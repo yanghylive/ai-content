@@ -45,9 +45,11 @@ const MIME = {
 
 http.createServer((req, res) => {
   const urlPath = (req.url || "/").split("?")[0];
-  /* /api 与 /auth 代理到后端 */
-  if (urlPath.startsWith("/api") || urlPath.startsWith("/auth")) {
-    const target = API_BASE + req.url;
+  /* /api 以及旧版 /auth 入口代理到后端。后端实际统一挂在 /api 下。 */
+  const isApiRequest = urlPath === "/api" || urlPath.startsWith("/api/");
+  const isLegacyAuthRequest = urlPath === "/auth" || urlPath.startsWith("/auth/");
+  if (isApiRequest || isLegacyAuthRequest) {
+    const target = API_BASE + (isLegacyAuthRequest ? "/api" : "") + req.url;
     const proxyReq = http.request(target, { method: req.method, headers: { ...req.headers, host: "127.0.0.1:3011" } }, (proxyRes) => {
       res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
       proxyRes.pipe(res);
@@ -56,10 +58,25 @@ http.createServer((req, res) => {
     req.pipe(proxyReq);
     return;
   }
-  let p = decodeURIComponent(urlPath);
+  let p;
+  try {
+    p = decodeURIComponent(urlPath);
+  } catch {
+    res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Bad Request");
+    return;
+  }
   if (p === "/" || p === "") p = "/index.html";
-  let file = path.join(ROOT, p);
-  if (!file.startsWith(ROOT)) { res.writeHead(403); res.end(); return; }
+  /* 目录边界防护：resolve 规范化 + 带分隔符前缀判断。
+     不能裸用 file.startsWith(ROOT)：单 ../ 会被 join 规范化为兄弟目录
+     （frontend/out-desktop），字符串前缀会误判在根内（2026-08-11 安全修复）。 */
+  const rootResolved = path.resolve(ROOT);
+  let file = path.resolve(rootResolved, p.replace(/^[/\\]+/, ""));
+  if (file !== rootResolved && !file.startsWith(rootResolved + path.sep)) {
+    res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Forbidden");
+    return;
+  }
   if (!fs.existsSync(file)) {
     if (fs.existsSync(file + ".html")) file = file + ".html";
     else { res.writeHead(404); res.end("not found"); return; }
@@ -74,3 +91,11 @@ http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": MIME[path.extname(file)] || "application/octet-stream" });
   fs.createReadStream(file).pipe(res);
 }).listen(PORT, "127.0.0.1", () => console.log(`✅ static server on ${PORT} -> ${ROOT}`));
+
+/* 进程级兜底：异常/畸形客户端请求不得让服务退出（2026-08-11 安全修复） */
+process.on("uncaughtException", (err) => {
+  console.error(`[static-server] uncaught: ${err?.message || err}`);
+});
+process.on("unhandledRejection", (err) => {
+  console.error(`[static-server] unhandled rejection: ${err?.message || err}`);
+});
