@@ -24,6 +24,8 @@ export interface GrowthNodeData {
   status?: string;
   /** 流水线中的步骤序号（1 起） */
   stepIndex?: number;
+  /** 步骤执行配置（如获客配置 ID） */
+  config?: Record<string, unknown>;
   [key: string]: unknown;
 }
 

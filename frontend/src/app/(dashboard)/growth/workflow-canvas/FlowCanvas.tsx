@@ -13,7 +13,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Save, RotateCcw, Trash2, ArrowLeft, Loader2, Workflow } from "lucide-react";
+import { Save, RotateCcw, Trash2, ArrowLeft, Loader2, Workflow, Play, Settings2 } from "lucide-react";
 import NodePanel from "./NodePanel";
 import { FLOW_NODE_TYPES, NODE_TYPE_META, type GrowthCanvasNode, type GrowthCanvasEdge, type GrowthCanvasNodeType } from "./nodeTypes";
 import { growthApi, type GrowthWorkflow } from "@/lib/api/growth";
@@ -48,7 +48,7 @@ export function buildWorkflowSteps(nodes: GrowthCanvasNode[], edges: GrowthCanva
     description: node.data?.description as string | undefined,
     nodeType: node.type,
     dependencies: dependencies.get(node.id) ?? [],
-    config: { ...(node.data ?? {}) },
+    config: { acquisitionConfigId: (node.data?.config as Record<string, unknown> | undefined)?.acquisitionConfigId },
   }));
 }
 
@@ -62,6 +62,7 @@ type CanvasStepSource = {
   description?: string;
   nodeType?: string;
   dependencies?: string[];
+  config?: unknown;
 };
 
 export function buildCanvasFromSteps(steps: CanvasStepSource[]): { nodes: GrowthCanvasNode[]; edges: GrowthCanvasEdge[] } {
@@ -78,6 +79,7 @@ export function buildCanvasFromSteps(steps: CanvasStepSource[]): { nodes: Growth
         riskMode: step.riskMode,
         status: step.status,
         stepIndex: index + 1,
+        config: (step.config as Record<string, unknown> | undefined) ?? undefined,
       },
     };
   });
@@ -244,6 +246,107 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
     setError(null);
   };
 
+  // ===== 执行引擎支持：状态轮询 + 节点配置 + 确认 =====
+  const [configTarget, setConfigTarget] = useState<GrowthCanvasNode | null>(null);
+  const [configs, setConfigs] = useState<Array<{ id: string; name: string; mode: string; platform: string }>>([]);
+  const [confirming, setConfirming] = useState(false);
+  const [hasWaiting, setHasWaiting] = useState(false);
+  const [liveStatus, setLiveStatus] = useState(workflow.status);
+
+  // 轮询工作流状态（执行引擎推进后实时着色 + 等待确认提示）
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const latest = await growthApi.listWorkflows();
+        const found = (Array.isArray(latest) ? latest : []).find((w) => w.id === workflow.id);
+        if (!found) return;
+        setLiveStatus(found.status);
+        setHasWaiting(found.steps.some((s) => s.status === "waiting-confirmation"));
+        setNodes((nds) =>
+          (nds as GrowthCanvasNode[]).map((n) => {
+            const step = found.steps.find((s) => s.id === n.id);
+            if (!step) return n;
+            return {
+              ...n,
+              data: {
+                ...n.data,
+                status: step.status,
+                label: n.data.label || step.name,
+                riskMode: step.riskMode,
+              },
+            };
+          }) as never,
+        );
+      } catch {
+        // 忽略轮询错误
+      }
+    };
+    void poll();
+    const timer = setInterval(() => void poll(), 5000);
+    return () => clearInterval(timer);
+  }, [workflow.id, setNodes]);
+
+  // 加载获客配置（节点配置弹窗用）
+  useEffect(() => {
+    void (async () => {
+      try {
+        const data = await growthApi.listConfigs();
+        setConfigs(
+          (Array.isArray(data) ? data : []).map((c) => ({
+            id: c.id,
+            name: (c as { name?: string }).name || c.taskName || "未命名获客任务",
+            mode: c.mode || "",
+            platform: c.platform || "",
+          })),
+        );
+      } catch {
+        // 忽略
+      }
+    })();
+  }, []);
+
+  /** 节点点击 → 打开配置面板 */
+  const onNodeClick = useCallback(
+    (_event: unknown, node: GrowthCanvasNode) => {
+      setConfigTarget(node);
+    },
+    [],
+  );
+
+  /** 保存节点配置（获客配置绑定）→ 更新画布 */
+  const handleSaveNodeConfig = async (nodeId: string, acquisitionConfigId: string) => {
+    try {
+      // 先构造新节点数组（避免异步 state 竞态），再更新画布并保存
+      const newNodes = (getNodes() as GrowthCanvasNode[]).map((n) =>
+        n.id === nodeId
+          ? { ...n, data: { ...n.data, config: { ...((n.data.config as object) || {}), acquisitionConfigId } } }
+          : n,
+      );
+      setNodes(newNodes as never);
+      setConfigTarget(null);
+      setError(null);
+      const steps = buildWorkflowSteps(newNodes, getEdges() as GrowthCanvasEdge[]);
+      await growthApi.updateWorkflow(workflow.id, { steps: steps as never });
+      setSavedAt(new Date().toLocaleTimeString());
+    } catch (err) {
+      setError(toPublicError(err, "保存节点配置失败"));
+    }
+  };
+
+  /** 确认当前等待确认的步骤（执行引擎：确认后执行动作并推进） */
+  const handleConfirmStep = async () => {
+    setConfirming(true);
+    setError(null);
+    try {
+      await growthApi.workflowAction(workflow.id, "confirm-step", {});
+      setSavedAt(new Date().toLocaleTimeString());
+    } catch (err) {
+      setError(toPublicError(err, "确认失败，请稍后重试"));
+    } finally {
+      setConfirming(false);
+    }
+  };
+
   const nodeTypes = useMemo(() => FLOW_NODE_TYPES, []);
 
   return (
@@ -279,6 +382,23 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           保存
         </button>
+        {hasWaiting && (
+          <button
+            type="button"
+            onClick={() => void handleConfirmStep()}
+            disabled={confirming}
+            className="flex items-center gap-1 rounded bg-[var(--kaypal-v3-amber)] px-4 py-1.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+          >
+            {confirming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+            确认继续
+          </button>
+        )}
+        {liveStatus === "running" && (
+          <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--kaypal-v3-success)]">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--kaypal-v3-success)]" />
+            执行中
+          </span>
+        )}
         {savedAt && <span className="text-xs text-[var(--kaypal-v3-muted)]">已保存 {savedAt}</span>}
       </div>
 
@@ -311,6 +431,7 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
             onNodesDelete={onNodesDelete as never}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onNodeClick={onNodeClick as never}
             onDrop={onDrop}
             onDragOver={onDragOver}
             nodeTypes={nodeTypes}
@@ -323,7 +444,7 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
           </ReactFlow>
           {/* 操作提示 */}
           <div className="pointer-events-none absolute bottom-3 left-3 rounded bg-[var(--kaypal-v3-paper)] px-2 py-1 text-[11px] text-[var(--kaypal-v3-muted)] shadow-sm">
-            上下拖动节点调整执行顺序 · 选中按 Delete 删除 · 拖拽连线设置额外依赖
+            点击节点配置执行动作 · 上下拖动调整顺序 · Delete 删除 · 拖拽连线设置依赖
           </div>
           {nodes.length === 0 && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -332,6 +453,69 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
           )}
         </div>
       </div>
+
+      {/* 节点配置弹窗：绑定执行动作（获客配置） */}
+      {configTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setConfigTarget(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2">
+              <Settings2 className="h-4 w-4 text-[var(--kaypal-v3-accent)]" />
+              <h3 className="text-base font-bold text-[var(--kaypal-v3-ink)]">
+                配置步骤：{(configTarget.data?.label as string) || "未命名"}
+              </h3>
+            </div>
+            <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
+              绑定执行动作后，运行到该步骤会自动执行（auto）或确认后执行（先确认）
+            </p>
+            {configTarget.type === "acquisition" ? (
+              <div className="mt-4">
+                <label className="text-sm font-medium text-[var(--kaypal-v3-ink)]">获客任务（评论/私信触达）</label>
+                <select
+                  value={
+                    ((configTarget.data?.config as Record<string, unknown> | undefined)?.acquisitionConfigId as string) || ""
+                  }
+                  onChange={(e) => void handleSaveNodeConfig(configTarget.id, e.target.value)}
+                  className="mt-1.5 w-full rounded border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-2 text-sm text-[var(--kaypal-v3-ink)] focus:border-[var(--kaypal-v3-accent)] focus:outline-none"
+                >
+                  <option value="">不执行获客（人工处理）</option>
+                  {configs.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}（{c.platform} · {c.mode}）
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-2 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                  选择后运行到此步骤将调用对应获客任务真实执行（需账号在线 + 执行开关开启）
+                </p>
+              </div>
+            ) : (
+              <div className="mt-4 rounded border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-xs text-[var(--kaypal-v3-muted)]">
+                此步骤类型（{configTarget.type}）当前无需绑定执行资源：{configTarget.type === "strategy" && "目标确认后由人工推进"}
+                {configTarget.type === "content" && "内容准备完成后由人工确认推进"}
+                {configTarget.type === "publish" && "发布动作将在后续版本接入发布引擎"}
+                {configTarget.type === "follow-up" && "线索跟进需在获客完成后人工执行"}
+                {configTarget.type === "crm" && "线索将随获客执行自动沉淀 CRM"}
+                {configTarget.type === "report" && "复盘数据在流程完成后查看"}
+              </div>
+            )}
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setConfigTarget(null)}
+                className="rounded bg-[var(--kaypal-v3-paper-soft)] px-4 py-1.5 text-sm font-medium text-[var(--kaypal-v3-ink)] transition hover:opacity-80"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

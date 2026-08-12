@@ -498,7 +498,7 @@ export const growthApi = {
     deleteWorkflow: (id: string) => api.delete<{ ok: boolean }>(`/growth/workflows/${id}`),
     workflowAction: (
         id: string,
-        action: "start" | "pause" | "resume" | "stop" | "enable" | "advance" | "complete-step" | "fail" | "reset",
+        action: "start" | "pause" | "resume" | "stop" | "enable" | "advance" | "complete-step" | "fail" | "reset" | "confirm-step",
         body: { stepId?: string; outputSummary?: string } = {},
     ) => api.post<GrowthWorkflow>(`/growth/workflows/${id}/${action}`, body),
 };

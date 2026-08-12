@@ -63,7 +63,9 @@ export type GrowthWorkflowAction =
   | 'advance'
   | 'complete-step'
   | 'fail'
-  | 'reset';
+  | 'reset'
+  | 'await-confirmation'
+  | 'confirm-step';
 
 export type GrowthWorkflowStepStatus =
   | 'pending'
