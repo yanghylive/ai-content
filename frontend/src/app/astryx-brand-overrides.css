@@ -1,0 +1,53 @@
+/*
+ * 方案 B · Astryx 品牌覆盖层
+ * 把 Astryx 语义 token 映射到 kaypal-v3 品牌视觉。
+ * kaypal-v3 是品牌定制层（:root 定义 light、.dark 定义 dark），
+ * 这里用 var(--kaypal-v3-*) 引用，明暗自动跟随，无需重复定义。
+ *
+ * 映射关系见 docs/ui-token-convergence.md
+ */
+[data-astryx-theme="neutral"] {
+  /* 强调色：Astryx neutral 默认是黑色 accent，这里换成品牌紫 */
+  --color-accent: var(--kaypal-v3-accent);
+  --color-accent-muted: var(--kaypal-v3-accent-soft);
+  --color-text-accent: var(--kaypal-v3-accent-ink);
+  --color-icon-accent: var(--kaypal-v3-accent-ink);
+  --color-on-accent: var(--kaypal-v3-paper);
+
+  /* 背景：surface/card/popover 统一到 paper */
+  --color-background-body: var(--kaypal-v3-canvas);
+  --color-background-surface: var(--kaypal-v3-paper);
+  --color-background-card: var(--kaypal-v3-paper);
+  --color-background-popover: var(--kaypal-v3-paper);
+  --color-background-muted: var(--kaypal-v3-paper-soft);
+
+  /* 文字 */
+  --color-text-primary: var(--kaypal-v3-ink);
+  --color-text-secondary: var(--kaypal-v3-soft-ink);
+  --color-text-disabled: var(--kaypal-v3-muted);
+
+  /* 图标 */
+  --color-icon-primary: var(--kaypal-v3-ink);
+  --color-icon-secondary: var(--kaypal-v3-soft-ink);
+  --color-icon-disabled: var(--kaypal-v3-muted);
+
+  /* 边框 */
+  --color-border: var(--kaypal-v3-border);
+  --color-border-emphasized: var(--kaypal-v3-border-strong);
+
+  /* 语义色 */
+  --color-success: var(--kaypal-v3-success);
+  --color-success-muted: var(--kaypal-v3-success-soft);
+  --color-error: var(--kaypal-v3-danger);
+  --color-error-muted: var(--kaypal-v3-danger-soft);
+  --color-warning: var(--kaypal-v3-amber);
+  --color-warning-muted: var(--kaypal-v3-amber-soft);
+
+  /* 骨架屏 */
+  --color-skeleton: var(--kaypal-v3-paper-soft);
+
+  /* 圆角：Astryx element=10px / container=12px，对齐 kaypal-v3 的 10px/14px */
+  --radius-inner: var(--kaypal-v3-radius-xs);
+  --radius-element: var(--kaypal-v3-radius-sm);
+  --radius-container: var(--kaypal-v3-radius);
+}
