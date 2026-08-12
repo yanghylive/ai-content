@@ -23,13 +23,21 @@ export function getApiBase() {
     try {
       const parsed = new URL(explicit);
       const baseIsLoopback = LOOPBACK_HOSTS.has(parsed.hostname);
+      /* API 根统一语义：必须带 /api 前缀（后端 setGlobalPrefix('api')）。
+         历史坑（2026-08-12）：显式配置裸 host（如 http://127.0.0.1:3011）时
+         若原样返回，login 页 `${apiBase}/auth/wechat/start` 会拼出缺 /api 的
+         URL → 后端 404「Cannot GET /auth/wechat/start」，微信登录反复修反复坏。 */
+      const withApiRoot = (base: string) => {
+        const clean = base.replace(/\/$/, "");
+        return clean.endsWith("/api") ? clean : `${clean}/api`;
+      };
       if (!baseIsLoopback) {
-        // 云端跨域部署：可信的显式绝对地址
-        return explicit.replace(/\/$/, "");
+        // 云端跨域部署：可信的显式绝对地址（补 /api 保证语义一致）
+        return withApiRoot(explicit);
       }
       if (LOOPBACK_HOSTS.has(hostname)) {
-        // next dev / 本地直连场景（无反代入口）：保留显式 loopback 直连
-        return explicit.replace(/\/$/, "");
+        // next dev / 本地直连场景（无反代入口）：保留显式 loopback 直连（补 /api）
+        return withApiRoot(explicit);
       }
       // 生产 web 构建期误注入 loopback 字面量：回落同源 /api（nginx 反代兜底）
       return `${protocol}//${hostname}/api`;

@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["darwin-arm64"]
 }
 
 datasource db {
@@ -1541,6 +1542,7 @@ model InteractionTask {
   localTaskId                String?               @map("localTaskId")
   requiresDoubleConfirmation Boolean               @default(false) @map("requiresDoubleConfirmation")
   createdAt                  DateTime              @default(now()) @map("createdAt")
+  claimedBy                  String?               @map("claimedBy")
   updatedAt                  DateTime              @updatedAt @map("updatedAt")
 
   @@index([tenantId, userId, status])
@@ -2344,6 +2346,8 @@ model GrowthWorkflow {
   tenant        Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   name          String
   template      String
+  industry      String?
+  scenario      String?
   status        String
   steps         Json      @default("[]")
   currentStepId String?   @map("current_step_id")

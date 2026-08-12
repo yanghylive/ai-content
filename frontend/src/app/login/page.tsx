@@ -908,11 +908,19 @@ function LoginPageContent() {
                           }
                           label="微信登录"
                           onClick={() => {
-                            // 用 getApiBase() 拼绝对地址直连后端：
-                            // 桌面 Electron 的静态服务不反代 /api（相对路径会 404 到 not-found 页）；
-                            // 生产 web 的 getApiBase 回落为同源 /api（nginx 反代），两处都兼容。
+                            // 用 getApiBase() 拼绝对地址直连后端。
+                            // 后端路由固定在 /api/auth/wechat/start（setGlobalPrefix('api')），
+                            // 这里对 apiBase 两种形态（同源 "/api" / 绝对 host）都补齐 /api，
+                            // 避免拼出缺 /api 的 URL → 404「Cannot GET /auth/wechat/start」（2026-08-12 修复）。
                             const apiBase = getApiBase().replace(/\/$/, "");
-                            window.location.href = `${apiBase}/auth/wechat/start?next=${encodeURIComponent(
+                            const wechatStart = apiBase.endsWith("/api")
+                              ? `${apiBase}/auth/wechat/start`
+                              : `${apiBase}/api/auth/wechat/start`;
+                            // 把当前前端 origin 显式传给后端做微信回调 returnUrl：
+                            // 后端按此 origin 回跳并种会话 cookie，保证与用户当前访问域一致
+                            // （根治 localhost vs 127.0.0.1 登录完回登录页，2026-08-12）。
+                            const origin = encodeURIComponent(window.location.origin);
+                            window.location.href = `${wechatStart}?origin=${origin}&next=${encodeURIComponent(
                               nextPath,
                             )}`;
                           }}
