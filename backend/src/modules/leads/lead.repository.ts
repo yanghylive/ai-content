@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import crypto from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { LeadEventBus } from './lead-event-bus';
 
 /**
  * 统一线索写入层（一期）。
@@ -45,7 +46,10 @@ export interface LeadUpsertResult {
 
 @Injectable()
 export class LeadRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: LeadEventBus,
+  ) {}
 
   /** 统一去重键：有平台用户 ID 优先（最强），无则昵称 + 文本前缀兜底 */
   static dedupeKeyOf(input: {
@@ -147,6 +151,16 @@ export class LeadRepository {
         ownerUserId: input.ownerUserId ?? null,
       },
     });
+    this.events.emit({
+      type: 'lead.created',
+      leadId: lead.id,
+      userId: lead.userId,
+      tenantId: lead.tenantId,
+      platform: lead.platform,
+      sourceType: lead.sourceType,
+      dedupeKey: lead.dedupeKey,
+      at: lead.createdAt,
+    });
     return { lead, created: true };
   }
 
@@ -155,9 +169,16 @@ export class LeadRepository {
     leadId: string,
     customerId: string,
   ): Promise<void> {
-    await this.prisma.lead.update({
+    const lead = await this.prisma.lead.update({
       where: { id: leadId },
       data: { status: 'converted', customerId },
+    });
+    this.events.emit({
+      type: 'lead.converted',
+      leadId: lead.id,
+      customerId: lead.customerId ?? customerId,
+      userId: lead.userId,
+      at: new Date(),
     });
   }
 
