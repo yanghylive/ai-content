@@ -18,6 +18,7 @@ export interface LeadUpsertInput {
   tenantId?: string | null;
   platform: string;
   sourceType: string; // comment / dm / notification / search / import
+  sourceAccountId?: string | null;
   sourceTaskId?: string | null;
   sourceRunId?: string | null;
   sourceUrl?: string | null;
@@ -33,6 +34,7 @@ export interface LeadUpsertInput {
   signals?: Prisma.InputJsonValue;
   latestReply?: string | null;
   replyPersonaId?: string | null;
+  lastError?: string | null;
   ownerUserId?: string | null;
 }
 
@@ -104,11 +106,14 @@ export class LeadRepository {
           latestReply: input.latestReply ?? existing.latestReply,
           replyPersonaId: input.replyPersonaId ?? existing.replyPersonaId,
           // 补充追溯字段（若旧数据缺失）
+          sourceAccountId:
+            existing.sourceAccountId ?? input.sourceAccountId ?? null,
           sourceTaskId: existing.sourceTaskId ?? input.sourceTaskId ?? null,
           sourceRunId: existing.sourceRunId ?? input.sourceRunId ?? null,
           sourceUrl: existing.sourceUrl ?? input.sourceUrl ?? null,
           sourceText: existing.sourceText ?? input.sourceText ?? null,
           commentRef: input.commentRef ?? existing.commentRef ?? null,
+          lastError: input.lastError ?? existing.lastError ?? null,
           ownerUserId: existing.ownerUserId ?? input.ownerUserId ?? null,
         },
       });
@@ -121,6 +126,7 @@ export class LeadRepository {
         tenantId: input.tenantId ?? null,
         platform: input.platform,
         sourceType: input.sourceType,
+        sourceAccountId: input.sourceAccountId ?? null,
         sourceTaskId: input.sourceTaskId ?? null,
         sourceRunId: input.sourceRunId ?? null,
         sourceUrl: input.sourceUrl ?? null,
@@ -137,6 +143,7 @@ export class LeadRepository {
         signals: input.signals ?? [],
         latestReply: input.latestReply ?? null,
         replyPersonaId: input.replyPersonaId ?? null,
+        lastError: input.lastError ?? null,
         ownerUserId: input.ownerUserId ?? null,
       },
     });
@@ -151,6 +158,32 @@ export class LeadRepository {
     await this.prisma.lead.update({
       where: { id: leadId },
       data: { status: 'converted', customerId },
+    });
+  }
+
+  /**
+   * 更新线索的回复/互动结果状态（评论获客用）。
+   * status 复用 leads.status（pending/approved/replied/skipped/failed），
+   * error 落 lastError，成功时记录 repliedAt。
+   * 带 userId 条件，保持与旧表一致的跨用户隔离边界。
+   */
+  async updateReplyStatus(
+    leadId: string,
+    input: {
+      userId: string;
+      status: string;
+      lastError?: string | null;
+      repliedAt?: Date | null;
+    },
+  ): Promise<void> {
+    await this.prisma.lead.updateMany({
+      where: { id: leadId, userId: input.userId },
+      data: {
+        status: input.status,
+        lastError: input.lastError ?? null,
+        repliedAt: input.repliedAt,
+        updatedAt: new Date(),
+      },
     });
   }
 
