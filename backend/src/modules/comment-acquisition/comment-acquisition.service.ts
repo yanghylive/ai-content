@@ -220,6 +220,10 @@ export class CommentAcquisitionService {
           platform: input.platform,
           sourceType: 'comment',
           sourceText: comment.text,
+          commentRef:
+            comment.commentIndex !== undefined
+              ? String(comment.commentIndex)
+              : null,
           score,
           signals,
           latestReply: replyText ?? null,

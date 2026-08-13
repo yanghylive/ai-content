@@ -22,6 +22,7 @@ export interface LeadUpsertInput {
   sourceRunId?: string | null;
   sourceUrl?: string | null;
   sourceText?: string | null;
+  commentRef?: string | null;
   externalUserId?: string | null;
   nickname?: string | null;
   profileUrl?: string | null;
@@ -107,6 +108,7 @@ export class LeadRepository {
           sourceRunId: existing.sourceRunId ?? input.sourceRunId ?? null,
           sourceUrl: existing.sourceUrl ?? input.sourceUrl ?? null,
           sourceText: existing.sourceText ?? input.sourceText ?? null,
+          commentRef: input.commentRef ?? existing.commentRef ?? null,
           ownerUserId: existing.ownerUserId ?? input.ownerUserId ?? null,
         },
       });
@@ -123,6 +125,7 @@ export class LeadRepository {
         sourceRunId: input.sourceRunId ?? null,
         sourceUrl: input.sourceUrl ?? null,
         sourceText: input.sourceText ?? null,
+        commentRef: input.commentRef ?? null,
         externalUserId: input.externalUserId ?? null,
         dedupeKey,
         nickname: input.nickname ?? null,

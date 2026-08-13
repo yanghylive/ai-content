@@ -2319,6 +2319,7 @@ model Lead {
   sourceRunId     String?      @map("source_run_id")
   sourceUrl       String?      @map("source_url") @db.Text
   sourceText      String?      @map("source_text") @db.Text
+  commentRef      String?      @map("comment_ref") // 小红书评论序号（xiaohongshu 回复定位用，其他平台为 null）
 
   externalUserId  String?      @map("external_user_id")
   dedupeKey       String       @map("dedupe_key")
