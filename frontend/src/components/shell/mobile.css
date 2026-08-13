@@ -419,3 +419,27 @@
   width: 14px;
   height: 14px;
 }
+
+/* 以下 4 类 mx-* 图标容器里的 svg 尺寸限制原本只写在上面 @media(max-width:767px)
+   里，桌面端无限制会撑大。这里提为全局规则，一次性覆盖所有使用页面。 */
+.mx-sec-icon svg {
+  width: 15px;
+  height: 15px;
+}
+.mx-svc-ic svg {
+  width: 19px;
+  height: 19px;
+}
+.mx-row-ic svg {
+  width: 18px;
+  height: 18px;
+}
+.mx-tab .mx-tab-ic svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.8;
+}
+.mx-section-action svg {
+  width: 14px;
+  height: 14px;
+}
