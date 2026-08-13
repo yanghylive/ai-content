@@ -2601,6 +2601,30 @@ model AiToolCallLog {
   @@map("ai_tool_call_logs")
 }
 
+// AI 调用追踪（二期 P1：AI 质量观测）——记录每次 LLM 推理的 prompt/completion
+// 快照、模型、耗时、成败，补上「AI 回复缺量化评估」缺口（论证报告真缺口）。
+model AiCallTrace {
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  tenantId         String?  @map("tenant_id")
+  scene            String // chat / comment-reply / growth-acquisition / tool 等
+  modelId          String?  @map("model_id")
+  modelName        String?  @map("model_name")
+  promptJson       Json     @default("[]") @map("prompt_json") // prompt 快照（messages 数组）
+  completion       String?  @map("completion") @db.Text // 回复快照（截断）
+  promptTokens     Int      @default(0) @map("prompt_tokens")
+  completionTokens Int      @default(0) @map("completion_tokens")
+  totalTokens      Int      @default(0) @map("total_tokens")
+  latencyMs        Int      @default(0) @map("latency_ms")
+  success          Boolean  @default(true)
+  errorMsg         String?  @map("error_msg")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([scene, createdAt])
+  @@map("ai_call_traces")
+}
+
 // AI 用量配额（B6/P3）：每用户每日对话/工具次数
 model AiUsageQuota {
   id        String   @id @default(cuid())

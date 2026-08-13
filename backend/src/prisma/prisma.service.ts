@@ -1346,6 +1346,23 @@ export class PrismaService
         "tokens_used" INTEGER DEFAULT 0,
         "created_at" DATETIME
       )`,
+      `CREATE TABLE IF NOT EXISTS ai_call_traces (
+        "id" TEXT PRIMARY KEY NOT NULL,
+        "user_id" TEXT,
+        "tenant_id" TEXT,
+        "scene" TEXT,
+        "model_id" TEXT,
+        "model_name" TEXT,
+        "prompt_json" JSONB NOT NULL DEFAULT '[]',
+        "completion" TEXT,
+        "prompt_tokens" INTEGER DEFAULT 0,
+        "completion_tokens" INTEGER DEFAULT 0,
+        "total_tokens" INTEGER DEFAULT 0,
+        "latency_ms" INTEGER DEFAULT 0,
+        "success" BOOLEAN DEFAULT 1,
+        "error_msg" TEXT,
+        "created_at" DATETIME
+      )`,
       `CREATE TABLE IF NOT EXISTS ai_usage_quotas (
         "id" TEXT PRIMARY KEY NOT NULL,
         "user_id" TEXT,

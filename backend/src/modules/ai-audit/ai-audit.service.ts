@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export interface AuditToolInput {
@@ -24,6 +25,7 @@ export interface QuotaStatus {
 }
 
 const TOOL_ARG_SUMMARY_LEN = 500; // 审计参数摘要长度（避免存大对象）
+const COMPLETION_SNAPSHOT_LEN = 2000; // AI 回复快照截断长度（质量评估够用，避免存大文本）
 
 /**
  * AI 审计 + 配额（B6/P3，主文档 3.8 安全契约）
@@ -173,6 +175,51 @@ export class AiAuditService {
       });
     } catch (error) {
       this.logger.warn(`记录 Token 用量失败: ${error}`);
+    }
+  }
+
+  /**
+   * 记录一次 LLM 推理调用追踪（二期 P1：AI 质量观测）。
+   * 补上「AI 回复缺量化评估」缺口——记录 prompt/completion 快照、模型、
+   * 耗时、成败，供质量评估与失败原因排查。不阻塞主流程。
+   */
+  async recordTrace(input: {
+    userId: string;
+    tenantId?: string | null;
+    scene: string;
+    modelId?: string | null;
+    modelName?: string | null;
+    promptJson?: Prisma.InputJsonValue;
+    completion?: string | null;
+    promptTokens?: number;
+    completionTokens?: number;
+    totalTokens?: number;
+    latencyMs?: number;
+    success?: boolean;
+    errorMsg?: string | null;
+  }): Promise<void> {
+    try {
+      await this.prisma.aiCallTrace.create({
+        data: {
+          userId: input.userId,
+          tenantId: input.tenantId ?? null,
+          scene: input.scene,
+          modelId: input.modelId ?? null,
+          modelName: input.modelName ?? null,
+          promptJson: input.promptJson ?? [],
+          completion: input.completion
+            ? input.completion.slice(0, COMPLETION_SNAPSHOT_LEN)
+            : null,
+          promptTokens: input.promptTokens ?? 0,
+          completionTokens: input.completionTokens ?? 0,
+          totalTokens: input.totalTokens ?? 0,
+          latencyMs: input.latencyMs ?? 0,
+          success: input.success ?? true,
+          errorMsg: input.errorMsg ?? null,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(`记录 AI 调用追踪失败: ${error}`);
     }
   }
 
