@@ -412,3 +412,10 @@
 
   /* 桌面壳在手机宽度下的收尾：rail/topbar 隐藏由 AppShell 组件逻辑处理 */
 }
+
+/* 品牌 eyebrow 里的 svg 图标在桌面端（>767px）也固定为 14px，
+   避免 viewBox 无显式宽高时撑满容器变成大图标（多个页面共用此结构）。 */
+.mx-brand-eyebrow svg {
+  width: 14px;
+  height: 14px;
+}

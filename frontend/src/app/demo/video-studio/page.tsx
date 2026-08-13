@@ -144,7 +144,7 @@ export default function VideoStudioDemoPage() {
         <div className="mx-header-row">
           <div>
             <div className="mx-brand-eyebrow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="3" /><path d="M10 9l5 3-5 3V9z" /></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="3" /><path d="M10 9l5 3-5 3V9z" /></svg>
               JIUZHANG AI · 演示舱
             </div>
             <h1 className="mx-page-title">{status?.title || "视频一键成片"}</h1>
