@@ -6,6 +6,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiAuditService } from '../ai-audit/ai-audit.service';
 import { SavingsExchangeService } from '../savings/savings-exchange.service';
@@ -1252,6 +1253,7 @@ export class AiClientService {
 
     this.logger.log(`调用 AI 模型: ${model.name} (${model.modelId})`);
 
+    const startedAt = Date.now();
     try {
       const response = await client.chat.completions.create(
         {
@@ -1296,11 +1298,38 @@ export class AiClientService {
           `[ai-client] 模型返回空 content. model=${model.modelId} choices=${response?.choices?.length ?? 0} finishReason=${JSON.stringify(response?.choices?.[0]?.finish_reason ?? null)} usage=${JSON.stringify(response?.usage ?? null)}`,
         );
       }
+      if (kaypalUserId) {
+        void this.aiAudit?.recordTrace({
+          userId: kaypalUserId,
+          scene: 'text_generation',
+          modelId: model.modelId,
+          modelName: model.name,
+          promptJson: contextualMessages as Prisma.InputJsonValue,
+          completion: content,
+          promptTokens: response?.usage?.prompt_tokens,
+          completionTokens: response?.usage?.completion_tokens,
+          totalTokens: response?.usage?.total_tokens,
+          latencyMs: Date.now() - startedAt,
+          success: true,
+        });
+      }
       return content;
     } catch (error) {
       this.rethrowIfAborted(error, options?.signal);
       const message = this.getErrorMessage(error);
       this.logger.error(`AI 文本生成失败: ${message}`);
+      if (kaypalUserId) {
+        void this.aiAudit?.recordTrace({
+          userId: kaypalUserId,
+          scene: 'text_generation',
+          modelId: model.modelId,
+          modelName: model.name,
+          promptJson: contextualMessages as Prisma.InputJsonValue,
+          errorMsg: message,
+          latencyMs: Date.now() - startedAt,
+          success: false,
+        });
+      }
       throw this.toUserFacingAiError(error, model.platform);
     }
   }
@@ -1363,6 +1392,7 @@ export class AiClientService {
 
     this.logger.log(`调用视觉 AI 模型: ${model.name} (${model.modelId})`);
 
+    const startedAt = Date.now();
     try {
       const response = await client.chat.completions.create(
         {
@@ -1392,11 +1422,52 @@ export class AiClientService {
           totalTokens: response?.usage?.total_tokens,
         },
       });
-      return response.choices[0]?.message?.content || '';
+      const visionContent = response.choices[0]?.message?.content || '';
+      if (kaypalUserId) {
+        void this.aiAudit?.recordTrace({
+          userId: kaypalUserId,
+          scene: 'vision',
+          modelId: model.modelId,
+          modelName: model.name,
+          // 脱敏：不存图片 base64，只存文本 prompt + 图片占位
+          promptJson: [
+            ...(input.system
+              ? [{ role: 'system', content: input.system }]
+              : []),
+            { role: 'user', content: input.prompt },
+            { role: 'user', content: '[image]' },
+          ] as Prisma.InputJsonValue,
+          completion: visionContent,
+          promptTokens: response?.usage?.prompt_tokens,
+          completionTokens: response?.usage?.completion_tokens,
+          totalTokens: response?.usage?.total_tokens,
+          latencyMs: Date.now() - startedAt,
+          success: true,
+        });
+      }
+      return visionContent;
     } catch (error) {
       this.rethrowIfAborted(error, options?.signal);
       const message = this.getErrorMessage(error);
       this.logger.error(`AI 图片识别失败: ${message}`);
+      if (kaypalUserId) {
+        void this.aiAudit?.recordTrace({
+          userId: kaypalUserId,
+          scene: 'vision',
+          modelId: model.modelId,
+          modelName: model.name,
+          promptJson: [
+            ...(input.system
+              ? [{ role: 'system', content: input.system }]
+              : []),
+            { role: 'user', content: input.prompt },
+            { role: 'user', content: '[image]' },
+          ] as Prisma.InputJsonValue,
+          errorMsg: message,
+          latencyMs: Date.now() - startedAt,
+          success: false,
+        });
+      }
       throw this.toUserFacingAiError(error, model.platform);
     }
   }
