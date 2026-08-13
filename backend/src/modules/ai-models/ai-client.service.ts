@@ -1510,6 +1510,7 @@ export class AiClientService {
 
     this.logger.log(`流式调用 AI 模型: ${model.name} (${model.modelId})`);
 
+    const startedAt = Date.now();
     let stream: AsyncIterable<ChatCompletionChunk>;
     try {
       stream = await client.chat.completions.create(
@@ -1530,19 +1531,77 @@ export class AiClientService {
       this.rethrowIfAborted(error, options?.signal);
       const message = this.getErrorMessage(error);
       this.logger.error(`AI 流式文本生成失败: ${message}`);
+      if (kaypalUserId) {
+        void this.aiAudit?.recordTrace({
+          userId: kaypalUserId,
+          scene: 'stream_text',
+          modelId: model.modelId,
+          modelName: model.name,
+          promptJson: contextualMessages as Prisma.InputJsonValue,
+          errorMsg: message,
+          latencyMs: Date.now() - startedAt,
+          success: false,
+        });
+      }
       throw this.toUserFacingAiError(error, model.platform);
     }
 
+    let fullContent = '';
+    let promptTokens = 0;
+    let completionTokens = 0;
+    let totalTokens = 0;
     try {
       for await (const chunk of stream) {
         this.throwIfAborted(options?.signal);
         const content = chunk.choices[0]?.delta?.content;
         if (content) {
+          fullContent += content;
           yield content;
         }
+        // 流式 usage：仅在开启 stream_options.include_usage 时最后一个 chunk 携带
+        const usage = (chunk as unknown as {
+          usage?: {
+            prompt_tokens?: number;
+            completion_tokens?: number;
+            total_tokens?: number;
+          };
+        })?.usage;
+        if (usage) {
+          promptTokens = usage.prompt_tokens ?? promptTokens;
+          completionTokens = usage.completion_tokens ?? completionTokens;
+          totalTokens = usage.total_tokens ?? totalTokens;
+        }
+      }
+      if (kaypalUserId) {
+        void this.aiAudit?.recordTrace({
+          userId: kaypalUserId,
+          scene: 'stream_text',
+          modelId: model.modelId,
+          modelName: model.name,
+          promptJson: contextualMessages as Prisma.InputJsonValue,
+          completion: fullContent,
+          promptTokens,
+          completionTokens,
+          totalTokens,
+          latencyMs: Date.now() - startedAt,
+          success: true,
+        });
       }
     } catch (error) {
       this.rethrowIfAborted(error, options?.signal);
+      if (kaypalUserId) {
+        void this.aiAudit?.recordTrace({
+          userId: kaypalUserId,
+          scene: 'stream_text',
+          modelId: model.modelId,
+          modelName: model.name,
+          promptJson: contextualMessages as Prisma.InputJsonValue,
+          completion: fullContent || undefined,
+          errorMsg: error instanceof Error ? error.message : String(error),
+          latencyMs: Date.now() - startedAt,
+          success: false,
+        });
+      }
       throw error;
     }
   }
