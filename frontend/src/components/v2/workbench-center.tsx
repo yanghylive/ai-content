@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 export type WorkbenchStat = {
   label: string;
@@ -74,6 +75,7 @@ export function WorkbenchCenter({
   advancedLinks = [],
   error,
   notice,
+  backHref,
 }: {
   title: string;
   subtitle: string;
@@ -81,6 +83,8 @@ export function WorkbenchCenter({
   stats?: WorkbenchStat[];
   /** 统计数据来源说明，例如"示例数据，接口接入后显示真实值" */
   statsNote?: string;
+  /** 传了 backHref 就在页面顶部显示「返回上一级」按钮（功能子页用），顶级中心页不传 */
+  backHref?: string;
   primaryAction?: {
     label: string;
     href?: string;
@@ -100,6 +104,11 @@ export function WorkbenchCenter({
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">
+        {backHref ? (
+          <div className="mx-px" style={{ marginTop: 8 }}>
+            <V2BackButton to={backHref} />
+          </div>
+        ) : null}
         <header className="mx-header">
           <div className="mx-header-row">
             <div style={{ minWidth: 0 }}>
@@ -237,6 +246,7 @@ export function WorkbenchCenter({
 
   return (
     <div className="kaypal-v2-engine flex flex-col gap-6">
+      {backHref ? <V2BackButton to={backHref} /> : null}
       {/* 顶部：标题 + 单一主行动 */}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center justify-between">

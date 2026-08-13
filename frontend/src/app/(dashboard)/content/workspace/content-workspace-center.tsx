@@ -49,7 +49,8 @@ export function ContentWorkspaceCenter() {
 
   return (
     <WorkbenchCenter
-      title="内容工作区"
+      backHref="/content"
+            title="内容工作区"
       subtitle="所有内容的统一入口：写文章、做笔记、管素材"
       icon={FileEdit}
       stats={[

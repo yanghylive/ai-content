@@ -15,7 +15,8 @@ import { WorkbenchCenter } from "@/components/v2/workbench-center";
 export function ContentOptimizationCenter() {
   return (
     <WorkbenchCenter
-      title="内容优化"
+      backHref="/content"
+            title="内容优化"
       subtitle="选中一篇内容，AI 帮你改标题、改结构、提质量"
       icon={Wand2}
       primaryAction={{ label: "开始优化", href: "/content/optimization?action=new" }}
