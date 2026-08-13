@@ -4,6 +4,7 @@ import React from "react";
 import { generateImage as dashGenerateImage } from "@/lib/api/dashscope";
 import { redfoxApi } from "@/lib/api/redfox";
 import { toPublicError } from "@/lib/public-error";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const SIZES = [
   { v: "1024*1024", label: "方图 1:1" },
@@ -45,7 +46,8 @@ export default function AiImageGenPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "8px 0 40px" }}>
-      <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.3px" }}>AI 生图</h1>
+      <V2BackButton to="/content" />
+      <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.3px", marginTop: 4 }}>AI 生图</h1>
       <p style={{ color: "var(--kx-muted)", fontSize: 14, margin: "6px 0 20px" }}>
         描述画面即可生成图片（qwen-image-3.0-pro），自动存入素材库
       </p>

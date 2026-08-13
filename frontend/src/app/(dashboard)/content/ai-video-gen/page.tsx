@@ -3,6 +3,7 @@
 import React from "react";
 import { generateVideo as dashGenerateVideo } from "@/lib/api/dashscope";
 import { toPublicError } from "@/lib/public-error";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const DURATIONS = [3, 5, 10, 15];
 
@@ -32,7 +33,8 @@ export default function AiVideoGenPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "8px 0 40px" }}>
-      <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.3px" }}>AI 生视频</h1>
+      <V2BackButton to="/content" />
+      <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.3px", marginTop: 4 }}>AI 生视频</h1>
       <p style={{ color: "var(--kx-muted)", fontSize: 14, margin: "6px 0 20px" }}>
         描述画面即可生成短视频（happyhorse-1.1），自动存入素材库
       </p>
