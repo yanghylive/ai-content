@@ -2170,6 +2170,7 @@ export class PrismaService
         source_run_id TEXT,
         source_url TEXT,
         source_text TEXT,
+        comment_ref TEXT,
         external_user_id TEXT,
         dedupe_key TEXT NOT NULL,
         nickname TEXT,
@@ -2205,6 +2206,7 @@ export class PrismaService
     }
 
     for (const column of [
+      ['leads', 'comment_ref', 'TEXT'],
       ['app_install_states', 'tenant_id', 'TEXT'],
       ['app_install_states', 'actor_user_id', 'TEXT'],
       ['crm_companies', 'tenant_id', 'TEXT'],
