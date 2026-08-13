@@ -10,6 +10,7 @@ import { Button, Input, Textarea, addToast } from "@heroui/react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { videoApi, type ProductCopy, type ProductCutResult } from "@/lib/api/video";
 import { toPublicError } from "@/lib/public-error";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 export default function ProductCutPage() {
   const isMobile = useIsMobile();
@@ -134,6 +135,9 @@ export default function ProductCutPage() {
   if (isMobile) {
     return (
       <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ marginTop: 8 }}>
+          <V2BackButton to="/content" />
+        </div>
         <header className="mx-header">
           <div className="mx-header-row">
             <div>

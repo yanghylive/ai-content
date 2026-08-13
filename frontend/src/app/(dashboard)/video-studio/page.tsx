@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 /**
  * 视频成片 —— 独立盈利商用产品（studio_core）
@@ -30,6 +31,9 @@ export default function VideoStudioPage() {
       className="kx-mobile-ambient"
       style={{ minHeight: "100dvh", paddingBottom: 90 }}
     >
+      <div className="mx-px" style={{ marginTop: 8 }}>
+        <V2BackButton to="/content" />
+      </div>
       <header className="mx-header">
         <div className="mx-header-row">
           <div>

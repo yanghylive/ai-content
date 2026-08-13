@@ -3,6 +3,7 @@
 import React from "react";
 import { redfoxApi } from "@/lib/api/redfox";
 import { toPublicError } from "@/lib/public-error";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 type Action = "search" | "detail" | "list";
 
@@ -242,7 +243,8 @@ export default function CollectionCenterPage() {
 
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "8px 0 40px" }}>
-      <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.3px" }}>全网采集</h1>
+      <V2BackButton to="/content" />
+      <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.3px", marginTop: 4 }}>全网采集</h1>
       <p style={{ color: "var(--kx-muted)", fontSize: 14, margin: "6px 0 20px" }}>
         关键词搜作品、查作品详情、看账号作品列表
       </p>
