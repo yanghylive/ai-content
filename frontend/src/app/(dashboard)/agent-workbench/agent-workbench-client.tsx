@@ -526,6 +526,7 @@ export function ConfirmationsPage() {
   return (
     <AgentShell
       title="待我确认"
+      backHref="/mine"
       description="以下动作需要你确认后才能继续。确认后会自动执行，拒绝则取消。"
       icon="solar:check-square-linear"
       action={
@@ -1130,6 +1131,7 @@ export function SessionsPage({
   return (
     <AgentShell
       title={meta.title}
+      backHref="/mine"
       description={meta.description}
       icon={meta.icon}
       action={
@@ -1944,15 +1946,18 @@ function AgentShell({
   icon,
   action,
   children,
+  backHref,
 }: {
   title: string;
   description: string;
   icon: string;
   action?: React.ReactNode;
   children: React.ReactNode;
+  backHref?: string;
 }) {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      {backHref ? <V2BackButton to={backHref} /> : null}
       <header className="flex flex-col gap-4 rounded-[8px] border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-4">
           <div className="flex h-11 w-11 flex-none items-center justify-center rounded-[8px] bg-primary/10 text-primary">
