@@ -35,6 +35,7 @@ import { VideoWorkshopModule } from './modules/video-workshop/video-workshop.mod
 import { AppMarketModule } from './modules/app-market/app-market.module';
 import { CrmModule } from './modules/crm/crm.module';
 import { GrowthModule } from './modules/growth/growth.module';
+import { LeadsModule } from './modules/leads/leads.module';
 import { CommercialReadinessModule } from './modules/commercial-readiness/commercial-readiness.module';
 import { IntelligenceModule } from './modules/intelligence/intelligence.module';
 import { RedfoxModule } from './modules/redfox/redfox.module';
@@ -88,6 +89,7 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     GeoBridgeModule,
     AppMarketModule,
     CrmModule,
+    LeadsModule,
     CommercialReadinessModule,
     WecomAssistantModule,
     WecomCrmModule,

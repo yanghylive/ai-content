@@ -60,6 +60,7 @@ model Tenant {
   members                  TenantMember[]
   entitlements             TenantEntitlement[]
   appInstallStates         AppInstallState[]
+  leads                    Lead[]
   crmCustomers             CrmCustomer[]
   crmCompanies             CrmCompany[]
   crmOpportunities         CrmOpportunity[]
@@ -1943,6 +1944,7 @@ model CrmCustomer {
   opportunities           CrmOpportunity[]   @relation("CrmOpportunityPrimaryCustomer")
   tasks                   CrmTask[]
   notes                   CrmNote[]
+  leads                   Lead[]
 
   @@unique([ownerId, dedupeKey])
   @@unique([tenantId, dedupeKey])
@@ -2301,6 +2303,56 @@ model GrowthAcquisitionRun {
   @@index([tenantId, startedAt])
   @@index([configId, startedAt])
   @@map("growth_acquisition_runs")
+}
+
+/// 统一线索（一期）：吸收 growth_leads + comment_acquisition_leads 的重叠语义，
+/// 用统一 dedupeKey 去重，status=converted 时通过 customerId 关联 CrmCustomer。
+model Lead {
+  id              String       @id @default(cuid())
+  userId          String       @map("user_id")
+  tenantId        String?      @map("tenant_id")
+  tenant          Tenant?      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  platform        String
+  sourceType      String       @map("source_type") // comment/dm/notification/search/import
+  sourceTaskId    String?      @map("source_task_id")
+  sourceRunId     String?      @map("source_run_id")
+  sourceUrl       String?      @map("source_url") @db.Text
+  sourceText      String?      @map("source_text") @db.Text
+
+  externalUserId  String?      @map("external_user_id")
+  dedupeKey       String       @map("dedupe_key")
+  nickname        String?
+  profileUrl      String?      @map("profile_url") @db.Text
+  avatarUrl       String?      @map("avatar_url")
+
+  score           Int          @default(0)
+  scoreReasons    Json         @default("[]") @map("score_reasons")
+  matchedKeywords Json         @default("[]") @map("matched_keywords")
+  signals         Json         @default("[]")
+
+  latestReply     String?      @map("latest_reply") @db.Text
+  replyPersonaId  String?      @map("reply_persona_id")
+  repliedAt       DateTime?    @map("replied_at")
+
+  // pending/reviewed/contacted/qualified/converted/dismissed
+  status          String       @default("pending")
+
+  customerId      String?      @map("customer_id")
+  customer        CrmCustomer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  evidenceUrls    Json         @default("[]") @map("evidence_urls")
+  ownerUserId     String?      @map("owner_user_id")
+  nextFollowUpAt  DateTime?    @map("next_follow_up_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@unique([tenantId, dedupeKey])
+  @@unique([userId, dedupeKey])
+  @@index([userId, status])
+  @@index([tenantId, platform])
+  @@index([sourceTaskId])
+  @@map("leads")
 }
 
 model GrowthLead {
