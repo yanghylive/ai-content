@@ -5310,36 +5310,6 @@ export class GrowthService implements OnModuleInit {
         started_at DATETIME NOT NULL,
         ended_at DATETIME
       )`,
-      `CREATE TABLE IF NOT EXISTS growth_leads (
-        id TEXT PRIMARY KEY NOT NULL,
-        user_id TEXT NOT NULL,
-        tenant_id TEXT,
-        platform TEXT NOT NULL,
-        source_type TEXT NOT NULL,
-        source_task_id TEXT,
-        source_run_id TEXT,
-        crm_customer_id TEXT,
-        nickname TEXT NOT NULL,
-        profile_url TEXT,
-        avatar_url TEXT,
-        external_user_id TEXT,
-        source_text TEXT NOT NULL,
-        source_url TEXT,
-        video_title TEXT,
-        video_url TEXT,
-        comment_time TEXT,
-        matched_keywords JSONB NOT NULL DEFAULT '[]',
-        score INTEGER NOT NULL DEFAULT 0,
-        score_reasons JSONB NOT NULL DEFAULT '[]',
-        status TEXT NOT NULL DEFAULT 'new',
-        next_follow_up_at DATETIME,
-        owner_user_id TEXT,
-        notes JSONB NOT NULL DEFAULT '[]',
-        evidence_urls JSONB NOT NULL DEFAULT '[]',
-        latest_reply TEXT,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )`,
       `CREATE TABLE IF NOT EXISTS growth_account_health (
         id TEXT PRIMARY KEY NOT NULL,
         user_id TEXT NOT NULL,
@@ -5403,9 +5373,6 @@ export class GrowthService implements OnModuleInit {
       `CREATE INDEX IF NOT EXISTS growth_configs_tenant_schedule_idx ON growth_acquisition_configs(tenant_id, schedule_enabled)`,
       `CREATE INDEX IF NOT EXISTS growth_runs_user_started_idx ON growth_acquisition_runs(user_id, started_at)`,
       `CREATE INDEX IF NOT EXISTS growth_runs_tenant_started_idx ON growth_acquisition_runs(tenant_id, started_at)`,
-      `CREATE INDEX IF NOT EXISTS growth_leads_user_status_idx ON growth_leads(user_id, status)`,
-      `CREATE INDEX IF NOT EXISTS growth_leads_tenant_status_idx ON growth_leads(tenant_id, status)`,
-      `CREATE INDEX IF NOT EXISTS growth_leads_tenant_platform_idx ON growth_leads(tenant_id, platform)`,
       `CREATE INDEX IF NOT EXISTS growth_account_health_tenant_risk_idx ON growth_account_health(tenant_id, risk_status)`,
       `CREATE INDEX IF NOT EXISTS growth_workflows_user_status_idx ON growth_workflows(user_id, status)`,
       `CREATE INDEX IF NOT EXISTS growth_workflows_tenant_status_idx ON growth_workflows(tenant_id, status)`,
@@ -5421,18 +5388,10 @@ export class GrowthService implements OnModuleInit {
       }
       await this.prisma.$executeRawUnsafe(statement);
     }
-    try {
-      await this.prisma.$executeRawUnsafe(
-        `ALTER TABLE growth_leads ADD COLUMN notes JSONB NOT NULL DEFAULT '[]'`,
-      );
-    } catch {
-      // Existing SQLite databases already have the column.
-    }
     for (const [table, column] of [
       ['growth_strategies', 'tenant_id'],
       ['growth_acquisition_configs', 'tenant_id'],
       ['growth_acquisition_runs', 'tenant_id'],
-      ['growth_leads', 'tenant_id'],
       ['growth_account_health', 'tenant_id'],
       ['growth_workflows', 'tenant_id'],
     ] as const) {
@@ -5475,7 +5434,8 @@ export class GrowthService implements OnModuleInit {
         orderBy: { startedAt: 'desc' },
         take: 500,
       }),
-      prisma.growthLead.findMany({
+      prisma.lead.findMany({
+        where: { sourceType: { notIn: ['comment', 'dm'] } },
         orderBy: { createdAt: 'desc' },
         take: 1000,
       }),
@@ -5562,12 +5522,12 @@ export class GrowthService implements OnModuleInit {
         sourceType: this.leadSourceType(item.sourceType),
         sourceTaskId: item.sourceTaskId ?? undefined,
         sourceRunId: item.sourceRunId ?? undefined,
-        crmCustomerId: item.crmCustomerId ?? undefined,
-        nickname: item.nickname,
+        crmCustomerId: item.customerId ?? undefined,
+        nickname: item.nickname ?? '',
         profileUrl: item.profileUrl ?? undefined,
         avatarUrl: item.avatarUrl ?? undefined,
         externalUserId: item.externalUserId ?? undefined,
-        sourceText: item.sourceText,
+        sourceText: item.sourceText ?? '',
         sourceUrl: item.sourceUrl ?? undefined,
         videoTitle: item.videoTitle ?? undefined,
         videoUrl: item.videoUrl ?? undefined,
@@ -5645,9 +5605,7 @@ export class GrowthService implements OnModuleInit {
           create: {
             id: item.id,
             userId: item.userId,
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             industry: item.industry,
             scenario: item.scenario,
             name: item.name,
@@ -5664,9 +5622,7 @@ export class GrowthService implements OnModuleInit {
             updatedAt: new Date(item.updatedAt),
           },
           update: {
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             industry: item.industry,
             scenario: item.scenario,
             name: item.name,
@@ -5693,9 +5649,7 @@ export class GrowthService implements OnModuleInit {
           create: {
             id: item.id,
             userId: item.userId,
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             mode: item.mode,
             taskName: item.taskName,
             platform: item.platform,
@@ -5721,9 +5675,7 @@ export class GrowthService implements OnModuleInit {
             updatedAt: new Date(item.updatedAt),
           },
           update: {
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             mode: item.mode,
             taskName: item.taskName,
             platform: item.platform,
@@ -5759,9 +5711,7 @@ export class GrowthService implements OnModuleInit {
           create: {
             id: item.id,
             userId: item.userId,
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             configId: item.configId,
             mode: item.mode,
             platform: item.platform,
@@ -5778,9 +5728,7 @@ export class GrowthService implements OnModuleInit {
             endedAt: item.endedAt ? new Date(item.endedAt) : undefined,
           },
           update: {
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             status: item.status,
             failureReason: item.failureReason,
             message: item.message,
@@ -5799,19 +5747,17 @@ export class GrowthService implements OnModuleInit {
         options,
         'leads',
       )) {
-        await tx.growthLead.upsert({
+        await tx.lead.upsert({
           where: { id: item.id },
           create: {
             id: item.id,
             userId: item.userId,
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             platform: item.platform,
             sourceType: item.sourceType,
             sourceTaskId: item.sourceTaskId,
             sourceRunId: item.sourceRunId,
-            crmCustomerId: item.crmCustomerId,
+            customerId: item.crmCustomerId ?? null,
             nickname: item.nickname,
             profileUrl: item.profileUrl,
             avatarUrl: item.avatarUrl,
@@ -5821,29 +5767,31 @@ export class GrowthService implements OnModuleInit {
             videoTitle: item.videoTitle,
             videoUrl: item.videoUrl,
             commentTime: item.commentTime,
-            matchedKeywords: item.matchedKeywords,
+            matchedKeywords: (item.matchedKeywords ??
+              []) as Prisma.InputJsonValue,
             score: item.score,
-            scoreReasons: item.scoreReasons,
+            scoreReasons: (item.scoreReasons ??
+              []) as Prisma.InputJsonValue,
             status: item.status,
             nextFollowUpAt: item.nextFollowUpAt
               ? new Date(item.nextFollowUpAt)
               : undefined,
             ownerUserId: item.ownerUserId ?? undefined,
             notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
-            evidenceUrls: item.evidenceUrls,
+            evidenceUrls: (item.evidenceUrls ??
+              []) as Prisma.InputJsonValue,
             latestReply: item.latestReply,
+            dedupeKey: `lead:growth:${item.id}`,
             createdAt: new Date(item.createdAt),
             updatedAt: new Date(item.updatedAt),
           },
           update: {
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             platform: item.platform,
             sourceType: item.sourceType,
             sourceTaskId: item.sourceTaskId,
             sourceRunId: item.sourceRunId,
-            crmCustomerId: item.crmCustomerId,
+            customerId: item.crmCustomerId ?? null,
             nickname: item.nickname,
             profileUrl: item.profileUrl,
             avatarUrl: item.avatarUrl,
@@ -5853,16 +5801,19 @@ export class GrowthService implements OnModuleInit {
             videoTitle: item.videoTitle,
             videoUrl: item.videoUrl,
             commentTime: item.commentTime,
-            matchedKeywords: item.matchedKeywords,
+            matchedKeywords: (item.matchedKeywords ??
+              []) as Prisma.InputJsonValue,
             score: item.score,
-            scoreReasons: item.scoreReasons,
+            scoreReasons: (item.scoreReasons ??
+              []) as Prisma.InputJsonValue,
             status: item.status,
             nextFollowUpAt: item.nextFollowUpAt
               ? new Date(item.nextFollowUpAt)
               : undefined,
             ownerUserId: item.ownerUserId ?? undefined,
             notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
-            evidenceUrls: item.evidenceUrls,
+            evidenceUrls: (item.evidenceUrls ??
+              []) as Prisma.InputJsonValue,
             latestReply: item.latestReply,
             updatedAt: new Date(item.updatedAt),
           },
@@ -5878,9 +5829,7 @@ export class GrowthService implements OnModuleInit {
           create: {
             id: item.id,
             userId: item.userId,
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             platform: item.platform,
             accountId: item.accountId,
             accountName: item.accountName,
@@ -5895,9 +5844,7 @@ export class GrowthService implements OnModuleInit {
             lastCheckedAt: new Date(item.lastCheckedAt),
           },
           update: {
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             accountName: item.accountName,
             loginStatus: item.loginStatus,
             todayActionCount: item.todayActionCount,
@@ -5921,9 +5868,7 @@ export class GrowthService implements OnModuleInit {
           create: {
             id: item.id,
             userId: item.userId,
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             name: item.name,
             template: item.template,
             industry: item.industry,
@@ -5939,9 +5884,7 @@ export class GrowthService implements OnModuleInit {
             updatedAt: new Date(item.updatedAt),
           },
           update: {
-            tenant: item.tenantId
-              ? { connect: { id: item.tenantId } }
-              : undefined,
+            tenantId: item.tenantId ?? null,
             name: item.name,
             template: item.template,
             industry: item.industry,
@@ -5995,7 +5938,7 @@ export class GrowthService implements OnModuleInit {
       strategies: 'growthStrategy',
       configs: 'growthAcquisitionConfig',
       runs: 'growthAcquisitionRun',
-      leads: 'growthLead',
+      leads: 'lead',
       accountHealth: 'growthAccountHealth',
       workflows: 'growthWorkflow',
     };

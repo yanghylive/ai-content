@@ -2269,6 +2269,9 @@ model Lead {
   sourceUrl       String?      @map("source_url")
   sourceText      String?      @map("source_text")
   commentRef      String?      @map("comment_ref") // 小红书评论序号（xiaohongshu 回复定位用，其他平台为 null）
+  videoTitle      String?      @map("video_title") // 线索来源视频标题（抖音/视频号评论区获客）
+  videoUrl        String?      @map("video_url")
+  commentTime     String?      @map("comment_time") // 原始评论时间（平台返回的字符串）
 
   externalUserId  String?      @map("external_user_id")
   dedupeKey       String       @map("dedupe_key")
@@ -2285,6 +2288,7 @@ model Lead {
   replyPersonaId  String?      @map("reply_persona_id")
   repliedAt       DateTime?    @map("replied_at")
   lastError       String?      @map("last_error") // 最近一次回复/互动失败原因（成功时为 null）
+  notes           Json         @default("[]") // 人工备注（growth 模块用）
 
   // pending/reviewed/contacted/qualified/converted/dismissed
   status          String       @default("pending")
