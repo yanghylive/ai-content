@@ -44,6 +44,7 @@ import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { AgentConversationWorkbench } from "./agent-conversation-workbench";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const statusColor: Record<
   AgentSession["status"],
@@ -421,6 +422,9 @@ export function ConfirmationsPage() {
       level === "critical" ? "高危" : level === "high" ? "高风险" : level === "medium" ? "中风险" : "低风险";
     return (
       <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ marginTop: 8 }}>
+          <V2BackButton />
+        </div>
         <header className="mx-header">
           <div className="mx-header-row">
             <div>
@@ -944,6 +948,9 @@ export function SessionsPage({
               : "mx-badge";
     return (
       <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ marginTop: 8 }}>
+          <V2BackButton />
+        </div>
         <header className="mx-header">
           <div className="mx-header-row">
             <div style={{ minWidth: 0 }}>

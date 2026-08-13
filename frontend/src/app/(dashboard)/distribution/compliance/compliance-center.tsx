@@ -33,7 +33,8 @@ export function ComplianceCenter() {
   }, []);
   return (
     <WorkbenchCenter
-      title="合规检查"
+      backHref="/distribution"
+            title="合规检查"
       subtitle="发布前检查内容是否合规，避免违规风险"
       icon={ShieldCheck}
       stats={[

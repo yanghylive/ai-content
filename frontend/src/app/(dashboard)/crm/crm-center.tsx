@@ -19,6 +19,7 @@ import { CrmCustomerFormModal } from "@/components/v2/crm-customer-form";
 import { listCrmCustomers, getCrmSummary, type CrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 function isThisWeek(dateStr?: string) {
   if (!dateStr) return false;
@@ -97,6 +98,9 @@ export function CrmCenter() {
     return (
       <>
         <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ marginTop: 8 }}>
+          <V2BackButton />
+        </div>
         <header className="mx-header">
           <div className="mx-header-row">
             <div>

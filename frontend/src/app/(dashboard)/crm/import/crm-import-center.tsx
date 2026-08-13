@@ -13,6 +13,7 @@ export function CrmImportCenter() {
   return (
     <WorkbenchCenter
       title="导入客户"
+      backHref="/crm"
       subtitle="上传 Excel 或粘贴数据，系统自动识别字段并导入"
       icon={Upload}
       primaryAction={{ label: "开始导入", href: "/crm-import/flow" }}

@@ -44,7 +44,8 @@ export function AutoAcquisitionCenter() {
 
   return (
     <WorkbenchCenter
-      title="自动获客"
+      backHref="/apps"
+            title="自动获客"
       subtitle="设置好规则，系统自动帮你找客户、加好友"
       icon={TrendingUp}
       stats={[

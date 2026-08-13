@@ -27,6 +27,7 @@ import {
   type WecomAssistantSettings,
 } from "@/lib/api/wecom-ai-assistant";
 import { toPublicError } from "@/lib/public-error";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const STATUS_META: Record<
   string,
@@ -185,6 +186,7 @@ export function WecomAssistantCenter() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <V2BackButton />
       {/* 头部 */}
       <div
         style={{

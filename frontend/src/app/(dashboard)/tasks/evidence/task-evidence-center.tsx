@@ -13,6 +13,7 @@ import {
   V2StatusChip,
 } from "@/components/v2/ui-kit";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 interface EvidenceRow {
   id: string;
@@ -99,6 +100,9 @@ export function TaskEvidenceCenter() {
             : "mx-badge";
     return (
       <div className="kx-mobile-ambient">
+        <div className="mx-px" style={{ marginTop: 8 }}>
+          <V2BackButton />
+        </div>
         <header className="mx-header">
           <div className="mx-header-row">
             <div style={{ minWidth: 0 }}>
