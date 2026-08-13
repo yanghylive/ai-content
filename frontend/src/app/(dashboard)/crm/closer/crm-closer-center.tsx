@@ -147,6 +147,7 @@ export function CrmCloserCenter() {
 
   return (
     <div className="flex flex-col gap-6">
+      <V2BackButton />
       <section className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="kaypal-v3-icon-tile h-12 w-12">
