@@ -1,0 +1,10 @@
+-- AlterTable：多租户双维度 —— 给 CRM + 增长任务核心表加操作者维度
+ALTER TABLE "crm_customers" ADD COLUMN "actor_user_id" TEXT;
+ALTER TABLE "crm_companies" ADD COLUMN "actor_user_id" TEXT;
+ALTER TABLE "crm_opportunities" ADD COLUMN "actor_user_id" TEXT;
+ALTER TABLE "crm_tasks" ADD COLUMN "actor_user_id" TEXT;
+ALTER TABLE "crm_notes" ADD COLUMN "actor_user_id" TEXT;
+ALTER TABLE "crm_timeline_events" ADD COLUMN "actor_user_id" TEXT;
+ALTER TABLE "growth_strategies" ADD COLUMN "actor_user_id" TEXT;
+ALTER TABLE "growth_acquisition_configs" ADD COLUMN "actor_user_id" TEXT;
+ALTER TABLE "growth_acquisition_runs" ADD COLUMN "actor_user_id" TEXT;
