@@ -16,6 +16,7 @@ import {
 } from './reply-engine.service';
 import { CircuitBreaker } from './circuit-breaker';
 import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
+import { LeadRepository } from '../leads/lead.repository';
 
 /**
  * CommentAcquisitionService —— 评论获客闭环
@@ -65,6 +66,7 @@ export class CommentAcquisitionService {
     private readonly interactionExecutor: PlatformInteractionExecutor,
     private readonly xhsInteraction: XiaohongshuInteractionExecutor,
     private readonly replyEngine: ReplyEngineService,
+    private readonly leadRepository: LeadRepository,
   ) {}
 
   async onModuleInit() {
@@ -209,6 +211,25 @@ export class CommentAcquisitionService {
           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
         )
       `;
+
+      // 4.5 双写统一 leads 表（一期止血：新线索不再成为数据孤岛；失败不影响主流程）
+      try {
+        await this.leadRepository.upsert({
+          userId: scope.userId,
+          tenantId: scope.tenantId,
+          platform: input.platform,
+          sourceType: 'comment',
+          sourceText: comment.text,
+          score,
+          signals,
+          latestReply: replyText ?? null,
+          replyPersonaId: personaId ?? null,
+        });
+      } catch (error) {
+        this.logger.warn(
+          `[comment-acquisition] 统一 leads 双写失败（不影响主流程）: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
 
       // 5. 自动回复（可选；熔断中则跳过发送，标记 pending 待人工）
       let status = 'pending';
@@ -376,6 +397,25 @@ export class CommentAcquisitionService {
           ${personaId ?? null}, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
         )
       `;
+
+      // 双写统一 leads 表（一期止血；失败不影响主流程）
+      try {
+        await this.leadRepository.upsert({
+          userId: scope.userId,
+          tenantId: scope.tenantId,
+          platform: input.platform,
+          sourceType: 'dm',
+          sourceText: message.text,
+          score,
+          signals,
+          latestReply: replyText ?? null,
+          replyPersonaId: personaId ?? null,
+        });
+      } catch (error) {
+        this.logger.warn(
+          `[comment-acquisition] 统一 leads 双写失败（不影响主流程）: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
 
       let status = 'pending';
       if (autoReply && replyText) {
