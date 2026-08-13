@@ -2315,6 +2315,7 @@ model Lead {
 
   platform        String
   sourceType      String       @map("source_type") // comment/dm/notification/search/import
+  sourceAccountId String?      @map("source_account_id") // 产生线索的平台账号 ID（如抖音/小红书账号）
   sourceTaskId    String?      @map("source_task_id")
   sourceRunId     String?      @map("source_run_id")
   sourceUrl       String?      @map("source_url") @db.Text
@@ -2335,6 +2336,7 @@ model Lead {
   latestReply     String?      @map("latest_reply") @db.Text
   replyPersonaId  String?      @map("reply_persona_id")
   repliedAt       DateTime?    @map("replied_at")
+  lastError       String?      @map("last_error") // 最近一次回复/互动失败原因（成功时为 null）
 
   // pending/reviewed/contacted/qualified/converted/dismissed
   status          String       @default("pending")

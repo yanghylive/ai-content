@@ -2166,6 +2166,7 @@ export class PrismaService
         tenant_id TEXT,
         platform TEXT NOT NULL,
         source_type TEXT NOT NULL,
+        source_account_id TEXT,
         source_task_id TEXT,
         source_run_id TEXT,
         source_url TEXT,
@@ -2183,6 +2184,7 @@ export class PrismaService
         latest_reply TEXT,
         reply_persona_id TEXT,
         replied_at DATETIME,
+        last_error TEXT,
         status TEXT NOT NULL DEFAULT 'pending',
         customer_id TEXT,
         evidence_urls JSONB NOT NULL DEFAULT '[]',
@@ -2207,6 +2209,8 @@ export class PrismaService
 
     for (const column of [
       ['leads', 'comment_ref', 'TEXT'],
+      ['leads', 'source_account_id', 'TEXT'],
+      ['leads', 'last_error', 'TEXT'],
       ['app_install_states', 'tenant_id', 'TEXT'],
       ['app_install_states', 'actor_user_id', 'TEXT'],
       ['crm_companies', 'tenant_id', 'TEXT'],

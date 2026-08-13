@@ -4,7 +4,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
@@ -36,21 +35,21 @@ export type LeadStatus = 'pending' | 'approved' | 'replied' | 'skipped' | 'faile
 
 export interface AcquisitionLeadRow {
   id: string;
-  tenant_id: string | null;
-  user_id: string;
+  tenantId: string | null;
+  userId: string;
   platform: string;
-  account_id: string;
-  comment_text: string;
-  commenter_name?: string | null;
-  lead_score: number;
+  accountId: string;
+  commentText: string;
+  commenterName?: string | null;
+  leadScore: number;
   signals?: string | null;
-  reply_text?: string | null;
-  persona_id?: string | null;
+  replyText?: string | null;
+  personaId?: string | null;
   status: string;
   error?: string | null;
-  comment_ref?: string | null;
-  created_at: string | Date;
-  updated_at: string | Date;
+  commentRef?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 @Injectable()
@@ -68,10 +67,6 @@ export class CommentAcquisitionService {
     private readonly replyEngine: ReplyEngineService,
     private readonly leadRepository: LeadRepository,
   ) {}
-
-  async onModuleInit() {
-    await this.ensureAcquisitionTables();
-  }
 
   /**
    * 扫描账号最新评论 → 潜客评分 → 生成回复 → 入库（pending 待审核/自动发）
@@ -173,7 +168,6 @@ export class CommentAcquisitionService {
       if (score < minScore) continue;
 
       leads += 1;
-      const leadId = `lead-${randomUUID()}`;
 
       // 3. 生成回复
       let replyText: string | undefined;
@@ -196,44 +190,24 @@ export class CommentAcquisitionService {
         );
       }
 
-      // 4. 入库（comment_ref 存小红书通知条目序号，供手动回复精准定位）
-      await this.prisma.$executeRaw`
-        INSERT INTO comment_acquisition_leads (
-          id, tenant_id, user_id, platform, account_id, comment_text,
-          commenter_name, lead_score, signals, reply_text, persona_id,
-          status, comment_ref, created_at, updated_at
-        ) VALUES (
-          ${leadId}, ${scope.tenantId}, ${scope.userId}, ${input.platform},
-          ${String(input.accountId)}, ${comment.text},
-          ${null}, ${score}, ${JSON.stringify(signals)}, ${replyText ?? null},
-          ${personaId ?? null}, 'pending',
-          ${comment.commentIndex !== undefined ? String(comment.commentIndex) : null},
-          CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-        )
-      `;
-
-      // 4.5 双写统一 leads 表（一期止血：新线索不再成为数据孤岛；失败不影响主流程）
-      try {
-        await this.leadRepository.upsert({
-          userId: scope.userId,
-          tenantId: scope.tenantId,
-          platform: input.platform,
-          sourceType: 'comment',
-          sourceText: comment.text,
-          commentRef:
-            comment.commentIndex !== undefined
-              ? String(comment.commentIndex)
-              : null,
-          score,
-          signals,
-          latestReply: replyText ?? null,
-          replyPersonaId: personaId ?? null,
-        });
-      } catch (error) {
-        this.logger.warn(
-          `[comment-acquisition] 统一 leads 双写失败（不影响主流程）: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
+      // 4. 单写统一 leads 表（去重写入，返回 lead.id 供后续回复/状态更新）
+      const { lead } = await this.leadRepository.upsert({
+        userId: scope.userId,
+        tenantId: scope.tenantId,
+        platform: input.platform,
+        sourceType: 'comment',
+        sourceAccountId: String(input.accountId),
+        sourceText: comment.text,
+        commentRef:
+          comment.commentIndex !== undefined
+            ? String(comment.commentIndex)
+            : null,
+        score,
+        signals,
+        latestReply: replyText ?? null,
+        replyPersonaId: personaId ?? null,
+      });
+      const leadId = lead.id;
 
       // 5. 自动回复（可选；熔断中则跳过发送，标记 pending 待人工）
       let status = 'pending';
@@ -369,7 +343,6 @@ export class CommentAcquisitionService {
       if (score < minScore) continue;
 
       leads += 1;
-      const leadId = `lead-dm-${randomUUID()}`;
 
       let replyText: string | undefined;
       let personaId: string | undefined;
@@ -389,37 +362,20 @@ export class CommentAcquisitionService {
         );
       }
 
-      await this.prisma.$executeRaw`
-        INSERT INTO comment_acquisition_leads (
-          id, tenant_id, user_id, platform, account_id, comment_text,
-          commenter_name, lead_score, signals, reply_text, persona_id,
-          status, created_at, updated_at
-        ) VALUES (
-          ${leadId}, ${scope.tenantId}, ${scope.userId}, ${input.platform},
-          ${String(input.accountId)}, ${message.text},
-          ${null}, ${score}, ${JSON.stringify(signals)}, ${replyText ?? null},
-          ${personaId ?? null}, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-        )
-      `;
-
-      // 双写统一 leads 表（一期止血；失败不影响主流程）
-      try {
-        await this.leadRepository.upsert({
-          userId: scope.userId,
-          tenantId: scope.tenantId,
-          platform: input.platform,
-          sourceType: 'dm',
-          sourceText: message.text,
-          score,
-          signals,
-          latestReply: replyText ?? null,
-          replyPersonaId: personaId ?? null,
-        });
-      } catch (error) {
-        this.logger.warn(
-          `[comment-acquisition] 统一 leads 双写失败（不影响主流程）: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
+      // 单写统一 leads 表（去重写入，返回 lead.id）
+      const { lead } = await this.leadRepository.upsert({
+        userId: scope.userId,
+        tenantId: scope.tenantId,
+        platform: input.platform,
+        sourceType: 'dm',
+        sourceAccountId: String(input.accountId),
+        sourceText: message.text,
+        score,
+        signals,
+        latestReply: replyText ?? null,
+        replyPersonaId: personaId ?? null,
+      });
+      const leadId = lead.id;
 
       let status = 'pending';
       if (autoReply && replyText) {
@@ -500,14 +456,12 @@ export class CommentAcquisitionService {
           );
         }
       }
-      await this.prisma.$executeRaw`
-        UPDATE comment_acquisition_leads
-        SET status = ${ok ? 'replied' : 'failed'},
-          error = ${ok ? null : result.message},
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${leadId}
-          AND user_id = ${scope.userId}
-      `;
+      await this.leadRepository.updateReplyStatus(leadId, {
+        userId: scope.userId,
+        status: ok ? 'replied' : 'failed',
+        lastError: ok ? null : (result.message ?? null),
+        repliedAt: ok ? new Date() : null,
+      });
       return ok;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -515,12 +469,11 @@ export class CommentAcquisitionService {
       this.logger.error(
         `[comment-acquisition] 私信回复执行失败 lead=${leadId}: ${message}`,
       );
-      await this.prisma.$executeRaw`
-        UPDATE comment_acquisition_leads
-        SET status = 'failed', error = ${message}, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${leadId}
-          AND user_id = ${scope.userId}
-      `;
+      await this.leadRepository.updateReplyStatus(leadId, {
+        userId: scope.userId,
+        status: 'failed',
+        lastError: message,
+      });
       return false;
     }
   }
@@ -549,13 +502,11 @@ export class CommentAcquisitionService {
     // 小红书手动回复：commentIndex 缺省时从 lead 行读取（自动回复已显式传入）
     let xhsIndex = input.commentIndex;
     if (input.platform === 'xiaohongshu' && xhsIndex === undefined) {
-      const leadRows = await this.prisma.$queryRaw<
-        Array<{ comment_ref: string | null }>
-      >(Prisma.sql`
-        SELECT comment_ref FROM comment_acquisition_leads
-        WHERE id = ${leadId} AND user_id = ${resolvedScope.userId} LIMIT 1
-      `);
-      const ref = leadRows[0]?.comment_ref;
+      const leadRow = await this.prisma.lead.findFirst({
+        where: { id: leadId, userId: resolvedScope.userId },
+        select: { commentRef: true },
+      });
+      const ref = leadRow?.commentRef;
       if (ref !== undefined && ref !== null && ref !== '') {
         xhsIndex = Number(ref);
       }
@@ -591,14 +542,12 @@ export class CommentAcquisitionService {
           );
         }
       }
-      await this.prisma.$executeRaw`
-        UPDATE comment_acquisition_leads
-        SET status = ${ok ? 'replied' : 'failed'},
-          error = ${ok ? null : result.message},
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${leadId}
-          AND user_id = ${resolvedScope.userId}
-      `;
+      await this.leadRepository.updateReplyStatus(leadId, {
+        userId: resolvedScope.userId,
+        status: ok ? 'replied' : 'failed',
+        lastError: ok ? null : (result.message ?? null),
+        repliedAt: ok ? new Date() : null,
+      });
       return ok;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -611,12 +560,11 @@ export class CommentAcquisitionService {
       this.logger.error(
         `[comment-acquisition] 回复执行失败 lead=${leadId}: ${message}`,
       );
-      await this.prisma.$executeRaw`
-        UPDATE comment_acquisition_leads
-        SET status = 'failed', error = ${message}, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${leadId}
-          AND user_id = ${resolvedScope.userId}
-      `;
+      await this.leadRepository.updateReplyStatus(leadId, {
+        userId: resolvedScope.userId,
+        status: 'failed',
+        lastError: message,
+      });
       return false;
     }
   }
@@ -629,35 +577,45 @@ export class CommentAcquisitionService {
     offset?: number;
   }): Promise<{ items: AcquisitionLeadRow[]; total: number }> {
     const scope = await this.resolveScope();
-    const where = Prisma.sql`
-      WHERE user_id = ${scope.userId}
-        AND ${scope.tenantId === null ? Prisma.sql`tenant_id IS NULL` : Prisma.sql`tenant_id = ${scope.tenantId}`}
-        ${input.platform ? Prisma.sql`AND platform = ${input.platform}` : Prisma.empty}
-        ${input.status ? Prisma.sql`AND status = ${input.status}` : Prisma.empty}
-    `;
+    const where: Prisma.LeadWhereInput = {
+      userId: scope.userId,
+      tenantId: scope.tenantId,
+      sourceType: { in: ['comment', 'dm'] },
+      ...(input.platform ? { platform: input.platform } : {}),
+      ...(input.status ? { status: input.status } : {}),
+    };
 
-    const rows = await this.prisma.$queryRaw<AcquisitionLeadRow[]>(
-      Prisma.sql`SELECT * FROM comment_acquisition_leads ${where} ORDER BY created_at DESC LIMIT ${input.limit ?? 50} OFFSET ${input.offset ?? 0}`,
-    );
-    const countRows = await this.prisma.$queryRaw<
-      Array<{ total: number }>
-    >(Prisma.sql`SELECT COUNT(*) as total FROM comment_acquisition_leads ${where}`);
+    const [rows, total] = await Promise.all([
+      this.prisma.lead.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: input.offset ?? 0,
+        take: input.limit ?? 50,
+      }),
+      this.prisma.lead.count({ where }),
+    ]);
 
-    // $queryRaw 在 SQLite 下会把 INTEGER 列返回为 BigInt，JSON 序列化会崩 → 统一转纯 JS 值
+    // 统一 leads 表 → 评论获客前端字段（camelCase，对齐前端 AcquisitionLead）
     const items: AcquisitionLeadRow[] = rows.map((row) => ({
-      ...row,
-      lead_score: Number(row.lead_score),
-      created_at:
-        row.created_at instanceof Date
-          ? row.created_at.toISOString()
-          : String(row.created_at),
-      updated_at:
-        row.updated_at instanceof Date
-          ? row.updated_at.toISOString()
-          : String(row.updated_at),
+      id: row.id,
+      tenantId: row.tenantId,
+      userId: row.userId,
+      platform: row.platform,
+      accountId: row.sourceAccountId ?? '',
+      commentText: row.sourceText ?? '',
+      commenterName: row.nickname,
+      leadScore: row.score,
+      signals: row.signals ? JSON.stringify(row.signals) : null,
+      replyText: row.latestReply,
+      personaId: row.replyPersonaId,
+      status: row.status,
+      error: row.lastError,
+      commentRef: row.commentRef,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
     }));
 
-    return { items, total: Number(countRows[0]?.total ?? 0) };
+    return { items, total };
   }
 
   /** 人工审核：通过 → 待回复；跳过 */
@@ -667,54 +625,22 @@ export class CommentAcquisitionService {
   ): Promise<{ status: string }> {
     const scope = await this.resolveScope();
     const status = input.action === 'approve' ? 'approved' : 'skipped';
-    await this.prisma.$executeRaw`
-      UPDATE comment_acquisition_leads
-      SET status = ${status},
-        reply_text = ${input.replyText ?? Prisma.sql`reply_text`},
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${leadId}
-        AND user_id = ${scope.userId}
-    `;
+    await this.prisma.lead.updateMany({
+      where: { id: leadId, userId: scope.userId },
+      data: {
+        status,
+        ...(input.replyText !== undefined
+          ? { latestReply: input.replyText }
+          : {}),
+        updatedAt: new Date(),
+      },
+    });
     return { status };
   }
 
   // ------------------------------------------------------------------
   // 私有
   // ------------------------------------------------------------------
-
-  private async ensureAcquisitionTables() {
-    const databaseUrl = `${process.env.SQLITE_DATABASE_URL || process.env.DATABASE_URL || ''}`;
-    if (!databaseUrl.startsWith('file:')) return;
-
-    await this.prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS comment_acquisition_leads (
-        id TEXT PRIMARY KEY NOT NULL,
-        tenant_id TEXT,
-        user_id TEXT NOT NULL,
-        platform TEXT NOT NULL,
-        account_id TEXT NOT NULL,
-        comment_text TEXT NOT NULL,
-        commenter_name TEXT,
-        lead_score INTEGER NOT NULL DEFAULT 0,
-        signals JSONB,
-        reply_text TEXT,
-        persona_id TEXT,
-        status TEXT NOT NULL DEFAULT 'pending',
-        error TEXT,
-        comment_ref TEXT,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    // 兼容旧库（首次建表后新增的列）
-    await this.prisma
-      .$executeRawUnsafe(`ALTER TABLE comment_acquisition_leads ADD COLUMN comment_ref TEXT`)
-      .catch(() => undefined);
-    await this.prisma.$executeRawUnsafe(`
-      CREATE INDEX IF NOT EXISTS comment_acquisition_leads_user_idx
-      ON comment_acquisition_leads(user_id, created_at DESC)
-    `);
-  }
 
   private async resolveScope(): Promise<{
     tenantId: string | null;
