@@ -32,8 +32,17 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.81";
+const DESKTOP_APP_VERSION = "1.1.82";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.82",
+    date: "2026-08-12",
+    highlights: [
+      "修复素材库「始终 20 篇」、文章反抓正文恒空、抖音私信误报、微信群发入口等真机反馈的闭环断裂",
+      "AI 生图（qwen-image 可选尺寸）/ 生视频（happyhorse 可选时长）切换百炼引擎，稳定出图出片",
+      "视频一键成片独立为专属产品页；功能页统一补齐返回按钮、顶部图标桌面端不再撑大",
+    ],
+  },
   {
     version: "v1.1.81",
     date: "2026-08-12",
