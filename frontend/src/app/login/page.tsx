@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Suspense } from "react";
-import QRCode from "qrcode";
 import { AppShell } from "@astryxdesign/core/AppShell";
 import { Banner } from "@astryxdesign/core/Banner";
 import { Button } from "@astryxdesign/core/Button";
@@ -231,17 +230,15 @@ function LoginPageContent() {
   const hasNavigatedRef = React.useRef(false);
   const startInFlightRef = React.useRef(false);
   /* 账号密码登录（参考 WorkBuddy 手机版：直接填账号密码，一步进入） */
-  const [loginTab, setLoginTab] = React.useState<"sso" | "password" | "qr">(
+  const [loginTab, setLoginTab] = React.useState<"sso" | "password" | "wechat">(
     "sso",
   );
   /* 移动端（手机/APK WebView）没有桌面 Electron bridge，设备码授权无法工作。
      直接隐藏「扫码/授权码」入口，只保留账号密码登录，避免真机报
      「登录授权未能启动」。桌面端/PC 浏览器仍显示该 tab。 */
-  const [isMobile, setIsMobile] = React.useState(false);
   React.useEffect(() => {
     if (typeof navigator === "undefined") return;
     const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    setIsMobile(mobile);
     if (mobile) setLoginTab("password");
   }, []);
   const [username, setUsername] = React.useState("");
@@ -251,9 +248,6 @@ function LoginPageContent() {
   const [passwordError, setPasswordError] = React.useState<string | null>(
     null,
   );
-  const [wechatQrImage, setWechatQrImage] = React.useState<string | null>(null);
-  const [wechatQrLoading, setWechatQrLoading] = React.useState(false);
-  const [wechatQrError, setWechatQrError] = React.useState<string | null>(null);
 
   const handlePasswordLogin = async () => {
     if (!username.trim() || !password) {
@@ -301,33 +295,6 @@ function LoginPageContent() {
     const origin = encodeURIComponent(window.location.origin);
     window.location.href = `${wechatStart}?origin=${origin}&next=${encodeURIComponent(nextPath)}`;
   }, [nextPath]);
-
-  const loadWechatQr = React.useCallback(async () => {
-    if (typeof window === "undefined" || isMobileShell()) return;
-    setWechatQrLoading(true);
-    setWechatQrError(null);
-    try {
-      const result = await authApi.wechatQr(nextPath, window.location.origin);
-      if (!result.url) throw new Error("微信登录服务未返回二维码地址");
-      const image = await QRCode.toDataURL(result.url, {
-        width: 360,
-        margin: 1,
-        errorCorrectionLevel: "M",
-        color: { dark: "#221a29", light: "#ffffff" },
-      });
-      setWechatQrImage(image);
-    } catch (error) {
-      setWechatQrImage(null);
-      setWechatQrError(toPublicError(error, "二维码加载失败，请点击下方按钮重试"));
-    } finally {
-      setWechatQrLoading(false);
-    }
-  }, [nextPath]);
-
-  React.useEffect(() => {
-    if (loginTab !== "qr" || isMobileShell()) return;
-    void loadWechatQr();
-  }, [loadWechatQr, loginTab]);
 
   const navigateToNext = React.useCallback(() => {
     if (hasNavigatedRef.current) {
@@ -804,7 +771,7 @@ function LoginPageContent() {
                         [
                           { key: "sso", label: "九章账号" },
                           { key: "password", label: "账号密码" },
-                          { key: "qr", label: "微信扫码" },
+                          { key: "wechat", label: "微信登录" },
                         ] as const
                       )
                         .map((tab) => (
@@ -948,25 +915,13 @@ function LoginPageContent() {
                         </Stack>
                       </Stack>
                     ) : (
-                      <Stack className="qr-pane" gap={2}>
-                        <div className="qr-box">
-                          {wechatQrImage ? (
-                            <img className="qr-image" src={wechatQrImage} alt="微信登录二维码" />
-                          ) : wechatQrLoading ? (
-                            <Spinner label="正在生成二维码" size="sm" />
-                          ) : (
-                            <Text className="qr-error" type="supporting">二维码暂时不可用</Text>
-                          )}
-                          {!wechatQrImage ? <span className="scan-line" /> : null}
-                        </div>
-                        <Heading level={3}>微信扫码，快速登录</Heading>
-                        <Text type="supporting">打开微信扫一扫，在手机上确认授权</Text>
-                        {wechatQrError ? <Text className="qr-error" type="supporting">{wechatQrError}</Text> : null}
+                      <Stack className="qr-pane" gap={3}>
+                        <Stack gap={1}>
+                          <Heading level={3}>微信扫码登录</Heading>
+                          <Text type="supporting">点击下方按钮，跳转到微信完成扫码授权，登录后自动回到本页。</Text>
+                        </Stack>
                         {!isMobileShell() && (
-                          <Stack direction="horizontal" gap={2}>
-                            <Button className="qr-login-button" label="刷新二维码" onClick={() => void loadWechatQr()} variant="ghost" width="100%" />
-                            <Button className="qr-login-button" label="打开微信登录" onClick={handleWechatLogin} variant="secondary" width="100%" />
-                          </Stack>
+                          <Button className="qr-login-button" label="使用微信登录" onClick={handleWechatLogin} variant="primary" width="100%" />
                         )}
                         {/* App 内微信一键登录仍走原有壳桥能力，但与账号密码表单分离。 */}
                         {isMobileShell() && (
