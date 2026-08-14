@@ -24,6 +24,7 @@ import {
   hashSessionToken,
   verifyPassword,
 } from './auth.utils';
+import { resolveCommercialGrant } from './plan-order';
 
 interface LoginInput {
   username: string;
@@ -484,9 +485,17 @@ export class AuthService {
       });
       // 该 kaypal 账号已绑定别的本地用户时不覆盖
       if (existing && existing.id !== localUserId) return;
+      const grant = resolveCommercialGrant({
+        subscriptionPlan: cloudUser.subscriptionPlan,
+        subscriptionPeriodEnd: cloudUser.subscriptionPeriodEnd,
+      });
       await this.prisma.user.update({
         where: { id: localUserId },
-        data: { kaypalUserId: cloudUser.id },
+        data: {
+          kaypalUserId: cloudUser.id,
+          commercialExecutionAllowed: grant.commercialExecutionAllowed,
+          planMode: grant.planMode,
+        },
       });
       console.log(
         `[auth] 本地账号 ${localUserId} 已绑定 kaypal 云账号 ${cloudUser.id}`,

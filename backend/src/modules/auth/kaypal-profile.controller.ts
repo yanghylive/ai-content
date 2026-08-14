@@ -36,6 +36,7 @@ import {
   KaypalAuthClient,
   type KaypalDesktopTokenRefreshResult,
 } from './kaypal-auth.client';
+import { resolveCommercialGrant } from './plan-order';
 
 const execFileAsync = promisify(execFile);
 
@@ -1922,9 +1923,17 @@ for imagePath in CommandLine.arguments.dropFirst() {
       throw new BadRequestException('该 Kaypal 账号已绑定到其他本地账号');
     }
 
+    const grant = resolveCommercialGrant({
+      subscriptionPlan: cloudUser.subscriptionPlan,
+      subscriptionPeriodEnd: cloudUser.subscriptionPeriodEnd,
+    });
     await this.prisma.user.update({
       where: { id: localUserId },
-      data: { kaypalUserId: cloudUser.id },
+      data: {
+        kaypalUserId: cloudUser.id,
+        commercialExecutionAllowed: grant.commercialExecutionAllowed,
+        planMode: grant.planMode,
+      },
     });
 
     return {
