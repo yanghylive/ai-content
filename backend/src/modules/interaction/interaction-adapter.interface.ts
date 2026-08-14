@@ -53,6 +53,10 @@ export interface InteractionItem {
 export interface InteractionReadResult {
   items: InteractionItem[];
   readAt: string;
+  /** 来源视频标题（抖音/视频号评论区获客有；小红书通知页无） */
+  title?: string;
+  /** 来源视频/页面 URL（回读证据用） */
+  url?: string;
 }
 
 /** 发送/回复入参 */

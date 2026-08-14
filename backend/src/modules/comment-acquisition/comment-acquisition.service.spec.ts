@@ -16,9 +16,53 @@ import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.r
 function makeRegistryMock(
   executorMock: { dispatch: jest.Mock },
   xhsReply?: jest.Mock,
+  autoUploadMock?: {
+    readDouyinComments?: jest.Mock;
+    readWechatChannelComments?: jest.Mock;
+  },
+  xhsRead?: jest.Mock,
 ) {
   return {
     get: (platform: string) => ({
+      read: async (input: {
+        platform: string;
+        taskType: string;
+        accountId: number | string;
+        limit?: number;
+      }) => {
+        if (platform === 'xiaohongshu') {
+          const raw =
+            (await xhsRead?.({ accountId: input.accountId, limit: input.limit })) ??
+            { comments: [] };
+          return {
+            items: (raw.comments || [])
+              .map(
+                (c: { text?: string; content?: string; index?: number }) => ({
+                  text: String(c.text ?? c.content ?? '').trim(),
+                  ref: String(c.index ?? ''),
+                }),
+              )
+              .filter((c: { text: string }) => c.text.length > 0),
+            url: raw.url,
+            readAt: new Date().toISOString(),
+          };
+        }
+        const readFn =
+          platform === 'wechat-channel'
+            ? autoUploadMock?.readWechatChannelComments
+            : autoUploadMock?.readDouyinComments;
+        const raw =
+          (await readFn?.({ accountId: input.accountId, limit: input.limit })) ??
+          { comments: [] };
+        return {
+          items: (raw.comments || [])
+            .map((c: { text?: string }) => ({ text: String(c.text ?? '').trim() }))
+            .filter((c: { text: string }) => c.text.length > 0),
+          title: raw.title,
+          url: raw.url,
+          readAt: new Date().toISOString(),
+        };
+      },
       send: (input: {
         platform: string;
         taskType: string;
@@ -86,7 +130,7 @@ describe('CommentAcquisitionService', () => {
     dispatch: jest.fn(),
   };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
-  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment);
+  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
@@ -251,7 +295,7 @@ describe('CommentAcquisitionService 风控断路器', () => {
   };
   const executorMock = { dispatch: jest.fn() };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
-  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment);
+  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
@@ -371,7 +415,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
     }),
     updateReplyStatus: jest.fn().mockResolvedValue(undefined),
   };
-  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment);
+  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -468,7 +512,7 @@ describe('CommentAcquisitionService 私信获客', () => {
     }),
     updateReplyStatus: jest.fn().mockResolvedValue(undefined),
   };
-  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment);
+  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
 
   beforeEach(async () => {
     jest.clearAllMocks();

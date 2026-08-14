@@ -14,7 +14,6 @@ import {
   type CommentInput,
 } from './reply-engine.service';
 import { CircuitBreaker } from './circuit-breaker';
-import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
 import { LeadRepository } from '../leads/lead.repository';
 import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
 
@@ -25,9 +24,8 @@ import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.r
  *      → 审核队列（可选人工）→ 真实回复（CDP 会话）→ 潜客落库（CRM）
  *
  * 复用现有能力（零改动）：
- * - AutoUploadService.readDouyinComments / readWechatChannelComments（评论读取）
- * - XiaohongshuInteractionExecutor（小红书通知评论读取/回复）
- * - PlatformInteractionExecutor.dispatch（真实回复执行）
+ * - InteractionAdapterRegistry（统一互动契约，按平台读写评论/回复）
+ * - PlatformInteractionExecutor.dispatch（抖音/视频号真实回复执行，经 adapter 委托）
  * - ReplyEngineService（AI 回复生成，人格池 + 策略）
  */
 
@@ -64,7 +62,6 @@ export class CommentAcquisitionService {
     private readonly authRequestContext: AuthRequestContextService,
     private readonly autoUpload: AutoUploadService,
     private readonly interactionExecutor: PlatformInteractionExecutor,
-    private readonly xhsInteraction: XiaohongshuInteractionExecutor,
     private readonly replyEngine: ReplyEngineService,
     private readonly leadRepository: LeadRepository,
     private readonly interactionRegistry: InteractionAdapterRegistry,
@@ -108,44 +105,25 @@ export class CommentAcquisitionService {
     const circuitKey = `${input.platform}:${input.accountId}`;
     const circuit = this.circuitBreaker.getStatus(circuitKey);
 
-    // 1. 读取评论（readDouyinComments 需要 number 类型 accountId）
-    const numericAccountId = Number(input.accountId);
-    const readResult =
-      input.platform === 'douyin'
-        ? await this.autoUpload.readDouyinComments({
-            accountId: numericAccountId,
-            limit: input.limit ?? 50,
-          })
-        : input.platform === 'xiaohongshu'
-          ? await this.xhsInteraction.readComments({
-              accountId: input.accountId,
-              limit: input.limit ?? 50,
-            })
-          : await this.autoUpload.readWechatChannelComments({
-              accountId: numericAccountId,
-              limit: input.limit ?? 50,
-            });
+    // 1. 读取评论：统一走互动适配器契约（registry.read），消除三平台分支
+    const adapter = this.interactionRegistry.get(input.platform);
+    if (!adapter.read) {
+      throw new Error(`平台 ${input.platform} 的互动适配器不支持读取评论`);
+    }
+    const readResult = await adapter.read({
+      platform: input.platform,
+      taskType: 'comment-reply',
+      accountId: input.accountId,
+      limit: input.limit ?? 50,
+    });
 
-    const comments = (readResult.comments || [])
-      .map((c, i) => {
-        // 兼容字段名：抖音/视频号用 text，小红书通知用 content
-        const raw = (c as { text?: unknown; content?: unknown });
-        const text = String(
-          typeof raw.text === 'string' && raw.text
-            ? raw.text
-            : typeof raw.content === 'string'
-              ? raw.content
-              : '',
-        ).trim();
-        return {
-          text,
-          // 小红书通知条目序号（回复定位用）；其他平台无此概念
-          commentIndex:
-            input.platform === 'xiaohongshu'
-              ? Number((c as { index?: number }).index ?? i)
-              : undefined,
-        };
-      })
+    const comments = (readResult.items ?? [])
+      .map((item, i) => ({
+        text: item.text,
+        // 小红书通知条目序号（回复定位用）；其他平台无此概念
+        commentIndex:
+          input.platform === 'xiaohongshu' ? Number(item.ref ?? i) : undefined,
+      }))
       .filter((c) => c.text.length > 0);
 
     this.logger.log(

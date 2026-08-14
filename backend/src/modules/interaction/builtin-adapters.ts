@@ -51,11 +51,15 @@ export class DouyinInteractionAdapter implements InteractionAdapter {
   async read(input: InteractionReadInput): Promise<InteractionReadResult> {
     const accountId = Number(input.accountId);
     const items: { text: string }[] = [];
+    let title: string | undefined;
+    let url: string | undefined;
     if (input.taskType === 'comment-reply') {
       const raw = await this.autoUpload.readDouyinComments({
         accountId,
         limit: input.limit ?? 50,
       });
+      title = raw.title || undefined;
+      url = raw.url || undefined;
       for (const c of raw.comments || []) {
         const text = String(c.text || '').trim();
         if (text) items.push({ text });
@@ -65,12 +69,14 @@ export class DouyinInteractionAdapter implements InteractionAdapter {
         accountId,
         limit: input.limit ?? 50,
       });
+      title = raw.title || undefined;
+      url = raw.url || undefined;
       for (const m of raw.messages || []) {
         const text = String(m.text || '').trim();
         if (text) items.push({ text });
       }
     }
-    return { items, readAt: new Date().toISOString() };
+    return { items, title, url, readAt: new Date().toISOString() };
   }
 
   async send(input: InteractionSendInput): Promise<InteractionSendResult> {
@@ -110,11 +116,15 @@ export class WechatChannelInteractionAdapter implements InteractionAdapter {
   async read(input: InteractionReadInput): Promise<InteractionReadResult> {
     const accountId = Number(input.accountId);
     const items: { text: string }[] = [];
+    let title: string | undefined;
+    let url: string | undefined;
     if (input.taskType === 'comment-reply') {
       const raw = await this.autoUpload.readWechatChannelComments({
         accountId,
         limit: input.limit ?? 50,
       });
+      title = raw.title || undefined;
+      url = raw.url || undefined;
       for (const c of raw.comments || []) {
         const text = String(c.text || '').trim();
         if (text) items.push({ text });
@@ -124,12 +134,14 @@ export class WechatChannelInteractionAdapter implements InteractionAdapter {
         accountId,
         limit: input.limit ?? 50,
       });
+      title = raw.title || undefined;
+      url = raw.url || undefined;
       for (const m of raw.messages || []) {
         const text = String(m.text || '').trim();
         if (text) items.push({ text });
       }
     }
-    return { items, readAt: new Date().toISOString() };
+    return { items, title, url, readAt: new Date().toISOString() };
   }
 
   async send(input: InteractionSendInput): Promise<InteractionSendResult> {
@@ -189,6 +201,7 @@ export class XiaohongshuInteractionAdapter implements InteractionAdapter {
           return { text, ref: String(raw.index ?? '') };
         })
         .filter((c) => c.text.length > 0),
+      url: result.url || undefined,
       readAt: new Date().toISOString(),
     };
   }
