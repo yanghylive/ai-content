@@ -422,22 +422,32 @@ export class MultimodalService {
     };
   }
 
-  /** kaypal 网关回退（未配置百炼 Key 时） */
+  /** kaypal 网关通道（计费走 kaypal.cn，未配置百炼直连 Key 时的主路径） */
   private async generateVideoViaKaypal(
     authUser: AuthenticatedUser,
     prompt: string,
-    input: { duration?: number; ratio?: string },
+    input: { duration?: number; ratio?: string; imageUrl?: string },
   ): Promise<VideoGenResult> {
+    const duration = Math.min(
+      Math.max(Math.round(input.duration ?? 5) || 5, 3),
+      15,
+    );
+    const isI2v = Boolean(input.imageUrl);
+    const model = isI2v ? DEFAULT_VIDEO_I2V_MODEL : DEFAULT_VIDEO_T2V_MODEL;
+    const videoInput = isI2v
+      ? { imageUrl: input.imageUrl as string, prompt, duration }
+      : { prompt, duration };
+    const headers = this.buildHeaders(authUser);
+
+    // 1. 提交（异步任务）
+    let taskId = '';
     try {
       const resp = await fetch(
         `${this.getGatewayBaseUrl()}/v1/video/generations`,
         {
           method: 'POST',
-          headers: this.buildHeaders(authUser),
-          body: JSON.stringify({
-            model: DEFAULT_VIDEO_T2V_MODEL,
-            input: { prompt, duration: input.duration ?? 5 },
-          }),
+          headers,
+          body: JSON.stringify({ model, input: videoInput }),
           signal: AbortSignal.timeout(60_000),
         },
       );
@@ -454,15 +464,70 @@ export class MultimodalService {
           `HTTP ${resp.status}`;
         throw new ServiceUnavailableException(`视频生成失败：${message}`);
       }
-      // 网关回退走异步轮询（简化：只提交并返回任务态，交由前端轮询）
-      throw new ServiceUnavailableException(
-        '视频引擎暂不可用，请配置百炼 DASHSCOPE_API_KEY 或稍后重试',
-      );
+      taskId = payload.taskId;
     } catch (err) {
       if (err instanceof ServiceUnavailableException) throw err;
       throw new ServiceUnavailableException(
-        `视频生成异常：${err instanceof Error ? err.message : String(err)}`,
+        `视频提交异常：${err instanceof Error ? err.message : String(err)}`,
       );
     }
+
+    // 2. 轮询（最多 60 次 × 5s ≈ 5 分钟）
+    let videoUrl = '';
+    for (let i = 0; i < 60; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+      try {
+        const qResp = await fetch(
+          `${this.getGatewayBaseUrl()}/v1/video/generations?id=${encodeURIComponent(taskId)}`,
+          {
+            headers: {
+              'x-kaypal-api-key': headers['x-kaypal-api-key'] || '',
+              'x-kaypal-user-id': headers['x-kaypal-user-id'] || '',
+            },
+            signal: AbortSignal.timeout(30_000),
+          },
+        );
+        const q = (await qResp.json().catch(() => null)) as {
+          status?: string;
+          videoUrl?: string | null;
+          error?: { message?: string } | string;
+        } | null;
+        const status = (q?.status || '').toUpperCase();
+        if (status === 'SUCCEEDED') {
+          videoUrl = q?.videoUrl || '';
+          if (videoUrl) break;
+        } else if (status === 'FAILED') {
+          const msg =
+            (typeof q?.error === 'object' && q.error?.message) ||
+            (typeof q?.error === 'string' ? q.error : '') ||
+            '未知错误';
+          throw new ServiceUnavailableException(`视频生成失败：${msg}`);
+        }
+      } catch (err) {
+        if (err instanceof ServiceUnavailableException) throw err;
+        this.logger.warn(`视频任务轮询异常 ${taskId}: ${String(err)}`);
+      }
+    }
+    if (!videoUrl) {
+      throw new ServiceUnavailableException('视频生成超时，请稍后重试');
+    }
+
+    // 3. 下载入素材库
+    const buffer = Buffer.from(
+      new Uint8Array(
+        await (
+          await fetch(videoUrl, { signal: AbortSignal.timeout(90_000) })
+        ).arrayBuffer(),
+      ),
+    );
+    const filename = `wan-${Date.now()}.mp4`;
+    const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
+    this.logger.log(`视频已入素材库（kaypal 网关）：${saved.filename}`);
+    return {
+      filename: saved.filename,
+      sizeBytes: buffer.byteLength,
+      url: videoUrl,
+      prompt,
+    };
   }
 }
