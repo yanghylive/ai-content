@@ -7,6 +7,51 @@ import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
 import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
 import { LeadRepository } from '../leads/lead.repository';
+import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
+
+/**
+ * 构造互动适配器注册表 mock：get(platform).send 委托回 executorMock.dispatch
+ * （抖音/视频号）或 xhsReply（小红书），保持既有断言不变。
+ */
+function makeRegistryMock(
+  executorMock: { dispatch: jest.Mock },
+  xhsReply?: jest.Mock,
+) {
+  return {
+    get: (platform: string) => ({
+      send: (input: {
+        platform: string;
+        taskType: string;
+        accountId: number | string;
+        targetText: string;
+        sourceText?: string;
+        videoTitle?: string;
+        commentRef?: string;
+        replyText: string;
+      }) => {
+        if (platform === 'xiaohongshu') {
+          return (
+            xhsReply?.({
+              accountId: input.accountId,
+              commentIndex: Number(input.commentRef ?? 0),
+              content: input.replyText,
+            }) ?? { status: 'failed', message: '未实现' }
+          );
+        }
+        return executorMock.dispatch({
+          platform,
+          taskType: input.taskType,
+          action: 'send',
+          accountId: input.accountId,
+          targetText: input.targetText,
+          sourceText: input.sourceText,
+          videoTitle: input.videoTitle,
+          replyText: input.replyText,
+        });
+      },
+    }),
+  };
+}
 
 describe('CommentAcquisitionService', () => {
   let service: CommentAcquisitionService;
@@ -40,6 +85,8 @@ describe('CommentAcquisitionService', () => {
   const executorMock = {
     dispatch: jest.fn(),
   };
+  const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment);
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
@@ -61,12 +108,10 @@ describe('CommentAcquisitionService', () => {
         { provide: AuthRequestContextService, useValue: authMock },
         { provide: AutoUploadService, useValue: autoUploadMock },
         { provide: PlatformInteractionExecutor, useValue: executorMock },
-        {
-          provide: XiaohongshuInteractionExecutor,
-          useValue: { readComments: jest.fn(), replyComment: jest.fn() },
-        },
+        { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
+        { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
@@ -205,6 +250,8 @@ describe('CommentAcquisitionService 风控断路器', () => {
     readWechatChannelComments: jest.fn(),
   };
   const executorMock = { dispatch: jest.fn() };
+  const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment);
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
@@ -226,12 +273,10 @@ describe('CommentAcquisitionService 风控断路器', () => {
         { provide: AuthRequestContextService, useValue: authMock },
         { provide: AutoUploadService, useValue: autoUploadMock },
         { provide: PlatformInteractionExecutor, useValue: executorMock },
-        {
-          provide: XiaohongshuInteractionExecutor,
-          useValue: { readComments: jest.fn(), replyComment: jest.fn() },
-        },
+        { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
+        { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
@@ -326,6 +371,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
     }),
     updateReplyStatus: jest.fn().mockResolvedValue(undefined),
   };
+  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment);
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -339,6 +385,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
         { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
+        { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
@@ -421,6 +468,7 @@ describe('CommentAcquisitionService 私信获客', () => {
     }),
     updateReplyStatus: jest.fn().mockResolvedValue(undefined),
   };
+  const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment);
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -434,6 +482,7 @@ describe('CommentAcquisitionService 私信获客', () => {
         { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
+        { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);

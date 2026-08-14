@@ -16,6 +16,7 @@ import {
 import { CircuitBreaker } from './circuit-breaker';
 import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
 import { LeadRepository } from '../leads/lead.repository';
+import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
 
 /**
  * CommentAcquisitionService —— 评论获客闭环
@@ -66,6 +67,7 @@ export class CommentAcquisitionService {
     private readonly xhsInteraction: XiaohongshuInteractionExecutor,
     private readonly replyEngine: ReplyEngineService,
     private readonly leadRepository: LeadRepository,
+    private readonly interactionRegistry: InteractionAdapterRegistry,
   ) {}
 
   /**
@@ -513,23 +515,21 @@ export class CommentAcquisitionService {
     }
 
     try {
+      // 统一互动契约：按平台从 registry 取 adapter 调用，消除平台分支。
+      // 小红书 send 用 commentRef 定位通知条目；抖音/视频号 send 走 dispatch。
+      const adapter = this.interactionRegistry.get(input.platform);
       const result =
-        input.platform === 'xiaohongshu'
-          ? await this.xhsInteraction.replyComment({
-              accountId: input.accountId,
-              commentIndex: xhsIndex ?? 0,
-              content: input.replyText,
-            })
-          : await this.interactionExecutor.dispatch({
-              platform: input.platform,
-              taskType: 'comment-reply',
-              action: 'send',
-              accountId: input.accountId,
-              targetText: input.commentText,
-              sourceText: input.commentText,
-              videoTitle: input.sourceTitle,
-              replyText: input.replyText,
-            });
+        (await adapter.send?.({
+          platform: input.platform,
+          taskType: 'comment-reply',
+          accountId: input.accountId,
+          targetText: input.commentText,
+          sourceText: input.commentText,
+          videoTitle: input.sourceTitle,
+          commentRef: xhsIndex !== undefined ? String(xhsIndex) : undefined,
+          replyText: input.replyText,
+        })) ??
+        ({ status: 'failed', message: '该平台未实现回复能力' } as const);
 
       const ok = result.status === 'sent';
       if (ok) {
