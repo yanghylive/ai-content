@@ -221,14 +221,6 @@ export default function AccountsPage() {
             平台账号登录
           </Button>
           <Button
-            as="a"
-            href="/intelligence/redfox"
-            startContent={<Icon icon="solar:plug-circle-linear" />}
-            variant="flat"
-          >
-            数据来源
-          </Button>
-          <Button
             color="primary"
             onClick={handleAdd}
             startContent={<Icon icon="solar:add-circle-bold" />}

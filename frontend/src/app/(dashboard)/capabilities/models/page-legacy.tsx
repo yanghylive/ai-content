@@ -215,22 +215,6 @@ function IntelligenceCapabilityLinks() {
         <div className="grid gap-2 md:grid-cols-3">
           <Button
             as="a"
-            href="/intelligence/skills"
-            startContent={<Icon icon="solar:widget-5-linear" />}
-            variant="flat"
-          >
-            功能模板
-          </Button>
-          <Button
-            as="a"
-            href="/intelligence/redfox"
-            startContent={<Icon icon="solar:plug-circle-linear" />}
-            variant="flat"
-          >
-            数据来源
-          </Button>
-          <Button
-            as="a"
             href="/intelligence/costs"
             startContent={<Icon icon="solar:bill-list-linear" />}
             variant="flat"

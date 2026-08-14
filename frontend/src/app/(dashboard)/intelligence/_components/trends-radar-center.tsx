@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ExternalLink, Radar, RefreshCcw } from "lucide-react";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
@@ -27,9 +26,8 @@ const PLATFORM_TINT: Record<string, "accent" | "success" | "warning" | "danger">
   B站: "success",
 };
 
-/** 趋势雷达——真实全网热榜（RedFox 热榜技能，30 分钟缓存），不再写死 */
+/** 趋势雷达——真实全网热榜（30 分钟缓存），不再写死 */
 export function TrendsRadarCenter() {
-  const router = useRouter();
   const [items, setItems] = useState<HotTopic[]>([]);
   const [fetchedAt, setFetchedAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,7 +101,6 @@ export function TrendsRadarCenter() {
             <div className="mx-card mx-empty">
               <p>热榜暂时没有内容</p>
               <p style={{ fontSize: 11, marginTop: 4, lineHeight: 1.6 }}>数据服务拉取失败或还没同步，点上方刷新重试</p>
-              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/intelligence/redfox")}>去检查连接</button>
             </div>
           ) : (
             <>
@@ -172,12 +169,7 @@ export function TrendsRadarCenter() {
         <V2EmptyState
           icon={Radar}
           title="热榜暂时没有内容"
-          description="数据服务拉取失败或还没有同步，点右上角刷新重试；也可先去「数据服务连接」检查"
-          action={
-            <V2GhostButton onClick={() => router.push("/intelligence/redfox")}>
-              去检查连接
-            </V2GhostButton>
-          }
+          description="数据服务拉取失败或还没有同步，点右上角刷新重试"
         />
       ) : (
         <V2Section title={`实时热榜 TOP ${items.length}`}>

@@ -239,7 +239,7 @@ export function GrowthAcquisitionTasks() {
         target: `${executeTarget.taskName} · ${
           executeTarget.accountName || executeTarget.accountId
         } · ${executeTarget.id}`,
-        reason: "执行增长获客任务会触发外部平台采集、评论或私信动作，必须在后端确认真实触达风险。",
+        reason: "执行增长获客任务会触发外部平台采集、评论或私信动作，系统将确认真实触达风险。",
       })) as { confirmationId: string };
       if (!approval?.confirmationId) {
         throw new Error("后端未返回确认编号，请稍后重试");

@@ -209,7 +209,7 @@ export const voiceApi = {
 
   /** 上传整段 16kHz/16bit/mono PCM，返回识别文本 */
   async asrTranscribe(pcm: ArrayBuffer) {
-    const res = await fetch(`${getApiBase()}/api/voice/asr`, {
+    const res = await fetch(`${getApiBase()}/voice/asr`, {
       method: "POST",
       headers: { "Content-Type": "application/octet-stream" },
       credentials: "include",
@@ -242,7 +242,7 @@ export const voiceApi = {
 
   /** 文本 → 音频 Blob（后端经 kaypal.cn 网关合成） */
   async ttsStream(text: string): Promise<Blob> {
-    const res = await fetch(`${getApiBase()}/api/voice/tts/stream`, {
+    const res = await fetch(`${getApiBase()}/voice/tts/stream`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
