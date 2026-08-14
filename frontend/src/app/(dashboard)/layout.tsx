@@ -32,8 +32,16 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.83";
+const DESKTOP_APP_VERSION = "1.1.84";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.84",
+    date: "2026-08-14",
+    highlights: [
+      "登录页微信登录修复：改为跳转方式，去掉扫码后无反应的二维码展示",
+      "旧入口路由归一：旧任务控制台/文章库/客户详情/企微助手重定向到规范路由",
+    ],
+  },
   {
     version: "v1.1.83",
     date: "2026-08-14",
