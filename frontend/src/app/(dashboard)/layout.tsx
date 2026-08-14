@@ -32,8 +32,17 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.82";
+const DESKTOP_APP_VERSION = "1.1.83";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.83",
+    date: "2026-08-14",
+    highlights: [
+      "统一线索对象 + 事件流：三套线索表收敛为统一 leads 表，线索全链路可追溯",
+      "AI 质量观测落地：每次 AI 调用 prompt/回复快照、耗时、成败、失败原因自动落库",
+      "多租户双维度 + 成员管理：actorUserId 操作者维度 + 成员邀请/移除闭环",
+    ],
+  },
   {
     version: "v1.1.82",
     date: "2026-08-12",
