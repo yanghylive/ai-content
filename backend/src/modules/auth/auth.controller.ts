@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -179,6 +180,26 @@ export class AuthController {
       302,
       `${kaypalUrlEndpoint}?returnUrl=${encodeURIComponent(callbackUrl)}`,
     );
+  }
+
+  /**
+   * 获取微信扫码地址给登录页生成二维码。
+   * 这里由后端向 Kaypal 请求授权地址，避免前端直接跳走；扫码后的回调
+   * 仍然复用 /auth/wechat/callback，成功后回到当前前端页面并建立会话。
+   */
+  @Public()
+  @Get('wechat/qr')
+  async wechatQr(
+    @Req() request: Request,
+    @Query('next') next?: string,
+    @Query('origin') origin?: string,
+  ) {
+    const safeOrigin = this.getCallbackOrigin(request, origin);
+    const callbackUrl = `${safeOrigin}/api/auth/wechat/callback?next=${encodeURIComponent(
+      normalizeWechatNext(next),
+    )}${origin ? `&origin=${encodeURIComponent(origin)}` : ''}`;
+    const result = await this.authService.getWechatLoginWithCookies(callbackUrl);
+    return { url: result.url };
   }
 
   /** 微信扫码回调（kaypal 回跳带 kaypalToken）：换用户建会话后 302 回前端 */
@@ -497,6 +518,123 @@ export class AuthController {
         },
       });
     });
+  }
+
+  /**
+   * 邀请成员（仅 admin）：按 email 或 username 将用户加入当前租户。
+   * POST /api/auth/members
+   * 租户内角色：member（普通成员）| admin（管理员）。
+   */
+  @Post('members')
+  async inviteMember(
+    @Body()
+    body: {
+      email?: string;
+      username?: string;
+      role?: 'member' | 'admin';
+    },
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const tenantId = await this.requireAdminTenant(request);
+    const email = body.email?.trim().toLowerCase();
+    const username = body.username?.trim();
+    if (!email && !username) {
+      throw new BadRequestException('请提供 email 或 username');
+    }
+
+    const targetUser = await this.prisma.user.findFirst({
+      where: {
+        ...(email ? { email } : {}),
+        ...(username ? { username } : {}),
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        name: true,
+        status: true,
+      },
+    });
+    if (!targetUser) {
+      throw new BadRequestException(
+        '未找到该用户，请确认 email/username 是否正确',
+      );
+    }
+    if (targetUser.status !== 'active') {
+      throw new BadRequestException('该账号已被停用');
+    }
+    if (targetUser.id === request.authUser?.id) {
+      throw new BadRequestException('不能邀请自己');
+    }
+
+    const role = body.role === 'admin' ? 'admin' : 'member';
+    const existing = await this.prisma.tenantMember.findUnique({
+      where: { tenantId_userId: { tenantId, userId: targetUser.id } },
+    });
+    if (existing && existing.status === 'active') {
+      throw new BadRequestException('该用户已是组织成员');
+    }
+
+    const member = existing
+      ? await this.prisma.tenantMember.update({
+          where: { id: existing.id },
+          data: { role, status: 'active' },
+          select: { id: true, role: true, status: true },
+        })
+      : await this.prisma.tenantMember.create({
+          data: { tenantId, userId: targetUser.id, role },
+          select: { id: true, role: true, status: true },
+        });
+
+    return {
+      userId: targetUser.id,
+      username: targetUser.username,
+      email: targetUser.email,
+      name: targetUser.name,
+      role: member.role,
+      status: member.status,
+    };
+  }
+
+  /**
+   * 移除成员（仅 admin）：软删租户成员关系（status → removed）。
+   * DELETE /api/auth/members/:userId
+   */
+  @Delete('members/:userId')
+  async removeMember(
+    @Param('userId') userId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const tenantId = await this.requireAdminTenant(request);
+    const membership = await this.prisma.tenantMember.findFirst({
+      where: { tenantId, userId, status: 'active' },
+      select: { id: true, role: true },
+    });
+    if (!membership) {
+      throw new ForbiddenException('只能管理当前组织内的用户');
+    }
+    if (request.authUser?.id === userId) {
+      throw new ForbiddenException('不能移除自己，请使用退出组织功能');
+    }
+    // 防自锁：不能移除最后一个 admin/owner
+    if (membership.role === 'admin' || membership.role === 'owner') {
+      const adminCount = await this.prisma.tenantMember.count({
+        where: {
+          tenantId,
+          status: 'active',
+          role: { in: ['admin', 'owner'] },
+        },
+      });
+      if (adminCount <= 1) {
+        throw new ForbiddenException('不能移除最后一个管理员');
+      }
+    }
+
+    await this.prisma.tenantMember.update({
+      where: { id: membership.id },
+      data: { status: 'removed' },
+    });
+    return { userId, removed: true };
   }
 
   private async requireAdminTenant(request: AuthenticatedRequest) {
