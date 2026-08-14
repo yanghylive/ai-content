@@ -6,6 +6,7 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
 import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
+import { LeadRepository } from '../leads/lead.repository';
 
 describe('CommentAcquisitionService', () => {
   let service: CommentAcquisitionService;
@@ -19,6 +20,12 @@ describe('CommentAcquisitionService', () => {
       values,
     })),
     empty: jest.fn(),
+    lead: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
   };
   const authMock = {
     get: jest.fn(() => ({
@@ -37,6 +44,13 @@ describe('CommentAcquisitionService', () => {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
   };
+  const leadRepositoryMock = {
+    upsert: jest.fn().mockResolvedValue({
+      lead: { id: 'lead-mock-id', userId: 'u1', tenantId: null, dedupeKey: 'lead:mock' },
+      created: true,
+    }),
+    updateReplyStatus: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -52,6 +66,7 @@ describe('CommentAcquisitionService', () => {
           useValue: { readComments: jest.fn(), replyComment: jest.fn() },
         },
         { provide: ReplyEngineService, useValue: replyEngineMock },
+        { provide: LeadRepository, useValue: leadRepositoryMock },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
@@ -143,7 +158,7 @@ describe('CommentAcquisitionService', () => {
         { tenantId: null, userId: 'u1' },
       );
       expect(ok).toBe(true);
-      expect(prismaMock.$executeRaw).toHaveBeenCalled();
+      expect(leadRepositoryMock.updateReplyStatus).toHaveBeenCalled();
     });
 
     it('发送失败标记 failed 并返回 false', async () => {
@@ -174,6 +189,12 @@ describe('CommentAcquisitionService 风控断路器', () => {
     $queryRaw: jest.fn(),
     sql: jest.fn(),
     empty: jest.fn(),
+    lead: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
   };
   const authMock = {
     get: jest.fn(() => ({ user: { id: 'u1', kaypalLocalOnly: true } })),
@@ -187,6 +208,13 @@ describe('CommentAcquisitionService 风控断路器', () => {
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
+  };
+  const leadRepositoryMock = {
+    upsert: jest.fn().mockResolvedValue({
+      lead: { id: 'lead-mock-id', userId: 'u1', tenantId: null, dedupeKey: 'lead:mock' },
+      created: true,
+    }),
+    updateReplyStatus: jest.fn().mockResolvedValue(undefined),
   };
 
   beforeEach(async () => {
@@ -203,6 +231,7 @@ describe('CommentAcquisitionService 风控断路器', () => {
           useValue: { readComments: jest.fn(), replyComment: jest.fn() },
         },
         { provide: ReplyEngineService, useValue: replyEngineMock },
+        { provide: LeadRepository, useValue: leadRepositoryMock },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
@@ -266,6 +295,12 @@ describe('CommentAcquisitionService 小红书获客', () => {
     $queryRaw: jest.fn(),
     sql: jest.fn(),
     empty: jest.fn(),
+    lead: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
   };
   const authMock = {
     get: jest.fn(() => ({ user: { id: 'u1', kaypalLocalOnly: true } })),
@@ -284,6 +319,13 @@ describe('CommentAcquisitionService 小红书获客', () => {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
   };
+  const leadRepositoryMock = {
+    upsert: jest.fn().mockResolvedValue({
+      lead: { id: 'lead-mock-id', userId: 'u1', tenantId: null, dedupeKey: 'lead:mock' },
+      created: true,
+    }),
+    updateReplyStatus: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -296,6 +338,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
         { provide: PlatformInteractionExecutor, useValue: executorMock },
         { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
         { provide: ReplyEngineService, useValue: replyEngineMock },
+        { provide: LeadRepository, useValue: leadRepositoryMock },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
@@ -350,6 +393,12 @@ describe('CommentAcquisitionService 私信获客', () => {
     $queryRaw: jest.fn(),
     sql: jest.fn(),
     empty: jest.fn(),
+    lead: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
   };
   const authMock = {
     get: jest.fn(() => ({ user: { id: 'u1', kaypalLocalOnly: true } })),
@@ -365,6 +414,13 @@ describe('CommentAcquisitionService 私信获客', () => {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
   };
+  const leadRepositoryMock = {
+    upsert: jest.fn().mockResolvedValue({
+      lead: { id: 'lead-mock-id', userId: 'u1', tenantId: null, dedupeKey: 'lead:mock' },
+      created: true,
+    }),
+    updateReplyStatus: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -377,6 +433,7 @@ describe('CommentAcquisitionService 私信获客', () => {
         { provide: PlatformInteractionExecutor, useValue: executorMock },
         { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
         { provide: ReplyEngineService, useValue: replyEngineMock },
+        { provide: LeadRepository, useValue: leadRepositoryMock },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);

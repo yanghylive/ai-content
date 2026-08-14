@@ -120,7 +120,7 @@ describe('RedfoxService', () => {
         apiKeySource: 'missing',
         status: 'missing_key',
         timeoutMs: 60000,
-        lastError: '系统数据服务暂未开通，请联系管理员处理。',
+        lastError: '情报数据服务尚未配置，请到「设置」添加数据源后使用。',
       }),
     );
   });
@@ -155,14 +155,14 @@ describe('RedfoxService', () => {
     await expect(service.testConnection()).rejects.toMatchObject({
       response: expect.objectContaining({
         code: 'REDFOX_API_KEY_REQUIRED',
-        message: '系统数据服务暂未开通，请联系管理员处理。',
+        message: '情报数据服务尚未配置，请到「设置」添加数据源后使用。',
       }),
     });
 
     await expect(service.getConnection()).resolves.toEqual(
       expect.objectContaining({
         status: 'failed',
-        lastError: '系统数据服务暂未开通，请联系管理员处理。',
+        lastError: '情报数据服务尚未配置，请到「设置」添加数据源后使用。',
       }),
     );
   });

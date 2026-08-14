@@ -73,7 +73,7 @@ describe('RedfoxClientService', () => {
         operation: 'connection.test',
         status: 'failed',
         errorCode: 'REDFOX_API_KEY_REQUIRED',
-        errorMessage: '系统数据服务暂未开通，请联系管理员处理。',
+        errorMessage: '情报数据服务尚未配置，请到「设置」添加数据源后使用。',
       }),
     );
   });
