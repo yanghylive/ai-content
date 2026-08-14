@@ -464,6 +464,7 @@ export class CrmService {
       this.createManualDedupeKey(displayName, input);
     const data = {
       ownerId: userId,
+      actorUserId: userId,
       tenantId,
       displayName,
       companyId,
@@ -700,6 +701,7 @@ export class CrmService {
     const company = await this.prisma.crmCompany.create({
       data: {
         ownerId: userId,
+        actorUserId: userId,
         tenantId,
         name,
         domain: this.optionalString(input.domain),
@@ -854,6 +856,7 @@ export class CrmService {
     const opportunity = await this.prisma.crmOpportunity.create({
       data: {
         ownerId: userId,
+        actorUserId: userId,
         tenantId,
         name,
         stage: this.optionalString(input.stage) || 'qualified',
@@ -1024,6 +1027,7 @@ export class CrmService {
     const task = await this.prisma.crmTask.create({
       data: {
         ownerId: userId,
+        actorUserId: userId,
         tenantId,
         title,
         description: this.optionalString(input.description),
@@ -1226,6 +1230,7 @@ export class CrmService {
     const note = await this.prisma.crmNote.create({
       data: {
         ownerId: userId,
+        actorUserId: userId,
         tenantId,
         body,
         createdBy: this.optionalString(input.createdBy) || userId,
@@ -1379,6 +1384,7 @@ export class CrmService {
     const template = await this.prisma.crmNote.create({
       data: {
         ownerId: userId,
+        actorUserId: userId,
         tenantId: await this.resolveCrmTenantId(userId),
         body,
         createdBy: CRM_WELCOME_TEMPLATE_CREATED_BY,
@@ -2022,6 +2028,7 @@ export class CrmService {
     return {
       generatedAt,
       ownerId: userId,
+      actorUserId: userId,
       status: 'contract-ready',
       ready: true,
       summary:
@@ -2091,6 +2098,7 @@ export class CrmService {
       ...connector,
       generatedAt: readiness.generatedAt,
       ownerId: userId,
+      actorUserId: userId,
       audit: {
         ...readiness.audit,
         connectorId: connector.id,
@@ -2162,6 +2170,7 @@ export class CrmService {
           ? undefined
           : {
               ownerId: userId,
+              actorUserId: userId,
               requestedBy: this.optionalString(input.requestedBy) || userId,
               connectorKey,
               hash,
@@ -2556,6 +2565,7 @@ export class CrmService {
     return {
       id: `dryrun_${proofHash.slice(0, 12)}`,
       ownerId: userId,
+      actorUserId: userId,
       filename,
       sourceType,
       status: 'preview',
@@ -2846,6 +2856,7 @@ export class CrmService {
       id: importCommitId,
       importBatch,
       ownerId: userId,
+      actorUserId: userId,
       filename,
       sourceType,
       status: 'committed',
@@ -3260,6 +3271,7 @@ export class CrmService {
         where: this.customerDedupeWhere(userId, tenantId, dedupeKey),
         create: {
           ownerId: userId,
+          actorUserId: userId,
           tenantId,
           displayName,
           status: 'contacted',
@@ -3396,6 +3408,7 @@ export class CrmService {
       where: this.customerDedupeWhere(userId, tenantId, dedupeKey),
       create: {
         ownerId: userId,
+        actorUserId: userId,
         tenantId,
         displayName,
         status: customerStatus,
@@ -5002,6 +5015,7 @@ export class CrmService {
     const company = await tx.crmCompany.create({
       data: {
         ownerId: userId,
+        actorUserId: userId,
         tenantId,
         name: companyName,
         metadata: { source: 'crm_import_inline_create' },
@@ -5217,6 +5231,7 @@ export class CrmService {
     return tx.crmTimelineEvent.create({
       data: {
         ownerId: userId,
+        actorUserId: userId,
         tenantId,
         customerId: input.customerId || null,
         companyId: input.companyId || null,
@@ -5450,6 +5465,7 @@ export class CrmService {
     const company = await this.prisma.crmCompany.create({
       data: {
         ownerId: userId,
+        actorUserId: userId,
         tenantId: await this.resolveCrmTenantId(userId),
         name: companyName,
         metadata: { source: 'crm_inline_create' },
