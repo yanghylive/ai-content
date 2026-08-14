@@ -148,6 +148,7 @@ describe('AuthController', () => {
     };
 
     await scopedController.wechatCallback(
+      { headers: { host: 'localhost:3011' }, protocol: 'http' } as never,
       { kaypalToken: 'kda_test-token' } as never,
       response as never,
     );
@@ -157,7 +158,10 @@ describe('AuthController', () => {
       'session-token-1',
       expect.objectContaining({ httpOnly: true, path: '/' }),
     );
-    expect(response.redirect).toHaveBeenCalledWith(302, '/');
+    expect(response.redirect).toHaveBeenCalledWith(
+      302,
+      'http://localhost:3011/',
+    );
   });
 
   it('wechat callback: converts service exception to friendly redirect instead of 500', async () => {
@@ -173,6 +177,7 @@ describe('AuthController', () => {
     };
 
     await scopedController.wechatCallback(
+      { headers: { host: 'localhost:3011' }, protocol: 'http' } as never,
       { kaypalToken: 'kda_test-token' } as never,
       response as never,
     );
@@ -198,7 +203,7 @@ describe('AuthController', () => {
       redirect: jest.fn(),
     };
 
-    await scopedController.wechatCallback({} as never, response as never);
+    await scopedController.wechatCallback({ headers: { host: 'localhost:3011' }, protocol: 'http' } as never, {} as never, response as never);
 
     expect(response.redirect).toHaveBeenCalledWith(
       302,
