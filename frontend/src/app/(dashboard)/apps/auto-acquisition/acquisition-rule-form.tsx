@@ -94,7 +94,6 @@ export function AcquisitionRuleForm() {
   const visibleAccounts = useMemo(
     () =>
       accounts.filter((a) => accountMatchesPlatform(a.platform, form.platform)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [accounts, form.platform],
   );
 
