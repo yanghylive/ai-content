@@ -6,11 +6,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IS_PUBLIC_KEY } from './auth.decorator';
-import { AUTH_COOKIE_NAME } from './auth.constants';
+import { AUTH_COOKIE_NAME, AUTH_SESSION_DAYS } from './auth.constants';
+import { shouldUseSecureAuthCookie } from './cookie-options';
 import { hashSessionToken, parseCookieHeader } from './auth.utils';
 import type { AuthenticatedUser } from './auth.types';
 import { safeText } from '../../common/text.utils';
@@ -31,10 +32,14 @@ type AuthenticatedRequest = Request & {
 const KAYPAL_METADATA_SYNC_TIMEOUT_MS = 2500;
 const SESSION_LAST_USED_WRITE_INTERVAL_MS = 60_000;
 const PRISMA_TRANSIENT_RETRY_ATTEMPTS = 3;
+// 滑动续期：session 剩余有效期不足一半时，延长到完整窗口并重设 cookie，
+// 避免「天天用仍被固定 14 天窗口强制登出」（2026-08-14 用户截图排查发现）。
+const SESSION_SLIDING_THRESHOLD = 0.5;
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly lastUsedAtWriteCache = new Map<string, number>();
+  private readonly slidingRenewCache = new Map<string, number>();
 
   constructor(
     private readonly reflector: Reflector,
@@ -160,8 +165,55 @@ export class AuthGuard implements CanActivate {
     });
 
     this.touchSessionLastUsedAt(session.id, session.lastUsedAt);
+    this.slideSessionExpiry(request, session.id, session.createdAt, session.expiresAt);
 
     return true;
+  }
+
+  /**
+   * 滑动续期：剩余有效期不足一半时延长到完整窗口，并重设 cookie maxAge。
+   * 解决「每天使用仍被固定窗口（14 天）强制登出」的体验问题。
+   * 节流：每 session 每 5 分钟最多续一次，避免每次请求都写库。
+   */
+  private slideSessionExpiry(
+    request: AuthenticatedRequest,
+    sessionId: string,
+    createdAt: Date,
+    expiresAt: Date,
+  ) {
+    const now = Date.now();
+    const windowMs = AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000;
+    const remaining = expiresAt.getTime() - now;
+    if (remaining > windowMs * (1 - SESSION_SLIDING_THRESHOLD)) return;
+
+    const lastRenew = this.slidingRenewCache.get(sessionId) ?? 0;
+    if (now - lastRenew < 5 * 60 * 1000) return;
+    this.slidingRenewCache.set(sessionId, now);
+
+    const newExpiresAt = new Date(now + windowMs);
+    void this.runPrismaTransientRetry('session sliding renew', () =>
+      this.prisma.userSession.update({
+        where: { id: sessionId },
+        data: { expiresAt: newExpiresAt },
+      }),
+    ).catch(() => this.slidingRenewCache.delete(sessionId));
+
+    const response = (request as Request & { res?: Response }).res;
+    const token = this.extractRequestToken(request);
+    if (response && token) {
+      response.cookie(AUTH_COOKIE_NAME, token, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: shouldUseSecureAuthCookie(),
+        maxAge: windowMs,
+        path: '/',
+      });
+    }
+  }
+
+  private extractRequestToken(request: AuthenticatedRequest): string | undefined {
+    const cookies = parseCookieHeader(request.headers.cookie);
+    return cookies[AUTH_COOKIE_NAME] || this.extractBearerToken(request.headers.authorization);
   }
 
   private async applyEffectiveEntitlement(
