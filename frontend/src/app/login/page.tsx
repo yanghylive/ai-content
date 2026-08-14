@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
+import QRCode from "qrcode";
 import { AppShell } from "@astryxdesign/core/AppShell";
 import { Banner } from "@astryxdesign/core/Banner";
 import { Button } from "@astryxdesign/core/Button";
@@ -230,8 +231,8 @@ function LoginPageContent() {
   const hasNavigatedRef = React.useRef(false);
   const startInFlightRef = React.useRef(false);
   /* 账号密码登录（参考 WorkBuddy 手机版：直接填账号密码，一步进入） */
-  const [loginTab, setLoginTab] = React.useState<"password" | "device">(
-    "password",
+  const [loginTab, setLoginTab] = React.useState<"sso" | "password" | "qr">(
+    "sso",
   );
   /* 移动端（手机/APK WebView）没有桌面 Electron bridge，设备码授权无法工作。
      直接隐藏「扫码/授权码」入口，只保留账号密码登录，避免真机报
@@ -250,6 +251,9 @@ function LoginPageContent() {
   const [passwordError, setPasswordError] = React.useState<string | null>(
     null,
   );
+  const [wechatQrImage, setWechatQrImage] = React.useState<string | null>(null);
+  const [wechatQrLoading, setWechatQrLoading] = React.useState(false);
+  const [wechatQrError, setWechatQrError] = React.useState<string | null>(null);
 
   const handlePasswordLogin = async () => {
     if (!username.trim() || !password) {
@@ -288,6 +292,42 @@ function LoginPageContent() {
       setPasswordSubmitting(false);
     }
   };
+
+  const handleWechatLogin = React.useCallback(() => {
+    const apiBase = getApiBase().replace(/\/$/, "");
+    const wechatStart = apiBase.endsWith("/api")
+      ? `${apiBase}/auth/wechat/start`
+      : `${apiBase}/api/auth/wechat/start`;
+    const origin = encodeURIComponent(window.location.origin);
+    window.location.href = `${wechatStart}?origin=${origin}&next=${encodeURIComponent(nextPath)}`;
+  }, [nextPath]);
+
+  const loadWechatQr = React.useCallback(async () => {
+    if (typeof window === "undefined" || isMobileShell()) return;
+    setWechatQrLoading(true);
+    setWechatQrError(null);
+    try {
+      const result = await authApi.wechatQr(nextPath, window.location.origin);
+      if (!result.url) throw new Error("微信登录服务未返回二维码地址");
+      const image = await QRCode.toDataURL(result.url, {
+        width: 360,
+        margin: 1,
+        errorCorrectionLevel: "M",
+        color: { dark: "#221a29", light: "#ffffff" },
+      });
+      setWechatQrImage(image);
+    } catch (error) {
+      setWechatQrImage(null);
+      setWechatQrError(toPublicError(error, "二维码加载失败，请点击下方按钮重试"));
+    } finally {
+      setWechatQrLoading(false);
+    }
+  }, [nextPath]);
+
+  React.useEffect(() => {
+    if (loginTab !== "qr" || isMobileShell()) return;
+    void loadWechatQr();
+  }, [loadWechatQr, loginTab]);
 
   const navigateToNext = React.useCallback(() => {
     if (hasNavigatedRef.current) {
@@ -381,7 +421,7 @@ function LoginPageContent() {
             setExpiresIn(
               Math.max(1, Math.round((persisted.expiresAt - Date.now()) / 1000)),
             );
-            setLoginTab("device");
+            setLoginTab("sso");
             setPhase("waiting");
             return;
           }
@@ -612,9 +652,10 @@ function LoginPageContent() {
   }
 
   return (
-    <AppShell contentPadding={0} height="auto" variant="wash">
-      <Center axis="horizontal" width="100%">
+    <AppShell className="login-preview" contentPadding={0} height="auto" variant="wash">
+      <Center className="login-preview-center" axis="horizontal" width="100%">
         <Stack
+          className="login-preview-stack"
           gap={6}
           maxWidth={1184}
           minHeight="100dvh"
@@ -624,20 +665,22 @@ function LoginPageContent() {
         >
           <Stack
             as="header"
+            className="login-preview-header"
             direction="horizontal"
             hAlign="between"
             vAlign="center"
           >
-            <Stack direction="horizontal" gap={3} vAlign="center">
+            <Stack className="preview-brand" direction="horizontal" gap={3} vAlign="center">
               {/* eslint-disable-next-line @next/next/no-img-element -- Static export cannot use next/image optimization. */}
               <img
                 alt="JIUZHANG AI"
                 className="h-7 w-auto shrink-0"
-                src="/brand/jiuzhang-ai-logo.png"
+                src="/brand/jiuzhang-ai-icon.png"
               />
-              <Text color="secondary" type="supporting">
-                智能运营系统
-              </Text>
+              <Stack gap={0}>
+                <Text className="preview-wordmark" type="label" weight="bold">JIUZHANG <span>AI</span></Text>
+                <Text className="preview-brand-sub" type="supporting">智能内容增长与客户运营系统</Text>
+              </Stack>
             </Stack>
             <Stack
               className="hidden sm:flex"
@@ -650,15 +693,13 @@ function LoginPageContent() {
                 className="h-4 w-4"
                 strokeWidth={1.75}
               />
-              <Text color="accent" type="supporting" weight="semibold">
-                安全登录
-              </Text>
+              <Text color="accent" type="supporting" weight="semibold">企业级安全登录</Text>
             </Stack>
           </Stack>
 
           <Grid
+            className="login-preview-grid flex-1"
             align="center"
-            className="flex-1"
             columns={{ minWidth: 320, max: 2, repeat: "fit" }}
             gap={10}
             width="100%"
@@ -666,41 +707,21 @@ function LoginPageContent() {
             {/* P2-18：hero 营销区紧凑化——缩小间距/字号/图标，首屏占用从约 1/3 降下来 */}
             <Stack
               as="section"
-              className="order-last md:order-first"
+              className="login-preview-hero order-last md:order-first"
               gap={3}
               maxWidth={640}
             >
-              <Stack gap={2}>
-                <Text color="accent" type="supporting" weight="bold">
-                  AI EMPLOYEE OS
-                </Text>
-                <Heading level={1} textWrap="balance" type="display-3">
-                  让内容创作、发布和互动一起跑起来
-                </Heading>
-                <Text as="p" color="secondary" textWrap="pretty" type="large">
-                  JIUZHANG AI
-                  帮你从素材采集、选题生成、文章创作到多平台发布和客户互动回复，
-                  把日常内容运营变成一套可持续执行的工作流。
-                </Text>
+              <Stack className="login-preview-hero-copy" gap={2}>
+                <Text className="preview-kicker" type="supporting" weight="bold">INTELLIGENT GROWTH SYSTEM</Text>
+                <Heading level={1} textWrap="balance" type="display-3">让内容成为<br /><em>持续增长的系统。</em></Heading>
+                <Text as="p" color="secondary" textWrap="pretty" type="large">从发现市场机会，到内容生产、全域触达、互动获客与客户沉淀，九章智能把每一步连接为可执行、可追踪、可复用的增长闭环。</Text>
               </Stack>
 
-              <Grid columns={{ minWidth: 148, max: 3, repeat: "fit" }} gap={3}>
+              <Grid className="login-preview-features" columns={{ minWidth: 148, max: 3, repeat: "fit" }} gap={3}>
                 {[
-                  {
-                    label: "内容生产",
-                    value: "从素材到成稿",
-                    icon: LayoutDashboard,
-                  },
-                  {
-                    label: "发布管理",
-                    value: "多平台统一执行",
-                    icon: KeyRound,
-                  },
-                  {
-                    label: "客户互动",
-                    value: "评论私信及时跟进",
-                    icon: MapPinned,
-                  },
+                  { label: "发现机会", value: "情报 · 趋势 · 选题", icon: LayoutDashboard },
+                  { label: "智能创作", value: "文字 · 图片 · 视频", icon: KeyRound },
+                  { label: "沉淀客户", value: "线索 · 微信 · CRM", icon: MapPinned },
                 ].map((item) => (
                   <Stack
                     key={item.label}
@@ -730,16 +751,30 @@ function LoginPageContent() {
                   </Stack>
                 ))}
               </Grid>
+              <div className="preview-system-visual" aria-label="九章智能增长闭环动态视觉">
+                <span className="preview-glow" /><span className="preview-ring preview-ring-one" /><span className="preview-ring preview-ring-two" /><span className="preview-ring preview-ring-three" /><span className="preview-ring preview-ring-four" /><span className="preview-pulse-ring" />
+                <span className="preview-core"><img alt="" src="/brand/jiuzhang-ai-icon.png" /></span>
+                {[
+                  ["01", "发现机会", "情报 · 趋势 · 选题", "preview-node-one"],
+                  ["02", "智能创作", "文字 · 图片 · 视频", "preview-node-two"],
+                  ["04", "沉淀客户", "线索 · 微信 · CRM", "preview-node-three"],
+                  ["03", "全域触达", "发布 · 互动 · 跟进", "preview-node-four"],
+                ].map(([number, title, detail, className]) => <span className={`preview-node ${className}`} key={number}><i>{number}</i><b>{title}</b><small>{detail}</small></span>)}
+                <span className="preview-connector preview-connector-one" /><span className="preview-connector preview-connector-two" /><span className="preview-connector preview-connector-three" /><span className="preview-connector preview-connector-four" />
+              </div>
+              <Stack className="preview-stage-footer" direction="horizontal" gap={4}>
+                <Text type="supporting"><i />中国主流内容平台</Text><Text type="supporting"><i />AI 与真实执行结合</Text><Text type="supporting"><i />关键任务全程留痕</Text>
+              </Stack>
             </Stack>
 
             <Card
-              className="order-first md:order-last"
+              className="login-preview-card order-first md:order-last"
               maxWidth={440}
               padding={6}
               width="100%"
             >
-              <Stack gap={5}>
-                <Stack gap={3}>
+              <Stack className="login-preview-card-inner" gap={5}>
+                <Stack className="login-preview-card-head" gap={3}>
                   <Center height={40} width={40}>
                     <KeyRound
                       aria-hidden="true"
@@ -748,19 +783,14 @@ function LoginPageContent() {
                     />
                   </Center>
                   <Stack gap={1}>
-                    <Heading level={2}>
-                      {phase === "waiting"
-                        ? "请在 JIUZHANG AI 页面确认"
-                        : forceReauth
-                          ? "重新授权账号"
-                          : "欢迎回来"}
-                    </Heading>
+                    <Text className="preview-login-kicker" type="supporting">WELCOME TO JIUZHANG AI</Text>
+                    <Heading level={2}>{phase === "waiting" ? "请在 JIUZHANG AI 页面确认" : forceReauth ? "重新授权账号" : "进入九章智能"}</Heading>
                     <Text as="p" color="secondary" type="supporting">
                       {phase === "waiting"
                         ? "确认后会自动进入当前工作台。"
                         : forceReauth
                           ? "完成确认后会更新当前账号授权。"
-                          : "登录后进入 JIUZHANG AI。"}
+                          : "选择一种方式登录你的智能运营工作台。"}
                     </Text>
                   </Stack>
                 </Stack>
@@ -768,26 +798,21 @@ function LoginPageContent() {
                 {phase === "idle" ||
                 phase === "starting" ||
                 phase === "error" ? (
-                  <Stack gap={4}>
-                    {/* 登录方式切换：账号密码（默认，手机版体验） / 设备码（备用） */}
-                    <Stack direction="horizontal" gap={2}>
+                  <Stack className="login-preview-form" gap={4}>
+                    <Stack className="preview-tabs" direction="horizontal" gap={2}>
                       {(
                         [
-                          { key: "password", label: "账号密码登录" },
-                          { key: "device", label: "扫码/授权码" },
+                          { key: "sso", label: "九章账号" },
+                          { key: "password", label: "账号密码" },
+                          { key: "qr", label: "微信扫码" },
                         ] as const
                       )
-                        .filter((tab) => tab.key === "password" || !isMobile)
                         .map((tab) => (
                         <button
                           key={tab.key}
                           type="button"
                           onClick={() => setLoginTab(tab.key)}
-                          className={`rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition ${
-                            loginTab === tab.key
-                              ? "bg-[var(--accent)] text-[var(--accent-foreground)]"
-                              : "text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
-                          }`}
+                          className={`preview-tab ${loginTab === tab.key ? "active" : ""}`}
                           style={{
                             border: "1px solid transparent",
                             cursor: "pointer",
@@ -798,7 +823,22 @@ function LoginPageContent() {
                       ))}
                     </Stack>
 
-                    {loginTab === "password" ? (
+                    {loginTab === "sso" ? (
+                      <Stack className="sso-pane" gap={3}>
+                        <Stack className="sso-hero" gap={3}>
+                          <Stack className="sso-head" direction="horizontal" gap={3} vAlign="center">
+                            <img alt="" src="/brand/jiuzhang-ai-icon.png" />
+                            <Stack gap={0}><Text type="label" weight="bold">使用 JIUZHANG AI 账号</Text><Text type="supporting">统一身份授权 · 无需再次输入密码</Text></Stack>
+                          </Stack>
+                          <Text as="p">像 Codex 使用 ChatGPT 账号一样，通过你的九章统一账号完成授权，并安全连接当前浏览器或桌面设备。</Text>
+                          <Grid className="sso-points" columns={{ minWidth: 140, max: 2, repeat: "fit" }} gap={2}>
+                            {["自动识别当前账号", "设备授权随时撤销", "工作区权限自动同步", "任务与证据安全回传"].map((point) => <Text key={point} type="supporting"><b>✓</b>{point}</Text>)}
+                          </Grid>
+                          <Button className="preview-main-button" icon={<LogIn aria-hidden="true" className="h-4 w-4" />} isLoading={phase === "starting"} label={phase === "starting" ? "正在准备 JIUZHANG AI 登录..." : "使用 JIUZHANG AI 账号继续"} onClick={() => void startDeviceAuth()} variant="primary" width="100%" />
+                        </Stack>
+                        <Text className="sso-note" type="supporting">授权过程由九章统一账号中心完成，本页面不会读取你的密码</Text>
+                      </Stack>
+                    ) : loginTab === "password" ? (
                       <Stack gap={3}>
                         <Field label="手机号 / 邮箱" width="100%" inputID="login-username">
                           <TextInput
@@ -869,110 +909,6 @@ function LoginPageContent() {
                             title="登录失败"
                           />
                         ) : null}
-                        {/* 微信登录（kaypal 认证服务原生支持，扫码一步登录） */}
-                        <Stack
-                          direction="horizontal"
-                          gap={3}
-                          hAlign="center"
-                          vAlign="center"
-                        >
-                          <span
-                            style={{
-                              height: 1,
-                              flex: 1,
-                              background: "var(--border)",
-                            }}
-                          />
-                          <Text
-                            color="secondary"
-                            type="supporting"
-                            style={{ textAlign: "center" }}
-                          >
-                            或
-                          </Text>
-                          <span
-                            style={{
-                              height: 1,
-                              flex: 1,
-                              background: "var(--border)",
-                            }}
-                          />
-                        </Stack>
-                        <Button
-                          icon={
-                            <MessageCircle
-                              aria-hidden="true"
-                              className="h-4 w-4"
-                              strokeWidth={1.75}
-                            />
-                          }
-                          label="微信登录"
-                          onClick={() => {
-                            // 用 getApiBase() 拼绝对地址直连后端。
-                            // 后端路由固定在 /api/auth/wechat/start（setGlobalPrefix('api')），
-                            // 这里对 apiBase 两种形态（同源 "/api" / 绝对 host）都补齐 /api，
-                            // 避免拼出缺 /api 的 URL → 404「Cannot GET /auth/wechat/start」（2026-08-12 修复）。
-                            const apiBase = getApiBase().replace(/\/$/, "");
-                            const wechatStart = apiBase.endsWith("/api")
-                              ? `${apiBase}/auth/wechat/start`
-                              : `${apiBase}/api/auth/wechat/start`;
-                            // 把当前前端 origin 显式传给后端做微信回调 returnUrl：
-                            // 后端按此 origin 回跳并种会话 cookie，保证与用户当前访问域一致
-                            // （根治 localhost vs 127.0.0.1 登录完回登录页，2026-08-12）。
-                            const origin = encodeURIComponent(window.location.origin);
-                            window.location.href = `${wechatStart}?origin=${origin}&next=${encodeURIComponent(
-                              nextPath,
-                            )}`;
-                          }}
-                          variant="secondary"
-                          width="100%"
-                        />
-                        <Text
-                          as="p"
-                          color="secondary"
-                          type="supporting"
-                          style={{ textAlign: "center" }}
-                        >
-                          扫码后请在手机上点「允许」完成登录，与账号登录是同一个账户
-                        </Text>
-                        {/* App 内微信一键登录（2026-08-11：壳桥拉起微信 SDK 授权，
-                            回传 code 由后端换取会话；需微信开放平台企业资质 AppID，未开通时桥返回提示） */}
-                        {isMobileShell() && (
-                          <Button
-                            icon={
-                              <MessageCircle
-                                aria-hidden="true"
-                                className="h-4 w-4"
-                                strokeWidth={1.75}
-                              />
-                            }
-                            label="微信一键登录"
-                            onClick={() => {
-                              const result = wechatLogin();
-                              if (!result.ok || !result.code) {
-                                toast.error(result.message);
-                                return;
-                              }
-                              void authApi
-                                .wechatAppLogin(result.code)
-                                .then(() => navigateToNext())
-                                .catch((err: unknown) => {
-                                  const raw =
-                                    err instanceof Error ? err.message : "";
-                                  toast.error(
-                                    raw
-                                      ? `微信登录失败：${raw}`
-                                      : toActionableError(
-                                          err,
-                                          "微信登录失败，请重试",
-                                        ),
-                                  );
-                                });
-                            }}
-                            variant="secondary"
-                            width="100%"
-                          />
-                        )}
                         {/* P2-19：忘记密码 / 注册入口。
                             目标路由 /auth/forgot-password、/auth/register 尚未实现，
                             先用 # 占位链接，路由就绪后替换 href 即可。 */}
@@ -1012,38 +948,57 @@ function LoginPageContent() {
                         </Stack>
                       </Stack>
                     ) : (
-                      <Stack gap={3}>
-                        <Button
-                          icon={
-                            <LogIn
-                              aria-hidden="true"
-                              className="h-4 w-4"
-                              strokeWidth={1.75}
-                            />
-                          }
-                          isLoading={phase === "starting"}
-                          label={
-                            phase === "starting"
-                              ? "正在准备 JIUZHANG AI 登录..."
-                              : phase === "error"
-                                ? "重新获取授权码"
-                                : forceReauth
-                                  ? "重新授权 JIUZHANG AI 账号"
-                                  : "用 JIUZHANG AI 账号登录"
-                          }
-                          onClick={() => void startDeviceAuth()}
-                          variant="primary"
-                          width="100%"
-                        />
-                        {errorMessage && phase === "error" ? (
-                          <Banner
-                            description={errorMessage}
-                            status="error"
-                            title="登录授权未能启动"
+                      <Stack className="qr-pane" gap={2}>
+                        <div className="qr-box">
+                          {wechatQrImage ? (
+                            <img className="qr-image" src={wechatQrImage} alt="微信登录二维码" />
+                          ) : wechatQrLoading ? (
+                            <Spinner label="正在生成二维码" size="sm" />
+                          ) : (
+                            <Text className="qr-error" type="supporting">二维码暂时不可用</Text>
+                          )}
+                          {!wechatQrImage ? <span className="scan-line" /> : null}
+                        </div>
+                        <Heading level={3}>微信扫码，快速登录</Heading>
+                        <Text type="supporting">打开微信扫一扫，在手机上确认授权</Text>
+                        {wechatQrError ? <Text className="qr-error" type="supporting">{wechatQrError}</Text> : null}
+                        {!isMobileShell() && (
+                          <Stack direction="horizontal" gap={2}>
+                            <Button className="qr-login-button" label="刷新二维码" onClick={() => void loadWechatQr()} variant="ghost" width="100%" />
+                            <Button className="qr-login-button" label="打开微信登录" onClick={handleWechatLogin} variant="secondary" width="100%" />
+                          </Stack>
+                        )}
+                        {/* App 内微信一键登录仍走原有壳桥能力，但与账号密码表单分离。 */}
+                        {isMobileShell() && (
+                          <Button
+                            className="qr-login-button"
+                            icon={<MessageCircle aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />}
+                            label="微信一键登录"
+                            onClick={() => {
+                              const result = wechatLogin();
+                              if (!result.ok || !result.code) {
+                                toast.error(result.message);
+                                return;
+                              }
+                              void authApi
+                                .wechatAppLogin(result.code)
+                                .then(() => navigateToNext())
+                                .catch((err: unknown) => {
+                                  const raw = err instanceof Error ? err.message : "";
+                                  toast.error(
+                                    raw
+                                      ? `微信登录失败：${raw}`
+                                      : toActionableError(err, "微信登录失败，请重试"),
+                                  );
+                                });
+                            }}
+                            variant="secondary"
+                            width="100%"
                           />
-                        ) : null}
+                        )}
                       </Stack>
                     )}
+                    <Text className="preview-signup" type="supporting">还没有九章账号？<a href="#" onClick={(event) => { event.preventDefault(); toast("账号由管理员开通，请联系管理员"); }}>申请体验</a></Text>
                   </Stack>
                 ) : null}
 
@@ -1202,19 +1157,8 @@ function LoginPageContent() {
             </Card>
           </Grid>
 
-          <Stack as="footer" gap={2}>
-            <Text color="secondary" type="supporting">
-              JIUZHANG AI · 内容创作、发布与客户互动工作台
-            </Text>
-            <Text color="secondary" type="supporting">
-              v1.1.81 · 2026-08-12 更新 ·{" "}
-              <a
-                href="/release-notes"
-                className="underline-offset-2 hover:text-foreground hover:underline"
-              >
-                查看更新历史
-              </a>
-            </Text>
+          <Stack className="login-preview-footer" as="footer" gap={2}>
+            <Text type="supporting">数据自有部署　·　关键操作可审计　·　本地执行可控</Text>
           </Stack>
         </Stack>
       </Center>

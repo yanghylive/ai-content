@@ -61,6 +61,12 @@ export const authApi = {
     );
   },
 
+  /** 获取微信扫码授权地址；登录页据此生成真实二维码。 */
+  wechatQr(next: string, origin: string) {
+    const params = new URLSearchParams({ next, origin });
+    return api.get<{ url: string }>(`/auth/wechat/qr?${params.toString()}`);
+  },
+
   logout() {
     return api.post<{ success: boolean }>("/auth/logout");
   },
