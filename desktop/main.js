@@ -1880,6 +1880,18 @@ function setupIPC() {
   });
 }
 
+// 单实例锁：Windows/macOS 下用户再次点击任务栏/Dock 图标时，系统会启动
+// 第二个实例；单实例锁让第二个实例退出，并触发 second-instance 事件唤起
+// 已运行实例的主窗口（修复「界面关闭后点任务栏图标无法唤起」）。
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    showMainWindow();
+  });
+}
+
 // 应用启动
 app.whenReady().then(async () => {
   if (process.platform !== 'darwin') {
