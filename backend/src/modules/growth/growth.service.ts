@@ -2038,6 +2038,19 @@ export class GrowthService implements OnModuleInit {
           lastCheckedAt: health.checkedAt,
         } satisfies GrowthAccountHealth;
       });
+      // 历史脏数据兜底：同一平台下 accountId 可能重复（映射曾把非数字
+      // 行主键坍缩为 0），导致前端多个账号同时选中、无法单选。此处给
+      // id 追加去重后缀，保证返回的每条账号 id 唯一（accountId 语义不变）。
+      const seenIds = new Set<string>();
+      for (const item of live) {
+        let key = item.id;
+        let n = 2;
+        while (seenIds.has(key)) {
+          key = `${item.id}#${n++}`;
+        }
+        seenIds.add(key);
+        item.id = key;
+      }
       const latestStore = await this.loadStore();
       const liveKeys = new Set(
         live.map((item) => `${item.platform}:${item.accountId}`),

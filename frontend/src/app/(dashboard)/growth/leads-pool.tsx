@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  Trash2,
   UserRound,
   UsersRound,
 } from "lucide-react";
@@ -178,6 +179,45 @@ export function LeadsPool() {
     }
   };
 
+  // 删除单条线索（带确认，二次防误删）
+  const handleDeleteOne = async (lead: GrowthLead) => {
+    const ok = window.confirm(
+      `确定删除线索「${lead.nickname || "未知用户"}」吗？删除后不可恢复。`,
+    );
+    if (!ok) return;
+    setActingId(lead.id);
+    setError(null);
+    try {
+      await growthApi.deleteLead(lead.id);
+      await fetchLeads();
+    } catch (err: unknown) {
+      setError(toPublicError(err, "删除线索失败"));
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    const ok = window.confirm(
+      `确定删除选中的 ${selectedIds.size} 条线索吗？删除后不可恢复。`,
+    );
+    if (!ok) return;
+    setBulkActing("delete");
+    setError(null);
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map((id) => growthApi.deleteLead(id)),
+      );
+      setSelectedIds(new Set());
+      await fetchLeads();
+    } catch (err: unknown) {
+      setError(toPublicError(err, "批量删除失败"));
+    } finally {
+      setBulkActing(null);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <section className="kaypal-v3-panel p-6">
@@ -200,6 +240,9 @@ export function LeadsPool() {
             </div>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               系统抓到的潜在客户，高意向的转成 CRM 客户重点跟进
+            </p>
+            <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
+              评分在抓取时由 AI 自动给出（依据命中关键词与留言内容，悬停分数可见）；你可以通过「转为客户 / 忽略」人工复核评分是否准确
             </p>
           </div>
           <V2StatusChip tone="accent">
@@ -281,11 +324,23 @@ export function LeadsPool() {
                         </p>
                         <V2StatusChip tone={status.tone}>{status.label}</V2StatusChip>
                         {lead.score > 0 && (
-                          <span className="text-xs font-medium text-[var(--kaypal-v3-amber)]">
+                          <span
+                            className="text-xs font-medium text-[var(--kaypal-v3-amber)]"
+                            title={
+                              lead.scoreReasons?.length
+                                ? `评分依据：${lead.scoreReasons.join("；")}`
+                                : undefined
+                            }
+                          >
                             {lead.score} 分
                           </span>
                         )}
                       </div>
+                      {lead.scoreReasons?.length > 0 && (
+                        <p className="mt-0.5 line-clamp-1 text-xs text-[var(--kaypal-v3-muted)]">
+                          评分依据：{lead.scoreReasons.join("；")}
+                        </p>
+                      )}
                       <p className="mt-0.5 line-clamp-1 text-sm text-[var(--kaypal-v3-muted)]">
                         {PLATFORM_LABELS[lead.platform] || lead.platform}
                         {lead.matchedKeywords?.length
@@ -314,6 +369,15 @@ export function LeadsPool() {
                         转为客户
                       </V2PrimaryButton>
                     ) : null}
+                    <button
+                      type="button"
+                      title="删除线索"
+                      className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)] disabled:opacity-50"
+                      disabled={actingId === lead.id}
+                      onClick={() => void handleDeleteOne(lead)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               );
@@ -340,6 +404,12 @@ export function LeadsPool() {
               onClick={() => void handleBulkStatus("ignored", "忽略")}
             >
               忽略
+            </V2GhostButton>
+            <V2GhostButton
+              loading={bulkActing === "delete"}
+              onClick={() => void handleBulkDelete()}
+            >
+              删除
             </V2GhostButton>
             <V2GhostButton onClick={() => setSelectedIds(new Set())}>
               取消选择
