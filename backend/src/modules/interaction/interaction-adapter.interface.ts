@@ -85,6 +85,8 @@ export interface InteractionSendResult {
   message: string;
   /** readback 回读文本：真实发送后从页面读回，非空才算「真实送达」 */
   readbackText?: string;
+  /** 发送截图证据 URL（回读/截图存证，P0-6 证据链） */
+  evidenceUrl?: string;
 }
 
 /**

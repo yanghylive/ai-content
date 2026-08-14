@@ -507,7 +507,11 @@ export class CommentAcquisitionService {
           commentRef: xhsIndex !== undefined ? String(xhsIndex) : undefined,
           replyText: input.replyText,
         })) ??
-        ({ status: 'failed', message: '该平台未实现回复能力' } as const);
+        ({
+          status: 'failed' as const,
+          message: '该平台未实现回复能力',
+          evidenceUrl: undefined,
+        });
 
       const ok = result.status === 'sent';
       if (ok) {
@@ -525,6 +529,7 @@ export class CommentAcquisitionService {
         status: ok ? 'replied' : 'failed',
         lastError: ok ? null : (result.message ?? null),
         repliedAt: ok ? new Date() : null,
+        evidenceUrls: result.evidenceUrl ? [result.evidenceUrl] : undefined,
       });
       return ok;
     } catch (error) {

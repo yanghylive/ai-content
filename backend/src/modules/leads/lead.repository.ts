@@ -195,16 +195,29 @@ export class LeadRepository {
       status: string;
       lastError?: string | null;
       repliedAt?: Date | null;
+      /** 追加证据 URL（截图/回读存证，P0-6 证据链），与现有 evidenceUrls 去重合并 */
+      evidenceUrls?: string[];
     },
   ): Promise<void> {
+    const data: Prisma.LeadUpdateManyMutationInput = {
+      status: input.status,
+      lastError: input.lastError ?? null,
+      repliedAt: input.repliedAt,
+      updatedAt: new Date(),
+    };
+    if (input.evidenceUrls && input.evidenceUrls.length > 0) {
+      const existing = await this.prisma.lead.findFirst({
+        where: { id: leadId, userId: input.userId },
+        select: { evidenceUrls: true },
+      });
+      data.evidenceUrls = this.mergeJsonArray(
+        existing?.evidenceUrls,
+        input.evidenceUrls,
+      );
+    }
     await this.prisma.lead.updateMany({
       where: { id: leadId, userId: input.userId },
-      data: {
-        status: input.status,
-        lastError: input.lastError ?? null,
-        repliedAt: input.repliedAt,
-        updatedAt: new Date(),
-      },
+      data,
     });
   }
 

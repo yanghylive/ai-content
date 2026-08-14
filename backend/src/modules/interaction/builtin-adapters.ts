@@ -94,6 +94,7 @@ export class DouyinInteractionAdapter implements InteractionAdapter {
       status: mapDispatchStatus(result.status),
       message: result.message,
       readbackText: result.readbackText,
+      evidenceUrl: result.evidenceUrl,
     };
   }
 }
@@ -159,6 +160,7 @@ export class WechatChannelInteractionAdapter implements InteractionAdapter {
       status: mapDispatchStatus(result.status),
       message: result.message,
       readbackText: result.readbackText,
+      evidenceUrl: result.evidenceUrl,
     };
   }
 }

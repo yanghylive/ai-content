@@ -79,6 +79,26 @@ describe('内置互动适配器', () => {
     expect(result?.status).toBe('sent');
   });
 
+  it('抖音 send 透传证据 URL（evidenceUrl，P0-6 证据链）', async () => {
+    executorMock.dispatch.mockResolvedValue({
+      status: 'sent',
+      message: 'ok',
+      evidenceUrl: 'http://127.0.0.1:3011/evidence/xxx.png',
+      readbackText: '{"reply":"私信我"}',
+    });
+    const adapter = registry.get('douyin');
+    const result = await adapter.send?.({
+      platform: 'douyin',
+      taskType: 'comment-reply',
+      accountId: 1,
+      targetText: '怎么买',
+      sourceText: '怎么买',
+      replyText: '私信我',
+    });
+    expect(result?.evidenceUrl).toBe('http://127.0.0.1:3011/evidence/xxx.png');
+    expect(result?.readbackText).toBe('{"reply":"私信我"}');
+  });
+
   it('小红书 send 委托 replyComment，commentRef 映射为 commentIndex', async () => {
     xhsMock.replyComment.mockResolvedValue({ status: 'sent', message: 'ok' });
     const adapter = registry.get('xiaohongshu');
