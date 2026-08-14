@@ -88,21 +88,21 @@ export function GrowthCenter() {
             title: "获客策略",
             description: "按行业的获客打法",
             icon: ClipboardList,
-            href: "/growth?view=strategies",
+            href: "/growth/strategies",
           },
           {
             key: "workflows",
             title: "增长工作流",
             description: "多步骤自动化流程",
             icon: Route,
-            href: "/growth?view=workflows",
+            href: "/growth/workflows",
           },
           {
             key: "account-health",
             title: "账号健康",
             description: "各平台账号状态",
             icon: ShieldCheck,
-            href: "/growth?view=account-health",
+            href: "/growth/account-health",
             badge: (overview?.accountRiskCount ?? 0) > 0 ? String(overview?.accountRiskCount) : undefined,
           },
           {
@@ -110,11 +110,11 @@ export function GrowthCenter() {
             title: "增长复盘",
             description: "效果数据回顾",
             icon: TrendingUp,
-            href: "/growth?view=reports",
+            href: "/growth/reports",
           },
         ]}
         advancedLinks={[
-          { key: "console", title: "旧版控制台", icon: ChartNoAxesCombined, href: "/growth?view=overview" },
+          { key: "console", title: "旧版控制台", icon: ChartNoAxesCombined, href: "/growth" },
         ]}
       />
 
@@ -178,7 +178,7 @@ export function GrowthCenter() {
                 key={strategy.id}
                 type="button"
                 className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-4 text-left transition hover:border-[var(--kaypal-v3-border-strong)]"
-                onClick={() => router.push("/growth?view=strategies")}
+                onClick={() => router.push("/growth/strategies")}
               >
                 <p className="font-medium text-[var(--kaypal-v3-ink)]">
                   {strategy.name}

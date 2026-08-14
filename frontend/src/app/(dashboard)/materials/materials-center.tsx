@@ -30,6 +30,7 @@ import {
 } from "@/lib/api/materials";
 import { redfoxApi } from "@/lib/api/redfox";
 import { generateImage as dashGenerateImage, generateVideo as dashGenerateVideo, generateSpeech as dashGenerateSpeech } from "@/lib/api/dashscope";
+import { videoWorkshopApi } from "@/lib/api/video-workshop";
 import { savingsApi } from "@/lib/api/savings";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
@@ -115,9 +116,32 @@ export function MaterialsCenter() {
   const [ttsResult, setTtsResult] = useState<{ audioUrl: string; filename: string } | null>(null);
   const [collectMsg, setCollectMsg] = useState<string | null>(null);
 
+  // 本地上传（上传素材口）：从本地选择文件上传到发布素材库
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
   const flash = (text: string) => {
     setNotice(text);
     setTimeout(() => setNotice(null), 3000);
+  };
+
+  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      await videoWorkshopApi.uploadMaterialFile(formData);
+      flash(`✅ 已上传：${file.name}，已存入发布素材库`);
+      await fetchMaterials(1);
+    } catch (err: unknown) {
+      setError(toPublicError(err, "上传失败"));
+    } finally {
+      setUploading(false);
+      if (uploadInputRef.current) uploadInputRef.current.value = "";
+    }
   };
 
   const fetchMaterials = useCallback(async (nextPage = 1) => {
@@ -460,6 +484,15 @@ export function MaterialsCenter() {
   /* 去水印弹层（A4）——移动端/桌面端共用（桌面端曾有入口无弹层的 bug，2026-08-11 修复） */
   const linkSheetOverlay = (
     <>
+      {/* 本地上传隐藏文件选择（桌面端/移动端共用入口） */}
+      <input
+        ref={uploadInputRef}
+        type="file"
+        accept="image/*,video/*"
+        multiple={false}
+        style={{ display: "none" }}
+        onChange={handleUploadFile}
+      />
       {/* 去水印采集弹层（A4 去水印） */}
       {linkSheetOpen && (
         <div
@@ -577,6 +610,14 @@ export function MaterialsCenter() {
               <h1 className="mx-page-title">素材库</h1>
               <p className="mx-page-sub">自动采集的内容素材，可直接用于创作</p>
             </div>
+            <button
+              type="button"
+              onClick={() => uploadInputRef.current?.click()}
+              disabled={uploading}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(96,165,250,.12)", color: "#93c5fd", border: "1px solid rgba(96,165,250,.4)", cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
+            >
+              📤 上传
+            </button>
             <button
               type="button"
               onClick={openLinkSheet}
@@ -1070,6 +1111,14 @@ export function MaterialsCenter() {
               系统自动采集的内容素材，可直接用于创作
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => uploadInputRef.current?.click()}
+            disabled={uploading}
+            style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(96,165,250,.12)", color: "#93c5fd", border: "1px solid rgba(96,165,250,.4)", cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
+          >
+            {uploading ? "上传中…" : "📤 本地上传"}
+          </button>
           <button
             type="button"
             onClick={openLinkSheet}
