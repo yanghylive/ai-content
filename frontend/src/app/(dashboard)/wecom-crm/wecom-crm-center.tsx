@@ -443,7 +443,7 @@ function GroupMsgPanel() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [form.configId]);
 
   useEffect(() => {
     void fetchData();
@@ -796,7 +796,7 @@ function MomentPanel() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [form.configId]);
 
   useEffect(() => {
     void fetchData();

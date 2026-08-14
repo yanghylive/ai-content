@@ -36,7 +36,12 @@ const MIME = {
 };
 
 function resolveFile(urlPath) {
-  const decoded = decodeURIComponent(urlPath.split("?")[0]);
+  let decoded;
+  try {
+    decoded = decodeURIComponent(urlPath.split("?")[0]);
+  } catch {
+    return { badRequest: true };
+  }
   const clean = normalize(decoded).replace(/^[/.]*/, "");
   const candidate = join(ROOT, clean);
   // 1. 目录 → index.html；无 index.html 时尝试 <dir>.html（Next 单文件导出）
@@ -100,6 +105,11 @@ createServer((req, res) => {
     return proxyApi(req, res);
   }
   const file = resolveFile(urlPath);
+  if (file && file.badRequest) {
+    res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Bad Request");
+    return;
+  }
   if (file && existsSync(file) && statSync(file).isFile()) {
     return serveFile(res, file);
   }

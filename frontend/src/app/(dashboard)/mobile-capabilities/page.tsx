@@ -82,7 +82,7 @@ export default function MobileCapabilitiesPage() {
           <div className="mx-card" style={{ padding: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: "#64748b" }}>⚙️ 工具能力状态</span>
-              <span style={{ fontSize: 10.5, color: "rgba(219,234,254,.5)" }}>由后端运营配置下发</span>
+              <span style={{ fontSize: 10.5, color: "rgba(219,234,254,.5)" }}>由系统运营配置下发</span>
             </div>
             {Object.entries(FEATURE_LABELS).map(([key, label]) => (
               <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,.06)" }}>

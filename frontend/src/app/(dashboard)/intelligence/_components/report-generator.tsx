@@ -65,7 +65,7 @@ function buildDailyMarkdown(items: HotTopicItem[]): string {
   return [
     `# 今日热点日报（${dateLabel}）`,
     ``,
-    `> 数据来源：RedFox 全网热点聚合（30 分钟缓存）｜生成时间 ${now.toLocaleTimeString("zh-CN")}`,
+    `> 数据来源：全网热点聚合（30 分钟缓存）｜生成时间 ${now.toLocaleTimeString("zh-CN")}`,
     ``,
     `## 总览`,
     `- 今日聚合热点 **${items.length} 条**，覆盖 ${byPlatform.size} 个平台`,
