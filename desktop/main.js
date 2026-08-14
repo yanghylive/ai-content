@@ -605,6 +605,35 @@ function createWindow() {
     mainWindow.loadURL(frontendServerUrl);
   }
 
+  // 渲染进程崩溃 / 加载失败自愈：避免窗口白屏后「点 Dock/托盘无效」的观感，
+  // 自动 reload 或重新加载前端。
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    if (details.reason === 'clean-exit') return;
+    console.warn('[Window] 渲染进程退出，自动恢复:', details.reason);
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.reload();
+      }
+    }, 500);
+  });
+  mainWindow.webContents.on('did-fail-load', (_event, code, desc, _url, isMainFrame) => {
+    if (!isMainFrame || code === -3) return;
+    console.warn(`[Window] 前端加载失败(${code}): ${desc}，自动重试`);
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed() && frontendServerUrl) {
+        mainWindow.loadURL(frontendServerUrl);
+      }
+    }, 1000);
+  });
+  mainWindow.on('unresponsive', () => {
+    console.warn('[Window] 窗口无响应，尝试恢复渲染进程');
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.reload();
+      }
+    }, 500);
+  });
+
   // 保存窗口大小
   mainWindow.on('resize', () => {
     const bounds = mainWindow.getBounds();
@@ -630,6 +659,33 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+}
+
+// 统一唤起主窗口：Dock 点击 / 托盘点击 / 托盘菜单「显示主窗口」都走这里。
+// 单独 show() 在 macOS 应用处于后台时不一定会把窗口置前，需要 restore +
+// show + focus 组合，并对「窗口已被销毁 / 最小化」做兜底。
+function showMainWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    createWindow();
+    return;
+  }
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore();
+  }
+  mainWindow.show();
+  mainWindow.focus();
+  if (process.platform === 'darwin') {
+    try {
+      mainWindow.moveTop();
+    } catch (_err) {
+      /* ignore */
+    }
+    try {
+      app.focus({ steal: true });
+    } catch (_err) {
+      /* ignore */
+    }
+  }
 }
 
 // 需要的 Python 版本：Agent-S sidecar 使用 3.12+。
@@ -1508,13 +1564,10 @@ function createTray() {
   refreshTray();
 
   tray.on('click', () => {
-    if (mainWindow) {
-      if (mainWindow.isVisible()) {
-        mainWindow.hide();
-      } else {
-        mainWindow.show();
-        mainWindow.focus();
-      }
+    if (mainWindow && mainWindow.isVisible()) {
+      mainWindow.hide();
+    } else {
+      showMainWindow();
     }
   });
 }
@@ -1524,10 +1577,7 @@ function buildTrayMenu() {
     {
       label: '显示主窗口',
       click: () => {
-        if (mainWindow) {
-          mainWindow.show();
-          mainWindow.focus();
-        }
+        showMainWindow();
       }
     },
     { type: 'separator' }
@@ -1884,11 +1934,7 @@ app.whenReady().then(async () => {
 
   // macOS: 点击 dock 图标时显示窗口
   app.on('activate', () => {
-    if (mainWindow === null) {
-      createWindow();
-    } else {
-      mainWindow.show();
-    }
+    showMainWindow();
   });
 }).catch((err) => {
   console.error('[App] Failed to initialize:', err);

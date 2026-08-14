@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -29,16 +29,29 @@ const PLATFORM_OPTIONS = [
   { value: "wechat", label: "微信", desc: "微信群和朋友圈", icon: MessageCircle },
 ] as const;
 
+// 平台与执行账号联动：只展示与所选平台匹配的账号。
+// 微信任务的执行账号来自视频号（账号体系同源），故 wechat 兼容 wechat-channel。
+function accountMatchesPlatform(
+  accountPlatform: string,
+  taskPlatform: string,
+): boolean {
+  if (taskPlatform === "wechat") {
+    return accountPlatform === "wechat" || accountPlatform === "wechat-channel";
+  }
+  return accountPlatform === taskPlatform;
+}
+
 export function AcquisitionRuleForm() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 执行账号：自动拉取账号健康列表，默认选中该平台 online+normal 的真实账号
+  // 执行账号：自动拉取账号健康列表，按所选平台联动过滤，默认选中该平台
+  // online+normal 的真实账号。选择用后端复合 key（platform:accountId）定位，
+  // 避免历史数据 accountId 重复时多个账号同时显示选中、无法单选。
   const [accounts, setAccounts] = useState<GrowthAccountHealth[]>([]);
-  const [accountId, setAccountId] = useState("");
-  const [accountName, setAccountName] = useState("");
+  const [selectedKey, setSelectedKey] = useState("");
   const [accountsLoading, setAccountsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,20 +60,7 @@ export function AcquisitionRuleForm() {
       .listAccountHealth()
       .then((list) => {
         if (cancelled) return;
-        const next = Array.isArray(list) ? list : [];
-        setAccounts(next);
-        const preferred = next.find(
-          (a) =>
-            a.platform === "douyin" &&
-            a.loginStatus === "online" &&
-            a.riskStatus === "normal",
-        );
-        const fallback = next[0];
-        const chosen = preferred || fallback;
-        if (chosen) {
-          setAccountId(chosen.accountId);
-          setAccountName(chosen.accountName);
-        }
+        setAccounts(Array.isArray(list) ? list : []);
       })
       .catch(() => {
         if (!cancelled) setAccounts([]);
@@ -72,6 +72,7 @@ export function AcquisitionRuleForm() {
       cancelled = true;
     };
   }, []);
+
 
   // 智能默认值
   const [form, setForm] = useState({
@@ -89,6 +90,34 @@ export function AcquisitionRuleForm() {
     beginTime: "09:00",
   });
 
+  // 平台与账号联动：只展示当前所选平台的账号（微信任务兼容视频号账号）
+  const visibleAccounts = useMemo(
+    () =>
+      accounts.filter((a) => accountMatchesPlatform(a.platform, form.platform)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [accounts, form.platform],
+  );
+
+  const selectedAccount = useMemo(
+    () => accounts.find((a) => a.id === selectedKey) ?? null,
+    [accounts, selectedKey],
+  );
+
+  // 平台切换 / 列表加载后，若选中账号不在当前平台，自动改选该平台第一个可用账号
+  useEffect(() => {
+    if (accountsLoading) return;
+    const stillVisible =
+      selectedAccount !== null &&
+      accountMatchesPlatform(selectedAccount.platform, form.platform);
+    if (stillVisible) return;
+    const usable = visibleAccounts.find(
+      (a) => a.loginStatus === "online" && a.riskStatus === "normal",
+    );
+    const chosen = usable ?? visibleAccounts[0] ?? null;
+    setSelectedKey(chosen ? chosen.id : "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.platform, accountsLoading, accounts]);
+
   // 任务名自动生成
   const keywords = form.keywords
     .split(/[,，\n]/)
@@ -104,7 +133,7 @@ export function AcquisitionRuleForm() {
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
-    if (!accountId) {
+    if (!selectedAccount) {
       setError("请先选择执行账号（账号健康列表为空或未加载到可用账号）");
       return;
     }
@@ -114,8 +143,8 @@ export function AcquisitionRuleForm() {
       await growthApi.createConfig({
         taskName: autoTaskName,
         platform: form.platform,
-        accountId,
-        accountName,
+        accountId: selectedAccount.accountId,
+        accountName: selectedAccount.accountName,
         sourceInputs: keywords,
         includeKeywords: keywords,
         excludeKeywords: form.excludeKeywords
@@ -207,26 +236,23 @@ export function AcquisitionRuleForm() {
           <div className="mx-section-head" style={{ marginTop: 16 }}>执行账号</div>
           {accountsLoading ? (
             <p style={{ fontSize: 12, color: "var(--mx-muted)" }}>正在加载账号…</p>
-          ) : accounts.length === 0 ? (
+          ) : visibleAccounts.length === 0 ? (
             <p style={{ fontSize: 12, color: "#e05c5c" }}>
-              暂无可用执行账号：请先到「平台账号」页完成账号授权登录
+              当前平台暂无可用执行账号：请先到「平台账号」页完成账号授权登录，或切换平台
             </p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {accounts.map((account) => {
-                const selected = account.accountId === accountId;
+              {visibleAccounts.map((account) => {
+                const selected = account.id === selectedKey;
                 const usable =
                   account.loginStatus === "online" &&
                   account.riskStatus === "normal";
                 return (
                   <button
-                    key={`${account.platform}:${account.accountId}`}
+                    key={account.id}
                     type="button"
                     disabled={!usable}
-                    onClick={() => {
-                      setAccountId(account.accountId);
-                      setAccountName(account.accountName);
-                    }}
+                    onClick={() => setSelectedKey(account.id)}
                     className="mx-card"
                     style={{
                       padding: 12,
@@ -416,30 +442,27 @@ export function AcquisitionRuleForm() {
       {/* 执行账号 */}
       <V2Section title="执行账号">
         <p className="mb-2 text-sm text-[var(--kaypal-v3-muted)]">
-          任务将使用下面这个已登录的平台账号真实执行（发评论/私信）
+          任务将使用下面这个已登录的平台账号实际执行（发评论/私信）
         </p>
         {accountsLoading ? (
           <p className="text-sm text-[var(--kaypal-v3-muted)]">正在加载账号…</p>
-        ) : accounts.length === 0 ? (
+        ) : visibleAccounts.length === 0 ? (
           <p className="text-sm text-[var(--kaypal-v3-danger)]">
-            暂无可用执行账号：请先到「平台账号」页完成平台账号授权登录
+            当前平台暂无可用执行账号：请先到「平台账号」页完成平台账号授权登录，或切换平台
           </p>
         ) : (
           <div className="grid gap-2">
-            {accounts.map((account) => {
-              const selected = account.accountId === accountId;
+            {visibleAccounts.map((account) => {
+              const selected = account.id === selectedKey;
               const usable =
                 account.loginStatus === "online" &&
                 account.riskStatus === "normal";
               return (
                 <button
-                  key={`${account.platform}:${account.accountId}`}
+                  key={account.id}
                   type="button"
                   disabled={!usable}
-                  onClick={() => {
-                    setAccountId(account.accountId);
-                    setAccountName(account.accountName);
-                  }}
+                  onClick={() => setSelectedKey(account.id)}
                   className="flex items-center gap-3 rounded-[var(--kaypal-v3-radius-sm)] border p-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
                   style={{
                     borderColor: selected
