@@ -5605,6 +5605,7 @@ export class GrowthService implements OnModuleInit {
           create: {
             id: item.id,
             userId: item.userId,
+            actorUserId: options.scope?.userId ?? item.userId,
             tenantId: item.tenantId ?? null,
             industry: item.industry,
             scenario: item.scenario,
@@ -5623,6 +5624,7 @@ export class GrowthService implements OnModuleInit {
           },
           update: {
             tenantId: item.tenantId ?? null,
+            actorUserId: options.scope?.userId ?? item.userId,
             industry: item.industry,
             scenario: item.scenario,
             name: item.name,
@@ -5649,6 +5651,7 @@ export class GrowthService implements OnModuleInit {
           create: {
             id: item.id,
             userId: item.userId,
+            actorUserId: options.scope?.userId ?? item.userId,
             tenantId: item.tenantId ?? null,
             mode: item.mode,
             taskName: item.taskName,
@@ -5676,6 +5679,7 @@ export class GrowthService implements OnModuleInit {
           },
           update: {
             tenantId: item.tenantId ?? null,
+            actorUserId: options.scope?.userId ?? item.userId,
             mode: item.mode,
             taskName: item.taskName,
             platform: item.platform,
@@ -5711,6 +5715,7 @@ export class GrowthService implements OnModuleInit {
           create: {
             id: item.id,
             userId: item.userId,
+            actorUserId: options.scope?.userId ?? item.userId,
             tenantId: item.tenantId ?? null,
             configId: item.configId,
             mode: item.mode,
@@ -5729,6 +5734,7 @@ export class GrowthService implements OnModuleInit {
           },
           update: {
             tenantId: item.tenantId ?? null,
+            actorUserId: options.scope?.userId ?? item.userId,
             status: item.status,
             failureReason: item.failureReason,
             message: item.message,
