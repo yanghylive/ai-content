@@ -309,9 +309,9 @@ async function checkBigIntSerialization(sqliteDbPath, apiBase) {
       now,
     );
     db.prepare(
-      `INSERT OR IGNORE INTO comment_acquisition_leads
-        (id, user_id, platform, account_id, comment_text, lead_score)
-       VALUES ('guard-lead-1', ?, 'douyin', 'guard-acct', '守卫评论', 42)`,
+      `INSERT OR IGNORE INTO leads
+        (id, user_id, platform, source_type, source_account_id, source_text, dedupe_key, score)
+       VALUES ('guard-lead-1', ?, 'douyin', 'comment', 'guard-acct', '守卫评论', 'lead:guard-lead-1', 42)`,
     ).run(userId);
     db.exec('COMMIT');
   } catch (e) {
@@ -336,7 +336,7 @@ async function checkBigIntSerialization(sqliteDbPath, apiBase) {
 
   // 清理
   const db2 = new DatabaseSync(sqliteDbPath);
-  db2.prepare("DELETE FROM comment_acquisition_leads WHERE id = 'guard-lead-1'").run();
+  db2.prepare("DELETE FROM leads WHERE id = 'guard-lead-1'").run();
   db2.prepare('DELETE FROM user_sessions WHERE id = ?').run('guard-session-2');
   db2.prepare('DELETE FROM users WHERE id = ?').run(userId);
   db2.close();
