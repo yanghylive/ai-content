@@ -18,7 +18,13 @@ export function Marquee({
         style={{ ["--kx-mq-speed" as string]: `${speed}s` }}
       >
         {children}
-        {children}
+        {/* 无缝滚动副本：纯视觉占位，aria-hidden 防读屏重复播报。
+            display:contents 让副本不参与 flex 布局，保持与第一遍完全一致的
+            视觉/动画，同时不改变移动端 .kx-marquee-track > :not(:first-child)
+            的扁平子元素选择语义。 */}
+        <span aria-hidden="true" style={{ display: "contents" }}>
+          {children}
+        </span>
       </div>
     </div>
   );
