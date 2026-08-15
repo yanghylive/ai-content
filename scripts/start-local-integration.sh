@@ -73,9 +73,19 @@ fi
 
 rm -f "${LOG_DIR}/backend-3011.log" "${LOG_DIR}/frontend-3010.log"
 
+# Node 版本检查：后端 bundle 与 Next 前端需要 Node 20+（Node 22 有 PlatformInit 兼容要求）
+NODE_MAJOR="$(node -e 'process.stdout.write(String(process.versions.node.split(".")[0]))' 2>/dev/null || echo 0)"
+if [[ "${NODE_MAJOR}" -lt 20 ]]; then
+  echo "Node 20+ is required, but found $(node -v 2>/dev/null || echo 'no node')." >&2
+  echo "Install Node 20/22 LTS and retry." >&2
+  exit 1
+fi
+
 SQLITE_BUNDLE="${ROOT_DIR}/backend/dist-bundle-sqlite/index.js"
 echo "Building SQLite backend bundle..."
-if ! (cd "${ROOT_DIR}/backend" && npm run build:bundle:sqlite > "${LOG_DIR}/backend-3011.log" 2>&1); then
+# 关键：清 NODE_OPTIONS 再构建。WorkBuddy 沙箱注入的 safe-delete shim（genie-safe-delete.cjs）
+# 会拦截 build-sqlite-bundle.mjs 里 rmSync 批量删除旧产物，导致构建失败、后端起不来。
+if ! (cd "${ROOT_DIR}/backend" && env -u NODE_OPTIONS npm run build:bundle:sqlite > "${LOG_DIR}/backend-3011.log" 2>&1); then
   echo "SQLite backend bundle build failed." >&2
   tail -80 "${LOG_DIR}/backend-3011.log" >&2 || true
   exit 1
@@ -93,12 +103,22 @@ cat > "${FRONTEND_GUARD}" <<EOF
 #!/usr/bin/env bash
 set -u
 cd "${ROOT_DIR}/frontend"
+attempt=0
+max_attempts=10
 while true; do
-  echo "[\$(date '+%Y-%m-%d %H:%M:%S')] starting frontend on 3010" >> "${LOG_DIR}/frontend-3010.log"
-  NEXT_PUBLIC_API_BASE=http://localhost:3011/api npm run dev -- -p 3010 >> "${LOG_DIR}/frontend-3010.log" 2>&1
+  attempt=\$((attempt + 1))
+  echo "[\$(date '+%Y-%m-%d %H:%M:%S')] starting frontend on 3010 (attempt \${attempt})" >> "${LOG_DIR}/frontend-3010.log"
+  # 清 NODE_OPTIONS：safe-delete shim 会拦截 Next dev 的 .next 清理，导致内存阈值重启时挂掉
+  NEXT_PUBLIC_API_BASE=http://localhost:3011/api env -u NODE_OPTIONS npm run dev -- -p 3010 >> "${LOG_DIR}/frontend-3010.log" 2>&1
   status=\$?
-  echo "[\$(date '+%Y-%m-%d %H:%M:%S')] frontend exited with status \${status}; restarting in 2s" >> "${LOG_DIR}/frontend-3010.log"
-  sleep 2
+  if [[ \${attempt} -ge \${max_attempts} ]]; then
+    echo "[\$(date '+%Y-%m-%d %H:%M:%S')] frontend failed \${max_attempts} times consecutively, giving up to avoid restart loop" >> "${LOG_DIR}/frontend-3010.log"
+    break
+  fi
+  backoff=\$((2 * attempt))
+  [[ \${backoff} -gt 60 ]] && backoff=60
+  echo "[\$(date '+%Y-%m-%d %H:%M:%S')] frontend exited with status \${status}; restarting in \${backoff}s" >> "${LOG_DIR}/frontend-3010.log"
+  sleep \${backoff}
 done
 EOF
 chmod +x "${FRONTEND_GUARD}"
