@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Sparkle } from "lucide-react";
 import {
   V2Section,
   V2Field,
@@ -76,7 +76,7 @@ export function TopicForm() {
 
           <div className="mx-card" style={{ padding: 16 }}>
             <div className="mx-section-title" style={{ marginBottom: 14 }}>
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" /></svg></span>
+              <span className="mx-sec-icon"><Sparkle /></span>
               选题内容
             </div>
 
