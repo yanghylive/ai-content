@@ -127,6 +127,9 @@ export function PlatformAccounts() {
   const [refreshingAvatarId, setRefreshingAvatarId] = useState<
     number | string | null
   >(null);
+
+  // 恢复因账号失效而阻塞的发布任务
+  const [recoveringId, setRecoveringId] = useState<number | null>(null);
   const handleRefreshAvatar = async (account: AutoUploadAccount) => {
     setRefreshingAvatarId(account.id);
     setError(null);
@@ -493,6 +496,30 @@ export function PlatformAccounts() {
     openLoginModal(account);
   };
 
+  // 恢复该账号因失效而阻塞的发布任务（先风控确认，再恢复）
+  const handleRecoverTasks = async (account: AutoUploadAccount) => {
+    setRecoveringId(account.id);
+    setError(null);
+    try {
+      const confirmation =
+        await autoUploadApi.createRecoverBlockedTasksConfirmation(account.id);
+      const result = await autoUploadApi.recoverBlockedTasks(
+        account.id,
+        confirmation.confirmationId,
+      );
+      setMobileBridgeMsg(
+        `已恢复 ${result.resumed} 个任务${
+          result.skipped ? `，跳过 ${result.skipped} 个` : ""
+        }`,
+      );
+      await fetchAccounts({ silent: true });
+    } catch (err) {
+      setError(toPublicError(err, "恢复任务失败，请先确认账号已重新登录"));
+    } finally {
+      setRecoveringId(null);
+    }
+  };
+
   const expiredCount = displayAccounts.filter(
     (a) => accountStatus(a).tone === "danger",
   ).length;
@@ -582,6 +609,14 @@ export function PlatformAccounts() {
                                 onClick={() => handleMobileLaunchApp(platformTypeToKey(account.type))}
                               >
                                 去重登
+                              </button>
+                              <button
+                                type="button"
+                                disabled={recoveringId === account.id}
+                                style={{ fontSize: 11, padding: "4px 10px", borderRadius: 999, background: "rgba(52,211,153,.12)", border: "1px solid rgba(52,211,153,.45)", color: "#34d399", opacity: recoveringId === account.id ? 0.6 : 1, cursor: recoveringId === account.id ? "not-allowed" : "pointer" }}
+                                onClick={() => void handleRecoverTasks(account)}
+                              >
+                                {recoveringId === account.id ? "恢复中…" : "恢复任务"}
                               </button>
                             </>
                           )}
