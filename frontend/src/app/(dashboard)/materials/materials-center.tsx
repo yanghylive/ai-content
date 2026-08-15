@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
+  ChevronRight,
   FolderOpen,
+  Image as ImageIcon,
   Loader2,
   Play,
   RefreshCcw,
@@ -676,7 +678,7 @@ export function MaterialsCenter() {
                 <div style={{ fontSize: 10, color: "rgba(219,234,254,.6)" }}>条已入库</div>
               </div>
               <span className="mx-badge mx-badge-white">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><rect width="18" height="18" x="3" y="3" rx="5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                <ImageIcon width={12} height={12} aria-hidden="true" />
                 采集素材
               </span>
             </div>
@@ -684,7 +686,7 @@ export function MaterialsCenter() {
 
           {/* 搜索 */}
           <div className="mx-control" style={{ display: "flex", alignItems: "center", gap: 8, borderRadius: 14, padding: "0 14px", height: 44 }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#b87325" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+            <Search width={16} height={16} style={{ color: "#b87325" }} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -717,7 +719,7 @@ export function MaterialsCenter() {
                   onClick={() => setViewing(m)}
                 >
                   <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><rect width="18" height="18" x="3" y="3" rx="5" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+                    <ImageIcon width={18} height={18} aria-hidden="true" />
                   </span>
                   <div className="mx-row-main">
                     <div className="mx-row-title">{m.title}</div>
@@ -729,7 +731,7 @@ export function MaterialsCenter() {
                   </div>
                   <div className="mx-row-right">
                     {m.status === "unmined" ? <span className="mx-badge mx-badge-gold">新</span> : null}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+                    <ChevronRight width={15} height={15} style={{ color: "#b9c5d4" }} />
                   </div>
                 </button>
               ))
