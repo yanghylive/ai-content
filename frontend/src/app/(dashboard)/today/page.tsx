@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ShellIcon } from "@/components/shell/icons";
 import { Ticker, type TickerItem } from "@/components/shell/tickers";
 import { useShellUser } from "@/components/shell/app-shell";
+import { Avatar } from "@/components/avatar";
 import { localEngineApi, type InteractionTask } from "@/lib/api/local-engine";
 import { autoUploadApi, type AutoUploadPublishTask } from "@/lib/api/auto-upload";
 import { growthApi } from "@/lib/api/growth";
@@ -761,16 +762,14 @@ function MobileTodayView({
                     borderRadius: 12,
                   }}
                 >
-                  {account.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- 静态导出无法用 next/image 优化
-                    <img
-                      src={account.avatarUrl}
-                      alt={account.name}
-                      style={{ width: 36, height: 36, objectFit: "cover" }}
-                    />
-                  ) : (
-                    "竞"
-                  )}
+                  <Avatar
+                    src={account.avatarUrl}
+                    name="竞"
+                    size={36}
+                    alt={account.name || "竞品账号"}
+                    radius={12}
+                    color="#6366f1"
+                  />
                 </span>
                 <div className="mx-row-main">
                   <div className="mx-row-title">{account.name}</div>

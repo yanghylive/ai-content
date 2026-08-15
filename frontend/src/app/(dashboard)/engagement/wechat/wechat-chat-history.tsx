@@ -16,6 +16,7 @@ import {
   V2EmptyState,
   V2Input,
 } from "@/components/v2/ui-kit";
+import { Avatar } from "@/components/avatar";
 import {
   localEngineApi,
   type WechatChatSession,
@@ -240,12 +241,13 @@ export function WechatChatHistory() {
                   onClick={() => { setSelectedSessionId(session.id); setMobileDetailOpen(true); }}
                 >
                   <span style={{ width: 38, height: 38, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", overflow: "hidden", flexShrink: 0 }}>
-                    {session.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={session.avatarUrl} alt="" style={{ width: 38, height: 38, objectFit: "cover" }} />
-                    ) : (
-                      <UserRound width={17} height={17} style={{ color: "#d98a2d" }} />
-                    )}
+                    <Avatar
+                      src={session.avatarUrl}
+                      name={session.contactName || session.title}
+                      size={38}
+                      alt={session.contactName || session.title || "会话"}
+                      fallback={<UserRound width={17} height={17} style={{ color: "#d98a2d" }} />}
+                    />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
                     <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
@@ -352,12 +354,13 @@ export function WechatChatHistory() {
                   onClick={() => setSelectedSessionId(session.id)}
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent-soft)]">
-                    {session.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={session.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
-                    ) : (
-                      <UserRound className="h-5 w-5 text-[var(--kaypal-v3-accent-ink)]" />
-                    )}
+                    <Avatar
+                      src={session.avatarUrl}
+                      name={session.contactName || session.title}
+                      size={40}
+                      alt={session.contactName || session.title || "会话"}
+                      fallback={<UserRound className="h-5 w-5 text-[var(--kaypal-v3-accent-ink)]" />}
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
