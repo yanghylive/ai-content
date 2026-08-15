@@ -21,6 +21,7 @@ import {
   V2EmptyState,
   V2PrimaryButton,
 } from "@/components/v2/ui-kit";
+import { useConfirm } from "@/hooks/use-confirm";
 import { growthApi, type GrowthLead, type GrowthLeadStatus } from "@/lib/api/growth";
 import { createCrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
@@ -53,6 +54,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
 ];
 
 export function LeadsPool() {
+  const { confirm, modal } = useConfirm();
   // 手动补充线索
   const [addOpen, setAddOpen] = useState(false);
   const [newLead, setNewLead] = useState({ nickname: "", platform: "douyin", sourceText: "" });
@@ -181,9 +183,12 @@ export function LeadsPool() {
 
   // 删除单条线索（带确认，二次防误删）
   const handleDeleteOne = async (lead: GrowthLead) => {
-    const ok = window.confirm(
-      `确定删除线索「${lead.nickname || "未知用户"}」吗？删除后不可恢复。`,
-    );
+    const ok = await confirm({
+      kind: "danger",
+      title: `删除线索「${lead.nickname || "未知用户"}」`,
+      description: "删除后不可恢复，相关跟进记录一并清除。",
+      confirmText: "删除",
+    });
     if (!ok) return;
     setActingId(lead.id);
     setError(null);
@@ -199,9 +204,12 @@ export function LeadsPool() {
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    const ok = window.confirm(
-      `确定删除选中的 ${selectedIds.size} 条线索吗？删除后不可恢复。`,
-    );
+    const ok = await confirm({
+      kind: "danger",
+      title: `删除选中的 ${selectedIds.size} 条线索`,
+      description: "删除后不可恢复，相关跟进记录一并清除。",
+      confirmText: "删除",
+    });
     if (!ok) return;
     setBulkActing("delete");
     setError(null);
@@ -476,6 +484,7 @@ export function LeadsPool() {
           </div>
         </div>
       )}
+      {modal}
     </div>
   );
 }

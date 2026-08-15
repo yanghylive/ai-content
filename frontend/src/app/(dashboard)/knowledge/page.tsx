@@ -6,6 +6,7 @@ import {
   type BrandKnowledgeItem,
 } from "@/lib/api/knowledge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { useConfirm } from "@/hooks/use-confirm";
 
 const TYPE_LABEL: Record<string, string> = {
   brand: "品牌",
@@ -25,6 +26,7 @@ const PLACEHOLDER =
   "例如：品牌介绍、产品卖点、门店信息、常用话术……AI 创作时会自动引用这些真实资料，不再凭空编造。";
 
 function KnowledgeList() {
+  const { confirm, modal } = useConfirm();
   const [items, setItems] = useState<BrandKnowledgeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -99,7 +101,13 @@ function KnowledgeList() {
 
   const doRemove = useCallback(
     async (id: string) => {
-      if (!window.confirm("确定删除这条知识吗？AI 创作时将不再引用它。")) {
+      const ok = await confirm({
+        kind: "danger",
+        title: "删除这条知识",
+        description: "删除后 AI 创作时将不再引用它，此操作不可恢复。",
+        confirmText: "删除",
+      });
+      if (!ok) {
         return;
       }
       setRemovingId(id);
@@ -113,11 +121,12 @@ function KnowledgeList() {
         setRemovingId(null);
       }
     },
-    [load, showToast],
+    [load, showToast, confirm],
   );
 
   return (
     <div>
+      <V2BackButton />
       {/* 页面头 */}
       <header className="mx-header">
         <div className="mx-header-row">
@@ -302,6 +311,7 @@ function KnowledgeList() {
           </div>
         </div>
       </section>
+      {modal}
     </div>
   );
 }
@@ -309,4 +319,3 @@ function KnowledgeList() {
 export default function KnowledgeV2Page() {
   return <KnowledgeList />;
 }
-  <V2BackButton />

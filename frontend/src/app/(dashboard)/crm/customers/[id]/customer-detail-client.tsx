@@ -45,6 +45,7 @@ import {
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
+import { useConfirm } from "@/hooks/use-confirm";
 import { WelcomeMessagePanel } from "./welcome-message-panel";
 
 const statusLabels: Record<string, string> = {
@@ -206,6 +207,7 @@ function customerLoadIssueFrom(error: unknown): CustomerLoadIssue {
 export function CustomerDetailClient({
   customerId,
 }: CustomerDetailClientProps) {
+  const { confirm, modal } = useConfirm();
   const isMobile = useIsMobile();
   const [continuity, setContinuity] =
     React.useState<CrmCustomerContinuity | null>(null);
@@ -278,13 +280,19 @@ export function CustomerDetailClient({
   useUnsavedChangesWarning(hasUnsavedChanges);
 
   const refreshCustomer = () => {
-    if (
-      hasUnsavedChanges &&
-      !window.confirm("当前客户页还有未保存的修改，确定要重新加载吗？")
-    ) {
+    if (!hasUnsavedChanges) {
+      void load(false);
       return;
     }
-    void load(false);
+    void confirm({
+      kind: "warning",
+      title: "有未保存的修改",
+      description: "重新加载将丢失未保存的修改。",
+      confirmText: "重新加载",
+      cancelText: "留在本页",
+    }).then((ok) => {
+      if (ok) void load(false);
+    });
   };
 
   const saveCustomer = async () => {
@@ -990,6 +998,7 @@ export function CustomerDetailClient({
           </div>
         </Tab>
       </Tabs>
+      {modal}
     </div>
   );
 }

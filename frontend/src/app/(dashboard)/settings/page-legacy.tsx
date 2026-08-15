@@ -29,6 +29,7 @@ import {
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
+import { useConfirm } from "@/hooks/use-confirm";
 import { FailureActionPanel } from "../components/failure-action-panel";
 import { FunctionalEmptyState } from "../components/functional-empty-state";
 import {
@@ -142,6 +143,7 @@ function parseSourceConfig(configJson: string) {
 }
 
 export default function SettingsPage() {
+  const { confirm, modal } = useConfirm();
   const [selectedTab, setSelectedTab] = useState("desktop");
   const [dirtyTabs, setDirtyTabs] = useState<Record<string, boolean>>({});
 
@@ -160,35 +162,51 @@ export default function SettingsPage() {
   useEffect(() => {
     const syncTabFromUrl = () => {
       const requestedTab = settingsTabFromLocation();
-      setSelectedTab((currentTab) => {
-        if (requestedTab === currentTab) return currentTab;
-        if (
-          dirtyTabs[currentTab] &&
-          !window.confirm("当前设置还有未保存的修改，确定要切换吗？")
-        ) {
-          writeSettingsTabToUrl(currentTab, "replace");
-          return currentTab;
-        }
-        return requestedTab;
-      });
+      if (requestedTab === selectedTab) return;
+      if (dirtyTabs[selectedTab]) {
+        void confirm({
+          kind: "warning",
+          title: "有未保存的修改",
+          description: "当前设置还有未保存的修改，切换将丢失这些修改。",
+          confirmText: "切换",
+          cancelText: "留在当前",
+        }).then((ok) => {
+          if (ok) {
+            setSelectedTab(requestedTab);
+          } else {
+            writeSettingsTabToUrl(selectedTab, "replace");
+          }
+        });
+        return;
+      }
+      setSelectedTab(requestedTab);
     };
 
     syncTabFromUrl();
     window.addEventListener("popstate", syncTabFromUrl);
     return () => window.removeEventListener("popstate", syncTabFromUrl);
-  }, [dirtyTabs]);
+  }, [dirtyTabs, selectedTab, confirm]);
 
   const handleTabChange = (key: React.Key) => {
     const nextTab = String(key);
     if (nextTab === selectedTab) return;
-    if (
-      dirtyTabs[selectedTab] &&
-      !window.confirm("当前设置还有未保存的修改，确定要切换吗？")
-    ) {
+    if (!dirtyTabs[selectedTab]) {
+      setSelectedTab(nextTab);
+      writeSettingsTabToUrl(nextTab, "push");
       return;
     }
-    setSelectedTab(nextTab);
-    writeSettingsTabToUrl(nextTab, "push");
+    void confirm({
+      kind: "warning",
+      title: "有未保存的修改",
+      description: "当前设置还有未保存的修改，切换将丢失这些修改。",
+      confirmText: "切换",
+      cancelText: "留在当前",
+    }).then((ok) => {
+      if (ok) {
+        setSelectedTab(nextTab);
+        writeSettingsTabToUrl(nextTab, "push");
+      }
+    });
   };
 
   const markTabDirty = useCallback((tab: string, dirty: boolean) => {
@@ -275,11 +293,13 @@ export default function SettingsPage() {
           </Tab>
         </Tabs>
       </Card>
+      {modal}
     </DashboardPageShell>
   );
 }
 
 function SourceSettings({ onDirtyChange }: DirtyStateProps) {
+  const { confirm, modal } = useConfirm();
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<SourceFormState | null>(null);
@@ -301,25 +321,44 @@ function SourceSettings({ onDirtyChange }: DirtyStateProps) {
   }, [formIsDirty, onDirtyChange]);
 
   const openSourceForm = (nextForm: SourceFormState) => {
-    if (
-      formIsDirty &&
-      !window.confirm("当前采集源还有未保存的修改，确定要切换吗？")
-    ) {
+    if (!formIsDirty) {
+      applySourceForm(nextForm);
       return;
     }
+    void confirm({
+      kind: "warning",
+      title: "有未保存的修改",
+      description: "当前采集源还有未保存的修改，切换将丢失这些修改。",
+      confirmText: "切换",
+      cancelText: "留在当前",
+    }).then((ok) => {
+      if (ok) applySourceForm(nextForm);
+    });
+  };
+
+  const applySourceForm = (nextForm: SourceFormState) => {
     setForm({ ...nextForm });
     setFormBaseline({ ...nextForm });
   };
 
   const closeSourceForm = () => {
-    if (
-      formIsDirty &&
-      !window.confirm("采集源还有未保存的修改，确定要取消吗？")
-    ) {
+    if (!formIsDirty) {
+      setForm(null);
+      setFormBaseline(null);
       return;
     }
-    setForm(null);
-    setFormBaseline(null);
+    void confirm({
+      kind: "warning",
+      title: "有未保存的修改",
+      description: "采集源还有未保存的修改，取消将丢失这些修改。",
+      confirmText: "取消编辑",
+      cancelText: "继续编辑",
+    }).then((ok) => {
+      if (ok) {
+        setForm(null);
+        setFormBaseline(null);
+      }
+    });
   };
 
   const loadSources = useCallback(async () => {
@@ -708,6 +747,7 @@ function SourceSettings({ onDirtyChange }: DirtyStateProps) {
         onCancel={() => setSourceToDelete(null)}
         onConfirm={confirmDeleteSource}
       />
+      {modal}
     </div>
   );
 }

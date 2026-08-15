@@ -10,8 +10,10 @@ import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { poiApi, type PoiStore, type PoiReport } from "@/lib/api/poi";
 import { toPublicError } from "@/lib/public-error";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export default function PoiPage() {
+  const { confirm, modal } = useConfirm();
   const isMobile = useIsMobile();
   const [stores, setStores] = useState<PoiStore[]>([]);
   const [report, setReport] = useState<PoiReport | null>(null);
@@ -61,7 +63,13 @@ export default function PoiPage() {
   };
 
   const handleDelete = async (s: PoiStore) => {
-    if (!window.confirm(`确定删除门店「${s.name}」？此操作不可撤销`)) return;
+    const ok = await confirm({
+      kind: "danger",
+      title: `删除门店「${s.name}」`,
+      description: "此操作不可撤销，删除后该门店及其数据将无法恢复。",
+      confirmText: "删除",
+    });
+    if (!ok) return;
     try {
       await poiApi.remove(s.id);
       toast("已删除");
@@ -168,6 +176,7 @@ export default function PoiPage() {
       {showForm ? formView : null}
       {reportView}
       {loading ? <p style={{ fontSize: 13, opacity: 0.6 }}>加载中…</p> : listView}
+      {modal}
     </div>
   );
 }

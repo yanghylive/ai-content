@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { autoUploadApi, type AutoUploadCalendarDay } from "@/lib/api/auto-upload";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { useConfirm } from "@/hooks/use-confirm";
 import { LocalBridgeStatus } from "./local-bridge-status";
 
 type PublishStatus = "draft" | "pending" | "queued" | "done" | "failed";
@@ -429,6 +430,7 @@ const CALENDAR_STATUS_COLOR: Record<string, string> = {
 
 /** 发布日历：近 7 天任务分组 + 取消/改期 */
 function PublishCalendarView() {
+  const { confirm, modal } = useConfirm();
   const [days, setDays] = React.useState<AutoUploadCalendarDay[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
@@ -455,7 +457,13 @@ function PublishCalendarView() {
 
   const doCancel = useCallback(
     async (id: number) => {
-      if (!window.confirm("确定取消这个发布任务吗？取消后不会再执行发布。")) {
+      const ok = await confirm({
+        kind: "danger",
+        title: "取消发布任务",
+        description: "取消后不会再执行发布，你可以稍后重新发起。",
+        confirmText: "取消发布",
+      });
+      if (!ok) {
         return;
       }
       setActingId(id);
@@ -468,7 +476,7 @@ function PublishCalendarView() {
         setActingId(null);
       }
     },
-    [load],
+    [load, confirm],
   );
 
   const openReschedule = useCallback((id: number) => {
@@ -647,6 +655,7 @@ function PublishCalendarView() {
           ))
         )}
       </div>
+      {modal}
     </div>
   );
 }
