@@ -2,6 +2,15 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import {
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  Flame,
+  PlusSquare,
+  Search,
+} from "lucide-react";
 import { ShellIcon } from "@/components/shell/icons";
 import { Ticker, type TickerItem } from "@/components/shell/tickers";
 import { useShellUser } from "@/components/shell/app-shell";
@@ -488,7 +497,7 @@ function MobileTodayView({
           <div className="mx-hero-ring" style={{ width: 82, height: 82, top: 14, right: 22, borderColor: "rgba(240,179,90,.15)" }} />
           <div style={{ position: "relative", zIndex: 2 }}>
             <span className="mx-badge mx-badge-white" style={{ marginBottom: 10 }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+              <Clock width={12} height={12} />
               今日待办
             </span>
             {loading ? (
@@ -514,7 +523,7 @@ function MobileTodayView({
               {todos.length > 0 ? (
                 <button type="button" className="mx-btn-gold" onClick={() => router.push(todos[0].href)}>
                   {todos[0].btn}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                  <ArrowRight width={13} height={13} />
                 </button>
               ) : null}
               <button
@@ -537,7 +546,7 @@ function MobileTodayView({
             <div>
               <div className="mx-section-title">
                 <span className="mx-sec-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" /></svg>
+                  <Flame width={15} height={15} />
                 </span>
                 今日选题
               </div>
@@ -622,7 +631,7 @@ function MobileTodayView({
         <div className="mx-section-head">
           <div>
             <div className="mx-section-title">
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="5" /><path d="M8 12h8" /><path d="M12 8v8" /></svg></span>
+              <span className="mx-sec-icon"><PlusSquare /></span>
               快捷动作
             </div>
             <p className="mx-section-eyebrow">高频操作，一步直达</p>
@@ -646,7 +655,7 @@ function MobileTodayView({
         <div className="mx-section-head">
           <div>
             <div className="mx-section-title">
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16" /><path d="M7 16v-5" /><path d="M11 16V8" /><path d="M15 16v-3" /><path d="M19 16v-2" /></svg></span>
+              <span className="mx-sec-icon"><BarChart3 /></span>
               今日进展
             </div>
             <p className="mx-section-eyebrow">实时统计</p>
@@ -665,7 +674,7 @@ function MobileTodayView({
         <div className="mx-section-head">
           <div>
             <div className="mx-section-title">
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg></span>
+              <span className="mx-sec-icon"><CheckCircle2 /></span>
               最近完成
             </div>
             <p className="mx-section-eyebrow">今天已完成的事</p>
@@ -678,7 +687,7 @@ function MobileTodayView({
             doneItems.map((item, i) => (
               <div className="mx-row" key={i}>
                 <span className="mx-row-ic" style={{ background: "rgba(16,185,129,.1)", color: "#059669" }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                  <CheckCircle2 />
                 </span>
                 <div className="mx-row-main"><div className="mx-row-title">{item}</div><div className="mx-row-desc">已完成</div></div>
                 <div className="mx-row-right"><span className="mx-badge mx-badge-green">完成</span></div>
@@ -693,7 +702,7 @@ function MobileTodayView({
         <div className="mx-section-head">
           <div>
             <div className="mx-section-title">
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg></span>
+              <span className="mx-sec-icon"><Clock /></span>
               数据复盘
             </div>
             <p className="mx-section-eyebrow">今日小结与建议</p>
@@ -720,7 +729,7 @@ function MobileTodayView({
         <div className="mx-section-head">
           <div>
             <div className="mx-section-title">
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></span>
+              <span className="mx-sec-icon"><Search /></span>
               竞品雷达
             </div>
             <p className="mx-section-eyebrow">抖音 · 30 分钟更新 · 全网热榜数据</p>
