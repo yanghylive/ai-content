@@ -215,6 +215,9 @@ function LoginPageContent() {
   const searchParams = useSearchParams();
   const nextPath = normalizeNextPath(searchParams.get("next"));
   const forceReauth = searchParams.get("reauth") === "1";
+  // kaypal 账号自助服务回跳状态：注册/改密完成后回跳本地登录页提示
+  const registered = searchParams.get("registered") === "1";
+  const passwordReset = searchParams.get("passwordReset") === "1";
 
   const [phase, setPhase] = React.useState<Phase>("loading");
   const [deviceCode, setDeviceCode] = React.useState<string | null>(null);
@@ -241,6 +244,13 @@ function LoginPageContent() {
     const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     if (mobile) setLoginTab("password");
   }, []);
+
+  // kaypal 账号自助服务回跳提示：注册成功 / 密码已重置
+  React.useEffect(() => {
+    if (registered) toast("注册成功，请用新账号登录");
+    else if (passwordReset) toast("密码已重置，请重新登录");
+  }, [registered, passwordReset]);
+
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [rememberAccount, setRememberAccount] = React.useState(true);
@@ -295,6 +305,23 @@ function LoginPageContent() {
     const origin = encodeURIComponent(window.location.origin);
     window.location.href = `${wechatStart}?origin=${origin}&next=${encodeURIComponent(nextPath)}`;
   }, [nextPath]);
+
+  /** 跳转 kaypal.cn 账号自助服务（注册 / 忘记密码），完成后回跳本地登录页 */
+  const handleKaypalAccount = React.useCallback(
+    (action: "register" | "forgot-password") => {
+      const apiBase = getApiBase().replace(/\/$/, "");
+      const path =
+        action === "register"
+          ? "register-redirect"
+          : "forgot-password-redirect";
+      const endpoint = apiBase.endsWith("/api")
+        ? `${apiBase}/auth/${path}`
+        : `${apiBase}/api/auth/${path}`;
+      const origin = encodeURIComponent(window.location.origin);
+      window.location.href = `${endpoint}?origin=${origin}&next=${encodeURIComponent(nextPath)}`;
+    },
+    [nextPath],
+  );
 
   const navigateToNext = React.useCallback(() => {
     if (hasNavigatedRef.current) {
@@ -876,9 +903,7 @@ function LoginPageContent() {
                             title="登录失败"
                           />
                         ) : null}
-                        {/* P2-19：忘记密码 / 注册入口。
-                            目标路由 /auth/forgot-password、/auth/register 尚未实现，
-                            先用 # 占位链接，路由就绪后替换 href 即可。 */}
+                        {/* 忘记密码 / 注册：共用 kaypal.cn 账号自助服务，跳转后完成回跳本地登录页 */}
                         <Stack
                           direction="horizontal"
                           gap={4}
@@ -889,7 +914,7 @@ function LoginPageContent() {
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              toast("忘记密码请联系管理员重置");
+                              handleKaypalAccount("forgot-password");
                             }}
                             className="text-[13px] font-medium text-[var(--accent)] underline-offset-2 hover:underline"
                           >
@@ -906,7 +931,7 @@ function LoginPageContent() {
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              toast("账号由管理员开通，请联系管理员");
+                              handleKaypalAccount("register");
                             }}
                             className="text-[13px] font-medium text-[var(--accent)] underline-offset-2 hover:underline"
                           >
@@ -953,7 +978,7 @@ function LoginPageContent() {
                         )}
                       </Stack>
                     )}
-                    <Text className="preview-signup" type="supporting">还没有九章账号？<a href="#" onClick={(event) => { event.preventDefault(); toast("账号由管理员开通，请联系管理员"); }}>申请体验</a></Text>
+                    <Text className="preview-signup" type="supporting">还没有九章账号？<a href="#" onClick={(event) => { event.preventDefault(); handleKaypalAccount("register"); }}>申请体验</a></Text>
                   </Stack>
                 ) : null}
 

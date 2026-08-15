@@ -62,6 +62,14 @@ export class AuthService {
     return this.kaypalClient.getWechatUrlEndpoint();
   }
 
+  /** kaypal 账号系统 base URL（跳转注册/忘记密码等账号自助页面用） */
+  getKaypalBaseUrl(): string {
+    if (!this.kaypalClient) {
+      throw new ServiceUnavailableException('Kaypal 账号系统未配置');
+    }
+    return this.kaypalClient.getAuthBaseUrl();
+  }
+
   /** kaypal 微信授权 URL + state cookie（start 透传给浏览器） */
   async getWechatLoginWithCookies(returnUrl: string) {
     if (!this.kaypalClient) {
