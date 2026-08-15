@@ -32,8 +32,16 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.84";
+const DESKTOP_APP_VERSION = "1.1.85";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.85",
+    date: "2026-08-15",
+    highlights: [
+      "发布中心修复闭环：确认发布/重试按钮接上行为，账号失效可恢复任务",
+      "移动端界面统一：手写图标收敛为统一图标库，品牌 logo 与骨架屏抽成共享组件",
+    ],
+  },
   {
     version: "v1.1.84",
     date: "2026-08-14",
