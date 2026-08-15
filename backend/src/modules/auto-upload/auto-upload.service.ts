@@ -2721,7 +2721,11 @@ export class AutoUploadService {
           ? 'completed'
           : record.status === 'failed'
             ? 'failed'
-            : 'waiting_for_send_confirmation',
+            : record.status === 'cancelled'
+              ? 'cancelled'
+              : record.status === 'claimed'
+                ? 'claimed'
+                : 'waiting_for_send_confirmation',
       message: this.describePublishBatchMessage(displayResult, failedCount),
       result: {
         source: DURABLE_PUBLISH_RECORD_SOURCE,
