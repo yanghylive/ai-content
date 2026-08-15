@@ -16,6 +16,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Logger,
   Req,
   Res,
 } from '@nestjs/common';
@@ -35,6 +36,8 @@ import { Public } from '../auth/auth.decorator';
  */
 @Controller('mcp')
 export class McpController {
+  private readonly logger = new Logger(McpController.name);
+
   constructor(
     private readonly playwrightMcp: PlaywrightMcpService,
     private readonly mcpRuntime: McpRuntimeService,
@@ -55,6 +58,9 @@ export class McpController {
     if (isLoopback) return;
     const expected = this.config.get<string>('KAYPAL_MCP_TOKEN') || '';
     if (!expected) {
+      this.logger.warn(
+        `[mcp-auth] 拒绝请求：KAYPAL_MCP_TOKEN 未配置 (remote=${remote})`,
+      );
       throw new HttpException(
         'MCP token not configured (set KAYPAL_MCP_TOKEN env)',
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -62,6 +68,10 @@ export class McpController {
     }
     const got = req.headers['x-kaypal-mcp-token'];
     if (got !== expected) {
+      // 失败审计：记录来源 IP（不含 token 值，避免敏感信息入日志）
+      this.logger.warn(
+        `[mcp-auth] 拒绝请求：token 不匹配 (remote=${remote})`,
+      );
       throw new HttpException('Invalid MCP token', HttpStatus.UNAUTHORIZED);
     }
   }
