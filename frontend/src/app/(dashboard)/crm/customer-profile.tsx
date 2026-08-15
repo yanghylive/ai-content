@@ -6,9 +6,11 @@ import {
   ArrowLeft,
   Loader2,
   Mail,
+  Pencil,
   Send,
   MessageSquareText,
   Phone,
+  User,
   UserRound,
   Building2,
 } from "lucide-react";
@@ -118,7 +120,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
         <header className="mx-header">
           <div className="mx-header-row">
             <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => router.push("/crm")}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+              <ArrowLeft width={18} height={18} />
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="mx-page-sub" style={{ marginTop: 0, fontSize: 11, color: "#a9671f", fontWeight: 700, letterSpacing: ".12em" }}>客户详情</div>
@@ -137,7 +139,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
             <div className="mx-hero-ring" style={{ width: 110, height: 110, top: -30, right: -22 }} />
             <div style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 14 }}>
               <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 56, height: 56, borderRadius: 999, flexShrink: 0, background: "rgba(255,255,255,.14)" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="#f4bb67" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="26" height="26"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                <User width={26} height={26} style={{ color: "#f4bb67" }} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -159,7 +161,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
             {contactRows.map((row) => (
               <div className="mx-row" key={row.label}>
                 <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+                  <Mail width={18} height={18} />
                 </span>
                 <div className="mx-row-main">
                   <div className="mx-row-title">{row.label}</div>
@@ -173,7 +175,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
           {(customer.sourceText || customer.sourceKeyword) ? (
             <div className="mx-card" style={{ marginTop: 14, padding: 16 }}>
               <div className="mx-section-title" style={{ marginBottom: 10, fontSize: 15 }}>
-                <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></span>
+                <span className="mx-sec-icon"><Pencil /></span>
                 客户来源
               </div>
               {customer.sourceKeyword ? (
@@ -189,7 +191,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
           {customer.latestReply ? (
             <div className="mx-card" style={{ marginTop: 14, padding: 16 }}>
               <div className="mx-section-title" style={{ marginBottom: 10, fontSize: 15 }}>
-                <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg></span>
+                <span className="mx-sec-icon"><Send /></span>
                 最新互动
               </div>
               <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "#475569" }}>{customer.latestReply}</p>
