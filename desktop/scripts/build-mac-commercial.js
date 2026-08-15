@@ -37,7 +37,6 @@ npm('clean:mac-package-output');
 npm('prepare:node-runtime');
 npm('prepare:media-tools');
 npm('prepare:playwright-browsers');
-npm('prepare:bailongma-runtime');
 npm('check:commercial-assets');
 run(process.execPath, [path.join('scripts', 'check-full-installer-assets.js'), '--phase=pre']);
 

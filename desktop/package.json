@@ -243,13 +243,6 @@
           "manifest.json",
           "SOURCE-OFFER.txt"
         ]
-      },
-      {
-        "from": "runtime/bailongma",
-        "to": "bailongma",
-        "filter": [
-          "**/*"
-        ]
       }
     ],
     "mac": {

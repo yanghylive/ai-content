@@ -114,24 +114,6 @@ interface ElectronShellAPI {
   showItemInFolder(fullPath: string): void;
 }
 
-export interface ElectronBaiLongmaStatus {
-  ok?: boolean;
-  serviceRunning: boolean;
-  phase: "stopped" | "starting" | "running" | "error";
-  ready: boolean;
-  authorized: boolean;
-  external?: boolean;
-  url?: string;
-  message?: string;
-  error?: string | null;
-}
-
-interface ElectronBaiLongmaAPI {
-  status(): Promise<ElectronBaiLongmaStatus>;
-  start(): Promise<ElectronBaiLongmaStatus>;
-  open(): Promise<ElectronBaiLongmaStatus>;
-}
-
 export interface UpdateEventCallbacks {
   onUpdateState?: (cb: (state: Record<string, unknown>) => void) => string;
   onUpdateDownloadProgress?: (cb: (p: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void) => string;
@@ -151,7 +133,6 @@ interface ElectronAPI {
   service: ElectronServiceAPI;
   app: ElectronAppAPI;
   shell: ElectronShellAPI;
-  baiLongma: ElectronBaiLongmaAPI;
   onUpdateState(cb: (state: Record<string, unknown>) => void): string;
   onUpdateDownloadProgress(cb: (p: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void): string;
   onUpdateAvailable(cb: (info: { version: string }) => void): string;
