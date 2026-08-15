@@ -28,6 +28,7 @@ import {
 } from "@/lib/api/wecom-ai-assistant";
 import { toPublicError } from "@/lib/public-error";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { useConfirm } from "@/hooks/use-confirm";
 
 const STATUS_META: Record<
   string,
@@ -100,6 +101,7 @@ const smallBtn: React.CSSProperties = {
 };
 
 export function WecomAssistantCenter() {
+  const { confirm, modal } = useConfirm();
   const [state, setState] = useState<WecomAssistantState>(() =>
     createDefaultWecomAssistantState(),
   );
@@ -343,9 +345,14 @@ export function WecomAssistantCenter() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (window.confirm("确定删除企微助手连接？删除后需要重新安装。")) {
-                      void run(() => deleteWecomAssistant());
-                    }
+                    void confirm({
+                      kind: "danger",
+                      title: "删除企微助手连接",
+                      description: "删除后需要重新安装才能继续使用。",
+                      confirmText: "删除",
+                    }).then((ok) => {
+                      if (ok) void run(() => deleteWecomAssistant());
+                    });
                   }}
                   disabled={busy}
                   style={{
@@ -559,6 +566,7 @@ export function WecomAssistantCenter() {
           {error}
         </div>
       ) : null}
+      {modal}
     </div>
   );
 }

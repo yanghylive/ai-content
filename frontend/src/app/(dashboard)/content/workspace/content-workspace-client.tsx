@@ -19,6 +19,7 @@ import {
   useState,
 } from "react";
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
+import { useConfirm } from "@/hooks/use-confirm";
 import {
   contentWorkspaceApi,
   type ContentWorkspaceDocument,
@@ -225,6 +226,7 @@ function buildLocalRulePreview(
 }
 
 export function ContentWorkspaceClient() {
+  const { confirm, modal } = useConfirm();
   const router = useRouter();
   const [queue, setQueue] = useState<WorkspaceQueueItemView[]>([]);
   const [materials, setMaterials] = useState<WorkspaceMaterialView[]>([]);
@@ -701,11 +703,20 @@ export function ContentWorkspaceClient() {
     ) {
       const saved = await saveNow();
       if (intendedDocumentIdRef.current !== item.id) return;
-      if (!saved && !window.confirm("当前修改保存失败，仍要切换内容吗？")) {
-        const currentId = documentRef.current?.id || "";
-        intendedDocumentIdRef.current = currentId;
-        setIntendedDocumentId(currentId);
-        return;
+      if (!saved) {
+        const ok = await confirm({
+          kind: "warning",
+          title: "修改保存失败",
+          description: "仍要切换内容吗？未保存的修改将丢失。",
+          confirmText: "仍要切换",
+          cancelText: "留在当前",
+        });
+        if (!ok) {
+          const currentId = documentRef.current?.id || "";
+          intendedDocumentIdRef.current = currentId;
+          setIntendedDocumentId(currentId);
+          return;
+        }
       }
     }
     if (intendedDocumentIdRef.current !== item.id) return;
@@ -860,9 +871,12 @@ export function ContentWorkspaceClient() {
 
     if (
       !matchesCurrent &&
-      !window.confirm(
-        `“${targetVersion.title || "未命名版本"}”与当前正文不同。采用该版本会覆盖当前编辑内容并保存，是否继续？`,
-      )
+      !(await confirm({
+        kind: "danger",
+        title: `采用「${targetVersion.title || "未命名版本"}」`,
+        description: "该版本与当前正文不同，采用会覆盖当前编辑内容并保存，是否继续？",
+        confirmText: "覆盖并保存",
+      }))
     ) {
       return;
     }
@@ -1125,6 +1139,7 @@ export function ContentWorkspaceClient() {
 
         </div>
       )}
+      {modal}
     </main>
   );
 }

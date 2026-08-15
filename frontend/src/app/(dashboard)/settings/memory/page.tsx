@@ -8,6 +8,7 @@ import {
   type UserMemoryItem,
 } from "@/lib/api/ai-gateway";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { useConfirm } from "@/hooks/use-confirm";
 
 const TYPE_LABEL: Record<string, string> = {
   persona: "画像偏好",
@@ -22,6 +23,7 @@ const TYPE_COLOR: Record<string, string> = {
 };
 
 export default function MemorySettingsPage() {
+  const { confirm, modal } = useConfirm();
   const [items, setItems] = useState<UserMemoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
@@ -61,7 +63,13 @@ export default function MemorySettingsPage() {
   );
 
   const clearAll = useCallback(async () => {
-    if (!window.confirm("确定清除全部记忆吗？此操作不可恢复。")) return;
+    const ok = await confirm({
+      kind: "danger",
+      title: "清除全部记忆",
+      description: "此操作不可恢复，AI 将不再记得关于你的任何历史信息。",
+      confirmText: "清除",
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       const count = await clearMemories();
@@ -73,7 +81,7 @@ export default function MemorySettingsPage() {
       setBusy(false);
       window.setTimeout(() => setMsg(""), 2500);
     }
-  }, []);
+  }, [confirm]);
 
   return (
     <div>
@@ -208,6 +216,7 @@ export default function MemorySettingsPage() {
           </div>
         </div>
       </section>
+      {modal}
     </div>
   );
 }

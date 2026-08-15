@@ -37,6 +37,7 @@ import {
 } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
+import { useConfirm } from "@/hooks/use-confirm";
 
 const channelLabels: Record<CrmWelcomeMessageChannel, string> = {
   douyin: "抖音私信",
@@ -91,6 +92,7 @@ export function WelcomeMessagePanel({
   onTemplatesChange,
   onPrepared,
 }: WelcomeMessagePanelProps) {
+  const { confirm, modal } = useConfirm();
   const [selectedTemplateId, setSelectedTemplateId] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [preparation, setPreparation] =
@@ -133,12 +135,22 @@ export function WelcomeMessagePanel({
   }, [customer, selectedTemplate, selectedTemplateId, templates]);
 
   const selectTemplate = (templateId: string) => {
-    if (
-      messageIsDirty &&
-      !window.confirm("测试消息还有未保存的修改，确定要切换模板吗？")
-    ) {
+    if (!messageIsDirty) {
+      applyTemplate(templateId);
       return;
     }
+    void confirm({
+      kind: "warning",
+      title: "有未保存的修改",
+      description: "测试消息还有未保存的修改，切换模板将丢失这些修改。",
+      confirmText: "切换模板",
+      cancelText: "留在当前",
+    }).then((ok) => {
+      if (ok) applyTemplate(templateId);
+    });
+  };
+
+  const applyTemplate = (templateId: string) => {
     setSelectedTemplateId(templateId);
     const template = templates.find((item) => item.id === templateId);
     setMessage(template ? renderTemplate(template.body, customer) : "");
@@ -154,13 +166,19 @@ export function WelcomeMessagePanel({
   };
 
   const closeTemplateModal = () => {
-    if (
-      templateIsDirty &&
-      !window.confirm("模板还有未保存的修改，确定要关闭吗？")
-    ) {
+    if (!templateIsDirty) {
+      setModalOpen(false);
       return;
     }
-    setModalOpen(false);
+    void confirm({
+      kind: "warning",
+      title: "有未保存的修改",
+      description: "模板还有未保存的修改，关闭将丢失这些修改。",
+      confirmText: "关闭",
+      cancelText: "留在当前",
+    }).then((ok) => {
+      if (ok) setModalOpen(false);
+    });
   };
 
   const saveTemplate = async () => {
@@ -202,7 +220,13 @@ export function WelcomeMessagePanel({
 
   const archiveTemplate = async () => {
     if (!selectedTemplate) return;
-    if (!window.confirm(`归档模板“${selectedTemplate.name}”？`)) return;
+    const ok = await confirm({
+      kind: "danger",
+      title: `归档模板「${selectedTemplate.name}」`,
+      description: "归档后该模板不再出现在模板列表中。",
+      confirmText: "归档",
+    });
+    if (!ok) return;
     try {
       await archiveCrmWelcomeMessageTemplate(selectedTemplate.id);
       const next = templates.filter(
@@ -456,6 +480,7 @@ export function WelcomeMessagePanel({
           </ModalFooter>
         </ModalContent>
       </Modal>
+      {modal}
     </section>
   );
 }
