@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
+  CreditCard,
   ExternalLink,
   Loader2,
   RefreshCcw,
@@ -588,7 +589,7 @@ export function PlatformAccounts() {
                 return (
                   <div className="mx-row" key={account.id}>
                     <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" x2="22" y1="10" y2="10" /></svg>
+                      <CreditCard width={18} height={18} />
                     </span>
                     <div className="mx-row-main">
                       <div className="mx-row-title">{PLATFORM_NAMES[account.type] || `平台 ${account.type}`}</div>
