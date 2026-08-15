@@ -8,7 +8,10 @@ import {
   Database,
   Download,
   KeyRound,
+  Lock,
   Save,
+  Shield,
+  User,
 } from "lucide-react";
 import {
   V2Section,
@@ -88,7 +91,7 @@ export function SettingsDetail() {
         <header className="mx-header">
           <div className="mx-header-row">
             <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => router.push("/")}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+              <ArrowLeft width={18} height={18} />
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
               <h1 className="mx-page-title" style={{ fontSize: 22 }}>设置</h1>
@@ -108,7 +111,7 @@ export function SettingsDetail() {
           {/* 个人资料 */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
             <div className="mx-section-title" style={{ marginBottom: 12 }}>
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" /></svg></span>
+              <span className="mx-sec-icon"><User /></span>
               个人资料
             </div>
             <div style={{ marginBottom: 12 }}>
@@ -125,7 +128,7 @@ export function SettingsDetail() {
           {/* 修改密码 */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
             <div className="mx-section-title" style={{ marginBottom: 12 }}>
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg></span>
+              <span className="mx-sec-icon"><Lock /></span>
               修改密码
             </div>
             <div style={{ marginBottom: 12 }}>
@@ -185,7 +188,7 @@ export function SettingsDetail() {
       {/* 通知设置 */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
             <div className="mx-section-title" style={{ marginBottom: 12 }}>
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg></span>
+              <span className="mx-sec-icon"><Bell /></span>
               通知设置
             </div>
             {/* Web Push 推送开关（PRD 16.x：移动端 PWA 推送） */}
@@ -228,7 +231,7 @@ export function SettingsDetail() {
           {/* 数据管理 */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
             <div className="mx-section-title" style={{ marginBottom: 12 }}>
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5V19A9 3 0 0 0 21 19V5" /><path d="M3 12A9 3 0 0 0 21 12" /></svg></span>
+              <span className="mx-sec-icon"><Database /></span>
               数据管理
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
@@ -246,7 +249,7 @@ export function SettingsDetail() {
           {/* 合规中心（2026-08-09：用户协议/隐私/AI 说明/投诉/备案公示） */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
             <div className="mx-section-title" style={{ marginBottom: 12 }}>
-              <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg></span>
+              <span className="mx-sec-icon"><Shield /></span>
               合规中心
             </div>
             <button
