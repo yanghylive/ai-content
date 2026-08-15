@@ -46,6 +46,7 @@ import { type ContentQueueStatusFilter } from "./content-queue";
 import { WorkspaceContext } from "./workspace-context";
 import { WorkspaceHeader } from "./workspace-header";
 import { shouldClearRulePreviewOnStepChange } from "./workspace-action-state";
+import { resolveWorkspaceInitialAction } from "./workspace-initial-action";
 import {
   WorkspaceMobileTools,
   type WorkspaceMobilePanel,
@@ -674,12 +675,12 @@ export function ContentWorkspaceClient() {
     const timer = window.setTimeout(() => {
       void refreshQueue(keyword).then((items) => {
         if (!documentRef.current) {
-          const params = new URLSearchParams(window.location.search);
-          const requestedId =
-            params.get("articleId") || params.get("article");
+          const initial = resolveWorkspaceInitialAction(
+            window.location.search,
+          );
           // action=new：新建草稿，不 fallback 到队列第一篇。
           // 幂等靠两点：createDraft 内部 creating 防重 + 这里立即清除 action 参数。
-          if (params.get("action") === "new") {
+          if (initial.type === "create-new") {
             const nextUrl = new URL(window.location.href);
             nextUrl.searchParams.delete("action");
             window.history.replaceState(null, "", nextUrl);
@@ -687,7 +688,7 @@ export function ContentWorkspaceClient() {
             return;
           }
           void loadRequestedOrFirstDocument(
-            requestedId,
+            initial.articleId,
             items,
             loadDocument,
           );
