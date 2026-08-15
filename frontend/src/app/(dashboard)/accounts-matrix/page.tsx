@@ -13,6 +13,7 @@ import {
   type PlatformKey,
 } from "@/lib/mobile-bridge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { Avatar } from "@/components/avatar";
 
 /** 账号平台 key（douyin/wechat-channel 等）→ mobile-bridge 平台 key */
 const toBridgeKey = (platform: string): PlatformKey => {
@@ -278,16 +279,14 @@ export default function AccountsMatrixV2Page() {
                           borderRadius: 12,
                         }}
                       >
-                        {account.avatarUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element -- 静态导出无法用 next/image 优化
-                          <img
-                            src={account.avatarUrl}
-                            alt={account.profileName || account.userName || "账号"}
-                            style={{ width: 36, height: 36, objectFit: "cover" }}
-                          />
-                        ) : (
-                          displayAccountName(account, index).slice(0, 1)
-                        )}
+                        <Avatar
+                          src={account.avatarUrl}
+                          name={displayAccountName(account, index)}
+                          size={36}
+                          alt={account.profileName || account.userName || "账号"}
+                          radius={12}
+                          color={meta.color}
+                        />
                       </span>
                       <div className="mx-row-main">
                         <div className="mx-row-title" style={{ fontSize: 13.5 }}>

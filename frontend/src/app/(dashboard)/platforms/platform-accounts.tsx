@@ -25,6 +25,7 @@ import {
   V2Input,
   V2Select,
 } from "@/components/v2/ui-kit";
+import { Avatar } from "@/components/avatar";
 import {
   autoUploadApi,
   buildRiskConfirmation,
@@ -811,16 +812,13 @@ export function PlatformAccounts() {
                 <div key={autoUploadAccountIdentityKey(account)} className="flex items-center justify-between p-5">
                   <div className="flex items-center gap-4">
                     <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent-soft)]">
-                      {account.avatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={account.avatarUrl}
-                          alt=""
-                          className="h-11 w-11 rounded-full object-cover"
-                        />
-                      ) : (
-                        <Smartphone className="h-5 w-5 text-[var(--kaypal-v3-accent-ink)]" />
-                      )}
+                      <Avatar
+                        src={account.avatarUrl}
+                        name={account.profileName || account.userName || "账号"}
+                        size={44}
+                        alt={account.profileName || account.userName || "账号"}
+                        fallback={<Smartphone className="h-5 w-5 text-[var(--kaypal-v3-accent-ink)]" />}
+                      />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
