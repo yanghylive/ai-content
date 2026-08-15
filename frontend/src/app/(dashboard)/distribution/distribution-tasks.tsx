@@ -28,6 +28,9 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "failed", label: "失败" },
 ];
 
+// 单页任务条数（后端 listPage pageSize 上限 100，取 80 留余量）
+const PAGE_SIZE = 80;
+
 /* 平台主题色（P1-10：平台图标统一占位——平台名首字符 + 主题色圆角容器） */
 const PLATFORM_THEME_COLORS: Record<string, string> = {
   douyin: "#fe2c55",
@@ -95,6 +98,9 @@ export function DistributionTasks() {
   const [retryingId, setRetryingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const flash = (text: string) => {
     setNotice(text);
@@ -138,17 +144,31 @@ export function DistributionTasks() {
     }
   };
 
-  const fetchTasks = useCallback(async () => {
+  const fetchTasks = useCallback(async (targetPage = 1, append = false) => {
+    if (append) setLoadingMore(true);
+    else setLoading(true);
     try {
-      setLoading(true);
-      const result = await autoUploadApi.taskPage({ page: 1, pageSize: 80 });
-      setTasks(Array.isArray(result?.items) ? result.items : []);
+      const result = await autoUploadApi.taskPage({
+        page: targetPage,
+        pageSize: PAGE_SIZE,
+      });
+      const items = Array.isArray(result?.items) ? result.items : [];
+      setTasks((prev) => (append ? [...prev, ...items] : items));
+      setPage(targetPage);
+      setTotalPages(result?.totalPages ?? 1);
     } catch (err: unknown) {
       setError(toPublicError(err, "发布任务暂时无法读取"));
     } finally {
-      setLoading(false);
+      if (append) setLoadingMore(false);
+      else setLoading(false);
     }
   }, []);
+
+  // 加载更多（下一页 append）
+  const loadMore = useCallback(() => {
+    if (loadingMore || page >= totalPages) return;
+    void fetchTasks(page + 1, true);
+  }, [loadingMore, page, totalPages, fetchTasks]);
 
   useEffect(() => {
     void fetchTasks();
@@ -276,6 +296,20 @@ export function DistributionTasks() {
               })
             )}
           </div>
+
+          {page < totalPages && (
+            <button
+              type="button"
+              className="mx-btn"
+              style={{ marginTop: 12, width: "100%", justifyContent: "center" }}
+              disabled={loadingMore}
+              onClick={loadMore}
+            >
+              {loadingMore
+                ? "加载中…"
+                : `加载更多（第 ${page}/${totalPages} 页）`}
+            </button>
+          )}
         </section>
 
         {/* 详情弹窗：复用桌面 fixed inset-0 弹窗（天然全屏） */}
@@ -435,6 +469,16 @@ export function DistributionTasks() {
           </div>
         )}
       </V2Section>
+
+      {page < totalPages && (
+        <div className="flex justify-center">
+          <V2GhostButton loading={loadingMore} onClick={loadMore}>
+            {loadingMore
+              ? "加载中…"
+              : `加载更多（第 ${page}/${totalPages} 页）`}
+          </V2GhostButton>
+        </div>
+      )}
 
       <section className="flex items-center justify-between">
         <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/distribution")}>
