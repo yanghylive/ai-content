@@ -52,7 +52,6 @@ export function sceneOfPath(pathname: string): string {
   if (
     pathname.startsWith("/content") ||
     pathname.startsWith("/materials") ||
-    pathname.startsWith("/articles") ||
     pathname.startsWith("/distribution") ||
     pathname.startsWith("/compliance") ||
     pathname.startsWith("/solutions")

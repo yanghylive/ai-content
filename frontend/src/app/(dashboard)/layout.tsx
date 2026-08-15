@@ -382,7 +382,6 @@ const routeAliases: Record<string, string> = {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routeBreadcrumbs: Record<string, BreadcrumbRoute> = {
-  "/agent-console": { sectionTitle: "任务中心", title: "任务控制台" },
   "/agent-workbench": { sectionTitle: "任务中心", title: "任务历史" },
   "/apps/auto-acquisition": {
     sectionTitle: "增长获客",

@@ -31,7 +31,7 @@ const CHECK_TARGETS: Array<{ match: RegExp; href: string; label: string }> = [
   { match: /^crm\.closer/, href: "/crm-closer", label: "前往销售建议" },
   { match: /^crm\.connectors/, href: "/crm-connectors", label: "前往集成配置" },
   { match: /^crm\./, href: "/crm", label: "前往 CRM" },
-  { match: /^tenant\./, href: "/admin", label: "前往账号管理" },
+  { match: /^tenant\./, href: "/capabilities/account", label: "前往账号管理" },
   { match: /^payment\./, href: "/settings", label: "前往计费设置" },
   { match: /^external-crm\./, href: "/crm-connectors", label: "前往外部 CRM" },
   { match: /^windows\./, href: "/settings", label: "查看发布说明" },
