@@ -9,13 +9,14 @@ import {
   FileText,
   Loader2,
   Plus,
-  Send,
+  RefreshCw,
   Video,
   XCircle,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { autoUploadApi, type AutoUploadCalendarDay } from "@/lib/api/auto-upload";
+import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useConfirm } from "@/hooks/use-confirm";
 import { LocalBridgeStatus } from "./local-bridge-status";
@@ -38,7 +39,7 @@ const STATUS_CONFIG: Record<
   { label: string; icon: LucideIcon; color: string }
 > = {
   draft: { label: "草稿", icon: FileText, color: "var(--kaypal-v3-muted)" },
-  pending: { label: "待确认", icon: Clock, color: "var(--kaypal-v3-amber)" },
+  pending: { label: "计划中", icon: Clock, color: "var(--kaypal-v3-amber)" },
   queued: { label: "排队中", icon: Loader2, color: "var(--kaypal-v3-accent)" },
   done: { label: "已完成", icon: CheckCircle2, color: "var(--kaypal-v3-success)" },
   failed: { label: "失败", icon: XCircle, color: "var(--kaypal-v3-danger)" },
@@ -48,6 +49,36 @@ const STATUS_CONFIG: Record<
 export function PublishCenter() {
   const [items, setItems] = useState<PublishItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actingId, setActingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const flash = (text: string) => {
+    setNotice(text);
+    window.setTimeout(() => setNotice(null), 3000);
+  };
+
+  // 失败任务重试（与 distribution-tasks 同一套：先创建重试确认，再 retry）
+  const handleRetry = async (item: PublishItem) => {
+    const taskId = Number(item.id);
+    if (!Number.isFinite(taskId)) {
+      setError("任务 ID 无效，无法重试");
+      return;
+    }
+    setActingId(item.id);
+    setError(null);
+    try {
+      const confirmation = await autoUploadApi.createRetryTaskConfirmation(taskId);
+      await autoUploadApi.retryTask(taskId, confirmation.confirmationId);
+      flash("重试已开始，结果稍后查看");
+      await fetchTasks();
+    } catch (err: unknown) {
+      const raw = err instanceof Error ? err.message : "";
+      setError(raw || toPublicError(err, "重试失败，请稍后重试"));
+    } finally {
+      setActingId(null);
+    }
+  };
 
   // 真实发布任务（替代写死的示例数据）
   const fetchTasks = useCallback(async () => {
@@ -127,9 +158,9 @@ export function PublishCenter() {
     );
 
   const primaryAction = (item: PublishItem) => {
-    if (item.status === "pending") return { label: "确认发布", primary: true };
+    // pending（计划中）任务由后端 worker 到点自动执行，无需手动确认
+    // draft 是未知状态兜底，任务结构无 articleId，无法跳转编辑
     if (item.status === "failed") return { label: "重试", primary: true };
-    if (item.status === "draft") return { label: "继续编辑", primary: true };
     return null;
   };
 
@@ -151,7 +182,9 @@ export function PublishCenter() {
               发布中心
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              {loading ? "正在加载..." : `你有 ${stats.pending} 个内容待确认发布`}
+              {loading
+                ? "正在加载..."
+                : `你有 ${stats.pending} 个内容计划中，到点自动发布`}
             </p>
           </div>
           {/* 单一主行动 */}
@@ -163,6 +196,17 @@ export function PublishCenter() {
             新建发布
           </Link>
         </div>
+
+        {notice && (
+          <div className="mt-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-4 py-2.5 text-sm text-[var(--kaypal-v3-success-ink)]">
+            {notice}
+          </div>
+        )}
+        {error && (
+          <div className="mt-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-4 py-2.5 text-sm text-[var(--kaypal-v3-danger-ink)]">
+            {error}
+          </div>
+        )}
 
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-5">
@@ -313,12 +357,20 @@ export function PublishCenter() {
                               {action && (
                                 <button
                                   type="button"
-                                  className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-3 py-2 text-sm font-medium text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+                                  disabled={actingId === item.id}
+                                  onClick={() => {
+                                    if (item.status === "failed") {
+                                      void handleRetry(item);
+                                    }
+                                  }}
+                                  className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-3 py-2 text-sm font-medium text-white transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                  {item.status === "pending" && (
-                                    <Send className="h-3.5 w-3.5" />
+                                  {item.status === "failed" && (
+                                    <RefreshCw className="h-3.5 w-3.5" />
                                   )}
-                                  {action.label}
+                                  {actingId === item.id
+                                    ? "处理中…"
+                                    : action.label}
                                 </button>
                               )}
                             </div>
