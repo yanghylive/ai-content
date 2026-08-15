@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
+  Ban,
   CheckCircle2,
   Clock,
   FileText,
@@ -12,6 +13,7 @@ import {
   RefreshCw,
   Video,
   XCircle,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -21,7 +23,14 @@ import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useConfirm } from "@/hooks/use-confirm";
 import { LocalBridgeStatus } from "./local-bridge-status";
 
-type PublishStatus = "draft" | "pending" | "queued" | "done" | "failed";
+type PublishStatus =
+  | "draft"
+  | "pending"
+  | "queued"
+  | "running"
+  | "cancelled"
+  | "done"
+  | "failed";
 
 type PublishItem = {
   id: string;
@@ -32,6 +41,8 @@ type PublishItem = {
   scheduledAt?: string;
   progress?: string;
   failReason?: string;
+  /** 后端 updated_at（ISO 8601），用于判断「执行中」任务是否超时卡住 */
+  updatedAt?: string;
 };
 
 const STATUS_CONFIG: Record<
@@ -41,9 +52,15 @@ const STATUS_CONFIG: Record<
   draft: { label: "草稿", icon: FileText, color: "var(--kaypal-v3-muted)" },
   pending: { label: "计划中", icon: Clock, color: "var(--kaypal-v3-amber)" },
   queued: { label: "排队中", icon: Loader2, color: "var(--kaypal-v3-accent)" },
+  running: { label: "执行中", icon: Zap, color: "var(--kaypal-v3-accent)" },
+  cancelled: { label: "已取消", icon: Ban, color: "var(--kaypal-v3-muted)" },
   done: { label: "已完成", icon: CheckCircle2, color: "var(--kaypal-v3-success)" },
   failed: { label: "失败", icon: XCircle, color: "var(--kaypal-v3-danger)" },
 };
+
+// 后端租约时长（durable-publish.worker.ts LEASE_DURATION_MS=120s）：
+// 「执行中」任务超过该时长未更新，视为可能卡住（后端 reclaimStaleTasks 会回收重跑）。
+const RUNNING_STALE_THRESHOLD_MS = 120_000;
 
 // 预览用示例数据（正式接入时替换为后端发布任务接口）
 export function PublishCenter() {
@@ -93,11 +110,15 @@ export function PublishCenter() {
               ? "done"
               : s === "failed" || s === "error" || s === "blocked"
                 ? "failed"
-                : s.startsWith("waiting") || s === "pending"
-                  ? "pending"
-                  : s === "queued" || s === "running" || s === "publishing" || s === "claimed"
-                    ? "queued"
-                    : "draft";
+                : s === "cancelled" || s === "canceled"
+                  ? "cancelled"
+                  : s === "claimed" || s === "running" || s === "publishing"
+                    ? "running"
+                    : s === "queued"
+                      ? "queued"
+                      : s.startsWith("waiting") || s === "pending"
+                        ? "pending"
+                        : "draft";
           return {
             id: String(task.id),
             title: task.title || `任务 #${task.id}`,
@@ -105,6 +126,7 @@ export function PublishCenter() {
             status,
             platforms: task.platform ? [task.platform] : [],
             failReason: status === "failed" ? (task.message ?? undefined) : undefined,
+            updatedAt: task.updated_at,
           };
         }),
       );
@@ -121,16 +143,30 @@ export function PublishCenter() {
 
   // 有排队/执行中任务时自动轮询
   useEffect(() => {
-    const hasActive = items.some((t) => t.status === "queued" || t.status === "pending");
+    const hasActive = items.some(
+      (t) =>
+        t.status === "queued" ||
+        t.status === "pending" ||
+        t.status === "running",
+    );
     if (!hasActive) return;
     const timer = setInterval(() => void fetchTasks(), 5000);
     return () => clearInterval(timer);
   }, [items, fetchTasks]);
 
+  // 「执行中」任务超过后端租约时长（120s）未更新 → 可能卡住，提示 + 可重试
+  const isStaleRunning = (item: PublishItem): boolean => {
+    if (item.status !== "running" || !item.updatedAt) return false;
+    const ts = Date.parse(item.updatedAt);
+    if (!Number.isFinite(ts)) return false;
+    return Date.now() - ts > RUNNING_STALE_THRESHOLD_MS;
+  };
+
   const stats = useMemo(
     () => ({
       pending: items.filter((i) => i.status === "pending").length,
       queued: items.filter((i) => i.status === "queued").length,
+      running: items.filter((i) => i.status === "running").length,
       doneToday: items.filter((i) => i.status === "done").length,
       failed: items.filter((i) => i.status === "failed").length,
     }),
@@ -148,7 +184,15 @@ export function PublishCenter() {
           status: "queued",
           items: items.filter((i) => i.status === "queued"),
         },
+        {
+          status: "running",
+          items: items.filter((i) => i.status === "running"),
+        },
         { status: "done", items: items.filter((i) => i.status === "done") },
+        {
+          status: "cancelled",
+          items: items.filter((i) => i.status === "cancelled"),
+        },
         {
           status: "failed",
           items: items.filter((i) => i.status === "failed"),
@@ -160,7 +204,9 @@ export function PublishCenter() {
   const primaryAction = (item: PublishItem) => {
     // pending（计划中）任务由后端 worker 到点自动执行，无需手动确认
     // draft 是未知状态兜底，任务结构无 articleId，无法跳转编辑
+    // failed 可重试；running 且超租约卡住也可重试（后端 reclaim 会回收，手动重试更直接）
     if (item.status === "failed") return { label: "重试", primary: true };
+    if (isStaleRunning(item)) return { label: "重试", primary: true };
     return null;
   };
 
@@ -208,11 +254,11 @@ export function PublishCenter() {
           </div>
         )}
 
-        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
           <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[var(--kaypal-v3-muted)]">待确认</p>
+                <p className="text-sm text-[var(--kaypal-v3-muted)]">计划中</p>
                 <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-amber)]">
                   {stats.pending}
                 </p>
@@ -229,6 +275,17 @@ export function PublishCenter() {
                 </p>
               </div>
               <Loader2 className="h-6 w-6 text-[var(--kaypal-v3-accent-ink)]" />
+            </div>
+          </div>
+          <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)] p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-[var(--kaypal-v3-muted)]">执行中</p>
+                <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-accent-ink)]">
+                  {stats.running}
+                </p>
+              </div>
+              <Zap className="h-6 w-6 text-[var(--kaypal-v3-accent-ink)]" />
             </div>
           </div>
           <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-5">
@@ -285,11 +342,11 @@ export function PublishCenter() {
             📋 发布看板
           </h2>
           <span className="text-sm text-[var(--kaypal-v3-muted)]">
-            内容从待确认到完成的全过程
+            内容从计划到发布的全过程
           </span>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-4">
+        <div className="grid gap-4 lg:grid-cols-3">
           {kanbanColumns.map((column) => {
             const config = STATUS_CONFIG[column.status];
             const Icon = config.icon;
@@ -349,6 +406,12 @@ export function PublishCenter() {
                                   {item.progress}
                                 </p>
                               )}
+                              {isStaleRunning(item) && (
+                                <p className="mt-1.5 flex items-center gap-1 text-xs text-[var(--kaypal-v3-amber)]">
+                                  <AlertTriangle className="h-3.5 w-3.5" />
+                                  执行时间较长，可能卡住，可重试
+                                </p>
+                              )}
                               {item.failReason && (
                                 <p className="mt-1.5 text-xs text-[var(--kaypal-v3-danger)]">
                                   {item.failReason}
@@ -359,13 +422,17 @@ export function PublishCenter() {
                                   type="button"
                                   disabled={actingId === item.id}
                                   onClick={() => {
-                                    if (item.status === "failed") {
+                                    if (
+                                      item.status === "failed" ||
+                                      isStaleRunning(item)
+                                    ) {
                                       void handleRetry(item);
                                     }
                                   }}
                                   className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-3 py-2 text-sm font-medium text-white transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                  {item.status === "failed" && (
+                                  {(item.status === "failed" ||
+                                    isStaleRunning(item)) && (
                                     <RefreshCw className="h-3.5 w-3.5" />
                                   )}
                                   {actingId === item.id
@@ -423,8 +490,10 @@ export function PublishCenter() {
 
 const MOBILE_STATUS_LABEL: Record<PublishStatus, string> = {
   draft: "草稿",
-  pending: "待确认",
+  pending: "计划中",
   queued: "排队中",
+  running: "执行中",
+  cancelled: "已取消",
   done: "已完成",
   failed: "失败",
 };
@@ -433,6 +502,8 @@ const MOBILE_STATUS_BADGE: Record<PublishStatus, string> = {
   draft: "mx-badge",
   pending: "mx-badge mx-badge-gold",
   queued: "mx-badge mx-badge-blue",
+  running: "mx-badge mx-badge-blue",
+  cancelled: "mx-badge",
   done: "mx-badge mx-badge-green",
   failed: "mx-badge mx-badge-red",
 };
@@ -441,6 +512,8 @@ const MOBILE_STATUS_DOT: Record<PublishStatus, string> = {
   draft: "#94a3b8",
   pending: "#d98a2d",
   queued: "#2563eb",
+  running: "#2563eb",
+  cancelled: "#94a3b8",
   done: "#059669",
   failed: "#dc2626",
 };
