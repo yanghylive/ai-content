@@ -1,5 +1,7 @@
 "use client";
 
+import { BrandLogo } from "@/components/brand-logo";
+
 import React, { useState } from "react";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 
@@ -36,9 +38,7 @@ export default function LegalPage() {
         <div className="mx-header-row">
           <div>
             <div className="mx-brand-eyebrow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 .304.377l6.001 4.1a.5.5 0 0 1-.29.908l-6.985.49a1 1 0 0 0-.673.42l-3.45 4.8a.5.5 0 0 1-.84 0l-3.45-4.8a1 1 0 0 0-.673-.42l-6.985-.49a.5.5 0 0 1-.29-.908l6.001-4.1a1 1 0 0 0 .304-.377z" />
-              </svg>
+              <BrandLogo />
               JIUZHANG AI
             </div>
             <h1 className="mx-page-title">合规中心</h1>
