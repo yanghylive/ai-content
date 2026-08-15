@@ -677,6 +677,15 @@ export function ContentWorkspaceClient() {
           const params = new URLSearchParams(window.location.search);
           const requestedId =
             params.get("articleId") || params.get("article");
+          // action=new：新建草稿，不 fallback 到队列第一篇。
+          // 幂等靠两点：createDraft 内部 creating 防重 + 这里立即清除 action 参数。
+          if (params.get("action") === "new") {
+            const nextUrl = new URL(window.location.href);
+            nextUrl.searchParams.delete("action");
+            window.history.replaceState(null, "", nextUrl);
+            void createDraft();
+            return;
+          }
           void loadRequestedOrFirstDocument(
             requestedId,
             items,
@@ -686,6 +695,7 @@ export function ContentWorkspaceClient() {
       });
     }, 300);
     return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- createDraft 有 creating 幂等保护，且 action 参数立即清除，不加入依赖避免每次渲染重触发
   }, [keyword, loadDocument, refreshQueue]);
 
   const selectQueueItem = async (item: WorkspaceQueueItemView) => {
