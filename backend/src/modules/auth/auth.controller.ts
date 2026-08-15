@@ -183,6 +183,53 @@ export class AuthController {
   }
 
   /**
+   * 注册：302 跳转 kaypal.cn 账号自助注册，注册完成回跳本地登录页（?registered=1）。
+   * 共用 kaypal.cn 账号体系，本地零注册逻辑。
+   */
+  @Public()
+  @Get('register-redirect')
+  registerRedirect(
+    @Req() request: Request,
+    @Res() response: Response,
+    @Query('next') next?: string,
+    @Query('origin') origin?: string,
+  ) {
+    const safeOrigin = this.getCallbackOrigin(request, origin);
+    const returnUrl = `${safeOrigin}/login?registered=1${
+      next ? `&next=${encodeURIComponent(normalizeWechatNext(next))}` : ''
+    }`;
+    return response.redirect(
+      302,
+      `${this.authService.getKaypalBaseUrl()}/zh-CN/auth/register?returnUrl=${encodeURIComponent(
+        returnUrl,
+      )}`,
+    );
+  }
+
+  /**
+   * 忘记密码：302 跳转 kaypal.cn 账号自助找回密码，改密完成回跳本地登录页（?passwordReset=1）。
+   */
+  @Public()
+  @Get('forgot-password-redirect')
+  forgotPasswordRedirect(
+    @Req() request: Request,
+    @Res() response: Response,
+    @Query('next') next?: string,
+    @Query('origin') origin?: string,
+  ) {
+    const safeOrigin = this.getCallbackOrigin(request, origin);
+    const returnUrl = `${safeOrigin}/login?passwordReset=1${
+      next ? `&next=${encodeURIComponent(normalizeWechatNext(next))}` : ''
+    }`;
+    return response.redirect(
+      302,
+      `${this.authService.getKaypalBaseUrl()}/zh-CN/auth/forgot-password?returnUrl=${encodeURIComponent(
+        returnUrl,
+      )}`,
+    );
+  }
+
+  /**
    * 获取微信扫码地址给登录页生成二维码。
    * 这里由后端向 Kaypal 请求授权地址，避免前端直接跳走；扫码后的回调
    * 仍然复用 /auth/wechat/callback，成功后回到当前前端页面并建立会话。

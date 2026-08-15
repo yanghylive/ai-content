@@ -153,6 +153,11 @@ export class KaypalAuthClient {
     return `${this.requireBaseUrl()}/api/auth/wechat/url`;
   }
 
+  /** kaypal 账号系统 base URL（用于跳转注册/忘记密码等账号自助页面） */
+  getAuthBaseUrl(): string {
+    return this.requireBaseUrl();
+  }
+
   /**
    * 获取 kaypal 微信扫码登录的授权 URL + kaypal 设置的 state cookie。
    * 流程：ai-content start 服务端调本方法 → 拿到微信 URL + kaypal
