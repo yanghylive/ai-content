@@ -199,7 +199,7 @@ export default function MineScene() {
                 tint: "kx-t-slate",
                 title: "数据服务管理",
                 desc: "数据源连接与配额配置",
-                href: "/admin/redfox",
+                href: "/redfox-connection",
                 group: "系统与服务",
               },
             ]
@@ -329,7 +329,7 @@ function MobileMineView({
                 desc: "数据源连接与配额配置",
                 icon: "settings" as const,
                 tint: "#64748b",
-                href: "/admin/redfox",
+                href: "/redfox-connection",
               },
             ],
           }

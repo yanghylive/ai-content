@@ -41,7 +41,7 @@ export function AccountCenter() {
           title: "团队成员",
           description: "管理子账号权限",
           icon: Users,
-          href: "/capabilities/users",
+          href: "/capabilities/account",
         },
       ]}
     />
