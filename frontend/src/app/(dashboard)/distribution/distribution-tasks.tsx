@@ -1,8 +1,8 @@
 "use client";
 
 import { SkeletonRow } from "@/components/skeleton";
-
 import { BrandLogo } from "@/components/brand-logo";
+import { statusGroup } from "@/lib/publish-status";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -59,14 +59,6 @@ function platformInitial(platform?: string | null): string {
   const p = (platform || "").trim();
   if (!p) return "未";
   return /[a-z]/i.test(p[0]) ? p[0].toUpperCase() : p[0];
-}
-
-function statusGroup(status?: string): "pending" | "done" | "failed" | "other" {
-  const s = (status || "").toLowerCase();
-  if (s === "success" || s === "completed" || s === "done" || s === "published") return "done";
-  if (s === "failed" || s === "error" || s === "blocked") return "failed";
-  if (s === "queued" || s === "running" || s === "pending" || s === "publishing" || s === "waiting" || s.startsWith("waiting")) return "pending";
-  return "other";
 }
 
 const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "accent" | "muted"> = {
