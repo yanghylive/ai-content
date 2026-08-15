@@ -1,8 +1,13 @@
 "use client";
 
 import { SkeletonRow } from "@/components/skeleton";
-
 import { BrandLogo } from "@/components/brand-logo";
+import {
+  MOBILE_STATUS_BADGE,
+  MOBILE_STATUS_DOT,
+  MOBILE_STATUS_LABEL,
+  type PublishStatus,
+} from "@/lib/publish-status";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -26,15 +31,6 @@ import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useConfirm } from "@/hooks/use-confirm";
 import { LocalBridgeStatus } from "./local-bridge-status";
-
-type PublishStatus =
-  | "draft"
-  | "pending"
-  | "queued"
-  | "running"
-  | "cancelled"
-  | "done"
-  | "failed";
 
 type PublishItem = {
   id: string;
@@ -491,36 +487,6 @@ export function PublishCenter() {
 }
 
 /* ================= 移动端视图（<768px，明德 VP 风格） ================= */
-
-const MOBILE_STATUS_LABEL: Record<PublishStatus, string> = {
-  draft: "草稿",
-  pending: "计划中",
-  queued: "排队中",
-  running: "执行中",
-  cancelled: "已取消",
-  done: "已完成",
-  failed: "失败",
-};
-
-const MOBILE_STATUS_BADGE: Record<PublishStatus, string> = {
-  draft: "mx-badge",
-  pending: "mx-badge mx-badge-gold",
-  queued: "mx-badge mx-badge-blue",
-  running: "mx-badge mx-badge-blue",
-  cancelled: "mx-badge",
-  done: "mx-badge mx-badge-green",
-  failed: "mx-badge mx-badge-red",
-};
-
-const MOBILE_STATUS_DOT: Record<PublishStatus, string> = {
-  draft: "#94a3b8",
-  pending: "#d98a2d",
-  queued: "#2563eb",
-  running: "#2563eb",
-  cancelled: "#94a3b8",
-  done: "#059669",
-  failed: "#dc2626",
-};
 
 /** 平台 key → 中文名（与后端 registry 一致） */
 const MOBILE_PLATFORM_NAMES: Record<string, string> = {
