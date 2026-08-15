@@ -103,6 +103,10 @@ const tabKeys: LocalEngineTabKey[] = [
   "logs",
 ];
 
+// 健康检查请求超时（与 engine-health-center 的 STATUS_REQUEST_TIMEOUT_MS 一致）。
+// 本机 Local Engine 未启动时 health 请求可能挂起，必须给 AbortController 超时兜底。
+const HEALTH_REQUEST_TIMEOUT_MS = 12_000;
+
 const legacyInteractionRoutes: Partial<Record<string, string>> = {
   comments: "/engagement/douyin-comments",
   messages: "/engagement/douyin-messages",
@@ -517,14 +521,22 @@ function LocalEngineContent() {
     }
   }, [requestedTab, router]);
 
+  // 健康检查在途标记：上一轮未返回时跳过本轮，避免轮询并发堆积请求
+  const healthInflightRef = React.useRef(false);
+
   const refreshHealth = React.useCallback(async () => {
+    if (healthInflightRef.current) return;
+    healthInflightRef.current = true;
     setLoading(true);
     try {
-      const result = await localEngineApi.health();
+      const result = await localEngineApi.health({
+        timeoutMs: HEALTH_REQUEST_TIMEOUT_MS,
+      });
       setHealth(result);
     } catch {
       setHealth(null);
     } finally {
+      healthInflightRef.current = false;
       setLoading(false);
     }
   }, []);
@@ -719,6 +731,8 @@ function LocalEngineContent() {
 
   React.useEffect(() => {
     const timer = window.setInterval(() => {
+      // 页面不可见（切后台/最小化）时暂停轮询，恢复可见后自动续跑
+      if (document.visibilityState !== "visible") return;
       refreshHealth();
       if (
         selectedTab === "browser" ||
@@ -999,13 +1013,21 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
   const [replyRuleLoading, setReplyRuleLoading] = React.useState(true);
   const [tasksLoading, setTasksLoading] = React.useState(true);
 
+  // 健康检查在途标记：上一轮未返回时跳过本轮，避免轮询并发堆积请求
+  const healthInflightRef = React.useRef(false);
+
   const refreshHealth = React.useCallback(async () => {
+    if (healthInflightRef.current) return;
+    healthInflightRef.current = true;
     setHealthLoading(true);
     try {
-      setHealth(await localEngineApi.health());
+      setHealth(
+        await localEngineApi.health({ timeoutMs: HEALTH_REQUEST_TIMEOUT_MS }),
+      );
     } catch {
       setHealth(null);
     } finally {
+      healthInflightRef.current = false;
       setHealthLoading(false);
     }
   }, []);
@@ -1128,6 +1150,8 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
 
   React.useEffect(() => {
     const timer = window.setInterval(() => {
+      // 页面不可见（切后台/最小化）时暂停轮询，恢复可见后自动续跑
+      if (document.visibilityState !== "visible") return;
       refreshHealth();
       if (businessRoute) {
         refreshBrowserStatus();
