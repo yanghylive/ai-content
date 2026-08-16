@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Prisma, InteractionTaskStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 
 /** 统一收件箱视图（报告 15.4#4：未分配/待处理/已回复/需人工接管/超时） */
 export type ThreadView =
@@ -32,12 +33,31 @@ export interface InteractionThread {
  */
 @Injectable()
 export class InteractionThreadService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authRequestContext: AuthRequestContextService,
+  ) {}
+
+  /** 解析 tenant+user scope（报告 P1 line628：禁止裸 findMany 泄露租户） */
+  private async resolveScope() {
+    const context = this.authRequestContext.get();
+    const userId = context?.user?.id?.trim() || '';
+    if (!userId) {
+      throw new UnauthorizedException('请先登录后查看互动任务');
+    }
+    const tenantId = await this.authRequestContext.resolveTenantId(this.prisma);
+    return { tenantId, userId };
+  }
 
   /** 按视图筛选互动任务（对应统一 Inbox 的保存视图） */
   async listByView(view: ThreadView, limit = 100) {
     const take = Math.min(Math.max(limit, 1), 200);
-    const where = this.buildViewWhere(view);
+    const scope = await this.resolveScope();
+    const where = {
+      ...this.buildViewWhere(view),
+      tenantId: scope.tenantId,
+      userId: scope.userId,
+    };
     return this.prisma.interactionTask.findMany({
       where,
       orderBy: { updatedAt: 'desc' },
@@ -88,8 +108,13 @@ export class InteractionThreadService {
     limit?: number;
   }): Promise<InteractionThread[]> {
     const take = Math.min(Math.max(input.limit ?? 100, 1), 500);
+    const scope = await this.resolveScope();
     const events = await this.prisma.interactionEvent.findMany({
-      where: input.platform ? { platform: input.platform } : {},
+      where: {
+        tenantId: scope.tenantId,
+        userId: scope.userId,
+        ...(input.platform ? { platform: input.platform } : {}),
+      },
       orderBy: { occurredAt: 'desc' },
       take,
     });

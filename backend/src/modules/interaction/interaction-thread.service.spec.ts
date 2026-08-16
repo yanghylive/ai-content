@@ -1,5 +1,12 @@
 import { InteractionThreadService } from './interaction-thread.service';
 
+function makeAuthContext() {
+  return {
+    get: jest.fn().mockReturnValue({ user: { id: 'u-1' } }),
+    resolveTenantId: jest.fn().mockResolvedValue('tenant-1'),
+  };
+}
+
 function makeService(overrides: {
   findMany?: jest.Mock;
 } = {}) {
@@ -11,12 +18,15 @@ function makeService(overrides: {
       findMany: jest.fn().mockResolvedValue([]),
     },
   };
-  const service = new InteractionThreadService(prisma as never);
+  const service = new InteractionThreadService(
+    prisma as never,
+    makeAuthContext() as never,
+  );
   return { service, prisma };
 }
 
 describe('InteractionThreadService', () => {
-  it('listByView=unassigned 查未认领且非终态', async () => {
+  it('listByView=unassigned 查未认领且非终态（带 scope）', async () => {
     const { service, prisma } = makeService();
     await service.listByView('unassigned');
 
@@ -25,12 +35,14 @@ describe('InteractionThreadService', () => {
         where: {
           claimedBy: null,
           status: { notIn: ['COMPLETED', 'SKIPPED', 'NO_TARGET'] },
+          tenantId: 'tenant-1',
+          userId: 'u-1',
         },
       }),
     );
   });
 
-  it('listByView=overdue 查 SLA 已过且非终态', async () => {
+  it('listByView=overdue 查 SLA 已过且非终态（带 scope）', async () => {
     const { service, prisma } = makeService();
     await service.listByView('overdue');
 
@@ -39,17 +51,21 @@ describe('InteractionThreadService', () => {
         where: expect.objectContaining({
           slaDueAt: { lt: expect.any(Date) },
           status: { notIn: ['COMPLETED', 'SKIPPED', 'NO_TARGET'] },
+          tenantId: 'tenant-1',
+          userId: 'u-1',
         }),
       }),
     );
   });
 
-  it('listByView=replied 查已完成', async () => {
+  it('listByView=replied 查已完成（带 scope）', async () => {
     const { service, prisma } = makeService();
     await service.listByView('replied');
 
     expect(prisma.interactionTask.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { status: 'COMPLETED' } }),
+      expect.objectContaining({
+        where: { status: 'COMPLETED', tenantId: 'tenant-1', userId: 'u-1' },
+      }),
     );
   });
 
@@ -78,13 +94,14 @@ describe('InteractionThreadService', () => {
         occurredAt: new Date('2026-08-16T12:00:00Z'),
       },
     ];
-    const { service } = makeService();
-    (service as never as { prisma: never }).prisma;
     const prisma = {
       interactionTask: { findMany: jest.fn().mockResolvedValue([]) },
       interactionEvent: { findMany: jest.fn().mockResolvedValue(events) },
     };
-    const svc = new InteractionThreadService(prisma as never);
+    const svc = new InteractionThreadService(
+      prisma as never,
+      makeAuthContext() as never,
+    );
 
     const threads = await svc.listEventThreads({});
 
@@ -94,6 +111,15 @@ describe('InteractionThreadService', () => {
       eventCount: 2,
       latestBody: '第二条',
     });
+    // scope 必须注入事件查询
+    expect(prisma.interactionEvent.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          tenantId: 'tenant-1',
+          userId: 'u-1',
+        }),
+      }),
+    );
   });
 
   it('listEventThreads 无 externalThreadId 按 作者+来源 聚合', async () => {
@@ -125,7 +151,10 @@ describe('InteractionThreadService', () => {
       interactionTask: { findMany: jest.fn().mockResolvedValue([]) },
       interactionEvent: { findMany: jest.fn().mockResolvedValue(events) },
     };
-    const svc = new InteractionThreadService(prisma as never);
+    const svc = new InteractionThreadService(
+      prisma as never,
+      makeAuthContext() as never,
+    );
 
     const threads = await svc.listEventThreads({});
 
