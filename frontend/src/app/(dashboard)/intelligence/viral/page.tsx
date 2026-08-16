@@ -1,7 +1,5 @@
-import { HybridRoute } from "@/components/v2/hybrid-route";
-import { ViralAnalysisCenter } from "../_components/viral-analysis-center";
-import LegacyPage from "./page-legacy";
+import { ViralAnalysisWorkbench } from "../_components/viral-analysis-workbench";
 
 export default function Page() {
-  return <HybridRoute v2={<ViralAnalysisCenter />} legacy={<LegacyPage />} />;
+  return <ViralAnalysisWorkbench />;
 }
