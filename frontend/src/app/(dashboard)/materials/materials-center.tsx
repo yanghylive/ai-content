@@ -1160,7 +1160,7 @@ export function MaterialsCenter() {
                 采集是从「内容来源」里抓内容的。先去设置里添加来源（比如 36氪、知乎热榜），回来再点采集。
               </p>
               <div className="mt-3">
-                <V2PrimaryButton onClick={() => router.push("/settings?legacy=1")}>
+                <V2PrimaryButton onClick={() => router.push("/settings")}>
                   去添加内容来源
                 </V2PrimaryButton>
               </div>
