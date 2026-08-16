@@ -105,6 +105,32 @@ export class DashboardService {
     return this.systemLogsService.getRecent(limit);
   }
 
+  /**
+   * 归因链骨架（阶段 B）：从一篇内容出发，查它的发布记录 + 互动任务。
+   * 强关联：PublishRecord.articleId + InteractionTask.sourceArticleId。
+   * 完整链（互动→线索→CRM）依赖平台侧匹配（sourceUrl/commentRef），后续单独做。
+   */
+  async resolveContentAttribution(articleId: string) {
+    const [article, publishRecords, interactionTasks] = await Promise.all([
+      this.prisma.article.findUnique({ where: { id: articleId } }),
+      this.prisma.publishRecord.findMany({
+        where: { articleId },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.interactionTask.findMany({
+        where: { sourceArticleId: articleId },
+        orderBy: { updatedAt: 'desc' },
+      }),
+    ]);
+    return {
+      article,
+      publishCount: publishRecords.length,
+      interactionCount: interactionTasks.length,
+      publishRecords,
+      interactionTasks,
+    };
+  }
+
   async getRiskAuditEvidence(limit: number = 50) {
     const take = this.normalizeLimit(limit);
     const rows = await this.prisma.systemLog.findMany({
