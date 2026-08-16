@@ -67,6 +67,9 @@ export function PublishCenter() {
   const [actingId, setActingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<
+    "kanban" | "failed" | "calendar" | "accounts"
+  >("kanban");
 
   const flash = (text: string) => {
     setNotice(text);
@@ -317,10 +320,48 @@ export function PublishCenter() {
         </div>
       </section>
 
-      <LocalBridgeStatus />
+      {/* 四视图 Tab（报告 4.1：看板 + 失败队列 + 日历 + 账号健康） */}
+      <div className="flex items-center gap-1 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-1">
+        {(
+          [
+            { key: "kanban", label: "看板" },
+            { key: "failed", label: `失败队列${stats.failed > 0 ? ` (${stats.failed})` : ""}` },
+            { key: "calendar", label: "发布日历" },
+            { key: "accounts", label: "账号健康" },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
+            className={`rounded-[var(--kaypal-v3-radius-sm)] px-4 py-2 text-sm font-medium transition ${
+              activeTab === tab.key
+                ? "bg-[var(--kaypal-v3-accent)] text-white"
+                : "text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-muted)]"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {/* 失败提醒（上下文引导） */}
-      {stats.failed > 0 && (
+      {activeTab === "failed" ? (
+        <FailedQueueTab
+          items={items}
+          loading={loading}
+          actingId={actingId}
+          onRetry={handleRetry}
+        />
+      ) : activeTab === "calendar" ? (
+        <PublishCalendarTab />
+      ) : activeTab === "accounts" ? (
+        <AccountHealthTab />
+      ) : (
+        <>
+          <LocalBridgeStatus />
+
+          {/* 失败提醒（上下文引导） */}
+          {stats.failed > 0 && (
         <section className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -486,6 +527,391 @@ export function PublishCenter() {
           ))}
         </div>
       </section>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ================= 失败队列 Tab（报告 4.1 验收 3） ================= */
+
+const PLATFORM_NAMES: Record<string, string> = {
+  xiaohongshu: "小红书",
+  "wechat-channel": "视频号",
+  "wechat-official": "公众号",
+  douyin: "抖音",
+  kuaishou: "快手",
+  bilibili: "B站",
+  weibo: "微博",
+  zhihu: "知乎",
+  toutiao: "头条",
+};
+
+function platformName(key: string): string {
+  return PLATFORM_NAMES[key] || key;
+}
+
+function FailedQueueTab({
+  items,
+  loading,
+  actingId,
+  onRetry,
+}: {
+  items: PublishItem[];
+  loading: boolean;
+  actingId: string | null;
+  onRetry: (item: PublishItem) => void;
+}) {
+  const failed = items.filter((i) => i.status === "failed");
+
+  if (loading) {
+    return (
+      <div className="kaypal-v3-panel p-6 text-sm text-[var(--kaypal-v3-muted)]">
+        正在加载失败任务…
+      </div>
+    );
+  }
+  if (failed.length === 0) {
+    return (
+      <div className="kaypal-v3-panel p-10 text-center">
+        <CheckCircle2 className="mx-auto h-8 w-8 text-[var(--kaypal-v3-success)]" />
+        <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">
+          没有失败任务，一切正常
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="kaypal-v3-panel divide-y divide-[var(--kaypal-v3-border)]">
+      {failed.map((item) => (
+        <div key={item.id} className="flex items-start justify-between gap-4 p-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <XCircle className="h-4 w-4 shrink-0 text-[var(--kaypal-v3-danger)]" />
+              <p className="truncate text-sm font-medium text-[var(--kaypal-v3-ink)]">
+                {item.title}
+              </p>
+              <span className="shrink-0 rounded-full bg-[var(--kaypal-v3-paper-muted)] px-2 py-0.5 text-xs text-[var(--kaypal-v3-soft-ink)]">
+                {platformName(item.platforms[0] || "未指定平台")}
+              </span>
+            </div>
+            <p className="mt-1.5 text-xs text-[var(--kaypal-v3-danger)]">
+              {item.failReason || "发布失败（无详细原因）"}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              disabled={actingId === item.id}
+              onClick={() => onRetry(item)}
+              className="inline-flex items-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-3 py-2 text-sm font-medium text-white transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              {actingId === item.id ? "重试中…" : "重试"}
+            </button>
+            <Link
+              href="/distribution/accounts"
+              className="inline-flex items-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] px-3 py-2 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+            >
+              账号修复
+            </Link>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ================= 账号健康 Tab（报告 4.1/4.6） ================= */
+
+function AccountHealthTab() {
+  const [health, setHealth] = React.useState<{
+    checkedAt: string;
+    totalAccounts: number;
+    readyAccounts: number;
+    expiredAccounts: number;
+    issues: Array<{
+      accountId?: number;
+      accountName: string;
+      platform: string;
+      status: "expired" | "missing";
+      message: string;
+      nextAction: string;
+    }>;
+    waitingTasks: Array<{
+      id: number;
+      title: string;
+      platform: string;
+      status: string;
+      message: string | null;
+      canResume: boolean;
+      nextAction: string;
+    }>;
+  } | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await autoUploadApi.accountHealth();
+      setHealth(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "账号健康检查失败");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  if (loading) {
+    return (
+      <div className="kaypal-v3-panel p-6 text-sm text-[var(--kaypal-v3-muted)]">
+        正在检查账号健康…
+      </div>
+    );
+  }
+  if (error || !health) {
+    return (
+      <div className="kaypal-v3-panel p-6">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-[var(--kaypal-v3-danger)]">
+            {error || "账号健康数据加载失败"}
+          </p>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 text-sm text-[var(--kaypal-v3-accent-ink)] underline"
+            onClick={() => void load()}
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> 重试
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-3 gap-4">
+        <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-5">
+          <p className="text-sm text-[var(--kaypal-v3-muted)]">总账号</p>
+          <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-ink)]">
+            {health.totalAccounts}
+          </p>
+        </div>
+        <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-5">
+          <p className="text-sm text-[var(--kaypal-v3-muted)]">正常</p>
+          <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-success)]">
+            {health.readyAccounts}
+          </p>
+        </div>
+        <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-5">
+          <p className="text-sm text-[var(--kaypal-v3-muted)]">需处理</p>
+          <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-danger)]">
+            {health.expiredAccounts}
+          </p>
+        </div>
+      </div>
+
+      {health.issues.length > 0 && (
+        <div className="kaypal-v3-panel divide-y divide-[var(--kaypal-v3-border)]">
+          {health.issues.map((issue, idx) => (
+            <div key={idx} className="flex items-start justify-between gap-4 p-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--kaypal-v3-amber)]" />
+                  <p className="truncate text-sm font-medium text-[var(--kaypal-v3-ink)]">
+                    {issue.accountName}
+                    <span className="ml-2 text-xs text-[var(--kaypal-v3-muted)]">
+                      {platformName(issue.platform)}
+                    </span>
+                  </p>
+                </div>
+                <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
+                  {issue.message} · {issue.nextAction}
+                </p>
+              </div>
+              <Link
+                href="/distribution/accounts"
+                className="shrink-0 text-sm font-medium text-[var(--kaypal-v3-accent-ink)] underline"
+              >
+                去修复
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {health.waitingTasks.length > 0 && (
+        <div className="kaypal-v3-panel divide-y divide-[var(--kaypal-v3-border)]">
+          <div className="px-4 py-3 text-sm font-medium text-[var(--kaypal-v3-ink)]">
+            因账号失效而阻塞的待发布任务（{health.waitingTasks.length}）
+          </div>
+          {health.waitingTasks.map((task) => (
+            <div key={task.id} className="flex items-center justify-between gap-4 p-4">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-[var(--kaypal-v3-ink)]">
+                  {task.title}
+                </p>
+                <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
+                  {platformName(task.platform)}
+                  {task.message ? ` · ${task.message}` : ""} · {task.nextAction}
+                </p>
+              </div>
+              {task.canResume ? (
+                <span className="shrink-0 rounded-full bg-[var(--kaypal-v3-success-soft)] px-2 py-0.5 text-xs font-medium text-[var(--kaypal-v3-success)]">
+                  可恢复
+                </span>
+              ) : (
+                <span className="shrink-0 rounded-full bg-[var(--kaypal-v3-paper-muted)] px-2 py-0.5 text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                  待账号修复
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {health.issues.length === 0 && health.waitingTasks.length === 0 && (
+        <div className="kaypal-v3-panel p-10 text-center">
+          <CheckCircle2 className="mx-auto h-8 w-8 text-[var(--kaypal-v3-success)]" />
+          <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">
+            所有账号状态正常，没有阻塞的发布任务
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================= 发布日历 Tab（桌面版，报告 4.1） ================= */
+
+function PublishCalendarTab() {
+  const [days, setDays] = React.useState<AutoUploadCalendarDay[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await autoUploadApi.calendar(7);
+      setDays(Array.isArray(result) ? result : []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "日历加载失败");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  const fmtDate = (key: string) => {
+    const [y, m, d] = key.split("-");
+    const date = new Date(Number(y), Number(m) - 1, Number(d));
+    const week = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][date.getDay()];
+    return `${Number(m)}月${Number(d)}日 ${week}`;
+  };
+  const fmtTime = (iso: string) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  };
+  const todayKey = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
+
+  if (loading) {
+    return (
+      <div className="kaypal-v3-panel p-6 text-sm text-[var(--kaypal-v3-muted)]">
+        正在加载发布日历…
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="kaypal-v3-panel p-6">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-[var(--kaypal-v3-danger)]">{error}</p>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 text-sm text-[var(--kaypal-v3-accent-ink)] underline"
+            onClick={() => void load()}
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> 重试
+          </button>
+        </div>
+      </div>
+    );
+  }
+  if (days.every((d) => d.items.length === 0)) {
+    return (
+      <div className="kaypal-v3-panel p-10 text-center">
+        <Clock className="mx-auto h-8 w-8 text-[var(--kaypal-v3-muted)]" />
+        <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">
+          近 7 天还没有发布任务
+        </p>
+        <Link
+          href="/distribution/articles"
+          className="mt-4 inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-medium text-white"
+        >
+          <Plus className="h-4 w-4" /> 新建发布
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {days.map((day) => (
+        <div key={day.date} className="kaypal-v3-panel overflow-hidden">
+          <div className="flex items-center gap-2 border-b border-[var(--kaypal-v3-border)] px-4 py-3">
+            <span className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+              {fmtDate(day.date)}
+            </span>
+            {day.date === todayKey && (
+              <span className="rounded-full bg-[var(--kaypal-v3-accent)] px-2 py-0.5 text-xs font-medium text-white">
+                今天
+              </span>
+            )}
+            <span className="ml-auto text-xs text-[var(--kaypal-v3-muted)]">
+              {day.items.length} 个任务
+            </span>
+          </div>
+          {day.items.length === 0 ? (
+            <div className="px-4 py-3 text-xs text-[var(--kaypal-v3-muted)]">
+              无任务
+            </div>
+          ) : (
+            <div className="divide-y divide-[var(--kaypal-v3-border)]">
+              {day.items.map((item) => (
+                <div key={item.id} className="flex items-center justify-between px-4 py-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-[var(--kaypal-v3-ink)]">
+                      {item.title}
+                    </p>
+                    <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+                      {platformName(item.platform)} · {fmtTime(item.time)}
+                      {item.isRescheduled ? " · 已改期" : ""}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-[var(--kaypal-v3-paper-muted)] px-2 py-0.5 text-xs text-[var(--kaypal-v3-soft-ink)]">
+                    {CALENDAR_STATUS_LABEL[item.status] ?? item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
