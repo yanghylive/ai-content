@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ReportingService } from './reporting.service';
 import { ReportingController } from './reporting.controller';
+import { FunnelReportService } from './funnel-report.service';
 
 /**
  * 效果报告模块（2026-08-09 商用能力补齐 R3）：
  * AI 生成数 / 发布数 / 曝光 / 互动统计，供前端效果看板与周报卡。
+ * 2026-08-16 补六步漏斗（FunnelReportService）。
  */
 @Module({
   controllers: [ReportingController],
-  providers: [ReportingService],
-  exports: [ReportingService],
+  providers: [ReportingService, FunnelReportService],
+  exports: [ReportingService, FunnelReportService],
 })
 export class ReportingModule {}
