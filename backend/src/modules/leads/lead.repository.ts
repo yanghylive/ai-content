@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import crypto from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -253,22 +257,47 @@ export class LeadRepository {
     return { lead, created: true };
   }
 
-  /** 线索转客户：status=converted 并关联 CrmCustomer（一期最小实现） */
+  /**
+   * 线索转客户：status=converted 并关联 CrmCustomer。
+   * S0-2 安全锁：校验 lead 与 customer 两端 scope，防跨租户转客户；
+   * 用 updateMany 保证「不存在/无权」时 count=0 → 404，不做裸 update。
+   */
   async markConverted(
     leadId: string,
     customerId: string,
+    scope: { userId: string; tenantId?: string | null },
   ): Promise<void> {
-    const lead = await this.prisma.lead.update({
-      where: { id: leadId },
+    // 校验 customer 归属（防关联他人客户）
+    const customer = await this.prisma.crmCustomer.findFirst({
+      where: { id: customerId, ownerId: scope.userId },
+      select: { id: true },
+    });
+    if (!customer) {
+      throw new ForbiddenException('不能关联非本人客户');
+    }
+
+    const result = await this.prisma.lead.updateMany({
+      where: {
+        id: leadId,
+        userId: scope.userId,
+        ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+      },
       data: { status: 'converted', customerId },
     });
-    this.events.emit({
-      type: 'lead.converted',
-      leadId: lead.id,
-      customerId: lead.customerId ?? customerId,
-      userId: lead.userId,
-      at: new Date(),
-    });
+    if (result.count !== 1) {
+      throw new NotFoundException('线索不存在或无权操作');
+    }
+
+    const lead = await this.prisma.lead.findUnique({ where: { id: leadId } });
+    if (lead) {
+      this.events.emit({
+        type: 'lead.converted',
+        leadId: lead.id,
+        customerId: lead.customerId ?? customerId,
+        userId: lead.userId,
+        at: new Date(),
+      });
+    }
   }
 
   /**

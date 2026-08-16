@@ -60,3 +60,71 @@ describe('LeadRepository.fromGrowthLead（收敛映射）', () => {
     expect(input.customerId).toBeNull();
   });
 });
+
+describe('LeadRepository.markConverted（S0-2 跨租户安全锁）', () => {
+  const scope = { userId: 'user-1', tenantId: 'tenant-1' };
+
+  function makeRepo(overrides: {
+    crmCustomerFindFirst?: jest.Mock;
+    leadUpdateMany?: jest.Mock;
+    leadFindUnique?: jest.Mock;
+  } = {}) {
+    const prisma = {
+      crmCustomer: {
+        findFirst: overrides.crmCustomerFindFirst ?? jest.fn(),
+      },
+      lead: {
+        updateMany: overrides.leadUpdateMany ?? jest.fn(),
+        findUnique: overrides.leadFindUnique ?? jest.fn(),
+      },
+    };
+    const events = { emit: jest.fn() };
+    const repo = new LeadRepository(prisma as never, events as never);
+    return { repo, prisma, events };
+  }
+
+  it('成功转客户：customer 归属校验通过 + updateMany 带 scope', async () => {
+    const { repo, prisma, events } = makeRepo({
+      crmCustomerFindFirst: jest.fn().mockResolvedValue({ id: 'customer-1' }),
+      leadUpdateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      leadFindUnique: jest
+        .fn()
+        .mockResolvedValue({ id: 'lead-1', customerId: 'customer-1', userId: 'user-1' }),
+    });
+
+    await repo.markConverted('lead-1', 'customer-1', scope);
+
+    expect(prisma.crmCustomer.findFirst).toHaveBeenCalledWith({
+      where: { id: 'customer-1', ownerId: 'user-1' },
+      select: { id: true },
+    });
+    expect(prisma.lead.updateMany).toHaveBeenCalledWith({
+      where: { id: 'lead-1', userId: 'user-1', tenantId: 'tenant-1' },
+      data: { status: 'converted', customerId: 'customer-1' },
+    });
+    expect(events.emit).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'lead.converted' }),
+    );
+  });
+
+  it('关联非本人客户抛 403', async () => {
+    const { repo } = makeRepo({
+      crmCustomerFindFirst: jest.fn().mockResolvedValue(null),
+    });
+
+    await expect(
+      repo.markConverted('lead-1', 'others-customer', scope),
+    ).rejects.toThrow('不能关联非本人客户');
+  });
+
+  it('跨用户 lead 转客户抛 404（updateMany count=0）', async () => {
+    const { repo } = makeRepo({
+      crmCustomerFindFirst: jest.fn().mockResolvedValue({ id: 'customer-1' }),
+      leadUpdateMany: jest.fn().mockResolvedValue({ count: 0 }),
+    });
+
+    await expect(
+      repo.markConverted('others-lead', 'customer-1', scope),
+    ).rejects.toThrow('线索不存在或无权操作');
+  });
+});
