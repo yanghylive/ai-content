@@ -9,25 +9,10 @@ import {
   V2GhostButton,
   V2DangerButton,
   V2Input,
+  V2Textarea,
+  V2Select,
 } from "@/components/v2/ui-kit";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Select,
-  SelectItem,
-  Switch,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  Textarea,
-  addToast,
-} from "@heroui/react";
+import { addToast } from "@heroui/react";
 import { Icon } from "@/components/lucide-icon-compat";
 import {
   buildLocalEngineRiskConfirmation,
@@ -2422,37 +2407,46 @@ function RunCheckDetailsPanel({
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <Select
-            aria-label="按状态筛选"
-            label="状态"
-            selectedKeys={[statusFilter]}
-           
-            onSelectionChange={(keys) => {
-              const value = Array.from(keys)[0] as
-                "all" | RunCheckDetailTone | undefined;
-              if (value) setStatusFilter(value);
-            }}
-          >
-            <SelectItem key="all">全部状态</SelectItem>
-            <SelectItem key="danger">需处理</SelectItem>
-            <SelectItem key="warning">需留意</SelectItem>
-            <SelectItem key="deferred">待检查</SelectItem>
-            <SelectItem key="ready">正常</SelectItem>
-            <SelectItem key="muted">未启用</SelectItem>
-          </Select>
-          <Select
-            aria-label="按分类筛选"
-            items={groupFilterOptions}
-            label="分类"
-            selectedKeys={[groupFilter]}
-           
-            onSelectionChange={(keys) => {
-              const value = Array.from(keys)[0] as string | undefined;
-              if (value) setGroupFilter(value);
-            }}
-          >
-            {(group) => <SelectItem key={group.key}>{group.title}</SelectItem>}
-          </Select>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              状态
+            </label>
+            <V2Select
+              aria-label="按状态筛选"
+              value={statusFilter}
+              onChange={(e) => {
+                const value = e.target.value as
+                  "all" | RunCheckDetailTone | undefined;
+                if (value) setStatusFilter(value);
+              }}
+            >
+              <option value="all">全部状态</option>
+              <option value="danger">需处理</option>
+              <option value="warning">需留意</option>
+              <option value="deferred">待检查</option>
+              <option value="ready">正常</option>
+              <option value="muted">未启用</option>
+            </V2Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              分类
+            </label>
+            <V2Select
+              aria-label="按分类筛选"
+              value={groupFilter}
+              onChange={(e) => {
+                const value = e.target.value as string | undefined;
+                if (value) setGroupFilter(value);
+              }}
+            >
+              {groupFilterOptions.map((group) => (
+                <option key={group.key} value={group.key}>
+                  {group.title}
+                </option>
+              ))}
+            </V2Select>
+          </div>
           <V2GhostButton
             className="local-engine-console__service-action md:self-end"
            
@@ -2478,101 +2472,113 @@ function RunCheckDetailsPanel({
             ))}
           </div>
         </div>
-        <Table
-          aria-label="功能状态表"
-          classNames={{
-            wrapper:
-              "local-engine-console__run-table-wrapper border-small border-divider shadow-none",
-            th: "bg-default-50 text-default-500",
-            td: "align-top",
-          }}
-        >
-          <TableHeader>
-            <TableColumn>状态</TableColumn>
-            <TableColumn>分类</TableColumn>
-            <TableColumn>功能</TableColumn>
-            <TableColumn>当前摘要</TableColumn>
-            <TableColumn>下一步</TableColumn>
-            <TableColumn>操作</TableColumn>
-          </TableHeader>
-          <TableBody
-            emptyContent={
-              runtimeLoading ||
-              browserLoading ||
-              executorsLoading ||
-              filesLoading ||
-              readinessLoading ||
-              wechatContactsLoading ||
-              agentSLoading
-                ? "正在读取功能状态..."
-                : "当前筛选没有结果。"
-            }
-            items={filteredRows}
-          >
-            {(item) => (
-              <TableRow key={item.key}>
-                <TableCell>
-                  <V2StatusChip
-                    tone={runCheckToneColor(item.status)}
-                   
-                   
+        <div className="local-engine-console__run-table-wrapper overflow-x-auto rounded-[8px] border border-[var(--kaypal-v3-border)]">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                  状态
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                  分类
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                  功能
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                  当前摘要
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                  下一步
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                  操作
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRows.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-3 py-8 text-center text-small text-default-500"
                   >
-                    {item.statusLabel}
-                  </V2StatusChip>
-                </TableCell>
-                <TableCell>
-                  <div className="flex min-w-[120px] items-center gap-2">
-                    <Icon
-                      icon={item.groupIcon}
-                      className="text-lg text-default-400"
-                    />
-                    <span className="text-small text-default-700">
-                      {item.groupTitle}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <V2GhostButton
-                    className="h-auto min-h-0 justify-start px-0 py-0 text-left text-small font-semibold text-default-900"
-                   
-                    onClick={() => setSelectedItem(item)}
+                    {runtimeLoading ||
+                    browserLoading ||
+                    executorsLoading ||
+                    filesLoading ||
+                    readinessLoading ||
+                    wechatContactsLoading ||
+                    agentSLoading
+                      ? "正在读取功能状态..."
+                      : "当前筛选没有结果。"}
+                  </td>
+                </tr>
+              ) : (
+                filteredRows.map((item) => (
+                  <tr
+                    key={item.key}
+                    className="border-t border-[var(--kaypal-v3-border)]"
                   >
-                    <span className="max-w-[220px] truncate">{item.name}</span>
-                  </V2GhostButton>
-                </TableCell>
-                <TableCell>
-                  <p className="max-w-[320px] break-words text-small text-default-600">
-                    {item.summary}
-                  </p>
-                </TableCell>
-                <TableCell>
-                  <p className="max-w-[260px] break-words text-tiny text-default-400">
-                    {item.detail || "无额外处理建议"}
-                  </p>
-                </TableCell>
-                <TableCell>
-                  {item.actionHref ? (
-                    <Link
-                      className="local-engine-console__service-action inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
-                      href={item.actionHref}
-                    >
-                      {item.actionLabel || "去处理"}
-                    </Link>
-                  ) : (
-                    <V2GhostButton
-                      className="local-engine-console__service-action"
-                     
-                     
-                      onClick={() => setSelectedItem(item)}
-                    >
-                      详情
-                    </V2GhostButton>
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                    <td className="px-3 py-2 align-top">
+                      <V2StatusChip tone={runCheckToneColor(item.status)}>
+                        {item.statusLabel}
+                      </V2StatusChip>
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      <div className="flex min-w-[120px] items-center gap-2">
+                        <Icon
+                          icon={item.groupIcon}
+                          className="text-lg text-default-400"
+                        />
+                        <span className="text-small text-default-700">
+                          {item.groupTitle}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      <V2GhostButton
+                        className="h-auto min-h-0 justify-start px-0 py-0 text-left text-small font-semibold text-default-900"
+                        onClick={() => setSelectedItem(item)}
+                      >
+                        <span className="max-w-[220px] truncate">
+                          {item.name}
+                        </span>
+                      </V2GhostButton>
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      <p className="max-w-[320px] break-words text-small text-default-600">
+                        {item.summary}
+                      </p>
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      <p className="max-w-[260px] break-words text-tiny text-default-400">
+                        {item.detail || "无额外处理建议"}
+                      </p>
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      {item.actionHref ? (
+                        <Link
+                          className="local-engine-console__service-action inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+                          href={item.actionHref}
+                        >
+                          {item.actionLabel || "去处理"}
+                        </Link>
+                      ) : (
+                        <V2GhostButton
+                          className="local-engine-console__service-action"
+                          onClick={() => setSelectedItem(item)}
+                        >
+                          详情
+                        </V2GhostButton>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       {selectedItem ? (
         <RunCheckDetailDrawer
@@ -3056,70 +3062,90 @@ function WechatSessionPanel() {
                     }
                   />
                 </div>
-                <Switch
-                  isSelected={draft.currentWindowConfirmed}
-                  onValueChange={(value) =>
-                    setDraft((current) => ({
-                      ...current,
-                      currentWindowConfirmed: value,
-                    }))
-                  }
-                >
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.currentWindowConfirmed}
+                    onChange={(e) =>
+                      setDraft((current) => ({
+                        ...current,
+                        currentWindowConfirmed: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
                   当前微信窗口已切到目标会话
-                </Switch>
-                <Switch
-                  isSelected={draft.contactConfirmed}
-                  onValueChange={(value) =>
-                    setDraft((current) => ({
-                      ...current,
-                      contactConfirmed: value,
-                    }))
-                  }
-                >
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.contactConfirmed}
+                    onChange={(e) =>
+                      setDraft((current) => ({
+                        ...current,
+                        contactConfirmed: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
                   已核对联系人/当前窗口
-                </Switch>
-                <Switch
-                  color="danger"
-                  isSelected={draft.draftBeforeFillConfirmed}
-                  onValueChange={(value) =>
-                    setDraft((current) => ({
-                      ...current,
-                      draftBeforeFillConfirmed: value,
-                    }))
-                  }
-                >
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.draftBeforeFillConfirmed}
+                    onChange={(e) =>
+                      setDraft((current) => ({
+                        ...current,
+                        draftBeforeFillConfirmed: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
                   草稿填入前再次确认
-                </Switch>
-                <Switch
-                  isSelected={draft.loggedInConfirmed}
-                  onValueChange={(value) =>
-                    setDraft((current) => ({
-                      ...current,
-                      loggedInConfirmed: value,
-                    }))
-                  }
-                >
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.loggedInConfirmed}
+                    onChange={(e) =>
+                      setDraft((current) => ({
+                        ...current,
+                        loggedInConfirmed: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
                   微信已登录，没有掉线
-                </Switch>
-                <Switch
-                  isSelected={draft.popupCleared}
-                  onValueChange={(value) =>
-                    setDraft((current) => ({ ...current, popupCleared: value }))
-                  }
-                >
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.popupCleared}
+                    onChange={(e) =>
+                      setDraft((current) => ({
+                        ...current,
+                        popupCleared: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
                   弹窗/遮挡已处理
-                </Switch>
-                <Switch
-                  isSelected={draft.contactAmbiguityResolved}
-                  onValueChange={(value) =>
-                    setDraft((current) => ({
-                      ...current,
-                      contactAmbiguityResolved: value,
-                    }))
-                  }
-                >
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.contactAmbiguityResolved}
+                    onChange={(e) =>
+                      setDraft((current) => ({
+                        ...current,
+                        contactAmbiguityResolved: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
                   联系人歧义已人工排除
-                </Switch>
+                </label>
                 <div className="flex flex-wrap gap-2">
                   <V2PrimaryButton
                     
@@ -3501,12 +3527,16 @@ function QuickAgentTaskPanel({
             查看会话
           </Link>
         </div>
-        <Textarea
-          label="本机任务指令"
-          minRows={4}
-          value={instruction}
-          onValueChange={setInstruction}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            本机任务指令
+          </label>
+          <V2Textarea
+            rows={4}
+            value={instruction}
+            onChange={(e) => setInstruction(e.target.value)}
+          />
+        </div>
         <div className="flex flex-wrap justify-end gap-2">
           <V2PrimaryButton
             
@@ -5441,60 +5471,78 @@ function InteractionCreatePanel({
           ) : null}
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <Select
-            label="任务类型"
-            selectedKeys={[form.type || view.defaultType]}
-            onSelectionChange={(keys) => {
-              const value = Array.from(keys)[0] as
-                InteractionTaskType | undefined;
-              if (value) setForm((current) => ({ ...current, type: value }));
-            }}
-          >
-            {taskTypes
-              .filter((taskType) => taskType.key === view.defaultType)
-              .map((taskType) => (
-                <SelectItem key={taskType.key}>{taskType.label}</SelectItem>
-              ))}
-          </Select>
-          <Select
-            label="发送模式"
-            selectedKeys={[form.sendMode || "auto-send"]}
-            onSelectionChange={(keys) => {
-              const value = Array.from(keys)[0] as
-                InteractionSendMode | undefined;
-              if (value)
-                setForm((current) => ({ ...current, sendMode: value }));
-            }}
-          >
-            {availableSendModes.map((mode) => (
-              <SelectItem key={mode.key}>{mode.label}</SelectItem>
-            ))}
-          </Select>
-          {readyAccounts.length ? (
-            <Select
-              label={`${view.platformLabel}账号`}
-              placeholder="选择本地已登录账号"
-              selectedKeys={form.accountId ? [form.accountId] : []}
-              onSelectionChange={(keys) => {
-                const value = Array.from(keys)[0] as string | undefined;
-                const account = readyAccounts.find(
-                  (item) => String(item.id) === value,
-                );
-                setForm((current) => ({
-                  ...current,
-                  accountId: value,
-                  accountName: account?.displayName || current.accountName,
-                  platformType: account?.type || view.platformType,
-                  platformName: account?.platform || view.platformLabel,
-                }));
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              任务类型
+            </label>
+            <V2Select
+              value={form.type || view.defaultType}
+              onChange={(e) => {
+                const value = e.target.value as
+                  InteractionTaskType | undefined;
+                if (value) setForm((current) => ({ ...current, type: value }));
               }}
             >
-              {readyAccounts.map((account) => (
-                <SelectItem key={String(account.id)}>
-                  {account.platform} · {account.displayName}
-                </SelectItem>
+              {taskTypes
+                .filter((taskType) => taskType.key === view.defaultType)
+                .map((taskType) => (
+                  <option key={taskType.key} value={taskType.key}>
+                    {taskType.label}
+                  </option>
+                ))}
+            </V2Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              发送模式
+            </label>
+            <V2Select
+              value={form.sendMode || "auto-send"}
+              onChange={(e) => {
+                const value = e.target.value as
+                  InteractionSendMode | undefined;
+                if (value)
+                  setForm((current) => ({ ...current, sendMode: value }));
+              }}
+            >
+              {availableSendModes.map((mode) => (
+                <option key={mode.key} value={mode.key}>
+                  {mode.label}
+                </option>
               ))}
-            </Select>
+            </V2Select>
+          </div>
+          {readyAccounts.length ? (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                {`${view.platformLabel}账号`}
+              </label>
+              <V2Select
+                value={form.accountId || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const account = readyAccounts.find(
+                    (item) => String(item.id) === value,
+                  );
+                  setForm((current) => ({
+                    ...current,
+                    accountId: value,
+                    accountName: account?.displayName || current.accountName,
+                    platformType: account?.type || view.platformType,
+                    platformName: account?.platform || view.platformLabel,
+                  }));
+                }}
+              >
+                <option value="" disabled>
+                  选择本地已登录账号
+                </option>
+                {readyAccounts.map((account) => (
+                  <option key={String(account.id)} value={String(account.id)}>
+                    {account.platform} · {account.displayName}
+                  </option>
+                ))}
+              </V2Select>
+            </div>
           ) : (
             <div className="flex flex-col gap-1.5">
               <label className="text-sm text-[var(--kaypal-v3-muted)]">
@@ -5533,22 +5581,30 @@ function InteractionCreatePanel({
             />
           </div>
         </div>
-        <Textarea
-          label={view.sourceLabel}
-          minRows={3}
-          value={form.sourceText || ""}
-          onValueChange={(value) =>
-            setForm((current) => ({ ...current, sourceText: value }))
-          }
-        />
-        <Textarea
-          label={view.replyLabel}
-          minRows={3}
-          value={form.replyText || ""}
-          onValueChange={(value) =>
-            setForm((current) => ({ ...current, replyText: value }))
-          }
-        />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            {view.sourceLabel}
+          </label>
+          <V2Textarea
+            rows={3}
+            value={form.sourceText || ""}
+            onChange={(e) =>
+              setForm((current) => ({ ...current, sourceText: e.target.value }))
+            }
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            {view.replyLabel}
+          </label>
+          <V2Textarea
+            rows={3}
+            value={form.replyText || ""}
+            onChange={(e) =>
+              setForm((current) => ({ ...current, replyText: e.target.value }))
+            }
+          />
+        </div>
         {isDesktopRoute ? (
           <div className="rounded-[8px] border-small border-success-200 bg-success-50 p-3 text-small text-success-700">
             <p className="font-semibold">桌面微信执行</p>
@@ -5572,14 +5628,20 @@ function InteractionCreatePanel({
           </div>
         ) : null}
         {blockers.length ? <ActionBlockerList blockers={blockers} /> : null}
-        <Textarea
-          label="批量对象（可选）"
-          minRows={4}
-          value={batchText}
-          description="每行一个对象；支持“客户名｜留言内容”，不写客户名时会自动编号。"
-          placeholder={`张女士｜想了解今天还能预约吗？\n李先生｜价格大概多少？`}
-          onValueChange={setBatchText}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            批量对象（可选）
+          </label>
+          <V2Textarea
+            rows={4}
+            value={batchText}
+            placeholder={`张女士｜想了解今天还能预约吗？\n李先生｜价格大概多少？`}
+            onChange={(e) => setBatchText(e.target.value)}
+          />
+          <p className="text-xs text-[var(--kaypal-v3-muted)]">
+            每行一个对象；支持“客户名｜留言内容”，不写客户名时会自动编号。
+          </p>
+        </div>
         <div className="flex justify-end">
           <V2PrimaryButton
             disabled={!canSubmit}
@@ -5855,22 +5917,19 @@ function ApprovalConfirmModal({
     task?.safetyBoundary?.permissionStatus !== "allowed";
   const requiresDoubleConfirmation = Boolean(task?.requiresDoubleConfirmation);
 
-  return (
-    <Modal
-      isOpen={isOpen}
-      size="2xl"
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <ModalContent>
-        <ModalHeader className="flex flex-col gap-1">
-          <span>{isWechatTask ? "继续微信会话执行" : "继续受控执行"}</span>
-          <span className="text-small font-normal text-default-500">
-            系统会核对目标、内容和窗口；异常会停止并留下记录。
-          </span>
-        </ModalHeader>
-        <ModalBody>
+  return isOpen ? (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+        <div className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-[12px] bg-[var(--kaypal-v3-panel)]">
+          <div className="flex flex-col gap-1 border-b border-[var(--kaypal-v3-border)] p-5">
+            <span className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
+              {isWechatTask ? "继续微信会话执行" : "继续受控执行"}
+            </span>
+            <span className="text-sm font-normal text-[var(--kaypal-v3-muted)]">
+              系统会核对目标、内容和窗口；异常会停止并留下记录。
+            </span>
+          </div>
+          <div className="overflow-y-auto p-5">
           {task ? (
             <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-3">
@@ -5962,129 +6021,156 @@ function ApprovalConfirmModal({
                       }
                     />
                   </div>
-                  <Switch
-                    className="mt-3"
-                    color="danger"
-                    isSelected={draft.currentWindowConfirmed}
-                    onValueChange={(value) =>
-                      onDraftChange((current) => ({
-                        ...current,
-                        currentWindowConfirmed: value,
-                      }))
-                    }
-                  >
+                  <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                    <input
+                      type="checkbox"
+                      checked={draft.currentWindowConfirmed}
+                      onChange={(e) =>
+                        onDraftChange((current) => ({
+                          ...current,
+                          currentWindowConfirmed: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                    />
                     我已确认当前微信会话就是目标客户
-                  </Switch>
-                  <Switch
-                    className="mt-3"
-                    color="danger"
-                    isSelected={draft.contactConfirmed}
-                    onValueChange={(value) =>
-                      onDraftChange((current) => ({
-                        ...current,
-                        contactConfirmed: value,
-                      }))
-                    }
-                  >
+                  </label>
+                  <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                    <input
+                      type="checkbox"
+                      checked={draft.contactConfirmed}
+                      onChange={(e) =>
+                        onDraftChange((current) => ({
+                          ...current,
+                          contactConfirmed: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                    />
                     我已核对联系人/当前窗口标题
-                  </Switch>
-                  <Switch
-                    className="mt-3"
-                    color="danger"
-                    isSelected={draft.draftBeforeFillConfirmed}
-                    onValueChange={(value) =>
-                      onDraftChange((current) => ({
-                        ...current,
-                        draftBeforeFillConfirmed: value,
-                      }))
-                    }
-                  >
+                  </label>
+                  <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                    <input
+                      type="checkbox"
+                      checked={draft.draftBeforeFillConfirmed}
+                      onChange={(e) =>
+                        onDraftChange((current) => ({
+                          ...current,
+                          draftBeforeFillConfirmed: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                    />
                     我确认现在可以继续执行微信动作
-                  </Switch>
+                  </label>
                 </div>
               ) : null}
               <div className="grid gap-3 md:grid-cols-2">
-                <Switch
-                  isSelected={draft.targetConfirmed}
-                  onValueChange={(value) =>
-                    onDraftChange((current) => ({
-                      ...current,
-                      targetConfirmed: value,
-                    }))
-                  }
-                >
-                  已确认目标对象
-                </Switch>
-                <Switch
-                  isSelected={draft.contentConfirmed}
-                  onValueChange={(value) =>
-                    onDraftChange((current) => ({
-                      ...current,
-                      contentConfirmed: value,
-                    }))
-                  }
-                >
-                  已确认草稿内容
-                </Switch>
-                <Switch
-                  isSelected={draft.checklistConfirmed}
-                  onValueChange={(value) =>
-                    onDraftChange((current) => ({
-                      ...current,
-                      checklistConfirmed: value,
-                    }))
-                  }
-                >
-                  已逐项核对检查项
-                </Switch>
-                <Switch
-                  isSelected={draft.misfireProtectionConfirmed}
-                  onValueChange={(value) =>
-                    onDraftChange((current) => ({
-                      ...current,
-                      misfireProtectionConfirmed: value,
-                    }))
-                  }
-                >
-                  已确认误发误删保护
-                </Switch>
-                {requiresCommercialPermission ? (
-                  <Switch
-                    isSelected={draft.commercialPermissionConfirmed}
-                    onValueChange={(value) =>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.targetConfirmed}
+                    onChange={(e) =>
                       onDraftChange((current) => ({
                         ...current,
-                        commercialPermissionConfirmed: value,
+                        targetConfirmed: e.target.checked,
                       }))
                     }
-                  >
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
+                  已确认目标对象
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.contentConfirmed}
+                    onChange={(e) =>
+                      onDraftChange((current) => ({
+                        ...current,
+                        contentConfirmed: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
+                  已确认草稿内容
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.checklistConfirmed}
+                    onChange={(e) =>
+                      onDraftChange((current) => ({
+                        ...current,
+                        checklistConfirmed: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
+                  已逐项核对检查项
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.misfireProtectionConfirmed}
+                    onChange={(e) =>
+                      onDraftChange((current) => ({
+                        ...current,
+                        misfireProtectionConfirmed: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                  />
+                  已确认误发误删保护
+                </label>
+                {requiresCommercialPermission ? (
+                  <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                    <input
+                      type="checkbox"
+                      checked={draft.commercialPermissionConfirmed}
+                      onChange={(e) =>
+                        onDraftChange((current) => ({
+                          ...current,
+                          commercialPermissionConfirmed: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                    />
                     已确认试用限制/商用执行权限
-                  </Switch>
+                  </label>
                 ) : null}
                 {requiresDoubleConfirmation ? (
-                  <Switch
-                    color="danger"
-                    isSelected={draft.doubleConfirmationConfirmed}
-                    onValueChange={(value) =>
-                      onDraftChange((current) => ({
-                        ...current,
-                        doubleConfirmationConfirmed: value,
-                      }))
-                    }
-                  >
+                  <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                    <input
+                      type="checkbox"
+                      checked={draft.doubleConfirmationConfirmed}
+                      onChange={(e) =>
+                        onDraftChange((current) => ({
+                          ...current,
+                          doubleConfirmationConfirmed: e.target.checked,
+                        }))
+                      }
+                      className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+                    />
                     高风险继续执行保护
-                  </Switch>
+                  </label>
                 ) : null}
               </div>
-              <Textarea
-                label="确认备注"
-                minRows={2}
-                placeholder="可选，例如：已核对当前窗口和回复内容"
-                value={draft.note}
-                onValueChange={(value) =>
-                  onDraftChange((current) => ({ ...current, note: value }))
-                }
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                  确认备注
+                </label>
+                <V2Textarea
+                  rows={2}
+                  placeholder="可选，例如：已核对当前窗口和回复内容"
+                  value={draft.note}
+                  onChange={(e) =>
+                    onDraftChange((current) => ({
+                      ...current,
+                      note: e.target.value,
+                    }))
+                  }
+                />
+              </div>
               {task.diagnostics ? (
                 <div className="rounded-[8px] border-small border-divider bg-default-50 p-3 text-small text-default-700">
                   <p className="font-semibold">当前情况</p>
@@ -6113,8 +6199,8 @@ function ApprovalConfirmModal({
               </div>
             </div>
           ) : null}
-        </ModalBody>
-        <ModalFooter>
+          </div>
+          <div className="flex justify-end gap-2 border-t border-[var(--kaypal-v3-border)] p-4">
           <V2GhostButton disabled={isLoading} onClick={onClose}>
             取消
           </V2GhostButton>
@@ -6140,10 +6226,10 @@ function ApprovalConfirmModal({
           >
             继续执行
           </V2PrimaryButton>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  );
+          </div>
+        </div>
+      </div>
+  ) : null;
 }
 
 function RecordsPanel({
@@ -6317,55 +6403,63 @@ function RecordsPanel({
             <StatusItem label="记录数" value={String(summary.evidenceCount)} />
           </div>
           <div className="grid gap-3 md:grid-cols-[220px_220px_1fr] md:items-end">
-            <Select
-              label="状态"
-              selectedKeys={[statusFilter]}
-             
-              onSelectionChange={(keys) => {
-                const value = Array.from(keys)[0] as
-                  typeof statusFilter | undefined;
-                if (value) {
-                  setStatusFilter(value);
-                  onRefresh({ status: value, type: typeFilter }).catch(() => {
-                    addToast({ title: "筛选失败", color: "danger" });
-                  });
-                }
-              }}
-            >
-              <SelectItem key="all">全部状态</SelectItem>
-              <SelectItem key="completed">已完成</SelectItem>
-              <SelectItem key="failed">失败</SelectItem>
-              <SelectItem key="skipped">已跳过</SelectItem>
-              <SelectItem key="no_target">无对象</SelectItem>
-            </Select>
-            <Select
-              label="类型"
-              selectedKeys={[typeFilter]}
-             
-              onSelectionChange={(keys) => {
-                const value = Array.from(keys)[0] as
-                  typeof typeFilter | undefined;
-                if (value) {
-                  setTypeFilter(value);
-                  onRefresh({ status: statusFilter, type: value }).catch(() => {
-                    addToast({ title: "筛选失败", color: "danger" });
-                  });
-                }
-              }}
-            >
-              <SelectItem key="all">全部类型</SelectItem>
-              <SelectItem key="douyin-comment-reply">抖音自动评论</SelectItem>
-              <SelectItem key="douyin-direct-message-reply">
-                抖音私信回复
-              </SelectItem>
-              <SelectItem key="wechat-channel-comment-reply">
-                视频号评论回复
-              </SelectItem>
-              <SelectItem key="wechat-channel-direct-message-reply">
-                视频号私信回复
-              </SelectItem>
-              <SelectItem key="customer-follow-up">客户跟进</SelectItem>
-            </Select>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                状态
+              </label>
+              <V2Select
+                value={statusFilter}
+                onChange={(e) => {
+                  const value = e.target.value as
+                    typeof statusFilter | undefined;
+                  if (value) {
+                    setStatusFilter(value);
+                    onRefresh({ status: value, type: typeFilter }).catch(() => {
+                      addToast({ title: "筛选失败", color: "danger" });
+                    });
+                  }
+                }}
+              >
+                <option value="all">全部状态</option>
+                <option value="completed">已完成</option>
+                <option value="failed">失败</option>
+                <option value="skipped">已跳过</option>
+                <option value="no_target">无对象</option>
+              </V2Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                类型
+              </label>
+              <V2Select
+                value={typeFilter}
+                onChange={(e) => {
+                  const value = e.target.value as
+                    typeof typeFilter | undefined;
+                  if (value) {
+                    setTypeFilter(value);
+                    onRefresh({ status: statusFilter, type: value }).catch(
+                      () => {
+                        addToast({ title: "筛选失败", color: "danger" });
+                      },
+                    );
+                  }
+                }}
+              >
+                <option value="all">全部类型</option>
+                <option value="douyin-comment-reply">抖音自动评论</option>
+                <option value="douyin-direct-message-reply">
+                  抖音私信回复
+                </option>
+                <option value="wechat-channel-comment-reply">
+                  视频号评论回复
+                </option>
+                <option value="wechat-channel-direct-message-reply">
+                  视频号私信回复
+                </option>
+                <option value="customer-follow-up">客户跟进</option>
+              </V2Select>
+            </div>
             <p className="text-small text-default-500">
               当前显示 {tasks.length} 条，点击“详情”查看步骤记录和截图。
               {summary.lastUpdatedAt
@@ -6373,107 +6467,130 @@ function RecordsPanel({
                 : ""}
             </p>
           </div>
-          <Table
-            aria-label="回复记录表"
-            classNames={{
-              wrapper: "border-small border-divider shadow-none",
-              th: "bg-default-50 text-default-500",
-            }}
-          >
-            <TableHeader>
-              <TableColumn>状态</TableColumn>
-              <TableColumn>类型 / 平台</TableColumn>
-              <TableColumn>账号 / 目标</TableColumn>
-              <TableColumn>摘要</TableColumn>
-              <TableColumn>记录</TableColumn>
-              <TableColumn>更新时间</TableColumn>
-              <TableColumn>操作</TableColumn>
-            </TableHeader>
-            <TableBody
-              emptyContent={
-                loading ? (
-                  "正在读取回复记录..."
+          <div className="overflow-x-auto rounded-[8px] border border-[var(--kaypal-v3-border)]">
+            <table className="w-full">
+              <thead>
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                    状态
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                    类型 / 平台
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                    账号 / 目标
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                    摘要
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                    记录
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                    更新时间
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">
+                    操作
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-3 py-8">
+                      {loading ? (
+                        "正在读取回复记录..."
+                      ) : (
+                        <FunctionalEmptyState
+                          actions={[
+                            { href: "/engagement", label: "客户互动" },
+                          ]}
+                          description="还没有互动回复记录。执行评论、私信或微信任务后，这里会显示状态、摘要、记录和更新时间。"
+                          examples={[
+                            "评论回复",
+                            "私信回复",
+                            "微信互动",
+                            "更新时间",
+                          ]}
+                          surface="plain"
+                          title="当前没有回复记录"
+                        />
+                      )}
+                    </td>
+                  </tr>
                 ) : (
-                  <FunctionalEmptyState
-                    actions={[
-                      { href: "/engagement", label: "客户互动" },
-                    ]}
-                    description="还没有互动回复记录。执行评论、私信或微信任务后，这里会显示状态、摘要、记录和更新时间。"
-                    examples={["评论回复", "私信回复", "微信互动", "更新时间"]}
-                    surface="plain"
-                    title="当前没有回复记录"
-                  />
-                )
-              }
-              items={tasks}
-            >
-              {(task) => (
-                <TableRow key={task.id}>
-                  <TableCell>
-                    <StatusChip status={task.status} label={task.statusLabel} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <p className="text-small font-medium text-default-800">
-                        {task.typeLabel}
-                      </p>
-                      <p className="text-tiny text-default-400">
-                        {task.platformName || "本地互动"}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-[190px] space-y-1">
-                      <p className="truncate text-small text-default-800">
-                        {task.accountName}
-                      </p>
-                      <p className="truncate text-tiny text-default-400">
-                        {(task.batchTargets?.length || 0) > 1
-                          ? `批量 ${task.batchTargets?.length} 条，首条：${task.targetName}`
-                          : task.targetName}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-[320px] space-y-1">
-                      <p className="truncate text-small text-default-700">
-                        {interactionDisplayText(
-                          task.resultSummary?.headline ||
-                            task.nextAction ||
-                            task.diagnostics?.summary ||
-                            "已记录互动结果",
-                        )}
-                      </p>
-                      <p className="truncate text-tiny text-default-400">
-                        {interactionDisplayText(
-                          task.resultSummary?.nextAction || task.replyText,
-                        )}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <V2StatusChip>
-                      {task.events.filter((event) => event.evidence).length}条
-                    </V2StatusChip>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-tiny text-default-500">
-                      {formatDate(task.completedAt || task.updatedAt)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <V2GhostButton
-                     
-                     
-                      onClick={() => setSelectedTask(task)}
+                  tasks.map((task) => (
+                    <tr
+                      key={task.id}
+                      className="border-t border-[var(--kaypal-v3-border)]"
                     >
-                      详情
-                    </V2GhostButton>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                      <td className="px-3 py-2 align-top">
+                        <StatusChip
+                          status={task.status}
+                          label={task.statusLabel}
+                        />
+                      </td>
+                      <td className="px-3 py-2 align-top">
+                        <div className="space-y-1">
+                          <p className="text-small font-medium text-default-800">
+                            {task.typeLabel}
+                          </p>
+                          <p className="text-tiny text-default-400">
+                            {task.platformName || "本地互动"}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 align-top">
+                        <div className="max-w-[190px] space-y-1">
+                          <p className="truncate text-small text-default-800">
+                            {task.accountName}
+                          </p>
+                          <p className="truncate text-tiny text-default-400">
+                            {(task.batchTargets?.length || 0) > 1
+                              ? `批量 ${task.batchTargets?.length} 条，首条：${task.targetName}`
+                              : task.targetName}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 align-top">
+                        <div className="max-w-[320px] space-y-1">
+                          <p className="truncate text-small text-default-700">
+                            {interactionDisplayText(
+                              task.resultSummary?.headline ||
+                                task.nextAction ||
+                                task.diagnostics?.summary ||
+                                "已记录互动结果",
+                            )}
+                          </p>
+                          <p className="truncate text-tiny text-default-400">
+                            {interactionDisplayText(
+                              task.resultSummary?.nextAction || task.replyText,
+                            )}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 align-top">
+                        <V2StatusChip>
+                          {task.events.filter((event) => event.evidence).length}
+                          条
+                        </V2StatusChip>
+                      </td>
+                      <td className="px-3 py-2 align-top">
+                        <span className="text-tiny text-default-500">
+                          {formatDate(task.completedAt || task.updatedAt)}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 align-top">
+                        <V2GhostButton onClick={() => setSelectedTask(task)}>
+                          详情
+                        </V2GhostButton>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
       <section className="kaypal-v3-panel overflow-hidden">
@@ -6571,33 +6688,35 @@ function RecordsPanel({
           ) : null}
         </div>
       </section>
-      <Modal
-        isOpen={Boolean(selectedTask)}
-        size="5xl"
-        scrollBehavior="inside"
-        onOpenChange={(open) => {
-          if (!open) setSelectedTask(null);
-        }}
-      >
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">
-            <span>回复记录详情</span>
-            <span className="text-small font-normal text-default-500">
-              查看步骤、原因、原文、草稿和结果留存。
-            </span>
-          </ModalHeader>
-          <ModalBody>
-            {selectedTask ? (
-              <TaskCard task={selectedTask} onAction={async () => undefined} />
-            ) : null}
-          </ModalBody>
-          <ModalFooter>
-            <V2GhostButton onClick={() => setSelectedTask(null)}>
-              关闭
-            </V2GhostButton>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {selectedTask ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setSelectedTask(null)}
+          />
+          <div className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-[12px] bg-[var(--kaypal-v3-panel)]">
+            <div className="flex flex-col gap-1 border-b border-[var(--kaypal-v3-border)] p-5">
+              <span className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
+                回复记录详情
+              </span>
+              <span className="text-sm font-normal text-[var(--kaypal-v3-muted)]">
+                查看步骤、原因、原文、草稿和结果留存。
+              </span>
+            </div>
+            <div className="overflow-y-auto p-5">
+              <TaskCard
+                task={selectedTask}
+                onAction={async () => undefined}
+              />
+            </div>
+            <div className="flex justify-end gap-2 border-t border-[var(--kaypal-v3-border)] p-4">
+              <V2GhostButton onClick={() => setSelectedTask(null)}>
+                关闭
+              </V2GhostButton>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
@@ -7362,57 +7481,78 @@ function RulesPanel({
               }
             />
           </div>
-          <Select
-            label="默认发送模式"
-            selectedKeys={[draft.defaultSendMode]}
-            onSelectionChange={(keys) => {
-              const value = Array.from(keys)[0] as
-                InteractionSendMode | undefined;
-              if (value)
-                setDraft((current) =>
-                  current ? { ...current, defaultSendMode: value } : current,
-                );
-            }}
-          >
-            {sendModes.map((mode) => (
-              <SelectItem key={mode.key}>{mode.label}</SelectItem>
-            ))}
-          </Select>
-          <Select
-            label="回复语气"
-            selectedKeys={[draft.tone]}
-            onSelectionChange={(keys) => {
-              const value = Array.from(keys)[0] as
-                InteractionReplyRuleConfig["tone"] | undefined;
-              if (value)
-                setDraft((current) =>
-                  current ? { ...current, tone: value } : current,
-                );
-            }}
-          >
-            <SelectItem key="warm">亲切自然</SelectItem>
-            <SelectItem key="professional">稳重专业</SelectItem>
-            <SelectItem key="concise">简洁直接</SelectItem>
-          </Select>
-          <div className="flex items-center rounded-[8px] border-small border-divider bg-default-50 px-4">
-            <Switch
-              isSelected={draft.askForContact}
-              onValueChange={(value) =>
-                setDraft((current) =>
-                  current ? { ...current, askForContact: value } : current,
-                )
-              }
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              默认发送模式
+            </label>
+            <V2Select
+              value={draft.defaultSendMode}
+              onChange={(e) => {
+                const value = e.target.value as
+                  InteractionSendMode | undefined;
+                if (value)
+                  setDraft((current) =>
+                    current
+                      ? { ...current, defaultSendMode: value }
+                      : current,
+                  );
+              }}
             >
+              {sendModes.map((mode) => (
+                <option key={mode.key} value={mode.key}>
+                  {mode.label}
+                </option>
+              ))}
+            </V2Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              回复语气
+            </label>
+            <V2Select
+              value={draft.tone}
+              onChange={(e) => {
+                const value = e.target.value as
+                  InteractionReplyRuleConfig["tone"] | undefined;
+                if (value)
+                  setDraft((current) =>
+                    current ? { ...current, tone: value } : current,
+                  );
+              }}
+            >
+              <option value="warm">亲切自然</option>
+              <option value="professional">稳重专业</option>
+              <option value="concise">简洁直接</option>
+            </V2Select>
+          </div>
+          <div className="flex items-center rounded-[8px] border-small border-divider bg-default-50 px-4">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+              <input
+                type="checkbox"
+                checked={draft.askForContact}
+                onChange={(e) =>
+                  setDraft((current) =>
+                    current
+                      ? { ...current, askForContact: e.target.checked }
+                      : current,
+                  )
+                }
+                className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+              />
               引导留联系方式
-            </Switch>
+            </label>
           </div>
         </div>
-        <Textarea
-          label="服务卖点"
-          minRows={2}
-          value={draft.serviceHighlights.join("，")}
-          onValueChange={(value) => updateList("serviceHighlights", value)}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            服务卖点
+          </label>
+          <V2Textarea
+            rows={2}
+            value={draft.serviceHighlights.join("，")}
+            onChange={(e) => updateList("serviceHighlights", e.target.value)}
+          />
+        </div>
         <hr className="border-[var(--kaypal-v3-border)]" />
         <div>
           <h4 className="text-small font-semibold text-default-900">
@@ -7423,36 +7563,48 @@ function RulesPanel({
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <Select
-            label="识别规则"
-            selectedKeys={[draft.commentParsingMode]}
-            onSelectionChange={(keys) => {
-              const value = Array.from(keys)[0] as
-                InteractionReplyRuleConfig["commentParsingMode"] | undefined;
-              if (value)
-                setDraft((current) =>
-                  current ? { ...current, commentParsingMode: value } : current,
-                );
-            }}
-          >
-            <SelectItem key="rules">有规则</SelectItem>
-            <SelectItem key="none">没有规则</SelectItem>
-          </Select>
-          <Select
-            label="规则强度"
-            selectedKeys={[draft.commentRulePreset]}
-            onSelectionChange={(keys) => {
-              const value = Array.from(keys)[0] as
-                InteractionReplyRuleConfig["commentRulePreset"] | undefined;
-              if (value)
-                setDraft((current) =>
-                  current ? { ...current, commentRulePreset: value } : current,
-                );
-            }}
-          >
-            <SelectItem key="strict">严格</SelectItem>
-            <SelectItem key="loose">宽松</SelectItem>
-          </Select>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              识别规则
+            </label>
+            <V2Select
+              value={draft.commentParsingMode}
+              onChange={(e) => {
+                const value = e.target.value as
+                  InteractionReplyRuleConfig["commentParsingMode"] | undefined;
+                if (value)
+                  setDraft((current) =>
+                    current
+                      ? { ...current, commentParsingMode: value }
+                      : current,
+                  );
+              }}
+            >
+              <option value="rules">有规则</option>
+              <option value="none">没有规则</option>
+            </V2Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              规则强度
+            </label>
+            <V2Select
+              value={draft.commentRulePreset}
+              onChange={(e) => {
+                const value = e.target.value as
+                  InteractionReplyRuleConfig["commentRulePreset"] | undefined;
+                if (value)
+                  setDraft((current) =>
+                    current
+                      ? { ...current, commentRulePreset: value }
+                      : current,
+                  );
+              }}
+            >
+              <option value="strict">严格</option>
+              <option value="loose">宽松</option>
+            </V2Select>
+          </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm text-[var(--kaypal-v3-muted)]">
               最小字数
@@ -7487,81 +7639,116 @@ function RulesPanel({
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
-          <Switch
-            isSelected={draft.commentRequireActionAndTime}
-            onValueChange={(value) =>
-              setDraft((current) =>
-                current
-                  ? { ...current, commentRequireActionAndTime: value }
-                  : current,
-              )
-            }
-          >
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+            <input
+              type="checkbox"
+              checked={draft.commentRequireActionAndTime}
+              onChange={(e) =>
+                setDraft((current) =>
+                  current
+                    ? {
+                        ...current,
+                        commentRequireActionAndTime: e.target.checked,
+                      }
+                    : current,
+                )
+              }
+              className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+            />
             必须带评论操作和时间
-          </Switch>
-          <Switch
-            isSelected={draft.commentAllowShortText}
-            onValueChange={(value) =>
-              setDraft((current) =>
-                current
-                  ? { ...current, commentAllowShortText: value }
-                  : current,
-              )
-            }
-          >
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+            <input
+              type="checkbox"
+              checked={draft.commentAllowShortText}
+              onChange={(e) =>
+                setDraft((current) =>
+                  current
+                    ? { ...current, commentAllowShortText: e.target.checked }
+                    : current,
+                )
+              }
+              className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+            />
             允许短评论
-          </Switch>
-          <Switch
-            isSelected={draft.commentSkipHandled}
-            onValueChange={(value) =>
-              setDraft((current) =>
-                current ? { ...current, commentSkipHandled: value } : current,
-              )
-            }
-          >
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+            <input
+              type="checkbox"
+              checked={draft.commentSkipHandled}
+              onChange={(e) =>
+                setDraft((current) =>
+                  current
+                    ? { ...current, commentSkipHandled: e.target.checked }
+                    : current,
+                )
+              }
+              className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+            />
             跳过已回复评论
-          </Switch>
-          <Switch
-            isSelected={draft.commentQuestionOnly}
-            onValueChange={(value) =>
-              setDraft((current) =>
-                current ? { ...current, commentQuestionOnly: value } : current,
-              )
-            }
-          >
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+            <input
+              type="checkbox"
+              checked={draft.commentQuestionOnly}
+              onChange={(e) =>
+                setDraft((current) =>
+                  current
+                    ? { ...current, commentQuestionOnly: e.target.checked }
+                    : current,
+                )
+              }
+              className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+            />
             只回复问句
-          </Switch>
+          </label>
         </div>
-        <Textarea
-          label="关键词白名单"
-          minRows={2}
-          value={draft.commentWhitelistKeywords.join("，")}
-          onValueChange={(value) =>
-            updateList("commentWhitelistKeywords", value)
-          }
-        />
-        <Textarea
-          label="作者/自身过滤词"
-          minRows={2}
-          value={draft.commentExcludeAuthorKeywords.join("，")}
-          onValueChange={(value) =>
-            updateList("commentExcludeAuthorKeywords", value)
-          }
-        />
-        <Textarea
-          label="噪音过滤词"
-          minRows={2}
-          value={draft.commentNoiseKeywords.join("，")}
-          onValueChange={(value) => updateList("commentNoiseKeywords", value)}
-        />
-        <Textarea
-          label="优先识别关键词"
-          minRows={2}
-          value={draft.commentPriorityKeywords.join("，")}
-          onValueChange={(value) =>
-            updateList("commentPriorityKeywords", value)
-          }
-        />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            关键词白名单
+          </label>
+          <V2Textarea
+            rows={2}
+            value={draft.commentWhitelistKeywords.join("，")}
+            onChange={(e) =>
+              updateList("commentWhitelistKeywords", e.target.value)
+            }
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            作者/自身过滤词
+          </label>
+          <V2Textarea
+            rows={2}
+            value={draft.commentExcludeAuthorKeywords.join("，")}
+            onChange={(e) =>
+              updateList("commentExcludeAuthorKeywords", e.target.value)
+            }
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            噪音过滤词
+          </label>
+          <V2Textarea
+            rows={2}
+            value={draft.commentNoiseKeywords.join("，")}
+            onChange={(e) => updateList("commentNoiseKeywords", e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            优先识别关键词
+          </label>
+          <V2Textarea
+            rows={2}
+            value={draft.commentPriorityKeywords.join("，")}
+            onChange={(e) =>
+              updateList("commentPriorityKeywords", e.target.value)
+            }
+          />
+        </div>
         <hr className="border-[var(--kaypal-v3-border)]" />
         <div>
           <h4 className="text-small font-semibold text-default-900">
@@ -7572,59 +7759,83 @@ function RulesPanel({
           </p>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
-          <Switch
-            isSelected={draft.fallbackEnabled}
-            onValueChange={(value) =>
-              setDraft((current) =>
-                current ? { ...current, fallbackEnabled: value } : current,
-              )
-            }
-          >
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+            <input
+              type="checkbox"
+              checked={draft.fallbackEnabled}
+              onChange={(e) =>
+                setDraft((current) =>
+                  current
+                    ? { ...current, fallbackEnabled: e.target.checked }
+                    : current,
+                )
+              }
+              className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+            />
             启用兜底回复
-          </Switch>
-          <Switch
-            isSelected={draft.allowFallbackAutoSend}
-            onValueChange={(value) =>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+            <input
+              type="checkbox"
+              checked={draft.allowFallbackAutoSend}
+              onChange={(e) =>
+                setDraft((current) =>
+                  current
+                    ? { ...current, allowFallbackAutoSend: e.target.checked }
+                    : current,
+                )
+              }
+              className="h-4 w-4 rounded accent-[var(--kaypal-v3-accent)]"
+            />
+            允许兜底回复自动发送
+          </label>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            兜底回复话术
+          </label>
+          <V2Textarea
+            rows={3}
+            value={draft.fallbackReplies.join("\n")}
+            onChange={(e) => updateList("fallbackReplies", e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            需人工确认关键词
+          </label>
+          <V2Textarea
+            rows={2}
+            value={draft.requireApprovalKeywords.join("，")}
+            onChange={(e) =>
+              updateList("requireApprovalKeywords", e.target.value)
+            }
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            禁用词
+          </label>
+          <V2Textarea
+            rows={2}
+            value={draft.blockedKeywords.join("，")}
+            onChange={(e) => updateList("blockedKeywords", e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            收尾话术
+          </label>
+          <V2Textarea
+            rows={2}
+            value={draft.closingText}
+            onChange={(e) =>
               setDraft((current) =>
-                current
-                  ? { ...current, allowFallbackAutoSend: value }
-                  : current,
+                current ? { ...current, closingText: e.target.value } : current,
               )
             }
-          >
-            允许兜底回复自动发送
-          </Switch>
+          />
         </div>
-        <Textarea
-          label="兜底回复话术"
-          minRows={3}
-          value={draft.fallbackReplies.join("\n")}
-          onValueChange={(value) => updateList("fallbackReplies", value)}
-        />
-        <Textarea
-          label="需人工确认关键词"
-          minRows={2}
-          value={draft.requireApprovalKeywords.join("，")}
-          onValueChange={(value) =>
-            updateList("requireApprovalKeywords", value)
-          }
-        />
-        <Textarea
-          label="禁用词"
-          minRows={2}
-          value={draft.blockedKeywords.join("，")}
-          onValueChange={(value) => updateList("blockedKeywords", value)}
-        />
-        <Textarea
-          label="收尾话术"
-          minRows={2}
-          value={draft.closingText}
-          onValueChange={(value) =>
-            setDraft((current) =>
-              current ? { ...current, closingText: value } : current,
-            )
-          }
-        />
         <div className="flex justify-end">
           <V2PrimaryButton
             
