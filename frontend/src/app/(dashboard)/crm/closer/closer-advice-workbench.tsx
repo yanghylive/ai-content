@@ -3,14 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Chip,
-  Divider,
-  Spinner,
-} from "@heroui/react";
+  V2StatusChip,
+  V2GhostButton,
+  V2PrimaryButton,
+} from "@/components/v2/ui-kit";
 import {
   AlertTriangle,
   ArrowRight,
@@ -33,17 +29,15 @@ import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { getCrmAppState } from "@/lib/api/app-market";
 import { api } from "@/lib/api/client";
 
-type ChipColor =
-  "default" | "primary" | "secondary" | "success" | "warning" | "danger";
+type ChipColor = "accent" | "success" | "warning" | "danger" | "muted";
 
 function isChipColor(value: unknown): value is ChipColor {
   return (
-    value === "default" ||
-    value === "primary" ||
-    value === "secondary" ||
+    value === "accent" ||
     value === "success" ||
     value === "warning" ||
-    value === "danger"
+    value === "danger" ||
+    value === "muted"
   );
 }
 
@@ -246,7 +240,7 @@ function priorityColor(priority?: string): ChipColor {
   if (["medium", "normal", "p2", "中", "普通"].includes(normalized)) {
     return "warning";
   }
-  return "primary";
+  return "accent";
 }
 
 function riskColor(level?: string): ChipColor {
@@ -467,10 +461,10 @@ export function CloserAdviceWorkbench() {
   const metricItems: CloserMetric[] = advice?.metrics?.length
     ? advice.metrics.map((metric) => ({
         ...metric,
-        tone: isChipColor(metric.tone) ? metric.tone : "default",
+        tone: isChipColor(metric.tone) ? metric.tone : "muted",
       }))
     : [
-        { label: "今日跟进", value: followUps.length, tone: "primary" },
+        { label: "今日跟进", value: followUps.length, tone: "accent" },
         { label: "风险客户", value: riskCustomers.length, tone: "danger" },
         { label: "推进商机", value: opportunityMoves.length, tone: "warning" },
         { label: "可复制话术", value: scripts.length, tone: "success" },
@@ -480,7 +474,7 @@ export function CloserAdviceWorkbench() {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="flex items-center gap-3 rounded-[8px] border border-default-200 bg-content1 px-4 py-3 shadow-sm">
-          <Spinner size="sm" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
           <span className="text-sm text-default-500">
             成交助手正在读取 CRM 数据...
           </span>
@@ -493,27 +487,21 @@ export function CloserAdviceWorkbench() {
     return (
       <div className="mx-auto flex w-full max-w-[960px] flex-col gap-5">
         <header className="kaypal-v3-page-header p-5">
-          <Chip
-            color="warning"
-            variant="flat"
-            startContent={<DatabaseZap size={14} />}
-          >
-            CRM 未安装
-          </Chip>
+          <V2StatusChip tone="warning">
+            <DatabaseZap size={14} /> CRM 未安装
+          </V2StatusChip>
           <h1 className="mt-3">Kaypal 成交助手</h1>
           <p className="mt-2 text-sm leading-6 text-default-500">
             成交助手需要读取 CRM Lite 的联系人、任务、商机和时间线，安装 CRM
             后才能生成 AI 销售跟进建议。
           </p>
-          <Button
-            as={Link}
+          <Link
             href="/apps"
-            color="primary"
-            className="mt-4 rounded-[8px] font-semibold"
-            endContent={<ArrowRight size={16} />}
+            className="inline-flex items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
           >
             去应用市场安装 CRM
-          </Button>
+            <ArrowRight size={16} />
+          </Link>
         </header>
       </div>
     );
@@ -524,21 +512,13 @@ export function CloserAdviceWorkbench() {
       <header className="kaypal-v3-page-header flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <Chip
-              color="primary"
-              variant="flat"
-              startContent={<Bot size={14} />}
-            >
-              成交助手
-            </Chip>
-            <Chip
-              color="warning"
-              variant="flat"
-              startContent={<ShieldAlert size={14} />}
-            >
-              AI 建议，需人工判断
-            </Chip>
-            {advice?.model ? <Chip variant="flat">{advice.model}</Chip> : null}
+            <V2StatusChip tone="accent">
+              <Bot size={14} /> 成交助手
+            </V2StatusChip>
+            <V2StatusChip tone="warning">
+              <ShieldAlert size={14} /> AI 建议，需人工判断
+            </V2StatusChip>
+            {advice?.model ? <V2StatusChip>{advice.model}</V2StatusChip> : null}
           </div>
           <h1 className="mt-2">Kaypal 成交助手工作台</h1>
           <p className="mt-1 text-sm text-default-500">
@@ -546,23 +526,19 @@ export function CloserAdviceWorkbench() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="flat"
-            className="rounded-[8px] font-semibold"
-            onPress={() => loadAdvice("refresh")}
-            isLoading={refreshing}
-            startContent={!refreshing ? <RefreshCw size={16} /> : null}
+          <V2GhostButton
+            icon={RefreshCw}
+            loading={refreshing}
+            onClick={() => loadAdvice("refresh")}
           >
             刷新建议
-          </Button>
-          <Button
-            color="primary"
-            className="rounded-[8px] font-semibold"
-            onPress={() => copyText(managerReportText, "经理日报已复制")}
-            startContent={<Clipboard size={16} />}
+          </V2GhostButton>
+          <V2PrimaryButton
+            icon={Clipboard}
+            onClick={() => copyText(managerReportText, "经理日报已复制")}
           >
             复制日报
-          </Button>
+          </V2PrimaryButton>
         </div>
       </header>
 
@@ -572,7 +548,7 @@ export function CloserAdviceWorkbench() {
             key={`${metric.label || "metric"}-${index}`}
             label={metric.label || "指标"}
             value={metric.value ?? "-"}
-            tone={metric.tone || "default"}
+            tone={metric.tone || "muted"}
           />
         ))}
       </div>
@@ -598,8 +574,8 @@ export function CloserAdviceWorkbench() {
       ) : null}
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.45fr_0.75fr]">
-        <Card className="border border-default-200 bg-content1 shadow-sm">
-          <CardHeader className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <section className="kaypal-v3-panel overflow-hidden">
+          <header className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
                 今日 AI 跟进队列
@@ -608,12 +584,12 @@ export function CloserAdviceWorkbench() {
                 按任务、互动、客户状态和商机信号排序；不会自动外发消息。
               </p>
             </div>
-            <Chip size="sm" variant="flat" color="primary">
+            <V2StatusChip tone="accent">
               {formatDate(advice?.generatedAt)} 生成
-            </Chip>
-          </CardHeader>
-          <Divider />
-          <CardBody className="p-0">
+            </V2StatusChip>
+          </header>
+          <hr className="border-[var(--kaypal-v3-border)]" />
+          <div className="p-0">
             <div className="overflow-x-auto">
               <FollowUpTable
                 followUps={followUps}
@@ -621,11 +597,11 @@ export function CloserAdviceWorkbench() {
                 onSelect={setActiveFollowUpId}
               />
             </div>
-          </CardBody>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="border border-default-200 bg-content1 shadow-sm">
-          <CardHeader className="flex items-center justify-between p-3">
+        <section className="kaypal-v3-panel overflow-hidden">
+          <header className="flex items-center justify-between p-3">
             <div>
               <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
                 选中客户 Copilot
@@ -635,21 +611,21 @@ export function CloserAdviceWorkbench() {
               </p>
             </div>
             <Sparkles className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <Divider />
-          <CardBody className="flex flex-col gap-3 p-3">
+          </header>
+          <hr className="border-[var(--kaypal-v3-border)]" />
+          <div className="flex flex-col gap-3 p-3">
             {selectedFollowUp ? (
               <SelectedFollowUpPanel followUp={selectedFollowUp} />
             ) : (
               <EmptyState label="暂无今日跟进建议" />
             )}
-          </CardBody>
-        </Card>
+          </div>
+        </section>
       </div>
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-[0.9fr_1.1fr]">
-        <Card className="border border-default-200 bg-content1 shadow-sm">
-          <CardHeader className="flex items-center justify-between p-3">
+        <section className="kaypal-v3-panel overflow-hidden">
+          <header className="flex items-center justify-between p-3">
             <div>
               <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
                 风险客户
@@ -659,15 +635,15 @@ export function CloserAdviceWorkbench() {
               </p>
             </div>
             <ShieldAlert className="h-4 w-4 text-danger" />
-          </CardHeader>
-          <Divider />
-          <CardBody className="p-0">
+          </header>
+          <hr className="border-[var(--kaypal-v3-border)]" />
+          <div className="p-0">
             <RiskCustomerList risks={riskCustomers} />
-          </CardBody>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="border border-default-200 bg-content1 shadow-sm">
-          <CardHeader className="flex items-center justify-between p-3">
+        <section className="kaypal-v3-panel overflow-hidden">
+          <header className="flex items-center justify-between p-3">
             <div>
               <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
                 机会推进建议
@@ -677,17 +653,17 @@ export function CloserAdviceWorkbench() {
               </p>
             </div>
             <Target className="h-4 w-4 text-warning" />
-          </CardHeader>
-          <Divider />
-          <CardBody className="p-0">
+          </header>
+          <hr className="border-[var(--kaypal-v3-border)]" />
+          <div className="p-0">
             <OpportunityMoveTable moves={opportunityMoves} />
-          </CardBody>
-        </Card>
+          </div>
+        </section>
       </div>
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1fr_1fr]">
-        <Card className="border border-default-200 bg-content1 shadow-sm">
-          <CardHeader className="flex items-center justify-between p-3">
+        <section className="kaypal-v3-panel overflow-hidden">
+          <header className="flex items-center justify-between p-3">
             <div>
               <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
                 可复制话术
@@ -697,9 +673,9 @@ export function CloserAdviceWorkbench() {
               </p>
             </div>
             <MessageSquareText className="h-4 w-4 text-success" />
-          </CardHeader>
-          <Divider />
-          <CardBody className="flex max-h-[420px] flex-col gap-2 overflow-auto p-3">
+          </header>
+          <hr className="border-[var(--kaypal-v3-border)]" />
+          <div className="flex max-h-[420px] flex-col gap-2 overflow-auto p-3">
             {scripts.length ? (
               scripts.map((script, index) => (
                 <ScriptBlock
@@ -719,11 +695,11 @@ export function CloserAdviceWorkbench() {
             ) : (
               <EmptyState label="暂无可复制话术" />
             )}
-          </CardBody>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="border border-default-200 bg-content1 shadow-sm">
-          <CardHeader className="flex items-center justify-between p-3">
+        <section className="kaypal-v3-panel overflow-hidden">
+          <header className="flex items-center justify-between p-3">
             <div>
               <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
                 经理日报
@@ -732,21 +708,18 @@ export function CloserAdviceWorkbench() {
                 用于晨会、复盘和团队风险同步。
               </p>
             </div>
-            <Button
-              size="sm"
-              variant="flat"
-              className="rounded-[8px]"
-              onPress={() => copyText(managerReportText, "经理日报已复制")}
-              startContent={<Copy size={14} />}
+            <V2GhostButton
+              icon={Copy}
+              onClick={() => copyText(managerReportText, "经理日报已复制")}
             >
               复制
-            </Button>
-          </CardHeader>
-          <Divider />
-          <CardBody className="flex flex-col gap-3 p-3">
+            </V2GhostButton>
+          </header>
+          <hr className="border-[var(--kaypal-v3-border)]" />
+          <div className="flex flex-col gap-3 p-3">
             <ManagerReportPanel report={managerReport} />
-          </CardBody>
-        </Card>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -786,13 +759,13 @@ function FollowUpTable({
                 }`}
               >
                 <td className="px-3 py-2">
-                  <Chip
-                    size="sm"
-                    variant="flat"
-                    color={priorityColor(item.priority || item.urgency)}
+                  <V2StatusChip
+                   
+                   
+                    tone={priorityColor(item.priority || item.urgency)}
                   >
                     {labelPriority(item.priority || item.urgency)}
-                  </Chip>
+                  </V2StatusChip>
                   {item.confidence !== undefined ? (
                     <div className="mt-1 text-[11px] text-default-400">
                       置信 {formatPercent(item.confidence)}
@@ -827,26 +800,20 @@ function FollowUpTable({
                 </td>
                 <td className="px-3 py-2 text-right">
                   <div className="flex justify-end gap-1">
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      className="rounded-[8px]"
-                      onPress={() => onSelect(key)}
-                      startContent={<Gauge size={14} />}
+                    <V2GhostButton
+                      icon={Gauge}
+                      onClick={() => onSelect(key)}
                     >
                       查看
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      className="rounded-[8px]"
-                      onPress={() =>
+                    </V2GhostButton>
+                    <V2GhostButton
+                      icon={Copy}
+                      onClick={() =>
                         copyText(followUpScript(item), "跟进话术已复制")
                       }
-                      startContent={<Copy size={14} />}
                     >
                       复制
-                    </Button>
+                    </V2GhostButton>
                   </div>
                 </td>
               </tr>
@@ -879,13 +846,13 @@ function SelectedFollowUpPanel({ followUp }: { followUp: CloserFollowUp }) {
               {followUp.companyName || followUp.title || "CRM 客户"}
             </p>
           </div>
-          <Chip
-            size="sm"
-            variant="flat"
-            color={priorityColor(followUp.priority || followUp.urgency)}
+          <V2StatusChip
+           
+           
+            tone={priorityColor(followUp.priority || followUp.urgency)}
           >
             {labelPriority(followUp.priority || followUp.urgency)}
-          </Chip>
+          </V2StatusChip>
         </div>
       </div>
       <InfoBlock icon={<Sparkles size={14} />} label="为什么跟">
@@ -897,15 +864,12 @@ function SelectedFollowUpPanel({ followUp }: { followUp: CloserFollowUp }) {
       <InfoBlock icon={<MessageSquareText size={14} />} label="建议话术">
         <div className="flex flex-col gap-2">
           <p>{followUpScript(followUp)}</p>
-          <Button
-            size="sm"
-            variant="flat"
-            className="w-fit rounded-[8px]"
-            onPress={() => copyText(followUpScript(followUp), "跟进话术已复制")}
-            startContent={<Copy size={14} />}
+          <V2GhostButton
+            icon={Copy}
+            onClick={() => copyText(followUpScript(followUp), "跟进话术已复制")}
           >
             复制话术
-          </Button>
+          </V2GhostButton>
         </div>
       </InfoBlock>
       <InfoBlock icon={<AlertTriangle size={14} />} label="风险点">
@@ -919,14 +883,14 @@ function SelectedFollowUpPanel({ followUp }: { followUp: CloserFollowUp }) {
         <div className="mt-2 flex flex-wrap gap-1">
           {evidence.length ? (
             evidence.map((item) => (
-              <Chip
+              <V2StatusChip
                 key={item}
-                size="sm"
-                variant="flat"
-                className="rounded-[6px]"
+               
+               
+               
               >
                 {item}
-              </Chip>
+              </V2StatusChip>
             ))
           ) : (
             <span className="text-xs text-default-400">
@@ -966,13 +930,13 @@ function RiskCustomerList({ risks }: { risks: CloserRiskCustomer[] }) {
                   {risk.companyName || risk.owner || "-"}
                 </div>
               </div>
-              <Chip
-                size="sm"
-                variant="flat"
-                color={riskColor(risk.riskLevel || risk.level)}
+              <V2StatusChip
+               
+               
+                tone={riskColor(risk.riskLevel || risk.level)}
               >
                 {labelRisk(risk.riskLevel || risk.level)}
-              </Chip>
+              </V2StatusChip>
             </div>
             <p className="mt-2 text-sm leading-6 text-default-600">
               {textOrDash(risk.riskReason || risk.reason)}
@@ -982,20 +946,20 @@ function RiskCustomerList({ risks }: { risks: CloserRiskCustomer[] }) {
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-1">
               {risk.valueAtRiskCents || risk.amountCents ? (
-                <Chip size="sm" variant="flat" color="warning">
+                <V2StatusChip tone="warning">
                   风险金额{" "}
                   {formatMoney(risk.valueAtRiskCents || risk.amountCents)}
-                </Chip>
+                </V2StatusChip>
               ) : null}
               {evidence.map((item) => (
-                <Chip
+                <V2StatusChip
                   key={item}
-                  size="sm"
-                  variant="flat"
-                  className="rounded-[6px]"
+                 
+                 
+                 
                 >
                   {item}
-                </Chip>
+                </V2StatusChip>
               ))}
             </div>
           </div>
@@ -1034,9 +998,9 @@ function OpportunityMoveTable({ moves }: { moves: CloserOpportunityMove[] }) {
                   </div>
                 </td>
                 <td className="px-3 py-2 text-default-600">
-                  <Chip size="sm" variant="flat" color="primary">
+                  <V2StatusChip tone="accent">
                     {move.stage || "待推进"}
-                  </Chip>
+                  </V2StatusChip>
                   <div className="mt-1 text-xs text-default-400">
                     {formatMoney(move.amountCents)} · 胜率{" "}
                     {formatPercent(move.probability)}
@@ -1053,20 +1017,17 @@ function OpportunityMoveTable({ moves }: { moves: CloserOpportunityMove[] }) {
                   </div>
                 </td>
                 <td className="px-3 py-2 text-right">
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    className="rounded-[8px]"
-                    onPress={() =>
+                  <V2GhostButton
+                    icon={Copy}
+                    onClick={() =>
                       copyText(
                         move.suggestedMessage || move.suggestedAction || "",
                         "商机推进话术已复制",
                       )
                     }
-                    startContent={<Copy size={14} />}
                   >
                     复制
-                  </Button>
+                  </V2GhostButton>
                 </td>
               </tr>
             ))
@@ -1091,31 +1052,28 @@ function ScriptBlock({ script }: { script: CloserScript }) {
           </div>
           <div className="mt-1 flex flex-wrap gap-1">
             {script.channel ? (
-              <Chip size="sm" variant="flat" color="primary">
+              <V2StatusChip tone="accent">
                 {script.channel}
-              </Chip>
+              </V2StatusChip>
             ) : null}
             {script.goal ? (
-              <Chip size="sm" variant="flat">
+              <V2StatusChip>
                 {textOrDash(script.goal)}
-              </Chip>
+              </V2StatusChip>
             ) : null}
             {script.objection ? (
-              <Chip size="sm" variant="flat" color="warning">
+              <V2StatusChip tone="warning">
                 异议：{script.objection}
-              </Chip>
+              </V2StatusChip>
             ) : null}
           </div>
         </div>
-        <Button
-          size="sm"
-          variant="flat"
-          className="rounded-[8px]"
-          onPress={() => copyText(text, "话术已复制")}
-          startContent={<Copy size={14} />}
+        <V2GhostButton
+          icon={Copy}
+          onClick={() => copyText(text, "话术已复制")}
         >
           复制
-        </Button>
+        </V2GhostButton>
       </div>
       <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-default-700">
         {text}
@@ -1164,7 +1122,7 @@ function ManagerReportPanel({ report }: { report: CloserDailyReport }) {
         title="今日动作"
         icon={<Target size={14} />}
         items={report.actions}
-        tone="primary"
+        tone="accent"
       />
       <ReportSection
         title="阻塞"
@@ -1192,14 +1150,14 @@ function ReportSection({
   return (
     <div className="rounded-[8px] border border-default-200 bg-content1 p-3">
       <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-default-500">
-        <Chip
-          size="sm"
-          color={tone}
-          variant="flat"
-          className="h-6 rounded-[6px]"
+        <V2StatusChip
+         
+          tone={tone}
+         
+         
         >
           {icon}
-        </Chip>
+        </V2StatusChip>
         {title}
       </div>
       <ul className="space-y-1 text-sm leading-6 text-default-700">
@@ -1239,7 +1197,7 @@ function InfoBlock({
 function Metric({
   label,
   value,
-  tone = "default",
+  tone = "muted",
 }: {
   label: string;
   value: number | string;
@@ -1251,14 +1209,14 @@ function Metric({
         <div className="text-[11px] font-semibold text-default-500">
           {label}
         </div>
-        <Chip
-          size="sm"
-          variant="flat"
-          color={tone}
-          className="h-5 rounded-[6px]"
+        <V2StatusChip
+         
+         
+          tone={tone}
+         
         >
           AI
-        </Chip>
+        </V2StatusChip>
       </div>
       <div className="mt-1 truncate text-xl font-bold text-[var(--kaypal-v3-ink)]">
         {value}
