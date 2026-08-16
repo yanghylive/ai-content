@@ -1,7 +1,5 @@
-import { HybridRoute } from "@/components/v2/hybrid-route";
-import { CrmCloserCenter } from "./crm-closer-center";
-import LegacyPage from "./page-legacy";
+import { CloserPage } from "./closer-page";
 
 export default function Page() {
-  return <HybridRoute v2={<CrmCloserCenter />} legacy={<LegacyPage />} />;
+  return <CloserPage />;
 }
