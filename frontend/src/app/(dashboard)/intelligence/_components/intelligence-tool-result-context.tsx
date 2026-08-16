@@ -130,7 +130,7 @@ const intelligenceToolViews: Record<string, IntelligenceToolView> = {
       },
     ],
     nextActions: [
-      { label: "创建监控", href: "/intelligence/monitors?tool=brand-monitoring", icon: BellRing },
+      { label: "创建监控", href: "/intelligence/monitor-new", icon: BellRing },
       { label: "生成报告", href: "/intelligence/reports", icon: FileText },
       { label: "生成选题", href: "/topics", icon: Lightbulb },
     ],
@@ -266,7 +266,7 @@ const intelligenceToolViews: Record<string, IntelligenceToolView> = {
       },
     ],
     nextActions: [
-      { label: "新建监控", href: "/intelligence/monitors?tool=brand-monitoring", icon: BellRing },
+      { label: "新建监控", href: "/intelligence/monitor-new", icon: BellRing },
       { label: "看待处理", href: "/intelligence/inbox", icon: Target },
       { label: "生成报告", href: "/intelligence/reports", icon: FileText },
     ],
