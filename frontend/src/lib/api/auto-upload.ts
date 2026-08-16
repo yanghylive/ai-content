@@ -37,6 +37,8 @@ export interface AutoUploadAccount {
   lastDispatchAt?: string | null;
   lastDispatchOk?: boolean | null;
   lastDispatchReason?: string | null;
+  /** 统一生命周期状态（后端 deriveAccountLifecycle 返回） */
+  lifecycleStatus?: string | null;
 }
 
 export interface AutoUploadPage<T> {
