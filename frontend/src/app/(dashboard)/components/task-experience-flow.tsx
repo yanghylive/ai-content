@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Button, Chip } from "@heroui/react";
+import { V2StatusChip } from "@/components/v2/ui-kit";
 import {
   Bot,
   CheckCircle2,
@@ -141,9 +141,7 @@ export function TaskExperienceFlow({
     >
       <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <Chip color="primary" size="sm" variant="flat">
-            流程
-          </Chip>
+          <V2StatusChip tone="accent">流程</V2StatusChip>
           <h3
             className="shrink-0 text-small font-semibold text-default-900"
             title={description}
@@ -174,22 +172,17 @@ export function TaskExperienceFlow({
 
         {primaryHref ? (
           <div className="flex min-w-0 shrink-0 items-center gap-2 border-t border-divider pt-2 xl:w-[260px] xl:border-l xl:border-t-0 xl:pl-3 xl:pt-0">
-            <Chip color="success" size="sm" variant="flat">
-              操作
-            </Chip>
-            <Button
-              as={Link}
-              className="shrink-0 rounded-[8px] font-semibold"
+            <V2StatusChip tone="success">操作</V2StatusChip>
+            <Link
+              className="inline-flex shrink-0 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-1.5 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
               href={primaryHref}
-              size="sm"
-              startContent={React.createElement(actionIconByIndex[0], {
+            >
+              {React.createElement(actionIconByIndex[0], {
                 "aria-hidden": true,
                 className: "h-4 w-4",
               })}
-              variant="flat"
-            >
               {primaryLabel}
-            </Button>
+            </Link>
           </div>
         ) : null}
       </div>
