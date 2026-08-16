@@ -2,6 +2,7 @@ import { Injectable, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { ActivationService } from '../activation/activation.service';
 import type { AgentSession } from '../local-engine/local-engine.types';
 
 /**
@@ -17,6 +18,8 @@ export class PublishTrackingService {
     private readonly prisma: PrismaService,
     @Optional()
     private readonly authRequestContext?: AuthRequestContextService,
+    @Optional()
+    private readonly activation?: ActivationService,
   ) {}
 
   /** 创建发布跟踪会话（与 local-engine 原实现行为一致） */
@@ -94,6 +97,17 @@ export class PublishTrackingService {
       evidenceCount: input.evidenceCount ?? 0,
     };
     await this.persist(session);
+    // 激活事件（报告 16.3 第 1 项）：首次发布成功 = 首个价值。幂等旁路，失败不阻断。
+    if (input.ok && this.activation && session.userId && session.userId !== 'legacy-local-user') {
+      void this.activation
+        .recordFirstValue({
+          userId: session.userId,
+          tenantId: session.tenantId,
+          eventType: 'first_publish',
+          refId: id,
+        })
+        .catch(() => {});
+    }
     return session;
   }
 

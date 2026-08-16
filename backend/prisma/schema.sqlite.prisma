@@ -3038,3 +3038,18 @@ model EntitlementSnapshot {
   @@index([refId])
   @@map("entitlement_snapshots")
 }
+
+// 激活事件（报告 16.3 第 1 项）：记录用户「首个价值」达成时刻，
+// 用于 time_to_first_value 指标（注册 → 首个有效发布/线索）。
+model ActivationEvent {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tenantId  String?  @map("tenant_id")
+  eventType String   @map("event_type") // first_publish | first_lead
+  refId     String?  @map("ref_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, eventType])
+  @@index([tenantId, eventType, createdAt])
+  @@map("activation_events")
+}
