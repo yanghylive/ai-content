@@ -368,7 +368,7 @@ async function copyText(value: string, message = "已复制到剪贴板") {
   }
 }
 
-export default function CrmCloserPage() {
+export function CloserAdviceWorkbench() {
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [installed, setInstalled] = React.useState(false);
