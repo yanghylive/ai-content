@@ -3410,60 +3410,66 @@ export class CrmService {
     } satisfies Prisma.InputJsonObject;
     const customerStatus = this.growthLeadStatusToCustomerStatus(status);
 
-    const customer = await this.prisma.crmCustomer.upsert({
-      where: this.customerDedupeWhere(userId, tenantId, dedupeKey),
-      create: {
-        ownerId: userId,
-        actorUserId: userId,
-        tenantId,
-        displayName,
-        status: customerStatus,
-        sourcePlatform: platform,
-        sourceKeyword,
-        matchedKeyword: matchedKeywords.join('、') || null,
-        sourceUrl,
-        sourceText,
-        latestReply,
-        score: this.normalizeScore(input.score ?? 60),
-        tags: this.growthLeadTags(input),
-        profileUrl: this.optionalString(input.profileUrl),
-        externalUserId: this.optionalString(input.externalUserId),
-        dedupeKey,
-        firstInteractionTaskId: taskId,
-        latestInteractionTaskId: taskId,
-        metadata,
-      },
-      update: {
-        tenantId,
-        displayName,
-        status: customerStatus,
-        sourcePlatform: platform,
-        sourceKeyword,
-        matchedKeyword: matchedKeywords.join('、') || null,
-        sourceUrl,
-        sourceText,
-        latestReply,
-        score: this.normalizeScore(input.score ?? 60),
-        tags: this.growthLeadTags(input),
-        profileUrl: this.optionalString(input.profileUrl),
-        externalUserId: this.optionalString(input.externalUserId),
-        latestInteractionTaskId: taskId,
-        metadata,
-        archivedAt: null,
-      },
-    });
+    // S0-6 原子化：建客户 + 写时间线包进一个事务，任一步失败整体回滚，
+    // 杜绝「客户已建但时间线丢失」的半成品状态。
+    const customer = await this.prisma.$transaction(async (tx) => {
+      const c = await tx.crmCustomer.upsert({
+        where: this.customerDedupeWhere(userId, tenantId, dedupeKey),
+        create: {
+          ownerId: userId,
+          actorUserId: userId,
+          tenantId,
+          displayName,
+          status: customerStatus,
+          sourcePlatform: platform,
+          sourceKeyword,
+          matchedKeyword: matchedKeywords.join('、') || null,
+          sourceUrl,
+          sourceText,
+          latestReply,
+          score: this.normalizeScore(input.score ?? 60),
+          tags: this.growthLeadTags(input),
+          profileUrl: this.optionalString(input.profileUrl),
+          externalUserId: this.optionalString(input.externalUserId),
+          dedupeKey,
+          firstInteractionTaskId: taskId,
+          latestInteractionTaskId: taskId,
+          metadata,
+        },
+        update: {
+          tenantId,
+          displayName,
+          status: customerStatus,
+          sourcePlatform: platform,
+          sourceKeyword,
+          matchedKeyword: matchedKeywords.join('、') || null,
+          sourceUrl,
+          sourceText,
+          latestReply,
+          score: this.normalizeScore(input.score ?? 60),
+          tags: this.growthLeadTags(input),
+          profileUrl: this.optionalString(input.profileUrl),
+          externalUserId: this.optionalString(input.externalUserId),
+          latestInteractionTaskId: taskId,
+          metadata,
+          archivedAt: null,
+        },
+      });
 
-    await this.appendTimeline(userId, {
-      customerId: customer.id,
-      companyId: customer.companyId,
-      relatedInteractionTaskId: taskId,
-      eventType: 'growth_lead_synced',
-      channel: platform,
-      content: sourceText,
-      replyContent: latestReply,
-      status,
-      evidence,
-      metadata,
+      await this.appendTimelineWithClient(tx, userId, tenantId, {
+        customerId: c.id,
+        companyId: c.companyId,
+        relatedInteractionTaskId: taskId,
+        eventType: 'growth_lead_synced',
+        channel: platform,
+        content: sourceText,
+        replyContent: latestReply,
+        status,
+        evidence,
+        metadata,
+      });
+
+      return c;
     });
 
     return {
