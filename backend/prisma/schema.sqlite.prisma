@@ -1578,6 +1578,36 @@ model InteractionTask {
   @@map("interaction_tasks")
 }
 
+// 互动事件（六步闭环 15.4#3）：平台侧事实（评论/私信/提及/表单），
+// 独立于 InteractionTask（团队动作）。dedupeKey 去重，同一事件重扫不重复入库。
+model InteractionEvent {
+  id               String   @id @default(cuid())
+  tenantId         String   @default("legacy-local-desktop") @map("tenant_id")
+  userId           String   @default("legacy-local-user") @map("user_id")
+  platform         String
+  accountId        String?  @map("account_id")
+  channel          String   @default("comment") @map("channel") // comment | dm | mention | form
+  externalEventId  String?  @map("external_event_id")
+  externalThreadId String?  @map("external_thread_id")
+  authorExternalId String?  @map("author_external_id")
+  sourceUrl        String?  @map("source_url")
+  sourceArticleId  String?  @map("source_article_id")
+  publishRecordId  String?  @map("publish_record_id")
+  body             String? 
+  dedupeKey        String   @map("dedupe_key")
+  occurredAt       DateTime @map("occurred_at")
+  raw              Json?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, dedupeKey])
+  @@index([tenantId, platform, accountId, occurredAt])
+  @@index([sourceArticleId])
+  @@index([publishRecordId])
+  @@index([authorExternalId])
+  @@map("interaction_events")
+}
+
 // 交互任务事件表
 model InteractionTaskEvent {
   id        String   @id @default(cuid())
