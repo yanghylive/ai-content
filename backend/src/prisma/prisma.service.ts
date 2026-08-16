@@ -2362,6 +2362,7 @@ export class PrismaService
       ['publish_records', 'body_snapshot', 'TEXT'],
       ['publish_records', 'payload_json', 'JSONB'],
       ['publish_records', 'result_json', 'JSONB'],
+      ['publish_records', 'readback_state', "TEXT NOT NULL DEFAULT 'pending'"],
       [
         'local_engine_reply_rules',
         'tenant_id',

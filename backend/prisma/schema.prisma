@@ -1360,6 +1360,8 @@ model PublishRecord {
   platform       String // wechat 等
   status         String  @default("pending") // pending, success, failed
   publishUrl     String? @map("publish_url") // 发布的文章外部链接或外部 ID
+  // 记录级回读状态（六步闭环 15.4#5 PublishReceipt 提列）：pending | verified | uncertain
+  readbackState  String  @default("pending") @map("readback_state")
   errorMessage   String? @map("error_message") @db.Text // 报错信息记录
   sourceIdentity Json?   @map("source_identity")
   bodySnapshot   String? @map("body_snapshot") @db.Text
