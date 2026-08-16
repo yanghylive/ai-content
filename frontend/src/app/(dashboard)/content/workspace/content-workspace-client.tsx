@@ -2,7 +2,6 @@
 
 import { addToast } from "@heroui/react";
 import { EmptyState } from "@astryxdesign/core/EmptyState";
-import { Spinner } from "@astryxdesign/core/Spinner";
 import {
   ClipboardList,
   FilePlus2,
@@ -1081,7 +1080,10 @@ export function ContentWorkspaceClient() {
                   aria-label="内容编辑工作区"
                   className="order-1 flex min-h-[560px] items-center justify-center rounded-[6px] border border-divider bg-content1 px-6 text-center lg:order-2"
                 >
-                  <Spinner label="正在加载内容" size="sm" />
+                  <div className="flex flex-col items-center gap-2 text-sm text-[var(--kaypal-v3-muted)]">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+                    正在加载内容
+                  </div>
                 </section>
               ) : (
                 <section
