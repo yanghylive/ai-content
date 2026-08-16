@@ -27,7 +27,7 @@ function makeUser(
 }
 
 describe('EntitlementsService', () => {
-  const service = new EntitlementsService();
+  const service = new EntitlementsService({} as any);
 
   it('does not treat cached Kaypal plan metadata as a commercial execution grant', () => {
     const entitlement = service.getEffectiveEntitlement(makeUser());
@@ -100,7 +100,7 @@ describe('EntitlementsService', () => {
       }),
       findCommercialEntitlementForTenant: jest.fn().mockResolvedValue(null),
     };
-    const serviceWithTenants = new EntitlementsService(tenants as any);
+    const serviceWithTenants = new EntitlementsService({} as any, tenants as any);
 
     const entitlement =
       await serviceWithTenants.getEffectiveEntitlementForUser(makeUser());
@@ -151,7 +151,7 @@ describe('EntitlementsService', () => {
         updatedAt: new Date('2026-07-01T00:00:00.000Z'),
       }),
     };
-    const serviceWithTenants = new EntitlementsService(tenants as any);
+    const serviceWithTenants = new EntitlementsService({} as any, tenants as any);
 
     const entitlement = await serviceWithTenants.getEffectiveEntitlementForUser(
       makeUser({
@@ -198,7 +198,7 @@ describe('EntitlementsService', () => {
         updatedAt: new Date('2026-07-11T00:00:00.000Z'),
       }),
     };
-    const serviceWithTenants = new EntitlementsService(tenants as any);
+    const serviceWithTenants = new EntitlementsService({} as any, tenants as any);
 
     const entitlement = await serviceWithTenants.getEffectiveEntitlementForUser(
       makeUser({ kaypalPlan: 'ADVANCED', kaypalPlanExpired: false }),
@@ -238,7 +238,7 @@ describe('EntitlementsService', () => {
         updatedAt: new Date('2026-08-01T00:00:00.000Z'),
       }),
     };
-    const serviceWithTenants = new EntitlementsService(tenants as any);
+    const serviceWithTenants = new EntitlementsService({} as any, tenants as any);
 
     const entitlement = await serviceWithTenants.getEffectiveEntitlementForUser(
       makeUser({
@@ -259,5 +259,41 @@ describe('EntitlementsService', () => {
         'commercial-execution',
       ]),
     );
+  });
+
+  describe('captureSnapshot（商用账本快照）', () => {
+    it('把当前授权状态写入 entitlement_snapshots 表', async () => {
+      const prisma = {
+        entitlementSnapshot: {
+          create: jest.fn().mockResolvedValue({}),
+        },
+      };
+      const service = new EntitlementsService(prisma as any);
+      const user = makeUser({ plan: 'ADVANCED', planMode: 'commercial' });
+
+      await service.captureSnapshot(user, 'publish', 'ref-123');
+
+      expect(prisma.entitlementSnapshot.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          userId: user.id,
+          plan: 'ADVANCED',
+          context: 'publish',
+          refId: 'ref-123',
+        }),
+      });
+    });
+
+    it('快照写入失败不抛异常（记账是旁路）', async () => {
+      const prisma = {
+        entitlementSnapshot: {
+          create: jest.fn().mockRejectedValue(new Error('db down')),
+        },
+      };
+      const service = new EntitlementsService(prisma as any);
+
+      await expect(
+        service.captureSnapshot(makeUser(), 'publish', 'ref-1'),
+      ).resolves.toBeUndefined();
+    });
   });
 });

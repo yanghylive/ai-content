@@ -1,5 +1,7 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   getKaypalPlanRank,
   isKaypalPlanAtLeast,
@@ -17,7 +19,10 @@ import type {
 
 @Injectable()
 export class EntitlementsService {
+  private readonly logger = new Logger(EntitlementsService.name);
+
   constructor(
+    private readonly prisma: PrismaService,
     @Optional()
     private readonly tenants?: TenantsService,
   ) {}
@@ -155,6 +160,38 @@ export class EntitlementsService {
   ) {
     const entitlement = this.getEffectiveEntitlement(user);
     return this.evaluatePlanRequirement(entitlement, requiredPlans);
+  }
+
+  /**
+   * 商用账本：在执行关键动作前，快照「当时的授权状态」（报告 16.2 entitlementSnapshot）。
+   * 用于事后追责「这次执行用的是哪个套餐/限额」。
+   * 快照失败不阻断主流程（记账是旁路），仅记录告警。
+   */
+  async captureSnapshot(
+    user: AuthenticatedUser | null | undefined,
+    context: string,
+    refId?: string,
+  ): Promise<void> {
+    const entitlement = this.getEffectiveEntitlement(user);
+    try {
+      await this.prisma.entitlementSnapshot.create({
+        data: {
+          tenantId: entitlement.tenant?.tenantId ?? null,
+          userId: entitlement.userId ?? null,
+          plan: entitlement.plan,
+          planMode: entitlement.planMode ?? null,
+          source: entitlement.source,
+          features: entitlement.features as unknown as Prisma.InputJsonValue,
+          blockers: entitlement.blockers as unknown as Prisma.InputJsonValue,
+          context,
+          refId: refId ?? null,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `entitlement snapshot 写入失败: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   async meetsAnyPlanForUser(
