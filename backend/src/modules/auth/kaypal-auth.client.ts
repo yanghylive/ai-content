@@ -756,6 +756,69 @@ export class KaypalAuthClient {
     };
   }
 
+  /**
+   * 云端扣积分（统一接 kaypal.cn 的 billing，不本地自建计量）。
+   * 用服务端 key（x-kaypal-api-key）+ user_id 指定目标用户，managed 模式
+   * 由 kaypal 按 service_type/resource_type 自动定价（如 platform_action 按
+   * articlePublishes/videoPublishes 折算），幂等键走 metadata.idempotencyKey。
+   * 失败返回 ok:false（旁路，不阻断主流程）。
+   */
+  async deductCloudBilling(input: {
+    userId: string;
+    serviceType: string;
+    resourceType: string;
+    amount?: number;
+    idempotencyKey?: string;
+    metadata?: Record<string, unknown>;
+  }): Promise<{
+    ok: boolean;
+    amount?: number;
+    balanceAfter?: number;
+    idempotentReplay?: boolean;
+  }> {
+    const serverApiKey = this.getServerBillingApiKey();
+    if (!serverApiKey) {
+      return { ok: false };
+    }
+    try {
+      const payload = await this.fetchCloudJson<Record<string, unknown>>(
+        '/api/billing/deduct',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'x-kaypal-api-key': serverApiKey,
+          },
+          body: JSON.stringify({
+            user_id: input.userId,
+            ...(input.amount != null ? { amount: input.amount } : {}),
+            service_type: input.serviceType,
+            resource_type: input.resourceType,
+            metadata: {
+              source: 'ai-content-workbench',
+              billingMode: 'cloud',
+              ...(input.idempotencyKey
+                ? { idempotencyKey: input.idempotencyKey }
+                : {}),
+              ...(input.metadata || {}),
+            },
+          }),
+        },
+      );
+      const data = this.asRecord(payload?.data) || payload || {};
+      return {
+        ok: true,
+        amount: this.toNumberOrNull(data?.amount) ?? undefined,
+        balanceAfter:
+          this.toNumberOrNull(data?.balanceAfter) ?? undefined,
+        idempotentReplay: data?.idempotentReplay === true,
+      };
+    } catch {
+      return { ok: false };
+    }
+  }
+
   async searchCloudKnowledge(
     accessToken: string,
     input: {

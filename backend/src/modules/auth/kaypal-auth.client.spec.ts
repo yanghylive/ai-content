@@ -125,4 +125,72 @@ describe('KaypalAuthClient', () => {
     });
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
+
+  it('deductCloudBilling 用服务端 key 调 kaypal deduct 接口（统一接 kaypal 积分）', async () => {
+    let capturedBody: Record<string, unknown> = {};
+    global.fetch = jest.fn((input: URL | RequestInfo, init?: RequestInit) => {
+      const url = input instanceof URL ? input : new URL(String(input));
+      if (url.pathname === '/api/billing/deduct') {
+        capturedBody = JSON.parse(String(init?.body || '{}'));
+        expect(
+          (init?.headers as Record<string, string>)['x-kaypal-api-key'],
+        ).toBe('server-key');
+        return Promise.resolve(
+          jsonResponse({
+            id: 'deduct-1',
+            amount: 15,
+            balanceAfter: 985,
+            success: true,
+          }),
+        );
+      }
+      throw new Error(`unexpected url: ${url.toString()}`);
+    }) as jest.Mock;
+
+    const client = new KaypalAuthClient({
+      get: jest.fn((key: string) => {
+        const values: Record<string, string> = {
+          KAYPAL_AUTH_BASE_URL: 'https://test.kaypal.cn',
+          KAYPAL_BILLING_API_KEY: 'server-key',
+        };
+        return values[key] || '';
+      }),
+    } as any);
+
+    const result = await client.deductCloudBilling({
+      userId: 'kaypal-user-1',
+      serviceType: 'ai_content_workbench',
+      resourceType: 'platform_action',
+      idempotencyKey: 'ai-content:publish:confirm-1',
+      metadata: { articlePublishes: 2 },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.balanceAfter).toBe(985);
+    expect(capturedBody).toMatchObject({
+      user_id: 'kaypal-user-1',
+      service_type: 'ai_content_workbench',
+      resource_type: 'platform_action',
+      metadata: expect.objectContaining({
+        source: 'ai-content-workbench',
+        billingMode: 'cloud',
+        idempotencyKey: 'ai-content:publish:confirm-1',
+        articlePublishes: 2,
+      }),
+    });
+  });
+
+  it('deductCloudBilling 无服务端 key 时返回 ok:false（旁路不抛异常）', async () => {
+    const client = new KaypalAuthClient({
+      get: jest.fn(() => ''),
+    } as any);
+
+    const result = await client.deductCloudBilling({
+      userId: 'kaypal-user-1',
+      serviceType: 'ai_content_workbench',
+      resourceType: 'platform_action',
+    });
+
+    expect(result.ok).toBe(false);
+  });
 });

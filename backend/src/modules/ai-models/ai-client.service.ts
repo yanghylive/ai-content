@@ -9,7 +9,6 @@ import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiAuditService } from '../ai-audit/ai-audit.service';
-import { MeteringService } from '../metering/metering.service';
 import { SavingsExchangeService } from '../savings/savings-exchange.service';
 import OpenAI from 'openai';
 import type {
@@ -135,8 +134,6 @@ export class AiClientService {
     private readonly savingsExchange?: SavingsExchangeService,
     @Optional()
     private readonly aiAudit?: AiAuditService,
-    @Optional()
-    private readonly metering?: MeteringService,
   ) {}
 
   // 获取或创建 AI 客户端
@@ -1276,28 +1273,6 @@ export class AiClientService {
       options?.rebateReceiptId,
     );
 
-    // 用量预占（阶段 B）：调用前预占 token 用量，成功 confirm / 失败 reverse
-    const meterUserId =
-      this.authRequestContext?.get()?.user?.id ?? kaypalUserId ?? null;
-    let meterEventId: string | null = null;
-    if (this.metering && meterUserId) {
-      try {
-        const evt = await this.metering.reserve({
-          userId: meterUserId,
-          meter: 'token',
-          amount: options?.maxTokens ?? 4000,
-          context: 'ai-text',
-          refId: modelId,
-          idempotencyKey: kaypalIdempotencyKey || undefined,
-        });
-        meterEventId = evt.id;
-      } catch (error) {
-        this.logger.warn(
-          `用量预占失败: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-    }
-
     this.logger.log(`调用 AI 模型: ${model.name} (${model.modelId})`);
 
     const startedAt = Date.now();
@@ -1360,17 +1335,11 @@ export class AiClientService {
           success: true,
         });
       }
-      if (meterEventId) {
-        void this.metering?.confirm(meterEventId).catch(() => {});
-      }
       return content;
     } catch (error) {
       this.rethrowIfAborted(error, options?.signal);
       const message = this.getErrorMessage(error);
       this.logger.error(`AI 文本生成失败: ${message}`);
-      if (meterEventId) {
-        void this.metering?.reverse(meterEventId).catch(() => {});
-      }
       if (kaypalUserId) {
         void this.aiAudit?.recordTrace({
           userId: kaypalUserId,

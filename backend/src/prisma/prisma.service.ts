@@ -156,22 +156,6 @@ export class PrismaService
       )`,
       `CREATE INDEX IF NOT EXISTS entitlement_snapshots_user_id_created_at_idx ON entitlement_snapshots(user_id, created_at)`,
       `CREATE INDEX IF NOT EXISTS entitlement_snapshots_ref_id_idx ON entitlement_snapshots(ref_id)`,
-      `CREATE TABLE IF NOT EXISTS usage_events (
-        id TEXT PRIMARY KEY NOT NULL,
-        tenant_id TEXT,
-        user_id TEXT,
-        meter TEXT NOT NULL,
-        amount INTEGER NOT NULL DEFAULT 0,
-        state TEXT NOT NULL DEFAULT 'reserved',
-        context TEXT,
-        ref_id TEXT,
-        idempotency_key TEXT,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )`,
-      `CREATE UNIQUE INDEX IF NOT EXISTS usage_events_idempotency_key_key ON usage_events(idempotency_key)`,
-      `CREATE INDEX IF NOT EXISTS usage_events_user_meter_state_idx ON usage_events(user_id, meter, state, created_at)`,
-      `CREATE INDEX IF NOT EXISTS usage_events_ref_id_idx ON usage_events(ref_id)`,
       `CREATE TABLE IF NOT EXISTS schedule_configs (
         id TEXT PRIMARY KEY NOT NULL,
         task_type TEXT NOT NULL,
