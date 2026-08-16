@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MultimodalService } from './multimodal.service';
 import { AutoUploadModule } from '../auto-upload/auto-upload.module';
+import { AuthModule } from '../auth/auth.module';
 
 /**
  * 多模态模块（P4）：Qwen-Image 生图 + qwen3-tts 配音。
@@ -9,7 +10,7 @@ import { AutoUploadModule } from '../auto-upload/auto-upload.module';
  * 路由由 DashscopeModule（/api/ai/image、/api/ai/speech）提供。
  */
 @Module({
-  imports: [AutoUploadModule],
+  imports: [AutoUploadModule, AuthModule],
   providers: [MultimodalService],
   exports: [MultimodalService],
 })

@@ -35,7 +35,7 @@ import {
   type MaterialCollectStatus,
 } from "@/lib/api/materials";
 import { redfoxApi } from "@/lib/api/redfox";
-import { generateImage as dashGenerateImage, generateVideo as dashGenerateVideo, generateSpeech as dashGenerateSpeech } from "@/lib/api/dashscope";
+import { generateImage as dashGenerateImage, generateVideo as dashGenerateVideo, generateSpeech as dashGenerateSpeech, quoteImageCost, quoteVideoCost } from "@/lib/api/dashscope";
 import { videoWorkshopApi } from "@/lib/api/video-workshop";
 import { savingsApi } from "@/lib/api/savings";
 import { toPublicError } from "@/lib/public-error";
@@ -298,7 +298,13 @@ export function MaterialsCenter() {
     setGenBusy(true);
     setCollectMsg(null);
     let paidMsg = "";
+    let costMsg = "";
     try {
+      // 成本预估（报告 16.3 第 11 项）：生成前展示积分 + 人民币，预估失败静默
+      const quote = await quoteImageCost({ count: 1 });
+      if (quote && quote.amount > 0) {
+        costMsg = `（预估 ${quote.amount} 积分${quote.estimatedCostCny > 0 ? ` ≈ ¥${quote.estimatedCostCny.toFixed(2)}` : ""}）`;
+      }
       if (genPayByRebate) {
         // 返利直付：扣返利拿凭证（幂等）→ 再生成
         const info = await savingsApi.payCheck("image_generation");
@@ -317,7 +323,7 @@ export function MaterialsCenter() {
         paidMsg = `（已用返利 ¥${info.price} 抵扣）`;
       }
       const result = await dashGenerateImage({ prompt: genPrompt.trim(), size: genSize });
-      setCollectMsg(`✅ 已生成：${result.filename}${paidMsg}`);
+      setCollectMsg(`✅ 已生成：${result.filename}${costMsg}${paidMsg}`);
       setGenPrompt("");
       await refreshMaterials();
     } catch (e) {
@@ -333,7 +339,13 @@ export function MaterialsCenter() {
     setVideoBusy(true);
     setVideoStatus("准备中…");
     setCollectMsg(null);
+    let costMsg = "";
     try {
+      // 成本预估（报告 16.3 第 11 项）：生成前展示积分 + 人民币，预估失败静默
+      const quote = await quoteVideoCost({ durationSeconds: videoDuration });
+      if (quote && quote.amount > 0) {
+        costMsg = `（预估 ${quote.amount} 积分${quote.estimatedCostCny > 0 ? ` ≈ ¥${quote.estimatedCostCny.toFixed(2)}` : ""}）`;
+      }
       if (videoPayByRebate) {
         const info = await savingsApi.payCheck("video_generation");
         setVideoPayInfo(info);
@@ -354,7 +366,7 @@ export function MaterialsCenter() {
       // 百炼直连文生视频（同步等待，约 1-5 分钟）
       setVideoStatus("生成中（约 1-5 分钟，请稍候）…");
       const result = await dashGenerateVideo({ prompt: videoPrompt.trim(), duration: videoDuration });
-      setVideoStatus(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB），已存入素材库`);
+      setVideoStatus(`✅ 已生成：${result.filename}（${(result.sizeBytes / 1048576).toFixed(1)}MB），已存入素材库${costMsg}`);
       setVideoPrompt("");
       setVideoSheetOpen(false);
       clearOpenParam();
