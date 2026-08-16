@@ -36,8 +36,8 @@ export class AiScorerService {
     // 获取选题详情
     const topic = await this.topicsService.findOne(topicId);
 
-    // 更新状态为 generating
-    await this.topicsService.updateStatus(topicId, 'generating');
+    // S0-P1-12：原子认领 generating，并发重复评分抛冲突（防重复计费）
+    await this.topicsService.claimGenerating(topicId);
 
     try {
       // 获取默认评分模型

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   Logger,
@@ -163,6 +164,18 @@ export class TopicsService {
       where: { id, ...scope },
       data: { status },
     });
+  }
+
+  /** S0-P1-12：原子认领评分（where status not generating），并发重复评分返回冲突 */
+  async claimGenerating(id: string) {
+    const scope = await this.resolveTopicOwnerScope();
+    const result = await this.prisma.topic.updateMany({
+      where: { id, ...scope, status: { not: 'generating' } },
+      data: { status: 'generating' },
+    });
+    if (result.count !== 1) {
+      throw new BadRequestException('选题正在评分中，请勿重复提交');
+    }
   }
 
   // 更新 AI 评分结果
