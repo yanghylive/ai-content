@@ -40,7 +40,7 @@ describe('ReviewRunService', () => {
       owner,
     );
 
-    expect(funnelReport.funnel).toHaveBeenCalledWith(7);
+    expect(funnelReport.funnel).toHaveBeenCalledWith(7, 'user-1');
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ period: '7d', userId: 'user-1' }),
@@ -54,7 +54,7 @@ describe('ReviewRunService', () => {
       { period: '7d', generatedFrom: 'article-1', insights: [], actions: [] },
       owner,
     );
-    expect(funnelReport.articleFunnel).toHaveBeenCalledWith('article-1');
+    expect(funnelReport.articleFunnel).toHaveBeenCalledWith('article-1', 'user-1');
   });
 
   it('findOne 不存在抛 404', async () => {

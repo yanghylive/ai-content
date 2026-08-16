@@ -346,6 +346,8 @@ model Material {
 // 选题表
 model Topic {
   id          String   @id @default(cuid())
+  tenantId    String   @default("legacy-local-desktop") @map("tenant_id")
+  userId      String   @default("legacy-local-user") @map("user_id")
   title       String
   description String?  @db.Text
   summary     String?  @db.Text

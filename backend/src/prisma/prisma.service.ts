@@ -512,6 +512,8 @@ export class PrismaService
       `CREATE INDEX IF NOT EXISTS materials_hasImage_idx ON materials(hasImage)`,
       `CREATE TABLE IF NOT EXISTS topics (
         id TEXT PRIMARY KEY NOT NULL,
+        tenant_id TEXT NOT NULL DEFAULT 'legacy-local-desktop',
+        user_id TEXT NOT NULL DEFAULT 'legacy-local-user',
         title TEXT NOT NULL,
         description TEXT,
         summary TEXT,
@@ -530,6 +532,7 @@ export class PrismaService
       `CREATE INDEX IF NOT EXISTS topics_status_idx ON topics(status)`,
       `CREATE INDEX IF NOT EXISTS topics_is_published_idx ON topics(is_published)`,
       `CREATE INDEX IF NOT EXISTS topics_created_at_idx ON topics(created_at)`,
+      `CREATE INDEX IF NOT EXISTS topics_tenant_user_idx ON topics(tenant_id, user_id)`,
       `CREATE TABLE IF NOT EXISTS styles (
         id TEXT PRIMARY KEY NOT NULL,
         name TEXT NOT NULL,
@@ -2535,6 +2538,9 @@ export class PrismaService
       ['interaction_tasks', 'slaDueAt', 'DATETIME'],
       ['interaction_tasks', 'handoffState', "TEXT NOT NULL DEFAULT 'normal'"],
       ['interaction_tasks', 'handoffReason', 'TEXT'],
+      // Topic 归属（逐页体验报告 10.5 P0：Topic 无 owner/tenant scope）
+      ['topics', 'tenant_id', "TEXT NOT NULL DEFAULT 'legacy-local-desktop'"],
+      ['topics', 'user_id', "TEXT NOT NULL DEFAULT 'legacy-local-user'"],
     ] as const) {
       await this.ensureSqliteColumn(column[0], column[1], column[2]);
     }

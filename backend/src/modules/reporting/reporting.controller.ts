@@ -43,7 +43,7 @@ export class ReportingController {
     const user = request.authUser;
     if (!user) throw new UnauthorizedException('请先登录');
     const d = Math.min(30, Math.max(1, Number(days) || 7));
-    return this.funnelReport.funnel(d);
+    return this.funnelReport.funnel(d, user.id);
   }
 
   @Get('content/:articleId')
@@ -54,6 +54,6 @@ export class ReportingController {
   ) {
     const user = request.authUser;
     if (!user) throw new UnauthorizedException('请先登录');
-    return this.funnelReport.articleFunnel(articleId);
+    return this.funnelReport.articleFunnel(articleId, user.id);
   }
 }

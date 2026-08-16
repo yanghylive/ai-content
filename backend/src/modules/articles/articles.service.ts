@@ -762,7 +762,7 @@ export class ArticlesService {
       allowScheduledLegacyOwner,
     );
     let topic = await this.prisma.topic.findUnique({
-      where: { id: topicId },
+      where: { id: topicId, ...ownerScope },
       include: { materials: { include: { material: true } } },
     });
 
@@ -782,7 +782,7 @@ export class ArticlesService {
       );
       throwIfAborted(signal);
       topic = await this.prisma.topic.findUnique({
-        where: { id: topicId },
+        where: { id: topicId, ...ownerScope },
         include: { materials: { include: { material: true } } },
       });
       if (!topic) {
@@ -793,6 +793,7 @@ export class ArticlesService {
     const claimed = await this.prisma.topic.updateMany({
       where: {
         id: topicId,
+        ...ownerScope,
         status: { not: 'generating' },
         ...(force ? {} : { isPublished: false }),
       },
@@ -926,7 +927,7 @@ export class ArticlesService {
             });
 
             await this.prisma.topic.update({
-              where: { id: topic.id },
+              where: { id: topic.id, ...ownerScope },
               data: {
                 status: 'completed',
                 isPublished: true,
@@ -1005,7 +1006,7 @@ export class ArticlesService {
           });
 
           await this.prisma.topic.update({
-            where: { id: topic.id },
+            where: { id: topic.id, ...ownerScope },
             data: {
               status: 'completed',
               isPublished: true,
@@ -1033,7 +1034,7 @@ export class ArticlesService {
       );
       await this.systemLogsService.record(errorMsg, 'error');
       await this.prisma.topic.update({
-        where: { id: topicId },
+        where: { id: topicId, ...ownerScope },
         data: { status: 'completed' },
       });
       throw new HttpException(message, HttpStatus.INTERNAL_SERVER_ERROR);
