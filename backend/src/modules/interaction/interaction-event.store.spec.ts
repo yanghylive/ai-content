@@ -1,8 +1,21 @@
 import { InteractionEventStore } from './interaction-event.store';
 
+function makeAuthContext(overrides: {
+  get?: jest.Mock;
+  resolveTenantId?: jest.Mock;
+} = {}) {
+  return {
+    get: overrides.get ?? jest.fn().mockReturnValue(undefined),
+    resolveTenantId:
+      overrides.resolveTenantId ??
+      jest.fn().mockResolvedValue('local-desktop:u-1'),
+  };
+}
+
 function makeStore(overrides: {
   findUnique?: jest.Mock;
   create?: jest.Mock;
+  auth?: ReturnType<typeof makeAuthContext>;
 } = {}) {
   const prisma = {
     interactionEvent: {
@@ -11,7 +24,10 @@ function makeStore(overrides: {
       findMany: jest.fn(),
     },
   };
-  const store = new InteractionEventStore(prisma as never);
+  const store = new InteractionEventStore(
+    prisma as never,
+    (overrides.auth ?? makeAuthContext()) as never,
+  );
   return { store, prisma };
 }
 
@@ -101,5 +117,26 @@ describe('InteractionEventStore', () => {
       sourceArticleId: 'article-1',
       body: '有优惠吗？',
     });
+  });
+
+  it('ingest 无显式 tenant 时从登录上下文 resolve 真实 scope（对齐 InteractionTask）', async () => {
+    const findUnique = jest.fn().mockResolvedValue(null);
+    const create = jest.fn().mockResolvedValue({ id: 'evt-1', dedupeKey: 'k' });
+    const auth = makeAuthContext({
+      get: jest.fn().mockReturnValue({ user: { id: 'u-1' } }),
+      resolveTenantId: jest.fn().mockResolvedValue('tenant-real'),
+    });
+    const { store } = makeStore({ findUnique, create, auth });
+
+    await store.ingest(baseEvent);
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          tenantId: 'tenant-real',
+          userId: 'u-1',
+        }),
+      }),
+    );
   });
 });

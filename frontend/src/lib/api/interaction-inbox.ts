@@ -81,6 +81,6 @@ export function getInboxViews() {
 
 export function getInboxThreadDetail(threadKey: string) {
   return api.get<InboxThreadDetail>(
-    "/interaction/inbox/" + encodeURIComponent(threadKey),
+    "/interaction/inbox/detail?threadKey=" + encodeURIComponent(threadKey),
   );
 }

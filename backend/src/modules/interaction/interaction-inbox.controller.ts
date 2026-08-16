@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InteractionInboxService } from './interaction-inbox.service';
 
@@ -38,9 +38,9 @@ export class InteractionInboxController {
     return result.views;
   }
 
-  @Get(':threadKey')
+  @Get('detail')
   @ApiOperation({ summary: '右栏会话详情（历史 + 任务状态 + 线索/CRM + 草稿）' })
-  detail(@Param('threadKey') threadKey: string) {
+  detail(@Query('threadKey') threadKey: string) {
     return this.inbox.getThreadDetail(threadKey);
   }
 }
