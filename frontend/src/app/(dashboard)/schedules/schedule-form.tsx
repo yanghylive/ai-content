@@ -15,10 +15,9 @@ import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const TASK_TYPE_LABELS: Record<string, { label: string; desc: string }> = {
-  "create-articles": { label: "自动生成文章", desc: "按策略定时生成内容" },
-  "publish-articles": { label: "自动发布文章", desc: "定时发布已生成的内容" },
-  "sync-intelligence": { label: "同步情报数据", desc: "定时拉取最新情报" },
-  "check-accounts": { label: "检查账号状态", desc: "定时检查平台账号是否正常" },
+  collect_materials: { label: "自动采集素材", desc: "从所有已启用的信息源定期获取最新内容" },
+  mine_materials: { label: "自动挖掘素材", desc: "批量利用大模型加工并提炼未处理的素材" },
+  create_articles: { label: "自动生成文章", desc: "从就绪的精选选题中按默认风格生成草稿" },
 };
 
 // cron 转人话预设：用户看到的是"每天 9 点"而不是 0 9 * * *
@@ -49,7 +48,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
 
   // 智能默认值：每天 09:00、启用
   const [form, setForm] = useState({
-    taskType: taskType || "create-articles",
+    taskType: taskType || "create_articles",
     cron: "0 9 * * *",
     enabled: true,
   });
