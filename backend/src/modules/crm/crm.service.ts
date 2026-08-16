@@ -565,10 +565,11 @@ export class CrmService {
 
   async getCustomerContinuity(userId: string, customerId: string) {
     const customer = await this.getCustomer(userId, customerId);
-    const [tasks, notes, timeline] = await Promise.all([
+    const [tasks, notes, timeline, opportunities] = await Promise.all([
       this.listTasks(userId, { customerId }),
       this.listNotes(userId, { customerId }),
       this.listTimeline(userId, { customerId }),
+      this.listOpportunities(userId, { customerId }),
     ]);
 
     return {
@@ -576,6 +577,7 @@ export class CrmService {
       tasks,
       notes,
       timeline,
+      opportunities,
     };
   }
 
@@ -833,6 +835,8 @@ export class CrmService {
     };
     const stage = this.optionalString(query.stage || query.status);
     if (stage && stage !== 'all') where.stage = stage;
+    const customerId = this.optionalString(query.customerId);
+    if (customerId) where.primaryCustomerId = customerId;
     const q = this.optionalString(query.q);
     if (q) {
       where.OR = [

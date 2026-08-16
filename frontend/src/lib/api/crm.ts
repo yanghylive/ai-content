@@ -188,6 +188,7 @@ export interface CrmCustomerContinuity {
   tasks: CrmTask[];
   notes: CrmNote[];
   timeline: CrmTimelineEvent[];
+  opportunities: CrmOpportunity[];
 }
 
 export type CrmWelcomeMessageChannel = "douyin" | "wechat" | "wechat-channel";
