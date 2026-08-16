@@ -94,6 +94,7 @@ export class CommentAcquisitionService {
     }>;
   }> {
     const scope = await this.resolveScope();
+    await this.assertAccountOwnership(input.accountId, scope);
     const platformName =
       input.platform === 'douyin'
         ? '抖音'
@@ -477,13 +478,20 @@ export class CommentAcquisitionService {
     circuitKey?: string,
   ): Promise<boolean> {
     const resolvedScope = scope ?? (await this.resolveScope());
+    await this.assertAccountOwnership(input.accountId, resolvedScope);
     const key = circuitKey ?? `${input.platform}:${input.accountId}`;
 
     // 小红书手动回复：commentIndex 缺省时从 lead 行读取（自动回复已显式传入）
     let xhsIndex = input.commentIndex;
     if (input.platform === 'xiaohongshu' && xhsIndex === undefined) {
       const leadRow = await this.prisma.lead.findFirst({
-        where: { id: leadId, userId: resolvedScope.userId },
+        where: {
+          id: leadId,
+          userId: resolvedScope.userId,
+          ...(resolvedScope.tenantId
+            ? { tenantId: resolvedScope.tenantId }
+            : {}),
+        },
         select: { commentRef: true },
       });
       const ref = leadRow?.commentRef;
@@ -608,8 +616,12 @@ export class CommentAcquisitionService {
   ): Promise<{ status: string }> {
     const scope = await this.resolveScope();
     const status = input.action === 'approve' ? 'approved' : 'skipped';
-    await this.prisma.lead.updateMany({
-      where: { id: leadId, userId: scope.userId },
+    const result = await this.prisma.lead.updateMany({
+      where: {
+        id: leadId,
+        userId: scope.userId,
+        ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+      },
       data: {
         status,
         ...(input.replyText !== undefined
@@ -618,6 +630,9 @@ export class CommentAcquisitionService {
         updatedAt: new Date(),
       },
     });
+    if (result.count !== 1) {
+      throw new NotFoundException('线索不存在或无权操作');
+    }
     return { status };
   }
 
@@ -639,5 +654,24 @@ export class CommentAcquisitionService {
     }
     const tenantId = await this.authRequestContext.resolveTenantId(this.prisma);
     return { tenantId, userId };
+  }
+
+  /** S0-3 安全锁：校验账号归属，防读/发他人账号 */
+  private async assertAccountOwnership(
+    accountId: number | string,
+    scope: { tenantId: string | null; userId: string },
+  ): Promise<void> {
+    const id = String(accountId);
+    const account = await this.prisma.publishAccount.findFirst({
+      where: {
+        id,
+        userId: scope.userId,
+        ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+      },
+      select: { id: true },
+    });
+    if (!account) {
+      throw new NotFoundException('发布账号不存在或无权操作');
+    }
   }
 }
