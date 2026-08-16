@@ -7,6 +7,7 @@ import { LeadsModule } from '../leads/leads.module';
 import { CommentAcquisitionController } from './comment-acquisition.controller';
 import { CommentAcquisitionService } from './comment-acquisition.service';
 import { ReplyEngineService } from './reply-engine.service';
+import { InteractionRuleService } from './interaction-rule.service';
 
 @Module({
   imports: [
@@ -17,7 +18,15 @@ import { ReplyEngineService } from './reply-engine.service';
     LeadsModule,
   ],
   controllers: [CommentAcquisitionController],
-  providers: [CommentAcquisitionService, ReplyEngineService],
-  exports: [CommentAcquisitionService, ReplyEngineService],
+  providers: [
+    CommentAcquisitionService,
+    ReplyEngineService,
+    InteractionRuleService,
+  ],
+  exports: [
+    CommentAcquisitionService,
+    ReplyEngineService,
+    InteractionRuleService,
+  ],
 })
 export class CommentAcquisitionModule {}
