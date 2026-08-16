@@ -50,11 +50,12 @@ export function CrmImportCenter() {
   }, [loadBatches]);
 
   const handleRollbackBatch = async (batch: CrmImportBatch) => {
+    // 报告 7.5：回滚不依赖前端 batch.customerIds（字段可能缺失/批量大不完整），
+    // 传空数组，后端按 importCommitId + rollbackToken 回退到 batch 内存储的客户
     const customerIds = Array.isArray(batch.customerIds)
       ? (batch.customerIds as string[])
       : [];
-    if (!customerIds.length) return;
-    if (!window.confirm(`确定回滚这批导入的 ${customerIds.length} 条客户吗？回滚后需要重新导入。`)) return;
+    if (!window.confirm(`确定回滚这批导入的 ${batch.committedCount || customerIds.length || "?"} 条客户吗？回滚后需要重新导入。`)) return;
     setRollingBackId(batch.id);
     setRollbackMsg(null);
     try {
@@ -141,9 +142,6 @@ export function CrmImportCenter() {
           ) : (
             <div className="mt-3 flex flex-col gap-2">
               {batches.map((batch) => {
-                const customerIds = Array.isArray(batch.customerIds)
-                  ? (batch.customerIds as string[]).length
-                  : 0;
                 const rollbacked =
                   batch.status === "rolled_back" || batch.status === "archived";
                 return (
@@ -167,7 +165,8 @@ export function CrmImportCenter() {
                         {" · "}导入 {batch.committedCount} 条 · {batchStatusLabel(batch.status)}
                       </p>
                     </div>
-                    {!rollbacked && customerIds > 0 && batch.rollbackToken ? (
+                    {/* 报告 7.5：回滚按钮按 committedCount 判断，不依赖前端 customerIds */}
+                    {!rollbacked && batch.committedCount > 0 && batch.rollbackToken ? (
                       <button
                         type="button"
                         className="inline-flex shrink-0 items-center gap-1 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)]/40 px-3 py-1.5 text-xs font-medium text-[var(--kaypal-v3-danger)] hover:bg-[var(--kaypal-v3-danger-soft)]"
