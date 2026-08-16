@@ -807,9 +807,10 @@ export class PublishingService {
       throw error;
     }
 
+    // result 提升到 try 外，catch 里据此判断「外部是否已成功」，
+    // 避免外部已发布却因本地 DB 异常被误标 failed（S0-11）。
+    let result: WechatPublishResult | undefined;
     try {
-      let result: WechatPublishResult;
-
       if (accountConfig.source === 'local-engine') {
         const filePath =
           typeof accountConfig.filePath === 'string'
@@ -862,37 +863,38 @@ export class PublishingService {
         );
       }
 
-      const readbackMatched = result.readback?.matched === true;
+      const res = result!;
+      const readbackMatched = res.readback?.matched === true;
       // 记录级回读状态（六步闭环 PublishReceipt 提列）：
       // 回读匹配=verified；平台返回外部 ID/URL 但未回读=uncertain（需人工确认，勿重复发布）
       const readbackState = readbackMatched
         ? 'verified'
-        : result.publishUrl || result.articleId
+        : res.publishUrl || res.articleId
           ? 'uncertain'
           : 'pending';
       const metadata: PublishRecordMetadata = {
         version: 1,
         platform: account.platform,
         accountId: account.id,
-        resultId: result.articleId,
-        publishUrl: result.publishUrl,
-        evidence: result.evidence,
-        readback: result.readback,
+        resultId: res.articleId,
+        publishUrl: res.publishUrl,
+        evidence: res.evidence,
+        readback: res.readback,
       };
       const recordUpdate = this.prisma.publishRecord.update({
         where: { id: record.id },
         data: {
           status: readbackMatched ? 'success' : 'pending',
           readbackState,
-          publishUrl: result.publishUrl || result.articleId,
+          publishUrl: res.publishUrl || res.articleId,
           errorMessage: this.serializePublishRecordMetadata(metadata),
           resultJson: this.jsonValue({
             status: readbackMatched ? 'success' : 'pending',
             readbackState,
-            providerArticleId: result.articleId,
-            publishUrl: result.publishUrl ?? null,
-            evidence: result.evidence ?? null,
-            readback: result.readback ?? null,
+            providerArticleId: res.articleId,
+            publishUrl: res.publishUrl ?? null,
+            evidence: res.evidence ?? null,
+            readback: res.readback ?? null,
             recordedAt: new Date().toISOString(),
           }),
         },
@@ -913,37 +915,53 @@ export class PublishingService {
       return {
         success: readbackMatched,
         status: readbackMatched ? 'completed' : 'waiting',
-        articleId: result.articleId,
+        articleId: res.articleId,
         publishRecordId: record.id,
         durableRecordId,
-        readback: result.readback ?? null,
+        readback: res.readback ?? null,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      // S0-11：外部已返回 publishUrl/articleId 说明可能已发布成功，
+      // 本地异常时标 uncertain（结果不确定，需回查），不得误标 failed（防重复发布）。
+      const externalSucceeded = Boolean(result?.publishUrl || result?.articleId);
       this.logger.error(
-        `发布失败 [articleId: ${articleId}, accountId: ${accountId}]: ${message}`,
+        `发布${externalSucceeded ? '结果不确定' : '失败'} [articleId: ${articleId}, accountId: ${accountId}]: ${message}`,
       );
 
-      // 更新记录为失败
       await this.prisma.publishRecord.update({
         where: { id: record.id },
         data: {
-          status: 'failed',
+          status: externalSucceeded ? 'pending' : 'failed',
+          readbackState: externalSucceeded ? 'uncertain' : undefined,
           errorMessage: this.serializePublishRecordMetadata({
             version: 1,
             platform: account.platform,
             accountId: account.id,
             failureReason: message,
+            ...(externalSucceeded
+              ? { externalResult: result?.publishUrl || result?.articleId }
+              : {}),
           }),
           resultJson: this.jsonValue({
-            status: 'failed',
+            status: externalSucceeded ? 'uncertain' : 'failed',
             failureReason: message,
+            ...(externalSucceeded
+              ? {
+                  providerArticleId: result?.articleId ?? null,
+                  publishUrl: result?.publishUrl ?? null,
+                }
+              : {}),
             recordedAt: new Date().toISOString(),
           }),
         },
       });
 
-      throw new BadRequestException(`发布失败: ${message}`);
+      throw new BadRequestException(
+        externalSucceeded
+          ? `发布结果不确定（外部可能已发布），请回查后确认: ${message}`
+          : `发布失败: ${message}`,
+      );
     }
   }
 
