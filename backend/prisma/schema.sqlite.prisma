@@ -330,6 +330,11 @@ model Material {
   intelligenceItems IntelligenceItem[]
   complianceChecks  ComplianceCheck[]
 
+  // 归属与可见性（P1-6 多租户隔离）：爬虫素材=public，本地知识=private
+  ownerId    String? @map("owner_id")    // 拥有者 userId；null=系统/公共
+  tenantId   String? @map("tenant_id")   // 租户；null=系统/公共
+  visibility String  @default("private") // private | tenant | public | quarantine
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -337,6 +342,7 @@ model Material {
   @@index([collectDate])
   @@index([platform])
   @@index([hasImage])
+  @@index([ownerId, platform])
   @@map("materials")
 }
 

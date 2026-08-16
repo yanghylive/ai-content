@@ -1093,14 +1093,25 @@ export class AiClientService {
   private async buildLocalKnowledgeContext(query: string) {
     const terms = this.buildKnowledgeTerms(query);
     const searchTerms = terms.length ? terms : [query];
+    // P1-6：只召回「当前用户自己的」或「public」知识；系统级调用（无用户）只召回 public。
+    // 绝不召回他人的 private，也绝不召回归属不明的 ownerId=null 旧数据。
+    const currentUserId = this.authRequestContext?.get()?.user?.id?.trim() || null;
+    const visibilityFilter = currentUserId
+      ? { OR: [{ ownerId: currentUserId }, { visibility: 'public' }] }
+      : { visibility: 'public' };
     const materials = await this.prisma.material.findMany({
       where: {
         platform: 'LocalKnowledge',
-        OR: searchTerms.flatMap((term) => [
-          { title: { contains: term } },
-          { summary: { contains: term } },
-          { content: { contains: term } },
-        ]),
+        AND: [
+          visibilityFilter,
+          {
+            OR: searchTerms.flatMap((term) => [
+              { title: { contains: term } },
+              { summary: { contains: term } },
+              { content: { contains: term } },
+            ]),
+          },
+        ],
       },
       orderBy: { updatedAt: 'desc' },
       take: 5,

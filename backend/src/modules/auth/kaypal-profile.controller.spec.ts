@@ -76,6 +76,7 @@ describe('KaypalProfileController', () => {
         findMany: jest.fn().mockResolvedValue([]),
         create: jest.fn(),
         update: jest.fn(),
+        delete: jest.fn(),
       },
     };
     const kaypalClient = {
@@ -450,7 +451,9 @@ describe('KaypalProfileController', () => {
       },
     ]);
 
-    await expect(controller.listLocalKnowledge()).resolves.toEqual({
+    await expect(
+      controller.listLocalKnowledge({ authUser: { id: 'local-user' } } as any),
+    ).resolves.toEqual({
       total: 1,
       items: [
         expect.objectContaining({
@@ -503,7 +506,9 @@ describe('KaypalProfileController', () => {
       },
     ]);
 
-    await expect(controller.listLocalKnowledge()).resolves.toEqual({
+    await expect(
+      controller.listLocalKnowledge({ authUser: { id: 'local-user' } } as any),
+    ).resolves.toEqual({
       total: 1,
       items: [
         expect.objectContaining({
@@ -686,5 +691,37 @@ describe('KaypalProfileController', () => {
     );
     expect(kaypalClient.getCloudProfile).toHaveBeenCalled();
     expect(prisma.material.update).not.toHaveBeenCalled();
+  });
+
+  it('P1-6：拒绝删除他人（非 owner）的本地知识', async () => {
+    const { controller, prisma } = createController();
+    prisma.material.findUnique.mockResolvedValue({
+      id: 'knowledge-x',
+      platform: 'LocalKnowledge',
+      ownerId: 'user-A',
+    });
+    await expect(
+      controller.deleteLocalKnowledge(
+        { authUser: { id: 'user-B' } } as any,
+        'knowledge-x',
+      ),
+    ).rejects.toThrow('无权删除他人的知识');
+    expect(prisma.material.delete).not.toHaveBeenCalled();
+  });
+
+  it('P1-6：list 只查询当前 owner 的知识（where 带 ownerId）', async () => {
+    const { controller, prisma } = createController();
+    prisma.material.findMany.mockResolvedValue([]);
+    await controller.listLocalKnowledge({
+      authUser: { id: 'user-A' },
+    } as any);
+    expect(prisma.material.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          platform: 'LocalKnowledge',
+          ownerId: 'user-A',
+        }),
+      }),
+    );
   });
 });

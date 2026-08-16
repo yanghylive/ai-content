@@ -9,6 +9,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   Param,
@@ -445,6 +446,8 @@ export class KaypalProfileController {
     content: string;
     sourceUrl?: string;
     metadata?: Record<string, unknown>;
+    ownerId?: string | null;
+    tenantId?: string | null;
   }) {
     const title =
       this.decodePossiblyLatin1Text(input.title).trim().slice(0, 180) ||
@@ -463,6 +466,10 @@ export class KaypalProfileController {
           8,
         ),
         metadata: this.localKnowledgeMetadata(input.metadata),
+        // P1-6 归属：本地知识默认私有，owner 为上传者
+        ownerId: input.ownerId ?? null,
+        tenantId: input.tenantId ?? null,
+        visibility: 'private',
       },
     });
   }
@@ -473,6 +480,8 @@ export class KaypalProfileController {
     fileSize?: number;
     contentType?: string;
     parsed: boolean;
+    ownerId?: string | null;
+    tenantId?: string | null;
   }) {
     const fileName = this.decodePossiblyLatin1Text(input.fileName).trim();
     const content = this.decodePossiblyLatin1Text(input.content).trim();
@@ -485,6 +494,7 @@ export class KaypalProfileController {
     const existing = await this.findExistingLocalKnowledgeFile(
       fileName,
       input.fileSize,
+      input.ownerId ?? null,
     );
 
     if (!existing) {
@@ -493,6 +503,8 @@ export class KaypalProfileController {
         content,
         sourceUrl: `local://knowledge-file/${fileName || Date.now()}`,
         metadata,
+        ownerId: input.ownerId ?? null,
+        tenantId: input.tenantId ?? null,
       });
     }
 
@@ -528,6 +540,7 @@ export class KaypalProfileController {
   private async findExistingLocalKnowledgeFile(
     fileName: string,
     fileSize?: number,
+    ownerId?: string | null,
   ) {
     const decodedName = this.decodePossiblyLatin1Text(fileName).trim();
     if (
@@ -539,7 +552,11 @@ export class KaypalProfileController {
     }
 
     const candidates = await this.prisma.material.findMany({
-      where: { platform: this.localKnowledgePlatform },
+      where: {
+        platform: this.localKnowledgePlatform,
+        // P1-6：只查当前 owner 的知识（null owner 兼容旧数据）
+        ownerId: ownerId ?? null,
+      },
       orderBy: { updatedAt: 'desc' },
       take: 200,
     });
@@ -1108,12 +1125,18 @@ for imagePath in CommandLine.arguments.dropFirst() {
     ];
   }
 
-  private async searchLocalKnowledge(query: string, limit: number) {
+  private async searchLocalKnowledge(
+    query: string,
+    limit: number,
+    ownerId?: string | null,
+  ) {
     const terms = this.buildLocalKnowledgeTerms(query);
     const searchTerms = terms.length ? terms : [query];
     const candidates = await this.prisma.material.findMany({
       where: {
         platform: this.localKnowledgePlatform,
+        // P1-6：只搜当前 owner 的知识
+        ownerId: ownerId ?? null,
         OR: searchTerms.flatMap((term) => [
           { title: { contains: term } },
           { summary: { contains: term } },
@@ -1682,7 +1705,11 @@ for imagePath in CommandLine.arguments.dropFirst() {
       typeof body.limit === 'number' && Number.isFinite(body.limit)
         ? Math.max(1, Math.min(20, Math.floor(body.limit)))
         : 8;
-    const localMatches = await this.searchLocalKnowledge(query, limit);
+    const localMatches = await this.searchLocalKnowledge(
+      query,
+      limit,
+      req.authUser?.id ?? null,
+    );
     let cloudWarning = '';
     let cloudMatches: Array<Record<string, unknown>> = [];
     if (this.isLocalOnlyKaypalSnapshot(req) && !this.hasRealKaypalToken(req)) {
@@ -1732,9 +1759,13 @@ for imagePath in CommandLine.arguments.dropFirst() {
   }
 
   @Get('knowledge/local')
-  async listLocalKnowledge() {
+  async listLocalKnowledge(@Req() req: AuthenticatedRequest) {
     const items = await this.prisma.material.findMany({
-      where: { platform: this.localKnowledgePlatform },
+      where: {
+        platform: this.localKnowledgePlatform,
+        // P1-6：只列当前 owner 的知识
+        ownerId: req.authUser?.id ?? null,
+      },
       orderBy: { updatedAt: 'desc' },
       take: 100,
     });
@@ -1795,15 +1826,25 @@ for imagePath in CommandLine.arguments.dropFirst() {
       fileSize: file.size,
       contentType: file.mimetype,
       parsed,
+      ownerId: req.authUser?.id ?? null,
+      tenantId: null,
     });
     return { items: [item], total: 1, local: true, parsed };
   }
 
   @Delete('knowledge/local/:id')
-  async deleteLocalKnowledge(@Param('id') id: string) {
+  async deleteLocalKnowledge(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
     const item = await this.prisma.material.findUnique({ where: { id } });
     if (!item || item.platform !== this.localKnowledgePlatform) {
       throw new BadRequestException('本机知识不存在');
+    }
+    // P1-6：只能删自己的知识；ownerId 为 null 的旧数据（归属不明）禁止删除
+    const ownerId = req.authUser?.id ?? null;
+    if (item.ownerId !== ownerId) {
+      throw new ForbiddenException('无权删除他人的知识');
     }
     await this.prisma.material.delete({ where: { id } });
     return { ok: true, id };
@@ -1830,6 +1871,8 @@ for imagePath in CommandLine.arguments.dropFirst() {
       content,
       sourceUrl: `local://knowledge-text/${Date.now()}`,
       metadata: { fileName: filename, contentType: 'text/plain' },
+      ownerId: req.authUser?.id ?? null,
+      tenantId: null,
     });
     if (body.syncCloud === true) {
       try {
