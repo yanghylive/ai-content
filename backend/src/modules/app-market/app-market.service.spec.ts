@@ -556,4 +556,42 @@ describe('AppMarketService', () => {
       }),
     });
   });
+
+  it('listApps 返回应用目录（至少含 CRM 条目）', async () => {
+    const prisma = makePrismaMock();
+    const entitlements = makeEntitlementsMock();
+    prisma.appInstallState.findUnique.mockResolvedValue(null);
+    const service = new AppMarketService(prisma, entitlements);
+
+    const apps = await service.listApps(makeUser());
+
+    expect(Array.isArray(apps)).toBe(true);
+    expect(apps.length).toBeGreaterThanOrEqual(1);
+    const crm = apps.find((app) => app.appKey === 'crm');
+    expect(crm).toBeDefined();
+    expect(crm?.name).toBe('CRM 客户管理');
+  });
+
+  it('getAppState 按 appKey 返回单个应用状态（目录驱动）', async () => {
+    const prisma = makePrismaMock();
+    const entitlements = makeEntitlementsMock();
+    prisma.appInstallState.findUnique.mockResolvedValue(null);
+    const service = new AppMarketService(prisma, entitlements);
+
+    const state = await service.getAppState(makeUser(), 'crm');
+
+    expect(state.appKey).toBe('crm');
+    expect(state.name).toBe('CRM 客户管理');
+    expect(state.access.state).toBe('not_purchased');
+  });
+
+  it('getAppState 未知应用抛 400', async () => {
+    const prisma = makePrismaMock();
+    const entitlements = makeEntitlementsMock();
+    const service = new AppMarketService(prisma, entitlements);
+
+    await expect(
+      service.getAppState(makeUser(), 'nonexistent'),
+    ).rejects.toThrow(BadRequestException);
+  });
 });
