@@ -28,7 +28,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { autoUploadApi, type AutoUploadCalendarDay } from "@/lib/api/auto-upload";
+import {
+  autoUploadApi,
+  type AutoUploadAccountHealth,
+  type AutoUploadCalendarDay,
+} from "@/lib/api/auto-upload";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -626,29 +630,9 @@ function FailedQueueTab({
 /* ================= 账号健康 Tab（报告 4.1/4.6） ================= */
 
 function AccountHealthTab() {
-  const [health, setHealth] = React.useState<{
-    checkedAt: string;
-    totalAccounts: number;
-    readyAccounts: number;
-    expiredAccounts: number;
-    issues: Array<{
-      accountId?: number;
-      accountName: string;
-      platform: string;
-      status: "expired" | "missing";
-      message: string;
-      nextAction: string;
-    }>;
-    waitingTasks: Array<{
-      id: number;
-      title: string;
-      platform: string;
-      status: string;
-      message: string | null;
-      canResume: boolean;
-      nextAction: string;
-    }>;
-  } | null>(null);
+  const [health, setHealth] = React.useState<AutoUploadAccountHealth | null>(
+    null,
+  );
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
