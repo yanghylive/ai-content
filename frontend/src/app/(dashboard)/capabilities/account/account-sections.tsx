@@ -2,20 +2,8 @@
 
 import React from "react";
 import {
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Spinner,
-  useDisclosure,
+  Button, Card, CardBody, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, useDisclosure,
 } from "@heroui/react";
-import { MonitorCog, Settings2, UserRound } from "lucide-react";
 import {
   kaypalApi,
   type KaypalProfile,
@@ -25,10 +13,6 @@ import {
 } from "@/lib/api/auth";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
-import {
-  DashboardPageHeader,
-  DashboardPageShell,
-} from "../../components/dashboard-page";
 
 function formatCredits(value?: number | null) {
   if (value == null) return "同步中";
@@ -166,7 +150,7 @@ function KaypalLinkPanel({ onLinked }: { onLinked: () => void }) {
   );
 }
 
-function KaypalAccountSections() {
+export function KaypalAccountSections() {
   const [profile, setProfile] = React.useState<KaypalProfile | null>(null);
   const [devices, setDevices] = React.useState<KaypalDevice[] | null>(null);
   const [subscription, setSubscription] =
@@ -527,39 +511,5 @@ function KaypalAccountSections() {
         </ModalContent>
       </Modal>
     </div>
-  );
-}
-
-export default function Page() {
-  return (
-    <DashboardPageShell width="wide">
-      <DashboardPageHeader
-        actions={
-          <>
-            <Button
-              as="a"
-              href="/settings?tab=desktop"
-              startContent={<Settings2 aria-hidden="true" size={16} />}
-              variant="flat"
-            >
-              桌面设置
-            </Button>
-            <Button
-              as="a"
-              color="primary"
-              href="/local-engine?tab=browser"
-              startContent={<MonitorCog aria-hidden="true" size={16} />}
-              variant="flat"
-            >
-              检查设备
-            </Button>
-          </>
-        }
-        description="查看当前账号、套餐余额和已连接设备。"
-        icon={<UserRound aria-hidden="true" size={19} />}
-        title="账号与设备"
-      />
-      <KaypalAccountSections />
-    </DashboardPageShell>
   );
 }
