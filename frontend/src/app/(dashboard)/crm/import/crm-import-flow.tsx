@@ -272,8 +272,14 @@ export function CrmImportFlow() {
         imported: result.committedCount ?? dataRows.length,
         skipped: (result.rowCount ?? dataRows.length) - (result.committedCount ?? dataRows.length),
       });
-      if (result.rollbackPlan?.customerIds?.length) {
-        setRollbackPlan(result.rollbackPlan);
+      if (result.rollbackPlan) {
+        setRollbackPlan({
+          importCommitId: result.rollbackPlan.importCommitId,
+          rollbackToken: result.rollbackPlan.rollbackToken,
+          customerIds: Array.isArray(result.rollbackPlan.customerIds)
+            ? result.rollbackPlan.customerIds
+            : [],
+        });
       }
       setStep(3);
     } catch (err: unknown) {
@@ -293,17 +299,19 @@ export function CrmImportFlow() {
     }
   };
 
-  // 回滚本次导入（受控导入：导入出错可一键归档回滚）
+  // 回滚本次导入（受控导入：导入出错可一键归档回滚；不依赖前端 customerIds，
+  // 后端按 importCommitId + rollbackToken 回退到 batch 内存储的客户）
   const handleRollback = async () => {
-    if (!rollbackPlan || !rollbackPlan.customerIds.length) return;
-    if (!window.confirm(`确定回滚本次导入的 ${rollbackPlan.customerIds.length} 条客户吗？回滚后需要重新导入。`)) return;
+    if (!rollbackPlan) return;
+    const customerIds = rollbackPlan.customerIds || [];
+    if (!window.confirm(`确定回滚本次导入的 ${customerIds.length || "已导入"} 条客户吗？回滚后需要重新导入。`)) return;
     setRollingBack(true);
     setRollbackMsg(null);
     try {
       const result = await rollbackCrmImport({
         importCommitId: rollbackPlan.importCommitId,
         rollbackToken: rollbackPlan.rollbackToken,
-        customerIds: rollbackPlan.customerIds,
+        customerIds,
         reason: "crm-import-flow-local-rollback",
       });
       setRollbackMsg(`已回滚 ${result.archivedCount} 条`);
