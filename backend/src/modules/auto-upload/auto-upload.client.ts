@@ -5809,6 +5809,8 @@ export class AutoUploadClient {
   }
 
   async listTasks(limit = 50): Promise<AutoUploadPublishTask[]> {
+    // S0-P1-1：互动任务查询加 owner scope，防泄露所有租户任务
+    const ownerScope = await this.resolvePublishOwnerScope();
     const taskTypeLabel: Record<string, string> = {
       DOUYIN_COMMENT_REPLY: '抖音自动评论',
       DOUYIN_DIRECT_MESSAGE_REPLY: '抖音私信回复',
@@ -5835,6 +5837,7 @@ export class AutoUploadClient {
         CUSTOMER_FOLLOW_UP: { type: 0, name: '客户互动' },
       };
     const rows = await this.prisma.interactionTask.findMany({
+      where: { ...ownerScope },
       orderBy: { updatedAt: 'desc' },
       take: Math.max(1, Math.min(200, Math.floor(limit))),
     });
