@@ -2400,9 +2400,21 @@ export class PrismaService
       ['interaction_tasks', 'claimedBy', 'TEXT'],
       ['growth_workflows', 'industry', 'TEXT'],
       ['growth_workflows', 'scenario', 'TEXT'],
+      // P1-6 知识库归属与可见性（爬虫素材=public，本地知识=private）
+      ['materials', 'owner_id', 'TEXT'],
+      ['materials', 'tenant_id', 'TEXT'],
+      ['materials', 'visibility', "TEXT NOT NULL DEFAULT 'private'"],
     ] as const) {
       await this.ensureSqliteColumn(column[0], column[1], column[2]);
     }
+
+    // P1-6 回填：爬虫素材（非本地知识）是系统公共，visibility 应为 public
+    await this.$executeRawUnsafe(
+      `UPDATE materials
+       SET visibility = 'public'
+       WHERE platform != 'LocalKnowledge'
+         AND (visibility IS NULL OR visibility = 'private')`,
+    );
 
     await this.$executeRawUnsafe(
       `UPDATE local_engine_reply_rules
