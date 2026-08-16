@@ -11,19 +11,15 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { EntitlementsService } from '../entitlements/entitlements.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import {
+  APP_CATALOG,
   CRM_APP_KEY,
+  getCatalogEntry,
+  type AppCatalogEntry,
   type AppInstallStatus,
   type AppPurchaseStatus,
   type MarketAppAccessPolicy,
   type MarketAppState,
 } from './app-market.types';
-
-const CRM_APP_META = {
-  appKey: CRM_APP_KEY,
-  name: 'CRM 客户管理',
-  description: '承接自动获客线索、客户档案、跟进时间线和来源证据。',
-  priceLabel: '高级版可购买',
-};
 
 @Injectable()
 export class AppMarketService {
@@ -35,13 +31,26 @@ export class AppMarketService {
   ) {}
 
   async listApps(actor: AppMarketActor) {
-    return [await this.getCrmState(actor)];
+    return Promise.all(
+      APP_CATALOG.map((entry) => this.getAppState(actor, entry.appKey)),
+    );
+  }
+
+  async getAppState(
+    actor: AppMarketActor,
+    appKey: string,
+  ): Promise<MarketAppState> {
+    const entry = getCatalogEntry(appKey);
+    if (!entry) {
+      throw new BadRequestException(`未知应用：${appKey}`);
+    }
+    const scope = await this.resolveScope(actor, entry);
+    const state = await this.findState(scope, entry.appKey);
+    return this.toAppState(scope, entry, state);
   }
 
   async getCrmState(actor: AppMarketActor): Promise<MarketAppState> {
-    const scope = await this.resolveScope(actor);
-    const state = await this.findState(scope);
-    return this.toCrmState(state, scope);
+    return this.getAppState(actor, CRM_APP_KEY);
   }
 
   async purchaseCrm(actor: AppMarketActor) {
@@ -100,7 +109,11 @@ export class AppMarketService {
   async assertCrmInstalled(actor: AppMarketActor) {
     const scope = await this.resolveScope(actor);
     const record = await this.findState(scope);
-    const state = this.toCrmState(record, scope);
+    const state = this.toAppState(
+      scope,
+      getCatalogEntry(CRM_APP_KEY) as AppCatalogEntry,
+      record,
+    );
     if (!state.access.allowedActions.includes('open')) {
       throw new ForbiddenException({
         code:
@@ -120,7 +133,10 @@ export class AppMarketService {
     return state;
   }
 
-  private async resolveScope(actor: AppMarketActor): Promise<AppMarketScope> {
+  private async resolveScope(
+    actor: AppMarketActor,
+    entry?: AppCatalogEntry,
+  ): Promise<AppMarketScope> {
     if (typeof actor === 'string' || !actor) {
       return {
         userId: actor || 'local-user',
@@ -138,20 +154,23 @@ export class AppMarketService {
     const entitlement =
       await this.entitlements.getEffectiveEntitlementForUser(actor);
     const features = entitlement.features || [];
-    const hasCrmFeature =
-      features.includes('crm') ||
+    const featureKey = entry?.entitlementFeature ?? 'crm';
+    const hasFeature =
+      features.includes(featureKey) ||
       entitlement.source === 'local-commercial-override';
-    // A verified, active Kaypal plan grants product access to the CRM app even
+    // A verified, active Kaypal plan grants product access to the app even
     // when the separate external-action execution grant is not enabled.
-    const hasCrmProductGrant =
+    const hasProductGrant =
       entitlement.cloudSubscriptionActive ||
       entitlement.commercialExecutionAllowed;
-    const crmProductEntitled = hasCrmProductGrant && hasCrmFeature;
-    const crmFeatureBlockers =
-      hasCrmProductGrant && !hasCrmFeature ? ['crm-feature-not-entitled'] : [];
-    const crmEntitlementBlockers = (entitlement.blockers || []).filter(
+    const productEntitled = hasProductGrant && hasFeature;
+    const featureBlockers =
+      hasProductGrant && !hasFeature
+        ? [`${featureKey}-feature-not-entitled`]
+        : [];
+    const entitlementBlockers = (entitlement.blockers || []).filter(
       (blocker) =>
-        !(crmProductEntitled && blocker === 'missing-commercial-entitlement'),
+        !(productEntitled && blocker === 'missing-commercial-entitlement'),
     );
     const requestUser = this.authRequestContext?.get()?.user;
     const selectedTenantId =
@@ -169,9 +188,9 @@ export class AppMarketService {
       actorUserId: actor.id,
       entitlementSource: entitlement.source,
       entitlementPlan: entitlement.plan,
-      commercialEntitled: crmProductEntitled,
+      commercialEntitled: productEntitled,
       commercialEntitlementRequired: true,
-      commercialBlockers: [...crmEntitlementBlockers, ...crmFeatureBlockers],
+      commercialBlockers: [...entitlementBlockers, ...featureBlockers],
       commercialWarnings: [
         ...(entitlement.warnings || []),
         ...(entitlement.tenant.warnings || []),
@@ -181,13 +200,14 @@ export class AppMarketService {
 
   private async findState(
     scope: AppMarketScope,
+    appKey: string = CRM_APP_KEY,
   ): Promise<AppInstallState | null> {
     if (scope.tenantId) {
       const scoped = await this.prisma.appInstallState.findUnique({
         where: {
           tenantId_appKey: {
             tenantId: scope.tenantId,
-            appKey: CRM_APP_KEY,
+            appKey,
           },
         },
       });
@@ -197,7 +217,7 @@ export class AppMarketService {
     }
 
     const legacy = await this.prisma.appInstallState.findUnique({
-      where: { userId_appKey: { userId: scope.userId, appKey: CRM_APP_KEY } },
+      where: { userId_appKey: { userId: scope.userId, appKey } },
     });
     if (legacy && scope.tenantId && !legacy.tenantId) {
       return this.prisma.appInstallState
@@ -209,6 +229,7 @@ export class AppMarketService {
             entitlementSnapshot: this.buildEntitlementSnapshot(
               scope,
               'migrate',
+              appKey,
             ),
           },
         })
@@ -225,20 +246,21 @@ export class AppMarketService {
     > & {
       entitlementSnapshot: Prisma.InputJsonValue;
     },
+    appKey: string = CRM_APP_KEY,
   ) {
     if (scope.tenantId) {
       return this.prisma.appInstallState.upsert({
         where: {
           tenantId_appKey: {
             tenantId: scope.tenantId,
-            appKey: CRM_APP_KEY,
+            appKey,
           },
         },
         create: {
           userId: scope.userId,
           tenantId: scope.tenantId,
           actorUserId: scope.actorUserId,
-          appKey: CRM_APP_KEY,
+          appKey,
           purchaseStatus: data.purchaseStatus,
           installStatus: data.installStatus,
           purchasedAt: data.purchasedAt,
@@ -255,11 +277,11 @@ export class AppMarketService {
     }
 
     return this.prisma.appInstallState.upsert({
-      where: { userId_appKey: { userId: scope.userId, appKey: CRM_APP_KEY } },
+      where: { userId_appKey: { userId: scope.userId, appKey } },
       create: {
         userId: scope.userId,
         actorUserId: scope.actorUserId,
-        appKey: CRM_APP_KEY,
+        appKey,
         purchaseStatus: data.purchaseStatus,
         installStatus: data.installStatus,
         purchasedAt: data.purchasedAt,
@@ -277,6 +299,7 @@ export class AppMarketService {
   private buildEntitlementSnapshot(
     scope: AppMarketScope,
     action: string,
+    appKey: string = CRM_APP_KEY,
   ): Prisma.InputJsonObject {
     const installStatus: AppInstallStatus =
       action === 'install'
@@ -286,7 +309,7 @@ export class AppMarketService {
           : 'not_installed';
     return {
       source: 'tenant_app_market',
-      appKey: CRM_APP_KEY,
+      appKey,
       action,
       tenantId: scope.tenantId,
       actorUserId: scope.actorUserId,
@@ -299,6 +322,8 @@ export class AppMarketService {
       commercialWarnings: scope.commercialWarnings,
       accessPolicy: {
         ...this.buildAccessPolicy({
+          appKey,
+          appName: getCatalogEntry(appKey)?.name,
           purchaseStatus: 'purchased',
           installStatus,
           commercialEntitled: scope.commercialEntitled,
@@ -311,9 +336,10 @@ export class AppMarketService {
     };
   }
 
-  private toCrmState(
+  private toAppState(
+    scope: AppMarketScope,
+    entry: AppCatalogEntry,
     value: AppInstallState | null,
-    scope?: AppMarketScope,
   ): MarketAppState {
     const purchaseStatus = this.normalizePurchaseStatus(value?.purchaseStatus);
     const installStatus = this.normalizeInstallStatus(value?.installStatus);
@@ -321,6 +347,8 @@ export class AppMarketService {
     const commercialEntitlementRequired =
       scope?.commercialEntitlementRequired ?? false;
     const access = this.buildAccessPolicy({
+      appKey: entry.appKey,
+      appName: entry.name,
       purchaseStatus,
       installStatus,
       commercialEntitled,
@@ -329,7 +357,10 @@ export class AppMarketService {
       commercialWarnings: scope?.commercialWarnings ?? [],
     });
     return {
-      ...CRM_APP_META,
+      appKey: entry.appKey,
+      name: entry.name,
+      description: entry.description,
+      priceLabel: entry.priceLabel,
       tenantId: value?.tenantId ?? scope?.tenantId ?? null,
       actorUserId: value?.actorUserId ?? scope?.actorUserId ?? null,
       scope: value?.tenantId || scope?.tenantId ? 'tenant' : 'legacy-user',
@@ -378,6 +409,8 @@ export class AppMarketService {
   }
 
   private buildAccessPolicy(input: {
+    appKey: string;
+    appName?: string;
     purchaseStatus: AppPurchaseStatus;
     installStatus: AppInstallStatus;
     commercialEntitled: boolean;
@@ -385,78 +418,96 @@ export class AppMarketService {
     commercialBlockers: string[];
     commercialWarnings: string[];
   }): MarketAppAccessPolicy {
+    const name = input.appName ?? '应用';
+    const appKey = input.appKey;
     if (input.commercialEntitlementRequired && !input.commercialEntitled) {
-      return this.withAccessProof({
-        state: 'commercial_blocked',
-        primaryAction: 'contact_sales',
-        allowedActions: ['contact_sales'],
-        nextActionLabel: 'CRM 客户管理需要有效商用授权后才能购买、安装或访问',
-        blockers: input.commercialBlockers.length
-          ? input.commercialBlockers
-          : ['missing-commercial-entitlement'],
-        warnings: input.commercialWarnings,
-        requiresCommercialEntitlement: true,
-        requiresPurchase: input.purchaseStatus !== 'purchased',
-        requiresInstall: input.installStatus !== 'installed',
-      });
+      return this.withAccessProof(
+        appKey,
+        {
+          state: 'commercial_blocked',
+          primaryAction: 'contact_sales',
+          allowedActions: ['contact_sales'],
+          nextActionLabel: `${name}需要有效商用授权后才能购买、安装或访问`,
+          blockers: input.commercialBlockers.length
+            ? input.commercialBlockers
+            : ['missing-commercial-entitlement'],
+          warnings: input.commercialWarnings,
+          requiresCommercialEntitlement: true,
+          requiresPurchase: input.purchaseStatus !== 'purchased',
+          requiresInstall: input.installStatus !== 'installed',
+        },
+      );
     }
 
     if (input.purchaseStatus !== 'purchased') {
-      return this.withAccessProof({
-        state: 'not_purchased',
-        primaryAction: 'purchase',
-        allowedActions: ['purchase'],
-        nextActionLabel: '先购买 CRM 客户管理应用',
-        blockers: ['crm-not-purchased'],
-        warnings: input.commercialWarnings,
-        requiresCommercialEntitlement: input.commercialEntitlementRequired,
-        requiresPurchase: true,
-        requiresInstall: true,
-      });
+      return this.withAccessProof(
+        appKey,
+        {
+          state: 'not_purchased',
+          primaryAction: 'purchase',
+          allowedActions: ['purchase'],
+          nextActionLabel: `先购买${name}应用`,
+          blockers: [`${appKey}-not-purchased`],
+          warnings: input.commercialWarnings,
+          requiresCommercialEntitlement: input.commercialEntitlementRequired,
+          requiresPurchase: true,
+          requiresInstall: true,
+        },
+      );
     }
 
     if (input.installStatus === 'uninstalled') {
-      return this.withAccessProof({
-        state: 'uninstalled',
-        primaryAction: 'install',
-        allowedActions: ['install'],
-        nextActionLabel: 'CRM 已购买但当前已卸载，可重新安装后访问',
-        blockers: ['crm-uninstalled'],
-        warnings: input.commercialWarnings,
-        requiresCommercialEntitlement: input.commercialEntitlementRequired,
-        requiresPurchase: false,
-        requiresInstall: true,
-      });
+      return this.withAccessProof(
+        appKey,
+        {
+          state: 'uninstalled',
+          primaryAction: 'install',
+          allowedActions: ['install'],
+          nextActionLabel: `${name}已购买但当前已卸载，可重新安装后访问`,
+          blockers: [`${appKey}-uninstalled`],
+          warnings: input.commercialWarnings,
+          requiresCommercialEntitlement: input.commercialEntitlementRequired,
+          requiresPurchase: false,
+          requiresInstall: true,
+        },
+      );
     }
 
     if (input.installStatus !== 'installed') {
-      return this.withAccessProof({
-        state: 'not_installed',
-        primaryAction: 'install',
-        allowedActions: ['install'],
-        nextActionLabel: 'CRM 已购买，安装后开放客户管理入口',
-        blockers: ['crm-not-installed'],
+      return this.withAccessProof(
+        appKey,
+        {
+          state: 'not_installed',
+          primaryAction: 'install',
+          allowedActions: ['install'],
+          nextActionLabel: `${name}已购买，安装后开放入口`,
+          blockers: [`${appKey}-not-installed`],
+          warnings: input.commercialWarnings,
+          requiresCommercialEntitlement: input.commercialEntitlementRequired,
+          requiresPurchase: false,
+          requiresInstall: true,
+        },
+      );
+    }
+
+    return this.withAccessProof(
+      appKey,
+      {
+        state: 'installed',
+        primaryAction: 'open',
+        allowedActions: ['open', 'uninstall'],
+        nextActionLabel: `${name}已购买并安装，可进入使用`,
+        blockers: [],
         warnings: input.commercialWarnings,
         requiresCommercialEntitlement: input.commercialEntitlementRequired,
         requiresPurchase: false,
-        requiresInstall: true,
-      });
-    }
-
-    return this.withAccessProof({
-      state: 'installed',
-      primaryAction: 'open',
-      allowedActions: ['open', 'uninstall'],
-      nextActionLabel: 'CRM 已购买并安装，可进入客户管理',
-      blockers: [],
-      warnings: input.commercialWarnings,
-      requiresCommercialEntitlement: input.commercialEntitlementRequired,
-      requiresPurchase: false,
-      requiresInstall: false,
-    });
+        requiresInstall: false,
+      },
+    );
   }
 
   private withAccessProof(
+    appKey: string,
     input: Omit<MarketAppAccessPolicy, 'proofHash'>,
   ): MarketAppAccessPolicy {
     return {
@@ -465,7 +516,7 @@ export class AppMarketService {
         .createHash('sha256')
         .update(
           JSON.stringify({
-            appKey: CRM_APP_KEY,
+            appKey,
             state: input.state,
             primaryAction: input.primaryAction,
             blockers: input.blockers,

@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Param,
   Post,
   Req,
   UnauthorizedException,
@@ -18,6 +19,11 @@ export class AppMarketController {
   @Get('apps')
   listApps(@Req() request: AuthenticatedRequest) {
     return this.appMarketService.listApps(this.getUser(request));
+  }
+
+  @Get('apps/:appKey')
+  getApp(@Req() request: AuthenticatedRequest, @Param('appKey') appKey: string) {
+    return this.appMarketService.getAppState(this.getUser(request), appKey);
   }
 
   @Get('apps/crm')
