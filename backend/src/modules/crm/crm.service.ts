@@ -3466,7 +3466,6 @@ export class CrmService {
         update: {
           tenantId,
           displayName,
-          status: customerStatus,
           sourcePlatform: platform,
           sourceKeyword,
           matchedKeyword: matchedKeywords.join('、') || null,
@@ -3479,7 +3478,6 @@ export class CrmService {
           externalUserId: this.optionalString(input.externalUserId),
           latestInteractionTaskId: taskId,
           metadata,
-          archivedAt: null,
         },
       });
 
