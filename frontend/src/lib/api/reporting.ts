@@ -13,6 +13,15 @@ export interface EffectReport {
     text: string;
     sharePayload: string;
   };
+  topContent: Array<{
+    publishRecordId: string;
+    articleId: string;
+    title: string;
+    platform: string;
+    exposure: number | null;
+    interactions: number | null;
+    publishUrl: string | null;
+  }>;
 }
 
 export function getEffects(range: "7d" | "30d" = "7d") {

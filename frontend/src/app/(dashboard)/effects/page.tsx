@@ -1,13 +1,23 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getEffects, type EffectReport } from "@/lib/api/reporting";
 import { shareText, copyText } from "@/lib/mobile-bridge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 
+const PLATFORM_LABEL: Record<string, string> = {
+  douyin: "抖音",
+  xiaohongshu: "小红书",
+  "wechat-channel": "视频号",
+  wechat: "公众号",
+  bilibili: "B站",
+};
+
 /** S3 效果报告（2026-08-09 商用能力补齐 R3）：AI 生成/发布/曝光/互动看板 + 周报分享 */
 
 export default function EffectsPage() {
+  const router = useRouter();
   const [report, setReport] = useState<EffectReport | null>(null);
   const [range, setRange] = useState<"7d" | "30d">("7d");
   const [loading, setLoading] = useState(true);
@@ -184,6 +194,65 @@ export default function EffectsPage() {
               <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>📅 本周摘要</div>
               <div style={{ fontSize: 13, lineHeight: 1.8, color: "#dbe7f5" }}>{report.weeklySummary.text}</div>
             </div>
+
+            {/* Top 内容（报告 8.1：复盘回写，可重发/生成变体） */}
+            {report.topContent && report.topContent.length > 0 ? (
+              <div
+                style={{
+                  marginTop: 14,
+                  padding: 16,
+                  borderRadius: 14,
+                  background: "rgba(255,255,255,.05)",
+                  border: "1px solid rgba(142,165,190,.2)",
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>
+                  🔥 表现最好的内容
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {report.topContent.map((top) => (
+                    <div
+                      key={top.publishRecordId}
+                      style={{
+                        padding: 12,
+                        borderRadius: 10,
+                        background: "rgba(246,196,120,.08)",
+                        border: "1px solid rgba(246,196,120,.25)",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#e8f1fc", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {top.title}
+                        </span>
+                        <span style={{ fontSize: 11, color: "rgba(215,230,248,.6)", flexShrink: 0 }}>
+                          {PLATFORM_LABEL[top.platform] || top.platform}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11, color: "rgba(148,163,184,.75)", marginTop: 4 }}>
+                        {top.interactions != null ? `互动 ${top.interactions}` : ""}
+                        {top.exposure != null ? ` · 曝光 ${top.exposure}` : ""}
+                      </div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/distribution/publish-article?articleId=${top.articleId}`)}
+                          style={{ padding: "5px 12px", borderRadius: 999, fontSize: 11, background: "rgba(246,196,120,.15)", border: "1px solid rgba(246,196,120,.4)", color: "#f6c478", cursor: "pointer" }}
+                        >
+                          重发
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/content?articleId=${top.articleId}`)}
+                          style={{ padding: "5px 12px", borderRadius: 999, fontSize: 11, background: "transparent", border: "1px solid rgba(142,165,190,.3)", color: "rgba(215,230,248,.8)", cursor: "pointer" }}
+                        >
+                          生成变体
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             {/* 说明 */}
             <div style={{ marginTop: 14, fontSize: 11, lineHeight: 1.7, color: "rgba(148,163,184,.55)" }}>
