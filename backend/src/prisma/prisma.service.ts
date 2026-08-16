@@ -2434,6 +2434,10 @@ export class PrismaService
       ['interaction_tasks', 'sourceArticleId', 'TEXT'],
       ['interaction_tasks', 'publishRecordId', 'TEXT'],
       ['interaction_tasks', 'sourceUrl', 'TEXT'],
+      // 互动承接 SLA + 转人工（报告 16.3 第 15 项）
+      ['interaction_tasks', 'slaDueAt', 'DATETIME'],
+      ['interaction_tasks', 'handoffState', "TEXT NOT NULL DEFAULT 'normal'"],
+      ['interaction_tasks', 'handoffReason', 'TEXT'],
     ] as const) {
       await this.ensureSqliteColumn(column[0], column[1], column[2]);
     }
