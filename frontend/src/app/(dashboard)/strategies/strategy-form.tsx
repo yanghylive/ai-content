@@ -182,6 +182,21 @@ export function StrategyForm({
     }
   };
 
+  const handleDelete = async () => {
+    if (!strategyId) return;
+    if (!window.confirm("确定删除这个内容策略吗？删除后无法恢复。")) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await contentStrategiesApi.remove(strategyId);
+      router.push("/strategies");
+    } catch (err: unknown) {
+      setError(toPublicError(err, "删除失败，请稍后重试"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="kaypal-v3-panel p-12 text-center">
@@ -302,6 +317,15 @@ export function StrategyForm({
             <button type="button" onClick={() => router.push("/strategies")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
+            {strategyId && (
+              <button
+                type="button"
+                onClick={() => void handleDelete()}
+                style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(220,80,80,.12)", color: "#dc2626", border: "1px solid rgba(220,80,80,.35)", fontSize: 12.5, fontWeight: 600 }}
+              >
+                删除
+              </button>
+            )}
             <button
               type="button"
               className="mx-btn-gold"
@@ -488,9 +512,14 @@ export function StrategyForm({
 
       {/* 底部操作栏 — 单一主行动 */}
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/strategies")}>
-          返回
-        </V2GhostButton>
+        <div className="flex items-center gap-2">
+          <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/strategies")}>
+            返回
+          </V2GhostButton>
+          {strategyId && (
+            <V2GhostButton onClick={() => void handleDelete()}>删除</V2GhostButton>
+          )}
+        </div>
         <V2PrimaryButton
           icon={Save}
           loading={saving}

@@ -89,6 +89,21 @@ export function StyleForm({
     }
   };
 
+  const handleDelete = async () => {
+    if (!styleId) return;
+    if (!window.confirm("确定删除吗？删除后无法恢复。")) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await stylesApi.remove(styleId);
+      router.push(fixedType === "template" ? "/templates" : "/styles");
+    } catch (err: unknown) {
+      setError(toPublicError(err, "删除失败，请稍后重试"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const backHref = fixedType === "template" ? "/templates" : "/styles";
   const pageTitle = fixedType === "template" ? "模板" : "风格";
 
@@ -196,6 +211,15 @@ export function StyleForm({
             <button type="button" onClick={() => router.push(backHref)} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
+            {styleId && (
+              <button
+                type="button"
+                onClick={() => void handleDelete()}
+                style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(220,80,80,.12)", color: "#dc2626", border: "1px solid rgba(220,80,80,.35)", fontSize: 12.5, fontWeight: 600 }}
+              >
+                删除
+              </button>
+            )}
             <button
               type="button"
               className="mx-btn-gold"
@@ -314,9 +338,14 @@ export function StyleForm({
       </V2Section>
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push(backHref)}>
-          返回
-        </V2GhostButton>
+        <div className="flex items-center gap-2">
+          <V2GhostButton icon={ArrowLeft} onClick={() => router.push(backHref)}>
+            返回
+          </V2GhostButton>
+          {styleId && (
+            <V2GhostButton onClick={() => void handleDelete()}>删除</V2GhostButton>
+          )}
+        </div>
         <V2PrimaryButton
           icon={Save}
           loading={saving}
