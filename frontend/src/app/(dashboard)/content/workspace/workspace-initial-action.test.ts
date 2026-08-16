@@ -48,4 +48,10 @@ describe("resolveWorkspaceInitialAction（P1-3 action=new 必须创建新草稿�
       articleId: null,
     });
   });
+
+  it("create=true → 创建新草稿（报告 3.2：article-list 的「新建」入口）", () => {
+    expect(resolveWorkspaceInitialAction("?create=true")).toEqual({
+      type: "create-new",
+    });
+  });
 });
