@@ -14,7 +14,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { getSolutionRuns } from "@/lib/api/solutions";
+import {
+  getSolutionPackages,
+  getSolutionRuns,
+  type SolutionPackageDefinition,
+} from "@/lib/api/solutions";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type Solution = {
@@ -28,57 +32,26 @@ type Solution = {
   href: string;
 };
 
-// 智能推荐：根据用户角色/行业（正式接入时从用户画像 API 读取）
-const RECOMMENDED_SOLUTIONS: Solution[] = [
-  {
-    id: "1",
-    title: "私域获客增长包",
-    description: "自动找选题、生成内容、分发到各平台，每周持续获客",
-    icon: TrendingUp,
-    category: "增长",
-    recommended: true,
-    recommendReason: "适合你的电商运营场景",
-    href: "/solutions/configure?package=private-domain-growth",
-  },
-  {
-    id: "2",
-    title: "客户互动自动化",
-    description: "自动回复评论和私信，把互动客户沉淀为私域好友",
-    icon: Users,
-    category: "互动",
-    recommended: true,
-    recommendReason: "你上周有 120 条未回复互动",
-    href: "/solutions/configure?package=engagement-automation",
-  },
-];
+// 根据方案名/code 关键词匹配图标
+function pickIcon(p: SolutionPackageDefinition): LucideIcon {
+  if (/热点|爆款|选题|趋势|出海/.test(p.name)) return TrendingUp;
+  if (/评论|互动|获客|线索|达人/.test(p.name)) return Users;
+  if (/视频|直播|剪辑/.test(p.name)) return Video;
+  if (/素材|AIGC|工厂|文案|内容/.test(p.name)) return Sparkles;
+  return Sparkles;
+}
 
-const ALL_SOLUTIONS: Solution[] = [
-  ...RECOMMENDED_SOLUTIONS,
-  {
-    id: "4",
-    title: "账号矩阵管理",
-    description: "多平台多账号统一管理，批量检查和运营",
-    icon: Users,
-    category: "管理",
-    href: "/solutions/configure?package=account-matrix",
-  },
-  {
-    id: "5",
-    title: "竞品监控分析",
-    description: "自动监控竞品动态，每周生成分析报告",
-    icon: TrendingUp,
-    category: "情报",
-    href: "/solutions/configure?package=competitor-monitor",
-  },
-  {
-    id: "6",
-    title: "直播带货助手",
-    description: "直播预告、弹幕互动、直播后数据分析",
-    icon: Video,
-    category: "直播",
-    href: "/solutions/configure?package=livestream-assistant",
-  },
-];
+// 后端方案包 → 前端展示项
+function toSolution(p: SolutionPackageDefinition): Solution {
+  return {
+    id: p.code,
+    title: p.name,
+    description: p.summary,
+    icon: pickIcon(p),
+    category: p.category === "core" ? "核心" : "RedFox 池",
+    href: `/solutions/configure?package=${p.code}`,
+  };
+}
 
 // 真实运行记录（来自 getSolutionRuns）
 type RealRun = {
@@ -93,6 +66,7 @@ export function SolutionsCenter() {
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [runs, setRuns] = useState<RealRun[]>([]);
+  const [packages, setPackages] = useState<SolutionPackageDefinition[]>([]);
 
   // 真实运行记录
   const fetchRuns = useCallback(async () => {
@@ -104,18 +78,41 @@ export function SolutionsCenter() {
     }
   }, []);
 
+  // 方案包（后端目录，28 个真实方案）
+  const fetchPackages = useCallback(async () => {
+    try {
+      const data = await getSolutionPackages();
+      setPackages(data.items || []);
+    } catch {
+      // 后端不可用时保持空列表
+    }
+  }, []);
+
   useEffect(() => {
     void fetchRuns();
-  }, [fetchRuns]);
+    void fetchPackages();
+  }, [fetchRuns, fetchPackages]);
 
-  // 搜索过滤
+  // 方案列表（后端驱动）；已接入的作为「为你推荐」，其余进全部方案
+  const allSolutions = useMemo(() => packages.map(toSolution), [packages]);
+  const connectedCodes = packages
+    .filter((p) => p.implementationState === "connected")
+    .map((p) => p.code);
+  const recommendedSolutions =
+    connectedCodes.length > 0
+      ? allSolutions.filter((s) => connectedCodes.includes(s.id))
+      : allSolutions
+          .filter((s) => packages.find((p) => p.code === s.id)?.category === "core")
+          .slice(0, 2);
+
+  // 搜索过滤（推荐项 + 全部方案都参与搜索）
   const filteredSolutions = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return ALL_SOLUTIONS;
-    return ALL_SOLUTIONS.filter((s) =>
+    if (!q) return allSolutions;
+    return allSolutions.filter((s) =>
       [s.title, s.description, s.category].join(" ").toLowerCase().includes(q),
     );
-  }, [searchQuery]);
+  }, [searchQuery, allSolutions]);
 
   const waitingCount = runs.filter((r) =>
     ["waiting", "paused", "waiting_for_confirmation"].includes(r.status),
@@ -144,7 +141,7 @@ export function SolutionsCenter() {
           {/* 为你推荐 */}
           <div className="mx-section-head" style={{ marginTop: 16 }}>为你推荐</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {RECOMMENDED_SOLUTIONS.map((solution) => {
+            {recommendedSolutions.map((solution) => {
               const Icon = solution.icon;
               return (
                 <div key={solution.id} className="mx-card" style={{ padding: 14 }}>
@@ -300,7 +297,7 @@ export function SolutionsCenter() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-3">
-          {RECOMMENDED_SOLUTIONS.map((solution) => {
+          {recommendedSolutions.map((solution) => {
             const Icon = solution.icon;
             return (
               <div
