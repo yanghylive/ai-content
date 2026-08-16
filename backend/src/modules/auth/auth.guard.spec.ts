@@ -1,7 +1,9 @@
 import type { ExecutionContext } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import { AUTH_COOKIE_NAME } from './auth.constants';
 import { hashSessionToken } from './auth.utils';
+import { KAYPAL_ROLES_KEY } from './roles.decorator';
 import { EntitlementsService } from '../entitlements/entitlements.service';
 
 describe('AuthGuard', () => {
@@ -627,5 +629,74 @@ describe('AuthGuard', () => {
         }),
       }),
     );
+  });
+
+  const buildRoleCheckFixture = (role: string) => {
+    const sessionToken = 'session-token';
+    const prisma = {
+      userSession: {
+        findFirst: jest.fn().mockResolvedValue({
+          id: 'session-1',
+          userId: 'user-1',
+          tokenHash: hashSessionToken(sessionToken),
+          expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60_000),
+          metadata: { localOnly: true, kaypalSubscriptionPlan: 'ADVANCED' },
+          user: {
+            id: 'user-1',
+            username: 'kaypal_user',
+            email: 'kaypal@example.com',
+            name: 'Kaypal User',
+            status: 'active',
+            lastLoginAt: new Date(),
+            kaypalUserId: 'kaypal-user-1',
+            role,
+            commercialExecutionAllowed: false,
+            planMode: 'trial',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        }),
+        findUnique: jest.fn().mockResolvedValue({
+          metadata: { localOnly: true, kaypalSubscriptionPlan: 'ADVANCED' },
+        }),
+        update: jest.fn().mockResolvedValue({}),
+        delete: jest.fn(),
+      },
+    };
+    const kaypalClient = {
+      refreshDesktopAuthToken: jest.fn(),
+      getUserFromDesktopToken: jest.fn(),
+    };
+    const request = {
+      path: '/api/commercial/client-config',
+      headers: { cookie: `${AUTH_COOKIE_NAME}=${sessionToken}` },
+    };
+    const reflector = {
+      getAllAndOverride: jest
+        .fn()
+        .mockImplementation((key: string) =>
+          key === KAYPAL_ROLES_KEY ? ['admin', 'owner'] : false,
+        ),
+    };
+    const guard = new AuthGuard(
+      reflector as any,
+      prisma as any,
+      kaypalClient as any,
+    );
+    return { guard, request };
+  };
+
+  it('拒绝普通用户（operator）访问 @RequireKaypalRoles 端点', async () => {
+    const { guard, request } = buildRoleCheckFixture('operator');
+    await expect(
+      guard.canActivate(createExecutionContext(request)),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('允许管理员（admin）访问 @RequireKaypalRoles 端点', async () => {
+    const { guard, request } = buildRoleCheckFixture('admin');
+    await expect(
+      guard.canActivate(createExecutionContext(request)),
+    ).resolves.toBe(true);
   });
 });

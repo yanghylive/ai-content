@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   Optional,
   UnauthorizedException,
@@ -10,6 +11,7 @@ import type { Request, Response } from 'express';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IS_PUBLIC_KEY } from './auth.decorator';
+import { KAYPAL_ROLES_KEY } from './roles.decorator';
 import { AUTH_COOKIE_NAME, AUTH_SESSION_DAYS } from './auth.constants';
 import { shouldUseSecureAuthCookie } from './cookie-options';
 import { hashSessionToken, parseCookieHeader } from './auth.utils';
@@ -166,6 +168,19 @@ export class AuthGuard implements CanActivate {
 
     this.touchSessionLastUsedAt(session.id, session.lastUsedAt);
     this.slideSessionExpiry(request, session.id, session.createdAt, session.expiresAt);
+
+    // 角色检查：@RequireKaypalRoles('admin', 'owner') 声明的端点，仅允许匹配角色。
+    // 默认 'operator' 是普通用户，不允许访问管理员端点。
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+      KAYPAL_ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (requiredRoles && requiredRoles.length > 0) {
+      const role = request.authUser.role ?? 'operator';
+      if (!requiredRoles.includes(role)) {
+        throw new ForbiddenException('无权限执行此操作');
+      }
+    }
 
     return true;
   }

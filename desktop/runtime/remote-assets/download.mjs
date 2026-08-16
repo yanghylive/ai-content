@@ -70,6 +70,11 @@ try {
   const res = await fetch(spec.url, { signal: AbortSignal.timeout(300000) });
   if (!res.ok) fail(`下载失败 HTTP ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
+  // 供应链完整性：从配置中心拉取的资源必须带 sha256，缺失即拒绝下载（防篡改来源）。
+  // 手动 --url 调试模式仍允许省略 sha256。
+  if (configUrl && !spec.sha256) {
+    fail(`资源 ${resourceName} 缺少 sha256，拒绝下载（配置必须提供校验值）`);
+  }
   if (spec.sha256) {
     const actual = createHash('sha256').update(buf).digest('hex');
     if (actual.toLowerCase() !== spec.sha256.toLowerCase()) {
