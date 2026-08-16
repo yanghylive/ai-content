@@ -347,7 +347,7 @@ export default function CommentAcquisitionPage() {
                         </V2GhostButton>
                       </>
                     )}
-                    {(lead.status === "approved" || lead.status === "pending") && (
+                    {lead.status === "approved" && (
                       <V2PrimaryButton
                         icon={replying === lead.id ? Loader2 : Send}
                         loading={replying === lead.id}
