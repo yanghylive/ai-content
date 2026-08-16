@@ -419,6 +419,12 @@ model Article {
   status     String  @default("draft") // draft, published
   coverImage String? @map("cover_image") // 封面图 URL
 
+  // 内容父子关系（报告 16.3 第 9 项）：同一选题的多平台变体建立父子关联，
+  // 第一个生成的版本是主版本（parentId=null），后续变体 parentId 指向主版本。
+  parentId String?  @map("parent_id")
+  parent   Article? @relation("ArticleVariants", fields: [parentId], references: [id], onDelete: SetNull)
+  variants Article[] @relation("ArticleVariants")
+
   publishRecords PublishRecord[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -428,6 +434,7 @@ model Article {
   @@index([topicId])
   @@index([contentType])
   @@index([templateId])
+  @@index([parentId])
   @@index([tenantId, userId, createdAt])
   @@map("articles")
 }

@@ -2293,6 +2293,8 @@ export class PrismaService
       ['articles', 'workspace_outline', 'JSONB'],
       ['articles', 'workspace_step', "TEXT NOT NULL DEFAULT 'brief'"],
       ['articles', 'workspace_revision', 'INTEGER NOT NULL DEFAULT 1'],
+      // 内容父子关系（报告 16.3 第 9 项）：同一选题多平台变体的 parent 关联
+      ['articles', 'parent_id', 'TEXT'],
       [
         'publish_accounts',
         'tenant_id',
