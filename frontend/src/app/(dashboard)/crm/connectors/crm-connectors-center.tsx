@@ -14,6 +14,7 @@ import {
   V2StatusChip,
 } from "@/components/v2/ui-kit";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { HubSpotVaultPanel } from "./hubspot-vault-panel";
 
 interface ConnectorItem {
   connectorKey: string;
@@ -152,6 +153,10 @@ export function CrmConnectorsCenter() {
               </div>
             </>
           )}
+
+          <div style={{ marginTop: 12 }}>
+            <HubSpotVaultPanel />
+          </div>
         </div>
       </div>
     );
@@ -219,6 +224,8 @@ export function CrmConnectorsCenter() {
           </div>
         </V2Section>
       )}
+
+      <HubSpotVaultPanel />
     </div>
   );
 }
