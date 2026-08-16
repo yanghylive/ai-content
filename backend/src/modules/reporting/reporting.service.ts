@@ -66,10 +66,13 @@ export class ReportingService {
     const likes = r.likes ?? r.likeCount;
     const comments = r.comments ?? r.commentCount;
     const shares = r.shares ?? r.shareCount;
-    const interactions =
-      (likes ?? comments ?? shares)
-        ? Number(likes ?? 0) + Number(comments ?? 0) + Number(shares ?? 0)
-        : null;
+    // S0-P1-6：0 值与「无数据」区分——任一互动字段存在（即使为 0）就算有数据，
+    // 三个字段都缺失才算 null（unavailable），避免 0 互动被误报为「暂无数据」。
+    const hasInteractionData =
+      likes !== undefined || comments !== undefined || shares !== undefined;
+    const interactions = hasInteractionData
+      ? Number(likes ?? 0) + Number(comments ?? 0) + Number(shares ?? 0)
+      : null;
     return {
       exposure:
         typeof exp === 'number' ? exp : exp != null ? Number(exp) : null,
@@ -85,11 +88,12 @@ export class ReportingService {
     const since = this.sinceDays(days);
     const userId = authUser?.id || 'legacy-local-user';
 
-    // 1. AI 生成数（创作类工具调用成功）
+    // 1. AI 生成数（创作类工具调用成功，S0-P1-6 只统计 resultOk）
     const aiGenerated = await this.prisma.aiToolCallLog.count({
       where: {
         userId,
         tool: { in: AI_CREATION_TOOLS },
+        resultOk: true,
         createdAt: { gte: since },
       },
     });
@@ -103,7 +107,7 @@ export class ReportingService {
       },
     });
 
-    // 3. 曝光/互动（从发布结果提取，无数据则降级）
+    // 3. 曝光/互动（从发布结果提取，无数据则降级；S0-P1-6 按时间倒序取最新的）
     const publishRecords = await this.prisma.publishRecord.findMany({
       where: {
         userId,
@@ -111,7 +115,8 @@ export class ReportingService {
         createdAt: { gte: since },
       },
       select: { resultJson: true },
-      take: 50,
+      orderBy: { createdAt: 'desc' },
+      take: 200,
     });
     let exposureTotal: number | null = 0;
     let interactionTotal: number | null = 0;
