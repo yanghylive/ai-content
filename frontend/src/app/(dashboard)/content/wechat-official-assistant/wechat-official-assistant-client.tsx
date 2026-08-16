@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Button,
-  Chip,
+  V2StatusChip,
+  V2PrimaryButton,
+  V2GhostButton,
+  V2DangerButton,
+} from "@/components/v2/ui-kit";
+import {
   Input,
-  Progress,
   Select,
   SelectItem,
-  Spinner,
   Textarea,
-  Tooltip,
   addToast,
 } from "@heroui/react";
 import {
@@ -44,14 +45,14 @@ import {
 
 const STATUS_COLOR: Record<
   AgentWakerRunStatus,
-  "default" | "primary" | "success" | "warning" | "danger"
+  "accent" | "success" | "warning" | "danger" | "muted"
 > = {
-  draft: "default",
-  running: "primary",
+  draft: "muted",
+  running: "accent",
   waiting_for_confirmation: "warning",
   completed: "success",
   failed: "danger",
-  cancelled: "default",
+  cancelled: "muted",
 };
 
 const STEP_PROGRESS: Record<AgentWakerRun["currentStep"], number> = {
@@ -720,8 +721,11 @@ export function WechatOfficialAssistantClient() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[480px] items-center justify-center">
-        <Spinner label="正在加载公众号运营助理" />
+      <div className="flex min-h-[480px] items-center justify-center gap-3">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <span className="text-sm text-[var(--kaypal-v3-muted)]">
+          正在加载公众号运营助理
+        </span>
       </div>
     );
   }
@@ -737,31 +741,23 @@ export function WechatOfficialAssistantClient() {
           <h1 className="text-[24px] font-semibold">公众号运营助理</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Chip
-            color={roleAvailable ? "success" : "danger"}
-            size="sm"
-            startContent={
-              roleAvailable ? (
-                <CheckCircle2 className="h-3.5 w-3.5" />
-              ) : (
-                <AlertTriangle className="h-3.5 w-3.5" />
-              )
-            }
-            variant="flat"
-          >
+          <V2StatusChip tone={roleAvailable ? "success" : "danger"}>
+            {roleAvailable ? (
+              <CheckCircle2 className="h-3.5 w-3.5" />
+            ) : (
+              <AlertTriangle className="h-3.5 w-3.5" />
+            )}
             {roleAvailable ? "角色已就绪" : "角色不可用"}
-          </Chip>
-          <Tooltip content="刷新任务">
-            <Button
-              isIconOnly
-              aria-label="刷新任务"
-              size="sm"
-              variant="light"
-              onPress={() => void refreshView()}
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </Tooltip>
+          </V2StatusChip>
+          <button
+            type="button"
+            aria-label="刷新任务"
+            title="刷新任务"
+            className="rounded-lg p-2 text-[var(--kaypal-v3-soft-ink)] transition hover:bg-[var(--kaypal-v3-accent-soft)] hover:text-[var(--kaypal-v3-accent-ink)]"
+            onClick={() => void refreshView()}
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
         </div>
       </header>
 
@@ -849,20 +845,17 @@ export function WechatOfficialAssistantClient() {
                 setForm((value) => ({ ...value, sourceMaterials }))
               }
             />
-            <Button
+            <V2PrimaryButton
               className="w-full"
-              color="primary"
-              isDisabled={
+              disabled={
                 !canSubmit || Boolean(executingRunId) || isActive(currentRun)
               }
-              isLoading={submitting}
-              startContent={
-                submitting ? null : <WandSparkles className="h-4 w-4" />
-              }
-              onPress={() => void submit()}
+              loading={submitting}
+              icon={submitting ? undefined : WandSparkles}
+              onClick={() => void submit()}
             >
               生成公众号文章包
-            </Button>
+            </V2PrimaryButton>
           </div>
         </section>
 
@@ -877,13 +870,13 @@ export function WechatOfficialAssistantClient() {
               ) : null}
             </div>
             {currentRun ? (
-              <Chip
-                color={STATUS_COLOR[currentRun.status]}
-                size="sm"
-                variant="flat"
+              <V2StatusChip
+                tone={STATUS_COLOR[currentRun.status]}
+               
+               
               >
                 {currentRun.statusLabel}
-              </Chip>
+              </V2StatusChip>
             ) : null}
           </div>
           {!currentRun ? (
@@ -900,16 +893,24 @@ export function WechatOfficialAssistantClient() {
                   <span>{currentRun.nextAction}</span>
                   <span>{STEP_PROGRESS[currentRun.currentStep]}%</span>
                 </div>
-                <Progress
+                <div
+                  role="progressbar"
                   aria-label="任务进度"
-                  color={currentRun.status === "failed" ? "danger" : "primary"}
-                  size="sm"
-                  value={STEP_PROGRESS[currentRun.currentStep]}
-                />
+                  className="h-2 w-full overflow-hidden rounded-full bg-[var(--kaypal-v3-accent-soft)]"
+                >
+                  <div
+                    className={`h-full rounded-full ${
+                      currentRun.status === "failed"
+                        ? "bg-[var(--kaypal-v3-danger)]"
+                        : "bg-[var(--kaypal-v3-accent)]"
+                    }`}
+                    style={{ width: `${STEP_PROGRESS[currentRun.currentStep]}%` }}
+                  />
+                </div>
               </div>
               {isActive(currentRun) ? (
                 <div className="flex min-h-[360px] items-center justify-center gap-3 text-[13px] text-default-500">
-                  <Spinner size="sm" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
                   <span>任务在后台执行，刷新页面不会丢失进度</span>
                 </div>
               ) : currentRun.output ? (
@@ -962,16 +963,13 @@ export function WechatOfficialAssistantClient() {
               ) : currentRun.failureReason ? (
                 <div className="space-y-3 border-l-2 border-danger bg-danger-50 px-3 py-3 text-[13px] text-danger-700">
                   <p>{currentRun.failureReason}</p>
-                  <Button
-                    color="danger"
-                    isLoading={executingRunId === currentRun.runId}
-                    size="sm"
-                    startContent={<RotateCcw className="h-4 w-4" />}
-                    variant="flat"
-                    onPress={() => startExecution(currentRun.runId)}
+                  <V2DangerButton
+                    loading={executingRunId === currentRun.runId}
+                    icon={RotateCcw}
+                    onClick={() => startExecution(currentRun.runId)}
                   >
                     重试任务
-                  </Button>
+                  </V2DangerButton>
                 </div>
               ) : null}
             </div>
@@ -1003,11 +1001,11 @@ export function WechatOfficialAssistantClient() {
                   {run.inputs.product || "未填写主题"}
                 </span>
               </span>
-              <Chip color={STATUS_COLOR[run.status]} size="sm" variant="flat">
+              <V2StatusChip tone={STATUS_COLOR[run.status]}>
                 {run.statusLabel}
-              </Chip>
+              </V2StatusChip>
               <span className="flex items-center justify-end gap-2 text-[11px] text-default-400">
-                {historyBusyId === run.runId ? <Spinner size="sm" /> : null}
+                {historyBusyId === run.runId ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" /> : null}
                 {formatTime(run.updatedAt)}
               </span>
             </button>
@@ -1067,7 +1065,7 @@ function JpagePreviewPanel({
         <Select
           label="公众号文章授权"
           selectedKeys={accountId ? [accountId] : []}
-          size="sm"
+         
           onSelectionChange={(keys) =>
             onAccountChange(String(Array.from(keys)[0] || ""))
           }
@@ -1077,9 +1075,12 @@ function JpagePreviewPanel({
           ))}
         </Select>
       ) : (
-        <Button as={Link} href="/platforms" size="sm" variant="flat">
+        <Link
+          href="/platforms"
+          className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+        >
           配置公众号文章授权
-        </Button>
+        </Link>
       )}
       {account && !accountReady ? (
         <div className="border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700">
@@ -1095,26 +1096,22 @@ function JpagePreviewPanel({
               Markdown #{receipt.markdown.id} · HTML #{receipt.html.id} · 私有
             </span>
             <div className="flex gap-2">
-              <Button
-                as="a"
+              <a
                 href={receipt.markdown.authenticatedRenderUrl}
                 rel="noreferrer"
-                size="sm"
                 target="_blank"
-                variant="flat"
+                className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
               >
                 Markdown
-              </Button>
-              <Button
-                as="a"
+              </a>
+              <a
                 href={receipt.html.authenticatedRenderUrl}
                 rel="noreferrer"
-                size="sm"
                 target="_blank"
-                variant="flat"
+                className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
               >
                 HTML
-              </Button>
+              </a>
             </div>
           </div>
           <p>
@@ -1123,24 +1120,24 @@ function JpagePreviewPanel({
           </p>
           {!preview?.ready ? (
             renderConfirmationId ? (
-              <Button
-                color="warning"
-                isLoading={busy === "jpage-render-confirm"}
-                size="sm"
-                startContent={<MonitorCheck className="h-4 w-4" />}
-                onPress={onConfirmRender}
+              <V2GhostButton
+               
+                loading={busy === "jpage-render-confirm"}
+               
+                icon={MonitorCheck}
+                onClick={onConfirmRender}
               >
                 确认远程移动预览
-              </Button>
+              </V2GhostButton>
             ) : (
-              <Button
-                isLoading={busy === "jpage-render-confirmation"}
-                size="sm"
-                variant="flat"
-                onPress={onPrepareRender}
+              <V2GhostButton
+                loading={busy === "jpage-render-confirmation"}
+               
+               
+                onClick={onPrepareRender}
               >
                 申请渲染确认
-              </Button>
+              </V2GhostButton>
             )
           ) : null}
         </div>
@@ -1148,24 +1145,24 @@ function JpagePreviewPanel({
         uploadConfirmationId ? (
           <div className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-warning bg-warning-50 px-3 py-3 text-[12px] text-warning-700">
             <span>即将上传当前锁定版本的 Markdown 与 HTML，保持私有。</span>
-            <Button
-              color="warning"
-              isLoading={busy === "jpage-upload"}
-              size="sm"
-              onPress={onUpload}
+            <V2GhostButton
+             
+              loading={busy === "jpage-upload"}
+             
+              onClick={onUpload}
             >
               确认私有上传
-            </Button>
+            </V2GhostButton>
           </div>
         ) : (
-          <Button
-            isLoading={busy === "jpage-confirmation"}
-            size="sm"
-            variant="flat"
-            onPress={onPrepareUpload}
+          <V2GhostButton
+            loading={busy === "jpage-confirmation"}
+           
+           
+            onClick={onPrepareUpload}
           >
             申请私有预览上传
-          </Button>
+          </V2GhostButton>
         )
       ) : null}
     </div>
@@ -1236,7 +1233,7 @@ function WechatDeliveryPanel({
         <Select
           label="目标公众号"
           selectedKeys={accountId ? [accountId] : []}
-          size="sm"
+         
           onSelectionChange={(keys) =>
             onAccountChange(String(Array.from(keys)[0] || ""))
           }
@@ -1246,9 +1243,12 @@ function WechatDeliveryPanel({
           ))}
         </Select>
       ) : (
-        <Button as={Link} href="/platforms" size="sm" variant="flat">
+        <Link
+          href="/platforms"
+          className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+        >
           配置公众号账号
-        </Button>
+        </Link>
       )}
       {account && !accountReady ? (
         <div className="border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700">
@@ -1259,14 +1259,12 @@ function WechatDeliveryPanel({
       {run.status !== "completed" ? (
         <div className="flex items-center justify-between gap-3 border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700">
           <span>内容审批通过后，才允许写入公众号草稿箱。</span>
-          <Button
-            as={Link}
+          <Link
             href="/tasks/confirmations"
-            size="sm"
-            variant="flat"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
           >
             去审批
-          </Button>
+          </Link>
         </div>
       ) : null}
       {run.status === "completed" && !jpageReady ? (
@@ -1281,24 +1279,24 @@ function WechatDeliveryPanel({
         draftConfirmationId ? (
           <div className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-warning bg-warning-50 px-3 py-3 text-[12px] text-warning-700">
             <span>即将把当前锁定版本写入“{account?.name}”草稿箱。</span>
-            <Button
-              color="warning"
-              isLoading={busy === "draft"}
-              size="sm"
-              onPress={onSaveDraft}
+            <V2GhostButton
+             
+              loading={busy === "draft"}
+             
+              onClick={onSaveDraft}
             >
               确认保存草稿
-            </Button>
+            </V2GhostButton>
           </div>
         ) : (
-          <Button
-            isLoading={busy === "draft-confirmation"}
-            size="sm"
-            variant="flat"
-            onPress={onPrepareDraft}
+          <V2GhostButton
+            loading={busy === "draft-confirmation"}
+           
+           
+            onClick={onPrepareDraft}
           >
             申请草稿写入确认
-          </Button>
+          </V2GhostButton>
         )
       ) : null}
       {draftResult ? (
@@ -1313,48 +1311,45 @@ function WechatDeliveryPanel({
                 草稿尚未通过标题和正文校验，正式发布已阻止；对账不会重复创建草稿。
               </span>
               {draftReadbackConfirmationId ? (
-                <Button
-                  color="warning"
-                  isLoading={busy === "draft-readback"}
-                  size="sm"
-                  onPress={onReconcileDraftReadback}
+                <V2GhostButton
+                 
+                  loading={busy === "draft-readback"}
+                 
+                  onClick={onReconcileDraftReadback}
                 >
                   确认对账
-                </Button>
+                </V2GhostButton>
               ) : (
-                <Button
-                  isLoading={busy === "draft-readback-confirmation"}
-                  size="sm"
-                  variant="flat"
-                  onPress={onPrepareDraftReadback}
+                <V2GhostButton
+                  loading={busy === "draft-readback-confirmation"}
+                 
+                 
+                  onClick={onPrepareDraftReadback}
                 >
                   申请草稿校验
-                </Button>
+                </V2GhostButton>
               )}
             </div>
           ) : !publishResult ? (
             publishConfirmationId ? (
               <div className="flex flex-wrap items-center justify-between gap-3 text-danger-700">
                 <span>正式发布是独立高风险动作，确认后将提交微信审核。</span>
-                <Button
+                <V2GhostButton
                   color="danger"
-                  isLoading={busy === "publish"}
-                  size="sm"
-                  onPress={onSubmitPublish}
+                  loading={busy === "publish"}
+                 
+                  onClick={onSubmitPublish}
                 >
                   确认正式发布
-                </Button>
+                </V2GhostButton>
               </div>
             ) : (
-              <Button
-                color="danger"
-                isLoading={busy === "publish-confirmation"}
-                size="sm"
-                variant="flat"
-                onPress={onPreparePublish}
+              <V2DangerButton
+                loading={busy === "publish-confirmation"}
+                onClick={onPreparePublish}
               >
                 申请正式发布确认
-              </Button>
+              </V2DangerButton>
             )
           ) : null}
         </div>
@@ -1366,26 +1361,24 @@ function WechatDeliveryPanel({
           </span>
           <div className="flex gap-2">
             {publishResult.articleUrl ? (
-              <Button
-                as="a"
+              <a
                 href={publishResult.articleUrl}
                 rel="noreferrer"
-                size="sm"
                 target="_blank"
-                variant="flat"
+                className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
               >
                 查看文章
-              </Button>
+              </a>
             ) : null}
-            <Button
-              isLoading={busy === "refresh"}
-              size="sm"
-              startContent={<RefreshCw className="h-4 w-4" />}
-              variant="flat"
-              onPress={onRefreshPublish}
+            <V2GhostButton
+              loading={busy === "refresh"}
+             
+              icon={RefreshCw}
+             
+              onClick={onRefreshPublish}
             >
               回查状态
-            </Button>
+            </V2GhostButton>
           </div>
         </div>
       ) : null}
@@ -1487,22 +1480,20 @@ function WechatRunOutput({ run }: { run: AgentWakerRun }) {
       </div>
 
       <div className="flex flex-wrap justify-end gap-2 border-t border-divider pt-4">
-        <Button
-          as={Link}
+        <Link
           href={`/content/articles?articleId=${encodeURIComponent(output.articleId)}`}
-          variant="flat"
+          className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
         >
           查看文章库
-        </Button>
+        </Link>
         {run.status === "waiting_for_confirmation" ? (
-          <Button
-            as={Link}
-            color="warning"
+          <Link
             href="/tasks/confirmations"
-            startContent={<ClipboardCheck className="h-4 w-4" />}
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
           >
+            <ClipboardCheck className="h-4 w-4" />
             逐项确认
-          </Button>
+          </Link>
         ) : null}
       </div>
     </div>
