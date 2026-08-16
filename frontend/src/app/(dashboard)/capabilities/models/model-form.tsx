@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, PlugZap, Save } from "lucide-react";
 import {
   V2Section,
   V2Field,
@@ -29,6 +29,8 @@ export function ModelForm({ modelId }: { modelId?: string }) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [platforms, setPlatforms] = useState<AIPlatform[]>([]);
@@ -76,6 +78,30 @@ export function ModelForm({ modelId }: { modelId?: string }) {
   const effectiveModelId =
     form.modelId === "__custom" ? form.customModelId.trim() : form.modelId;
   const canSubmit = form.platformId && effectiveModelId;
+
+  const handleTest = async () => {
+    if (!form.platformId || !effectiveModelId) {
+      setTestResult("请先选择平台和模型");
+      return;
+    }
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const result = await settingsApi.testModel({
+        platformId: form.platformId,
+        modelId: effectiveModelId,
+      });
+      setTestResult(
+        result.success
+          ? result.reply || "AI 服务连接正常"
+          : result.message || "AI 服务检查失败",
+      );
+    } catch (err: unknown) {
+      setTestResult(toPublicError(err, "AI 服务检查未完成，请稍后重试"));
+    } finally {
+      setTesting(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -209,6 +235,23 @@ export function ModelForm({ modelId }: { modelId?: string }) {
             style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
           />
 
+          {/* 测试连接（继承 legacy 的 testModel 功能） */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>测试连接</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => void handleTest()}
+              disabled={testing}
+              style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}
+            >
+              <PlugZap width={14} height={14} />
+              {testing ? "测试中…" : "测试连接"}
+            </button>
+            {testResult && (
+              <span style={{ fontSize: 12, color: "var(--mx-muted)", lineHeight: 1.5 }}>{testResult}</span>
+            )}
+          </div>
+
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
             <button type="button" onClick={() => router.push("/capabilities/models")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
@@ -339,6 +382,24 @@ export function ModelForm({ modelId }: { modelId?: string }) {
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
           />
         </V2Field>
+      </V2Section>
+
+      {/* 测试连接（继承 legacy 的 testModel 功能） */}
+      <V2Section title="测试连接" description="验证这个模型在当前平台能否正常调用">
+        <div className="flex items-center gap-3">
+          <V2GhostButton
+            icon={PlugZap}
+            loading={testing}
+            onClick={handleTest}
+          >
+            {testing ? "测试中..." : "测试连接"}
+          </V2GhostButton>
+          {testResult && (
+            <span className="text-sm text-[var(--kaypal-v3-muted)]">
+              {testResult}
+            </span>
+          )}
+        </div>
       </V2Section>
 
       <section className="flex items-center justify-between">
