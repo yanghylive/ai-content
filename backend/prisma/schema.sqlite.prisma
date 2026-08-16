@@ -1358,6 +1358,10 @@ model PublishRecord {
   tenantId        String  @default("legacy-local-desktop") @map("tenant_id")
   userId          String  @default("legacy-local-user") @map("user_id")
   durableRecordId String? @map("durable_record_id")
+  // 归因主键（报告 10.6）：内容版本→发布→互动→线索→CRM→复盘 的稳定主键
+  contentVersionId String? @map("content_version_id")
+  publishIntentId  String? @map("publish_intent_id")
+  correlationId    String? @map("correlation_id")
 
   articleId String  @map("article_id")
   article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
