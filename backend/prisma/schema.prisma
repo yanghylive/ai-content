@@ -1099,6 +1099,7 @@ model ContentVersion {
   @@index([userId, updatedAt])
   @@index([tenantId, updatedAt])
   @@index([draftId, versionNo])
+  @@unique([draftId, versionNo])
   @@index([status])
   @@index([isOfficial])
   @@map("content_versions")
