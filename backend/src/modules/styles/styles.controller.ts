@@ -69,4 +69,17 @@ export class StylesController {
   setDefault(@Param('id') id: string) {
     return this.stylesService.setDefault(id);
   }
+
+  @Get(':id/versions')
+  listVersions(@Param('id') id: string) {
+    return this.stylesService.listVersions(id);
+  }
+
+  @Post(':id/rollback')
+  rollback(
+    @Param('id') id: string,
+    @Body() body: { versionNo: number },
+  ) {
+    return this.stylesService.rollback(id, body.versionNo);
+  }
 }

@@ -96,4 +96,75 @@ describe('ContentStrategiesService risk gates', () => {
       where: { id: 'strategy-1' },
     });
   });
+
+  it('rollback 恢复快照内容并生成新版本', async () => {
+    const versioning = {
+      getSnapshot: jest.fn().mockResolvedValue({
+        name: '旧策略名',
+        targetAudience: '旧受众',
+        commercialGoal: '旧目标',
+        corePainPoints: '旧痛点',
+        writingAngles: '旧角度',
+        isDefault: false,
+      }),
+      recordVersion: jest.fn().mockResolvedValue(undefined),
+      listVersions: jest.fn().mockResolvedValue([]),
+    };
+    const svc = new ContentStrategiesService(
+      prisma as unknown as PrismaService,
+      versioning as never,
+    );
+    prisma.contentStrategy.findUnique.mockResolvedValue({
+      id: 'strategy-1',
+      isDefault: false,
+    });
+    prisma.contentStrategy.update.mockResolvedValue({
+      id: 'strategy-1',
+      name: '旧策略名',
+      targetAudience: '旧受众',
+      commercialGoal: '旧目标',
+      corePainPoints: '旧痛点',
+      writingAngles: '旧角度',
+      toneAndStyle: null,
+      description: null,
+      industry: '通用',
+      isDefault: false,
+      enabled: true,
+    });
+
+    const result = await svc.rollback('strategy-1', 2);
+
+    expect(versioning.getSnapshot).toHaveBeenCalledWith(
+      'strategy',
+      'strategy-1',
+      2,
+    );
+    expect(prisma.contentStrategy.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'strategy-1' },
+        data: expect.objectContaining({ name: '旧策略名' }),
+      }),
+    );
+    // 回滚本身也留痕（生成新版本）
+    expect(versioning.recordVersion).toHaveBeenCalled();
+    expect(result).toEqual(expect.objectContaining({ name: '旧策略名' }));
+  });
+
+  it('rollback 到不存在版本抛 404', async () => {
+    const versioning = {
+      getSnapshot: jest.fn().mockResolvedValue(null),
+      recordVersion: jest.fn(),
+      listVersions: jest.fn(),
+    };
+    const svc = new ContentStrategiesService(
+      prisma as unknown as PrismaService,
+      versioning as never,
+    );
+    prisma.contentStrategy.findUnique.mockResolvedValue({
+      id: 'strategy-1',
+      isDefault: false,
+    });
+
+    await expect(svc.rollback('strategy-1', 99)).rejects.toThrow();
+  });
 });

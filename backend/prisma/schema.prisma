@@ -3119,3 +3119,21 @@ model ActivationEvent {
   @@index([tenantId, eventType, createdAt])
   @@map("activation_events")
 }
+
+// 内容资产版本化（主线②扩展，报告 16.3 第 8 项）：
+// 策略/风格/策略模板 每次改动留痕，支持历史查询 + 回滚，记录操作人。
+model ContentAssetVersion {
+  id            String   @id @default(cuid())
+  tenantId      String?  @map("tenant_id")
+  assetType     String   @map("asset_type") // strategy | strategy_template | style
+  assetId       String   @map("asset_id")
+  versionNo     Int      @map("version_no")
+  snapshot      String   @db.Text // 资产内容快照（JSON 序列化）
+  changeSummary String?  @map("change_summary") // 改动摘要（创建/更新/删除/回滚）
+  actorUserId   String?  @map("actor_user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([assetType, assetId, versionNo])
+  @@index([assetType, assetId, createdAt])
+  @@map("content_asset_versions")
+}

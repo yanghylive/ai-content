@@ -165,6 +165,19 @@ export class PrismaService
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
       )`,
       `CREATE UNIQUE INDEX IF NOT EXISTS activation_events_user_event_key ON activation_events(user_id, event_type)`,
+      `CREATE TABLE IF NOT EXISTS content_asset_versions (
+        id TEXT PRIMARY KEY NOT NULL,
+        tenant_id TEXT,
+        asset_type TEXT NOT NULL,
+        asset_id TEXT NOT NULL,
+        version_no INTEGER NOT NULL DEFAULT 1,
+        snapshot TEXT,
+        change_summary TEXT,
+        actor_user_id TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS content_asset_versions_type_id_no_key ON content_asset_versions(asset_type, asset_id, version_no)`,
+      `CREATE INDEX IF NOT EXISTS content_asset_versions_type_id_created_idx ON content_asset_versions(asset_type, asset_id, created_at)`,
       `CREATE TABLE IF NOT EXISTS schedule_configs (
         id TEXT PRIMARY KEY NOT NULL,
         task_type TEXT NOT NULL,
