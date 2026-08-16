@@ -1,6 +1,7 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Public } from './modules/auth/auth.decorator';
+import { RequireKaypalRoles } from './modules/auth/roles.decorator';
 import { AgentWakerService } from './modules/agentwaker/agentwaker.service';
 import { TaskQueueProcessor } from './modules/runtime/task-queue-processor.service';
 import { PrismaService } from './prisma/prisma.service';
@@ -25,15 +26,28 @@ export class AppController {
   async getHealth() {
     const database = await this.checkDatabase();
     const agentWaker = this.checkAgentWaker();
-    const growthExecution = this.checkGrowthExecution();
     const taskQueue = this.taskQueueProcessor.getHealth();
     const ok = database.ok && agentWaker.ok && taskQueue.ok;
-    const ready = ok;
 
+    // P2-4：对外只暴露存活状态，不暴露 database/growth/taskQueue 等内部运行态
     return {
       ok,
-      ready,
+      ready: ok,
       service: 'ai-content-backend',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /** 运维诊断（仅平台管理员）：返回各组件的详细检查结果 */
+  @RequireKaypalRoles('admin', 'owner')
+  @Get('ops/diagnostics')
+  async getDiagnostics() {
+    const database = await this.checkDatabase();
+    const agentWaker = this.checkAgentWaker();
+    const growthExecution = this.checkGrowthExecution();
+    const taskQueue = this.taskQueueProcessor.getHealth();
+    return {
+      ok: database.ok && agentWaker.ok && taskQueue.ok,
       timestamp: new Date().toISOString(),
       checks: { database, agentWaker, growthExecution, taskQueue },
     };
@@ -47,11 +61,6 @@ export class AppController {
       throw new ServiceUnavailableException({
         code: 'HEALTH_GATE_BLOCKED',
         message: '运行健康门禁未通过，请检查数据库连接和 AgentWaker 角色包。',
-        publicDetails: {
-          checks: health.checks,
-          nextAction:
-            '修复 checks 中状态为 false 的项目后重试 /api/health/ready。',
-        },
       });
     }
     return health;
