@@ -16,8 +16,8 @@ import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PublishTrackingService } from './publish-tracking.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
-import { MeteringService } from '../metering/metering.service';
 import { EntitlementsService } from '../entitlements/entitlements.service';
+import { KaypalAuthClient } from '../auth/kaypal-auth.client';
 import {
   resolveProjectDataPath,
   resolveProjectLogPath,
@@ -312,8 +312,8 @@ export class AutoUploadService {
     @Optional()
     private readonly riskPolicyService?: RiskPolicyService,
     @Optional() private readonly imagePreprocessor?: RemoteImagePreprocessor,
-    @Optional() private readonly metering?: MeteringService,
     @Optional() private readonly entitlements?: EntitlementsService,
+    @Optional() private readonly kaypalAuth?: KaypalAuthClient,
   ) {}
 
   private get publishRecordStore() {
@@ -1764,20 +1764,26 @@ export class AutoUploadService {
       });
     }
 
-    // 商用账本（阶段 B）：风险确认通过后，快照授权状态 + 预占发布用量（旁路，失败不阻断）
+    // 商用账本（阶段 B）：风险确认通过后，快照授权状态 + 扣 kaypal 积分（旁路，失败不阻断）
     const actorUser = this.authRequestContext?.get()?.user ?? null;
     if (actorUser) {
       void this.entitlements
         ?.captureSnapshot(actorUser, 'publish', undefined)
         .catch(() => {});
-      if (this.metering) {
-        void this.metering
-          .reserve({
-            userId: actorUser.id,
-            meter: 'publish',
-            amount: payloads.length,
-            context: 'publish',
-            idempotencyKey: options.confirmationId || undefined,
+      // 统一接 kaypal.cn 积分（不再本地自建计量）：发布按 platform_action 扣费，
+      // kaypal 按 articlePublishes/videoPublishes 自动定价，幂等键复用确认 ID。
+      const kaypalUserId = actorUser.kaypalUserId?.trim();
+      if (this.kaypalAuth && kaypalUserId) {
+        void this.kaypalAuth
+          .deductCloudBilling({
+            userId: kaypalUserId,
+            serviceType: 'ai_content_workbench',
+            resourceType: 'platform_action',
+            idempotencyKey: `ai-content:publish:${options.confirmationId || randomUUID()}`,
+            metadata: {
+              articlePublishes: payloads.length,
+              phase: 'publish_confirmed',
+            },
           })
           .catch(() => {});
       }
