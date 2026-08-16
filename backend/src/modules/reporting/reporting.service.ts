@@ -25,6 +25,16 @@ export interface EffectReport {
     text: string;
     sharePayload: string;
   };
+  /** Top 内容（按互动量排序，复盘回写：可重发/生成变体/建跟进） */
+  topContent: Array<{
+    publishRecordId: string;
+    articleId: string;
+    title: string;
+    platform: string;
+    exposure: number | null;
+    interactions: number | null;
+    publishUrl: string | null;
+  }>;
 }
 
 /**
@@ -114,7 +124,14 @@ export class ReportingService {
         status: 'success',
         createdAt: { gte: since },
       },
-      select: { resultJson: true },
+      select: {
+        id: true,
+        articleId: true,
+        platform: true,
+        publishUrl: true,
+        resultJson: true,
+        article: { select: { title: true } },
+      },
       orderBy: { createdAt: 'desc' },
       take: 200,
     });
@@ -122,6 +139,7 @@ export class ReportingService {
     let interactionTotal: number | null = 0;
     let hasExposureData = false;
     let hasInteractionData = false;
+    const topContent: EffectReport['topContent'] = [];
     for (const rec of publishRecords) {
       const m = this.extractMetrics(rec.resultJson);
       if (m.exposure != null) {
@@ -132,7 +150,20 @@ export class ReportingService {
         interactionTotal = (interactionTotal ?? 0) + m.interactions;
         hasInteractionData = true;
       }
+      // Top 内容：按互动量排序取前 5，供复盘回写（重发/生成变体/建跟进）
+      if (m.interactions != null && m.interactions > 0) {
+        topContent.push({
+          publishRecordId: rec.id,
+          articleId: rec.articleId,
+          title: rec.article?.title || '未命名内容',
+          platform: rec.platform,
+          exposure: m.exposure,
+          interactions: m.interactions,
+          publishUrl: rec.publishUrl,
+        });
+      }
     }
+    topContent.sort((a, b) => (b.interactions ?? 0) - (a.interactions ?? 0));
 
     const weeklySummaryText = `本周 AI 帮我生成 ${aiGenerated} 条内容，发布 ${published} 条${
       hasExposureData ? `，带来 ${exposureTotal} 次曝光` : ''
@@ -160,6 +191,7 @@ export class ReportingService {
           published,
         }),
       },
+      topContent: topContent.slice(0, 5),
     };
   }
 }
