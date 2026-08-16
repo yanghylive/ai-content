@@ -79,6 +79,21 @@ export class ContentStrategiesController {
     return this.contentStrategiesService.setDefault(id);
   }
 
+  /* ===== 版本化（报告 16.3 第 8 项） ===== */
+
+  @Get(':id/versions')
+  listVersions(@Param('id') id: string) {
+    return this.contentStrategiesService.listVersions(id);
+  }
+
+  @Post(':id/rollback')
+  rollback(
+    @Param('id') id: string,
+    @Body() dto: { versionNo: number },
+  ) {
+    return this.contentStrategiesService.rollback(id, dto.versionNo);
+  }
+
   @Post('templates')
   createTemplate(
     @Body()

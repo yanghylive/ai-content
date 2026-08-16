@@ -2,9 +2,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma, type ContentStrategy } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ContentAssetVersioningService } from './content-asset-versioning.service';
 
 export interface ContentStrategyPayload {
   name: string;
@@ -37,7 +39,27 @@ const DEFAULT_CONTENT_STRATEGY: ContentStrategyPayload = {
 
 @Injectable()
 export class ContentStrategiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional()
+    private readonly versioning?: ContentAssetVersioningService,
+  ) {}
+
+  /** 内容策略的内容字段快照（版本化用，排除 id/时间戳等元数据） */
+  private strategySnapshot(strategy: ContentStrategy) {
+    return {
+      name: strategy.name,
+      description: strategy.description,
+      industry: strategy.industry,
+      targetAudience: strategy.targetAudience,
+      commercialGoal: strategy.commercialGoal,
+      corePainPoints: strategy.corePainPoints,
+      writingAngles: strategy.writingAngles,
+      toneAndStyle: strategy.toneAndStyle,
+      isDefault: strategy.isDefault,
+      enabled: strategy.enabled,
+    };
+  }
 
   async findAll(): Promise<ContentStrategy[]> {
     try {
@@ -111,13 +133,20 @@ export class ContentStrategiesService {
     }
 
     try {
-      return await this.prisma.contentStrategy.create({
+      const created = await this.prisma.contentStrategy.create({
         data: {
           ...data,
           industry: data.industry || '通用',
           enabled: data.enabled ?? true,
         },
       });
+      void this.versioning?.recordVersion({
+        assetType: 'strategy',
+        assetId: created.id,
+        snapshot: this.strategySnapshot(created),
+        changeSummary: '创建内容策略',
+      });
+      return created;
     } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -146,10 +175,17 @@ export class ContentStrategiesService {
     }
 
     try {
-      return await this.prisma.contentStrategy.update({
+      const updated = await this.prisma.contentStrategy.update({
         where: { id },
         data,
       });
+      void this.versioning?.recordVersion({
+        assetType: 'strategy',
+        assetId: updated.id,
+        snapshot: this.strategySnapshot(updated),
+        changeSummary: '更新内容策略',
+      });
+      return updated;
     } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -168,6 +204,57 @@ export class ContentStrategiesService {
     }
 
     return this.prisma.contentStrategy.delete({ where: { id } });
+  }
+
+  /* ===== 版本化（报告 16.3 第 8 项） ===== */
+
+  /** 策略版本历史（倒序） */
+  async listVersions(id: string) {
+    await this.findOne(id);
+    return this.versioning?.listVersions('strategy', id) ?? [];
+  }
+
+  /** 回滚到指定版本：恢复快照内容并生成新版本（留痕） */
+  async rollback(id: string, versionNo: number) {
+    await this.findOne(id);
+    const snapshot = await this.versioning?.getSnapshot(
+      'strategy',
+      id,
+      versionNo,
+    );
+    if (!snapshot) {
+      throw new NotFoundException(`版本 ${versionNo} 不存在`);
+    }
+
+    if (snapshot.isDefault) {
+      await this.prisma.contentStrategy.updateMany({
+        where: { isDefault: true },
+        data: { isDefault: false },
+      });
+    }
+
+    const restored = await this.prisma.contentStrategy.update({
+      where: { id },
+      data: {
+        name: snapshot.name as string,
+        description: snapshot.description as string | undefined,
+        industry: snapshot.industry as string | undefined,
+        targetAudience: snapshot.targetAudience as string,
+        commercialGoal: snapshot.commercialGoal as string,
+        corePainPoints: snapshot.corePainPoints as string,
+        writingAngles: snapshot.writingAngles as string,
+        toneAndStyle: snapshot.toneAndStyle as string | undefined,
+        isDefault: snapshot.isDefault as boolean | undefined,
+        enabled: snapshot.enabled as boolean | undefined,
+      },
+    });
+    void this.versioning?.recordVersion({
+      assetType: 'strategy',
+      assetId: id,
+      snapshot: this.strategySnapshot(restored),
+      changeSummary: `回滚到 v${versionNo}`,
+    });
+    return restored;
   }
 
   /* ===== 行业模板库（2026-08-09 商用能力补齐 R1） ===== */
