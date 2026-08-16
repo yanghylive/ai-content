@@ -1449,7 +1449,7 @@ export function SimpleFeaturePage({
     },
     {
       label: "平台账号",
-      href: "/distribution?tab=accounts",
+      href: "/distribution/accounts",
       icon: "solar:user-id-linear",
     },
     {
@@ -1478,7 +1478,7 @@ export function SimpleFeaturePage({
           </Button>
           <Button
             as={Link}
-            href="/distribution?tab=accounts"
+            href="/distribution/accounts"
             color="default"
             variant="flat"
           >
