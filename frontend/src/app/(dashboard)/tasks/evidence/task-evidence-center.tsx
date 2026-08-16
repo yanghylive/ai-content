@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { FileSearch, RefreshCcw } from "lucide-react";
 import { localEngineApi } from "@/lib/api/local-engine";
 import { autoUploadApi } from "@/lib/api/auto-upload";
+import { dashboardApi } from "@/lib/api/dashboard";
+import { aiEmployeeApi } from "@/lib/api/ai-employee";
 import { toPublicError } from "@/lib/public-error";
 import {
   V2EmptyState,
@@ -19,7 +21,7 @@ import { V2BackButton } from "@/components/v2/v2-back-button";
 
 interface EvidenceRow {
   id: string;
-  kind: "互动" | "发布";
+  kind: "互动" | "发布" | "风险" | "会话" | "工作流";
   title: string;
   status: string;
   time?: string;
@@ -37,10 +39,16 @@ export function TaskEvidenceCenter() {
     setLoading(true);
     setError(null);
     try {
-      const [tasks, pubTasks] = await Promise.all([
-        localEngineApi.tasks(30).catch(() => []),
-        autoUploadApi.tasks(30).catch(() => []),
-      ]);
+      const [tasks, pubTasks, riskEvidence, agentSessions, workflowResult] =
+        await Promise.all([
+          localEngineApi.tasks(30).catch(() => []),
+          autoUploadApi.tasks(30).catch(() => []),
+          dashboardApi.riskAuditEvidence(80).catch(() => []),
+          localEngineApi.agentSessions({ limit: 80 }).catch(() => []),
+          aiEmployeeApi
+            .workflows(80)
+            .catch(() => ({ definitions: [], runs: [] })),
+        ]);
 
       const evidence: EvidenceRow[] = [];
       (Array.isArray(tasks) ? tasks : []).forEach((t) => {
@@ -63,9 +71,43 @@ export function TaskEvidenceCenter() {
           detail: t.message || undefined,
         });
       });
+      // 风险确认记录（人工确认/任务执行/系统记录形成的高影响动作留痕）
+      (Array.isArray(riskEvidence) ? riskEvidence : []).forEach((r) => {
+        evidence.push({
+          id: r.id,
+          kind: "风险",
+          title: r.actionLabel || r.targetLabel || "风险动作",
+          status: r.riskLevel === "high" ? "high" : "allowed",
+          detail: r.summary,
+        });
+      });
+      // Agent 会话（AI 工作台执行留痕）
+      (Array.isArray(agentSessions) ? agentSessions : []).forEach((s) => {
+        evidence.push({
+          id: s.id,
+          kind: "会话",
+          title: s.title || s.instruction?.slice(0, 30) || "Agent 会话",
+          status: s.status || "unknown",
+          time: s.updatedAt || s.createdAt,
+          detail: s.failureReason || s.nextAction,
+        });
+      });
+      // AI 员工工作流
+      const workflowRuns = workflowResult?.runs ?? [];
+      (Array.isArray(workflowRuns) ? workflowRuns : []).forEach((w) => {
+        evidence.push({
+          id: w.id,
+          kind: "工作流",
+          title: w.title || `工作流 #${w.id}`,
+          status: w.status || "unknown",
+          detail: w.aggregate
+            ? `已完成 ${w.aggregate.completedSteps}/${w.aggregate.totalSteps} 步`
+            : undefined,
+        });
+      });
 
       evidence.sort((a, b) => new Date(b.time || 0).getTime() - new Date(a.time || 0).getTime());
-      setRows(evidence.slice(0, 30));
+      setRows(evidence.slice(0, 60));
     } catch (err: unknown) {
       setError(toPublicError(err, "任务证据读取失败"));
     } finally {
@@ -78,27 +120,47 @@ export function TaskEvidenceCenter() {
   }, [load]);
 
   const statusTone = (s: string) => {
-    if (s === "completed") return "success" as const;
-    if (s === "failed" || s === "blocked") return "danger" as const;
-    if (s === "waiting_for_send_confirmation" || s === "queued" || s === "running") return "warning" as const;
+    if (s === "completed" || s === "success" || s === "allowed") return "success" as const;
+    if (s === "failed" || s === "blocked" || s === "high") return "danger" as const;
+    if (s === "waiting_for_send_confirmation" || s === "queued" || s === "running" || s === "pending" || s === "medium") return "warning" as const;
     return "muted" as const;
   };
   const statusLabel = (s: string) =>
     ({
       completed: "已完成",
+      success: "成功",
+      allowed: "已放行",
       failed: "失败",
       blocked: "已拦截",
+      high: "高风险",
+      medium: "中风险",
       queued: "排队中",
       running: "执行中",
+      pending: "待处理",
       waiting_for_send_confirmation: "待确认",
     } as Record<string, string>)[s] || s;
+
+  const kindTone = (k: EvidenceRow["kind"]) => {
+    if (k === "发布") return "accent" as const;
+    if (k === "风险") return "danger" as const;
+    if (k === "工作流") return "warning" as const;
+    if (k === "会话") return "success" as const;
+    return "muted" as const;
+  };
+  const kindColor = (k: EvidenceRow["kind"]) => {
+    if (k === "发布") return { bg: "rgba(37,99,235,.1)", fg: "#2563eb" };
+    if (k === "风险") return { bg: "rgba(220,80,80,.1)", fg: "#dc2626" };
+    if (k === "工作流") return { bg: "rgba(222,150,57,.12)", fg: "#d98a2d" };
+    if (k === "会话") return { bg: "rgba(16,185,129,.12)", fg: "#059669" };
+    return { bg: "rgba(120,148,179,.14)", fg: "#64748b" };
+  };
 
   const isMobile = useIsMobile();
   if (isMobile) {
     const mobileStatusBadge = (s: string) =>
-      s === "completed" ? "mx-badge mx-badge-green"
-        : s === "failed" || s === "blocked" ? "mx-badge mx-badge-red"
-          : s === "waiting_for_send_confirmation" || s === "queued" || s === "running" ? "mx-badge mx-badge-gold"
+      s === "completed" || s === "success" || s === "allowed" ? "mx-badge mx-badge-green"
+        : s === "failed" || s === "blocked" || s === "high" ? "mx-badge mx-badge-red"
+          : s === "waiting_for_send_confirmation" || s === "queued" || s === "running" || s === "pending" || s === "medium" ? "mx-badge mx-badge-gold"
             : "mx-badge";
     return (
       <div className="kx-mobile-ambient">
@@ -150,7 +212,7 @@ export function TaskEvidenceCenter() {
               <div className="mx-card mx-list-card">
                 {rows.map((row) => (
                   <div key={`${row.kind}-${row.id}`} className="mx-row">
-                    <span className="mx-row-ic" style={{ background: row.kind === "发布" ? "rgba(37,99,235,.1)" : "rgba(120,148,179,.14)", color: row.kind === "发布" ? "#2563eb" : "#64748b", borderRadius: 999 }}>
+                    <span className="mx-row-ic" style={{ background: kindColor(row.kind).bg, color: kindColor(row.kind).fg, borderRadius: 999 }}>
                       <FileSearch size={18} strokeWidth={1.8} />
                     </span>
                     <div className="mx-row-main">
@@ -218,7 +280,7 @@ export function TaskEvidenceCenter() {
                 key={`${row.kind}-${row.id}`}
                 className="kaypal-v3-surface flex items-center gap-4 p-4"
               >
-                <V2StatusChip tone={row.kind === "发布" ? "accent" : "muted"}>
+                <V2StatusChip tone={kindTone(row.kind)}>
                   {row.kind}
                 </V2StatusChip>
                 <div className="min-w-0 flex-1">
