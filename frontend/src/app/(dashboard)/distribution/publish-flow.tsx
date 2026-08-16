@@ -270,10 +270,11 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
       const result = await redfoxApi.checkProhibited({ text });
       setCompliance({ status: "done", result });
     } catch {
+      // S0-4 fail-closed：检查接口异常时不得伪装「通过」，标记 degraded 由 UI 显示「检查不可用」
       setCompliance({
         status: "done",
         result: {
-          pass: true,
+          pass: false,
           violations: [],
           platform: "multi",
           checkedAt: new Date().toISOString(),
@@ -1045,7 +1046,11 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 合规体检
               </p>
               {compliance.status === "done" &&
-                (compliance.result.pass ? (
+                (compliance.result.degraded ? (
+                  <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-600">
+                    ⚠️ 检查不可用
+                  </span>
+                ) : compliance.result.pass ? (
                   <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">
                     ✅ 通过
                   </span>
@@ -1090,7 +1095,17 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 </V2GhostButton>
               </div>
             )}
-            {compliance.status === "done" && compliance.result.pass && (
+            {compliance.status === "done" && compliance.result.degraded && (
+              <div className="mt-2">
+                <p className="text-xs text-amber-600">
+                  违禁词检查服务暂不可用，请重试；未完成检查前不建议发布。
+                </p>
+                <V2GhostButton icon={ShieldCheck} onClick={() => void runComplianceCheck()}>
+                  重新检查
+                </V2GhostButton>
+              </div>
+            )}
+            {compliance.status === "done" && compliance.result.pass && !compliance.result.degraded && (
               <p className="text-xs text-emerald-600">文案没有发现违禁词，可以放心发布。</p>
             )}
           </div>
