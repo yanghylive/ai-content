@@ -1,7 +1,5 @@
-import { HybridRoute } from "@/components/v2/hybrid-route";
-import { RedfoxSkillsCenter } from "../_components/redfox-skills-center";
-import LegacyPage from "./page-legacy";
+import { RedfoxSkillsClient } from "../_components/redfox-skills-client";
 
 export default function Page() {
-  return <HybridRoute v2={<RedfoxSkillsCenter />} legacy={<LegacyPage />} />;
+  return <RedfoxSkillsClient />;
 }
