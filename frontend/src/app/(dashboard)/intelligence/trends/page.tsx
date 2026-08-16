@@ -1,7 +1,5 @@
-import { HybridRoute } from "@/components/v2/hybrid-route";
-import { TrendsRadarCenter } from "../_components/trends-radar-center";
-import LegacyPage from "./page-legacy";
+import { TrendsRadarWorkbench } from "../_components/trends-radar-workbench";
 
 export default function Page() {
-  return <HybridRoute v2={<TrendsRadarCenter />} legacy={<LegacyPage />} />;
+  return <TrendsRadarWorkbench />;
 }
