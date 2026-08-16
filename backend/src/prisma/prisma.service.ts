@@ -141,6 +141,21 @@ export class PrismaService
       `CREATE INDEX IF NOT EXISTS tenant_entitlements_plan_idx ON tenant_entitlements(plan)`,
       `CREATE INDEX IF NOT EXISTS tenant_entitlements_status_idx ON tenant_entitlements(status)`,
       `CREATE INDEX IF NOT EXISTS tenant_entitlements_period_end_idx ON tenant_entitlements(period_end)`,
+      `CREATE TABLE IF NOT EXISTS entitlement_snapshots (
+        id TEXT PRIMARY KEY NOT NULL,
+        tenant_id TEXT,
+        user_id TEXT,
+        plan TEXT NOT NULL,
+        plan_mode TEXT,
+        source TEXT NOT NULL,
+        features JSONB NOT NULL DEFAULT '{}',
+        blockers JSONB NOT NULL DEFAULT '[]',
+        context TEXT,
+        ref_id TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS entitlement_snapshots_user_id_created_at_idx ON entitlement_snapshots(user_id, created_at)`,
+      `CREATE INDEX IF NOT EXISTS entitlement_snapshots_ref_id_idx ON entitlement_snapshots(ref_id)`,
       `CREATE TABLE IF NOT EXISTS schedule_configs (
         id TEXT PRIMARY KEY NOT NULL,
         task_type TEXT NOT NULL,

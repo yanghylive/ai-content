@@ -3068,3 +3068,23 @@ model ExposureAccount {
   @@unique([platform, accountId])
   @@map("exposure_accounts")
 }
+
+// 商用账本：执行时的授权快照（阶段 B，报告 16.2 entitlementSnapshot）
+// 每次关键执行（发布/AI/互动/获客）前写入，用于事后追责「当时用的是哪个套餐/限额」
+model EntitlementSnapshot {
+  id        String   @id @default(cuid())
+  tenantId  String?  @map("tenant_id")
+  userId    String?  @map("user_id")
+  plan      String
+  planMode  String?
+  source    String
+  features  Json     @default("{}")
+  blockers  Json     @default("[]")
+  context   String?  // 执行上下文：publish / ai / interaction / lead / ...
+  refId     String?  @map("ref_id") // 关联对象 ID（publishRecordId / taskId / ...）
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([refId])
+  @@map("entitlement_snapshots")
+}
