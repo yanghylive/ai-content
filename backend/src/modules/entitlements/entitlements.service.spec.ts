@@ -296,4 +296,43 @@ describe('EntitlementsService', () => {
       ).resolves.toBeUndefined();
     });
   });
+
+  describe('limits（limit 类资源限额，报告 16.5 席位规则）', () => {
+    it('FREE/STANDARD/PRO → single 席位（maxSeats 1）', () => {
+      for (const plan of ['FREE', 'STANDARD', 'PRO']) {
+        const entitlement = service.getEffectiveEntitlement(
+          makeUser({ kaypalPlan: plan }),
+        );
+        expect(entitlement.limits).toEqual({
+          seatMode: 'single',
+          maxSeats: 1,
+        });
+      }
+    });
+
+    it('ADVANCED（team）→ shared 席位（maxSeats 10）', () => {
+      const entitlement = service.getEffectiveEntitlement(
+        makeUser({ kaypalPlan: 'ADVANCED' }),
+      );
+      expect(entitlement.limits).toEqual({
+        seatMode: 'shared',
+        maxSeats: 10,
+      });
+    });
+
+    it('FLAGSHIP（business）→ per_seat 席位（minSeats 1，无上限）', () => {
+      const entitlement = service.getEffectiveEntitlement(
+        makeUser({ kaypalPlan: 'FLAGSHIP' }),
+      );
+      expect(entitlement.limits).toEqual({
+        seatMode: 'per_seat',
+        minSeats: 1,
+      });
+    });
+
+    it('匿名用户 limits 为 null', () => {
+      const entitlement = service.getEffectiveEntitlement(null);
+      expect(entitlement.limits).toBeNull();
+    });
+  });
 });

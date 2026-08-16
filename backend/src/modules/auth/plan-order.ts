@@ -37,6 +37,30 @@ export function isKaypalPlanAtLeast(
   return getKaypalPlanRank(currentPlan) >= getKaypalPlanRank(requiredPlan);
 }
 
+/** 席位规则（报告 16.5 limit 类资源限额）。数据源：kaypal subscription-catalog.ts 的 seatRule。 */
+export interface PlanSeatRule {
+  mode: 'single' | 'shared' | 'per_seat' | 'custom';
+  minSeats?: number;
+  maxSeats?: number;
+}
+
+// kaypal SUBSCRIPTION_CATALOG 的 seatRule 映射到本地 legacy plan：
+// free/pro/standard → single(maxSeats 1)；team(ADVANCED) → shared(maxSeats 10)；
+// business(FLAGSHIP) → per_seat(minSeats 1)；enterprise/private → custom（不在此表）。
+const PLAN_SEAT_RULES: Record<string, PlanSeatRule> = {
+  FREE: { mode: 'single', maxSeats: 1 },
+  STUDY: { mode: 'single', maxSeats: 1 },
+  STANDARD: { mode: 'single', maxSeats: 1 },
+  PRO: { mode: 'single', maxSeats: 1 },
+  ADVANCED: { mode: 'shared', maxSeats: 10 },
+  FLAGSHIP: { mode: 'per_seat', minSeats: 1 },
+};
+
+export function getPlanSeatRule(plan: unknown): PlanSeatRule {
+  const normalized = normalizeKaypalPlan(plan);
+  return PLAN_SEAT_RULES[normalized] ?? { mode: 'single', maxSeats: 1 };
+}
+
 /**
  * 由 kaypal 云端订阅信息解析本地商用授权。
  * 商用分界线与 entitlements.resolveFeatures 一致：STANDARD（含）以上且未过期。

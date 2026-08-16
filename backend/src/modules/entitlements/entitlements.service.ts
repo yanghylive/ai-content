@@ -4,6 +4,7 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   getKaypalPlanRank,
+  getPlanSeatRule,
   isKaypalPlanAtLeast,
   normalizeKaypalPlan,
 } from '../auth/plan-order';
@@ -84,6 +85,7 @@ export class EntitlementsService {
         warnings: ['tenant-model-not-yet-persisted'],
       },
       features: this.resolveFeatures(plan, commercialExecutionAllowed),
+      limits: this.resolveLimits(plan),
       blockers,
       warnings,
       evidence: {
@@ -248,6 +250,7 @@ export class EntitlementsService {
         warnings: ['not-authenticated'],
       },
       features: [],
+      limits: null,
       blockers: ['not-authenticated'],
       warnings: [],
       evidence: { source: 'anonymous' },
@@ -272,6 +275,16 @@ export class EntitlementsService {
       features.push('commercial-execution');
     }
     return features;
+  }
+
+  /** limit 类资源限额（报告 16.5）：席位规则，从 kaypal seatRule 映射 */
+  private resolveLimits(plan: string): EffectiveEntitlement['limits'] {
+    const seatRule = getPlanSeatRule(plan);
+    return {
+      seatMode: seatRule.mode,
+      ...(seatRule.minSeats != null ? { minSeats: seatRule.minSeats } : {}),
+      ...(seatRule.maxSeats != null ? { maxSeats: seatRule.maxSeats } : {}),
+    };
   }
 
   private mergeTenantBillingEntitlement(
@@ -308,6 +321,7 @@ export class EntitlementsService {
         commercialExecutionAllowed: localCommercialAllowed,
         planMode: localCommercialAllowed ? 'commercial' : 'trial',
         features: this.resolveFeatures(fallbackPlan, localCommercialAllowed),
+        limits: this.resolveLimits(fallbackPlan),
         blockers: Array.from(
           new Set([
             ...entitlement.blockers.filter(
@@ -361,6 +375,7 @@ export class EntitlementsService {
       planMode: 'commercial',
       tenant,
       features,
+      limits: this.resolveLimits(billingPlan),
       blockers: entitlement.blockers.filter(
         (blocker) =>
           blocker !== 'missing-commercial-entitlement' &&
