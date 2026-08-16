@@ -230,6 +230,15 @@ export class PrismaService
       `CREATE UNIQUE INDEX IF NOT EXISTS attribution_links_unique_key ON attribution_links(from_type, from_id, to_type, to_id, model)`,
       `CREATE INDEX IF NOT EXISTS attribution_links_to_idx ON attribution_links(to_type, to_id)`,
       `CREATE INDEX IF NOT EXISTS attribution_links_from_idx ON attribution_links(from_type, from_id)`,
+      `CREATE TABLE IF NOT EXISTS lead_event_outbox (
+        id TEXT PRIMARY KEY NOT NULL,
+        event_type TEXT NOT NULL,
+        payload JSONB NOT NULL,
+        status TEXT NOT NULL DEFAULT 'published',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        consumed_at DATETIME
+      )`,
+      `CREATE INDEX IF NOT EXISTS lead_event_outbox_status_created_idx ON lead_event_outbox(status, created_at)`,
       `CREATE TABLE IF NOT EXISTS schedule_configs (
         id TEXT PRIMARY KEY NOT NULL,
         user_id TEXT NOT NULL DEFAULT 'legacy-local-user',
