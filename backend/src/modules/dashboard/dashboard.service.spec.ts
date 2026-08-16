@@ -219,3 +219,38 @@ describe('DashboardService risk audit evidence', () => {
     ]);
   });
 });
+
+describe('DashboardService 归因链', () => {
+  it('resolveContentAttribution 从内容查发布记录 + 互动任务', async () => {
+    const prisma = {
+      article: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'article-1', title: '品牌手册' }),
+      },
+      publishRecord: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'pub-1', articleId: 'article-1' },
+          { id: 'pub-2', articleId: 'article-1' },
+        ]),
+      },
+      interactionTask: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'it-1', sourceArticleId: 'article-1' },
+        ]),
+      },
+    };
+    const systemLogsService = { getRecent: jest.fn() };
+    const service = new DashboardService(prisma as never, systemLogsService as never);
+
+    const result = await service.resolveContentAttribution('article-1');
+
+    expect(prisma.publishRecord.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { articleId: 'article-1' } }),
+    );
+    expect(prisma.interactionTask.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { sourceArticleId: 'article-1' } }),
+    );
+    expect(result.publishCount).toBe(2);
+    expect(result.interactionCount).toBe(1);
+    expect(result.article).toMatchObject({ id: 'article-1' });
+  });
+});
