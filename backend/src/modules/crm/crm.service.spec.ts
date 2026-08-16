@@ -492,6 +492,7 @@ describe('CrmService', () => {
       }),
     ]);
     prisma.crmTimelineEvent.findMany.mockResolvedValue([]);
+    prisma.crmOpportunity.findMany.mockResolvedValue([]);
     const service = new CrmService(
       prisma as PrismaService,
       makeAppMarketMock(),
@@ -502,6 +503,7 @@ describe('CrmService', () => {
     expect(result.customer.id).toBe('customer-1');
     expect(result.tasks).toHaveLength(1);
     expect(result.notes).toHaveLength(1);
+    expect(result.opportunities).toHaveLength(0);
     expect(prisma.crmTask.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ customerId: 'customer-1' }),

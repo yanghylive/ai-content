@@ -25,6 +25,7 @@ import {
   Plus,
   RefreshCw,
   Save,
+  Target,
   UserRound,
   X,
 } from "lucide-react";
@@ -80,7 +81,18 @@ const platformLabels: Record<string, string> = {
   csv: "CSV 导入",
 };
 
-const customerTabKeys = ["profile", "follow-up", "welcome"] as const;
+const customerTabKeys = ["profile", "follow-up", "opportunities", "welcome"] as const;
+
+const OPPORTUNITY_STAGE_LABELS: Record<string, string> = {
+  new: "新商机",
+  qualified: "资格确认",
+  discovery: "发现阶段",
+  proposal: "提案",
+  negotiation: "谈判",
+  won: "成交",
+  lost: "失单",
+  nurture: "暂缓",
+};
 
 function customerTabFromLocation() {
   const requestedTab = new URLSearchParams(window.location.search).get("tab");
@@ -502,7 +514,7 @@ export function CustomerDetailClient({
 
           {/* Tab 切换（横滚） */}
           <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6, margin: "14px 0 12px" }}>
-            {([["profile", "客户档案"], ["follow-up", "跟进与备注"], ["welcome", "欢迎消息"]] as Array<[string, string]>).map(([key, label]) => (
+            {([["profile", "客户档案"], ["follow-up", "跟进与备注"], ["opportunities", "商机"], ["welcome", "欢迎消息"]] as Array<[string, string]>).map(([key, label]) => (
               <button
                 key={key}
                 type="button"
@@ -700,6 +712,36 @@ export function CustomerDetailClient({
                 )}
               </section>
             </>
+          ) : null}
+
+          {selectedTab === "opportunities" ? (
+            <section className="mx-mt-lg">
+              <div className="mx-section-head">
+                <div className="mx-section-title">关联商机</div>
+                <span className="mx-section-eyebrow">{continuity.opportunities.length} 个</span>
+              </div>
+              {continuity.opportunities.length === 0 ? (
+                <div className="mx-card mx-empty">
+                  <p>还没有关联商机</p>
+                  <p style={{ fontSize: 11, marginTop: 4 }}>去 CRM 给这个客户建商机</p>
+                </div>
+              ) : (
+                <div className="mx-card mx-list-card">
+                  {continuity.opportunities.map((o) => (
+                    <div key={o.id} className="mx-row">
+                      <div className="mx-row-main">
+                        <div className="mx-row-title">{o.name}</div>
+                        <div className="mx-row-desc">
+                          {OPPORTUNITY_STAGE_LABELS[o.stage] || o.stage}
+                          {o.amountCents ? ` · ¥${(o.amountCents / 100).toLocaleString()}` : ""}
+                          {o.nextStep ? ` · 下一步:${o.nextStep}` : ""}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           ) : null}
 
           {selectedTab === "welcome" ? (
@@ -983,6 +1025,44 @@ export function CustomerDetailClient({
                   />
                 )}
               </div>
+            </section>
+          </div>
+        </Tab>
+
+        <Tab key="opportunities" title={`商机${continuity.opportunities.length ? `（${continuity.opportunities.length}）` : ""}`}>
+          <div className="pt-4">
+            <section aria-labelledby="opportunities-heading" className="space-y-5">
+              <h2 id="opportunities-heading" className="text-base font-semibold">
+                关联商机
+              </h2>
+              {continuity.opportunities.length ? (
+                <div className="space-y-2">
+                  {continuity.opportunities.map((o) => (
+                    <article
+                      key={o.id}
+                      className="border border-divider p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium">{o.name}</h3>
+                        <span className="rounded-full bg-primary-50 px-2.5 py-0.5 text-xs text-primary-600">
+                          {OPPORTUNITY_STAGE_LABELS[o.stage] || o.stage}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-default-500">
+                        {o.amountCents
+                          ? `预计 ¥${(o.amountCents / 100).toLocaleString()}`
+                          : "金额未填"}
+                        {o.nextStep ? ` · 下一步：${o.nextStep}` : ""}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <EmptyBlock
+                  icon={<Target size={22} />}
+                  title="还没有关联商机"
+                />
+              )}
             </section>
           </div>
         </Tab>
