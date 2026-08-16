@@ -44,7 +44,10 @@ export interface ConvertLeadResult {
 export class LeadConvertService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** 线索 → 客户 dedupeKey，对齐 crm.service 的 `crm:${sha1(...)}` 前缀 */
+  /**
+   * 线索 → 客户 dedupeKey，对齐 crm.service 的 `crm:{子类}:${sha1(...)}` 前缀，
+   * 子类用 `lead`（与 `growth-lead` / `manual` 对称），字段取身份强项。
+   */
   static customerDedupeKeyOf(lead: {
     nickname: string | null;
     externalUserId: string | null;
@@ -53,12 +56,12 @@ export class LeadConvertService {
   }): string {
     const raw = [
       'lead',
-      lead.nickname ?? '',
       lead.externalUserId ?? '',
+      lead.nickname ?? '',
       lead.platform,
       lead.sourceUrl ?? '',
     ].join(':');
-    return `crm:${crypto.createHash('sha1').update(raw).digest('hex')}`;
+    return `crm:lead:${crypto.createHash('sha1').update(raw).digest('hex')}`;
   }
 
   async convert(input: ConvertLeadInput): Promise<ConvertLeadResult> {

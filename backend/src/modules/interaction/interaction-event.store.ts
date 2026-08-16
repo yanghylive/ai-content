@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import type { InteractionEvent } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import type { InteractionItem } from './interaction-adapter.interface';
 
 export type InteractionChannel = 'comment' | 'dm' | 'mention' | 'form';
@@ -42,7 +43,44 @@ const DEFAULT_USER = 'legacy-local-user';
  */
 @Injectable()
 export class InteractionEventStore {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authRequestContext: AuthRequestContextService,
+  ) {}
+
+  /**
+   * 解析事件归属 scope。优先用显式传入的 tenantId/userId；否则从登录上下文
+   * resolve 真实 scope（对齐 InteractionTask 的 persist 路径），保证事件与任务
+   * 的 tenantId 一致——否则读层（Inbox/Thread）按真实 scope 过滤会查不到事件。
+   * 无上下文（后台任务/测试）回退 legacy 默认。
+   */
+  private async resolveScope(
+    tenantId: string | undefined,
+    userId: string | undefined,
+  ): Promise<{ tenantId: string; userId: string }> {
+    if (tenantId && userId) {
+      return { tenantId, userId };
+    }
+    const context = this.authRequestContext.get();
+    const contextUserId = context?.user?.id?.trim() || '';
+    if (contextUserId) {
+      try {
+        const resolvedTenantId = await this.authRequestContext.resolveTenantId(
+          this.prisma,
+        );
+        return {
+          tenantId: tenantId ?? resolvedTenantId,
+          userId: userId ?? contextUserId,
+        };
+      } catch {
+        // 解析失败（如无 membership）回退默认，不阻断采集
+      }
+    }
+    return {
+      tenantId: tenantId ?? DEFAULT_TENANT,
+      userId: userId ?? DEFAULT_USER,
+    };
+  }
 
   /** 去重键：tenantId + platform + accountId + (eventId??threadId??sourceUrl) + body */
   computeDedupeKey(event: InteractionEventInput): string {
@@ -65,8 +103,10 @@ export class InteractionEventStore {
   async ingest(
     event: InteractionEventInput,
   ): Promise<{ event: InteractionEvent; created: boolean }> {
-    const tenantId = event.tenantId ?? DEFAULT_TENANT;
-    const dedupeKey = this.computeDedupeKey(event);
+    const scope = await this.resolveScope(event.tenantId, event.userId);
+    const tenantId = scope.tenantId;
+    const userId = scope.userId;
+    const dedupeKey = this.computeDedupeKey({ ...event, tenantId });
 
     const existing = await this.prisma.interactionEvent.findUnique({
       where: { tenantId_dedupeKey: { tenantId, dedupeKey } },
@@ -79,7 +119,7 @@ export class InteractionEventStore {
       .create({
         data: {
           tenantId,
-          userId: event.userId ?? DEFAULT_USER,
+          userId,
           platform: event.platform,
           accountId: event.accountId,
           channel: event.channel ?? 'comment',

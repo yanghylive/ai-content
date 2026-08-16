@@ -455,10 +455,16 @@ export class InteractionInboxService {
       publishRecordId: string | null;
       sourceUrl: string | null;
       authorExternalId: string | null;
+      events: Array<{ id: string }>;
     },
     index: ReturnType<InteractionInboxService['indexLeads']>,
   ): Lead | null {
-    // 事件级直连优先（sourceInteractionEventId 已按事件索引，线程键非事件ID，这里用归因键回退）
+    // 事件级直连优先（lead.sourceInteractionEventId → 线程内某事件的 id）
+    for (const event of thread.events) {
+      if (index.byEvent.has(event.id)) {
+        return index.byEvent.get(event.id)!;
+      }
+    }
     if (thread.sourceArticleId && index.byArticle.has(thread.sourceArticleId)) {
       return index.byArticle.get(thread.sourceArticleId)!;
     }
