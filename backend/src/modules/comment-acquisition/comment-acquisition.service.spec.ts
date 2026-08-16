@@ -104,6 +104,9 @@ describe('CommentAcquisitionService', () => {
     $executeRawUnsafe: jest.fn(),
     $executeRaw: jest.fn(),
     $queryRaw: jest.fn(),
+    publishAccount: {
+      findFirst: jest.fn().mockResolvedValue({ id: 'acc-1' }),
+    },
     sql: jest.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
       strings,
       values,
@@ -278,6 +281,9 @@ describe('CommentAcquisitionService 风控断路器', () => {
     $queryRaw: jest.fn(),
     sql: jest.fn(),
     empty: jest.fn(),
+    publishAccount: {
+      findFirst: jest.fn().mockResolvedValue({ id: 'acc-1' }),
+    },
     lead: {
       findFirst: jest.fn().mockResolvedValue(null),
       findMany: jest.fn().mockResolvedValue([]),
@@ -384,6 +390,9 @@ describe('CommentAcquisitionService 小红书获客', () => {
     $queryRaw: jest.fn(),
     sql: jest.fn(),
     empty: jest.fn(),
+    publishAccount: {
+      findFirst: jest.fn().mockResolvedValue({ id: 'acc-1' }),
+    },
     lead: {
       findFirst: jest.fn().mockResolvedValue(null),
       findMany: jest.fn().mockResolvedValue([]),
@@ -484,6 +493,9 @@ describe('CommentAcquisitionService 私信获客', () => {
     $queryRaw: jest.fn(),
     sql: jest.fn(),
     empty: jest.fn(),
+    publishAccount: {
+      findFirst: jest.fn().mockResolvedValue({ id: 'acc-1' }),
+    },
     lead: {
       findFirst: jest.fn().mockResolvedValue(null),
       findMany: jest.fn().mockResolvedValue([]),
