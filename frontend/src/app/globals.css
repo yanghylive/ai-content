@@ -25,17 +25,17 @@
     --kaypal-v3-field-border-hover: #b6aed0;
     --kaypal-v3-field-height: 32px;
     --kaypal-v3-field-label-offset: 22px;
-    --kaypal-v3-field-focus-ring: rgba(124, 92, 240, 0.16);
+    --kaypal-v3-field-focus-ring: rgba(114, 46, 209, 0.16);
     --kaypal-v3-field-shadow:
       inset 0 1px 0 rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.03);
     --kaypal-v3-field-shadow-focus:
       0 0 0 4px var(--kaypal-v3-field-focus-ring),
       inset 0 1px 0 rgba(15, 23, 42, 0.03);
-    --kaypal-v3-accent: #7c5cf0;
-    --kaypal-v3-accent-soft: #ede8fd;
-    --kaypal-v3-accent-border: #cfc0f9;
-    --kaypal-v3-accent-tint: #ddd2fb;
-    --kaypal-v3-accent-ink: #5b3fd4;
+    --kaypal-v3-accent: #722ed1;
+    --kaypal-v3-accent-soft: #f9f0ff;
+    --kaypal-v3-accent-border: #d3adf7;
+    --kaypal-v3-accent-tint: #b37feb;
+    --kaypal-v3-accent-ink: #531dab;
     --kaypal-v3-cobalt: #2f6bd8;
     --kaypal-v3-blue-soft: #e4eefe;
     --kaypal-v3-amber: #c26a06;
@@ -58,8 +58,8 @@
     --kaypal-v3-nav-ink: #2a2438;
     --kaypal-v3-nav-muted: #4d4560;
     --kaypal-v3-nav-shadow: 2px 0 12px rgba(15, 23, 42, 0.06);
-    --kaypal-v3-purple: #7c5cf0;
-    --kaypal-v3-purple-soft: #ede8fd;
+    --kaypal-v3-purple: #722ed1;
+    --kaypal-v3-purple-soft: #f9f0ff;
     --kaypal-v3-card-shadow:
       0 1px 2px rgba(42, 36, 56, 0.05), 0 3px 14px rgba(90, 70, 160, 0.08);
     --kaypal-v3-elevated-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
@@ -115,19 +115,19 @@
     --kaypal-v3-field-border-hover: #5a5470;
     --kaypal-v3-field-height: 32px;
     --kaypal-v3-field-label-offset: 22px;
-    --kaypal-v3-field-focus-ring: rgba(139, 111, 245, 0.28);
+    --kaypal-v3-field-focus-ring: rgba(146, 84, 222, 0.28);
     --kaypal-v3-field-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 8px rgba(0, 0, 0, 0.18);
     --kaypal-v3-field-shadow-focus:
       0 0 0 4px var(--kaypal-v3-field-focus-ring),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    --kaypal-v3-accent: #8b6ff5;
-    --kaypal-v3-accent-soft: rgba(124, 92, 240, 0.16);
-    --kaypal-v3-accent-ink: #b7a6f8;
-    --kaypal-v3-accent-border: #413a52;
-    --kaypal-v3-accent-tint: rgba(124, 92, 240, 0.28);
-    --kaypal-v3-purple: #8b6ff5;
-    --kaypal-v3-purple-soft: rgba(124, 92, 240, 0.16);
+    --kaypal-v3-accent: #9254de;
+    --kaypal-v3-accent-soft: rgba(114, 46, 209, 0.18);
+    --kaypal-v3-accent-ink: #d3adf7;
+    --kaypal-v3-accent-border: #3a2b5c;
+    --kaypal-v3-accent-tint: rgba(114, 46, 209, 0.3);
+    --kaypal-v3-purple: #9254de;
+    --kaypal-v3-purple-soft: rgba(114, 46, 209, 0.18);
     --kaypal-v3-cobalt: #93b8f5;
     --kaypal-v3-blue-soft: rgba(90, 140, 240, 0.16);
     --kaypal-v3-amber: #eebd72;

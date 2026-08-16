@@ -10,16 +10,16 @@
   --kx-ink: #2a2438;
   --kx-ink-soft: #4d4560;
   --kx-muted: #8b84a0;
-  --kx-accent: #7c5cf0;
-  --kx-accent-ink: #5b3fd4;
-  --kx-accent-soft: #ede8fd;
+  --kx-accent: #722ed1;
+  --kx-accent-ink: #531dab;
+  --kx-accent-soft: #f9f0ff;
   --kx-border: #e6e2ef;
   --kx-border-strong: #cfc8e0;
   --kx-success: #16a34a;
   --kx-amber: #d97706;
   --kx-danger: #dc2626;
   --kx-shadow-card: 0 3px 14px rgba(90, 70, 160, 0.08);
-  --kx-shadow-hover: 0 6px 18px rgba(124, 92, 240, 0.12);
+  --kx-shadow-hover: 0 6px 18px rgba(114, 46, 209, 0.12);
   --kx-overlay: rgba(24, 19, 38, 0.42);
   /* 图标 chip 七色：商用后台用低饱和描边，不做糖果色块 */
   --kx-cv-bg: #f5f3ff; --kx-cv-fg: #6d28d9; --kx-cv-bd: #ddd6fe;
@@ -40,18 +40,18 @@ html[data-theme="dark"] {
   --kx-ink: #ece9f4;
   --kx-ink-soft: #c9c3d9;
   --kx-muted: #847d99;
-  --kx-accent: #8b6ff5;
-  --kx-accent-ink: #b7a6f8;
-  --kx-accent-soft: rgba(124, 92, 240, 0.16);
+  --kx-accent: #9254de;
+  --kx-accent-ink: #d3adf7;
+  --kx-accent-soft: rgba(114, 46, 209, 0.18);
   --kx-border: #2b2735;
   --kx-border-strong: #413a52;
   --kx-success: #4ade80;
   --kx-amber: #eebd72;
   --kx-danger: #f87171;
   --kx-shadow-card: 0 3px 14px rgba(0, 0, 0, 0.3);
-  --kx-shadow-hover: 0 6px 20px rgba(124, 92, 240, 0.22);
+  --kx-shadow-hover: 0 6px 20px rgba(114, 46, 209, 0.22);
   --kx-overlay: rgba(0, 0, 0, 0.55);
-  --kx-cv-bg: rgba(139, 111, 245, 0.1); --kx-cv-fg: #b7a6f8; --kx-cv-bd: rgba(139, 111, 245, 0.22);
+  --kx-cv-bg: rgba(146, 84, 222, 0.1); --kx-cv-fg: #d3adf7; --kx-cv-bd: rgba(146, 84, 222, 0.22);
   --kx-cb-bg: rgba(90, 140, 240, 0.1);  --kx-cb-fg: #93b8f5; --kx-cb-bd: rgba(90, 140, 240, 0.2);
   --kx-cg-bg: rgba(48, 190, 130, 0.09);  --kx-cg-fg: #6fd9a8; --kx-cg-bd: rgba(48, 190, 130, 0.18);
   --kx-ca-bg: rgba(230, 160, 60, 0.09);  --kx-ca-fg: #eebd72; --kx-ca-bd: rgba(230, 160, 60, 0.18);
@@ -94,7 +94,7 @@ html[data-theme="dark"] {
 
 /* ---------- 左侧图标栏 ---------- */
 .kx-rail { width: 72px; background: var(--kx-card); border-right: 1px solid var(--kx-border); display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 6px; flex-shrink: 0; transition: background 0.3s ease, border-color 0.3s ease; }
-.kx-rail-logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #8b6ff5, #5b3fd4); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(124, 92, 240, 0.3); }
+.kx-rail-logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #9254de, #531dab); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(114, 46, 209, 0.3); }
 .kx-rail-item { width: 52px; border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 0 8px; border-radius: 12px; cursor: pointer; color: var(--kx-muted); transition: all 0.18s ease; position: relative; }
 .kx-rail-item:hover { background: var(--kx-paper-soft); color: var(--kx-ink); }
 .kx-rail-item.kx-active { background: var(--kx-accent-soft); color: var(--kx-accent-ink); }
@@ -149,7 +149,7 @@ html[data-theme="dark"] {
 .kx-todo-desc { color: var(--kx-muted); font-size: 13px; margin-top: 3px; }
 .kx-btn { border: none; border-radius: var(--kx-radius-sm); padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; font-family: inherit; }
 .kx-btn:active { transform: scale(0.96); }
-.kx-btn-primary { background: var(--kx-accent); color: #fff; box-shadow: 0 2px 8px rgba(124, 92, 240, 0.3); }
+.kx-btn-primary { background: var(--kx-accent); color: #fff; box-shadow: 0 2px 8px rgba(114, 46, 209, 0.3); }
 .kx-btn-primary:hover { background: var(--kx-accent-ink); color: #fff; }
 .kx-btn-ghost { background: var(--kx-card); color: var(--kx-ink-soft); border: 1px solid var(--kx-border); }
 .kx-btn-ghost:hover { border-color: var(--kx-border-strong); color: var(--kx-ink); }
