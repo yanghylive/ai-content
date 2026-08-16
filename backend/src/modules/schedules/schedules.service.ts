@@ -3,10 +3,12 @@ import {
   Logger,
   OnModuleDestroy,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { CronJob } from 'cron';
 import { MaterialsService } from '../materials/materials.service';
 import { TopicsService } from '../topics/topics.service';
@@ -43,7 +45,16 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
     private readonly topicsService: TopicsService,
     private readonly topicMiningService: TopicMiningService,
     private readonly articlesService: ArticlesService,
+    @Optional()
+    private readonly authRequestContext?: AuthRequestContextService,
   ) {}
+
+  /** S0-P1-10：调度配置按用户隔离；无上下文时 legacy 兜底 */
+  private resolveUserId(): string {
+    return (
+      this.authRequestContext?.get()?.user?.id?.trim() || 'legacy-local-user'
+    );
+  }
 
   async onModuleInit() {
     try {
@@ -71,10 +82,12 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
     ];
 
     for (const conf of defaultConfigs) {
+      const userId = this.resolveUserId();
       await this.prisma.scheduleConfig.upsert({
-        where: { taskType: conf.taskType },
+        where: { userId_taskType: { userId, taskType: conf.taskType } },
         update: {},
         create: {
+          userId,
           taskType: conf.taskType,
           cronExpr: conf.cronExpr,
           enabled: conf.enabled,
@@ -85,8 +98,9 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
 
   // 加载所有启用的任务到内存
   async loadAllSchedules() {
+    const userId = this.resolveUserId();
     const configs = await this.prisma.scheduleConfig.findMany({
-      where: { enabled: true },
+      where: { enabled: true, userId },
     });
 
     for (const config of configs) {
@@ -96,7 +110,9 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
 
   // 获取所有任务配置
   async getAllSchedules() {
+    const userId = this.resolveUserId();
     return this.prisma.scheduleConfig.findMany({
+      where: { userId },
       orderBy: { taskType: 'asc' },
     });
   }
@@ -107,8 +123,9 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
       throw new Error(`Unsupported task type: ${taskType}`);
     }
 
+    const userId = this.resolveUserId();
     const updated = await this.prisma.scheduleConfig.update({
-      where: { taskType },
+      where: { userId_taskType: { userId, taskType } },
       data: {
         cronExpr: dto.cronExpr,
         enabled: dto.enabled,
@@ -165,9 +182,10 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
   // 执行对应的任务逻辑
   private async executeTask(taskType: string) {
     try {
+      const userId = this.resolveUserId();
       // 获取最新配置可能包含如阀值、批量限制等
       const sc = await this.prisma.scheduleConfig.findUnique({
-        where: { taskType },
+        where: { userId_taskType: { userId, taskType } },
       });
       const userConfig: Record<string, unknown> =
         (sc?.config as Record<string, unknown> | null) || {};
@@ -216,7 +234,7 @@ export class SchedulesService implements OnModuleInit, OnModuleDestroy {
 
       // 更新最后运行时间
       await this.prisma.scheduleConfig.update({
-        where: { taskType },
+        where: { userId_taskType: { userId, taskType } },
         data: {
           lastRunTime: new Date(),
           ...(taskType === 'create_articles'
