@@ -10,7 +10,7 @@ function makeService(overrides: {
 } = {}) {
   const prisma = {
     article: {
-      findUnique: overrides.article ?? jest.fn(),
+      findFirst: overrides.article ?? jest.fn(),
       count: jest.fn().mockResolvedValue(0),
     },
     publishRecord: { count: jest.fn().mockResolvedValue(0) },
@@ -26,8 +26,10 @@ function makeService(overrides: {
   return { service, prisma };
 }
 
+const USER = 'user-1';
+
 describe('FunnelReportService', () => {
-  it('articleFunnel 聚合文章六步漏斗', async () => {
+  it('articleFunnel 聚合文章六步漏斗（带 userId scope）', async () => {
     const { service, prisma } = makeService({
       article: jest
         .fn()
@@ -43,11 +45,20 @@ describe('FunnelReportService', () => {
     ]);
     prisma.crmOpportunity.count.mockResolvedValue(2);
 
-    const result = await service.articleFunnel('article-1');
+    const result = await service.articleFunnel('article-1', USER);
 
     expect(result).toMatchObject({
       article: { id: 'article-1' },
       funnel: { publish: 3, interaction: 18, lead: 9, customer: 2, opportunity: 2 },
+    });
+    // article 查询必须带 userId scope（堵 IDOR）
+    expect(prisma.article.findFirst).toHaveBeenCalledWith({
+      where: { id: 'article-1', userId: USER },
+      select: { id: true, title: true, status: true },
+    });
+    // 下游 count 也带 userId
+    expect(prisma.publishRecord.count).toHaveBeenCalledWith({
+      where: { articleId: 'article-1', userId: USER },
     });
     // 去重后的 customerId 用于查商机
     expect(prisma.crmOpportunity.count).toHaveBeenCalledWith({
@@ -55,17 +66,17 @@ describe('FunnelReportService', () => {
     });
   });
 
-  it('articleFunnel 文章不存在返回 null', async () => {
+  it('articleFunnel 他人文章返回 null（IDOR 拦截）', async () => {
     const { service } = makeService({
       article: jest.fn().mockResolvedValue(null),
     });
 
-    const result = await service.articleFunnel('missing');
+    const result = await service.articleFunnel('others-article', USER);
 
     expect(result).toBeNull();
   });
 
-  it('funnel 聚合全局六步漏斗', async () => {
+  it('funnel 聚合全局六步漏斗（带 userId scope）', async () => {
     const { service, prisma } = makeService();
     prisma.article.count.mockResolvedValue(32);
     prisma.publishRecord.count.mockResolvedValue(28);
@@ -74,7 +85,7 @@ describe('FunnelReportService', () => {
     prisma.crmCustomer.count.mockResolvedValue(5);
     prisma.crmOpportunity.count.mockResolvedValue(3);
 
-    const result = await service.funnel(7);
+    const result = await service.funnel(7, USER);
 
     expect(result.funnel).toEqual({
       content: 32,
@@ -85,5 +96,12 @@ describe('FunnelReportService', () => {
       opportunity: 3,
     });
     expect(result.range).toBe('7d');
+    // 全局漏斗也必须按 userId 过滤，不统计全库
+    expect(prisma.article.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({ userId: USER }),
+    });
+    expect(prisma.crmCustomer.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({ ownerId: USER }),
+    });
   });
 });

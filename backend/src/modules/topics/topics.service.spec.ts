@@ -1,5 +1,11 @@
 import { TopicsService } from './topics.service';
 
+const makeAuthContext = () => ({
+  hasContext: jest.fn().mockReturnValue(true),
+  get: jest.fn().mockReturnValue({ user: { id: 'user-1' } }),
+  resolveTenantId: jest.fn().mockResolvedValue('tenant-1'),
+});
+
 describe('TopicsService stale generating recovery', () => {
   const createPrismaMock = () => ({
     topic: {
@@ -17,7 +23,7 @@ describe('TopicsService stale generating recovery', () => {
 
   it('should reset stale generating topic with score back to completed', async () => {
     const prisma = createPrismaMock();
-    const service = new TopicsService(prisma as any);
+    const service = new TopicsService(prisma as any, makeAuthContext() as any);
     const now = new Date('2026-03-11T10:00:00.000Z');
     jest.useFakeTimers().setSystemTime(now);
 
@@ -40,7 +46,7 @@ describe('TopicsService stale generating recovery', () => {
     await service.findAll({ page: 1, limit: 20 });
 
     expect(prisma.topic.update).toHaveBeenCalledWith({
-      where: { id: 'topic-1' },
+      where: { id: 'topic-1', tenantId: 'tenant-1', userId: 'user-1' },
       data: {
         status: 'completed',
         isPublished: false,
@@ -52,7 +58,7 @@ describe('TopicsService stale generating recovery', () => {
 
   it('should mark stale generating topic with article as published completed', async () => {
     const prisma = createPrismaMock();
-    const service = new TopicsService(prisma as any);
+    const service = new TopicsService(prisma as any, makeAuthContext() as any);
     const now = new Date('2026-03-11T10:00:00.000Z');
     jest.useFakeTimers().setSystemTime(now);
 
@@ -75,7 +81,7 @@ describe('TopicsService stale generating recovery', () => {
     await service.findAll({ page: 1, limit: 20 });
 
     expect(prisma.topic.update).toHaveBeenCalledWith({
-      where: { id: 'topic-2' },
+      where: { id: 'topic-2', tenantId: 'tenant-1', userId: 'user-1' },
       data: {
         status: 'completed',
         isPublished: true,
@@ -87,7 +93,7 @@ describe('TopicsService stale generating recovery', () => {
 
   it('should ignore missing material links when listing topics', async () => {
     const prisma = createPrismaMock();
-    const service = new TopicsService(prisma as any);
+    const service = new TopicsService(prisma as any, makeAuthContext() as any);
 
     prisma.topic.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
       {

@@ -1551,6 +1551,8 @@ HTML_END`);
     expect(prisma.topic.updateMany).toHaveBeenCalledWith({
       where: {
         id: 'topic-1',
+        tenantId: 'tenant-a',
+        userId: 'user-a',
         status: { not: 'generating' },
         isPublished: false,
       },

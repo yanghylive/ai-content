@@ -1,20 +1,48 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  Optional,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { QueryTopicDto } from './dto/query-topic.dto';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { Prisma } from '@prisma/client';
 
 const STALE_GENERATING_TIMEOUT_MS = 30 * 60 * 1000;
 
+type TopicOwnerScope = { tenantId: string; userId: string };
+
 @Injectable()
 export class TopicsService {
   private readonly logger = new Logger(TopicsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional()
+    private readonly authRequestContext?: AuthRequestContextService,
+  ) {}
+
+  /** 选题归属 scope（逐页体验报告 10.5 P0：Topic 原无 owner/tenant scope） */
+  private async resolveTopicOwnerScope(): Promise<TopicOwnerScope> {
+    if (!this.authRequestContext?.hasContext()) {
+      throw new UnauthorizedException('缺少登录上下文，不能管理选题。');
+    }
+    const user = this.authRequestContext.get()?.user;
+    const userId = user?.id?.trim() || '';
+    if (!userId) {
+      throw new UnauthorizedException('请先登录后管理选题。');
+    }
+    const tenantId = await this.authRequestContext.resolveTenantId(this.prisma);
+    return { tenantId, userId };
+  }
 
   // 分页查询选题列表
   async findAll(query: QueryTopicDto) {
-    await this.recoverStaleGeneratingTopics();
+    const scope = await this.resolveTopicOwnerScope();
+    await this.recoverStaleGeneratingTopics(scope);
 
     const {
       page = 1,
@@ -25,7 +53,7 @@ export class TopicsService {
       sortBy = 'date-desc',
     } = query;
 
-    const where: Prisma.TopicWhereInput = {};
+    const where: Prisma.TopicWhereInput = { ...scope };
 
     if (keyword) {
       where.title = { contains: keyword };
@@ -81,10 +109,11 @@ export class TopicsService {
 
   // 获取单个选题
   async findOne(id: string) {
-    await this.recoverStaleGeneratingTopics(id);
+    const scope = await this.resolveTopicOwnerScope();
+    await this.recoverStaleGeneratingTopics(scope, id);
 
     const topic = await this.prisma.topic.findUnique({
-      where: { id },
+      where: { id, ...scope },
       include: {
         materials: {
           select: { materialId: true },
@@ -99,10 +128,12 @@ export class TopicsService {
   // 创建选题
   async create(dto: CreateTopicDto) {
     const { materialIds, ...data } = dto;
+    const scope = await this.resolveTopicOwnerScope();
 
     const created = await this.prisma.topic.create({
       data: {
         ...data,
+        ...scope,
         keywords: data.keywords || [],
         searchQueries: [],
         materials: materialIds?.length
@@ -126,9 +157,10 @@ export class TopicsService {
 
   // 更新选题状态
   async updateStatus(id: string, status: string) {
+    const scope = await this.resolveTopicOwnerScope();
     await this.findOne(id);
     return this.prisma.topic.update({
-      where: { id },
+      where: { id, ...scope },
       data: { status },
     });
   }
@@ -141,8 +173,9 @@ export class TopicsService {
     reason: string,
     keywords?: string[],
   ) {
+    const scope = await this.resolveTopicOwnerScope();
     return this.prisma.topic.update({
-      where: { id },
+      where: { id, ...scope },
       data: {
         aiScore: score,
         scoreDetails: details,
@@ -155,23 +188,29 @@ export class TopicsService {
 
   // 发布/取消发布选题
   async publish(id: string, isPublished: boolean) {
+    const scope = await this.resolveTopicOwnerScope();
     await this.findOne(id);
     return this.prisma.topic.update({
-      where: { id },
+      where: { id, ...scope },
       data: { isPublished },
     });
   }
 
   // 删除选题
   async remove(id: string) {
+    const scope = await this.resolveTopicOwnerScope();
     await this.findOne(id);
-    return this.prisma.topic.delete({ where: { id } });
+    return this.prisma.topic.delete({ where: { id, ...scope } });
   }
 
-  private async recoverStaleGeneratingTopics(topicId?: string) {
+  private async recoverStaleGeneratingTopics(
+    scope: TopicOwnerScope,
+    topicId?: string,
+  ) {
     const staleBefore = new Date(Date.now() - STALE_GENERATING_TIMEOUT_MS);
     const staleTopics = await this.prisma.topic.findMany({
       where: {
+        ...scope,
         status: 'generating',
         updatedAt: { lt: staleBefore },
         ...(topicId ? { id: topicId } : {}),
@@ -204,7 +243,7 @@ export class TopicsService {
         const nextPublished = topic.isPublished || hasArticle;
 
         await this.prisma.topic.update({
-          where: { id: topic.id },
+          where: { id: topic.id, ...scope },
           data: {
             status: nextStatus,
             isPublished: nextPublished,

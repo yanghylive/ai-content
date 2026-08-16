@@ -42,8 +42,11 @@ export class ReviewRunService {
     owner: { userId: string; tenantId?: string | null; actorUserId?: string | null },
   ) {
     const funnel = input.generatedFrom
-      ? await this.funnelReport.articleFunnel(input.generatedFrom)
-      : await this.funnelReport.funnel(input.period === '30d' ? 30 : 7);
+      ? await this.funnelReport.articleFunnel(input.generatedFrom, owner.userId)
+      : await this.funnelReport.funnel(
+          input.period === '30d' ? 30 : 7,
+          owner.userId,
+        );
 
     return this.prisma.reviewRun.create({
       data: {
