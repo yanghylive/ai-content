@@ -9,6 +9,7 @@ import {
   Download,
   KeyRound,
   Lock,
+  MonitorCog,
   Save,
   Shield,
   User,
@@ -22,6 +23,7 @@ import {
   V2StatusChip,
 } from "@/components/v2/ui-kit";
 import { SettingsIntegrations } from "./settings-integrations";
+import { DesktopSettings } from "./desktop-settings";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useWebPush } from "@/lib/hooks/use-web-push";
 
@@ -245,6 +247,15 @@ export function SettingsDetail() {
 
           {/* 集成设置 */}
           <SettingsIntegrations />
+
+          {/* 桌面设置（本机应用专属） */}
+          <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
+            <div className="mx-section-title" style={{ marginBottom: 12 }}>
+              <span className="mx-sec-icon"><MonitorCog /></span>
+              桌面设置
+            </div>
+            <DesktopSettings />
+          </div>
 
           {/* 合规中心（2026-08-09：用户协议/隐私/AI 说明/投诉/备案公示） */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
@@ -476,14 +487,7 @@ export function SettingsDetail() {
 
       {/* 桌面设置（本机应用专属） */}
       <V2Section title="桌面设置" description="微信应用位置、自动恢复连接等本机选项">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-[var(--kaypal-v3-muted)]">
-            微信应用路径、自动恢复连接、AI 专家状态、问题资料发送
-          </p>
-          <V2GhostButton onClick={() => router.push("/settings?legacy=1&tab=desktop")}>
-            去桌面设置 →
-          </V2GhostButton>
-        </div>
+        <DesktopSettings />
       </V2Section>
 
       {/* 集成设置：AI 服务 / 内容来源 / 文件存储 */}

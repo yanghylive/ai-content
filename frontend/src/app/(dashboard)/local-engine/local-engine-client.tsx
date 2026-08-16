@@ -1565,7 +1565,7 @@ function getReadinessAction(capability: string) {
   }
   if (/AI.*模型|AI.*服务/i.test(capability)) {
     return {
-      actionHref: "/settings?tab=ai",
+      actionHref: "/settings",
       actionLabel: "设置 AI 服务",
     };
   }
