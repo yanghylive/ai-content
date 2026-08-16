@@ -9,6 +9,8 @@ import {
 import { InteractionAdapterRegistry } from './interaction-adapter.registry';
 import { InteractionEventStore } from './interaction-event.store';
 import { InteractionThreadService } from './interaction-thread.service';
+import { InteractionInboxService } from './interaction-inbox.service';
+import { InteractionInboxController } from './interaction-inbox.controller';
 
 /**
  * 统一互动契约模块。
@@ -22,6 +24,7 @@ import { InteractionThreadService } from './interaction-thread.service';
  */
 @Module({
   imports: [LocalEngineModule],
+  controllers: [InteractionInboxController],
   providers: [
     InteractionAdapterRegistry,
     DouyinInteractionAdapter,
@@ -30,6 +33,7 @@ import { InteractionThreadService } from './interaction-thread.service';
     InteractionAdapterRegistrar,
     InteractionEventStore,
     InteractionThreadService,
+    InteractionInboxService,
   ],
   exports: [
     InteractionAdapterRegistry,
@@ -38,6 +42,7 @@ import { InteractionThreadService } from './interaction-thread.service';
     XiaohongshuInteractionAdapter,
     InteractionEventStore,
     InteractionThreadService,
+    InteractionInboxService,
   ],
 })
 export class InteractionModule {}
