@@ -1101,10 +1101,11 @@ export class PublishRecordStore {
     record: DurablePublishRecord,
     scope: Record<string, string>,
   ) {
-    if (
-      scope.tenantId &&
-      (record.tenantId !== scope.tenantId || record.userId !== scope.userId)
-    ) {
+    // S0-P1-5：tenant 存在时校验 tenant+user；legacy 无 tenant 时也必须校验 userId，
+    // 杜绝「tenantId 为空就跳过校验」导致的跨用户操作发布记录。
+    const tenantMatches = !scope.tenantId || record.tenantId === scope.tenantId;
+    const userMatches = record.userId === scope.userId;
+    if (!tenantMatches || !userMatches) {
       throw new ForbiddenException('无权操作这条发布记录。');
     }
   }
