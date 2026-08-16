@@ -3,6 +3,9 @@ import {
   MOBILE_STATUS_BADGE,
   MOBILE_STATUS_DOT,
   MOBILE_STATUS_LABEL,
+  RUNNING_STALE_THRESHOLD_MS,
+  isStaleRunning,
+  mapBackendStatus,
   statusGroup,
   type PublishStatus,
 } from "./publish-status";
@@ -74,5 +77,65 @@ describe("移动端状态映射（P1-1 状态中间态）", () => {
   it("进行类状态（queued/running）共用蓝色 badge 与 dot", () => {
     expect(MOBILE_STATUS_BADGE.queued).toBe(MOBILE_STATUS_BADGE.running);
     expect(MOBILE_STATUS_DOT.queued).toBe(MOBILE_STATUS_DOT.running);
+  });
+});
+
+describe("mapBackendStatus 后端状态 → 展示状态（P1-1 核心映射）", () => {
+  it("claimed/running/publishing 归 running（执行中）", () => {
+    for (const s of ["claimed", "running", "publishing"]) {
+      expect(mapBackendStatus(s)).toBe("running");
+    }
+  });
+
+  it("cancelled/canceled 归 cancelled（已取消）", () => {
+    expect(mapBackendStatus("cancelled")).toBe("cancelled");
+    expect(mapBackendStatus("canceled")).toBe("cancelled");
+  });
+
+  it("waiting* 前缀与 pending 归 pending（计划中）", () => {
+    expect(mapBackendStatus("waiting")).toBe("pending");
+    expect(mapBackendStatus("waiting_for_send_confirmation")).toBe("pending");
+    expect(mapBackendStatus("pending")).toBe("pending");
+  });
+
+  it("success/completed/done 归 done；failed/error/blocked 归 failed", () => {
+    for (const s of ["success", "completed", "done"]) {
+      expect(mapBackendStatus(s)).toBe("done");
+    }
+    for (const s of ["failed", "error", "blocked"]) {
+      expect(mapBackendStatus(s)).toBe("failed");
+    }
+  });
+
+  it("未知状态与空值归 draft（兜底不崩溃）", () => {
+    expect(mapBackendStatus("")).toBe("draft");
+    expect(mapBackendStatus(undefined)).toBe("draft");
+    expect(mapBackendStatus("weird-status")).toBe("draft");
+  });
+});
+
+describe("isStaleRunning 卡住任务检测（P1-1 租约超时）", () => {
+  const now = 1_000_000;
+
+  it("running 且超过租约时长 → 卡住", () => {
+    const updatedAt = new Date(now - RUNNING_STALE_THRESHOLD_MS - 1).toISOString();
+    expect(isStaleRunning("running", updatedAt, now)).toBe(true);
+  });
+
+  it("running 但未超租约 → 不卡住", () => {
+    const updatedAt = new Date(now - RUNNING_STALE_THRESHOLD_MS + 1).toISOString();
+    expect(isStaleRunning("running", updatedAt, now)).toBe(false);
+  });
+
+  it("非 running 状态永不判卡住（即使时间很久）", () => {
+    const old = new Date(now - 999_999).toISOString();
+    for (const s of ["queued", "pending", "done", "failed", "cancelled", "draft"]) {
+      expect(isStaleRunning(s as PublishStatus, old, now)).toBe(false);
+    }
+  });
+
+  it("无 updatedAt 或非法时间 → 不判卡住", () => {
+    expect(isStaleRunning("running", undefined, now)).toBe(false);
+    expect(isStaleRunning("running", "not-a-date", now)).toBe(false);
   });
 });

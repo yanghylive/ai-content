@@ -70,3 +70,36 @@ export function statusGroup(
     return "pending";
   return "other";
 }
+
+/**
+ * 后端原始状态 → 发布中心展示维度状态（P1-1 状态中间态收敛的核心映射）。
+ * 与 fetchTasks 里的内联映射一致，抽出来作为回归锚点。
+ */
+export function mapBackendStatus(status?: string): PublishStatus {
+  const s = (status || "").toLowerCase();
+  if (s === "success" || s === "completed" || s === "done") return "done";
+  if (s === "failed" || s === "error" || s === "blocked") return "failed";
+  if (s === "cancelled" || s === "canceled") return "cancelled";
+  if (s === "claimed" || s === "running" || s === "publishing") return "running";
+  if (s === "queued") return "queued";
+  if (s.startsWith("waiting") || s === "pending") return "pending";
+  return "draft";
+}
+
+/** 后端租约时长（durable-publish.worker.ts LEASE_DURATION_MS=120s） */
+export const RUNNING_STALE_THRESHOLD_MS = 120_000;
+
+/**
+ * 「执行中」任务超过租约时长未更新 → 判定卡住（P1-1：提示 + 可重试）。
+ * now 可注入便于测试。
+ */
+export function isStaleRunning(
+  status: PublishStatus,
+  updatedAt?: string,
+  now = Date.now(),
+): boolean {
+  if (status !== "running" || !updatedAt) return false;
+  const ts = Date.parse(updatedAt);
+  if (!Number.isFinite(ts)) return false;
+  return now - ts > RUNNING_STALE_THRESHOLD_MS;
+}

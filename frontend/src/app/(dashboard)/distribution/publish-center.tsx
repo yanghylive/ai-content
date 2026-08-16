@@ -6,6 +6,8 @@ import {
   MOBILE_STATUS_BADGE,
   MOBILE_STATUS_DOT,
   MOBILE_STATUS_LABEL,
+  isStaleRunning as isStaleRunningTask,
+  mapBackendStatus,
   type PublishStatus,
 } from "@/lib/publish-status";
 
@@ -58,10 +60,6 @@ const STATUS_CONFIG: Record<
   failed: { label: "失败", icon: XCircle, color: "var(--kaypal-v3-danger)" },
 };
 
-// 后端租约时长（durable-publish.worker.ts LEASE_DURATION_MS=120s）：
-// 「执行中」任务超过该时长未更新，视为可能卡住（后端 reclaimStaleTasks 会回收重跑）。
-const RUNNING_STALE_THRESHOLD_MS = 120_000;
-
 // 预览用示例数据（正式接入时替换为后端发布任务接口）
 export function PublishCenter() {
   const [items, setItems] = useState<PublishItem[]>([]);
@@ -104,21 +102,7 @@ export function PublishCenter() {
       const tasks = Array.isArray(result?.items) ? result.items : [];
       setItems(
         tasks.map((task): PublishItem => {
-          const s = (task.status || "").toLowerCase();
-          const status: PublishStatus =
-            s === "success" || s === "completed" || s === "done"
-              ? "done"
-              : s === "failed" || s === "error" || s === "blocked"
-                ? "failed"
-                : s === "cancelled" || s === "canceled"
-                  ? "cancelled"
-                  : s === "claimed" || s === "running" || s === "publishing"
-                    ? "running"
-                    : s === "queued"
-                      ? "queued"
-                      : s.startsWith("waiting") || s === "pending"
-                        ? "pending"
-                        : "draft";
+          const status = mapBackendStatus(task.status);
           return {
             id: String(task.id),
             title: task.title || `任务 #${task.id}`,
@@ -155,12 +139,8 @@ export function PublishCenter() {
   }, [items, fetchTasks]);
 
   // 「执行中」任务超过后端租约时长（120s）未更新 → 可能卡住，提示 + 可重试
-  const isStaleRunning = (item: PublishItem): boolean => {
-    if (item.status !== "running" || !item.updatedAt) return false;
-    const ts = Date.parse(item.updatedAt);
-    if (!Number.isFinite(ts)) return false;
-    return Date.now() - ts > RUNNING_STALE_THRESHOLD_MS;
-  };
+  const isStaleRunning = (item: PublishItem): boolean =>
+    isStaleRunningTask(item.status, item.updatedAt);
 
   const stats = useMemo(
     () => ({
