@@ -3246,3 +3246,17 @@ model AttributionLink {
   @@index([fromType, fromId])
   @@map("attribution_links")
 }
+
+// 线索事件 outbox（S0-P1-11）：事件先落库再发内存事件，
+// 进程重启不丢失，供后续重放/补偿消费。
+model LeadEventOutbox {
+  id         String    @id @default(cuid())
+  eventType  String    @map("event_type") // lead.created | lead.converted
+  payload    Json      @map("payload")
+  status     String    @default("published") @map("status") // published | consumed
+  createdAt  DateTime  @default(now()) @map("created_at")
+  consumedAt DateTime? @map("consumed_at")
+
+  @@index([status, createdAt])
+  @@map("lead_event_outbox")
+}
