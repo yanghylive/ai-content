@@ -77,6 +77,29 @@ export function CrmConnectorsCenter() {
     void load();
   }, [load]);
 
+  // 连接记录（contract proof：审计证明，展示安全边界 + 留存编号）
+  const [proof, setProof] = useState<Record<string, unknown> | null>(null);
+  const [proofBusy, setProofBusy] = useState(false);
+  const [proofError, setProofError] = useState<string | null>(null);
+
+  const handleProof = async (connectorKey: string) => {
+    setProofBusy(true);
+    setProofError(null);
+    setProof(null);
+    try {
+      const result = await api.post("/crm/connectors/contract", {
+        connectorKey,
+        includeProof: true,
+        requestedBy: "crm-connectors-center",
+      });
+      setProof((result as Record<string, unknown>) || null);
+    } catch (err: unknown) {
+      setProofError(toPublicError(err, "连接记录生成失败"));
+    } finally {
+      setProofBusy(false);
+    }
+  };
+
   const readyCount = items.filter((i) => i.status === "ready" || i.status === "connected").length;
   const isMobile = useIsMobile();
 
@@ -219,11 +242,48 @@ export function CrmConnectorsCenter() {
                     下一步:{formatNextAction(item.nextActions[0])}
                   </p>
                 ) : null}
+                <button
+                  type="button"
+                  className="mt-3 text-xs font-medium text-[var(--kaypal-v3-accent-ink)] hover:underline"
+                  disabled={proofBusy}
+                  onClick={() => void handleProof(item.connectorKey)}
+                >
+                  {proofBusy ? "生成中…" : "生成连接记录"}
+                </button>
               </div>
             ))}
           </div>
         </V2Section>
       )}
+
+      {proofError ? (
+        <p className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4 text-sm text-[var(--kaypal-v3-danger)]">
+          {proofError}
+        </p>
+      ) : null}
+
+      {proof ? (
+        <V2Section title="连接记录" description="只读检查、安全边界和留存编号">
+          <div className="kaypal-v3-surface p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-semibold text-[var(--kaypal-v3-ink)]">
+                {String((proof as { connectorName?: string }).connectorName || "连接器")} 连接记录
+              </h3>
+              <V2StatusChip tone="success">
+                {String((proof as { status?: string }).status || "contract-ready") === "contract-ready" ? "方案已确认" : String((proof as { status?: string }).status || "")}
+              </V2StatusChip>
+            </div>
+            <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">
+              只读检查、不写 CRM、不触碰外部系统；安全边界与留存编号已由系统记录。
+            </p>
+            {((proof as { auditId?: string }).auditId) ? (
+              <p className="mt-2 text-xs text-[var(--kaypal-v3-muted)]">
+                留存编号：{String((proof as { auditId?: string }).auditId)}
+              </p>
+            ) : null}
+          </div>
+        </V2Section>
+      ) : null}
 
       <HubSpotVaultPanel />
     </div>
