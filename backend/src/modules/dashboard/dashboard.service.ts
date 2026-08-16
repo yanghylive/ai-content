@@ -106,9 +106,9 @@ export class DashboardService {
   }
 
   /**
-   * 归因链骨架（阶段 B）：从一篇内容出发，查它的发布记录 + 互动任务。
+   * 归因链（阶段 B）：从一篇内容出发，查它的发布记录 + 互动任务 + 线索。
    * 强关联：PublishRecord.articleId + InteractionTask.sourceArticleId。
-   * 完整链（互动→线索→CRM）依赖平台侧匹配（sourceUrl/commentRef），后续单独做。
+   * 弱关联（互动→线索）：InteractionTask.sourceUrl 匹配 Lead.sourceUrl（平台同一条评论/内容）。
    */
   async resolveContentAttribution(articleId: string) {
     const [article, publishRecords, interactionTasks] = await Promise.all([
@@ -122,12 +122,25 @@ export class DashboardService {
         orderBy: { updatedAt: 'desc' },
       }),
     ]);
+    // 互动 → 线索：通过 sourceUrl 弱关联匹配（同一平台来源的评论/内容）
+    const sourceUrls = interactionTasks
+      .map((task) => task.sourceUrl)
+      .filter((url): url is string => Boolean(url));
+    const leads =
+      sourceUrls.length > 0
+        ? await this.prisma.lead.findMany({
+            where: { sourceUrl: { in: sourceUrls } },
+            orderBy: { createdAt: 'desc' },
+          })
+        : [];
     return {
       article,
       publishCount: publishRecords.length,
       interactionCount: interactionTasks.length,
+      leadCount: leads.length,
       publishRecords,
       interactionTasks,
+      leads,
     };
   }
 

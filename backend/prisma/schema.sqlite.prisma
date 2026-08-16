@@ -1550,6 +1550,8 @@ model InteractionTask {
   // 归因链（阶段 B）：互动归因到内容/某次发布
   sourceArticleId            String?               @map("sourceArticleId")
   publishRecordId            String?               @map("publishRecordId")
+  // 平台侧来源 URL（评论/私信链接），用于「互动→线索」弱关联匹配
+  sourceUrl                  String?               @map("sourceUrl")
   createdAt                  DateTime              @default(now()) @map("createdAt")
   claimedBy                  String?               @map("claimedBy")
   updatedAt                  DateTime              @updatedAt @map("updatedAt")
