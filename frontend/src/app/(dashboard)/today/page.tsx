@@ -352,7 +352,7 @@ export default function TodayPage() {
           <div className="kx-action-title">做内容</div>
           <div className="kx-action-desc">AI 帮你写图文、做小红书和公众号</div>
         </button>
-        <button className="kx-action-card" onClick={() => router.push("/content")}>
+        <button className="kx-action-card" onClick={() => router.push("/distribution")}>
           <div className="kx-action-ico kx-t-green">
             <ShellIcon name="megaphone" size={22} />
           </div>
