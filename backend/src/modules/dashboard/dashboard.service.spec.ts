@@ -324,4 +324,33 @@ describe('DashboardService 归因链', () => {
 
     expect(result.total).toBe(0);
   });
+
+  it('getWeeklyReport 聚合内容→发布→互动→线索→成交指标', async () => {
+    const prisma = {
+      article: { count: jest.fn().mockResolvedValue(10) },
+      publishRecord: { count: jest.fn().mockResolvedValue(8) },
+      interactionTask: { count: jest.fn().mockResolvedValue(30) },
+      lead: {
+        count: jest
+          .fn()
+          .mockResolvedValueOnce(6) // leadCount
+          .mockResolvedValueOnce(2) // convertedCount
+          .mockResolvedValueOnce(3), // qualifiedLeadCount
+      },
+      crmOpportunity: { count: jest.fn().mockResolvedValue(1) },
+    };
+    const systemLogsService = { getRecent: jest.fn() };
+    const service = new DashboardService(prisma as never, systemLogsService as never);
+
+    const result = await service.getWeeklyReport(7);
+
+    expect(result.contentCount).toBe(10);
+    expect(result.publishCount).toBe(8);
+    expect(result.interactionCount).toBe(30);
+    expect(result.leadCount).toBe(6);
+    expect(result.convertedCount).toBe(2);
+    expect(result.wonCount).toBe(1);
+    expect(result.qualifiedLeadCount).toBe(3);
+    expect(result.periodDays).toBe(7);
+  });
 });

@@ -153,6 +153,52 @@ export class DashboardService {
   }
 
   /**
+   * 周报（报告 16.3 第 21 项，主线⑦复盘证明）：聚合近 N 天的内容→发布→互动→
+   * 线索→成交，作为「客户可读周报」的核心指标。
+   */
+  async getWeeklyReport(days = 7) {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const [
+      contentCount,
+      publishCount,
+      interactionCount,
+      leadCount,
+      convertedCount,
+      wonCount,
+      qualifiedLeadCount,
+    ] = await Promise.all([
+      this.prisma.article.count({ where: { createdAt: { gte: since } } }),
+      this.prisma.publishRecord.count({
+        where: { createdAt: { gte: since } },
+      }),
+      this.prisma.interactionTask.count({
+        where: { createdAt: { gte: since } },
+      }),
+      this.prisma.lead.count({ where: { createdAt: { gte: since } } }),
+      this.prisma.lead.count({
+        where: { createdAt: { gte: since }, status: 'converted' },
+      }),
+      this.prisma.crmOpportunity.count({
+        where: { createdAt: { gte: since }, stage: 'won' },
+      }),
+      this.prisma.lead.count({
+        where: { createdAt: { gte: since }, status: 'qualified' },
+      }),
+    ]);
+    return {
+      periodDays: days,
+      since: since.toISOString(),
+      contentCount,
+      publishCount,
+      interactionCount,
+      leadCount,
+      qualifiedLeadCount,
+      convertedCount,
+      wonCount,
+    };
+  }
+
+  /**
    * 统一任务中心（报告 16.3 第 14 项）：聚合 auto-upload / interaction /
    * local-engine / video-workshop 四套任务列表，归一成统一状态。
    */
