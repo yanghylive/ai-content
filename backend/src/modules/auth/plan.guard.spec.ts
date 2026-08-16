@@ -58,29 +58,32 @@ function makeGuard(
 }
 
 function makePersistedCloudEntitlements(plan = 'ADVANCED') {
-  return new EntitlementsService({
-    ensureDefaultTenantForUser: jest.fn().mockResolvedValue({
-      tenantId: 'tenant-1',
-      source: 'persisted-default',
-      role: 'operator',
-      permissions: [],
-      warnings: [],
-    }),
-    findCommercialEntitlementForTenant: jest.fn().mockResolvedValue({
-      id: 'entitlement-1',
-      tenantId: 'tenant-1',
-      source: 'kaypal-subscription',
-      plan,
-      status: 'active',
-      features: ['crm', 'growth', 'commercial-execution'],
-      commercialExecutionAllowed: true,
-      externalSubscriptionId: 'subscription-1',
-      periodStart: new Date('2026-07-01T00:00:00.000Z'),
-      periodEnd: new Date('2099-08-01T00:00:00.000Z'),
-      metadata: { provider: 'kaypal' },
-      updatedAt: new Date('2026-07-12T00:00:00.000Z'),
-    }),
-  } as any);
+  return new EntitlementsService(
+    {} as any,
+    {
+      ensureDefaultTenantForUser: jest.fn().mockResolvedValue({
+        tenantId: 'tenant-1',
+        source: 'persisted-default',
+        role: 'operator',
+        permissions: [],
+        warnings: [],
+      }),
+      findCommercialEntitlementForTenant: jest.fn().mockResolvedValue({
+        id: 'entitlement-1',
+        tenantId: 'tenant-1',
+        source: 'kaypal-subscription',
+        plan,
+        status: 'active',
+        features: ['crm', 'growth', 'commercial-execution'],
+        commercialExecutionAllowed: true,
+        externalSubscriptionId: 'subscription-1',
+        periodStart: new Date('2026-07-01T00:00:00.000Z'),
+        periodEnd: new Date('2099-08-01T00:00:00.000Z'),
+        metadata: { provider: 'kaypal' },
+        updatedAt: new Date('2026-07-12T00:00:00.000Z'),
+      }),
+    } as any,
+  );
 }
 
 describe('PlanGuard', () => {
