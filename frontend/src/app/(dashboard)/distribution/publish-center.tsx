@@ -444,7 +444,7 @@ export function PublishCenter() {
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           {[
             { key: "materials", title: "素材库", href: "/materials" },
-            { key: "accounts", title: "发布账号", href: "/platforms" },
+            { key: "accounts", title: "发布账号", href: "/distribution/accounts" },
             { key: "compliance", title: "合规检查", href: "/compliance" },
             { key: "engine", title: "发布引擎", href: "/local-engine" },
             { key: "logs", title: "发布日志", href: "/distribution/logs" },
