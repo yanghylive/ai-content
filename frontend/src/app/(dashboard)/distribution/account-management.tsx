@@ -49,6 +49,32 @@ function sessionStatusLabel(status?: string) {
   return "待验证";
 }
 
+// 统一生命周期状态（后端 deriveAccountLifecycle 返回）
+const LIFECYCLE_LABEL: Record<string, string> = {
+  unbound: "未绑定",
+  login_pending: "待校验",
+  online: "已登录",
+  degraded: "浏览器阻断",
+  expired: "登录失效",
+  reauth: "需要重新登录",
+  disabled: "已禁用",
+};
+const LIFECYCLE_TONE: Record<string, "success" | "warning" | "danger" | "muted"> = {
+  online: "success",
+  login_pending: "muted",
+  reauth: "warning",
+  degraded: "danger",
+  expired: "danger",
+  disabled: "danger",
+  unbound: "muted",
+};
+function lifecycleStatusTone(status?: string | null) {
+  return (status && LIFECYCLE_TONE[status]) || "muted";
+}
+function lifecycleStatusLabel(status?: string | null) {
+  return (status && LIFECYCLE_LABEL[status]) || "待验证";
+}
+
 export function AccountManagement() {
   const [accounts, setAccounts] = useState<AutoUploadAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,7 +180,13 @@ export function AccountManagement() {
           {displayAccounts.map((account, index) => {
             const session = findAccountCdpSession(ops.cdpSessions, account);
             const chip = cdpSessionChip(session);
-            const statusTone = sessionStatusTone(account.sessionStatus);
+            // 优先用后端统一生命周期状态，无则回退 sessionStatus
+            const statusTone = account.lifecycleStatus
+              ? lifecycleStatusTone(account.lifecycleStatus)
+              : sessionStatusTone(account.sessionStatus);
+            const statusLabel = account.lifecycleStatus
+              ? lifecycleStatusLabel(account.lifecycleStatus)
+              : sessionStatusLabel(account.sessionStatus);
             const storageLabel =
               session?.status === "ready"
                 ? "账号环境已接管"
@@ -182,7 +214,7 @@ export function AccountManagement() {
                     </div>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <V2StatusChip tone={statusTone}>
-                        {sessionStatusLabel(account.sessionStatus)}
+                        {statusLabel}
                       </V2StatusChip>
                       <V2StatusChip tone={chip.tone}>{chip.label}</V2StatusChip>
                       <span className="text-xs text-[var(--kaypal-v3-muted)]">

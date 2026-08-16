@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { assertMaterialFileSafe } from './material-file.guard';
+import { deriveAccountLifecycle, type AccountLifecycleStatus } from './account-lifecycle';
 import { ConfigService } from '@nestjs/config';
 import { safeText } from '../../common/text.utils';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
@@ -206,6 +207,8 @@ export type AutoUploadAccount = {
   statusLabel: string;
   avatarUpdatedAt?: string | null;
   sessionStatus?: string;
+  /** 统一生命周期状态（报告 16.3 第 12 项） */
+  lifecycleStatus?: AccountLifecycleStatus;
   lastDispatchAt?: string | null;
   lastDispatchOk?: boolean | null;
   lastDispatchReason?: string | null;
@@ -2517,6 +2520,21 @@ export class AutoUploadClient {
         : currentSessionBlocked
           ? 'error'
           : cfg.sessionStatus,
+      // 统一生命周期状态（报告 16.3 第 12 项）：前端/报表/授权判断共用
+      lifecycleStatus: deriveAccountLifecycle({
+        sessionStatus: currentSessionNeedsLogin
+          ? 'needs_login'
+          : currentSessionBlocked
+            ? 'error'
+            : cfg.sessionStatus,
+        statusLabel: currentSessionNeedsLogin
+          ? '需要重新登录'
+          : currentSessionBlocked
+            ? '浏览器阻断'
+            : cfg.statusLabel,
+        loggedIn: ready,
+        status: ready ? 1 : 0,
+      }),
       lastDispatchAt: cfg.lastDispatchAt ?? null,
       lastDispatchOk: cfg.lastDispatchOk ?? null,
       lastDispatchReason: cfg.lastDispatchReason ?? null,
