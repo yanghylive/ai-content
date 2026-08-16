@@ -243,6 +243,15 @@ export class LeadRepository {
           ? new Date(input.nextFollowUpAt)
           : null,
       },
+    }).catch(async (error: unknown) => {
+      // S0-P1-3 竞态：并发同 dedupeKey 撞唯一约束（P2002）时重查返回已有线索
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        return this.prisma.lead.findUniqueOrThrow({ where });
+      }
+      throw error;
     });
     this.events.emit({
       type: 'lead.created',
