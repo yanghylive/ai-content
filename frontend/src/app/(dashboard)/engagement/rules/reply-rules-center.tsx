@@ -32,14 +32,14 @@ export function ReplyRulesCenter() {
       stats={[
         { label: "待确认回复", value: pending === null ? "-" : pending, tone: pending ? "warning" : "success" },
       ]}
-      primaryAction={{ label: "配置回复规则", href: "/engagement/rules?legacy=1" }}
+      primaryAction={{ label: "配置回复规则", href: "/engagement" }}
       quickActions={[
         {
           key: "config",
           title: "规则配置",
           description: "设置自动回复的规则和话术",
           icon: Settings2,
-          href: "/engagement/rules?legacy=1",
+          href: "/engagement",
         },
         {
           key: "pending",
@@ -59,7 +59,7 @@ export function ReplyRulesCenter() {
       ]}
       advancedLinks={[
         { key: "insights", title: "评论线索", icon: MessageSquareText, href: "/engagement/comment-insights" },
-        { key: "new", title: "新建规则", icon: Plus, href: "/engagement/rules?legacy=1&action=new" },
+        { key: "new", title: "新建规则", icon: Plus, href: "/engagement" },
       ]}
     />
   );
