@@ -306,10 +306,10 @@ export function PublishCenter() {
               </p>
             </div>
             <Link
-              href="/local-engine"
+              href="/distribution/accounts"
               className="text-sm font-medium text-[var(--kaypal-v3-danger)] underline"
             >
-              去检查账号 →
+              去修复账号 →
             </Link>
           </div>
         </section>
