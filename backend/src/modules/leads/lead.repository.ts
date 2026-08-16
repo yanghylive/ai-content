@@ -22,6 +22,10 @@ export interface LeadUpsertInput {
   sourceAccountId?: string | null;
   sourceTaskId?: string | null;
   sourceRunId?: string | null;
+  // 六步闭环归因链：线索直接指向内容/发布/互动事件（15.4#7）
+  sourceArticleId?: string | null;
+  sourcePublishRecordId?: string | null;
+  sourceInteractionEventId?: string | null;
   sourceUrl?: string | null;
   sourceText?: string | null;
   commentRef?: string | null;
@@ -114,6 +118,14 @@ export class LeadRepository {
             existing.sourceAccountId ?? input.sourceAccountId ?? null,
           sourceTaskId: existing.sourceTaskId ?? input.sourceTaskId ?? null,
           sourceRunId: existing.sourceRunId ?? input.sourceRunId ?? null,
+          sourceArticleId:
+            existing.sourceArticleId ?? input.sourceArticleId ?? null,
+          sourcePublishRecordId:
+            existing.sourcePublishRecordId ?? input.sourcePublishRecordId ?? null,
+          sourceInteractionEventId:
+            existing.sourceInteractionEventId ??
+            input.sourceInteractionEventId ??
+            null,
           sourceUrl: existing.sourceUrl ?? input.sourceUrl ?? null,
           sourceText: existing.sourceText ?? input.sourceText ?? null,
           commentRef: input.commentRef ?? existing.commentRef ?? null,
@@ -133,6 +145,9 @@ export class LeadRepository {
         sourceAccountId: input.sourceAccountId ?? null,
         sourceTaskId: input.sourceTaskId ?? null,
         sourceRunId: input.sourceRunId ?? null,
+        sourceArticleId: input.sourceArticleId ?? null,
+        sourcePublishRecordId: input.sourcePublishRecordId ?? null,
+        sourceInteractionEventId: input.sourceInteractionEventId ?? null,
         sourceUrl: input.sourceUrl ?? null,
         sourceText: input.sourceText ?? null,
         commentRef: input.commentRef ?? null,

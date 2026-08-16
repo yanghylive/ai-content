@@ -2386,6 +2386,10 @@ model Lead {
   sourceAccountId String? @map("source_account_id") // 产生线索的平台账号 ID（如抖音/小红书账号）
   sourceTaskId    String? @map("source_task_id")
   sourceRunId     String? @map("source_run_id")
+  // 六步闭环归因链（15.4#7）：线索直接指向内容/发布/互动事件，不再只靠 sourceUrl 弱关联
+  sourceArticleId          String? @map("source_article_id")
+  sourcePublishRecordId    String? @map("source_publish_record_id")
+  sourceInteractionEventId String? @map("source_interaction_event_id")
   sourceUrl       String? @map("source_url") @db.Text
   sourceText      String? @map("source_text") @db.Text
   commentRef      String? @map("comment_ref") // 小红书评论序号（xiaohongshu 回复定位用，其他平台为 null）
