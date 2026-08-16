@@ -234,7 +234,12 @@ describe('DashboardService 归因链', () => {
       },
       interactionTask: {
         findMany: jest.fn().mockResolvedValue([
-          { id: 'it-1', sourceArticleId: 'article-1' },
+          { id: 'it-1', sourceArticleId: 'article-1', sourceUrl: 'https://douyin.com/comment/1' },
+        ]),
+      },
+      lead: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'lead-1', sourceUrl: 'https://douyin.com/comment/1' },
         ]),
       },
     };
@@ -249,8 +254,15 @@ describe('DashboardService 归因链', () => {
     expect(prisma.interactionTask.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { sourceArticleId: 'article-1' } }),
     );
+    // 互动 → 线索：sourceUrl 匹配
+    expect(prisma.lead.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { sourceUrl: { in: ['https://douyin.com/comment/1'] } },
+      }),
+    );
     expect(result.publishCount).toBe(2);
     expect(result.interactionCount).toBe(1);
+    expect(result.leadCount).toBe(1);
     expect(result.article).toMatchObject({ id: 'article-1' });
   });
 });
