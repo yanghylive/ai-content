@@ -7,14 +7,11 @@ import {
   V2PrimaryButton,
   V2GhostButton,
   V2DangerButton,
+  V2Input,
+  V2Textarea,
+  V2Select,
 } from "@/components/v2/ui-kit";
-import {
-  Input,
-  Select,
-  SelectItem,
-  Textarea,
-  addToast,
-} from "@heroui/react";
+import { addToast } from "@heroui/react";
 import {
   AlertTriangle,
   BookOpenCheck,
@@ -768,83 +765,126 @@ export function WechatOfficialAssistantClient() {
             <h2 className="text-[15px] font-semibold">创建文章流水线</h2>
           </div>
           <div className="space-y-3">
-            <Textarea
-              isRequired
-              label="运营目标"
-              minRows={2}
-              value={form.goal}
-              onValueChange={(goal) => setForm((value) => ({ ...value, goal }))}
-            />
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-              <Input
-                label="公众号或品牌"
-                value={form.accountName}
-                onValueChange={(accountName) =>
-                  setForm((value) => ({ ...value, accountName }))
-                }
-              />
-              <Input
-                isRequired
-                label="文章主题"
-                value={form.product}
-                onValueChange={(product) =>
-                  setForm((value) => ({ ...value, product }))
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                运营目标
+              </label>
+              <V2Textarea
+                required
+                rows={2}
+                value={form.goal}
+                onChange={(e) =>
+                  setForm((value) => ({ ...value, goal: e.target.value }))
                 }
               />
             </div>
-            <Input
-              isRequired
-              label="目标读者"
-              value={form.audience}
-              onValueChange={(audience) =>
-                setForm((value) => ({ ...value, audience }))
-              }
-            />
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-              <Input
-                label="作者"
-                value={form.author}
-                onValueChange={(author) =>
-                  setForm((value) => ({ ...value, author }))
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                  公众号或品牌
+                </label>
+                <V2Input
+                  value={form.accountName}
+                  onChange={(e) =>
+                    setForm((value) => ({
+                      ...value,
+                      accountName: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                  文章主题
+                </label>
+                <V2Input
+                  required
+                  value={form.product}
+                  onChange={(e) =>
+                    setForm((value) => ({ ...value, product: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                目标读者
+              </label>
+              <V2Input
+                required
+                value={form.audience}
+                onChange={(e) =>
+                  setForm((value) => ({ ...value, audience: e.target.value }))
                 }
               />
-              <Select
-                label="写作语气"
-                selectedKeys={[form.tone]}
-                onSelectionChange={(keys) => {
-                  const tone = String(Array.from(keys)[0] || form.tone);
-                  setForm((value) => ({ ...value, tone }));
-                }}
-              >
-                <SelectItem key="专业、清楚、证据优先">专业严谨</SelectItem>
-                <SelectItem key="深入浅出、步骤明确">教程讲解</SelectItem>
-                <SelectItem key="观点鲜明、克制可信">行业观点</SelectItem>
-              </Select>
             </div>
-            <Input
-              label="关键词"
-              value={form.keywords}
-              onValueChange={(keywords) =>
-                setForm((value) => ({ ...value, keywords }))
-              }
-            />
-            <Input
-              label="规范来源链接"
-              placeholder="https://"
-              type="url"
-              value={form.sourceUrl}
-              onValueChange={(sourceUrl) =>
-                setForm((value) => ({ ...value, sourceUrl }))
-              }
-            />
-            <Textarea
-              label="事实与参考素材"
-              minRows={4}
-              value={form.sourceMaterials}
-              onValueChange={(sourceMaterials) =>
-                setForm((value) => ({ ...value, sourceMaterials }))
-              }
-            />
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                  作者
+                </label>
+                <V2Input
+                  value={form.author}
+                  onChange={(e) =>
+                    setForm((value) => ({ ...value, author: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                  写作语气
+                </label>
+                <V2Select
+                  value={form.tone}
+                  onChange={(e) =>
+                    setForm((value) => ({ ...value, tone: e.target.value }))
+                  }
+                >
+                  <option value="专业、清楚、证据优先">专业严谨</option>
+                  <option value="深入浅出、步骤明确">教程讲解</option>
+                  <option value="观点鲜明、克制可信">行业观点</option>
+                </V2Select>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                关键词
+              </label>
+              <V2Input
+                value={form.keywords}
+                onChange={(e) =>
+                  setForm((value) => ({ ...value, keywords: e.target.value }))
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                规范来源链接
+              </label>
+              <V2Input
+                placeholder="https://"
+                type="url"
+                value={form.sourceUrl}
+                onChange={(e) =>
+                  setForm((value) => ({ ...value, sourceUrl: e.target.value }))
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                事实与参考素材
+              </label>
+              <V2Textarea
+                rows={4}
+                value={form.sourceMaterials}
+                onChange={(e) =>
+                  setForm((value) => ({
+                    ...value,
+                    sourceMaterials: e.target.value,
+                  }))
+                }
+              />
+            </div>
             <V2PrimaryButton
               className="w-full"
               disabled={
@@ -1062,18 +1102,21 @@ function JpagePreviewPanel({
         公众号文章私有双文件预览
       </div>
       {accounts.length ? (
-        <Select
-          label="公众号文章授权"
-          selectedKeys={accountId ? [accountId] : []}
-         
-          onSelectionChange={(keys) =>
-            onAccountChange(String(Array.from(keys)[0] || ""))
-          }
-        >
-          {accounts.map((item) => (
-            <SelectItem key={item.id}>{item.name}</SelectItem>
-          ))}
-        </Select>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            公众号文章授权
+          </label>
+          <V2Select
+            value={accountId}
+            onChange={(e) => onAccountChange(e.target.value)}
+          >
+            {accounts.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </V2Select>
+        </div>
       ) : (
         <Link
           href="/platforms"
@@ -1230,18 +1273,21 @@ function WechatDeliveryPanel({
         微信官方草稿与发布
       </div>
       {accounts.length ? (
-        <Select
-          label="目标公众号"
-          selectedKeys={accountId ? [accountId] : []}
-         
-          onSelectionChange={(keys) =>
-            onAccountChange(String(Array.from(keys)[0] || ""))
-          }
-        >
-          {accounts.map((item) => (
-            <SelectItem key={item.id}>{item.name}</SelectItem>
-          ))}
-        </Select>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            目标公众号
+          </label>
+          <V2Select
+            value={accountId}
+            onChange={(e) => onAccountChange(e.target.value)}
+          >
+            {accounts.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </V2Select>
+        </div>
       ) : (
         <Link
           href="/platforms"
