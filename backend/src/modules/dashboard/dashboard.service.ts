@@ -2,6 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 import { VideoWorkshopService } from '../video-workshop/video-workshop.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import {
   normalizeTaskStatus,
   type TaskModuleName,
@@ -106,7 +107,14 @@ export class DashboardService {
     private systemLogsService: SystemLogsService,
     @Optional()
     private readonly videoWorkshop?: VideoWorkshopService,
+    @Optional()
+    private readonly authRequestContext?: AuthRequestContextService,
   ) {}
+
+  /** 当前用户 ID（dashboard 统计按用户隔离；无上下文时 legacy 兜底） */
+  private resolveUserId(): string {
+    return this.authRequestContext?.get()?.user?.id?.trim() || 'legacy-local-user';
+  }
 
   // 获取最近的系统运行日志
   getSystemLogs(limit: number = 50) {
@@ -331,7 +339,11 @@ export class DashboardService {
     // 4. 获取今日最高光关键词 (今日生成的选题中分数最高的关键词之一)
     let topKeyword = '暂无数据';
     const recentHighTopics = await this.prisma.topic.findMany({
-      where: { createdAt: { gte: today }, aiScore: { gt: 80 } },
+      where: {
+        userId: this.resolveUserId(),
+        createdAt: { gte: today },
+        aiScore: { gt: 80 },
+      },
       select: { keywords: true },
       take: 20,
     });
@@ -631,7 +643,11 @@ export class DashboardService {
 
     // 1. 高分风向词 (近7天 aiScore > 80)
     const highTopics = await this.prisma.topic.findMany({
-      where: { createdAt: { gte: sevenDaysAgo }, aiScore: { gt: 80 } },
+      where: {
+        userId: this.resolveUserId(),
+        createdAt: { gte: sevenDaysAgo },
+        aiScore: { gt: 80 },
+      },
       select: { keywords: true },
     });
 
