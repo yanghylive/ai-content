@@ -736,6 +736,30 @@ export function createCrmOpportunity(input: {
   return api.post<CrmOpportunity>("/crm/opportunities", input);
 }
 
+export function getCrmOpportunity(id: string) {
+  return api.get<CrmOpportunity>(`/crm/opportunities/${encodeURIComponent(id)}`);
+}
+
+export function updateCrmOpportunity(
+  id: string,
+  input: {
+    name?: string;
+    stage?: string;
+    amountCents?: number;
+    probability?: number;
+    nextStep?: string;
+    closeDate?: string;
+    competitor?: string;
+    winReason?: string;
+    loseReason?: string;
+  },
+) {
+  return api.patch<CrmOpportunity>(
+    `/crm/opportunities/${encodeURIComponent(id)}`,
+    input,
+  );
+}
+
 export function archiveCrmOpportunity(id: string) {
   return api.post<CrmOpportunity>(`/crm/opportunities/${id}/archive`, {});
 }
