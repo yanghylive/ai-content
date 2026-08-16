@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Sparkles } from "lucide-react";
+import { ArrowLeft, FileUp, Save, Sparkles } from "lucide-react";
 import {
   V2Section,
   V2Field,
@@ -33,6 +33,9 @@ export function KnowledgeForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [titleTouched, setTitleTouched] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -66,6 +69,22 @@ export function KnowledgeForm() {
       setError(toPublicError(err, "保存失败，请稍后重试"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUploadFile = async () => {
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      await kaypalApi.uploadKnowledgeFile(formData);
+      router.push("/knowledge-base");
+    } catch (err: unknown) {
+      setError(toPublicError(err, "文件未上传，请重试。"));
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -127,6 +146,30 @@ export function KnowledgeForm() {
               </div>
               <span style={{ fontSize: 10.5, color: "var(--mx-muted)" }}>已从内容自动取了一个，不满意可以改</span>
             </label>
+          </div>
+
+          {/* 上传文件 */}
+          <div className="mx-section-head" style={{ marginTop: 14 }}>或上传知识文件</div>
+          <div className="mx-card" style={{ padding: 13 }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              style={{ fontSize: 12, color: "var(--mx-muted)" }}
+            />
+            {file ? (
+              <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 6 }}>{file.name} · {Math.ceil(file.size / 1024)} KB</p>
+            ) : null}
+            <button
+              type="button"
+              className="mx-btn-gold"
+              style={{ width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              disabled={!file || uploading}
+              onClick={() => void handleUploadFile()}
+            >
+              <FileUp width={14} height={14} />
+              {uploading ? "正在上传…" : "上传到本机知识库"}
+            </button>
           </div>
 
           {/* 同步 */}
@@ -222,6 +265,30 @@ export function KnowledgeForm() {
             </div>
           </V2Field>
         </div>
+      </V2Section>
+
+      <V2Section title="或上传知识文件" description="文件会先保存到本机知识库，需要团队共享时在列表里同步到云端">
+        <div className="flex items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="flex-1 text-sm text-[var(--kaypal-v3-muted)] file:mr-3 file:rounded-[var(--kaypal-v3-radius-sm)] file:border-0 file:bg-[var(--kaypal-v3-accent-soft)] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[var(--kaypal-v3-accent-ink)]"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+          />
+          <V2PrimaryButton
+            icon={FileUp}
+            loading={uploading}
+            disabled={!file}
+            onClick={handleUploadFile}
+          >
+            上传
+          </V2PrimaryButton>
+        </div>
+        {file ? (
+          <p className="mt-2 text-xs text-[var(--kaypal-v3-muted)]">
+            {file.name} · {Math.ceil(file.size / 1024)} KB
+          </p>
+        ) : null}
       </V2Section>
 
       <V2Section>
