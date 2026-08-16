@@ -55,13 +55,13 @@ export function PlatformsCenter() {
   return (
     <ResourceCenter
       title="发布平台"
-      subtitle="管理各平台的发布账号和授权状态"
+      subtitle="管理各平台的发布账号和授权状态 · 平台账号登录在发布中心处理"
       resourceName="平台账号"
       icon={Share2}
       items={items}
       loading={loading}
       onCreate={() => router.push("/platforms/new")}
-      onItemClick={(item) => router.push(`/platforms?account=${item.id}`)}
+      onItemClick={(item) => router.push(`/platforms/edit?id=${item.id}`)}
     />
   );
 }
