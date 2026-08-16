@@ -166,11 +166,29 @@ export function DistributionTasks() {
     void fetchTasks(page + 1, true);
   }, [loadingMore, page, totalPages, fetchTasks]);
 
+  // 轮询刷新：重拉所有已加载页（1..page），保留多页不丢（报告 4.4）
+  const refreshAll = useCallback(async () => {
+    try {
+      const results = await Promise.all(
+        Array.from({ length: page }, (_, i) =>
+          autoUploadApi.taskPage({ page: i + 1, pageSize: PAGE_SIZE }),
+        ),
+      );
+      const all = results.flatMap((r) =>
+        Array.isArray(r?.items) ? r.items : [],
+      );
+      setTasks(all);
+      setTotalPages(results[0]?.totalPages ?? totalPages);
+    } catch (err: unknown) {
+      setError(toPublicError(err, "发布任务暂时无法读取"));
+    }
+  }, [page, totalPages]);
+
   useEffect(() => {
     void fetchTasks();
   }, [fetchTasks]);
 
-  // 有进行中任务时自动轮询
+  // 有进行中任务时自动轮询（patch 全部已加载页，不重置到第一页）
   useEffect(() => {
     const hasActive = tasks.some(
       (t) => {
@@ -179,9 +197,9 @@ export function DistributionTasks() {
       },
     );
     if (!hasActive) return;
-    const timer = setInterval(() => void fetchTasks(), 5000);
+    const timer = setInterval(() => void refreshAll(), 5000);
     return () => clearInterval(timer);
-  }, [tasks, fetchTasks]);
+  }, [tasks, refreshAll]);
 
   const filtered = useMemo(
     () => tasks.filter((t) => matchFilter(t, filter)),
