@@ -134,6 +134,10 @@ cloud-api-server/.env.example
 !backend/.env.example
 !frontend/.env.example
 
+# 桌面端真实环境（含第三方密钥，不入库；模板见 desktop/backend.env.example）
+desktop/backend.env
+!desktop/backend.env.example
+
 # AI top-level file (tooling artifact)
 AI
 
