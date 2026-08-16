@@ -838,6 +838,15 @@ export class ArticlesService {
           const contentFormat: ArticleContentFormat =
             contentType === 'article' && templateHtml ? 'html' : 'markdown';
 
+          // 内容父子关系（报告 16.3 第 9 项）：同一选题下先到的是主版本，
+          // 后续生成的其他平台变体 parentId 指向主版本，建立父子关联。
+          const parentArticle = await this.prisma.article.findFirst({
+            where: { topicId: topic.id },
+            orderBy: { createdAt: 'asc' },
+            select: { id: true },
+          });
+          const parentId = parentArticle?.id ?? null;
+
           const config = await this.defaultModels.getDefaults();
           if (!config.articleCreation) {
             throw new HttpException(
@@ -909,6 +918,7 @@ export class ArticlesService {
                 status: 'draft',
                 ...ownerScope,
                 topicId: topic.id,
+                parentId,
                 styleId: articleStyle?.id,
                 templateId: null,
                 modelId: config.articleCreation,
@@ -987,6 +997,7 @@ export class ArticlesService {
               status: 'draft',
               ...ownerScope,
               topicId: topic.id,
+              parentId,
               styleId: articleStyle?.id,
               templateId: articleTemplate?.id,
               modelId: config.articleCreation,
