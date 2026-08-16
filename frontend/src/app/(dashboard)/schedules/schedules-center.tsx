@@ -8,10 +8,9 @@ import { schedulesApi, type ScheduleConfig } from "@/lib/api/schedules";
 import { toPublicError } from "@/lib/public-error";
 
 const TASK_TYPE_LABELS: Record<string, string> = {
-  "create-articles": "自动生成文章",
-  "publish-articles": "自动发布文章",
-  "sync-intelligence": "同步情报数据",
-  "check-accounts": "检查账号状态",
+  collect_materials: "自动采集素材",
+  mine_materials: "自动挖掘素材",
+  create_articles: "自动生成文章",
 };
 
 function taskTypeLabel(taskType: string) {
