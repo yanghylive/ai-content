@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, RefreshCcw, ShieldAlert } from "lucide-react";
 import { api } from "@/lib/api/client";
-import { localEngineApi } from "@/lib/api/local-engine";
+import { localEngineApi, riskPolicyApi, type RiskPolicy } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
 import {
   V2EmptyState,
@@ -14,15 +14,7 @@ import {
   V2StatusChip,
 } from "@/components/v2/ui-kit";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-
-interface RiskPolicy {
-  action: string;
-  riskLevel: string;
-  requireConfirm?: boolean;
-  autoExecute?: boolean;
-  forbidden?: boolean;
-  description?: string;
-}
+import { DefaultSendModeSection } from "./default-send-mode-section";
 
 const ACTION_LABELS: Record<string, string> = {
   "agent-confirmation-approve": "批准智能任务执行",
@@ -50,6 +42,10 @@ export function RiskCenter() {
   const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // 策略编辑草稿：action → 待保存的字段改动
+  const [draft, setDraft] = useState<Record<string, Partial<RiskPolicy>>>({});
+  const [savingAction, setSavingAction] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -60,6 +56,7 @@ export function RiskCenter() {
         localEngineApi.confirmations().catch(() => []),
       ]);
       setPolicies(Array.isArray(policyData) ? policyData : []);
+      setDraft({});
       setPendingCount(
         (Array.isArray(confirmations) ? confirmations : []).filter(
           (c) => c.status === "pending",
@@ -75,6 +72,46 @@ export function RiskCenter() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  /** 切换某个策略的开关，写入草稿 */
+  const togglePolicy = (
+    action: string,
+    field: "requireConfirm" | "autoExecute" | "forbidden",
+    value: boolean,
+  ) => {
+    setSaveError(null);
+    setDraft((prev) => ({
+      ...prev,
+      [action]: { ...prev[action], [field]: value },
+    }));
+  };
+
+  /** 保存某个策略的草稿改动 */
+  const savePolicy = async (policy: RiskPolicy) => {
+    const changes = draft[policy.action];
+    if (!changes) return;
+    setSavingAction(policy.action);
+    setSaveError(null);
+    try {
+      const updated = await riskPolicyApi.update(policy.action, changes);
+      setPolicies((prev) =>
+        prev.map((p) => (p.action === updated.action ? updated : p)),
+      );
+      setDraft((prev) => {
+        const next = { ...prev };
+        delete next[policy.action];
+        return next;
+      });
+    } catch (err: unknown) {
+      setSaveError(toPublicError(err, "风控策略未能更新，请稍后重试。"));
+    } finally {
+      setSavingAction(null);
+    }
+  };
+
+  /** 草稿值（未保存时优先用草稿，否则用策略当前值） */
+  const getVal = (policy: RiskPolicy, field: "requireConfirm" | "autoExecute" | "forbidden") =>
+    draft[policy.action]?.[field] ?? policy[field];
 
   const levelTone = (level?: string) => {
     if (level === "high") return "danger" as const;
@@ -137,13 +174,41 @@ export function RiskCenter() {
                     {policy.description ? (
                       <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.45 }}>{policy.description}</p>
                     ) : null}
-                    <div style={{ marginTop: 8 }}>
-                      <span className={`mx-badge ${policy.forbidden ? "mx-badge-red" : policy.requireConfirm ? "mx-badge-gold" : "mx-badge-green"}`} style={{ fontSize: 10 }}>
-                        {policy.forbidden ? "禁止" : policy.requireConfirm ? "需确认" : "自动执行"}
-                      </span>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 9 }}>
+                      {(
+                        [
+                          ["requireConfirm", "需确认"],
+                          ["autoExecute", "自动执行"],
+                          ["forbidden", "禁止"],
+                        ] as const
+                      ).map(([field, label]) => (
+                        <label key={field} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--mx-muted)" }}>
+                          <input
+                            type="checkbox"
+                            checked={getVal(policy, field)}
+                            onChange={(e) => togglePolicy(policy.action, field, e.target.checked)}
+                            style={{ width: 15, height: 15, accentColor: "var(--mx-accent, #de9639)" }}
+                          />
+                          {label}
+                        </label>
+                      ))}
                     </div>
+                    {draft[policy.action] ? (
+                      <button
+                        type="button"
+                        className="mx-btn-gold"
+                        style={{ width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+                        disabled={savingAction === policy.action}
+                        onClick={() => void savePolicy(policy)}
+                      >
+                        {savingAction === policy.action ? "正在保存…" : "保存"}
+                      </button>
+                    ) : null}
                   </div>
                 ))}
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <DefaultSendModeSection />
               </div>
             </>
           )}
@@ -184,6 +249,12 @@ export function RiskCenter() {
         </p>
       )}
 
+      {saveError && (
+        <p className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4 text-sm text-[var(--kaypal-v3-danger)]">
+          {saveError}
+        </p>
+      )}
+
       {loading ? (
         <div className="py-10 text-center">
           <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
@@ -197,34 +268,76 @@ export function RiskCenter() {
       ) : (
         <V2Section title={`风控策略（${policies.length}）`}>
           <div className="flex flex-col gap-3">
-            {policies.map((policy) => (
-              <div
-                key={policy.action}
-                className="kaypal-v3-surface flex items-center justify-between p-4"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
-                      {formatAction(policy.action)}
-                    </p>
-                    <V2StatusChip tone={levelTone(policy.riskLevel)}>
-                      {levelLabel(policy.riskLevel)}
-                    </V2StatusChip>
+            {policies.map((policy) => {
+              const changed = Boolean(draft[policy.action]);
+              const v = getVal(policy, "forbidden");
+              const rc = getVal(policy, "requireConfirm");
+              const ae = getVal(policy, "autoExecute");
+              return (
+                <div
+                  key={policy.action}
+                  className="kaypal-v3-surface flex items-center justify-between gap-4 p-4"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
+                        {formatAction(policy.action)}
+                      </p>
+                      <V2StatusChip tone={levelTone(policy.riskLevel)}>
+                        {levelLabel(policy.riskLevel)}
+                      </V2StatusChip>
+                    </div>
+                    {policy.description ? (
+                      <p className="mt-0.5 truncate text-xs text-[var(--kaypal-v3-muted)]">
+                        {policy.description}
+                      </p>
+                    ) : null}
                   </div>
-                  {policy.description ? (
-                    <p className="mt-0.5 truncate text-xs text-[var(--kaypal-v3-muted)]">
-                      {policy.description}
-                    </p>
-                  ) : null}
+                  <div className="flex items-center gap-4">
+                    {(
+                      [
+                        ["requireConfirm", "需确认"],
+                        ["autoExecute", "自动执行"],
+                        ["forbidden", "禁止"],
+                      ] as const
+                    ).map(([field, label]) => (
+                      <label
+                        key={field}
+                        className="flex cursor-pointer items-center gap-1.5 text-xs text-[var(--kaypal-v3-muted)]"
+                      >
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 accent-[var(--kaypal-v3-accent)]"
+                          checked={getVal(policy, field)}
+                          onChange={(e) =>
+                            togglePolicy(policy.action, field, e.target.checked)
+                          }
+                        />
+                        {label}
+                      </label>
+                    ))}
+                    <V2StatusChip tone={v ? "danger" : rc ? "warning" : ae ? "success" : "success"}>
+                      {v ? "禁止" : rc ? "需确认" : "自动执行"}
+                    </V2StatusChip>
+                    {changed ? (
+                      <V2PrimaryButton
+                        loading={savingAction === policy.action}
+                        onClick={() => void savePolicy(policy)}
+                      >
+                        保存
+                      </V2PrimaryButton>
+                    ) : (
+                      <V2GhostButton disabled>保存</V2GhostButton>
+                    )}
+                  </div>
                 </div>
-                <V2StatusChip tone={policy.forbidden ? "danger" : policy.requireConfirm ? "warning" : "success"}>
-                  {policy.forbidden ? "禁止" : policy.requireConfirm ? "需确认" : "自动执行"}
-                </V2StatusChip>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </V2Section>
       )}
+
+      <DefaultSendModeSection />
     </div>
   );
 }
