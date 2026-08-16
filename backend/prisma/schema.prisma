@@ -3173,3 +3173,27 @@ model ContentAssetVersion {
   @@index([assetType, assetId, createdAt])
   @@map("content_asset_versions")
 }
+
+// 内容计划（六步闭环 15.4#8 补 / 报告 3.1 ContentPlan）：
+// 从「写文章」升级为「创建内容任务包」——说明为什么做这条内容、怎么算成功。
+model ContentPlan {
+  id            String   @id @default(cuid())
+  tenantId      String?  @map("tenant_id")
+  userId        String   @map("user_id")
+  actorUserId   String?  @map("actor_user_id")
+  name          String
+  goal          String // 品牌认知 / 教育 / 咨询 / 留资 / 转化
+  audience      String?  @db.Text // 目标受众
+  coreClaim     String?  @map("core_claim") @db.Text // 核心主张
+  offer         String?  @db.Text // Offer / CTA
+  platforms     Json     @default("[]") // 平台计划（平台/形式/时间窗口）
+  successMetric String?  @map("success_metric") // 衡量指标
+  evidenceRefs  Json     @default("[]") @map("evidence_refs") // 证据来源
+  status        String   @default("draft") // draft | active | archived
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, userId, status])
+  @@index([status])
+  @@map("content_plans")
+}
