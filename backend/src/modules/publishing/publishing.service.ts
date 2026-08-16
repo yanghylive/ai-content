@@ -796,13 +796,23 @@ export class PublishingService {
           ? (error as { code: string }).code
           : '';
       if (code === 'P2002') {
+        // S0-P1-4：重复请求幂等返回已有记录，不抛 400（防重复发布）
         const existing = await this.prisma.publishRecord.findUnique({
           where: { id: durableRecordId },
-          select: { status: true },
+          select: { id: true, status: true },
         });
-        throw new BadRequestException(
-          `相同账号和文章版本已有发布记录（${existing?.status || 'unknown'}），请先完成状态回查，禁止重复提交。`,
-        );
+        if (existing) {
+          return {
+            success: existing.status === 'success',
+            status:
+              existing.status === 'success' ? 'completed' : 'waiting',
+            articleId: article.id,
+            publishRecordId: existing.id,
+            durableRecordId,
+            readback: null,
+          };
+        }
+        throw new BadRequestException('发布记录冲突，请重试');
       }
       throw error;
     }
