@@ -742,15 +742,26 @@ export class AiClientService {
   }
 
   private async findReusableKaypalSession() {
+    // 服务商模式：仅允许显式配置的计费主体（KAYPAL_BILLING_USER_ID）。
+    // 不再从全库任意挑 session 复用——消除「跨用户计费/配额归属错误」。
+    // 未配置计费主体时返回 null，调用方 fail-closed（不猜计费主体）。
+    const billingUserId = this.config
+      .get<string>('KAYPAL_BILLING_USER_ID')
+      ?.trim();
+    if (!billingUserId) {
+      return null;
+    }
+
     const sessions = await this.prisma.userSession.findMany({
       where: {
         expiresAt: { gt: new Date() },
+        user: { kaypalUserId: billingUserId },
       },
       include: {
         user: true,
       },
       orderBy: { updatedAt: 'desc' },
-      take: 50,
+      take: 1,
     });
 
     const isAcceptanceOnlySession = (
