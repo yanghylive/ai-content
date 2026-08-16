@@ -74,6 +74,7 @@ desktop/installer/wheelhouse/*/
 backend/dist-bundle/
 backend/dist-bundle-sqlite/
 backend/dev.db
+backend/ai-content-dev.db
 
 # Desktop packaged runtime/output snapshots
 desktop/dist.bak-*/
