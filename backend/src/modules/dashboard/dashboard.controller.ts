@@ -19,6 +19,12 @@ export class DashboardController {
     return this.service.resolveContentAttribution(articleId);
   }
 
+  @Get('task-center')
+  @ApiOperation({ summary: '统一任务中心：聚合各模块任务（报告 16.3 第 14 项）' })
+  getTaskCenter(@Query('limit') limit?: number) {
+    return this.service.unifiedTaskCenter(limit ? Number(limit) : 50);
+  }
+
   @Get('system-logs')
   @ApiOperation({ summary: '获取最新系统运行日志' })
   @ApiQuery({

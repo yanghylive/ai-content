@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
+import {
+  normalizeTaskStatus,
+  type TaskModuleName,
+  type UnifiedTaskStatus,
+} from './unified-task-status';
 
 export type RiskAuditEvidence = {
   id: string;
@@ -142,6 +147,69 @@ export class DashboardService {
       interactionTasks,
       leads,
     };
+  }
+
+  /**
+   * 统一任务中心（报告 16.3 第 14 项）：聚合 auto-upload / interaction /
+   * local-engine 三套任务列表，归一成统一状态，供任务中心统一展示。
+   */
+  async unifiedTaskCenter(limit = 50) {
+    const take = Math.min(Math.max(limit, 1), 100);
+    const [publishRecords, interactionTasks, runtimeExecutions] =
+      await Promise.all([
+        this.prisma.publishRecord.findMany({
+          where: { status: { in: ['pending', 'failed'] } },
+          orderBy: { updatedAt: 'desc' },
+          take,
+        }),
+        this.prisma.interactionTask.findMany({
+          where: {
+            status: {
+              notIn: ['COMPLETED', 'SKIPPED', 'NO_TARGET'],
+            },
+          },
+          orderBy: { updatedAt: 'desc' },
+          take,
+        }),
+        this.prisma.runtimeExecution.findMany({
+          where: { status: { notIn: ['completed', 'done', 'success'] } },
+          orderBy: { updatedAt: 'desc' },
+          take,
+        }),
+      ]);
+
+    type UnifiedTaskItem = {
+      module: TaskModuleName;
+      id: string;
+      title: string;
+      status: UnifiedTaskStatus;
+      updatedAt: Date;
+    };
+    const items: UnifiedTaskItem[] = [
+      ...publishRecords.map((r) => ({
+        module: 'auto-upload' as const,
+        id: r.id,
+        title: r.publishUrl || r.accountId || `发布任务 ${r.id}`,
+        status: normalizeTaskStatus('auto-upload', r.status),
+        updatedAt: r.updatedAt,
+      })),
+      ...interactionTasks.map((t) => ({
+        module: 'interaction' as const,
+        id: t.id,
+        title: t.currentTarget || t.taskType || `互动任务 ${t.id}`,
+        status: normalizeTaskStatus('interaction', t.status),
+        updatedAt: t.updatedAt,
+      })),
+      ...runtimeExecutions.map((e) => ({
+        module: 'local-engine' as const,
+        id: e.id,
+        title: e.userMessage || e.taskType || `执行任务 ${e.id}`,
+        status: normalizeTaskStatus('local-engine', e.status),
+        updatedAt: e.updatedAt,
+      })),
+    ].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+
+    return { total: items.length, items: items.slice(0, take) };
   }
 
   async getRiskAuditEvidence(limit: number = 50) {
