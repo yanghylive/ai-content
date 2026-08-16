@@ -51,9 +51,12 @@ export function CrmCenter() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  // ?action=new 进入时自动打开「新增客户」弹窗（承接 legacy 的快速新增入口）
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  // ?action=new 进入时自动打开「新增客户」弹窗；?filter=follow-up 进入时过滤待跟进客户
   useEffect(() => {
     if (searchParams.get("action") === "new") setShowCreateModal(true);
+    const filter = searchParams.get("filter");
+    setActiveFilter(filter === "follow-up" ? "follow-up" : null);
   }, [searchParams]);
   const [stats, setStats] = useState({
     total: 0,
@@ -379,7 +382,12 @@ export function CrmCenter() {
           </div>
         ) : (
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
-            {customers.map((customer) => {
+            {(activeFilter === "follow-up"
+              ? customers.filter(
+                  (c) => c.status === "follow_up" || c.status === "following",
+                )
+              : customers
+            ).map((customer) => {
               const status = STATUS_LABELS[customer.status] || {
                 label: customer.status,
                 tone: "muted" as const,
