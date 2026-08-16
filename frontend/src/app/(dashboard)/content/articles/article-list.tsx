@@ -25,6 +25,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { addToast } from "@heroui/react";
 import { articlesApi, type Article } from "@/lib/api/articles";
+import { dashboardApi } from "@/lib/api/dashboard";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -59,6 +60,9 @@ export function ArticleList({
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [attribution, setAttribution] = useState<
+    Record<string, { publishCount: number; interactionCount: number }>
+  >({});
 
   const fetchArticles = useCallback(async () => {
     try {
@@ -68,6 +72,28 @@ export function ArticleList({
         ? data
         : (data as { items?: Article[] }).items || [];
       setArticles(list);
+      // 归因链（阶段 B）：批量查每篇内容的发布数/互动数（前 20 篇）
+      void Promise.all(
+        list.slice(0, 20).map(async (a) => {
+          try {
+            const att = await dashboardApi.contentAttribution(a.id);
+            return [a.id, att] as const;
+          } catch {
+            return [a.id, null] as const;
+          }
+        }),
+      ).then((rows) => {
+        const map: Record<string, { publishCount: number; interactionCount: number }> = {};
+        for (const [id, att] of rows) {
+          if (att) {
+            map[id] = {
+              publishCount: att.publishCount,
+              interactionCount: att.interactionCount,
+            };
+          }
+        }
+        setAttribution(map);
+      });
     } catch (err: unknown) {
       setError(toPublicError(err, "加载内容失败"));
     } finally {
@@ -284,6 +310,12 @@ export function ArticleList({
                           ? ` ${new Date(article.createdAt).toLocaleString("zh-CN")}`
                           : ""}
                       </p>
+                      {attribution[article.id] ? (
+                        <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+                          发布 {attribution[article.id].publishCount} 次 · 互动{" "}
+                          {attribution[article.id].interactionCount} 条
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

@@ -159,6 +159,19 @@ export const dashboardApi = {
     });
   },
 
+  // 内容归因链（阶段 B）：发布记录 + 互动任务
+  contentAttribution(articleId: string, signal?: AbortSignal) {
+    return api.get<{
+      article: { id: string; title: string } | null;
+      publishCount: number;
+      interactionCount: number;
+      publishRecords: Array<{ id: string }>;
+      interactionTasks: Array<{ id: string }>;
+    }>(`/dashboard/content-attribution/${encodeURIComponent(articleId)}`, {
+      signal,
+    });
+  },
+
   // 系统运行日志
   systemLogs(limit: number = 50, signal?: AbortSignal) {
     return api.get<SystemLog[]>(`/dashboard/system-logs?limit=${limit}`, {
