@@ -13,6 +13,7 @@ import {
   MessageCircle,
   PenLine,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import {
   V2Section,
@@ -20,7 +21,9 @@ import {
   V2GhostButton,
   V2EmptyState,
   V2PrimaryButton,
+  V2DangerButton,
 } from "@/components/v2/ui-kit";
+import { addToast } from "@heroui/react";
 import { articlesApi, type Article } from "@/lib/api/articles";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
@@ -71,6 +74,27 @@ export function ArticleList({
       setLoading(false);
     }
   }, [contentType]);
+
+  const handleDelete = useCallback(
+    async (article: Article) => {
+      const title = article.title || "未命名";
+      if (!window.confirm(`确定删除「${title}」吗？删除后不可恢复。`)) {
+        return;
+      }
+      try {
+        await articlesApi.remove(article.id);
+        addToast({ title: "删除成功", color: "success" });
+        void fetchArticles();
+      } catch (err: unknown) {
+        addToast({
+          title: "删除失败",
+          description: toPublicError(err, "内容未能删除，请稍后重试。"),
+          color: "danger",
+        });
+      }
+    },
+    [fetchArticles],
+  );
 
   useEffect(() => {
     void fetchArticles();
@@ -136,27 +160,38 @@ export function ArticleList({
                       : status.tone === "danger" ? "mx-badge mx-badge-red"
                         : "mx-badge";
                 return (
-                  <button
+                  <div
                     key={article.id}
-                    type="button"
                     className="mx-row"
                     style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
-                    onClick={() => openArticle(article)}
                   >
-                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
-                      {isXhs ? <MessageCircle size={18} /> : <PenLine size={18} />}
-                    </span>
-                    <div className="mx-row-main">
-                      <div className="mx-row-title">{displayTitle}</div>
-                      <div className="mx-row-desc">
-                        {article.createdAt ? new Date(article.createdAt).toLocaleString("zh-CN") : ""}
+                    <button
+                      type="button"
+                      onClick={() => openArticle(article)}
+                      style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", padding: 0 }}
+                    >
+                      <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                        {isXhs ? <MessageCircle size={18} /> : <PenLine size={18} />}
+                      </span>
+                      <div className="mx-row-main" style={{ flex: 1, minWidth: 0 }}>
+                        <div className="mx-row-title">{displayTitle}</div>
+                        <div className="mx-row-desc">
+                          {article.createdAt ? new Date(article.createdAt).toLocaleString("zh-CN") : ""}
+                        </div>
                       </div>
-                    </div>
-                    <div className="mx-row-right">
+                    </button>
+                    <div className="mx-row-right" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                       <span className={badgeClass}>{status.label}</span>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="#b9c5d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="m9 18 6-6-6-6" /></svg>
+                      <button
+                        type="button"
+                        aria-label={`删除${displayTitle}`}
+                        onClick={() => handleDelete(article)}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 8, background: "none", border: "none", color: "#dc2626", cursor: "pointer", flexShrink: 0 }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                  </button>
+                  </div>
                 );
               })
             )}
@@ -251,28 +286,36 @@ export function ArticleList({
                       </p>
                     </div>
                   </div>
-                  {isXhs ? (
-                    // 产品约束：小红书笔记只允许预览/下载，不允许编辑和分发
-                    <V2GhostButton
-                      icon={ArrowRight}
-                      onClick={() =>
-                        router.push(
-                          `/content/xiaohongshu?legacy=1&note=${article.id}`,
-                        )
-                      }
+                  <div className="flex items-center gap-2">
+                    {isXhs ? (
+                      // 产品约束：小红书笔记只允许预览/下载，不允许编辑和分发
+                      <V2GhostButton
+                        icon={ArrowRight}
+                        onClick={() =>
+                          router.push(
+                            `/content/xiaohongshu?legacy=1&note=${article.id}`,
+                          )
+                        }
+                      >
+                        预览/下载
+                      </V2GhostButton>
+                    ) : (
+                      <V2GhostButton
+                        icon={ArrowRight}
+                        onClick={() =>
+                          router.push(`/content/workspace?article=${article.id}`)
+                        }
+                      >
+                        打开
+                      </V2GhostButton>
+                    )}
+                    <V2DangerButton
+                      icon={Trash2}
+                      onClick={() => handleDelete(article)}
                     >
-                      预览/下载
-                    </V2GhostButton>
-                  ) : (
-                    <V2GhostButton
-                      icon={ArrowRight}
-                      onClick={() =>
-                        router.push(`/content/workspace?article=${article.id}`)
-                      }
-                    >
-                      打开
-                    </V2GhostButton>
-                  )}
+                      删除
+                    </V2DangerButton>
+                  </div>
                 </div>
               );
             })}
