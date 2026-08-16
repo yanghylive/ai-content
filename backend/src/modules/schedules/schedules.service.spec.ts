@@ -176,7 +176,12 @@ describe('SchedulesService risk gates', () => {
       }),
     });
     expect(prisma.scheduleConfig.update).toHaveBeenCalledWith({
-      where: { taskType: 'create_articles' },
+      where: {
+        userId_taskType: {
+          userId: 'legacy-local-user',
+          taskType: 'create_articles',
+        },
+      },
       data: {
         lastRunTime: expect.any(Date),
         config: { autoPublish: false },

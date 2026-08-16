@@ -232,6 +232,7 @@ export class PrismaService
       `CREATE INDEX IF NOT EXISTS attribution_links_from_idx ON attribution_links(from_type, from_id)`,
       `CREATE TABLE IF NOT EXISTS schedule_configs (
         id TEXT PRIMARY KEY NOT NULL,
+        user_id TEXT NOT NULL DEFAULT 'legacy-local-user',
         task_type TEXT NOT NULL,
         cron_expr TEXT NOT NULL,
         enabled BOOLEAN NOT NULL DEFAULT false,
@@ -240,7 +241,7 @@ export class PrismaService
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
       )`,
-      `CREATE UNIQUE INDEX IF NOT EXISTS schedule_configs_task_type_key ON schedule_configs(task_type)`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS schedule_configs_user_task_key ON schedule_configs(user_id, task_type)`,
       `CREATE TABLE IF NOT EXISTS app_install_states (
         id TEXT PRIMARY KEY NOT NULL,
         user_id TEXT NOT NULL,
