@@ -16,6 +16,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { OpportunityDetailModal } from "./opportunity-detail";
 
 interface Opportunity {
   id: string;
@@ -42,6 +43,7 @@ export function CrmCloserCenter() {
   const [items, setItems] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -122,7 +124,7 @@ export function CrmCloserCenter() {
                   type="button"
                   className="mx-row"
                   style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
-                  onClick={() => router.push(o.customerId ? `/crm/customer?id=${o.customerId}` : "/crm")}
+                  onClick={() => setSelectedId(o.id)}
                 >
                   <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
                     <Target size={18} strokeWidth={1.8} />
@@ -143,6 +145,13 @@ export function CrmCloserCenter() {
             </div>
           )}
         </div>
+        {selectedId && (
+          <OpportunityDetailModal
+            opportunityId={selectedId}
+            onClose={() => setSelectedId(null)}
+            onChanged={() => void load()}
+          />
+        )}
       </div>
     );
   }
@@ -196,7 +205,7 @@ export function CrmCloserCenter() {
                 key={o.id}
                 type="button"
                 className="kaypal-v3-panel flex items-center justify-between p-5 text-left transition hover:border-[var(--kaypal-v3-accent)]"
-                onClick={() => router.push(o.customerId ? `/crm/customer?id=${o.customerId}` : "/crm")}
+                onClick={() => setSelectedId(o.id)}
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -215,6 +224,14 @@ export function CrmCloserCenter() {
             ))}
           </div>
         </V2Section>
+      )}
+
+      {selectedId && (
+        <OpportunityDetailModal
+          opportunityId={selectedId}
+          onClose={() => setSelectedId(null)}
+          onChanged={() => void load()}
+        />
       )}
     </div>
   );
