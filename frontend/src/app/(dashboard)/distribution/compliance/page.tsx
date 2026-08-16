@@ -1,7 +1,5 @@
-import { HybridRoute } from "@/components/v2/hybrid-route";
-import { ComplianceCenter } from "./compliance-center";
-import LegacyPage from "./page-legacy";
+import { ComplianceWorkbench } from "./compliance-workbench";
 
 export default function Page() {
-  return <HybridRoute v2={<ComplianceCenter />} legacy={<LegacyPage />} />;
+  return <ComplianceWorkbench />;
 }

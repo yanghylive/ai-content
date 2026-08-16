@@ -1,5 +1,5 @@
-import { ComplianceCenter } from "../distribution/compliance/compliance-center";
+import { ComplianceWorkbench } from "../distribution/compliance/compliance-workbench";
 
-export default function ComplianceV2Page() {
-  return <ComplianceCenter />;
+export default function CompliancePage() {
+  return <ComplianceWorkbench />;
 }
