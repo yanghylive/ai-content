@@ -5,7 +5,7 @@ import { SkeletonRow } from "@/components/skeleton";
 import { BrandLogo } from "@/components/brand-logo";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Building2,
   ChevronRight,
@@ -49,7 +49,12 @@ const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning"
 
 export function CrmCenter() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  // ?action=new 进入时自动打开「新增客户」弹窗（承接 legacy 的快速新增入口）
+  useEffect(() => {
+    if (searchParams.get("action") === "new") setShowCreateModal(true);
+  }, [searchParams]);
   const [stats, setStats] = useState({
     total: 0,
     newThisWeek: 0,
