@@ -27,16 +27,19 @@ function batchStatusLabel(status: string) {
 export function CrmImportCenter() {
   const [batches, setBatches] = useState<CrmImportBatch[]>([]);
   const [loadingBatches, setLoadingBatches] = useState(false);
+  const [batchesError, setBatchesError] = useState<string | null>(null);
   const [rollingBackId, setRollingBackId] = useState<string | null>(null);
   const [rollbackMsg, setRollbackMsg] = useState<string | null>(null);
 
   const loadBatches = useCallback(async () => {
     setLoadingBatches(true);
+    setBatchesError(null);
     try {
       const list = await listCrmImportBatches();
       setBatches(Array.isArray(list) ? list : []);
-    } catch {
-      // 导入记录加载失败不阻断主流程
+    } catch (err: unknown) {
+      // 报告 7.5：导入历史加载失败不得静默显示空
+      setBatchesError(toPublicError(err, "导入记录加载失败"));
     } finally {
       setLoadingBatches(false);
     }
@@ -107,7 +110,7 @@ export function CrmImportCenter() {
       />
 
       {/* 导入记录（审计留痕 + 回滚） */}
-      {batches.length > 0 && (
+      {(batches.length > 0 || batchesError) && (
         <section className="kaypal-v3-panel p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -124,6 +127,17 @@ export function CrmImportCenter() {
           </div>
           {loadingBatches ? (
             <p className="mt-3 text-sm text-[var(--kaypal-v3-muted)]">加载中…</p>
+          ) : batchesError ? (
+            <div className="mt-3 flex items-center justify-between">
+              <p className="text-sm text-[var(--kaypal-v3-danger)]">{batchesError}</p>
+              <button
+                type="button"
+                className="text-sm text-[var(--kaypal-v3-accent-ink)] underline"
+                onClick={() => void loadBatches()}
+              >
+                重试
+              </button>
+            </div>
           ) : (
             <div className="mt-3 flex flex-col gap-2">
               {batches.map((batch) => {
