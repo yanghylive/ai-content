@@ -863,6 +863,10 @@ export interface InteractionTask {
   updatedAt: string;
   completedAt?: string;
   failureReason?: string;
+  // 互动承接 SLA（报告 16.3 第 15 项）：待处理超时 + 转人工标记
+  slaDueAt?: string;
+  handoffState?: "normal" | "needs_human";
+  handoffReason?: string;
   failureContext?: LocalEngineFailureContext;
   blockers?: LocalEngineActionBlocker[];
   nextAction?: string;

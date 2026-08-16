@@ -8,7 +8,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { ScenePage } from "@/components/shell/scene-page";
 import { ShellIcon } from "@/components/shell/icons";
-import { localEngineApi, type AgentConfirmation } from "@/lib/api/local-engine";
+import { localEngineApi, type AgentConfirmation, type InteractionTask } from "@/lib/api/local-engine";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export default function MessageScene() {
@@ -16,19 +16,29 @@ export default function MessageScene() {
   const [waitingCount, setWaitingCount] = React.useState(0);
   const [confirmations, setConfirmations] = React.useState<AgentConfirmation[]>([]);
   const [confirmationsLoading, setConfirmationsLoading] = React.useState(true);
+  const [inbox, setInbox] = React.useState<InteractionTask[]>([]);
   const isMobile = useIsMobile();
 
   React.useEffect(() => {
     let active = true;
     localEngineApi
-      .tasks(50)
+      .tasks(100)
       .then((tasks) => {
         if (!active) return;
+        const list = Array.isArray(tasks) ? tasks : [];
         setWaitingCount(
-          (Array.isArray(tasks) ? tasks : []).filter(
-            (t) => t.status === "waiting_for_send_confirmation",
-          ).length,
+          list.filter((t) => t.status === "waiting_for_send_confirmation")
+            .length,
         );
+        // 收件箱：待处理互动（待确认 + 转人工 + 执行中），按 SLA 超时/时间排序
+        const pending = list.filter(
+          (t) =>
+            t.status === "waiting_for_send_confirmation" ||
+            t.status === "running" ||
+            t.status === "queued" ||
+            t.handoffState === "needs_human",
+        );
+        setInbox(pending.slice(0, 30));
       })
       .catch(() => undefined);
 
@@ -59,25 +69,28 @@ export default function MessageScene() {
         waitingCount={waitingCount}
         confirmations={confirmations}
         confirmationsLoading={confirmationsLoading}
+        inbox={inbox}
       />
     );
   }
 
   return (
-    <ScenePage
-      title="消息"
-      sub="所有渠道的客户消息，一个地方处理"
-      hint={
-        waitingCount > 0
-          ? {
-              icon: "message",
-              text: `${waitingCount} 条回复等你确认，AI 已写好草稿`,
-              actionLabel: "去确认",
-              href: "/tasks/confirmations",
-            }
-          : undefined
-      }
-      cards={[
+    <div className="kx-view">
+      <InboxSection inbox={inbox} router={router} />
+      <ScenePage
+        title="消息"
+        sub="所有渠道的客户消息，一个地方处理"
+        hint={
+          waitingCount > 0
+            ? {
+                icon: "message",
+                text: `${waitingCount} 条回复等你确认，AI 已写好草稿`,
+                actionLabel: "去确认",
+                href: "/tasks/confirmations",
+              }
+            : undefined
+        }
+        cards={[
         {
           icon: "messageSq",
           tint: "kx-t-slate",
@@ -136,7 +149,86 @@ export default function MessageScene() {
           href: "/war-room",
         },
       ]}
-    />
+      />
+    </div>
+  );
+}
+
+/* ================= 待处理互动收件箱（报告 16.3 第 15 项：统一收件箱） ================= */
+
+function slaTint(task: InteractionTask): string {
+  if (task.handoffState === "needs_human") return "kx-t-rose";
+  if (task.slaDueAt && new Date(task.slaDueAt).getTime() < Date.now()) {
+    return "kx-t-amber";
+  }
+  return "kx-t-blue";
+}
+
+function slaLabel(task: InteractionTask): string {
+  if (task.handoffState === "needs_human") return "转人工";
+  if (task.slaDueAt && new Date(task.slaDueAt).getTime() < Date.now()) {
+    return "已超时";
+  }
+  if (task.status === "waiting_for_send_confirmation") return "待确认";
+  if (task.status === "running") return "执行中";
+  if (task.status === "queued") return "排队中";
+  return task.statusLabel || task.status;
+}
+
+function InboxSection({
+  inbox,
+  router,
+}: {
+  inbox: InteractionTask[];
+  router: ReturnType<typeof useRouter>;
+}) {
+  if (inbox.length === 0) return null;
+  return (
+    <>
+      <div className="kx-section-title" style={{ marginTop: 8 }}>
+        <ShellIcon name="message" />
+        待处理互动
+      </div>
+      <div>
+        {inbox.slice(0, 15).map((t) => (
+          <div className="kx-done-item" key={t.id}>
+            <span className={`kx-tag ${slaTint(t)}`}>{slaLabel(t)}</span>
+            <span
+              style={{
+                flex: 1,
+                minWidth: 0,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                color: "var(--kx-ink)",
+              }}
+            >
+              {t.targetName || t.sourceText?.slice(0, 24) || "客户"}
+              {t.typeLabel ? ` · ${t.typeLabel}` : ""}
+            </span>
+            <span style={{ flexShrink: 0, color: "var(--kx-muted)", fontSize: 12 }}>
+              {t.accountName || ""}
+            </span>
+          </div>
+        ))}
+        {inbox.length > 15 ? (
+          <div
+            className="kx-done-item"
+            style={{ justifyContent: "center", color: "var(--kx-muted)" }}
+          >
+            还有 {inbox.length - 15} 条待处理，去
+            <button
+              type="button"
+              onClick={() => router.push("/tasks/confirmations")}
+              style={{ background: "none", border: "none", color: "#722ed1", cursor: "pointer", padding: 0 }}
+            >
+              确认中心
+            </button>
+            查看全部
+          </div>
+        ) : null}
+      </div>
+    </>
   );
 }
 
@@ -177,11 +269,13 @@ function MobileMessageView({
   waitingCount,
   confirmations,
   confirmationsLoading,
+  inbox,
 }: {
   router: ReturnType<typeof useRouter>;
   waitingCount: number;
   confirmations: AgentConfirmation[];
   confirmationsLoading: boolean;
+  inbox: InteractionTask[];
 }) {
   const pending = confirmations;
 
@@ -299,6 +393,54 @@ function MobileMessageView({
           ))}
         </div>
       </section>
+
+      {/* 待处理互动收件箱（报告 16.3 第 15 项） */}
+      {inbox.length > 0 ? (
+        <section className="mx-px mx-mt-lg">
+          <div className="mx-section-head">
+            <div>
+              <div className="mx-section-title">
+                <span className="mx-sec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13" /><path d="M22 2 15 22l-4-9-9-4Z" /></svg></span>
+                待处理互动
+              </div>
+              <p className="mx-section-eyebrow">跨渠道聚合 · 超时与转人工标记</p>
+            </div>
+          </div>
+          <div className="mx-card mx-list-card">
+            {inbox.slice(0, 15).map((t) => (
+              <div className="mx-row" key={t.id}>
+                <span
+                  className="mx-row-ic"
+                  style={{
+                    background:
+                      t.handoffState === "needs_human"
+                        ? "rgba(220,38,38,.1)"
+                        : "rgba(37,99,235,.1)",
+                    color:
+                      t.handoffState === "needs_human" ? "#dc2626" : "#2563eb",
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M22 2 11 13" /><path d="M22 2 15 22l-4-9-9-4Z" /></svg>
+                </span>
+                <div className="mx-row-main">
+                  <div className="mx-row-title">
+                    {t.targetName || t.sourceText?.slice(0, 24) || "客户"}
+                  </div>
+                  <div className="mx-row-desc">
+                    {t.typeLabel || "互动"}
+                    {t.accountName ? ` · ${t.accountName}` : ""}
+                  </div>
+                </div>
+                <div className="mx-row-right">
+                  <span className={`mx-badge ${slaTint(t) === "kx-t-rose" ? "mx-badge-red" : slaTint(t) === "kx-t-amber" ? "mx-badge-gold" : "mx-badge-blue"}`}>
+                    {slaLabel(t)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* 待确认列表 */}
       <section className="mx-px mx-mt-lg" style={{ paddingBottom: 28 }}>
