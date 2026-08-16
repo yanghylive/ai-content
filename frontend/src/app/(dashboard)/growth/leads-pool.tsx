@@ -23,7 +23,6 @@ import {
 } from "@/components/v2/ui-kit";
 import { useConfirm } from "@/hooks/use-confirm";
 import { growthApi, type GrowthLead, type GrowthLeadStatus } from "@/lib/api/growth";
-import { createCrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 
 const STATUS_LABELS: Record<GrowthLeadStatus, { label: string; tone: "success" | "warning" | "accent" | "muted" | "danger" }> = {
@@ -43,14 +42,25 @@ const PLATFORM_LABELS: Record<string, string> = {
   bilibili: "B站",
 };
 
-type FilterKey = "all" | "new" | "contacted" | "qualified" | "converted";
+type FilterKey =
+  | "all"
+  | "new"
+  | "contacted"
+  | "replied"
+  | "qualified"
+  | "converted"
+  | "ignored"
+  | "blocked";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "全部" },
   { key: "new", label: "新线索" },
   { key: "contacted", label: "已触达" },
+  { key: "replied", label: "已回复" },
   { key: "qualified", label: "高意向" },
   { key: "converted", label: "已成交" },
+  { key: "ignored", label: "已忽略" },
+  { key: "blocked", label: "已屏蔽" },
 ];
 
 export function LeadsPool() {
@@ -91,7 +101,16 @@ export function LeadsPool() {
   );
 
   const counts = useMemo(() => {
-    const result: Record<FilterKey, number> = { all: 0, new: 0, contacted: 0, qualified: 0, converted: 0 };
+    const result: Record<FilterKey, number> = {
+      all: 0,
+      new: 0,
+      contacted: 0,
+      replied: 0,
+      qualified: 0,
+      converted: 0,
+      ignored: 0,
+      blocked: 0,
+    };
     leads.forEach((lead) => {
       result.all += 1;
       if (lead.status in result) {
@@ -101,26 +120,18 @@ export function LeadsPool() {
     return result;
   }, [leads]);
 
-  // 高意向/已回复 → 一键转为 CRM 客户（真实创建客户记录 + 标记线索已转化）
+  // 高意向/已回复 → 一键转为 CRM 客户（报告 6.3 P0：原子转客户，
+  // 走 /growth/leads/:id/sync-crm，后端单事务建客户+写时间线，杜绝
+  // 「先 createCrmCustomer 再 updateLead」第二步失败导致的重复建客户）
   const handleConvert = async (lead: GrowthLead) => {
     setActingId(lead.id);
     setError(null);
     try {
-      // 第一步：在 CRM 里真实创建客户
-      const customer = await createCrmCustomer({
-        displayName: lead.nickname || "未命名客户",
-        status: "new",
-        sourcePlatform: lead.platform,
-        sourceKeyword: lead.matchedKeywords?.[0],
-        sourceText: lead.sourceText,
-        sourceUrl: lead.sourceUrl,
-        score: lead.score,
-      });
-      // 第二步：标记线索已转化并关联 CRM 客户 ID
-      await growthApi.updateLead(lead.id, {
-        status: "converted",
-        crmCustomerId: customer.id,
-      });
+      const res = await growthApi.syncLeadToCrm(lead.id);
+      if (!res.ok || !res.enabled) {
+        setError(res.message || "CRM 未启用，无法转客户");
+        return;
+      }
       await fetchLeads();
     } catch (err: unknown) {
       setError(toPublicError(err, "转客户失败，请稍后重试"));
