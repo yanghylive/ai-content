@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
-import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const backendRoot = process.cwd();
-const sqliteBundleDir = join(backendRoot, 'dist-bundle-sqlite');
+// 构建到 .tmp，成功后原子替换到正式目录——构建失败时不破坏旧 bundle（P0-3）
+const finalBundleDir = join(backendRoot, 'dist-bundle-sqlite');
+const sqliteBundleDir = join(backendRoot, 'dist-bundle-sqlite.tmp');
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -110,7 +112,7 @@ run(npxBin(), [
   'build',
   'src/main.ts',
   '-o',
-  'dist-bundle-sqlite',
+  'dist-bundle-sqlite.tmp',
   '--quiet',
   '--external',
   'playwright',
@@ -149,4 +151,8 @@ if (!existsSync(join(sqliteBundleDir, 'index.js'))) {
   throw new Error('SQLite bundle index.js was not produced');
 }
 
-console.log(`SQLite backend bundle generated at ${sqliteBundleDir}`);
+// 原子替换：构建成功后，删旧正式目录并 rename .tmp → 正式
+rmSync(finalBundleDir, { recursive: true, force: true });
+renameSync(sqliteBundleDir, finalBundleDir);
+
+console.log(`SQLite backend bundle generated at ${finalBundleDir}`);
