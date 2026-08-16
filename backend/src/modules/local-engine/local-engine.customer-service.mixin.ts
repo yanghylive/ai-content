@@ -582,7 +582,8 @@ export function createDefaultReplyRule(): InteractionReplyRuleConfig {
     revision: 1,
     industryName: '本地生活/电商服务',
     tone: 'warm',
-    defaultSendMode: 'auto-send',
+    // 报告 5.6 P1：默认「发送前都确认」，避免首次保存即自动外发
+    defaultSendMode: 'approval-send',
     askForContact: true,
     commentParsingMode: 'none',
     commentRulePreset: 'loose',

@@ -115,7 +115,8 @@ function ruleToCustomerServiceForm(
     botType: rule.botType || "sales",
     industryName: rule.industryName,
     tone: rule.tone,
-    defaultSendMode: rule.defaultSendMode || "auto-send",
+    // 报告 5.6 P1：默认「发送前都确认」，避免首次保存即自动外发
+    defaultSendMode: rule.defaultSendMode || "approval-send",
     askForContact: rule.askForContact,
     authorizedAccounts:
       joinConfigLines(rule.authorizedAccounts) || "抖音门店号\n微信客服号",

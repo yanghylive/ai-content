@@ -40,6 +40,17 @@ const STATUS_LABEL: Record<LeadStatus, string> = {
   failed: "失败",
 };
 
+/** 平台中文标签（报告 5.4 P1：小红书曾被误标为「视频号」） */
+const PLATFORM_LABEL: Record<string, string> = {
+  douyin: "抖音",
+  "wechat-channel": "视频号",
+  xiaohongshu: "小红书",
+};
+
+function platformLabel(p: string): string {
+  return PLATFORM_LABEL[p] ?? p;
+}
+
 const STATUS_COLOR: Record<LeadStatus, string> = {
   pending: "bg-amber-100 text-amber-700",
   approved: "bg-blue-100 text-blue-700",
@@ -55,6 +66,7 @@ export default function CommentAcquisitionPage() {
   const [autoReply, setAutoReply] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [leads, setLeads] = useState<AcquisitionLead[]>([]);
+  const [leadsError, setLeadsError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "">("");
   const [lastScan, setLastScan] = useState<{
@@ -75,8 +87,10 @@ export default function CommentAcquisitionPage() {
       });
       setLeads(res.items);
       setTotal(res.total);
-    } catch {
-      /* 列表加载失败不打扰 */
+      setLeadsError(null);
+    } catch (err) {
+      // 报告 5.4 P1：请求失败不得显示空潜客列表（会误导成「无潜客」）
+      setLeadsError(err instanceof Error ? err.message : "潜客列表加载失败");
     }
   }, [platform, statusFilter]);
 
@@ -88,6 +102,13 @@ export default function CommentAcquisitionPage() {
     if (!accountId.trim()) {
       toast.error("请先填写账号 ID");
       return;
+    }
+    // 报告 5.4 P1：扫描后自动回复会直接造成外部动作，必须二次确认
+    if (autoReply) {
+      const ok = window.confirm(
+        "开启「扫描后自动回复」会直接向真实用户发送消息，可能触发平台风控。确认要扫描并自动回复吗？",
+      );
+      if (!ok) return;
     }
     setScanning(true);
     try {
@@ -282,7 +303,15 @@ export default function CommentAcquisitionPage() {
           </V2Select>
         }
       >
-        {leads.length === 0 ? (
+        {leadsError ? (
+          <div className="flex flex-col items-center gap-3 py-10 text-[var(--kaypal-v3-danger)]">
+            <XCircle className="h-8 w-8" />
+            <p className="text-sm">{leadsError}</p>
+            <V2GhostButton icon={RefreshCcw} onClick={refreshLeads}>
+              重试
+            </V2GhostButton>
+          </div>
+        ) : leads.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-10 text-[var(--kaypal-v3-muted)]">
             <MessageSquare className="h-8 w-8" />
             <p className="text-sm">还没有潜客线索，先扫描一下账号评论</p>
@@ -298,7 +327,7 @@ export default function CommentAcquisitionPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
-                        {lead.platform === "douyin" ? "抖音" : "视频号"}
+                        {platformLabel(lead.platform)}
                         <span className="mx-1 text-[var(--kaypal-v3-muted)]">
                           #{lead.accountId}
                         </span>
