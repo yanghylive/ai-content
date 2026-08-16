@@ -713,6 +713,11 @@ export class PublishingService {
     accountId: string,
     confirmationId?: string,
     sourceUrl?: string,
+    attribution?: {
+      contentVersionId?: string;
+      publishIntentId?: string;
+      correlationId?: string;
+    },
   ): Promise<{
     success: boolean;
     status: 'completed' | 'waiting';
@@ -768,6 +773,10 @@ export class PublishingService {
           accountId: account.id,
           platform: account.platform,
           status: 'pending',
+          // 归因主键（报告 10.6）：贯穿内容版本→发布→互动→线索→CRM→复盘
+          contentVersionId: attribution?.contentVersionId ?? null,
+          publishIntentId: attribution?.publishIntentId ?? null,
+          correlationId: attribution?.correlationId ?? durableRecordId,
           sourceIdentity: this.jsonValue(prepared.sourceIdentity),
           bodySnapshot: prepared.body,
           payloadJson: this.jsonValue({

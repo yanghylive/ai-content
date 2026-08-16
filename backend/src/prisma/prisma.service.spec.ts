@@ -188,6 +188,9 @@ describe('PrismaService SQLite startup safety', () => {
         'payload_json',
         'result_json',
         'readback_state',
+        'content_version_id',
+        'publish_intent_id',
+        'correlation_id',
       ],
     };
     service.$queryRawUnsafe.mockImplementation(async (sql: string) => {

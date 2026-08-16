@@ -2431,6 +2431,10 @@ export class PrismaService
       ['publish_records', 'payload_json', 'JSONB'],
       ['publish_records', 'result_json', 'JSONB'],
       ['publish_records', 'readback_state', "TEXT NOT NULL DEFAULT 'pending'"],
+      // 归因主键（报告 10.6）：内容版本→发布→互动→线索→CRM→复盘 的稳定主键
+      ['publish_records', 'content_version_id', 'TEXT'],
+      ['publish_records', 'publish_intent_id', 'TEXT'],
+      ['publish_records', 'correlation_id', 'TEXT'],
       [
         'local_engine_reply_rules',
         'tenant_id',
