@@ -7,23 +7,14 @@ import { BrandLogo } from "@/components/brand-logo";
 import React from "react";
 import Link from "next/link";
 import {
-  Button,
-  Card,
-  CardBody,
-  Checkbox,
-  Chip,
-  Input,
-  Select,
-  SelectItem,
-  Spinner,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  addToast,
-} from "@heroui/react";
+  V2StatusChip,
+  V2PrimaryButton,
+  V2GhostButton,
+  V2DangerButton,
+  V2Input,
+  V2Select,
+} from "@/components/v2/ui-kit";
+import { addToast } from "@heroui/react";
 import { Icon } from "@/components/lucide-icon-compat";
 import {
   buildLocalEngineRiskConfirmation,
@@ -52,14 +43,14 @@ import { V2BackButton } from "@/components/v2/v2-back-button";
 
 const statusColor: Record<
   AgentSession["status"],
-  "default" | "primary" | "success" | "warning" | "danger"
+  "accent" | "success" | "warning" | "danger" | "muted"
 > = {
-  draft: "default",
-  running: "primary",
+  draft: "muted",
+  running: "accent",
   waiting_for_confirmation: "warning",
   completed: "success",
   failed: "danger",
-  cancelled: "default",
+  cancelled: "muted",
 };
 
 const confirmationSourceHref: Record<AgentSession["source"], string> = {
@@ -534,9 +525,9 @@ export function ConfirmationsPage() {
       description="以下动作需要你确认后才能继续。确认后会自动执行，拒绝则取消。"
       icon="solar:check-square-linear"
       action={
-        <Button variant="flat" onPress={refresh}>
+        <V2GhostButton onClick={refresh}>
           刷新
-        </Button>
+        </V2GhostButton>
       }
     >
       {loading ? <LoadingBlock /> : null}
@@ -556,22 +547,22 @@ export function ConfirmationsPage() {
           </h3>
           <div className="grid gap-4">
             {pendingTasks.map((task) => (
-              <Card
+              <section
                 key={task.id}
-                className="border-small border-divider bg-background shadow-sm"
+                className="kaypal-v3-panel overflow-hidden"
               >
-                <CardBody className="gap-3">
+                <div className="gap-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Chip size="sm" variant="flat" color="primary">
+                    <V2StatusChip tone="accent">
                       {task.typeLabel || "客户回复"}
-                    </Chip>
-                    <Chip size="sm" variant="flat">
+                    </V2StatusChip>
+                    <V2StatusChip>
                       {task.targetName || "未命名客户"}
-                    </Chip>
+                    </V2StatusChip>
                     {task.accountName ? (
-                      <Chip size="sm" variant="flat">
+                      <V2StatusChip>
                         {task.accountName}
-                      </Chip>
+                      </V2StatusChip>
                     ) : null}
                   </div>
                   {task.sourceText ? (
@@ -591,16 +582,16 @@ export function ConfirmationsPage() {
                     </div>
                   ) : null}
                   <div className="flex justify-end">
-                    <Button
-                      color="primary"
-                      isLoading={busyId === task.id}
-                      onPress={() => void approveTask(task)}
+                    <V2PrimaryButton
+                      
+                      loading={busyId === task.id}
+                      onClick={() => void approveTask(task)}
                     >
                       确认发送
-                    </Button>
+                    </V2PrimaryButton>
                   </div>
-                </CardBody>
-              </Card>
+                </div>
+              </section>
             ))}
           </div>
         </div>
@@ -627,30 +618,30 @@ export function ConfirmationsPage() {
             (check) => !check.required || selectedChecks[check.key] === true,
           );
           return (
-            <Card
+            <section
               key={item.id}
-              className="border-small border-divider bg-background shadow-sm"
+              className="kaypal-v3-panel overflow-hidden"
             >
-              <CardBody className="gap-3">
+              <div className="gap-3">
                 {getConfirmationBlockers(item).length ? (
                   <BlockerList blockers={getConfirmationBlockers(item)} />
                 ) : null}
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <Chip size="sm" variant="flat">
+                      <V2StatusChip>
                         {source}
-                      </Chip>
+                      </V2StatusChip>
                       {item.session?.statusLabel ? (
-                        <Chip size="sm" variant="flat">
+                        <V2StatusChip>
                           {item.session.statusLabel}
-                        </Chip>
+                        </V2StatusChip>
                       ) : null}
-                      <Chip size="sm" variant="flat">
+                      <V2StatusChip>
                         {formatAgentDateTime(
                           item.session?.updatedAt || item.createdAt,
                         )}
-                      </Chip>
+                      </V2StatusChip>
                     </div>
                     <h3 className="truncate font-semibold text-default-900">
                       {sessionTitle}
@@ -674,66 +665,69 @@ export function ConfirmationsPage() {
                     {item.requiredChecks?.length ? (
                       <div className="mt-3 space-y-2 border-t border-divider pt-3">
                         {item.requiredChecks.map((check) => (
-                          <Checkbox
+                          <label
                             key={check.key}
-                            color={
-                              check.status === "blocked" ? "danger" : "primary"
-                            }
-                            isDisabled={check.status === "blocked"}
-                            isSelected={selectedChecks[check.key] === true}
-                            size="sm"
-                            onValueChange={(selected) =>
-                              setConfirmedChecksById((current) => ({
-                                ...current,
-                                [item.id]: {
-                                  ...(current[item.id] || {}),
-                                  [check.key]: selected,
-                                },
-                              }))
-                            }
+                            className="flex items-center gap-2 text-sm text-[var(--kaypal-v3-soft-ink)]"
                           >
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-[var(--kaypal-v3-border)]"
+                              disabled={check.status === "blocked"}
+                              checked={selectedChecks[check.key] === true}
+                              onChange={(e) =>
+                                setConfirmedChecksById((current) => ({
+                                  ...current,
+                                  [item.id]: {
+                                    ...(current[item.id] || {}),
+                                    [check.key]: e.target.checked,
+                                  },
+                                }))
+                              }
+                            />
                             {check.label}
-                          </Checkbox>
+                          </label>
                         ))}
                       </div>
                     ) : null}
                   </div>
                   <div className="flex flex-wrap justify-end gap-2">
-                    <Button
-                      as={Link}
+                    <Link
                       href={confirmationRecordHref(item)}
-                      variant="flat"
+                      className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                     >
                       查看记录
-                    </Button>
-                    <Button as={Link} href={sourceHref} variant="flat">
+                    </Link>
+                    <Link
+                      href={sourceHref}
+                      className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                    >
                       回来源
-                    </Button>
-                    <Button
-                      color="primary"
-                      isDisabled={
+                    </Link>
+                    <V2PrimaryButton
+                      
+                      disabled={
                         item.status !== "pending" ||
                         isConfirmationBlocked(item) ||
                         !allRequiredChecked
                       }
-                      isLoading={busyId === item.id}
-                      onPress={() => decide(item, true)}
+                      loading={busyId === item.id}
+                      onClick={() => decide(item, true)}
                     >
                       确认执行
-                    </Button>
-                    <Button
-                      color="danger"
-                      variant="flat"
-                      isDisabled={item.status !== "pending"}
-                      isLoading={busyId === item.id}
-                      onPress={() => decide(item, false)}
+                    </V2PrimaryButton>
+                    <V2DangerButton
+                      
+                     
+                      disabled={item.status !== "pending"}
+                      loading={busyId === item.id}
+                      onClick={() => decide(item, false)}
                     >
                       拒绝
-                    </Button>
+                    </V2DangerButton>
                   </div>
                 </div>
-              </CardBody>
-            </Card>
+              </div>
+            </section>
           );
         })}
       </div>
@@ -1140,17 +1134,15 @@ export function SessionsPage({
       icon={meta.icon}
       action={
         <div className="flex flex-wrap gap-2">
-          <Button
-            as={Link}
+          <Link
             href="/tasks/confirmations"
-            color={pendingCount ? "warning" : "default"}
-            variant="flat"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
           >
             待确认 {pendingCount}
-          </Button>
-          <Button variant="flat" onPress={refresh}>
+          </Link>
+          <V2GhostButton onClick={refresh}>
             刷新
-          </Button>
+          </V2GhostButton>
         </div>
       }
     >
@@ -1161,8 +1153,8 @@ export function SessionsPage({
         <MetricCard label="结果留存" value={evidenceCount} />
       </div>{" "}
       {mode === "artifacts" ? (
-        <Card className="border-small border-divider bg-background shadow-sm">
-          <CardBody>
+        <section className="kaypal-v3-panel overflow-hidden">
+          <div>
             <div className="grid gap-2 md:grid-cols-5">
               <StatusPill
                 label="浏览器截图"
@@ -1188,54 +1180,67 @@ export function SessionsPage({
                 value={evidenceStats.failure_reason || 0}
               />
             </div>
-          </CardBody>
-        </Card>
+          </div>
+        </section>
       ) : null}
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody>
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div>
           <div className="grid gap-3 md:grid-cols-[180px_180px_1fr_auto] md:items-end">
-            <Select
-              label="状态"
-              selectedKeys={[statusFilter]}
-              size="sm"
-              onSelectionChange={(keys) =>
-                setStatusFilter(Array.from(keys)[0] as typeof statusFilter)
-              }
-            >
-              {agentStatusFilterOptions.map((option) => (
-                <SelectItem key={option.key}>{option.label}</SelectItem>
-              ))}
-            </Select>
-            <Select
-              label="来源"
-              selectedKeys={[sourceFilter]}
-              size="sm"
-              onSelectionChange={(keys) =>
-                setSourceFilter(Array.from(keys)[0] as typeof sourceFilter)
-              }
-            >
-              {agentSourceFilterOptions.map((option) => (
-                <SelectItem key={option.key}>{option.label}</SelectItem>
-              ))}
-            </Select>
-            <Input
-              label="搜索"
-              placeholder="按指令、标题或目标应用搜索"
-              size="sm"
-              value={keyword}
-              onValueChange={setKeyword}
-            />
-            <Button
-              color="primary"
-              isLoading={loading}
-              size="sm"
-              onPress={refresh}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                状态
+              </label>
+              <V2Select
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(e.target.value as typeof statusFilter)
+                }
+              >
+                {agentStatusFilterOptions.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </V2Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                来源
+              </label>
+              <V2Select
+                value={sourceFilter}
+                onChange={(e) =>
+                  setSourceFilter(e.target.value as typeof sourceFilter)
+                }
+              >
+                {agentSourceFilterOptions.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </V2Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                搜索
+              </label>
+              <V2Input
+                placeholder="按指令、标题或目标应用搜索"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
+            </div>
+            <V2PrimaryButton
+              
+              loading={loading}
+             
+              onClick={refresh}
             >
               应用筛选
-            </Button>
+            </V2PrimaryButton>
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      </section>
       {mode === "artifacts" && !loading ? (
         <ArtifactsTable
           items={items}
@@ -1257,15 +1262,15 @@ export function SessionsPage({
       ) : null}
       <div className="grid gap-4">
         {items.map((session) => (
-          <Card
+          <section
             key={session.id}
-            className={`border-small shadow-sm ${
+            className={`kaypal-v3-panel overflow-hidden ${
               session.id === highlightedSessionId
-                ? "border-primary/50 bg-primary/5"
-                : "border-divider bg-background"
+                ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)]"
+                : ""
             }`}
           >
-            <CardBody className="gap-4">
+            <div className="gap-4">
               {session.id === highlightedSessionId ? (
                 <div className="flex flex-wrap items-center gap-2 rounded-[8px] border-small border-primary/30 bg-background px-3 py-2 text-small text-primary">
                   <Icon icon="solar:pin-list-linear" width={16} />
@@ -1275,35 +1280,25 @@ export function SessionsPage({
               <SessionHeader session={session} />
               <AgentSessionLifecycleStepper compact session={session} />
               <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  variant="flat"
-                  isLoading={exportingId === session.id}
-                  startContent={
-                    exportingId === session.id ? null : (
-                      <Icon icon="solar:download-minimalistic-linear" />
-                    )
-                  }
-                  onPress={() => exportEvidence(session)}
+                <V2GhostButton
+                  loading={exportingId === session.id}
+                  onClick={() => exportEvidence(session)}
                 >
+                  <Icon icon="solar:download-minimalistic-linear" />
                   导出记录
-                </Button>
-                <Button
-                  as={Link}
+                </V2GhostButton>
+                <Link
                   href="/tasks/confirmations"
-                  size="sm"
-                  variant="flat"
+                  className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 >
                   待我确认
-                </Button>
-                <Button
-                  as={Link}
+                </Link>
+                <Link
                   href={confirmationSourceHref[session.source]}
-                  size="sm"
-                  variant="flat"
+                  className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 >
                   回来源
-                </Button>
+                </Link>
               </div>
               {session.resumeAction ? (
                 <div className="rounded-[8px] border-small border-warning-200 bg-warning-50 p-3 text-small text-warning-700">
@@ -1327,35 +1322,35 @@ export function SessionsPage({
               ) : null}
               {mode === "sessions" ? (
                 <div className="flex flex-col gap-3 md:flex-row">
-                  <Input
+                  <V2Input
                     className="flex-1"
                     placeholder="补充指令，例如：只生成草稿，不要发送"
                     value={continueText}
-                    onValueChange={setContinueText}
+                    onChange={(e) => setContinueText(e.target.value)}
                   />
-                  <Button
-                    color="primary"
-                    isDisabled={
+                  <V2PrimaryButton
+                    
+                    disabled={
                       session.status === "completed" ||
                       session.status === "cancelled" ||
                       Boolean(session.blockers?.length)
                     }
-                    isLoading={busyId === session.id}
-                    onPress={() => continueSession(session)}
+                    loading={busyId === session.id}
+                    onClick={() => continueSession(session)}
                   >
                     继续执行
-                  </Button>
-                  <Button
-                    color="danger"
-                    variant="flat"
-                    isDisabled={
+                  </V2PrimaryButton>
+                  <V2DangerButton
+                    
+                   
+                    disabled={
                       session.status === "completed" ||
                       session.status === "cancelled"
                     }
-                    onPress={() => stopSession(session)}
+                    onClick={() => stopSession(session)}
                   >
                     停止
-                  </Button>
+                  </V2DangerButton>
                 </div>
               ) : null}
               <EventTimeline
@@ -1395,8 +1390,8 @@ export function SessionsPage({
                 )}
                 timelineTitle={session.title || "任务时间线"}
               />
-            </CardBody>
-          </Card>
+            </div>
+          </section>
         ))}
       </div>
     </AgentShell>
@@ -1465,25 +1460,19 @@ export function SimpleFeaturePage({
       icon={icon}
       action={
         <div className="flex flex-wrap gap-2">
-          <Button
-            as={Link}
+          <Link
             href={primaryAction?.href || "/tasks/records"}
-            color="primary"
-            startContent={
-              <Icon icon={primaryAction?.icon || "solar:play-circle-linear"} />
-            }
-            variant="flat"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
           >
+            <Icon icon={primaryAction?.icon || "solar:play-circle-linear"} />
             {primaryAction?.label || "查看记录"}
-          </Button>
-          <Button
-            as={Link}
+          </Link>
+          <Link
             href="/distribution/accounts"
-            color="default"
-            variant="flat"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
           >
             平台账号
-          </Button>
+          </Link>
         </div>
       }
     >
@@ -1492,38 +1481,37 @@ export function SimpleFeaturePage({
         localEngineTab={localEngineTab}
         title={title}
       />
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody>
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div>
           <div className="grid gap-3 md:grid-cols-3">
             {actions.map((action) => (
-              <Button
+              <Link
                 key={action.href}
-                as={Link}
                 href={action.href}
-                startContent={action.icon ? <Icon icon={action.icon} /> : null}
-                variant="flat"
+                className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
               >
+                {action.icon ? <Icon icon={action.icon} /> : null}
                 {action.label}
-              </Button>
+              </Link>
             ))}
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      </section>
       <div className="grid gap-4 md:grid-cols-2">
         {items.map((item) => (
-          <Card
+          <section
             key={item}
-            className="border-small border-divider bg-background shadow-sm"
+            className="kaypal-v3-panel overflow-hidden"
           >
-            <CardBody className="flex-row items-start gap-3">
+            <div className="flex-row items-start gap-3">
               <Icon
                 className="mt-0.5 text-primary"
                 icon="solar:check-circle-linear"
                 width={20}
               />
               <p className="text-small text-default-600">{item}</p>
-            </CardBody>
-          </Card>
+            </div>
+          </section>
         ))}
       </div>
       {children}
@@ -1799,54 +1787,48 @@ function CapabilityOperationsPanel({
     }
   };
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-4">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-medium font-semibold text-default-900">
                 任务处理
               </h3>
-              <Chip
-                color={isBlocked ? "danger" : "success"}
-                size="sm"
-                variant="flat"
+              <V2StatusChip
+                tone={isBlocked ? "danger" : "success"}
+               
+               
               >
                 {isBlocked ? "需要处理" : "就绪"}
-              </Chip>
+              </V2StatusChip>
               {capability ? (
-                <Chip
-                  color={
+                <V2StatusChip
+                  tone={
                     capability.status === "ready"
                       ? "success"
                       : capability.status === "warning"
                         ? "warning"
                         : "danger"
                   }
-                  size="sm"
-                  variant="flat"
+                 
+                 
                 >
                   {capability.name}
-                </Chip>
+                </V2StatusChip>
               ) : null}
             </div>
           </div>
-          <Button
-            isLoading={loading || busyAction === "refresh"}
-            size="sm"
-            startContent={
-              loading || busyAction === "refresh" ? null : (
-                <Icon icon="solar:refresh-linear" />
-              )
-            }
-            variant="flat"
-            onPress={() => {
+          <V2GhostButton
+            loading={loading || busyAction === "refresh"}
+            onClick={() => {
               setBusyAction("refresh");
               refresh().finally(() => setBusyAction(null));
             }}
           >
+            <Icon icon="solar:refresh-linear" />
             刷新状态
-          </Button>
+          </V2GhostButton>
         </div>
         <div className="grid gap-3 md:grid-cols-6">
           <StatusPill
@@ -1861,87 +1843,70 @@ function CapabilityOperationsPanel({
         </div>
         {blockers.length ? <BlockerList blockers={blockers} /> : null}
         <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
-          <Button
-            as={Link}
+          <Link
             href={`/local-engine?tab=${localEngineTab}`}
-            startContent={<Icon icon="solar:wrench-linear" />}
-            variant="flat"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
           >
+            <Icon icon="solar:wrench-linear" />
             失败修复
-          </Button>
-          <Button
+          </Link>
+          <V2PrimaryButton
             aria-label={
               retryUnavailableReason
                 ? `重试失败任务，${retryUnavailableReason}`
                 : "重试失败任务"
             }
-            color="primary"
-            isDisabled={retryDisabled}
-            isLoading={busyAction === "retry"}
-            startContent={
-              busyAction === "retry" ? null : (
-                <Icon icon="solar:restart-linear" />
-              )
-            }
+            disabled={retryDisabled}
+            loading={busyAction === "retry"}
             title={retryUnavailableReason}
-            variant="flat"
-            onPress={runRetry}
+            onClick={runRetry}
           >
+            <Icon icon="solar:restart-linear" />
             重试失败
-          </Button>
-          <Button
+          </V2PrimaryButton>
+          <V2DangerButton
             aria-label={
               stopUnavailableReason
                 ? `停止任务，${stopUnavailableReason}`
                 : "停止任务"
             }
-            color="danger"
-            isDisabled={stopDisabled}
-            isLoading={busyAction === "stop"}
-            startContent={
-              busyAction === "stop" ? null : (
-                <Icon icon="solar:stop-circle-linear" />
-              )
-            }
+            disabled={stopDisabled}
+            loading={busyAction === "stop"}
             title={stopUnavailableReason}
-            variant="flat"
-            onPress={runStop}
+            onClick={runStop}
           >
+            <Icon icon="solar:stop-circle-linear" />
             停止
-          </Button>
-          <Button
+          </V2DangerButton>
+          <V2GhostButton
             aria-label={
               exportUnavailableReason
                 ? `导出任务记录，${exportUnavailableReason}`
                 : "导出任务记录"
             }
-            isDisabled={exportDisabled}
-            isLoading={busyAction === "export"}
-            startContent={
-              busyAction === "export" ? null : (
-                <Icon icon="solar:download-minimalistic-linear" />
-              )
-            }
+            disabled={exportDisabled}
+            loading={busyAction === "export"}
             title={exportUnavailableReason}
-            variant="flat"
-            onPress={runExport}
+            onClick={runExport}
           >
+            <Icon icon="solar:download-minimalistic-linear" />
             导出记录
-          </Button>
-          <Button
-            as={Link}
-            color={pendingCount ? "warning" : "default"}
+          </V2GhostButton>
+          <Link
             href="/tasks/confirmations"
-            variant="flat"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
           >
             待确认 {pendingCount}
-          </Button>
-          <Button as={Link} href="/tasks/records" variant="flat">
+          </Link>
+          <Link
+            href="/tasks/records"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+          >
             任务历史
-          </Button>
+          </Link>
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 function AgentShell({
@@ -1989,29 +1954,29 @@ function SessionHeader({ session }: { session: AgentSession }) {
           <h3 className="font-semibold text-default-900">
             {commercialAgentText(session.title)}
           </h3>
-          <Chip color={statusColor[session.status]} size="sm" variant="flat">
+          <V2StatusChip tone={statusColor[session.status]}>
             {commercialAgentText(session.statusLabel)}
-          </Chip>
-          <Chip size="sm" variant="flat">
+          </V2StatusChip>
+          <V2StatusChip>
             {commercialAgentText(session.executionScope)}
-          </Chip>
-          <Chip
-            color={
+          </V2StatusChip>
+          <V2StatusChip
+            tone={
               session.riskLevel === "high"
                 ? "danger"
                 : session.riskLevel === "medium"
                   ? "warning"
                   : "success"
             }
-            size="sm"
-            variant="flat"
+           
+           
           >
             {session.riskLevel === "high"
               ? "高风险"
               : session.riskLevel === "medium"
                 ? "中风险"
                 : "低风险"}
-          </Chip>
+          </V2StatusChip>
         </div>
         <p className="mt-1 text-small text-default-500">
           {commercialAgentText(session.instruction)}
@@ -2051,8 +2016,8 @@ function ArtifactsTable({
     )
     .slice(0, 80);
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-4">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-medium font-semibold text-default-900">
@@ -2063,39 +2028,35 @@ function ArtifactsTable({
             </p>
           </div>
         </div>
-        <Table
-          aria-label="结果留存"
-          classNames={{
-            wrapper: "border-small border-divider shadow-none",
-            th: "bg-default-50 text-default-500",
-          }}
-        >
-          <TableHeader>
-            <TableColumn>类型</TableColumn>
-            <TableColumn>记录</TableColumn>
-            <TableColumn>任务</TableColumn>
-            <TableColumn>时间</TableColumn>
-            <TableColumn>操作</TableColumn>
-          </TableHeader>
-          <TableBody
-            emptyContent="暂无结果留存。完成发布、互动或检查后，这里会展示截图、步骤和结果。"
-            items={rows}
-          >
-            {(row) => (
-              <TableRow key={`${row.session.id}-${row.event.id}`}>
-                <TableCell>
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-accent-soft)]">
+            <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">类型</th>
+            <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">记录</th>
+            <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">任务</th>
+            <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">时间</th>
+            <th className="px-3 py-2 text-left text-xs font-medium text-[var(--kaypal-v3-muted)]">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr
+                key={`${row.session.id}-${row.event.id}`}
+                className="border-t border-[var(--kaypal-v3-border)]"
+              >
+                <td className="px-3 py-2 align-top">
                   <div className="flex flex-wrap gap-2">
-                    <Chip size="sm" variant="flat">
+                    <V2StatusChip>
                       {evidenceTypeName[row.evidence.type] || row.evidence.type}
-                    </Chip>
+                    </V2StatusChip>
                     {row.evidence.stageKey ? (
-                      <Chip size="sm" variant="flat">
+                      <V2StatusChip>
                         {formatEvidenceStage(row.evidence.stageKey)}
-                      </Chip>
+                      </V2StatusChip>
                     ) : null}
                   </div>
-                </TableCell>
-                <TableCell>
+                </td>
+                <td className="px-3 py-2 align-top">
                   <div className="max-w-[320px] space-y-1">
                     <p className="text-small font-medium text-default-800">
                       {commercialAgentText(row.evidence.label || "过程凭证")}
@@ -2114,8 +2075,8 @@ function ArtifactsTable({
                       </Link>
                     ) : null}
                   </div>
-                </TableCell>
-                <TableCell>
+                </td>
+                <td className="px-3 py-2 align-top">
                   <div className="max-w-[240px] space-y-1">
                     <p className="truncate text-small text-default-800">
                       {commercialAgentText(row.session.title)}
@@ -2124,38 +2085,36 @@ function ArtifactsTable({
                       {confirmationSourceLabel[row.session.source]}
                     </p>
                   </div>
-                </TableCell>
-                <TableCell>
+                </td>
+                <td className="px-3 py-2 align-top">
                   <span className="text-tiny text-default-500">
                     {new Date(row.event.createdAt).toLocaleString()}
                   </span>
-                </TableCell>
-                <TableCell>
+                </td>
+                <td className="px-3 py-2 align-top">
                   <div className="flex gap-2">
-                    <Button
-                      as={Link}
+                    <Link
                       href={confirmationSourceHref[row.session.source]}
-                      size="sm"
-                      variant="flat"
+                      className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                     >
                       来源
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      isLoading={exportingId === row.session.id}
-                      onPress={() => onExport(row.session)}
+                    </Link>
+                    <V2GhostButton
+                     
+                     
+                      loading={exportingId === row.session.id}
+                      onClick={() => onExport(row.session)}
                     >
                       导出
-                    </Button>
+                    </V2GhostButton>
                   </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardBody>
-    </Card>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
@@ -2217,13 +2176,13 @@ function EventTimeline({
           {event.evidence ? (
             <div className="mt-2 rounded-small bg-default-100 p-2 text-small text-default-600">
               <div className="flex flex-wrap items-center gap-2">
-                <Chip size="sm" variant="flat">
+                <V2StatusChip>
                   {evidenceTypeName[event.evidence.type] || event.evidence.type}
-                </Chip>
+                </V2StatusChip>
                 {event.evidence.stageKey ? (
-                  <Chip size="sm" variant="flat">
+                  <V2StatusChip>
                     {formatEvidenceStage(event.evidence.stageKey)}
-                  </Chip>
+                  </V2StatusChip>
                 ) : null}
                 <span className="font-medium">
                   {commercialAgentText(event.evidence.label || "过程凭证")}
@@ -2241,12 +2200,12 @@ function EventTimeline({
 }
 function MetricCard({ label, value }: { label: string; value: number }) {
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody>
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div>
         <p className="text-tiny text-default-500">{label}</p>
         <p className="mt-1 text-2xl font-semibold text-default-900">{value}</p>
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 function StatusPill({
@@ -2323,9 +2282,9 @@ function BlockerList({ blockers }: { blockers: LocalEngineActionBlocker[] }) {
             <Icon icon="solar:shield-warning-linear" />
             <span>需处理：{commercialAgentText(blocker.stage)}</span>
             {blocker.capability ? (
-              <Chip color="danger" size="sm" variant="flat">
+              <V2StatusChip tone="danger">
                 {commercialCapabilityLabel(blocker.capability)}
-              </Chip>
+              </V2StatusChip>
             ) : null}
           </div>
           <p className="mt-2">
@@ -2370,22 +2329,25 @@ function EmptyBlock({
   actionHref?: string;
 }) {
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="items-center justify-center gap-3 py-12 text-center text-small text-default-500">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="items-center justify-center gap-3 py-12 text-center text-small text-default-500">
         <p className="max-w-xl leading-6">{text}</p>
         {actionLabel && actionHref ? (
-          <Button as={Link} href={actionHref} size="sm" variant="flat">
+          <Link
+            href={actionHref}
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+          >
             {actionLabel}
-          </Button>
+          </Link>
         ) : null}
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 function LoadingBlock() {
   return (
     <div className="flex justify-center py-16">
-      <Spinner size="sm" />
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
     </div>
   );
 }
