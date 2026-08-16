@@ -197,6 +197,22 @@ export class PrismaService
       )`,
       `CREATE INDEX IF NOT EXISTS content_plans_tenant_user_status_idx ON content_plans(tenant_id, user_id, status)`,
       `CREATE INDEX IF NOT EXISTS content_plans_status_idx ON content_plans(status)`,
+      `CREATE TABLE IF NOT EXISTS review_runs (
+        id TEXT PRIMARY KEY NOT NULL,
+        tenant_id TEXT,
+        user_id TEXT NOT NULL DEFAULT 'legacy-local-user',
+        actor_user_id TEXT,
+        period TEXT NOT NULL DEFAULT '7d',
+        filters JSONB NOT NULL DEFAULT '{}',
+        funnel JSONB,
+        insights JSONB NOT NULL DEFAULT '[]',
+        actions JSONB NOT NULL DEFAULT '[]',
+        generated_from TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS review_runs_tenant_user_created_idx ON review_runs(tenant_id, user_id, created_at)`,
+      `CREATE INDEX IF NOT EXISTS review_runs_generated_from_idx ON review_runs(generated_from)`,
       `CREATE TABLE IF NOT EXISTS schedule_configs (
         id TEXT PRIMARY KEY NOT NULL,
         task_type TEXT NOT NULL,

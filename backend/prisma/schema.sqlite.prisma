@@ -3145,3 +3145,24 @@ model ContentPlan {
   @@index([status])
   @@map("content_plans")
 }
+
+// 复盘运行（六步闭环报告 3.1 ReviewRun）：可复现的复盘结果，
+// 保存六步漏斗快照 + 洞察 + 下一步动作，支持回写为新内容计划。
+model ReviewRun {
+  id            String   @id @default(cuid())
+  tenantId      String?  @map("tenant_id")
+  userId        String   @map("user_id")
+  actorUserId   String?  @map("actor_user_id")
+  period        String   @default("7d") // 7d | 30d
+  filters       Json     @default("{}") // 复现用的筛选条件
+  funnel        Json // 六步漏斗快照（内容→发布→互动→线索→客户→商机）
+  insights      Json     @default("[]") // 洞察列表（observation/evidence/confidence/decision）
+  actions       Json     @default("[]") // 动作列表（action/expectedSignal）
+  generatedFrom String?  @map("generated_from") // 生成依据（articleId 或 'global'）
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId, userId, createdAt])
+  @@index([generatedFrom])
+  @@map("review_runs")
+}
