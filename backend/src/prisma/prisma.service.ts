@@ -2279,6 +2279,9 @@ export class PrismaService
       ['crm_customers', 'phone', 'TEXT'],
       ['crm_customers', 'wechat', 'TEXT'],
       ['crm_opportunities', 'tenant_id', 'TEXT'],
+      // 赢单/输单原因（报告 16.3 第 19 项）
+      ['crm_opportunities', 'win_reason', 'TEXT'],
+      ['crm_opportunities', 'lose_reason', 'TEXT'],
       ['crm_tasks', 'tenant_id', 'TEXT'],
       ['crm_notes', 'tenant_id', 'TEXT'],
       ['crm_timeline_events', 'tenant_id', 'TEXT'],
