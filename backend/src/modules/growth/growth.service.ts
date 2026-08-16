@@ -23,6 +23,7 @@ import {
 } from '../ai-employee/ai-employee.service';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { CrmService } from '../crm/crm.service';
+import { ActivationService } from '../activation/activation.service';
 import {
   type ExecutorTask,
   type RuntimeExecutionResult,
@@ -130,6 +131,7 @@ export class GrowthService implements OnModuleInit {
     @Optional() private readonly crmService?: CrmService,
     @Optional()
     private readonly authRequestContext?: AuthRequestContextService,
+    @Optional() private readonly activation?: ActivationService,
   ) {}
 
   async onModuleInit() {
@@ -5837,6 +5839,23 @@ export class GrowthService implements OnModuleInit {
             updatedAt: new Date(item.updatedAt),
           },
         });
+      }
+      // 激活事件（报告 16.3 第 1 项）：首个线索 = 首个价值。幂等旁路，失败不阻断。
+      if (this.activation && store.leads.length > 0) {
+        const firstLead = store.leads[0];
+        const ownerId =
+          firstLead.userId ||
+          (this.authRequestContext?.get()?.user?.id ?? null);
+        if (ownerId) {
+          void this.activation
+            .recordFirstValue({
+              userId: ownerId,
+              tenantId: firstLead.tenantId ?? null,
+              eventType: 'first_lead',
+              refId: firstLead.id,
+            })
+            .catch(() => {});
+        }
       }
       for (const item of this.growthPersistenceItems(
         store.accountHealth,

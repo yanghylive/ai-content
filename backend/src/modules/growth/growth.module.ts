@@ -5,6 +5,7 @@ import { AutoUploadModule } from '../auto-upload/auto-upload.module';
 import { AuthModule } from '../auth/auth.module';
 import { CrmModule } from '../crm/crm.module';
 import { RuntimeModule } from '../runtime/runtime.module';
+import { ActivationModule } from '../activation/activation.module';
 import { GrowthController } from './growth.controller';
 import { GrowthService } from './growth.service';
 
@@ -16,6 +17,7 @@ import { GrowthService } from './growth.service';
     CrmModule,
     PrismaModule,
     RuntimeModule,
+    ActivationModule,
   ],
   controllers: [GrowthController],
   providers: [GrowthService],

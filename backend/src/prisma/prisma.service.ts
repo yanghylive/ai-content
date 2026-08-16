@@ -156,6 +156,15 @@ export class PrismaService
       )`,
       `CREATE INDEX IF NOT EXISTS entitlement_snapshots_user_id_created_at_idx ON entitlement_snapshots(user_id, created_at)`,
       `CREATE INDEX IF NOT EXISTS entitlement_snapshots_ref_id_idx ON entitlement_snapshots(ref_id)`,
+      `CREATE TABLE IF NOT EXISTS activation_events (
+        id TEXT PRIMARY KEY NOT NULL,
+        user_id TEXT NOT NULL,
+        tenant_id TEXT,
+        event_type TEXT NOT NULL,
+        ref_id TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS activation_events_user_event_key ON activation_events(user_id, event_type)`,
       `CREATE TABLE IF NOT EXISTS schedule_configs (
         id TEXT PRIMARY KEY NOT NULL,
         task_type TEXT NOT NULL,
