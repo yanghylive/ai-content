@@ -148,9 +148,13 @@ export const dashboardApi = {
     return api.get<KeywordMatrix>('/dashboard/keyword-matrix');
   },
 
-  // 最新待发布草稿
-  draftArticles(limit: number = 5, signal?: AbortSignal) {
-    return api.get<DraftArticle[]>(`/dashboard/draft-articles?limit=${limit}`, {
+  // 最新待发布草稿（P1-4：支持关键词筛选）
+  draftArticles(limit: number = 50, keyword?: string, signal?: AbortSignal) {
+    const kw = keyword?.trim();
+    const qs = kw
+      ? `limit=${limit}&keyword=${encodeURIComponent(kw)}`
+      : `limit=${limit}`;
+    return api.get<DraftArticle[]>(`/dashboard/draft-articles?${qs}`, {
       signal,
     });
   },

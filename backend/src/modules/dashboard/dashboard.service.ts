@@ -511,10 +511,13 @@ export class DashboardService {
   }
 
   // 获取最新待发布草稿
-  async getLatestDraftArticles(limit: number = 5) {
+  async getLatestDraftArticles(limit: number = 50, keyword?: string) {
     return this.prisma.article
       .findMany({
-        where: { status: 'draft' },
+        where: {
+          status: 'draft',
+          ...(keyword ? { title: { contains: keyword } } : {}),
+        },
         orderBy: { createdAt: 'desc' },
         take: limit,
         select: {

@@ -27,11 +27,12 @@ export function DistributionArticles() {
   const [articles, setArticles] = useState<DraftArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [keyword, setKeyword] = useState("");
 
-  const fetchArticles = useCallback(async () => {
+  const fetchArticles = useCallback(async (kw?: string) => {
     try {
       setLoading(true);
-      const data = await dashboardApi.draftArticles(50);
+      const data = await dashboardApi.draftArticles(50, kw);
       setArticles(Array.isArray(data) ? data : []);
     } catch (err: unknown) {
       setError(toPublicError(err, "加载草稿失败"));
@@ -125,6 +126,21 @@ export function DistributionArticles() {
           <V2StatusChip tone={articles.length > 0 ? "warning" : "success"}>
             {loading ? "加载中" : `${articles.length} 篇待发布`}
           </V2StatusChip>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          <input
+            type="search"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void fetchArticles(keyword);
+            }}
+            placeholder="按标题关键词筛选"
+            className="flex-1 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-2 text-sm text-[var(--kaypal-v3-ink)] outline-none transition focus:border-[var(--kaypal-v3-accent)]"
+          />
+          <V2GhostButton onClick={() => void fetchArticles(keyword)}>
+            搜索
+          </V2GhostButton>
         </div>
       </section>
 
