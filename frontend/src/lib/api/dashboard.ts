@@ -188,6 +188,23 @@ export const dashboardApi = {
     });
   },
 
+  // 周报（报告 16.3 第 21 项）：内容→发布→互动→线索→成交 聚合指标
+  weeklyReport(days = 7, signal?: AbortSignal) {
+    return api.get<{
+      periodDays: number;
+      since: string;
+      contentCount: number;
+      publishCount: number;
+      interactionCount: number;
+      leadCount: number;
+      qualifiedLeadCount: number;
+      convertedCount: number;
+      wonCount: number;
+    }>(`/dashboard/weekly-report?days=${days}`, {
+      signal,
+    });
+  },
+
   // 系统运行日志
   systemLogs(limit: number = 50, signal?: AbortSignal) {
     return api.get<SystemLog[]>(`/dashboard/system-logs?limit=${limit}`, {

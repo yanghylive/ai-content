@@ -111,7 +111,7 @@ export function OnboardingGuide() {
   /** Step 2→3：看示例 → 下一步 */
   const nextToStep3 = useCallback(() => setStep(3), []);
 
-  /** Step 3：完成 → 生成示例草稿 + 跳工作区 */
+  /** Step 3：完成 → 生成示例草稿 + 进入激活清单 */
   const finish = useCallback(async () => {
     setBusy(true);
     try {
@@ -119,15 +119,38 @@ export function OnboardingGuide() {
       const title = example?.title || `${industry}内容创作`;
       await articlesApi.createDraft({ title, content: example?.content || "" });
       markOnboardingDone();
-      setVisible(false);
-      router.push("/content-workspace");
+      setStep(4);
     } catch {
       markOnboardingDone();
-      setVisible(false);
+      setStep(4);
     } finally {
       setBusy(false);
     }
-  }, [example, industry, router]);
+  }, [example, industry]);
+
+  /** 激活清单（报告 16.3 第 1 项）：生成首稿后，引导完成「首个价值」闭环 */
+  const activationSteps = [
+    {
+      label: "绑定平台账号",
+      desc: "连接抖音/小红书/公众号，让内容能发出去",
+      href: "/distribution",
+    },
+    {
+      label: "导入品牌知识",
+      desc: "上传品牌资料，AI 写得更像你",
+      href: "/knowledge",
+    },
+    {
+      label: "发布第一条内容",
+      desc: "把刚生成的草稿发到平台，拿到回执",
+      href: "/distribution",
+    },
+    {
+      label: "收获首个线索",
+      desc: "发布后评论/私信会沉淀成客户线索",
+      href: "/growth/leads",
+    },
+  ];
 
   /** 跳过 */
   const skip = useCallback(() => {
@@ -290,6 +313,88 @@ export function OnboardingGuide() {
               }}
             >
               跳过
+            </button>
+          </>
+        ) : null}
+
+        {step === 4 ? (
+          <>
+            <div style={{ color: "#f6c478", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
+              ✅ 示例草稿已生成
+            </div>
+            <div style={{ color: "rgba(215,230,248,.7)", fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
+              接下来 4 步，就能发出第一条内容、收获首个客户线索：
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {activationSteps.map((s, i) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  onClick={() => {
+                    setVisible(false);
+                    router.push(s.href);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    border: "1px solid rgba(142,165,190,.25)",
+                    background: "rgba(255,255,255,.05)",
+                    color: "#dbe7f5",
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      background: "rgba(246,196,120,.15)",
+                      color: "#f6c478",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700 }}>
+                      {s.label}
+                    </span>
+                    <span style={{ display: "block", fontSize: 11, color: "rgba(148,163,184,.7)", marginTop: 2 }}>
+                      {s.desc}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setVisible(false);
+                router.push("/today");
+              }}
+              style={{
+                marginTop: 16,
+                width: "100%",
+                padding: "12px 0",
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                border: "none",
+                cursor: "pointer",
+                background: "#f6c478",
+                color: "#1a1207",
+              }}
+            >
+              先去今天页看看
             </button>
           </>
         ) : null}

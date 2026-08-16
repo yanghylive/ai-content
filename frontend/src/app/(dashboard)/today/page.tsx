@@ -98,11 +98,20 @@ export default function TodayPage() {
   const [newsItems, setNewsItems] = React.useState<TickerItem[]>([]);
   const [hotTopics, setHotTopics] = React.useState<HotTopic[]>([]);
   const [taskItems, setTaskItems] = React.useState<UnifiedTaskItem[]>([]);
+  const [weeklyReport, setWeeklyReport] = React.useState<{
+    contentCount: number;
+    publishCount: number;
+    interactionCount: number;
+    leadCount: number;
+    qualifiedLeadCount: number;
+    convertedCount: number;
+    wonCount: number;
+  } | null>(null);
 
   React.useEffect(() => {
     let active = true;
     (async () => {
-      const [tasks, pubTasks, overview, collect, intel, unified] =
+      const [tasks, pubTasks, overview, collect, intel, unified, weekly] =
         await Promise.all([
           localEngineApi.tasks(50).catch(() => [] as InteractionTask[]),
           autoUploadApi.tasks(50).catch(() => [] as AutoUploadPublishTask[]),
@@ -112,11 +121,14 @@ export default function TodayPage() {
             .get<{ items?: HotTopic[] }>("/redfox/hot-topics")
             .catch(() => null),
           dashboardApi.taskCenter(20).catch(() => null),
+          dashboardApi.weeklyReport(7).catch(() => null),
         ]);
       if (!active) return;
 
       const taskList = Array.isArray(tasks) ? tasks : [];
       const pubList = Array.isArray(pubTasks) ? pubTasks : [];
+
+      setWeeklyReport(weekly as typeof weeklyReport | null);
 
       const unifiedData = unified as {
         items?: UnifiedTaskItem[];
@@ -399,6 +411,47 @@ export default function TodayPage() {
           <div className="kx-stat-lbl">待确认</div>
         </div>
       </div>
+
+      {weeklyReport ? (
+        <>
+          <div className="kx-section-title">
+            <ShellIcon name="chart" />
+            本周复盘（近 7 天）
+          </div>
+          <div className="kx-progress-row">
+            <div className="kx-stat-card">
+              <div className="kx-stat-num">{weeklyReport.contentCount}</div>
+              <div className="kx-stat-lbl">本周内容</div>
+            </div>
+            <div className="kx-stat-card">
+              <div className="kx-stat-num kx-stat-accent">{weeklyReport.publishCount}</div>
+              <div className="kx-stat-lbl">本周发布</div>
+            </div>
+            <div className="kx-stat-card">
+              <div className="kx-stat-num">{weeklyReport.interactionCount}</div>
+              <div className="kx-stat-lbl">本周互动</div>
+            </div>
+            <div className="kx-stat-card">
+              <div className="kx-stat-num kx-stat-accent">{weeklyReport.leadCount}</div>
+              <div className="kx-stat-lbl">本周线索</div>
+            </div>
+          </div>
+          <div className="kx-progress-row" style={{ marginTop: 10 }}>
+            <div className="kx-stat-card">
+              <div className="kx-stat-num kx-stat-amber">{weeklyReport.qualifiedLeadCount}</div>
+              <div className="kx-stat-lbl">合格线索</div>
+            </div>
+            <div className="kx-stat-card">
+              <div className="kx-stat-num kx-stat-ok">{weeklyReport.convertedCount}</div>
+              <div className="kx-stat-lbl">线索成交</div>
+            </div>
+            <div className="kx-stat-card">
+              <div className="kx-stat-num kx-stat-ok">{weeklyReport.wonCount}</div>
+              <div className="kx-stat-lbl">商机赢单</div>
+            </div>
+          </div>
+        </>
+      ) : null}
 
       {taskItems.length > 0 ? (
         <>
