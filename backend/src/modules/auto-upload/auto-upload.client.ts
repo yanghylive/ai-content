@@ -267,6 +267,12 @@ export type AutoUploadInteractionEntryResult = {
 
 export type AutoUploadDouyinComment = {
   text: string;
+  // S0-P1-2：作者/评论 ID/时间/定位序号（抓取器逐步解析，供线索 dedupe 用；
+  // 未解析时为 undefined，上层降级到昵称+文本 dedupe）
+  authorName?: string;
+  authorId?: string;
+  commentTime?: string;
+  ref?: string;
   looksLikeComment?: boolean;
   x?: number;
   y?: number;

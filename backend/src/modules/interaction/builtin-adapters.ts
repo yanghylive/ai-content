@@ -5,6 +5,7 @@ import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-inte
 import {
   InteractionAdapter,
   InteractionCapability,
+  InteractionItem,
   InteractionReadInput,
   InteractionReadResult,
   InteractionSendInput,
@@ -50,7 +51,7 @@ export class DouyinInteractionAdapter implements InteractionAdapter {
 
   async read(input: InteractionReadInput): Promise<InteractionReadResult> {
     const accountId = Number(input.accountId);
-    const items: { text: string }[] = [];
+    const items: InteractionItem[] = [];
     let title: string | undefined;
     let url: string | undefined;
     if (input.taskType === 'comment-reply') {
@@ -62,7 +63,14 @@ export class DouyinInteractionAdapter implements InteractionAdapter {
       url = raw.url || undefined;
       for (const c of raw.comments || []) {
         const text = String(c.text || '').trim();
-        if (text) items.push({ text });
+        if (text)
+          items.push({
+            text,
+            authorName: c.authorName,
+            authorId: c.authorId,
+            commentTime: c.commentTime,
+            ref: c.ref,
+          });
       }
     } else {
       const raw = await this.autoUpload.readDouyinMessages({
@@ -116,7 +124,7 @@ export class WechatChannelInteractionAdapter implements InteractionAdapter {
 
   async read(input: InteractionReadInput): Promise<InteractionReadResult> {
     const accountId = Number(input.accountId);
-    const items: { text: string }[] = [];
+    const items: InteractionItem[] = [];
     let title: string | undefined;
     let url: string | undefined;
     if (input.taskType === 'comment-reply') {
@@ -128,7 +136,14 @@ export class WechatChannelInteractionAdapter implements InteractionAdapter {
       url = raw.url || undefined;
       for (const c of raw.comments || []) {
         const text = String(c.text || '').trim();
-        if (text) items.push({ text });
+        if (text)
+          items.push({
+            text,
+            authorName: c.authorName,
+            authorId: c.authorId,
+            commentTime: c.commentTime,
+            ref: c.ref,
+          });
       }
     } else {
       const raw = await this.autoUpload.readWechatChannelMessages({
