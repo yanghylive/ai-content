@@ -75,25 +75,38 @@ export class InteractionEventStore {
       return { event: existing, created: false };
     }
 
-    const created = await this.prisma.interactionEvent.create({
-      data: {
-        tenantId,
-        userId: event.userId ?? DEFAULT_USER,
-        platform: event.platform,
-        accountId: event.accountId,
-        channel: event.channel ?? 'comment',
-        externalEventId: event.externalEventId,
-        externalThreadId: event.externalThreadId,
-        authorExternalId: event.authorExternalId,
-        sourceUrl: event.sourceUrl,
-        sourceArticleId: event.sourceArticleId,
-        publishRecordId: event.publishRecordId,
-        body: event.body,
-        dedupeKey,
-        occurredAt: event.occurredAt ?? new Date(),
-        raw: (event.raw ?? undefined) as Prisma.InputJsonValue | undefined,
-      },
-    });
+    const created = await this.prisma.interactionEvent
+      .create({
+        data: {
+          tenantId,
+          userId: event.userId ?? DEFAULT_USER,
+          platform: event.platform,
+          accountId: event.accountId,
+          channel: event.channel ?? 'comment',
+          externalEventId: event.externalEventId,
+          externalThreadId: event.externalThreadId,
+          authorExternalId: event.authorExternalId,
+          sourceUrl: event.sourceUrl,
+          sourceArticleId: event.sourceArticleId,
+          publishRecordId: event.publishRecordId,
+          body: event.body,
+          dedupeKey,
+          occurredAt: event.occurredAt ?? new Date(),
+          raw: (event.raw ?? undefined) as Prisma.InputJsonValue | undefined,
+        },
+      })
+      .catch((error: unknown) => {
+        // S0-P1 竞态：并发同 dedupeKey 撞唯一约束（P2002）时，重查返回已有事件
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          return this.prisma.interactionEvent.findUniqueOrThrow({
+            where: { tenantId_dedupeKey: { tenantId, dedupeKey } },
+          });
+        }
+        throw error;
+      });
     return { event: created, created: true };
   }
 

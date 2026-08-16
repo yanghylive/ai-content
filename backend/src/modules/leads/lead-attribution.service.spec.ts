@@ -9,13 +9,13 @@ function makeService(overrides: {
 } = {}) {
   const prisma = {
     lead: {
-      findUnique: overrides.lead ?? jest.fn(),
+      findFirst: overrides.lead ?? jest.fn(),
       findMany: jest.fn(),
     },
-    article: { findUnique: overrides.article ?? jest.fn() },
-    publishRecord: { findUnique: overrides.publishRecord ?? jest.fn() },
-    interactionEvent: { findUnique: overrides.interactionEvent ?? jest.fn() },
-    crmCustomer: { findUnique: overrides.crmCustomer ?? jest.fn() },
+    article: { findFirst: overrides.article ?? jest.fn() },
+    publishRecord: { findFirst: overrides.publishRecord ?? jest.fn() },
+    interactionEvent: { findFirst: overrides.interactionEvent ?? jest.fn() },
+    crmCustomer: { findFirst: overrides.crmCustomer ?? jest.fn() },
   };
   const service = new LeadAttributionService(prisma as never);
   return { service, prisma };
@@ -63,7 +63,7 @@ describe('LeadAttributionService', () => {
       crmCustomer: jest.fn().mockResolvedValue({ id: 'customer-1', displayName: '李女士' }),
     });
 
-    const result = await service.resolveLeadAttribution('lead-1');
+    const result = await service.resolveLeadAttribution('lead-1', 'user-1');
 
     expect(result).toMatchObject({
       lead: { id: 'lead-1' },
@@ -72,8 +72,8 @@ describe('LeadAttributionService', () => {
       interactionEvent: { id: 'evt-1' },
       customer: { displayName: '李女士' },
     });
-    expect(prisma.article.findUnique).toHaveBeenCalled();
-    expect(prisma.crmCustomer.findUnique).toHaveBeenCalled();
+    expect(prisma.article.findFirst).toHaveBeenCalled();
+    expect(prisma.crmCustomer.findFirst).toHaveBeenCalled();
   });
 
   it('resolveLeadAttribution 线索不存在返回 null', async () => {
@@ -81,7 +81,7 @@ describe('LeadAttributionService', () => {
       lead: jest.fn().mockResolvedValue(null),
     });
 
-    const result = await service.resolveLeadAttribution('missing');
+    const result = await service.resolveLeadAttribution('missing', 'user-1');
 
     expect(result).toBeNull();
   });

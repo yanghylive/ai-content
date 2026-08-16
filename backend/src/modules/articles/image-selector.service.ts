@@ -286,11 +286,14 @@ export class ImageSelectorService {
   }
 
   /**
-   * 获取选题关联素材的所有可用图片
+   * 获取选题关联素材的所有可用图片（带 scope，防跨租户读他人选题素材）
    */
-  async getAvailableImages(topicId: string): Promise<string[]> {
+  async getAvailableImages(
+    topicId: string,
+    scope: { tenantId: string; userId: string },
+  ): Promise<string[]> {
     const topic = await this.prisma.topic.findUnique({
-      where: { id: topicId },
+      where: { id: topicId, ...scope },
       include: {
         materials: {
           include: {

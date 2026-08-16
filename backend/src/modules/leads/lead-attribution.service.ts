@@ -32,22 +32,24 @@ export class LeadAttributionService {
     };
   }
 
-  /** 从线索查完整归因链：内容 / 发布 / 互动事件 / CRM 客户 */
-  async resolveLeadAttribution(leadId: string) {
-    const lead = await this.prisma.lead.findUnique({ where: { id: leadId } });
+  /** 从线索查完整归因链：内容 / 发布 / 互动事件 / CRM 客户（带 userId scope 堵 IDOR） */
+  async resolveLeadAttribution(leadId: string, userId: string) {
+    const lead = await this.prisma.lead.findFirst({
+      where: { id: leadId, userId },
+    });
     if (!lead) return null;
 
     const [article, publishRecord, interactionEvent, customer] =
       await Promise.all([
         lead.sourceArticleId
-          ? this.prisma.article.findUnique({
-              where: { id: lead.sourceArticleId },
+          ? this.prisma.article.findFirst({
+              where: { id: lead.sourceArticleId, userId },
               select: { id: true, title: true, status: true },
             })
           : Promise.resolve(null),
         lead.sourcePublishRecordId
-          ? this.prisma.publishRecord.findUnique({
-              where: { id: lead.sourcePublishRecordId },
+          ? this.prisma.publishRecord.findFirst({
+              where: { id: lead.sourcePublishRecordId, userId },
               select: {
                 id: true,
                 platform: true,
@@ -58,13 +60,13 @@ export class LeadAttributionService {
             })
           : Promise.resolve(null),
         lead.sourceInteractionEventId
-          ? this.prisma.interactionEvent.findUnique({
-              where: { id: lead.sourceInteractionEventId },
+          ? this.prisma.interactionEvent.findFirst({
+              where: { id: lead.sourceInteractionEventId, userId },
             })
           : Promise.resolve(null),
         lead.customerId
-          ? this.prisma.crmCustomer.findUnique({
-              where: { id: lead.customerId },
+          ? this.prisma.crmCustomer.findFirst({
+              where: { id: lead.customerId, ownerId: userId },
               select: { id: true, displayName: true },
             })
           : Promise.resolve(null),
@@ -73,19 +75,19 @@ export class LeadAttributionService {
     return { lead, article, publishRecord, interactionEvent, customer };
   }
 
-  /** 反向：从内容查线索（复盘「哪篇内容带来多少线索」用） */
-  listLeadsByArticle(articleId: string, limit = 100) {
+  /** 反向：从内容查线索（复盘「哪篇内容带来多少线索」用，带 userId scope） */
+  listLeadsByArticle(articleId: string, userId: string, limit = 100) {
     return this.prisma.lead.findMany({
-      where: { sourceArticleId: articleId },
+      where: { sourceArticleId: articleId, userId },
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
   }
 
-  /** 反向：从互动事件查线索（识别同一事件产生的线索） */
-  listLeadsByInteractionEvent(eventId: string) {
+  /** 反向：从互动事件查线索（识别同一事件产生的线索，带 userId scope） */
+  listLeadsByInteractionEvent(eventId: string, userId: string) {
     return this.prisma.lead.findMany({
-      where: { sourceInteractionEventId: eventId },
+      where: { sourceInteractionEventId: eventId, userId },
       orderBy: { createdAt: 'desc' },
     });
   }
