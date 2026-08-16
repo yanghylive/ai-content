@@ -543,27 +543,37 @@ export class ContentOptimizationService implements OnModuleInit {
       )
     `;
 
-    await this.prisma.$executeRaw`
-      INSERT INTO content_versions (
-        id, draft_id, run_id, tenant_id, user_id, mode, mode_label, title,
-        content, platform, target_type, version_no, status, is_official,
-        source_workflow_id, source_summary, created_at, updated_at
-      )
-      VALUES (
-        ${versionId}, ${draftId}, ${runId}, ${scope.tenantId}, ${scope.userId},
-        ${this.clean(dto.mode)}, ${this.clean(dto.modeLabel)}, ${this.clean(dto.title)},
-        ${this.cleanMultiline(dto.content)}, ${platform}, ${targetType}, ${versionNo},
-        'saved', ${false}, ${dto.sourceWorkflowId || null}, ${dto.sourceSummary || null},
-        ${now}, ${now}
-      )
-    `;
+    // S0-P1-13：撞 (draft_id, version_no) 唯一约束（并发保存）时 versionNo+1 重试
+    let savedVersionNo = versionNo;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        await this.prisma.$executeRaw`
+          INSERT INTO content_versions (
+            id, draft_id, run_id, tenant_id, user_id, mode, mode_label, title,
+            content, platform, target_type, version_no, status, is_official,
+            source_workflow_id, source_summary, created_at, updated_at
+          )
+          VALUES (
+            ${versionId}, ${draftId}, ${runId}, ${scope.tenantId}, ${scope.userId},
+            ${this.clean(dto.mode)}, ${this.clean(dto.modeLabel)}, ${this.clean(dto.title)},
+            ${this.cleanMultiline(dto.content)}, ${platform}, ${targetType}, ${savedVersionNo},
+            'saved', ${false}, ${dto.sourceWorkflowId || null}, ${dto.sourceSummary || null},
+            ${now}, ${now}
+          )
+        `;
+        break;
+      } catch (error) {
+        if (attempt >= 2) throw error;
+        savedVersionNo = await this.nextVersionNo(draftId, scope);
+      }
+    }
 
     await this.writeEvidence('content_version', versionId, 'save_version', {
       draftId: draft.id,
       title: dto.title,
       mode: dto.mode,
       platform,
-      versionNo,
+      versionNo: savedVersionNo,
     });
 
     return this.getVersion(versionId);
@@ -1146,6 +1156,10 @@ export class ContentOptimizationService implements OnModuleInit {
     );
     await this.prisma.$executeRawUnsafe(
       `CREATE INDEX IF NOT EXISTS content_versions_draft_idx ON content_versions(draft_id, version_no)`,
+    );
+    // S0-P1-13：draft+version 唯一约束，防并发保存产生重复版本
+    await this.prisma.$executeRawUnsafe(
+      `CREATE UNIQUE INDEX IF NOT EXISTS content_versions_draft_version_key ON content_versions(draft_id, version_no)`,
     );
     await this.prisma.$executeRawUnsafe(
       `CREATE INDEX IF NOT EXISTS content_publish_intents_version_idx ON content_publish_intents(version_id)`,
