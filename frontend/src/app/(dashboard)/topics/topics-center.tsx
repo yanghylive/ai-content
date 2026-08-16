@@ -6,9 +6,10 @@ import { BrandLogo } from "@/components/brand-logo";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lightbulb, Loader2, RefreshCcw, Send, XCircle } from "lucide-react";
+import { FileText, Lightbulb, Loader2, RefreshCcw, Send, Trash2, Wand2, XCircle } from "lucide-react";
 import { ResourceCenter, type ResourceItem } from "@/components/v2/resource-center";
-import { topicsApi, type Topic } from "@/lib/api/topics";
+import { topicsApi, type Topic, type TopicDiscoveryResult } from "@/lib/api/topics";
+import { articlesApi } from "@/lib/api/articles";
 import { toActionableError, toPublicError } from "@/lib/public-error";
 import { V2GhostButton, V2PrimaryButton, V2StatusChip } from "@/components/v2/ui-kit";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
@@ -95,6 +96,91 @@ export function TopicsCenter() {
     }
   };
 
+  // 一键挖掘新选题
+  const [mining, setMining] = useState(false);
+  const handleMine = async () => {
+    setMining(true);
+    setActionError(null);
+    try {
+      const result = await topicsApi.mine();
+      setNotice(result.message || `已挖掘 ${result.created} 个选题`);
+      await fetchTopics();
+    } catch (error: unknown) {
+      setActionError(toPublicError(error, "选题挖掘未完成"));
+    } finally {
+      setMining(false);
+    }
+  };
+
+  // 智能挖题（输入种子词，AI 多渠道发现）
+  const [showDiscover, setShowDiscover] = useState(false);
+  const [seedInput, setSeedInput] = useState("");
+  const [discovering, setDiscovering] = useState(false);
+  const [discovery, setDiscovery] = useState<TopicDiscoveryResult | null>(null);
+
+  const handleDiscover = async () => {
+    if (!seedInput.trim()) {
+      setActionError("请输入关键词、事件或一段描述");
+      return;
+    }
+    setDiscovering(true);
+    setActionError(null);
+    try {
+      const result = await topicsApi.discover(seedInput.trim());
+      setDiscovery(result);
+      setNotice(result.message || `智能挖题完成，新增 ${result.created} 个选题`);
+      await fetchTopics();
+    } catch (error: unknown) {
+      setActionError(toPublicError(error, "智能挖题未完成"));
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  // 以此选题创作文章 / 小红书笔记
+  const handleCreateContent = async (id: string, type: "article" | "xiaohongshu") => {
+    setActing(true);
+    setActionError(null);
+    try {
+      const result = await articlesApi.generate(id, true, type);
+      setNotice(
+        type === "xiaohongshu"
+          ? `小红书笔记《${result.title}》已存入笔记库`
+          : `文章《${result.title}》已存入文章库`,
+      );
+      await fetchTopics();
+    } catch (error: unknown) {
+      setActionError(toPublicError(error, "内容创作未完成"));
+    } finally {
+      setActing(false);
+    }
+  };
+
+  // 删除选题
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("确定删除这个选题吗？")) return;
+    setActing(true);
+    setActionError(null);
+    try {
+      await topicsApi.remove(id);
+      setViewing(null);
+      setNotice("选题已删除");
+      await fetchTopics();
+    } catch (error: unknown) {
+      setActionError(toPublicError(error, "删除失败"));
+    } finally {
+      setActing(false);
+    }
+  };
+
+  // 顶部提示（挖掘/创作成功等）
+  const [notice, setNotice] = useState<string | null>(null);
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
+
   const items: ResourceItem[] = topics.map((t) => ({
     id: t.id,
     title: t.title,
@@ -129,6 +215,53 @@ export function TopicsCenter() {
         </header>
 
         <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
+          {notice ? (
+            <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(16,185,129,.1)", fontSize: 12, color: "#047857" }}>{notice}</div>
+          ) : null}
+          {actionError ? (
+            <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{actionError}</div>
+          ) : null}
+
+          {/* 挖掘工具栏 */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "10px 0", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(255,255,255,.55)", color: "#334155", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} disabled={mining} onClick={() => void handleMine()}>
+              <Wand2 size={14} /> {mining ? "挖掘中…" : "一键挖掘"}
+            </button>
+            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "10px 0", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }} onClick={() => setShowDiscover((v) => !v)}>
+              <Lightbulb size={14} /> 智能挖题
+            </button>
+          </div>
+
+          {/* 智能挖题面板 */}
+          {showDiscover ? (
+            <div className="mx-card" style={{ padding: 13, marginBottom: 12 }}>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  value={seedInput}
+                  onChange={(e) => setSeedInput(e.target.value)}
+                  placeholder="输入关键词、事件或一段描述"
+                  style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+                />
+                <button type="button" className="mx-btn-gold" style={{ flexShrink: 0, padding: "0 14px", display: "inline-flex", alignItems: "center", gap: 5 }} disabled={discovering} onClick={() => void handleDiscover()}>
+                  {discovering ? "发现中…" : "开始"}
+                </button>
+              </div>
+              {discovery ? (
+                <div style={{ marginTop: 10 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>
+                    归一主题：{discovery.analysis.normalizedSeed}
+                  </p>
+                  <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>
+                    目标读者：{discovery.analysis.audience} · {discovery.analysis.intent}
+                  </p>
+                  <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>
+                    扫描 {discovery.retrieval.scannedSources} 渠道，抓取 {discovery.retrieval.fetchedCount} 条，命中 {discovery.retrieval.matchedCount} 条，新增入库 {discovery.retrieval.savedCount} 条。
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="mx-card mx-list-card">
             {loading ? (
               <div>
@@ -257,12 +390,18 @@ export function TopicsCenter() {
               ) : null}
             </div>
 
-            <div style={{ display: "flex", gap: 10, padding: "0 16px" }}>
+            <div style={{ display: "flex", gap: 10, padding: "0 16px", flexWrap: "wrap" }}>
               <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "#334155", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} disabled={acting} onClick={handleRescore}>
                 <RefreshCcw size={14} style={{ marginRight: 4 }} /> 重新评分
               </button>
               <button type="button" className="mx-btn-gold" style={{ flex: 1.4, fontSize: 12, padding: "11px 0" }} disabled={acting} onClick={handlePublishToggle}>
                 <Send size={14} style={{ marginRight: 4 }} /> {viewing.isPublished ? "取消发布" : "发布这个选题"}
+              </button>
+              <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "#334155", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4 }} disabled={acting} onClick={() => void handleCreateContent(viewing.id, "article")}>
+                <FileText size={14} /> 创作文章
+              </button>
+              <button type="button" style={{ flex: "0 0 auto", fontSize: 12, padding: "11px 14px", color: "#dc2626", background: "none", border: "none" }} disabled={acting} onClick={() => void handleDelete(viewing.id)}>
+                <Trash2 size={14} style={{ marginRight: 4 }} /> 删除
               </button>
             </div>
           </div>
@@ -273,6 +412,51 @@ export function TopicsCenter() {
 
   return (
     <>
+      {notice ? (
+        <p className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4 text-sm text-[var(--kaypal-v3-success)]">
+          {notice}
+        </p>
+      ) : null}
+
+      {/* 挖掘工具栏 */}
+      <section className="kaypal-v3-panel flex items-center gap-2 p-4">
+        <V2GhostButton icon={Wand2} loading={mining} onClick={() => void handleMine()}>
+          一键挖掘
+        </V2GhostButton>
+        <V2GhostButton icon={Lightbulb} onClick={() => setShowDiscover((v) => !v)}>
+          智能挖题
+        </V2GhostButton>
+        {showDiscover ? (
+          <div className="flex flex-1 items-center gap-2">
+            <input
+              value={seedInput}
+              onChange={(e) => setSeedInput(e.target.value)}
+              placeholder="输入关键词、事件或一段描述"
+              className="h-10 flex-1 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-3 text-sm text-[var(--kaypal-v3-ink)] outline-none placeholder:text-[var(--kaypal-v3-muted)] focus:border-[var(--kaypal-v3-accent)]"
+            />
+            <V2PrimaryButton icon={Lightbulb} loading={discovering} onClick={() => void handleDiscover()}>
+              开始
+            </V2PrimaryButton>
+          </div>
+        ) : null}
+      </section>
+
+      {showDiscover && discovery ? (
+        <section className="kaypal-v3-panel p-4 text-sm text-[var(--kaypal-v3-muted)]">
+          <p className="font-medium text-[var(--kaypal-v3-ink)]">归一主题：{discovery.analysis.normalizedSeed}</p>
+          <p className="mt-1">目标读者：{discovery.analysis.audience} · {discovery.analysis.intent}</p>
+          <p className="mt-1">
+            扫描 {discovery.retrieval.scannedSources} 渠道，抓取 {discovery.retrieval.fetchedCount} 条，命中 {discovery.retrieval.matchedCount} 条，新增入库 {discovery.retrieval.savedCount} 条。
+          </p>
+        </section>
+      ) : null}
+
+      {actionError ? (
+        <p className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4 text-sm text-[var(--kaypal-v3-danger)]">
+          {actionError}
+        </p>
+      ) : null}
+
       <ResourceCenter
         title="选题"
         subtitle="AI 推荐的内容选题，看中就直接拿来写"
@@ -407,8 +591,23 @@ export function TopicsCenter() {
             </div>
 
             <div className="flex items-center justify-end gap-3 border-t border-[var(--kaypal-v3-border)] p-4">
+              <V2GhostButton
+                icon={Trash2}
+                loading={acting}
+                onClick={() => void handleDelete(viewing.id)}
+                className="text-[var(--kaypal-v3-danger)]"
+              >
+                删除
+              </V2GhostButton>
               <V2GhostButton icon={RefreshCcw} loading={acting} onClick={handleRescore}>
                 重新评分
+              </V2GhostButton>
+              <V2GhostButton
+                icon={FileText}
+                loading={acting}
+                onClick={() => void handleCreateContent(viewing.id, "article")}
+              >
+                创作文章
               </V2GhostButton>
               <V2PrimaryButton icon={Send} loading={acting} onClick={handlePublishToggle}>
                 {viewing.isPublished ? "取消发布" : "发布这个选题"}
