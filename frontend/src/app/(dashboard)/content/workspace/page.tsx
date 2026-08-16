@@ -1,13 +1,10 @@
-import { HybridRoute } from "@/components/v2/hybrid-route";
-import { ContentWorkspaceCenter } from "./content-workspace-center";
-import LegacyPage from "./page-legacy";
+import { Suspense } from "react";
+import { ContentWorkspaceRoute } from "./content-workspace-route";
 
 export default function Page() {
   return (
-    <HybridRoute
-      v2={<ContentWorkspaceCenter />}
-      legacy={<LegacyPage />}
-      hideBack
-    />
+    <Suspense fallback={null}>
+      <ContentWorkspaceRoute />
+    </Suspense>
   );
 }
