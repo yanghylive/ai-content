@@ -168,11 +168,13 @@ export class EntitlementsService {
    * 快照失败不阻断主流程（记账是旁路），仅记录告警。
    */
   async captureSnapshot(
-    user: AuthenticatedUser | null | undefined,
+    user: unknown,
     context: string,
     refId?: string,
   ): Promise<void> {
-    const entitlement = this.getEffectiveEntitlement(user);
+    const entitlement = this.getEffectiveEntitlement(
+      (user ?? null) as AuthenticatedUser | null,
+    );
     try {
       await this.prisma.entitlementSnapshot.create({
         data: {
