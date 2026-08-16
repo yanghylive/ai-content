@@ -265,4 +265,33 @@ describe('DashboardService 归因链', () => {
     expect(result.leadCount).toBe(1);
     expect(result.article).toMatchObject({ id: 'article-1' });
   });
+
+  it('unifiedTaskCenter 聚合三模块任务并归一状态', async () => {
+    const prisma = {
+      publishRecord: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'pub-1', status: 'failed', accountId: 'acc-1', publishUrl: null, updatedAt: new Date('2026-08-16T12:00:00Z') },
+        ]),
+      },
+      interactionTask: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'it-1', status: 'WAITING_FOR_SEND_CONFIRMATION', taskType: 'comment-reply', currentTarget: null, updatedAt: new Date('2026-08-16T11:00:00Z') },
+        ]),
+      },
+      runtimeExecution: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 're-1', status: 'running', taskType: 'browser', userMessage: '打开网页', updatedAt: new Date('2026-08-16T10:00:00Z') },
+        ]),
+      },
+    };
+    const systemLogsService = { getRecent: jest.fn() };
+    const service = new DashboardService(prisma as never, systemLogsService as never);
+
+    const result = await service.unifiedTaskCenter(20);
+
+    expect(result.total).toBe(3);
+    // 各模块状态归一：failed→failed、WAITING_FOR_SEND_CONFIRMATION→waiting、running→running
+    const statuses = result.items.map((i) => i.status).sort();
+    expect(statuses).toEqual(['failed', 'running', 'waiting']);
+  });
 });
