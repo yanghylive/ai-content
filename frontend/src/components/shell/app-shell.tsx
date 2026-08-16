@@ -23,7 +23,7 @@ import { OnboardingGuide } from "./onboarding-guide";
 import "./shell.css";
 import "./desktop-vp.css";
 
-/* ---------- 场景定义（顺序 = 快捷键 1-6） ---------- */
+/* ---------- 场景定义（顺序 = 快捷键 1-5；「我的」第 6 个硬编码在 rail 末尾） ---------- */
 const SCENES: Array<{
   key: string;
   href: string;
@@ -31,17 +31,28 @@ const SCENES: Array<{
   icon: ShellIconName;
 }> = [
   { key: "today", href: "/today", label: "今天", icon: "home" },
-  { key: "agent", href: "/agent", label: "助手", icon: "cpu" },
-  { key: "customer", href: "/customer", label: "客户", icon: "users" },
   { key: "content", href: "/content", label: "内容", icon: "fileText" },
-  { key: "message", href: "/message", label: "消息", icon: "message" },
-  { key: "mine", href: "/mine", label: "我的", icon: "user" },
+  { key: "publish", href: "/distribution", label: "发布", icon: "send" },
+  { key: "interaction", href: "/message", label: "互动", icon: "message" },
+  { key: "customer", href: "/customer", label: "客户", icon: "users" },
 ];
 
 /** 任意路径 → 所属场景（旧页面也能点亮正确的 rail 图标） */
 export function sceneOfPath(pathname: string): string {
   if (pathname === "/" || pathname.startsWith("/today")) return "today";
-  if (pathname.startsWith("/agent")) return "agent";
+  if (
+    pathname.startsWith("/content") ||
+    pathname.startsWith("/materials") ||
+    pathname.startsWith("/solutions")
+  )
+    return "content";
+  if (
+    pathname.startsWith("/distribution") ||
+    pathname.startsWith("/compliance") ||
+    pathname.startsWith("/platforms")
+  )
+    return "publish";
+  // 评论获客 → 线索 → 客户（先于 interaction 判断，避免被 /engagement 兜走）
   if (
     pathname.startsWith("/customer") ||
     pathname.startsWith("/growth") ||
@@ -50,14 +61,6 @@ export function sceneOfPath(pathname: string): string {
   )
     return "customer";
   if (
-    pathname.startsWith("/content") ||
-    pathname.startsWith("/materials") ||
-    pathname.startsWith("/distribution") ||
-    pathname.startsWith("/compliance") ||
-    pathname.startsWith("/solutions")
-  )
-    return "content";
-  if (
     pathname.startsWith("/message") ||
     pathname.startsWith("/engagement") ||
     pathname.startsWith("/tasks") ||
@@ -65,7 +68,9 @@ export function sceneOfPath(pathname: string): string {
     pathname.startsWith("/douyin") ||
     pathname.startsWith("/wechat")
   )
-    return "message";
+    return "interaction";
+  // 助手保留场景 key（供全局助手 /agent 页高亮），但不占一级导航
+  if (pathname.startsWith("/agent")) return "agent";
   return "mine";
 }
 
@@ -302,7 +307,7 @@ export function AppShell({
 
   const badgeOf = (key: string) => {
     if (key === "today") return badges.today;
-    if (key === "message") return badges.waiting;
+    if (key === "interaction") return badges.waiting;
     return 0;
   };
 
@@ -314,7 +319,7 @@ export function AppShell({
           badges={{
             today: badges.today,
             publish: badges.failed,
-            message: badges.waiting,
+            interaction: badges.waiting,
           }}
           onOpenPalette={() => setPaletteOpen(true)}
         >
@@ -371,6 +376,15 @@ export function AppShell({
             onClick={toggleTheme}
           >
             <ShellIcon name={dark ? "sun" : "moon"} />
+          </button>
+          <button
+            className={`kx-rail-item${activeScene === "agent" ? " kx-active" : ""}`}
+            aria-label="助手"
+            aria-current={activeScene === "agent" ? "page" : undefined}
+            onClick={() => router.push("/agent")}
+          >
+            <ShellIcon name="cpu" size={22} />
+            <span className="kx-rail-lbl">助手</span>
           </button>
           <button
             className={`kx-rail-item${activeScene === "mine" ? " kx-active" : ""}`}
