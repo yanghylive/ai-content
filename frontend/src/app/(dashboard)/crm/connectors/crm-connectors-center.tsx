@@ -20,8 +20,33 @@ interface ConnectorItem {
   connectorKey: string;
   connectorName: string;
   status: string;
+  mode?: string;
+  readinessStatus?: string;
   summary?: string;
   nextActions?: string[];
+}
+
+/**
+ * 连接器状态 → 诚实标注（报告 7.6）：后端返回 contract-only / dry-run-only，
+ * 均「不联网、不收 token、不写外部系统」，不能叫「已连接」。
+ */
+function connectorStatusMeta(item: ConnectorItem): {
+  label: string;
+  tone: "success" | "warning" | "muted";
+} {
+  const mode = (item.mode || "").toLowerCase();
+  const status = (item.status || "").toLowerCase();
+  if (status === "connected" || mode.includes("write") || mode.includes("synced")) {
+    return { label: "已连接", tone: "success" };
+  }
+  if (mode.includes("read") || mode.includes("no-token") || mode.includes("contract") || mode.includes("dry-run")) {
+    return { label: "只读预配置", tone: "warning" };
+  }
+  if (status === "ready") return { label: "就绪", tone: "success" };
+  if (status === "failed" || status === "expired") {
+    return { label: status === "failed" ? "失败" : "已过期", tone: "muted" };
+  }
+  return { label: "待配置", tone: "muted" };
 }
 
 /** 连接器说明脱敏：把内部合同/干跑阶段描述替换为面向客户的文案 */
@@ -100,7 +125,9 @@ export function CrmConnectorsCenter() {
     }
   };
 
-  const readyCount = items.filter((i) => i.status === "ready" || i.status === "connected").length;
+  const readyCount = items.filter(
+    (i) => connectorStatusMeta(i).tone === "success",
+  ).length;
   const isMobile = useIsMobile();
 
   if (isMobile) {
@@ -167,8 +194,8 @@ export function CrmConnectorsCenter() {
                       ) : null}
                     </div>
                     <div className="mx-row-right">
-                      <span className={`mx-badge ${item.status === "ready" || item.status === "connected" ? "mx-badge-green" : "mx-badge-gold"}`}>
-                        {item.status === "ready" ? "就绪" : item.status === "connected" ? "已连接" : "待配置"}
+                      <span className={`mx-badge ${connectorStatusMeta(item).tone === "success" ? "mx-badge-green" : "mx-badge-gold"}`}>
+                        {connectorStatusMeta(item).label}
                       </span>
                     </div>
                   </div>
@@ -230,8 +257,8 @@ export function CrmConnectorsCenter() {
               <div key={item.connectorKey} className="kaypal-v3-surface p-5">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium text-[var(--kaypal-v3-ink)]">{item.connectorName}</h3>
-                  <V2StatusChip tone={item.status === "ready" || item.status === "connected" ? "success" : "warning"}>
-                    {item.status === "ready" ? "就绪" : item.status === "connected" ? "已连接" : "待配置"}
+                  <V2StatusChip tone={connectorStatusMeta(item).tone}>
+                    {connectorStatusMeta(item).label}
                   </V2StatusChip>
                 </div>
                 {item.summary ? (
