@@ -70,6 +70,8 @@ interface OpportunityInput {
   nextStep?: string;
   competitor?: string;
   source?: string;
+  winReason?: string;
+  loseReason?: string;
   metadata?: unknown;
 }
 
@@ -869,6 +871,8 @@ export class CrmService {
         nextStep: this.optionalString(input.nextStep),
         competitor: this.optionalString(input.competitor),
         source: this.optionalString(input.source),
+        winReason: this.optionalString(input.winReason),
+        loseReason: this.optionalString(input.loseReason),
         metadata: this.toRecord(input.metadata),
       },
     });
@@ -916,6 +920,8 @@ export class CrmService {
       'nextStep',
       'competitor',
       'source',
+      'winReason',
+      'loseReason',
     ] as const) {
       if (key in input) {
         const value = this.optionalString(input[key]);
