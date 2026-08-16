@@ -16,6 +16,8 @@ import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PublishTrackingService } from './publish-tracking.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { MeteringService } from '../metering/metering.service';
+import { EntitlementsService } from '../entitlements/entitlements.service';
 import {
   resolveProjectDataPath,
   resolveProjectLogPath,
@@ -310,6 +312,8 @@ export class AutoUploadService {
     @Optional()
     private readonly riskPolicyService?: RiskPolicyService,
     @Optional() private readonly imagePreprocessor?: RemoteImagePreprocessor,
+    @Optional() private readonly metering?: MeteringService,
+    @Optional() private readonly entitlements?: EntitlementsService,
   ) {}
 
   private get publishRecordStore() {
@@ -1758,6 +1762,25 @@ export class AutoUploadService {
         context: options.context,
         reason: '发布前检查不会向平台提交内容。',
       });
+    }
+
+    // 商用账本（阶段 B）：风险确认通过后，快照授权状态 + 预占发布用量（旁路，失败不阻断）
+    const actorUser = this.authRequestContext?.get()?.user ?? null;
+    if (actorUser) {
+      void this.entitlements
+        ?.captureSnapshot(actorUser, 'publish', undefined)
+        .catch(() => {});
+      if (this.metering) {
+        void this.metering
+          .reserve({
+            userId: actorUser.id,
+            meter: 'publish',
+            amount: payloads.length,
+            context: 'publish',
+            idempotencyKey: options.confirmationId || undefined,
+          })
+          .catch(() => {});
+      }
     }
 
     const articleIdentityIssues =
