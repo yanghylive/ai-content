@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
+import { VideoWorkshopService } from '../video-workshop/video-workshop.service';
 import {
   normalizeTaskStatus,
   type TaskModuleName,
@@ -103,6 +104,8 @@ export class DashboardService {
   constructor(
     private prisma: PrismaService,
     private systemLogsService: SystemLogsService,
+    @Optional()
+    private readonly videoWorkshop?: VideoWorkshopService,
   ) {}
 
   // 获取最近的系统运行日志
@@ -151,11 +154,11 @@ export class DashboardService {
 
   /**
    * 统一任务中心（报告 16.3 第 14 项）：聚合 auto-upload / interaction /
-   * local-engine 三套任务列表，归一成统一状态，供任务中心统一展示。
+   * local-engine / video-workshop 四套任务列表，归一成统一状态。
    */
   async unifiedTaskCenter(limit = 50) {
     const take = Math.min(Math.max(limit, 1), 100);
-    const [publishRecords, interactionTasks, runtimeExecutions] =
+    const [publishRecords, interactionTasks, runtimeExecutions, videoTasks] =
       await Promise.all([
         this.prisma.publishRecord.findMany({
           where: { status: { in: ['pending', 'failed'] } },
@@ -176,6 +179,9 @@ export class DashboardService {
           orderBy: { updatedAt: 'desc' },
           take,
         }),
+        this.videoWorkshop
+          ? this.videoWorkshop.listTasks(take).catch(() => [])
+          : Promise.resolve([]),
       ]);
 
     type UnifiedTaskItem = {
@@ -206,6 +212,13 @@ export class DashboardService {
         title: e.userMessage || e.taskType || `执行任务 ${e.id}`,
         status: normalizeTaskStatus('local-engine', e.status),
         updatedAt: e.updatedAt,
+      })),
+      ...videoTasks.map((t) => ({
+        module: 'video-workshop' as const,
+        id: t.id,
+        title: t.stage || (t.kind === 'render' ? '视频渲染' : '视频下载'),
+        status: normalizeTaskStatus('video-workshop', t.status),
+        updatedAt: new Date(t.updatedAt),
       })),
     ].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
