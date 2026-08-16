@@ -22,6 +22,16 @@ const FORMAT_LABELS: Record<string, string> = {
   image: "图片",
 };
 
+// 报告 4.2：大量「未命名」内容 —— title 为空时用选题/关键词兜底，不显示空白
+function articleTitle(article: DraftArticle): string {
+  if (article.title?.trim()) return article.title;
+  if (article.topicTitle?.trim()) return `【${article.topicTitle}】待发布`;
+  if (article.keywords?.length) {
+    return `待发布内容（${article.keywords.slice(0, 3).join("、")}）`;
+  }
+  return "未命名内容";
+}
+
 export function DistributionArticles() {
   const router = useRouter();
   const [articles, setArticles] = useState<DraftArticle[]>([]);
@@ -85,7 +95,7 @@ export function DistributionArticles() {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5Z" /><path d="M14 3v4a2 2 0 0 0 2 2h4" /></svg>
                   </span>
                   <div className="mx-row-main">
-                    <div className="mx-row-title">{article.title || "未命名"}</div>
+                    <div className="mx-row-title">{articleTitle(article)}</div>
                     <div className="mx-row-desc">
                       {FORMAT_LABELS[article.contentFormat] || article.contentFormat}
                       {article.topicTitle ? ` · 选题：${article.topicTitle}` : ""}
@@ -168,7 +178,7 @@ export function DistributionArticles() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-[var(--kaypal-v3-ink)]">
-                      {article.title || "未命名"}
+                      {articleTitle(article)}
                     </h3>
                     <V2StatusChip tone="accent">
                       {FORMAT_LABELS[article.contentFormat] || article.contentFormat}
