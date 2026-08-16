@@ -2404,6 +2404,9 @@ export class PrismaService
       ['materials', 'owner_id', 'TEXT'],
       ['materials', 'tenant_id', 'TEXT'],
       ['materials', 'visibility', "TEXT NOT NULL DEFAULT 'private'"],
+      // 归因链（阶段 B）：互动归因到内容/某次发布
+      ['interaction_tasks', 'sourceArticleId', 'TEXT'],
+      ['interaction_tasks', 'publishRecordId', 'TEXT'],
     ] as const) {
       await this.ensureSqliteColumn(column[0], column[1], column[2]);
     }

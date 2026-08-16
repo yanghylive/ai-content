@@ -1599,6 +1599,9 @@ model InteractionTask {
   createdBy                  String?               @map("createdBy")
   localTaskId                String?               @map("localTaskId")
   requiresDoubleConfirmation Boolean               @default(false) @map("requiresDoubleConfirmation")
+  // 归因链（阶段 B）：互动归因到内容/某次发布
+  sourceArticleId            String?               @map("sourceArticleId")
+  publishRecordId            String?               @map("publishRecordId")
   createdAt                  DateTime              @default(now()) @map("createdAt")
   claimedBy                  String?               @map("claimedBy")
   updatedAt                  DateTime              @updatedAt @map("updatedAt")
@@ -1609,6 +1612,8 @@ model InteractionTask {
   @@index([accountId])
   @@index([sessionId])
   @@index([createdAt])
+  @@index([sourceArticleId])
+  @@index([publishRecordId])
   @@map("interaction_tasks")
 }
 
