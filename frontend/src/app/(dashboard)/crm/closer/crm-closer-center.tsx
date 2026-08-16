@@ -29,32 +29,48 @@ interface Opportunity {
 }
 
 const STAGE_LABELS: Record<string, string> = {
-  lead: "线索",
-  qualified: "有意向",
-  proposal: "已报价",
-  negotiation: "谈判中",
-  won: "已成交",
-  lost: "已流失",
+  new: "新商机",
+  qualified: "资格确认",
+  discovery: "发现阶段",
+  proposal: "提案",
+  negotiation: "谈判",
+  won: "成交",
+  lost: "失单",
+  nurture: "暂缓",
 };
 
-/** 成交跟进——真实商机列表（不再写死） */
+/** 看板列顺序（报告 7.4：商机 Kanban 按阶段分列） */
+const STAGE_ORDER = [
+  "new",
+  "qualified",
+  "discovery",
+  "proposal",
+  "negotiation",
+  "won",
+  "lost",
+  "nurture",
+] as const;
+
+/** 成交跟进——真实商机列表 + 看板（不再写死） */
 export function CrmCloserCenter() {
   const router = useRouter();
   const [items, setItems] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = (await api.get("/crm/opportunities?limit=50").catch(() => null)) as
+      const result = (await api.get("/crm/opportunities?limit=200").catch(() => null)) as
         | { items?: Opportunity[] }
         | Opportunity[]
         | null;
       const list = Array.isArray(result) ? result : result?.items || [];
-      setItems(list.filter((o) => o.stage !== "won" && o.stage !== "lost"));
+      // 保留全部阶段（看板要按阶段分列），列表视图再过滤跟进中
+      setItems(list);
     } catch (err: unknown) {
       setError(toPublicError(err, "商机读取失败"));
     } finally {
@@ -66,7 +82,13 @@ export function CrmCloserCenter() {
     void load();
   }, [load]);
 
-  const totalAmount = items.reduce((sum, o) => sum + (o.expectedAmount || 0), 0);
+  const activeItems = items.filter(
+    (o) => o.stage !== "won" && o.stage !== "lost",
+  );
+  const totalAmount = activeItems.reduce(
+    (sum, o) => sum + (o.expectedAmount || 0),
+    0,
+  );
   const isMobile = useIsMobile();
 
   if (isMobile) {
@@ -85,7 +107,7 @@ export function CrmCloserCenter() {
               <div className="mx-brand-eyebrow">JIUZHANG AI</div>
               <h1 className="mx-page-title">成交跟进</h1>
               <p className="mx-page-sub">
-                跟进中 {items.length} 个
+                跟进中 {activeItems.length} 个
                 {totalAmount > 0 ? ` · 共 ¥${totalAmount.toLocaleString()}` : ""}
               </p>
             </div>
@@ -110,7 +132,7 @@ export function CrmCloserCenter() {
               <SkeletonRow width="70%" />
               <SkeletonRow width="58%" />
             </div>
-          ) : items.length === 0 ? (
+          ) : activeItems.length === 0 ? (
             <div className="mx-card mx-empty">
               <p>没有跟进中的商机</p>
               <p style={{ fontSize: 11, marginTop: 4 }}>在 CRM 里给客户建商机（意向/报价/谈判），会出现在这里</p>
@@ -118,7 +140,7 @@ export function CrmCloserCenter() {
             </div>
           ) : (
             <div className="mx-card mx-list-card">
-              {items.map((o) => (
+              {activeItems.map((o) => (
                 <button
                   key={o.id}
                   type="button"
@@ -167,12 +189,29 @@ export function CrmCloserCenter() {
           <div>
             <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">成交跟进</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              盯紧每一个快要成交的客户 · 跟进中 {items.length} 个
+              盯紧每一个快要成交的客户 · 跟进中 {activeItems.length} 个
               {totalAmount > 0 ? ` · 共 ¥${totalAmount.toLocaleString()}` : ""}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* 列表 / 看板 切换（报告 7.4） */}
+          <div className="flex items-center gap-1 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-1">
+            {(["list", "kanban"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setViewMode(m)}
+                className={`rounded-[var(--kaypal-v3-radius-sm)] px-3 py-1.5 text-sm font-medium transition ${
+                  viewMode === m
+                    ? "bg-[var(--kaypal-v3-accent)] text-white"
+                    : "text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-muted)]"
+                }`}
+              >
+                {m === "list" ? "列表" : "看板"}
+              </button>
+            ))}
+          </div>
           <V2GhostButton icon={RefreshCcw} onClick={() => void load()}>刷新</V2GhostButton>
           <V2PrimaryButton onClick={() => router.push("/crm")}>去 CRM</V2PrimaryButton>
         </div>
@@ -188,7 +227,9 @@ export function CrmCloserCenter() {
         <div className="py-10 text-center">
           <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         </div>
-      ) : items.length === 0 ? (
+      ) : viewMode === "kanban" ? (
+        <OpportunityKanban items={items} onSelect={setSelectedId} />
+      ) : activeItems.length === 0 ? (
         <V2EmptyState
           icon={Target}
           title="没有跟进中的商机"
@@ -198,9 +239,9 @@ export function CrmCloserCenter() {
           }
         />
       ) : (
-        <V2Section title={`跟进中（${items.length}）`}>
+        <V2Section title={`跟进中（${activeItems.length}）`}>
           <div className="flex flex-col gap-3">
-            {items.map((o) => (
+            {activeItems.map((o) => (
               <button
                 key={o.id}
                 type="button"
@@ -233,6 +274,73 @@ export function CrmCloserCenter() {
           onChanged={() => void load()}
         />
       )}
+    </div>
+  );
+}
+
+/** 商机看板（报告 7.4）：按 8 阶段分列，点卡片打开商机详情推进阶段 */
+function OpportunityKanban({
+  items,
+  onSelect,
+}: {
+  items: Opportunity[];
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <div className="flex gap-3" style={{ minWidth: 8 * 220 }}>
+        {STAGE_ORDER.map((stage) => {
+          const stageItems = items.filter((o) => (o.stage || "new") === stage);
+          const stageTotal = stageItems.reduce(
+            (sum, o) => sum + (o.expectedAmount || 0),
+            0,
+          );
+          return (
+            <div
+              key={stage}
+              className="kaypal-v3-surface flex w-[220px] shrink-0 flex-col p-3"
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+                  {STAGE_LABELS[stage]}
+                </span>
+                <span className="rounded-full bg-[var(--kaypal-v3-paper-muted)] px-2 py-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+                  {stageItems.length}
+                </span>
+              </div>
+              {stageTotal > 0 && (
+                <p className="mb-2 text-xs text-[var(--kaypal-v3-muted)]">
+                  ¥{stageTotal.toLocaleString()}
+                </p>
+              )}
+              <div className="flex flex-col gap-2">
+                {stageItems.length === 0 ? (
+                  <p className="py-3 text-center text-xs text-[var(--kaypal-v3-muted)]">
+                    暂无
+                  </p>
+                ) : (
+                  stageItems.map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      className="kaypal-v3-panel p-3 text-left transition hover:border-[var(--kaypal-v3-accent)]"
+                      onClick={() => onSelect(o.id)}
+                    >
+                      <p className="truncate text-sm font-medium text-[var(--kaypal-v3-ink)]">
+                        {o.name}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-[var(--kaypal-v3-muted)]">
+                        {o.customerName || "未关联客户"}
+                        {o.expectedAmount ? ` · ¥${o.expectedAmount.toLocaleString()}` : ""}
+                      </p>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
