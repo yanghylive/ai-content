@@ -41,6 +41,8 @@ export interface LeadUpsertInput {
   replyPersonaId?: string | null;
   lastError?: string | null;
   ownerUserId?: string | null;
+  customerId?: string | null;
+  nextFollowUpAt?: Date | string | null;
 }
 
 export interface LeadUpsertResult {
@@ -69,6 +71,70 @@ export class LeadRepository {
       .createHash('sha256')
       .update(`${input.platform}:${identity}`)
       .digest('hex')}`;
+  }
+
+  /**
+   * GrowthLead → LeadUpsertInput 字段映射（六步闭环 7.2 A「收敛为统一线索模型」）。
+   * GrowthLead 特有关联 crmCustomerId → customerId；videoTitle/videoUrl/commentTime
+   * 折叠进 signals 保留不丢。供迁移/双写阶段把 GrowthLead 写入统一到 Lead。
+   */
+  static fromGrowthLead(input: {
+    userId: string;
+    tenantId?: string | null;
+    platform: string;
+    sourceType: string;
+    sourceTaskId?: string | null;
+    sourceRunId?: string | null;
+    crmCustomerId?: string | null;
+    nickname?: string | null;
+    profileUrl?: string | null;
+    avatarUrl?: string | null;
+    externalUserId?: string | null;
+    sourceText?: string | null;
+    sourceUrl?: string | null;
+    videoTitle?: string | null;
+    videoUrl?: string | null;
+    commentTime?: string | null;
+    matchedKeywords?: unknown;
+    score?: number;
+    scoreReasons?: unknown;
+    ownerUserId?: string | null;
+    nextFollowUpAt?: Date | string | null;
+    latestReply?: string | null;
+  }): LeadUpsertInput {
+    const growthSignals =
+      input.videoTitle || input.videoUrl || input.commentTime
+        ? [
+            {
+              source: 'growth_lead',
+              videoTitle: input.videoTitle ?? null,
+              videoUrl: input.videoUrl ?? null,
+              commentTime: input.commentTime ?? null,
+            },
+          ]
+        : [];
+    return {
+      userId: input.userId,
+      tenantId: input.tenantId,
+      platform: input.platform,
+      sourceType: input.sourceType,
+      sourceTaskId: input.sourceTaskId,
+      sourceRunId: input.sourceRunId,
+      sourceUrl: input.sourceUrl,
+      sourceText: input.sourceText,
+      externalUserId: input.externalUserId,
+      nickname: input.nickname,
+      profileUrl: input.profileUrl,
+      avatarUrl: input.avatarUrl,
+      score: input.score,
+      scoreReasons: input.scoreReasons as Prisma.InputJsonValue,
+      matchedKeywords: input.matchedKeywords as Prisma.InputJsonValue,
+      latestReply: input.latestReply,
+      ownerUserId: input.ownerUserId,
+      customerId: input.crmCustomerId ?? null,
+      nextFollowUpAt: input.nextFollowUpAt ?? null,
+      signals: growthSignals as Prisma.InputJsonValue,
+    };
   }
 
   private dedupeWhere(
@@ -131,6 +197,10 @@ export class LeadRepository {
           commentRef: input.commentRef ?? existing.commentRef ?? null,
           lastError: input.lastError ?? existing.lastError ?? null,
           ownerUserId: existing.ownerUserId ?? input.ownerUserId ?? null,
+          customerId: existing.customerId ?? input.customerId ?? null,
+          nextFollowUpAt:
+            existing.nextFollowUpAt ??
+            (input.nextFollowUpAt ? new Date(input.nextFollowUpAt) : null),
         },
       });
       return { lead, created: false };
@@ -164,6 +234,10 @@ export class LeadRepository {
         replyPersonaId: input.replyPersonaId ?? null,
         lastError: input.lastError ?? null,
         ownerUserId: input.ownerUserId ?? null,
+        customerId: input.customerId ?? null,
+        nextFollowUpAt: input.nextFollowUpAt
+          ? new Date(input.nextFollowUpAt)
+          : null,
       },
     });
     this.events.emit({
