@@ -4,21 +4,20 @@ import React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  Divider,
-  Input,
+  V2StatusChip,
+  V2PrimaryButton,
+  V2GhostButton,
+  V2DangerButton,
+  V2Input,
+} from "@/components/v2/ui-kit";
+import {
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Progress,
   Select,
   SelectItem,
-  Spinner,
   Switch,
   Table,
   TableBody,
@@ -449,7 +448,7 @@ export default function LocalEnginePage() {
     <React.Suspense
       fallback={
         <div className="flex min-h-[360px] items-center justify-center">
-          <Spinner size="sm" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         </div>
       }
     >
@@ -466,7 +465,7 @@ export function InteractionRoutePage({
     <React.Suspense
       fallback={
         <div className="flex min-h-[360px] items-center justify-center">
-          <Spinner size="sm" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         </div>
       }
     >
@@ -809,11 +808,11 @@ function LocalEngineContent() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Chip
-            color={
-              statusChecking ? "default" : requiredReady ? "success" : "danger"
+          <V2StatusChip
+            tone={
+              statusChecking ? "muted" : requiredReady ? "success" : "danger"
             }
-            variant="flat"
+           
           >
             {statusChecking
               ? "检查中"
@@ -822,10 +821,9 @@ function LocalEngineContent() {
                 : requiredIssueCount > 0
                   ? `需处理 ${requiredIssueCount}`
                   : "状态未确认"}
-          </Chip>
-          <Button
-            color="primary"
-            isLoading={
+          </V2StatusChip>
+          <V2GhostButton
+            loading={
               loading ||
               tasksLoading ||
               browserLoading ||
@@ -835,20 +833,7 @@ function LocalEngineContent() {
               wechatContactsLoading ||
               runtimeLoading
             }
-            startContent={
-              loading ||
-              tasksLoading ||
-              browserLoading ||
-              executorsLoading ||
-              filesLoading ||
-              readinessLoading ||
-              wechatContactsLoading ||
-              runtimeLoading ? null : (
-                <Icon icon="solar:refresh-linear" />
-              )
-            }
-            variant="flat"
-            onPress={() => {
+            onClick={() => {
               Promise.all([
                 refreshHealth(),
                 refreshTasks(),
@@ -864,8 +849,9 @@ function LocalEngineContent() {
               });
             }}
           >
+            <Icon icon="solar:refresh-linear" />
             刷新
-          </Button>
+          </V2GhostButton>
         </div>
       </header>
       <RunCheckNav selectedTab={selectedTab} />
@@ -1181,14 +1167,13 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
         <p className="text-small text-default-500">
           当前版本暂不支持微信会话、微信群发和朋友圈发布，请使用抖音和视频号互动功能。
         </p>
-        <Button
-          as={Link}
-          color="primary"
+        <Link
           href="/engagement"
-          startContent={<Icon icon="solar:widget-linear" />}
+          className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
         >
+          <Icon icon="solar:widget-linear" />
           返回客户互动
-        </Button>
+        </Link>
       </div>
     );
   }
@@ -1216,21 +1201,16 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Chip color={health?.online ? "success" : "danger"} variant="flat">
+          <V2StatusChip tone={health?.online ? "success" : "danger"}>
             {healthLoading
               ? "检查中"
               : health?.online
                 ? "引擎在线"
                 : "引擎离线"}
-          </Chip>
-          <Button
-            color="primary"
-            isLoading={isLoading}
-            startContent={
-              isLoading ? null : <Icon icon="solar:refresh-linear" />
-            }
-            variant="flat"
-            onPress={() => {
+          </V2StatusChip>
+          <V2GhostButton
+            loading={isLoading}
+            onClick={() => {
               const calls: Array<Promise<void>> = [refreshHealth()];
               if (businessRoute) {
                 calls.push(refreshBrowserStatus());
@@ -1247,8 +1227,9 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
               });
             }}
           >
+            <Icon icon="solar:refresh-linear" />
             刷新
-          </Button>
+          </V2GhostButton>
         </div>
       </header>
       {isBusinessRoute ? (
@@ -1310,18 +1291,18 @@ function RunCheckNav({ selectedTab }: { selectedTab: LocalEngineTabKey }) {
         {runCheckNavItems.map((item) => {
           const active = item.key === selectedTab;
           return (
-            <Button
+            <Link
               key={item.key}
-              as={Link}
-              className="justify-start"
-              color={active ? "primary" : "default"}
               href={item.href}
-              size="sm"
-              startContent={<Icon icon={item.icon} />}
-              variant={active ? "flat" : "light"}
+              className={`inline-flex items-center justify-start gap-2 rounded-[var(--kaypal-v3-radius-sm)] px-4 py-2.5 text-sm font-medium transition ${
+                active
+                  ? "bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
+                  : "text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-accent-soft)]"
+              }`}
             >
+              <Icon icon={item.icon} />
               {item.title}
-            </Button>
+            </Link>
           );
         })}
       </div>
@@ -1365,15 +1346,15 @@ function EngineOverview({
   agentSLoading: boolean;
 }) {
   if (loading && !health) {
-    return <Spinner size="sm" />;
+    return <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />;
   }
   if (!health) {
     return (
-      <Card className="border-small border-danger-200 bg-danger-50 shadow-sm">
-        <CardBody className="text-small text-danger-700">
+      <section className="kaypal-v3-panel overflow-hidden border-[var(--kaypal-v3-danger)]">
+        <div className="text-small text-danger-700">
           本机助手暂不可用，请稍后重新检查。
-        </CardBody>
-      </Card>
+        </div>
+      </section>
     );
   }
   const agentSAssessment = getAgentSAssessment(agentSStatus, agentSLoading);
@@ -1388,8 +1369,8 @@ function EngineOverview({
     (health.requiredBlocked ?? 0) + readinessBlockerCount;
   return (
     <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody className="gap-4">
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div className="gap-4">
           <div>
             <h3 className="text-medium font-semibold text-default-900">
               本机助手总览
@@ -1430,10 +1411,10 @@ function EngineOverview({
               wide
             />
           </div>
-        </CardBody>
-      </Card>
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody className="gap-3">
+        </div>
+      </section>
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div className="gap-3">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-medium font-semibold text-default-900">
@@ -1447,29 +1428,27 @@ function EngineOverview({
                     : "部分服务需要处理，完成后再继续任务。"}
               </p>
             </div>
-            <Chip
-              color={runtimeStatus?.allOnline ? "success" : "warning"}
-              variant="flat"
+            <V2StatusChip
+              tone={runtimeStatus?.allOnline ? "success" : "warning"}
+             
             >
               {runtimeLoading
                 ? "检查中"
                 : runtimeStatus?.allOnline
                   ? "可用"
                   : "需处理"}
-            </Chip>
+            </V2StatusChip>
           </div>
-          <Button
-            as={Link}
+          <Link
             href="/local-engine?tab=logs"
-            size="sm"
-            variant="flat"
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
           >
             查看高级信息
-          </Button>
-        </CardBody>
-      </Card>
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody className="gap-4">
+          </Link>
+        </div>
+      </section>
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div className="gap-4">
           <h3 className="text-medium font-semibold text-default-900">
             任务概况
           </h3>
@@ -1479,8 +1458,8 @@ function EngineOverview({
             <QueueItem label="已完成" value={health.queue.completed} />
             <QueueItem label="失败" value={health.queue.failed} />
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      </section>
       <div className="lg:col-span-2">
         <RunCheckDetailsPanel
           health={health}
@@ -2399,8 +2378,8 @@ function RunCheckDetailsPanel({
   }, [selectedItem]);
 
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-4">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h3 className="text-medium font-semibold text-default-900">
@@ -2411,46 +2390,43 @@ function RunCheckDetailsPanel({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Chip color="success" size="sm" variant="flat">
+            <V2StatusChip tone="success">
               正常 {readyCount}
-            </Chip>
-            <Chip color="warning" size="sm" variant="flat">
+            </V2StatusChip>
+            <V2StatusChip tone="warning">
               需留意 {warningCount}
-            </Chip>
-            <Chip color="danger" size="sm" variant="flat">
+            </V2StatusChip>
+            <V2StatusChip tone="danger">
               需处理 {dangerCount}
-            </Chip>
-            <Chip size="sm" variant="flat">
+            </V2StatusChip>
+            <V2StatusChip>
               待检查 {deferredCount}
-            </Chip>
-            <Chip size="sm" variant="flat">
+            </V2StatusChip>
+            <V2StatusChip>
               未启用 {mutedCount}
-            </Chip>
-            <Chip size="sm" variant="flat">
+            </V2StatusChip>
+            <V2StatusChip>
               合计 {allItems.length}
-            </Chip>
+            </V2StatusChip>
           </div>
         </div>
         <div className="local-engine-console__filterbar grid gap-3 rounded-[8px] border-small border-divider bg-default-50 p-3 md:grid-cols-[minmax(240px,1fr)_180px_180px_auto] md:items-end">
-          <Input
-            aria-label="搜索功能状态"
-            label="搜索"
-            placeholder="功能、账号或处理建议"
-            size="sm"
-            startContent={
-              <Icon
-                icon="solar:magnifer-linear"
-                className="text-lg text-default-400"
-              />
-            }
-            value={query}
-            onValueChange={setQuery}
-          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              搜索
+            </label>
+            <V2Input
+              aria-label="搜索功能状态"
+              placeholder="功能、账号或处理建议"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
           <Select
             aria-label="按状态筛选"
             label="状态"
             selectedKeys={[statusFilter]}
-            size="sm"
+           
             onSelectionChange={(keys) => {
               const value = Array.from(keys)[0] as
                 "all" | RunCheckDetailTone | undefined;
@@ -2469,7 +2445,7 @@ function RunCheckDetailsPanel({
             items={groupFilterOptions}
             label="分类"
             selectedKeys={[groupFilter]}
-            size="sm"
+           
             onSelectionChange={(keys) => {
               const value = Array.from(keys)[0] as string | undefined;
               if (value) setGroupFilter(value);
@@ -2477,18 +2453,18 @@ function RunCheckDetailsPanel({
           >
             {(group) => <SelectItem key={group.key}>{group.title}</SelectItem>}
           </Select>
-          <Button
+          <V2GhostButton
             className="local-engine-console__service-action md:self-end"
-            size="sm"
-            variant="flat"
-            onPress={() => {
+           
+           
+            onClick={() => {
               setQuery("");
               setStatusFilter("all");
               setGroupFilter("all");
             }}
           >
             重置筛选
-          </Button>
+          </V2GhostButton>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-small text-default-500">
@@ -2496,9 +2472,9 @@ function RunCheckDetailsPanel({
           </p>
           <div className="flex flex-wrap gap-2">
             {displayGroups.map((group) => (
-              <Chip key={group.key} size="sm" variant="flat">
+              <V2StatusChip key={group.key}>
                 {group.title} {group.items.length}
-              </Chip>
+              </V2StatusChip>
             ))}
           </div>
         </div>
@@ -2536,13 +2512,13 @@ function RunCheckDetailsPanel({
             {(item) => (
               <TableRow key={item.key}>
                 <TableCell>
-                  <Chip
-                    color={runCheckToneColor(item.status)}
-                    size="sm"
-                    variant="flat"
+                  <V2StatusChip
+                    tone={runCheckToneColor(item.status)}
+                   
+                   
                   >
                     {item.statusLabel}
-                  </Chip>
+                  </V2StatusChip>
                 </TableCell>
                 <TableCell>
                   <div className="flex min-w-[120px] items-center gap-2">
@@ -2556,13 +2532,13 @@ function RunCheckDetailsPanel({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Button
+                  <V2GhostButton
                     className="h-auto min-h-0 justify-start px-0 py-0 text-left text-small font-semibold text-default-900"
-                    variant="light"
-                    onPress={() => setSelectedItem(item)}
+                   
+                    onClick={() => setSelectedItem(item)}
                   >
                     <span className="max-w-[220px] truncate">{item.name}</span>
-                  </Button>
+                  </V2GhostButton>
                 </TableCell>
                 <TableCell>
                   <p className="max-w-[320px] break-words text-small text-default-600">
@@ -2576,39 +2552,35 @@ function RunCheckDetailsPanel({
                 </TableCell>
                 <TableCell>
                   {item.actionHref ? (
-                    <Button
-                      as={Link}
-                      className="local-engine-console__service-action"
-                      color="primary"
+                    <Link
+                      className="local-engine-console__service-action inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
                       href={item.actionHref}
-                      size="sm"
-                      variant="flat"
                     >
                       {item.actionLabel || "去处理"}
-                    </Button>
+                    </Link>
                   ) : (
-                    <Button
+                    <V2GhostButton
                       className="local-engine-console__service-action"
-                      size="sm"
-                      variant="flat"
-                      onPress={() => setSelectedItem(item)}
+                     
+                     
+                      onClick={() => setSelectedItem(item)}
                     >
                       详情
-                    </Button>
+                    </V2GhostButton>
                   )}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </CardBody>
+      </div>
       {selectedItem ? (
         <RunCheckDetailDrawer
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
         />
       ) : null}
-    </Card>
+    </section>
   );
 }
 
@@ -2635,19 +2607,19 @@ function RunCheckDetailDrawer({
         <div className="local-engine-console__drawer-header">
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <Chip size="sm" variant="flat">
+              <V2StatusChip>
                 <span className="inline-flex items-center gap-1">
                   <Icon icon={item.groupIcon} className="text-base" />
                   {item.groupTitle}
                 </span>
-              </Chip>
-              <Chip
-                color={runCheckToneColor(item.status)}
-                size="sm"
-                variant="flat"
+              </V2StatusChip>
+              <V2StatusChip
+                tone={runCheckToneColor(item.status)}
+               
+               
               >
                 {item.statusLabel}
-              </Chip>
+              </V2StatusChip>
             </div>
             <h3
               className="break-words text-large font-semibold text-default-900"
@@ -2656,16 +2628,14 @@ function RunCheckDetailDrawer({
               {item.name}
             </h3>
           </div>
-          <Button
-            isIconOnly
-            aria-label="关闭详情"
+          <V2GhostButton            aria-label="关闭详情"
             className="local-engine-console__service-action shrink-0"
-            size="sm"
-            variant="flat"
-            onPress={onClose}
+           
+           
+            onClick={onClose}
           >
             <Icon icon="solar:close-circle-linear" className="text-lg" />
-          </Button>
+          </V2GhostButton>
         </div>
         <div className="local-engine-console__drawer-body">
           <section className="local-engine-console__drawer-section">
@@ -2721,22 +2691,21 @@ function RunCheckDetailDrawer({
         </div>
         <div className="local-engine-console__drawer-footer">
           {item.actionHref ? (
-            <Button
-              as={Link}
-              color="primary"
+            <Link
               href={item.actionHref}
-              onPress={onClose}
+              onClick={onClose}
+              className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
             >
               {item.actionLabel || "去处理"}
-            </Button>
+            </Link>
           ) : null}
-          <Button
+          <V2GhostButton
             className="local-engine-console__service-action"
-            variant="flat"
-            onPress={onClose}
+           
+            onClick={onClose}
           >
             关闭
-          </Button>
+          </V2GhostButton>
         </div>
       </aside>
     </div>
@@ -2769,8 +2738,8 @@ function runCheckToneColor(status: RunCheckDetailTone) {
     ready: "success",
     warning: "warning",
     danger: "danger",
-    deferred: "default",
-    muted: "default",
+    deferred: "muted",
+    muted: "muted",
   } as const;
   return map[status];
 }
@@ -2905,8 +2874,8 @@ function WechatSessionPanel() {
   const anomalies = status?.anomalySummary;
   const lock = status?.lock;
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-4">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h3 className="text-medium font-semibold text-default-900">
@@ -2917,35 +2886,32 @@ function WechatSessionPanel() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Chip
-              color={status?.canDraft ? "success" : "warning"}
-              variant="flat"
+            <V2StatusChip
+              tone={status?.canDraft ? "success" : "warning"}
+             
             >
               {status?.canDraft ? "可写入内容" : "等待确认"}
-            </Chip>
+            </V2StatusChip>
             {status?.takeoverActive ? (
-              <Chip color="primary" variant="flat">
+              <V2StatusChip tone="accent">
                 人工接管中
-              </Chip>
+              </V2StatusChip>
             ) : null}
             {status?.stopped ? (
-              <Chip color="danger" variant="flat">
+              <V2StatusChip tone="danger">
                 已停止
-              </Chip>
+              </V2StatusChip>
             ) : null}
-            <Button
-              size="sm"
-              variant="flat"
-              isLoading={loading}
-              startContent={
-                loading ? null : <Icon icon="solar:refresh-linear" />
-              }
-              onPress={() => {
+            <V2GhostButton
+             
+             
+              loading={loading}
+              onClick={() => {
                 refresh().catch(() => undefined);
               }}
             >
               刷新
-            </Button>
+            </V2GhostButton>
           </div>
         </div>
         {desktop ? (
@@ -2982,30 +2948,30 @@ function WechatSessionPanel() {
                 />
               </div>
               <div className="grid gap-2 md:grid-cols-4">
-                <Chip
-                  color={anomalies?.loggedOut ? "danger" : "success"}
-                  variant="flat"
+                <V2StatusChip
+                  tone={anomalies?.loggedOut ? "danger" : "success"}
+                 
                 >
                   {anomalies?.loggedOut ? "疑似掉线" : "登录正常"}
-                </Chip>
-                <Chip
-                  color={anomalies?.popupDetected ? "warning" : "success"}
-                  variant="flat"
+                </V2StatusChip>
+                <V2StatusChip
+                  tone={anomalies?.popupDetected ? "warning" : "success"}
+                 
                 >
                   {anomalies?.popupDetected ? "有弹窗/遮挡" : "窗口正常"}
-                </Chip>
-                <Chip
-                  color={anomalies?.contactAmbiguous ? "warning" : "success"}
-                  variant="flat"
+                </V2StatusChip>
+                <V2StatusChip
+                  tone={anomalies?.contactAmbiguous ? "warning" : "success"}
+                 
                 >
                   {anomalies?.contactAmbiguous ? "联系人需核对" : "联系人清晰"}
-                </Chip>
-                <Chip
-                  color={anomalies?.permissionBlocked ? "danger" : "success"}
-                  variant="flat"
+                </V2StatusChip>
+                <V2StatusChip
+                  tone={anomalies?.permissionBlocked ? "danger" : "success"}
+                 
                 >
                   {anomalies?.permissionBlocked ? "权限需处理" : "权限正常"}
-                </Chip>
+                </V2StatusChip>
               </div>
               <div className="grid gap-2 md:grid-cols-2">
                 {permissionChecks.map((check) => (
@@ -3017,19 +2983,19 @@ function WechatSessionPanel() {
                       <span className="text-small font-medium text-default-800">
                         {check.label}
                       </span>
-                      <Chip
-                        color={
+                      <V2StatusChip
+                        tone={
                           check.status === "allowed"
                             ? "success"
                             : check.status === "blocked"
                               ? "danger"
                               : "warning"
                         }
-                        size="sm"
-                        variant="flat"
+                       
+                       
                       >
                         {permissionStatusLabel[check.status] || check.status}
-                      </Chip>
+                      </V2StatusChip>
                     </div>
                     <p className="mt-1 text-tiny text-default-500">
                       {commercialDisplayText(check.message)}
@@ -3075,17 +3041,21 @@ function WechatSessionPanel() {
             </div>
             <div className="rounded-[8px] border-small border-divider bg-default-50 p-3">
               <div className="grid gap-3">
-                <Input
-                  label="目标联系人"
-                  placeholder="例如：张先生 / 某门店客户"
-                  value={draft.targetContact}
-                  onValueChange={(value) =>
-                    setDraft((current) => ({
-                      ...current,
-                      targetContact: value,
-                    }))
-                  }
-                />
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                    目标联系人
+                  </label>
+                  <V2Input
+                    placeholder="例如：张先生 / 某门店客户"
+                    value={draft.targetContact}
+                    onChange={(e) =>
+                      setDraft((current) => ({
+                        ...current,
+                        targetContact: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
                 <Switch
                   isSelected={draft.currentWindowConfirmed}
                   onValueChange={(value) =>
@@ -3151,43 +3121,28 @@ function WechatSessionPanel() {
                   联系人歧义已人工排除
                 </Switch>
                 <div className="flex flex-wrap gap-2">
-                  <Button
-                    color="primary"
-                    isLoading={saving === "confirm"}
-                    startContent={
-                      saving === "confirm" ? null : (
-                        <Icon icon="solar:check-circle-linear" />
-                      )
-                    }
-                    onPress={() => run("confirm")}
+                  <V2PrimaryButton
+                    
+                    loading={saving === "confirm"}
+                    onClick={() => run("confirm")}
                   >
                     确认会话
-                  </Button>
-                  <Button
-                    variant="flat"
-                    isLoading={saving === "takeover"}
-                    startContent={
-                      saving === "takeover" ? null : (
-                        <Icon icon="solar:hand-shake-linear" />
-                      )
-                    }
-                    onPress={() => run("takeover")}
+                  </V2PrimaryButton>
+                  <V2GhostButton
+                   
+                    loading={saving === "takeover"}
+                    onClick={() => run("takeover")}
                   >
                     人工接管
-                  </Button>
-                  <Button
-                    color="danger"
-                    variant="flat"
-                    isLoading={saving === "stop"}
-                    startContent={
-                      saving === "stop" ? null : (
-                        <Icon icon="solar:stop-circle-linear" />
-                      )
-                    }
-                    onPress={() => run("stop")}
+                  </V2GhostButton>
+                  <V2DangerButton
+                    
+                   
+                    loading={saving === "stop"}
+                    onClick={() => run("stop")}
                   >
                     停止会话
-                  </Button>
+                  </V2DangerButton>
                 </div>
               </div>
               {latestEvidence ? (
@@ -3204,11 +3159,11 @@ function WechatSessionPanel() {
           </div>
         ) : (
           <div className="flex justify-center py-5">
-            <Spinner size="sm" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
           </div>
         )}
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -3261,8 +3216,8 @@ function RuntimeStatusPanel({
     }
   }, [loadRuntimeLog, runtimeLog, selectedLogKey, status?.services.length]);
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-4">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-medium font-semibold text-default-900">
@@ -3273,94 +3228,72 @@ function RuntimeStatusPanel({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Chip
-              color={status?.allOnline ? "success" : "warning"}
-              variant="flat"
+            <V2StatusChip
+              tone={status?.allOnline ? "success" : "warning"}
+             
             >
               {status?.allOnline ? "全部在线" : "需检查"}
-            </Chip>
-            <Button
-              size="sm"
-              variant="flat"
-              isLoading={loading}
-              startContent={
-                loading ? null : <Icon icon="solar:refresh-linear" />
-              }
-              onPress={() => {
+            </V2StatusChip>
+            <V2GhostButton
+             
+             
+              loading={loading}
+              onClick={() => {
                 onRefresh().catch(() => {
                   addToast({ title: "刷新失败", color: "danger" });
                 });
               }}
             >
               刷新
-            </Button>
+            </V2GhostButton>
           </div>
         </div>
         <div className="local-engine-console__service-actions grid gap-2 md:grid-cols-3">
-          <Button
+          <V2GhostButton
             className="local-engine-console__service-action"
             color="success"
-            isLoading={runningAction === "start"}
-            size="sm"
-            startContent={
-              runningAction === "start" ? null : (
-                <Icon icon="solar:play-circle-linear" />
-              )
-            }
-            variant="flat"
-            onPress={() => {
+            loading={runningAction === "start"}
+           
+            onClick={() => {
               onRunAction("start").catch(() => {
                 addToast({ title: "启动失败", color: "danger" });
               });
             }}
           >
             启动服务
-          </Button>
-          <Button
+          </V2GhostButton>
+          <V2PrimaryButton
             className="local-engine-console__service-action"
-            color="primary"
-            isLoading={runningAction === "restart"}
-            size="sm"
-            startContent={
-              runningAction === "restart" ? null : (
-                <Icon icon="solar:restart-linear" />
-              )
-            }
-            variant="flat"
-            onPress={() => {
+            loading={runningAction === "restart"}
+           
+            onClick={() => {
               onRunAction("restart").catch(() => {
                 addToast({ title: "重启失败", color: "danger" });
               });
             }}
           >
             重新启动
-          </Button>
-          <Button
+          </V2PrimaryButton>
+          <V2GhostButton
             className="local-engine-console__service-action"
             color="warning"
-            isLoading={runningAction === "stop"}
-            size="sm"
-            startContent={
-              runningAction === "stop" ? null : (
-                <Icon icon="solar:stop-circle-linear" />
-              )
-            }
-            variant="flat"
-            onPress={() => {
+            loading={runningAction === "stop"}
+           
+            onClick={() => {
               onRunAction("stop").catch(() => {
                 addToast({ title: "停止失败", color: "danger" });
               });
             }}
           >
             停止服务
-          </Button>
+          </V2GhostButton>
         </div>
         <div className="rounded-[8px] border-small border-warning-200 bg-warning-50 px-4 py-3 text-tiny text-warning-700">
           重新启动或停止会让页面短暂断开；等待服务恢复后刷新即可。
         </div>
         {loading && !status ? (
           <div className="flex justify-center py-8">
-            <Spinner size="sm" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
           </div>
         ) : null}
         {status ? (
@@ -3374,13 +3307,13 @@ function RuntimeStatusPanel({
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Chip
-                          color={service.online ? "success" : "danger"}
-                          size="sm"
-                          variant="flat"
+                        <V2StatusChip
+                          tone={service.online ? "success" : "danger"}
+                         
+                         
                         >
                           {service.online ? "在线" : "离线"}
-                        </Chip>
+                        </V2StatusChip>
                         <span className="text-small font-semibold text-default-900">
                           {commercialDisplayText(service.name)}
                         </span>
@@ -3394,15 +3327,8 @@ function RuntimeStatusPanel({
                         </p>
                       ) : null}
                     </div>
-                    <Button
-                      size="sm"
-                      variant={
-                        selectedLogKey === service.key && diagnosticsOpen
-                          ? "solid"
-                          : "flat"
-                      }
-                      isLoading={logLoading && selectedLogKey === service.key}
-                      onPress={() => {
+                    <V2GhostButton                      loading={logLoading && selectedLogKey === service.key}
+                      onClick={() => {
                         setDiagnosticsOpen(true);
                         loadRuntimeLog(service.key).catch(() => {
                           addToast({
@@ -3413,7 +3339,7 @@ function RuntimeStatusPanel({
                       }}
                     >
                       查看高级信息
-                    </Button>
+                    </V2GhostButton>
                   </div>
                 </div>
               ))}
@@ -3429,22 +3355,19 @@ function RuntimeStatusPanel({
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    onPress={() => setDiagnosticsOpen((value) => !value)}
+                  <V2GhostButton
+                   
+                   
+                    onClick={() => setDiagnosticsOpen((value) => !value)}
                   >
                     {diagnosticsOpen ? "收起高级信息" : "展开高级信息"}
-                  </Button>
+                  </V2GhostButton>
                   {diagnosticsOpen ? (
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      isLoading={logLoading}
-                      startContent={
-                        logLoading ? null : <Icon icon="solar:refresh-linear" />
-                      }
-                      onPress={() => {
+                    <V2GhostButton
+                     
+                     
+                      loading={logLoading}
+                      onClick={() => {
                         loadRuntimeLog(selectedLogKey).catch(() => {
                           addToast({
                             title: "任务记录刷新失败",
@@ -3454,7 +3377,7 @@ function RuntimeStatusPanel({
                       }}
                     >
                       刷新记录
-                    </Button>
+                    </V2GhostButton>
                   ) : null}
                 </div>
               </div>
@@ -3511,8 +3434,8 @@ function RuntimeStatusPanel({
             暂未读取到处理服务状态。
           </div>
         ) : null}
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -3560,8 +3483,8 @@ function QuickAgentTaskPanel({
     }
   };
   return (
-    <Card className="local-engine-console__capability-card border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-4">
+    <section className="local-engine-console__capability-card kaypal-v3-panel overflow-hidden">
+      <div className="gap-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-primary/10 text-primary">
@@ -3574,9 +3497,9 @@ function QuickAgentTaskPanel({
               <p className="mt-1 text-small text-default-500">{description}</p>
             </div>
           </div>
-	          <Button as={Link} href="/tasks/records" variant="flat">
+	          <Link href="/tasks/records" className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]">
             查看会话
-          </Button>
+          </Link>
         </div>
         <Textarea
           label="本机任务指令"
@@ -3585,19 +3508,16 @@ function QuickAgentTaskPanel({
           onValueChange={setInstruction}
         />
         <div className="flex flex-wrap justify-end gap-2">
-          <Button
-            color="primary"
-            isLoading={creating}
-            startContent={
-              creating ? null : <Icon icon="solar:play-circle-linear" />
-            }
-            onPress={createSession}
+          <V2PrimaryButton
+            
+            loading={creating}
+            onClick={createSession}
           >
             创建本机任务
-          </Button>
+          </V2PrimaryButton>
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -3739,8 +3659,8 @@ function EvidenceReplayPanel({
   };
   return (
     <div className="grid gap-4">
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody className="gap-4">
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div className="gap-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
               <h3 className="text-medium font-semibold text-default-900">
@@ -3751,13 +3671,13 @@ function EvidenceReplayPanel({
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button
-                isLoading={tasksLoading}
-                variant="flat"
-                onPress={onRefreshTasks}
+              <V2GhostButton
+                loading={tasksLoading}
+               
+                onClick={onRefreshTasks}
               >
                 刷新任务
-              </Button>
+              </V2GhostButton>
             </div>
           </div>
           <div className="grid gap-3 md:grid-cols-4">
@@ -3823,31 +3743,31 @@ function EvidenceReplayPanel({
                         status={task.status}
                         label={task.statusLabel}
                       />
-                      <Chip size="sm" variant="flat">
+                      <V2StatusChip>
                         {task.typeLabel}
-                      </Chip>
-                      <Chip size="sm" variant="flat">
+                      </V2StatusChip>
+                      <V2StatusChip>
                         {evidenceCountForTask(task)} 条记录
-                      </Chip>
+                      </V2StatusChip>
                       {task.safetyBoundary ? (
-                        <Chip
-                          color={
+                        <V2StatusChip
+                          tone={
                             task.safetyBoundary.permissionStatus === "allowed"
                               ? "success"
                               : "warning"
                           }
-                          size="sm"
-                          variant="flat"
+                         
+                         
                         >
                           {permissionStatusLabel[
                             task.safetyBoundary.permissionStatus
                           ] || task.safetyBoundary.permissionStatus}
-                        </Chip>
+                        </V2StatusChip>
                       ) : null}
                       {task.riskPolicy?.remoteTakeoverAuditRequired ? (
-                        <Chip color="danger" size="sm" variant="flat">
+                        <V2StatusChip tone="danger">
                           远程记录
-                        </Chip>
+                        </V2StatusChip>
                       ) : null}
                     </div>
                     <p className="mt-2 text-small font-semibold text-default-900">
@@ -3867,10 +3787,10 @@ function EvidenceReplayPanel({
                     <div className="mt-3 flex flex-wrap gap-2">
                       {Object.entries(evidenceTypeCountsForTask(task)).map(
                         ([type, count]) => (
-                          <Chip key={type} size="sm" variant="flat">
+                          <V2StatusChip key={type}>
                             {evidenceTypeLabel(type as LocalEngineEvidenceType)}
                             : {count}
-                          </Chip>
+                          </V2StatusChip>
                         ),
                       )}
                     </div>
@@ -3888,25 +3808,19 @@ function EvidenceReplayPanel({
                       </div>
                     ) : null}
                   </div>
-                  <Button
-                    isLoading={exportingTaskId === task.id}
-                    size="sm"
-                    startContent={
-                      exportingTaskId === task.id ? null : (
-                        <Icon icon="solar:download-minimalistic-linear" />
-                      )
-                    }
-                    variant="flat"
-                    onPress={() => exportTask(task)}
+                  <V2GhostButton
+                    loading={exportingTaskId === task.id}
+                   
+                    onClick={() => exportTask(task)}
                   >
                     导出排查资料
-                  </Button>
+                  </V2GhostButton>
                 </div>
               </div>
             ))}
             {selectedTaskLoading ? (
               <div className="flex justify-center py-5">
-                <Spinner size="sm" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
               </div>
             ) : null}
             {!tasksLoading && !selectedTaskLoading && !evidenceTasks.length ? (
@@ -3922,10 +3836,10 @@ function EvidenceReplayPanel({
               />
             ) : null}
           </div>
-        </CardBody>
-      </Card>
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody className="gap-4">
+        </div>
+      </section>
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div className="gap-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <h3 className="text-medium font-semibold text-default-900">
@@ -3936,31 +3850,34 @@ function EvidenceReplayPanel({
               </p>
             </div>
             <div className="flex flex-wrap items-end gap-2">
-              <Input
-                className="w-32"
-                label="保留天数"
-                min={0}
-                size="sm"
-                type="number"
-                value={retentionDays}
-                onValueChange={setRetentionDays}
-              />
-              <Button
-                isLoading={cleanupLoading}
-                variant="flat"
-                onPress={previewCleanup}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                  保留天数
+                </label>
+                <V2Input
+                  className="w-32"
+                  min={0}
+                  type="number"
+                  value={retentionDays}
+                  onChange={(e) => setRetentionDays(e.target.value)}
+                />
+              </div>
+              <V2GhostButton
+                loading={cleanupLoading}
+               
+                onClick={previewCleanup}
               >
                 预览清理
-              </Button>
-              <Button
-                color="danger"
-                isDisabled={!cleanupPreview?.candidateCount}
-                isLoading={cleanupLoading}
-                variant="flat"
-                onPress={cleanupEvidence}
+              </V2GhostButton>
+              <V2DangerButton
+                
+                disabled={!cleanupPreview?.candidateCount}
+                loading={cleanupLoading}
+               
+                onClick={cleanupEvidence}
               >
                 清理旧记录
-              </Button>
+              </V2DangerButton>
             </div>
           </div>
           {cleanupPreview ? (
@@ -3991,8 +3908,8 @@ function EvidenceReplayPanel({
               点击“预览清理”后，再决定是否清理旧截图和快照。
             </div>
           )}
-        </CardBody>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }
@@ -4155,8 +4072,8 @@ function BrowserControlPanel({
     }
   };
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-5">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-medium font-semibold text-default-900">
@@ -4168,21 +4085,18 @@ function BrowserControlPanel({
           </div>
           <div className="flex items-center gap-2">
             <CapabilityChip status={capability?.status || "missing"} />
-            <Button
-              size="sm"
-              variant="flat"
-              isLoading={loading}
-              startContent={
-                loading ? null : <Icon icon="solar:refresh-linear" />
-              }
-              onPress={() => {
+            <V2GhostButton
+             
+             
+              loading={loading}
+              onClick={() => {
                 onRefresh().catch(() => {
                   addToast({ title: "刷新失败", color: "danger" });
                 });
               }}
             >
               刷新
-            </Button>
+            </V2GhostButton>
           </div>
         </div>
         <ExecutorStatusPanel
@@ -4241,9 +4155,9 @@ function BrowserControlPanel({
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Chip size="sm" variant="flat">
+                    <V2StatusChip>
                       {account.platform}
-                    </Chip>
+                    </V2StatusChip>
                     <span className="text-small font-semibold text-default-900">
                       {account.displayName}
                     </span>
@@ -4267,43 +4181,33 @@ function BrowserControlPanel({
                   ) : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                  <Chip
-                    color={account.status === "ready" ? "success" : "warning"}
-                    size="sm"
-                    variant="flat"
+                  <V2StatusChip
+                    tone={account.status === "ready" ? "success" : "warning"}
+                   
+                   
                   >
                     {account.statusLabel}
-                  </Chip>
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    color="primary"
-                    isDisabled={!canCreateTask || Boolean(creatingTaskKey)}
-                    isLoading={creatingTaskKey === commentKey}
-                    startContent={
-                      creatingTaskKey === commentKey ? null : (
-                        <Icon icon="solar:chat-round-line-linear" />
-                      )
-                    }
-                    onPress={() => createBrowserTask(account, "comments")}
+                  </V2StatusChip>
+                  <V2PrimaryButton
+                   
+                   
+                    
+                    disabled={!canCreateTask || Boolean(creatingTaskKey)}
+                    loading={creatingTaskKey === commentKey}
+                    onClick={() => createBrowserTask(account, "comments")}
                   >
                     评论检查
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="flat"
+                  </V2PrimaryButton>
+                  <V2GhostButton
+                   
+                   
                     color="secondary"
-                    isDisabled={!canCreateTask || Boolean(creatingTaskKey)}
-                    isLoading={creatingTaskKey === messageKey}
-                    startContent={
-                      creatingTaskKey === messageKey ? null : (
-                        <Icon icon="solar:letter-linear" />
-                      )
-                    }
-                    onPress={() => createBrowserTask(account, "messages")}
+                    disabled={!canCreateTask || Boolean(creatingTaskKey)}
+                    loading={creatingTaskKey === messageKey}
+                    onClick={() => createBrowserTask(account, "messages")}
                   >
                     私信检查
-                  </Button>
+                  </V2GhostButton>
                 </div>
               </div>
             );
@@ -4315,12 +4219,12 @@ function BrowserControlPanel({
           ) : null}
           {loading ? (
             <div className="flex justify-center py-8">
-              <Spinner size="sm" />
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
             </div>
           ) : null}
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -4362,19 +4266,18 @@ function ExecutorStatusPanel({
             检查评论、私信和微信回复能不能真实读取、生成内容并继续执行。
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="flat"
-          isLoading={loading}
-          startContent={loading ? null : <Icon icon="solar:refresh-linear" />}
-          onPress={() => {
+        <V2GhostButton
+         
+         
+          loading={loading}
+          onClick={() => {
             onRefresh().catch(() => {
               addToast({ title: "刷新失败", color: "danger" });
             });
           }}
         >
           重新检查
-        </Button>
+        </V2GhostButton>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-4">
         <StatusItem label="检查项" value={String(status?.summary.total ?? 0)} />
@@ -4396,7 +4299,7 @@ function ExecutorStatusPanel({
       ) : null}
       {loading && !status ? (
         <div className="flex justify-center py-5">
-          <Spinner size="sm" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
         </div>
       ) : null}
       <div className="mt-4 grid gap-3">
@@ -4410,9 +4313,9 @@ function ExecutorStatusPanel({
                     isAgentSDesktop={isAgentSDesktopExecutor(executor)}
                     agentSAssessment={agentSAssessment}
                   />
-                  <Chip size="sm" variant="flat">
+                  <V2StatusChip>
                     {executor.platformName}
-                  </Chip>
+                  </V2StatusChip>
                   <span className="text-small font-semibold text-default-900">
                     {executor.name}
                   </span>
@@ -4621,19 +4524,18 @@ function McpStatusCard() {
             个浏览器动作；平台服务会用这条路径真实打开抖音和视频号页面。
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="flat"
-          isLoading={loading}
-          startContent={loading ? null : <Icon icon="solar:refresh-linear" />}
-          onPress={() => {
+        <V2GhostButton
+         
+         
+          loading={loading}
+          onClick={() => {
             refresh().catch(() => {
               addToast({ title: "刷新失败", color: "danger" });
             });
           }}
         >
           刷新
-        </Button>
+        </V2GhostButton>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <StatusItem label="浏览器服务" value={online ? "在线" : "离线"} />
@@ -4645,26 +4547,26 @@ function McpStatusCard() {
         </p>
       ) : null}
       <div className="mt-4 flex flex-col gap-2 md:flex-row md:items-end">
-        <Input
-          size="sm"
-          value={testUrl}
-          onValueChange={setTestUrl}
-          placeholder="https://example.com"
-          label="打开网页"
-          className="flex-1"
-        />
-        <Button
-          size="sm"
-          color="primary"
-          isLoading={testRunning}
-          isDisabled={!online}
-          onPress={onTestNavigate}
-          startContent={
-            !testRunning ? <Icon icon="solar:globus-linear" /> : null
-          }
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-[var(--kaypal-v3-muted)]">
+            打开网页
+          </label>
+          <V2Input
+            value={testUrl}
+            onChange={(e) => setTestUrl(e.target.value)}
+            placeholder="https://example.com"
+            className="flex-1"
+          />
+        </div>
+        <V2PrimaryButton
+         
+          
+          loading={testRunning}
+          disabled={!online}
+          onClick={onTestNavigate}
         >
           打开
-        </Button>
+        </V2PrimaryButton>
       </div>
       <div className="mt-3 flex flex-col gap-2">
         <p className="text-tiny text-default-500">
@@ -4672,31 +4574,29 @@ function McpStatusCard() {
           先在浏览器里登录账号，登录态会自动保存。之后系统打开平台时会带着已登录账号。
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            variant="bordered"
-            isDisabled={!online || testRunning}
-            onPress={() =>
+          <V2GhostButton
+           
+           
+            disabled={!online || testRunning}
+            onClick={() =>
               onOpenLogin("https://creator.douyin.com/", "抖音创作者中心")
             }
-            startContent={<Icon icon="solar:user-circle-linear" />}
           >
             打开抖音登录页
-          </Button>
-          <Button
-            size="sm"
-            variant="bordered"
-            isDisabled={!online || testRunning}
-            onPress={() =>
+          </V2GhostButton>
+          <V2GhostButton
+           
+           
+            disabled={!online || testRunning}
+            onClick={() =>
               onOpenLogin(
                 "https://channels.weixin.qq.com/platform",
                 "视频号助手",
               )
             }
-            startContent={<Icon icon="solar:user-circle-linear" />}
           >
             打开视频号登录页
-          </Button>
+          </V2GhostButton>
         </div>
       </div>
       {tools.length > 0 ? (
@@ -4780,8 +4680,8 @@ function DesktopCapabilityPanel({
     window.open(urls[pane], "_self");
   };
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-5">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h3 className="text-medium font-semibold text-default-900">
@@ -4792,15 +4692,15 @@ function DesktopCapabilityPanel({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Chip color="success" size="sm" variant="flat">
+            <V2StatusChip tone="success">
               可用 {readyCount}
-            </Chip>
-            <Chip color="warning" size="sm" variant="flat">
+            </V2StatusChip>
+            <V2StatusChip tone="warning">
               需确认 {warningCount}
-            </Chip>
-            <Chip color="danger" size="sm" variant="flat">
+            </V2StatusChip>
+            <V2StatusChip tone="danger">
               需要处理 {missingCount}
-            </Chip>
+            </V2StatusChip>
           </div>
         </div>
         <div className="rounded-[8px] border-small border-warning-200 bg-warning-50 p-4">
@@ -4815,34 +4715,34 @@ function DesktopCapabilityPanel({
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="flat"
-                onPress={() => openMacPrivacyPane("accessibility")}
+              <V2GhostButton
+               
+               
+                onClick={() => openMacPrivacyPane("accessibility")}
               >
                 辅助功能
-              </Button>
-              <Button
-                size="sm"
-                variant="flat"
-                onPress={() => openMacPrivacyPane("screen")}
+              </V2GhostButton>
+              <V2GhostButton
+               
+               
+                onClick={() => openMacPrivacyPane("screen")}
               >
                 屏幕录制
-              </Button>
-              <Button
-                size="sm"
-                variant="flat"
-                onPress={() => openMacPrivacyPane("automation")}
+              </V2GhostButton>
+              <V2GhostButton
+               
+               
+                onClick={() => openMacPrivacyPane("automation")}
               >
                 自动化
-              </Button>
-              <Button
-                size="sm"
-                variant="flat"
-                onPress={() => openMacPrivacyPane("files")}
+              </V2GhostButton>
+              <V2GhostButton
+               
+               
+                onClick={() => openMacPrivacyPane("files")}
               >
                 完全磁盘访问
-              </Button>
+              </V2GhostButton>
             </div>
           </div>
           <div className="mt-3 grid gap-2 text-tiny text-warning-700 md:grid-cols-2">
@@ -4907,8 +4807,8 @@ function DesktopCapabilityPanel({
             </div>
           ) : null}
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -5032,8 +4932,8 @@ function FileAccessPanel({
   onRefresh: () => Promise<void>;
 }) {
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-5">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-medium font-semibold text-default-900">
@@ -5045,21 +4945,18 @@ function FileAccessPanel({
           </div>
           <div className="flex items-center gap-2">
             <CapabilityChip status={capability?.status || "missing"} />
-            <Button
-              size="sm"
-              variant="flat"
-              isLoading={loading}
-              startContent={
-                loading ? null : <Icon icon="solar:refresh-linear" />
-              }
-              onPress={() => {
+            <V2GhostButton
+             
+             
+              loading={loading}
+              onClick={() => {
                 onRefresh().catch(() => {
                   addToast({ title: "刷新失败", color: "danger" });
                 });
               }}
             >
               刷新
-            </Button>
+            </V2GhostButton>
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-3">
@@ -5095,7 +4992,7 @@ function FileAccessPanel({
         ) : null}
         {loading && !status ? (
           <div className="flex justify-center py-8">
-            <Spinner size="sm" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
           </div>
         ) : null}
         <div className="grid gap-4">
@@ -5109,19 +5006,19 @@ function FileAccessPanel({
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Chip
-                        color={isReady ? "success" : "warning"}
-                        size="sm"
-                        variant="flat"
+                      <V2StatusChip
+                        tone={isReady ? "success" : "warning"}
+                       
+                       
                       >
                         {isReady ? "可访问" : "需处理"}
-                      </Chip>
+                      </V2StatusChip>
                       <span className="text-small font-semibold text-default-900">
                         {item.name}
                       </span>
-                      <Chip size="sm" variant="flat">
+                      <V2StatusChip>
                         {fileKindLabel(item.kind)}
-                      </Chip>
+                      </V2StatusChip>
                     </div>
                     {item.note ? (
                       <p className="mt-2 text-small text-default-600">
@@ -5140,7 +5037,7 @@ function FileAccessPanel({
                 </div>
                 {item.recentFiles?.length ? (
                   <>
-                    <Divider className="my-3" />
+                    <hr className="my-3 border-[var(--kaypal-v3-border)]" />
                     <div className="grid gap-2">
                       {item.recentFiles.map((file) => (
                         <div
@@ -5181,8 +5078,8 @@ function FileAccessPanel({
             </div>
           ) : null}
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 function PermissionCheckPanel({
@@ -5198,8 +5095,8 @@ function PermissionCheckPanel({
 }) {
   const ready = Boolean(readiness?.ready);
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-5">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-medium font-semibold text-default-900">
@@ -5210,24 +5107,21 @@ function PermissionCheckPanel({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Chip color={ready ? "success" : "warning"} variant="flat">
+            <V2StatusChip tone={ready ? "success" : "warning"}>
               {ready ? "可执行" : "需处理"}
-            </Chip>
-            <Button
-              size="sm"
-              variant="flat"
-              isLoading={loading}
-              startContent={
-                loading ? null : <Icon icon="solar:refresh-linear" />
-              }
-              onPress={() => {
+            </V2StatusChip>
+            <V2GhostButton
+             
+             
+              loading={loading}
+              onClick={() => {
                 onRefresh().catch(() => {
                   addToast({ title: "刷新失败", color: "danger" });
                 });
               }}
             >
               重新检查
-            </Button>
+            </V2GhostButton>
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-5">
@@ -5274,7 +5168,7 @@ function PermissionCheckPanel({
         ) : null}
         {loading && !readiness ? (
           <div className="flex justify-center py-8">
-            <Spinner size="sm" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
           </div>
         ) : null}
         {readiness ? (
@@ -5302,8 +5196,8 @@ function PermissionCheckPanel({
             暂未读取到权限检查结果。
           </div>
         ) : null}
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -5323,9 +5217,9 @@ function ReadinessList({
     <section className="rounded-[8px] border-small border-divider bg-default-50 p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h4 className="text-small font-semibold text-default-900">{title}</h4>
-        <Chip color={color} size="sm" variant="flat">
+        <V2StatusChip tone={color}>
           {items.length}
-        </Chip>
+        </V2StatusChip>
       </div>
       <div className="grid gap-3">
         {items.map((item) => (
@@ -5533,8 +5427,8 @@ function InteractionCreatePanel({
     }
   };
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-5">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-5">
         <div>
           <h3 className="text-medium font-semibold text-default-900">
             {view.title}
@@ -5602,34 +5496,42 @@ function InteractionCreatePanel({
               ))}
             </Select>
           ) : (
-            <Input
-              label={`${view.platformLabel}账号`}
-              value={form.accountName || ""}
-              isDisabled={route !== "customers" && !isDesktopRoute}
-              description={
-                isDesktopRoute
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                {`${view.platformLabel}账号`}
+              </label>
+              <V2Input
+                value={form.accountName || ""}
+                disabled={route !== "customers" && !isDesktopRoute}
+                onChange={(e) =>
+                  setForm((current) => ({
+                    ...current,
+                    accountName: e.target.value,
+                    platformType: view.platformType,
+                    platformName: view.platformLabel,
+                  }))
+                }
+              />
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                {isDesktopRoute
                   ? "桌面微信任务使用本机微信，不需要平台账号。"
                   : route === "customers"
                     ? "客户跟进默认转为桌面微信跟进发送。"
-                    : `暂无可用${view.platformLabel}账号，当前不能创建任务。请先到发布中心-平台账号登录。`
-              }
-              onValueChange={(value) =>
-                setForm((current) => ({
-                  ...current,
-                  accountName: value,
-                  platformType: view.platformType,
-                  platformName: view.platformLabel,
-                }))
+                    : `暂无可用${view.platformLabel}账号，当前不能创建任务。请先到发布中心-平台账号登录。`}
+              </p>
+            </div>
+          )}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              目标对象
+            </label>
+            <V2Input
+              value={form.targetName || ""}
+              onChange={(e) =>
+                setForm((current) => ({ ...current, targetName: e.target.value }))
               }
             />
-          )}
-          <Input
-            label="目标对象"
-            value={form.targetName || ""}
-            onValueChange={(value) =>
-              setForm((current) => ({ ...current, targetName: value }))
-            }
-          />
+          </div>
         </div>
         <Textarea
           label={view.sourceLabel}
@@ -5679,24 +5581,21 @@ function InteractionCreatePanel({
           onValueChange={setBatchText}
         />
         <div className="flex justify-end">
-          <Button
-            color="primary"
-            isDisabled={!canSubmit}
-            isLoading={submitting}
-            startContent={
-              submitting ? null : <Icon icon="solar:play-circle-linear" />
-            }
-            onPress={handleSubmit}
+          <V2PrimaryButton
+            disabled={!canSubmit}
+            loading={submitting}
+            onClick={handleSubmit}
           >
+            <Icon icon="solar:play-circle-linear" />
             {canSubmit
               ? route === "customers"
                 ? "创建并微信跟进"
                 : "打开入口并创建任务"
               : "需处理，先补齐条件"}
-          </Button>
+          </V2PrimaryButton>
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -5853,8 +5752,8 @@ function TasksPanel({
   };
   return (
     <>
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody className="gap-4">
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div className="gap-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h3 className="text-medium font-semibold text-default-900">
@@ -5864,20 +5763,17 @@ function TasksPanel({
                 显示每条互动任务的阶段、结果、结果留存和下一步动作。
               </p>
             </div>
-            <Button
-              variant="flat"
-              isLoading={loading}
-              startContent={
-                loading ? null : <Icon icon="solar:refresh-linear" />
-              }
-              onPress={() => {
+            <V2GhostButton
+             
+              loading={loading}
+              onClick={() => {
                 onRefresh().catch(() => {
                   addToast({ title: "刷新失败", color: "danger" });
                 });
               }}
             >
               刷新
-            </Button>
+            </V2GhostButton>
           </div>
           <div className="grid gap-4">
             {visibleTasks.map((task) => (
@@ -5890,12 +5786,12 @@ function TasksPanel({
             ) : null}
             {loading ? (
               <div className="flex justify-center py-8">
-                <Spinner size="sm" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
               </div>
             ) : null}
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      </section>
       <ApprovalConfirmModal
         isOpen={Boolean(pendingApprovalTask)}
         isLoading={approving}
@@ -6051,18 +5947,21 @@ function ApprovalConfirmModal({
                   <p className="mt-1">
                     微信没有网页后台对象锁定，执行前会读取当前会话并核对目标；不一致会停止并留下记录。
                   </p>
-                  <Input
-                    className="mt-3"
-                    label="确认联系人"
-                    placeholder="当前微信会话里的客户名称"
-                    value={draft.targetContact}
-                    onValueChange={(value) =>
-                      onDraftChange((current) => ({
-                        ...current,
-                        targetContact: value,
-                      }))
-                    }
-                  />
+                  <div className="mt-3 flex flex-col gap-1.5">
+                    <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                      确认联系人
+                    </label>
+                    <V2Input
+                      placeholder="当前微信会话里的客户名称"
+                      value={draft.targetContact}
+                      onChange={(e) =>
+                        onDraftChange((current) => ({
+                          ...current,
+                          targetContact: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
                   <Switch
                     className="mt-3"
                     color="danger"
@@ -6216,12 +6115,12 @@ function ApprovalConfirmModal({
           ) : null}
         </ModalBody>
         <ModalFooter>
-          <Button isDisabled={isLoading} variant="flat" onPress={onClose}>
+          <V2GhostButton disabled={isLoading} onClick={onClose}>
             取消
-          </Button>
-          <Button
-            color="primary"
-            isDisabled={
+          </V2GhostButton>
+          <V2PrimaryButton
+            
+            disabled={
               !draft.targetConfirmed ||
               !draft.contentConfirmed ||
               !draft.checklistConfirmed ||
@@ -6236,11 +6135,11 @@ function ApprovalConfirmModal({
                   !draft.draftBeforeFillConfirmed ||
                   !draft.targetContact.trim()))
             }
-            isLoading={isLoading}
-            onPress={onConfirm}
+            loading={isLoading}
+            onClick={onConfirm}
           >
             继续执行
-          </Button>
+          </V2PrimaryButton>
         </ModalFooter>
       </ModalContent>
     </Modal>
@@ -6377,8 +6276,8 @@ function RecordsPanel({
   }, [retentionDays]);
   return (
     <>
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody className="gap-4">
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div className="gap-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h3 className="text-medium font-semibold text-default-900">
@@ -6389,32 +6288,24 @@ function RecordsPanel({
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button
-                variant="flat"
-                isLoading={exporting}
-                startContent={
-                  exporting ? null : (
-                    <Icon icon="solar:download-minimalistic-linear" />
-                  )
-                }
-                onPress={handleExport}
+              <V2GhostButton
+               
+                loading={exporting}
+                onClick={handleExport}
               >
                 导出 CSV
-              </Button>
-              <Button
-                variant="flat"
-                isLoading={loading}
-                startContent={
-                  loading ? null : <Icon icon="solar:refresh-linear" />
-                }
-                onPress={() => {
+              </V2GhostButton>
+              <V2GhostButton
+               
+                loading={loading}
+                onClick={() => {
                   refreshWithCurrentFilters().catch(() => {
                     addToast({ title: "刷新失败", color: "danger" });
                   });
                 }}
               >
                 刷新
-              </Button>
+              </V2GhostButton>
             </div>
           </div>
           <div className="grid gap-3 md:grid-cols-6">
@@ -6429,7 +6320,7 @@ function RecordsPanel({
             <Select
               label="状态"
               selectedKeys={[statusFilter]}
-              size="sm"
+             
               onSelectionChange={(keys) => {
                 const value = Array.from(keys)[0] as
                   typeof statusFilter | undefined;
@@ -6450,7 +6341,7 @@ function RecordsPanel({
             <Select
               label="类型"
               selectedKeys={[typeFilter]}
-              size="sm"
+             
               onSelectionChange={(keys) => {
                 const value = Array.from(keys)[0] as
                   typeof typeFilter | undefined;
@@ -6561,9 +6452,9 @@ function RecordsPanel({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Chip size="sm" variant="flat">
+                    <V2StatusChip>
                       {task.events.filter((event) => event.evidence).length}条
-                    </Chip>
+                    </V2StatusChip>
                   </TableCell>
                   <TableCell>
                     <span className="text-tiny text-default-500">
@@ -6571,22 +6462,22 @@ function RecordsPanel({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      onPress={() => setSelectedTask(task)}
+                    <V2GhostButton
+                     
+                     
+                      onClick={() => setSelectedTask(task)}
                     >
                       详情
-                    </Button>
+                    </V2GhostButton>
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </CardBody>
-      </Card>
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody className="gap-4">
+        </div>
+      </section>
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div className="gap-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
               <h3 className="text-medium font-semibold text-default-900">
@@ -6597,39 +6488,34 @@ function RecordsPanel({
               </p>
             </div>
             <div className="flex flex-wrap items-end gap-2">
-              <Input
-                className="w-32"
-                label="保留天数"
-                min={0}
-                size="sm"
-                type="number"
-                value={retentionDays}
-                onValueChange={setRetentionDays}
-              />
-              <Button
-                variant="flat"
-                isLoading={cleanupLoading}
-                startContent={
-                  cleanupLoading ? null : <Icon icon="solar:eye-linear" />
-                }
-                onPress={previewCleanup}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm text-[var(--kaypal-v3-muted)]">
+                  保留天数
+                </label>
+                <V2Input
+                  className="w-32"
+                  min={0}
+                  type="number"
+                  value={retentionDays}
+                  onChange={(e) => setRetentionDays(e.target.value)}
+                />
+              </div>
+              <V2GhostButton
+               
+                loading={cleanupLoading}
+                onClick={previewCleanup}
               >
                 预览清理
-              </Button>
-              <Button
-                color="danger"
-                variant="flat"
-                isDisabled={!cleanupPreview?.candidateCount}
-                isLoading={cleanupLoading}
-                startContent={
-                  cleanupLoading ? null : (
-                    <Icon icon="solar:trash-bin-trash-linear" />
-                  )
-                }
-                onPress={runCleanup}
+              </V2GhostButton>
+              <V2DangerButton
+                
+               
+                disabled={!cleanupPreview?.candidateCount}
+                loading={cleanupLoading}
+                onClick={runCleanup}
               >
                 清理旧记录
-              </Button>
+              </V2DangerButton>
             </div>
           </div>
           {cleanupPreview ? (
@@ -6683,8 +6569,8 @@ function RecordsPanel({
               {cleanupPreview.errors.join("；")}
             </div>
           ) : null}
-        </CardBody>
-      </Card>
+        </div>
+      </section>
       <Modal
         isOpen={Boolean(selectedTask)}
         size="5xl"
@@ -6706,9 +6592,9 @@ function RecordsPanel({
             ) : null}
           </ModalBody>
           <ModalFooter>
-            <Button variant="flat" onPress={() => setSelectedTask(null)}>
+            <V2GhostButton onClick={() => setSelectedTask(null)}>
               关闭
-            </Button>
+            </V2GhostButton>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -6750,47 +6636,47 @@ function TaskCard({
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <Chip size="sm" variant="flat">
+            <V2StatusChip>
               {task.typeLabel}
-            </Chip>
-            <Chip
-              color={
+            </V2StatusChip>
+            <V2StatusChip
+              tone={
                 task.executionMode === "browser-assisted"
-                  ? "primary"
-                  : "default"
+                  ? "accent"
+                  : "muted"
               }
-              size="sm"
-              variant="flat"
+             
+             
             >
               {task.executionMode === "browser-assisted"
                 ? "账号后台"
                 : "内部记录"}
-            </Chip>
+            </V2StatusChip>
             {task.runtimeState ? (
               <RuntimeStateChip state={task.runtimeState} />
             ) : null}
             {task.platformName ? (
-              <Chip size="sm" variant="flat">
+              <V2StatusChip>
                 {task.platformName}
-              </Chip>
+              </V2StatusChip>
             ) : null}
             {resultSummary ? (
-              <Chip
-                color={resultSummaryChipColor(resultSummary.kind)}
-                size="sm"
-                variant="flat"
+              <V2StatusChip
+                tone={resultSummaryChipColor(resultSummary.kind)}
+               
+               
               >
             {interactionDisplayText(resultSummary.headline)}
-              </Chip>
+              </V2StatusChip>
             ) : null}
             {isBatchTask ? (
-              <Chip color="secondary" size="sm" variant="flat">
+              <V2StatusChip tone="muted">
                 批量 {task.batchTargets?.length} 条
-              </Chip>
+              </V2StatusChip>
             ) : null}
-            <Chip size="sm" variant="flat">
+            <V2StatusChip>
               {sendModeLabel(task.sendMode)}
-            </Chip>
+            </V2StatusChip>
             <StatusChip status={task.status} label={task.statusLabel} />
           </div>
           <h4 className="mt-3 text-medium font-semibold text-default-900">
@@ -6807,39 +6693,30 @@ function TaskCard({
           ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            as={Link}
+          <Link
             href={
               isDesktopInteractionTask(task.type)
                 ? "/local-engine?tab=desktop"
                 : "/local-engine?tab=browser"
             }
-            size="sm"
-            variant="flat"
-            startContent={
-              <Icon
-                icon={
-                  isDesktopInteractionTask(task.type)
-                    ? "solar:monitor-linear"
-                    : "solar:window-frame-linear"
-                }
-              />
-            }
+            className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
           >
+            <Icon
+              icon={
+                isDesktopInteractionTask(task.type)
+                  ? "solar:monitor-linear"
+                  : "solar:window-frame-linear"
+              }
+            />
             {isDesktopInteractionTask(task.type)
               ? "微信桌面检查"
               : "平台账号检查"}
-          </Button>
-          <Button
-            size="sm"
-            variant="flat"
-            isLoading={exportingDiagnostics}
-            startContent={
-              exportingDiagnostics ? null : (
-                <Icon icon="solar:download-minimalistic-linear" />
-              )
-            }
-            onPress={() => {
+          </Link>
+          <V2GhostButton
+           
+           
+            loading={exportingDiagnostics}
+            onClick={() => {
               setExportingDiagnostics(true);
               localEngineApi
                 .exportTaskDiagnostics(task.id)
@@ -6866,47 +6743,43 @@ function TaskCard({
             }}
           >
             排查资料
-          </Button>
+          </V2GhostButton>
           {canDecide ? (
             <>
-              <Button
-                color="primary"
-                size="sm"
-                variant="flat"
-                isDisabled={
+              <V2PrimaryButton
+                
+               
+               
+                disabled={
                   task.status !== "waiting_for_send_confirmation" ||
                   Boolean(task.blockers?.length)
                 }
-                onPress={() => onAction(task, "approve")}
+                onClick={() => onAction(task, "approve")}
               >
                 确认
-              </Button>
-              <Button
-                size="sm"
-                variant="flat"
-                onPress={() => onAction(task, "skip")}
+              </V2PrimaryButton>
+              <V2GhostButton
+               
+               
+                onClick={() => onAction(task, "skip")}
               >
                 跳过
-              </Button>
-              <Button
-                color="danger"
-                size="sm"
-                variant="flat"
-                onPress={() => onAction(task, "fail")}
+              </V2GhostButton>
+              <V2DangerButton
+                
+               
+               
+                onClick={() => onAction(task, "fail")}
               >
                 停止
-              </Button>
+              </V2DangerButton>
             </>
           ) : canRetry ? (
-            <Button
-              color="primary"
-              size="sm"
-              variant="flat"
-              startContent={<Icon icon="solar:restart-linear" />}
-              onPress={() => onAction(task, "retry")}
+            <V2PrimaryButton
+              onClick={() => onAction(task, "retry")}
             >
               重试
-            </Button>
+            </V2PrimaryButton>
           ) : null}
         </div>
       </div>
@@ -6959,22 +6832,18 @@ function TaskCard({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button
-              as={Link}
+            <Link
               href="/local-engine?tab=tasks"
-              size="sm"
-              variant="flat"
+              className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
             >
               本页任务
-            </Button>
-            <Button
-              as={Link}
+            </Link>
+            <Link
               href={resultSummary.evidenceHref || "/local-engine?tab=evidence"}
-              size="sm"
-              variant="flat"
+              className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
             >
               结果留存
-            </Button>
+            </Link>
           </div>
         </div>
       ) : null}
@@ -7075,7 +6944,7 @@ function TaskCard({
           </div>
         </div>
       ) : null}
-      <Divider className="my-4" />
+      <hr className="my-4 border-[var(--kaypal-v3-border)]" />
       {isBatchTask ? (
         <>
           <div className="rounded-small bg-background p-3">
@@ -7084,22 +6953,22 @@ function TaskCard({
                 批量对象
               </p>
               <div className="flex flex-wrap gap-2">
-                <Chip size="sm" variant="flat">
+                <V2StatusChip>
                   共{task.batchSummary?.total || task.batchTargets?.length || 0}
                   条
-                </Chip>
-                <Chip color="success" size="sm" variant="flat">
+                </V2StatusChip>
+                <V2StatusChip tone="success">
                   完成 {task.batchSummary?.completed || 0}
-                </Chip>
-                <Chip color="danger" size="sm" variant="flat">
+                </V2StatusChip>
+                <V2StatusChip tone="danger">
                   失败 {task.batchSummary?.failed || 0}
-                </Chip>
-                <Chip color="warning" size="sm" variant="flat">
+                </V2StatusChip>
+                <V2StatusChip tone="warning">
                   跳过 {task.batchSummary?.skipped || 0}
-                </Chip>
-                <Chip color="default" size="sm" variant="flat">
+                </V2StatusChip>
+                <V2StatusChip tone="muted">
                   无对象 {task.batchSummary?.noTarget || 0}
-                </Chip>
+                </V2StatusChip>
               </div>
             </div>
             {(() => {
@@ -7115,23 +6984,30 @@ function TaskCard({
                     </span>
                     <span>{pct}%</span>
                   </div>
-                  <Progress
+                  <div
+                    role="progressbar"
                     aria-label="批量进度"
-                    value={pct}
-                    color={pct === 100 ? "success" : "primary"}
-                    size="sm"
-                  />
+                    className="h-2 w-full overflow-hidden rounded-full bg-[var(--kaypal-v3-accent-soft)]"
+                  >
+                    <div
+                      className={`h-full rounded-full ${
+                        pct === 100
+                          ? "bg-[var(--kaypal-v3-success)]"
+                          : "bg-[var(--kaypal-v3-accent)]"
+                      }`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
                 </div>
               );
             })()}
             {canDecide ? (
               <div className="mt-3 flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  variant="flat"
+                <V2GhostButton
+                 
+                 
                   color="warning"
-                  startContent={<Icon icon="solar:pause-circle-linear" />}
-                  onPress={async () => {
+                  onClick={async () => {
                     try {
                       await localEngineApi.pauseTask(task.id);
                       addToast({ title: "任务已暂停", color: "warning" });
@@ -7145,13 +7021,9 @@ function TaskCard({
                   }}
                 >
                   暂停
-                </Button>
-                <Button
-                  size="sm"
-                  variant="flat"
-                  color="primary"
-                  startContent={<Icon icon="solar:play-circle-linear" />}
-                  onPress={async () => {
+                </V2GhostButton>
+                <V2PrimaryButton
+                  onClick={async () => {
                     try {
                       await localEngineApi.resumeTask(task.id, {
                         riskConfirmation: buildLocalEngineRiskConfirmation(
@@ -7171,15 +7043,12 @@ function TaskCard({
                   }}
                 >
                   继续
-                </Button>
-                <Button
-                  size="sm"
-                  variant="flat"
-                  startContent={<Icon icon="solar:forward-2-linear" />}
-                  onPress={() => onAction(task, "skip")}
+                </V2PrimaryButton>
+                <V2GhostButton
+                  onClick={() => onAction(task, "skip")}
                 >
                   跳过当前
-                </Button>
+                </V2GhostButton>
               </div>
             ) : null}
             <div className="mt-3 grid gap-2">
@@ -7198,12 +7067,8 @@ function TaskCard({
                         label={targetStatusLabel(target.status)}
                       />
                       {target.status === "failed" ? (
-                        <Button
-                          size="sm"
-                          variant="flat"
-                          color="primary"
-                          startContent={<Icon icon="solar:restart-linear" />}
-                          onPress={async () => {
+                        <V2PrimaryButton
+                          onClick={async () => {
                             try {
                               await localEngineApi.retryTask(task.id);
                               addToast({
@@ -7220,7 +7085,7 @@ function TaskCard({
                           }}
                         >
                           重试
-                        </Button>
+                        </V2PrimaryButton>
                       ) : null}
                     </div>
                   </div>
@@ -7245,7 +7110,7 @@ function TaskCard({
               ) : null}
             </div>
           </div>
-          <Divider className="my-4" />
+          <hr className="my-4 border-[var(--kaypal-v3-border)]" />
         </>
       ) : null}
       {task.steps?.length ? (
@@ -7265,7 +7130,7 @@ function TaskCard({
               </div>
             ))}
           </div>
-          <Divider className="my-4" />
+          <hr className="my-4 border-[var(--kaypal-v3-border)]" />
         </>
       ) : null}
       <div className="grid gap-3 md:grid-cols-2">
@@ -7448,25 +7313,25 @@ function RulesPanel({
   };
   if (loading && !draft) {
     return (
-      <Card className="border-small border-divider bg-background shadow-sm">
-        <CardBody>
-          <Spinner size="sm" />
-        </CardBody>
-      </Card>
+      <section className="kaypal-v3-panel overflow-hidden">
+        <div>
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        </div>
+      </section>
     );
   }
   if (!draft) {
     return (
-      <Card className="border-small border-danger-200 bg-danger-50 shadow-sm">
-        <CardBody className="text-small text-danger-700">
+      <section className="kaypal-v3-panel overflow-hidden border-[var(--kaypal-v3-danger)]">
+        <div className="text-small text-danger-700">
           自动回复规则暂不可用。
-        </CardBody>
-      </Card>
+        </div>
+      </section>
     );
   }
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-5">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-5">
         <div>
           <h3 className="text-medium font-semibold text-default-900">
             自动回复规则
@@ -7484,15 +7349,19 @@ function RulesPanel({
           <StatusItem label="更新时间" value={formatDate(draft.updatedAt)} />
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <Input
-            label="行业名称"
-            value={draft.industryName}
-            onValueChange={(value) =>
-              setDraft((current) =>
-                current ? { ...current, industryName: value } : current,
-              )
-            }
-          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              行业名称
+            </label>
+            <V2Input
+              value={draft.industryName}
+              onChange={(e) =>
+                setDraft((current) =>
+                  current ? { ...current, industryName: e.target.value } : current,
+                )
+              }
+            />
+          </div>
           <Select
             label="默认发送模式"
             selectedKeys={[draft.defaultSendMode]}
@@ -7544,7 +7413,7 @@ function RulesPanel({
           value={draft.serviceHighlights.join("，")}
           onValueChange={(value) => updateList("serviceHighlights", value)}
         />
-        <Divider />
+        <hr className="border-[var(--kaypal-v3-border)]" />
         <div>
           <h4 className="text-small font-semibold text-default-900">
             评论识别规则
@@ -7584,30 +7453,38 @@ function RulesPanel({
             <SelectItem key="strict">严格</SelectItem>
             <SelectItem key="loose">宽松</SelectItem>
           </Select>
-          <Input
-            label="最小字数"
-            type="number"
-            value={String(draft.commentMinLength)}
-            onValueChange={(value) =>
-              setDraft((current) =>
-                current
-                  ? { ...current, commentMinLength: Number(value) || 1 }
-                  : current,
-              )
-            }
-          />
-          <Input
-            label="最长字数"
-            type="number"
-            value={String(draft.commentMaxLength)}
-            onValueChange={(value) =>
-              setDraft((current) =>
-                current
-                  ? { ...current, commentMaxLength: Number(value) || 180 }
-                  : current,
-              )
-            }
-          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              最小字数
+            </label>
+            <V2Input
+              type="number"
+              value={String(draft.commentMinLength)}
+              onChange={(e) =>
+                setDraft((current) =>
+                  current
+                    ? { ...current, commentMinLength: Number(e.target.value) || 1 }
+                    : current,
+                )
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-[var(--kaypal-v3-muted)]">
+              最长字数
+            </label>
+            <V2Input
+              type="number"
+              value={String(draft.commentMaxLength)}
+              onChange={(e) =>
+                setDraft((current) =>
+                  current
+                    ? { ...current, commentMaxLength: Number(e.target.value) || 180 }
+                    : current,
+                )
+              }
+            />
+          </div>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <Switch
@@ -7685,7 +7562,7 @@ function RulesPanel({
             updateList("commentPriorityKeywords", value)
           }
         />
-        <Divider />
+        <hr className="border-[var(--kaypal-v3-border)]" />
         <div>
           <h4 className="text-small font-semibold text-default-900">
             兜底回复
@@ -7749,17 +7626,16 @@ function RulesPanel({
           }
         />
         <div className="flex justify-end">
-          <Button
-            color="primary"
-            isLoading={saving}
-            startContent={saving ? null : <Icon icon="solar:diskette-linear" />}
-            onPress={handleSave}
+          <V2PrimaryButton
+            
+            loading={saving}
+            onClick={handleSave}
           >
             保存规则
-          </Button>
+          </V2PrimaryButton>
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -7772,8 +7648,8 @@ function CapabilitySummary({
 }) {
   const isAgentSCapability = capability.key === "agent-s-sidecar";
   return (
-    <Card className="border-small border-divider bg-background shadow-sm">
-      <CardBody className="gap-3">
+    <section className="kaypal-v3-panel overflow-hidden">
+      <div className="gap-3">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-medium font-semibold text-default-900">
             {commercialDisplayText(capability.name)}
@@ -7823,8 +7699,8 @@ function CapabilitySummary({
             {commercialDisplayText(capability.nextAction)}
           </p>
         ) : null}
-      </CardBody>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -7839,14 +7715,14 @@ function CapabilityChip({
     missing: { color: "danger" as const, label: "需处理" },
     blocked: { color: "danger" as const, label: "需处理" },
     degraded: { color: "warning" as const, label: "需留意" },
-    optional: { color: "default" as const, label: "未启用" },
-    developing: { color: "default" as const, label: "未启用" },
+    optional: { color: "muted" as const, label: "未启用" },
+    developing: { color: "muted" as const, label: "未启用" },
   };
   const item = map[status] || map.missing;
   return (
-    <Chip color={item.color} size="sm" variant="flat">
+    <V2StatusChip tone={item.color}>
       {item.label}
-    </Chip>
+    </V2StatusChip>
   );
 }
 
@@ -7858,9 +7734,9 @@ function RunCheckToneChip({
   label: string;
 }) {
   return (
-    <Chip color={runCheckToneColor(status)} size="sm" variant="flat">
+    <V2StatusChip tone={runCheckToneColor(status)}>
       {label}
-    </Chip>
+    </V2StatusChip>
   );
 }
 
@@ -7890,13 +7766,13 @@ function ExecutorStatusChip({
     ready: { color: "success" as const, label: "正常" },
     preflight_only: { color: "warning" as const, label: "待确认" },
     missing: { color: "danger" as const, label: "需处理" },
-    optional: { color: "default" as const, label: "未启用" },
+    optional: { color: "muted" as const, label: "未启用" },
   };
   const item = map[status];
   return (
-    <Chip color={item.color} size="sm" variant="flat">
+    <V2StatusChip tone={item.color}>
       {item.label}
-    </Chip>
+    </V2StatusChip>
   );
 }
 
@@ -7922,9 +7798,9 @@ function ExecutorAbilityChip({
   return (
     <div className="flex items-center justify-between gap-2 rounded-small border-small border-divider bg-default-50 px-3 py-2">
       <span className="text-tiny text-default-600">{label}</span>
-      <Chip color={ready ? "success" : "warning"} size="sm" variant="flat">
+      <V2StatusChip tone={ready ? "success" : "warning"}>
         {ready ? "已接" : "待接"}
-      </Chip>
+      </V2StatusChip>
     </div>
   );
 }
@@ -7944,12 +7820,12 @@ function StatusChip({
         : status === "waiting_for_send_confirmation"
           ? "warning"
           : status === "no_target"
-            ? "default"
-            : "default";
+            ? "muted"
+            : "muted";
   return (
-    <Chip color={color} size="sm" variant="flat">
+    <V2StatusChip tone={color}>
       {label}
-    </Chip>
+    </V2StatusChip>
   );
 }
 
@@ -7970,9 +7846,9 @@ function resultSummaryChipColor(
     success: "success",
     failure: "danger",
     skipped: "warning",
-    no_target: "default",
+    no_target: "muted",
     waiting: "warning",
-    running: "primary",
+    running: "accent",
   } as const;
   return colors[kind];
 }
@@ -8065,16 +7941,16 @@ function RuntimeStateChip({
     preflight_only: { color: "warning" as const, label: "待确认" },
     executor_missing: { color: "danger" as const, label: "需处理" },
     live_ready: { color: "success" as const, label: "正常" },
-    record_ready: { color: "default" as const, label: "内部记录" },
-    running: { color: "primary" as const, label: "执行中" },
+    record_ready: { color: "muted" as const, label: "内部记录" },
+    running: { color: "accent" as const, label: "执行中" },
     completed: { color: "success" as const, label: "已完成" },
     blocked: { color: "danger" as const, label: "需处理" },
   };
   const item = map[state];
   return (
-    <Chip color={item.color} size="sm" variant="flat">
+    <V2StatusChip tone={item.color}>
       {item.label}
-    </Chip>
+    </V2StatusChip>
   );
 }
 
@@ -8152,9 +8028,9 @@ function ActionBlockerList({
             <Icon icon="solar:shield-warning-linear" />
             <span>需处理：{commercialDisplayText(blocker.stage)}</span>
             {blocker.capability ? (
-              <Chip color="danger" size="sm" variant="flat">
+              <V2StatusChip tone="danger">
                 {interactionDisplayText(blocker.capability)}
-              </Chip>
+              </V2StatusChip>
             ) : null}
           </div>
           <p className="mt-2">
@@ -8203,17 +8079,17 @@ function StepStatusChip({
   status: NonNullable<InteractionTask["steps"]>[number]["status"];
 }) {
   const map = {
-    pending: { color: "default" as const, label: "待执行" },
-    running: { color: "primary" as const, label: "执行中" },
+    pending: { color: "muted" as const, label: "待执行" },
+    running: { color: "accent" as const, label: "执行中" },
     completed: { color: "success" as const, label: "完成" },
     blocked: { color: "danger" as const, label: "需要处理" },
     skipped: { color: "warning" as const, label: "跳过" },
   };
   const item = map[status];
   return (
-    <Chip color={item.color} size="sm" variant="flat">
+    <V2StatusChip tone={item.color}>
       {item.label}
-    </Chip>
+    </V2StatusChip>
   );
 }
 function QueueItem({ label, value }: { label: string; value: number }) {
