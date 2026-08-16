@@ -22,6 +22,7 @@ import { autoUploadApi, type AutoUploadPublishTask } from "@/lib/api/auto-upload
 import { growthApi } from "@/lib/api/growth";
 import { materialsApi } from "@/lib/api/materials";
 import { api } from "@/lib/api/client";
+import { dashboardApi } from "@/lib/api/dashboard";
 import { redfoxApi, type RadarResult } from "@/lib/api/redfox";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -33,6 +34,35 @@ interface HotTopic {
 }
 
 const TAG_TINTS = ["kx-t-rose", "kx-t-amber", "kx-t-blue", "kx-t-cyan"];
+
+/** 统一任务中心：模块 → 中文标签 */
+const TASK_MODULE_LABEL: Record<string, string> = {
+  "auto-upload": "发布",
+  interaction: "互动",
+  "local-engine": "执行",
+};
+
+/** 统一任务中心：状态 → { 文案, tint }（归一化后的 7 态） */
+const TASK_STATUS_META: Record<
+  string,
+  { label: string; tint: string }
+> = {
+  queued: { label: "排队中", tint: "kx-t-slate" },
+  running: { label: "执行中", tint: "kx-t-blue" },
+  waiting: { label: "待确认", tint: "kx-t-amber" },
+  failed: { label: "失败", tint: "kx-t-rose" },
+  completed: { label: "完成", tint: "kx-t-green" },
+  cancelled: { label: "已取消", tint: "kx-t-slate" },
+  stale: { label: "卡住", tint: "kx-t-amber" },
+};
+
+interface UnifiedTaskItem {
+  module: string;
+  id: string;
+  title: string;
+  status: string;
+  updatedAt: string;
+}
 
 function isToday(value: unknown): boolean {
   if (value == null) return false;
@@ -66,23 +96,33 @@ export default function TodayPage() {
   const [doneItems, setDoneItems] = React.useState<string[]>([]);
   const [newsItems, setNewsItems] = React.useState<TickerItem[]>([]);
   const [hotTopics, setHotTopics] = React.useState<HotTopic[]>([]);
+  const [taskItems, setTaskItems] = React.useState<UnifiedTaskItem[]>([]);
 
   React.useEffect(() => {
     let active = true;
     (async () => {
-      const [tasks, pubTasks, overview, collect, intel] = await Promise.all([
-        localEngineApi.tasks(50).catch(() => [] as InteractionTask[]),
-        autoUploadApi.tasks(50).catch(() => [] as AutoUploadPublishTask[]),
-        growthApi.overview().catch(() => null),
-        materialsApi.collectStatus().catch(() => null),
-        api
-          .get<{ items?: HotTopic[] }>("/redfox/hot-topics")
-          .catch(() => null),
-      ]);
+      const [tasks, pubTasks, overview, collect, intel, unified] =
+        await Promise.all([
+          localEngineApi.tasks(50).catch(() => [] as InteractionTask[]),
+          autoUploadApi.tasks(50).catch(() => [] as AutoUploadPublishTask[]),
+          growthApi.overview().catch(() => null),
+          materialsApi.collectStatus().catch(() => null),
+          api
+            .get<{ items?: HotTopic[] }>("/redfox/hot-topics")
+            .catch(() => null),
+          dashboardApi.taskCenter(20).catch(() => null),
+        ]);
       if (!active) return;
 
       const taskList = Array.isArray(tasks) ? tasks : [];
       const pubList = Array.isArray(pubTasks) ? pubTasks : [];
+
+      const unifiedData = unified as {
+        items?: UnifiedTaskItem[];
+      } | null;
+      setTaskItems(
+        Array.isArray(unifiedData?.items) ? unifiedData.items.slice(0, 8) : [],
+      );
 
       setWaitingCount(
         taskList.filter((t) => t.status === "waiting_for_send_confirmation")
@@ -358,6 +398,47 @@ export default function TodayPage() {
           <div className="kx-stat-lbl">待确认</div>
         </div>
       </div>
+
+      {taskItems.length > 0 ? (
+        <>
+          <div className="kx-section-title">
+            <ShellIcon name="layers" />
+            进行中的任务
+          </div>
+          <div>
+            {taskItems.map((t) => {
+              const meta = TASK_STATUS_META[t.status] ?? {
+                label: t.status,
+                tint: "kx-t-slate",
+              };
+              return (
+                <div
+                  className="kx-done-item"
+                  key={`${t.module}-${t.id}`}
+                  style={{ color: "var(--kx-muted)" }}
+                >
+                  <span className={`kx-tag ${meta.tint}`}>
+                    {TASK_MODULE_LABEL[t.module] ?? t.module}
+                  </span>
+                  <span
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      color: "var(--kx-ink)",
+                    }}
+                  >
+                    {t.title}
+                  </span>
+                  <span style={{ flexShrink: 0 }}>{meta.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      ) : null}
 
       {doneItems.length > 0 ? (
         <>

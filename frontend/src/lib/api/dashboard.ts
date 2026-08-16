@@ -172,6 +172,22 @@ export const dashboardApi = {
     });
   },
 
+  // 统一任务中心（报告 16.3 第 14 项）：聚合各模块任务
+  taskCenter(limit = 50, signal?: AbortSignal) {
+    return api.get<{
+      total: number;
+      items: Array<{
+        module: string;
+        id: string;
+        title: string;
+        status: string;
+        updatedAt: string;
+      }>;
+    }>(`/dashboard/task-center?limit=${limit}`, {
+      signal,
+    });
+  },
+
   // 系统运行日志
   systemLogs(limit: number = 50, signal?: AbortSignal) {
     return api.get<SystemLog[]>(`/dashboard/system-logs?limit=${limit}`, {
