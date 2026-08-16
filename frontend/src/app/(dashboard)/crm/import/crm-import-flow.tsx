@@ -19,7 +19,7 @@ import {
   V2PrimaryButton,
   V2GhostButton,
 } from "@/components/v2/ui-kit";
-import { commitCrmImport, type CrmImportPreviewRow } from "@/lib/api/crm";
+import { commitCrmImport, dryRunCrmImport, rollbackCrmImport, type CrmImportPreviewRow } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -64,9 +64,25 @@ export function CrmImportFlow() {
   const [previewRows, setPreviewRows] = useState<CrmImportPreviewRow[]>([]);
   const [loadingPreview] = useState(false);
 
+  // 后端干跑凭证（受控导入：commit 时带上 proofId/hash，支撑审计与回滚）
+  const [dryRunId, setDryRunId] = useState<string | undefined>();
+  const [proofHash, setProofHash] = useState<string | undefined>();
+  const [dryRunInfo, setDryRunInfo] = useState<{
+    validCount: number;
+    duplicateCount: number;
+    invalidCount: number;
+  } | null>(null);
+
   // 第 3 步：导入
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(null);
+  const [rollbackPlan, setRollbackPlan] = useState<{
+    importCommitId: string;
+    rollbackToken: string;
+    customerIds: string[];
+  } | null>(null);
+  const [rollingBack, setRollingBack] = useState(false);
+  const [rollbackMsg, setRollbackMsg] = useState<string | null>(null);
   const [crmNotInstalled, setCrmNotInstalled] = useState(false);
 
   // 解析粘贴的文本为行
@@ -79,7 +95,7 @@ export function CrmImportFlow() {
   };
 
   // 进入字段映射（粘贴和文件两条路共用）
-  const goToMapping = (rows: string[][]) => {
+  const goToMapping = (rows: string[][], name: string) => {
     if (rows.length === 0) {
       setError("没有读到有效数据行");
       return;
@@ -110,6 +126,49 @@ export function CrmImportFlow() {
       })),
     );
     setStep(2);
+    // 后端干跑（受控导入：字段识别 + 去重 + 回滚凭证，不阻断本地预览）
+    void runDryRun(rows, autoMapping, name);
+  };
+
+  // 后端干跑预览：拿到 proofId/hash（commit 凭证）+ 去重/校验信息
+  const runDryRun = async (
+    rows: string[][],
+    autoMapping: Record<string, string>,
+    name: string,
+  ) => {
+    try {
+      const header = rows[0];
+      const dataRows = rows.slice(1).map((cells) => {
+        const row: Record<string, string> = {};
+        header.forEach((col, i) => {
+          row[col] = cells[i] || "";
+        });
+        return row;
+      });
+      const result = await dryRunCrmImport({
+        filename: name,
+        sourceType: "paste",
+        rows: dataRows,
+        mapping: autoMapping,
+        hasHeader: true,
+        commit: false,
+      });
+      setDryRunId(result.proofId || result.id);
+      setProofHash(result.hash);
+      setDryRunInfo({
+        validCount: result.validCount,
+        duplicateCount: result.duplicateCount,
+        invalidCount: result.invalidCount,
+      });
+      if (result.mapping && Object.keys(result.mapping).length) {
+        setMapping((prev) => ({ ...result.mapping, ...prev }));
+      }
+      if (result.previewRows?.length) {
+        setPreviewRows(result.previewRows);
+      }
+    } catch {
+      // 后端干跑不可用时降级为前端本地解析，不阻断导入流程
+    }
   };
 
   const handleNextToMapping = async () => {
@@ -120,7 +179,7 @@ export function CrmImportFlow() {
     }
     setFileRows(rows);
     setFileName("粘贴导入");
-    goToMapping(rows);
+    goToMapping(rows, "粘贴导入");
   };
 
   // 上传 Excel/CSV 文件
@@ -153,7 +212,7 @@ export function CrmImportFlow() {
       }
       setFileRows(rows);
       setFileName(file.name);
-      goToMapping(rows);
+      goToMapping(rows, file.name);
     } catch {
       setError("文件读取失败，请确认是 .xlsx 或 .csv 文件");
     } finally {
@@ -198,6 +257,8 @@ export function CrmImportFlow() {
         rows: dataRows,
         mapping,
         hasHeader: true,
+        dryRunId,
+        proofHash,
         confirmationGate: "MIGO_LOCAL_CRM_IMPORT_APPROVED",
         commit: true,
       });
@@ -205,6 +266,9 @@ export function CrmImportFlow() {
         imported: result.committedCount ?? dataRows.length,
         skipped: (result.rowCount ?? dataRows.length) - (result.committedCount ?? dataRows.length),
       });
+      if (result.rollbackPlan?.customerIds?.length) {
+        setRollbackPlan(result.rollbackPlan);
+      }
       setStep(3);
     } catch (err: unknown) {
       const rawMessage = err instanceof Error ? err.message : "";
@@ -220,6 +284,28 @@ export function CrmImportFlow() {
       }
     } finally {
       setImporting(false);
+    }
+  };
+
+  // 回滚本次导入（受控导入：导入出错可一键归档回滚）
+  const handleRollback = async () => {
+    if (!rollbackPlan || !rollbackPlan.customerIds.length) return;
+    if (!window.confirm(`确定回滚本次导入的 ${rollbackPlan.customerIds.length} 条客户吗？回滚后需要重新导入。`)) return;
+    setRollingBack(true);
+    setRollbackMsg(null);
+    try {
+      const result = await rollbackCrmImport({
+        importCommitId: rollbackPlan.importCommitId,
+        rollbackToken: rollbackPlan.rollbackToken,
+        customerIds: rollbackPlan.customerIds,
+        reason: "crm-import-flow-local-rollback",
+      });
+      setRollbackMsg(`已回滚 ${result.archivedCount} 条`);
+      setRollbackPlan(null);
+    } catch (err: unknown) {
+      setRollbackMsg(toPublicError(err, "本次导入未能回退，请重试。"));
+    } finally {
+      setRollingBack(false);
     }
   };
 
@@ -374,6 +460,17 @@ export function CrmImportFlow() {
                 </div>
               )}
 
+              {dryRunInfo && (
+                <div className="mx-card" style={{ marginTop: 10, padding: 11 }}>
+                  <p style={{ fontSize: 11.5, fontWeight: 600, color: "var(--mx-muted)", marginBottom: 6 }}>导入检查：</p>
+                  <p style={{ fontSize: 11.5, color: "var(--mx-muted)", margin: 0, lineHeight: 1.6 }}>
+                    有效 {dryRunInfo.validCount} 条
+                    {dryRunInfo.duplicateCount > 0 ? ` · 重复 ${dryRunInfo.duplicateCount} 条` : ""}
+                    {dryRunInfo.invalidCount > 0 ? ` · 无效 ${dryRunInfo.invalidCount} 条` : ""}
+                  </p>
+                </div>
+              )}
+
               <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
                 <button type="button" onClick={() => setStep(1)} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
                   <ArrowLeft width={14} height={14} /> 上一步
@@ -412,6 +509,19 @@ export function CrmImportFlow() {
                 )}
               </div>
               <button type="button" className="mx-btn-gold" style={{ marginTop: 18, width: "100%" }} onClick={() => router.push("/crm")}>去看客户</button>
+              {rollbackPlan ? (
+                <button
+                  type="button"
+                  style={{ marginTop: 9, width: "100%", padding: "10px 0", borderRadius: 10, color: "#dc2626", border: "1px solid rgba(220,80,80,.4)", background: "rgba(220,80,80,.08)", fontSize: 12.5, fontWeight: 600 }}
+                  disabled={rollingBack}
+                  onClick={() => void handleRollback()}
+                >
+                  {rollingBack ? "回滚中…" : "回滚本次导入"}
+                </button>
+              ) : null}
+              {rollbackMsg ? (
+                <p style={{ marginTop: 8, fontSize: 11.5, color: rollbackMsg.startsWith("已回滚") ? "#059669" : "#dc2626" }}>{rollbackMsg}</p>
+              ) : null}
               <button
                 type="button"
                 style={{ marginTop: 9, width: "100%", padding: "10px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}
@@ -420,6 +530,8 @@ export function CrmImportFlow() {
                   setRawText("");
                   setMapping({});
                   setImportResult(null);
+                  setRollbackPlan(null);
+                  setRollbackMsg(null);
                 }}
               >
                 再导一批
@@ -634,6 +746,17 @@ export function CrmImportFlow() {
             </div>
           )}
 
+          {dryRunInfo && (
+            <div className="mt-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
+              <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">导入检查</p>
+              <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
+                有效 {dryRunInfo.validCount} 条
+                {dryRunInfo.duplicateCount > 0 ? ` · 重复 ${dryRunInfo.duplicateCount} 条` : ""}
+                {dryRunInfo.invalidCount > 0 ? ` · 无效 ${dryRunInfo.invalidCount} 条` : ""}
+              </p>
+            </div>
+          )}
+
           <div className="mt-6 flex justify-between">
             <V2GhostButton icon={ArrowLeft} onClick={() => setStep(1)}>
               上一步
@@ -680,17 +803,33 @@ export function CrmImportFlow() {
               <V2PrimaryButton onClick={() => router.push("/crm")}>
                 去看客户
               </V2PrimaryButton>
+              {rollbackPlan ? (
+                <V2GhostButton
+                  loading={rollingBack}
+                  onClick={() => void handleRollback()}
+                  className="text-[var(--kaypal-v3-danger)]"
+                >
+                  回滚本次导入
+                </V2GhostButton>
+              ) : null}
               <V2GhostButton
                 onClick={() => {
                   setStep(1);
                   setRawText("");
                   setMapping({});
                   setImportResult(null);
+                  setRollbackPlan(null);
+                  setRollbackMsg(null);
                 }}
               >
                 再导一批
               </V2GhostButton>
             </div>
+            {rollbackMsg ? (
+              <p className={`mt-3 text-sm ${rollbackMsg.startsWith("已回滚") ? "text-[var(--kaypal-v3-success)]" : "text-[var(--kaypal-v3-danger)]"}`}>
+                {rollbackMsg}
+              </p>
+            ) : null}
           </div>
         </V2Section>
       )}
