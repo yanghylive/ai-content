@@ -40,6 +40,7 @@ const TASK_MODULE_LABEL: Record<string, string> = {
   "auto-upload": "发布",
   interaction: "互动",
   "local-engine": "执行",
+  "video-workshop": "视频",
 };
 
 /** 统一任务中心：状态 → { 文案, tint }（归一化后的 7 态） */

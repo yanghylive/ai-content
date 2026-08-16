@@ -266,7 +266,7 @@ describe('DashboardService 归因链', () => {
     expect(result.article).toMatchObject({ id: 'article-1' });
   });
 
-  it('unifiedTaskCenter 聚合三模块任务并归一状态', async () => {
+  it('unifiedTaskCenter 聚合四模块任务并归一状态', async () => {
     const prisma = {
       publishRecord: {
         findMany: jest.fn().mockResolvedValue([
@@ -285,13 +285,43 @@ describe('DashboardService 归因链', () => {
       },
     };
     const systemLogsService = { getRecent: jest.fn() };
+    const videoWorkshop = {
+      listTasks: jest.fn().mockResolvedValue([
+        { id: 'vw-1', kind: 'render', status: 'succeeded', stage: '渲染中', updatedAt: '2026-08-16T09:00:00.000Z' },
+      ]),
+    };
+    const service = new DashboardService(
+      prisma as never,
+      systemLogsService as never,
+      videoWorkshop as never,
+    );
+
+    const result = await service.unifiedTaskCenter(20);
+
+    expect(result.total).toBe(4);
+    // 各模块状态归一：failed→failed、WAITING_FOR_SEND_CONFIRMATION→waiting、
+    // running→running、succeeded(video-workshop)→completed
+    const statuses = result.items.map((i) => i.status).sort();
+    expect(statuses).toEqual(['completed', 'failed', 'running', 'waiting']);
+    const videoItem = result.items.find((i) => i.module === 'video-workshop');
+    expect(videoItem).toMatchObject({
+      id: 'vw-1',
+      status: 'completed',
+      title: '渲染中',
+    });
+  });
+
+  it('unifiedTaskCenter 未注入 videoWorkshop 时不报错（@Optional）', async () => {
+    const prisma = {
+      publishRecord: { findMany: jest.fn().mockResolvedValue([]) },
+      interactionTask: { findMany: jest.fn().mockResolvedValue([]) },
+      runtimeExecution: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    const systemLogsService = { getRecent: jest.fn() };
     const service = new DashboardService(prisma as never, systemLogsService as never);
 
     const result = await service.unifiedTaskCenter(20);
 
-    expect(result.total).toBe(3);
-    // 各模块状态归一：failed→failed、WAITING_FOR_SEND_CONFIRMATION→waiting、running→running
-    const statuses = result.items.map((i) => i.status).sort();
-    expect(statuses).toEqual(['failed', 'running', 'waiting']);
+    expect(result.total).toBe(0);
   });
 });
