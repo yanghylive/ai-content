@@ -8,6 +8,7 @@ import {
 } from './builtin-adapters';
 import { InteractionAdapterRegistry } from './interaction-adapter.registry';
 import { InteractionEventStore } from './interaction-event.store';
+import { InteractionThreadService } from './interaction-thread.service';
 
 /**
  * 统一互动契约模块。
@@ -28,6 +29,7 @@ import { InteractionEventStore } from './interaction-event.store';
     XiaohongshuInteractionAdapter,
     InteractionAdapterRegistrar,
     InteractionEventStore,
+    InteractionThreadService,
   ],
   exports: [
     InteractionAdapterRegistry,
@@ -35,6 +37,7 @@ import { InteractionEventStore } from './interaction-event.store';
     WechatChannelInteractionAdapter,
     XiaohongshuInteractionAdapter,
     InteractionEventStore,
+    InteractionThreadService,
   ],
 })
 export class InteractionModule {}
