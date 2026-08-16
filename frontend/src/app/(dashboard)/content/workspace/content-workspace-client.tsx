@@ -42,7 +42,6 @@ import {
   loadRequestedOrFirstDocument,
   resolveWorkspaceStep,
 } from "./content-workspace-state";
-import { type ContentQueueStatusFilter } from "./content-queue";
 import { WorkspaceContext } from "./workspace-context";
 import { WorkspaceHeader } from "./workspace-header";
 import { shouldClearRulePreviewOnStepChange } from "./workspace-action-state";
@@ -234,7 +233,7 @@ export function ContentWorkspaceClient() {
   const [knowledge, setKnowledge] = useState<WorkspaceKnowledgeView[]>([]);
   const [versions, setVersions] = useState<ContentWorkspaceVersion[]>([]);
   const [document, setDocument] = useState<ContentWorkspaceDocument | null>(null);
-  const [intendedDocumentId, setIntendedDocumentId] = useState("");
+  const [, setIntendedDocumentId] = useState("");
   const [workspaceState, dispatchWorkspace] = useReducer(
     contentWorkspaceReducer,
     createEmptyEditorValue(),
@@ -243,9 +242,6 @@ export function ContentWorkspaceClient() {
   const { activeStep, value: editorValue } = workspaceState;
   const [candidate, setCandidate] = useState<RulePreviewCandidate | null>(null);
   const [brandVoice, setBrandVoice] = useState<WorkspaceBrandVoice>("professional");
-  const [keyword, setKeyword] = useState("");
-  const [queueStatusFilter, setQueueStatusFilter] =
-    useState<ContentQueueStatusFilter>("all");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [lastSavedAt, setLastSavedAt] = useState("");
   const [queueLoading, setQueueLoading] = useState(true);
@@ -673,7 +669,7 @@ export function ContentWorkspaceClient() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      void refreshQueue(keyword).then((items) => {
+      void refreshQueue().then((items) => {
         if (!documentRef.current) {
           const initial = resolveWorkspaceInitialAction(
             window.location.search,
@@ -697,42 +693,7 @@ export function ContentWorkspaceClient() {
     }, 300);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- createDraft 有 creating 幂等保护，且 action 参数立即清除，不加入依赖避免每次渲染重触发
-  }, [keyword, loadDocument, refreshQueue]);
-
-  const selectQueueItem = async (item: WorkspaceQueueItemView) => {
-    if (item.id === intendedDocumentIdRef.current) return;
-    intendedDocumentIdRef.current = item.id;
-    setIntendedDocumentId(item.id);
-    if (item.id === documentRef.current?.id) {
-      documentLoadRequestRef.current += 1;
-      setDocumentLoading(false);
-      return;
-    }
-    if (
-      workspaceFingerprint(valueRef.current, activeStepRef.current) !==
-      savedFingerprintRef.current
-    ) {
-      const saved = await saveNow();
-      if (intendedDocumentIdRef.current !== item.id) return;
-      if (!saved) {
-        const ok = await confirm({
-          kind: "warning",
-          title: "修改保存失败",
-          description: "仍要切换内容吗？未保存的修改将丢失。",
-          confirmText: "仍要切换",
-          cancelText: "留在当前",
-        });
-        if (!ok) {
-          const currentId = documentRef.current?.id || "";
-          intendedDocumentIdRef.current = currentId;
-          setIntendedDocumentId(currentId);
-          return;
-        }
-      }
-    }
-    if (intendedDocumentIdRef.current !== item.id) return;
-    await loadDocument(item.id);
-  };
+  }, [loadDocument, refreshQueue]);
 
   const createDraft = async () => {
     if (creating) return;
@@ -1055,7 +1016,7 @@ export function ContentWorkspaceClient() {
           <V2PrimaryButton
             className="mt-5"
             icon={RefreshCw}
-            onClick={() => void refreshQueue(keyword)}
+            onClick={() => void refreshQueue()}
           >
             重新加载
           </V2PrimaryButton>
