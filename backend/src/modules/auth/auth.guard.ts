@@ -204,6 +204,7 @@ export class AuthGuard implements CanActivate {
     const lastRenew = this.slidingRenewCache.get(sessionId) ?? 0;
     if (now - lastRenew < 5 * 60 * 1000) return;
     this.slidingRenewCache.set(sessionId, now);
+    this.maybePruneSessionCaches();
 
     const newExpiresAt = new Date(now + windowMs);
     void this.runPrismaTransientRetry('session sliding renew', () =>
@@ -267,6 +268,7 @@ export class AuthGuard implements CanActivate {
     }
 
     this.lastUsedAtWriteCache.set(sessionId, now);
+    this.maybePruneSessionCaches();
     this.prisma.userSession
       .update({
         where: { id: sessionId },
@@ -275,6 +277,23 @@ export class AuthGuard implements CanActivate {
       .catch(() => {
         this.lastUsedAtWriteCache.delete(sessionId);
       });
+  }
+
+  /** P2-3：清理过期缓存条目，避免长寿命进程 + 大量历史 session 造成缓存无限增长 */
+  private maybePruneSessionCaches() {
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000; // 30 天未更新的条目视为过期
+    if (
+      this.lastUsedAtWriteCache.size < 500 &&
+      this.slidingRenewCache.size < 500
+    ) {
+      return;
+    }
+    for (const [key, ts] of this.lastUsedAtWriteCache) {
+      if (ts < cutoff) this.lastUsedAtWriteCache.delete(key);
+    }
+    for (const [key, ts] of this.slidingRenewCache) {
+      if (ts < cutoff) this.slidingRenewCache.delete(key);
+    }
   }
 
   private async runPrismaTransientRetry<T>(

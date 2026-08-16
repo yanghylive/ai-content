@@ -190,14 +190,22 @@ async function bootstrap() {
 
   // 请求频率计数（10s 窗口聚合 + 定时打印，定位高频轮询/弹窗触发源；健康检查等排除）
   const reqCounter = new Map<string, number>();
+  const MAX_REQ_COUNTER_KEYS = 200; // P2-3：key 数量上限，防路径片段膨胀打爆内存
   app.use((req: Request, _res: Response, next: NextFunction) => {
-    const path = (req.path || req.url || '').split('?')[0];
+    const rawPath = (req.path || req.url || '').split('?')[0];
+    // P2-3：归一化动态段（数字 id / cuid / ulid / uuid），避免每个 id 都是一个 key
+    const path = rawPath
+      .replace(/\/\d+(?=\/|$)/g, '/:id')
+      .replace(/\/[a-z0-9]{24,}(?=\/|$)/gi, '/:id');
     if (
       path.startsWith('/api/') &&
       !path.includes('/health') &&
       !path.includes('.well-known')
     ) {
-      reqCounter.set(path, (reqCounter.get(path) ?? 0) + 1);
+      const key = reqCounter.has(path) || reqCounter.size < MAX_REQ_COUNTER_KEYS
+        ? path
+        : '__overflow__';
+      reqCounter.set(key, (reqCounter.get(key) ?? 0) + 1);
     }
     next();
   });
