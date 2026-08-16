@@ -107,10 +107,15 @@ export class OutlineService {
     topic: string,
     pageCount = DEFAULT_PAGE_COUNT,
   ): Promise<{ pages: OutlinePage[] }> {
+    // S0-P1-14：页数 clamp 到 1-20，防任意大 pageCount 造成 AI 调用/生成 DoS
+    const safePageCount = Math.max(
+      1,
+      Math.min(20, Number.isFinite(pageCount) ? pageCount : DEFAULT_PAGE_COUNT),
+    );
     const modelId = await this.resolveDefaultModelId();
     const prompt = this.loadPrompt('outline_prompt.txt')
       .replaceAll('{topic}', topic)
-      .replaceAll('{pageCount}', String(pageCount));
+      .replaceAll('{pageCount}', String(safePageCount));
 
     const raw = await this.aiClient.generate(
       modelId,
@@ -125,7 +130,7 @@ export class OutlineService {
       { temperature: 0.8, maxTokens: 3000 },
     );
 
-    const pages = this.parseOutline(raw, pageCount);
+    const pages = this.parseOutline(raw, safePageCount);
     if (pages.length === 0) {
       throw new Error('AI 未返回有效大纲，请调整主题后重试');
     }
