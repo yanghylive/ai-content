@@ -213,6 +213,23 @@ export class PrismaService
       )`,
       `CREATE INDEX IF NOT EXISTS review_runs_tenant_user_created_idx ON review_runs(tenant_id, user_id, created_at)`,
       `CREATE INDEX IF NOT EXISTS review_runs_generated_from_idx ON review_runs(generated_from)`,
+      `CREATE TABLE IF NOT EXISTS attribution_links (
+        id TEXT PRIMARY KEY NOT NULL,
+        tenant_id TEXT,
+        user_id TEXT NOT NULL DEFAULT 'legacy-local-user',
+        from_type TEXT NOT NULL,
+        from_id TEXT NOT NULL,
+        to_type TEXT NOT NULL,
+        to_id TEXT NOT NULL,
+        model TEXT NOT NULL DEFAULT 'deterministic',
+        confidence TEXT NOT NULL DEFAULT 'high',
+        label TEXT,
+        evidence JSONB NOT NULL DEFAULT '{}',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS attribution_links_unique_key ON attribution_links(from_type, from_id, to_type, to_id, model)`,
+      `CREATE INDEX IF NOT EXISTS attribution_links_to_idx ON attribution_links(to_type, to_id)`,
+      `CREATE INDEX IF NOT EXISTS attribution_links_from_idx ON attribution_links(from_type, from_id)`,
       `CREATE TABLE IF NOT EXISTS schedule_configs (
         id TEXT PRIMARY KEY NOT NULL,
         task_type TEXT NOT NULL,

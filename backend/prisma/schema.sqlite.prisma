@@ -3166,3 +3166,26 @@ model ReviewRun {
   @@index([generatedFrom])
   @@map("review_runs")
 }
+
+// 归因链接（六步闭环报告 3.1 AttributionLink）：通用关系表，
+// 记录对象之间的关系 + 归因模型 + 置信度 + 关系标签。
+// 三层归因（报告 9.2 B）：deterministic 确定 / rule_based 规则 / inferred 推断。
+model AttributionLink {
+  id         String   @id @default(cuid())
+  tenantId   String?  @map("tenant_id")
+  userId     String   @map("user_id")
+  fromType   String   @map("from_type") // content | publish | interaction | lead | customer | opportunity
+  fromId     String   @map("from_id")
+  toType     String   @map("to_type")
+  toId       String   @map("to_id")
+  model      String   @default("deterministic") @map("model") // deterministic | rule_based | inferred
+  confidence String   @default("high") @map("confidence") // high | medium | low
+  label      String?  @map("label") // first_touch | last_touch | qualified_by | created_from | influenced_by
+  evidence   Json     @default("{}") @map("evidence") // 归因证据
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([fromType, fromId, toType, toId, model])
+  @@index([toType, toId])
+  @@index([fromType, fromId])
+  @@map("attribution_links")
+}
