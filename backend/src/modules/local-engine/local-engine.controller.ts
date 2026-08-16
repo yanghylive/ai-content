@@ -247,7 +247,12 @@ export class LocalEngineController {
   }
 
   @Post('interaction-assets')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      // multipart 层限制（对齐服务层 30MB），避免先整文件进内存（P1-9）
+      limits: { fileSize: 30 * 1024 * 1024, files: 1 },
+    }),
+  )
   uploadInteractionAsset(
     @UploadedFile() file: AutoUploadUploadFile | undefined,
   ) {

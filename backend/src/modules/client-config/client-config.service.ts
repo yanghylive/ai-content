@@ -52,6 +52,11 @@ export class ClientConfigService {
     }
     const snapshot: ClientConfigSnapshot = {
       ...DEFAULT_CLIENT_CONFIG,
+      // 深拷贝，避免下面按 key 覆盖时污染全局 DEFAULT_CLIENT_CONFIG（P1-8）
+      features: { ...DEFAULT_CLIENT_CONFIG.features },
+      resources: Object.fromEntries(
+        Object.entries(DEFAULT_CLIENT_CONFIG.resources).map(([k, v]) => [k, { ...v }]),
+      ),
       version: Number(overrides['version'] || 1),
       issuedAt: new Date().toISOString(),
     };
@@ -83,11 +88,12 @@ export class ClientConfigService {
     if (!key?.trim() || value == null) {
       throw new Error('key/value 不能为空');
     }
+    // 不再吞异常：写入失败必须向调用方暴露（P1-8），否则运营面板收到 ok:true 误以为已生效
     await this.prisma.clientConfig.upsert({
       where: { key: key.trim() },
       create: { key: key.trim(), value: String(value) },
       update: { value: String(value) },
-    }).catch(() => undefined);
+    });
     return { ok: true, key: key.trim() };
   }
 

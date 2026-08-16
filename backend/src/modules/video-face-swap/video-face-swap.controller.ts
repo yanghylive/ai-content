@@ -55,7 +55,12 @@ export class VideoFaceSwapController {
   }
 
   @Post('material-files')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      // multipart 层限制，避免超大素材先整文件进内存（P1-9）
+      limits: { fileSize: 50 * 1024 * 1024, files: 1 },
+    }),
+  )
   importMaterialFile(@UploadedFile() file: VideoFaceSwapUploadFile) {
     return this.videoFaceSwap.importMaterialFile(file);
   }

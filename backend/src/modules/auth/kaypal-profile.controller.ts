@@ -1765,7 +1765,12 @@ for imagePath in CommandLine.arguments.dropFirst() {
 
   @Post('knowledge/uploads')
   @HttpCode(201)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      // multipart 层限制，避免超大文档在 PDF/OCR 解析前就占满内存（P1-9）
+      limits: { fileSize: 50 * 1024 * 1024, files: 1 },
+    }),
+  )
   async uploadKnowledgeFile(
     @Req() req: AuthenticatedRequest,
     @UploadedFile() file: UploadedKnowledgeFile | undefined,

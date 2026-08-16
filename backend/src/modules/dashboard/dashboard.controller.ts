@@ -63,9 +63,20 @@ export class DashboardController {
     name: 'limit',
     required: false,
     description: '限制条数',
-    example: 5,
+    example: 50,
   })
-  getDraftArticles(@Query('limit') limit?: number) {
-    return this.service.getLatestDraftArticles(limit ? Number(limit) : 5);
+  @ApiQuery({
+    name: 'keyword',
+    required: false,
+    description: '标题关键词筛选',
+  })
+  getDraftArticles(
+    @Query('limit') limit?: number,
+    @Query('keyword') keyword?: string,
+  ) {
+    return this.service.getLatestDraftArticles(
+      limit ? Number(limit) : 50,
+      keyword?.trim() || undefined,
+    );
   }
 }
