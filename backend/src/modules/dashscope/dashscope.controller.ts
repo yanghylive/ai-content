@@ -33,6 +33,16 @@ export class DashscopeController {
     return this.multimodal.generateImage(request.authUser, input || {});
   }
 
+  @Post('image/quote')
+  @ApiOperation({ summary: '生图成本预估（积分 + 人民币，报告 16.3 第 11 项）' })
+  quoteImage(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { count?: number },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.multimodal.quoteImageCost(request.authUser, input || {});
+  }
+
   @Post('video')
   @ApiOperation({ summary: '万相/快乐马 文生/图生视频（入素材库，百炼直连或网关回退）' })
   generateVideo(
@@ -41,6 +51,16 @@ export class DashscopeController {
   ) {
     if (!request.authUser) throw new UnauthorizedException('请先登录');
     return this.multimodal.generateVideo(request.authUser, input || {});
+  }
+
+  @Post('video/quote')
+  @ApiOperation({ summary: '生视频成本预估（积分 + 人民币，报告 16.3 第 11 项）' })
+  quoteVideo(
+    @Req() request: AuthenticatedRequest,
+    @Body() input: { durationSeconds?: number },
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    return this.multimodal.quoteVideoCost(request.authUser, input || {});
   }
 
   @Post('speech')

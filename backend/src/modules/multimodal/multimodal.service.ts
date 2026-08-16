@@ -1,11 +1,13 @@
 import {
   Injectable,
   Logger,
+  Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { KaypalAuthClient } from '../auth/kaypal-auth.client';
 
 export interface ImageGenResult {
   filename: string;
@@ -52,7 +54,61 @@ export class MultimodalService {
   constructor(
     private readonly config: ConfigService,
     private readonly autoUploadService: AutoUploadService,
+    @Optional()
+    private readonly kaypalAuth?: KaypalAuthClient,
   ) {}
+
+  private resolveKaypalUserId(authUser: AuthenticatedUser): string {
+    return authUser?.kaypalUserId?.trim() || authUser?.id?.trim() || '';
+  }
+
+  /**
+   * 媒体生成成本预估（报告 16.3 第 11 项）：生成前调 kaypal quote，
+   * 返回预估积分 + 预估人民币，供前端「生成前展示成本」。
+   * 价格透明是「怎么计量」商业问的前提；预估失败返回 null（不阻断生成）。
+   */
+  async quoteImageCost(authUser: AuthenticatedUser, input: { count?: number }) {
+    return this.quoteCost(authUser, 'image_generation', {
+      count: Math.max(1, input.count ?? 1),
+    });
+  }
+
+  async quoteVideoCost(
+    authUser: AuthenticatedUser,
+    input: { durationSeconds?: number },
+  ) {
+    return this.quoteCost(authUser, 'video_generation', {
+      durationSeconds: Math.max(1, input.durationSeconds ?? 5),
+    });
+  }
+
+  private async quoteCost(
+    authUser: AuthenticatedUser,
+    resourceType: string,
+    metadata: Record<string, unknown>,
+  ) {
+    const userId = this.resolveKaypalUserId(authUser);
+    if (!this.kaypalAuth || !userId) {
+      return null;
+    }
+    const result = await this.kaypalAuth.quoteCloudBilling({
+      userId,
+      serviceType: 'ai_content_workbench',
+      resourceType,
+      metadata,
+    });
+    if (!result.ok || !result.quote) {
+      return null;
+    }
+    return {
+      resourceType,
+      amount: result.quote.amount,
+      estimatedCostCny: result.quote.estimatedCostCny,
+      managed: result.quote.managed,
+      pricingBasis: result.quote.pricingBasis,
+      inputs: result.quote.inputs,
+    };
+  }
 
   private readConfig(key: string): string {
     return this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || '';

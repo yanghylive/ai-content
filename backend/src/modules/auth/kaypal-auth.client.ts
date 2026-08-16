@@ -819,6 +819,77 @@ export class KaypalAuthClient {
     }
   }
 
+  /**
+   * 成本预估（报告 16.3 第 11 项）：生成前调 kaypal /api/billing/quote，
+   * managed 模式由 kaypal 按 resource_type + metadata 自动定价，返回
+   * 预估积分（amount）+ 预估人民币（estimatedCostCny），供前端「生成前
+   * 展示成本」——价格透明是「怎么计量」商业问的前提。
+   */
+  async quoteCloudBilling(input: {
+    userId: string;
+    serviceType: string;
+    resourceType: string;
+    amount?: number;
+    metadata?: Record<string, unknown>;
+  }): Promise<{
+    ok: boolean;
+    quote?: {
+      managed: boolean;
+      amount: number;
+      estimatedCostCny: number;
+      category: string;
+      pricingBasis: string;
+      inputs: Record<string, unknown>;
+    };
+  }> {
+    const serverApiKey = this.getServerBillingApiKey();
+    if (!serverApiKey) {
+      return { ok: false };
+    }
+    try {
+      const payload = await this.fetchCloudJson<Record<string, unknown>>(
+        '/api/billing/quote',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'x-kaypal-api-key': serverApiKey,
+          },
+          body: JSON.stringify({
+            user_id: input.userId,
+            ...(input.amount != null ? { amount: input.amount } : {}),
+            service_type: input.serviceType,
+            resource_type: input.resourceType,
+            metadata: {
+              source: 'ai-content-workbench',
+              ...(input.metadata || {}),
+            },
+          }),
+        },
+      );
+      const data = this.asRecord(payload?.data) || payload || {};
+      const quote = this.asRecord(data?.quote);
+      return {
+        ok: true,
+        quote: {
+          managed: quote?.managed === true,
+          amount: this.toNumberOrNull(quote?.amount) ?? 0,
+          estimatedCostCny:
+            this.toNumberOrNull(quote?.estimatedCostCny) ?? 0,
+          category: typeof quote?.category === 'string' ? quote.category : '',
+          pricingBasis:
+            typeof quote?.pricingBasis === 'string'
+              ? quote.pricingBasis
+              : '',
+          inputs: this.asRecord(quote?.inputs) || {},
+        },
+      };
+    } catch {
+      return { ok: false };
+    }
+  }
+
   async searchCloudKnowledge(
     accessToken: string,
     input: {

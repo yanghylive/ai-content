@@ -64,3 +64,41 @@ export function generateSpeech(input: {
 }): Promise<DashSpeechResult> {
   return postJson<DashSpeechResult>("/api/ai/speech", input);
 }
+
+/** 媒体生成成本预估（报告 16.3 第 11 项）——积分 + 人民币，预估失败返回 null */
+export interface CostQuote {
+  resourceType: string;
+  amount: number;
+  estimatedCostCny: number;
+  managed: boolean;
+  pricingBasis: string;
+  inputs: Record<string, unknown>;
+}
+
+async function postCostQuote(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<CostQuote | null> {
+  try {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const json = (await res.json()) as { success?: boolean; data?: CostQuote | null };
+    if (!res.ok || !json.success) return null;
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** 生图成本预估 */
+export function quoteImageCost(input: { count?: number }): Promise<CostQuote | null> {
+  return postCostQuote("/api/ai/image/quote", input);
+}
+
+/** 生视频成本预估 */
+export function quoteVideoCost(input: { durationSeconds?: number }): Promise<CostQuote | null> {
+  return postCostQuote("/api/ai/video/quote", input);
+}

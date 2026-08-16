@@ -193,4 +193,73 @@ describe('KaypalAuthClient', () => {
 
     expect(result.ok).toBe(false);
   });
+
+  it('quoteCloudBilling 调 kaypal quote 接口返回预估积分 + 人民币', async () => {
+    let capturedBody: Record<string, unknown> = {};
+    global.fetch = jest.fn((input: URL | RequestInfo, init?: RequestInit) => {
+      const url = input instanceof URL ? input : new URL(String(input));
+      if (url.pathname === '/api/billing/quote') {
+        capturedBody = JSON.parse(String(init?.body || '{}'));
+        return Promise.resolve(
+          jsonResponse({
+            userId: 'kaypal-user-1',
+            serviceType: 'ai_content_workbench',
+            resourceType: 'video_generation',
+            quote: {
+              managed: true,
+              amount: 10,
+              estimatedCostCny: 0.1,
+              category: 'ai',
+              pricingBasis: 'duration',
+              inputs: { durationSeconds: 5 },
+            },
+          }),
+        );
+      }
+      throw new Error(`unexpected url: ${url.toString()}`);
+    }) as jest.Mock;
+
+    const client = new KaypalAuthClient({
+      get: jest.fn((key: string) => {
+        const values: Record<string, string> = {
+          KAYPAL_AUTH_BASE_URL: 'https://kaypal.cn',
+          KAYPAL_BILLING_API_KEY: 'server-key',
+        };
+        return values[key] || '';
+      }),
+    } as any);
+
+    const result = await client.quoteCloudBilling({
+      userId: 'kaypal-user-1',
+      serviceType: 'ai_content_workbench',
+      resourceType: 'video_generation',
+      metadata: { durationSeconds: 5 },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.quote).toMatchObject({
+      managed: true,
+      amount: 10,
+      estimatedCostCny: 0.1,
+    });
+    expect(capturedBody).toMatchObject({
+      user_id: 'kaypal-user-1',
+      resource_type: 'video_generation',
+      metadata: expect.objectContaining({ durationSeconds: 5 }),
+    });
+  });
+
+  it('quoteCloudBilling 无服务端 key 时返回 ok:false', async () => {
+    const client = new KaypalAuthClient({
+      get: jest.fn(() => ''),
+    } as any);
+
+    const result = await client.quoteCloudBilling({
+      userId: 'kaypal-user-1',
+      serviceType: 'ai_content_workbench',
+      resourceType: 'image_generation',
+    });
+
+    expect(result.ok).toBe(false);
+  });
 });
