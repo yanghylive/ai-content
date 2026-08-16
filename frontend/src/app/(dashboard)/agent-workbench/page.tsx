@@ -1,7 +1,5 @@
-import { HybridRoute } from "@/components/v2/hybrid-route";
-import { AgentWorkbenchCenter } from "./agent-workbench-center";
-import LegacyPage from "./page-legacy";
+import { AgentConsolePage } from "./agent-workbench-client";
 
 export default function Page() {
-  return <HybridRoute v2={<AgentWorkbenchCenter />} legacy={<LegacyPage />} />;
+  return <AgentConsolePage />;
 }
