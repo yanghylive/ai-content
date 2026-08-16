@@ -606,7 +606,7 @@ describe('AuthGuard', () => {
       prisma as any,
       kaypalClient as any,
       undefined,
-      new EntitlementsService(tenants as any),
+      new EntitlementsService({} as any, tenants as any),
     );
 
     await expect(

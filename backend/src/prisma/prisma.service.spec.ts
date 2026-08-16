@@ -176,6 +176,7 @@ describe('PrismaService SQLite startup safety', () => {
         'workspace_outline',
         'workspace_step',
         'workspace_revision',
+        'parent_id',
       ],
       publish_accounts: ['tenant_id', 'user_id', 'status'],
       publish_records: [

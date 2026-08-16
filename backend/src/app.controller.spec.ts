@@ -61,20 +61,13 @@ describe('AppController', () => {
       expect(health).toEqual(
         expect.objectContaining({
           ok: true,
+          ready: true,
           service: 'ai-content-backend',
           timestamp: expect.any(String),
-          checks: expect.objectContaining({
-            database: expect.objectContaining({ ok: true }),
-            agentWaker: expect.objectContaining({ ok: true }),
-            growthExecution: expect.objectContaining({
-              enabled: expect.any(Boolean),
-            }),
-            taskQueue: expect.objectContaining({
-              enabled: expect.any(Boolean),
-            }),
-          }),
         }),
       );
+      // P2-4：health 不再暴露内部运行态（database/growth/taskQueue/agentWaker）
+      expect(health).not.toHaveProperty('checks');
     });
 
     it('keeps readiness healthy while unattended growth execution is safely disabled', async () => {
@@ -84,12 +77,6 @@ describe('AppController', () => {
       try {
         await expect(appController.getReadiness()).resolves.toMatchObject({
           ready: true,
-          checks: {
-            growthExecution: expect.objectContaining({
-              enabled: false,
-              safetyStatus: 'closed',
-            }),
-          },
         });
       } finally {
         if (previous === undefined) {
