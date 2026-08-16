@@ -178,7 +178,7 @@ export function ContentHubPage() {
       label: "发布前检查",
       description: "先看风险，再进入发布准备。",
       icon: ShieldCheck,
-      onClick: () => router.push("/distribution?tab=compliance"),
+      onClick: () => router.push("/compliance"),
     },
     {
       label: "打开知识库",

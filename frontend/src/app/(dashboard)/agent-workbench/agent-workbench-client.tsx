@@ -64,7 +64,7 @@ const statusColor: Record<
 
 const confirmationSourceHref: Record<AgentSession["source"], string> = {
   "agent-console": "/tasks/records",
-  publishing: "/distribution?tab=article",
+  publishing: "/distribution/publish-article",
   interaction: "/engagement/records",
   system: "/local-engine?tab=engine",
   web: "/tasks",
