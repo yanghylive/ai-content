@@ -447,7 +447,7 @@ export function PublishCenter() {
             { key: "accounts", title: "发布账号", href: "/platforms" },
             { key: "compliance", title: "合规检查", href: "/compliance" },
             { key: "engine", title: "发布引擎", href: "/local-engine" },
-            { key: "logs", title: "发布日志", href: "/local-engine/logs" },
+            { key: "logs", title: "发布日志", href: "/distribution/logs" },
           ].map((module) => (
             <Link
               key={module.key}
