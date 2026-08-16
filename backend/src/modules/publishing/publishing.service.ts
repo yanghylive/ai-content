@@ -863,6 +863,13 @@ export class PublishingService {
       }
 
       const readbackMatched = result.readback?.matched === true;
+      // 记录级回读状态（六步闭环 PublishReceipt 提列）：
+      // 回读匹配=verified；平台返回外部 ID/URL 但未回读=uncertain（需人工确认，勿重复发布）
+      const readbackState = readbackMatched
+        ? 'verified'
+        : result.publishUrl || result.articleId
+          ? 'uncertain'
+          : 'pending';
       const metadata: PublishRecordMetadata = {
         version: 1,
         platform: account.platform,
@@ -876,10 +883,12 @@ export class PublishingService {
         where: { id: record.id },
         data: {
           status: readbackMatched ? 'success' : 'pending',
+          readbackState,
           publishUrl: result.publishUrl || result.articleId,
           errorMessage: this.serializePublishRecordMetadata(metadata),
           resultJson: this.jsonValue({
             status: readbackMatched ? 'success' : 'pending',
+            readbackState,
             providerArticleId: result.articleId,
             publishUrl: result.publishUrl ?? null,
             evidence: result.evidence ?? null,
