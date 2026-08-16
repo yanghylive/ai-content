@@ -1,7 +1,5 @@
-import { HybridRoute } from "@/components/v2/hybrid-route";
-import { CollaborationCenter } from "../_components/collaboration-center";
-import LegacyPage from "./page-legacy";
+import { IntelligenceCollaborationWorkbench } from "../_components/intelligence-collaboration-workbench";
 
 export default function Page() {
-  return <HybridRoute v2={<CollaborationCenter />} legacy={<LegacyPage />} />;
+  return <IntelligenceCollaborationWorkbench />;
 }

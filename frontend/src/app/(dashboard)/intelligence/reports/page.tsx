@@ -1,11 +1,5 @@
-import { HybridRoute } from "@/components/v2/hybrid-route";
-import { ReportsCenter } from "../_components/reports-center";
-import LegacyPage from "./page-legacy";
+import { IntelligenceReportsWorkbench } from "../_components/intelligence-reports-workbench";
 
 export default function Page() {
-  return <HybridRoute
-      v2={<ReportsCenter />}
-      legacy={<LegacyPage />}
-      ignoreParams={["action", "id"]}
-    />;
+  return <IntelligenceReportsWorkbench />;
 }
