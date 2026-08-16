@@ -190,6 +190,14 @@ export async function persistTaskNow(this: PersistHost, task: InteractionTask) {
     requiresDoubleConfirmation: task.requiresDoubleConfirmation ?? false,
     // 执行上下文绑定：记录当前进程认领（防重启后遗留 RUNNING 僵尸任务）
     claimedBy: TASK_CLAIMED_BY,
+    // 互动承接 SLA（报告 16.3 第 15 项）：默认 24h 内处理，超时转人工
+    slaDueAt:
+      (task as { slaDueAt?: string | Date | null }).slaDueAt ??
+      new Date(Date.now() + 24 * 60 * 60 * 1000),
+    handoffState:
+      (task as { handoffState?: string | null }).handoffState ?? 'normal',
+    handoffReason:
+      (task as { handoffReason?: string | null }).handoffReason ?? null,
   };
   await this.runPrismaTransientRetry('persist interaction task', () =>
     this.prisma.interactionTask.upsert({

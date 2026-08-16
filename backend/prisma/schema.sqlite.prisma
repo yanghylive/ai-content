@@ -1559,6 +1559,10 @@ model InteractionTask {
   publishRecordId            String?               @map("publishRecordId")
   // 平台侧来源 URL（评论/私信链接），用于「互动→线索」弱关联匹配
   sourceUrl                  String?               @map("sourceUrl")
+  // 互动承接 SLA（报告 16.3 第 15 项）：待处理超时时间 + 转人工标记
+  slaDueAt                   DateTime?             @map("slaDueAt")
+  handoffState               String                @default("normal") @map("handoffState") // normal | needs_human
+  handoffReason              String?               @map("handoffReason")
   createdAt                  DateTime              @default(now()) @map("createdAt")
   claimedBy                  String?               @map("claimedBy")
   updatedAt                  DateTime              @updatedAt @map("updatedAt")
