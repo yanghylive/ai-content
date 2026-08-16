@@ -22,7 +22,6 @@ import {
   V2GhostButton,
   V2EmptyState,
 } from "@/components/v2/ui-kit";
-import { toPublicError } from "@/lib/public-error";
 
 /** 把本机运行时术语替换为用户友好文案 */
 function cleanRuntimeText(text: string): string {
@@ -46,18 +45,23 @@ export function DistributionEngineLogs() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    const errors: string[] = [];
+    // S0-9：失败不伪装成「0 条/服务可用」，分开捕获并显示错误态 + 重试
     try {
-      const [h, l] = await Promise.all([
-        autoUploadApi.health().catch(() => null),
-        autoUploadApi.logs(80).catch(() => []),
-      ]);
-      setHealth(h);
-      setLogs(Array.isArray(l) ? l : []);
-    } catch (err: unknown) {
-      setError(toPublicError(err, "发布服务与结果读取失败"));
-    } finally {
-      setLoading(false);
+      setHealth(await autoUploadApi.health());
+    } catch {
+      errors.push("引擎健康读取失败");
+      setHealth(null);
     }
+    try {
+      const l = await autoUploadApi.logs(80);
+      setLogs(Array.isArray(l) ? l : []);
+    } catch {
+      errors.push("发布结果日志读取失败");
+      setLogs([]);
+    }
+    if (errors.length) setError(`${errors.join("；")}，请重试`);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
