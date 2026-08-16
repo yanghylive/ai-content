@@ -7,6 +7,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { assertPublishTransition } from './publish-state.machine';
 import type {
   AutoUploadPublishBatchResult,
   AutoUploadPublishPayload,
@@ -403,6 +404,7 @@ export class PublishRecordStore {
     });
     if (!candidate) return null;
 
+    assertPublishTransition('queued', 'claimed');
     const claimed = await this.prisma.runtimeExecution.updateMany({
       where: {
         id: candidate.id,
@@ -436,6 +438,7 @@ export class PublishRecordStore {
     reasonCode: string,
     userMessage: string,
   ): Promise<boolean> {
+    assertPublishTransition('claimed', status);
     const result = await this.prisma.runtimeExecution.updateMany({
       where: {
         id: databaseId,
@@ -474,6 +477,7 @@ export class PublishRecordStore {
     now: Date,
     maxAttempts = 3,
   ): Promise<{ reclaimed: number; deadLettered: number }> {
+    assertPublishTransition('claimed', 'failed');
     const deadLettered = await this.prisma.runtimeExecution.updateMany({
       where: {
         taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
@@ -491,6 +495,7 @@ export class PublishRecordStore {
       },
     });
 
+    assertPublishTransition('claimed', 'queued');
     const reclaimed = await this.prisma.runtimeExecution.updateMany({
       where: {
         taskType: DURABLE_PUBLISH_RECORD_TASK_TYPE,
@@ -780,6 +785,7 @@ export class PublishRecordStore {
       cancelledAt: updatedAt,
       updatedAt,
     };
+    assertPublishTransition(record.status, 'cancelled');
     const updated = await this.prisma.runtimeExecution.update({
       where: { id: record.databaseId },
       data: {
@@ -823,6 +829,7 @@ export class PublishRecordStore {
       outcomeUncertain: { markedAt: updatedAt, reason },
       updatedAt,
     };
+    assertPublishTransition('claimed', 'failed');
     await this.prisma.runtimeExecution.update({
       where: { id: record.databaseId },
       data: {
@@ -908,6 +915,7 @@ export class PublishRecordStore {
       if (!plannedAt) continue;
       const planned = Date.parse(plannedAt);
       if (!Number.isFinite(planned) || planned > now.getTime()) continue;
+      assertPublishTransition('waiting', 'queued');
       await this.prisma.runtimeExecution.update({
         where: { id: row.id },
         data: {
