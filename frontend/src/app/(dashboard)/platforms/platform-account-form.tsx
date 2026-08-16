@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   MessageCircle,
   Save,
+  Trash2,
 } from "lucide-react";
 import {
   V2Section,
@@ -26,9 +27,15 @@ const PLATFORMS = [
 
 export function PlatformAccountForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 编辑模式：?id= 存在时加载现有账号
+  const accountId = searchParams.get("id") || undefined;
+  const isEdit = Boolean(accountId);
 
   const [form, setForm] = useState({
     platform: "wechat",
@@ -49,6 +56,45 @@ export function PlatformAccountForm() {
   const setConfig = <K extends keyof typeof form.config>(key: K, value: (typeof form.config)[K]) =>
     setForm((p) => ({ ...p, config: { ...p.config, [key]: value } }));
 
+  // 编辑模式：加载现有账号填充表单
+  useEffect(() => {
+    if (!accountId) return;
+    let active = true;
+    publishingApi
+      .getAccounts()
+      .then((list) => {
+        const account = (Array.isArray(list) ? list : []).find(
+          (a) => String(a.id) === String(accountId),
+        );
+        if (!account || !active) return;
+        setForm({
+          platform: account.platform || "wechat",
+          name: account.name || "",
+          appId: account.appId || "",
+          apiToken: account.apiToken || "",
+          config: {
+            apiUrl: account.config?.apiUrl || "https://mp.idouq.com/api/open/article",
+            baseUrl: account.config?.baseUrl || "https://jpage.cn",
+            categoryId: account.config?.categoryId ?? "",
+            defaultThumbMediaId: account.config?.defaultThumbMediaId || "",
+            openComment: account.config?.openComment ?? 1,
+            onlyFansCanComment: account.config?.onlyFansCanComment ?? 0,
+            tags:
+              (Array.isArray(account.config?.tags)
+                ? account.config.tags.join(",")
+                : account.config?.tags) || "wechat-official-account,pre-draft-preview",
+          },
+        });
+      })
+      .catch((err: unknown) => {
+        if (active) setError(toPublicError(err, "加载授权配置失败"));
+      });
+    return () => {
+      active = false;
+    };
+  }, [accountId]);
+
+
   const canSubmit = form.platform && form.name.trim();
 
   const handleSubmit = async () => {
@@ -56,7 +102,7 @@ export function PlatformAccountForm() {
     setSaving(true);
     setError(null);
     try {
-      await publishingApi.createAccount({
+      const payload = {
         platform: form.platform,
         name: form.name,
         appId: form.appId || undefined,
@@ -70,12 +116,33 @@ export function PlatformAccountForm() {
           ...(form.config.defaultThumbMediaId ? { defaultThumbMediaId: form.config.defaultThumbMediaId } : {}),
           tags: form.config.tags,
         },
-      });
+      };
+      if (isEdit && accountId) {
+        await publishingApi.updateAccount(accountId, payload);
+      } else {
+        await publishingApi.createAccount(payload);
+      }
       router.push("/platforms");
     } catch (err: unknown) {
       setError(toPublicError(err, "保存失败，请稍后重试"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!isEdit || !accountId) return;
+    if (!window.confirm("确定删除这个平台授权吗？删除后需要重新添加。")) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      const confirmation = await publishingApi.createAccountDeleteConfirmation(accountId);
+      await publishingApi.deleteAccount(accountId, confirmation.confirmationId);
+      router.push("/platforms");
+    } catch (err: unknown) {
+      setError(toPublicError(err, "删除失败，请稍后重试"));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -116,8 +183,8 @@ export function PlatformAccountForm() {
                 <ArrowLeft width={14} height={14} /> 返回平台列表
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
-                <div className="mx-page-title" style={{ fontSize: 18 }}>"添加发布配置"</div>
-                <div className="mx-page-sub" style={{ marginTop: 1 }}>"两步搞定：选平台 → 填账号名"</div>
+                <div className="mx-page-title" style={{ fontSize: 18 }}>{isEdit ? "编辑发布配置" : "添加发布配置"}</div>
+                <div className="mx-page-sub" style={{ marginTop: 1 }}>{isEdit ? "修改授权信息、发文参数和安全凭证" : "两步搞定：选平台 → 填账号名"}</div>
               </div>
               <span style={{ flexShrink: 0, width: 44 }} />
             </div>
@@ -205,6 +272,17 @@ export function PlatformAccountForm() {
             <button type="button" onClick={() => router.push("/platforms")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
+            {isEdit ? (
+              <button
+                type="button"
+                style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 5, padding: "10px 14px", borderRadius: 10, color: "#dc2626", border: "1px solid rgba(220,80,80,.4)", background: "rgba(220,80,80,.08)", fontSize: 12.5, fontWeight: 600 }}
+                disabled={deleting}
+                onClick={() => void handleDelete()}
+              >
+                <Trash2 width={14} height={14} />
+                {deleting ? "正在删除…" : "删除"}
+              </button>
+            ) : null}
             <button
               type="button"
               className="mx-btn-gold"
@@ -213,7 +291,7 @@ export function PlatformAccountForm() {
               onClick={() => void handleSubmit()}
             >
               <Save width={15} height={15} />
-              {saving ? "正在保存…" : "保存配置"}
+              {saving ? "正在保存…" : isEdit ? "保存修改" : "保存配置"}
             </button>
           </div>
         </div>
@@ -234,10 +312,10 @@ export function PlatformAccountForm() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
-              添加发布配置
+              {isEdit ? "编辑发布配置" : "添加发布配置"}
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              两步搞定：选平台 → 填账号名
+              {isEdit ? "修改授权信息、发文参数和安全凭证" : "两步搞定：选平台 → 填账号名"}
             </p>
           </div>
         </div>
@@ -373,16 +451,28 @@ export function PlatformAccountForm() {
       </V2Section>
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/platforms")}>
-          返回
-        </V2GhostButton>
+        <div className="flex items-center gap-2">
+          <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/platforms")}>
+            返回
+          </V2GhostButton>
+          {isEdit ? (
+            <V2GhostButton
+              icon={Trash2}
+              loading={deleting}
+              onClick={handleDelete}
+              className="text-[var(--kaypal-v3-danger)]"
+            >
+              删除
+            </V2GhostButton>
+          ) : null}
+        </div>
         <V2PrimaryButton
           icon={Save}
           loading={saving}
           disabled={!canSubmit}
           onClick={handleSubmit}
         >
-          {saving ? "正在保存..." : "保存配置"}
+          {saving ? "正在保存..." : isEdit ? "保存修改" : "保存配置"}
         </V2PrimaryButton>
       </section>
     </div>
