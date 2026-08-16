@@ -57,12 +57,13 @@ export function CrmImportFlow() {
   const [fileRows, setFileRows] = useState<string[][] | null>(null);
   const [fileName, setFileName] = useState("");
   const [readingFile, setReadingFile] = useState(false);
+  const [sourceType, setSourceType] = useState<"paste" | "file">("paste");
 
   // 第 2 步：字段映射
   const [columns, setColumns] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [previewRows, setPreviewRows] = useState<CrmImportPreviewRow[]>([]);
-  const [loadingPreview] = useState(false);
+  const [dryRunning, setDryRunning] = useState(false);
 
   // 后端干跑凭证（受控导入：commit 时带上 proofId/hash，支撑审计与回滚）
   const [dryRunId, setDryRunId] = useState<string | undefined>();
@@ -95,7 +96,11 @@ export function CrmImportFlow() {
   };
 
   // 进入字段映射（粘贴和文件两条路共用）
-  const goToMapping = (rows: string[][], name: string) => {
+  const goToMapping = (
+    rows: string[][],
+    name: string,
+    srcType: "paste" | "file",
+  ) => {
     if (rows.length === 0) {
       setError("没有读到有效数据行");
       return;
@@ -127,7 +132,7 @@ export function CrmImportFlow() {
     );
     setStep(2);
     // 后端干跑（受控导入：字段识别 + 去重 + 回滚凭证，不阻断本地预览）
-    void runDryRun(rows, autoMapping, name);
+    void runDryRun(rows, autoMapping, name, srcType);
   };
 
   // 后端干跑预览：拿到 proofId/hash（commit 凭证）+ 去重/校验信息
@@ -135,7 +140,9 @@ export function CrmImportFlow() {
     rows: string[][],
     autoMapping: Record<string, string>,
     name: string,
+    srcType: "paste" | "file",
   ) => {
+    setDryRunning(true);
     try {
       const header = rows[0];
       const dataRows = rows.slice(1).map((cells) => {
@@ -147,7 +154,7 @@ export function CrmImportFlow() {
       });
       const result = await dryRunCrmImport({
         filename: name,
-        sourceType: "paste",
+        sourceType: srcType,
         rows: dataRows,
         mapping: autoMapping,
         hasHeader: true,
@@ -168,6 +175,8 @@ export function CrmImportFlow() {
       }
     } catch {
       // 后端干跑不可用时降级为前端本地解析，不阻断导入流程
+    } finally {
+      setDryRunning(false);
     }
   };
 
@@ -179,7 +188,8 @@ export function CrmImportFlow() {
     }
     setFileRows(rows);
     setFileName("粘贴导入");
-    goToMapping(rows, "粘贴导入");
+    setSourceType("paste");
+    goToMapping(rows, "粘贴导入", "paste");
   };
 
   // 上传 Excel/CSV 文件
@@ -187,32 +197,27 @@ export function CrmImportFlow() {
     setReadingFile(true);
     setError(null);
     try {
-      let rows: string[][] = [];
-      if (/\.xlsx?$/i.test(file.name)) {
-        const XLSX = await import("xlsx");
-        const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array" });
-        const sheet = wb.Sheets[wb.SheetNames[0]];
-        rows = XLSX.utils.sheet_to_json<string[]>(sheet, {
+      // 报告 7.5：CSV 用成熟 parser（xlsx 同时支持 xlsx/csv），正确处理
+      // 引号、逗号、换行字段，不再手写正则 split 切逗号
+      const XLSX = await import("xlsx");
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils
+        .sheet_to_json<string[]>(sheet, {
           header: 1,
           defval: "",
           blankrows: false,
-        }).map((r) => r.map((c) => String(c ?? "").trim()));
-      } else {
-        const text = await file.text();
-        rows = text
-          .split(/\r?\n/)
-          .map((line) => line.trim())
-          .filter(Boolean)
-          .map((line) => line.split(/[\t,，|]/).map((cell) => cell.trim()));
-      }
+        })
+        .map((r) => r.map((c) => String(c ?? "").trim()));
       if (rows.length < 2) {
         setError("文件里至少要有一行表头和一行数据");
         return;
       }
       setFileRows(rows);
       setFileName(file.name);
-      goToMapping(rows, file.name);
+      setSourceType("file");
+      goToMapping(rows, file.name, "file");
     } catch {
       setError("文件读取失败，请确认是 .xlsx 或 .csv 文件");
     } finally {
@@ -254,6 +259,7 @@ export function CrmImportFlow() {
       });
       const result = await commitCrmImport({
         filename: fileName || "粘贴导入",
+        sourceType,
         rows: dataRows,
         mapping,
         hasHeader: true,
@@ -685,7 +691,6 @@ export function CrmImportFlow() {
               <V2PrimaryButton
                 icon={ArrowRight}
                 disabled={!rawText.trim()}
-                loading={loadingPreview}
                 onClick={handleNextToMapping}
               >
                 下一步
@@ -743,6 +748,13 @@ export function CrmImportFlow() {
                   {previewRows.slice(0, 3).map((row) => JSON.stringify(row.normalized || row.raw)).join("\n")}
                 </pre>
               </div>
+            </div>
+          )}
+
+          {dryRunning && !dryRunInfo && (
+            <div className="mt-4 flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-xs text-[var(--kaypal-v3-muted)]">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              正在做导入检查…
             </div>
           )}
 
