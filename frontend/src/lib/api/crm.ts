@@ -704,6 +704,12 @@ export function archiveCrmCustomer(id: string) {
   return api.post<CrmCustomer>(`/crm/customers/${id}/archive`, {});
 }
 
+export function mergeCrmCustomer(id: string, sourceCustomerId: string) {
+  return api.post<CrmCustomer>(`/crm/customers/${encodeURIComponent(id)}/merge`, {
+    sourceCustomerId,
+  });
+}
+
 export function listCrmCompanies(params: { q?: string; status?: string } = {}) {
   return api.get<CrmCompany[]>(`/crm/companies${suffix(params)}`);
 }

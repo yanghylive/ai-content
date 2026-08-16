@@ -581,6 +581,83 @@ export class CrmService {
     };
   }
 
+  /**
+   * 客户合并（报告 7.2：合并/重复）：把 source 客户合并进 target，
+   * 事务内迁移关联对象（任务/备注/时间线/商机）→ 归档 source → 写时间线。
+   */
+  async mergeCustomer(
+    userId: string,
+    targetId: string,
+    sourceId: string,
+  ): Promise<unknown> {
+    await this.requireCrmMutationScope(userId);
+    if (targetId === sourceId) {
+      throw new BadRequestException('不能把客户合并到自身');
+    }
+    const tenantId = await this.resolveCrmTenantId(userId);
+    const target = await this.getCustomer(userId, targetId);
+    const source = await this.getCustomer(userId, sourceId);
+    const now = new Date();
+
+    let migrated = { tasks: 0, notes: 0, timeline: 0, opportunities: 0 };
+    await this.runCrmWriteTransaction(async (tx) => {
+      migrated.tasks = (
+        await tx.crmTask.updateMany({
+          where: { customerId: sourceId, ownerId: userId },
+          data: { customerId: targetId },
+        })
+      ).count;
+      migrated.notes = (
+        await tx.crmNote.updateMany({
+          where: { customerId: sourceId, ownerId: userId },
+          data: { customerId: targetId },
+        })
+      ).count;
+      migrated.timeline = (
+        await tx.crmTimelineEvent.updateMany({
+          where: { customerId: sourceId, ownerId: userId },
+          data: { customerId: targetId },
+        })
+      ).count;
+      migrated.opportunities = (
+        await tx.crmOpportunity.updateMany({
+          where: { primaryCustomerId: sourceId, ownerId: userId },
+          data: { primaryCustomerId: targetId },
+        })
+      ).count;
+
+      await tx.crmCustomer.update({
+        where: { id: sourceId },
+        data: {
+          status: 'archived',
+          archivedAt: now,
+          metadata: {
+            mergedInto: targetId,
+            mergedAt: now.toISOString(),
+          } as Prisma.InputJsonObject,
+        },
+      });
+
+      await this.appendTimelineWithClient(tx, userId, tenantId, {
+        customerId: targetId,
+        eventType: 'customer_merged',
+        channel: 'manual',
+        content: `合并了客户「${source.displayName}」（#${sourceId}）`,
+        status: 'merged',
+        metadata: {
+          sourceCustomerId: sourceId,
+          targetCustomerId: targetId,
+          migrated,
+        } as Prisma.InputJsonObject,
+      });
+    });
+
+    return {
+      ...(await this.getCustomer(userId, targetId)),
+      merged: { sourceId, displayName: source.displayName, migrated },
+    };
+  }
+
   async updateCustomer(
     userId: string,
     customerId: string,
