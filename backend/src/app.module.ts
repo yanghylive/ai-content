@@ -57,6 +57,7 @@ import { PushNotificationsModule } from './modules/push-notifications/push-notif
 import { MultimodalModule } from './modules/multimodal/multimodal.module';
 import { MobileExecutorModule } from './modules/mobile-executor/mobile-executor.module';
 import { DashscopeModule } from './modules/dashscope/dashscope.module';
+import { MeteringModule } from './modules/metering/metering.module';
 
 @Module({
   imports: [
@@ -120,6 +121,7 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     MultimodalModule,
     MobileExecutorModule,
     DashscopeModule,
+    MeteringModule,
   ],
   controllers: [AppController],
   providers: [AppService],

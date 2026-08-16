@@ -2662,6 +2662,27 @@ model AiUsageQuota {
   @@map("ai_usage_quotas")
 }
 
+// 商用账本：用量事件（阶段 B，报告 16.2 usageEventId + 16.5 预占-确认-冲正）
+// 每次计量动作走三态：reserved（预占）→ confirmed（确认）/ reversed（冲正）
+model UsageEvent {
+  id             String   @id @default(cuid())
+  tenantId       String?  @map("tenant_id")
+  userId         String?  @map("user_id")
+  meter          String // token / image / video / publish / lead / interaction / ...
+  amount         Int
+  state          String   @default("reserved") // reserved / confirmed / reversed
+  context        String? // ai-chat / publish / interaction / ...
+  refId          String?  @map("ref_id")
+  idempotencyKey String?  @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([idempotencyKey])
+  @@index([userId, meter, state, createdAt])
+  @@index([refId])
+  @@map("usage_events")
+}
+
 // 手机执行设备（C 组/P5）：用户手机 agent 注册 + 心跳
 model MobileDevice {
   id              String    @id @default(cuid())
