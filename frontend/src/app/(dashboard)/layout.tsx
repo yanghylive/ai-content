@@ -597,7 +597,7 @@ const toolEntryDefinitions: Record<string, ToolEntryDefinition> = {
     module: "发布中心",
     description: "发布前检查违禁词、风险表达和替代写法。",
     outputs: ["合规检查", "替代表达", "风险记录"],
-    resultHref: "/distribution?tab=compliance",
+    resultHref: "/compliance",
     actionLabel: "检查风险",
   },
   "kol-screening": {

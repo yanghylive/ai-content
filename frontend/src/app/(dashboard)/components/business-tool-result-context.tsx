@@ -72,7 +72,7 @@ const businessToolViews: Record<string, BusinessToolView> = {
       },
       {
         label: "发布检查",
-        href: "/distribution?tab=compliance&tool=publish-compliance",
+        href: "/compliance",
         icon: ShieldCheck,
       },
     ],
@@ -112,7 +112,7 @@ const businessToolViews: Record<string, BusinessToolView> = {
       },
       {
         label: "发布检查",
-        href: "/distribution?tab=compliance&tool=publish-compliance",
+        href: "/compliance",
         icon: ShieldCheck,
       },
       { label: "打开素材库", href: "/content?tool=private-asset-extractor", icon: Database },
@@ -147,10 +147,10 @@ const businessToolViews: Record<string, BusinessToolView> = {
     ],
     nextActions: [
       { label: "打开素材库", href: "/content?tool=private-asset-extractor", icon: Database },
-      { label: "发布衔接", href: "/distribution?tab=video", icon: Upload },
+      { label: "发布衔接", href: "/distribution/publish-video", icon: Upload },
       {
         label: "风险检查",
-        href: "/distribution?tab=compliance&tool=publish-compliance",
+        href: "/compliance",
         icon: ShieldCheck,
       },
     ],
@@ -185,7 +185,7 @@ const businessToolViews: Record<string, BusinessToolView> = {
     nextActions: [
       {
         label: "发布检查",
-        href: "/distribution?tab=compliance&tool=publish-compliance",
+        href: "/compliance",
         icon: ShieldCheck,
       },
       { label: "打开文章库", href: "/content/articles?tool=creation-enhancement", icon: FileText },

@@ -803,7 +803,7 @@ export function ContentOptimizationWorkbench() {
       targetType: version.targetType,
     });
     router.push(
-      `/distribution?tab=compliance&source=content-optimization&versionId=${encodeURIComponent(
+      `/compliance?versionId=${encodeURIComponent(
         version.id,
       )}`,
     );
@@ -1048,7 +1048,7 @@ export function ContentOptimizationWorkbench() {
               </Link>
               <Link
                 className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
-                href="/distribution?tab=compliance"
+                href="/compliance"
               >
                 发布前检查
                 <ShieldCheck
@@ -1341,7 +1341,7 @@ export function ContentOptimizationWorkbench() {
                   actions={[
                     { label: "重新优化", onPress: () => void runOptimization() },
                     { label: "清空结果", onPress: resetResult },
-                    { href: "/distribution?tab=compliance", label: "发布前检查" },
+                    { href: "/compliance", label: "发布前检查" },
                   ]}
                   impact="当前内容不会进入正式稿和发布检查。"
                   nextAction="补齐表单或换一个 AI 候选，再重新优化。"

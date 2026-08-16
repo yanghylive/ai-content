@@ -199,7 +199,7 @@ const intelligenceToolViews: Record<string, IntelligenceToolView> = {
     ],
     nextActions: [
       { label: "生成文案", href: "/content/articles?tool=creation-enhancement", icon: Sparkles },
-      { label: "风险检查", href: "/distribution?tab=compliance&tool=publish-compliance", icon: ShieldAlert },
+      { label: "风险检查", href: "/compliance", icon: ShieldAlert },
       { label: "生成报告", href: "/intelligence/reports", icon: FileText },
     ],
     guardrails: [

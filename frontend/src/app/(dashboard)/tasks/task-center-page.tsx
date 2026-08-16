@@ -1382,7 +1382,7 @@ export function TaskCenterPage() {
             <Link href="/tasks/runs" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>正在运行 ›</Link>
             <Link href="/tasks/records" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>任务历史 ›</Link>
             <Link href="/tasks/evidence" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>执行留痕 ›</Link>
-            <Link href="/distribution?tab=tasks" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>发布记录 ›</Link>
+            <Link href="/distribution/tasks" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>发布记录 ›</Link>
           </div>
         </div>
       </div>
@@ -2274,7 +2274,7 @@ export function TaskCenterPage() {
         extra={
           <Button
             as={Link}
-            href="/distribution?tab=tasks"
+            href="/distribution/tasks"
             size="sm"
             startContent={<Icon icon="solar:document-text-linear" />}
             variant="flat"
@@ -2386,7 +2386,7 @@ export function TaskCenterPage() {
                         </Button>
                         <Button
                           as={Link}
-                          href="/distribution?tab=tasks"
+                          href="/distribution/tasks"
                           size="sm"
                           variant="flat"
                         >
@@ -2597,7 +2597,7 @@ export function TaskCenterPage() {
         onExport={exportDrawerSession}
         onOpenRecord={(session) =>
           session.id.startsWith("interaction-task:publish-record:")
-            ? "/distribution?tab=tasks"
+            ? "/distribution/tasks"
             : agentSessionRecordHref(session.id)
         }
         onStop={stopDrawerSession}
