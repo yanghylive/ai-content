@@ -43,6 +43,14 @@ const TASK_MODULE_LABEL: Record<string, string> = {
   "video-workshop": "视频",
 };
 
+/** 统一任务中心：模块 → 详情页路径（报告 8.4：进行中任务可点击详情） */
+const TASK_MODULE_HREF: Record<string, string> = {
+  "auto-upload": "/distribution/tasks",
+  interaction: "/engagement/records",
+  "local-engine": "/tasks",
+  "video-workshop": "/video-workshop",
+};
+
 /** 统一任务中心：状态 → { 文案, tint }（归一化后的 7 态） */
 const TASK_STATUS_META: Record<
   string,
@@ -151,9 +159,10 @@ export default function TodayPage() {
       setLeadCount(ov?.todayLeadCount ?? 0);
       setHighIntent(ov?.highIntentLeadCount ?? 0);
 
+      // 报告 8.4：发布数按完成/发布时间（updated_at）统计，不用 created_at
       setPublishedToday(
         pubList.filter(
-          (t) => t.status === "completed" && isToday(t.created_at),
+          (t) => t.status === "completed" && isToday(t.updated_at),
         ).length,
       );
 
@@ -163,7 +172,7 @@ export default function TodayPage() {
 
       const done: string[] = [];
       pubList
-        .filter((t) => t.status === "completed" && isToday(t.created_at))
+        .filter((t) => t.status === "completed" && isToday(t.updated_at))
         .slice(0, 2)
         .forEach((t) => done.push(`发布「${t.title || `任务 #${t.id}`}」`));
       taskList
@@ -466,10 +475,21 @@ export default function TodayPage() {
                 tint: "kx-t-slate",
               };
               return (
-                <div
+                <button
                   className="kx-done-item"
                   key={`${t.module}-${t.id}`}
-                  style={{ color: "var(--kx-muted)" }}
+                  type="button"
+                  style={{
+                    color: "var(--kx-muted)",
+                    width: "100%",
+                    textAlign: "left",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                  onClick={() =>
+                    router.push(TASK_MODULE_HREF[t.module] ?? "/tasks")
+                  }
                 >
                   <span className={`kx-tag ${meta.tint}`}>
                     {TASK_MODULE_LABEL[t.module] ?? t.module}
@@ -487,7 +507,7 @@ export default function TodayPage() {
                     {t.title}
                   </span>
                   <span style={{ flexShrink: 0 }}>{meta.label}</span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -616,6 +636,9 @@ function MobileTodayView({
             className="mx-control"
             aria-label="通知"
             style={{ position: "relative", width: 42, height: 42, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--mx-ic-tint)", flexShrink: 0 }}
+            onClick={() =>
+              router.push(todos.length > 0 ? todos[0].href : "/message")
+            }
           >
             <ShellIcon name="bell" size={18} />
             {pendingCount > 0 ? (
