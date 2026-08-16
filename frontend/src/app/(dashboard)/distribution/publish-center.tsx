@@ -114,8 +114,13 @@ export function PublishCenter() {
           };
         }),
       );
-    } catch {
-      setItems([]);
+      setError(null);
+    } catch (err: unknown) {
+      // 报告 4.1 确定性 bug：请求失败不得清空旧列表（网络故障被误报为「无任务」）
+      setError(
+        (err instanceof Error ? err.message : "") ||
+          toPublicError(err, "发布任务加载失败，请检查网络后重试"),
+      );
     } finally {
       setLoading(false);
     }
@@ -142,12 +147,27 @@ export function PublishCenter() {
   const isStaleRunning = (item: PublishItem): boolean =>
     isStaleRunningTask(item.status, item.updatedAt);
 
+  // 报告 4.1 确定性 bug：doneToday 不得统计「当前加载的全部 done」，
+  // 按完成时间（updatedAt）落在今天过滤
+  const isToday = (iso?: string): boolean => {
+    if (!iso) return false;
+    const d = new Date(iso);
+    const now = new Date();
+    return (
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate()
+    );
+  };
+
   const stats = useMemo(
     () => ({
       pending: items.filter((i) => i.status === "pending").length,
       queued: items.filter((i) => i.status === "queued").length,
       running: items.filter((i) => i.status === "running").length,
-      doneToday: items.filter((i) => i.status === "done").length,
+      doneToday: items.filter(
+        (i) => i.status === "done" && isToday(i.updatedAt),
+      ).length,
       failed: items.filter((i) => i.status === "failed").length,
     }),
     [items],
@@ -156,6 +176,10 @@ export function PublishCenter() {
   const kanbanColumns: Array<{ status: PublishStatus; items: PublishItem[] }> =
     useMemo(
       () => [
+        {
+          status: "draft",
+          items: items.filter((i) => i.status === "draft"),
+        },
         {
           status: "pending",
           items: items.filter((i) => i.status === "pending"),
