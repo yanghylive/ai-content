@@ -12,6 +12,19 @@ import { safeText } from '../../common/text.utils';
 import { AppMarketService } from '../app-market/app-market.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 
+/** S0-P1-8：商机阶段白名单（报告 7.2 C 的 new→qualified→…→won/lost/nurture） */
+const OPPORTUNITY_STAGES = [
+  'new',
+  'qualified',
+  'discovery',
+  'proposal',
+  'negotiation',
+  'won',
+  'lost',
+  'nurture',
+] as const;
+type OpportunityStage = (typeof OPPORTUNITY_STAGES)[number];
+
 interface CollectionQuery {
   q?: string;
   status?: string;
@@ -846,10 +859,21 @@ export class CrmService {
     );
   }
 
+  /** S0-P1-8：商机阶段白名单校验，防自由字符串（如 won+0 / 无原因关闭） */
+  private validateOpportunityStage(stage: string): void {
+    if (!(OPPORTUNITY_STAGES as readonly string[]).includes(stage)) {
+      throw new BadRequestException(
+        `不支持的商机阶段：${stage}（可选：${OPPORTUNITY_STAGES.join(' / ')}）`,
+      );
+    }
+  }
+
   async createOpportunity(userId: string, input: OpportunityInput) {
     await this.requireCrmMutationScope(userId);
     const tenantId = await this.resolveCrmTenantId(userId);
     const name = this.requiredString(input.name, '商机名称不能为空');
+    const stage = (this.optionalString(input.stage) || 'qualified') as string;
+    this.validateOpportunityStage(stage);
     const companyId = await this.resolveCompanyId(userId, input);
     const primaryCustomerId = await this.resolveCustomerId(
       userId,
@@ -861,7 +885,7 @@ export class CrmService {
         actorUserId: userId,
         tenantId,
         name,
-        stage: this.optionalString(input.stage) || 'qualified',
+        stage,
         amountCents: this.optionalInt(input.amountCents) ?? 0,
         currency: this.optionalString(input.currency) || 'CNY',
         probability: this.normalizeProbability(input.probability),
@@ -925,6 +949,9 @@ export class CrmService {
     ] as const) {
       if (key in input) {
         const value = this.optionalString(input[key]);
+        if (key === 'stage' && value) {
+          this.validateOpportunityStage(value);
+        }
         if (value !== null || !['name', 'stage', 'currency'].includes(key)) {
           (data as Record<string, unknown>)[key] = value;
         }
