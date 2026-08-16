@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
 
@@ -11,6 +11,12 @@ export class DashboardController {
   @ApiOperation({ summary: '获取核心指标统计' })
   getStats() {
     return this.service.getStats();
+  }
+
+  @Get('content-attribution/:articleId')
+  @ApiOperation({ summary: '内容归因链：发布记录 + 互动任务（阶段 B）' })
+  getContentAttribution(@Param('articleId') articleId: string) {
+    return this.service.resolveContentAttribution(articleId);
   }
 
   @Get('system-logs')
