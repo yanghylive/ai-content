@@ -37,6 +37,7 @@ import {
   createCrmTask,
   getCrmCustomerContinuity,
   listCrmWelcomeMessageTemplates,
+  mergeCrmCustomer,
   updateCrmCustomer,
   type CrmCustomer,
   type CrmCustomerContinuity,
@@ -240,6 +241,11 @@ export function CustomerDetailClient({
   const [noteBody, setNoteBody] = React.useState("");
   const [followUpBusy, setFollowUpBusy] = React.useState(false);
   const [selectedTab, setSelectedTab] = React.useState("profile");
+  // 合并/重复（报告 7.2）：输入要合并进来的客户 ID
+  const [mergeOpen, setMergeOpen] = React.useState(false);
+  const [mergeSourceId, setMergeSourceId] = React.useState("");
+  const [merging, setMerging] = React.useState(false);
+  const [mergeMsg, setMergeMsg] = React.useState<string | null>(null);
 
   const load = React.useCallback(
     async (showSpinner = true, preserveForm = false) => {
@@ -274,6 +280,31 @@ export function CustomerDetailClient({
   }, []);
 
   const customer = continuity?.customer || null;
+
+  const handleMerge = React.useCallback(async () => {
+    const sourceId = mergeSourceId.trim();
+    if (!sourceId) {
+      setMergeMsg("请输入要合并进来的客户 ID");
+      return;
+    }
+    if (sourceId === customerId) {
+      setMergeMsg("不能把客户合并到自身");
+      return;
+    }
+    setMerging(true);
+    setMergeMsg(null);
+    try {
+      await mergeCrmCustomer(customerId, sourceId);
+      setMergeOpen(false);
+      setMergeSourceId("");
+      await load(false, true);
+    } catch (reason) {
+      setMergeMsg(toPublicError(reason, "合并失败，请确认客户 ID 正确"));
+    } finally {
+      setMerging(false);
+    }
+  }, [mergeSourceId, customerId, load]);
+
   const profileIsDirty = Boolean(
     editing &&
       form &&
@@ -871,6 +902,23 @@ export function CustomerDetailClient({
                   timeline={continuity.timeline}
                 />
               </div>
+
+              <div className="border-t border-divider pt-5">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-semibold">合并与去重</h2>
+                  <Button
+                    size="sm"
+                    variant="light"
+                    startContent={<Link2 size={15} />}
+                    onPress={() => setMergeOpen(true)}
+                  >
+                    合并客户
+                  </Button>
+                </div>
+                <p className="mt-1 text-sm text-default-400">
+                  如果这个客户与另一个客户重复，可把另一个客户的跟进记录合并进来。
+                </p>
+              </div>
             </section>
 
             <section aria-labelledby="timeline-heading" className="space-y-3">
@@ -1079,6 +1127,50 @@ export function CustomerDetailClient({
         </Tab>
       </Tabs>
       {modal}
+
+      {mergeOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-default-50">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">合并客户</h3>
+              <button
+                type="button"
+                className="rounded-full p-1 text-default-400 hover:bg-default-100"
+                onClick={() => {
+                  setMergeOpen(false);
+                  setMergeMsg(null);
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <p className="mt-2 text-sm text-default-500">
+              把另一个客户的跟进记录（任务/备注/时间线/商机）合并进当前客户，被合并客户会归档。
+            </p>
+            <input
+              value={mergeSourceId}
+              onChange={(e) => setMergeSourceId(e.target.value)}
+              placeholder="要合并进来的客户 ID"
+              className="mt-4 h-10 w-full rounded-lg border border-default-200 px-3 text-sm outline-none focus:border-primary"
+            />
+            {mergeMsg ? (
+              <p className="mt-2 text-sm text-danger">{mergeMsg}</p>
+            ) : null}
+            <div className="mt-5 flex justify-end gap-3">
+              <Button variant="light" onPress={() => setMergeOpen(false)}>
+                取消
+              </Button>
+              <Button
+                color="danger"
+                isLoading={merging}
+                onPress={() => void handleMerge()}
+              >
+                确认合并
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

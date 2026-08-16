@@ -75,6 +75,19 @@ export class CrmController {
     return this.crmService.archiveCustomer(this.getUserId(request), id);
   }
 
+  @Post('customers/:id/merge')
+  mergeCustomer(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() body: Record<string, unknown>,
+  ) {
+    return this.crmService.mergeCustomer(
+      this.getUserId(request),
+      id,
+      String(body?.sourceCustomerId || ''),
+    );
+  }
+
   @Post('customers/:id/welcome-message/prepare')
   prepareWelcomeMessage(
     @Req() request: AuthenticatedRequest,
