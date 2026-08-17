@@ -324,6 +324,29 @@ export default function TodayPage() {
             <div className="kx-empty-desc">
               现在没有等你处理的事。喝杯茶，或者主动出击：
             </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap", justifyContent: "center" }}>
+              <button
+                type="button"
+                className="kx-btn kx-btn-primary"
+                onClick={() => router.push("/content")}
+              >
+                去创作内容
+              </button>
+              <button
+                type="button"
+                className="kx-btn kx-btn-ghost"
+                onClick={() => router.push("/growth/leads")}
+              >
+                查看线索池
+              </button>
+              <button
+                type="button"
+                className="kx-btn kx-btn-ghost"
+                onClick={() => router.push("/effects")}
+              >
+                看复盘
+              </button>
+            </div>
           </div>
         </>
       ) : (
