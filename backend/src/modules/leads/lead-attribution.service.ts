@@ -91,4 +91,54 @@ export class LeadAttributionService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  /**
+   * A 档归因补强（2026-08-16）：互动事件 → 线索 双键匹配。
+   * 主键：externalEventId 直连；辅键：platform+sourceUrl+commentRef（评论序号）。
+   * 用于采集端把互动事件匹配到已产生的线索（不只靠 sourceUrl 弱关联）。
+   */
+  async resolveEventToLead(input: {
+    userId: string;
+    platform: string;
+    externalEventId?: string | null;
+    sourceUrl?: string | null;
+    commentRef?: string | null;
+  }): Promise<{ leadId: string; matchedBy: 'external_event_id' | 'comment_ref' | null } | null> {
+    const { userId, platform } = input;
+
+    // 1. 主键：externalEventId 直连（最强）
+    if (input.externalEventId?.trim()) {
+      const event = await this.prisma.interactionEvent.findFirst({
+        where: { userId, platform, externalEventId: input.externalEventId },
+        select: { id: true },
+      });
+      if (event) {
+        const byEvent = await this.prisma.lead.findFirst({
+          where: { userId, sourceInteractionEventId: event.id },
+          select: { id: true },
+        });
+        if (byEvent) return { leadId: byEvent.id, matchedBy: 'external_event_id' };
+      }
+    }
+
+    // 2. 辅键：platform + sourceUrl + commentRef（评论序号，小红书等）
+    if (input.sourceUrl && input.commentRef) {
+      const byRef = await this.prisma.lead.findFirst({
+        where: { userId, platform, sourceUrl: input.sourceUrl, commentRef: input.commentRef },
+        select: { id: true },
+      });
+      if (byRef) return { leadId: byRef.id, matchedBy: 'comment_ref' };
+    }
+
+    // 3. 兜底：sourceUrl 弱关联（仅当无 commentRef 时）
+    if (input.sourceUrl) {
+      const byUrl = await this.prisma.lead.findFirst({
+        where: { userId, platform, sourceUrl: input.sourceUrl },
+        select: { id: true },
+      });
+      if (byUrl) return { leadId: byUrl.id, matchedBy: 'comment_ref' };
+    }
+
+    return null;
+  }
 }

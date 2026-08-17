@@ -86,3 +86,52 @@ describe('LeadAttributionService', () => {
     expect(result).toBeNull();
   });
 });
+
+describe('LeadAttributionService · A 档 resolveEventToLead', () => {
+  function makeSvc(overrides: { lead?: jest.Mock; interactionEvent?: jest.Mock } = {}) {
+    const prisma = {
+      lead: { findFirst: overrides.lead ?? jest.fn().mockResolvedValue(null), findMany: jest.fn() },
+      article: { findFirst: jest.fn() },
+      publishRecord: { findFirst: jest.fn() },
+      interactionEvent: { findFirst: overrides.interactionEvent ?? jest.fn().mockResolvedValue(null) },
+      crmCustomer: { findFirst: jest.fn() },
+    };
+    const service = new LeadAttributionService(prisma as never);
+    return { service, prisma };
+  }
+
+  it('externalEventId 命中事件 → 线索（matchedBy external_event_id）', async () => {
+    const { service, prisma } = makeSvc({
+      interactionEvent: jest.fn().mockResolvedValue({ id: 'ev-1' }),
+      lead: jest
+        .fn()
+        .mockResolvedValueOnce(null) // byEvent 查不到时返回 null？——直接让 byEvent 命中
+        .mockResolvedValueOnce({ id: 'lead-1' }),
+    });
+    // 修正 mock 顺序：event 先查到，lead.findFirst 只调一次（byEvent）
+    prisma.lead.findFirst = jest.fn().mockResolvedValue({ id: 'lead-1' });
+    const r = await service.resolveEventToLead({
+      userId: 'u1', platform: 'douyin', externalEventId: 'ext-1',
+    });
+    expect(r).toEqual({ leadId: 'lead-1', matchedBy: 'external_event_id' });
+  });
+
+  it('sourceUrl + commentRef 命中线索（matchedBy comment_ref）', async () => {
+    const { service, prisma } = makeSvc({
+      lead: jest.fn().mockResolvedValue({ id: 'lead-9' }),
+    });
+    const r = await service.resolveEventToLead({
+      userId: 'u1', platform: 'xiaohongshu',
+      sourceUrl: 'https://xhs/item/1', commentRef: '5f3a',
+    });
+    expect(r).toEqual({ leadId: 'lead-9', matchedBy: 'comment_ref' });
+  });
+
+  it('无任何匹配 → null', async () => {
+    const { service } = makeSvc();
+    const r = await service.resolveEventToLead({
+      userId: 'u1', platform: 'douyin',
+    });
+    expect(r).toBeNull();
+  });
+});

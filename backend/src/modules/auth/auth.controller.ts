@@ -24,6 +24,7 @@ import type {
   AuthenticatedUserResponse,
 } from './auth.types';
 import { shouldUseSecureAuthCookie } from './cookie-options';
+import { getPlanSeatRule } from './plan-order';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { Logger } from '@nestjs/common';
@@ -622,6 +623,9 @@ export class AuthController {
       throw new BadRequestException('该用户已是组织成员');
     }
 
+    // A 档席位硬校验（2026-08-16）：建成员前校验当前 plan 的席位上限
+    await this.assertSeatAvailable(tenantId);
+
     const member = existing
       ? await this.prisma.tenantMember.update({
           where: { id: existing.id },
@@ -710,6 +714,30 @@ export class AuthController {
   private assertAdmin(user?: AuthenticatedUser) {
     if (!user || user.role !== 'admin') {
       throw new ForbiddenException('需要 admin 角色');
+    }
+  }
+
+  /**
+   * A 档席位硬校验（2026-08-16）：建成员前检查当前 plan 席位上限。
+   * seatRule 来自 kaypal subscription-catalog（getPlanSeatRule 映射），
+   * single→1、shared(ADVANCED)→10、per_seat(FLAGSHIP)→min 1；custom 不限。
+   */
+  private async assertSeatAvailable(tenantId: string): Promise<void> {
+    const entitlement = await this.prisma.tenantEntitlement.findFirst({
+      where: { tenantId, status: 'active' },
+      orderBy: { updatedAt: 'desc' },
+      select: { plan: true },
+    });
+    const seatRule = getPlanSeatRule(entitlement?.plan);
+    if (seatRule.maxSeats == null) return; // custom/不限额
+
+    const activeCount = await this.prisma.tenantMember.count({
+      where: { tenantId, status: 'active' },
+    });
+    if (activeCount >= seatRule.maxSeats) {
+      throw new BadRequestException(
+        `当前方案席位已达上限（${seatRule.maxSeats} 个），无法添加新成员。升级方案或移除闲置成员后再试。`,
+      );
     }
   }
 }
