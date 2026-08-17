@@ -3467,3 +3467,29 @@ model PublishReceipt {
   @@index([tenantId, jobId])
   @@map("publish_receipts")
 }
+
+// 通用领域事件 outbox（开发文档 §13，Sprint 1 泛化 lead-event-bus）
+// 事件先落库再由 worker 发布；进程内 EventEmitter 只做进程内通知，不作事实总线。
+model DomainEventOutbox {
+  id             String   @id @default(cuid())
+  eventId        String   @unique @map("event_id")
+  schemaVersion  Int      @default(1) @map("schema_version")
+  tenantId       String   @default("legacy-local-desktop") @map("tenant_id")
+  userId         String   @default("legacy-local-user") @map("user_id")
+  aggregateType  String   @map("aggregate_type")
+  aggregateId    String   @map("aggregate_id")
+  type           String
+  idempotencyKey String   @map("idempotency_key")
+  occurredAt     DateTime @map("occurred_at")
+  payload        Json
+  status         String   @default("published") @map("status") // published/consumed/failed/dead
+  attempt        Int      @default(0)
+  lastError      String?  @map("last_error") @db.Text
+  consumedAt     DateTime? @map("consumed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, aggregateType, aggregateId, idempotencyKey])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, type])
+  @@map("domain_event_outbox")
+}
