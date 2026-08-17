@@ -77,6 +77,7 @@ export class WechatPayService {
     creditPoints?: number;
     amountCents?: number;
     payParams?: unknown;
+    codeUrl?: string;
     message?: string;
   }> {
     const config = this.config();
@@ -122,23 +123,71 @@ export class WechatPayService {
       },
     });
 
-    // 构造 JSAPI 下单参数（真实 HTTP 调用在配置齐全后由 fetch 完成）
-    const payParams = {
+    // Bug 修复（2026-08-17）：配置齐全必须真实调微信 API 下单，
+    // 否则本地订单创建了却没支付入口（用户点充值没反应）。
+    // Native 模式返回 code_url（二维码链接），前端展示扫码支付。
+    const payBody = JSON.stringify({
       appid: config.appId,
       mchid: config.mchid,
       description: order.description,
       out_trade_no: order.outTradeNo,
       notify_url: config.notifyUrl,
       amount: { total: order.amountCents, currency: 'CNY' },
-    };
-    return {
-      status: 'pending',
-      outTradeNo: order.outTradeNo,
-      creditPoints,
-      amountCents,
-      payParams,
-      message: '支付单已创建（联调需配置完整后调用微信下单接口）',
-    };
+    });
+    try {
+      const wxResponse = await fetch(
+        'https://api.mch.weixin.qq.com/v3/pay/transactions/native',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: this.buildV3Authorization(
+              'POST',
+              '/v3/pay/transactions/native',
+              payBody,
+            ),
+          },
+          body: payBody,
+        },
+      );
+      const wxResult = (await wxResponse.json().catch(() => ({}))) as Record<string, unknown>;
+      if (!wxResponse.ok || !wxResult.code_url) {
+        // 下单失败：把本地订单标记 closed，避免挂着 pending 假单
+        await this.prisma.wechatPayOrder.update({
+          where: { id: order.id },
+          data: { status: 'closed', notifyPayload: wxResult as object },
+        });
+        return {
+          status: 'order_failed',
+          outTradeNo: order.outTradeNo,
+          message: `微信下单失败：${(wxResult.message as string) ?? wxResponse.status}（订单已关闭）`,
+        };
+      }
+      return {
+        status: 'pending',
+        outTradeNo: order.outTradeNo,
+        creditPoints,
+        amountCents,
+        payParams: {
+          appid: config.appId,
+          mchid: config.mchid,
+          out_trade_no: order.outTradeNo,
+          amount: { total: order.amountCents, currency: 'CNY' },
+        },
+        codeUrl: wxResult.code_url as string,
+        message: '支付单已创建，请扫码支付',
+      };
+    } catch (error) {
+      // 网络异常：订单保留 pending（可重试查单），但告知调用方
+      this.logger.warn(`微信下单网络异常 ${order.outTradeNo}：${(error as Error).message}`);
+      return {
+        status: 'order_pending_retry',
+        outTradeNo: order.outTradeNo,
+        creditPoints,
+        amountCents,
+        message: `微信下单网络异常：${(error as Error).message}（可重试）`,
+      };
+    }
   }
 
   /**

@@ -61,7 +61,7 @@ describe('WechatPayService', () => {
     expect(cfg.mchid).toBe('1116143786');
   });
 
-  it('配置齐全时创建订单（10 元 → 1000 分 → 334 积分）', async () => {
+  it('配置齐全时创建订单（10 元 → 1000 分 → 334 积分 + code_url）', async () => {
     const prisma = makePrisma();
     const svc = new WechatPayService(prisma as never, makeAuth() as never);
     // 覆盖 config 为齐全
@@ -70,13 +70,22 @@ describe('WechatPayService', () => {
     Object.defineProperty(process.env, 'WXPAY_SERIAL_NO', { value: 'S1', configurable: true });
     Object.defineProperty(process.env, 'WXPAY_PRIVATE_KEY_PATH', { value: '/tmp/k.pem', configurable: true });
     Object.defineProperty(process.env, 'WXPAY_NOTIFY_URL', { value: 'https://x/n', configurable: true });
+    // 签名方法 mock（测试无真实证书文件，走网络层 mock）
+    jest.spyOn(svc, 'buildV3Authorization').mockReturnValue('WECHATPAY2-SHA256-RSA2048 mock');
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ code_url: 'weixin://wxpay/bizpayurl?pr=abc' }),
+    }) as never;
     try {
       const r = await svc.createCreditOrder({ amountYuan: 10, idempotencyKey: 'wx-1' });
       expect(r.status).toBe('pending');
       expect(r.amountCents).toBe(1000);
       expect(r.creditPoints).toBe(334);
+      expect(r.codeUrl).toContain('weixin://');
       expect(prisma.wechatPayOrder.create).toHaveBeenCalled();
     } finally {
+      global.fetch = originalFetch;
       delete process.env.WXPAY_APP_ID;
       delete process.env.WXPAY_APIV3_KEY;
       delete process.env.WXPAY_SERIAL_NO;

@@ -283,20 +283,23 @@ export class AiAuditService {
         orderBy: { _sum: { costPoints: 'desc' } },
         take: 10,
       }),
-      this.prisma.aiToolCallLog.groupBy({
-        by: ['createdAt'],
+      // Bug 修复（2026-08-17）：groupBy by 精确时间戳 = 每调用一组（10 万次调用返回 10 万组，
+      // 捞全表内存爆炸）。改 findMany 限定范围 + take 上限，内存按日聚合。
+      this.prisma.aiToolCallLog.findMany({
         where: { createdAt: { gte: since } },
-        _sum: { tokensUsed: true, costPoints: true },
+        select: { createdAt: true, tokensUsed: true, costPoints: true },
+        orderBy: { createdAt: 'desc' },
+        take: 50000,
       }),
     ]);
 
-    // 按日聚合（groupBy createdAt 是精确时间戳，需归日）
+    // 按日聚合（内存，已限定 take 上限）
     const byDay = new Map<string, { tokens: number; costPoints: number }>();
     for (const row of dailyRows) {
-      const day = (row.createdAt as Date).toISOString().slice(0, 10);
+      const day = row.createdAt.toISOString().slice(0, 10);
       const cur = byDay.get(day) ?? { tokens: 0, costPoints: 0 };
-      cur.tokens += row._sum.tokensUsed ?? 0;
-      cur.costPoints += row._sum.costPoints ?? 0;
+      cur.tokens += row.tokensUsed ?? 0;
+      cur.costPoints += row.costPoints ?? 0;
       byDay.set(day, cur);
     }
 
