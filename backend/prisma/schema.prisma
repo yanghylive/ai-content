@@ -2692,6 +2692,7 @@ model AiToolCallLog {
   durationMs Int      @default(0) @map("duration_ms")
   confirmed  Boolean  @default(false) // 写工具二次确认标记
   tokensUsed Int      @default(0) @map("tokens_used") // 本次调用 token 消耗
+  costPoints Int      @default(0) @map("cost_points") // token×20 成本积分（大王定价 2026-08-16）
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([userId, createdAt])

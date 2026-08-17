@@ -5,8 +5,18 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
 import { SavingsLedgerService } from './savings-ledger.service';
 import { Prisma } from '@prisma/client';
 
-/** 兑换比例（V1.1 §9 毛利模型：1 元返利 = 0.8 元 AI 额度价值，运营期可调） */
-const EXCHANGE_RATE = 0.8;
+/**
+ * 兑换比例（大王定价 2026-08-16：按 kaypal.cn 订阅价配的积分逻辑锚定）。
+ * 汇率 = 订阅赠送积分 / 订阅价 → 1 元返利可兑的 kaypal 积分。
+ * 例：订阅 ¥29.9/月 送 1000 积分 → 汇率 ≈ 33.4 积分/元（可经 env 覆盖）。
+ * 取代 V1.1 硬编码 0.8 元/元 的拍脑袋比例，锚定订阅价。
+ */
+const KAYPAL_SUBSCRIPTION_PRICE = Number(process.env.KAYPAL_SUBSCRIPTION_PRICE || 29.9);
+const KAYPAL_SUBSCRIPTION_CREDITS = Number(process.env.KAYPAL_SUBSCRIPTION_CREDITS || 1000);
+const EXCHANGE_RATE =
+  KAYPAL_SUBSCRIPTION_PRICE > 0
+    ? Number((KAYPAL_SUBSCRIPTION_CREDITS / KAYPAL_SUBSCRIPTION_PRICE).toFixed(2))
+    : 0.8; // 兜底（配置异常时退回原比例）
 /** 单次兑换最低返利 */
 const MIN_EXCHANGE_AMOUNT = 1;
 /** 生图/生视频单次现金定价（返利直付 1:1，环境变量可调） */
@@ -14,8 +24,8 @@ const IMAGE_PRICE = Number(process.env.SAVINGS_IMAGE_PRICE || 1);
 const VIDEO_PRICE = Number(process.env.SAVINGS_VIDEO_PRICE || 5);
 
 /**
- * 返利兑换 AI 额度（需求清单 V1.1 §13.3-13.5）：
- * 创建兑换单 → 冻结可用返利 → 发放 AI 额度 → 成功确认扣减 / 失败解冻 / 超时补偿。
+ * 返利兑换 AI 额度（需求清单 V1.1 §13.3-13.5 + 大王定价 2026-08-16）：
+ * 创建兑换单 → 冻结可用返利 → 按 kaypal 订阅价锚定汇率发放积分 → 成功确认扣减 / 失败解冻 / 超时补偿。
  * 幂等键唯一——重复提交返回原结果，不重复扣减/发放。
  */
 @Injectable()
