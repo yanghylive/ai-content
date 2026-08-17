@@ -29,6 +29,12 @@ export class WechatPayController {
     });
   }
 
+  @Get('config-status')
+  @ApiOperation({ summary: '微信支付配置就绪检查' })
+  configStatus() {
+    return this.wechatPay.configStatus();
+  }
+
   @Get('orders/:outTradeNo')
   @ApiOperation({ summary: '查询支付单状态' })
   getOrder(@Param('outTradeNo') outTradeNo: string, @Req() request: Request) {
