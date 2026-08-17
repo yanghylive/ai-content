@@ -371,7 +371,41 @@ export default function EffectsPage() {
               「AI 生成」= 语音助手/创作工具帮你产出的内容条数。
             </div>
           </>
-        ) : null}
+        ) : (
+          <div
+            style={{
+              padding: "40px 20px",
+              textAlign: "center",
+              borderRadius: 16,
+              border: "1px dashed rgba(142,165,190,.25)",
+              background: "rgba(255,255,255,.02)",
+            }}
+          >
+            <div style={{ fontSize: 30, marginBottom: 10 }}>📊</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#dbe7f5" }}>还没有复盘数据</div>
+            <p style={{ fontSize: 12, color: "rgba(148,163,184,.65)", margin: "6px 0 16px", lineHeight: 1.6 }}>
+              发布内容并产生互动后，这里会展示内容/发布/互动/线索的完整归因漏斗和周报。
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ fontSize: 12, padding: "9px 16px", textDecoration: "none" }}
+                onClick={() => router.push("/content")}
+              >
+                去创作内容
+              </button>
+              <button
+                type="button"
+                className="mx-btn-gold"
+                style={{ fontSize: 12, padding: "9px 16px", textDecoration: "none", background: "rgba(255,255,255,.1)", backgroundImage: "none", border: "1px solid rgba(142,165,190,.3)" }}
+                onClick={() => router.push("/growth/leads")}
+              >
+                查看线索池
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

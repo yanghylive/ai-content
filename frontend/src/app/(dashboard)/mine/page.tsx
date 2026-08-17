@@ -17,12 +17,14 @@ import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { MobileThemeToggle } from "@/components/shell/mobile-theme-toggle";
 import { authApi } from "@/lib/api/auth";
 import { isAdminUser } from "@/lib/admin-user";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export default function MineScene() {
   const user = useShellUser();
   const [accountIssue, setAccountIssue] = React.useState(0);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const isMobile = useIsMobile();
+  const { confirm, modal } = useConfirm();
 
   React.useEffect(() => {
     let active = true;
@@ -71,7 +73,8 @@ export default function MineScene() {
   }
 
   return (
-    <ScenePage
+    <>
+      <ScenePage
       title="我的"
       sub="账号、设备、设置、数据"
       before={
@@ -89,7 +92,16 @@ export default function MineScene() {
             <button
               className="kx-btn kx-btn-ghost"
               disabled={user.loggingOut}
-              onClick={user.onLogout}
+              onClick={() => {
+                void confirm({
+                  kind: "danger",
+                  title: "退出登录？",
+                  description: "退出后需要重新登录 Kaypal 账号才能使用全部功能",
+                  confirmText: "退出",
+                }).then((ok) => {
+                  if (ok) user.onLogout?.();
+                });
+              }}
             >
               {user.loggingOut ? "正在退出..." : "退出登录"}
             </button>
@@ -207,7 +219,9 @@ export default function MineScene() {
             ]
           : []),
       ]}
-    />
+      />
+      {modal}
+    </>
   );
 }
 
