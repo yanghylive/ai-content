@@ -325,6 +325,11 @@ export class WechatPayService {
       { key: 'serialNo', ready: Boolean(config.serialNo), hint: `证书序列号 ${config.serialNo ?? '未配置'}` },
       { key: 'privateKeyPath', ready: Boolean(config.privateKeyPath), hint: config.privateKeyPath ?? 'apiclient_key.pem 路径' },
       { key: 'notifyUrl', ready: Boolean(config.notifyUrl), hint: '回调通知公网地址' },
+      {
+        key: 'platformCert',
+        ready: Boolean(process.env.WXPAY_PLATFORM_CERT_PATH),
+        hint: '微信平台证书（回调签名验证，生产收款前必配）',
+      },
     ];
     return {
       mchid: config.mchid,
