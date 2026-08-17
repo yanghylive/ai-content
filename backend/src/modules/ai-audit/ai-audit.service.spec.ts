@@ -67,3 +67,36 @@ describe('AiAuditService token usage tracking', () => {
     expect(prisma.aiToolCallLog.create).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('AiAuditService · economySummary（token 经济看板）', () => {
+  it('汇总 token + costPoints + 场景分布 + 每日趋势', async () => {
+    const prisma = {
+      aiToolCallLog: {
+        aggregate: jest.fn().mockResolvedValue({
+          _sum: { tokensUsed: 5000, costPoints: 100000 },
+          _count: 3,
+        }),
+        groupBy: jest.fn().mockImplementation(async ({ by }) => {
+          if (by[0] === 'tool') {
+            return [
+              { tool: 'text_generation', _sum: { tokensUsed: 4000, costPoints: 80000 } },
+              { tool: 'vision', _sum: { tokensUsed: 1000, costPoints: 20000 } },
+            ];
+          }
+          return [
+            { createdAt: new Date('2026-08-15T10:00:00Z'), _sum: { tokensUsed: 2000, costPoints: 40000 } },
+            { createdAt: new Date('2026-08-16T10:00:00Z'), _sum: { tokensUsed: 3000, costPoints: 60000 } },
+          ];
+        }),
+      },
+      tenantMember: { findMany: jest.fn().mockResolvedValue([{ userId: 'u1' }]) },
+    };
+    const svc = new AiAuditService(prisma as never);
+    const r = await svc.economySummary({ days: 7 });
+    expect(r.totalTokens).toBe(5000);
+    expect(r.totalCostPoints).toBe(100000); // token×20
+    expect(r.topScenes).toHaveLength(2);
+    expect(r.daily).toHaveLength(2);
+    expect(r.daily[1].costPoints).toBe(60000);
+  });
+});

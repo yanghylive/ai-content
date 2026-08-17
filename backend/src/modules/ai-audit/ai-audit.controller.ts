@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -82,5 +83,20 @@ export class AiAuditController {
     });
     const quota = await this.aiAudit.getQuota(userId);
     return { recordedTokens: tokens, quota };
+  }
+
+  /**
+   * Token 经济看板（大王商业模式：只赚 token 钱）：
+   * 近 N 天 token 消耗 + costPoints（token×20）收入口径 + 场景分布 + 每日趋势。
+   * GET /usage/token/economy?days=7
+   */
+  @Get('economy')
+  async economy(
+    @Req() request: Request,
+    @Query() query: Record<string, string>,
+  ) {
+    this.resolveUserId(request);
+    const days = Math.min(Math.max(Number(query.days) || 7, 1), 90);
+    return this.aiAudit.economySummary({ days });
   }
 }
