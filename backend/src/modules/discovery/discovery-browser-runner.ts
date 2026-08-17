@@ -5,6 +5,7 @@
 //   - 只用用户自己登录的浏览器会话，不绕过验证码/风控（遇验证码/风控 → 转人工原因码）
 //   - 结果人工确认后进线索池（draft-only → confirm-first），不包装成稳定 API 承诺
 import { Injectable, Logger } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import type { Page } from 'playwright';
 import { LocalBrowserEngine, type EngineSession } from '../local-engine/local-browser-engine.service';
 import { AcquisitionQuotaService } from './acquisition-quota.service';
@@ -274,6 +275,5 @@ export class DiscoveryBrowserRunner {
 }
 
 function createId(input: string): string {
-  const { createHash } = require('node:crypto') as typeof import('node:crypto');
   return createHash('sha1').update(input).digest('hex').slice(0, 24);
 }
