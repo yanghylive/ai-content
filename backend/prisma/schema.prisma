@@ -427,7 +427,8 @@ model Article {
   parent   Article? @relation("ArticleVariants", fields: [parentId], references: [id], onDelete: SetNull)
   variants Article[] @relation("ArticleVariants")
 
-  publishRecords PublishRecord[]
+  publishRecords  PublishRecord[]
+  contentVariants ContentVariant[] @relation("ArticleContentVariants")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1660,14 +1661,26 @@ model InteractionEvent {
   dedupeKey        String   @map("dedupe_key")
   occurredAt       DateTime @map("occurred_at")
   raw              Json?
+  // Sprint 1 增量（开发文档 §6.3）：事件→身份/来源内容/父事件/证据
+  identityId       String?  @map("identity_id")
+  contentId        String?  @map("content_id")
+  parentEventId    String?  @map("parent_event_id")
+  evidenceUrl      String?  @map("evidence_url") @db.Text
+  rawHash          String?  @map("raw_hash")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
+
+  identity PlatformIdentity? @relation(fields: [identityId], references: [id], onDelete: SetNull)
+  content  SourceContent?    @relation(fields: [contentId], references: [id], onDelete: SetNull)
 
   @@unique([tenantId, dedupeKey])
   @@index([tenantId, platform, accountId, occurredAt])
   @@index([sourceArticleId])
   @@index([publishRecordId])
   @@index([authorExternalId])
+  @@index([identityId])
+  @@index([contentId])
+  @@index([parentEventId])
   @@map("interaction_events")
 }
 
@@ -3263,4 +3276,194 @@ model LeadEventOutbox {
 
   @@index([status, createdAt])
   @@map("lead_event_outbox")
+}
+
+// =====================================================================
+// Sprint 1 增量（3010 统一开发计划 §七）：事实层 + 发布侧 read model
+// 2026-08-16 按《AI 获客完整开发文档》§6-7 + 逐页计划 §3.1
+// =====================================================================
+
+// 来源内容（获客侧事实层 §6.1）：一条视频/笔记/文章等，互动事件与归因的锚点
+model SourceContent {
+  id                String    @id @default(cuid())
+  tenantId          String    @default("legacy-local-desktop") @map("tenant_id")
+  userId            String    @default("legacy-local-user") @map("user_id")
+  platform          String
+  accountId         String    @map("account_id")
+  externalContentId String    @map("external_content_id")
+  url               String    @db.Text
+  contentType       String    @default("video") @map("content_type") // video/note/article/live/comment_thread
+  authorIdentityId  String?   @map("author_identity_id")
+  title             String?
+  text              String?   @db.Text
+  publishedAt       DateTime? @map("published_at")
+  metrics           Json?
+  rawHash           String    @map("raw_hash")
+  collectedAt       DateTime  @map("collected_at")
+  expiresAt         DateTime? @map("expires_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  authorIdentity PlatformIdentity? @relation(fields: [authorIdentityId], references: [id], onDelete: SetNull)
+  events         InteractionEvent[]
+
+  @@unique([tenantId, platform, accountId, externalContentId])
+  @@index([tenantId, platform, accountId, collectedAt])
+  @@index([authorIdentityId])
+  @@map("source_contents")
+}
+
+// 平台身份（获客侧事实层 §6.2）：作者身份，确定/高置信/低置信/未识别
+model PlatformIdentity {
+  id                 String   @id @default(cuid())
+  tenantId           String   @default("legacy-local-desktop") @map("tenant_id")
+  userId             String   @default("legacy-local-user") @map("user_id")
+  platform           String
+  accountId          String   @map("account_id")
+  externalUserId     String?  @map("external_user_id")
+  normalizedHandle   String?  @map("normalized_handle")
+  nickname           String?
+  profileUrl         String?  @map("profile_url") @db.Text
+  avatarHash         String?  @map("avatar_hash")
+  verified           Boolean  @default(false)
+  identityConfidence Int      @default(0) @map("identity_confidence") // 0-100
+  firstSeenAt        DateTime @map("first_seen_at")
+  lastSeenAt         DateTime @map("last_seen_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  sourceContents SourceContent[]
+  events         InteractionEvent[]
+
+  @@unique([tenantId, platform, accountId, externalUserId])
+  @@index([tenantId, platform, accountId])
+  @@map("platform_identities")
+}
+
+// 抑制名单（获客侧事实层 §6.6）：退订/投诉/封禁，发送前+消费前双检查
+model Suppression {
+  id              String    @id @default(cuid())
+  tenantId        String    @default("legacy-local-desktop") @map("tenant_id")
+  userId          String    @default("legacy-local-user") @map("user_id")
+  kind            String    // email/phone/platform_identity/domain/lead
+  normalizedValue String    @map("normalized_value")
+  reason          String    // explicit_opt_out/complaint/manual_block/platform_risk
+  sourceEventId   String?   @map("source_event_id")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  removedAt       DateTime? @map("removed_at")
+
+  @@unique([tenantId, kind, normalizedValue])
+  @@index([tenantId, kind, normalizedValue])
+  @@map("suppressions")
+}
+
+// 线索信号（决策层 §6.4）：每次加减分的证据点
+model LeadSignal {
+  id         String    @id @default(cuid())
+  tenantId   String    @default("legacy-local-desktop") @map("tenant_id")
+  userId     String    @default("legacy-local-user") @map("user_id")
+  leadId     String    @map("lead_id")
+  type       String    // intent.explicit_request/question/price; fit.industry/role/region; engagement.repeat/reply; recency.last_7d; risk.spam/duplicate/opt_out; account.verified
+  value      Int       @default(1)
+  evidenceId String?   @map("evidence_id")
+  source     String?
+  observedAt DateTime  @map("observed_at")
+  expiresAt  DateTime? @map("expires_at")
+  confidence Int       @default(100) // 0-100
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId, leadId])
+  @@index([tenantId, type])
+  @@map("lead_signals")
+}
+
+// 线索评分快照（决策层 §6.5）：每次评分不覆盖历史，可解释
+model LeadScoreSnapshot {
+  id                 String   @id @default(cuid())
+  tenantId           String   @default("legacy-local-desktop") @map("tenant_id")
+  userId             String   @default("legacy-local-user") @map("user_id")
+  leadId             String   @map("lead_id")
+  fitScore           Int      @map("fit_score")
+  intentScore        Int      @map("intent_score")
+  identityConfidence Int      @map("identity_confidence")
+  riskScore          Int      @map("risk_score")
+  totalScore         Int      @map("total_score")
+  confidence         Int      @map("confidence")
+  components         Json     // Record<string, number>
+  reasons            Json     // string[]
+  evidenceIds        Json     @map("evidence_ids") // string[]
+  modelVersion       String   @map("model_version")
+  ruleVersion        String   @map("rule_version")
+  scoredAt           DateTime @map("scored_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, leadId, scoredAt])
+  @@map("lead_score_snapshots")
+}
+
+// 发布侧 read model §3.1：平台变体（内容主稿 Article 已有，variants 挂其下）
+model ContentVariant {
+  id               String    @id @default(cuid())
+  tenantId         String    @default("legacy-local-desktop") @map("tenant_id")
+  userId           String    @default("legacy-local-user") @map("user_id")
+  contentUnitId    String    @map("content_unit_id") // → article.id
+  platform         String
+  body             String    @db.Text
+  title            String?
+  platformMetadata Json?     @map("platform_metadata") // thread/firstComment/reel/story/board/userTags
+  contentHash      String    @map("content_hash")
+  status           String    @default("draft") // draft/pending_review/approved/scheduled
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  contentUnit Article     @relation("ArticleContentVariants", fields: [contentUnitId], references: [id], onDelete: Cascade)
+  jobs        PublishJob[]
+
+  @@unique([contentUnitId, platform, contentHash])
+  @@index([tenantId, status])
+  @@map("content_variants")
+}
+
+// 发布任务（账号维度：一个变体 → 多平台账号 → 多 job）
+model PublishJob {
+  id             String    @id @default(cuid())
+  tenantId       String    @default("legacy-local-desktop") @map("tenant_id")
+  userId         String    @default("legacy-local-user") @map("user_id")
+  variantId      String    @map("variant_id")
+  accountId      String    @map("account_id")
+  status         String    @default("queued") // queued/preflight/running/pending_readback/succeeded/failed_retryable/failed_permanent/cancelled
+  attempt        Int       @default(0)
+  scheduledAt    DateTime? @map("scheduled_at")
+  idempotencyKey String    @map("idempotency_key")
+  correlationId  String?   @map("correlation_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  variant  ContentVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  receipts PublishReceipt[]
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, status])
+  @@map("publish_jobs")
+}
+
+// 发布回执（平台侧帖子 ID/URL/readback 状态）
+model PublishReceipt {
+  id               String    @id @default(cuid())
+  tenantId         String    @default("legacy-local-desktop") @map("tenant_id")
+  userId           String    @default("legacy-local-user") @map("user_id")
+  jobId            String    @map("job_id")
+  externalPostId   String?   @map("external_post_id")
+  externalUrl      String?   @map("external_url") @db.Text
+  readbackState    String    @default("pending") @map("readback_state") // pending/verified/uncertain
+  readbackAt       DateTime? @map("readback_at")
+  platformMetadata Json?     @map("platform_metadata")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  job PublishJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, jobId])
+  @@map("publish_receipts")
 }
