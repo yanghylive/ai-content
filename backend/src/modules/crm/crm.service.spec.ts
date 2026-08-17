@@ -1551,3 +1551,110 @@ describe('CrmService', () => {
     );
   });
 });
+
+describe('CrmService · Sprint 4 T4.2 Opportunity 规则强化', () => {
+  function makeService() {
+    const prisma = makePrismaMock();
+    prisma.tenantMember.findFirst.mockResolvedValue({
+      tenantId: 'tenant-1',
+      role: 'admin',
+      permissions: [],
+    });
+    const service = new CrmService(
+      prisma as PrismaService,
+      makeAppMarketMock(),
+    );
+    return { prisma, service };
+  }
+
+  it('createOpportunity: stage=won 且金额 0 → 拒绝', async () => {
+    const { service } = makeService();
+    await expect(
+      service.createOpportunity('user-1', {
+        name: '成交商机',
+        stage: 'won',
+        amountCents: 0,
+        closeDate: new Date('2026-09-01'),
+      }),
+    ).rejects.toThrow('成交金额必须 > 0');
+  });
+
+  it('createOpportunity: stage=won 无 closeDate → 拒绝', async () => {
+    const { service } = makeService();
+    await expect(
+      service.createOpportunity('user-1', {
+        name: '成交商机',
+        stage: 'won',
+        amountCents: 100000,
+      }),
+    ).rejects.toThrow('必须填写成交日期');
+  });
+
+  it('createOpportunity: stage=lost 无 loseReason → 拒绝', async () => {
+    const { service } = makeService();
+    await expect(
+      service.createOpportunity('user-1', {
+        name: '流失商机',
+        stage: 'lost',
+      }),
+    ).rejects.toThrow('必须填写失单原因');
+  });
+
+  it('createOpportunity: won 金额+日期齐全 → 通过 + 写 opportunity_created 时间线', async () => {
+    const { prisma, service } = makeService();
+    prisma.crmOpportunity.create.mockResolvedValue(
+      makeOpportunity({ stage: 'won', amountCents: 100000, closeDate: new Date('2026-09-01') }),
+    );
+    prisma.crmOpportunity.findFirst.mockResolvedValue(
+      makeOpportunity({ stage: 'won', amountCents: 100000, closeDate: new Date('2026-09-01') }),
+    );
+    prisma.crmTimelineEvent.create.mockResolvedValue({ id: 'tl-1' });
+
+    const result = await service.createOpportunity('user-1', {
+      name: '成交商机',
+      stage: 'won',
+      amountCents: 100000,
+      closeDate: new Date('2026-09-01'),
+    });
+    expect(result.stage).toBe('won');
+    expect(prisma.crmTimelineEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ eventType: 'opportunity_created' }),
+      }),
+    );
+  });
+
+  it('updateOpportunity: 阶段变更为 won 但金额仍 0 → 拒绝', async () => {
+    const { prisma, service } = makeService();
+    prisma.crmOpportunity.findFirst.mockResolvedValue(
+      makeOpportunity({ stage: 'qualified', amountCents: 0 }),
+    );
+    await expect(
+      service.updateOpportunity('user-1', 'opportunity-1', {
+        stage: 'won',
+      }),
+    ).rejects.toThrow('成交金额必须 > 0');
+  });
+
+  it('updateOpportunity: 阶段从 qualified → negotiation → 写 stage_changed 时间线', async () => {
+    const { prisma, service } = makeService();
+    prisma.crmOpportunity.findFirst.mockResolvedValue(
+      makeOpportunity({ stage: 'qualified' }),
+    );
+    prisma.crmOpportunity.update.mockResolvedValue(
+      makeOpportunity({ stage: 'negotiation' }),
+    );
+    prisma.crmOpportunity.findMany.mockResolvedValue([]);
+    prisma.crmTimelineEvent.create.mockResolvedValue({ id: 'tl-1' });
+
+    await service.updateOpportunity('user-1', 'opportunity-1', { stage: 'negotiation' });
+
+    const timelineCall = prisma.crmTimelineEvent.create.mock.calls.map((c: unknown[]) => c[0]).find(
+      (c: { data?: { eventType?: string } }) => c?.data?.eventType === 'opportunity_stage_changed',
+    );
+    expect(timelineCall).toBeTruthy();
+    expect(timelineCall.data.metadata).toEqual(
+      expect.objectContaining({ fromStage: 'qualified', toStage: 'negotiation' }),
+    );
+  });
+});

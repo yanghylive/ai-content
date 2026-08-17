@@ -26,11 +26,18 @@ export class LeadsController {
   @Post(':leadId/convert')
   @ApiOperation({
     summary:
-      '原子转客户：事务内 锁定线索 → 查找/创建客户 → 写 timeline → 更新线索',
+      '原子转 CRM：事务内 锁定线索 → 解析身份 → 建客户/公司/商机/任务/备注 → 写 timeline → 更新线索 → 写 outbox',
   })
   async convert(
     @Param('leadId') leadId: string,
-    @Body() body: { idempotencyKey?: string },
+    @Body()
+    body: {
+      idempotencyKey?: string;
+      company?: Record<string, unknown>;
+      opportunity?: Record<string, unknown>;
+      task?: Record<string, unknown>;
+      note?: Record<string, unknown>;
+    },
   ) {
     const context = this.authRequestContext.get();
     const userId = context?.user?.id?.trim() || '';
@@ -42,6 +49,11 @@ export class LeadsController {
       leadId,
       idempotencyKey: body?.idempotencyKey,
       scope: { userId, tenantId },
+      // Sprint 4 T4.1：一步建商机/任务/备注（可选）
+      company: body?.company ? (body.company as never) : undefined,
+      opportunity: body?.opportunity ? (body.opportunity as never) : undefined,
+      task: body?.task ? (body.task as never) : undefined,
+      note: body?.note ? (body.note as never) : undefined,
     });
   }
 }

@@ -52,6 +52,26 @@ function makePrisma(overrides: Record<string, unknown> = {}) {
     crmTimelineEvent: {
       create: jest.fn().mockResolvedValue({ id: 'tl-1' }),
     },
+    // Sprint 4 T4.1 新增依赖表
+    domainEventOutbox: {
+      create: jest.fn().mockResolvedValue({ id: 'outbox-1' }),
+    },
+    interactionEvent: {
+      findUnique: jest.fn().mockResolvedValue(null),
+    },
+    crmCompany: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      create: jest.fn().mockResolvedValue({ id: 'comp-1' }),
+    },
+    crmOpportunity: {
+      create: jest.fn().mockResolvedValue({ id: 'opp-1' }),
+    },
+    crmTask: {
+      create: jest.fn().mockResolvedValue({ id: 'task-1' }),
+    },
+    crmNote: {
+      create: jest.fn().mockResolvedValue({ id: 'note-1' }),
+    },
     ...overrides,
   };
   const prisma = {
@@ -162,5 +182,114 @@ describe('LeadConvertService', () => {
     expect(result.created).toBe(false);
     expect(tx.crmCustomer.create).not.toHaveBeenCalled();
     expect(tx.crmCustomer.update).toHaveBeenCalled();
+  });
+
+  it('T4.1：一步建 Company/Opportunity/Task/Note + 写 outbox + timeline 带归因链', async () => {
+    const { prisma, tx } = makePrisma({
+      lead: {
+        findFirst: jest.fn().mockResolvedValue(
+          LEAD({
+            sourceArticleId: 'art-1',
+            sourcePublishRecordId: 'pub-1',
+            sourceInteractionEventId: 'ev-1',
+          }),
+        ),
+        update: jest.fn().mockImplementation(async ({ data }) => ({
+          id: 'lead-1',
+          ...data,
+        })),
+      },
+      interactionEvent: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'ev-1',
+          identityId: 'pid-1',
+          platform: 'douyin',
+          accountId: 'acc-1',
+        }),
+      },
+    });
+    const svc = makeService(prisma);
+
+    const result = await svc.convert({
+      leadId: 'lead-1',
+      idempotencyKey: 'conv-1',
+      scope: { userId: 'u-1', tenantId: 'tenant-1' },
+      company: { name: '测试公司', industry: 'SaaS' },
+      opportunity: { stage: 'qualified', expectedAmount: 10000 },
+      task: { title: '跟进报价', dueAt: new Date('2026-09-01') },
+      note: { body: '客户询问价格' },
+    });
+
+    expect(result.companyId).toBe('comp-1');
+    expect(result.opportunityId).toBe('opp-1');
+    expect(result.taskId).toBe('task-1');
+    expect(result.noteId).toBe('note-1');
+    expect(result.identityId).toBe('pid-1');
+    expect(tx.crmCompany.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: '测试公司' }),
+      }),
+    );
+    expect(tx.crmOpportunity.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          stage: 'qualified',
+          amountCents: 1000000, // 10000 元 → cents
+          primaryCustomerId: 'cust-1',
+        }),
+      }),
+    );
+    expect(tx.crmTask.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ title: '跟进报价' }),
+      }),
+    );
+    expect(tx.crmNote.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ body: '客户询问价格' }),
+      }),
+    );
+    // timeline 带归因主键链
+    expect(tx.crmTimelineEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          metadata: expect.objectContaining({
+            sourceArticleId: 'art-1',
+            sourcePublishRecordId: 'pub-1',
+            sourceInteractionEventId: 'ev-1',
+            identityId: 'pid-1',
+          }),
+        }),
+      }),
+    );
+    // outbox 已写（幂等键同输入）
+    expect(tx.domainEventOutbox.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          type: 'lead.action.executed',
+          idempotencyKey: 'conv-1',
+        }),
+      }),
+    );
+  });
+
+  it('T4.1：任何一步失败 → 事务回滚（抛错，不残留）', async () => {
+    const { prisma } = makePrisma({
+      crmCompany: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockRejectedValue(new Error('company create failed')),
+      },
+    });
+    const svc = makeService(prisma);
+
+    await expect(
+      svc.convert({
+        leadId: 'lead-1',
+        scope: { userId: 'u-1', tenantId: 'tenant-1' },
+        company: { name: 'X' },
+      }),
+    ).rejects.toThrow('company create failed');
+    // 事务内后续步骤未执行（customer 已建但事务回滚 → 不产生 timeline）
+    expect(prisma.crmTimelineEvent.create).not.toHaveBeenCalled();
   });
 });
