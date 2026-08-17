@@ -3493,3 +3493,27 @@ model DomainEventOutbox {
   @@index([tenantId, type])
   @@map("domain_event_outbox")
 }
+
+// 审批记录（开发文档 §10.1-10.2，Sprint 3 T3.3）
+// 高风险动作强制人工审批；内容/目标集合变化后 inputHash 对比自动失效。
+model Approval {
+  id              String    @id @default(cuid())
+  tenantId        String    @default("legacy-local-desktop") @map("tenant_id")
+  userId          String    @default("legacy-local-user") @map("user_id")
+  actionId        String    @map("action_id")
+  actionType      String    @map("action_type") // create_task/draft_reply/send_reply/batch_outreach/convert_crm
+  riskLevel       String    @map("risk_level") // low/medium/high
+  inputHash       String    @map("input_hash")
+  affectedLeadIds Json      @map("affected_lead_ids")
+  excludedLeadIds Json      @default("[]") @map("excluded_lead_ids")
+  approverId      String?   @map("approver_id")
+  status          String    @default("pending") @map("status") // pending/approved/rejected/requested_changes/expired/resubmitted/applied
+  reason          String?   @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+  expiresAt       DateTime? @map("expires_at")
+  appliedAt       DateTime? @map("applied_at")
+
+  @@index([tenantId, status])
+  @@index([tenantId, actionId])
+  @@map("approvals")
+}
