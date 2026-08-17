@@ -7,12 +7,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { Page } from 'playwright';
 import { LocalBrowserEngine, type EngineSession } from '../local-engine/local-browser-engine.service';
+import { AcquisitionQuotaService } from './acquisition-quota.service';
 import type {
   DiscoveryItem,
 } from './discovery.types';
 
 export type BrowserDiscoverReasonCode =
   | 'ok'
+  | 'quota_exceeded'
   | 'not_logged_in'
   | 'captcha_required'
   | 'risk_control'
@@ -62,7 +64,10 @@ const ACCOUNT_URLS: Record<string, string> = {
 export class DiscoveryBrowserRunner {
   private readonly logger = new Logger(DiscoveryBrowserRunner.name);
 
-  constructor(private readonly browser: LocalBrowserEngine) {}
+  constructor(
+    private readonly browser: LocalBrowserEngine,
+    private readonly quota?: AcquisitionQuotaService,
+  ) {}
 
   /** 浏览器会话是否就绪（决定 capabilities 是否可用） */
   async isReady(platform: string, accountId: string | number): Promise<boolean> {
@@ -78,8 +83,22 @@ export class DiscoveryBrowserRunner {
     }
   }
 
+  /** 采集配额检查（超限 → quota_exceeded 原因码，不静默降级） */
+  private async assertQuota(userId: string): Promise<void> {
+    if (!this.quota) return;
+    try {
+      await this.quota.assertCanDiscover(userId);
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AcquisitionQuotaExceededError') {
+        throw new BrowserDiscoverError('quota_exceeded', error.message);
+      }
+      throw error;
+    }
+  }
+
   /** 关键词搜索 → 发现候选（draft-only：人工确认后才进线索池） */
   async searchByKeyword(input: BrowserSearchInput): Promise<DiscoveryItem[]> {
+    await this.assertQuota(String(input.accountId));
     const urlTemplate = SEARCH_URLS[input.platform];
     if (!urlTemplate) {
       throw new BrowserDiscoverError('parse_failed', `平台 ${input.platform} 暂不支持浏览器搜索`);
@@ -113,6 +132,7 @@ export class DiscoveryBrowserRunner {
 
   /** 目标账号主页 → 作品列表 */
   async listAccountWorks(input: BrowserAccountInput): Promise<DiscoveryItem[]> {
+    await this.assertQuota(String(input.accountId));
     const urlTemplate = ACCOUNT_URLS[input.platform];
     if (!urlTemplate) {
       throw new BrowserDiscoverError('parse_failed', `平台 ${input.platform} 暂不支持账号主页浏览`);
@@ -140,6 +160,7 @@ export class DiscoveryBrowserRunner {
     if (items.length === 0) {
       throw new BrowserDiscoverError('parse_failed', '账号主页未解析到作品（页面结构变化或未加载）');
     }
+    await this.quota?.recordDiscover(String(input.accountId)).catch(() => {});
     return items.slice(0, Math.max(1, Math.min(input.limit ?? 20, 50)));
   }
 
