@@ -28,6 +28,17 @@ const TOOL_ARG_SUMMARY_LEN = 500; // 审计参数摘要长度（避免存大对�
 const COMPLETION_SNAPSHOT_LEN = 2000; // AI 回复快照截断长度（质量评估够用，避免存大文本）
 
 /**
+ * 成本积分换算倍率（大王定价 2026-08-16：按 token 成本的 20 倍定）。
+ * 成本积分 = token × TOKEN_COST_MULTIPLIER，写入 ai_tool_call_logs.cost_points。
+ * 可经 env AI_TOKEN_COST_MULTIPLIER 覆盖（默认 20）。
+ */
+export function resolveTokenCostMultiplier(env: Record<string, string | undefined> = process.env): number {
+  const raw = env.AI_TOKEN_COST_MULTIPLIER ?? '20';
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 ? value : 20;
+}
+
+/**
  * AI 审计 + 配额（B6/P3，主文档 3.8 安全契约）
  *
  * 审计：ai_chat_logs（会话）+ ai_tool_call_logs（工具调用，含参数摘要/结果/耗时）
@@ -157,7 +168,9 @@ export class AiAuditService {
           update: { tokenCount: { increment: tokens }, updatedAt: new Date() },
         });
       }
-      // 明细：写入工具调用日志（带 token 消耗 + 场景），可追溯
+      // 明细：写入工具调用日志（带 token 消耗 + 场景 + 成本积分，可追溯）
+      // 成本积分 = token × 20（大王定价：按 token 成本 20 倍，2026-08-16）
+      const costPoints = tokens * resolveTokenCostMultiplier();
       await this.prisma.aiToolCallLog.create({
         data: {
           userId: input.userId,
@@ -171,6 +184,7 @@ export class AiAuditService {
           resultOk: true,
           durationMs: 0,
           tokensUsed: tokens,
+          costPoints,
         },
       });
     } catch (error) {
