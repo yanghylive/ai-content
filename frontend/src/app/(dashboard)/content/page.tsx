@@ -218,7 +218,7 @@ const CONTENT_TOOL_ENTRIES: Array<{
   { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target", tint: "#0e8a5f", href: "/poi" },
   { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "#76517e", href: "/distribution/publish-article" },
   { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "#a16207", href: "/knowledge-base" },
-  { label: "视频特效", desc: "模板化视频效果", icon: "video", tint: "#7c3aed", href: "/effects" },
+  { label: "视频特效", desc: "换脸与模板化视频效果", icon: "video", tint: "#7c3aed", href: "/content/face-swap" },
   { label: "文案对比", desc: "原文与改写对照", icon: "clipboard", tint: "#64748b", href: "/copy-compare" },
   { label: "产物", desc: "生成结果存档", icon: "archive", tint: "#8d6e63", href: "/tasks/evidence" },
 ];
