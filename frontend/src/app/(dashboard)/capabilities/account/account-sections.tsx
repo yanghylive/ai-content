@@ -366,6 +366,29 @@ export function KaypalAccountSections() {
                   {billing?.balance?.balance != null ? "已更新" : "读取中"}
                 </Chip>
               </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  color="primary"
+                  variant="flat"
+                  onPress={() => {
+                    window.open(
+                      "https://kaypal.cn/zh-CN/dashboard/billing/topup",
+                      "_blank",
+                      "noopener,noreferrer",
+                    );
+                  }}
+                >
+                  充值积分
+                </Button>
+                <Button
+                  size="sm"
+                  variant="bordered"
+                  onPress={() => setReloadKey((k) => k + 1)}
+                >
+                  刷新余额
+                </Button>
+              </div>
               {billing?.balance?.message ? (
                 <p className="text-tiny text-default-500">
                   {commercialDisplayText(
