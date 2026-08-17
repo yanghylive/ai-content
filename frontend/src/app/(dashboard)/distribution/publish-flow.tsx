@@ -39,7 +39,10 @@ import {
   type AutoUploadPublishPreflightResult,
 } from "@/lib/api/auto-upload";
 import { articlesApi, type Article } from "@/lib/api/articles";
-import { redfoxApi, type ComplianceResult } from "@/lib/api/redfox";
+import {
+  checkCompliance,
+  type ComplianceCheckResult,
+} from "@/lib/api/compliance";
 import { api } from "@/lib/api/client";
 import {
   autoUploadAccountIdentityKey,
@@ -114,7 +117,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
   const [compliance, setCompliance] = useState<
     | { status: "idle" }
     | { status: "checking" }
-    | { status: "done"; result: ComplianceResult }
+    | { status: "done"; result: ComplianceCheckResult & { degraded?: boolean } }
   >({ status: "idle" });
   const [coverPath, setCoverPath] = useState<string>("");
 
@@ -267,17 +270,35 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
     if (!text.trim()) return;
     setCompliance({ status: "checking" });
     try {
-      const result = await redfoxApi.checkProhibited({ text });
+      // 统一到后端 compliance.service（报告 4.5）：按 riskLevel 分级 + gate
+      const result = await checkCompliance({
+        content: text,
+        platform: payload?.accountIdentity?.platform ?? undefined,
+        targetType: contentKind === "video" ? "video_script" : "article",
+        targetId: selectedArticle?.id,
+        title: payload?.title,
+        scenario: "pre_publish",
+      });
       setCompliance({ status: "done", result });
     } catch {
       // S0-4 fail-closed：检查接口异常时不得伪装「通过」，标记 degraded 由 UI 显示「检查不可用」
       setCompliance({
         status: "done",
         result: {
-          pass: false,
-          violations: [],
-          platform: "multi",
-          checkedAt: new Date().toISOString(),
+          checkId: "",
+          targetType: "article",
+          platform: "all",
+          riskLevel: "high",
+          riskScore: 0,
+          summary: "",
+          findings: [],
+          suggestions: [],
+          gate: {
+            publishAllowed: false,
+            manualReviewRequired: true,
+            reason: "检查服务不可用",
+            nextActions: ["重试检查"],
+          },
           degraded: true,
         },
       });
@@ -1050,18 +1071,18 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                   <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-600">
                     ⚠️ 检查不可用
                   </span>
-                ) : compliance.result.pass ? (
+                ) : compliance.result.riskLevel === "pass" ? (
                   <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">
                     ✅ 通过
                   </span>
                 ) : (
                   <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-600">
-                    ⚠️ {compliance.result.violations.length} 个风险词
+                    ⚠️ {compliance.result.findings.length} 个风险
                   </span>
                 ))}
             </div>
             <p className="mb-3 text-xs text-[var(--kaypal-v3-muted)]">
-              发布前检查违禁词，避免限流封号（多平台词库）
+              发布前合规体检（分级：阻断 / 警告 / 提示）
             </p>
             {compliance.status === "idle" && (
               <V2GhostButton icon={ShieldCheck} onClick={() => void runComplianceCheck()}>
@@ -1073,23 +1094,33 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 <Loader2 className="h-4 w-4 animate-spin" /> 检测中…
               </div>
             )}
-            {compliance.status === "done" && compliance.result.violations.length > 0 && (
+            {compliance.status === "done" && compliance.result.findings.length > 0 && (
               <div className="mt-2 space-y-2">
-                {compliance.result.violations.map((v, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-2 rounded border border-red-100 bg-red-50/60 px-3 py-2 text-xs"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-red-700">
-                        「{v.word}」{v.reason ? ` · ${v.reason}` : ""}
-                      </p>
-                      {v.suggestion && (
-                        <p className="mt-0.5 text-red-500">建议换成：{v.suggestion}</p>
-                      )}
+                {compliance.result.findings.map((finding) => {
+                  const blocked = finding.riskLevel === "high" || finding.riskLevel === "medium";
+                  return (
+                    <div
+                      key={finding.id}
+                      className={`flex items-start gap-2 rounded border px-3 py-2 text-xs ${
+                        blocked
+                          ? "border-red-100 bg-red-50/60"
+                          : "border-amber-100 bg-amber-50/60"
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className={`font-semibold ${blocked ? "text-red-700" : "text-amber-700"}`}>
+                          {blocked ? "⛔ " : "⚠️ "}
+                          「{finding.matchedText}」{finding.reason ? ` · ${finding.reason}` : ""}
+                        </p>
+                        {finding.suggestion && (
+                          <p className={`mt-0.5 ${blocked ? "text-red-500" : "text-amber-600"}`}>
+                            建议：{finding.suggestion}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <V2GhostButton icon={ShieldCheck} onClick={() => void runComplianceCheck()}>
                   修改后重新体检
                 </V2GhostButton>
@@ -1105,8 +1136,8 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 </V2GhostButton>
               </div>
             )}
-            {compliance.status === "done" && compliance.result.pass && !compliance.result.degraded && (
-              <p className="text-xs text-emerald-600">文案没有发现违禁词，可以放心发布。</p>
+            {compliance.status === "done" && compliance.result.riskLevel === "pass" && !compliance.result.degraded && (
+              <p className="text-xs text-emerald-600">文案没有发现合规风险，可以放心发布。</p>
             )}
           </div>
 
