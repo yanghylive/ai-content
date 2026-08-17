@@ -823,6 +823,20 @@ model SolutionArtifact {
 }
 
 // 方案包成本账本：记录预估、授权、实际扣减和外部调用引用。
+// 采集配额（报告 16.3 第 6 项，2026-08-17）：每日发现/采集次数上限。
+// 发现中心（keyword/target-account 浏览器会话采集）计数，超限返回 quota_exceeded 原因码。
+model AcquisitionQuota {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  date           DateTime @map("date") @db.Date
+  discoverCount  Int      @default(0) @map("discover_count")
+  discoverLimit  Int      @default(100) @map("discover_limit") // 每日发现上限（env ACQUISITION_DAILY_LIMIT 覆盖）
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@map("acquisition_quotas")
+}
+
 model SolutionCostEntry {
   id                   String        @id @default(cuid())
   runId                String        @map("run_id")
