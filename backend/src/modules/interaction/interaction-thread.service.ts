@@ -150,4 +150,85 @@ export class InteractionThreadService {
       (a, b) => b.latestAt.getTime() - a.latestAt.getTime(),
     );
   }
+
+  /**
+   * 线程详情（Sprint 5 T5.8 Conversation 增量）：
+   * 某线程的全部互动事件按时间 + parentEventId 排序成回复串，
+   * 每事件带 作者/身份/证据链接。互动记录展示基础。
+   */
+  async threadDetail(input: {
+    key: string;
+    limit?: number;
+  }): Promise<{
+    key: string;
+    events: Array<{
+      id: string;
+      channel: string;
+      authorExternalId: string | null;
+      identityId: string | null;
+      body: string | null;
+      occurredAt: Date;
+      sourceUrl: string | null;
+      evidenceUrl: string | null;
+      externalEventId: string | null;
+      parentEventId: string | null;
+    }>;
+    total: number;
+  }> {
+    const take = Math.min(Math.max(input.limit ?? 200, 1), 500);
+    const scope = await this.resolveScope();
+    const events = await this.prisma.interactionEvent.findMany({
+      where: {
+        tenantId: scope.tenantId,
+        userId: scope.userId,
+      },
+      orderBy: [{ occurredAt: 'asc' }],
+      take,
+    });
+
+    // 按线程键归组（与 listEventThreads 同键规则）
+    const threadEvents = events.filter((e) => {
+      const key =
+        e.externalThreadId ??
+        `${e.channel}:${e.sourceUrl ?? ''}:${e.authorExternalId ?? ''}`;
+      return key === input.key;
+    });
+
+    // parentEventId 排序：先按时间，父事件在前（回复串）
+    const byId = new Map(threadEvents.map((e) => [e.id, e]));
+    const children = new Map<string, typeof threadEvents>();
+    const roots: typeof threadEvents = [];
+    for (const e of threadEvents) {
+      if (e.parentEventId && byId.has(e.parentEventId)) {
+        const list = children.get(e.parentEventId) ?? [];
+        list.push(e);
+        children.set(e.parentEventId, list);
+      } else {
+        roots.push(e);
+      }
+    }
+    const ordered: typeof threadEvents = [];
+    const visit = (e: (typeof threadEvents)[number]) => {
+      ordered.push(e);
+      for (const child of children.get(e.id) ?? []) visit(child);
+    };
+    for (const r of roots) visit(r);
+
+    return {
+      key: input.key,
+      events: ordered.map((e) => ({
+        id: e.id,
+        channel: e.channel,
+        authorExternalId: e.authorExternalId,
+        identityId: e.identityId,
+        body: e.body,
+        occurredAt: e.occurredAt,
+        sourceUrl: e.sourceUrl,
+        evidenceUrl: e.evidenceUrl,
+        externalEventId: e.externalEventId,
+        parentEventId: e.parentEventId,
+      })),
+      total: ordered.length,
+    };
+  }
 }
