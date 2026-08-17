@@ -94,6 +94,12 @@ export interface CommercialBackupStatus {
   restoreDryRunReady: boolean;
   objectStoreMirror: CommercialBackupObjectStoreMirror;
   message: string;
+  /** 备份 SLA 声明（报告 27 项，2026-08-16）：RPO/RTO/保留期 */
+  sla: {
+    rpo: string;
+    rto: string;
+    retention: string;
+  };
 }
 
 export interface CommercialBackupRestoreDryRunResult {

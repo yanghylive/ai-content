@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { growthApi, type GrowthLead, type LeadScoreHistoryDto, type LeadAttributionDto } from "@/lib/api/growth";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { V2StatusChip } from "@/components/v2/ui-kit";
 
 const PLATFORM_LABEL: Record<string, string> = {
   douyin: "抖音",
@@ -294,19 +295,19 @@ export default function LeadDetailPage() {
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">归因链</h2>
           {attribution && (
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            <V2StatusChip
+              tone={
                 attribution.layer === "confirmed"
-                  ? "bg-emerald-50 text-emerald-600"
+                  ? "success"
                   : attribution.layer === "rule_matched"
-                    ? "bg-amber-50 text-amber-600"
+                    ? "warning"
                     : attribution.layer === "inferred"
-                      ? "bg-sky-50 text-sky-600"
-                      : "bg-gray-100 text-gray-500"
-              }`}
+                      ? "accent"
+                      : "muted"
+              }
             >
               {LAYER_LABEL[attribution.layer] ?? attribution.layer}
-            </span>
+            </V2StatusChip>
           )}
         </div>
 

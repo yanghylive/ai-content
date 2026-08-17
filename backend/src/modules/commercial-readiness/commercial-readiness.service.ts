@@ -2594,6 +2594,11 @@ export class CommercialReadinessService
       manifestValid: snapshot.manifestValid,
       restoreDryRunReady,
       objectStoreMirror,
+      sla: {
+        rpo: '24h', // 恢复点目标：最多丢失 24 小时数据（备份建议每日一次）
+        rto: '1h', // 恢复时间目标：1 小时内恢复可用
+        retention: '30d', // 备份保留 30 天
+      },
       message:
         databaseTarget.kind === 'postgres' && !pgDump.available
           ? '当前运行库是 Postgres，但没有找到 pg_dump；请安装 PostgreSQL client 或配置 PG_DUMP_PATH。'
