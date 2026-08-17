@@ -43,6 +43,7 @@ import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { ContentOptimizationModule } from './modules/content-optimization/content-optimization.module';
 import { ComplianceModule } from './modules/compliance/compliance.module';
 import { WorkflowModule } from './modules/workflow/workflow.module';
+import { DiscoveryModule } from './modules/discovery/discovery.module';
 import { CommentInsightsModule } from './modules/comment-insights/comment-insights.module';
 import { CommentAcquisitionModule } from './modules/comment-acquisition/comment-acquisition.module';
 import { AiFlavorModule } from './modules/ai-flavor/ai-flavor.module';
@@ -107,6 +108,7 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     ContentOptimizationModule,
     ComplianceModule,
     WorkflowModule,
+    DiscoveryModule,
     CommentInsightsModule,
     CommentAcquisitionModule,
     AiFlavorModule,
