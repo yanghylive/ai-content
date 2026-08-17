@@ -1,0 +1,69 @@
+// 审批中心端点（Sprint 3 ApprovalGateService + 前端入口打通，Sprint 5）
+// 高风险动作（首次私信/批量评论/批量触达/商机阶段变化）的审批列表与操作。
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ApprovalGateService, type ApprovalAction } from './approval-gate.service';
+
+@ApiTags('approval')
+@Controller('approvals')
+export class ApprovalController {
+  constructor(
+    private readonly approvalGate: ApprovalGateService,
+    private readonly authRequestContext: AuthRequestContextService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  private async requireUser() {
+    const context = this.authRequestContext.get();
+    const userId = context?.user?.id?.trim() || '';
+    if (!userId) {
+      throw new UnauthorizedException('请先登录');
+    }
+    const tenantId = await this.authRequestContext.resolveTenantId(this.prisma);
+    return { userId, tenantId };
+  }
+
+  @Get()
+  @ApiOperation({ summary: '待审批列表（高风险动作）' })
+  async listPending(@Query('limit') limit?: string) {
+    const { tenantId } = await this.requireUser();
+    return this.approvalGate.listPending(
+      tenantId,
+      Math.min(Number(limit) || 50, 200),
+    );
+  }
+
+  @Post(':id/act')
+  @ApiOperation({ summary: '审批操作：approve/reject/request_changes/expire/resubmit' })
+  act(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      action: ApprovalAction;
+      reason?: string;
+      /** 审批时校验内容是否已变（inputHash 不匹配自动失效） */
+      currentInput?: Record<string, unknown>;
+    },
+  ) {
+    return this.requireUser().then(({ userId, tenantId }) =>
+      this.approvalGate.act({
+        tenantId,
+        approvalId: id,
+        action: body.action,
+        approverId: userId,
+        reason: body.reason,
+        currentInput: body.currentInput as never,
+      }),
+    );
+  }
+}

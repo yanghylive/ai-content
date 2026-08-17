@@ -39,6 +39,7 @@ const COMMANDS: PaletteCommand[] = [
   { cat: "内容", name: "发布", icon: "megaphone", tint: "kx-t-green", href: "/distribution/publish-video", kw: "publish 发布 抖音 小红书" },
   { cat: "消息", name: "AI 客服", icon: "messageSq", tint: "kx-t-slate", href: "/engagement", kw: "客服 回复 确认" },
   { cat: "消息", name: "待我确认", icon: "checkCircle", tint: "kx-t-amber", href: "/tasks/confirmations", kw: "确认 放行 审批" },
+  { cat: "消息", name: "审批中心", icon: "alert", tint: "kx-t-red", href: "/approvals", kw: "审批 高风险 批量 触达 私信" },
   { cat: "消息", name: "抖音评论", icon: "message", tint: "kx-t-slate", href: "/engagement/douyin-comments", kw: "抖音 评论" },
   { cat: "消息", name: "视频号评论", icon: "message", tint: "kx-t-cyan", href: "/engagement/wechat-channel-comments", kw: "视频号 评论" },
   { cat: "消息", name: "微信（会话/群发）", icon: "messageSq", tint: "kx-t-green", href: "/engagement/wechat", kw: "wechat 微信 群发 朋友圈" },

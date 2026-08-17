@@ -3415,6 +3415,9 @@ model ContentVariant {
   platformMetadata Json?     @map("platform_metadata") // thread/firstComment/reel/story/board/userTags
   contentHash      String    @map("content_hash")
   status           String    @default("draft") // draft/pending_review/approved/scheduled
+  // C 档横切：素材版权/授权状态（unknown/authorized/unauthorized/pending）
+  licenseStatus    String    @default("unknown") @map("license_status")
+  copyrightNotice  String?   @map("copyright_notice") @db.Text
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 

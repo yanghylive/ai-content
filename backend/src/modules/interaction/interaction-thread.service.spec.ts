@@ -161,3 +161,81 @@ describe('InteractionThreadService', () => {
     expect(threads).toHaveLength(2);
   });
 });
+
+describe('InteractionThreadService · T5.8 threadDetail', () => {
+  it('线程详情：parentEventId 排序（父在前子在后）+ 回复串组装', async () => {
+    const events = [
+      {
+        id: 'ev-1', platform: 'douyin', channel: 'comment',
+        externalThreadId: 'thread-1', authorExternalId: 'author-1',
+        identityId: 'pid-1', body: '主评论', occurredAt: new Date('2026-08-16T10:00:00Z'),
+        sourceUrl: 'https://dy/v/1', evidenceUrl: 'https://dy/v/1#ev-1',
+        externalEventId: 'ext-1', parentEventId: null, userId: 'u-1', tenantId: 'tenant-1',
+      },
+      {
+        id: 'ev-2', platform: 'douyin', channel: 'comment',
+        externalThreadId: 'thread-1', authorExternalId: 'author-2',
+        identityId: null, body: '回复1', occurredAt: new Date('2026-08-16T10:01:00Z'),
+        sourceUrl: 'https://dy/v/1', evidenceUrl: 'https://dy/v/1#ev-2',
+        externalEventId: 'ext-2', parentEventId: 'ev-1', userId: 'u-1', tenantId: 'tenant-1',
+      },
+      {
+        id: 'ev-3', platform: 'douyin', channel: 'comment',
+        externalThreadId: 'thread-1', authorExternalId: 'author-1',
+        identityId: 'pid-1', body: '追回复', occurredAt: new Date('2026-08-16T10:02:00Z'),
+        sourceUrl: 'https://dy/v/1', evidenceUrl: 'https://dy/v/1#ev-3',
+        externalEventId: 'ext-3', parentEventId: 'ev-1', userId: 'u-1', tenantId: 'tenant-1',
+      },
+      {
+        id: 'ev-9', platform: 'douyin', channel: 'comment',
+        externalThreadId: 'thread-9', authorExternalId: 'author-9',
+        identityId: null, body: '别的线程', occurredAt: new Date('2026-08-16T10:03:00Z'),
+        sourceUrl: 'https://dy/v/9', evidenceUrl: null,
+        externalEventId: 'ext-9', parentEventId: null, userId: 'u-1', tenantId: 'tenant-1',
+      },
+    ];
+    const prisma = {
+      interactionTask: { findMany: jest.fn().mockResolvedValue([]) },
+      interactionEvent: { findMany: jest.fn().mockResolvedValue(events) },
+    };
+    const svc = new InteractionThreadService(prisma as never, makeAuthContext() as never);
+
+    const detail = await svc.threadDetail({ key: 'thread-1' });
+
+    expect(detail.total).toBe(3);
+    expect(detail.events[0].id).toBe('ev-1'); // 父在前
+    // ev-2 / ev-3 都是 ev-1 的子（按时间）
+    expect(detail.events.map((e) => e.id)).toEqual(['ev-1', 'ev-2', 'ev-3']);
+    expect(detail.events[0].identityId).toBe('pid-1');
+    expect(detail.events[1].parentEventId).toBe('ev-1');
+  });
+
+  it('线程详情：无 externalThreadId 时按 渠道+URL+作者 键归组', async () => {
+    const events = [
+      {
+        id: 'ev-1', platform: 'xhs', channel: 'comment',
+        externalThreadId: null, authorExternalId: 'author-1',
+        identityId: null, body: '第一条', occurredAt: new Date('2026-08-16T10:00:00Z'),
+        sourceUrl: 'https://xhs/item/1', evidenceUrl: null,
+        externalEventId: 'ext-1', parentEventId: null, userId: 'u-1', tenantId: 'tenant-1',
+      },
+      {
+        id: 'ev-2', platform: 'xhs', channel: 'comment',
+        externalThreadId: null, authorExternalId: 'author-1',
+        identityId: null, body: '第二条', occurredAt: new Date('2026-08-16T10:01:00Z'),
+        sourceUrl: 'https://xhs/item/1', evidenceUrl: null,
+        externalEventId: 'ext-2', parentEventId: 'ev-1', userId: 'u-1', tenantId: 'tenant-1',
+      },
+    ];
+    const prisma = {
+      interactionTask: { findMany: jest.fn().mockResolvedValue([]) },
+      interactionEvent: { findMany: jest.fn().mockResolvedValue(events) },
+    };
+    const svc = new InteractionThreadService(prisma as never, makeAuthContext() as never);
+
+    const key = 'comment:https://xhs/item/1:author-1';
+    const detail = await svc.threadDetail({ key });
+    expect(detail.total).toBe(2);
+    expect(detail.events[0].id).toBe('ev-1');
+  });
+});
