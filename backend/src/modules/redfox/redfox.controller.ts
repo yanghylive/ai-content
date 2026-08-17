@@ -392,4 +392,18 @@ export class RedfoxController {
   ) {
     return this.redfoxService.getCostSummary(request.authUser, query);
   }
+
+  /** C 档：RedFox 技能 catalog（官方仓库目录建模，可检索） */
+  @Get('skills/catalog')
+  async skillCatalog(
+    @Req() request: AuthenticatedRequest,
+    @Query('q') q?: string,
+  ) {
+    if (!request.authUser) throw new UnauthorizedException('请先登录');
+    const { findRedfoxSkill } = require('./redfox-skill-catalog');
+    return {
+      total: findRedfoxSkill(q ?? '').length,
+      items: findRedfoxSkill(q ?? ''),
+    };
+  }
 }
