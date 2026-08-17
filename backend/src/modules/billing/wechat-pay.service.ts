@@ -254,6 +254,28 @@ export class WechatPayService {
     };
   }
 
+  /** 配置就绪检查（大王一眼看还差什么） */
+  configStatus(): {
+    mchid: string;
+    items: Array<{ key: string; ready: boolean; hint: string }>;
+    ready: boolean;
+  } {
+    const config = this.config();
+    const items = [
+      { key: 'mchid', ready: Boolean(config.mchid), hint: `商户号 ${config.mchid}` },
+      { key: 'appId', ready: Boolean(config.appId), hint: '关联公众号/小程序 AppID（微信公众平台）' },
+      { key: 'apiV3Key', ready: Boolean(config.apiV3Key), hint: 'APIv3 密钥（商户平台-账户中心-API 安全）' },
+      { key: 'serialNo', ready: Boolean(config.serialNo), hint: `证书序列号 ${config.serialNo ?? '未配置'}` },
+      { key: 'privateKeyPath', ready: Boolean(config.privateKeyPath), hint: config.privateKeyPath ?? 'apiclient_key.pem 路径' },
+      { key: 'notifyUrl', ready: Boolean(config.notifyUrl), hint: '回调通知公网地址' },
+    ];
+    return {
+      mchid: config.mchid,
+      items,
+      ready: items.every((i) => i.ready),
+    };
+  }
+
   private headerValue(headers: Record<string, string | string[] | undefined>, key: string): string {
     const v = headers[key] ?? headers[key.toLowerCase()];
     if (Array.isArray(v)) return v[0] ?? '';
