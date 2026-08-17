@@ -2093,6 +2093,7 @@ model CrmOpportunity {
   primaryCustomer   CrmCustomer?       @relation("CrmOpportunityPrimaryCustomer", fields: [primaryCustomerId], references: [id], onDelete: SetNull)
   closeDate         DateTime?          @map("close_date")
   nextStep          String?            @map("next_step") @db.Text
+  nextActionAt      DateTime?          @map("next_action_at") // Sprint 4 T4.2：下次跟进时间
   competitor        String?            @db.Text
   source            String?
   metadata          Json?

@@ -81,6 +81,7 @@ interface OpportunityInput {
   primaryCustomerId?: string | null;
   closeDate?: string | Date | null;
   nextStep?: string;
+  nextActionAt?: string | Date | null;
   competitor?: string;
   source?: string;
   winReason?: string;
@@ -949,12 +950,41 @@ export class CrmService {
     }
   }
 
+  /**
+   * Sprint 4 T4.2：阶段写入必填校验
+   * - won：必填金额 > 0 + closeDate（成交不能是 0 元、不能没有日期）
+   * - lost：必填 loseReason（失单必须有原因）
+   */
+  private validateOpportunityStageForWrite(
+    stage: string,
+    input: { amountCents?: number | null; closeDate?: Date | string | null; loseReason?: string | null },
+  ): void {
+    this.validateOpportunityStage(stage);
+    if (stage === 'won') {
+      const amount = input.amountCents ?? 0;
+      if (amount <= 0) {
+        throw new BadRequestException('商机阶段为 won 时，成交金额必须 > 0');
+      }
+      if (!input.closeDate) {
+        throw new BadRequestException('商机阶段为 won 时，必须填写成交日期 closeDate');
+      }
+    }
+    if (stage === 'lost' && !input.loseReason?.trim()) {
+      throw new BadRequestException('商机阶段为 lost 时，必须填写失单原因 loseReason');
+    }
+  }
+
   async createOpportunity(userId: string, input: OpportunityInput) {
     await this.requireCrmMutationScope(userId);
     const tenantId = await this.resolveCrmTenantId(userId);
     const name = this.requiredString(input.name, '商机名称不能为空');
     const stage = (this.optionalString(input.stage) || 'qualified') as string;
-    this.validateOpportunityStage(stage);
+    // Sprint 4 T4.2：won/lost 必填校验（金额/日期/原因）
+    this.validateOpportunityStageForWrite(stage, {
+      amountCents: this.optionalInt(input.amountCents),
+      closeDate: this.optionalDate(input.closeDate),
+      loseReason: this.optionalString(input.loseReason),
+    });
     const companyId = await this.resolveCompanyId(userId, input);
     const primaryCustomerId = await this.resolveCustomerId(
       userId,
@@ -974,6 +1004,7 @@ export class CrmService {
         primaryCustomerId,
         closeDate: this.optionalDate(input.closeDate),
         nextStep: this.optionalString(input.nextStep),
+        nextActionAt: this.optionalDate(input.nextActionAt),
         competitor: this.optionalString(input.competitor),
         source: this.optionalString(input.source),
         winReason: this.optionalString(input.winReason),
@@ -1016,7 +1047,19 @@ export class CrmService {
     input: OpportunityInput,
   ) {
     await this.requireCrmMutationScope(userId);
-    await this.getOpportunity(userId, opportunityId);
+    // 读原始记录（scope 校验 + 拿 stage 变化前完整值，DTO 会剥离 loseReason 等字段）
+    const scope =
+      await this.scopedCrmWhere<Prisma.CrmOpportunityWhereInput>(userId);
+    const currentRow = await this.prisma.crmOpportunity.findFirst({
+      where: { ...scope, id: opportunityId },
+    });
+    if (!currentRow) throw new NotFoundException('商机不存在');
+    const current = {
+      stage: currentRow.stage,
+      amountCents: currentRow.amountCents,
+      closeDate: currentRow.closeDate,
+      loseReason: currentRow.loseReason,
+    };
     const data: Prisma.CrmOpportunityUpdateInput = {};
     for (const key of [
       'name',
@@ -1044,6 +1087,8 @@ export class CrmService {
       data.probability = this.normalizeProbability(input.probability);
     if ('closeDate' in input)
       data.closeDate = this.optionalDate(input.closeDate);
+    if ('nextActionAt' in input)
+      data.nextActionAt = this.optionalDate(input.nextActionAt);
     if ('metadata' in input) data.metadata = this.toRecord(input.metadata);
     if ('companyId' in input || 'companyName' in input) {
       const companyId = await this.resolveCompanyId(userId, input);
@@ -1060,20 +1105,56 @@ export class CrmService {
         ? { connect: { id: customerId } }
         : { disconnect: true };
     }
+
+    // Sprint 4 T4.2：stage 变化 → won/lost 必填校验（用更新后的完整值）
+    const nextStage = (data as Record<string, unknown>).stage as string | undefined;
+    if (nextStage && nextStage !== current.stage) {
+      this.validateOpportunityStageForWrite(nextStage, {
+        amountCents: ('amountCents' in input)
+          ? (this.optionalInt(input.amountCents) ?? undefined)
+          : current.amountCents,
+        closeDate: ('closeDate' in input)
+          ? this.optionalDate(input.closeDate)
+          : current.closeDate,
+        loseReason: ('loseReason' in input)
+          ? this.optionalString(input.loseReason)
+          : current.loseReason,
+      });
+    }
+
     const opportunity = await this.prisma.crmOpportunity.update({
       where: { id: opportunityId },
       data,
     });
-    await this.appendTimeline(userId, {
-      companyId: opportunity.companyId,
-      customerId: opportunity.primaryCustomerId,
-      opportunityId,
-      eventType: 'opportunity_updated',
-      channel: 'crm',
-      content: `更新商机：${opportunity.name}`,
-      status: opportunity.stage,
-      metadata: { changedFields: Object.keys(data) },
-    });
+
+    // Sprint 4 T4.2：stage 变化单独写 stage_changed 时间线（可追溯阶段流转）
+    if (nextStage && nextStage !== current.stage) {
+      await this.appendTimeline(userId, {
+        companyId: opportunity.companyId,
+        customerId: opportunity.primaryCustomerId,
+        opportunityId,
+        eventType: 'opportunity_stage_changed',
+        channel: 'crm',
+        content: `商机阶段变化：${current.stage} → ${nextStage}`,
+        status: nextStage,
+        metadata: {
+          fromStage: current.stage,
+          toStage: nextStage,
+          changedFields: Object.keys(data),
+        },
+      });
+    } else {
+      await this.appendTimeline(userId, {
+        companyId: opportunity.companyId,
+        customerId: opportunity.primaryCustomerId,
+        opportunityId,
+        eventType: 'opportunity_updated',
+        channel: 'crm',
+        content: `更新商机：${opportunity.name}`,
+        status: opportunity.stage,
+        metadata: { changedFields: Object.keys(data) },
+      });
+    }
     return this.getOpportunity(userId, opportunityId);
   }
 
@@ -6197,6 +6278,8 @@ export class CrmService {
   }
 
   private optionalDate(value: unknown) {
+    // 直接传 Date 对象时兼容（safeText 会把 Date JSON 序列化导致 Invalid Date）
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
     const raw = this.optionalString(value);
     if (!raw) return null;
     const date = new Date(raw);
