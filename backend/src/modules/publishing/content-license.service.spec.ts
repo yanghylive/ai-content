@@ -82,9 +82,10 @@ describe('ContentLicenseService', () => {
   it('checkMany：批量检查统计 blocked', async () => {
     const prisma = makePrisma({
       contentVariant: {
-        findFirst: jest.fn().mockImplementation(async ({ where }) => {
-          return { id: where.id, licenseStatus: where.id === 'v-bad' ? 'unauthorized' : 'authorized', copyrightNotice: null };
-        }),
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'v-ok', licenseStatus: 'authorized', copyrightNotice: null },
+          { id: 'v-bad', licenseStatus: 'unauthorized', copyrightNotice: null },
+        ]),
       },
     });
     const svc = new ContentLicenseService(prisma);

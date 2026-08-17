@@ -84,16 +84,51 @@ export class ContentLicenseService {
     return { id: updated.id, licenseStatus: updated.licenseStatus as LicenseStatus };
   }
 
-  /** 批量检查（批量发布前） */
+  /** 批量检查（批量发布前；Bug 修复 2026-08-17：批量查询替代 N+1） */
   async checkMany(input: { tenantId: string; variantIds: string[] }) {
-    const results: Array<{ variantId: string } & LicenseCheckResult> = [];
-    for (const variantId of input.variantIds) {
-      results.push({
-        variantId,
-        ...(await this.checkLicense({ tenantId: input.tenantId, variantId })),
-      });
-    }
+    const variants = await this.prisma.contentVariant.findMany({
+      where: { id: { in: input.variantIds }, tenantId: input.tenantId },
+      select: { id: true, licenseStatus: true, copyrightNotice: true },
+    });
+    const byId = new Map(variants.map((v) => [v.id, v]));
+    const results: Array<{ variantId: string } & LicenseCheckResult> = input.variantIds.map(
+      (variantId) => {
+        const v = byId.get(variantId);
+        if (!v) {
+          return {
+            variantId,
+            licenseStatus: 'unknown' as const,
+            allowedToPublish: true,
+            reason: '素材未登记版权状态（旧流程），建议补录授权信息',
+          };
+        }
+        return { variantId, ...this.resolveLicense(v.licenseStatus, v.copyrightNotice) };
+      },
+    );
     const blocked = results.filter((r) => !r.allowedToPublish);
     return { results, blockedCount: blocked.length };
+  }
+
+  /** 版权状态判定（与 checkLicense 同规则，供 checkMany 复用） */
+  private resolveLicense(status: string, notice: string | null): LicenseCheckResult {
+    switch (status) {
+      case 'unauthorized':
+        return {
+          licenseStatus: 'unauthorized',
+          allowedToPublish: false,
+          reason: `素材未获授权（${notice ?? '无版权说明'}），禁止发布`,
+        };
+      case 'authorized':
+        return { licenseStatus: 'authorized', allowedToPublish: true, reason: null };
+      case 'pending':
+        return { licenseStatus: 'pending', allowedToPublish: false, reason: '素材授权审核中，通过后放行' };
+      case 'unknown':
+      default:
+        return {
+          licenseStatus: 'unknown',
+          allowedToPublish: true,
+          reason: '素材版权状态未知，建议补录授权信息后发布',
+        };
+    }
   }
 }
