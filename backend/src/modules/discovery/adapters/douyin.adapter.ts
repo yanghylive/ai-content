@@ -1,7 +1,10 @@
-// 抖音 adapter（开发文档 §7.1-7.2，Sprint 5 T5.1）
+// 抖音 adapter（开发文档 §7.1-7.2 + 大王方案 2026-08-16）
 // 三模式：keyword / video-link / target-account。
+// 数据来源（无官方 API 授权时的浏览器会话方案）：
+//   - keyword / target-account → DiscoveryBrowserRunner（用户登录的 Playwright 会话内辅助采集）
+//   - video-link → URL 解析（无需登录）
 // 铁律：不用 MediaCrawler stealth/签名/代理；不用 Cookie/验证码绕过替代授权；
-// 账号掉线/验证码/风控返回结构化 reason code，不伪装成功。
+// 遇验证码/风控 → 结构化原因码转人工，不伪装成功。
 import { createHash } from 'node:crypto';
 import type { DiscoveryAdapter } from '../discovery.adapter';
 import type {
@@ -11,45 +14,35 @@ import type {
   DiscoveryItem,
   ExternalContentRef,
 } from '../discovery.types';
-
-/** 平台调用失败的结构化原因码（前端据此置灰/提示，不报假成功） */
-export type DouyinReasonCode =
-  | 'ok'
-  | 'unauthorized' // 未授权/授权过期
-  | 'login_required' // 需要登录
-  | 'captcha_required' // 验证码
-  | 'risk_control' // 风控限制
-  | 'account_disabled' // 账号封禁
-  | 'quota_exhausted' // 额度用尽
-  | 'unsupported_mode' // 模式不支持
-  | 'network_error'; // 网络异常
+import { BrowserDiscoverError, DiscoveryBrowserRunner } from '../discovery-browser-runner';
 
 export class DouyinAdapter implements DiscoveryAdapter {
   readonly platform = 'douyin';
 
   constructor(
+    private readonly runner?: DiscoveryBrowserRunner,
     private readonly config: {
-      /** 官方/授权 API 是否已接入（未接入 → unavailableReason 明确置灰） */
-      authorized?: boolean;
+      /** 浏览器会话是否启用（默认启用——有 runner 即可用） */
+      browserEnabled?: boolean;
       dailyQuota?: number;
     } = {},
   ) {}
 
   async capabilities(): Promise<DiscoveryCapability> {
-    const authorized = this.config.authorized ?? false;
+    const browserReady = this.config.browserEnabled !== false && Boolean(this.runner);
     return {
       platform: 'douyin',
       modes: ['keyword', 'video-link', 'target-account'],
-      supportsComment: authorized,
-      supportsDm: authorized,
-      publishMode: authorized ? 'manual' : 'collect-only',
-      dailyQuota: authorized ? (this.config.dailyQuota ?? 200) : 0,
-      remainingQuota: authorized ? (this.config.dailyQuota ?? 200) : 0,
-      ...(authorized
+      supportsComment: browserReady,
+      supportsDm: browserReady,
+      publishMode: browserReady ? 'manual' : 'collect-only',
+      dailyQuota: browserReady ? (this.config.dailyQuota ?? 200) : 0,
+      remainingQuota: browserReady ? (this.config.dailyQuota ?? 200) : 0,
+      ...(browserReady
         ? {}
         : {
             unavailableReason:
-              '抖音官方/授权 API 未接入（不采用 Cookie/签名/代理绕过）。接入后可启用 keyword/video-link/target-account 三模式。',
+              '抖音无官方 API 授权，且浏览器会话未启用。启用 auto-upload 浏览器会话后可进行关键词搜索/账号主页发现（用户登录态内辅助采集，遇验证码转人工）。',
           }),
     };
   }
@@ -58,20 +51,68 @@ export class DouyinAdapter implements DiscoveryAdapter {
     input: DiscoveryInput,
     _ctx: DiscoveryContext,
   ): AsyncIterable<DiscoveryItem> {
-    // 未授权：明确报原因码，不产出任何条目（不伪装空数组成功）
-    const reason = await this.checkReady(input.mode);
-    if (reason !== 'ok') {
-      throw new DouyinAdapterError(reason, `抖音 ${input.mode} 模式不可用：${reason}`);
+    const mode = input.mode;
+    if (mode === 'video-link') {
+      // 视频链接：URL 解析（无需登录/浏览器会话）
+      const url = typeof input.input?.url === 'string' ? input.input.url : '';
+      if (!url) return;
+      const rawHash = createHash('sha256').update(url).digest('hex');
+      yield {
+        platform: 'douyin',
+        accountId: input.accountId,
+        sourceContent: {
+          externalContentId: url.split('/').filter(Boolean).pop() ?? 'douyin-link',
+          url,
+          contentType: 'video',
+          rawHash,
+        },
+      };
+      return;
     }
-    // —— 授权接入后在此实现三模式发现（keyword 搜索 / video-link 解析 / target-account 主页）——
-    return;
+
+    if (!this.runner) {
+      throw new BrowserDiscoverError('no_browser_session', '抖音浏览器会话未启用（无官方 API 授权，需浏览器会话进行发现）');
+    }
+
+    if (mode === 'keyword') {
+      const keyword = typeof input.input?.keyword === 'string' ? input.input.keyword : '';
+      if (!keyword?.trim()) {
+        throw new BrowserDiscoverError('parse_failed', '关键词模式需要 keyword 参数');
+      }
+      const items = await this.runner.searchByKeyword({
+        platform: 'douyin',
+        accountId: input.accountId,
+        keyword,
+        limit: input.limit,
+      });
+      for (const item of items) yield item;
+      return;
+    }
+
+    if (mode === 'target-account') {
+      const targetId =
+        typeof input.input?.targetId === 'string'
+          ? input.input.targetId
+          : typeof input.input?.targetAccountId === 'string'
+            ? input.input.targetAccountId
+            : '';
+      if (!targetId?.trim()) {
+        throw new BrowserDiscoverError('parse_failed', '目标账号模式需要 targetId 参数');
+      }
+      const items = await this.runner.listAccountWorks({
+        platform: 'douyin',
+        accountId: input.accountId,
+        targetId,
+        limit: input.limit,
+      });
+      for (const item of items) yield item;
+      return;
+    }
+
+    throw new BrowserDiscoverError('parse_failed', `不支持的发现模式：${mode}`);
   }
 
   async fetchContent(ref: ExternalContentRef, _ctx: DiscoveryContext) {
-    const reason = await this.checkReady('video-link');
-    if (reason !== 'ok') {
-      throw new DouyinAdapterError(reason, `抖音内容抓取不可用：${reason}`);
-    }
     return {
       externalContentId:
         ref.externalContentId ?? createHash('sha1').update(ref.url ?? 'douyin').digest('hex').slice(0, 24),
@@ -85,28 +126,7 @@ export class DouyinAdapter implements DiscoveryAdapter {
     _ref: ExternalContentRef,
     _ctx: DiscoveryContext,
   ): AsyncIterable<never> {
-    const reason = await this.checkReady('keyword');
-    if (reason !== 'ok') {
-      throw new DouyinAdapterError(reason, `抖音评论抓取不可用：${reason}`);
-    }
+    // 评论抓取走 interaction adapter（autoUpload.readDouyinComments），此处不重复实现
     return;
-  }
-
-  /** 模式可用性检查：未授权一律不可用（结构化原因码） */
-  private async checkReady(_mode: string): Promise<DouyinReasonCode> {
-    if (!this.config.authorized) return 'unauthorized';
-    // 授权接入后：检查登录态/风控/额度，映射为原因码
-    return 'ok';
-  }
-}
-
-/** 平台调用失败（带结构化原因码，前端据此展示，不伪装成功） */
-export class DouyinAdapterError extends Error {
-  constructor(
-    public readonly reasonCode: DouyinReasonCode,
-    message: string,
-  ) {
-    super(message);
-    this.name = 'DouyinAdapterError';
   }
 }

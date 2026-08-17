@@ -118,29 +118,61 @@ describe('VideoLinkAdapter', () => {
   });
 });
 
-import { DouyinAdapter, DouyinAdapterError } from './douyin.adapter';
+import { DouyinAdapter } from './douyin.adapter';
+import { BrowserDiscoverError } from '../discovery-browser-runner';
 import { ShipinhaoAdapter, WecomAdapter, KuaishouAdapter, XiaohongshuAdapter } from './platform-connectors';
 
 describe('DouyinAdapter', () => {
-  it('未授权 → unavailableReason 明确置灰，discover 抛结构化原因码', async () => {
-    const adapter = new DouyinAdapter({ authorized: false });
+  it('无浏览器会话 → unavailableReason 明确置灰，discover 抛结构化原因码', async () => {
+    const adapter = new DouyinAdapter(undefined, { browserEnabled: false });
     const cap = await adapter.capabilities();
     expect(cap.supportsComment).toBe(false);
-    expect(cap.unavailableReason).toContain('未接入');
+    expect(cap.unavailableReason).toContain('浏览器会话');
     await expect(
       (async () => {
-        const input = { platform: 'douyin', accountId: 'a', mode: 'keyword', input: {}, timeWindow: { from: 'a', to: 'b' }, limit: 5, riskMode: 'draft-only' } as never;
+        const input = { platform: 'douyin', accountId: 'a', mode: 'keyword', input: { keyword: 'x' }, timeWindow: { from: 'a', to: 'b' }, limit: 5, riskMode: 'draft-only' } as never;
         for await (const _ of adapter.discover(input, {} as never)) { /* noop */ }
       })(),
-    ).rejects.toThrow(DouyinAdapterError);
+    ).rejects.toThrow(BrowserDiscoverError);
   });
 
-  it('已授权 → 能力开放', async () => {
-    const adapter = new DouyinAdapter({ authorized: true, dailyQuota: 300 });
+  it('有浏览器会话（mock runner）→ 能力开放 + video-link 无需会话', async () => {
+    const runner = {
+      searchByKeyword: jest.fn().mockResolvedValue([]),
+      listAccountWorks: jest.fn().mockResolvedValue([]),
+    };
+    const adapter = new DouyinAdapter(runner as never, { browserEnabled: true, dailyQuota: 300 });
     const cap = await adapter.capabilities();
     expect(cap.modes).toEqual(['keyword', 'video-link', 'target-account']);
     expect(cap.supportsComment).toBe(true);
     expect(cap.unavailableReason).toBeUndefined();
+
+    // video-link 无需 runner 也可产出
+    const items: unknown[] = [];
+    const input = { platform: 'douyin', accountId: 'a', mode: 'video-link', input: { url: 'https://www.douyin.com/video/7312345678901234567' }, timeWindow: { from: 'a', to: 'b' }, limit: 5, riskMode: 'draft-only' } as never;
+    for await (const item of adapter.discover(input, {} as never)) items.push(item);
+    expect(items).toHaveLength(1);
+  });
+
+  it('keyword 模式：runner 返回结果 → yield 给调用方', async () => {
+    const runner = {
+      searchByKeyword: jest.fn().mockResolvedValue([
+        {
+          platform: 'douyin',
+          accountId: 'a',
+          sourceContent: { externalContentId: 'c1', url: 'https://www.douyin.com/video/1', contentType: 'video', title: '测试视频', rawHash: 'h1' },
+        },
+      ]),
+      listAccountWorks: jest.fn().mockResolvedValue([]),
+    };
+    const adapter = new DouyinAdapter(runner as never, { browserEnabled: true });
+    const items: unknown[] = [];
+    const input = { platform: 'douyin', accountId: 'a', mode: 'keyword', input: { keyword: 'AI 获客' }, timeWindow: { from: 'a', to: 'b' }, limit: 5, riskMode: 'draft-only' } as never;
+    for await (const item of adapter.discover(input, {} as never)) items.push(item);
+    expect(items).toHaveLength(1);
+    expect(runner.searchByKeyword).toHaveBeenCalledWith(
+      expect.objectContaining({ keyword: 'AI 获客' }),
+    );
   });
 });
 
