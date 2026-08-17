@@ -256,4 +256,72 @@ export class AiAuditService {
       update: { toolCount: { increment: 1 }, updatedAt: new Date() },
     });
   }
+
+  /**
+   * Token 经济看板（大王商业模式 2026-08-16：只赚 token 钱，智能体不限席位）。
+   * 汇总近 N 天的 token 消耗 + costPoints（token×20）收入口径 + 场景分布。
+   */
+  async economySummary(input: { days?: number; tenantId?: string } = {}) {
+    const days = Math.min(Math.max(input.days ?? 7, 1), 90);
+    const since = new Date();
+    since.setHours(0, 0, 0, 0);
+    since.setDate(since.getDate() - (days - 1));
+
+    const [aggregate, sceneRows, dailyRows] = await Promise.all([
+      this.prisma.aiToolCallLog.aggregate({
+        where: {
+          createdAt: { gte: since },
+          ...(input.tenantId ? { userId: { in: await this.tenantUserIds(input.tenantId) } } : {}),
+        },
+        _sum: { tokensUsed: true, costPoints: true },
+        _count: true,
+      }),
+      this.prisma.aiToolCallLog.groupBy({
+        by: ['tool'],
+        where: { createdAt: { gte: since } },
+        _sum: { tokensUsed: true, costPoints: true },
+        orderBy: { _sum: { costPoints: 'desc' } },
+        take: 10,
+      }),
+      this.prisma.aiToolCallLog.groupBy({
+        by: ['createdAt'],
+        where: { createdAt: { gte: since } },
+        _sum: { tokensUsed: true, costPoints: true },
+      }),
+    ]);
+
+    // 按日聚合（groupBy createdAt 是精确时间戳，需归日）
+    const byDay = new Map<string, { tokens: number; costPoints: number }>();
+    for (const row of dailyRows) {
+      const day = (row.createdAt as Date).toISOString().slice(0, 10);
+      const cur = byDay.get(day) ?? { tokens: 0, costPoints: 0 };
+      cur.tokens += row._sum.tokensUsed ?? 0;
+      cur.costPoints += row._sum.costPoints ?? 0;
+      byDay.set(day, cur);
+    }
+
+    return {
+      range: `${days}d`,
+      since: since.toISOString(),
+      totalTokens: aggregate._sum.tokensUsed ?? 0,
+      totalCostPoints: aggregate._sum.costPoints ?? 0,
+      callCount: aggregate._count,
+      topScenes: sceneRows.map((r) => ({
+        scene: r.tool,
+        tokens: r._sum.tokensUsed ?? 0,
+        costPoints: r._sum.costPoints ?? 0,
+      })),
+      daily: [...byDay.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([day, v]) => ({ day, tokens: v.tokens, costPoints: v.costPoints })),
+    };
+  }
+
+  private async tenantUserIds(tenantId: string): Promise<string[]> {
+    const members = await this.prisma.tenantMember.findMany({
+      where: { tenantId, status: 'active' },
+      select: { userId: true },
+    });
+    return members.map((m) => m.userId);
+  }
 }
