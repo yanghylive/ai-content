@@ -723,16 +723,28 @@ export class AuthController {
    * single→1、shared(ADVANCED)→10、per_seat(FLAGSHIP)→min 1；custom 不限。
    */
   private async assertSeatAvailable(tenantId: string): Promise<void> {
-    const entitlement = await this.prisma.tenantEntitlement.findFirst({
-      where: { tenantId, status: 'active' },
-      orderBy: { updatedAt: 'desc' },
-      select: { plan: true },
-    });
+    const [entitlement, tenant] = await Promise.all([
+      this.prisma.tenantEntitlement.findFirst({
+        where: { tenantId, status: 'active' },
+        orderBy: { updatedAt: 'desc' },
+        select: { plan: true },
+      }),
+      this.prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { ownerUserId: true },
+      }),
+    ]);
     const seatRule = getPlanSeatRule(entitlement?.plan);
     if (seatRule.maxSeats == null) return; // custom/不限额
 
+    // Bug 修复（2026-08-17）：owner 也写进 tenantMember（tenants.service upsert），
+    // 若不排除，single 方案（maxSeats=1）owner 占满唯一席位 → 永远无法邀请成员。
     const activeCount = await this.prisma.tenantMember.count({
-      where: { tenantId, status: 'active' },
+      where: {
+        tenantId,
+        status: 'active',
+        ...(tenant?.ownerUserId ? { userId: { not: tenant.ownerUserId } } : {}),
+      },
     });
     if (activeCount >= seatRule.maxSeats) {
       throw new BadRequestException(

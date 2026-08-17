@@ -212,3 +212,63 @@ describe('AuthController', () => {
     expect(response.cookie).not.toHaveBeenCalled();
   });
 });
+
+describe('AuthController · assertSeatAvailable（Bug 修复 2026-08-17）', () => {
+  function makeController(overrides: Record<string, unknown> = {}) {
+    const prisma = {
+      tenantEntitlement: {
+        findFirst: jest.fn().mockResolvedValue({ plan: 'FREE' }),
+      },
+      tenant: {
+        findUnique: jest.fn().mockResolvedValue({ ownerUserId: 'owner-1' }),
+      },
+      tenantMember: {
+        count: jest.fn().mockResolvedValue(0),
+        findUnique: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({ id: 'm1', role: 'member', status: 'active' }),
+        update: jest.fn().mockResolvedValue({ id: 'm1', role: 'member', status: 'active' }),
+      },
+      user: {
+        findFirst: jest.fn().mockResolvedValue({ id: 'u-2', username: 'u2', email: 'u2@x.com', name: 'U2', status: 'active' }),
+      },
+      ...overrides,
+    };
+    const controller = new AuthController(
+      { getSetupStatus: jest.fn() } as never,
+      prisma as never,
+    ) as unknown as {
+      assertSeatAvailable: (tenantId: string) => Promise<void>;
+      prisma: typeof prisma;
+    };
+    return controller;
+  }
+
+  it('single 方案（FREE maxSeats=1）：排除 owner 后 0 个成员 → 可邀请', async () => {
+    const c = makeController();
+    await expect(c.assertSeatAvailable('t-1')).resolves.toBeUndefined();
+    // 断言 count 排除 owner
+    expect(c.prisma.tenantMember.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: { not: 'owner-1' } }),
+      }),
+    );
+  });
+
+  it('single 方案：排除 owner 后已满 1 个 → 拒绝', async () => {
+    const c = makeController({
+      tenantMember: {
+        count: jest.fn().mockResolvedValue(1),
+      },
+    });
+    await expect(c.assertSeatAvailable('t-1')).rejects.toThrow('席位已达上限');
+  });
+
+  it('custom 不限额（plan 无 maxSeats）→ 直接放行', async () => {
+    const c = makeController({
+      tenantEntitlement: {
+        findFirst: jest.fn().mockResolvedValue({ plan: 'ENTERPRISE' }),
+      },
+    });
+    await expect(c.assertSeatAvailable('t-1')).resolves.toBeUndefined();
+  });
+});

@@ -202,14 +202,24 @@ export class WechatPayService {
     });
 
     // 配置齐全 → 解密金额 + 充值；否则仅落审计（联调期）
-    let paidCents = order.amountCents;
-    if (config.apiV3Key && resource?.ciphertext && resource?.nonce && resource?.associated_data) {
-      try {
-        paidCents = this.decryptAmount(resource, config.apiV3Key, order.amountCents);
-      } catch (error) {
-        this.logger.warn(`微信回调解密失败：${(error as Error).message}`);
-        return { code: 'FAIL', message: '解密失败' };
-      }
+    // 安全修复（2026-08-17）：无 apiV3Key 或缺少可解密 resource 时，
+    // 绝不能按订单金额静默充值——否则任何人 POST outTradeNo 即可伪造支付到账。
+    // 必须解密出微信返回的真实金额才允许入账（且校验与订单一致）。
+    if (!config.apiV3Key || !resource?.ciphertext || !resource?.nonce || !resource?.associated_data) {
+      this.logger.warn(`微信回调缺少可验资源（apiV3Key=${Boolean(config.apiV3Key)} ciphertext=${Boolean(resource?.ciphertext)}），拒绝充值 ${outTradeNo}`);
+      return { code: 'FAIL', message: '回调资源不可验，拒绝入账' };
+    }
+    let paidCents: number;
+    try {
+      paidCents = this.decryptAmount(resource, config.apiV3Key, order.amountCents);
+    } catch (error) {
+      this.logger.warn(`微信回调解密失败：${(error as Error).message}`);
+      return { code: 'FAIL', message: '解密失败' };
+    }
+    // 金额一致性校验：微信返回金额 ≠ 订单金额 → 拒绝（防篡改）
+    if (paidCents !== order.amountCents) {
+      this.logger.warn(`微信回调金额不符：订单 ${order.amountCents} vs 回调 ${paidCents}，拒绝 ${outTradeNo}`);
+      return { code: 'FAIL', message: '金额不一致，拒绝入账' };
     }
 
     // 事务：标记 paid + 充值 aiCreditAccount（幂等）
@@ -232,9 +242,7 @@ export class WechatPayService {
         },
       });
     });
-    void paidCents;
-
-    this.logger.log(`微信支付成功：${outTradeNo} 充值 ${order.creditPoints} 积分`);
+    this.logger.log(`微信支付成功：${outTradeNo} 充值 ${order.creditPoints} 积分（金额 ${paidCents} 分）`);
     return { code: 'SUCCESS', message: 'OK' };
   }
 
@@ -290,6 +298,10 @@ export class WechatPayService {
   ): number {
     const key = Buffer.from(apiV3Key, 'utf8');
     const ciphertext = Buffer.from(String(resource.ciphertext), 'base64');
+    if (ciphertext.length <= 16) {
+      // 防御：密文必须 > 16 字节（16 字节 AES-GCM tag + 至少 1 字节数据）
+      throw new Error('回调密文长度非法');
+    }
     const nonce = Buffer.from(String(resource.nonce), 'utf8');
     const aad = Buffer.from(String(resource.associated_data ?? ''), 'utf8');
     const authTag = ciphertext.subarray(ciphertext.length - 16);

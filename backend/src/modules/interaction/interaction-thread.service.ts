@@ -177,12 +177,14 @@ export class InteractionThreadService {
   }> {
     const take = Math.min(Math.max(input.limit ?? 200, 1), 500);
     const scope = await this.resolveScope();
+    // Bug 修复（2026-08-17）：desc 取「最近」N 条（asc 会截掉最新线程的事件，
+    // 用户事件多时 threadDetail 查不到新评论）；树排序在内存按 occurredAt 正序完成。
     const events = await this.prisma.interactionEvent.findMany({
       where: {
         tenantId: scope.tenantId,
         userId: scope.userId,
       },
-      orderBy: [{ occurredAt: 'asc' }],
+      orderBy: [{ occurredAt: 'desc' }],
       take,
     });
 
@@ -207,6 +209,10 @@ export class InteractionThreadService {
         roots.push(e);
       }
     }
+    const byTime = (a: (typeof threadEvents)[number], b: (typeof threadEvents)[number]) =>
+      a.occurredAt.getTime() - b.occurredAt.getTime();
+    roots.sort(byTime);
+    for (const list of children.values()) list.sort(byTime);
     const ordered: typeof threadEvents = [];
     const visit = (e: (typeof threadEvents)[number]) => {
       ordered.push(e);

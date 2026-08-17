@@ -103,7 +103,7 @@ export class LeadAttributionService {
     externalEventId?: string | null;
     sourceUrl?: string | null;
     commentRef?: string | null;
-  }): Promise<{ leadId: string; matchedBy: 'external_event_id' | 'comment_ref' | null } | null> {
+  }): Promise<{ leadId: string; matchedBy: 'external_event_id' | 'comment_ref' | 'source_url' | null } | null> {
     const { userId, platform } = input;
 
     // 1. 主键：externalEventId 直连（最强）
@@ -136,7 +136,7 @@ export class LeadAttributionService {
         where: { userId, platform, sourceUrl: input.sourceUrl },
         select: { id: true },
       });
-      if (byUrl) return { leadId: byUrl.id, matchedBy: 'comment_ref' };
+      if (byUrl) return { leadId: byUrl.id, matchedBy: 'source_url' };
     }
 
     return null;
