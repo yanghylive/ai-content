@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getEffects, type EffectReport } from "@/lib/api/reporting";
 import { shareText, copyText } from "@/lib/mobile-bridge";
@@ -104,9 +105,16 @@ export default function EffectsPage() {
               </svg>
               JIUZHANG AI
             </div>
-            <h1 className="mx-page-title">AI 效果报告</h1>
-            <p className="mx-page-sub">看看 AI 帮你干了多少活</p>
+            <h1 className="mx-page-title">复盘</h1>
+            <p className="mx-page-sub">内容 → 发布 → 互动 → 线索 → 客户，看到效果并回写下一步</p>
           </div>
+          <Link
+            href="/intelligence/reports"
+            className="mx-btn-gold"
+            style={{ fontSize: 12, padding: "8px 14px", textDecoration: "none", flexShrink: 0 }}
+          >
+            报告中心
+          </Link>
         </div>
       </header>
 
@@ -191,7 +199,7 @@ export default function EffectsPage() {
                 border: "1px solid rgba(142,165,190,.2)",
               }}
             >
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>📅 本周摘要</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>📅 本周复盘</div>
               <div style={{ fontSize: 13, lineHeight: 1.8, color: "#dbe7f5" }}>{report.weeklySummary.text}</div>
             </div>
 
