@@ -241,22 +241,30 @@ export function V2StatCard({
   );
 }
 
-/** 空状态：图标 + 标题 + 说明 + 可选操作 */
+/** 空状态：图标 + 标题 + 说明 + 可选操作（T5.7：empty=没数据 / unavailable=未连接未同步） */
 export function V2EmptyState({
   icon: Icon,
   title,
   description,
   action,
+  variant = "empty",
 }: {
   icon: LucideIcon;
   title: string;
   description?: string;
   action?: ReactNode;
+  variant?: "empty" | "unavailable";
 }) {
   return (
     <div className="py-12 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent-soft)]">
-        <Icon className="h-8 w-8 text-[var(--kaypal-v3-accent-ink)]" />
+      <div
+        className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${
+          variant === "unavailable"
+            ? "bg-amber-50 text-amber-500"
+            : "bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
+        }`}
+      >
+        <Icon className="h-8 w-8" />
       </div>
       <h3 className="mt-4 text-lg font-semibold text-[var(--kaypal-v3-ink)]">
         {title}

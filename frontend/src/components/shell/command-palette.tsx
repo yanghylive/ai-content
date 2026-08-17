@@ -59,7 +59,9 @@ const COMMANDS: PaletteCommand[] = [
 const SCENE_NAME: Record<string, string> = {
   "/today": "今天",
   "/agent": "助手",
-  "/customer": "客户",
+  "/growth/leads": "线索",
+  "/crm": "CRM",
+  "/effects": "复盘",
   "/content": "内容",
   "/message": "消息",
   "/mine": "我的",
@@ -69,7 +71,9 @@ function sceneOf(href: string) {
   for (const [prefix, name] of Object.entries(SCENE_NAME)) {
     if (href === prefix) return name;
   }
-  if (href.startsWith("/growth") || href.startsWith("/crm") || href.startsWith("/boss-recruit")) return "客户";
+  if (href.startsWith("/growth") || href.startsWith("/engagement/comment-acquisition")) return "线索";
+  if (href.startsWith("/crm") || href.startsWith("/customer") || href.startsWith("/boss-recruit")) return "CRM";
+  if (href.startsWith("/effects") || href.startsWith("/growth/reports") || href.startsWith("/intelligence/reports")) return "复盘";
   if (href.startsWith("/content") || href.startsWith("/materials") || href.startsWith("/distribution") || href.startsWith("/viral-analysis") || href.startsWith("/redfox-skills")) return "内容";
   if (href.startsWith("/engagement") || href.startsWith("/tasks")) return "消息";
   return "我的";

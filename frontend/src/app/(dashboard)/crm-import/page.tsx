@@ -1,7 +1,9 @@
-import { CrmImportFlow } from "../crm/import/crm-import-flow";
+import { redirect } from "next/navigation";
 
-// 直接渲染导入流程页（模板下载 + Excel 上传），
-// 不再先进 CrmImportCenter 介绍页——用户要的是打开就能导入
-export default function CrmImportV2Page() {
-  return <CrmImportFlow />;
+/**
+ * 导入页收敛：/crm-import → /crm/import（Sprint 5 T5.6）
+ * 保留深链能力：带参数访问时仍重定向到统一入口，不丢上下文。
+ */
+export default function Page() {
+  redirect("/crm/import");
 }
