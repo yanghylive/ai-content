@@ -11,7 +11,8 @@ import "./mobile.css";
  *
  * 5 个 Tab 对齐一级导航：
  *   今天 → /today · 内容 → /content · 发布 → /distribution
- *   互动 → /message · 客户 → /customer
+ *   互动 → /message · 线索 → /growth/leads
+ * CRM/复盘在移动端从线索详情/首页卡片进入（Tab 数量封顶 5）。
  * 「我的」移入右上角头像入口（不占底部 Tab）。
  * 视觉与交互由统一 MobileTabBar 组件承载（P2 架构沉淀）。
  */
@@ -20,7 +21,7 @@ const MOBILE_TABS: Array<{ key: string; href: string; label: string; icon: Param
   { key: "content", href: "/content", label: "内容", icon: "fileText" as const },
   { key: "publish", href: "/distribution", label: "发布", icon: "send" as const },
   { key: "interaction", href: "/message", label: "互动", icon: "message" as const },
-  { key: "customer", href: "/customer", label: "客户", icon: "users" as const },
+  { key: "leads", href: "/growth/leads", label: "线索", icon: "target" as const },
 ];
 
 function activeTabOf(pathname: string): string {
@@ -36,13 +37,14 @@ function activeTabOf(pathname: string): string {
     pathname.startsWith("/platforms")
   )
     return "publish";
+  // 线索（含 CRM/客户，从线索池进入）
   if (
-    pathname.startsWith("/customer") ||
     pathname.startsWith("/growth") ||
+    pathname.startsWith("/customer") ||
     pathname.startsWith("/crm") ||
     pathname.startsWith("/engagement/comment-acquisition")
   )
-    return "customer";
+    return "leads";
   if (
     pathname.startsWith("/message") ||
     pathname.startsWith("/engagement") ||

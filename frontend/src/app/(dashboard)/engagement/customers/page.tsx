@@ -1,7 +1,9 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { CrmCenter } from "../../crm/crm-center";
-
-export default function EngagementCustomersPage() {
-  return <CrmCenter />;
+/**
+ * 客户场景收敛：/engagement/customers → /crm（Sprint 5 T5.6）
+ * 保留深链能力：带参数访问时仍重定向到统一入口，不丢上下文。
+ */
+export default function Page() {
+  redirect("/crm");
 }

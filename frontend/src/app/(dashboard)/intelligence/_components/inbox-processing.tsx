@@ -97,7 +97,7 @@ export function InboxProcessing() {
           <div className="mx-header-row">
             <div style={{ minWidth: 0 }}>
               <div className="mx-brand-eyebrow">JIUZHANG AI</div>
-              <h1 className="mx-page-title">线索收件箱</h1>
+              <h1 className="mx-page-title">情报素材收件箱</h1>
               <p className="mx-page-sub">一键导入素材库或生成选题</p>
             </div>
             <span className={`mx-badge ${pendingItems.length > 0 ? "mx-badge-gold" : "mx-badge-green"}`} style={{ whiteSpace: "nowrap" }}>
@@ -200,7 +200,7 @@ export function InboxProcessing() {
           </button>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
-              线索收件箱
+              情报素材收件箱
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               看到有用的线索，一键导入素材库或生成选题

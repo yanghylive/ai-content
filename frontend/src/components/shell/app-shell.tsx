@@ -23,7 +23,7 @@ import { OnboardingGuide } from "./onboarding-guide";
 import "./shell.css";
 import "./desktop-vp.css";
 
-/* ---------- 场景定义（顺序 = 快捷键 1-5；「我的」第 6 个硬编码在 rail 末尾） ---------- */
+/* ---------- 场景定义（顺序 = 快捷键 1-7；「我的」第 8 个硬编码在 rail 末尾） ---------- */
 const SCENES: Array<{
   key: string;
   href: string;
@@ -33,8 +33,10 @@ const SCENES: Array<{
   { key: "today", href: "/today", label: "今天", icon: "home" },
   { key: "content", href: "/content", label: "内容", icon: "fileText" },
   { key: "publish", href: "/distribution", label: "发布", icon: "send" },
-  { key: "interaction", href: "/message", label: "互动", icon: "message" },
-  { key: "customer", href: "/customer", label: "客户", icon: "users" },
+  { key: "interaction", href: "/message", label: "互动", icon: "messageSq" },
+  { key: "leads", href: "/growth/leads", label: "线索", icon: "target" },
+  { key: "crm", href: "/crm", label: "CRM", icon: "users" },
+  { key: "review", href: "/effects", label: "复盘", icon: "trending" },
 ];
 
 /** 任意路径 → 所属场景（旧页面也能点亮正确的 rail 图标） */
@@ -52,14 +54,27 @@ export function sceneOfPath(pathname: string): string {
     pathname.startsWith("/platforms")
   )
     return "publish";
-  // 评论获客 → 线索 → 客户（先于 interaction 判断，避免被 /engagement 兜走）
+  // 线索运营（评论获客 → 线索池）
   if (
-    pathname.startsWith("/customer") ||
     pathname.startsWith("/growth") ||
-    pathname.startsWith("/crm") ||
     pathname.startsWith("/engagement/comment-acquisition")
   )
-    return "customer";
+    return "leads";
+  // CRM（客户/商机/导入/连接器/成交跟进）
+  if (
+    pathname.startsWith("/crm") ||
+    pathname.startsWith("/customer") ||
+    pathname.startsWith("/crm-closer")
+  )
+    return "crm";
+  // 复盘（效果/报告/归因漏斗）
+  if (
+    pathname.startsWith("/effects") ||
+    pathname.startsWith("/growth/reports") ||
+    pathname.startsWith("/intelligence/reports") ||
+    pathname.startsWith("/report-new")
+  )
+    return "review";
   if (
     pathname.startsWith("/message") ||
     pathname.startsWith("/engagement") ||
