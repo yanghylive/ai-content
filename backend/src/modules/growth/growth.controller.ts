@@ -384,6 +384,16 @@ export class GrowthController {
     return this.growthService.syncLeadToCrm(this.getUserId(request), id);
   }
 
+  @Get('leads/:id/score-history')
+  getLeadScoreHistory(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    return this.growthService.getLeadScoreHistory(this.getUserId(request), id);
+  }
+
+  @Get('leads/:id/attribution')
+  getLeadAttribution(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    return this.growthService.getLeadAttribution(this.getUserId(request), id);
+  }
+
   @Delete('leads/:id')
   deleteLead(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
     return this.growthService.deleteLead(this.getUserId(request), id);

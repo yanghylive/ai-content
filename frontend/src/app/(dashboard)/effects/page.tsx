@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getEffects, type EffectReport } from "@/lib/api/reporting";
+import { getEffects, getFunnel, type EffectReport, type FunnelReport } from "@/lib/api/reporting";
 import { shareText, copyText } from "@/lib/mobile-bridge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 
@@ -15,11 +15,27 @@ const PLATFORM_LABEL: Record<string, string> = {
   bilibili: "B站",
 };
 
+/** 归因漏斗六阶段（T4.6）：点击跳转对应队列 */
+const FUNNEL_STAGES: Array<{
+  key: "content" | "publish" | "interaction" | "lead" | "customer" | "opportunity";
+  label: string;
+  definition: string;
+  href: string;
+}> = [
+  { key: "content", label: "内容", definition: "AI 生成/导入的内容数", href: "/content" },
+  { key: "publish", label: "发布", definition: "成功发布的内容数", href: "/distribution" },
+  { key: "interaction", label: "互动", definition: "评论/私信/提及事件数", href: "/engagement" },
+  { key: "lead", label: "线索", definition: "从互动转化的线索数", href: "/growth/leads" },
+  { key: "customer", label: "客户", definition: "转成 CRM 客户数", href: "/crm" },
+  { key: "opportunity", label: "商机", definition: "进入商机管道数", href: "/crm-closer" },
+];
+
 /** S3 效果报告（2026-08-09 商用能力补齐 R3）：AI 生成/发布/曝光/互动看板 + 周报分享 */
 
 export default function EffectsPage() {
   const router = useRouter();
   const [report, setReport] = useState<EffectReport | null>(null);
+  const [funnel, setFunnel] = useState<FunnelReport | null>(null);
   const [range, setRange] = useState<"7d" | "30d">("7d");
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
@@ -27,8 +43,12 @@ export default function EffectsPage() {
   const refresh = useCallback(async (r: "7d" | "30d") => {
     setLoading(true);
     try {
-      const data = await getEffects(r);
-      setReport(data);
+      const [data, funnelData] = await Promise.allSettled([
+        getEffects(r),
+        getFunnel(r === "30d" ? 30 : 7),
+      ]);
+      if (data.status === "fulfilled") setReport(data.value);
+      if (funnelData.status === "fulfilled") setFunnel(funnelData.value);
     } catch {
       setMsg("加载失败，请稍后重试");
     } finally {
@@ -261,6 +281,88 @@ export default function EffectsPage() {
                 </div>
               </div>
             ) : null}
+
+            {/* 归因漏斗（T4.6：每阶段可点击跳转对应队列） */}
+            {funnel && (
+              <div
+                style={{
+                  marginTop: 14,
+                  padding: 16,
+                  borderRadius: 14,
+                  background: "rgba(255,255,255,.05)",
+                  border: "1px solid rgba(142,165,190,.2)",
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>
+                  🎯 归因漏斗（近 {range === "30d" ? "30 天" : "7 天"}）
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(148,163,184,.6)", marginBottom: 12 }}>
+                  每个数字=定义/分母/时间窗，点击阶段打开对应队列
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {FUNNEL_STAGES.map((stage) => {
+                    const value = funnel.funnel[stage.key];
+                    const meta = funnel.meta?.stages.find((s) => s.stage === stage.key);
+                    return (
+                      <button
+                        key={stage.key}
+                        type="button"
+                        onClick={() => router.push(stage.href)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          background: "rgba(255,255,255,.03)",
+                          border: "1px solid rgba(142,165,190,.18)",
+                          cursor: "pointer",
+                          textAlign: "left",
+                          fontFamily: "inherit",
+                          color: "inherit",
+                          width: "100%",
+                        }}
+                      >
+                        <span style={{ width: 64, flexShrink: 0, fontSize: 12, fontWeight: 600, color: "#f6c478" }}>
+                          {stage.label}
+                        </span>
+                        <span style={{ width: 44, flexShrink: 0, textAlign: "right", fontSize: 16, fontWeight: 800, color: "#e8f1fc" }}>
+                          {value}
+                        </span>
+                        <span
+                          style={{
+                            flex: 1,
+                            height: 6,
+                            borderRadius: 999,
+                            background: "rgba(142,165,190,.12)",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: "block",
+                              height: "100%",
+                              borderRadius: 999,
+                              width: `${Math.max(3, Math.round((value / Math.max(funnel.funnel.content, 1)) * 100))}%`,
+                              background: "rgba(246,196,120,.55)",
+                            }}
+                          />
+                        </span>
+                        <span style={{ width: 150, flexShrink: 0, fontSize: 10, color: "rgba(148,163,184,.65)", textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {meta?.definition ?? stage.definition}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {funnel.meta?.lastSyncedAt && (
+                  <div style={{ marginTop: 10, fontSize: 10, color: "rgba(148,163,184,.5)" }}>
+                    最后同步 {new Date(funnel.meta.lastSyncedAt).toLocaleString("zh-CN")}
+                    {funnel.meta.stages.some((s) => s.naReason) ? " · 部分阶段无数据（未开启对应采集）" : ""}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 说明 */}
             <div style={{ marginTop: 14, fontSize: 11, lineHeight: 1.7, color: "rgba(148,163,184,.55)" }}>

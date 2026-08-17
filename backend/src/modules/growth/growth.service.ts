@@ -7001,4 +7001,134 @@ export class GrowthService implements OnModuleInit {
       diagnostics: row.diagnostics ?? null,
     }));
   }
+
+  /**
+   * 线索评分历史（Sprint 4 T4.4/T2.6 桥接）：
+   * GrowthLead（JSON store）→ 按 dedupeKey 定位统一 Lead → 返回 LeadScoreSnapshot 倒序。
+   * 无对应统一 Lead（未走评分）→ available:false，前端显示「尚未评分」而非 0 分。
+   */
+  async getLeadScoreHistory(userId: string, leadId: string) {
+    const store = await this.loadStore();
+    const scope = await this.growthScope(userId);
+    const item = store.leads.find((l) => this.sameGrowthRecord(l, scope, leadId));
+    if (!item) throw new NotFoundException('线索不存在');
+
+    const lead = await this.findUnifiedLead(userId, item);
+    if (!lead) {
+      return { available: false, snapshots: [], message: '该线索尚未接入统一评分（未走 LeadScoreService）' };
+    }
+
+    const snapshots = await this.prisma.leadScoreSnapshot.findMany({
+      where: { leadId: lead.id },
+      orderBy: { scoredAt: 'desc' },
+      take: 50,
+    });
+    return {
+      available: true,
+      leadId: lead.id,
+      totalScore: lead.score ?? 0,
+      snapshots: snapshots.map((s) => ({
+        id: s.id,
+        scoredAt: s.scoredAt,
+        totalScore: s.totalScore,
+        fitScore: s.fitScore,
+        intentScore: s.intentScore,
+        identityConfidence: s.identityConfidence,
+        riskScore: s.riskScore,
+        confidence: s.confidence,
+        components: s.components,
+        reasons: s.reasons,
+        evidenceIds: s.evidenceIds,
+        modelVersion: s.modelVersion,
+        ruleVersion: s.ruleVersion,
+      })),
+    };
+  }
+
+  /**
+   * 线索归因链（Sprint 4 T4.3 展示桥接）：
+   * GrowthLead → 统一 Lead → 四层归因（confirmed/rule_matched/inferred/unknown）。
+   */
+  async getLeadAttribution(userId: string, leadId: string) {
+    const store = await this.loadStore();
+    const scope = await this.growthScope(userId);
+    const item = store.leads.find((l) => this.sameGrowthRecord(l, scope, leadId));
+    if (!item) throw new NotFoundException('线索不存在');
+
+    const lead = await this.findUnifiedLead(userId, item);
+    if (!lead) {
+      return {
+        layer: 'unknown',
+        hops: [],
+        lead: {
+          sourceArticleId: null,
+          sourcePublishRecordId: null,
+          sourceInteractionEventId: null,
+          sourceUrl: item.sourceUrl ?? null,
+        },
+      };
+    }
+
+    // 主键直连链（deterministic 层）
+    const hops: Array<{ fromType: string; fromId: string; toType: string; toId: string; model: string; label: string | null }> = [];
+    if (lead.sourceInteractionEventId) {
+      hops.push({ fromType: 'interaction', fromId: lead.sourceInteractionEventId, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'created_from' });
+    } else if (lead.sourcePublishRecordId) {
+      hops.push({ fromType: 'publish', fromId: lead.sourcePublishRecordId, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'created_from' });
+    } else if (lead.sourceArticleId) {
+      hops.push({ fromType: 'content', fromId: lead.sourceArticleId, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'created_from' });
+    }
+    if (lead.customerId) {
+      hops.push({ fromType: 'lead', fromId: lead.id, toType: 'customer', toId: lead.customerId, model: 'deterministic', label: 'qualified_by' });
+      const opp = await this.prisma.crmOpportunity.findFirst({
+        where: { ownerId: userId, primaryCustomerId: lead.customerId, archivedAt: null },
+        select: { id: true, stage: true },
+      });
+      if (opp) {
+        hops.push({ fromType: 'customer', fromId: lead.customerId, toType: 'opportunity', toId: opp.id, model: 'deterministic', label: 'created_from' });
+      }
+    }
+
+    // 无主键直连 → 查 AttributionLink（rule_based/inferred 层）
+    const layer: 'confirmed' | 'rule_matched' | 'inferred' | 'unknown' =
+      hops.length > 0 ? 'confirmed' : 'unknown';
+    if (hops.length === 0) {
+      const links = await this.prisma.attributionLink.findMany({
+        where: { userId, toType: 'lead', toId: lead.id },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      });
+      if (links.length > 0) {
+        const models = links.map((l) => l.model);
+        return {
+          layer: models.includes('rule_based') ? 'rule_matched' : 'inferred',
+          hops: links.map((l) => ({
+            fromType: l.fromType, fromId: l.fromId, toType: l.toType, toId: l.toId,
+            model: l.model, label: l.label,
+          })),
+          lead: { sourceArticleId: lead.sourceArticleId, sourcePublishRecordId: lead.sourcePublishRecordId, sourceInteractionEventId: lead.sourceInteractionEventId, sourceUrl: lead.sourceUrl },
+        };
+      }
+    }
+
+    return {
+      layer,
+      hops,
+      lead: { sourceArticleId: lead.sourceArticleId, sourcePublishRecordId: lead.sourcePublishRecordId, sourceInteractionEventId: lead.sourceInteractionEventId, sourceUrl: lead.sourceUrl },
+    };
+  }
+
+  /** 按 dedupeKey 定位统一 Lead（GrowthLead → Lead 桥接） */
+  private async findUnifiedLead(userId: string, item: {
+    platform: string; externalUserId?: string | null; nickname?: string | null;
+    sourceText?: string | null; tenantId?: string | null;
+  }) {
+    const dedupeKey = `lead:${createHash('sha256')
+      .update(`${item.platform}:${item.externalUserId ? `uid:${item.externalUserId}` : `nick:${item.nickname ?? ''}|${(item.sourceText ?? '').slice(0, 40)}`}`)
+      .digest('hex')}`;
+    if (item.tenantId) {
+      return this.prisma.lead.findUnique({ where: { tenantId_dedupeKey: { tenantId: item.tenantId, dedupeKey } } });
+    }
+    return this.prisma.lead.findUnique({ where: { userId_dedupeKey: { userId, dedupeKey } } });
+  }
 }

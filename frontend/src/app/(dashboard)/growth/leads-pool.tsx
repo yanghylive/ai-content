@@ -337,10 +337,17 @@ export function LeadsPool() {
                       <UserRound className="h-5 w-5 text-[var(--kaypal-v3-accent-ink)]" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-[var(--kaypal-v3-ink)]">
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 text-left"
+                        onClick={() => router.push(`/growth/leads/${lead.id}`)}
+                      >
+                        <p className="font-medium text-[var(--kaypal-v3-ink)] hover:text-[var(--kaypal-v3-accent)]">
                           {lead.nickname || "未知用户"}
                         </p>
+                        <span className="text-[10px] text-[var(--kaypal-v3-muted)]">详情 →</span>
+                      </button>
+                      <span className="flex items-center gap-2">
                         <V2StatusChip tone={status.tone}>{status.label}</V2StatusChip>
                         {lead.score > 0 && (
                           <span
@@ -354,7 +361,7 @@ export function LeadsPool() {
                             {lead.score} 分
                           </span>
                         )}
-                      </div>
+                      </span>
                       {lead.scoreReasons?.length > 0 && (
                         <p className="mt-0.5 line-clamp-1 text-xs text-[var(--kaypal-v3-muted)]">
                           评分依据：{lead.scoreReasons.join("；")}

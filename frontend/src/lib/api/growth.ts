@@ -469,6 +469,11 @@ export const growthApi = {
         api.post<{ duplicate: boolean; matches: GrowthLeadDedupeMatch[] }>("/growth/leads/dedupe-preview", body),
     mergeLeads: (body: { primaryId: string; duplicateIds: string[] }) =>
         api.post<{ ok: boolean; lead: GrowthLead; mergedCount: number }>("/growth/leads/merge", body),
+    // Sprint 4 前端收尾：评分历史 + 归因链
+    getLeadScoreHistory: (id: string) =>
+        api.get<LeadScoreHistoryDto>(`/growth/leads/${id}/score-history`),
+    getLeadAttribution: (id: string) =>
+        api.get<LeadAttributionDto>(`/growth/leads/${id}/attribution`),
     listAccountHealth: () => api.get<GrowthAccountHealth[]>("/growth/account-health"),
     checkAccountHealth: (platform: GrowthPlatform, accountId: string) =>
         api.post<GrowthAccountHealth>(`/growth/account-health/${platform}/${accountId}/check`),
@@ -502,3 +507,47 @@ export const growthApi = {
         body: { stepId?: string; outputSummary?: string } = {},
     ) => api.post<GrowthWorkflow>(`/growth/workflows/${id}/${action}`, body),
 };
+
+// —— Sprint 4 前端收尾：线索评分历史 + 归因链（T2.6/T4.3 展示）——
+
+export interface LeadScoreSnapshotDto {
+  id: string;
+  scoredAt: string;
+  totalScore: number;
+  fitScore: number;
+  intentScore: number;
+  identityConfidence: number;
+  riskScore: number;
+  confidence: number;
+  components: Record<string, number>;
+  reasons: string[];
+  evidenceIds: string[];
+  modelVersion: string;
+  ruleVersion: string;
+}
+
+export interface LeadScoreHistoryDto {
+  available: boolean;
+  leadId?: string;
+  totalScore?: number;
+  snapshots: LeadScoreSnapshotDto[];
+  message?: string;
+}
+
+export interface LeadAttributionDto {
+  layer: "confirmed" | "rule_matched" | "inferred" | "unknown";
+  hops: Array<{
+    fromType: string;
+    fromId: string;
+    toType: string;
+    toId: string;
+    model: string;
+    label: string | null;
+  }>;
+  lead: {
+    sourceArticleId: string | null;
+    sourcePublishRecordId: string | null;
+    sourceInteractionEventId: string | null;
+    sourceUrl: string | null;
+  };
+}
