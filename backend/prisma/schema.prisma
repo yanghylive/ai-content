@@ -209,6 +209,33 @@ model BillingInvoice {
   @@map("billing_invoices")
 }
 
+// 微信支付单（2026-08-16，商户号 1116143786）：本地订阅/积分充值的支付闭环。
+// 支付成功 → 回调验签幂等 → aiCreditAccount 充值（token×20 消费闭环）。
+model WechatPayOrder {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  userId        String    @map("user_id")
+  outTradeNo    String    @map("out_trade_no") // 本地单号（业务幂等键）
+  mchid         String    @default("1116143786") @map("mchid")
+  appid         String?   @map("appid")
+  description   String    @map("description")
+  amountCents   Int       @map("amount_cents") // 分
+  currency      String    @default("CNY")
+  status        String    @default("pending") // pending/paid/closed/refunded
+  transactionId String?   @map("transaction_id") // 微信支付单号
+  creditPoints  Int       @default(0) @map("credit_points") // 充值到 aiCreditAccount 的积分
+  paidAt        DateTime? @map("paid_at")
+  notifyPayload Json?     @map("notify_payload") // 回调原始数据（审计）
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([outTradeNo])
+  @@index([tenantId, userId])
+  @@index([status])
+  @@index([transactionId])
+  @@map("wechat_pay_orders")
+}
+
 // 计费 webhook 事件：按 provider + eventId 幂等落库，保留签名校验和处理结果。
 model BillingWebhookEvent {
   id                     String    @id @default(cuid())
