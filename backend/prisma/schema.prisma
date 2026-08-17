@@ -1654,6 +1654,8 @@ model InteractionEvent {
   externalEventId  String?  @map("external_event_id")
   externalThreadId String?  @map("external_thread_id")
   authorExternalId String?  @map("author_external_id")
+  // A 档归因补强（2026-08-16）：平台侧评论序号（小红书等回复定位 + 互动→线索匹配键）
+  commentRef       String?  @map("comment_ref")
   sourceUrl        String?  @map("source_url") @db.Text
   sourceArticleId  String?  @map("source_article_id")
   publishRecordId  String?  @map("publish_record_id")
