@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   ExternalLink,
+  KeyRound,
   Plus,
   RefreshCw,
   ShieldCheck,
@@ -137,6 +139,13 @@ export function AccountManagement() {
           >
             校验状态
           </V2GhostButton>
+          <Link
+            href="/platforms/new"
+            className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+          >
+            <KeyRound className="h-4 w-4" />
+            发布 API 账号
+          </Link>
           <V2PrimaryButton icon={Plus} onClick={() => ops.openLoginModal()}>
             绑定平台
           </V2PrimaryButton>
