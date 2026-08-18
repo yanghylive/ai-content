@@ -18,8 +18,13 @@ import { hashSessionToken, parseCookieHeader } from './auth.utils';
 import type { AuthenticatedUser } from './auth.types';
 import { safeText } from '../../common/text.utils';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { CredentialEnvelopeService } from '../../common/credential-envelope.service';
 import { KaypalAuthClient } from './kaypal-auth.client';
 import { EntitlementsService } from '../entitlements/entitlements.service';
+import {
+  encryptSessionToken,
+  decryptSessionToken,
+} from './session-token-cipher';
 
 type AuthenticatedRequest = Request & {
   authUser?: AuthenticatedUser;
@@ -51,6 +56,8 @@ export class AuthGuard implements CanActivate {
     private readonly authRequestContext?: AuthRequestContextService,
     @Optional()
     private readonly entitlements?: EntitlementsService,
+    @Optional()
+    private readonly envelope?: CredentialEnvelopeService,
   ) {}
 
   async canActivate(context: ExecutionContext) {
@@ -140,12 +147,12 @@ export class AuthGuard implements CanActivate {
       kaypalRole: request.kaypalRole,
       kaypalPlatformRole: request.kaypalPlatformRole,
       kaypalPermissionNames: request.kaypalPermissionNames,
-      kaypalDesktopAccessToken: this.toString(
-        metadata.kaypalDesktopAccessToken,
-      ),
-      kaypalDesktopRefreshToken: this.toString(
-        metadata.kaypalDesktopRefreshToken,
-      ),
+      kaypalDesktopAccessToken: this.envelope
+        ? decryptSessionToken(this.envelope, metadata.kaypalDesktopAccessToken)
+        : this.toString(metadata.kaypalDesktopAccessToken),
+      kaypalDesktopRefreshToken: this.envelope
+        ? decryptSessionToken(this.envelope, metadata.kaypalDesktopRefreshToken)
+        : this.toString(metadata.kaypalDesktopRefreshToken),
       kaypalDesktopTokenExpiresAt: this.toString(
         metadata.kaypalDesktopTokenExpiresAt,
       ),
@@ -167,7 +174,12 @@ export class AuthGuard implements CanActivate {
     });
 
     this.touchSessionLastUsedAt(session.id, session.lastUsedAt);
-    this.slideSessionExpiry(request, session.id, session.createdAt, session.expiresAt);
+    this.slideSessionExpiry(
+      request,
+      session.id,
+      session.createdAt,
+      session.expiresAt,
+    );
 
     // 角色检查：@RequireKaypalRoles('admin', 'owner') 声明的端点，仅允许匹配角色。
     // 默认 'operator' 是普通用户，不允许访问管理员端点。
@@ -227,9 +239,14 @@ export class AuthGuard implements CanActivate {
     }
   }
 
-  private extractRequestToken(request: AuthenticatedRequest): string | undefined {
+  private extractRequestToken(
+    request: AuthenticatedRequest,
+  ): string | undefined {
     const cookies = parseCookieHeader(request.headers.cookie);
-    return cookies[AUTH_COOKIE_NAME] || this.extractBearerToken(request.headers.authorization);
+    return (
+      cookies[AUTH_COOKIE_NAME] ||
+      this.extractBearerToken(request.headers.authorization)
+    );
   }
 
   private async applyEffectiveEntitlement(
@@ -417,7 +434,9 @@ export class AuthGuard implements CanActivate {
       return nextMetadata;
     }
 
-    const accessToken = this.toString(metadata.kaypalDesktopAccessToken);
+    const accessToken = this.envelope
+      ? decryptSessionToken(this.envelope, metadata.kaypalDesktopAccessToken)
+      : this.toString(metadata.kaypalDesktopAccessToken);
     if (accessToken) {
       return this.withKaypalMetadataTimeout(
         this.syncKaypalMetadataFromAccessToken(
@@ -508,8 +527,13 @@ export class AuthGuard implements CanActivate {
       });
       const tokenMetadata = {
         ...metadata,
-        kaypalDesktopAccessToken: refreshed.access_token,
-        kaypalDesktopRefreshToken: refreshed.refresh_token,
+        // S4 修复：refresh 后写回加密存储
+        kaypalDesktopAccessToken: this.envelope
+          ? encryptSessionToken(this.envelope, refreshed.access_token)
+          : refreshed.access_token,
+        kaypalDesktopRefreshToken: this.envelope
+          ? encryptSessionToken(this.envelope, refreshed.refresh_token)
+          : refreshed.refresh_token,
         kaypalDesktopTokenExpiresAt: new Date(
           Date.now() + refreshed.expires_in * 1000,
         ).toISOString(),

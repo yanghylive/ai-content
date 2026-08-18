@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { CredentialEnvelopeService } from '../../common/credential-envelope.service';
 import { EntitlementsModule } from '../entitlements/entitlements.module';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
@@ -25,6 +26,7 @@ import { RiskPolicyService } from './risk-policy.service';
     AuthService,
     KaypalAuthClient,
     RiskPolicyService,
+    CredentialEnvelopeService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
