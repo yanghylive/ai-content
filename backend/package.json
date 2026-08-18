@@ -33,6 +33,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js",
+    "start:sqlite": "node scripts/start-sqlite.mjs",
     "users:bootstrap": "ts-node -r tsconfig-paths/register scripts/bootstrap-user.ts",
     "lint": "eslint src --ignore-pattern \"**/*.spec.ts\"",
     "circular:check": "madge --circular --extensions ts --ts-config tsconfig.json src",
@@ -74,7 +75,7 @@
     "reflect-metadata": "^0.2.2",
     "rss-parser": "^3.13.0",
     "rxjs": "^7.8.1",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.3",
     "web-push": "^3.6.7",
     "winston": "^3.19.0"
   },
@@ -129,5 +130,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "overrides": {
+    "deepmerge-ts": "^8.0.0"
   }
 }
