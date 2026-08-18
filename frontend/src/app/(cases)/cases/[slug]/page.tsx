@@ -39,13 +39,29 @@ export async function generateMetadata({
   };
 }
 
-// output:export 要求动态路由段提供 generateStaticParams 且至少生成一条路由。
-// 案例数据经客户端 API（getCase）按需拉取，构建期无法枚举真实 slug，
-// 返回占位 slug 满足构建契约（Next 16 不允许空数组）；该占位页在客户端
-// 命中 404 时展示"案例不存在或尚未发布"。真实案例静态页需在开发中
-// 从静态数据源枚举 slug（见 /cases 列表页数据源）。
+// output:export 要求动态路由段提供 generateStaticParams。
+// 构建期从后端公开 API 枚举已发布案例 slug，为每个真实案例生成静态详情页（SEO 友好）。
+// 若构建期后端不可达或暂无案例，回退占位 slug 满足构建契约。
 export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
-  return [{ slug: "case-placeholder" }];
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:3011";
+  try {
+    const res = await fetch(`${apiBase}/api/v1/cases?limit=500`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return [{ slug: "case-placeholder" }];
+    }
+    const json = (await res.json()) as {
+      data?: { data?: Array<{ slug?: string }> };
+    };
+    const slugs = (json?.data?.data ?? [])
+      .map((c) => c.slug)
+      .filter((s): s is string => typeof s === "string" && s.length > 0)
+      .map((slug) => ({ slug }));
+    return slugs.length > 0 ? slugs : [{ slug: "case-placeholder" }];
+  } catch {
+    return [{ slug: "case-placeholder" }];
+  }
 }
 
 export default async function CaseDetailPage({ params }: DetailPageProps) {
