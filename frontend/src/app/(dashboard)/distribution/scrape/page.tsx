@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api/client";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { sanitizeArticleHtml } from "@/lib/sanitize-article-html";
 
 type ScrapedArticle = {
   url: string;
@@ -140,7 +141,7 @@ export default function ScrapeArticlePage() {
               <div
                 className="mx-prose"
                 style={{ marginTop: 10, fontSize: 12.5, lineHeight: 1.7, color: "#475569", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-                dangerouslySetInnerHTML={{ __html: article.content.slice(0, 500) + "..." }}
+                dangerouslySetInnerHTML={{ __html: sanitizeArticleHtml(article.content.slice(0, 500)) + "..." }}
               />
 
               {article.images.length > 0 && (
@@ -231,7 +232,7 @@ export default function ScrapeArticlePage() {
 
           <div
             className="text-sm text-muted-foreground line-clamp-4 prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content.slice(0, 500) + "..." }}
+            dangerouslySetInnerHTML={{ __html: sanitizeArticleHtml(article.content.slice(0, 500)) + "..." }}
           />
 
           {article.images.length > 0 && (
