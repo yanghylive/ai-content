@@ -311,6 +311,35 @@ const CASES: CaseSeed[] = [
     seoDescription: '医疗健康行业私域社群运营可定制模板演示。',
     publishedDaysAgo: 18,
   },
+  {
+    slug: 'mingde-vp-chamber',
+    title: 'VP 毕业生同学会数字平台',
+    subtitle: '会员、活动、商城与积分一体化的同学会微信小程序',
+    provenanceType: 'delivery',
+    primaryPlatform: 'wechat_mini_program',
+    platforms: ['wechat_mini_program', 'web'],
+    primaryIndustry: 'education',
+    industries: ['education'],
+    capabilityTags: ['private_domain', 'automation'],
+    businessProblem:
+      '同学会会员分散，活动报名、会费缴纳与信息触达缺乏统一的数字化平台，运营效率低、体验割裂。',
+    solutionSummary:
+      '基于 CRMEB 搭建同学会数字平台，提供会员管理、活动报名、商城与积分一体化的微信小程序，配合后台统一运营。',
+    keyFeatures: [
+      { title: '会员管理', description: '会籍计划、缴费与权益统一管理' },
+      { title: '活动报名', description: '活动发布、报名与签到全流程' },
+      { title: '商城积分', description: '商城交易与会员积分体系打通' },
+    ],
+    resultsSummary: '已上线运营，覆盖会员、活动与交易核心流程。',
+    evidenceLevel: 'E2',
+    evidenceScope: '客户运营数据脱敏回访',
+    deliveryModes: ['wechat_mini_program'],
+    maturity: 'scale',
+    techSummary: 'CRMEB + 自研 chamber 模块 + uni-app 小程序',
+    seoTitle: 'VP 毕业生同学会数字平台 - 九章智能',
+    seoDescription: '会员、活动、商城与积分一体化的同学会微信小程序交付案例。',
+    publishedDaysAgo: 6,
+  },
 ];
 
 /** 演示体验入口：真实可访问地址 + 对外短链代码（对应 ShowcaseShortLink） */
@@ -616,6 +645,16 @@ const AUTHORIZATIONS: AuthorizationSeed[] = [
   },
   {
     slug: 'cross-border-content-lead-gen',
+    recordType: 'customer_authorization',
+    grantor: '客户名称已隐去',
+    scope: '已获客户对外展示授权，客户名称与业务数据已脱敏',
+    licenseName: null,
+    sourceUrl: null,
+    versionOrCommit: null,
+    restrictionNotes: '匿名案例，客户名称已隐去',
+  },
+  {
+    slug: 'mingde-vp-chamber',
     recordType: 'customer_authorization',
     grantor: '客户名称已隐去',
     scope: '已获客户对外展示授权，客户名称与业务数据已脱敏',
