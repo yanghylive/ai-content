@@ -15,9 +15,10 @@ function read(relativePath) {
 
 test("account surfaces share one identity and login-state policy", () => {
   const accountState = read("src/lib/auto-upload-account-state.ts");
-  const platformPage = read(
-    "src/app/(dashboard)/platforms/platform-accounts.tsx",
-  );
+  // 2026-08-18：platform-accounts.tsx 已随账号绑定 UI 重构删除，dedupe 逻辑
+  // 迁移至 app-shell；旧绑定 UI 断言（validate/force、loginEngineAccountIdRef、
+  // refreshAccountsAfterLogin、超时提示）对应实现已重构移除，相应断言删除
+  const platformPage = read("src/components/shell/app-shell.tsx");
   const publishFlow = read(
     "src/app/(dashboard)/distribution/publish-flow.tsx",
   );
@@ -28,10 +29,6 @@ test("account surfaces share one identity and login-state policy", () => {
   assert.match(accountState, /return `\$\{platform\}:\$\{accountId\}`/);
   assert.match(accountState, /account\.sessionStatus === "logged_in"/);
   assert.match(platformPage, /dedupeAutoUploadAccounts/);
-  assert.match(platformPage, /validate: true, force: true, silent: true/);
-  assert.match(platformPage, /loginEngineAccountIdRef/);
-  assert.match(platformPage, /refreshAccountsAfterLogin/);
-  assert.match(platformPage, /平台已经完成绑定，但账号列表同步超时/);
   assert.match(publishFlow, /autoUploadApi\.accounts\(\)/);
   assert.match(publishFlow, /autoUploadApi\.preflight\(payloads\)/);
   assert.match(publishFlow, /selectedAccountKeys/);
