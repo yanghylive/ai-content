@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import {
@@ -65,25 +66,38 @@ export class GrowthController {
   }
 
   @Get('exposure-accounts')
-  listExposureAccounts() {
-    return this.growthService.listExposureAccounts();
+  listExposureAccounts(@Req() request: AuthenticatedRequest) {
+    const userId = request.authUser?.id?.trim() || '';
+    if (!userId) throw new UnauthorizedException('请先登录');
+    return this.growthService.listExposureAccounts(userId);
   }
 
   @Post('exposure-accounts')
   createExposureAccount(
+    @Req() request: AuthenticatedRequest,
     @Body() body: { platform?: string; accountId: string; name: string; note?: string },
   ) {
-    return this.growthService.createExposureAccount(body);
+    const userId = request.authUser?.id?.trim() || '';
+    if (!userId) throw new UnauthorizedException('请先登录');
+    return this.growthService.createExposureAccount(userId, body);
   }
 
   @Patch('exposure-accounts/:id/status')
-  setExposureAccountStatus(@Param('id') id: string, @Body() body: { status: string }) {
-    return this.growthService.setExposureAccountStatus(id, body.status);
+  setExposureAccountStatus(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() body: { status: string },
+  ) {
+    const userId = request.authUser?.id?.trim() || '';
+    if (!userId) throw new UnauthorizedException('请先登录');
+    return this.growthService.setExposureAccountStatus(userId, id, body.status);
   }
 
   @Delete('exposure-accounts/:id')
-  removeExposureAccount(@Param('id') id: string) {
-    return this.growthService.removeExposureAccount(id);
+  removeExposureAccount(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    const userId = request.authUser?.id?.trim() || '';
+    if (!userId) throw new UnauthorizedException('请先登录');
+    return this.growthService.removeExposureAccount(userId, id);
   }
 
   @Get('overview')

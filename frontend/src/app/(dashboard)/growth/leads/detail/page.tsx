@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { growthApi, type GrowthLead, type LeadScoreHistoryDto, type LeadAttributionDto } from "@/lib/api/growth";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { V2StatusChip } from "@/components/v2/ui-kit";
@@ -58,8 +58,20 @@ function ScoreBar({ label, value, max, color }: { label: string; value: number; 
 
 /** LEAD-003 线索详情页（Sprint 4 前端收尾）：基本信息 + 评分历史 + 归因链 + Top Lead 动作 */
 export default function LeadDetailPage() {
-  const params = useParams<{ leadId: string }>();
-  const leadId = params.leadId;
+  return (
+    <React.Suspense
+      fallback={
+        <div className="p-8 text-sm text-[var(--kaypal-v3-muted)]">加载线索…</div>
+      }
+    >
+      <LeadDetailClient />
+    </React.Suspense>
+  );
+}
+
+function LeadDetailClient() {
+  const searchParams = useSearchParams();
+  const leadId = searchParams.get("leadId") ?? "";
 
   const [lead, setLead] = useState<GrowthLead | null>(null);
   const [scoreHistory, setScoreHistory] = useState<LeadScoreHistoryDto | null>(null);

@@ -3176,6 +3176,8 @@ model ProductClipConfig {
 // 曝光账号管理（对标炼刀 /auto/exposure/accounts）：曝光任务使用的账号池
 model ExposureAccount {
   id        String   @id @default(cuid())
+  // 租户隔离（P0-3 修复 2026-08-17）：曝光账号归属用户，跨租户不共享
+  userId    String   @default("") @map("user_id")
   platform  String   @default("douyin")
   accountId String   @map("account_id")
   name      String
@@ -3184,7 +3186,8 @@ model ExposureAccount {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([platform, accountId])
+  @@unique([userId, platform, accountId])
+  @@index([userId])
   @@map("exposure_accounts")
 }
 
