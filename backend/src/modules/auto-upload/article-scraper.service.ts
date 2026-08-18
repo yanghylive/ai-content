@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as cheerio from 'cheerio';
+import { lookup as dnsLookup } from 'node:dns/promises';
 
 type CheerioAPI = ReturnType<typeof cheerio.load>;
 
@@ -22,6 +23,7 @@ export type ScrapedArticle = {
 
 const FETCH_TIMEOUT_MS = 10_000;
 const MAX_HTML_BYTES = 2 * 1024 * 1024;
+const MAX_REDIRECTS = 5;
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
@@ -76,23 +78,48 @@ export class ArticleScraperService {
   }
 
   private async fetchHtml(url: string): Promise<string> {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    // SSRF 防护：手动跟随重定向，每一跳都做目标地址校验（协议 + DNS 解析 IP 封禁私网/保留段）
+    let currentUrl = url;
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+      const safeUrl = await this.assertSafeUrl(currentUrl);
 
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        redirect: 'follow',
-        headers: {
-          'User-Agent': USER_AGENT,
-          Accept: 'text/html,application/xhtml+xml',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-        },
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+      let response: Response;
+      try {
+        response = await fetch(safeUrl.href, {
+          signal: controller.signal,
+          redirect: 'manual',
+          headers: {
+            'User-Agent': USER_AGENT,
+            Accept: 'text/html,application/xhtml+xml',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+          },
+        });
+      } catch (e) {
+        clearTimeout(timeout);
+        throw new Error(`页面请求失败: ${(e as Error).message}`);
+      }
       clearTimeout(timeout);
 
+      const status = response.status;
+      if (status >= 300 && status < 400) {
+        const location = response.headers.get('location');
+        if (!location) {
+          throw new Error('重定向缺少 Location 头');
+        }
+        try {
+          currentUrl = new URL(location, safeUrl.href).href;
+        } catch {
+          throw new Error('重定向地址无效');
+        }
+        // 下一跳循环会对重定向目标重新做安全校验
+        continue;
+      }
+
       if (!response.ok) {
-        throw new Error(`页面请求失败: ${response.status}`);
+        throw new Error(`页面请求失败: ${status}`);
       }
 
       const buffer = Buffer.from(await response.arrayBuffer());
@@ -101,9 +128,87 @@ export class ArticleScraperService {
       }
 
       return buffer.toString('utf8');
-    } finally {
-      clearTimeout(timeout);
     }
+    throw new Error(`重定向次数超过限制 (${MAX_REDIRECTS})`);
+  }
+
+  /**
+   * SSRF 防护：校验目标 URL 协议并确保其 DNS 解析结果不落在私网/回环/链路本地/云元数据等保留地址。
+   * 每跳重定向都必须经过本方法。
+   */
+  private async assertSafeUrl(rawUrl: string): Promise<URL> {
+    let parsed: URL;
+    try {
+      parsed = new URL(rawUrl);
+    } catch {
+      throw new Error('请输入有效的文章链接');
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new Error('仅支持 http/https 链接');
+    }
+    // 禁止 user:pass@host 形式的认证信息（经典绕过手段）
+    if (parsed.username || parsed.password) {
+      throw new Error('链接不允许包含认证信息');
+    }
+
+    const hostname = parsed.hostname;
+    const isIpLiteral =
+      /^[\d.]+$/.test(hostname) ||
+      /^[0-9a-fA-F:]+$/.test(hostname) ||
+      hostname === 'localhost';
+    const addresses = isIpLiteral
+      ? [{ address: hostname }]
+      : await dnsLookup(hostname, { all: true, verbatim: true }).catch(
+          () => [] as Array<{ address: string }>,
+        );
+
+    for (const { address } of addresses) {
+      if (this.isBlockedAddress(address)) {
+        throw new Error('目标地址不允许访问（内网/回环/保留地址）');
+      }
+    }
+    return parsed;
+  }
+
+  /** 判断 IP 是否属于私网/回环/链路本地/多播/保留段（含 IPv4-mapped IPv6）。 */
+  private isBlockedAddress(ip: string): boolean {
+    const lower = ip.toLowerCase();
+
+    // IPv4-mapped IPv6（::ffff:x.x.x.x）解包后按 IPv4 判断
+    const v4mapped = lower.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/);
+    if (v4mapped) return this.isBlockedAddress(v4mapped[1]);
+
+    if (lower.includes(':')) {
+      if (lower === '::' || lower === '::1') return true;
+      const firstGroup = lower.split(':')[0];
+      const first = Number.isNaN(parseInt(firstGroup, 16))
+        ? 0
+        : parseInt(firstGroup, 16);
+      // fc00::/7（ULA 唯一本地地址）、fe80::/10（链路本地）
+      if ((first & 0xfe00) === 0xfc00) return true;
+      if ((first & 0xffc0) === 0xfe80) return true;
+      return false;
+    }
+
+    const parts = ip.split('.').map((p) => Number(p));
+    if (
+      parts.length !== 4 ||
+      parts.some((n) => Number.isNaN(n) || n < 0 || n > 255)
+    ) {
+      return true; // 畸形地址按拦截处理
+    }
+    const [a, b] = parts;
+    if (a === 0) return true; // 0.0.0.0/8
+    if (a === 10) return true; // 10.0.0.0/8 私网
+    if (a === 127) return true; // 127.0.0.0/8 回环
+    if (a === 169 && b === 254) return true; // 169.254.0.0/16 链路本地（含云元数据 169.254.169.254）
+    if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12 私网
+    if (a === 192 && b === 168) return true; // 192.168.0.0/16 私网
+    if (a === 100 && b >= 64 && b <= 127) return true; // 100.64.0.0/10 CGNAT
+    if (a === 192 && b === 0) return true; // 192.0.0.0/24
+    if (a === 198 && (b === 18 || b === 19)) return true; // 198.18.0.0/15 基准测试
+    if (a >= 224) return true; // 224.0.0.0/4 多播 + 240.0.0.0/4 保留
+    return false;
   }
 
   private extractTitle($: CheerioAPI): string {
@@ -221,6 +326,7 @@ export class ArticleScraperService {
   private isValidUrl(url: string): boolean {
     try {
       const parsed = new URL(url);
+      if (parsed.username || parsed.password) return false; // 拒绝 user:pass@host
       return parsed.protocol === 'http:' || parsed.protocol === 'https:';
     } catch {
       return false;
