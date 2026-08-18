@@ -3294,7 +3294,7 @@ model ReviewRun {
 // 三层归因（报告 9.2 B）：deterministic 确定 / rule_based 规则 / inferred 推断。
 model AttributionLink {
   id         String   @id @default(cuid())
-  tenantId   String?  @map("tenant_id")
+  tenantId   String   @default("legacy-local-desktop") @map("tenant_id")
   userId     String   @map("user_id")
   fromType   String   @map("from_type") // content | publish | interaction | lead | customer | opportunity
   fromId     String   @map("from_id")
@@ -3306,9 +3306,9 @@ model AttributionLink {
   evidence   Json     @default("{}") @map("evidence") // 归因证据
   createdAt  DateTime @default(now()) @map("created_at")
 
-  @@unique([fromType, fromId, toType, toId, model])
-  @@index([toType, toId])
-  @@index([fromType, fromId])
+  @@unique([tenantId, fromType, fromId, toType, toId, model])
+  @@index([tenantId, toType, toId])
+  @@index([tenantId, fromType, fromId])
   @@map("attribution_links")
 }
 
@@ -3414,13 +3414,15 @@ model LeadSignal {
   leadId     String    @map("lead_id")
   type       String    // intent.explicit_request/question/price; fit.industry/role/region; engagement.repeat/reply; recency.last_7d; risk.spam/duplicate/opt_out; account.verified
   value      Int       @default(1)
-  evidenceId String?   @map("evidence_id")
+  // P1-12 修复（2026-08-17）：evidenceId 非 null default ""，配合唯一约束做并发幂等
+  evidenceId String    @default("") @map("evidence_id")
   source     String?
   observedAt DateTime  @map("observed_at")
   expiresAt  DateTime? @map("expires_at")
   confidence Int       @default(100) // 0-100
   createdAt  DateTime  @default(now()) @map("created_at")
 
+  @@unique([tenantId, leadId, type, evidenceId])
   @@index([tenantId, leadId])
   @@index([tenantId, type])
   @@map("lead_signals")

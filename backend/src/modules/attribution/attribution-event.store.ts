@@ -46,7 +46,8 @@ export class AttributionEventStore {
     const model = input.model ?? 'deterministic';
     await this.prisma.attributionLink.upsert({
       where: {
-        fromType_fromId_toType_toId_model: {
+        tenantId_fromType_fromId_toType_toId_model: {
+          tenantId: input.tenantId ?? 'legacy-local-desktop',
           fromType: input.fromType,
           fromId: input.fromId,
           toType: input.toType,
