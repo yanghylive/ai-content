@@ -197,6 +197,16 @@ export function CrmImportFlow() {
     setReadingFile(true);
     setError(null);
     try {
+      // S8 加固（2026-08-18）：上传文件大小/格式限制，防止超大文件与畸形文件拖垮解析
+      const MAX_IMPORT_BYTES = 10 * 1024 * 1024; // 10MB
+      if (file.size > MAX_IMPORT_BYTES) {
+        setError("文件过大（超过 10MB），请精简数据后重试");
+        return;
+      }
+      if (!/\.(xlsx|xls|csv)$/i.test(file.name)) {
+        setError("仅支持 .xlsx / .xls / .csv 文件");
+        return;
+      }
       // 报告 7.5：CSV 用成熟 parser（xlsx 同时支持 xlsx/csv），正确处理
       // 引号、逗号、换行字段，不再手写正则 split 切逗号
       const XLSX = await import("xlsx");
