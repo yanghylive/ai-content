@@ -313,10 +313,50 @@ const CASES: CaseSeed[] = [
   },
 ];
 
-/** 需要挂演示入口的案例（用于演示「可体验」标记） */
-const DEMO_ENDPOINT_SLUGS = [
-  'retail-private-domain-growth',
-  'open-source-customer-support-bot',
+/** 演示体验入口：真实可访问地址 + 对外短链代码（对应 ShowcaseShortLink） */
+interface DemoEndpointSeed {
+  slug: string;
+  endpointType: string;
+  targetUrl: string;
+  shortCode: string;
+  allowedDevices: string[];
+  accessInstruction: string;
+}
+
+/** 需要挂「在线体验」入口的案例（targetUrl 为真实公开地址，短链跳转） */
+const DEMO_ENDPOINTS: DemoEndpointSeed[] = [
+  {
+    slug: 'open-source-customer-support-bot',
+    endpointType: 'web',
+    targetUrl: 'https://wvw.dev/',
+    shortCode: 'jzchatbot',
+    allowedDevices: ['desktop', 'mobile'],
+    accessInstruction: '开源智能客服演示，新窗口打开',
+  },
+  {
+    slug: 'open-source-content-workbench',
+    endpointType: 'web',
+    targetUrl: 'https://wvw.dev/',
+    shortCode: 'jzworkbench',
+    allowedDevices: ['desktop'],
+    accessInstruction: '开源内容工作台演示，新窗口打开',
+  },
+  {
+    slug: 'ai-live-selection-prototype',
+    endpointType: 'web',
+    targetUrl: 'https://wvw.dev/',
+    shortCode: 'jzlivepick',
+    allowedDevices: ['desktop', 'mobile'],
+    accessInstruction: 'AI 直播选品原型，新窗口打开',
+  },
+  {
+    slug: 'smart-store-inspection-prototype',
+    endpointType: 'web',
+    targetUrl: 'https://wvw.dev/',
+    shortCode: 'jzinspect',
+    allowedDevices: ['mobile'],
+    accessInstruction: '智能门店巡检原型，新窗口打开',
+  },
 ];
 
 interface MediaSeed {
@@ -487,8 +527,10 @@ async function seedCases(): Promise<void> {
 }
 
 async function seedDemoEndpoints(): Promise<void> {
-  for (const slug of DEMO_ENDPOINT_SLUGS) {
-    const target = await prisma.showcaseCase.findUnique({ where: { slug } });
+  for (const item of DEMO_ENDPOINTS) {
+    const target = await prisma.showcaseCase.findUnique({
+      where: { slug: item.slug },
+    });
     if (!target) continue;
 
     const existing = await prisma.showcaseDemoEndpoint.findFirst({
@@ -499,18 +541,32 @@ async function seedDemoEndpoints(): Promise<void> {
     await prisma.showcaseDemoEndpoint.create({
       data: {
         caseId: target.id,
-        endpointType: 'web',
-        targetUrl: 'https://demo.internal.example.com',
-        allowedDevices: ['desktop', 'mobile'],
-        iframeAllowed: true,
-        accessInstruction: '演示环境，数据为演示数据',
+        endpointType: item.endpointType,
+        targetUrl: item.targetUrl,
+        shortCode: item.shortCode,
+        allowedDevices: item.allowedDevices,
+        iframeAllowed: false,
+        accessInstruction: item.accessInstruction,
         fallbackType: 'media',
         fallbackTarget: null,
         healthStatus: 'healthy',
       },
     });
+
+    // 同步创建短链记录（/r/:shortCode → targetUrl），让「在线体验」可跳转
+    await prisma.showcaseShortLink.upsert({
+      where: { shortCode: item.shortCode },
+      update: { targetUrl: item.targetUrl, status: 'active' },
+      create: {
+        shortCode: item.shortCode,
+        targetType: 'case',
+        targetId: target.id,
+        targetUrl: item.targetUrl,
+        status: 'active',
+      },
+    });
   }
-  console.log(`已种子演示入口 ${DEMO_ENDPOINT_SLUGS.length} 条`);
+  console.log(`已种子演示入口 ${DEMO_ENDPOINTS.length} 条（含短链）`);
 }
 
 async function seedMedia(): Promise<void> {
