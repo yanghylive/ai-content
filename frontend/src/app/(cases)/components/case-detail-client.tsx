@@ -125,8 +125,15 @@ function CaseVisual({ detail }: { detail: CaseDetailResult }) {
 
 export function CaseDetailClient({ slug }: { slug: string }) {
   const params = useParams<{ slug: string }>();
-  // 静态导出下详情页统一回退到占位壳，运行时从 URL 读真实 slug 拉数据
-  const effectiveSlug = params?.slug ?? slug;
+  // 静态导出下详情页统一回退到占位壳；useParams 拿到的是 RSC 里的占位参数，
+  // 必须从 window.location 读真实 URL slug 拉数据。
+  const effectiveSlug = (() => {
+    if (typeof window !== "undefined") {
+      const m = window.location.pathname.match(/\/cases\/([^/?#]+)/);
+      if (m?.[1] && m[1] !== "case-placeholder") return m[1];
+    }
+    return params?.slug ?? slug;
+  })();
   const [detail, setDetail] = useState<CaseDetailResult | null>(null);
   const [taxonomies, setTaxonomies] = useState<TaxonomyResult | null>(null);
   const [status, setStatus] = useState<
