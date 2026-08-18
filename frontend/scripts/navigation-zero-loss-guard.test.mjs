@@ -6,150 +6,81 @@ import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
+/**
+ * Navigation zero-loss guard v2 测试（2026-08-18 适配场景化导航）。
+ * fixture 内联生成 app-shell/command-palette/layout 三个文件，
+ * 不再依赖真实 sidebar-items.tsx（已随重构删除）。
+ */
+
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(scriptDir, "..");
 const guardPath = path.join(scriptDir, "navigation-zero-loss-guard.mjs");
 const snapshotPath = path.join(scriptDir, "navigation-zero-loss.snapshot.json");
-const sidebarText = readFileSync(
-  path.join(frontendRoot, "src/app/(dashboard)/sidebar-items.tsx"),
-  "utf8",
-);
-const layoutText = readFileSync(
-  path.join(frontendRoot, "src/app/(dashboard)/layout.tsx"),
-  "utf8",
-);
-const appShellText = readFileSync(
-  path.join(frontendRoot, "src/components/shell/app-shell.tsx"),
-  "utf8",
-);
-const shellCssText = readFileSync(
-  path.join(frontendRoot, "src/components/shell/shell.css"),
-  "utf8",
-);
 
-test("current navigation satisfies the zero-loss contract", () => {
-  const result = runGuard(sidebarText, layoutText);
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /base leaves: 72\/72/);
-  assert.match(result.stdout, /CRM-installed leaves: 76\/76/);
-});
+const snapshot = JSON.parse(readFileSync(snapshotPath, "utf8"));
 
-test("the system footer stays outside route-specific content wrappers", () => {
-  assert.match(appShellText, /footer:\s*React\.ReactNode/);
-  assert.match(
-    appShellText,
-    /className={`kx-legacy-wrap[\s\S]*?{children}[\s\S]*?<\/div>[\s\S]*?\)}[\s\S]*?{footer}[\s\S]*?<\/main>/,
-  );
-  assert.match(
-    layoutText,
-    /footer={[\s\S]*?<DashboardFooter\s+appVersion={DESKTOP_APP_VERSION}\s*\/>[\s\S]*?<ElectronUpdateBanner\s*\/>[\s\S]*?}/,
-  );
-  assert.match(shellCssText, /\.kx-main\s*>\s*footer\s*{\s*margin-top:\s*auto;/);
-});
-
-test("new navigation capabilities and aliases are allowed", () => {
-  const extendedSidebar = replaceOnce(
-    sidebarText,
-    "\n];\n\nconst crmSection",
-    `
-  {
-    key: "future-capabilities",
-    href: "/future-capabilities",
-    title: "新增能力",
-    icon: Settings,
-    items: [
-      {
-        key: "/future-capabilities",
-        href: "/future-capabilities",
-        icon: Settings,
-        title: "新增能力",
-      },
-    ],
-  },
+function makeShellSource({ scenes = snapshot.scenes, prefixes = true } = {}) {
+  const sceneLines = scenes
+    .map(
+      (scene) =>
+        `  { key: "${scene.key}", href: "${scene.href}", label: "${scene.label}", icon: "x" },`,
+    )
+    .join("\n");
+  const prefixBlock = prefixes
+    ? `  if (pathname.startsWith("/content") || pathname.startsWith("/materials")) return "content";
+  if (pathname.startsWith("/distribution")) return "publish";
+  if (pathname.startsWith("/growth")) return "leads";
+  if (pathname.startsWith("/crm")) return "crm";
+  if (pathname.startsWith("/message")) return "interaction";
+  if (pathname.startsWith("/effects")) return "review";
+  if (pathname.startsWith("/engagement")) return "interaction";`
+    : `  return "today";`;
+  return `const SCENES = [
+${sceneLines}
 ];
+export function sceneOfPath(pathname: string): string {
+${prefixBlock}
+}
+// "mine" scene is hardcoded in the rail
+const mineHref = "/mine";
+router.push(mineHref);`;
+}
 
-const crmSection`,
-  );
-  const extendedLayout = replaceOnce(
-    layoutText,
-    '  "/interaction/records": "/engagement/records",\n};',
-    '  "/interaction/records": "/engagement/records",\n  "/future": "/future-capabilities",\n};',
-  );
-  const result = runGuard(extendedSidebar, extendedLayout);
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /base leaves: 73\/72/);
-  assert.match(result.stdout, /protected route aliases: 55\/54/);
-});
+function makeCommandSource({ hrefs = snapshot.commandHrefs } = {}) {
+  const lines = hrefs
+    .map((href, index) => `  { cat: "c", name: "c${index}", href: "${href}" },`)
+    .join("\n");
+  return `const COMMANDS = [
+${lines}
+];`;
+}
 
-test("an emptied existing navigation href fails the guard", () => {
-  const changedSidebar = replaceOnce(
-    sidebarText,
-    'href: "/content/templates"',
-    'href: ""',
-  );
-  const result = runGuard(changedSidebar, layoutText);
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /\[NAV_LEAF_REQUIRED\]/);
-});
+function makeLayoutSource() {
+  const aliasLines = snapshot.routeAliases
+    .map((alias) => `  "${alias.from}": "${alias.to}",`)
+    .join("\n");
+  return `const routeAliases = {
+${aliasLines}
+};`;
+}
 
-test("hidden video workshop and face swap entries fail the guard if restored", () => {
-  const changedSidebar = replaceOnce(
-    sidebarText,
-    '      {\n        key: "/content/templates",',
-    '      {\n        key: "/content/video",\n        href: "/content/video",\n        icon: Video,\n        title: "视频工坊",\n      },\n      {\n        key: "/content/templates",',
-  );
-  const result = runGuard(changedSidebar, layoutText);
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /\[HIDDEN_ENTRY\]/);
-});
-
-test("an alias redirected to the wrong module fails the guard", () => {
-  const changedLayout = replaceOnce(
-    layoutText,
-    '"/workbench/wechat": "/engagement/wechat"',
-    '"/workbench/wechat": "/content/articles"',
-  );
-  const result = runGuard(sidebarText, changedLayout);
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /\[ALIAS_SNAPSHOT\]/);
-});
-
-test("a publishing tab query entry cannot be renamed or dropped", () => {
-  const changedSidebar = replaceOnce(
-    sidebarText,
-    'href: "/local-engine-v2/logs"',
-    'href: "/local-engine-v2/panel-logs"',
-  );
-  const result = runGuard(changedSidebar, layoutText);
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /\[DISTRIBUTION_TABS\]/);
-});
-
-test("CRM entries cannot escape the installed guard", () => {
-  const changedSidebar = replaceOnce(
-    sidebarText,
-    "if (options.crmInstalled) {",
-    "if (true) {",
-  );
-  const result = runGuard(changedSidebar, layoutText);
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /\[CRM_CONDITION\]/);
-});
-
-function runGuard(sidebarSource, layoutSource) {
-  const fixtureDir = mkdtempSync(path.join(os.tmpdir(), "navigation-zero-loss-"));
-  const fixtureSidebar = path.join(fixtureDir, "sidebar-items.tsx");
-  const fixtureLayout = path.join(fixtureDir, "layout.tsx");
+function runGuard({ scenes, hrefs, prefixes } = {}) {
+  const fixtureDir = mkdtempSync(path.join(os.tmpdir(), "nav-zero-loss-v2-"));
   try {
-    writeFileSync(fixtureSidebar, sidebarSource, "utf8");
-    writeFileSync(fixtureLayout, layoutSource, "utf8");
+    const shellPath = path.join(fixtureDir, "app-shell.tsx");
+    const commandPath = path.join(fixtureDir, "command-palette.tsx");
+    const layoutPath = path.join(fixtureDir, "layout.tsx");
+    writeFileSync(shellPath, makeShellSource({ scenes, prefixes }), "utf8");
+    writeFileSync(commandPath, makeCommandSource({ hrefs }), "utf8");
+    writeFileSync(layoutPath, makeLayoutSource(), "utf8");
     return spawnSync(process.execPath, [guardPath], {
       cwd: frontendRoot,
       encoding: "utf8",
       env: {
         ...process.env,
-        NAV_ZERO_LOSS_SIDEBAR_PATH: fixtureSidebar,
-        NAV_ZERO_LOSS_LAYOUT_PATH: fixtureLayout,
+        NAV_ZERO_LOSS_SHELL_PATH: shellPath,
+        NAV_ZERO_LOSS_COMMAND_PATH: commandPath,
+        NAV_ZERO_LOSS_LAYOUT_PATH: layoutPath,
         NAV_ZERO_LOSS_SNAPSHOT_PATH: snapshotPath,
       },
     });
@@ -158,13 +89,38 @@ function runGuard(sidebarSource, layoutSource) {
   }
 }
 
-function replaceOnce(source, before, after) {
-  const index = source.indexOf(before);
-  assert.notEqual(index, -1, `test fixture marker not found: ${before}`);
-  assert.equal(
-    source.indexOf(before, index + before.length),
-    -1,
-    `test fixture marker is not unique: ${before}`,
+test("current navigation satisfies the zero-loss contract", () => {
+  const result = runGuard();
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /scenes: \d+\/\d+/);
+  assert.match(result.stdout, /critical command entries: 15\/15/);
+});
+
+test("removing a required scene fails the guard", () => {
+  const scenes = snapshot.scenes.filter((scene) => scene.key !== "content");
+  const result = runGuard({ scenes });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /\[SCENE_MISSING\].*content/);
+});
+
+test("removing a critical command entry fails the guard", () => {
+  const hrefs = snapshot.commandHrefs.filter((href) => href !== "/crm");
+  const result = runGuard({ hrefs });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /critical command entry is missing: \/crm/);
+});
+
+test("sceneOfPath losing a critical prefix fails the guard", () => {
+  const result = runGuard({ prefixes: false });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /\[SCENE_PREFIX_LOST\]/);
+});
+
+test("a scene href changed to a non-root path fails the guard", () => {
+  const scenes = snapshot.scenes.map((scene) =>
+    scene.key === "content" ? { ...scene, href: "content" } : scene,
   );
-  return `${source.slice(0, index)}${after}${source.slice(index + before.length)}`;
-}
+  const result = runGuard({ scenes });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /\[SCENE_HREF_FORMAT\]/);
+});

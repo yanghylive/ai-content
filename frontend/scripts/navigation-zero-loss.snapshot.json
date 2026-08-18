@@ -1,388 +1,84 @@
 {
-  "schemaVersion": 1,
-  "baseLeaves": [
+  "schemaVersion": 2,
+  "scenes": [
     {
-      "key": "/solutions",
-      "href": "/solutions",
-      "title": "开始任务"
+      "key": "today",
+      "href": "/today",
+      "label": "今天"
     },
     {
-      "key": "/tasks",
-      "href": "/tasks",
-      "title": "任务总览"
-    },
-    {
-      "key": "/tasks/confirmations",
-      "href": "/tasks/confirmations",
-      "title": "待我确认"
-    },
-    {
-      "key": "/tasks/runs",
-      "href": "/tasks/runs",
-      "title": "正在运行"
-    },
-    {
-      "key": "/tasks/records",
-      "href": "/tasks/records",
-      "title": "任务历史"
-    },
-    {
-      "key": "/tasks/evidence",
-      "href": "/tasks/evidence",
-      "title": "结果留存"
-    },
-    {
-      "key": "/tasks/schedules",
-      "href": "/tasks/schedules",
-      "title": "计划任务"
-    },
-    {
-      "key": "/intelligence",
-      "href": "/intelligence",
-      "title": "商业价值总控台"
-    },
-    {
-      "key": "/intelligence/search",
-      "href": "/intelligence/search",
-      "title": "AI 情报搜索"
-    },
-    {
-      "key": "/intelligence/trends",
-      "href": "/intelligence/trends",
-      "title": "机会趋势雷达"
-    },
-    {
-      "key": "/intelligence/industries",
-      "href": "/intelligence/industries",
-      "title": "行业增长驾驶舱"
-    },
-    {
-      "key": "/intelligence/viral",
-      "href": "/intelligence/viral",
-      "title": "爆款拆解实验室"
-    },
-    {
-      "key": "/intelligence/inbox",
-      "href": "/intelligence/inbox",
-      "title": "智能收件箱"
-    },
-    {
-      "key": "/intelligence/collaboration",
-      "href": "/intelligence/collaboration",
-      "title": "协作复核室"
-    },
-    {
-      "key": "/intelligence/leads",
-      "href": "/intelligence/leads",
-      "title": "高优商机池"
-    },
-    {
-      "key": "/intelligence/reports",
-      "href": "/intelligence/reports",
-      "title": "经营报告中心"
-    },
-    {
-      "key": "/intelligence/monitors",
-      "href": "/intelligence/monitors",
-      "title": "自动监控中心"
-    },
-    {
-      "key": "/intelligence/risks",
-      "href": "/intelligence/risks",
-      "title": "风险审核中心"
-    },
-    {
-      "key": "/intelligence/rules",
-      "href": "/intelligence/rules",
-      "title": "规则种子库"
-    },
-    {
-      "key": "/intelligence/accounts",
-      "href": "/intelligence/accounts",
-      "title": "对标资产库"
-    },
-    {
-      "key": "/intelligence/skills",
-      "href": "/intelligence/skills",
-      "title": "AI 能力目录"
-    },
-    {
-      "key": "/intelligence/redfox",
-      "href": "/intelligence/redfox",
-      "title": "数据连接健康"
-    },
-    {
-      "key": "/intelligence/costs",
-      "href": "/intelligence/costs",
-      "title": "ROI 成本账单"
-    },
-    {
-      "key": "/content/workspace",
-      "href": "/content/workspace",
-      "title": "内容工作室"
-    },
-    {
-      "key": "/content/topics",
-      "href": "/content/topics",
-      "title": "选题库"
-    },
-    {
-      "key": "/content/strategies",
-      "href": "/content/strategies",
-      "title": "内容策略"
-    },
-    {
-      "key": "/content/articles",
-      "href": "/content/articles",
-      "title": "内容生成"
-    },
-    {
-      "key": "/content/xiaohongshu",
-      "href": "/content/xiaohongshu",
-      "title": "小红书笔记"
-    },
-    {
-      "key": "/content/xiaohongshu-assistant",
-      "href": "/content/xiaohongshu-assistant",
-      "title": "小红书运营助理"
-    },
-    {
-      "key": "/content/wechat-official-assistant",
-      "href": "/content/wechat-official-assistant",
-      "title": "公众号运营助理"
-    },
-    {
-      "key": "/content/optimization",
-      "href": "/content/optimization",
-      "title": "内容改写"
-    },
-    {
-      "key": "/content",
+      "key": "content",
       "href": "/content",
-      "title": "素材库"
+      "label": "内容"
     },
     {
-      "key": "/content/templates",
-      "href": "/content/templates",
-      "title": "模板库"
-    },
-    {
-      "key": "/content/styles",
-      "href": "/content/styles",
-      "title": "品牌风格"
-    },
-    {
-      "key": "/content/knowledge",
-      "href": "/content/knowledge",
-      "title": "知识库"
-    },
-    {
-      "key": "/distribution",
+      "key": "publish",
       "href": "/distribution",
-      "title": "发布记录"
+      "label": "发布"
     },
     {
-      "key": "/distribution?tab=article",
-      "href": "/distribution-v2/publish-article",
-      "title": "图文发布"
+      "key": "interaction",
+      "href": "/message",
+      "label": "互动"
     },
     {
-      "key": "/distribution?tab=video",
-      "href": "/distribution-v2/publish-video",
-      "title": "视频发布"
+      "key": "leads",
+      "href": "/growth/leads",
+      "label": "线索"
     },
     {
-      "key": "/distribution?tab=materials",
-      "href": "/materials",
-      "title": "发布素材"
+      "key": "crm",
+      "href": "/crm",
+      "label": "CRM"
     },
     {
-      "key": "/distribution?tab=accounts",
-      "href": "/platforms",
-      "title": "平台账号"
-    },
-    {
-      "key": "/distribution?tab=compliance",
-      "href": "/compliance-check-v2",
-      "title": "发布前检查"
-    },
-    {
-      "key": "/distribution?tab=tasks",
-      "href": "/distribution-v2/tasks",
-      "title": "发布任务"
-    },
-    {
-      "key": "/distribution?tab=logs",
-      "href": "/local-engine-v2/logs",
-      "title": "发布结果"
-    },
-    {
-      "key": "/growth",
-      "href": "/growth",
-      "title": "增长控制台"
-    },
-    {
-      "key": "/growth?view=strategies",
-      "href": "/growth-v2/strategies",
-      "title": "获客策略"
-    },
-    {
-      "key": "/growth?view=leads",
-      "href": "/growth-v2/leads",
-      "title": "线索池"
-    },
-    {
-      "key": "/growth?view=acquisition",
-      "href": "/growth-v2/acquisition",
-      "title": "获客任务"
-    },
-    {
-      "key": "/apps/auto-acquisition",
-      "href": "/apps/auto-acquisition",
-      "title": "短视频评论获客"
-    },
-    {
-      "key": "/growth?view=workflows",
-      "href": "/growth-v2/workflows",
-      "title": "增长工作流"
-    },
-    {
-      "key": "/growth?view=account-health",
-      "href": "/growth-v2/account-health",
-      "title": "账号健康"
-    },
-    {
-      "key": "/growth?view=reports",
-      "href": "/growth-v2/reports",
-      "title": "增长复盘"
-    },
-    {
-      "key": "/engagement",
-      "href": "/engagement",
-      "title": "统一收件箱"
-    },
-    {
-      "key": "/engagement/douyin-messages",
-      "href": "/engagement/douyin-messages",
-      "title": "抖音私信"
-    },
-    {
-      "key": "/engagement/douyin-comments",
-      "href": "/engagement/douyin-comments",
-      "title": "抖音评论"
-    },
-    {
-      "key": "/engagement/channel-messages",
-      "href": "/engagement/channel-messages",
-      "title": "视频号私信"
-    },
-    {
-      "key": "/engagement/wechat-channel-comments",
-      "href": "/engagement/wechat-channel-comments",
-      "title": "视频号评论"
-    },
-    {
-      "key": "/engagement/wechat",
-      "href": "/engagement/wechat",
-      "title": "微信会话"
-    },
-    {
-      "key": "/engagement/wechat-groups",
-      "href": "/engagement/wechat-groups",
-      "title": "微信群发"
-    },
-    {
-      "key": "/engagement/wechat-moments",
-      "href": "/engagement/wechat-moments",
-      "title": "朋友圈"
-    },
-    {
-      "key": "/engagement/customers",
-      "href": "/engagement/customers",
-      "title": "客户档案"
-    },
-    {
-      "key": "/engagement/comment-insights",
-      "href": "/engagement/comment-insights",
-      "title": "评论线索"
-    },
-    {
-      "key": "/engagement/wecom-assistant",
-      "href": "/engagement/wecom-assistant",
-      "title": "企微助手"
-    },
-    {
-      "key": "/engagement/rules",
-      "href": "/engagement/rules",
-      "title": "回复规则"
-    },
-    {
-      "key": "/engagement/records",
-      "href": "/engagement/records",
-      "title": "互动记录"
-    },
-    {
-      "key": "/apps",
-      "href": "/apps",
-      "title": "应用与安装"
-    },
-    {
-      "key": "/capabilities/account",
-      "href": "/capabilities/account",
-      "title": "账号与设备"
-    },
-    {
-      "key": "/platforms",
-      "href": "/admin/connectors",
-      "title": "平台授权"
-    },
-    {
-      "key": "/capabilities/models",
-      "href": "/capabilities/models",
-      "title": "模型与工具"
-    },
-    {
-      "key": "/voice-agent",
-      "href": "/voice-agent",
-      "title": "语音助手"
-    },
-    {
-      "key": "/local-engine",
-      "href": "/local-engine",
-      "title": "设备状态"
-    },
-    {
-      "key": "/capabilities/risk",
-      "href": "/capabilities/risk",
-      "title": "风控设置"
-    },
-    {
-      "key": "/settings",
-      "href": "/settings",
-      "title": "系统设置"
+      "key": "review",
+      "href": "/effects",
+      "label": "复盘"
     }
   ],
-  "crmLeaves": [
-    {
-      "key": "/crm",
-      "href": "/crm",
-      "title": "客户与机会"
-    },
-    {
-      "key": "/crm/import",
-      "href": "/crm/import",
-      "title": "数据导入"
-    },
-    {
-      "key": "/crm/closer",
-      "href": "/crm/closer",
-      "title": "成交助手"
-    },
-    {
-      "key": "/crm/connectors",
-      "href": "/crm/connectors",
-      "title": "CRM 连接"
-    }
+  "commandHrefs": [
+    "/today",
+    "/agent",
+    "/growth/acquisition",
+    "/growth/leads",
+    "/crm",
+    "/growth/acquisition",
+    "/growth/strategies",
+    "/engagement/comment-acquisition",
+    "/wecom-crm",
+    "/boss-recruit",
+    "/growth/workflows",
+    "/growth/account-health",
+    "/commercial-readiness",
+    "/content/articles",
+    "/content/xiaohongshu",
+    "/materials",
+    "/materials?open=download",
+    "/content/ai-image-gen",
+    "/content/collection-center",
+    "/viral-analysis",
+    "/knowledge-base",
+    "/styles",
+    "/distribution/publish-video",
+    "/engagement",
+    "/tasks/confirmations",
+    "/approvals",
+    "/engagement/douyin-comments",
+    "/engagement/wechat-channel-comments",
+    "/engagement/wechat",
+    "/engagement/records",
+    "/tasks/runs",
+    "/intelligence",
+    "/intelligence/industries",
+    "/intelligence/trends",
+    "/intelligence/monitors",
+    "/intelligence/reports",
+    "/platforms",
+    "/accounts-matrix",
+    "/intelligence/costs",
+    "/settings",
+    "/savings"
   ],
   "routeAliases": [
     {
@@ -434,6 +130,10 @@
       "to": "/capabilities/risk"
     },
     {
+      "from": "/admin/savings",
+      "to": "/savings"
+    },
+    {
       "from": "/admin/settings",
       "to": "/settings"
     },
@@ -446,8 +146,12 @@
       "to": "/capabilities/account"
     },
     {
-      "from": "/admin/voice-agent",
-      "to": "/voice-agent"
+      "from": "/admin/redfox",
+      "to": "/intelligence/redfox"
+    },
+    {
+      "from": "/admin/redfox-skills",
+      "to": "/intelligence/skills"
     },
     {
       "from": "/capabilities/users",
@@ -472,134 +176,6 @@
     {
       "from": "/capabilities/sandbox",
       "to": "/capabilities/risk"
-    },
-    {
-      "from": "/materials",
-      "to": "/content"
-    },
-    {
-      "from": "/knowledge-base",
-      "to": "/content/knowledge"
-    },
-    {
-      "from": "/topics",
-      "to": "/content/topics"
-    },
-    {
-      "from": "/strategies",
-      "to": "/content/strategies"
-    },
-    {
-      "from": "/articles",
-      "to": "/content/articles"
-    },
-    {
-      "from": "/xiaohongshu",
-      "to": "/content/xiaohongshu"
-    },
-    {
-      "from": "/video-workshop",
-      "to": "/content"
-    },
-    {
-      "from": "/templates",
-      "to": "/content/templates"
-    },
-    {
-      "from": "/styles",
-      "to": "/content/styles"
-    },
-    {
-      "from": "/execution-records",
-      "to": "/tasks/records"
-    },
-    {
-      "from": "/confirmations",
-      "to": "/tasks/confirmations"
-    },
-    {
-      "from": "/schedules",
-      "to": "/tasks/schedules"
-    },
-    {
-      "from": "/artifacts",
-      "to": "/tasks/evidence"
-    },
-    {
-      "from": "/workbench",
-      "to": "/engagement"
-    },
-    {
-      "from": "/workbench/douyin-comments",
-      "to": "/engagement/douyin-comments"
-    },
-    {
-      "from": "/workbench/douyin-messages",
-      "to": "/engagement/douyin-messages"
-    },
-    {
-      "from": "/workbench/wechat",
-      "to": "/engagement/wechat"
-    },
-    {
-      "from": "/workbench/wechat-channel-comments",
-      "to": "/engagement/wechat-channel-comments"
-    },
-    {
-      "from": "/workbench/channel-comments",
-      "to": "/engagement/wechat-channel-comments"
-    },
-    {
-      "from": "/workbench/channel-messages",
-      "to": "/engagement/channel-messages"
-    },
-    {
-      "from": "/workbench/wechat-groups",
-      "to": "/engagement/wechat-groups"
-    },
-    {
-      "from": "/workbench/wechat-moments",
-      "to": "/engagement/wechat-moments"
-    },
-    {
-      "from": "/interaction/comments",
-      "to": "/engagement/douyin-comments"
-    },
-    {
-      "from": "/interaction/messages",
-      "to": "/engagement/douyin-messages"
-    },
-    {
-      "from": "/interaction/wechat",
-      "to": "/engagement/wechat"
-    },
-    {
-      "from": "/interaction/groups",
-      "to": "/engagement/wechat-groups"
-    },
-    {
-      "from": "/interaction/moments",
-      "to": "/engagement/wechat-moments"
-    },
-    {
-      "from": "/interaction/customers",
-      "to": "/engagement/customers"
-    },
-    {
-      "from": "/interaction/comment-insights",
-      "to": "/engagement/comment-insights"
-    },
-    {
-      "from": "/interaction/wecom-assistant",
-      "to": "/engagement/wecom-assistant"
-    },
-    {
-      "from": "/interaction/rules",
-      "to": "/engagement/rules"
-    },
-    {
-      "from": "/interaction/records",
-      "to": "/engagement/records"
     }
   ]
 }

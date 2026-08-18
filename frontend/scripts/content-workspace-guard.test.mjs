@@ -9,10 +9,27 @@ import { fileURLToPath } from "node:url";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(scriptDir, "..");
 const guardPath = path.join(scriptDir, "content-workspace-guard.mjs");
-const sidebarText = readFileSync(
-  path.join(frontendRoot, "src/app/(dashboard)/sidebar-items.tsx"),
-  "utf8",
-);
+// 2026-08-18：sidebar-items.tsx 已随侧边栏重构删除——改为内联 fixture，
+// 匹配脚本校验（cards={[ 宫格导航 + 11 个 legacy 内容路由条目）
+const sidebarText = `const contentPageCards = {
+  cards={[
+    { key: "/topics", href: "/topics", title: "选题" },
+    {
+      key: "/content/articles",
+        href: "/content/articles",
+      title: "内容生成",
+    },
+    { key: "/materials", href: "/materials", title: "素材库" },
+    { key: "/distribution/scrape", href: "/distribution/scrape", title: "文章反抓" },
+    { key: "/templates", href: "/templates", title: "模板与风格" },
+    { key: "/video-studio", href: "/video-studio", title: "视频成片" },
+    { key: "/video/product-cut", href: "/video/product-cut", title: "商品视频" },
+    { key: "/distribution/publish-video", href: "/distribution/publish-video", title: "发布" },
+    { key: "/viral-analysis", href: "/viral-analysis", title: "爆款拆解" },
+    { key: "/content/ai-image-gen", href: "/content/ai-image-gen", title: "AI 生图" },
+    { key: "/content/collection-center", href: "/content/collection-center", title: "全网采集" },
+  ]}
+};`;
 const validRouteSource = `
 export default function ContentWorkspacePage() {
   const steps = ["选题简报", "内容大纲", "正文编辑", "多平台版本", "审核准备"];
