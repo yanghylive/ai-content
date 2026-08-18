@@ -45,10 +45,11 @@ const MIME = {
 
 http.createServer((req, res) => {
   const urlPath = (req.url || "/").split("?")[0];
-  /* /api 以及旧版 /auth 入口代理到后端。后端实际统一挂在 /api 下。 */
+  /* /api 以及旧版 /auth 入口代理到后端。后端实际统一挂在 /api 下。短链 /r/:code 走 exclude 无 api 前缀，同样反代。 */
   const isApiRequest = urlPath === "/api" || urlPath.startsWith("/api/");
   const isLegacyAuthRequest = urlPath === "/auth" || urlPath.startsWith("/auth/");
-  if (isApiRequest || isLegacyAuthRequest) {
+  const isShortLinkRequest = urlPath === "/r" || urlPath.startsWith("/r/");
+  if (isApiRequest || isLegacyAuthRequest || isShortLinkRequest) {
     const target = API_BASE + (isLegacyAuthRequest ? "/api" : "") + req.url;
     const proxyReq = http.request(target, { method: req.method, headers: { ...req.headers, host: "127.0.0.1:3011" } }, (proxyRes) => {
       res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
