@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, RequestMethod } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import type { NextFunction, Request, Response } from 'express';
@@ -157,8 +157,10 @@ async function bootstrap() {
     'http://127.0.0.1:3721',
   ]);
 
-  // 全局前缀
-  app.setGlobalPrefix('api');
+  // 全局前缀（短链 /r/:code 排除在 api 前缀外，与 PRD 公开短链路径 /r/{code} 对齐）
+  app.setGlobalPrefix('api', {
+    exclude: [{ path: 'r/:code', method: RequestMethod.GET }],
+  });
 
   // 全局安全响应头（API 服务基础加固，无需引入 helmet 依赖）
   const isProduction = process.env.NODE_ENV === 'production';
