@@ -202,20 +202,20 @@ async function bootstrap() {
       !path.includes('/health') &&
       !path.includes('.well-known')
     ) {
-      const key = reqCounter.has(path) || reqCounter.size < MAX_REQ_COUNTER_KEYS
-        ? path
-        : '__overflow__';
+      const key =
+        reqCounter.has(path) || reqCounter.size < MAX_REQ_COUNTER_KEYS
+          ? path
+          : '__overflow__';
       reqCounter.set(key, (reqCounter.get(key) ?? 0) + 1);
     }
     next();
   });
+  // S17 修复（2026-08-18）：仅告警高频路径（≥10 次/10s），低频路径不再每 10s
+  // 打印——消除长期运行的日志噪声，保留"高频接口"排查信号
   setInterval(() => {
     for (const [path, count] of reqCounter) {
-      if (count > 0) {
-        const level = count >= 10 ? 'warn' : 'log';
-        console[level === 'warn' ? 'warn' : 'log'](
-          `[ReqCounter] ${level === 'warn' ? '高频' : ''} ${path} x${count}/10s`,
-        );
+      if (count >= 10) {
+        console.warn(`[ReqCounter] 高频 ${path} x${count}/10s`);
       }
     }
     reqCounter.clear();
@@ -237,7 +237,11 @@ async function bootstrap() {
         return;
       }
 
-      callback(new Error(`当前来源未被允许访问：${origin}`), false);
+      // 修复（2026-08-18）：拒绝时 callback(null, false) 而非抛 Error——
+      // 抛错会被全局异常过滤器兜成 500；callback(null,false) 不设 CORS 头，
+      // 浏览器端拦截；curl 等直连请求继续进入业务层，由 mcp.controller 的
+      // Origin 校验（S11 DNS rebinding 防护）返回标准 403。
+      callback(null, false);
     },
     credentials: true,
   };
