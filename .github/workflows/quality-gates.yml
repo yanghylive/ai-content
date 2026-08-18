@@ -316,8 +316,10 @@ jobs:
 
   test-backend:
     name: ⑯ 后端单测（Jest）
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
+    # macOS runner：部分 spec 依赖 macOS 桌面环境（微信窗口/屏幕捕获/真实进程
+    # 检测）与 sharp 原生二进制，ubuntu 上必失败（2026-08-18 首跑验证）
+    runs-on: macos-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
