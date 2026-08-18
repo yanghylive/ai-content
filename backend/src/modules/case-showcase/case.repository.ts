@@ -170,8 +170,16 @@ export class CaseRepository {
         includeAny(row.capabilityTags, query.capabilities),
     );
 
-    const cases = filtered.slice(0, limit);
-    return { cases: cases as ShowcaseCaseRecord[], nextCursor: null };
+    // 游标分页：从 cursor 之后取 limit 条（案例数据量小，全量查 + 内存分页）
+    let startIndex = 0;
+    if (query.cursor) {
+      const idx = filtered.findIndex((row) => row.id === query.cursor);
+      if (idx >= 0) startIndex = idx + 1;
+    }
+    const pageRows = filtered.slice(startIndex);
+    const cases = pageRows.slice(0, limit);
+    const nextCursor = pageRows.length > limit ? pageRows[limit - 1].id : null;
+    return { cases: cases as ShowcaseCaseRecord[], nextCursor };
   }
 
   /** 首页精选案例：按运营配置的精选位排序，仅返回仍已发布的案例 */
