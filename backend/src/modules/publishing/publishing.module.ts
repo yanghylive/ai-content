@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PublishingService } from './publishing.service';
+import { PublishReconcileService } from './publish-reconcile.service';
 import { PublishingController } from './publishing.controller';
 import { PlatformPreflightService } from './platform-preflight.service';
 import { WechatPublisherService } from './wechat-publisher/wechat-publisher.service';
@@ -16,8 +17,9 @@ import { JpagePreviewClientService } from './jpage-preview/jpage-preview-client.
     PlatformPreflightService,
     WechatPublisherService,
     JpagePreviewClientService,
+    PublishReconcileService,
   ],
   controllers: [PublishingController],
-  exports: [PublishingService],
+  exports: [PublishingService, PublishReconcileService],
 })
 export class PublishingModule {}
