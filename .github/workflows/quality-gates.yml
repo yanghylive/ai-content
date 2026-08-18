@@ -336,4 +336,8 @@ jobs:
           NODE_OPTIONS: ''
         # --runInBand：并行 worker 下存在测试间状态污染（lead-score 等 1-2 个
         # 套件偶发失败，串行全绿 1912/1912），牺牲并行换取确定性
-        run: npm run test -- --silent --runInBand
+        # --testPathIgnorePatterns：auto-upload.client.spec 依赖本机真实微信
+        # 进程（半集成测试），CI 干净环境必失败；其回归价值由 ⑭ 真机守卫覆盖
+        run: >-
+          npm run test -- --silent --runInBand
+          --testPathIgnorePatterns="src/modules/auto-upload/auto-upload.client.spec.ts"
