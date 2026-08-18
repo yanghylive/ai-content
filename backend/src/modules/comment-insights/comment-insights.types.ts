@@ -85,7 +85,7 @@ export type CommentAnalyzeResult = {
 };
 
 export type CommentInsightsListResult = {
-  items: CommentAnalyzeResult[];
+  items: Array<CommentAnalyzeResult & { id: string; analyzedAt: string }>;
   total: number;
   message: string;
   workflow: CommentInsightsWorkflowTrace;

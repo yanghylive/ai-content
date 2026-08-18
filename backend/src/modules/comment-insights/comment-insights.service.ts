@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AiClientService } from '../ai-models/ai-client.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
 import {
   AnalyzeCommentsDto,
@@ -111,6 +112,7 @@ const INTENT_KEYWORDS = [
 @Injectable()
 export class CommentInsightsService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly aiClient?: AiClientService,
     private readonly defaultModels?: DefaultModelsService,
   ) {}
@@ -154,14 +156,51 @@ export class CommentInsightsService {
     };
   }
 
-  list(_query: QueryCommentInsightsDto): CommentInsightsListResult {
-    void _query; // 预留查询参数，洞察记录后续由任务链沉淀
+  // P1-11 修复（2026-08-17）：list 查 CommentInsight 表（历史洞察落库后可见）
+  async list(
+    userId: string,
+    query: QueryCommentInsightsDto = {},
+  ): Promise<CommentInsightsListResult> {
+    const rows = await this.prisma.commentInsight.findMany({
+      where: {
+        userId,
+        ...(query.platform ? { platform: query.platform } : {}),
+        ...(query.sourceUrl ? { sourceUrl: query.sourceUrl } : {}),
+      },
+      orderBy: { analyzedAt: 'desc' },
+      take: 100,
+    });
     return {
-      items: [],
-      total: 0,
-      message: '当前返回实时评论洞察；正式洞察记录会由后续任务链统一沉淀。',
+      items: rows.map((r) => ({
+        ...((r.raw as CommentAnalyzeResult | null) ?? ({} as CommentAnalyzeResult)),
+        id: r.id,
+        analyzedAt: r.analyzedAt.toISOString(),
+      })),
+      total: rows.length,
+      message: rows.length > 0 ? '' : '暂无评论洞察记录，分析后会沉淀到这里。',
       workflow: this.workflow(),
     };
+  }
+
+  /** 分析并落库（供 controller 调用，绑定 userId） */
+  async analyzeAndPersist(userId: string, dto: AnalyzeCommentsDto) {
+    const result = this.analyze(dto);
+    if (result.analyzedCount > 0) {
+      await this.prisma.commentInsight.create({
+        data: {
+          userId,
+          platform: result.platform,
+          sourceUrl: result.sourceUrl ?? null,
+          painPoints: result.painPoints as object,
+          intentKeywords: result.intentKeywords as object,
+          demandSignals: result.demands as object,
+          objections: result.objections as object,
+          replySuggestions: result.replySuggestions as object,
+          raw: result as object,
+        },
+      });
+    }
+    return result;
   }
 
   /**
@@ -339,8 +378,9 @@ ${toneList.map((tone) => `- ${tone}：${toneLabels[tone]}`).join('\n')}`;
     input: Array<string | CommentInputDto> | undefined,
     dto: AnalyzeCommentsDto,
   ): NormalizedComment[] {
-    const source =
-      input && input.length > 0 ? input : this.fallbackComments(dto);
+    // P1-11 修复（2026-08-17）：无评论输入返回空，不再生成模板样本污染真实洞察
+    const source = input && input.length > 0 ? input : [];
+    void dto;
     return source
       .map((item, index) => {
         if (typeof item === 'string') {
@@ -355,16 +395,6 @@ ${toneList.map((tone) => `- ${tone}：${toneLabels[tone]}`).join('\n')}`;
         };
       })
       .filter((comment) => comment.content);
-  }
-
-  private fallbackComments(dto: AnalyzeCommentsDto): string[] {
-    const topic = dto.workTitle || dto.keyword || dto.productName || '这个方案';
-    return [
-      `${topic}适合小白吗？有没有步骤教程`,
-      `多少钱，想先看看案例`,
-      `有没有模板可以参考，自己做总是没效果`,
-      `后续售后怎么保障，担心买了不会用`,
-    ];
   }
 
   private detectPainPoints(comments: NormalizedComment[]): PainPointInsight[] {
