@@ -7,6 +7,12 @@ import { BrowserControlService } from './browser-control/browser-control.service
 import { RuntimeOrchestrator } from './orchestrator/runtime-orchestrator.service';
 import { RuntimeModule } from './runtime.module';
 
+// S4 修复：AuthModule 经 forwardRef 依赖 CredentialEnvelopeService（要求
+// KAYPAL_CREDENTIAL_MASTER_KEY），测试环境需提供测试 key 才能实例化模块树。
+process.env.KAYPAL_CREDENTIAL_MASTER_KEY =
+  process.env.KAYPAL_CREDENTIAL_MASTER_KEY ||
+  Buffer.alloc(32, 1).toString('base64');
+
 describe('RuntimeModule wiring', () => {
   let moduleRef: TestingModule;
 

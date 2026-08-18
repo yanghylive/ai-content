@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Optional,
   ServiceUnavailableException,
   UnauthorizedException,
   Logger,
@@ -25,6 +26,11 @@ import {
   verifyPassword,
 } from './auth.utils';
 import { resolveCommercialGrant } from './plan-order';
+import { CredentialEnvelopeService } from '../../common/credential-envelope.service';
+import {
+  encryptSessionToken,
+  decryptSessionToken,
+} from './session-token-cipher';
 
 interface LoginInput {
   username: string;
@@ -44,6 +50,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly kaypalClient?: KaypalAuthClient,
+    @Optional() private readonly envelope?: CredentialEnvelopeService,
   ) {}
 
   /** 微信登录（kaypal 认证服务原生微信扫码）：拿授权 URL */
@@ -419,8 +426,13 @@ export class AuthService {
         password,
         deviceId,
       });
-      sessionMetadata.kaypalDesktopAccessToken = tokens.access_token;
-      sessionMetadata.kaypalDesktopRefreshToken = tokens.refresh_token;
+      // S4 修复：Kaypal OAuth token 加密后落盘（复用 credential-envelope）
+      sessionMetadata.kaypalDesktopAccessToken = this.envelope
+        ? encryptSessionToken(this.envelope, tokens.access_token)
+        : tokens.access_token;
+      sessionMetadata.kaypalDesktopRefreshToken = this.envelope
+        ? encryptSessionToken(this.envelope, tokens.refresh_token)
+        : tokens.refresh_token;
       sessionMetadata.kaypalDesktopDeviceId =
         tokens.device?.device_id || deviceId;
       if (typeof tokens.expires_in === 'number') {
@@ -439,10 +451,16 @@ export class AuthService {
     // PlanGuard 读 metadata.kaypalSubscriptionPlan 缓存（无缓存兜底 FREE），
     // 若登录后未先调 subscription 接口，RequirePlans 接口会被误判免费（直连 API 实测复现）。
     // 同步失败不阻断登录（前端布局轮询会补写缓存）。
-    if (sessionMetadata.kaypalDesktopAccessToken) {
+    const plainAccessToken = this.envelope
+      ? decryptSessionToken(
+          this.envelope,
+          sessionMetadata.kaypalDesktopAccessToken as string,
+        )
+      : (sessionMetadata.kaypalDesktopAccessToken as string);
+    if (plainAccessToken) {
       try {
         const sub = (await this.kaypalClient.getCloudSubscription(
-          sessionMetadata.kaypalDesktopAccessToken as string,
+          plainAccessToken,
         )) as { plan?: string; periodEnd?: string | null };
         const plan = typeof sub?.plan === 'string' ? sub.plan : '';
         if (plan && plan !== 'FREE') {

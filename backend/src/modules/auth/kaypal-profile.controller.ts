@@ -18,6 +18,7 @@ import {
   UploadedFile,
   UnauthorizedException,
   UseInterceptors,
+  Optional,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -33,6 +34,11 @@ import {
 import type { Prisma } from '@prisma/client';
 import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CredentialEnvelopeService } from '../../common/credential-envelope.service';
+import {
+  encryptSessionToken,
+  decryptSessionToken,
+} from './session-token-cipher';
 import {
   KaypalAuthClient,
   type KaypalDesktopTokenRefreshResult,
@@ -151,6 +157,7 @@ export class KaypalProfileController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly kaypalClient: KaypalAuthClient,
+    @Optional() private readonly envelope?: CredentialEnvelopeService,
   ) {}
 
   private async getLinkedKaypalUserId(req: AuthenticatedRequest) {
@@ -249,15 +256,22 @@ export class KaypalProfileController {
       select: { metadata: true },
     });
     const currentMetadata = this.toMetadataRecord(currentSession?.metadata);
-    const currentAccessToken = this.toOptionalString(
-      currentMetadata.kaypalDesktopAccessToken,
-    )?.trim();
+    // S4 修复：metadata 中 token 加密存储，读取时解密（兼容存量明文）
+    const currentAccessToken = this.envelope
+      ? decryptSessionToken(
+          this.envelope,
+          currentMetadata.kaypalDesktopAccessToken,
+        )
+      : this.toOptionalString(currentMetadata.kaypalDesktopAccessToken);
     const currentExpiresAt = this.toOptionalString(
       currentMetadata.kaypalDesktopTokenExpiresAt,
     );
-    const currentRefreshToken = this.toOptionalString(
-      currentMetadata.kaypalDesktopRefreshToken,
-    )?.trim();
+    const currentRefreshToken = this.envelope
+      ? decryptSessionToken(
+          this.envelope,
+          currentMetadata.kaypalDesktopRefreshToken,
+        )
+      : this.toOptionalString(currentMetadata.kaypalDesktopRefreshToken);
 
     if (
       currentAccessToken &&
@@ -292,8 +306,13 @@ export class KaypalProfileController {
       );
     }
     const nextMetadata = {
-      kaypalDesktopAccessToken: refreshed.access_token,
-      kaypalDesktopRefreshToken: refreshed.refresh_token,
+      // S4 修复：refresh 后写回加密存储
+      kaypalDesktopAccessToken: this.envelope
+        ? encryptSessionToken(this.envelope, refreshed.access_token)
+        : refreshed.access_token,
+      kaypalDesktopRefreshToken: this.envelope
+        ? encryptSessionToken(this.envelope, refreshed.refresh_token)
+        : refreshed.refresh_token,
       kaypalDesktopTokenExpiresAt: new Date(
         Date.now() + refreshed.expires_in * 1000,
       ).toISOString(),
