@@ -6,6 +6,7 @@ import { SourcesModule } from './modules/sources/sources.module';
 import { MaterialsModule } from './modules/materials/materials.module';
 import { TopicsModule } from './modules/topics/topics.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { StatsModule } from './modules/stats/stats.module';
 import { SystemLogsModule } from './modules/system-logs/system-logs.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -60,6 +61,7 @@ import { PushNotificationsModule } from './modules/push-notifications/push-notif
 import { MultimodalModule } from './modules/multimodal/multimodal.module';
 import { MobileExecutorModule } from './modules/mobile-executor/mobile-executor.module';
 import { DashscopeModule } from './modules/dashscope/dashscope.module';
+import { CaseShowcaseModule } from './modules/case-showcase/case-showcase.module';
 
 @Module({
   imports: [
@@ -79,6 +81,7 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     MaterialsModule,
     TopicsModule,
     DashboardModule,
+    StatsModule,
     SystemLogsModule,
     StylesModule,
     ArticlesModule,
@@ -126,6 +129,7 @@ import { DashscopeModule } from './modules/dashscope/dashscope.module';
     MultimodalModule,
     MobileExecutorModule,
     DashscopeModule,
+    CaseShowcaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

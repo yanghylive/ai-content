@@ -47,6 +47,9 @@ schema = schema
     /searchQueries\s+String\[\]\s+@map\("search_queries"\)\s+\/\/ AI 建议的搜索词组/g,
     'searchQueries Json      @default("[]") @map("search_queries")'
   )
+  // 通用兜底：其余标量列表 String[]（如 ShowcaseCase.platforms/industries/capabilityTags/keyFeatures/deliveryModes、
+  // allowedDevices 等）转 Json。SQLite 不支持标量列表；Prisma 对 Json 字段读写数组透明。
+  .replace(/\b(\w+)\s+String\[\]/g, '$1 Json @default("[]")')
   .replace(
     /taskType\s+InteractionTaskType\s+@map\("taskType"\)/g,
     'taskType                   String                @map("taskType")'
