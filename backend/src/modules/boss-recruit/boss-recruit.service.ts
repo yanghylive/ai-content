@@ -59,10 +59,7 @@ export class BossRecruitService {
     }
     // S10 加固（2026-08-18）：结构校验——cookies 必须为数组（storageState 规范），
     // 防止任意畸形 JSON 落盘
-    if (
-      'cookies' in storageState &&
-      !Array.isArray(storageState.cookies)
-    ) {
+    if ('cookies' in storageState && !Array.isArray(storageState.cookies)) {
       throw new BadRequestException('storageState.cookies 必须是数组');
     }
     // S10 加固：大小上限（5MB），防无界磁盘写
