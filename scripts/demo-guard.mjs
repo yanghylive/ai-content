@@ -19,13 +19,14 @@ function fail(msg) { console.log(`  ❌ ${msg}`); }
 
 console.log('\n──── Demo Mode 自检 ────');
 
-// 1. env flag
+// 1. env flag（前端构建期 NEXT_PUBLIC_ENABLE_DEMO + 后端运行时 ENABLE_DEMO）
 const flag = process.env.ENABLE_DEMO;
+const feFlag = process.env.NEXT_PUBLIC_ENABLE_DEMO;
 const token = process.env.DEMO_OVERRIDE_TOKEN;
-if (flag === 'true' && token && token.length >= 16) {
-  ok('ENABLE_DEMO=true 且 DEMO_OVERRIDE_TOKEN 已设置（≥16 字符）');
+if ((flag === 'true' || feFlag === 'true') && token && token.length >= 16) {
+  ok('演示 flag 已开启（ENABLE_DEMO / NEXT_PUBLIC_ENABLE_DEMO）且 DEMO_OVERRIDE_TOKEN 已设置（≥16 字符）');
 } else {
-  warn('演示模式未开启（默认）。若需开启，按 README 设 ENABLE_DEMO=true + DEMO_OVERRIDE_TOKEN=<随机32位>');
+  warn('演示模式未开启（默认）。若需开启，按 README 设 NEXT_PUBLIC_ENABLE_DEMO=true（前端构建期）+ ENABLE_DEMO=true（后端运行时）+ DEMO_OVERRIDE_TOKEN=<随机32位>');
 }
 
 // 2. NODE_ENV
