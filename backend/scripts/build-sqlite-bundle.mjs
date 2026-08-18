@@ -118,6 +118,11 @@ run(npxBin(), [
   'playwright',
   '--external',
   'playwright-core',
+  // sharp 0.35 含原生 libvips 二进制，ncc 打包崩溃（Cannot read properties
+  // of undefined (reading 'path')，webpack 解析 prebuilt 二进制路径失败）；
+  // external 后运行时从 node_modules require（与 playwright 同模式）
+  '--external',
+  'sharp',
 ]);
 
 copyFileSync(join(backendRoot, 'prisma', 'schema.sqlite.prisma'), join(sqliteBundleDir, 'schema.prisma'));
