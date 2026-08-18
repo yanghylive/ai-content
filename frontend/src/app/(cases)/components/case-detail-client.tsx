@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   Briefcase,
   CheckCircle2,
@@ -123,6 +124,9 @@ function CaseVisual({ detail }: { detail: CaseDetailResult }) {
 }
 
 export function CaseDetailClient({ slug }: { slug: string }) {
+  const params = useParams<{ slug: string }>();
+  // 静态导出下详情页统一回退到占位壳，运行时从 URL 读真实 slug 拉数据
+  const effectiveSlug = params?.slug ?? slug;
   const [detail, setDetail] = useState<CaseDetailResult | null>(null);
   const [taxonomies, setTaxonomies] = useState<TaxonomyResult | null>(null);
   const [status, setStatus] = useState<
@@ -144,7 +148,7 @@ export function CaseDetailClient({ slug }: { slug: string }) {
   const load = useCallback(() => {
     let cancelled = false;
     setStatus("loading");
-    getCase(slug)
+    getCase(effectiveSlug)
       .then((data) => {
         if (cancelled) return;
         setDetail(data);
@@ -161,7 +165,7 @@ export function CaseDetailClient({ slug }: { slug: string }) {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [effectiveSlug]);
 
   useEffect(() => {
     const cancel = load();
