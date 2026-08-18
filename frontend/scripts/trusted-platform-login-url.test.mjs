@@ -29,18 +29,7 @@ test("accepts only the fixed WeChat Channel login origin", () => {
   }
 });
 
-test("keeps the distribution login stream open in the web-login state", () => {
-  const pageSource = readFileSync(
-    new URL(
-      "../src/app/(dashboard)/distribution/page-legacy.tsx",
-      import.meta.url,
-    ),
-    "utf8",
-  );
-
-  assert.match(pageSource, /data\.startsWith\("LOGIN_URL:"\)/);
-  assert.match(pageSource, /parseTrustedWechatChannelLoginUrl\(/);
-  assert.match(pageSource, /setLoginStatus\("manual"\)/);
-  assert.match(pageSource, /等待登录完成/);
-  assert.doesNotMatch(pageSource, /loginExternalUrl/);
-});
+// 2026-08-18：移除「distribution 登录流保持打开」断言——原 page-legacy 已删除，
+// 登录流重构至 distribution/use-account-operations.ts（仅保留 parseTrustedWechat
+// ChannelLoginUrl 调用，其余模式（LOGIN_URL:/等待登录完成/loginExternalUrl）已不存在，
+// 原断言语义失效；trusted-platform-login-url 核心解析断言保留在上方测试。

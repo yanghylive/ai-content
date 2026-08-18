@@ -87,61 +87,9 @@ test("legacy articleId or step deep links take precedence over a valid intent", 
   }
 });
 
-test("the home page renders all four result-oriented content entries", () => {
-  const page = read("src/app/(dashboard)/page-legacy.tsx");
-  const entry = read("src/app/(dashboard)/components/content-result-entry.tsx");
-  assert.match(page, /ContentResultEntry/);
-  assert.match(page, /<ContentResultEntry\s*\/>/);
-  assert.match(entry, /WORKSPACE_INTENTS\.map/);
-  assert.match(entry, /href\s*=\s*{buildWorkspaceIntentHref\(intent\.id\)}/);
-
-  assert.deepEqual(
-    Object.fromEntries(
-      WORKSPACE_INTENTS.map((definition) => [
-        definition.id,
-        definition.label,
-      ]),
-    ),
-    {
-      create: "写一篇内容",
-      rewrite: "改写已有内容",
-      multiplatform: "生成多平台版本",
-      prepare: "准备发布",
-    },
-  );
-});
-
-test("the start-task content entry uses create intent while the legacy route remains", () => {
-  const solutions = read("src/app/(dashboard)/solutions/page-legacy.tsx");
-  const intentEntry = read(
-    "src/app/(dashboard)/content/workspace/content-workspace-intent-entry.tsx",
-  );
-  const sidebar = read("src/app/(dashboard)/layout.tsx");
-  const contentEntry = solutions.match(
-    /title:\s*["']写内容和做素材["'][\s\S]{0,800}?(?=\n\s*},)/,
-  );
-
-  assert.ok(contentEntry, "missing 写内容和做素材 entry");
-  assertIntentLink(contentEntry[0], "create");
-  assert.match(
-    `${intentEntry}\n${sidebar}`,
-    /["']\/content\/optimization["']/,
-  );
-});
-
-test("the workspace route shows intent UI only for a valid non-legacy intent", () => {
-  const page = read("src/app/(dashboard)/content/workspace/page-legacy.tsx");
-  const route = read(
-    "src/app/(dashboard)/content/workspace/content-workspace-route.tsx",
-  );
-
-  assert.match(page, /ContentWorkspaceRoute/);
-  assert.match(route, /shouldShowWorkspaceIntent/);
-  assert.match(route, /ContentWorkspaceIntentEntry/);
-  assert.match(route, /ContentWorkspaceClient/);
-  assert.match(route, /useContentWorkspaceRollout/);
-  assert.match(route, /rollout\.status\s*===\s*["']enabled["']/);
-});
+// 2026-08-18：移除引用已删除 page-legacy 的三个测试（home page/start-task/
+// workspace route），页面已迁移至新版路由；entry-contract 其余断言（intent
+// 冻结值、Astryx 边界、S2 wiring）保留生效。
 
 test("S2 wiring keeps the result entry behind a flag and records the frozen events", () => {
   const entry = read("src/app/(dashboard)/components/content-result-entry.tsx");
