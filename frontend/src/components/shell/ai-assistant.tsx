@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import { savingsApi } from "@/lib/api/savings";
 import {
   chatStream,
@@ -32,15 +35,22 @@ const SAVINGS_PROMPTS = [
   "店里抽纸快没了，列个补货清单",
 ];
 
-/** 简易 markdown 渲染（加粗/列表/换行），避免引第三方库 */
-function renderRichText(text: string): string {
-  return text
-    .replace(/^###\s+(.+)$/gm, "<b>$1</b>")
-    .replace(/^##\s+(.+)$/gm, "<b>$1</b>")
-    .replace(/^#\s+(.+)$/gm, "<b>$1</b>")
-    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
-    .replace(/\n/g, "<br/>");
-}
+/**
+ * AI 消息 markdown 渲染（S7 安全修复，2026-08-18）。
+ * 原 renderRichText 用正则替换后 dangerouslySetInnerHTML，原始 HTML（含
+ * <img onerror> 等）原样穿透执行 → 存储型/流式 XSS。
+ * 改用 react-markdown + remark-gfm + remark-breaks：
+ *   - react-markdown 默认不渲染原始 HTML（当纯文本处理），天然免疫 XSS
+ *   - remark-gfm 支持表格/删除线/任务列表
+ *   - remark-breaks 保持原「\n → <br/>」的换行行为
+ * 链接统一 target=_blank + rel=noopener noreferrer。
+ */
+export const markdownComponents = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- node 是 react-markdown 内部注入属性，需从 props 剔除
+  a: ({ node: _node, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => (
+    <a {...props} target="_blank" rel="noopener noreferrer" style={{ color: "#a5b4fc", textDecoration: "underline" }} />
+  ),
+};
 
 export function AiAssistant({
   embedded = false,
@@ -49,16 +59,18 @@ export function AiAssistant({
   embedded?: boolean;
 } = {}) {
   const [open, setOpen] = useState(embedded);
-  const [items, setItems] = useState<ChatItem[]>(() => {
-    if (typeof window === "undefined") return [];
+  // 历史记录延后到 useEffect 加载：若在 useState initializer 里读 localStorage，
+  // SSR（[]）与 CSR hydration（历史）不一致会触发 React #418 hydration mismatch。
+  const [items, setItems] = useState<ChatItem[]>([]);
+  useEffect(() => {
     try {
       const raw = window.localStorage.getItem("ai_assistant_history");
       const parsed = raw ? (JSON.parse(raw) as ChatItem[]) : [];
-      return Array.isArray(parsed) ? parsed.slice(-50) : [];
+      if (Array.isArray(parsed)) setItems(parsed.slice(-50));
     } catch {
-      return [];
+      // 忽略损坏的历史记录
     }
-  });
+  }, []);
   const [busy, setBusy] = useState(false);
   const isMobile = useIsMobile();
   // 桌面端默认文字输入（有实体键盘），移动端默认语音
@@ -582,8 +594,14 @@ export function AiAssistant({
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
                   }}
-                  dangerouslySetInnerHTML={{ __html: renderRichText(item.text) }}
-                />
+                >
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                    components={markdownComponents}
+                  >
+                    {item.text}
+                  </ReactMarkdown>
+                </div>
               ),
             )}
 
