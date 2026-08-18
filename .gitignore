@@ -185,3 +185,18 @@ tmp/
 # 根目录误放的旧 package.json（与 desktop/package.json 重复，1.1.30 过时）
 /package.json
 desktop/.env
+
+# ===== 凭据/登录态显式隔离（2026-08-18 事故审查加固）=====
+# 第三方平台登录态与凭据。父目录规则（data/、*.sqlite）已覆盖，
+# 此处显式声明防止未来规则调整后敏感文件裸奔入库。
+**/.login-cookies.json
+**/storageState*.json
+**/cookiesFile/
+**/local-mcp-auth.json
+**/boss-storage-states/
+# Kaypal OAuth token 运行库（SQLite，含明文 refresh_token）
+backend/prisma/data/
+**/kaypal-ai.sqlite*
+# launchd 运行副本（含密钥 env 的 plist 派生文件，不入库）
+.ai-content-frontend/
+.ai-content-backend/
