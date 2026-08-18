@@ -3570,3 +3570,302 @@ model Approval {
   @@index([tenantId, actionId])
   @@map("approvals")
 }
+
+// 身份合并审计（六步闭环 P1-13）：合并前存 source 身份快照，支持 revert 撤销。
+model IdentityMergeAudit {
+  id           String    @id @default(cuid())
+  tenantId     String    @default("legacy-local-desktop") @map("tenant_id")
+  userId       String    @default("legacy-local-user") @map("user_id")
+  targetId     String    @map("target_id")
+  sourceId     String    @map("source_id")
+  // source 身份的完整快照（合并前的全部字段）
+  sourceSnapshot Json    @map("source_snapshot")
+  // 合并时从 source 迁移到 target 的事件/内容 ID 清单（revert 用）
+  migratedEventIds   Json @default("[]") @map("migrated_event_ids")
+  migratedContentIds Json @default("[]") @map("migrated_content_ids")
+  fieldChoices Json?    @map("field_choices")
+  reverted     Boolean   @default(false)
+  revertedAt   DateTime? @map("reverted_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId, createdAt])
+  @@index([sourceId])
+  @@map("identity_merge_audits")
+}
+
+// ============================================================================
+// 案例展示中心（case-showcase，M1 数据模型底座）
+//
+// 面向客户公开访问的案例库平台，严格区分四类案例来源：
+//   delivery（九章交付）/ open_source（开源演示）/ prototype（概念原型）/ template（可定制模板）。
+// 公开端完全匿名，咨询复用现有 Lead（M5 落 Lead 逻辑）。
+//
+// 设计约定：
+//   - 所有 ownerUserId / reviewerUserId / submittedBy / reviewedBy 均为纯字符串引用，
+//     不与 User/Tenant 建立 Prisma 关系，避免改动现有 150+ model（安全边界：只新增）。
+//   - 案例中心面向公开 Web（PostgreSQL 部署），不涉及 SQLite 桌面分支。
+//   - 公开响应必须经 field-whitelist.ts 显式 pick 允许字段，禁止整体序列化，
+//     私有字段（internalCustomerAlias / authorization.attachment / inquiry.contactValue
+//     / demoEndpoint.targetUrl / 演示凭据）绝不进入公开 DTO。
+// ============================================================================
+
+// 案例主表（四类来源 + 内容 + 生命周期状态机）
+model ShowcaseCase {
+  id     String @id @default(cuid())
+  slug   String @unique // 公开 URL 标识：小写字母/数字/连字符，发布后改 slug 需重定向
+  title  String
+  subtitle String?
+
+  // 四类来源（PRD 核心区分，首屏必须文字标识）
+  provenanceType   String @map("provenance_type") // delivery/open_source/prototype/template
+  clientVisibility String @default("public") @map("client_visibility") // public/limited
+
+  // 平台/行业/能力分类（一级 + 多选标签）
+  primaryPlatform String?  @map("primary_platform")
+  platforms       String[] // 平台代码列表
+  primaryIndustry String?  @map("primary_industry")
+  industries      String[] // 行业代码列表
+  capabilityTags  String[] @map("capability_tags") // 能力标签
+
+  // 案例内容
+  businessProblem String?  @map("business_problem") @db.Text
+  solutionSummary String?  @map("solution_summary") @db.Text
+  keyFeatures     Json @default("[]") @map("key_features") // 结构化：[{ title, description }]
+  resultsSummary  String?  @map("results_summary") @db.Text
+
+  // 证据等级与范围（evidenceLevel != E0 必须配 evidenceScope）
+  evidenceLevel String  @default("E0") @map("evidence_level") // E0/E1/E2/E3
+  evidenceScope String? @map("evidence_scope") @db.Text
+
+  // 交付方式 / 成熟度 / 技术概要
+  deliveryModes String[] @map("delivery_modes")
+  maturity      String   @default("concept") // concept/prototype/mvp/product/scale
+  techSummary   String?  @map("tech_summary") @db.Text
+
+  // 封面（公开安全 JSON：{ url, thumbnailUrl, altText }）
+  coverMedia Json? @map("cover_media")
+
+  // SEO
+  seoTitle       String? @map("seo_title")
+  seoDescription String? @map("seo_description") @db.Text
+
+  // 生命周期状态机：draft/submitted/approved/published/unpublished/archived
+  status String @default("draft")
+
+  publishedAt    DateTime? @map("published_at")
+  lastReviewedAt DateTime? @map("last_reviewed_at")
+  nextReviewAt   DateTime? @map("next_review_at")
+
+  ownerUserId    String? @map("owner_user_id")
+  reviewerUserId String? @map("reviewer_user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  media           ShowcaseMedia[]
+  demoEndpoints   ShowcaseDemoEndpoint[]
+  authorizations  ShowcaseAuthorization[]
+  reviews         ShowcaseCaseReview[]
+  shortLinks      ShowcaseShortLink[]
+  collectionItems ShowcaseCollectionItem[]
+
+  @@index([status])
+  @@index([provenanceType])
+  @@index([publishedAt])
+  @@map("showcase_cases")
+}
+
+// 案例媒体（图片/视频/封面，权利状态与脱敏）
+model ShowcaseMedia {
+  id     String @id @default(cuid())
+  caseId String @map("case_id")
+  case   ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  mediaType    String  @map("media_type") // image/video/document
+  fileUrl      String? @map("file_url") @db.Text
+  externalUrl  String? @map("external_url") @db.Text
+  thumbnailUrl String? @map("thumbnail_url") @db.Text
+  title        String?
+  caption      String? @db.Text
+  altText      String  @map("alt_text") // 必填（无障碍）
+  deviceFrame  String? @map("device_frame") // desktop/mobile/tablet
+  sortOrder    Int     @default(0) @map("sort_order")
+  rightsStatus String  @default("unreviewed") @map("rights_status") // unreviewed/cleared/restricted
+  sensitiveReviewed Boolean @default(false) @map("sensitive_reviewed")
+  checksum     String? // 文件完整性校验（内部字段，不进公开 DTO）
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([caseId, sortOrder])
+  @@map("showcase_media")
+}
+
+// 演示体验入口（H5/Web/小程序码/下载/预约，必有回退方案）
+model ShowcaseDemoEndpoint {
+  id     String @id @default(cuid())
+  caseId String @map("case_id")
+  case   ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  endpointType      String  @map("endpoint_type") // h5/web/wechat_mini_program/download/appointment
+  targetUrl         String? @map("target_url") @db.Text // 内部配置，禁公开
+  shortCode         String? @map("short_code")
+  allowedDevices    String[] @map("allowed_devices") // desktop/mobile/tablet/wechat
+  iframeAllowed     Boolean @default(false) @map("iframe_allowed")
+  accessInstruction String? @map("access_instruction") @db.Text
+  validFrom         DateTime? @map("valid_from")
+  validUntil        DateTime? @map("valid_until")
+  fallbackType      String  @map("fallback_type") // media/url/none（无回退不得公开）
+  fallbackTarget    String? @map("fallback_target") @db.Text
+  healthStatus      String  @default("unknown") @map("health_status") // unknown/healthy/broken/expired
+  lastCheckedAt     DateTime? @map("last_checked_at")
+  ownerUserId       String? @map("owner_user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([caseId])
+  @@index([shortCode])
+  @@map("showcase_demo_endpoints")
+}
+
+// 授权/许可记录（客户授权/素材/开源许可/商标，附件私有）
+model ShowcaseAuthorization {
+  id     String @id @default(cuid())
+  caseId String @map("case_id")
+  case   ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  recordType       String  @map("record_type") // customer_authorization/oss_license/trademark/other
+  grantor          String?
+  scope            String? @db.Text
+  licenseName      String? @map("license_name")
+  sourceUrl        String? @map("source_url") @db.Text
+  versionOrCommit  String? @map("version_or_commit")
+  attachment       String? @map("attachment") @db.Text // 附件私有，仅审核人/管理员可读
+  validFrom        DateTime? @map("valid_from")
+  validUntil       DateTime? @map("valid_until")
+  reviewStatus     String  @default("pending") @map("review_status") // pending/approved/rejected
+  reviewerUserId   String? @map("reviewer_user_id")
+  restrictionNotes String? @map("restriction_notes") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([caseId])
+  @@index([reviewStatus])
+  @@map("showcase_authorizations")
+}
+
+// 销售/运营案例合集（有序引用已发布案例）
+model ShowcaseCollection {
+  id     String @id @default(cuid())
+  slug   String @unique
+  title  String
+  description String? @db.Text
+  coverMedia  Json?   @map("cover_media") // { url, thumbnailUrl, altText }
+
+  visibility            String   @default("public") // public/link_only/internal
+  channelCode           String?  @map("channel_code")
+  internalCustomerAlias String?  @map("internal_customer_alias") // 内部客户简称，禁公开
+  validUntil            DateTime? @map("valid_until")
+  ownerUserId           String?  @map("owner_user_id")
+  status                String   @default("draft") // draft/published/archived
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  items ShowcaseCollectionItem[]
+
+  @@index([status])
+  @@map("showcase_collections")
+}
+
+// 合集-案例 有序关联表（显式 join，承载 sortOrder）
+model ShowcaseCollectionItem {
+  collectionId String @map("collection_id")
+  collection   ShowcaseCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  caseId       String @map("case_id")
+  case         ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  sortOrder    Int    @default(0) @map("sort_order")
+
+  @@id([collectionId, caseId])
+  @@index([caseId])
+  @@map("showcase_collection_items")
+}
+
+// 短链（二维码/分享/归因跳转，短码随机不可猜，禁开放重定向）
+model ShowcaseShortLink {
+  id          String @id @default(cuid())
+  shortCode   String @unique @map("short_code") // 随机不可猜
+  targetType  String @map("target_type") // case/collection/demo_endpoint/external
+  targetId    String? @map("target_id")
+  targetUrl   String? @map("target_url") @db.Text // 内部目标 URL，禁公开
+  status      String @default("active") // active/disabled/expired
+  validUntil  DateTime? @map("valid_until")
+  channelCode String? @map("channel_code")
+  openCount   Int     @default(0) @map("open_count")
+  lastOpenAt  DateTime? @map("last_open_at")
+  ownerUserId String? @map("owner_user_id")
+
+  caseId String? @map("case_id")
+  case   ShowcaseCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([targetType, targetId])
+  @@index([status])
+  @@map("showcase_short_links")
+}
+
+// 分类（平台/行业/能力，一级分类仅管理员维护）
+model ShowcaseTaxonomy {
+  id     String @id @default(cuid())
+  type   String // platform/industry/capability
+  slug   String
+  name   String
+  sortOrder Int     @default(0) @map("sort_order")
+  enabled   Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  aliases ShowcaseTagAlias[]
+
+  @@unique([type, slug])
+  @@index([type, enabled])
+  @@map("showcase_taxonomies")
+}
+
+// 标签同义词映射（alias → 规范分类）
+model ShowcaseTagAlias {
+  id     String @id @default(cuid())
+  alias  String @unique // 同义词
+  canonicalTaxonomyId String @map("canonical_taxonomy_id")
+  canonicalTaxonomy   ShowcaseTaxonomy @relation(fields: [canonicalTaxonomyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([canonicalTaxonomyId])
+  @@map("showcase_tag_aliases")
+}
+
+// 案例审核记录（提交/驳回/批准/发布/事实变更，含重大字段检测）
+model ShowcaseCaseReview {
+  id     String @id @default(cuid())
+  caseId String @map("case_id")
+  case   ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  reviewType  String  @map("review_type") // submit/approve/reject/publish/fact_change
+  submittedBy String? @map("submitted_by")
+  reviewedBy  String? @map("reviewed_by")
+  decision    String  @default("pending") // pending/approved/rejected/requested_changes
+  comments    String? @db.Text
+  changedFields Json  @default("[]") @map("changed_fields") // 本次变更字段（重大字段检测）
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([caseId, createdAt])
+  @@index([decision])
+  @@map("showcase_case_reviews")
+}

@@ -212,6 +212,33 @@ model BillingInvoice {
   @@map("billing_invoices")
 }
 
+// 微信支付单（2026-08-16，商户号 1116143786）：本地订阅/积分充值的支付闭环。
+// 支付成功 → 回调验签幂等 → aiCreditAccount 充值（token×20 消费闭环）。
+model WechatPayOrder {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  userId        String    @map("user_id")
+  outTradeNo    String    @map("out_trade_no") // 本地单号（业务幂等键）
+  mchid         String    @default("1116143786") @map("mchid")
+  appid         String?   @map("appid")
+  description   String    @map("description")
+  amountCents   Int       @map("amount_cents") // 分
+  currency      String    @default("CNY")
+  status        String    @default("pending") // pending/paid/closed/refunded
+  transactionId String?   @map("transaction_id") // 微信支付单号
+  creditPoints  Int       @default(0) @map("credit_points") // 充值到 aiCreditAccount 的积分
+  paidAt        DateTime? @map("paid_at")
+  notifyPayload Json?     @map("notify_payload") // 回调原始数据（审计）
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([outTradeNo])
+  @@index([tenantId, userId])
+  @@index([status])
+  @@index([transactionId])
+  @@map("wechat_pay_orders")
+}
+
 // 计费 webhook 事件：按 provider + eventId 幂等落库，保留签名校验和处理结果。
 model BillingWebhookEvent {
   id                     String    @id @default(cuid())
@@ -430,7 +457,8 @@ model Article {
   parent   Article? @relation("ArticleVariants", fields: [parentId], references: [id], onDelete: SetNull)
   variants Article[] @relation("ArticleVariants")
 
-  publishRecords PublishRecord[]
+  publishRecords  PublishRecord[]
+  contentVariants ContentVariant[] @relation("ArticleContentVariants")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -798,6 +826,20 @@ model SolutionArtifact {
 }
 
 // 方案包成本账本：记录预估、授权、实际扣减和外部调用引用。
+// 采集配额（报告 16.3 第 6 项，2026-08-17）：每日发现/采集次数上限。
+// 发现中心（keyword/target-account 浏览器会话采集）计数，超限返回 quota_exceeded 原因码。
+model AcquisitionQuota {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  date           DateTime @map("date")
+  discoverCount  Int      @default(0) @map("discover_count")
+  discoverLimit  Int      @default(100) @map("discover_limit") // 每日发现上限（env ACQUISITION_DAILY_LIMIT 覆盖）
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@map("acquisition_quotas")
+}
+
 model SolutionCostEntry {
   id                   String        @id @default(cuid())
   runId                String        @map("run_id")
@@ -1601,6 +1643,8 @@ model InteractionEvent {
   externalEventId  String?  @map("external_event_id")
   externalThreadId String?  @map("external_thread_id")
   authorExternalId String?  @map("author_external_id")
+  // A 档归因补强（2026-08-16）：平台侧评论序号（小红书等回复定位 + 互动→线索匹配键）
+  commentRef       String?  @map("comment_ref")
   sourceUrl        String?  @map("source_url")
   sourceArticleId  String?  @map("source_article_id")
   publishRecordId  String?  @map("publish_record_id")
@@ -1608,14 +1652,26 @@ model InteractionEvent {
   dedupeKey        String   @map("dedupe_key")
   occurredAt       DateTime @map("occurred_at")
   raw              Json?
+  // Sprint 1 增量（开发文档 §6.3）：事件→身份/来源内容/父事件/证据
+  identityId       String?  @map("identity_id")
+  contentId        String?  @map("content_id")
+  parentEventId    String?  @map("parent_event_id")
+  evidenceUrl      String?  @map("evidence_url")
+  rawHash          String?  @map("raw_hash")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
+
+  identity PlatformIdentity? @relation(fields: [identityId], references: [id], onDelete: SetNull)
+  content  SourceContent?    @relation(fields: [contentId], references: [id], onDelete: SetNull)
 
   @@unique([tenantId, dedupeKey])
   @@index([tenantId, platform, accountId, occurredAt])
   @@index([sourceArticleId])
   @@index([publishRecordId])
   @@index([authorExternalId])
+  @@index([identityId])
+  @@index([contentId])
+  @@index([parentEventId])
   @@map("interaction_events")
 }
 
@@ -2028,6 +2084,7 @@ model CrmOpportunity {
   primaryCustomer   CrmCustomer?       @relation("CrmOpportunityPrimaryCustomer", fields: [primaryCustomerId], references: [id], onDelete: SetNull)
   closeDate         DateTime?          @map("close_date")
   nextStep          String?            @map("next_step")
+  nextActionAt      DateTime?          @map("next_action_at") // Sprint 4 T4.2：下次跟进时间
   competitor        String?           
   source            String?
   metadata          Json?
@@ -2624,6 +2681,7 @@ model AiToolCallLog {
   durationMs Int      @default(0) @map("duration_ms")
   confirmed  Boolean  @default(false) // 写工具二次确认标记
   tokensUsed Int      @default(0) @map("tokens_used") // 本次调用 token 消耗
+  costPoints Int      @default(0) @map("cost_points") // token×20 成本积分（大王定价 2026-08-16）
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([userId, createdAt])
@@ -3066,6 +3124,8 @@ model ProductClipConfig {
 // 曝光账号管理（对标炼刀 /auto/exposure/accounts）：曝光任务使用的账号池
 model ExposureAccount {
   id        String   @id @default(cuid())
+  // 租户隔离（P0-3 修复 2026-08-17）：曝光账号归属用户，跨租户不共享
+  userId    String   @default("") @map("user_id")
   platform  String   @default("douyin")
   accountId String   @map("account_id")
   name      String
@@ -3074,7 +3134,8 @@ model ExposureAccount {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([platform, accountId])
+  @@unique([userId, platform, accountId])
+  @@index([userId])
   @@map("exposure_accounts")
 }
 
@@ -3181,7 +3242,7 @@ model ReviewRun {
 // 三层归因（报告 9.2 B）：deterministic 确定 / rule_based 规则 / inferred 推断。
 model AttributionLink {
   id         String   @id @default(cuid())
-  tenantId   String?  @map("tenant_id")
+  tenantId   String   @default("legacy-local-desktop") @map("tenant_id")
   userId     String   @map("user_id")
   fromType   String   @map("from_type") // content | publish | interaction | lead | customer | opportunity
   fromId     String   @map("from_id")
@@ -3193,9 +3254,9 @@ model AttributionLink {
   evidence   Json     @default("{}") @map("evidence") // 归因证据
   createdAt  DateTime @default(now()) @map("created_at")
 
-  @@unique([fromType, fromId, toType, toId, model])
-  @@index([toType, toId])
-  @@index([fromType, fromId])
+  @@unique([tenantId, fromType, fromId, toType, toId, model])
+  @@index([tenantId, toType, toId])
+  @@index([tenantId, fromType, fromId])
   @@map("attribution_links")
 }
 
@@ -3211,4 +3272,548 @@ model LeadEventOutbox {
 
   @@index([status, createdAt])
   @@map("lead_event_outbox")
+}
+
+// =====================================================================
+// Sprint 1 增量（3010 统一开发计划 §七）：事实层 + 发布侧 read model
+// 2026-08-16 按《AI 获客完整开发文档》§6-7 + 逐页计划 §3.1
+// =====================================================================
+
+// 来源内容（获客侧事实层 §6.1）：一条视频/笔记/文章等，互动事件与归因的锚点
+model SourceContent {
+  id                String    @id @default(cuid())
+  tenantId          String    @default("legacy-local-desktop") @map("tenant_id")
+  userId            String    @default("legacy-local-user") @map("user_id")
+  platform          String
+  accountId         String    @map("account_id")
+  externalContentId String    @map("external_content_id")
+  url               String   
+  contentType       String    @default("video") @map("content_type") // video/note/article/live/comment_thread
+  authorIdentityId  String?   @map("author_identity_id")
+  title             String?
+  text              String?  
+  publishedAt       DateTime? @map("published_at")
+  metrics           Json?
+  rawHash           String    @map("raw_hash")
+  collectedAt       DateTime  @map("collected_at")
+  expiresAt         DateTime? @map("expires_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  authorIdentity PlatformIdentity? @relation(fields: [authorIdentityId], references: [id], onDelete: SetNull)
+  events         InteractionEvent[]
+
+  @@unique([tenantId, platform, accountId, externalContentId])
+  @@index([tenantId, platform, accountId, collectedAt])
+  @@index([authorIdentityId])
+  @@map("source_contents")
+}
+
+// 平台身份（获客侧事实层 §6.2）：作者身份，确定/高置信/低置信/未识别
+model PlatformIdentity {
+  id                 String   @id @default(cuid())
+  tenantId           String   @default("legacy-local-desktop") @map("tenant_id")
+  userId             String   @default("legacy-local-user") @map("user_id")
+  platform           String
+  accountId          String   @map("account_id")
+  externalUserId     String?  @map("external_user_id")
+  normalizedHandle   String?  @map("normalized_handle")
+  nickname           String?
+  profileUrl         String?  @map("profile_url")
+  avatarHash         String?  @map("avatar_hash")
+  verified           Boolean  @default(false)
+  identityConfidence Int      @default(0) @map("identity_confidence") // 0-100
+  firstSeenAt        DateTime @map("first_seen_at")
+  lastSeenAt         DateTime @map("last_seen_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  sourceContents SourceContent[]
+  events         InteractionEvent[]
+
+  @@unique([tenantId, platform, accountId, externalUserId])
+  @@index([tenantId, platform, accountId])
+  @@map("platform_identities")
+}
+
+// 抑制名单（获客侧事实层 §6.6）：退订/投诉/封禁，发送前+消费前双检查
+model Suppression {
+  id              String    @id @default(cuid())
+  tenantId        String    @default("legacy-local-desktop") @map("tenant_id")
+  userId          String    @default("legacy-local-user") @map("user_id")
+  kind            String    // email/phone/platform_identity/domain/lead
+  normalizedValue String    @map("normalized_value")
+  reason          String    // explicit_opt_out/complaint/manual_block/platform_risk
+  sourceEventId   String?   @map("source_event_id")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  removedAt       DateTime? @map("removed_at")
+
+  @@unique([tenantId, kind, normalizedValue])
+  @@index([tenantId, kind, normalizedValue])
+  @@map("suppressions")
+}
+
+// 线索信号（决策层 §6.4）：每次加减分的证据点
+model LeadSignal {
+  id         String    @id @default(cuid())
+  tenantId   String    @default("legacy-local-desktop") @map("tenant_id")
+  userId     String    @default("legacy-local-user") @map("user_id")
+  leadId     String    @map("lead_id")
+  type       String    // intent.explicit_request/question/price; fit.industry/role/region; engagement.repeat/reply; recency.last_7d; risk.spam/duplicate/opt_out; account.verified
+  value      Int       @default(1)
+  // P1-12 修复（2026-08-17）：evidenceId 非 null default ""，配合唯一约束做并发幂等
+  evidenceId String    @default("") @map("evidence_id")
+  source     String?
+  observedAt DateTime  @map("observed_at")
+  expiresAt  DateTime? @map("expires_at")
+  confidence Int       @default(100) // 0-100
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@unique([tenantId, leadId, type, evidenceId])
+  @@index([tenantId, leadId])
+  @@index([tenantId, type])
+  @@map("lead_signals")
+}
+
+// 线索评分快照（决策层 §6.5）：每次评分不覆盖历史，可解释
+model LeadScoreSnapshot {
+  id                 String   @id @default(cuid())
+  tenantId           String   @default("legacy-local-desktop") @map("tenant_id")
+  userId             String   @default("legacy-local-user") @map("user_id")
+  leadId             String   @map("lead_id")
+  fitScore           Int      @map("fit_score")
+  intentScore        Int      @map("intent_score")
+  identityConfidence Int      @map("identity_confidence")
+  riskScore          Int      @map("risk_score")
+  totalScore         Int      @map("total_score")
+  confidence         Int      @map("confidence")
+  components         Json     // Record<string, number>
+  reasons            Json     // string[]
+  evidenceIds        Json     @map("evidence_ids") // string[]
+  modelVersion       String   @map("model_version")
+  ruleVersion        String   @map("rule_version")
+  scoredAt           DateTime @map("scored_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, leadId, scoredAt])
+  @@map("lead_score_snapshots")
+}
+
+// 发布侧 read model §3.1：平台变体（内容主稿 Article 已有，variants 挂其下）
+model ContentVariant {
+  id               String    @id @default(cuid())
+  tenantId         String    @default("legacy-local-desktop") @map("tenant_id")
+  userId           String    @default("legacy-local-user") @map("user_id")
+  contentUnitId    String    @map("content_unit_id") // → article.id
+  platform         String
+  body             String   
+  title            String?
+  platformMetadata Json?     @map("platform_metadata") // thread/firstComment/reel/story/board/userTags
+  contentHash      String    @map("content_hash")
+  status           String    @default("draft") // draft/pending_review/approved/scheduled
+  // C 档横切：素材版权/授权状态（unknown/authorized/unauthorized/pending）
+  licenseStatus    String    @default("unknown") @map("license_status")
+  copyrightNotice  String?   @map("copyright_notice")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  contentUnit Article     @relation("ArticleContentVariants", fields: [contentUnitId], references: [id], onDelete: Cascade)
+  jobs        PublishJob[]
+
+  @@unique([contentUnitId, platform, contentHash])
+  @@index([tenantId, status])
+  @@map("content_variants")
+}
+
+// 发布任务（账号维度：一个变体 → 多平台账号 → 多 job）
+model PublishJob {
+  id             String    @id @default(cuid())
+  tenantId       String    @default("legacy-local-desktop") @map("tenant_id")
+  userId         String    @default("legacy-local-user") @map("user_id")
+  variantId      String    @map("variant_id")
+  accountId      String    @map("account_id")
+  status         String    @default("queued") // queued/preflight/running/pending_readback/succeeded/failed_retryable/failed_permanent/cancelled
+  attempt        Int       @default(0)
+  scheduledAt    DateTime? @map("scheduled_at")
+  idempotencyKey String    @map("idempotency_key")
+  correlationId  String?   @map("correlation_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  variant  ContentVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  receipts PublishReceipt[]
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, status])
+  @@map("publish_jobs")
+}
+
+// 发布回执（平台侧帖子 ID/URL/readback 状态）
+model PublishReceipt {
+  id               String    @id @default(cuid())
+  tenantId         String    @default("legacy-local-desktop") @map("tenant_id")
+  userId           String    @default("legacy-local-user") @map("user_id")
+  jobId            String    @map("job_id")
+  externalPostId   String?   @map("external_post_id")
+  externalUrl      String?   @map("external_url")
+  readbackState    String    @default("pending") @map("readback_state") // pending/verified/uncertain
+  readbackAt       DateTime? @map("readback_at")
+  platformMetadata Json?     @map("platform_metadata")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  job PublishJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, jobId])
+  @@map("publish_receipts")
+}
+
+// 通用领域事件 outbox（开发文档 §13，Sprint 1 泛化 lead-event-bus）
+// 事件先落库再由 worker 发布；进程内 EventEmitter 只做进程内通知，不作事实总线。
+model DomainEventOutbox {
+  id             String   @id @default(cuid())
+  eventId        String   @unique @map("event_id")
+  schemaVersion  Int      @default(1) @map("schema_version")
+  tenantId       String   @default("legacy-local-desktop") @map("tenant_id")
+  userId         String   @default("legacy-local-user") @map("user_id")
+  aggregateType  String   @map("aggregate_type")
+  aggregateId    String   @map("aggregate_id")
+  type           String
+  idempotencyKey String   @map("idempotency_key")
+  occurredAt     DateTime @map("occurred_at")
+  payload        Json
+  status         String   @default("published") @map("status") // published/consumed/failed/dead
+  attempt        Int      @default(0)
+  lastError      String?  @map("last_error")
+  consumedAt     DateTime? @map("consumed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, aggregateType, aggregateId, idempotencyKey])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, type])
+  @@map("domain_event_outbox")
+}
+
+// 审批记录（开发文档 §10.1-10.2，Sprint 3 T3.3）
+// 高风险动作强制人工审批；内容/目标集合变化后 inputHash 对比自动失效。
+model Approval {
+  id              String    @id @default(cuid())
+  tenantId        String    @default("legacy-local-desktop") @map("tenant_id")
+  userId          String    @default("legacy-local-user") @map("user_id")
+  actionId        String    @map("action_id")
+  actionType      String    @map("action_type") // create_task/draft_reply/send_reply/batch_outreach/convert_crm
+  riskLevel       String    @map("risk_level") // low/medium/high
+  inputHash       String    @map("input_hash")
+  affectedLeadIds Json      @map("affected_lead_ids")
+  excludedLeadIds Json      @default("[]") @map("excluded_lead_ids")
+  approverId      String?   @map("approver_id")
+  status          String    @default("pending") @map("status") // pending/approved/rejected/requested_changes/expired/resubmitted/applied
+  reason          String?  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  expiresAt       DateTime? @map("expires_at")
+  appliedAt       DateTime? @map("applied_at")
+
+  @@index([tenantId, status])
+  @@index([tenantId, actionId])
+  @@map("approvals")
+}
+
+// 身份合并审计（六步闭环 P1-13）：合并前存 source 身份快照，支持 revert 撤销。
+model IdentityMergeAudit {
+  id           String    @id @default(cuid())
+  tenantId     String    @default("legacy-local-desktop") @map("tenant_id")
+  userId       String    @default("legacy-local-user") @map("user_id")
+  targetId     String    @map("target_id")
+  sourceId     String    @map("source_id")
+  // source 身份的完整快照（合并前的全部字段）
+  sourceSnapshot Json    @map("source_snapshot")
+  // 合并时从 source 迁移到 target 的事件/内容 ID 清单（revert 用）
+  migratedEventIds   Json @default("[]") @map("migrated_event_ids")
+  migratedContentIds Json @default("[]") @map("migrated_content_ids")
+  fieldChoices Json?    @map("field_choices")
+  reverted     Boolean   @default(false)
+  revertedAt   DateTime? @map("reverted_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([tenantId, createdAt])
+  @@index([sourceId])
+  @@map("identity_merge_audits")
+}
+
+// ============================================================================
+// 案例展示中心（case-showcase，M1 数据模型底座）
+//
+// 面向客户公开访问的案例库平台，严格区分四类案例来源：
+//   delivery（九章交付）/ open_source（开源演示）/ prototype（概念原型）/ template（可定制模板）。
+// 公开端完全匿名，咨询复用现有 Lead（M5 落 Lead 逻辑）。
+//
+// 设计约定：
+//   - 所有 ownerUserId / reviewerUserId / submittedBy / reviewedBy 均为纯字符串引用，
+//     不与 User/Tenant 建立 Prisma 关系，避免改动现有 150+ model（安全边界：只新增）。
+//   - 案例中心面向公开 Web（PostgreSQL 部署），不涉及 SQLite 桌面分支。
+//   - 公开响应必须经 field-whitelist.ts 显式 pick 允许字段，禁止整体序列化，
+//     私有字段（internalCustomerAlias / authorization.attachment / inquiry.contactValue
+//     / demoEndpoint.targetUrl / 演示凭据）绝不进入公开 DTO。
+// ============================================================================
+
+// 案例主表（四类来源 + 内容 + 生命周期状态机）
+model ShowcaseCase {
+  id     String @id @default(cuid())
+  slug   String @unique // 公开 URL 标识：小写字母/数字/连字符，发布后改 slug 需重定向
+  title  String
+  subtitle String?
+
+  // 四类来源（PRD 核心区分，首屏必须文字标识）
+  provenanceType   String @map("provenance_type") // delivery/open_source/prototype/template
+  clientVisibility String @default("public") @map("client_visibility") // public/limited
+
+  // 平台/行业/能力分类（一级 + 多选标签）
+  primaryPlatform String?  @map("primary_platform")
+  platforms Json @default("[]") // 平台代码列表
+  primaryIndustry String?  @map("primary_industry")
+  industries Json @default("[]") // 行业代码列表
+  capabilityTags Json @default("[]") @map("capability_tags") // 能力标签
+
+  // 案例内容
+  businessProblem String?  @map("business_problem")
+  solutionSummary String?  @map("solution_summary")
+  keyFeatures     Json @default("[]") @map("key_features") // 结构化：[{ title, description }]
+  resultsSummary  String?  @map("results_summary")
+
+  // 证据等级与范围（evidenceLevel != E0 必须配 evidenceScope）
+  evidenceLevel String  @default("E0") @map("evidence_level") // E0/E1/E2/E3
+  evidenceScope String? @map("evidence_scope")
+
+  // 交付方式 / 成熟度 / 技术概要
+  deliveryModes Json @default("[]") @map("delivery_modes")
+  maturity      String   @default("concept") // concept/prototype/mvp/product/scale
+  techSummary   String?  @map("tech_summary")
+
+  // 封面（公开安全 JSON：{ url, thumbnailUrl, altText }）
+  coverMedia Json? @map("cover_media")
+
+  // SEO
+  seoTitle       String? @map("seo_title")
+  seoDescription String? @map("seo_description")
+
+  // 生命周期状态机：draft/submitted/approved/published/unpublished/archived
+  status String @default("draft")
+
+  publishedAt    DateTime? @map("published_at")
+  lastReviewedAt DateTime? @map("last_reviewed_at")
+  nextReviewAt   DateTime? @map("next_review_at")
+
+  ownerUserId    String? @map("owner_user_id")
+  reviewerUserId String? @map("reviewer_user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  media           ShowcaseMedia[]
+  demoEndpoints   ShowcaseDemoEndpoint[]
+  authorizations  ShowcaseAuthorization[]
+  reviews         ShowcaseCaseReview[]
+  shortLinks      ShowcaseShortLink[]
+  collectionItems ShowcaseCollectionItem[]
+
+  @@index([status])
+  @@index([provenanceType])
+  @@index([publishedAt])
+  @@map("showcase_cases")
+}
+
+// 案例媒体（图片/视频/封面，权利状态与脱敏）
+model ShowcaseMedia {
+  id     String @id @default(cuid())
+  caseId String @map("case_id")
+  case   ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  mediaType    String  @map("media_type") // image/video/document
+  fileUrl      String? @map("file_url")
+  externalUrl  String? @map("external_url")
+  thumbnailUrl String? @map("thumbnail_url")
+  title        String?
+  caption      String?
+  altText      String  @map("alt_text") // 必填（无障碍）
+  deviceFrame  String? @map("device_frame") // desktop/mobile/tablet
+  sortOrder    Int     @default(0) @map("sort_order")
+  rightsStatus String  @default("unreviewed") @map("rights_status") // unreviewed/cleared/restricted
+  sensitiveReviewed Boolean @default(false) @map("sensitive_reviewed")
+  checksum     String? // 文件完整性校验（内部字段，不进公开 DTO）
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([caseId, sortOrder])
+  @@map("showcase_media")
+}
+
+// 演示体验入口（H5/Web/小程序码/下载/预约，必有回退方案）
+model ShowcaseDemoEndpoint {
+  id     String @id @default(cuid())
+  caseId String @map("case_id")
+  case   ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  endpointType      String  @map("endpoint_type") // h5/web/wechat_mini_program/download/appointment
+  targetUrl         String? @map("target_url") // 内部配置，禁公开
+  shortCode         String? @map("short_code")
+  allowedDevices Json @default("[]") @map("allowed_devices") // desktop/mobile/tablet/wechat
+  iframeAllowed     Boolean @default(false) @map("iframe_allowed")
+  accessInstruction String? @map("access_instruction")
+  validFrom         DateTime? @map("valid_from")
+  validUntil        DateTime? @map("valid_until")
+  fallbackType      String  @map("fallback_type") // media/url/none（无回退不得公开）
+  fallbackTarget    String? @map("fallback_target")
+  healthStatus      String  @default("unknown") @map("health_status") // unknown/healthy/broken/expired
+  lastCheckedAt     DateTime? @map("last_checked_at")
+  ownerUserId       String? @map("owner_user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([caseId])
+  @@index([shortCode])
+  @@map("showcase_demo_endpoints")
+}
+
+// 授权/许可记录（客户授权/素材/开源许可/商标，附件私有）
+model ShowcaseAuthorization {
+  id     String @id @default(cuid())
+  caseId String @map("case_id")
+  case   ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  recordType       String  @map("record_type") // customer_authorization/oss_license/trademark/other
+  grantor          String?
+  scope            String?
+  licenseName      String? @map("license_name")
+  sourceUrl        String? @map("source_url")
+  versionOrCommit  String? @map("version_or_commit")
+  attachment       String? @map("attachment") // 附件私有，仅审核人/管理员可读
+  validFrom        DateTime? @map("valid_from")
+  validUntil       DateTime? @map("valid_until")
+  reviewStatus     String  @default("pending") @map("review_status") // pending/approved/rejected
+  reviewerUserId   String? @map("reviewer_user_id")
+  restrictionNotes String? @map("restriction_notes")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([caseId])
+  @@index([reviewStatus])
+  @@map("showcase_authorizations")
+}
+
+// 销售/运营案例合集（有序引用已发布案例）
+model ShowcaseCollection {
+  id     String @id @default(cuid())
+  slug   String @unique
+  title  String
+  description String?
+  coverMedia  Json?   @map("cover_media") // { url, thumbnailUrl, altText }
+
+  visibility            String   @default("public") // public/link_only/internal
+  channelCode           String?  @map("channel_code")
+  internalCustomerAlias String?  @map("internal_customer_alias") // 内部客户简称，禁公开
+  validUntil            DateTime? @map("valid_until")
+  ownerUserId           String?  @map("owner_user_id")
+  status                String   @default("draft") // draft/published/archived
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  items ShowcaseCollectionItem[]
+
+  @@index([status])
+  @@map("showcase_collections")
+}
+
+// 合集-案例 有序关联表（显式 join，承载 sortOrder）
+model ShowcaseCollectionItem {
+  collectionId String @map("collection_id")
+  collection   ShowcaseCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  caseId       String @map("case_id")
+  case         ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  sortOrder    Int    @default(0) @map("sort_order")
+
+  @@id([collectionId, caseId])
+  @@index([caseId])
+  @@map("showcase_collection_items")
+}
+
+// 短链（二维码/分享/归因跳转，短码随机不可猜，禁开放重定向）
+model ShowcaseShortLink {
+  id          String @id @default(cuid())
+  shortCode   String @unique @map("short_code") // 随机不可猜
+  targetType  String @map("target_type") // case/collection/demo_endpoint/external
+  targetId    String? @map("target_id")
+  targetUrl   String? @map("target_url") // 内部目标 URL，禁公开
+  status      String @default("active") // active/disabled/expired
+  validUntil  DateTime? @map("valid_until")
+  channelCode String? @map("channel_code")
+  openCount   Int     @default(0) @map("open_count")
+  lastOpenAt  DateTime? @map("last_open_at")
+  ownerUserId String? @map("owner_user_id")
+
+  caseId String? @map("case_id")
+  case   ShowcaseCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([targetType, targetId])
+  @@index([status])
+  @@map("showcase_short_links")
+}
+
+// 分类（平台/行业/能力，一级分类仅管理员维护）
+model ShowcaseTaxonomy {
+  id     String @id @default(cuid())
+  type   String // platform/industry/capability
+  slug   String
+  name   String
+  sortOrder Int     @default(0) @map("sort_order")
+  enabled   Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  aliases ShowcaseTagAlias[]
+
+  @@unique([type, slug])
+  @@index([type, enabled])
+  @@map("showcase_taxonomies")
+}
+
+// 标签同义词映射（alias → 规范分类）
+model ShowcaseTagAlias {
+  id     String @id @default(cuid())
+  alias  String @unique // 同义词
+  canonicalTaxonomyId String @map("canonical_taxonomy_id")
+  canonicalTaxonomy   ShowcaseTaxonomy @relation(fields: [canonicalTaxonomyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([canonicalTaxonomyId])
+  @@map("showcase_tag_aliases")
+}
+
+// 案例审核记录（提交/驳回/批准/发布/事实变更，含重大字段检测）
+model ShowcaseCaseReview {
+  id     String @id @default(cuid())
+  caseId String @map("case_id")
+  case   ShowcaseCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  reviewType  String  @map("review_type") // submit/approve/reject/publish/fact_change
+  submittedBy String? @map("submitted_by")
+  reviewedBy  String? @map("reviewed_by")
+  decision    String  @default("pending") // pending/approved/rejected/requested_changes
+  comments    String?
+  changedFields Json  @default("[]") @map("changed_fields") // 本次变更字段（重大字段检测）
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([caseId, createdAt])
+  @@index([decision])
+  @@map("showcase_case_reviews")
 }
