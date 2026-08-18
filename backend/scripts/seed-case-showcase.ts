@@ -606,11 +606,140 @@ async function seedMedia(): Promise<void> {
   console.log(`已种子媒体 ${MEDIA_SEEDS.length} 条`);
 }
 
+/** 授权/来源声明种子（PRD 附录 A「来源与声明」+ §6.1 四类案例发布必要条件） */
+interface AuthorizationSeed {
+  slug: string;
+  recordType: string;
+  grantor: string | null;
+  scope: string;
+  licenseName: string | null;
+  sourceUrl: string | null;
+  versionOrCommit: string | null;
+  restrictionNotes: string | null;
+}
+
+const AUTHORIZATIONS: AuthorizationSeed[] = [
+  // 九章交付（匿名）——客户授权 + 脱敏声明
+  {
+    slug: 'retail-private-domain-growth',
+    recordType: 'customer_authorization',
+    grantor: '客户名称已隐去',
+    scope: '已获客户对外展示授权，客户名称与业务数据已脱敏',
+    licenseName: null,
+    sourceUrl: null,
+    versionOrCommit: null,
+    restrictionNotes: '匿名案例，客户名称已隐去',
+  },
+  {
+    slug: 'cross-border-content-lead-gen',
+    recordType: 'customer_authorization',
+    grantor: '客户名称已隐去',
+    scope: '已获客户对外展示授权，客户名称与业务数据已脱敏',
+    licenseName: null,
+    sourceUrl: null,
+    versionOrCommit: null,
+    restrictionNotes: '匿名案例，客户名称已隐去',
+  },
+  // 开源演示——PRD 附录 C 真实开源项目 + 许可证 + 版本
+  {
+    slug: 'open-source-customer-support-bot',
+    recordType: 'oss_license',
+    grantor: 'f/wvw.dev 项目组',
+    scope: '本案例为开源能力演示，非九章客户交付项目',
+    licenseName: 'MIT',
+    sourceUrl: 'https://github.com/f/wvw.dev',
+    versionOrCommit: 'main',
+    restrictionNotes: '开源演示，复用前需核验许可证与依赖',
+  },
+  {
+    slug: 'open-source-content-workbench',
+    recordType: 'oss_license',
+    grantor: 'MrXujiang',
+    scope: '本案例为开源能力演示，非九章客户交付项目',
+    licenseName: 'GPL-3.0',
+    sourceUrl: 'https://github.com/MrXujiang/h5-Dooring',
+    versionOrCommit: 'main',
+    restrictionNotes: 'GPL-3.0，商业闭源集成需谨慎评估',
+  },
+  // 概念原型——演示数据声明
+  {
+    slug: 'ai-live-selection-prototype',
+    recordType: 'other',
+    grantor: null,
+    scope: '本案例用于方案沟通，不代表已正式上线',
+    licenseName: null,
+    sourceUrl: null,
+    versionOrCommit: null,
+    restrictionNotes: '概念原型，采用演示数据',
+  },
+  {
+    slug: 'smart-store-inspection-prototype',
+    recordType: 'other',
+    grantor: null,
+    scope: '本案例用于方案沟通，不代表已正式上线',
+    licenseName: null,
+    sourceUrl: null,
+    versionOrCommit: null,
+    restrictionNotes: '概念原型，采用演示数据',
+  },
+  // 可定制模板——模板演示数据声明
+  {
+    slug: 'wechat-account-operation-template',
+    recordType: 'other',
+    grantor: null,
+    scope: '展示内容为模板和演示数据，实际交付以确认需求为准',
+    licenseName: null,
+    sourceUrl: null,
+    versionOrCommit: null,
+    restrictionNotes: '可定制模板，演示数据',
+  },
+  {
+    slug: 'private-domain-sop-template',
+    recordType: 'other',
+    grantor: null,
+    scope: '展示内容为模板和演示数据，实际交付以确认需求为准',
+    licenseName: null,
+    sourceUrl: null,
+    versionOrCommit: null,
+    restrictionNotes: '可定制模板，演示数据',
+  },
+];
+
+async function seedAuthorizations(): Promise<void> {
+  for (const item of AUTHORIZATIONS) {
+    const target = await prisma.showcaseCase.findUnique({
+      where: { slug: item.slug },
+    });
+    if (!target) continue;
+
+    const existing = await prisma.showcaseAuthorization.findFirst({
+      where: { caseId: target.id },
+    });
+    if (existing) continue;
+
+    await prisma.showcaseAuthorization.create({
+      data: {
+        caseId: target.id,
+        recordType: item.recordType,
+        grantor: item.grantor,
+        scope: item.scope,
+        licenseName: item.licenseName,
+        sourceUrl: item.sourceUrl,
+        versionOrCommit: item.versionOrCommit,
+        reviewStatus: 'approved',
+        restrictionNotes: item.restrictionNotes,
+      },
+    });
+  }
+  console.log(`已种子授权记录 ${AUTHORIZATIONS.length} 条`);
+}
+
 async function main(): Promise<void> {
   await seedTaxonomies();
   await seedCases();
   await seedDemoEndpoints();
   await seedMedia();
+  await seedAuthorizations();
   console.log('案例展示中心种子数据完成');
   await prisma.$disconnect();
 }
