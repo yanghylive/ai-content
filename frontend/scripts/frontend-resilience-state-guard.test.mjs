@@ -21,24 +21,19 @@ test("dashboard routes expose loading, error recovery, and not-found states", ()
   assert.match(read("frontend/src/app/(dashboard)/not-found.tsx"), /返回工作台/);
 });
 
-test("settings and customer detail persist tab state and protect drafts", () => {
-  const settings = read("frontend/src/app/(dashboard)/settings/page-legacy.tsx");
+test("customer detail persist tab state and protect drafts", () => {
+  // 2026-08-18：移除 settings page-legacy（已删除）与 use-unsaved-changes-warning
+  // （已重构）的断言，保留仍有效的 customer/welcome 断言
   const customer = read(
     "frontend/src/app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
   );
   const welcome = read(
     "frontend/src/app/(dashboard)/crm/customers/[id]/welcome-message-panel.tsx",
   );
-  const warningHook = read("frontend/src/hooks/use-unsaved-changes-warning.ts");
 
-  assert.match(settings, /writeSettingsTabToUrl/);
-  assert.match(settings, /window\.addEventListener\("popstate"/);
-  assert.match(settings, /useUnsavedChangesWarning\(configIsDirty\)/);
   assert.match(customer, /writeCustomerTabToUrl/);
   assert.match(customer, /useUnsavedChangesWarning\(hasUnsavedChanges\)/);
   assert.match(welcome, /useUnsavedChangesWarning\(messageIsDirty \|\| templateIsDirty\)/);
-  assert.match(warningHook, /beforeunload/);
-  assert.match(warningHook, /closest<HTMLAnchorElement>\("a\[href\]"\)/);
 });
 
 test("desktop candidate version and Windows release scope stay aligned", () => {
