@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { Prisma, InteractionTaskStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 
@@ -67,35 +67,36 @@ export class InteractionThreadService {
 
   /** 视图 → 查询条件（终态 = COMPLETED/SKIPPED/NO_TARGET） */
   private buildViewWhere(view: ThreadView): Prisma.InteractionTaskWhereInput {
-    const terminal: InteractionTaskStatus[] = [
-      'COMPLETED',
-      'SKIPPED',
-      'NO_TARGET',
-    ];
-    const active: InteractionTaskStatus[] = [
+    // 用字面量数组而非 InteractionTaskStatus 枚举：该枚举在 SQLite 打包时会被转成 String，
+    // 导致 @prisma/client 无此导出（ncc 打包失败）。as const + spread 让 PG/SQLite 两端类型都兼容。
+    const terminal = ['COMPLETED', 'SKIPPED', 'NO_TARGET'] as const;
+    const active = [
       'QUEUED',
       'RUNNING',
       'WAITING_FOR_SEND_CONFIRMATION',
       'BLOCKED',
       'PAUSED',
-    ];
+    ] as const;
     switch (view) {
       case 'unassigned':
         // 未认领：无进程/人工认领，且非终态
-        return { claimedBy: null, status: { notIn: terminal } };
+        return { claimedBy: null, status: { notIn: [...terminal] } };
       case 'pending':
         // 待处理：排队/执行中/等待确认/阻塞/暂停
-        return { status: { in: active } };
+        return { status: { in: [...active] } };
       case 'replied':
         return { status: 'COMPLETED' };
       case 'needs_human':
         // 需人工接管：handoffState=needs_human 且非终态
-        return { handoffState: 'needs_human', status: { notIn: terminal } };
+        return {
+          handoffState: 'needs_human',
+          status: { notIn: [...terminal] },
+        };
       case 'overdue':
         // 超时：SLA 已过且非终态
         return {
           slaDueAt: { lt: new Date() },
-          status: { notIn: terminal },
+          status: { notIn: [...terminal] },
         };
       default:
         return {};
@@ -156,10 +157,7 @@ export class InteractionThreadService {
    * 某线程的全部互动事件按时间 + parentEventId 排序成回复串，
    * 每事件带 作者/身份/证据链接。互动记录展示基础。
    */
-  async threadDetail(input: {
-    key: string;
-    limit?: number;
-  }): Promise<{
+  async threadDetail(input: { key: string; limit?: number }): Promise<{
     key: string;
     events: Array<{
       id: string;
@@ -209,8 +207,10 @@ export class InteractionThreadService {
         roots.push(e);
       }
     }
-    const byTime = (a: (typeof threadEvents)[number], b: (typeof threadEvents)[number]) =>
-      a.occurredAt.getTime() - b.occurredAt.getTime();
+    const byTime = (
+      a: (typeof threadEvents)[number],
+      b: (typeof threadEvents)[number],
+    ) => a.occurredAt.getTime() - b.occurredAt.getTime();
     roots.sort(byTime);
     for (const list of children.values()) list.sort(byTime);
     const ordered: typeof threadEvents = [];
