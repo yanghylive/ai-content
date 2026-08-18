@@ -21,25 +21,24 @@ test("workflow steps fit the viewport without a hidden horizontal track", () => 
   assert.doesNotMatch(steps, /overflow-x-auto/);
 });
 
-test("narrow workspaces expose queue and context through titled drawers", () => {
+test("narrow workspaces expose context through a titled drawer", () => {
+  // 2026-08-18：V2 换皮——队列面板已合并移除，仅保留创作上下文 drawer；
+  // placement 固定 right（不再条件切换）；toolbar + Drawer isOpen 控制
   const tools = source("workspace-mobile-tools.tsx");
   assert.match(tools, /<Drawer/);
-  assert.match(tools, /xl:hidden/);
-  assert.match(tools, /内容队列/);
+  assert.match(tools, /isContextOpen/);
   assert.match(tools, /创作上下文/);
-  assert.match(tools, /placement=\{isQueueOpen \? "left" : "right"\}/);
+  assert.match(tools, /placement="right"/);
   assert.match(tools, /w-\[85vw\]/);
 });
 
-test("desktop keeps three columns while drawer panels stay out of mobile flow", () => {
+test("desktop keeps responsive columns while drawer panels stay out of mobile flow", () => {
+  // 2026-08-18：V2 换皮——三列 grid-cols-[280px_1fr_320px] 改单列基础
+  // + lg:order 断点；移动工具 Drawer variant 保留
   const client = source("content-workspace-client.tsx");
-  assert.match(
-    client,
-    /xl:grid-cols-\[280px_minmax\(0,1fr\)_320px\]/,
-  );
+  assert.match(client, /grid-cols-\[minmax\(0,1fr\)\]/);
   assert.match(client, /<WorkspaceMobileTools/);
-  assert.match(client, /hidden min-w-0 xl:order-1 xl:block/);
-  assert.match(client, /hidden min-w-0 xl:order-3 xl:block/);
+  assert.match(client, /lg:order-2/);
   assert.match(client, /variant="drawer"/);
 });
 
@@ -57,8 +56,8 @@ test("mobile editor keeps save and next-step actions at the viewport bottom", ()
   assert.match(editor, /--workspace-footer-left/);
   assert.match(editor, /--workspace-footer-width/);
   assert.match(editor, /md:left-\[var\(--workspace-footer-left\)\]/);
-  assert.match(editor, /xl:static/);
-  assert.match(editor, /mobilePanelOpen \? "hidden xl:flex"/);
+  assert.match(editor, /lg:static/);
+  assert.match(editor, /mobilePanelOpen \? "hidden lg:flex" : "flex"/);
   assert.match(editor, /max-sm:pl-14/);
   assert.match(editor, /onPress=\{onSave\}/);
   assert.match(editor, /saveState === "error" \? "重试保存" : "保存"/);
@@ -68,7 +67,8 @@ test("mobile editor keeps save and next-step actions at the viewport bottom", ()
 test("narrow layouts expose one save action and keep publish preparation in the review footer", () => {
   const header = source("workspace-header.tsx");
   const editor = source("content-editor.tsx");
-  assert.match(header, /className="hidden xl:inline-flex"/);
+  // 2026-08-18：header 重构为纯状态徽章（无操作按钮），隐藏类断言删除；
+  // 发布准备入口收敛到 editor footer（onPrepare/Tooltip prepareHint）
   assert.doesNotMatch(header, /onPrepare|进入发布准备|prepareHint/);
   assert.match(editor, /onPress=\{onPrepare\}/);
   assert.match(editor, /进入发布准备/);
