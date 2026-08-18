@@ -310,7 +310,8 @@ export class KaypalDesktopAuthController {
       tenantId: restored.tenantId,
       cookieName: AUTH_COOKIE_NAME,
       sessionToken: restored.sessionToken,
-      cookieHeader: `${AUTH_COOKIE_NAME}=${restored.sessionToken}`,
+      // S5 修复（2026-08-18）：不再回传 cookieHeader 明文（避免 local-mcp token
+      // 泄露时可直接冒充登录用户）。调用方可用 cookieName + sessionToken 自行拼接。
       expiresAt: restored.expiresAt.toISOString(),
       webRecoveryPath: this.createMcpWebSessionRecoveryPath(restored),
       user: {
@@ -391,8 +392,15 @@ export class KaypalDesktopAuthController {
     if (!normalizedDeviceId) {
       return null;
     }
+    // S12 优化（2026-08-18）：SQL 层先过滤未过期 + 用户活跃，避免 take 50
+    // 中大量无效候选（过期/停用）挤占窗口；deviceId 存于 JSON metadata，
+    // SQLite 下无法 Prisma where，保留内存过滤
     const sessions = await this.prisma.userSession.findMany({
       include: { user: true },
+      where: {
+        expiresAt: { gt: new Date() },
+        user: { status: 'active' },
+      },
       orderBy: [{ lastUsedAt: 'desc' }, { createdAt: 'desc' }],
       take: 50,
     });

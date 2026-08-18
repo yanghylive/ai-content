@@ -35,6 +35,13 @@ export function ensureLocalMcpAuthToken() {
   mkdirSync(dirname(filePath), { recursive: true });
 
   if (existsSync(filePath)) {
+    // S5 修复（2026-08-18）：存量文件读取时强制 0600（历史上曾有 0644 落盘
+    // 的旧文件，仅创建时 chmod 不覆盖已存在文件，导致本机任意进程可读 token）
+    try {
+      chmodSync(filePath, 0o600);
+    } catch {
+      // Windows does not use POSIX file modes.
+    }
     const parsed = JSON.parse(
       readFileSync(filePath, 'utf8'),
     ) as Partial<LocalMcpAuthFile>;
