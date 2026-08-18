@@ -8,22 +8,36 @@ import { AcquisitionQuotaService } from './acquisition-quota.service';
 import { DouyinAdapter } from './adapters/douyin.adapter';
 import { ManualAdapter } from './adapters/manual.adapter';
 import { VideoLinkAdapter } from './adapters/video-link.adapter';
+import { ShipinhaoAdapter, WecomAdapter, KuaishouAdapter, XiaohongshuAdapter } from './adapters/platform-connectors';
+import { DiscoveryRegistry } from './discovery-registry.service';
+import { DiscoveryController } from './discovery.controller';
 
 @Module({
   imports: [LocalEngineModule],
+  controllers: [DiscoveryController],
   providers: [
     DiscoveryBrowserRunner,
     AcquisitionQuotaService,
     DouyinAdapter,
     ManualAdapter,
     VideoLinkAdapter,
+    ShipinhaoAdapter,
+    WecomAdapter,
+    KuaishouAdapter,
+    XiaohongshuAdapter,
+    DiscoveryRegistry,
   ],
   exports: [
     DiscoveryBrowserRunner,
     AcquisitionQuotaService,
+    DiscoveryRegistry,
     DouyinAdapter,
     ManualAdapter,
     VideoLinkAdapter,
+    ShipinhaoAdapter,
+    WecomAdapter,
+    KuaishouAdapter,
+    XiaohongshuAdapter,
   ],
 })
 export class DiscoveryModule {}

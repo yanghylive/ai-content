@@ -1,6 +1,7 @@
 // 视频号 adapter（开发文档 §7.3 顺序 3，Sprint 5 T5.3）
 // 官方授权内容/评论/账号 + 人工链接导入；不用个人微信 UI 自动化。
 import type { DiscoveryAdapter } from '../discovery.adapter';
+import { DiscoveryBrowserRunner } from '../discovery-browser-runner';
 import type { DiscoveryCapability, DiscoveryContext, DiscoveryInput, DiscoveryItem, ExternalContentRef } from '../discovery.types';
 
 export class ShipinhaoAdapter implements DiscoveryAdapter {
@@ -25,7 +26,8 @@ export class ShipinhaoAdapter implements DiscoveryAdapter {
   }
 
   async *discover(_input: DiscoveryInput, _ctx: DiscoveryContext): AsyncIterable<DiscoveryItem> {
-    return; // 人工链接导入见 VideoLinkAdapter；官方授权后实现
+    // P1-4（2026-08-17）：空实现不再伪装成功，显式抛 unsupported
+    throw new Error('unsupported: 视频号无官方授权时仅支持人工链接导入（VideoLinkAdapter）');
   }
 
   async fetchContent(ref: ExternalContentRef, _ctx: DiscoveryContext) {
@@ -59,7 +61,7 @@ export class WecomAdapter implements DiscoveryAdapter {
   }
 
   async *discover(_input: DiscoveryInput, _ctx: DiscoveryContext): AsyncIterable<DiscoveryItem> {
-    return;
+    throw new Error('unsupported: 企微无企业授权时仅支持人工导入');
   }
 
   async fetchContent(ref: ExternalContentRef, _ctx: DiscoveryContext) {
@@ -74,25 +76,43 @@ export class WecomAdapter implements DiscoveryAdapter {
 export class KuaishouAdapter implements DiscoveryAdapter {
   readonly platform = 'kuaishou';
 
-  constructor(private readonly config: { authorized?: boolean } = {}) {}
+  constructor(
+    private readonly config: { authorized?: boolean } = {},
+    private readonly runner?: DiscoveryBrowserRunner,
+  ) {}
 
   async capabilities(): Promise<DiscoveryCapability> {
-    const authorized = this.config.authorized ?? false;
+    const browserReady = Boolean(this.runner);
     return {
       platform: 'kuaishou',
-      modes: ['video-link', 'target-account'],
-      supportsComment: authorized,
+      modes: browserReady ? ['keyword', 'video-link', 'target-account'] : ['video-link'],
+      supportsComment: browserReady,
       supportsDm: false,
-      publishMode: authorized ? 'manual' : 'collect-only',
-      dailyQuota: authorized ? 200 : 0,
-      ...(authorized ? {} : {
-        unavailableReason: '快手需官方允许的账号/内容/关系链接入。未授权时仅支持人工链接导入。',
+      publishMode: browserReady ? 'manual' : 'collect-only',
+      dailyQuota: browserReady ? 200 : 0,
+      ...(browserReady ? {} : {
+        unavailableReason: '快手需浏览器会话（用户登录态）或官方授权。未启用时仅支持人工链接导入。',
       }),
     };
   }
 
-  async *discover(_input: DiscoveryInput, _ctx: DiscoveryContext): AsyncIterable<DiscoveryItem> {
-    return;
+  async *discover(input: DiscoveryInput, _ctx: DiscoveryContext): AsyncIterable<DiscoveryItem> {
+    if (!this.runner) throw new Error('unsupported: 快手浏览器会话未启用');
+    if (input.mode === 'keyword') {
+      const keyword = typeof input.input?.keyword === 'string' ? input.input.keyword : '';
+      if (!keyword?.trim()) throw new Error('关键词模式需要 keyword 参数');
+      const items = await this.runner.searchByKeyword({ platform: 'kuaishou', accountId: input.accountId, keyword, limit: input.limit });
+      for (const item of items) yield item;
+      return;
+    }
+    if (input.mode === 'target-account') {
+      const targetId = typeof input.input?.targetId === 'string' ? input.input.targetId : '';
+      if (!targetId?.trim()) throw new Error('目标账号模式需要 targetId 参数');
+      const items = await this.runner.listAccountWorks({ platform: 'kuaishou', accountId: input.accountId, targetId, limit: input.limit });
+      for (const item of items) yield item;
+      return;
+    }
+    throw new Error(`unsupported: 快手不支持的发现模式 ${input.mode}`);
   }
 
   async fetchContent(ref: ExternalContentRef, _ctx: DiscoveryContext) {
@@ -107,25 +127,43 @@ export class KuaishouAdapter implements DiscoveryAdapter {
 export class XiaohongshuAdapter implements DiscoveryAdapter {
   readonly platform = 'xiaohongshu';
 
-  constructor(private readonly config: { authorized?: boolean } = {}) {}
+  constructor(
+    private readonly config: { authorized?: boolean } = {},
+    private readonly runner?: DiscoveryBrowserRunner,
+  ) {}
 
   async capabilities(): Promise<DiscoveryCapability> {
-    const authorized = this.config.authorized ?? false;
+    const browserReady = Boolean(this.runner);
     return {
       platform: 'xiaohongshu',
-      modes: ['video-link', 'target-account'],
-      supportsComment: authorized,
+      modes: browserReady ? ['keyword', 'video-link', 'target-account'] : ['video-link'],
+      supportsComment: browserReady,
       supportsDm: false,
-      publishMode: authorized ? 'manual' : 'collect-only',
-      dailyQuota: authorized ? 200 : 0,
-      ...(authorized ? {} : {
-        unavailableReason: '小红书按 capability 允许的 connector 接入；未授权时 unsupported 置灰，不报假成功。',
+      publishMode: browserReady ? 'manual' : 'collect-only',
+      dailyQuota: browserReady ? 200 : 0,
+      ...(browserReady ? {} : {
+        unavailableReason: '小红书需浏览器会话（用户登录态）或官方 connector 接入；未启用时仅支持人工链接导入。',
       }),
     };
   }
 
-  async *discover(_input: DiscoveryInput, _ctx: DiscoveryContext): AsyncIterable<DiscoveryItem> {
-    return;
+  async *discover(input: DiscoveryInput, _ctx: DiscoveryContext): AsyncIterable<DiscoveryItem> {
+    if (!this.runner) throw new Error('unsupported: 小红书浏览器会话未启用');
+    if (input.mode === 'keyword') {
+      const keyword = typeof input.input?.keyword === 'string' ? input.input.keyword : '';
+      if (!keyword?.trim()) throw new Error('关键词模式需要 keyword 参数');
+      const items = await this.runner.searchByKeyword({ platform: 'xiaohongshu', accountId: input.accountId, keyword, limit: input.limit });
+      for (const item of items) yield item;
+      return;
+    }
+    if (input.mode === 'target-account') {
+      const targetId = typeof input.input?.targetId === 'string' ? input.input.targetId : '';
+      if (!targetId?.trim()) throw new Error('目标账号模式需要 targetId 参数');
+      const items = await this.runner.listAccountWorks({ platform: 'xiaohongshu', accountId: input.accountId, targetId, limit: input.limit });
+      for (const item of items) yield item;
+      return;
+    }
+    throw new Error(`unsupported: 小红书不支持的发现模式 ${input.mode}`);
   }
 
   async fetchContent(ref: ExternalContentRef, _ctx: DiscoveryContext) {
