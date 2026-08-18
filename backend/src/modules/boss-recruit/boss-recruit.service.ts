@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -19,16 +23,22 @@ export class BossRecruitService {
 
   async getState(userId: string): Promise<BossRecruitState> {
     const [accounts, candidates, tasks, pendingTasks] = await Promise.all([
-      this.prisma.bossAccount.findMany({ where: { userId }, orderBy: { updatedAt: 'desc' } }),
+      this.prisma.bossAccount.findMany({
+        where: { userId },
+        orderBy: { updatedAt: 'desc' },
+      }),
       this.prisma.bossCandidate.count({ where: { userId } }),
       this.prisma.bossTask.count({ where: { userId } }),
-      this.prisma.bossTask.count({ where: { userId, status: { in: ['queued', 'running'] } } }),
+      this.prisma.bossTask.count({
+        where: { userId, status: { in: ['queued', 'running'] } },
+      }),
     ]);
     return {
       accounts: accounts.map((a) => ({
         id: a.id,
         name: a.name,
-        loginStatus: a.loginStatus as BossRecruitState['accounts'][number]['loginStatus'],
+        loginStatus:
+          a.loginStatus as BossRecruitState['accounts'][number]['loginStatus'],
         lastCheckedAt: a.lastCheckedAt ? a.lastCheckedAt.toISOString() : null,
       })),
       candidates,
@@ -38,9 +48,29 @@ export class BossRecruitService {
   }
 
   /** 上传登录态（storageState JSON） */
-  async saveCookie(userId: string, storageState: Record<string, unknown>): Promise<{ ok: boolean; accountId: string }> {
+  async saveCookie(
+    userId: string,
+    storageState: Record<string, unknown>,
+  ): Promise<{ ok: boolean; accountId: string }> {
     if (!storageState || typeof storageState !== 'object') {
-      throw new BadRequestException('storageState 必须是对象（含 cookies / localStorage）');
+      throw new BadRequestException(
+        'storageState 必须是对象（含 cookies / localStorage）',
+      );
+    }
+    // S10 加固（2026-08-18）：结构校验——cookies 必须为数组（storageState 规范），
+    // 防止任意畸形 JSON 落盘
+    if (
+      'cookies' in storageState &&
+      !Array.isArray(storageState.cookies)
+    ) {
+      throw new BadRequestException('storageState.cookies 必须是数组');
+    }
+    // S10 加固：大小上限（5MB），防无界磁盘写
+    const serialized = JSON.stringify(storageState);
+    if (serialized.length > 5 * 1024 * 1024) {
+      throw new BadRequestException(
+        'storageState 过大（超过 5MB），请重新导出后重试',
+      );
     }
     const account = await this.prisma.bossAccount.create({
       data: { userId, loginStatus: 'unknown' },
@@ -51,7 +81,11 @@ export class BossRecruitService {
       'boss-storage-states',
       `${account.id}.json`,
     );
-    writeFileSync(storagePath, JSON.stringify(storageState), 'utf8');
+    // S10 加固：0600 权限（含真实平台 cookies，禁止其他本机进程读取）
+    writeFileSync(storagePath, serialized, {
+      encoding: 'utf8',
+      mode: 0o600,
+    });
     await this.prisma.bossAccount.update({
       where: { id: account.id },
       data: { storageStatePath: storagePath, updatedAt: new Date() },
@@ -59,12 +93,21 @@ export class BossRecruitService {
     return { ok: true, accountId: account.id };
   }
 
-  async checkLogin(userId: string, accountId: string): Promise<BossLoginCheckResult> {
+  async checkLogin(
+    userId: string,
+    accountId: string,
+  ): Promise<BossLoginCheckResult> {
     const account = await this.getOwnedAccount(userId, accountId);
-    const result = await this.bossClient.checkLogin(account.storageStatePath || undefined);
+    const result = await this.bossClient.checkLogin(
+      account.storageStatePath || undefined,
+    );
     await this.prisma.bossAccount.update({
       where: { id: account.id },
-      data: { loginStatus: result.status, lastCheckedAt: new Date(), updatedAt: new Date() },
+      data: {
+        loginStatus: result.status,
+        lastCheckedAt: new Date(),
+        updatedAt: new Date(),
+      },
     });
     return result;
   }
@@ -75,7 +118,12 @@ export class BossRecruitService {
       throw new BadRequestException('该账号未配置登录态，请先上传 Boss 登录态');
     }
     const task = await this.prisma.bossTask.create({
-      data: { userId, accountId: account.id, taskType: 'refresh_position', status: 'running' },
+      data: {
+        userId,
+        accountId: account.id,
+        taskType: 'refresh_position',
+        status: 'running',
+      },
     });
     try {
       const result = await this.bossClient.refreshPositions(
@@ -84,7 +132,11 @@ export class BossRecruitService {
       );
       await this.prisma.bossTask.update({
         where: { id: task.id },
-        data: { status: 'completed', result: result as never, updatedAt: new Date() },
+        data: {
+          status: 'completed',
+          result: result as never,
+          updatedAt: new Date(),
+        },
       });
       return result;
     } catch (error) {
@@ -109,7 +161,12 @@ export class BossRecruitService {
       throw new BadRequestException('缺少候选人名称');
     }
     const task = await this.prisma.bossTask.create({
-      data: { userId, accountId: account.id, taskType: 'auto_hello', status: 'running' },
+      data: {
+        userId,
+        accountId: account.id,
+        taskType: 'auto_hello',
+        status: 'running',
+      },
     });
     try {
       const result = await this.bossClient.sendHello(
@@ -119,19 +176,25 @@ export class BossRecruitService {
       );
       await this.prisma.bossTask.update({
         where: { id: task.id },
-        data: { status: 'completed', result: result as never, updatedAt: new Date() },
+        data: {
+          status: 'completed',
+          result: result as never,
+          updatedAt: new Date(),
+        },
       });
       if (result.ok) {
-        await this.prisma.bossCandidate.upsert({
-          where: { id: `${account.id}:${input.candidateName.trim()}` },
-          create: {
-            userId,
-            accountId: account.id,
-            name: input.candidateName.trim(),
-            status: 'contacted',
-          },
-          update: { status: 'contacted', updatedAt: new Date() },
-        }).catch(() => undefined);
+        await this.prisma.bossCandidate
+          .upsert({
+            where: { id: `${account.id}:${input.candidateName.trim()}` },
+            create: {
+              userId,
+              accountId: account.id,
+              name: input.candidateName.trim(),
+              status: 'contacted',
+            },
+            update: { status: 'contacted', updatedAt: new Date() },
+          })
+          .catch(() => undefined);
       }
       return result;
     } catch (error) {

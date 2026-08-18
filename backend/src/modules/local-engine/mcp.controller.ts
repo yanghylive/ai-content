@@ -87,6 +87,27 @@ export class McpController {
   }
 
   /**
+   * Origin 是否为本地源（localhost / 127.0.0.1 / ::1）——S11 DNS rebinding 防护。
+   * 浏览器场景下 Origin 是页面地址，不会随 DNS 解析改变：恶意网页即使把域名
+   * rebinding 到 127.0.0.1，其 Origin 仍是攻击者域名 → 被拒绝。无 Origin 的
+   * 请求（curl / 原生 MCP 客户端）放行。
+   */
+  private static isLocalOrigin(origin: string | undefined): boolean {
+    if (!origin) return true;
+    try {
+      const host = new URL(origin).hostname.toLowerCase();
+      return (
+        host === 'localhost' ||
+        host === '127.0.0.1' ||
+        host === '::1' ||
+        host === '[::1]'
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * 本机访问绕过 (loopback IPv4/IPv6) 允许 dev 直连
    * 远程必须带 X-Kaypal-Mcp-Token，返回鉴权后的能力级别：
    * - loopback：本机直连，全权限
@@ -100,7 +121,18 @@ export class McpController {
    */
   private checkAuth(req: Request): 'loopback' | 'full' | 'readonly' {
     const remote = req.ip || req.socket.remoteAddress || '';
-    if (McpController.isLoopbackRemote(remote)) return 'loopback';
+    if (McpController.isLoopbackRemote(remote)) {
+      // S11 加固（2026-08-18）：DNS rebinding 防护——TCP 来源为本机时，若请求带
+      // 非本机 Origin（浏览器跨站页面场景），拒绝 loopback 全权限（browser_run_code
+      // 等敏感工具可被恶意网页调用），降级要求携带 token。
+      if (!McpController.isLocalOrigin(req.headers.origin)) {
+        throw new HttpException(
+          'Forbidden: cross-origin loopback access',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+      return 'loopback';
+    }
     const fullToken = this.config.get<string>('KAYPAL_MCP_TOKEN') || '';
     if (!fullToken) {
       this.logger.warn(
@@ -192,9 +224,7 @@ export class McpController {
     if (!body || body.method !== 'tools/call') return;
     const name = body.params?.name;
     if (typeof name === 'string' && SENSITIVE_MCP_TOOLS.has(name)) {
-      this.logger.warn(
-        `[mcp-cap] 只读 token 尝试调用敏感工具 ${name}，已拒绝`,
-      );
+      this.logger.warn(`[mcp-cap] 只读 token 尝试调用敏感工具 ${name}，已拒绝`);
       throw new HttpException(
         `Tool "${name}" requires write permission`,
         HttpStatus.FORBIDDEN,
@@ -214,8 +244,7 @@ export class McpController {
       this.checkCapability(level, req);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unauthorized';
-      const status =
-        error instanceof HttpException ? error.getStatus() : 401;
+      const status = error instanceof HttpException ? error.getStatus() : 401;
       res.status(status).json({
         jsonrpc: '2.0',
         error: { code: -32001, message },
