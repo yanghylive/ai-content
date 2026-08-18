@@ -27,7 +27,7 @@ AI Content 是一套面向内容团队与独立创作者的 AI 内容生产系�
 
 - 前端：Next.js、React、HeroUI、Tailwind CSS
 - 后端：NestJS、Prisma
-- 数据层：PostgreSQL、Redis
+- 数据层：**SQLite（桌面/本地单文件模式，默认）**；PostgreSQL + Redis（云服务/多租户部署模式，见 docker-compose.yml）
 - AI 能力：OpenAI 兼容模型接入
 - 内容采集：RSS、API、网页抓取
 - 其他能力：Markdown 渲染、HTML 模板生成、图片处理
@@ -49,6 +49,9 @@ cp frontend/.env.example frontend/.env.local
 ```
 
 ### 3. 启动数据库与 Redis
+
+> 桌面/本地模式（默认，SQLite 单文件）**无需启动数据库**，直接进入第 4 步。
+> 仅云服务/多租户部署模式需要 PostgreSQL 与 Redis：
 
 ```bash
 docker compose up -d
