@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -38,6 +39,7 @@ export type LeadEvent = LeadCreatedEvent | LeadConvertedEvent;
 @Injectable()
 export class LeadEventBus {
   private readonly emitter = new EventEmitter();
+  private readonly logger = new Logger(LeadEventBus.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -51,7 +53,9 @@ export class LeadEventBus {
           payload: event as unknown as Prisma.InputJsonValue,
         },
       })
-      .catch(() => {});
+      .catch((error) => {
+        this.logger.warn(`lead outbox 落库失败：${(error as Error).message}`);
+      });
     this.emitter.emit(event.type, event);
   }
 

@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
@@ -81,6 +82,8 @@ export interface ConvertLeadResult {
 
 @Injectable()
 export class LeadConvertService {
+  private readonly logger = new Logger(LeadConvertService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly identityResolver?: IdentityResolverService,
@@ -366,7 +369,10 @@ export class LeadConvertService {
           },
           status: 'published',
         },
-      }).catch(() => null); // outbox 失败不阻断主事务（审计尽力而为）
+      }).catch((error) => {
+        this.logger.warn(`domain outbox 落库失败：${(error as Error).message}`);
+        return null;
+      }); // outbox 失败不阻断主事务（审计尽力而为，错误不静默）
 
       return {
         lead: {
