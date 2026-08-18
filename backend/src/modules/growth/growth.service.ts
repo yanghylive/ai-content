@@ -6900,30 +6900,40 @@ export class GrowthService implements OnModuleInit {
   }
   // ============ 曝光账号管理（对标炼刀 /auto/exposure/accounts） ============
 
-  async listExposureAccounts() {
-    return this.prisma.exposureAccount.findMany({ orderBy: { createdAt: 'desc' } });
+  // 租户隔离（P0-3 修复 2026-08-17）：曝光账号按 userId 隔离
+  async listExposureAccounts(userId: string) {
+    return this.prisma.exposureAccount.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
-  async createExposureAccount(input: {
-    platform?: string;
-    accountId: string;
-    name: string;
-    note?: string;
-  }) {
+  async createExposureAccount(
+    userId: string,
+    input: {
+      platform?: string;
+      accountId: string;
+      name: string;
+      note?: string;
+    },
+  ) {
     const accountId = input.accountId?.trim();
     const name = input.name?.trim();
     if (!accountId || !name) {
       throw new BadRequestException('账号 ID 与名称不能为空');
     }
+    const platform = input.platform ?? 'douyin';
     return this.prisma.exposureAccount.upsert({
       where: {
-        platform_accountId: {
-          platform: input.platform ?? 'douyin',
+        userId_platform_accountId: {
+          userId,
+          platform,
           accountId,
         },
       },
       create: {
-        platform: input.platform ?? 'douyin',
+        userId,
+        platform,
         accountId,
         name,
         note: input.note ?? null,
@@ -6932,8 +6942,8 @@ export class GrowthService implements OnModuleInit {
     });
   }
 
-  async setExposureAccountStatus(id: string, status: string) {
-    const account = await this.prisma.exposureAccount.findUnique({ where: { id } });
+  async setExposureAccountStatus(userId: string, id: string, status: string) {
+    const account = await this.prisma.exposureAccount.findFirst({ where: { id, userId } });
     if (!account) throw new NotFoundException('曝光账号不存在');
     if (!['active', 'disabled'].includes(status)) {
       throw new BadRequestException('状态只能是 active / disabled');
@@ -6944,8 +6954,8 @@ export class GrowthService implements OnModuleInit {
     });
   }
 
-  async removeExposureAccount(id: string) {
-    const account = await this.prisma.exposureAccount.findUnique({ where: { id } });
+  async removeExposureAccount(userId: string, id: string) {
+    const account = await this.prisma.exposureAccount.findFirst({ where: { id, userId } });
     if (!account) throw new NotFoundException('曝光账号不存在');
     await this.prisma.exposureAccount.delete({ where: { id } });
     return { id, deleted: true };

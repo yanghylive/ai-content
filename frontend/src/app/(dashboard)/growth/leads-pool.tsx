@@ -340,7 +340,7 @@ export function LeadsPool() {
                       <button
                         type="button"
                         className="flex items-center gap-2 text-left"
-                        onClick={() => router.push(`/growth/leads/${lead.id}`)}
+                        onClick={() => router.push(`/growth/leads/detail?leadId=${lead.id}`)}
                       >
                         <p className="font-medium text-[var(--kaypal-v3-ink)] hover:text-[var(--kaypal-v3-accent)]">
                           {lead.nickname || "未知用户"}

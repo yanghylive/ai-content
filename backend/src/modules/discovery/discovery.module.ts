@@ -4,13 +4,26 @@
 import { Module } from '@nestjs/common';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { DiscoveryBrowserRunner } from './discovery-browser-runner';
+import { AcquisitionQuotaService } from './acquisition-quota.service';
 import { DouyinAdapter } from './adapters/douyin.adapter';
 import { ManualAdapter } from './adapters/manual.adapter';
 import { VideoLinkAdapter } from './adapters/video-link.adapter';
 
 @Module({
   imports: [LocalEngineModule],
-  providers: [DiscoveryBrowserRunner, DouyinAdapter, ManualAdapter, VideoLinkAdapter],
-  exports: [DiscoveryBrowserRunner, DouyinAdapter, ManualAdapter, VideoLinkAdapter],
+  providers: [
+    DiscoveryBrowserRunner,
+    AcquisitionQuotaService,
+    DouyinAdapter,
+    ManualAdapter,
+    VideoLinkAdapter,
+  ],
+  exports: [
+    DiscoveryBrowserRunner,
+    AcquisitionQuotaService,
+    DouyinAdapter,
+    ManualAdapter,
+    VideoLinkAdapter,
+  ],
 })
 export class DiscoveryModule {}
