@@ -173,12 +173,38 @@ function checkProdImportsDemo() {
   }
 }
 
-// 检查 2：release 构建时 ENABLE_DEMO 必须 false
+// 检查 2：release 构建时 demo flag 必须 false（前端构建期 NEXT_PUBLIC_ENABLE_DEMO + 后端运行时 ENABLE_DEMO 双名覆盖）
 function checkReleaseDemoFlag() {
   const isRelease = process.env.NODE_ENV === 'production' || process.env.CI_RELEASE === 'true';
-  const demoEnabled = process.env.ENABLE_DEMO === 'true';
-  if (isRelease && demoEnabled) {
+  const frontendDemoEnabled = process.env.NEXT_PUBLIC_ENABLE_DEMO === 'true';
+  const backendDemoEnabled = process.env.ENABLE_DEMO === 'true';
+  if (isRelease && frontendDemoEnabled) {
+    addViolation('release_demo_enabled', '(env)', `release 构建时 NEXT_PUBLIC_ENABLE_DEMO=true，合规书第五节第 2 条要求 release 必须 false`);
+  }
+  if (isRelease && backendDemoEnabled) {
     addViolation('release_demo_enabled', '(env)', `release 构建时 ENABLE_DEMO=true，合规书第五节第 2 条要求 release 必须 false`);
+  }
+}
+
+// 检查 6（S9 新增，2026-08-18）：构建产物（frontend/out/）不得含 demo 路由
+// 防止 webpack IgnorePlugin 失效（曾指向不存在目录）导致 out/demo/*.html 泄漏进发布包
+function checkNoDemoInArtifacts() {
+  if (process.env.NEXT_PUBLIC_ENABLE_DEMO === 'true') {
+    return; // 本地演示构建放行
+  }
+  const outDemo = join(ROOT, 'frontend', 'out', 'demo');
+  if (existsSync(outDemo)) {
+    addViolation('demo_in_artifacts', 'frontend/out/demo/', `构建产物含 demo 路由（IgnorePlugin 未生效？）。demo 实现位于 src/app/demo/**，next.config.ts 的 IgnorePlugin resourceRegExp 必须匹配 src/app/demo/，否则 demo 页面会进发布包`);
+  }
+  // 兜底：扫描 out/ 下所有含 demo 的 html 入口
+  const outDir = join(ROOT, 'frontend', 'out');
+  if (existsSync(outDir)) {
+    for (const f of walk(outDir)) {
+      const rel = relative(ROOT, f).split(sep).join('/');
+      if (/\bdemo\b/.test(rel) && /\.html$/.test(rel)) {
+        addViolation('demo_in_artifacts', rel, '构建产物含 demo 页面入口');
+      }
+    }
   }
 }
 
@@ -260,6 +286,7 @@ function main() {
   checkSensitiveLiterals();
   checkRealPlatformSeeds();
   checkDisclaimerFile();
+  checkNoDemoInArtifacts();
 
   console.log(`检查完成，发现 ${violations.length} 项违规`);
   console.log();
