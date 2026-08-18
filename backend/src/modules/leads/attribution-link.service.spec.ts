@@ -34,7 +34,8 @@ describe('AttributionLinkService', () => {
     expect(upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          fromType_fromId_toType_toId_model: {
+          tenantId_fromType_fromId_toType_toId_model: {
+            tenantId: 'tenant-1',
             fromType: 'content',
             fromId: 'article-1',
             toType: 'publish',

@@ -72,7 +72,8 @@ export class AttributionLinkService {
     const model = input.model ?? 'deterministic';
     return this.prisma.attributionLink.upsert({
       where: {
-        fromType_fromId_toType_toId_model: {
+        tenantId_fromType_fromId_toType_toId_model: {
+          tenantId: owner.tenantId ?? 'legacy-local-desktop',
           fromType: input.fromType,
           fromId: input.fromId,
           toType: input.toType,
@@ -81,7 +82,7 @@ export class AttributionLinkService {
         },
       },
       create: {
-        tenantId: owner.tenantId ?? null,
+        tenantId: owner.tenantId ?? 'legacy-local-desktop',
         userId: owner.userId,
         fromType: input.fromType,
         fromId: input.fromId,

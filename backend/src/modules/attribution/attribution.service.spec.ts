@@ -42,7 +42,7 @@ describe('AttributionEventStore', () => {
     expect(prisma.attributionLink.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          fromType_fromId_toType_toId_model: expect.objectContaining({
+          tenantId_fromType_fromId_toType_toId_model: expect.objectContaining({
             fromType: 'content', fromId: 'c1', toType: 'publish', toId: 'p1',
           }),
         }),

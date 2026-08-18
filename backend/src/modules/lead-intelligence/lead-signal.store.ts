@@ -31,7 +31,7 @@ export class LeadSignalStore {
           tenantId: s.tenantId,
           leadId: s.leadId,
           type: s.type,
-          evidenceId: s.evidenceId ?? null,
+          evidenceId: s.evidenceId ?? '',
         },
         select: { id: true },
       });
