@@ -342,17 +342,17 @@ const CASES: CaseSeed[] = [
   },
 ];
 
-/** 演示体验入口：真实可访问地址 + 对外短链代码（对应 ShowcaseShortLink） */
+/** 演示体验入口：按主平台配「在线体验 / 小程序码 / 预约演示」 */
 interface DemoEndpointSeed {
   slug: string;
   endpointType: string;
-  targetUrl: string;
-  shortCode: string;
+  targetUrl?: string;
+  shortCode?: string;
   allowedDevices: string[];
   accessInstruction: string;
 }
 
-/** 需要挂「在线体验」入口的案例（targetUrl 为九章真实部署的开源应用库，短链跳转） */
+/** 每个案例都配体验入口（web 在线体验 / 小程序码 / 预约演示） */
 const DEMO_ENDPOINTS: DemoEndpointSeed[] = [
   {
     slug: 'open-source-customer-support-bot',
@@ -369,6 +369,48 @@ const DEMO_ENDPOINTS: DemoEndpointSeed[] = [
     shortCode: 'jzhalo',
     allowedDevices: ['desktop'],
     accessInstruction: '九章部署的开源应用库，新窗口打开',
+  },
+  {
+    slug: 'mingde-vp-chamber',
+    endpointType: 'wechat_mini_program',
+    allowedDevices: ['mobile'],
+    accessInstruction: '微信小程序，扫码体验',
+  },
+  {
+    slug: 'retail-private-domain-growth',
+    endpointType: 'wechat_mini_program',
+    allowedDevices: ['mobile'],
+    accessInstruction: '微信小程序，扫码体验',
+  },
+  {
+    slug: 'cross-border-content-lead-gen',
+    endpointType: 'appointment',
+    allowedDevices: ['desktop', 'mobile'],
+    accessInstruction: '预约一对一产品演示',
+  },
+  {
+    slug: 'ai-live-selection-prototype',
+    endpointType: 'appointment',
+    allowedDevices: ['desktop', 'mobile'],
+    accessInstruction: '预约一对一产品演示',
+  },
+  {
+    slug: 'smart-store-inspection-prototype',
+    endpointType: 'appointment',
+    allowedDevices: ['mobile'],
+    accessInstruction: '预约一对一产品演示',
+  },
+  {
+    slug: 'wechat-account-operation-template',
+    endpointType: 'appointment',
+    allowedDevices: ['desktop', 'mobile'],
+    accessInstruction: '预约一对一产品演示',
+  },
+  {
+    slug: 'private-domain-sop-template',
+    endpointType: 'appointment',
+    allowedDevices: ['desktop', 'mobile'],
+    accessInstruction: '预约一对一产品演示',
   },
 ];
 
@@ -555,8 +597,8 @@ async function seedDemoEndpoints(): Promise<void> {
       data: {
         caseId: target.id,
         endpointType: item.endpointType,
-        targetUrl: item.targetUrl,
-        shortCode: item.shortCode,
+        targetUrl: item.targetUrl ?? null,
+        shortCode: item.shortCode ?? null,
         allowedDevices: item.allowedDevices,
         iframeAllowed: false,
         accessInstruction: item.accessInstruction,
@@ -566,18 +608,20 @@ async function seedDemoEndpoints(): Promise<void> {
       },
     });
 
-    // 同步创建短链记录（/r/:shortCode → targetUrl），让「在线体验」可跳转
-    await prisma.showcaseShortLink.upsert({
-      where: { shortCode: item.shortCode },
-      update: { targetUrl: item.targetUrl, status: 'active' },
-      create: {
-        shortCode: item.shortCode,
-        targetType: 'case',
-        targetId: target.id,
-        targetUrl: item.targetUrl,
-        status: 'active',
-      },
-    });
+    // 仅 web/download 等需要短链的入口同步创建短链记录
+    if (item.shortCode && item.targetUrl) {
+      await prisma.showcaseShortLink.upsert({
+        where: { shortCode: item.shortCode },
+        update: { targetUrl: item.targetUrl, status: 'active' },
+        create: {
+          shortCode: item.shortCode,
+          targetType: 'case',
+          targetId: target.id,
+          targetUrl: item.targetUrl,
+          status: 'active',
+        },
+      });
+    }
   }
   console.log(`已种子演示入口 ${DEMO_ENDPOINTS.length} 条（含短链）`);
 }
