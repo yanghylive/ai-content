@@ -33,12 +33,18 @@ const checks = [
     })(),
   },
   {
-    name: "存在 *-v2 新版页面目录（如 workbench-v2 / xiaohongshu-v2）",
+    // 2026-08-18：*-v2 目录已随 V2 换皮全部合并（无残留后缀目录），
+    // 新版身份证改为场景化导航外壳 app-shell（SCENES + sceneOfPath）。
+    // 若新版 UI 被回退/丢失，该外壳及其场景导航会消失，本检查依然拦住。
+    name: "存在新版 UI 导航外壳（app-shell.tsx + SCENES/sceneOfPath）",
     ok: (() => {
       try {
-        const dash = join(fe, "src", "app", "(dashboard)");
-        return readdirSync(dash, { withFileTypes: true }).some(
-          (e) => e.isDirectory() && e.name.endsWith("-v2"),
+        const shell = readFileSync(
+          join(fe, "src", "components", "shell", "app-shell.tsx"),
+          "utf8",
+        );
+        return (
+          shell.includes("SCENES") && shell.includes("sceneOfPath")
         );
       } catch {
         return false;
