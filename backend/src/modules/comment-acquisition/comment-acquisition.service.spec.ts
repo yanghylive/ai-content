@@ -8,6 +8,7 @@ import { PlatformInteractionExecutor } from '../local-engine/platform-interactio
 import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
 import { LeadRepository } from '../leads/lead.repository';
 import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
+import { InteractionEventStore } from '../interaction/interaction-event.store';
 
 /**
  * 构造互动适配器注册表 mock：get(platform).send 委托回 executorMock.dispatch
@@ -113,7 +114,12 @@ describe('CommentAcquisitionService', () => {
     })),
     empty: jest.fn(),
     lead: {
-      findFirst: jest.fn().mockResolvedValue(null),
+      findFirst: jest.fn().mockResolvedValue({
+        status: 'approved',
+        latestReply: '私信你',
+        commentRef: null,
+        sourceText: '怎么买',
+      }),
       findMany: jest.fn().mockResolvedValue([]),
       count: jest.fn().mockResolvedValue(0),
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
@@ -145,6 +151,17 @@ describe('CommentAcquisitionService', () => {
     }),
     updateReplyStatus: jest.fn().mockResolvedValue(undefined),
   };
+  const interactionEventStoreMock = {
+    fromInteractionItem: jest.fn((platform, accountId, item, context) => ({
+      platform,
+      accountId: String(accountId),
+      externalEventId: item.ref,
+      authorExternalId: item.authorId,
+      sourceUrl: context?.sourceUrl,
+      body: item.text,
+    })),
+    ingest: jest.fn().mockResolvedValue({ event: { id: 'event-comment-1' } }),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -159,13 +176,14 @@ describe('CommentAcquisitionService', () => {
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
+        { provide: InteractionEventStore, useValue: interactionEventStoreMock },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
   });
 
   describe('scanAccount', () => {
-    it('读取评论 → 评分 → 生成回复 → 入库 → 自动回复', async () => {
+    it('读取评论 → 评分 → 生成待审核回复，不因 autoReply 参数直接外发', async () => {
       autoUploadMock.readDouyinComments.mockResolvedValue({
         accountId: 1,
         title: '测试视频',
@@ -197,14 +215,15 @@ describe('CommentAcquisitionService', () => {
 
       expect(result.scanned).toBe(3);
       expect(result.leads).toBe(2);
-      expect(result.replies).toBe(2);
-      expect(executorMock.dispatch).toHaveBeenCalledTimes(2);
-      expect(executorMock.dispatch.mock.calls[0][0]).toMatchObject({
-        platform: 'douyin',
-        taskType: 'comment-reply',
-        action: 'send',
-        replyText: '私信我发你详情～',
-      });
+      expect(result.replies).toBe(0);
+      expect(executorMock.dispatch).not.toHaveBeenCalled();
+      expect(interactionEventStoreMock.ingest).toHaveBeenCalledTimes(2);
+      expect(leadRepositoryMock.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sourceInteractionEventId: 'event-comment-1',
+          sourceAccountId: '1',
+        }),
+      );
     });
 
     it('autoReply=false 时只入库不发送', async () => {
@@ -238,7 +257,10 @@ describe('CommentAcquisitionService', () => {
 
   describe('dispatchReply', () => {
     it('发送成功标记 replied', async () => {
-      executorMock.dispatch.mockResolvedValue({ status: 'sent' });
+      executorMock.dispatch.mockResolvedValue({
+        status: 'sent',
+        readbackText: '私信你',
+      });
       const ok = await service.dispatchReply(
         'lead-1',
         {
@@ -270,6 +292,53 @@ describe('CommentAcquisitionService', () => {
       );
       expect(ok).toBe(false);
     });
+
+    it('拒绝未审核线索，且不会调用平台发送', async () => {
+      prismaMock.lead.findFirst.mockResolvedValueOnce({
+        status: 'pending',
+        latestReply: '私信你',
+        commentRef: null,
+        sourceText: '怎么买',
+      });
+
+      await expect(
+        service.dispatchReply(
+          'lead-pending',
+          {
+            platform: 'douyin',
+            accountId: 1,
+            commentText: '怎么买',
+            replyText: '私信你',
+          },
+          { tenantId: null, userId: 'u1' },
+        ),
+      ).rejects.toThrow('线索尚未审核通过');
+      expect(executorMock.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('无回读或截图证据的 sent 不能标记 replied', async () => {
+      executorMock.dispatch.mockResolvedValue({ status: 'sent' });
+
+      const ok = await service.dispatchReply(
+        'lead-no-evidence',
+        {
+          platform: 'douyin',
+          accountId: 1,
+          commentText: '怎么买',
+          replyText: '私信你',
+        },
+        { tenantId: null, userId: 'u1' },
+      );
+
+      expect(ok).toBe(false);
+      expect(leadRepositoryMock.updateReplyStatus).toHaveBeenLastCalledWith(
+        'lead-no-evidence',
+        expect.objectContaining({
+          status: 'failed',
+          lastError: '平台未提供发送回读或截图证据',
+        }),
+      );
+    });
   });
 });
 
@@ -285,7 +354,12 @@ describe('CommentAcquisitionService 风控断路器', () => {
       findFirst: jest.fn().mockResolvedValue({ id: 'acc-1' }),
     },
     lead: {
-      findFirst: jest.fn().mockResolvedValue(null),
+      findFirst: jest.fn().mockResolvedValue({
+        status: 'approved',
+        latestReply: '私信你',
+        commentRef: null,
+        sourceText: '怎么买',
+      }),
       findMany: jest.fn().mockResolvedValue([]),
       count: jest.fn().mockResolvedValue(0),
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
@@ -327,6 +401,13 @@ describe('CommentAcquisitionService 风控断路器', () => {
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
+        {
+          provide: InteractionEventStore,
+          useValue: {
+            fromInteractionItem: jest.fn(),
+            ingest: jest.fn().mockResolvedValue({ event: { id: 'event-test' } }),
+          },
+        },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
@@ -439,12 +520,19 @@ describe('CommentAcquisitionService 小红书获客', () => {
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
+        {
+          provide: InteractionEventStore,
+          useValue: {
+            fromInteractionItem: jest.fn(),
+            ingest: jest.fn().mockResolvedValue({ event: { id: 'event-test' } }),
+          },
+        },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
   });
 
-  it('小红书扫描走 xhs executor，自动回复走 replyComment', async () => {
+  it('小红书扫描只生成待审核回复，不直接调用 replyComment', async () => {
     xhsMock.readComments.mockResolvedValue({
       accountId: 3,
       title: '小红书笔记',
@@ -473,13 +561,8 @@ describe('CommentAcquisitionService 小红书获客', () => {
 
     expect(xhsMock.readComments).toHaveBeenCalled();
     expect(result.leads).toBe(2);
-    expect(result.replies).toBe(2);
-    // 回复走小红书 executor，带评论 index
-    expect(xhsMock.replyComment).toHaveBeenCalledTimes(2);
-    expect(xhsMock.replyComment.mock.calls[0][0]).toMatchObject({
-      commentIndex: 0,
-      content: '私信我发你详情～',
-    });
+    expect(result.replies).toBe(0);
+    expect(xhsMock.replyComment).not.toHaveBeenCalled();
     // 不走通用 dispatch
     expect(executorMock.dispatch).not.toHaveBeenCalled();
   });
@@ -539,12 +622,19 @@ describe('CommentAcquisitionService 私信获客', () => {
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
+        {
+          provide: InteractionEventStore,
+          useValue: {
+            fromInteractionItem: jest.fn(),
+            ingest: jest.fn().mockResolvedValue({ event: { id: 'event-test' } }),
+          },
+        },
       ],
     }).compile();
     service = moduleRef.get(CommentAcquisitionService);
   });
 
-  it('私信扫描走 readDouyinMessages + dispatch direct-message-reply', async () => {
+  it('私信扫描生成待审核回复，不直接 dispatch direct-message-reply', async () => {
     autoUploadMock.readDouyinMessages.mockResolvedValue({
       accountId: 1,
       title: '抖音私信',
@@ -572,11 +662,7 @@ describe('CommentAcquisitionService 私信获客', () => {
 
     expect(result.scanned).toBe(2);
     expect(result.leads).toBe(1);
-    expect(result.replies).toBe(1);
-    expect(executorMock.dispatch).toHaveBeenCalledTimes(1);
-    expect(executorMock.dispatch.mock.calls[0][0]).toMatchObject({
-      taskType: 'direct-message-reply',
-      replyText: '私信你详细报价',
-    });
+    expect(result.replies).toBe(0);
+    expect(executorMock.dispatch).not.toHaveBeenCalled();
   });
 });

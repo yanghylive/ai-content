@@ -120,9 +120,11 @@ export class RpaController {
     tenantId?: string | null;
   } {
     const ctx = this.authRequestContext?.get();
+    // P1 复核（审查 #6）：authUser 存在但 id 为空 = 异常态 → 拒绝（堵旁路）；
+    // 仅完全无 authUser（桌面本地上下文模式）时才允许 ctx/fallback 兜底
     const userId =
       request?.authUser?.id?.trim() ||
-      ctx?.user?.id?.trim() ||
+      (request?.authUser ? '' : ctx?.user?.id?.trim() || '') ||
       'legacy-local-user';
     if (!userId) throw new UnauthorizedException('请先登录');
     // tenantId：authUser 携带优先，其次请求上下文
@@ -328,24 +330,37 @@ export class RpaController {
     } catch (error) {
       // 执行/建记录异常如实记失败（不伪装成功）
       if (record) {
-        await this.store.appendStep(
-          record.id,
-          owner,
-          {
-            stepName: action,
+        // P1 复核（审查 #8）：内层兜底——appendStep/finalize 二次异常不得掩盖原始错误
+        try {
+          await this.store.appendStep(
+            record.id,
+            owner,
+            {
+              stepName: action,
+              status: 'failed',
+              reasonCode: 'network_error',
+              message: error instanceof Error ? error.message : '执行异常',
+            },
+            { internal: true },
+          );
+          await this.store.finalize(record.id, owner, {
             status: 'failed',
             reasonCode: 'network_error',
-            message: error instanceof Error ? error.message : '执行异常',
-          },
-          { internal: true },
-        );
-        await this.store.finalize(record.id, owner, {
-          status: 'failed',
-          reasonCode: 'network_error',
-          nextAction: '检查平台会话后重试',
-          technicalMessage:
-            error instanceof Error ? error.message : String(error),
-        });
+            nextAction: '检查平台会话后重试',
+            technicalMessage:
+              error instanceof Error ? error.message : String(error),
+          });
+        } catch (persistError) {
+          this.logger.error(
+            `RPA 执行失败状态落库二次异常（run=${record.id}），原始错误：${
+              error instanceof Error ? error.message : String(error)
+            }；落库错误：${
+              persistError instanceof Error
+                ? persistError.message
+                : String(persistError)
+            }`,
+          );
+        }
       } else {
         throw error; // store.create 失败：直接抛出（finally 仍会关闭会话）
       }
@@ -729,19 +744,18 @@ export class RpaController {
     if (Array.isArray(result.items) && result.items.length) {
       // 证据契约：rpa-items 带内容可追溯字段（externalContentId/sourceUrl），
       // finalize 门禁据此校验"候选真实存在且可访问"，不只看步骤状态。
-      const contentRefs = result.items
+      // P0 复核（二次）：内容引用保持 {id,url} 结构化，不再 `id:url` 拼接后
+      // split(':') 还原——纯 url 条目含 `https://` 会被 split 成垃圾
+      // （externalContentIds='https'、sourceUrls='//…'）。
+      const refs = result.items
         .map((item) => {
           const it = item as {
             externalContentId?: string;
             url?: string;
           };
-          return it.externalContentId && it.url
-            ? `${it.externalContentId}:${it.url}`
-            : it.url
-              ? it.url
-              : '';
+          return { id: it.externalContentId, url: it.url };
         })
-        .filter(Boolean)
+        .filter((r) => r.id || r.url)
         .slice(0, 10);
       // P1-1 复核：rpa-items 补证据 hash = 发现结果序列化字节 hash（可复验候选集合）
       const itemsHash = this.hashEvidenceBytes(
@@ -751,10 +765,12 @@ export class RpaController {
       evidence.push({
         type: 'rpa-items',
         label: `发现 ${result.items.length} 条`,
-        externalContentIds: contentRefs.map((ref) => ref.split(':')[0]),
-        sourceUrls: contentRefs.map((ref) =>
-          ref.includes(':') ? ref.split(':').slice(1).join(':') : ref,
-        ),
+        externalContentIds: refs
+          .map((r) => r.id)
+          .filter((v): v is string => typeof v === 'string' && v.length > 0),
+        sourceUrls: refs
+          .map((r) => r.url)
+          .filter((v): v is string => typeof v === 'string' && v.length > 0),
         createdAt: new Date().toISOString(),
         sha256: itemsHash.sha256,
         metadata: itemsHash.metadata,
@@ -1003,6 +1019,24 @@ export class RpaController {
           nextAction: '浏览器会话关闭失败，请人工检查浏览器是否仍在运行',
           technicalMessage: `恢复执行已完成，但浏览器会话关闭失败：${closeIssue}`,
         });
+      } else if (
+        // P1 复核（审查 #7）：关闭成功后清空死会话 ID——paused/needs-human 记录
+        // 不残留已关闭的 sessionId，避免后续 pause/cancel 对死会话操作误报 close_failed
+        updated &&
+        (updated.status === 'paused' || updated.status === 'needs-human')
+      ) {
+        await this.store
+          .transition(run.id, owner, updated.status, {
+            sessionId: null,
+            resumeStep: updated.resumeStep ?? null,
+          })
+          .catch((err) => {
+            this.logger.warn(
+              `清理死会话 ID 失败（run=${run.id}）：${
+                err instanceof Error ? err.message : String(err)
+              }`,
+            );
+          });
       }
     }
     if (updated) return updated;

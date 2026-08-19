@@ -398,6 +398,79 @@ describe('RpaController 复核#4（真执行 + 证据守卫 + 会话控制）', 
     expect(driver.closeSession).toHaveBeenCalled();
   });
 
+  it('resume：断点续跑 execute 返回 failed → transition(paused, resume_failed)，断点保留不 finalize（状态机不死路）', async () => {
+    const driver = makeReadyDriver({
+      openSession: jest
+        .fn()
+        .mockResolvedValue({ sessionId: 'ks-real-3', platform: 'kuaishou' }),
+      execute: jest.fn().mockResolvedValue({
+        stepName: 'read-comments',
+        status: 'failed',
+        reasonCode: 'network_error',
+        message: '页面加载超时',
+        attempt: 1,
+        durationMs: 5,
+        driverVersion: '1.0.0',
+      }),
+    });
+    const store = makeStore({
+      transition: jest.fn().mockResolvedValue({
+        id: 'rpa-1',
+        status: 'paused',
+        resumeStep: 'read-comments',
+      }),
+    });
+    store.findOne.mockResolvedValueOnce({
+      id: 'rpa-1',
+      platform: 'kuaishou',
+      sessionId: 'ks-real-1',
+      accountId: 'ks-1',
+      steps: [{ stepName: 'discover-keyword', status: 'success' }],
+      pageFingerprint: null,
+      status: 'paused',
+      resumeStep: 'read-comments',
+      inputJson: { contentUrl: 'https://kuaishou.com/v/1', limit: 20 },
+    });
+    const controller = makeController(makeRegistry(driver), store);
+
+    const result = await controller.resume(
+      { authUser: { id: 'user-1' } },
+      'rpa-1',
+    );
+
+    // 失败步骤如实记录（internal 服务端步骤）
+    expect(store.appendStep).toHaveBeenCalledWith(
+      'rpa-1',
+      expect.anything(),
+      expect.objectContaining({
+        stepName: 'read-comments',
+        status: 'failed',
+        reasonCode: 'network_error',
+      }),
+      { internal: true },
+    );
+    // P0 复核（全面审查）：恢复失败转 paused（不是 failed 终态）——断点保留，
+    // 可再次发起 resume，状态机不死路
+    expect(store.transition).toHaveBeenCalledWith(
+      'rpa-1',
+      expect.anything(),
+      'paused',
+      expect.objectContaining({
+        reasonCode: 'resume_failed',
+        resumeStep: 'read-comments',
+      }),
+    );
+    // 失败路径不走 finalize（成功终态只能由真实业务成功 + 证据门禁达成）
+    expect(store.finalize).not.toHaveBeenCalled();
+    // 返回 transition 后的 paused 记录（断点仍在）
+    expect(result).toMatchObject({
+      status: 'paused',
+      resumeStep: 'read-comments',
+    });
+    // finally 中真实会话被释放
+    expect(driver.closeSession).toHaveBeenCalled();
+  });
+
   it('resume：状态非 paused/needs-human → 400（不能从 running 恢复）', async () => {
     const store = makeStore();
     store.findOne.mockResolvedValueOnce({
