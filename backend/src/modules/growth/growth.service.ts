@@ -3071,6 +3071,12 @@ export class GrowthService implements OnModuleInit {
     if (this.workflowDaemonRunning) return;
     this.workflowDaemonRunning = true;
     try {
+      // 性能优化：daemon 每 15s 空转触发时先做轻量计数（单表 count 仅过滤 status='running'），
+      // 无活跃执行直接 return，避免每次都全量 loadStore 读 7 张表。判据与下方执行过滤保持一致。
+      const runningCount = await this.prisma.growthWorkflow.count({
+        where: { status: 'running' },
+      });
+      if (runningCount === 0) return;
       const store = await this.loadStore();
       const runningWorkflows = store.workflows.filter(
         (wf) => wf.status === 'running',
