@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -64,15 +64,22 @@ export function WechatChatHistory() {
     void fetchSessions();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // 请求序号守卫：快速切换会话时，慢响应回来若序号已过期则丢弃，
+  // 避免旧会话的响应覆盖新会话消息（标题 B 内容 A 的竞态）
+  const messageReqSeq = useRef(0);
+
   const fetchMessages = useCallback(async (sessionId: string) => {
+    const seq = ++messageReqSeq.current;
     setLoadingMessages(true);
     try {
       const data = await localEngineApi.wechatChatHistory(sessionId, 100);
+      if (seq !== messageReqSeq.current) return; // 过期响应，丢弃
       setMessages((data as { items?: WechatChatMessage[] }).items || (Array.isArray(data) ? data : []));
     } catch (err: unknown) {
+      if (seq !== messageReqSeq.current) return;
       setError(toActionableError(err, "加载消息失败"));
     } finally {
-      setLoadingMessages(false);
+      if (seq === messageReqSeq.current) setLoadingMessages(false);
     }
   }, []);
 

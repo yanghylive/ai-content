@@ -83,6 +83,12 @@ export interface RpaCreateExecutionInput {
   mode?: string;
   driverVersion?: string;
   runId?: string;
+  /** 目标定位：关键词（如小红书目标笔记定位） */
+  keyword?: string;
+  /** 内容页 URL（评论/详情页） */
+  sourceUrl?: string;
+  /** 目标 id（如目标评论/笔记 id） */
+  targetId?: string;
 }
 
 /** 六平台 RPA 能力总览 */
