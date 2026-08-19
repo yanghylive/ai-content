@@ -49,7 +49,7 @@ describe('InteractionEventStore', () => {
     expect(a).not.toBe(c);
   });
 
-  it('无 eventId 时回退 externalThreadId → sourceUrl', () => {
+  it('无 eventId 时使用 thread；无 thread 时保留来源、作者、正文和时间的弱键', () => {
     const { store } = makeStore();
     const byThread = store.computeDedupeKey({
       ...baseEvent,
@@ -62,8 +62,16 @@ describe('InteractionEventStore', () => {
       externalThreadId: undefined,
       sourceUrl: 'https://xhs/item/1',
     });
+    const anotherComment = store.computeDedupeKey({
+      ...baseEvent,
+      externalEventId: undefined,
+      externalThreadId: undefined,
+      sourceUrl: 'https://xhs/item/1',
+      authorExternalId: 'author-2',
+    });
     expect(byThread).toContain('thread-1'.length ? '' : '');
     expect(byThread).not.toBe(byUrl);
+    expect(byUrl).not.toBe(anotherComment);
   });
 
   it('ingest 首次创建 created=true', async () => {
