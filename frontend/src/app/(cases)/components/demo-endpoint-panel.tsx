@@ -97,9 +97,11 @@ function shortLinkUrl(shortCode: string | null): string | null {
 function EndpointAction({
   endpoint,
   caseId,
+  caseSlug,
 }: {
   endpoint: PublicDemoEndpointDto;
   caseId?: string;
+  caseSlug?: string;
 }) {
   const unavailable = endpoint.healthStatus === "broken" || endpoint.healthStatus === "expired";
   const type = endpoint.endpointType;
@@ -125,7 +127,9 @@ function EndpointAction({
   if (type === "appointment") {
     return (
       <a
-        href="/contact"
+        href={`/demo-request?case=${caseSlug ?? ""}`}
+        target="_blank"
+        rel="noopener noreferrer"
         onClick={trackOpen}
         className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
       >
@@ -197,9 +201,11 @@ function EndpointAction({
 function EndpointCard({
   endpoint,
   caseId,
+  caseSlug,
 }: {
   endpoint: PublicDemoEndpointDto;
   caseId?: string;
+  caseSlug?: string;
 }) {
   const meta = ENDPOINT_META[endpoint.endpointType] ?? ENDPOINT_META.web;
   const health = HEALTH_META[endpoint.healthStatus] ?? HEALTH_META.unknown;
@@ -265,7 +271,7 @@ function EndpointCard({
       </div>
 
       <div className="mt-3">
-        <EndpointAction endpoint={endpoint} caseId={caseId} />
+        <EndpointAction endpoint={endpoint} caseId={caseId} caseSlug={caseSlug} />
       </div>
 
       {showQr && (
@@ -289,9 +295,11 @@ function EndpointCard({
 export function DemoEndpointPanel({
   endpoints,
   caseId,
+  caseSlug,
 }: {
   endpoints: PublicDemoEndpointDto[];
   caseId?: string;
+  caseSlug?: string;
 }) {
   if (endpoints.length === 0) return null;
 
@@ -302,7 +310,12 @@ export function DemoEndpointPanel({
       </h2>
       <div className="grid gap-3 sm:grid-cols-2">
         {endpoints.map((endpoint) => (
-          <EndpointCard key={endpoint.id} endpoint={endpoint} caseId={caseId} />
+          <EndpointCard
+            key={endpoint.id}
+            endpoint={endpoint}
+            caseId={caseId}
+            caseSlug={caseSlug}
+          />
         ))}
       </div>
     </section>
