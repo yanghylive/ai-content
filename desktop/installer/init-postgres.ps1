@@ -9,7 +9,8 @@ param(
     [string] $InstallDir = "$env:ProgramFiles\JIUZHANG AI",
     [string] $DatabaseName = "ai_content",
     [string] $User = "postgres",
-    [string] $Password = "ai_content_2026",
+    # 不内置明文口令：使用本脚本时必须显式传入 -Password（旧包回滚场景由回滚方提供）
+    [string] $Password = "",
     [int] $Port = 5432
 )
 
@@ -172,6 +173,9 @@ function Apply-Migrations {
 }
 
 function Main {
+    if (-not $Password) {
+        throw "缺少 -Password 参数：本脚本不内置 PostgreSQL 明文口令，必须显式传入。"
+    }
     Write-Step "开始初始化 PostgreSQL"
     $Global:PostgresBin = Find-PostgresBin
     Write-Step "PostgreSQL bin: $Global:PostgresBin"

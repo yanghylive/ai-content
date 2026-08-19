@@ -85,8 +85,8 @@ def load_settings() -> Settings:
     return Settings(
         host=os.getenv("KAYPAL_AGENT_S_HOST", "127.0.0.1").strip() or "127.0.0.1",
         port=_read_int("KAYPAL_AGENT_S_PORT", 17777),
-        auth_token=os.getenv("KAYPAL_AGENT_S_TOKEN", "change-me-local-token").strip()
-        or "change-me-local-token",
+        auth_token=os.getenv("KAYPAL_AGENT_S_TOKEN", "").strip()
+        or "",
         artifact_root=Path(artifact_root).expanduser().resolve(),
         mock_step_delay_ms=max(0, _read_int("KAYPAL_AGENT_S_MOCK_STEP_DELAY_MS", 250)),
         default_step_count=max(1, _read_int("KAYPAL_AGENT_S_DEFAULT_STEP_COUNT", 3)),

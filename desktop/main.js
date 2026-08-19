@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, shell, Menu, Tray, dialog, safeStorage } = require('electron');
 const path = require('path');
+const crypto = require('crypto');
 const { spawn, execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const net = require('net');
@@ -7,6 +8,7 @@ const http = require('http');
 const Store = require('electron-store');
 const fixPath = require('fix-path');
 const CloudAPI = require('./cloud-api');
+const { EMPTY_SQLITE_DATABASE_BASE64 } = require('./sqlite-empty-template');
 const { CREDENTIAL_MASTER_KEY_ENV, ensureCredentialMasterKey } = require('./credential-key-store');
 const { buildError: buildLocalBridgeError, createNonceCache, requestBackend: requestLocalBridgeBackend, shouldUseE2EUserData, validateRequest: validateLocalBridgeRequest } = require('./local-bridge');
 const { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy: destroyUpdater, downloadUpdate, skipUpdate, getSkippedVersion, getUpdateFeedInfo } = require('./auto-updater');
@@ -83,8 +85,69 @@ const BACKEND_PORT = 3011;
 const AGENT_S_PORT = 17777;
 const BACKEND_READY_TIMEOUT_MS = 60_000;
 const BACKEND_READY_INTERVAL_MS = 500;
-const DEFAULT_DATABASE_URL = 'postgresql://postgres:ai_content_2026@127.0.0.1:5432/ai_content?schema=public';
-const AGENT_S_TOKEN = 'qAB/62DBdXpIYi/uHYOQU/20DnlESvNZDAugSfHfn8k=';
+
+// 默认数据库连接：仅本地开发兜底。不内置任何真实口令，避免明文凭据进入产物；
+// 优先使用环境变量 DATABASE_URL（生产/打包环境由部署侧注入）。
+function defaultDatabaseUrl() {
+  if (process.env.DATABASE_URL && !process.env.DATABASE_URL.startsWith('file:')) {
+    return process.env.DATABASE_URL;
+  }
+  return 'postgresql://postgres@127.0.0.1:5432/ai_content?schema=public';
+}
+
+// per-device Agent-S 共享密钥（KAYPAL_RUNTIME_SHARED_SECRET / KAYPAL_AGENT_S_TOKEN）：
+// 首启随机生成并持久化到 userData/security 下 0600 文件；优先用 safeStorage 加密，
+// safeStorage 不可用（如 Linux 无 keyring）时回退明文存储并启动时告警一次。
+const AGENT_S_TOKEN_FILE = 'agent-s-token.v1';
+let cachedAgentSToken = null;
+
+function agentSTokenStoragePath() {
+  return path.join(app.getPath('userData'), 'security', AGENT_S_TOKEN_FILE);
+}
+
+function readAgentSTokenFromDisk() {
+  const tokenPath = agentSTokenStoragePath();
+  if (!fs.existsSync(tokenPath)) return null;
+  const raw = fs.readFileSync(tokenPath, 'utf8').trim();
+  if (!raw) return null;
+  // 明文回退格式（64 位 hex）直接复用
+  if (/^[0-9a-fA-F]{64}$/.test(raw)) return raw;
+  try {
+    if (safeStorage.isEncryptionAvailable()) {
+      return safeStorage.decryptString(Buffer.from(raw, 'base64')).toString('utf8');
+    }
+  } catch (error) {
+    console.warn('[Security] Agent-S token 解密失败，将重新生成:', error.message);
+  }
+  return null;
+}
+
+function persistAgentSToken(token) {
+  const tokenPath = agentSTokenStoragePath();
+  const directory = path.dirname(tokenPath);
+  fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+  if (safeStorage.isEncryptionAvailable()) {
+    const ciphertext = safeStorage.encryptString(token);
+    fs.writeFileSync(tokenPath, ciphertext.toString('base64'), { encoding: 'utf8', mode: 0o600 });
+    return 'safeStorage';
+  }
+  console.warn('[Security] safeStorage 不可用，Agent-S token 将以明文保存在用户数据目录（权限 0600），建议为系统配置 keyring');
+  fs.writeFileSync(tokenPath, token, { encoding: 'utf8', mode: 0o600 });
+  return 'plaintext';
+}
+
+function ensureAgentSToken() {
+  if (cachedAgentSToken) return cachedAgentSToken;
+  const stored = readAgentSTokenFromDisk();
+  if (stored) {
+    cachedAgentSToken = stored;
+    return cachedAgentSToken;
+  }
+  cachedAgentSToken = crypto.randomBytes(32).toString('hex');
+  persistAgentSToken(cachedAgentSToken);
+  console.log('[Security] Generated new per-device Agent-S token');
+  return cachedAgentSToken;
+}
 
 let pendingUpdate = {
   configured: false,
@@ -131,7 +194,8 @@ function resolveDesktopDatabaseEnv(envVars) {
   }
 
   if (!envVars.DATABASE_URL) {
-    envVars.DATABASE_URL = DEFAULT_DATABASE_URL;
+    envVars.DATABASE_URL = defaultDatabaseUrl();
+    console.warn('[Backend] 未配置 DATABASE_URL，使用无凭据的本地默认连接（postgresql://postgres@127.0.0.1:5432/ai_content），请通过环境变量 DATABASE_URL 配置');
   }
 }
 
@@ -167,6 +231,12 @@ function sqliteDatabaseHasRequiredSchema(filePath) {
       return false;
     }
 
+    // user_version=1：由桌面端「从零建新库」创建的模板库（尚无 schema），
+    // 交由后端启动时执行迁移生成表结构，不视为损坏/需要接管。
+    if (buffer.readUInt32BE(60) === 1) {
+      return true;
+    }
+
     const content = buffer.toString('latin1');
     const requiredMarkers = [
       'ai_models',
@@ -187,6 +257,12 @@ function sqliteDatabaseHasRequiredSchema(filePath) {
   }
 }
 
+// 从零建一个最小空库（user_version=1，无 schema/数据），覆盖原文件。
+// 不再复制种子库：schema 交给后端启动时迁移生成。
+function createEmptySqliteDatabase(databasePath) {
+  fs.writeFileSync(databasePath, Buffer.from(EMPTY_SQLITE_DATABASE_BASE64, 'base64'));
+}
+
 function ensureDesktopSqliteDatabase(envVars, backendPath) {
   const mode = (envVars.KAYPAL_DESKTOP_DATABASE_MODE || '').trim().toLowerCase();
   if (mode !== 'sqlite') return;
@@ -195,24 +271,38 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
   if (!databasePath) return;
 
   const seedPath = path.join(backendPath, 'prisma', 'dev.db');
-  if (!sqliteDatabaseHasRequiredSchema(seedPath)) {
-    console.warn('[Backend] SQLite seed database is missing or incomplete:', seedPath);
-    return;
-  }
 
+  // 目标库已存在且 schema 完整（或为桌面端新建的 user_version=1 空库）→ 直接复用
   if (sqliteDatabaseHasRequiredSchema(databasePath)) {
     return;
   }
 
-  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
-  if (fs.existsSync(databasePath) && fs.statSync(databasePath).size > 0) {
-    const backupPath = `${databasePath}.bak-${new Date().toISOString().replace(/[:.]/g, '-')}`;
-    fs.copyFileSync(databasePath, backupPath);
-    console.warn('[Backend] Existing SQLite database did not contain required schema, backed up to:', backupPath);
+  // 目标库不存在 → 仅在目标文件不存在时才复制种子库完成首次初始化
+  if (!fs.existsSync(databasePath)) {
+    if (sqliteDatabaseHasRequiredSchema(seedPath)) {
+      fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+      fs.copyFileSync(seedPath, databasePath);
+      console.log('[Backend] SQLite database initialized from packaged seed:', databasePath);
+    } else {
+      console.warn('[Backend] SQLite seed database is missing or incomplete:', seedPath);
+    }
+    return;
   }
 
-  fs.copyFileSync(seedPath, databasePath);
-  console.log('[Backend] SQLite database initialized from packaged seed:', databasePath);
+  // 目标库存在但 schema 校验失败：不覆盖原文件（避免用户数据静默丢失），
+  // 先保留为 .suspect-<ts>，再从零建一个空库供后端迁移重建。
+  const suspectPath = `${databasePath}.suspect-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  try {
+    fs.renameSync(databasePath, suspectPath);
+    console.error('[Backend] SQLite database failed schema check, preserved original as:', suspectPath);
+  } catch (error) {
+    console.error('[Backend] Unable to preserve suspect SQLite database, skipping recreation:', error.message);
+    return;
+  }
+
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+  createEmptySqliteDatabase(databasePath);
+  console.log('[Backend] SQLite database recreated from scratch (user_version=1):', databasePath);
 }
 
 function fileContainsMarker(filePath, marker) {
@@ -1034,7 +1124,7 @@ async function startAgentSService() {
       ...process.env,
       KAYPAL_AGENT_S_HOST: '127.0.0.1',
       KAYPAL_AGENT_S_PORT: String(AGENT_S_PORT),
-      KAYPAL_AGENT_S_TOKEN: AGENT_S_TOKEN,
+      KAYPAL_AGENT_S_TOKEN: ensureAgentSToken(),
       KAYPAL_AGENT_S_RUNNER_MODE: process.env.KAYPAL_AGENT_S_RUNNER_MODE || 'mock',
       KAYPAL_AGENT_S_ARTIFACT_ROOT: artifactRoot
     },
@@ -1051,6 +1141,7 @@ async function startAgentSService() {
 
   agentSService.on('close', (code) => {
     console.log(`[Agent-S] Sidecar exited with code ${code}`);
+    if (agentSService && agentSService.__killTimer) clearTimeout(agentSService.__killTimer);
     agentSService = null;
     if (isQuitting) return;
     scheduleRestart('Agent-S', () => startAgentSService(), () => ++agentSRestartCount);
@@ -1064,10 +1155,13 @@ async function startAgentSService() {
 function stopAgentSService() {
   if (agentSService) {
     console.log('[Agent-S] Stopping sidecar...');
-    agentSService.kill('SIGTERM');
-    setTimeout(() => {
-      if (agentSService && !agentSService.killed) {
-        agentSService.kill('SIGKILL');
+    // 捕获当时的进程引用，防止 5s 定时器误杀「重启后」的新进程
+    const target = agentSService;
+    if (target.__killTimer) clearTimeout(target.__killTimer);
+    target.kill('SIGTERM');
+    target.__killTimer = setTimeout(() => {
+      if (agentSService === target && target.exitCode === null && !target.killed) {
+        target.kill('SIGKILL');
       }
     }, 5000);
   }
@@ -1232,8 +1326,8 @@ async function startBackendService() {
 
   envVars.REDIS_DISABLED = envVars.REDIS_DISABLED || 'true';
   envVars.AGENT_S_BASE_URL = envVars.AGENT_S_BASE_URL || `http://127.0.0.1:${AGENT_S_PORT}`;
-  envVars.KAYPAL_RUNTIME_SHARED_SECRET = envVars.KAYPAL_RUNTIME_SHARED_SECRET || AGENT_S_TOKEN;
-  envVars.KAYPAL_AGENT_S_TOKEN = envVars.KAYPAL_AGENT_S_TOKEN || AGENT_S_TOKEN;
+  envVars.KAYPAL_RUNTIME_SHARED_SECRET = envVars.KAYPAL_RUNTIME_SHARED_SECRET || ensureAgentSToken();
+  envVars.KAYPAL_AGENT_S_TOKEN = envVars.KAYPAL_AGENT_S_TOKEN || ensureAgentSToken();
   envVars.KAYPAL_NODE_AGENT_RUNTIME = envVars.KAYPAL_NODE_AGENT_RUNTIME || process.env.KAYPAL_NODE_AGENT_RUNTIME || (app.isPackaged ? '1' : '0');
   const bundledBrowserRoot = getResourcePath('playwright-browsers');
   if (fs.existsSync(bundledBrowserRoot)) {
@@ -1421,6 +1515,7 @@ async function startBackendService() {
     backendStartupDiagnostic = `后端进程退出（代码 ${code ?? 'unknown'}）${errorLine ? `：${errorLine.slice(0, 500)}` : ''}`;
     appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
     console.log(`[Backend] Service exited with code ${code}`);
+    if (backendService && backendService.__killTimer) clearTimeout(backendService.__killTimer);
     backendService = null;
     if (isQuitting) return;
     const restartScheduled = scheduleRestart(
@@ -1443,10 +1538,13 @@ async function startBackendService() {
 function stopBackendService() {
   if (backendService) {
     console.log('[Backend] Stopping service...');
-    backendService.kill('SIGTERM');
-    setTimeout(() => {
-      if (backendService && !backendService.killed) {
-        backendService.kill('SIGKILL');
+    // 捕获当时的进程引用，防止 5s 定时器误杀「重启后」的新进程
+    const target = backendService;
+    if (target.__killTimer) clearTimeout(target.__killTimer);
+    target.kill('SIGTERM');
+    target.__killTimer = setTimeout(() => {
+      if (backendService === target && target.exitCode === null && !target.killed) {
+        target.kill('SIGKILL');
       }
     }, 5000);
   }
@@ -1471,7 +1569,7 @@ function createHoverBall() {
       skipTaskbar: true,
       hasShadow: false,
       webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
+        preload: path.join(__dirname, 'preload-hoverball.js'),
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: false,
@@ -1500,15 +1598,27 @@ function toggleHoverBall() {
   }
 }
 
+// 校验请求是否来自悬浮球窗口（含 senderFrame URL 兜底），防止其它窗口/页面冒充调用
+function isHoverBallSender(event) {
+  if (!hoverBallWindow || hoverBallWindow.isDestroyed()) return false;
+  if (event.sender !== hoverBallWindow.webContents) return false;
+  const frame = event.senderFrame;
+  if (frame && frame.url && !frame.url.startsWith('file://')) return false;
+  return true;
+}
+
 // 悬浮球拖拽
-ipcMain.on('hover-ball:drag', (_event, { dx, dy }) => {
-  if (!hoverBallWindow || hoverBallWindow.isDestroyed()) return;
+ipcMain.on('hover-ball:drag', (event, { dx, dy }) => {
+  if (!isHoverBallSender(event)) return;
   const [x, y] = hoverBallWindow.getPosition();
   hoverBallWindow.setPosition(x + dx, y + dy);
 });
 
 // 悬浮球执行 AI 网页代操作（复用后端 session cookie）
 ipcMain.handle('hover-ball:ai-action', async (event, data) => {
+  if (!isHoverBallSender(event)) {
+    return { ok: false, message: '请求来源无权访问' };
+  }
   const instruction = String(data?.instruction || '').trim();
   if (!instruction) {
     return { ok: false, message: '指令不能为空' };
@@ -1781,15 +1891,23 @@ function setupIPC() {
     return store.get(key);
   });
 
+  // config:set 白名单：仅允许渲染进程修改业务偏好类配置。
+  // apiToken / cloudApiEndpoint / skippedVersion 等敏感 key 禁止经此通道修改，
+  // 避免被注入的渲染页篡改凭据或跳转云 API 端点。
+  const CONFIG_SET_ALLOWED_KEYS = new Set([
+    'autoStartService',
+    'hoverBallEnabled',
+    'windowBounds',
+    'lastLoginUser',
+  ]);
+
   ipcMain.handle('config:set', (event, key, value) => {
+    if (typeof key !== 'string' || !CONFIG_SET_ALLOWED_KEYS.has(key)) {
+      console.warn(`[Config] 拒绝通过 config:set 修改未授权 key: ${key}`);
+      return false;
+    }
     store.set(key, value);
-    // 同步更新 cloudAPI 实例
-    if (key === 'apiToken' && cloudAPI) {
-      cloudAPI.setToken(value);
-    }
-    if (key === 'cloudApiEndpoint' && cloudAPI) {
-      cloudAPI.setEndpoint(value);
-    }
+    return true;
   });
 
   // 服务管理

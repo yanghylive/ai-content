@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORK_DIR="$ROOT_DIR/data-smoke-real"
-SIDE_TOKEN="${KAYPAL_AGENT_S_TOKEN:-change-me-local-token}"
+SIDE_TOKEN="${KAYPAL_AGENT_S_TOKEN:-}"
 SIDECAR_PORT="${KAYPAL_AGENT_S_PORT:-17779}"
 EXTERNAL_PORT="${MOCK_EXTERNAL_AGENT_PORT:-18888}"
 SIDECAR_URL="http://127.0.0.1:${SIDECAR_PORT}"
