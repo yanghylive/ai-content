@@ -1093,7 +1093,15 @@ export class DiscoveryBrowserRunner {
         return { comments: out, title: document.title || '' };
       }, selectors);
       const url = page.url();
-      const contentId = url.split('/').filter(Boolean).pop() ?? createId(url);
+      // URL 本身只是一条来源证据；没有明确的平台内容 ID 时不要把 URL
+      // 哈希冒充 externalContentId，交给下游真实内容门禁判为待人工核对。
+      let contentId: string | undefined;
+      try {
+        contentId = new URL(url).pathname.split('/').filter(Boolean).pop();
+      } catch {
+        contentId = undefined;
+      }
+      if (!contentId) return [];
       return parsed.comments.map((text) => ({
         platform,
         accountId: 'browser-session',
