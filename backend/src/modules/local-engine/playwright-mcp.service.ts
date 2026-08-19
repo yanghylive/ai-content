@@ -107,6 +107,7 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit(): void {
+    if (process.env.NODE_ENV === 'test') return;
     // The MCP browser sidecar can take tens of seconds to launch on first run.
     // Keep Nest/3011 startup independent so login, account sync, and UI pages stay usable.
     setImmediate(() => {
