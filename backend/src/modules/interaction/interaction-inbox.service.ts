@@ -227,9 +227,12 @@ export class InteractionInboxService {
     }>;
   }> {
     const scope = await this.resolveScope();
+    // 性能优化：线程详情只取最近 500 条事件（对齐 fetchEvents 的 desc + take 模式），
+    // 避免无 take 拉全表后内存聚合；history 展示时内部仍按 occurredAt 升序排序。
     const events = await this.prisma.interactionEvent.findMany({
       where: { tenantId: scope.tenantId, userId: scope.userId },
-      orderBy: { occurredAt: 'asc' },
+      orderBy: { occurredAt: 'desc' },
+      take: 500,
     });
 
     const threads = this.aggregateThreads(events);

@@ -24,11 +24,16 @@ export interface ReconcileExternalState {
 export class PublishReconcileService {
   private readonly logger = new Logger(PublishReconcileService.name);
 
+  /** 进程内防重入标志：外部查回较慢时避免 5 分钟定时任务重叠执行 */
+  private reconcileRunning = false;
+
   constructor(private readonly prisma: PrismaService) {}
 
   /** 定时对账：每 5 分钟扫一批 readback_pending 的发布记录 */
   @Cron('0 */5 * * * *')
   async scheduledReconcile(): Promise<void> {
+    if (this.reconcileRunning) return;
+    this.reconcileRunning = true;
     try {
       const result = await this.reconcile({});
       if (result.scanned > 0) {
@@ -38,6 +43,8 @@ export class PublishReconcileService {
       }
     } catch (error) {
       this.logger.warn(`发布对账批次失败：${(error as Error).message}`);
+    } finally {
+      this.reconcileRunning = false;
     }
   }
 
