@@ -352,7 +352,11 @@ export function CaseDetailClient({ slug }: { slug: string }) {
       )}
 
       {/* 8. 体验入口 */}
-      <DemoEndpointPanel endpoints={detail.demoEndpoints} caseId={detail.id} />
+      <DemoEndpointPanel
+        endpoints={detail.demoEndpoints}
+        caseId={detail.id}
+        caseSlug={detail.slug}
+      />
 
       {/* 9. 技术与交付 */}
       {(detail.techSummary || deliveryLabels.length > 0 || detail.maturity) && (
