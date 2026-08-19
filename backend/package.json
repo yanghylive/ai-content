@@ -32,7 +32,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/src/main.js",
+    "start:prod": "node dist/main.js",
     "start:sqlite": "node scripts/start-sqlite.mjs",
     "users:bootstrap": "ts-node -r tsconfig-paths/register scripts/bootstrap-user.ts",
     "lint": "eslint src --ignore-pattern \"**/*.spec.ts\"",

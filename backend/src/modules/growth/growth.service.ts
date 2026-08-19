@@ -4656,8 +4656,8 @@ export class GrowthService implements OnModuleInit {
       return this.executeWechatChannelFollowUp(config, targets, remaining);
     }
     // C 阶段：非抖音/企微平台查统一 RPA driver 触达能力。
-    // 当前 reply-comment/send-direct-message 均显式 unsupported（真实触达高风险），
-    // 代码路径已打通：driver 声明支持时走 driver 执行；否则保持诚实报错。
+    // reply-comment 只代表工作台逐条人工确认能力；Growth 无人值守触达仍由
+    // platformTouchReady 门禁控制，send-direct-message 保持 unsupported。
     const driver = this.rpaDriverRegistry?.get(config.platform);
     if (driver) {
       // 卡点1：触达能力查询也带账号级预检

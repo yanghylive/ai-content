@@ -1,5 +1,10 @@
 -- AlterTable: price_watches 加 source（manual 手动 / auto 搜索自动跟踪）
-ALTER TABLE "price_watches" ADD COLUMN "source" TEXT NOT NULL DEFAULT 'manual';
+DO $$
+BEGIN
+  IF to_regclass('price_watches') IS NOT NULL THEN
+    ALTER TABLE "price_watches" ADD COLUMN IF NOT EXISTS "source" TEXT NOT NULL DEFAULT 'manual';
+  END IF;
+END $$;
 
 -- CreateTable: price_histories（价格历史轨迹）
 CREATE TABLE "price_histories" (

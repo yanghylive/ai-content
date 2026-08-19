@@ -12,6 +12,11 @@ CREATE TABLE "stores" (
 );
 CREATE INDEX "stores_tenant_id_status_idx" ON "stores"("tenant_id", "status");
 
--- AlterTable: procurement_lists 加 store_id（兼容旧数据可空）
-ALTER TABLE "procurement_lists" ADD COLUMN "store_id" TEXT;
-CREATE INDEX "procurement_lists_store_id_idx" ON "procurement_lists"("store_id");
+-- procurement_lists 在 add_savings_module 中创建；新库先跳过，末尾 repair migration 补齐。
+DO $$
+BEGIN
+  IF to_regclass('procurement_lists') IS NOT NULL THEN
+    ALTER TABLE "procurement_lists" ADD COLUMN IF NOT EXISTS "store_id" TEXT;
+    CREATE INDEX IF NOT EXISTS "procurement_lists_store_id_idx" ON "procurement_lists"("store_id");
+  END IF;
+END $$;
