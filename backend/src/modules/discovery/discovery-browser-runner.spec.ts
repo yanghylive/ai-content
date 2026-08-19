@@ -145,6 +145,24 @@ describe('DiscoveryBrowserRunner D 阶段适配（抖音行为式搜索 + jingxu
     expect(items[0].sourceContent?.contentType).toBe('note');
   });
 
+  it('通用评论解析：详情 URL 没有明确内容 ID 时返回空，避免哈希冒充平台主键', async () => {
+    const page = makePage({
+      url: jest.fn().mockReturnValue('https://www.douyin.com/'),
+      evaluate: jest.fn().mockImplementation((fn: unknown) => {
+        const src = typeof fn === 'function' ? fn.toString() : String(fn);
+        if (/querySelectorAll/.test(src)) {
+          return Promise.resolve({ comments: ['这个怎么卖？'], title: '内容页' });
+        }
+        return Promise.resolve(undefined);
+      }),
+    });
+    const runner = new DiscoveryBrowserRunner(makeBrowser(page), makeQuota());
+
+    const items = await runner.extractComments(page, 'douyin');
+
+    expect(items).toEqual([]);
+  });
+
   it('快手 → 真实搜索不渲染 → 降级 new-reco 推荐流并标注（Sprint 5）', async () => {
     const page = makePage({
       evaluate: jest.fn().mockImplementation((fn: unknown) => {
