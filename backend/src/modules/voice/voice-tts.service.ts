@@ -43,8 +43,7 @@ export class VoiceTtsService {
     const authBase =
       this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn';
     return (
-      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') ||
-      `${authBase}/api/ai`
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') || `${authBase}/api/ai`
     ).replace(/\/+$/, '');
   }
 
@@ -57,7 +56,10 @@ export class VoiceTtsService {
   }
 
   /** 可用音色（qwen3-tts；以 env 配置为准） */
-  listCapabilities(): { providers: VoiceTtsCapability[]; voices: Record<string, unknown> } {
+  listCapabilities(): {
+    providers: VoiceTtsCapability[];
+    voices: Record<string, unknown>;
+  } {
     const defaultVoices: Record<string, unknown> = {
       'qwen3-tts': [
         { id: 'Cherry', label: '樱（女声）' },
@@ -66,7 +68,13 @@ export class VoiceTtsService {
       ],
     };
     return {
-      providers: [{ id: 'kaypal-gateway', label: 'kaypal.cn 云端（阿里百炼）', streaming: false }],
+      providers: [
+        {
+          id: 'kaypal-gateway',
+          label: 'kaypal.cn 云端（阿里百炼）',
+          streaming: false,
+        },
+      ],
       voices: defaultVoices,
     };
   }
@@ -85,7 +93,8 @@ export class VoiceTtsService {
     }
     const gatewayBase = this.getGatewayBaseUrl();
     const serverApiKey = this.getServerApiKey();
-    const model = this.readConfig('KAYPAL_VOICE_TTS_MODEL') || 'qwen3-tts-instruct-flash';
+    const model =
+      this.readConfig('KAYPAL_VOICE_TTS_MODEL') || 'qwen3-tts-instruct-flash';
     const voiceId =
       explicit?.voiceId?.trim() ||
       this.readConfig('KAYPAL_VOICE_TTS_VOICE') ||
@@ -130,8 +139,7 @@ export class VoiceTtsService {
         this.logger.warn(`KAYPAL TTS failed: ${message}`);
         throw new ServiceUnavailableException(`语音合成失败：${message}`);
       }
-      const contentType =
-        response.headers.get('content-type') || 'audio/mpeg';
+      const contentType = response.headers.get('content-type') || 'audio/mpeg';
       const stream = Readable.fromWeb(response.body as never);
       return { stream, model, voiceId, contentType };
     } catch (err) {

@@ -1,0 +1,1424 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-18T21:39:35.105Z",
+  "finishedAt": "2026-08-18T21:41:01.692Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/kaypal-ai/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 196,
+  "scannedRouteCount": 128,
+  "isPartial": true,
+  "routeCount": 128,
+  "excludedRouteCount": 68,
+  "passCount": 118,
+  "failCount": 10,
+  "consoleErrorCount": 4,
+  "failures": [
+    {
+      "route": "/case-admin/[id]",
+      "finalUrl": "http://127.0.0.1:3010/case-admin/[id]",
+      "status": "404",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 10,
+      "title": "",
+      "error": ""
+    },
+    {
+      "route": "/distribution/accounts",
+      "finalUrl": "http://127.0.0.1:3010/distribution/accounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "API",
+          "context": "发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 平台账号 账号、登录状态和平台后台统一在这里管理 校验状态 发布 API 账号 绑定平台 抖音 森 ID 6 已登录 后台已连接 账号环境已接管 打开 刷新头像 重登 删除 抖音 44 ID 11 已登录 后台已连接 账号环境已接管 打开 刷新头像 重登 删除 v1.1.85 · 更新于 2026-08-"
+        }
+      ],
+      "textLength": 376,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/logs",
+      "finalUrl": "http://127.0.0.1:3010/distribution/logs",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "backendSurface",
+          "match": "后端",
+          "context": "完成。 - 2026-08-10 19:59:58 [info] 人工确认记录已保存。 - 2026-08-10 19:59:58 [warning] 后端风控审批已记录。 - 2026-08-10 19:59:58 [success] 执行保护通过，结果已回写。 - 2026-08-10 19:59:58 [success] 已人工确认，内部记录已完成。 [2026-08-10"
+        },
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "08-12 05:13:02] 抖音私信回复 排队中 抖音 2 -> 王女士 - 2026-07-29 20:39:17 [info] 互动任务已创建，等待本地引擎执行。 - 2026-07-29 20:39:17 [info] 当前会尝试打开本地账号后台；确认后发送模式会在真实发送前等待用户确认。 - 2026-07-29 20:39:17 [info] 已套用客服规则：本地生活/电"
+        }
+      ],
+      "textLength": 34113,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "Webhook",
+          "context": "失败，待处理 返回 企微助手 未安装 企业微信 AI 智能客服：自动回复 + 转人工 + 消息记录 连接企业微信群机器人 在企业微信群里添加「群机器人」，复制 Webhook 地址粘贴到下面。 连接成功后，客户消息会由 AI 自动回复，命中转人工关键词时提醒人工介入。 测试连接 安装连接 v1.1.85 · 更新于 2026-08-15 · 检查新版本可获得最新能力 检查更新 更新历史 主导航 今"
+        }
+      ],
+      "textLength": 445,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "http://127.0.0.1:3010/growth/leads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "skillSurface",
+          "match": "Skill",
+          "context": "抖音 · 命中：AI手机 \"目标：青梅染雪 只要它的发售价格在1w8以下的话，多的是人买你信不信 评论时间：7小时前·山东 视频：12:086551万物皆可Skill：几十元传感器控制 视频互动分：65510000 来源：https://www.douyin.com/video/7672111888771108123 线索来源：抖音 AI手机 筛选原因：视频暂无可回复评论，改为直接在视频下评论"
+        }
+      ],
+      "textLength": 2053,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mine",
+      "finalUrl": "http://127.0.0.1:3010/mine",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "服务、微信桌面、运行检查 应用与安装 开通更多能力（CRM 等） Agent 对话 Agent 会话工作台（对话规划助手） 任务证据 执行证据与留痕 引擎权限 本地引擎权限管理 AI 工件 AI 生成的工件产物 v1.1.85 · 更新于 2026-08-15 · 检查新版本可获得最新能力 检查更新 更新历史 主导航 今天（按 1） 内容（按 2） 发布（按 3） 互动（按 4） 线索（按 5）"
+        }
+      ],
+      "textLength": 524,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/distribution/accounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "API",
+          "context": "发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 平台账号 账号、登录状态和平台后台统一在这里管理 校验状态 发布 API 账号 绑定平台 抖音 森 ID 6 已登录 后台已连接 账号环境已接管 打开 刷新头像 重登 删除 抖音 44 ID 11 已登录 后台已连接 账号环境已接管 打开 刷新头像 重登 删除 v1.1.85 · 更新于 2026-08-"
+        }
+      ],
+      "textLength": 376,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/release-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "内容工作区「新建」入口修复，正确创建新草稿。 移动端手写图标收敛为统一图标库，品牌 logo 与骨架屏抽成共享组件。 MCP 安全加固（限流 + 权限分级 + token 轮换）。 版本号、更新说明统一更新到 v1.1.85。 已修复的问题 修复发布中心「确认发布」「重试」死按钮（无真实行为）。 修复账号失效后无恢复任务入口。 修复 Local Engine 健康检查无超时导致无限挂起。 修复无缝"
+        }
+      ],
+      "textLength": 1239,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/wecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "Webhook",
+          "context": "失败，待处理 返回 企微助手 未安装 企业微信 AI 智能客服：自动回复 + 转人工 + 消息记录 连接企业微信群机器人 在企业微信群里添加「群机器人」，复制 Webhook 地址粘贴到下面。 连接成功后，客户消息会由 AI 自动回复，命中转人工关键词时提醒人工介入。 测试连接 安装连接 v1.1.85 · 更新于 2026-08-15 · 检查新版本可获得最新能力 检查更新 更新历史 主导航 今"
+        }
+      ],
+      "textLength": 445,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/wecom-crm",
+      "finalUrl": "http://127.0.0.1:3010/wecom-crm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "API",
+          "context": "能，或直接说你想做什么… ⌘K 通知 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 企业微信客户运营 官方 API 通道：客户群发、客户朋友圈、外部联系人管理 渠道配置 客户群发 客户朋友圈 新增 / 更新企业配置 企业 ID（corpid） 应用 Secret 配置名称（可选） 应用 AgentId（可选） 回调 Token（可选） 回调 E"
+        },
+        {
+          "rule": "secretSurface",
+          "match": "Token",
+          "context": "渠道配置 客户群发 客户朋友圈 新增 / 更新企业配置 企业 ID（corpid） 应用 Secret 配置名称（可选） 应用 AgentId（可选） 回调 Token（可选） 回调 EncodingAESKey（可选） 保存配置 已配置企业（0） 刷新 尚未配置企业微信，先在上方填写 corpid 并保存。 v1.1.85 · 更新于 2026-08-15 · 检查新版本可获得最新能力 检"
+        }
+      ],
+      "textLength": 558,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "route": "/case-admin/[id]"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "route": "/case-admin"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "route": "/crm-connectors"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "route": "/crm/connectors"
+    }
+  ],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/today",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1296,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/accounts-matrix",
+      "finalUrl": "http://127.0.0.1:3010/accounts-matrix",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 421,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent",
+      "finalUrl": "http://127.0.0.1:3010/agent",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 556,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent-workbench",
+      "finalUrl": "http://127.0.0.1:3010/agent-workbench",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 699,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/approvals",
+      "finalUrl": "http://127.0.0.1:3010/approvals",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 301,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/apps",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 329,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/apps/ai-employee",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 389,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth/acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 412,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/detail",
+      "finalUrl": "http://127.0.0.1:3010/apps/detail",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 309,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/artifacts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 572,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/auto-acquisition/create",
+      "finalUrl": "http://127.0.0.1:3010/auto-acquisition/create",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 606,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/boss-recruit",
+      "finalUrl": "http://127.0.0.1:3010/boss-recruit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 792,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin",
+      "finalUrl": "http://127.0.0.1:3010/case-admin",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 449,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin/[id]",
+      "finalUrl": "http://127.0.0.1:3010/case-admin/[id]",
+      "status": "404",
+      "badMatches": [
+        {
+          "rule": "blankPage",
+          "match": "blank",
+          "context": "page body text is empty or too short"
+        }
+      ],
+      "textLength": 10,
+      "title": "",
+      "error": ""
+    },
+    {
+      "route": "/case-admin/new",
+      "finalUrl": "http://127.0.0.1:3010/case-admin/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 950,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/commercial-readiness",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1682,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance",
+      "finalUrl": "http://127.0.0.1:3010/compliance",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 500,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance-check",
+      "finalUrl": "http://127.0.0.1:3010/compliance-check",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 353,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/content",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 566,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/ai-image-gen",
+      "finalUrl": "http://127.0.0.1:3010/content/ai-image-gen",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 393,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/ai-video-gen",
+      "finalUrl": "http://127.0.0.1:3010/content/ai-video-gen",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 385,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3010/content/articles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 341,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/collection-center",
+      "finalUrl": "http://127.0.0.1:3010/content/collection-center",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 443,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/image-gen",
+      "finalUrl": "http://127.0.0.1:3010/content/image-gen",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 377,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/content/optimization",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 789,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/wechat-official-assistant",
+      "finalUrl": "http://127.0.0.1:3010/content/wechat-official-assistant",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 419,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/workspace",
+      "finalUrl": "http://127.0.0.1:3010/content/workspace?articleId=cmsqhn4fk03tp31huo8kdg13k&step=outline",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1068,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/content/xiaohongshu",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 310,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu-assistant",
+      "finalUrl": "http://127.0.0.1:3010/content/xiaohongshu-assistant",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 636,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/copy-compare",
+      "finalUrl": "http://127.0.0.1:3010/copy-compare",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 396,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 435,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 359,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 878,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import",
+      "finalUrl": "http://127.0.0.1:3010/crm/import",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 370,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import/flow",
+      "finalUrl": "http://127.0.0.1:3010/crm-import/flow",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 495,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 359,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 878,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/customer",
+      "finalUrl": "http://127.0.0.1:3010/crm/customer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 340,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/crm/import",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 370,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/customer",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 435,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/distribution",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 902,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/accounts",
+      "finalUrl": "http://127.0.0.1:3010/distribution/accounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "API",
+          "context": "发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 平台账号 账号、登录状态和平台后台统一在这里管理 校验状态 发布 API 账号 绑定平台 抖音 森 ID 6 已登录 后台已连接 账号环境已接管 打开 刷新头像 重登 删除 抖音 44 ID 11 已登录 后台已连接 账号环境已接管 打开 刷新头像 重登 删除 v1.1.85 · 更新于 2026-08-"
+        }
+      ],
+      "textLength": 376,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/articles",
+      "finalUrl": "http://127.0.0.1:3010/distribution/articles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 4313,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/distribution/compliance",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 500,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/logs",
+      "finalUrl": "http://127.0.0.1:3010/distribution/logs",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "backendSurface",
+          "match": "后端",
+          "context": "完成。 - 2026-08-10 19:59:58 [info] 人工确认记录已保存。 - 2026-08-10 19:59:58 [warning] 后端风控审批已记录。 - 2026-08-10 19:59:58 [success] 执行保护通过，结果已回写。 - 2026-08-10 19:59:58 [success] 已人工确认，内部记录已完成。 [2026-08-10"
+        },
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "08-12 05:13:02] 抖音私信回复 排队中 抖音 2 -> 王女士 - 2026-07-29 20:39:17 [info] 互动任务已创建，等待本地引擎执行。 - 2026-07-29 20:39:17 [info] 当前会尝试打开本地账号后台；确认后发送模式会在真实发送前等待用户确认。 - 2026-07-29 20:39:17 [info] 已套用客服规则：本地生活/电"
+        }
+      ],
+      "textLength": 34113,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/publish-article",
+      "finalUrl": "http://127.0.0.1:3010/distribution/publish-article",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 355,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/publish-video",
+      "finalUrl": "http://127.0.0.1:3010/distribution/publish-video",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 328,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/scrape",
+      "finalUrl": "http://127.0.0.1:3010/distribution/scrape",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 318,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/tasks",
+      "finalUrl": "http://127.0.0.1:3010/distribution/tasks",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 863,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/effects",
+      "finalUrl": "http://127.0.0.1:3010/effects",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 630,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/engagement",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 363,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/channel-messages",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 413,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/engagement/comment-acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 484,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/engagement/comment-insights",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 416,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customer-service",
+      "finalUrl": "http://127.0.0.1:3010/engagement/customer-service",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 993,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 435,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 383,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/engagement/douyin-messages",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 381,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/engagement/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 314,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/engagement/rules",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 372,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 380,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-channel-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 415,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-groups",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 469,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-moments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 468,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments/detail",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat-moments/detail",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 315,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/chat-history",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat/chat-history",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 319,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/contact-add",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat/contact-add",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 369,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/contacts",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat/contacts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 317,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/friend-accept",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat/friend-accept",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 297,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/mass-send",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat/mass-send",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 451,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/moments-publish",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat/moments-publish",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 434,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/plans",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wechat/plans",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 333,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/engagement/wecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "Webhook",
+          "context": "失败，待处理 返回 企微助手 未安装 企业微信 AI 智能客服：自动回复 + 转人工 + 消息记录 连接企业微信群机器人 在企业微信群里添加「群机器人」，复制 Webhook 地址粘贴到下面。 连接成功后，客户消息会由 AI 自动回复，命中转人工关键词时提醒人工介入。 测试连接 安装连接 v1.1.85 · 更新于 2026-08-15 · 检查新版本可获得最新能力 检查更新 更新历史 主导航 今"
+        }
+      ],
+      "textLength": 445,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/growth",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 526,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/growth/account-health",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 373,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/growth/acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 412,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads",
+      "finalUrl": "http://127.0.0.1:3010/growth/leads",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "skillSurface",
+          "match": "Skill",
+          "context": "抖音 · 命中：AI手机 \"目标：青梅染雪 只要它的发售价格在1w8以下的话，多的是人买你信不信 评论时间：7小时前·山东 视频：12:086551万物皆可Skill：几十元传感器控制 视频互动分：65510000 来源：https://www.douyin.com/video/7672111888771108123 线索来源：抖音 AI手机 筛选原因：视频暂无可回复评论，改为直接在视频下评论"
+        }
+      ],
+      "textLength": 2053,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/leads/detail",
+      "finalUrl": "http://127.0.0.1:3010/growth/leads/detail",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 248,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3010/growth/reports",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 600,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "http://127.0.0.1:3010/growth/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 376,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/growth/workflows",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 758,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/knowledge",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 421,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 422,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base/new",
+      "finalUrl": "http://127.0.0.1:3010/knowledge-base/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 445,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/message",
+      "finalUrl": "http://127.0.0.1:3010/message",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 409,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mine",
+      "finalUrl": "http://127.0.0.1:3010/mine",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "runtimeSurface",
+          "match": "本地引擎",
+          "context": "服务、微信桌面、运行检查 应用与安装 开通更多能力（CRM 等） Agent 对话 Agent 会话工作台（对话规划助手） 任务证据 执行证据与留痕 引擎权限 本地引擎权限管理 AI 工件 AI 生成的工件产物 v1.1.85 · 更新于 2026-08-15 · 检查新版本可获得最新能力 检查更新 更新历史 主导航 今天（按 1） 内容（按 2） 发布（按 3） 互动（按 4） 线索（按 5）"
+        }
+      ],
+      "textLength": 524,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mobile-capabilities",
+      "finalUrl": "http://127.0.0.1:3010/mobile-capabilities",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 762,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/distribution/accounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "API",
+          "context": "发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 平台账号 账号、登录状态和平台后台统一在这里管理 校验状态 发布 API 账号 绑定平台 抖音 森 ID 6 已登录 后台已连接 账号环境已接管 打开 刷新头像 重登 删除 抖音 44 ID 11 已登录 后台已连接 账号环境已接管 打开 刷新头像 重登 删除 v1.1.85 · 更新于 2026-08-"
+        }
+      ],
+      "textLength": 376,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/edit",
+      "finalUrl": "http://127.0.0.1:3010/platforms/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 513,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/new",
+      "finalUrl": "http://127.0.0.1:3010/platforms/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 513,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/poi",
+      "finalUrl": "http://127.0.0.1:3010/poi",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 323,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/release-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "token",
+          "context": "内容工作区「新建」入口修复，正确创建新草稿。 移动端手写图标收敛为统一图标库，品牌 logo 与骨架屏抽成共享组件。 MCP 安全加固（限流 + 权限分级 + token 轮换）。 版本号、更新说明统一更新到 v1.1.85。 已修复的问题 修复发布中心「确认发布」「重试」死按钮（无真实行为）。 修复账号失效后无恢复任务入口。 修复 Local Engine 健康检查无超时导致无限挂起。 修复无缝"
+        }
+      ],
+      "textLength": 1239,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/reply",
+      "finalUrl": "http://127.0.0.1:3010/reply",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 366,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/risk-confirm",
+      "finalUrl": "http://127.0.0.1:3010/risk-confirm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 315,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings",
+      "finalUrl": "http://127.0.0.1:3010/savings",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2982,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings/orders",
+      "finalUrl": "http://127.0.0.1:3010/savings/orders",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 364,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings/wallet",
+      "finalUrl": "http://127.0.0.1:3010/savings/wallet",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 523,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/schedules",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 305,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules/edit",
+      "finalUrl": "http://127.0.0.1:3010/schedules/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 309,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/settings",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1509,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings/legal",
+      "finalUrl": "http://127.0.0.1:3010/settings/legal",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 688,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings/memory",
+      "finalUrl": "http://127.0.0.1:3010/settings/memory",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 411,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/solutions",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 951,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/configure",
+      "finalUrl": "http://127.0.0.1:3010/solutions/configure",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 309,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/run",
+      "finalUrl": "http://127.0.0.1:3010/solutions/run",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 309,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 446,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/edit",
+      "finalUrl": "http://127.0.0.1:3010/strategies/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 309,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/new",
+      "finalUrl": "http://127.0.0.1:3010/strategies/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 562,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/styles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 319,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/edit",
+      "finalUrl": "http://127.0.0.1:3010/styles/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 309,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/new",
+      "finalUrl": "http://127.0.0.1:3010/styles/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 442,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/task-evidence",
+      "finalUrl": "http://127.0.0.1:3010/task-evidence",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2671,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/tasks",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 3888,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/tasks/confirmations",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 330,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/tasks/evidence",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2671,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/tasks/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 453,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3010/tasks/runs",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 439,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/templates",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 313,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/edit",
+      "finalUrl": "http://127.0.0.1:3010/templates/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 309,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/new",
+      "finalUrl": "http://127.0.0.1:3010/templates/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 373,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3010/today",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1296,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video-generation",
+      "finalUrl": "http://127.0.0.1:3010/video-generation",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 361,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video/product-cut",
+      "finalUrl": "http://127.0.0.1:3010/video/product-cut",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 425,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video/release-plans",
+      "finalUrl": "http://127.0.0.1:3010/video/release-plans",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 325,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/viral-analysis",
+      "finalUrl": "http://127.0.0.1:3010/viral-analysis",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 358,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3010/war-room",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 442,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/wecom-assistant",
+      "finalUrl": "http://127.0.0.1:3010/wecom-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "secretSurface",
+          "match": "Webhook",
+          "context": "失败，待处理 返回 企微助手 未安装 企业微信 AI 智能客服：自动回复 + 转人工 + 消息记录 连接企业微信群机器人 在企业微信群里添加「群机器人」，复制 Webhook 地址粘贴到下面。 连接成功后，客户消息会由 AI 自动回复，命中转人工关键词时提醒人工介入。 测试连接 安装连接 v1.1.85 · 更新于 2026-08-15 · 检查新版本可获得最新能力 检查更新 更新历史 主导航 今"
+        }
+      ],
+      "textLength": 445,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/wecom-crm",
+      "finalUrl": "http://127.0.0.1:3010/wecom-crm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "apiSurface",
+          "match": "API",
+          "context": "能，或直接说你想做什么… ⌘K 通知 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 「圭」发布失败，待处理 企业微信客户运营 官方 API 通道：客户群发、客户朋友圈、外部联系人管理 渠道配置 客户群发 客户朋友圈 新增 / 更新企业配置 企业 ID（corpid） 应用 Secret 配置名称（可选） 应用 AgentId（可选） 回调 Token（可选） 回调 E"
+        },
+        {
+          "rule": "secretSurface",
+          "match": "Token",
+          "context": "渠道配置 客户群发 客户朋友圈 新增 / 更新企业配置 企业 ID（corpid） 应用 Secret 配置名称（可选） 应用 AgentId（可选） 回调 Token（可选） 回调 EncodingAESKey（可选） 保存配置 已配置企业（0） 刷新 尚未配置企业微信，先在上方填写 corpid 并保存。 v1.1.85 · 更新于 2026-08-15 · 检查新版本可获得最新能力 检"
+        }
+      ],
+      "textLength": 558,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

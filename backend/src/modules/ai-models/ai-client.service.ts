@@ -66,10 +66,7 @@ type AiModelWithPlatform = {
 };
 
 export type KaypalKnowledgeMode =
-  | 'required'
-  | 'preferred'
-  | 'contextual'
-  | 'off';
+  'required' | 'preferred' | 'contextual' | 'off';
 
 export type TextGenerationOptions = {
   temperature?: number;
@@ -549,14 +546,17 @@ export class AiClientService {
     }
   }
 
-
   /** Token 自动计量（P0 炼刀对标）：成功调用后采集 usage 上报 AiAuditService，不阻塞主流程 */
   private async reportTokenUsage(input: {
     kaypalUserId?: string;
     modelName?: string;
     modelId?: string;
     scene: string;
-    usage?: { promptTokens?: number; completionTokens?: number; totalTokens?: number };
+    usage?: {
+      promptTokens?: number;
+      completionTokens?: number;
+      totalTokens?: number;
+    };
   }) {
     const aiAudit = this.aiAudit;
     const userId = input.kaypalUserId?.trim();
@@ -1095,7 +1095,8 @@ export class AiClientService {
     const searchTerms = terms.length ? terms : [query];
     // P1-6：只召回「当前用户自己的」或「public」知识；系统级调用（无用户）只召回 public。
     // 绝不召回他人的 private，也绝不召回归属不明的 ownerId=null 旧数据。
-    const currentUserId = this.authRequestContext?.get()?.user?.id?.trim() || null;
+    const currentUserId =
+      this.authRequestContext?.get()?.user?.id?.trim() || null;
     const visibilityFilter = currentUserId
       ? { OR: [{ ownerId: currentUserId }, { visibility: 'public' }] }
       : { visibility: 'public' };
@@ -1311,9 +1312,11 @@ export class AiClientService {
       // 兜底：部分模型 content 为空但推理内容在 reasoning_content（thinking 关闭参数未被代理透传时）
       const content =
         rawContent ||
-        (response.choices[0]?.message as unknown as {
-          reasoning_content?: string;
-        })?.reasoning_content ||
+        (
+          response.choices[0]?.message as unknown as {
+            reasoning_content?: string;
+          }
+        )?.reasoning_content ||
         '';
       if (!content) {
         this.logger.warn(
@@ -1326,7 +1329,7 @@ export class AiClientService {
           scene: 'text_generation',
           modelId: model.modelId,
           modelName: model.name,
-          promptJson: contextualMessages as Prisma.InputJsonValue,
+          promptJson: contextualMessages,
           completion: content,
           promptTokens: response?.usage?.prompt_tokens,
           completionTokens: response?.usage?.completion_tokens,
@@ -1346,7 +1349,7 @@ export class AiClientService {
           scene: 'text_generation',
           modelId: model.modelId,
           modelName: model.name,
-          promptJson: contextualMessages as Prisma.InputJsonValue,
+          promptJson: contextualMessages,
           errorMsg: message,
           latencyMs: Date.now() - startedAt,
           success: false,
@@ -1559,7 +1562,7 @@ export class AiClientService {
           scene: 'stream_text',
           modelId: model.modelId,
           modelName: model.name,
-          promptJson: contextualMessages as Prisma.InputJsonValue,
+          promptJson: contextualMessages,
           errorMsg: message,
           latencyMs: Date.now() - startedAt,
           success: false,
@@ -1581,13 +1584,15 @@ export class AiClientService {
           yield content;
         }
         // 流式 usage：仅在开启 stream_options.include_usage 时最后一个 chunk 携带
-        const usage = (chunk as unknown as {
-          usage?: {
-            prompt_tokens?: number;
-            completion_tokens?: number;
-            total_tokens?: number;
-          };
-        })?.usage;
+        const usage = (
+          chunk as unknown as {
+            usage?: {
+              prompt_tokens?: number;
+              completion_tokens?: number;
+              total_tokens?: number;
+            };
+          }
+        )?.usage;
         if (usage) {
           promptTokens = usage.prompt_tokens ?? promptTokens;
           completionTokens = usage.completion_tokens ?? completionTokens;
@@ -1600,7 +1605,7 @@ export class AiClientService {
           scene: 'stream_text',
           modelId: model.modelId,
           modelName: model.name,
-          promptJson: contextualMessages as Prisma.InputJsonValue,
+          promptJson: contextualMessages,
           completion: fullContent,
           promptTokens,
           completionTokens,
@@ -1617,7 +1622,7 @@ export class AiClientService {
           scene: 'stream_text',
           modelId: model.modelId,
           modelName: model.name,
-          promptJson: contextualMessages as Prisma.InputJsonValue,
+          promptJson: contextualMessages,
           completion: fullContent || undefined,
           errorMsg: error instanceof Error ? error.message : String(error),
           latencyMs: Date.now() - startedAt,

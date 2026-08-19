@@ -10,9 +10,7 @@ import {
 } from 'class-validator';
 
 export type VoiceClientKind =
-  | 'bailongma-desktop'
-  | 'kaypal-web'
-  | 'external-client';
+  'bailongma-desktop' | 'kaypal-web' | 'external-client';
 
 export type VoiceCommandSource = string;
 
@@ -75,12 +73,7 @@ export class VoiceCommandDto {
   @IsOptional()
   @IsIn(['all', 'douyin', 'xiaohongshu', 'bilibili', 'wechat', 'gongzhonghao'])
   platform?:
-    | 'all'
-    | 'douyin'
-    | 'xiaohongshu'
-    | 'bilibili'
-    | 'wechat'
-    | 'gongzhonghao';
+    'all' | 'douyin' | 'xiaohongshu' | 'bilibili' | 'wechat' | 'gongzhonghao';
 
   @IsOptional()
   @IsIn(['all', 'post', 'account', 'comment', 'engagement'])

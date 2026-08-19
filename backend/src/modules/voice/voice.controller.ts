@@ -120,7 +120,10 @@ export class VoiceController {
       throw new HttpException('未收到音频数据', HttpStatus.BAD_REQUEST);
     }
     if (body.length > MAX_PCM_BYTES) {
-      throw new HttpException('录音过长，请控制在 8 分钟内', HttpStatus.PAYLOAD_TOO_LARGE);
+      throw new HttpException(
+        '录音过长，请控制在 8 分钟内',
+        HttpStatus.PAYLOAD_TOO_LARGE,
+      );
     }
     const result = await this.asr.transcribePcm(body, request.authUser);
     res.json({ ok: true, ...result });
@@ -141,10 +144,14 @@ export class VoiceController {
     @Body() dto: { text?: string; provider?: string; voiceId?: string },
     @Res() res: Response,
   ) {
-    const result = await this.tts.synthesize(dto?.text || '', request.authUser, {
-      provider: dto?.provider,
-      voiceId: dto?.voiceId,
-    });
+    const result = await this.tts.synthesize(
+      dto?.text || '',
+      request.authUser,
+      {
+        provider: dto?.provider,
+        voiceId: dto?.voiceId,
+      },
+    );
     res.setHeader('Content-Type', result.contentType);
     res.setHeader('Cache-Control', 'no-store');
     result.stream.pipe(res);

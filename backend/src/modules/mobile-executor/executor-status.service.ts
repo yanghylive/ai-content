@@ -32,10 +32,10 @@ export class ExecutorStatusService {
     };
     if (input.status === 'done') {
       data.executedAt = new Date();
-      data.result = (input.result ?? {}) as never;
+      data.result = input.result ?? {};
     }
     if (input.status === 'failed') {
-      data.result = { error: input.error ?? '执行失败' } as never;
+      data.result = { error: input.error ?? '执行失败' };
     }
     const updated = await this.prisma.executorTask.update({
       where: { id: taskId },

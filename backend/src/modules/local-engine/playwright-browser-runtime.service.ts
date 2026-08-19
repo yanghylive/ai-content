@@ -5,10 +5,7 @@ import { join, resolve } from 'path';
 import { chromium } from 'playwright';
 
 export type PlaywrightBrowserRuntimeSource =
-  | 'explicit'
-  | 'bundled'
-  | 'playwright-cache'
-  | 'system-fallback';
+  'explicit' | 'bundled' | 'playwright-cache' | 'system-fallback';
 
 export type PlaywrightBrowserRuntimeInfo = {
   executablePath: string;

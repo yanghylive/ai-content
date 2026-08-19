@@ -60,9 +60,12 @@ describe('FunnelReportService', () => {
     expect(prisma.publishRecord.count).toHaveBeenCalledWith({
       where: { articleId: 'article-1', userId: USER },
     });
-    // 去重后的 customerId 用于查商机
+    // 去重后的 customerId 用于查商机（带 ownerId scope，堵跨用户 IDOR）
     expect(prisma.crmOpportunity.count).toHaveBeenCalledWith({
-      where: { primaryCustomerId: { in: ['customer-1', 'customer-2'] } },
+      where: {
+        primaryCustomerId: { in: ['customer-1', 'customer-2'] },
+        ownerId: USER,
+      },
     });
   });
 
@@ -103,5 +106,47 @@ describe('FunnelReportService', () => {
     expect(prisma.crmCustomer.count).toHaveBeenCalledWith({
       where: expect.objectContaining({ ownerId: USER }),
     });
+  });
+});
+
+describe('FunnelReportService 租户隔离（P1-19 复核）', () => {
+  it('articleFunnel 带 tenantId → 文章归属校验含租户维度（防跨租户裸 ID 联查）', async () => {
+    const { service, prisma } = makeService({
+      article: jest
+        .fn()
+        .mockResolvedValue({ id: 'article-1', title: 't', status: 'published' }),
+    });
+    await service.articleFunnel('article-1', USER, 'tenant-1');
+
+    expect(prisma.article.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'article-1', userId: USER, tenantId: 'tenant-1' },
+      }),
+    );
+    expect(prisma.lead.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          sourceArticleId: 'article-1',
+          userId: USER,
+          tenantId: 'tenant-1',
+        }),
+      }),
+    );
+  });
+
+  it('funnel 带 tenantId → 全部查询按租户过滤', async () => {
+    const { service, prisma } = makeService();
+    await service.funnel(7, USER, 'tenant-1');
+
+    expect(prisma.article.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: USER, tenantId: 'tenant-1' }),
+      }),
+    );
+    expect(prisma.crmCustomer.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ ownerId: USER, tenantId: 'tenant-1' }),
+      }),
+    );
   });
 });

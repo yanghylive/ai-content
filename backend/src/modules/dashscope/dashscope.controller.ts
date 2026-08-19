@@ -24,7 +24,9 @@ export class DashscopeController {
   constructor(private readonly multimodal: MultimodalService) {}
 
   @Post('image')
-  @ApiOperation({ summary: 'Qwen-Image 生图（入素材库，走模型台网关 + 云端积分）' })
+  @ApiOperation({
+    summary: 'Qwen-Image 生图（入素材库，走模型台网关 + 云端积分）',
+  })
   generateImage(
     @Req() request: AuthenticatedRequest,
     @Body() input: { prompt: string; size?: string },
@@ -34,7 +36,9 @@ export class DashscopeController {
   }
 
   @Post('image/quote')
-  @ApiOperation({ summary: '生图成本预估（积分 + 人民币，报告 16.3 第 11 项）' })
+  @ApiOperation({
+    summary: '生图成本预估（积分 + 人民币，报告 16.3 第 11 项）',
+  })
   quoteImage(
     @Req() request: AuthenticatedRequest,
     @Body() input: { count?: number },
@@ -44,17 +48,27 @@ export class DashscopeController {
   }
 
   @Post('video')
-  @ApiOperation({ summary: '万相/快乐马 文生/图生视频（入素材库，百炼直连或网关回退）' })
+  @ApiOperation({
+    summary: '万相/快乐马 文生/图生视频（入素材库，百炼直连或网关回退）',
+  })
   generateVideo(
     @Req() request: AuthenticatedRequest,
-    @Body() input: { prompt: string; duration?: number; ratio?: string; imageUrl?: string },
+    @Body()
+    input: {
+      prompt: string;
+      duration?: number;
+      ratio?: string;
+      imageUrl?: string;
+    },
   ) {
     if (!request.authUser) throw new UnauthorizedException('请先登录');
     return this.multimodal.generateVideo(request.authUser, input || {});
   }
 
   @Post('video/quote')
-  @ApiOperation({ summary: '生视频成本预估（积分 + 人民币，报告 16.3 第 11 项）' })
+  @ApiOperation({
+    summary: '生视频成本预估（积分 + 人民币，报告 16.3 第 11 项）',
+  })
   quoteVideo(
     @Req() request: AuthenticatedRequest,
     @Body() input: { durationSeconds?: number },
@@ -64,7 +78,9 @@ export class DashscopeController {
   }
 
   @Post('speech')
-  @ApiOperation({ summary: '配音（文本 → 音频入素材库，走模型台网关 + 云端积分）' })
+  @ApiOperation({
+    summary: '配音（文本 → 音频入素材库，走模型台网关 + 云端积分）',
+  })
   generateSpeech(
     @Req() request: AuthenticatedRequest,
     @Body() input: { text: string; voice?: string },

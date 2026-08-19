@@ -202,7 +202,8 @@ export class CaseDetailDto {
   demoEndpoints: PublicDemoEndpointDto[];
 
   @ApiPropertyOptional({
-    description: '公开授权归属列表（grantor/scope/licenseName/sourceUrl，不含私有附件）',
+    description:
+      '公开授权归属列表（grantor/scope/licenseName/sourceUrl，不含私有附件）',
     type: [PublicAttributionDto],
   })
   attribution: PublicAttributionDto[];

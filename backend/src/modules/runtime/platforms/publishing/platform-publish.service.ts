@@ -835,10 +835,7 @@ export class PlatformPublishService implements TaskExecutor {
       await config.fill(page, title, tags);
       const publishButton = config.locatePublishButton
         ? await config.locatePublishButton(page, config.publishButtonText)
-        : await this.waitGenericPublishButton(
-            page,
-            config.publishButtonText,
-          );
+        : await this.waitGenericPublishButton(page, config.publishButtonText);
       await publishButton.click({ force: true, timeout: 15000 });
       await config.afterClick?.(page);
       let readbackMatched = false;

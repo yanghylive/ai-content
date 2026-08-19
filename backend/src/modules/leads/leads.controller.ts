@@ -51,7 +51,7 @@ export class LeadsController {
       scope: { userId, tenantId },
       // Sprint 4 T4.1：一步建商机/任务/备注（可选）
       company: body?.company ? (body.company as never) : undefined,
-      opportunity: body?.opportunity ? (body.opportunity as never) : undefined,
+      opportunity: body?.opportunity ? body.opportunity : undefined,
       task: body?.task ? (body.task as never) : undefined,
       note: body?.note ? (body.note as never) : undefined,
     });

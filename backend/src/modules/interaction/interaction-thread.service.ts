@@ -5,11 +5,7 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
 
 /** 统一收件箱视图（报告 15.4#4：未分配/待处理/已回复/需人工接管/超时） */
 export type ThreadView =
-  | 'unassigned'
-  | 'pending'
-  | 'replied'
-  | 'needs_human'
-  | 'overdue';
+  'unassigned' | 'pending' | 'replied' | 'needs_human' | 'overdue';
 
 /** 事件聚合出的会话线程（同一 externalThreadId 或同一作者+来源） */
 export interface InteractionThread {

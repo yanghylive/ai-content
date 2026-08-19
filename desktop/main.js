@@ -84,7 +84,7 @@ const AGENT_S_PORT = 17777;
 const BACKEND_READY_TIMEOUT_MS = 60_000;
 const BACKEND_READY_INTERVAL_MS = 500;
 const DEFAULT_DATABASE_URL = 'postgresql://postgres:ai_content_2026@127.0.0.1:5432/ai_content?schema=public';
-const AGENT_S_TOKEN = 'change-me-local-token';
+const AGENT_S_TOKEN = 'qAB/62DBdXpIYi/uHYOQU/20DnlESvNZDAugSfHfn8k=';
 
 let pendingUpdate = {
   configured: false,

@@ -7,6 +7,7 @@ import {
   BookOpen,
   MessageCircle,
   Music2,
+  Play,
   Save,
 } from "lucide-react";
 import {
@@ -26,6 +27,7 @@ import { useIsMobile } from "@/lib/hooks/use-media-query";
 const PLATFORM_OPTIONS = [
   { value: "douyin", label: "抖音", desc: "评论区找客户", icon: Music2 },
   { value: "xiaohongshu", label: "小红书", desc: "笔记和评论", icon: BookOpen },
+  { value: "kuaishou", label: "快手", desc: "评论区找客户", icon: Play },
   { value: "wechat", label: "微信", desc: "微信群和朋友圈", icon: MessageCircle },
 ] as const;
 
@@ -162,7 +164,7 @@ export function AcquisitionRuleForm() {
         scheduleEnabled: form.scheduleEnabled,
         beginTime: form.scheduleEnabled ? form.beginTime : "",
         riskMode: form.riskMode,
-        status: "enabled",
+        status: "disabled",
       });
       router.push("/apps/auto-acquisition");
     } catch (err: unknown) {

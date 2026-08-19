@@ -7,6 +7,7 @@ import { MaterialsModule } from './modules/materials/materials.module';
 import { TopicsModule } from './modules/topics/topics.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { RpaModule } from './modules/rpa/rpa.module';
 import { SystemLogsModule } from './modules/system-logs/system-logs.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -82,6 +83,7 @@ import { CaseShowcaseModule } from './modules/case-showcase/case-showcase.module
     TopicsModule,
     DashboardModule,
     StatsModule,
+    RpaModule,
     SystemLogsModule,
     StylesModule,
     ArticlesModule,

@@ -36,7 +36,12 @@ export class ContentReviewController {
     @Body()
     dto: {
       titles?: string[];
-      pages?: Array<{ type: string; heading?: string; content?: string; imagePrompt?: string }>;
+      pages?: Array<{
+        type: string;
+        heading?: string;
+        content?: string;
+        imagePrompt?: string;
+      }>;
       generatedImageCount?: number;
       aiFlavorScore?: number;
     },

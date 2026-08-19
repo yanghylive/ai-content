@@ -36,7 +36,14 @@ export class ContentPlanService {
     }
   }
 
-  async create(input: ContentPlanInput, owner: { userId: string; tenantId?: string | null; actorUserId?: string | null }) {
+  async create(
+    input: ContentPlanInput,
+    owner: {
+      userId: string;
+      tenantId?: string | null;
+      actorUserId?: string | null;
+    },
+  ) {
     this.validateGoal(input.goal);
     return this.prisma.contentPlan.create({
       data: {
@@ -55,7 +62,10 @@ export class ContentPlanService {
     });
   }
 
-  async list(owner: { userId: string; tenantId?: string | null }, status?: string) {
+  async list(
+    owner: { userId: string; tenantId?: string | null },
+    status?: string,
+  ) {
     return this.prisma.contentPlan.findMany({
       where: {
         userId: owner.userId,

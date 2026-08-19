@@ -189,10 +189,7 @@ export interface AgentSSidecarArtifact {
 }
 
 export type AgentSConversationPurpose =
-  | 'general'
-  | 'research'
-  | 'draft'
-  | 'execute';
+  'general' | 'research' | 'draft' | 'execute';
 
 export interface AgentSConversationAttachment {
   filename: string;

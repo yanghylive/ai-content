@@ -1,12 +1,8 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import crypto from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { LeadEventBus } from './lead-event-bus';
+import { LeadScoreService } from '../lead-intelligence/lead-score.service';
 
 /**
  * 统一线索写入层（一期）。
@@ -56,9 +52,11 @@ export interface LeadUpsertResult {
 
 @Injectable()
 export class LeadRepository {
+  private readonly logger = new Logger(LeadRepository.name);
+
   constructor(
     private readonly prisma: PrismaService,
-    private readonly events: LeadEventBus,
+    @Optional() private readonly leadScore?: LeadScoreService,
   ) {}
 
   /** 统一去重键：有平台用户 ID 优先（最强），无则昵称 + 文本前缀兜底 */
@@ -137,7 +135,7 @@ export class LeadRepository {
       ownerUserId: input.ownerUserId,
       customerId: input.crmCustomerId ?? null,
       nextFollowUpAt: input.nextFollowUpAt ?? null,
-      signals: growthSignals as Prisma.InputJsonValue,
+      signals: growthSignals,
     };
   }
 
@@ -165,7 +163,8 @@ export class LeadRepository {
         where,
         data: {
           // 来源信息：保留最早来源，仅回填缺失的更强身份字段
-          externalUserId: existing.externalUserId ?? input.externalUserId ?? null,
+          externalUserId:
+            existing.externalUserId ?? input.externalUserId ?? null,
           profileUrl: existing.profileUrl ?? input.profileUrl ?? null,
           avatarUrl: existing.avatarUrl ?? input.avatarUrl ?? null,
           nickname: existing.nickname ?? input.nickname ?? null,
@@ -191,7 +190,9 @@ export class LeadRepository {
           sourceArticleId:
             existing.sourceArticleId ?? input.sourceArticleId ?? null,
           sourcePublishRecordId:
-            existing.sourcePublishRecordId ?? input.sourcePublishRecordId ?? null,
+            existing.sourcePublishRecordId ??
+            input.sourcePublishRecordId ??
+            null,
           sourceInteractionEventId:
             existing.sourceInteractionEventId ??
             input.sourceInteractionEventId ??
@@ -210,103 +211,71 @@ export class LeadRepository {
       return { lead, created: false };
     }
 
-    const lead = await this.prisma.lead.create({
-      data: {
-        userId: input.userId,
-        tenantId: input.tenantId ?? null,
-        platform: input.platform,
-        sourceType: input.sourceType,
-        sourceAccountId: input.sourceAccountId ?? null,
-        sourceTaskId: input.sourceTaskId ?? null,
-        sourceRunId: input.sourceRunId ?? null,
-        sourceArticleId: input.sourceArticleId ?? null,
-        sourcePublishRecordId: input.sourcePublishRecordId ?? null,
-        sourceInteractionEventId: input.sourceInteractionEventId ?? null,
-        sourceUrl: input.sourceUrl ?? null,
-        sourceText: input.sourceText ?? null,
-        commentRef: input.commentRef ?? null,
-        externalUserId: input.externalUserId ?? null,
-        dedupeKey,
-        nickname: input.nickname ?? null,
-        profileUrl: input.profileUrl ?? null,
-        avatarUrl: input.avatarUrl ?? null,
-        score: input.score ?? 0,
-        scoreReasons: input.scoreReasons ?? [],
-        matchedKeywords: input.matchedKeywords ?? [],
-        signals: input.signals ?? [],
-        latestReply: input.latestReply ?? null,
-        replyPersonaId: input.replyPersonaId ?? null,
-        lastError: input.lastError ?? null,
-        ownerUserId: input.ownerUserId ?? null,
-        customerId: input.customerId ?? null,
-        nextFollowUpAt: input.nextFollowUpAt
-          ? new Date(input.nextFollowUpAt)
-          : null,
-      },
-    }).catch(async (error: unknown) => {
-      // S0-P1-3 竞态：并发同 dedupeKey 撞唯一约束（P2002）时重查返回已有线索
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        return this.prisma.lead.findUniqueOrThrow({ where });
-      }
-      throw error;
-    });
-    this.events.emit({
-      type: 'lead.created',
-      leadId: lead.id,
-      userId: lead.userId,
-      tenantId: lead.tenantId,
-      platform: lead.platform,
-      sourceType: lead.sourceType,
-      dedupeKey: lead.dedupeKey,
-      at: lead.createdAt,
-    });
-    return { lead, created: true };
-  }
-
-  /**
-   * 线索转客户：status=converted 并关联 CrmCustomer。
-   * S0-2 安全锁：校验 lead 与 customer 两端 scope，防跨租户转客户；
-   * 用 updateMany 保证「不存在/无权」时 count=0 → 404，不做裸 update。
-   */
-  async markConverted(
-    leadId: string,
-    customerId: string,
-    scope: { userId: string; tenantId?: string | null },
-  ): Promise<void> {
-    // 校验 customer 归属（防关联他人客户）
-    const customer = await this.prisma.crmCustomer.findFirst({
-      where: { id: customerId, ownerId: scope.userId },
-      select: { id: true },
-    });
-    if (!customer) {
-      throw new ForbiddenException('不能关联非本人客户');
-    }
-
-    const result = await this.prisma.lead.updateMany({
-      where: {
-        id: leadId,
-        userId: scope.userId,
-        ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
-      },
-      data: { status: 'converted', customerId },
-    });
-    if (result.count !== 1) {
-      throw new NotFoundException('线索不存在或无权操作');
-    }
-
-    const lead = await this.prisma.lead.findUnique({ where: { id: leadId } });
-    if (lead) {
-      this.events.emit({
-        type: 'lead.converted',
-        leadId: lead.id,
-        customerId: lead.customerId ?? customerId,
-        userId: lead.userId,
-        at: new Date(),
+    const lead = await this.prisma.lead
+      .create({
+        data: {
+          userId: input.userId,
+          tenantId: input.tenantId ?? null,
+          platform: input.platform,
+          sourceType: input.sourceType,
+          sourceAccountId: input.sourceAccountId ?? null,
+          sourceTaskId: input.sourceTaskId ?? null,
+          sourceRunId: input.sourceRunId ?? null,
+          sourceArticleId: input.sourceArticleId ?? null,
+          sourcePublishRecordId: input.sourcePublishRecordId ?? null,
+          sourceInteractionEventId: input.sourceInteractionEventId ?? null,
+          sourceUrl: input.sourceUrl ?? null,
+          sourceText: input.sourceText ?? null,
+          commentRef: input.commentRef ?? null,
+          externalUserId: input.externalUserId ?? null,
+          dedupeKey,
+          nickname: input.nickname ?? null,
+          profileUrl: input.profileUrl ?? null,
+          avatarUrl: input.avatarUrl ?? null,
+          score: input.score ?? 0,
+          scoreReasons: input.scoreReasons ?? [],
+          matchedKeywords: input.matchedKeywords ?? [],
+          signals: input.signals ?? [],
+          latestReply: input.latestReply ?? null,
+          replyPersonaId: input.replyPersonaId ?? null,
+          lastError: input.lastError ?? null,
+          ownerUserId: input.ownerUserId ?? null,
+          customerId: input.customerId ?? null,
+          nextFollowUpAt: input.nextFollowUpAt
+            ? new Date(input.nextFollowUpAt)
+            : null,
+        },
+      })
+      .catch(async (error: unknown) => {
+        // S0-P1-3 竞态：并发同 dedupeKey 撞唯一约束（P2002）时重查返回已有线索
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          return this.prisma.lead.findUniqueOrThrow({ where });
+        }
+        throw error;
       });
+    // 新线索自动增强：四维评分 + 打标签（fire-and-forget，不阻断线索创建）
+    if (this.leadScore) {
+      void this.leadScore
+        .scoreLeadFromText({
+          tenantId: lead.tenantId ?? 'legacy-local-desktop',
+          userId: lead.userId,
+          leadId: lead.id,
+          platform: lead.platform,
+          text: lead.sourceText ?? '',
+          channel: lead.sourceType === 'comment' ? 'mention' : 'manual',
+        })
+        .catch((error) => {
+          this.logger.warn(
+            `新线索自动增强失败（lead=${lead.id}）：${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        });
     }
+    return { lead, created: true };
   }
 
   /**
@@ -353,8 +322,8 @@ export class LeadRepository {
     existing: unknown,
     incoming: unknown,
   ): Prisma.InputJsonValue {
-    const a = Array.isArray(existing) ? existing : [];
-    const b = Array.isArray(incoming) ? incoming : [];
+    const a: unknown[] = Array.isArray(existing) ? existing : [];
+    const b: unknown[] = Array.isArray(incoming) ? incoming : [];
     const seen = new Set(a.map((x) => JSON.stringify(x)));
     return [
       ...a,

@@ -18,6 +18,41 @@ import { PrismaService } from '../../prisma/prisma.service';
  *   2. 双写：studio_core 写文件 + NestJS 同步到 Postgres（后续）
  *   3. 透传 user_id（多用户隔离）
  */
+/** 发布计划里单个 payload 的结构（来自 runtimeJson envelope，字段动态） */
+interface ReleasePlanPayload {
+  enableTimer?: unknown;
+  scheduleTime?: unknown;
+  platform?: unknown;
+  accountIdentity?: { platform?: string };
+}
+
+/** 发布计划行：runtimeExecution 查询结果，定时数据存在 runtimeJson（不是 envelope——schema 无 envelope 列） */
+type ReleasePlanRow = {
+  id: string;
+  createdAt: Date;
+  status: string;
+  runtimeJson?: unknown;
+};
+
+interface ReleasePlanEnvelope {
+  payloads?: ReleasePlanPayload[];
+  title?: unknown;
+  /** 改期后的计划发布时间（ISO 8601），未改期则缺省 */
+  plannedAt?: string;
+  /** 取消时间（ISO 8601），取消后写入 */
+  cancelledAt?: string;
+}
+
+export interface ReleasePlan {
+  id: string;
+  createdAt: Date;
+  status: string;
+  scheduled: boolean;
+  scheduleTime: string | null;
+  platforms: string[];
+  title: unknown;
+}
+
 @Injectable()
 export class VideoService {
   private readonly logger = new Logger(VideoService.name);
@@ -131,16 +166,25 @@ export class VideoService {
     if (!name) {
       throw new BadRequestException('商品名称不能为空');
     }
-    const points = (input.sellingPoints ?? []).filter((p) => p?.trim()).slice(0, 5);
+    const points = (input.sellingPoints ?? [])
+      .filter((p) => p?.trim())
+      .slice(0, 5);
     const price =
       input.price === undefined || input.price === ''
         ? ''
         : `只要 ${input.price}`;
     const audience = input.audience?.trim() || '家人们';
-    const targetSeconds = Math.min(Math.max(input.durationSeconds ?? 20, 10), 60);
+    const targetSeconds = Math.min(
+      Math.max(input.durationSeconds ?? 20, 10),
+      60,
+    );
 
     // 分镜：钩子 → 卖点（每点一个镜头）→ 价格锚点 → CTA
-    const segments: Array<{ subtitle: string; visual: string; seconds: number }> = [];
+    const segments: Array<{
+      subtitle: string;
+      visual: string;
+      seconds: number;
+    }> = [];
     const hookVisual = '商品特写开场，快节奏转场';
     if (points.length === 0) {
       segments.push({
@@ -205,7 +249,9 @@ export class VideoService {
     ]
       .filter(Boolean)
       .join('\n');
-    this.logger.log(`productCut: ${input.productName} segments=${script.segments.length}`);
+    this.logger.log(
+      `productCut: ${input.productName} segments=${script.segments.length}`,
+    );
     try {
       return await this.studioCoreProxy.postGenerate({
         pipeline: 'promo',
@@ -218,7 +264,8 @@ export class VideoService {
       return {
         queued: false,
         reason: 'studio_core_offline',
-        message: '成片引擎暂不可用，文案已生成；请确认 studio_core 已启动后重试',
+        message:
+          '成片引擎暂不可用，文案已生成；请确认 studio_core 已启动后重试',
         copy: script.copy,
         segments: script.segments,
       };
@@ -237,7 +284,8 @@ export class VideoService {
   }) {
     const name = input.name?.trim();
     if (!name) throw new BadRequestException('配置名不能为空');
-    if (!input.productName?.trim()) throw new BadRequestException('商品名称不能为空');
+    if (!input.productName?.trim())
+      throw new BadRequestException('商品名称不能为空');
     const price =
       typeof input.price === 'number'
         ? input.price
@@ -251,7 +299,10 @@ export class VideoService {
         sellingPoints: JSON.stringify(input.sellingPoints ?? []),
         price: Number.isFinite(price) ? price : null,
         audience: input.audience ?? null,
-        durationSeconds: Math.min(Math.max(input.durationSeconds ?? 20, 10), 60),
+        durationSeconds: Math.min(
+          Math.max(input.durationSeconds ?? 20, 10),
+          60,
+        ),
         imageUrl: input.imageUrl ?? null,
       },
     });
@@ -269,7 +320,9 @@ export class VideoService {
       imageUrl?: string;
     },
   ) {
-    const existing = await this.prisma.productClipConfig.findUnique({ where: { id } });
+    const existing = await this.prisma.productClipConfig.findUnique({
+      where: { id },
+    });
     if (!existing) throw new NotFoundException('剪辑配置不存在');
     const price =
       input.price === undefined
@@ -294,7 +347,12 @@ export class VideoService {
           : {}),
         ...(input.audience !== undefined ? { audience: input.audience } : {}),
         ...(input.durationSeconds !== undefined
-          ? { durationSeconds: Math.min(Math.max(input.durationSeconds, 10), 60) }
+          ? {
+              durationSeconds: Math.min(
+                Math.max(input.durationSeconds, 10),
+                60,
+              ),
+            }
           : {}),
         ...(input.imageUrl !== undefined ? { imageUrl: input.imageUrl } : {}),
         updatedAt: new Date(),
@@ -313,13 +371,20 @@ export class VideoService {
   }
 
   async getClipConfig(id: string) {
-    const row = await this.prisma.productClipConfig.findUnique({ where: { id } });
+    const row = await this.prisma.productClipConfig.findUnique({
+      where: { id },
+    });
     if (!row) throw new NotFoundException('剪辑配置不存在');
-    return { ...row, sellingPoints: this.parseSellingPoints(row.sellingPoints) };
+    return {
+      ...row,
+      sellingPoints: this.parseSellingPoints(row.sellingPoints),
+    };
   }
 
   async removeClipConfig(id: string) {
-    const existing = await this.prisma.productClipConfig.findUnique({ where: { id } });
+    const existing = await this.prisma.productClipConfig.findUnique({
+      where: { id },
+    });
     if (!existing) throw new NotFoundException('剪辑配置不存在');
     await this.prisma.productClipConfig.delete({ where: { id } });
     return { id, deleted: true };
@@ -328,8 +393,8 @@ export class VideoService {
   private parseSellingPoints(raw: string | null): string[] {
     if (!raw) return [];
     try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as string[]) : [];
     } catch {
       return [];
     }
@@ -345,30 +410,46 @@ export class VideoService {
       orderBy: { createdAt: 'desc' },
       take: safeLimit,
     });
-    return rows
-      .map((row: any) => {
-        let payloads: any[] = [];
+    return (rows as ReleasePlanRow[])
+      .map((row): ReleasePlan => {
+        const raw = row.runtimeJson;
+        let payloads: ReleasePlanPayload[] = [];
+        let title: unknown = null;
+        let plannedAt: string | null = null;
+        let cancelled = false;
         try {
-          payloads = Array.isArray(row.envelope?.payloads)
-            ? row.envelope.payloads
-            : JSON.parse(row.envelope || '{}').payloads || [];
+          const parsedEnvelope = (
+            typeof raw === 'string' ? JSON.parse(raw) : raw
+          ) as ReleasePlanEnvelope;
+          if (parsedEnvelope !== null && typeof parsedEnvelope === 'object') {
+            payloads = Array.isArray(parsedEnvelope.payloads)
+              ? parsedEnvelope.payloads
+              : [];
+            title = parsedEnvelope.title ?? null;
+            plannedAt =
+              typeof parsedEnvelope.plannedAt === 'string'
+                ? parsedEnvelope.plannedAt
+                : null;
+            cancelled = Boolean(parsedEnvelope.cancelledAt);
+          }
         } catch {
           payloads = [];
         }
         const timer = payloads.find(
-          (p: any) => p?.enableTimer === 1 || p?.scheduleTime,
+          (p) => p.enableTimer === 1 || Boolean(p.scheduleTime),
         );
         return {
           id: row.id,
           createdAt: row.createdAt,
           status: row.status,
-          scheduled: Boolean(timer),
-          scheduleTime: timer?.scheduleTime ?? null,
-          platforms: payloads.map((p: any) => p?.platform).filter(Boolean),
-          title: row.envelope?.title ?? null,
+          scheduled: (Boolean(timer) || Boolean(plannedAt)) && !cancelled,
+          scheduleTime: plannedAt ?? (timer?.scheduleTime as string) ?? null,
+          platforms: payloads
+            .map((p) => p.accountIdentity?.platform ?? p.platform)
+            .filter((v): v is string => typeof v === 'string' && v.length > 0),
+          title,
         };
       })
-      .filter((plan: any) => plan.scheduled);
+      .filter((plan) => plan.scheduled);
   }
 }
-

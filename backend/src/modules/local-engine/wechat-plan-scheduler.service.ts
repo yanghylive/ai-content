@@ -271,7 +271,7 @@ export class WechatPlanSchedulerService
           status: 'RUNNING',
           stage: 'agent-s-scheduled-running',
           config: nextTask as unknown as Prisma.InputJsonValue,
-          events: events as unknown as Prisma.InputJsonValue,
+          events: events,
         },
       });
       return true;
@@ -583,7 +583,7 @@ export class WechatPlanSchedulerService
           status: 'QUEUED',
           stage: 'scheduled-wait',
           config: nextTask as unknown as Prisma.InputJsonValue,
-          events: events as unknown as Prisma.InputJsonValue,
+          events: events,
         },
       });
       return true;
@@ -623,7 +623,7 @@ export class WechatPlanSchedulerService
           ].slice(-100),
           readbackRefs: combinedRefs,
         } as unknown as Prisma.InputJsonValue,
-        events: events as unknown as Prisma.InputJsonValue,
+        events: events,
       },
     });
     return true;
@@ -862,11 +862,7 @@ export class WechatPlanSchedulerService
     agentEvents: AgentSSidecarEvent[],
     outcome: BatchOutcome,
     requestedStatus:
-      | 'COMPLETED'
-      | 'FAILED'
-      | 'BLOCKED'
-      | 'PAUSED'
-      | 'NO_TARGET',
+      'COMPLETED' | 'FAILED' | 'BLOCKED' | 'PAUSED' | 'NO_TARGET',
     reason: string,
     now: Date,
     refs: string[] = [],
@@ -1052,8 +1048,8 @@ export class WechatPlanSchedulerService
         failedCount: batchSummary.failed,
         skippedCount: batchSummary.skipped + batchSummary.noTarget,
         batchTargets: targets as unknown as Prisma.InputJsonValue,
-        batchSummary: batchSummary as unknown as Prisma.InputJsonValue,
-        events: events as unknown as Prisma.InputJsonValue,
+        batchSummary: batchSummary,
+        events: events,
         config: {
           ...task,
           status: statusView.status,

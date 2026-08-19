@@ -77,10 +77,7 @@ const AUTO_ACQUISITION_SCHEDULER_MS = 30_000;
 const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://kaypal.cn';
 
 export type AiEmployeeCapabilityStatus =
-  | 'real'
-  | 'simulated'
-  | 'needs_config'
-  | 'unavailable';
+  'real' | 'simulated' | 'needs_config' | 'unavailable';
 
 export type AiEmployeeCapabilityRiskLevel = 'low' | 'medium' | 'high';
 
@@ -206,6 +203,13 @@ export interface DouyinFollowUpCandidateInput {
   targetName?: string;
   profileUrl?: string;
   commentTime?: string;
+  // P1-4：评论用户身份/事件字段贯穿
+  externalUserId?: string;
+  externalEventId?: string;
+  // P1-9 复核：RPA 发现结果完整字段透传（内容/作者/指纹，Lead 归因与去重依赖）
+  externalContentId?: string;
+  authorName?: string;
+  rawHash?: string;
   videoTitle?: string;
   videoUrl?: string;
   engagementScore?: number;
@@ -223,7 +227,9 @@ export type DouyinExposureCapabilityKey =
   | 'douyin-search-account-exposure'
   | 'douyin-hot-video-exposure'
   | 'douyin-targeted-exposure'
-  | 'douyin-retention-exposure';
+  | 'douyin-retention-exposure'
+  // P2 复核：推荐流独立配额标识（快手推荐流走同一能力名，平台维度区分）
+  | 'douyin-recommended-exposure';
 
 export interface DouyinFollowUpPlanInput {
   candidates?: DouyinFollowUpCandidateInput[];
@@ -4947,7 +4953,11 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
     if (!executorTaskType) return undefined;
     const direct = executorsByKey.get(executorTaskType);
     if (direct) return direct;
-    if (/^douyin-(link|search-account|hot-video|targeted|retention)-exposure$/.test(executorTaskType)) {
+    if (
+      /^douyin-(link|search-account|hot-video|targeted|retention)-exposure$/.test(
+        executorTaskType,
+      )
+    ) {
       return executorsByKey.get('douyin-exposure');
     }
     if (/^platform-publish-(video|image-text)$/.test(executorTaskType)) {

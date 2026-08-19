@@ -157,3 +157,99 @@ describe('VideoService product clip config CRUD', () => {
     ).rejects.toThrow();
   });
 });
+
+describe('VideoService listReleasePlans', () => {
+  let service: any;
+  let rows: any[];
+
+  beforeEach(() => {
+    rows = [];
+    const prisma = {
+      runtimeExecution: {
+        findMany: jest.fn(async ({ where }: any) => {
+          return rows.filter((r) => r.taskType.includes(where.taskType.contains));
+        }),
+      },
+    };
+    service = new (require('./video.service').VideoService)({}, {}, prisma);
+  });
+
+  const plan = (overrides: any = {}) => ({
+    id: 'exec-1',
+    createdAt: new Date(),
+    status: 'waiting',
+    taskType: 'auto-upload-publish-record-v1',
+    ...overrides,
+  });
+
+  it('enableTimer=1 的定时任务被列出，平台从 accountIdentity.platform 提取', async () => {
+    rows = [
+      plan({
+        runtimeJson: {
+          title: '定时发布A',
+          payloads: [
+            { title: 'A', enableTimer: 1, scheduleTime: '2026-08-20T10:00:00Z', accountIdentity: { platform: 'douyin' } },
+          ],
+        },
+      }),
+    ];
+    const list = await service.listReleasePlans();
+    expect(list).toHaveLength(1);
+    expect(list[0].title).toBe('定时发布A');
+    expect(list[0].scheduled).toBe(true);
+    expect(list[0].scheduleTime).toBe('2026-08-20T10:00:00Z');
+    expect(list[0].platforms).toEqual(['douyin']);
+  });
+
+  it('顶层 plannedAt 改期也视为定时发布，scheduleTime 优先取 plannedAt', async () => {
+    rows = [
+      plan({
+        runtimeJson: JSON.stringify({
+          title: '改期发布',
+          plannedAt: '2026-08-21T08:00:00Z',
+          payloads: [],
+        }),
+      }),
+    ];
+    const list = await service.listReleasePlans();
+    expect(list).toHaveLength(1);
+    expect(list[0].scheduled).toBe(true);
+    expect(list[0].scheduleTime).toBe('2026-08-21T08:00:00Z');
+  });
+
+  it('enableTimer=0 且无 plannedAt 的任务被过滤（不是定时发布）', async () => {
+    rows = [
+      plan({
+        runtimeJson: {
+          title: '非定时',
+          payloads: [{ title: 'x', enableTimer: 0 }],
+        },
+      }),
+    ];
+    const list = await service.listReleasePlans();
+    expect(list).toHaveLength(0);
+  });
+
+  it('cancelledAt 存在时，即使有定时也被过滤', async () => {
+    rows = [
+      plan({
+        runtimeJson: {
+          title: '已取消',
+          cancelledAt: '2026-08-18T00:00:00Z',
+          payloads: [{ title: 'x', enableTimer: 1 }],
+        },
+      }),
+    ];
+    const list = await service.listReleasePlans();
+    expect(list).toHaveLength(0);
+  });
+
+  it('runtimeJson 缺失/损坏时不抛错，返回空', async () => {
+    rows = [
+      plan({ runtimeJson: '{broken json' }),
+      plan({ taskType: 'auto-upload-publish-record-v1' }),
+    ];
+    const list = await service.listReleasePlans();
+    expect(list).toHaveLength(0);
+  });
+});

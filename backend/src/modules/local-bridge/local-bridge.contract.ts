@@ -62,8 +62,7 @@ export interface LocalBridgeErrorResponse extends LocalBridgeResponseBase {
 }
 
 export type LocalBridgeResponse<T = unknown> =
-  | LocalBridgeSuccessResponse<T>
-  | LocalBridgeErrorResponse;
+  LocalBridgeSuccessResponse<T> | LocalBridgeErrorResponse;
 
 export type LocalBridgeContentKind = 'article' | 'video';
 export type LocalBridgeExecutionMode = 'cdp';
@@ -93,10 +92,7 @@ export interface LocalBridgePlatformCapability {
 }
 
 export type LocalBridgeAccountStatus =
-  | 'ready'
-  | 'needs_login'
-  | 'error'
-  | 'unknown';
+  'ready' | 'needs_login' | 'error' | 'unknown';
 
 export interface LocalBridgeAccount {
   id: string;

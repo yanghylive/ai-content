@@ -35,7 +35,9 @@ export class ReportingController {
   }
 
   @Get('funnel')
-  @ApiOperation({ summary: '六步漏斗（内容→发布→互动→线索→客户→商机，近 N 天）' })
+  @ApiOperation({
+    summary: '六步漏斗（内容→发布→互动→线索→客户→商机，近 N 天）',
+  })
   getFunnel(
     @Req() request: AuthenticatedRequest,
     @Query('days') days?: string,
@@ -47,7 +49,9 @@ export class ReportingController {
   }
 
   @Get('content/:articleId')
-  @ApiOperation({ summary: '按文章六步漏斗（该内容带来多少发布/互动/线索/客户/商机）' })
+  @ApiOperation({
+    summary: '按文章六步漏斗（该内容带来多少发布/互动/线索/客户/商机）',
+  })
   getContentFunnel(
     @Req() request: AuthenticatedRequest,
     @Param('articleId') articleId: string,

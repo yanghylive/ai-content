@@ -172,7 +172,8 @@ export class CommentInsightsService {
     });
     return {
       items: rows.map((r) => ({
-        ...((r.raw as CommentAnalyzeResult | null) ?? ({} as CommentAnalyzeResult)),
+        ...((r.raw as CommentAnalyzeResult | null) ??
+          ({} as CommentAnalyzeResult)),
         id: r.id,
         analyzedAt: r.analyzedAt.toISOString(),
       })),
@@ -191,12 +192,12 @@ export class CommentInsightsService {
           userId,
           platform: result.platform,
           sourceUrl: result.sourceUrl ?? null,
-          painPoints: result.painPoints as object,
-          intentKeywords: result.intentKeywords as object,
-          demandSignals: result.demands as object,
-          objections: result.objections as object,
-          replySuggestions: result.replySuggestions as object,
-          raw: result as object,
+          painPoints: result.painPoints,
+          intentKeywords: result.intentKeywords,
+          demandSignals: result.demands,
+          objections: result.objections,
+          replySuggestions: result.replySuggestions,
+          raw: result,
         },
       });
     }

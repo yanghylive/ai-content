@@ -177,8 +177,7 @@ export interface CommercialBackupScheduledRunResult {
   mirrorValid: boolean;
   restoreDryRunStatus: CommercialBackupRestoreDryRunResult['status'] | null;
   isolatedRestoreStatus:
-    | CommercialBackupIsolatedRestoreDryRunResult['status']
-    | null;
+    CommercialBackupIsolatedRestoreDryRunResult['status'] | null;
   retention: CommercialBackupRetentionResult;
   alert: CommercialBackupAlertResult;
   message: string;

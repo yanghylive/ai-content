@@ -660,8 +660,7 @@ export class WecomAssistantService {
   private getErrorMessage(error: unknown) {
     if (axios.isAxiosError(error)) {
       const data = error.response?.data as
-        | { errmsg?: string; message?: string }
-        | undefined;
+        { errmsg?: string; message?: string } | undefined;
       return data?.errmsg || data?.message || error.message;
     }
     return error instanceof Error ? error.message : String(error);

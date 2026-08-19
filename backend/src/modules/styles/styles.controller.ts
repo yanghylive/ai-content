@@ -76,10 +76,7 @@ export class StylesController {
   }
 
   @Post(':id/rollback')
-  rollback(
-    @Param('id') id: string,
-    @Body() body: { versionNo: number },
-  ) {
+  rollback(@Param('id') id: string, @Body() body: { versionNo: number }) {
     return this.stylesService.rollback(id, body.versionNo);
   }
 }

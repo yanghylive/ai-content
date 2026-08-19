@@ -17,10 +17,7 @@ export const SHORT_LINK_REDIRECT_STATUS = 302 as const;
 export const SHORT_CODE_DEFAULT_LENGTH = 8;
 
 export type ShortLinkUnavailableReason =
-  | 'not_found'
-  | 'disabled'
-  | 'expired'
-  | 'invalid_target';
+  'not_found' | 'disabled' | 'expired' | 'invalid_target';
 
 export type ShortLinkResolveResult =
   | { kind: 'redirect'; url: string; statusCode: 302 | 307 }
@@ -66,10 +63,7 @@ export class ShortLinkService {
       return { kind: 'unavailable', reason: 'disabled' };
     }
 
-    if (
-      link.validUntil &&
-      new Date(link.validUntil).getTime() <= Date.now()
-    ) {
+    if (link.validUntil && new Date(link.validUntil).getTime() <= Date.now()) {
       return { kind: 'unavailable', reason: 'expired' };
     }
 
@@ -139,7 +133,11 @@ export function isLoopbackOrPrivateHost(hostname: string): boolean {
 
   if (host.includes(':')) {
     // IPv6（含 IPv4 映射形式 ::ffff:x.x.x.x）
-    if (host.startsWith('fe80:') || host.startsWith('fc') || host.startsWith('fd')) {
+    if (
+      host.startsWith('fe80:') ||
+      host.startsWith('fc') ||
+      host.startsWith('fd')
+    ) {
       return true;
     }
     const mappedIpv4 = ipv4MappedToIpv4(host);

@@ -1865,7 +1865,7 @@ export class SolutionsService {
         modeLabel: '方案结果发布稿',
         title,
         content,
-        platform: platform as 'all',
+        platform: platform,
         targetType: 'article',
         sourceWorkflowId,
         sourceSummary: request.description || run.packageName,
@@ -2485,7 +2485,7 @@ export class SolutionsService {
 
   private readJsonRecord(value: Prisma.JsonValue): Record<string, unknown> {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
-    return value as Record<string, unknown>;
+    return value;
   }
 
   private readStringArray(value: unknown): string[] {
@@ -5606,7 +5606,7 @@ export class SolutionsService {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return [];
     }
-    return Object.keys(value as Record<string, unknown>).slice(0, 20);
+    return Object.keys(value).slice(0, 20);
   }
 
   private valueKind(value: unknown): string {

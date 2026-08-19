@@ -1,0 +1,48 @@
+{
+  "stats": {
+    "delete": 22,
+    "publish": 269,
+    "payment": 24,
+    "account": 5,
+    "other": 0,
+    "clicked": 320,
+    "dialogCancelled": 1,
+    "navigated": 260,
+    "errors": 3
+  },
+  "errorRoutes": [
+    {
+      "route": "/case-admin",
+      "buttons": [
+        {
+          "text": "发布",
+          "kind": "publish",
+          "action": "error",
+          "error": "Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://127.0.0.1:3010/api/admin/cases"
+        }
+      ]
+    },
+    {
+      "route": "/crm-connectors",
+      "buttons": [
+        {
+          "text": "发布",
+          "kind": "publish",
+          "action": "error",
+          "error": "Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://127.0.0.1:3010/api/crm/connectors/hubspot/vault-status"
+        }
+      ]
+    },
+    {
+      "route": "/crm/connectors",
+      "buttons": [
+        {
+          "text": "发布",
+          "kind": "publish",
+          "action": "error",
+          "error": "Failed to load resource: the server responded with a status of 400 (Bad Request) @ http://127.0.0.1:3010/api/crm/connectors/hubspot/vault-status"
+        }
+      ]
+    }
+  ]
+}

@@ -103,7 +103,10 @@ export class LeadAttributionService {
     externalEventId?: string | null;
     sourceUrl?: string | null;
     commentRef?: string | null;
-  }): Promise<{ leadId: string; matchedBy: 'external_event_id' | 'comment_ref' | 'source_url' | null } | null> {
+  }): Promise<{
+    leadId: string;
+    matchedBy: 'external_event_id' | 'comment_ref' | 'source_url' | null;
+  } | null> {
     const { userId, platform } = input;
 
     // 1. 主键：externalEventId 直连（最强）
@@ -117,14 +120,20 @@ export class LeadAttributionService {
           where: { userId, sourceInteractionEventId: event.id },
           select: { id: true },
         });
-        if (byEvent) return { leadId: byEvent.id, matchedBy: 'external_event_id' };
+        if (byEvent)
+          return { leadId: byEvent.id, matchedBy: 'external_event_id' };
       }
     }
 
     // 2. 辅键：platform + sourceUrl + commentRef（评论序号，小红书等）
     if (input.sourceUrl && input.commentRef) {
       const byRef = await this.prisma.lead.findFirst({
-        where: { userId, platform, sourceUrl: input.sourceUrl, commentRef: input.commentRef },
+        where: {
+          userId,
+          platform,
+          sourceUrl: input.sourceUrl,
+          commentRef: input.commentRef,
+        },
         select: { id: true },
       });
       if (byRef) return { leadId: byRef.id, matchedBy: 'comment_ref' };

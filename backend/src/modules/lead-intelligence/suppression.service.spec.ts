@@ -34,6 +34,14 @@ function makePrisma(overrides: Record<string, unknown> = {}) {
         Object.assign(row, data);
         return row;
       }),
+      updateMany: jest.fn().mockImplementation(async ({ where, data }) => {
+        const matched = rows.filter(
+          (r) => r.id === where.id && r.tenantId === where.tenantId,
+        );
+        if (matched.length === 0) return { count: 0 };
+        matched.forEach((r) => Object.assign(r, data));
+        return { count: matched.length };
+      }),
     },
     ...overrides,
   } as never;

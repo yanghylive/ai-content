@@ -31,6 +31,7 @@ import { RedfoxSkillRunnerService } from './redfox-skill-runner.service';
 import { RedfoxAccountService } from './redfox-account.service';
 import { RedfoxVideoService } from './redfox-video.service';
 import { RedfoxPlatformService } from './redfox-platform.service';
+import { findRedfoxSkill } from './redfox-skill-catalog';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
 
@@ -395,12 +396,8 @@ export class RedfoxController {
 
   /** C 档：RedFox 技能 catalog（官方仓库目录建模，可检索） */
   @Get('skills/catalog')
-  async skillCatalog(
-    @Req() request: AuthenticatedRequest,
-    @Query('q') q?: string,
-  ) {
+  skillCatalog(@Req() request: AuthenticatedRequest, @Query('q') q?: string) {
     if (!request.authUser) throw new UnauthorizedException('请先登录');
-    const { findRedfoxSkill } = require('./redfox-skill-catalog');
     return {
       total: findRedfoxSkill(q ?? '').length,
       items: findRedfoxSkill(q ?? ''),

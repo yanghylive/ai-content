@@ -4,12 +4,7 @@
 
 /** 信号维度（对应 LeadScoreSnapshot.components 的 key） */
 export type ScoreDimension =
-  | 'intent'
-  | 'fit'
-  | 'identity'
-  | 'engagement'
-  | 'recency'
-  | 'risk';
+  'intent' | 'fit' | 'identity' | 'engagement' | 'recency' | 'risk';
 
 /** 各维度满分上限（开发文档 §8.1 公式） */
 export const DIMENSION_MAX: Record<ScoreDimension, number> = {
@@ -53,7 +48,11 @@ export const SIGNAL_RULES: Record<string, SignalRule> = {
   // —— identity（身份质量，0-15）——
   'account.verified': { score: 15, decayHours: null, dimension: 'identity' },
   'identity.profile_url': { score: 8, decayHours: null, dimension: 'identity' },
-  'identity.nickname_match': { score: 3, decayHours: null, dimension: 'identity' },
+  'identity.nickname_match': {
+    score: 3,
+    decayHours: null,
+    dimension: 'identity',
+  },
   // —— engagement（互动深度，0-10）——
   'engagement.repeat': { score: 7, decayHours: 336, dimension: 'engagement' },
   'engagement.reply': { score: 3, decayHours: 168, dimension: 'engagement' },
@@ -91,7 +90,12 @@ export function clamp(value: number, max: number, min = 0): number {
 
 /** 按维度聚合信号分值（应用衰减 + clamp 到维度上限） */
 export function aggregateByDimension(
-  signals: Array<{ type: string; value: number; observedAt: Date; expiresAt?: Date | null }>,
+  signals: Array<{
+    type: string;
+    value: number;
+    observedAt: Date;
+    expiresAt?: Date | null;
+  }>,
   now: Date = new Date(),
 ): Record<ScoreDimension, number> {
   const totals: Record<ScoreDimension, number> = {
@@ -123,7 +127,9 @@ export function aggregateByDimension(
  * total = intent + fit + identity + engagement + recency - risk
  * clamp 到 [0, 100]。
  */
-export function computeTotal(components: Record<ScoreDimension, number>): number {
+export function computeTotal(
+  components: Record<ScoreDimension, number>,
+): number {
   const raw =
     components.intent +
     components.fit +

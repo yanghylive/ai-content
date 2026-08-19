@@ -35,8 +35,7 @@ export class VoiceAsrService {
     const authBase =
       this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn';
     return (
-      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') ||
-      `${authBase}/api/ai`
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') || `${authBase}/api/ai`
     ).replace(/\/+$/, '');
   }
 
@@ -118,17 +117,14 @@ export class VoiceAsrService {
     if (userId) headers['x-kaypal-user-id'] = userId;
 
     try {
-      const response = await fetch(
-        `${gatewayBase}/v1/audio/transcriptions`,
-        {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ model, data, format: 'wav' }),
-          signal: AbortSignal.timeout(
-            Number(this.readConfig('KAYPAL_VOICE_ASR_TIMEOUT_MS')) || 40_000,
-          ),
-        },
-      );
+      const response = await fetch(`${gatewayBase}/v1/audio/transcriptions`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ model, data, format: 'wav' }),
+        signal: AbortSignal.timeout(
+          Number(this.readConfig('KAYPAL_VOICE_ASR_TIMEOUT_MS')) || 40_000,
+        ),
+      });
       const payload = (await response.json().catch(() => null)) as {
         text?: string;
         error?: { message?: string } | string;

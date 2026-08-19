@@ -4,7 +4,6 @@ import { Card, CardBody, Chip } from "@heroui/react";
 import {
   BadgeCheck,
   CheckCircle2,
-  LayoutGrid,
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";

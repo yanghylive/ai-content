@@ -87,8 +87,8 @@ export class LocalRuntimeEngineClient {
    * 5409 的 send/draft endpoint 现在已 in-process 移到 platform service 内部。
    * 保留此方法只为向后兼容——platform service 已迁到直接调 LocalBrowserEngine。
    */
-  // 声明返回 Promise 但内部直接 throw：必须 async，否则同步抛异常调用方拿不到 rejected promise
-  async postJson<T>(
+  // 同步 throw 必须转为 rejected promise（调用方依赖 .rejects）：用 Promise.reject 替代 async 包装
+  postJson<T>(
     pathname: string,
     body: unknown,
     _timeoutMs = 60_000,
@@ -96,8 +96,10 @@ export class LocalRuntimeEngineClient {
     this.logger.warn(
       `postJson(${pathname}) 已废弃 — platform service 应直接用 LocalBrowserEngine`,
     );
-    throw new ServiceUnavailableException(
-      `postJson 已废弃：5409 引擎已下线，platform service 改用 LocalBrowserEngine`,
+    return Promise.reject(
+      new ServiceUnavailableException(
+        `postJson 已废弃：5409 引擎已下线，platform service 改用 LocalBrowserEngine`,
+      ),
     );
   }
 }

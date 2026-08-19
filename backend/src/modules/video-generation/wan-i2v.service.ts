@@ -40,7 +40,9 @@ export class WanI2vService {
   constructor(private readonly config: ConfigService) {}
 
   private readConfig(key: string): string {
-    return this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || '';
+    return (
+      this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || ''
+    );
   }
 
   /** kaypal 云端网关地址（与 voice/ai-client 同源） */
@@ -48,8 +50,7 @@ export class WanI2vService {
     const authBase =
       this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn';
     return (
-      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') ||
-      `${authBase}/api/ai`
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') || `${authBase}/api/ai`
     ).replace(/\/+$/, '');
   }
 
@@ -89,9 +90,7 @@ export class WanI2vService {
       (typeof user?.id === 'string' && user.id) ||
       '';
     if (!serverKey) {
-      throw new ServiceUnavailableException(
-        '视频生成服务暂不可用，请稍后重试',
-      );
+      throw new ServiceUnavailableException('视频生成服务暂不可用，请稍后重试');
     }
     if (!userId) {
       throw new ServiceUnavailableException(
@@ -108,22 +107,19 @@ export class WanI2vService {
 
     let resp: Response;
     try {
-      resp = await fetch(
-        `${gatewayBase}/v1/video/generations`,
-        {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            model: DEFAULT_VIDEO_MODEL,
-            input: {
-              imageUrl: input.imageDataUrl,
-              prompt: input.prompt.slice(0, 5000),
-              duration,
-            },
-          }),
-          signal: AbortSignal.timeout(60_000),
-        },
-      );
+      resp = await fetch(`${gatewayBase}/v1/video/generations`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: DEFAULT_VIDEO_MODEL,
+          input: {
+            imageUrl: input.imageDataUrl,
+            prompt: input.prompt.slice(0, 5000),
+            duration,
+          },
+        }),
+        signal: AbortSignal.timeout(60_000),
+      });
     } catch (e) {
       this.logger.error(`视频生成网关提交异常：${String(e)}`);
       throw new ServiceUnavailableException('视频生成网关不可达，请稍后重试');
@@ -216,7 +212,8 @@ export class WanI2vService {
           (typeof payload.error === 'object' && payload.error?.message) ||
           '视频渲染失败';
       } else {
-        rec.status = raw === 'PENDING' || raw === 'QUEUED' ? 'queued' : 'rendering';
+        rec.status =
+          raw === 'PENDING' || raw === 'QUEUED' ? 'queued' : 'rendering';
       }
     } catch (e) {
       this.logger.warn(`视频网关轮询异常 ${rec.taskId}: ${String(e)}`);

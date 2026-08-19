@@ -13,6 +13,7 @@ import {
 } from '../auto-upload/durable-publish-command.coordinator';
 import { PublishRecordStore } from '../auto-upload/publish-record.store';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { safeText } from '../../common/text.utils';
 import { PlatformAdapterRegistry } from '../platform-registry/platform-adapter.registry';
 import {
   LOCAL_BRIDGE_ACTIONS,
@@ -286,17 +287,25 @@ export class LocalBridgeService {
     }
   }
 
-  // 声明 Promise 返回但同步 throw：必须 async，调用方才能拿到 rejected promise
-  async cancelTask(
+  // 同步 throw 必须转为 rejected promise（调用方依赖 .rejects）：用 Promise.reject 替代 async 包装
+  cancelTask(
     taskId: string | number,
     request: LocalBridgeCancelTaskRequest = {},
   ): Promise<LocalBridgeCancelTaskResult> {
-    this.requireTaskId(taskId);
-    this.validateCancelRequest(request);
-    throw new LocalBridgeError(
-      LOCAL_BRIDGE_ERROR_CODES.CANCELLATION_UNSUPPORTED,
-      'Local Bridge 当前不支持取消发布任务',
-      409,
+    try {
+      this.requireTaskId(taskId);
+      this.validateCancelRequest(request);
+    } catch (error) {
+      return Promise.reject(
+        error instanceof Error ? error : new Error(safeText(error)),
+      );
+    }
+    return Promise.reject(
+      new LocalBridgeError(
+        LOCAL_BRIDGE_ERROR_CODES.CANCELLATION_UNSUPPORTED,
+        'Local Bridge 当前不支持取消发布任务',
+        409,
+      ),
     );
   }
 

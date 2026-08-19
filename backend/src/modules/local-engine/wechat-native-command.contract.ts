@@ -26,19 +26,12 @@ export type WechatNativeCommandKey = (typeof WECHAT_NATIVE_COMMANDS)[number];
 export type WechatNativeRuntimePlatform = 'darwin' | 'win32';
 
 export type WechatNativeSendMode =
-  | 'read-only'
-  | 'draft-only'
-  | 'approval'
-  | 'auto-send';
+  'read-only' | 'draft-only' | 'approval' | 'auto-send';
 
 export type WechatNativeRiskLevel = 'low' | 'medium' | 'high';
 
 export type WechatNativeCommandStatus =
-  | 'success'
-  | 'partial'
-  | 'blocked'
-  | 'failed'
-  | 'skipped';
+  'success' | 'partial' | 'blocked' | 'failed' | 'skipped';
 
 export type WechatNativeErrorCode =
   | 'success'
@@ -64,13 +57,7 @@ export type WechatNativeErrorCode =
   | 'unknown';
 
 export type WechatNativeJsonSchemaType =
-  | 'object'
-  | 'array'
-  | 'string'
-  | 'number'
-  | 'integer'
-  | 'boolean'
-  | 'null';
+  'object' | 'array' | 'string' | 'number' | 'integer' | 'boolean' | 'null';
 
 export type WechatNativeJsonSchema = {
   type?: WechatNativeJsonSchemaType | readonly WechatNativeJsonSchemaType[];
@@ -552,10 +539,7 @@ export interface WechatNativeContactsDiagnostics extends WechatNativeCommandDiag
 
 export interface WechatNativeBatchDiagnostics extends WechatNativeCommandDiagnostics {
   command:
-    | 'group-broadcast'
-    | 'contact-add'
-    | 'friend-accept'
-    | 'moments-marketing';
+    'group-broadcast' | 'contact-add' | 'friend-accept' | 'moments-marketing';
   batch?: {
     requestedTargets: number;
     attemptedTargets: number;
@@ -1483,7 +1467,13 @@ export const WECHAT_NATIVE_COMMAND_DEFINITIONS = {
       output: objectSchema(
         {
           ok: booleanSchema,
-          status: enumSchema(['success', 'partial', 'blocked', 'failed', 'skipped']),
+          status: enumSchema([
+            'success',
+            'partial',
+            'blocked',
+            'failed',
+            'skipped',
+          ]),
           errorCode: commandErrorSchema.properties?.code || stringSchema,
           readText: stringSchema,
           sourceText: stringSchema,

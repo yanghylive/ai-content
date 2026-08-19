@@ -11,11 +11,17 @@ import { Prisma } from '@prisma/client';
  * 例：订阅 ¥29.9/月 送 1000 积分 → 汇率 ≈ 33.4 积分/元（可经 env 覆盖）。
  * 取代 V1.1 硬编码 0.8 元/元 的拍脑袋比例，锚定订阅价。
  */
-const KAYPAL_SUBSCRIPTION_PRICE = Number(process.env.KAYPAL_SUBSCRIPTION_PRICE || 29.9);
-const KAYPAL_SUBSCRIPTION_CREDITS = Number(process.env.KAYPAL_SUBSCRIPTION_CREDITS || 1000);
+const KAYPAL_SUBSCRIPTION_PRICE = Number(
+  process.env.KAYPAL_SUBSCRIPTION_PRICE || 29.9,
+);
+const KAYPAL_SUBSCRIPTION_CREDITS = Number(
+  process.env.KAYPAL_SUBSCRIPTION_CREDITS || 1000,
+);
 const EXCHANGE_RATE =
   KAYPAL_SUBSCRIPTION_PRICE > 0
-    ? Number((KAYPAL_SUBSCRIPTION_CREDITS / KAYPAL_SUBSCRIPTION_PRICE).toFixed(2))
+    ? Number(
+        (KAYPAL_SUBSCRIPTION_CREDITS / KAYPAL_SUBSCRIPTION_PRICE).toFixed(2),
+      )
     : 0.8; // 兜底（配置异常时退回原比例）
 /** 单次兑换最低返利 */
 const MIN_EXCHANGE_AMOUNT = 1;

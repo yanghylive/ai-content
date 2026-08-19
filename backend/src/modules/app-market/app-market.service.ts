@@ -355,6 +355,7 @@ export class AppMarketService {
       commercialEntitlementRequired,
       commercialBlockers: scope?.commercialBlockers ?? [],
       commercialWarnings: scope?.commercialWarnings ?? [],
+      installable: entry.installable,
     });
     return {
       appKey: entry.appKey,
@@ -417,93 +418,88 @@ export class AppMarketService {
     commercialEntitlementRequired: boolean;
     commercialBlockers: string[];
     commercialWarnings: string[];
+    /** 是否有购买/安装/卸载生命周期；false = 随套餐默认开放（跳过购买/安装门槛，直接可用） */
+    installable?: boolean;
   }): MarketAppAccessPolicy {
     const name = input.appName ?? '应用';
     const appKey = input.appKey;
+    // 非安装项（内置功能）：跳过购买/安装生命周期，视为已购买+已安装；商用授权检查仍保留
+    const installable = input.installable ?? true;
+    const purchaseStatus: AppPurchaseStatus = installable
+      ? input.purchaseStatus
+      : 'purchased';
+    const installStatus: AppInstallStatus = installable
+      ? input.installStatus
+      : 'installed';
     if (input.commercialEntitlementRequired && !input.commercialEntitled) {
-      return this.withAccessProof(
-        appKey,
-        {
-          state: 'commercial_blocked',
-          primaryAction: 'contact_sales',
-          allowedActions: ['contact_sales'],
-          nextActionLabel: `${name}需要有效商用授权后才能购买、安装或访问`,
-          blockers: input.commercialBlockers.length
-            ? input.commercialBlockers
-            : ['missing-commercial-entitlement'],
-          warnings: input.commercialWarnings,
-          requiresCommercialEntitlement: true,
-          requiresPurchase: input.purchaseStatus !== 'purchased',
-          requiresInstall: input.installStatus !== 'installed',
-        },
-      );
+      return this.withAccessProof(appKey, {
+        state: 'commercial_blocked',
+        primaryAction: 'contact_sales',
+        allowedActions: ['contact_sales'],
+        nextActionLabel: `${name}需要有效商用授权后才能购买、安装或访问`,
+        blockers: input.commercialBlockers.length
+          ? input.commercialBlockers
+          : ['missing-commercial-entitlement'],
+        warnings: input.commercialWarnings,
+        requiresCommercialEntitlement: true,
+        requiresPurchase: purchaseStatus !== 'purchased',
+        requiresInstall: installStatus !== 'installed',
+      });
     }
 
-    if (input.purchaseStatus !== 'purchased') {
-      return this.withAccessProof(
-        appKey,
-        {
-          state: 'not_purchased',
-          primaryAction: 'purchase',
-          allowedActions: ['purchase'],
-          nextActionLabel: `先购买${name}应用`,
-          blockers: [`${appKey}-not-purchased`],
-          warnings: input.commercialWarnings,
-          requiresCommercialEntitlement: input.commercialEntitlementRequired,
-          requiresPurchase: true,
-          requiresInstall: true,
-        },
-      );
+    if (purchaseStatus !== 'purchased') {
+      return this.withAccessProof(appKey, {
+        state: 'not_purchased',
+        primaryAction: 'purchase',
+        allowedActions: ['purchase'],
+        nextActionLabel: `先购买${name}应用`,
+        blockers: [`${appKey}-not-purchased`],
+        warnings: input.commercialWarnings,
+        requiresCommercialEntitlement: input.commercialEntitlementRequired,
+        requiresPurchase: true,
+        requiresInstall: true,
+      });
     }
 
-    if (input.installStatus === 'uninstalled') {
-      return this.withAccessProof(
-        appKey,
-        {
-          state: 'uninstalled',
-          primaryAction: 'install',
-          allowedActions: ['install'],
-          nextActionLabel: `${name}已购买但当前已卸载，可重新安装后访问`,
-          blockers: [`${appKey}-uninstalled`],
-          warnings: input.commercialWarnings,
-          requiresCommercialEntitlement: input.commercialEntitlementRequired,
-          requiresPurchase: false,
-          requiresInstall: true,
-        },
-      );
-    }
-
-    if (input.installStatus !== 'installed') {
-      return this.withAccessProof(
-        appKey,
-        {
-          state: 'not_installed',
-          primaryAction: 'install',
-          allowedActions: ['install'],
-          nextActionLabel: `${name}已购买，安装后开放入口`,
-          blockers: [`${appKey}-not-installed`],
-          warnings: input.commercialWarnings,
-          requiresCommercialEntitlement: input.commercialEntitlementRequired,
-          requiresPurchase: false,
-          requiresInstall: true,
-        },
-      );
-    }
-
-    return this.withAccessProof(
-      appKey,
-      {
-        state: 'installed',
-        primaryAction: 'open',
-        allowedActions: ['open', 'uninstall'],
-        nextActionLabel: `${name}已购买并安装，可进入使用`,
-        blockers: [],
+    if (installStatus === 'uninstalled') {
+      return this.withAccessProof(appKey, {
+        state: 'uninstalled',
+        primaryAction: 'install',
+        allowedActions: ['install'],
+        nextActionLabel: `${name}已购买但当前已卸载，可重新安装后访问`,
+        blockers: [`${appKey}-uninstalled`],
         warnings: input.commercialWarnings,
         requiresCommercialEntitlement: input.commercialEntitlementRequired,
         requiresPurchase: false,
-        requiresInstall: false,
-      },
-    );
+        requiresInstall: true,
+      });
+    }
+
+    if (installStatus !== 'installed') {
+      return this.withAccessProof(appKey, {
+        state: 'not_installed',
+        primaryAction: 'install',
+        allowedActions: ['install'],
+        nextActionLabel: `${name}已购买，安装后开放入口`,
+        blockers: [`${appKey}-not-installed`],
+        warnings: input.commercialWarnings,
+        requiresCommercialEntitlement: input.commercialEntitlementRequired,
+        requiresPurchase: false,
+        requiresInstall: true,
+      });
+    }
+
+    return this.withAccessProof(appKey, {
+      state: 'installed',
+      primaryAction: 'open',
+      allowedActions: ['open', 'uninstall'],
+      nextActionLabel: `${name}已购买并安装，可进入使用`,
+      blockers: [],
+      warnings: input.commercialWarnings,
+      requiresCommercialEntitlement: input.commercialEntitlementRequired,
+      requiresPurchase: false,
+      requiresInstall: false,
+    });
   }
 
   private withAccessProof(

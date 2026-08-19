@@ -438,7 +438,8 @@ export async function syncWechatContacts(
       if (ocrResult) {
         result = ocrResult;
       } else {
-        const visionResult = await this.tryRunWechatContactVisionFallback(error);
+        const visionResult =
+          await this.tryRunWechatContactVisionFallback(error);
         if (visionResult) {
           result = visionResult;
         } else {
@@ -752,7 +753,8 @@ export async function tryRunWechatContactOcrFallback(
   // OCR 引擎随包在 resources/wechat-ocr/（v1.1.76 起 helper 云端化到用户数据目录，
   // 不能再从 dirname(helperPath) 推导到随包路径——优先随包路径，缺失再回退推导路径）
   const packagedResourcesRoot =
-    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath ||
+    '';
   const packagedOcrDir = packagedResourcesRoot
     ? join(packagedResourcesRoot, 'wechat-ocr')
     : '';
@@ -789,12 +791,24 @@ export async function tryRunWechatContactOcrFallback(
       );
       let stdout = '';
       let stderr = '';
-      child.stdout?.on('data', (chunk: Buffer) => (stdout += chunk.toString('utf8')));
-      child.stderr?.on('data', (chunk: Buffer) => (stderr += chunk.toString('utf8')));
+      child.stdout?.on(
+        'data',
+        (chunk: Buffer) => (stdout += chunk.toString('utf8')),
+      );
+      child.stderr?.on(
+        'data',
+        (chunk: Buffer) => (stderr += chunk.toString('utf8')),
+      );
       child.on('error', reject);
       child.on('close', () => {
         try {
-          resolvePromise(JSON.parse(stdout) as { ok?: boolean; contacts?: Array<{ name?: string }>; textLines?: string[] });
+          resolvePromise(
+            JSON.parse(stdout) as {
+              ok?: boolean;
+              contacts?: Array<{ name?: string }>;
+              textLines?: string[];
+            },
+          );
         } catch {
           reject(
             new Error(
@@ -806,7 +820,9 @@ export async function tryRunWechatContactOcrFallback(
     });
 
     const rawContacts = Array.isArray(output?.contacts)
-      ? output.contacts.filter((c) => c && typeof c.name === 'string' && c.name.trim().length > 0)
+      ? output.contacts.filter(
+          (c) => c && typeof c.name === 'string' && c.name.trim().length > 0,
+        )
       : [];
     if (rawContacts.length === 0) {
       return null;

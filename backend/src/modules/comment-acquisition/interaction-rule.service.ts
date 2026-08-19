@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { safeText } from '../../common/text.utils';
 
 /**
  * 互动规则引擎安全边界（六步闭环 15.4#5，借鉴 Chatwoot automation_rule）。
@@ -11,12 +12,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
  */
 
 export type RuleConditionOperator =
-  | 'equals'
-  | 'not_equals'
-  | 'contains'
-  | 'gte'
-  | 'lte'
-  | 'in';
+  'equals' | 'not_equals' | 'contains' | 'gte' | 'lte' | 'in';
 
 export interface RuleCondition {
   key: string;
@@ -119,11 +115,11 @@ export class InteractionRuleService {
       const actual = event[condition.key];
       switch (condition.operator) {
         case 'equals':
-          return String(actual ?? '') === String(condition.value);
+          return safeText(actual) === String(condition.value);
         case 'not_equals':
-          return String(actual ?? '') !== String(condition.value);
+          return safeText(actual) !== String(condition.value);
         case 'contains':
-          return String(actual ?? '').includes(String(condition.value));
+          return safeText(actual).includes(String(condition.value));
         case 'gte':
           return Number(actual ?? 0) >= Number(condition.value);
         case 'lte':
@@ -131,7 +127,7 @@ export class InteractionRuleService {
         case 'in':
           return (
             Array.isArray(condition.value) &&
-            condition.value.map(String).includes(String(actual ?? ''))
+            condition.value.map(String).includes(safeText(actual))
           );
         default:
           return false;
@@ -140,7 +136,10 @@ export class InteractionRuleService {
   }
 
   /** 匹配规则：先校验白名单，再判断条件是否命中（命中返回动作，否则 null） */
-  match(rule: InteractionRule, event: Record<string, unknown>): RuleAction[] | null {
+  match(
+    rule: InteractionRule,
+    event: Record<string, unknown>,
+  ): RuleAction[] | null {
     this.validateRule(rule);
     return this.evaluateConditions(rule.conditions, event)
       ? rule.actions

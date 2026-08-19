@@ -23,10 +23,7 @@ export const UNIFIED_TASK_STATUS_LABEL: Record<UnifiedTaskStatus, string> = {
 };
 
 export type TaskModuleName =
-  | 'auto-upload'
-  | 'local-engine'
-  | 'video-workshop'
-  | 'interaction';
+  'auto-upload' | 'local-engine' | 'video-workshop' | 'interaction';
 
 /**
  * 各模块原始状态 → 统一状态。
@@ -42,7 +39,8 @@ export function normalizeTaskStatus(
       if (s === 'completed' || s === 'done') return 'completed';
       if (s === 'failed' || s === 'error') return 'failed';
       if (s === 'waiting') return 'waiting';
-      if (s === 'claimed' || s === 'running' || s === 'publishing') return 'running';
+      if (s === 'claimed' || s === 'running' || s === 'publishing')
+        return 'running';
       if (s === 'queued') return 'queued';
       return 'queued';
     case 'local-engine':
@@ -52,7 +50,8 @@ export function normalizeTaskStatus(
       if (s === 'queued') return 'queued';
       return 'queued';
     case 'video-workshop':
-      if (s === 'succeeded' || s === 'completed' || s === 'done') return 'completed';
+      if (s === 'succeeded' || s === 'completed' || s === 'done')
+        return 'completed';
       if (s === 'failed' || s === 'error') return 'failed';
       if (s === 'cancelled') return 'cancelled';
       if (s === 'running') return 'running';

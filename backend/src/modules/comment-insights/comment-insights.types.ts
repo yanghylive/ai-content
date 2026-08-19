@@ -1,15 +1,8 @@
 export type CommentInsightsPlatform =
-  | 'douyin'
-  | 'xiaohongshu'
-  | 'wechat_channel'
-  | 'bilibili'
-  | 'all';
+  'douyin' | 'xiaohongshu' | 'wechat_channel' | 'bilibili' | 'all';
 
 export type CommentSourceType =
-  | 'manual_comments'
-  | 'source_url'
-  | 'work_id'
-  | 'keyword';
+  'manual_comments' | 'source_url' | 'work_id' | 'keyword';
 
 export type CommentInsightRiskLevel = 'low' | 'medium' | 'high';
 

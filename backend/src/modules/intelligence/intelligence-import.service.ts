@@ -154,11 +154,11 @@ export class IntelligenceImportService {
       Record<string, Prisma.InputJsonValue>
     >((result, [key, value]) => {
       if (value !== undefined && value !== null) {
-        result[key] = value as Prisma.InputJsonValue;
+        result[key] = value;
       }
       return result;
     }, {});
 
-    return metadata as Prisma.InputJsonObject;
+    return metadata;
   }
 }

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import {
@@ -95,8 +94,7 @@ export class PersonaBinder {
         (p) => p.id !== current.id && p.weight >= 10,
       );
       if (alternates.length > 0) {
-        const next =
-          alternates[Math.floor(Math.random() * alternates.length)];
+        const next = alternates[Math.floor(Math.random() * alternates.length)];
         this.bindings.set(key, next);
         this.indices.set(key, 0);
         return next;

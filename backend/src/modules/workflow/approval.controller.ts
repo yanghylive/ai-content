@@ -12,7 +12,10 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ApprovalGateService, type ApprovalAction } from './approval-gate.service';
+import {
+  ApprovalGateService,
+  type ApprovalAction,
+} from './approval-gate.service';
 
 @ApiTags('approval')
 @Controller('approvals')
@@ -44,7 +47,9 @@ export class ApprovalController {
   }
 
   @Post(':id/act')
-  @ApiOperation({ summary: '审批操作：approve/reject/request_changes/expire/resubmit' })
+  @ApiOperation({
+    summary: '审批操作：approve/reject/request_changes/expire/resubmit',
+  })
   act(
     @Param('id') id: string,
     @Body()

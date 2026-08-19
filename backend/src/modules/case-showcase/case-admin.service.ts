@@ -128,8 +128,13 @@ export class CaseAdminService {
         'slug 格式非法：仅允许小写字母/数字/连字符，且不能以连字符开头或结尾',
       );
     }
-    if (dto.provenanceType && !this.validation.isValidProvenanceType(dto.provenanceType)) {
-      throw new BadRequestException(`provenanceType 非法：${dto.provenanceType}`);
+    if (
+      dto.provenanceType &&
+      !this.validation.isValidProvenanceType(dto.provenanceType)
+    ) {
+      throw new BadRequestException(
+        `provenanceType 非法：${dto.provenanceType}`,
+      );
     }
 
     try {
@@ -147,7 +152,8 @@ export class CaseAdminService {
           capabilityTags: dto.capabilityTags ?? [],
           businessProblem: dto.businessProblem ?? null,
           solutionSummary: dto.solutionSummary ?? null,
-          keyFeatures: (dto.keyFeatures ?? []) as unknown as Prisma.InputJsonValue,
+          keyFeatures: (dto.keyFeatures ??
+            []) as unknown as Prisma.InputJsonValue,
           resultsSummary: dto.resultsSummary ?? null,
           evidenceLevel: dto.evidenceLevel ?? 'E0',
           evidenceScope: dto.evidenceScope ?? null,
@@ -193,8 +199,13 @@ export class CaseAdminService {
         'slug 格式非法：仅允许小写字母/数字/连字符，且不能以连字符开头或结尾',
       );
     }
-    if (dto.provenanceType && !this.validation.isValidProvenanceType(dto.provenanceType)) {
-      throw new BadRequestException(`provenanceType 非法：${dto.provenanceType}`);
+    if (
+      dto.provenanceType &&
+      !this.validation.isValidProvenanceType(dto.provenanceType)
+    ) {
+      throw new BadRequestException(
+        `provenanceType 非法：${dto.provenanceType}`,
+      );
     }
 
     try {
@@ -203,26 +214,61 @@ export class CaseAdminService {
         data: {
           title: dto.title.trim(),
           ...(dto.slug ? { slug: dto.slug.trim() } : {}),
-          ...(dto.subtitle !== undefined ? { subtitle: dto.subtitle?.trim() || null } : {}),
+          ...(dto.subtitle !== undefined
+            ? { subtitle: dto.subtitle?.trim() || null }
+            : {}),
           ...(dto.provenanceType ? { provenanceType: dto.provenanceType } : {}),
-          ...(dto.clientVisibility ? { clientVisibility: dto.clientVisibility } : {}),
-          ...(dto.primaryPlatform !== undefined ? { primaryPlatform: dto.primaryPlatform?.trim() || null } : {}),
+          ...(dto.clientVisibility
+            ? { clientVisibility: dto.clientVisibility }
+            : {}),
+          ...(dto.primaryPlatform !== undefined
+            ? { primaryPlatform: dto.primaryPlatform?.trim() || null }
+            : {}),
           ...(dto.platforms !== undefined ? { platforms: dto.platforms } : {}),
-          ...(dto.primaryIndustry !== undefined ? { primaryIndustry: dto.primaryIndustry?.trim() || null } : {}),
-          ...(dto.industries !== undefined ? { industries: dto.industries } : {}),
-          ...(dto.capabilityTags !== undefined ? { capabilityTags: dto.capabilityTags } : {}),
-          ...(dto.businessProblem !== undefined ? { businessProblem: dto.businessProblem } : {}),
-          ...(dto.solutionSummary !== undefined ? { solutionSummary: dto.solutionSummary } : {}),
-          ...(dto.keyFeatures !== undefined ? { keyFeatures: dto.keyFeatures as unknown as Prisma.InputJsonValue } : {}),
-          ...(dto.resultsSummary !== undefined ? { resultsSummary: dto.resultsSummary } : {}),
+          ...(dto.primaryIndustry !== undefined
+            ? { primaryIndustry: dto.primaryIndustry?.trim() || null }
+            : {}),
+          ...(dto.industries !== undefined
+            ? { industries: dto.industries }
+            : {}),
+          ...(dto.capabilityTags !== undefined
+            ? { capabilityTags: dto.capabilityTags }
+            : {}),
+          ...(dto.businessProblem !== undefined
+            ? { businessProblem: dto.businessProblem }
+            : {}),
+          ...(dto.solutionSummary !== undefined
+            ? { solutionSummary: dto.solutionSummary }
+            : {}),
+          ...(dto.keyFeatures !== undefined
+            ? {
+                keyFeatures:
+                  dto.keyFeatures as unknown as Prisma.InputJsonValue,
+              }
+            : {}),
+          ...(dto.resultsSummary !== undefined
+            ? { resultsSummary: dto.resultsSummary }
+            : {}),
           ...(dto.evidenceLevel ? { evidenceLevel: dto.evidenceLevel } : {}),
-          ...(dto.evidenceScope !== undefined ? { evidenceScope: dto.evidenceScope } : {}),
-          ...(dto.deliveryModes !== undefined ? { deliveryModes: dto.deliveryModes } : {}),
+          ...(dto.evidenceScope !== undefined
+            ? { evidenceScope: dto.evidenceScope }
+            : {}),
+          ...(dto.deliveryModes !== undefined
+            ? { deliveryModes: dto.deliveryModes }
+            : {}),
           ...(dto.maturity ? { maturity: dto.maturity } : {}),
-          ...(dto.techSummary !== undefined ? { techSummary: dto.techSummary } : {}),
-          ...(dto.coverMedia !== undefined ? { coverMedia: dto.coverMedia as Prisma.InputJsonValue } : {}),
-          ...(dto.seoTitle !== undefined ? { seoTitle: dto.seoTitle?.trim() || null } : {}),
-          ...(dto.seoDescription !== undefined ? { seoDescription: dto.seoDescription } : {}),
+          ...(dto.techSummary !== undefined
+            ? { techSummary: dto.techSummary }
+            : {}),
+          ...(dto.coverMedia !== undefined
+            ? { coverMedia: dto.coverMedia as Prisma.InputJsonValue }
+            : {}),
+          ...(dto.seoTitle !== undefined
+            ? { seoTitle: dto.seoTitle?.trim() || null }
+            : {}),
+          ...(dto.seoDescription !== undefined
+            ? { seoDescription: dto.seoDescription }
+            : {}),
           media: dto.media
             ? { deleteMany: {}, create: dto.media.map(mapMediaInput) }
             : undefined,
@@ -287,7 +333,9 @@ export class CaseAdminService {
     const demos = dto.demoEndpoints ?? [];
     if (demos.length === 0) {
       hints.push('缺少演示体验入口（至少 1 个）');
-    } else if (!demos.some((d) => d.fallbackType && d.fallbackType !== 'none')) {
+    } else if (
+      !demos.some((d) => d.fallbackType && d.fallbackType !== 'none')
+    ) {
       hints.push('演示入口需配置回退方案（fallbackType 不能为 none）');
     }
 
@@ -302,7 +350,10 @@ export class CaseAdminService {
     });
     if (!current) throw new NotFoundException('案例不存在');
 
-    const error = transitionError(current.status as CaseStatus, CaseStatus.Submitted);
+    const error = transitionError(
+      current.status as CaseStatus,
+      CaseStatus.Submitted,
+    );
     if (error) throw new BadRequestException(error);
 
     await this.prisma.showcaseCase.update({
@@ -473,7 +524,9 @@ export class CaseAdminService {
         items: {
           orderBy: { sortOrder: 'asc' },
           include: {
-            case: { select: { id: true, slug: true, title: true, status: true } },
+            case: {
+              select: { id: true, slug: true, title: true, status: true },
+            },
           },
         },
       },
@@ -498,7 +551,9 @@ export class CaseAdminService {
     const found = new Set(cases.map((c) => c.id));
     const missing = ordered.filter((id) => !found.has(id));
     if (missing.length > 0) {
-      throw new BadRequestException(`精选位包含不存在的案例：${missing.join(', ')}`);
+      throw new BadRequestException(
+        `精选位包含不存在的案例：${missing.join(', ')}`,
+      );
     }
 
     const collection = await this.prisma.showcaseCollection.upsert({

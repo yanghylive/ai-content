@@ -859,7 +859,15 @@ export class LocalEngineController {
       intervalSecondsRange: [0, 3600],
       defaultIntervalSeconds: 0,
       maxTargetsPerPlan: 500,
-      statuses: ['queued', 'waiting', 'running', 'paused', 'completed', 'failed', 'cancelled'],
+      statuses: [
+        'queued',
+        'waiting',
+        'running',
+        'paused',
+        'completed',
+        'failed',
+        'cancelled',
+      ],
       supportedFields: [
         'targetName',
         'replyText',

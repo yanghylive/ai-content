@@ -35,7 +35,10 @@ export class KeyFeatureInputDto {
 }
 
 export class MediaInputDto {
-  @ApiPropertyOptional({ description: '媒体类型', enum: ['image', 'video', 'document'] })
+  @ApiPropertyOptional({
+    description: '媒体类型',
+    enum: ['image', 'video', 'document'],
+  })
   @IsOptional()
   @IsIn(['image', 'video', 'document'])
   mediaType?: string;
@@ -176,7 +179,10 @@ export class CaseAdminInputDto {
   @IsIn(['delivery', 'open_source', 'prototype', 'template'])
   provenanceType?: string;
 
-  @ApiPropertyOptional({ description: '客户可见性', enum: ['public', 'limited'] })
+  @ApiPropertyOptional({
+    description: '客户可见性',
+    enum: ['public', 'limited'],
+  })
   @IsOptional()
   @IsIn(['public', 'limited'])
   clientVisibility?: string;
@@ -233,7 +239,10 @@ export class CaseAdminInputDto {
   @IsString()
   resultsSummary?: string;
 
-  @ApiPropertyOptional({ description: '证据等级', enum: ['E0', 'E1', 'E2', 'E3'] })
+  @ApiPropertyOptional({
+    description: '证据等级',
+    enum: ['E0', 'E1', 'E2', 'E3'],
+  })
   @IsOptional()
   @IsIn(['E0', 'E1', 'E2', 'E3'])
   evidenceLevel?: string;
@@ -291,7 +300,10 @@ export class CaseAdminInputDto {
   @Type(() => MediaInputDto)
   media?: MediaInputDto[];
 
-  @ApiPropertyOptional({ description: '演示入口列表', type: [DemoEndpointInputDto] })
+  @ApiPropertyOptional({
+    description: '演示入口列表',
+    type: [DemoEndpointInputDto],
+  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
@@ -315,7 +327,10 @@ export class ReviewCaseDto {
 }
 
 export class SetFeaturedDto {
-  @ApiProperty({ description: '精选案例 ID 有序列表（按数组顺序即为排序）', type: [String] })
+  @ApiProperty({
+    description: '精选案例 ID 有序列表（按数组顺序即为排序）',
+    type: [String],
+  })
   @IsArray()
   @ArrayMinSize(1)
   @IsString({ each: true })

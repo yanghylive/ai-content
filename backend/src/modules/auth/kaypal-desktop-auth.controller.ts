@@ -441,7 +441,7 @@ export class KaypalDesktopAuthController {
           userId: session.userId,
           tokenHash: hashSessionToken(sessionToken),
           expiresAt,
-          metadata: restorableMetadata as Prisma.InputJsonObject,
+          metadata: restorableMetadata,
         },
       });
 

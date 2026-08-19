@@ -29,12 +29,7 @@ export type NodeAgentRuntimeStatus =
   | 'cancelled';
 
 export type NodeAgentRuntimeArtifactKind =
-  | 'screenshot'
-  | 'json'
-  | 'text'
-  | 'summary'
-  | 'log'
-  | 'trace';
+  'screenshot' | 'json' | 'text' | 'summary' | 'log' | 'trace';
 
 export interface NodeAgentRuntimeHealth {
   ok: boolean;

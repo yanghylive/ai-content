@@ -1,4 +1,5 @@
 import type { Page } from 'playwright';
+import { safeText } from '../../../../common/text.utils';
 import type {
   GenericVideoPublishAdapter,
   ImageTextPublishAdapter,
@@ -204,7 +205,7 @@ export class XiaohongshuPublishAdapter
               })
               .catch(() => false);
             if (!stillThere || attempt === 2) {
-              return { click: async () => undefined };
+              return { click: () => Promise.resolve() };
             }
             await page.waitForTimeout(1200);
           } catch (error) {
@@ -215,7 +216,7 @@ export class XiaohongshuPublishAdapter
         if (lastError) {
           throw lastError instanceof Error
             ? lastError
-            : new Error(String(lastError));
+            : new Error(safeText(lastError));
         }
       }
       await page.waitForTimeout(1000);
@@ -225,7 +226,9 @@ export class XiaohongshuPublishAdapter
       .locator('body')
       .innerText({ timeout: 3000 })
       .catch(() => '');
-    throw new Error(`小红书发布按钮评分定位失败。当前页面：${sample.slice(-800)}`);
+    throw new Error(
+      `小红书发布按钮评分定位失败。当前页面：${sample.slice(-800)}`,
+    );
   }
 
   private async fillXiaohongshuDescription(
@@ -262,9 +265,7 @@ export class XiaohongshuPublishAdapter
         const target = nodes.find(
           (node) =>
             /声明原创|原创声明/.test(node.textContent || '') &&
-            node.querySelector(
-              'input[type="checkbox"], input[type="radio"]',
-            ),
+            node.querySelector('input[type="checkbox"], input[type="radio"]'),
         );
         const input = target?.querySelector<HTMLInputElement>(
           'input[type="checkbox"], input[type="radio"]',

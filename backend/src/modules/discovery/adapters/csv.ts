@@ -78,7 +78,10 @@ export function parseCsv(text: string): CsvParseResult {
 }
 
 /** 行转 CSV 文本（导出用） */
-export function toCsv(headers: string[], rows: Array<Record<string, string>>): string {
+export function toCsv(
+  headers: string[],
+  rows: Array<Record<string, string>>,
+): string {
   const escape = (v: string) => {
     const s = v ?? '';
     return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;

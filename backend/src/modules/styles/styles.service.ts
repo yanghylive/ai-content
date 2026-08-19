@@ -202,7 +202,10 @@ export class StylesService {
 
     if (snapshot.isDefault) {
       await this.prisma.style.updateMany({
-        where: { isDefault: true, type: (snapshot.type as string) || 'article' },
+        where: {
+          isDefault: true,
+          type: (snapshot.type as string) || 'article',
+        },
         data: { isDefault: false },
       });
     }
@@ -215,9 +218,7 @@ export class StylesService {
         promptTemplate: snapshot.promptTemplate as string,
         isDefault: snapshot.isDefault as boolean | undefined,
         type: snapshot.type as string | undefined,
-        parameters: (snapshot.parameters ?? undefined) as
-          | Prisma.InputJsonValue
-          | undefined,
+        parameters: snapshot.parameters ?? undefined,
       },
     });
     void this.versioning?.recordVersion({

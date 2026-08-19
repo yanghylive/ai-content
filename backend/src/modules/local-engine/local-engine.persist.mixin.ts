@@ -38,7 +38,11 @@ export async function claimStaleTasks(this: PersistHost) {
     const [staleRunning, staleQueued] = await Promise.all([
       interactionTask.updateMany({
         where: { status: 'RUNNING', claimedBy: { not: TASK_CLAIMED_BY } },
-        data: { status: 'FAILED', stage: 'interrupted-by-restart', updatedAt: new Date() },
+        data: {
+          status: 'FAILED',
+          stage: 'interrupted-by-restart',
+          updatedAt: new Date(),
+        },
       }),
       interactionTask.updateMany({
         where: {
@@ -46,12 +50,15 @@ export async function claimStaleTasks(this: PersistHost) {
           claimedBy: { not: TASK_CLAIMED_BY },
           createdAt: { lt: new Date(Date.now() - 15 * 60 * 1000) },
         },
-        data: { status: 'FAILED', stage: 'stale-queued-on-restart', updatedAt: new Date() },
+        data: {
+          status: 'FAILED',
+          stage: 'stale-queued-on-restart',
+          updatedAt: new Date(),
+        },
       }),
     ]);
     const total = staleRunning.count + staleQueued.count;
     if (total > 0) {
-      // eslint-disable-next-line no-console
       console.log(
         `[LocalEngine] 启动清理僵尸任务: RUNNING→FAILED ${staleRunning.count} 个, 陈旧 QUEUED→FAILED ${staleQueued.count} 个`,
       );

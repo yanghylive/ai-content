@@ -1,9 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import crypto from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -53,7 +48,8 @@ export interface ConvertLeadInput {
   // —— T4.1 扩展（可选，一步建商机/任务/备注）——
   company?: ConvertLeadCompanyInput;
   opportunity?: ConvertLeadOpportunityInput;
-  task?: ConvertLeadTaskInput;
+  /** 可选：自定义转客户待办；缺省时默认建「跟进新客户」待办，传 null 则不建 */
+  task?: ConvertLeadTaskInput | null;
   note?: ConvertLeadNoteInput;
 }
 
@@ -140,7 +136,11 @@ export class LeadConvertService {
           throw new NotFoundException('线索关联的客户已失效，请重试');
         }
         return {
-          lead: { id: lead.id, status: lead.status, customerId: lead.customerId },
+          lead: {
+            id: lead.id,
+            status: lead.status,
+            customerId: lead.customerId,
+          },
           customer: {
             id: customer.id,
             displayName: customer.displayName,
@@ -171,7 +171,10 @@ export class LeadConvertService {
             profileUrl: lead.profileUrl,
             nickname: lead.nickname,
           });
-          if (resolved.kind === 'identified' || resolved.kind === 'high_confidence') {
+          if (
+            resolved.kind === 'identified' ||
+            resolved.kind === 'high_confidence'
+          ) {
             identityId = resolved.identityId;
           }
         }
@@ -184,7 +187,7 @@ export class LeadConvertService {
         : { ownerId_dedupeKey: { ownerId: scope.userId, dedupeKey } };
 
       const existingCustomer = await tx.crmCustomer.findUnique({
-        where: dedupeWhere as Prisma.CrmCustomerWhereUniqueInput,
+        where: dedupeWhere,
       });
 
       const customer = existingCustomer
@@ -202,8 +205,7 @@ export class LeadConvertService {
               ownerId: scope.userId,
               actorUserId: scope.userId,
               tenantId,
-              displayName:
-                lead.nickname ?? lead.externalUserId ?? '未命名客户',
+              displayName: lead.nickname ?? lead.externalUserId ?? '未命名客户',
               status: 'new',
               sourcePlatform: lead.platform,
               sourceUrl: lead.sourceUrl,
@@ -257,7 +259,9 @@ export class LeadConvertService {
             tenantId,
             name: `${customer.displayName} 商机`,
             stage: input.opportunity.stage ?? 'qualified',
-            amountCents: Math.round((input.opportunity.expectedAmount ?? 0) * 100),
+            amountCents: Math.round(
+              (input.opportunity.expectedAmount ?? 0) * 100,
+            ),
             currency: 'CNY',
             probability: 20,
             companyId,
@@ -270,18 +274,23 @@ export class LeadConvertService {
         opportunityId = opp.id;
       }
 
-      // 7) 建 Task / Note（T4.1#6；可选）
+      // 7) 建 Task（默认「跟进新客户」待办，让商户在 CRM 待办里看到新客户；
+      //    调用方传 input.task 用其内容，传 null 则不建）
       let taskId: string | undefined;
-      if (input.task?.title?.trim()) {
+      if (input.task !== null) {
+        const followUpTitle = customer.displayName
+          ? `跟进新客户：${customer.displayName}`
+          : '跟进新客户';
         const task = await tx.crmTask.create({
           data: {
             ownerId: scope.userId,
             actorUserId: scope.userId,
             tenantId,
-            title: input.task.title,
-            description: input.task.description,
-            priority: input.task.priority ?? 'normal',
-            dueAt: input.task.dueAt,
+            title: input.task?.title?.trim() || followUpTitle,
+            description:
+              input.task?.description ?? '线索已转为客户，请及时跟进。',
+            priority: input.task?.priority ?? 'normal',
+            dueAt: input.task?.dueAt,
             customerId: customer.id,
             companyId,
             opportunityId,
@@ -331,7 +340,7 @@ export class LeadConvertService {
             opportunityId,
             taskId,
             idempotencyKey: idempotencyKey ?? null,
-          } as Prisma.InputJsonValue,
+          },
         },
       });
 
@@ -344,35 +353,8 @@ export class LeadConvertService {
         },
       });
 
-      // 10) 写 outbox 事件（lead.action.executed / convert_crm；幂等键同 input）
-      const outboxKey = idempotencyKey ?? `convert-crm:${lead.id}`;
-      await tx.domainEventOutbox.create({
-        data: {
-          eventId: crypto.createHash('sha1').update(outboxKey).digest('hex'),
-          schemaVersion: 1,
-          tenantId: tenantId ?? 'legacy-local-desktop',
-          userId: scope.userId,
-          aggregateType: 'lead',
-          aggregateId: lead.id,
-          type: 'lead.action.executed',
-          idempotencyKey: outboxKey,
-          occurredAt: new Date(),
-          payload: {
-            actionType: 'convert_crm',
-            leadId: lead.id,
-            customerId: customer.id,
-            companyId,
-            opportunityId,
-            taskId,
-            noteId,
-            identityId,
-          },
-          status: 'published',
-        },
-      }).catch((error) => {
-        this.logger.warn(`domain outbox 落库失败：${(error as Error).message}`);
-        return null;
-      }); // outbox 失败不阻断主事务（审计尽力而为，错误不静默）
+      // 10) 写 outbox 事件移到事务外（见 convert 尾部）：事务内写失败会随事务回滚/吞掉，
+      // 导致「CRM 已转换但事件缺失」；移到提交后写，失败可告警重试。
 
       return {
         lead: {
@@ -395,6 +377,39 @@ export class LeadConvertService {
         alreadyConverted: false,
       };
     });
+
+    // 事务提交后写 outbox 事件（失败不阻断 CRM 转换，但告警可重试，避免「CRM 已转换但事件缺失」）
+    try {
+      const outboxKey = idempotencyKey ?? `convert-crm:${leadId}`;
+      await this.prisma.domainEventOutbox.create({
+        data: {
+          eventId: crypto.createHash('sha1').update(outboxKey).digest('hex'),
+          schemaVersion: 1,
+          tenantId: tenantId ?? 'legacy-local-desktop',
+          userId: scope.userId,
+          aggregateType: 'lead',
+          aggregateId: leadId,
+          type: 'lead.action.executed',
+          idempotencyKey: outboxKey,
+          occurredAt: new Date(),
+          payload: {
+            actionType: 'convert_crm',
+            leadId,
+            customerId: result.customer.id,
+            companyId: result.companyId,
+            opportunityId: result.opportunityId,
+            taskId: result.taskId,
+            noteId: result.noteId,
+            identityId: result.identityId,
+          },
+          status: 'published',
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `domain outbox 落库失败（lead=${leadId}，CRM 已转换）：${(error as Error).message}`,
+      );
+    }
 
     return result;
   }

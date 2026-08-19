@@ -1,12 +1,7 @@
 import type { Prisma } from '@prisma/client';
 
 export type GrowthPlatform =
-  | 'douyin'
-  | 'wechat-channel'
-  | 'wechat'
-  | 'wecom'
-  | 'xiaohongshu'
-  | 'kuaishou';
+  'douyin' | 'wechat-channel' | 'wechat' | 'wecom' | 'xiaohongshu' | 'kuaishou';
 
 export type GrowthAcquisitionMode =
   | 'keyword'
@@ -14,19 +9,15 @@ export type GrowthAcquisitionMode =
   | 'video-link'
   | 'target-account'
   | 'retention'
-  | 'manual-import';
+  | 'manual-import'
+  | 'recommended';
 
 export type GrowthRiskMode = 'auto' | 'confirm-first' | 'draft-only';
 
 export type GrowthTaskStatus = 'enabled' | 'disabled' | 'running';
 
 export type GrowthRunStatus =
-  | 'queued'
-  | 'running'
-  | 'success'
-  | 'partial'
-  | 'failed'
-  | 'skipped';
+  'queued' | 'running' | 'success' | 'partial' | 'failed' | 'skipped';
 
 export type GrowthLeadStatus =
   | 'new'
@@ -47,12 +38,7 @@ export type GrowthLeadSourceType =
   | 'manual-import';
 
 export type GrowthWorkflowStatus =
-  | 'draft'
-  | 'enabled'
-  | 'running'
-  | 'paused'
-  | 'completed'
-  | 'failed';
+  'draft' | 'enabled' | 'running' | 'paused' | 'completed' | 'failed';
 
 export type GrowthWorkflowAction =
   | 'start'
@@ -68,11 +54,7 @@ export type GrowthWorkflowAction =
   | 'confirm-step';
 
 export type GrowthWorkflowStepStatus =
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'waiting-confirmation';
+  'pending' | 'running' | 'completed' | 'failed' | 'waiting-confirmation';
 
 export type GrowthExecutionFailureReason =
   | 'engine_unavailable'
@@ -258,6 +240,9 @@ export interface GrowthAcquisitionConfig {
   beginTime: string;
   riskMode: GrowthRiskMode;
   status: GrowthTaskStatus;
+  /** auto 模式启用审批留痕（复核#4：自动发送必须有审批，无审批不得 daemon 执行） */
+  autoApprovedAt?: string;
+  autoApprovedBy?: string;
   exposureCount: number;
   exposureDate: string;
   lastRunAt?: string;
@@ -271,6 +256,8 @@ export interface GrowthLead {
   tenantId?: string;
   platform: GrowthPlatform;
   sourceType: GrowthLeadSourceType;
+  /** P1-11 复核：产生线索的平台账号 ID（从 config.accountId 透传，归因上游不丢） */
+  sourceAccountId?: string;
   sourceTaskId?: string;
   sourceRunId?: string;
   crmCustomerId?: string;
@@ -287,6 +274,16 @@ export interface GrowthLead {
   score: number;
   scoreReasons: string[];
   status: GrowthLeadStatus;
+  /** P1-6：统一侧桥接/评分/归因状态（失败时如实标注，前端显示"采集成功但评分未完成"） */
+  enrichmentStatus?: 'ok' | 'failed';
+  /** P0-5 复核：桥接失败的分段明细（interaction_event/platform_identity/scoring/...） */
+  enrichmentFailure?: string;
+  /** P0-6 复核：命中抑制名单（禁止自动转 CRM，强制留人工池） */
+  suppressed?: boolean;
+  /** 4.3：身份置信度（0-100；有 externalUserId=高，仅昵称+文本=低需人工确认） */
+  identityConfidence?: number;
+  /** 4.3：缺失的外部字段（externalUserId/profileUrl/externalEventId/commentTime 等） */
+  missingFields?: string[];
   nextFollowUpAt?: string;
   ownerUserId?: string;
   notes?: GrowthLeadNote[];
@@ -294,6 +291,12 @@ export interface GrowthLead {
   latestReply?: string;
   createdAt: string;
   updatedAt: string;
+  // —— 内容/发布归因（补齐「内容 → 发布 → 互动 → 线索」链路，缺省 null = 无上游内容）——
+  sourceArticleId?: string | null;
+  sourcePublishRecordId?: string | null;
+  /** P1-11 复核：互动事件归因（InteractionEvent.id，桥接后回填） */
+  sourceInteractionEventId?: string | null;
+  contentId?: string | null;
 }
 
 export interface GrowthLeadNote {
@@ -326,6 +329,19 @@ export interface GrowthAcquisitionRun {
   crmCapturedCount: number;
   evidenceUrls: string[];
   leadIds: string[];
+  /** 复核#4 可追责字段：触发来源 / 风控模式 / 是否经本次确认 */
+  trigger?: 'manual' | 'scheduled' | 'workflow' | 'api';
+  runRiskMode?: GrowthRiskMode;
+  approved?: boolean;
+  /** P1-2：失败回退追踪（RPA 失败→回退本地适配器时如实标注来源） */
+  fallback?: {
+    attempted: boolean;
+    source: 'rpa' | 'legacy-adapter' | 'manual-import' | 'none';
+    rpaExecutionId: string | null;
+    reasonCode: string | null;
+    fallbackAllowed: boolean;
+    message: string;
+  };
   startedAt: string;
   endedAt?: string;
 }
@@ -442,8 +458,7 @@ export interface GrowthCommercialReadinessRemediation {
 }
 
 export type GrowthCommercialAuditAction =
-  | 'commercial-readiness-remediate'
-  | 'acquisition-schedule-run';
+  'commercial-readiness-remediate' | 'acquisition-schedule-run';
 
 export interface GrowthCommercialAuditRecord {
   id: string;
@@ -568,9 +583,45 @@ export interface GrowthOverview {
   hotStrategies: GrowthStrategyTemplate[];
 }
 
+export interface GrowthSixStageFunnel {
+  /** 内容数（article） */
+  content: number;
+  /** 发布记录数 */
+  publish: number;
+  /** 互动事件数 */
+  interaction: number;
+  /** 线索数 */
+  lead: number;
+  /** CRM 客户数 */
+  customer: number;
+  /** 商机数 */
+  opportunity: number;
+  /** 成交金额（分） */
+  wonAmountCents: number;
+  /** 内容→线索转化率（0-1，无内容时为 0）。按主键归因：有归因链的线索数 / 内容数 */
+  contentConversionRate: number;
+  /** 归因到的线索数（有 interaction/publish/content→lead 归因链的 lead 去重数） */
+  attributedLeadCount: number;
+  /** 归因到的客户数（有 lead→customer 归因链的 customer 去重数） */
+  attributedCustomerCount: number;
+  /** 归因置信度（有确定性归因链为 high，仅有规则/推断为 medium/low） */
+  attributionConfidence: 'high' | 'medium' | 'low';
+  platformComparison: Array<{
+    platform: string;
+    content: number;
+    publish: number;
+    interaction: number;
+    lead: number;
+    customer: number;
+    opportunity: number;
+  }>;
+}
+
 export interface GrowthReports {
   overview: GrowthOverview;
   funnel: GrowthOverview['funnel'];
+  /** 六步闭环复盘（内容→发布→互动→线索→客户→商机），P1-15 新增 */
+  sixStage: GrowthSixStageFunnel;
   copywriting: Array<{
     text: string;
     usageCount: number;

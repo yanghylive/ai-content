@@ -29,8 +29,7 @@ import { WechatCompiler } from '../publishing/wechat-publisher/wechat-compiler';
 import { CreateAgentWakerRunDto } from './dto/create-agentwaker-run.dto';
 
 type AgentWakerRoleId =
-  | 'xiaohongshu-operator'
-  | 'wechat-official-account-operator';
+  'xiaohongshu-operator' | 'wechat-official-account-operator';
 type AgentWakerWorkflowId = 'note-package' | 'article-pipeline';
 
 type AgentWakerInputs = {

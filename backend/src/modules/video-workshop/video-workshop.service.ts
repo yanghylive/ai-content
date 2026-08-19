@@ -769,20 +769,27 @@ export class VideoWorkshopService implements OnModuleInit {
       return [];
     }
 
-    return readdirSync(materialDir)
-      .map((name) => join(materialDir, name))
-      .filter((path) => existsSync(path) && statSync(path).isFile())
-      .map((path) => this.materialFileFromPath(path))
-      .filter((item): item is VideoWorkshopMaterialFile => Boolean(item))
-      .sort((left, right) =>
-        left.kind === right.kind
-          ? new Date(right.updatedAt).getTime() -
-            new Date(left.updatedAt).getTime()
-          : left.kind === 'video'
-            ? -1
-            : 1,
-      )
-      .slice(0, Math.max(1, Math.min(100, Math.round(limit))));
+    return (
+      readdirSync(materialDir)
+        .map((name) => join(materialDir, name))
+        .filter((path) => existsSync(path) && statSync(path).isFile())
+        // 过滤内部文件：目录可写性 probe（.kaypal-runcheck-*.probe）与渲染中间文件（.partial.*）
+        .filter((path) => {
+          const name = basename(path);
+          return !name.startsWith('.kaypal-') && !name.includes('.partial');
+        })
+        .map((path) => this.materialFileFromPath(path))
+        .filter((item): item is VideoWorkshopMaterialFile => Boolean(item))
+        .sort((left, right) =>
+          left.kind === right.kind
+            ? new Date(right.updatedAt).getTime() -
+              new Date(left.updatedAt).getTime()
+            : left.kind === 'video'
+              ? -1
+              : 1,
+        )
+        .slice(0, Math.max(1, Math.min(100, Math.round(limit))))
+    );
   }
 
   async importMaterialFile(
@@ -1125,7 +1132,12 @@ export class VideoWorkshopService implements OnModuleInit {
     const materialDir = resolveProjectDataPath('materials');
     const safeName = name.split(/[\\/]/).pop() || '';
     const safeNewName = newName.split(/[\\/]/).pop() || '';
-    if (!safeName || !safeNewName || safeNewName === '.' || safeNewName === '..') {
+    if (
+      !safeName ||
+      !safeNewName ||
+      safeNewName === '.' ||
+      safeNewName === '..'
+    ) {
       throw new BadRequestException('素材名不合法');
     }
     const target = join(materialDir, safeName);

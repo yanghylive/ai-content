@@ -233,6 +233,31 @@ export class XiaohongshuInteractionAdapter implements InteractionAdapter {
   }
 }
 
+@Injectable()
+export class KuaishouInteractionAdapter implements InteractionAdapter {
+  readonly capability: InteractionCapability = {
+    platform: 'kuaishou',
+    displayName: '快手',
+    supportedTasks: ['comment-reply'],
+    supportsReadback: false,
+    adapterVersion: '0.1.0',
+  };
+
+  async read(input: InteractionReadInput): Promise<InteractionReadResult> {
+    // 快手评论获客待接入：cp.kuaishou.com 评论管理页的 URL + 读评论 selector
+    // 需真实快手账号实测校准（发现层 RPA 已就绪，此处是读自己账号评论）
+    throw new Error(
+      `快手评论获客待接入：账号 ${input.accountId} 需 cp.kuaishou.com 实测校准读评论 selector`,
+    );
+  }
+
+  async send(input: InteractionSendInput): Promise<InteractionSendResult> {
+    throw new Error(
+      `快手回复执行待接入：账号 ${input.accountId} 需 cp.kuaishou.com 实测校准回复 selector`,
+    );
+  }
+}
+
 /** 启动时把内置 adapter 注册进 registry */
 @Injectable()
 export class InteractionAdapterRegistrar implements OnModuleInit {
@@ -243,12 +268,14 @@ export class InteractionAdapterRegistrar implements OnModuleInit {
     private readonly douyin: DouyinInteractionAdapter,
     private readonly wechatChannel: WechatChannelInteractionAdapter,
     private readonly xiaohongshu: XiaohongshuInteractionAdapter,
+    private readonly kuaishou: KuaishouInteractionAdapter,
   ) {}
 
   onModuleInit() {
     this.registry.register(this.douyin);
     this.registry.register(this.wechatChannel);
     this.registry.register(this.xiaohongshu);
+    this.registry.register(this.kuaishou);
     this.logger.log(
       `互动适配器已注册: ${this.registry.listPlatforms().join(', ')}`,
     );

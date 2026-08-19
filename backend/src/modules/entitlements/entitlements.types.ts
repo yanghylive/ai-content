@@ -1,8 +1,5 @@
 export type EffectiveEntitlementSource =
-  | 'kaypal-subscription'
-  | 'local-commercial-override'
-  | 'trial'
-  | 'anonymous';
+  'kaypal-subscription' | 'local-commercial-override' | 'trial' | 'anonymous';
 
 export interface EffectiveTenantContext {
   tenantId: string;

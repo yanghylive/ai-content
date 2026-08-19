@@ -22,7 +22,10 @@ export class AppMarketController {
   }
 
   @Get('apps/:appKey')
-  getApp(@Req() request: AuthenticatedRequest, @Param('appKey') appKey: string) {
+  getApp(
+    @Req() request: AuthenticatedRequest,
+    @Param('appKey') appKey: string,
+  ) {
     return this.appMarketService.getAppState(this.getUser(request), appKey);
   }
 

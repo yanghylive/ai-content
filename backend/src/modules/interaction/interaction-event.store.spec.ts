@@ -140,3 +140,41 @@ describe('InteractionEventStore', () => {
     );
   });
 });
+
+describe('InteractionEventStore 读取租户隔离（P1-15 复核）', () => {
+  function makeStore() {
+    const findMany = jest.fn().mockResolvedValue([]);
+    const prisma = {
+      interactionEvent: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        findUniqueOrThrow: jest.fn(),
+        create: jest.fn().mockResolvedValue({ id: 'ev-1' }),
+        findMany,
+      },
+    };
+    const store = new InteractionEventStore(prisma as never, {
+      get: () => undefined,
+    } as never);
+    return { store, findMany };
+  }
+
+  it('listByArticle 强制 tenant scope（防串租户读取）', async () => {
+    const { store, findMany } = makeStore();
+    await store.listByArticle('article-1', 'tenant-1');
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { sourceArticleId: 'article-1', tenantId: 'tenant-1' },
+      }),
+    );
+  });
+
+  it('listByAuthor 强制 tenant scope（防串租户读取）', async () => {
+    const { store, findMany } = makeStore();
+    await store.listByAuthor('author-1', 'tenant-1');
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { authorExternalId: 'author-1', tenantId: 'tenant-1' },
+      }),
+    );
+  });
+});

@@ -94,7 +94,7 @@ export class VoiceService {
         userId: user!.id,
         tokenHash: hashSessionToken(sessionToken),
         expiresAt,
-        metadata: metadata as Prisma.InputJsonObject,
+        metadata: metadata,
       },
     });
 

@@ -299,7 +299,7 @@ export class RiskPolicyService {
           issuedByUserId: actor.userId,
           issuedForSessionId: actor.sessionId,
           consumedAt: null,
-        } as Prisma.InputJsonValue,
+        },
       },
       select: {
         id: true,
@@ -385,7 +385,7 @@ export class RiskPolicyService {
         confirmationJson: {
           ...approvalData,
           consumedAt,
-        } as Prisma.InputJsonValue,
+        },
       },
     });
     if (consumed.count !== 1) {

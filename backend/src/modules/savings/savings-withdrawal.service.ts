@@ -156,7 +156,17 @@ export class SavingsWithdrawalService {
           operator: 'system',
           remark: '提现单创建失败自动解冻',
         })
-        .catch(() => undefined);
+        .catch((unfreezeErr) => {
+          // P0 复核（全面审查）：解冻失败绝不静默——返利会永久冻结且无痕，
+          // 必须落错误日志供告警/人工补偿（幂等键支持重放）
+          this.logger.error(
+            `提现单创建失败后的解冻也失败（withdrawal=${withdrawalId}, user=${userId}, amount=${input.amount}）：${
+              unfreezeErr instanceof Error
+                ? unfreezeErr.message
+                : String(unfreezeErr)
+            }（幂等键 withdraw-unfreeze-fallback:${withdrawalId} 可重放）`,
+          );
+        });
       throw error;
     }
 

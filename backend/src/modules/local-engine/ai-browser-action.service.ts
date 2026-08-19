@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import type { Page } from 'playwright';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
@@ -38,6 +39,15 @@ export interface AiBrowserStepResult {
   message?: string;
   evidenceUrl?: string;
   extractText?: string;
+}
+
+interface RawAiActionItem {
+  action?: unknown;
+  url?: unknown;
+  selector?: unknown;
+  text?: unknown;
+  name?: unknown;
+  ms?: unknown;
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -115,43 +125,49 @@ export class AiBrowserActionService {
       'wait',
     ]);
     const actions: AiBrowserAction[] = [];
-    for (const item of parsed) {
+    for (const item of parsed as RawAiActionItem[]) {
       if (actions.length >= 12) break;
-      const action = (item as { action?: string })?.action;
-      if (!action || !allowed.has(action)) continue;
+      const action = item.action;
+      if (typeof action !== 'string' || !allowed.has(action)) continue;
       switch (action) {
         case 'goto':
-          if (typeof (item as any).url === 'string' && /^https?:\/\//.test((item as any).url)) {
-            actions.push({ action: 'goto', url: (item as any).url });
+          if (typeof item.url === 'string' && /^https?:\/\//.test(item.url)) {
+            actions.push({ action: 'goto', url: item.url });
           }
           break;
         case 'type':
-          if (typeof (item as any).selector === 'string' && typeof (item as any).text === 'string') {
+          if (
+            typeof item.selector === 'string' &&
+            typeof item.text === 'string'
+          ) {
             actions.push({
               action: 'type',
-              selector: (item as any).selector,
-              text: String((item as any).text).slice(0, 500),
+              selector: item.selector,
+              text: String(item.text).slice(0, 500),
             });
           }
           break;
         case 'click':
-          if (typeof (item as any).selector === 'string') {
-            actions.push({ action: 'click', selector: (item as any).selector });
+          if (typeof item.selector === 'string') {
+            actions.push({ action: 'click', selector: item.selector });
           }
           break;
         case 'screenshot':
           actions.push({
             action: 'screenshot',
-            name: typeof (item as any).name === 'string' ? (item as any).name : undefined,
+            name: typeof item.name === 'string' ? item.name : undefined,
           });
           break;
         case 'extract':
-          if (typeof (item as any).selector === 'string') {
-            actions.push({ action: 'extract', selector: (item as any).selector });
+          if (typeof item.selector === 'string') {
+            actions.push({
+              action: 'extract',
+              selector: item.selector,
+            });
           }
           break;
         case 'wait': {
-          const ms = Math.floor(Number((item as any).ms));
+          const ms = Math.floor(Number(item.ms));
           if (Number.isFinite(ms) && ms >= 0) {
             actions.push({ action: 'wait', ms: Math.min(ms, 60_000) });
           }
@@ -200,7 +216,9 @@ export class AiBrowserActionService {
       }
       // 3. 点击 <目标>（文本优先）
       if (!matched) {
-        m = step.match(/^(?:点击|点|按下|单击|click)\s*(?:按钮|链接|元素)?\s*[:：]?\s*(.+)/i);
+        m = step.match(
+          /^(?:点击|点|按下|单击|click)\s*(?:按钮|链接|元素)?\s*[:：]?\s*(.+)/i,
+        );
         if (m && m[1].trim()) {
           actions.push({ action: 'click', selector: `text=${m[1].trim()}` });
           matched = true;
@@ -208,7 +226,9 @@ export class AiBrowserActionService {
       }
       // 4. 输入/填写 <文字>（到输入框）
       if (!matched) {
-        m = step.match(/^(?:输入|填写|填入|键入|type)\s*(?:内容|文字|文本)?\s*[:：]?\s*(.+)/i);
+        m = step.match(
+          /^(?:输入|填写|填入|键入|type)\s*(?:内容|文字|文本)?\s*[:：]?\s*(.+)/i,
+        );
         if (m && m[1].trim()) {
           actions.push({
             action: 'type',
@@ -232,7 +252,9 @@ export class AiBrowserActionService {
       }
       // 6. 提取/读取 <选择器> 内容
       if (!matched) {
-        m = step.match(/^(?:提取|读取|获取|extract)\s*(?:内容|文字)?\s*[:：]?\s*(.+)/i);
+        m = step.match(
+          /^(?:提取|读取|获取|extract)\s*(?:内容|文字)?\s*[:：]?\s*(.+)/i,
+        );
         if (m && m[1].trim()) {
           actions.push({ action: 'extract', selector: m[1].trim() });
           matched = true;
@@ -247,7 +269,9 @@ export class AiBrowserActionService {
       throw new BadRequestException('未识别到可执行动作');
     }
     if (actions.length > MAX_ACTIONS) {
-      throw new BadRequestException(`动作过多（${actions.length} > ${MAX_ACTIONS}），请拆分成多次指令`);
+      throw new BadRequestException(
+        `动作过多（${actions.length} > ${MAX_ACTIONS}），请拆分成多次指令`,
+      );
     }
     return actions;
   }
@@ -291,9 +315,16 @@ export class AiBrowserActionService {
             step,
             timeoutMs,
           );
-          results.push({ index: i, action: step.action, ok: true, ...stepResult });
+          results.push({
+            index: i,
+            action: step.action,
+            ok: true,
+            ...stepResult,
+          });
         } catch (error) {
-          this.logger.warn(`ai-action step ${i} (${step.action}) 失败: ${error}`);
+          this.logger.warn(
+            `ai-action step ${i} (${step.action}) 失败: ${error}`,
+          );
           results.push({
             index: i,
             action: step.action,
@@ -319,7 +350,7 @@ export class AiBrowserActionService {
 
   private async executeStep(
     sessionKey: string,
-    page: any,
+    page: Page,
     step: AiBrowserAction,
     timeoutMs: number,
   ): Promise<{ evidenceUrl?: string; extractText?: string }> {
@@ -346,7 +377,9 @@ export class AiBrowserActionService {
         break;
       }
       case 'wait':
-        await new Promise((resolve) => setTimeout(resolve, Math.min(step.ms, 30_000)));
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.min(step.ms, 30_000)),
+        );
         break;
       case 'screenshot':
         break;

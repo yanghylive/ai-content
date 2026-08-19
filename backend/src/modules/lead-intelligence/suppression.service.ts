@@ -2,10 +2,11 @@
 // 退订/投诉/封禁阻断所有后续触达；发送前 + 队列消费前双检查（防竞态）。
 // explicit opt-out 立即阻断；inferred negative 停止当前序列但建人工跟进（不永久 suppress）；
 // complaint/platform risk 租户级或身份级阻断 + 通知管理员；新增/解除/命中都写 audit。
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export type SuppressionKind = 'email' | 'phone' | 'platform_identity' | 'domain' | 'lead';
+export type SuppressionKind =
+  'email' | 'phone' | 'platform_identity' | 'domain' | 'lead';
 
 @Injectable()
 export class SuppressionService {
@@ -67,17 +68,27 @@ export class SuppressionService {
         sourceEventId: input.sourceEventId,
         createdBy: input.createdBy,
       },
-      update: { reason: input.reason, removedAt: null, sourceEventId: input.sourceEventId },
+      update: {
+        reason: input.reason,
+        removedAt: null,
+        sourceEventId: input.sourceEventId,
+      },
     });
     return { id: row.id, suppressed: true };
   }
 
-  /** 解除（removedAt 标记，不物理删除） */
-  async remove(input: { tenantId: string; id: string }): Promise<{ id: string; removed: true }> {
-    await this.prisma.suppression.update({
-      where: { id: input.id },
+  /** 解除（removedAt 标记，不物理删除）。按 id + tenantId 双条件，跨租户无法解除。 */
+  async remove(input: {
+    tenantId: string;
+    id: string;
+  }): Promise<{ id: string; removed: true }> {
+    const result = await this.prisma.suppression.updateMany({
+      where: { id: input.id, tenantId: input.tenantId },
       data: { removedAt: new Date() },
     });
+    if (result.count === 0) {
+      throw new NotFoundException('抑制记录不存在或无权操作');
+    }
     return { id: input.id, removed: true };
   }
 
@@ -85,11 +96,11 @@ export class SuppressionService {
    * inferred negative（如 negative 回复/未响应）：不自动永久 suppress——
    * 停止当前序列，返回需要人工跟进（调用方负责建任务/通知）。
    */
-  async handleInferredNegative(input: {
+  handleInferredNegative(_input: {
     tenantId: string;
     leadId: string;
     reason: string;
-  }): Promise<{ action: 'stop_sequence'; needsHumanFollowUp: true }> {
+  }): { action: 'stop_sequence'; needsHumanFollowUp: true } {
     // 只做标记，不写 Suppression 表（inferred 不永久 suppress）
     // 完整实现：调用方收到返回值后停止 follow-up 序列 + 建人工跟进任务
     return { action: 'stop_sequence', needsHumanFollowUp: true };

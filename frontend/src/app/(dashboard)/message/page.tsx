@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { ScenePage } from "@/components/shell/scene-page";
 import { ShellIcon } from "@/components/shell/icons";
 import { localEngineApi, type AgentConfirmation, type InteractionTask } from "@/lib/api/local-engine";
+import { statsApi } from "@/lib/api/stats";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 export default function MessageScene() {
@@ -21,15 +22,23 @@ export default function MessageScene() {
 
   React.useEffect(() => {
     let active = true;
+    // 待确认徽章数：统一走后端 StatsSnapshot（approval 域，后端 count 口径）
+    statsApi
+      .snapshot("approval")
+      .then((snap) => {
+        if (!active) return;
+        const waiting = snap?.metrics?.find(
+          (m) => m.key === "approval.waiting_tasks",
+        )?.value;
+        setWaitingCount(typeof waiting === "number" ? waiting : 0);
+      })
+      .catch(() => undefined);
+
     localEngineApi
       .tasks(100)
       .then((tasks) => {
         if (!active) return;
         const list = Array.isArray(tasks) ? tasks : [];
-        setWaitingCount(
-          list.filter((t) => t.status === "waiting_for_send_confirmation")
-            .length,
-        );
         // 收件箱：待处理互动（待确认 + 转人工 + 执行中），按 SLA 超时/时间排序
         const pending = list.filter(
           (t) =>
@@ -137,8 +146,8 @@ export default function MessageScene() {
         {
           icon: "megaphone",
           tint: "kx-t-amber",
-          title: "朋友圈计划",
-          desc: "朋友圈发布计划与排期",
+          title: "群发计划",
+          desc: "群发任务管理：暂停、继续、重试",
           href: "/engagement/wechat/plans",
         },
         {
@@ -247,7 +256,7 @@ const MOBILE_CHANNELS: Array<{
   { label: "微信", sub: "会话 · 加好友", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },
   { label: "企微助手", sub: "企微智能回复", icon: "messageSq", brand: "#07c160", href: "/wecom-assistant" },
   { label: "互动记录", sub: "所有回复可追溯", icon: "history", brand: "#76517e", href: "/engagement/records" },
-  { label: "朋友圈计划", sub: "朋友圈排期", icon: "megaphone", brand: "#d97706", href: "/engagement/wechat/plans" },
+  { label: "群发计划", sub: "群发任务管理", icon: "megaphone", brand: "#d97706", href: "/engagement/wechat/plans" },
   { label: "执行态势", sub: "跨平台任务态势", icon: "cpu", brand: "#7c3aed", href: "/war-room" },
 ];
 

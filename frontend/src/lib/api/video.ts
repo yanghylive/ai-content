@@ -19,6 +19,17 @@ export interface ProductCutResult {
   message?: string;
 }
 
+/** 视频发布计划（定时发布的视频任务） */
+export interface ReleasePlan {
+  id: string;
+  createdAt: string;
+  status: string;
+  scheduled: boolean;
+  scheduleTime: string | null;
+  platforms: string[];
+  title: string | null;
+}
+
 /** 商品视频剪辑（炼刀 video_creation 对标，2026-08-10 前端接入） */
 export const videoApi = {
   /** 带货文案生成（确定性模板，离线友好） */
@@ -42,5 +53,11 @@ export const videoApi = {
     imageUrl?: string;
   }) {
     return api.post<ProductCutResult>("/video/product-cut", input);
+  },
+
+  /** 视频发布计划（定时发布的视频任务列表） */
+  listReleasePlans(limit?: number) {
+    const query = limit ? `?limit=${Math.floor(limit)}` : "";
+    return api.get<ReleasePlan[]>(`/video/release-plans${query}`);
   },
 };

@@ -3,7 +3,13 @@
 
 export type DiscoveryCapability = {
   platform: string;
-  modes: Array<'keyword' | 'video-link' | 'target-account' | 'manual-import' | 'account-search'>;
+  modes: Array<
+    | 'keyword'
+    | 'video-link'
+    | 'target-account'
+    | 'manual-import'
+    | 'account-search'
+  >;
   supportsComment: boolean;
   supportsDm: boolean;
   /** 能力差异：auto-publish / manual-notify / collect-only */
@@ -39,7 +45,8 @@ export type DiscoveryItem = {
   };
   /** 互动事件（可能为空） */
   interactionEvents?: Array<{
-    externalEventId: string;
+    // P1-6 复核：无平台真实事件/评论 ID 时为 undefined（禁止合成内容锚点冒充事件 ID）
+    externalEventId?: string;
     type: string;
     authorExternalId?: string;
     text?: string;
@@ -54,6 +61,8 @@ export type DiscoveryItem = {
     nickname?: string;
     avatarHash?: string;
   };
+  /** Sprint 5：快手真实搜索不渲染时降级推荐流的标注（不冒充关键词搜索结果） */
+  recommendedFallback?: boolean;
 };
 
 export type DiscoveryContext = {

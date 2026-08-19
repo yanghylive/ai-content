@@ -50,10 +50,7 @@ export class CrawlProcessor {
 
       if (crawler) {
         // 使用专用采集器
-        results = await crawler.crawl(
-          sourceUrl,
-          data.config as Record<string, unknown>,
-        );
+        results = await crawler.crawl(sourceUrl, data.config);
       } else if (sourceType === 'rss') {
         // 回退到 RSS 采集器
         results = await this.rssCrawler.crawl(sourceUrl, platform);

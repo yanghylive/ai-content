@@ -1,5 +1,14 @@
 // 微信支付 controller（2026-08-16，商户号 1116143786）
-import { Body, Controller, Get, Headers, Param, Post, Req, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { WechatPayService } from './wechat-pay.service';
 
@@ -9,7 +18,8 @@ export class WechatPayController {
   constructor(private readonly wechatPay: WechatPayService) {}
 
   private requireUser(@Req() request: Request) {
-    const user = (request as unknown as { authUser?: { id?: string } }).authUser;
+    const user = (request as unknown as { authUser?: { id?: string } })
+      .authUser;
     if (!user?.id) throw new UnauthorizedException('请先登录');
     return user.id;
   }
@@ -25,7 +35,9 @@ export class WechatPayController {
     return this.wechatPay.createCreditOrder({
       amountYuan: Number(body?.amountYuan),
       description: body?.description,
-      idempotencyKey: body?.idempotencyKey?.trim() || `wxpay:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+      idempotencyKey:
+        body?.idempotencyKey?.trim() ||
+        `wxpay:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
     });
   }
 

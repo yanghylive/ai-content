@@ -19,7 +19,12 @@ import {
 
 export interface ReviewRevision {
   titles: string[];
-  pages: Array<{ type: string; heading: string; content: string; imagePrompt: string }>;
+  pages: Array<{
+    type: string;
+    heading: string;
+    content: string;
+    imagePrompt: string;
+  }>;
   review: ContentReviewResult;
   revised?: boolean;
 }
@@ -42,11 +47,16 @@ export class ContentReviewService {
   async reviewAndRevise(
     input: ContentReviewInput & {
       titles: string[];
-      pages: Array<{ type: string; heading: string; content: string; imagePrompt: string }>;
+      pages: Array<{
+        type: string;
+        heading: string;
+        content: string;
+        imagePrompt: string;
+      }>;
     },
   ): Promise<ReviewRevision> {
     const { titles, pages, ...reviewInput } = input;
-    let review = reviewContent({ ...reviewInput, titles });
+    const review = reviewContent({ ...reviewInput, titles });
 
     // 已达标 → 不修订
     if (review.pass || pages.length === 0) {
@@ -86,17 +96,34 @@ export class ContentReviewService {
 
   private async reviseOnce(
     titles: string[],
-    pages: Array<{ type: string; heading: string; content: string; imagePrompt: string }>,
+    pages: Array<{
+      type: string;
+      heading: string;
+      content: string;
+      imagePrompt: string;
+    }>,
     issuesText: string,
-  ): Promise<{ titles: string[]; pages: Array<{ type: string; heading: string; content: string; imagePrompt: string }> }> {
+  ): Promise<{
+    titles: string[];
+    pages: Array<{
+      type: string;
+      heading: string;
+      content: string;
+      imagePrompt: string;
+    }>;
+  }> {
     if (!this.aiClient || !this.prisma) {
       throw new Error('AI 客户端未注入，无法定向修订');
     }
     let template: string;
     try {
-      template = readFileSync(join(this.promptsDir, 'review-revise.md'), 'utf-8');
+      template = readFileSync(
+        join(this.promptsDir, 'review-revise.md'),
+        'utf-8',
+      );
     } catch {
-      template = '按问题清单修订下面的内容：\n{{ISSUES}}\n\n{{TITLES}}\n{{PAGES}}';
+      template =
+        '按问题清单修订下面的内容：\n{{ISSUES}}\n\n{{TITLES}}\n{{PAGES}}';
     }
 
     const pagesBlock = pages
@@ -120,7 +147,8 @@ export class ContentReviewService {
       [
         {
           role: 'system',
-          content: '你是严格的内容编辑，只按问题清单定向修订，输出格式必须与输入一致。',
+          content:
+            '你是严格的内容编辑，只按问题清单定向修订，输出格式必须与输入一致。',
         },
         { role: 'user', content: prompt },
       ],
@@ -134,8 +162,21 @@ export class ContentReviewService {
   private parseRevised(
     raw: string,
     fallbackTitles: string[],
-    fallbackPages: Array<{ type: string; heading: string; content: string; imagePrompt: string }>,
-  ): { titles: string[]; pages: Array<{ type: string; heading: string; content: string; imagePrompt: string }> } {
+    fallbackPages: Array<{
+      type: string;
+      heading: string;
+      content: string;
+      imagePrompt: string;
+    }>,
+  ): {
+    titles: string[];
+    pages: Array<{
+      type: string;
+      heading: string;
+      content: string;
+      imagePrompt: string;
+    }>;
+  } {
     try {
       const text = raw.trim();
       // 严格校验：输出必须包含 --- 页分隔符才视为有效修订
@@ -171,7 +212,8 @@ export class ContentReviewService {
           const type = parts[0].trim();
           const heading = parts[1].trim();
           const content = parts.slice(2).join('|').trim();
-          const original = fallbackPages.find((p) => p.type === type) ?? fallbackPages[0];
+          const original =
+            fallbackPages.find((p) => p.type === type) ?? fallbackPages[0];
           return {
             type,
             heading: heading || original?.heading || '',

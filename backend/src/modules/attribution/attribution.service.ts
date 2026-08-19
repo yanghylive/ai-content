@@ -34,17 +34,38 @@ export class AttributionService {
   async resolveUpstream(input: {
     tenantId: string;
     userId: string;
-    type: 'content' | 'publish' | 'interaction' | 'lead' | 'customer' | 'opportunity';
+    type:
+      | 'content'
+      | 'publish'
+      | 'interaction'
+      | 'lead'
+      | 'customer'
+      | 'opportunity';
     id: string;
   }): Promise<{ layer: AttributionLayer; hops: AttributionHop[] }> {
-    const direct = await this.findDirectUpstream(input.userId, input.type, input.id);
+    const direct = await this.findDirectUpstream(
+      input.userId,
+      input.type,
+      input.id,
+    );
     if (direct.length > 0) {
       return { layer: 'confirmed', hops: direct };
     }
 
-    // 无主键直连 → 查 AttributionLink（rule_based/inferred 层）
+    // 无主键直连 → 查 AttributionLink（rule_based/inferred 层）。
+    // 按 userId + tenantId 双条件隔离（修复：原来只按 userId，可能跨租户串数据）
     const links = await this.prisma.attributionLink.findMany({
-      where: { userId: input.userId, toType: input.type, toId: input.id },
+      where: {
+        userId: input.userId,
+        toType: input.type,
+        toId: input.id,
+        tenantId: {
+          in: [
+            input.tenantId || 'legacy-local-desktop',
+            'legacy-local-desktop',
+          ],
+        },
+      },
       orderBy: { createdAt: 'desc' },
       take: 10,
     });
@@ -101,7 +122,10 @@ export class AttributionService {
     // 2. 发布 → 互动（InteractionEvent.publishRecordId）
     const interactions = publishes.length
       ? await this.prisma.interactionEvent.findMany({
-          where: { userId, publishRecordId: { in: publishes.map((p) => p.id) } },
+          where: {
+            userId,
+            publishRecordId: { in: publishes.map((p) => p.id) },
+          },
           select: { id: true },
         })
       : [];
@@ -109,7 +133,10 @@ export class AttributionService {
     // 3. 互动 → 线索（Lead.sourceInteractionEventId）
     const leads = interactions.length
       ? await this.prisma.lead.findMany({
-          where: { userId, sourceInteractionEventId: { in: interactions.map((i) => i.id) } },
+          where: {
+            userId,
+            sourceInteractionEventId: { in: interactions.map((i) => i.id) },
+          },
           select: { id: true, customerId: true },
         })
       : [];
@@ -117,7 +144,12 @@ export class AttributionService {
     // 4. 线索 → 客户 → 商机（CrmOpportunity.primaryCustomerId）
     const opportunities = leads.length
       ? await this.prisma.crmOpportunity.findMany({
-          where: { ownerId: userId, primaryCustomerId: { in: leads.map((l) => l.customerId).filter(Boolean) as string[] } },
+          where: {
+            ownerId: userId,
+            primaryCustomerId: {
+              in: leads.map((l) => l.customerId).filter(Boolean) as string[],
+            },
+          },
           select: { id: true, stage: true, amountCents: true },
         })
       : [];
@@ -175,28 +207,48 @@ export class AttributionService {
       if (!lead) return hops;
       if (lead.sourceInteractionEventId) {
         hops.push({
-          fromType: 'interaction', fromId: lead.sourceInteractionEventId,
-          toType: 'lead', toId: id,
-          model: 'deterministic', confidence: 'high', label: 'created_from', evidence: {},
+          fromType: 'interaction',
+          fromId: lead.sourceInteractionEventId,
+          toType: 'lead',
+          toId: id,
+          model: 'deterministic',
+          confidence: 'high',
+          label: 'created_from',
+          evidence: {},
         });
       } else if (lead.sourcePublishRecordId) {
         hops.push({
-          fromType: 'publish', fromId: lead.sourcePublishRecordId,
-          toType: 'lead', toId: id,
-          model: 'deterministic', confidence: 'high', label: 'created_from', evidence: {},
+          fromType: 'publish',
+          fromId: lead.sourcePublishRecordId,
+          toType: 'lead',
+          toId: id,
+          model: 'deterministic',
+          confidence: 'high',
+          label: 'created_from',
+          evidence: {},
         });
       } else if (lead.sourceArticleId) {
         hops.push({
-          fromType: 'content', fromId: lead.sourceArticleId,
-          toType: 'lead', toId: id,
-          model: 'deterministic', confidence: 'high', label: 'created_from', evidence: {},
+          fromType: 'content',
+          fromId: lead.sourceArticleId,
+          toType: 'lead',
+          toId: id,
+          model: 'deterministic',
+          confidence: 'high',
+          label: 'created_from',
+          evidence: {},
         });
       }
       if (lead.customerId) {
         hops.push({
-          fromType: 'lead', fromId: id,
-          toType: 'customer', toId: lead.customerId,
-          model: 'deterministic', confidence: 'high', label: 'qualified_by', evidence: {},
+          fromType: 'lead',
+          fromId: id,
+          toType: 'customer',
+          toId: lead.customerId,
+          model: 'deterministic',
+          confidence: 'high',
+          label: 'qualified_by',
+          evidence: {},
         });
       }
       return hops;
@@ -205,27 +257,46 @@ export class AttributionService {
     if (type === 'interaction') {
       const ev = await this.prisma.interactionEvent.findFirst({
         where: { id, userId },
-        select: { sourceArticleId: true, publishRecordId: true, contentId: true },
+        select: {
+          sourceArticleId: true,
+          publishRecordId: true,
+          contentId: true,
+        },
       });
       if (!ev) return hops;
       if (ev.publishRecordId) {
         hops.push({
-          fromType: 'interaction', fromId: id,
-          toType: 'publish', toId: ev.publishRecordId,
-          model: 'deterministic', confidence: 'high', label: 'created_from', evidence: {},
+          fromType: 'interaction',
+          fromId: id,
+          toType: 'publish',
+          toId: ev.publishRecordId,
+          model: 'deterministic',
+          confidence: 'high',
+          label: 'created_from',
+          evidence: {},
         });
       }
       if (ev.contentId) {
         hops.push({
-          fromType: 'interaction', fromId: id,
-          toType: 'content', toId: ev.contentId,
-          model: 'deterministic', confidence: 'high', label: 'created_from', evidence: {},
+          fromType: 'interaction',
+          fromId: id,
+          toType: 'content',
+          toId: ev.contentId,
+          model: 'deterministic',
+          confidence: 'high',
+          label: 'created_from',
+          evidence: {},
         });
       } else if (ev.sourceArticleId) {
         hops.push({
-          fromType: 'interaction', fromId: id,
-          toType: 'content', toId: ev.sourceArticleId,
-          model: 'deterministic', confidence: 'high', label: 'created_from', evidence: {},
+          fromType: 'interaction',
+          fromId: id,
+          toType: 'content',
+          toId: ev.sourceArticleId,
+          model: 'deterministic',
+          confidence: 'high',
+          label: 'created_from',
+          evidence: {},
         });
       }
       return hops;
@@ -248,9 +319,14 @@ export class AttributionService {
       });
       if (opp?.primaryCustomerId) {
         hops.push({
-          fromType: 'opportunity', fromId: id,
-          toType: 'customer', toId: opp.primaryCustomerId,
-          model: 'deterministic', confidence: 'high', label: 'created_from', evidence: {},
+          fromType: 'opportunity',
+          fromId: id,
+          toType: 'customer',
+          toId: opp.primaryCustomerId,
+          model: 'deterministic',
+          confidence: 'high',
+          label: 'created_from',
+          evidence: {},
         });
       }
       return hops;

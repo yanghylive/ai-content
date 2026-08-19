@@ -109,8 +109,12 @@ export function checkPlatformPreflight(
   if (!title) {
     errors.push('标题不能为空');
   } else if (title.length > rule.titleMax) {
-    errors.push(`标题 ${title.length} 字，超过 ${rule.platformName} 上限 ${rule.titleMax} 字`);
-    suggestions.push(`精简标题到 ${rule.titleMax} 字以内（当前 ${title.length} 字）`);
+    errors.push(
+      `标题 ${title.length} 字，超过 ${rule.platformName} 上限 ${rule.titleMax} 字`,
+    );
+    suggestions.push(
+      `精简标题到 ${rule.titleMax} 字以内（当前 ${title.length} 字）`,
+    );
   }
   if (content.length < rule.contentMin) {
     errors.push(
@@ -119,12 +123,16 @@ export function checkPlatformPreflight(
         : '正文不能为空',
     );
     if (rule.contentMin > 1) {
-      suggestions.push(`补充正文到 ${rule.contentMin} 字以上（当前 ${content.length} 字）`);
+      suggestions.push(
+        `补充正文到 ${rule.contentMin} 字以上（当前 ${content.length} 字）`,
+      );
     }
   }
   if (rule.tagMax > 0) {
     if (rawTags.length > rule.tagMax) {
-      errors.push(`话题 ${rawTags.length} 个，超过 ${rule.platformName} 上限 ${rule.tagMax} 个`);
+      errors.push(
+        `话题 ${rawTags.length} 个，超过 ${rule.platformName} 上限 ${rule.tagMax} 个`,
+      );
       suggestions.push(`话题最多保留 ${rule.tagMax} 个`);
     }
     const duplicated = rawTags.length - normalizedTags.length;
@@ -139,7 +147,9 @@ export function checkPlatformPreflight(
     }
   }
   if (rule.tagMax === 0 && rawTags.length > 0) {
-    suggestions.push(`${rule.platformName} 不支持话题，已忽略 ${rawTags.length} 个话题`);
+    suggestions.push(
+      `${rule.platformName} 不支持话题，已忽略 ${rawTags.length} 个话题`,
+    );
   }
 
   return {

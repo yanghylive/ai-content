@@ -2290,10 +2290,7 @@ export class CommercialReadinessService
   }
 
   private backupObjectStoreProvider():
-    | 'local-dir'
-    | 'aliyun-oss'
-    | 'unsupported'
-    | null {
+    'local-dir' | 'aliyun-oss' | 'unsupported' | null {
     const configured =
       process.env.COMMERCIAL_BACKUP_OBJECT_STORE_PROVIDER?.trim();
     if (configured) {

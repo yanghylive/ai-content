@@ -8,7 +8,11 @@ import { BossPlaywrightClient } from './boss-recruit.playwright.client';
 @Module({
   imports: [PrismaModule],
   controllers: [BossRecruitController],
-  providers: [BossRecruitService, BossPlaywrightClient, PlaywrightBrowserRuntimeService],
+  providers: [
+    BossRecruitService,
+    BossPlaywrightClient,
+    PlaywrightBrowserRuntimeService,
+  ],
   exports: [BossRecruitService],
 })
 export class BossRecruitModule {}

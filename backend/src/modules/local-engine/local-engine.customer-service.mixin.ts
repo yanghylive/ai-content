@@ -268,8 +268,8 @@ export async function createReplyBot(
       forbiddenWords: config.blockedKeywords,
       highlights: config.serviceHighlights,
       closingText: config.closingText,
-      ruleJson: config as unknown as Prisma.InputJsonValue,
-      escalationRules: config as unknown as Prisma.InputJsonValue,
+      ruleJson: config,
+      escalationRules: config,
       enabled: true,
       updatedAt: now,
     },
@@ -310,8 +310,8 @@ export async function updateReplyBot(
       forbiddenWords: config.blockedKeywords,
       highlights: config.serviceHighlights,
       closingText: config.closingText,
-      ruleJson: config as unknown as Prisma.InputJsonValue,
-      escalationRules: config as unknown as Prisma.InputJsonValue,
+      ruleJson: config,
+      escalationRules: config,
       configVersion: config.configVersion,
       revision: config.revision,
     },
@@ -359,8 +359,8 @@ export async function setReplyBotEnabled(
     data: {
       enabled,
       revision,
-      ruleJson: config as unknown as Prisma.InputJsonValue,
-      escalationRules: config as unknown as Prisma.InputJsonValue,
+      ruleJson: config,
+      escalationRules: config,
     },
   });
   if (updated.count !== 1) {

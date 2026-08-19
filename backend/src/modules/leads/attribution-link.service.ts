@@ -47,7 +47,10 @@ export class AttributionLinkService {
   constructor(private readonly prisma: PrismaService) {}
 
   private validate(input: AttributionLinkInput): void {
-    if (!ATTRIBUTION_TYPES.includes(input.fromType) || !ATTRIBUTION_TYPES.includes(input.toType)) {
+    if (
+      !ATTRIBUTION_TYPES.includes(input.fromType) ||
+      !ATTRIBUTION_TYPES.includes(input.toType)
+    ) {
       throw new BadRequestException(
         `不支持的对象类型（from=${input.fromType} to=${input.toType}，白名单：${ATTRIBUTION_TYPES.join('/')}）`,
       );

@@ -17,7 +17,10 @@ export interface ClientConfigSnapshot {
   resources: Record<string, ClientResourceSpec>;
 }
 
-const DEFAULT_CLIENT_CONFIG: Omit<ClientConfigSnapshot, 'version' | 'issuedAt'> = {
+const DEFAULT_CLIENT_CONFIG: Omit<
+  ClientConfigSnapshot,
+  'version' | 'issuedAt'
+> = {
   features: {
     wechatOcrEnabled: true,
     wxKeyDllEnabled: true,
@@ -45,7 +48,9 @@ export class ClientConfigService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getSnapshot(): Promise<ClientConfigSnapshot> {
-    const configs = await this.prisma.clientConfig.findMany().catch(() => [] as never[]);
+    const configs = await this.prisma.clientConfig
+      .findMany()
+      .catch(() => [] as never[]);
     const overrides: Record<string, string> = {};
     for (const row of configs as Array<{ key: string; value: string }>) {
       overrides[row.key] = row.value;
@@ -55,7 +60,10 @@ export class ClientConfigService {
       // 深拷贝，避免下面按 key 覆盖时污染全局 DEFAULT_CLIENT_CONFIG（P1-8）
       features: { ...DEFAULT_CLIENT_CONFIG.features },
       resources: Object.fromEntries(
-        Object.entries(DEFAULT_CLIENT_CONFIG.resources).map(([k, v]) => [k, { ...v }]),
+        Object.entries(DEFAULT_CLIENT_CONFIG.resources).map(([k, v]) => [
+          k,
+          { ...v },
+        ]),
       ),
       version: Number(overrides['version'] || 1),
       issuedAt: new Date().toISOString(),
@@ -72,7 +80,10 @@ export class ClientConfigService {
       const url = overrides[`resource.${key}.url`];
       const version = overrides[`resource.${key}.version`];
       const sha256 = overrides[`resource.${key}.sha256`];
-      if (url && !/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\//i.test(url)) {
+      if (
+        url &&
+        !/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\//i.test(url)
+      ) {
         snapshot.resources[key].url = url;
       }
       if (version && !/test|dev|local/i.test(version)) {
@@ -84,7 +95,10 @@ export class ClientConfigService {
   }
 
   /** 运营写配置（key-value），不存在的 key 也会落库供未来版本使用 */
-  async setConfig(key: string, value: string): Promise<{ ok: boolean; key: string }> {
+  async setConfig(
+    key: string,
+    value: string,
+  ): Promise<{ ok: boolean; key: string }> {
     if (!key?.trim() || value == null) {
       throw new Error('key/value 不能为空');
     }
@@ -97,12 +111,18 @@ export class ClientConfigService {
     return { ok: true, key: key.trim() };
   }
 
-  async listConfigs(): Promise<Array<{ key: string; value: string; updatedAt: string }>> {
-    const rows = await this.prisma.clientConfig.findMany().catch(() => [] as never[]);
-    return (rows as Array<{ key: string; value: string; updatedAt: Date }>).map((r) => ({
-      key: r.key,
-      value: r.value,
-      updatedAt: r.updatedAt.toISOString(),
-    }));
+  async listConfigs(): Promise<
+    Array<{ key: string; value: string; updatedAt: string }>
+  > {
+    const rows = await this.prisma.clientConfig
+      .findMany()
+      .catch(() => [] as never[]);
+    return (rows as Array<{ key: string; value: string; updatedAt: Date }>).map(
+      (r) => ({
+        key: r.key,
+        value: r.value,
+        updatedAt: r.updatedAt.toISOString(),
+      }),
+    );
   }
 }

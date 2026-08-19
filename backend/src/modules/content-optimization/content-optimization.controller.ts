@@ -14,6 +14,8 @@ import type { Request, Response } from 'express';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { ContentOptimizationService } from './content-optimization.service';
 import { OutlineService } from './outline.service';
+import { ContentQualityGateService } from './content-quality-gate.service';
+import { ContentQualityCheckDto } from './dto/content-quality-check.dto';
 import {
   CreateContentVersionCommentDto,
   CreateContentVersionFeedbackDto,
@@ -37,15 +39,22 @@ export class ContentOptimizationController {
   constructor(
     private readonly contentOptimizationService: ContentOptimizationService,
     private readonly outlineService: OutlineService,
+    private readonly qualityGateService: ContentQualityGateService,
   ) {}
+
+  // ---- §5.3 内容质量门 ----
+
+  @Post('quality-gate')
+  @ApiOperation({ summary: '内容质量门：六项检查（pass/warning/block）' })
+  qualityGate(@Body() dto: ContentQualityCheckDto) {
+    return this.qualityGateService.check(dto);
+  }
 
   // ---- §3 图文大纲流水线 ----
 
   @Post('outline')
   @ApiOperation({ summary: '一句话生成图文大纲（可编辑中间表示）' })
-  async generateOutline(
-    @Body() dto: { topic: string; pageCount?: number },
-  ) {
+  async generateOutline(@Body() dto: { topic: string; pageCount?: number }) {
     return this.outlineService.generateOutline(
       dto?.topic || '',
       dto?.pageCount,
@@ -53,11 +62,14 @@ export class ContentOptimizationController {
   }
 
   @Post('generate')
-  @ApiOperation({ summary: '大纲生成图文（SSE 逐事件：progress/titles/page_done/complete）' })
+  @ApiOperation({
+    summary: '大纲生成图文（SSE 逐事件：progress/titles/page_done/complete）',
+  })
   async generate(
     @Req() request: AuthenticatedRequest,
     @Res() response: Response,
-    @Body() dto: {
+    @Body()
+    dto: {
       topic: string;
       outline: Array<Record<string, unknown>>;
       deFlavor?: boolean;
@@ -69,9 +81,7 @@ export class ContentOptimizationController {
     const outline = (dto?.outline || []).map((p) => ({
       type: (p.type as 'cover' | 'content' | 'summary') || 'content',
       title: typeof p.title === 'string' ? p.title : '',
-      points: Array.isArray(p.points)
-        ? p.points.map((x) => String(x))
-        : [],
+      points: Array.isArray(p.points) ? p.points.map((x) => String(x)) : [],
       imagePrompt:
         typeof p.imagePrompt === 'string' ? p.imagePrompt : undefined,
     }));

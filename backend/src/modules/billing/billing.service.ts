@@ -216,7 +216,7 @@ export class BillingService {
           ...this.toJsonObject(subscription.metadata),
           billingEventOccurredAt: eventOccurredAt?.toISOString() ?? null,
           latestWebhookEventId: eventId,
-        } as Prisma.InputJsonValue,
+        },
       },
       update: {
         tenantId,
@@ -231,7 +231,7 @@ export class BillingService {
           ...this.toJsonObject(subscription.metadata),
           billingEventOccurredAt: eventOccurredAt?.toISOString() ?? null,
           latestWebhookEventId: eventId,
-        } as Prisma.InputJsonValue,
+        },
         updatedAt: now,
       },
     });
@@ -248,7 +248,7 @@ export class BillingService {
         source: 'kaypal-subscription',
         plan,
         status: entitlementStatus,
-        features: features as Prisma.InputJsonValue,
+        features: features,
         commercialExecutionAllowed,
         externalSubscriptionId,
         periodStart: currentPeriodStart,
@@ -261,12 +261,12 @@ export class BillingService {
           cancelAtPeriodEnd,
           billingStatus: status,
           billingEventOccurredAt: eventOccurredAt?.toISOString() ?? null,
-        } as Prisma.InputJsonValue,
+        },
       },
       update: {
         plan,
         status: entitlementStatus,
-        features: features as Prisma.InputJsonValue,
+        features: features,
         commercialExecutionAllowed,
         externalSubscriptionId,
         periodStart: currentPeriodStart,
@@ -279,7 +279,7 @@ export class BillingService {
           cancelAtPeriodEnd,
           billingStatus: status,
           billingEventOccurredAt: eventOccurredAt?.toISOString() ?? null,
-        } as Prisma.InputJsonValue,
+        },
         updatedAt: now,
       },
     });
@@ -456,7 +456,7 @@ export class BillingService {
           ...this.toJsonObject(invoice.metadata),
           billingEventOccurredAt: eventOccurredAt?.toISOString() ?? null,
           latestWebhookEventId: input.eventId,
-        } as Prisma.InputJsonValue,
+        },
       },
       update: {
         tenantId,
@@ -484,7 +484,7 @@ export class BillingService {
           ...this.toJsonObject(invoice.metadata),
           billingEventOccurredAt: eventOccurredAt?.toISOString() ?? null,
           latestWebhookEventId: input.eventId,
-        } as Prisma.InputJsonValue,
+        },
         updatedAt: now,
       },
     });
@@ -968,7 +968,7 @@ export class BillingService {
             billingEventOccurredAt:
               input.eventOccurredAt?.toISOString() ?? null,
             latestWebhookEventId: input.eventId,
-          } as Prisma.InputJsonValue,
+          },
           updatedAt: input.now,
         },
       });
@@ -990,7 +990,7 @@ export class BillingService {
             invoiceStatus: input.invoiceStatus,
             billingEventOccurredAt:
               input.eventOccurredAt?.toISOString() ?? null,
-          } as Prisma.InputJsonValue,
+          },
           updatedAt: input.now,
         },
       });
@@ -1033,7 +1033,7 @@ export class BillingService {
             billingEventOccurredAt:
               input.eventOccurredAt?.toISOString() ?? null,
             latestWebhookEventId: input.eventId,
-          } as Prisma.InputJsonValue,
+          },
           updatedAt: input.now,
         },
       });
@@ -1049,7 +1049,7 @@ export class BillingService {
           source: 'kaypal-subscription',
           plan: subscription.plan,
           status: commercialExecutionAllowed ? 'active' : 'expired',
-          features: features as Prisma.InputJsonValue,
+          features: features,
           commercialExecutionAllowed,
           externalSubscriptionId: input.externalSubscriptionId,
           periodStart: subscription.currentPeriodStart,
@@ -1063,12 +1063,12 @@ export class BillingService {
             invoiceStatus: input.invoiceStatus,
             billingEventOccurredAt:
               input.eventOccurredAt?.toISOString() ?? null,
-          } as Prisma.InputJsonValue,
+          },
         },
         update: {
           plan: subscription.plan,
           status: commercialExecutionAllowed ? 'active' : 'expired',
-          features: features as Prisma.InputJsonValue,
+          features: features,
           commercialExecutionAllowed,
           externalSubscriptionId: input.externalSubscriptionId,
           periodStart: subscription.currentPeriodStart,
@@ -1082,7 +1082,7 @@ export class BillingService {
             invoiceStatus: input.invoiceStatus,
             billingEventOccurredAt:
               input.eventOccurredAt?.toISOString() ?? null,
-          } as Prisma.InputJsonValue,
+          },
           updatedAt: input.now,
         },
       });

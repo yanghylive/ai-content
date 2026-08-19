@@ -23,15 +23,16 @@ export const ACCOUNT_LIFECYCLE_LABEL: Record<AccountLifecycleStatus, string> = {
 };
 
 /** 每个状态对应的「用户下一步动作」 */
-export const ACCOUNT_LIFECYCLE_ACTION: Record<AccountLifecycleStatus, string> = {
-  unbound: '绑定账号',
-  login_pending: '等待校验',
-  online: '可用',
-  degraded: '检查浏览器',
-  expired: '重新登录',
-  reauth: '重新登录',
-  disabled: '联系管理员',
-};
+export const ACCOUNT_LIFECYCLE_ACTION: Record<AccountLifecycleStatus, string> =
+  {
+    unbound: '绑定账号',
+    login_pending: '等待校验',
+    online: '可用',
+    degraded: '检查浏览器',
+    expired: '重新登录',
+    reauth: '重新登录',
+    disabled: '联系管理员',
+  };
 
 /**
  * 从现有字段推导标准生命周期状态。

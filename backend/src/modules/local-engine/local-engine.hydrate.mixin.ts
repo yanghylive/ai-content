@@ -167,10 +167,7 @@ export async function hydrateTasksFromStore(this: HydrateHost, limit = 50) {
       task.userId = row.userId;
       this.normalizeStoredBatchTargets(task);
       this.repairEvidenceIntegrityOnlyFailureTask(task);
-      void this.repairHydratedTaskEvidence(
-        row as InteractionTaskSummaryRow,
-        task,
-      );
+      void this.repairHydratedTaskEvidence(row, task);
       this.refreshTaskDiagnostics(task);
       this.tasks.set(task.id, task);
     }

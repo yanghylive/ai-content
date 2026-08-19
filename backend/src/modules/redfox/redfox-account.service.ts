@@ -335,7 +335,7 @@ export class RedfoxAccountService {
           kaypalUserId: sub.userId,
           kaypalRole: 'user',
           role: 'user',
-        } as RedfoxActor);
+        });
         const connection =
           await this.redfoxService.getEffectiveConnection(scope);
         const raw = await this.client.request<QueryUserResult>(

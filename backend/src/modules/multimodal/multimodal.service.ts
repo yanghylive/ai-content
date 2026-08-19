@@ -111,15 +111,16 @@ export class MultimodalService {
   }
 
   private readConfig(key: string): string {
-    return this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || '';
+    return (
+      this.config?.get<string>(key)?.trim() || process.env[key]?.trim() || ''
+    );
   }
 
   private getGatewayBaseUrl(): string {
     const authBase =
       this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn';
     return (
-      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') ||
-      `${authBase}/api/ai`
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') || `${authBase}/api/ai`
     ).replace(/\/+$/, '');
   }
 
@@ -134,9 +135,7 @@ export class MultimodalService {
   private buildHeaders(authUser: AuthenticatedUser): Record<string, string> {
     const serverKey = this.getServerApiKey();
     if (!serverKey) {
-      throw new ServiceUnavailableException(
-        '多模态服务暂不可用，请稍后重试',
-      );
+      throw new ServiceUnavailableException('多模态服务暂不可用，请稍后重试');
     }
     const userId = authUser?.kaypalUserId?.trim() || authUser?.id?.trim() || '';
     if (!userId) {
@@ -173,7 +172,11 @@ export class MultimodalService {
         dashscopeKey,
       );
     } else {
-      imageUrl = await this.generateImageViaKaypal(authUser, prompt, input.size);
+      imageUrl = await this.generateImageViaKaypal(
+        authUser,
+        prompt,
+        input.size,
+      );
     }
 
     const buffer = Buffer.from(
@@ -211,9 +214,7 @@ export class MultimodalService {
           body: JSON.stringify({
             model: DEFAULT_IMAGE_MODEL,
             input: {
-              messages: [
-                { role: 'user', content: [{ text: prompt }] },
-              ],
+              messages: [{ role: 'user', content: [{ text: prompt }] }],
             },
             parameters: { size },
           }),
@@ -235,9 +236,8 @@ export class MultimodalService {
         );
       }
       const imageUrl =
-        payload?.output?.choices?.[0]?.message?.content?.find(
-          (c) => c?.image,
-        )?.image || '';
+        payload?.output?.choices?.[0]?.message?.content?.find((c) => c?.image)
+          ?.image || '';
       if (!imageUrl) {
         throw new ServiceUnavailableException('生图失败：响应中无图片 URL');
       }
@@ -307,19 +307,16 @@ export class MultimodalService {
 
     let audioBuffer: Buffer;
     try {
-      const resp = await fetch(
-        `${this.getGatewayBaseUrl()}/v1/audio/speech`,
-        {
-          method: 'POST',
-          headers: this.buildHeaders(authUser),
-          body: JSON.stringify({
-            model: DEFAULT_TTS_MODEL,
-            input: text,
-            voice,
-          }),
-          signal: AbortSignal.timeout(60_000),
-        },
-      );
+      const resp = await fetch(`${this.getGatewayBaseUrl()}/v1/audio/speech`, {
+        method: 'POST',
+        headers: this.buildHeaders(authUser),
+        body: JSON.stringify({
+          model: DEFAULT_TTS_MODEL,
+          input: text,
+          voice,
+        }),
+        signal: AbortSignal.timeout(60_000),
+      });
       if (!resp.ok) {
         const payload = (await resp.json().catch(() => null)) as {
           error?: { message?: string } | string;
@@ -363,11 +360,18 @@ export class MultimodalService {
    */
   async generateVideo(
     authUser: AuthenticatedUser,
-    input: { prompt: string; duration?: number; ratio?: string; imageUrl?: string },
+    input: {
+      prompt: string;
+      duration?: number;
+      ratio?: string;
+      imageUrl?: string;
+    },
   ): Promise<VideoGenResult> {
     const prompt = (input.prompt || '').trim();
     if (!prompt && !input.imageUrl) {
-      throw new ServiceUnavailableException('请提供视频画面描述（prompt）或首帧图片');
+      throw new ServiceUnavailableException(
+        '请提供视频画面描述（prompt）或首帧图片',
+      );
     }
 
     const dashscopeKey = this.readConfig('DASHSCOPE_API_KEY');
@@ -383,11 +387,17 @@ export class MultimodalService {
     input: { duration?: number; ratio?: string; imageUrl?: string },
     apiKey: string,
   ): Promise<VideoGenResult> {
-    const duration = Math.min(Math.max(Math.round(input.duration ?? 5) || 5, 3), 15);
+    const duration = Math.min(
+      Math.max(Math.round(input.duration ?? 5) || 5, 3),
+      15,
+    );
     const isI2v = Boolean(input.imageUrl);
     const model = isI2v ? DEFAULT_VIDEO_I2V_MODEL : DEFAULT_VIDEO_T2V_MODEL;
     const videoInput = isI2v
-      ? { prompt, media: [{ type: 'first_frame', url: input.imageUrl as string }] }
+      ? {
+          prompt,
+          media: [{ type: 'first_frame', url: input.imageUrl as string }],
+        }
       : { prompt };
     let taskId = '';
     try {
@@ -442,7 +452,11 @@ export class MultimodalService {
           },
         );
         const q = (await qResp.json().catch(() => null)) as {
-          output?: { task_status?: string; video_url?: string; message?: string };
+          output?: {
+            task_status?: string;
+            video_url?: string;
+            message?: string;
+          };
         } | null;
         const status = (q?.output?.task_status || '').toUpperCase();
         if (status === 'SUCCEEDED') {
@@ -464,7 +478,9 @@ export class MultimodalService {
 
     const buffer = Buffer.from(
       new Uint8Array(
-        await (await fetch(videoUrl, { signal: AbortSignal.timeout(90_000) })).arrayBuffer(),
+        await (
+          await fetch(videoUrl, { signal: AbortSignal.timeout(90_000) })
+        ).arrayBuffer(),
       ),
     );
     const filename = `wan-${Date.now()}.mp4`;

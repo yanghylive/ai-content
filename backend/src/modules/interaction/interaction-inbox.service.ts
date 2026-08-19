@@ -15,12 +15,7 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
  */
 
 export type InboxView =
-  | 'all'
-  | 'unassigned'
-  | 'pending'
-  | 'replied'
-  | 'needs_human'
-  | 'overdue';
+  'all' | 'unassigned' | 'pending' | 'replied' | 'needs_human' | 'overdue';
 
 /** 三栏 Inbox 的中栏/右栏统一条目 */
 export interface InboxItem {
@@ -59,7 +54,7 @@ export interface InboxItem {
 export interface InboxListInput {
   view?: InboxView;
   platform?: string;
-  assignee?: 'me' | 'unassigned' | string;
+  assignee?: string;
   limit?: number;
   offset?: number;
 }
@@ -82,10 +77,12 @@ const TERMINAL_TASK = new Set(['COMPLETED', 'SKIPPED', 'NO_TARGET']);
  * 会话线程聚合键：有 externalThreadId 用它；否则用 渠道:来源URL:作者。
  * 与 InteractionThreadService.listEventThreads 保持同一规则，保证前后一致。
  */
-function threadKeyOf(event: Pick<
-  InteractionEvent,
-  'externalThreadId' | 'channel' | 'sourceUrl' | 'authorExternalId'
->): string {
+function threadKeyOf(
+  event: Pick<
+    InteractionEvent,
+    'externalThreadId' | 'channel' | 'sourceUrl' | 'authorExternalId'
+  >,
+): string {
   return (
     event.externalThreadId ??
     `${event.channel}:${event.sourceUrl ?? ''}:${event.authorExternalId ?? ''}`
@@ -182,7 +179,11 @@ export class InteractionInboxService {
         leadId: lead?.id ?? null,
         leadStatus: lead?.status ?? null,
         customerId: lead?.customerId ?? null,
-        allowedActions: this.resolveAllowedActions(status, handoffState, assigneeId),
+        allowedActions: this.resolveAllowedActions(
+          status,
+          handoffState,
+          assigneeId,
+        ),
       });
     }
 
@@ -290,7 +291,11 @@ export class InteractionInboxService {
       leadId: lead?.id ?? null,
       leadStatus: lead?.status ?? null,
       customerId: lead?.customerId ?? null,
-      allowedActions: this.resolveAllowedActions(status, handoffState, assigneeId),
+      allowedActions: this.resolveAllowedActions(
+        status,
+        handoffState,
+        assigneeId,
+      ),
     };
 
     return {
@@ -434,7 +439,11 @@ export class InteractionInboxService {
   }
 
   private matchTask(
-    thread: { sourceArticleId: string | null; publishRecordId: string | null; sourceUrl: string | null },
+    thread: {
+      sourceArticleId: string | null;
+      publishRecordId: string | null;
+      sourceUrl: string | null;
+    },
     index: ReturnType<InteractionInboxService['indexTasks']>,
   ): InteractionTask | null {
     if (thread.sourceArticleId && index.byArticle.has(thread.sourceArticleId)) {
@@ -526,7 +535,9 @@ export class InteractionInboxService {
       case 'replied':
         return item.status === 'COMPLETED';
       case 'needs_human':
-        return item.handoffState === 'needs_human' && !TERMINAL_TASK.has(item.status);
+        return (
+          item.handoffState === 'needs_human' && !TERMINAL_TASK.has(item.status)
+        );
       case 'overdue':
         return item.slaOverdue;
       default:

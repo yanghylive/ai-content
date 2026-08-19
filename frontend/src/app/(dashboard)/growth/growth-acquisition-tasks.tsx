@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -415,8 +415,8 @@ export function GrowthAcquisitionTasks() {
                       ) : (
                         <div className="space-y-2">
                           {runs.slice(0, 10).map((run) => (
+                          <Fragment key={run.id}>
                             <div
-                              key={run.id}
                               className="flex items-center justify-between text-sm"
                             >
                               <span className="text-[var(--kaypal-v3-soft-ink)]">
@@ -445,6 +445,15 @@ export function GrowthAcquisitionTasks() {
                                       : run.status}
                               </V2StatusChip>
                             </div>
+                            {/* P1-2：回退来源如实展示（RPA 失败→回退旧链路时不让用户误以为 RPA 成功） */}
+                            {run.fallback &&
+                              run.fallback.attempted &&
+                              run.fallback.source === "legacy-adapter" && (
+                                <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
+                                  ⚠ RPA 执行失败（{run.fallback.reasonCode ?? "未知原因"}），已回退本地适配器
+                                </p>
+                              )}
+                          </Fragment>
                           ))}
                         </div>
                       )}

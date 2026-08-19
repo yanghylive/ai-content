@@ -31,7 +31,7 @@ export class ActivationService {
         },
       });
       return { recorded: true };
-    } catch (error) {
+    } catch {
       // 唯一约束冲突 = 已记录过，静默忽略；其他错误旁路
       this.logger.debug(
         `activation 记录跳过: ${input.eventType} (${input.userId})`,

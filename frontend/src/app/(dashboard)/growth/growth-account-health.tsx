@@ -62,8 +62,13 @@ export function GrowthAccountHealthPage() {
     void fetchAccounts();
   }, [fetchAccounts]);
 
+  // 账号健康"需处理"只按登录可用性判定（对齐发布侧 expiredAccounts = status !== 1），
+  // 冷却（cooldown）是增长任务的软限制，单独计数，不污染"账号健康异常"。
   const abnormalCount = accounts.filter(
-    (a) => a.loginStatus !== "online" || a.riskStatus !== "normal",
+    (a) => a.loginStatus !== "online",
+  ).length;
+  const cooldownCount = accounts.filter(
+    (a) => a.loginStatus === "online" && a.riskStatus === "cooldown",
   ).length;
 
   return (
@@ -83,8 +88,14 @@ export function GrowthAccountHealthPage() {
               获客用的各平台账号状态
             </p>
           </div>
-          <V2StatusChip tone={abnormalCount > 0 ? "warning" : "success"}>
-            {loading ? "检查中" : abnormalCount > 0 ? `${abnormalCount} 个需注意` : "全部正常"}
+          <V2StatusChip tone={abnormalCount > 0 || cooldownCount > 0 ? "warning" : "success"}>
+            {loading
+              ? "检查中"
+              : abnormalCount > 0
+                ? `${abnormalCount} 个需处理`
+                : cooldownCount > 0
+                  ? `${cooldownCount} 个冷却中`
+                  : "全部正常"}
           </V2StatusChip>
         </div>
       </section>

@@ -3,6 +3,7 @@ import { LocalEngineModule } from '../local-engine/local-engine.module';
 import {
   DouyinInteractionAdapter,
   InteractionAdapterRegistrar,
+  KuaishouInteractionAdapter,
   WechatChannelInteractionAdapter,
   XiaohongshuInteractionAdapter,
 } from './builtin-adapters';
@@ -30,6 +31,7 @@ import { InteractionInboxController } from './interaction-inbox.controller';
     DouyinInteractionAdapter,
     WechatChannelInteractionAdapter,
     XiaohongshuInteractionAdapter,
+    KuaishouInteractionAdapter,
     InteractionAdapterRegistrar,
     InteractionEventStore,
     InteractionThreadService,
@@ -40,6 +42,7 @@ import { InteractionInboxController } from './interaction-inbox.controller';
     DouyinInteractionAdapter,
     WechatChannelInteractionAdapter,
     XiaohongshuInteractionAdapter,
+    KuaishouInteractionAdapter,
     InteractionEventStore,
     InteractionThreadService,
     InteractionInboxService,

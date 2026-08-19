@@ -1,7 +1,8 @@
 // Boss 直聘获客（boss-recruit）：Playwright 自动化 Boss 直聘网页 + 候选人/职位管理
 // 参考炼刀 boss_service：网页自动化 + 微信联系人联动触达
 
-export type BossLoginStatus = 'unknown' | 'logged_in' | 'not_logged_in' | 'failed';
+export type BossLoginStatus =
+  'unknown' | 'logged_in' | 'not_logged_in' | 'failed';
 
 export interface BossRecruitState {
   accounts: Array<{

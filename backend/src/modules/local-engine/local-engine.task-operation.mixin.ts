@@ -97,7 +97,12 @@ export interface TaskOperationHost {
   cancelTask(id: string): Promise<InteractionTask>;
   editTask(
     id: string,
-    patch: { replyText?: string; targetName?: string; dailyLimit?: number; intervalSeconds?: number },
+    patch: {
+      replyText?: string;
+      targetName?: string;
+      dailyLimit?: number;
+      intervalSeconds?: number;
+    },
   ): Promise<InteractionTask>;
   continueTask(id: string): Promise<InteractionTask>;
   getGroupBroadcastPlanDetails(
@@ -137,8 +142,7 @@ export interface TaskOperationHost {
     result: InteractionExecutorDraftResult,
   ): void;
   buildCurrentInteractionTaskBillingIdentity():
-    | InteractionTaskBillingIdentity
-    | undefined;
+    InteractionTaskBillingIdentity | undefined;
   captureDesktopScreenshot(
     label: string,
   ): Promise<LocalEngineDesktopScreenshotEvidence>;
@@ -1745,7 +1749,6 @@ export function buildContinueTaskInput(
   };
 }
 
-
 export async function cancelTask(
   this: TaskOperationHost,
   id: string,
@@ -1755,7 +1758,11 @@ export async function cancelTask(
   if (!task) {
     throw new BadRequestException('任务不存在');
   }
-  if (!['queued', 'paused', 'waiting_for_send_confirmation', 'blocked'].includes(task.status)) {
+  if (
+    !['queued', 'paused', 'waiting_for_send_confirmation', 'blocked'].includes(
+      task.status,
+    )
+  ) {
     throw new BadRequestException(
       `只有未执行的计划（排队/暂停/待确认/受阻）可以取消，当前状态 ${task.status}`,
     );

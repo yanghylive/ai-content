@@ -81,11 +81,7 @@ export interface VideoWorkshopPreviewClip {
 
 export type VideoWorkshopTaskKind = 'render' | 'download';
 export type VideoWorkshopTaskStatus =
-  | 'queued'
-  | 'running'
-  | 'succeeded'
-  | 'failed'
-  | 'cancelled';
+  'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
 
 export type VideoWorkshopFailureCode =
   | 'invalid_input'
@@ -140,12 +136,7 @@ export interface VideoWorkshopTaskResult {
 }
 
 export type VideoWorkshopPhoneUploadStatus =
-  | 'pending'
-  | 'uploading'
-  | 'succeeded'
-  | 'failed'
-  | 'cancelled'
-  | 'expired';
+  'pending' | 'uploading' | 'succeeded' | 'failed' | 'cancelled' | 'expired';
 
 export interface VideoWorkshopPhoneUploadSession {
   id: string;

@@ -8,11 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { actionRiskLevel, type LeadActionInput } from './action-contract';
 
 export type ApprovalAction =
-  | 'approve'
-  | 'reject'
-  | 'request_changes'
-  | 'expire'
-  | 'resubmit';
+  'approve' | 'reject' | 'request_changes' | 'expire' | 'resubmit';
 
 /** 计算 inputHash（内容/目标集合变化 → hash 变化 → 旧审批自动失效） */
 export function computeInputHash(input: LeadActionInput): string {
@@ -52,7 +48,12 @@ export class ApprovalGateService {
     // medium/high：查已有 pending 审批（幂等：同 inputHash 复用）
     const hash = computeInputHash(input);
     const existing = await this.prisma.approval.findFirst({
-      where: { tenantId: input.tenantId, actionId: input.leadId, inputHash: hash, status: 'pending' },
+      where: {
+        tenantId: input.tenantId,
+        actionId: input.leadId,
+        inputHash: hash,
+        status: 'pending',
+      },
     });
     if (existing) {
       return { needApproval: true, approvalId: existing.id, riskLevel };
@@ -75,7 +76,10 @@ export class ApprovalGateService {
       needApproval: true,
       approvalId: created.id,
       riskLevel,
-      reason: riskLevel === 'high' ? '高风险动作需人工审批' : '中等风险动作，确认后执行',
+      reason:
+        riskLevel === 'high'
+          ? '高风险动作需人工审批'
+          : '中等风险动作，确认后执行',
     };
   }
 
@@ -98,19 +102,26 @@ export class ApprovalGateService {
       throw new BadRequestException('审批不存在或不在当前租户');
     }
     if (approval.status !== 'pending') {
-      throw new BadRequestException(`审批已处理（${approval.status}），不能重复操作`);
+      throw new BadRequestException(
+        `审批已处理（${approval.status}），不能重复操作`,
+      );
     }
 
     if (input.action === 'expire') {
       await this.prisma.approval.update({
         where: { id: input.approvalId },
-        data: { status: 'expired', approverId: input.approverId, reason: input.reason },
+        data: {
+          status: 'expired',
+          approverId: input.approverId,
+          reason: input.reason,
+        },
       });
       return { status: 'expired' };
     }
 
     if (input.action === 'resubmit') {
-      if (!input.currentInput) throw new BadRequestException('resubmit 需要新的动作输入');
+      if (!input.currentInput)
+        throw new BadRequestException('resubmit 需要新的动作输入');
       const hash = computeInputHash(input.currentInput);
       await this.prisma.approval.update({
         where: { id: input.approvalId },
@@ -156,7 +167,9 @@ export class ApprovalGateService {
         reason: input.reason,
       },
     });
-    return { status: input.action === 'reject' ? 'rejected' : 'requested_changes' };
+    return {
+      status: input.action === 'reject' ? 'rejected' : 'requested_changes',
+    };
   }
 
   /** 待审批列表 */

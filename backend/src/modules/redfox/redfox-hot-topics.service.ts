@@ -70,14 +70,13 @@ export class RedfoxHotTopicsService {
         skillCode: HOT_SEARCH_SKILL,
         input: {},
         dryRun: false,
-      } as never);
+      });
 
       const summary = (result as { payloadSummary?: Record<string, unknown> })
         .payloadSummary;
       const sessionId = summary?.agentSessionId as string | undefined;
       const artifact = summary?.primaryArtifact as
-        | { artifactId?: string }
-        | undefined;
+        { artifactId?: string } | undefined;
       if (!sessionId || !artifact?.artifactId) {
         this.logger.warn('热榜技能未返回产物，使用缓存兜底');
         return this.cache?.items ?? [];

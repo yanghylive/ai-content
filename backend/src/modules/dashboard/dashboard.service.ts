@@ -2,6 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 import { VideoWorkshopService } from '../video-workshop/video-workshop.service';
+import type { VideoWorkshopTask } from '../video-workshop/video-workshop.types';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import {
   normalizeTaskStatus,
@@ -113,7 +114,9 @@ export class DashboardService {
 
   /** 当前用户 ID（dashboard 统计按用户隔离；无上下文时 legacy 兜底） */
   private resolveUserId(): string {
-    return this.authRequestContext?.get()?.user?.id?.trim() || 'legacy-local-user';
+    return (
+      this.authRequestContext?.get()?.user?.id?.trim() || 'legacy-local-user'
+    );
   }
 
   // 获取最近的系统运行日志
@@ -234,8 +237,10 @@ export class DashboardService {
           take,
         }),
         this.videoWorkshop
-          ? this.videoWorkshop.listTasks(take).catch(() => [])
-          : Promise.resolve([]),
+          ? this.videoWorkshop
+              .listTasks(take)
+              .catch((): VideoWorkshopTask[] => [])
+          : Promise.resolve<VideoWorkshopTask[]>([]),
       ]);
 
     type UnifiedTaskItem = {

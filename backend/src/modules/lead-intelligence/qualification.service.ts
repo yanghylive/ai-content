@@ -58,7 +58,9 @@ export class QualificationService {
     if (input.suppressed || input.highRisk) {
       return {
         outcome: 'blocked',
-        reason: input.suppressed ? '命中抑制名单（退订/投诉/封禁），禁止外发' : '命中账号风险/违法敏感标记，禁止外发',
+        reason: input.suppressed
+          ? '命中抑制名单（退订/投诉/封禁），禁止外发'
+          : '命中账号风险/违法敏感标记，禁止外发',
       };
     }
 
@@ -71,7 +73,9 @@ export class QualificationService {
     }
 
     // 3. identity 弱 → 即使总分高也只到 nurture（uncertain 不丢弃，进补充研究/人工）
-    if (snapshot.identityConfidence < QUALIFICATION_RULES.minIdentityConfidence) {
+    if (
+      snapshot.identityConfidence < QUALIFICATION_RULES.minIdentityConfidence
+    ) {
       return {
         outcome: 'nurture',
         reason: `身份置信度 ${snapshot.identityConfidence} 过低（<${QUALIFICATION_RULES.minIdentityConfidence}），线索不完整，进补充研究或人工确认`,
@@ -97,11 +101,12 @@ export class QualificationService {
       }
       return {
         outcome: 'qualified',
-        reason: input.approved === false
-          ? `总分 ${snapshot.totalScore} 通过资格门，待审批`
-          : (input.budget && input.budget.remaining <= 0)
-            ? `总分 ${snapshot.totalScore} 通过资格门，预算不足`
-            : `总分 ${snapshot.totalScore} 通过资格门`,
+        reason:
+          input.approved === false
+            ? `总分 ${snapshot.totalScore} 通过资格门，待审批`
+            : input.budget && input.budget.remaining <= 0
+              ? `总分 ${snapshot.totalScore} 通过资格门，预算不足`
+              : `总分 ${snapshot.totalScore} 通过资格门`,
       };
     }
 

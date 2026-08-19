@@ -1713,8 +1713,7 @@ export interface LocalEngineService {
   }): LocalEngineTenantScope;
   useNodeAgentRuntime(): boolean;
   buildCurrentInteractionTaskBillingIdentity():
-    | InteractionTaskBillingIdentity
-    | undefined;
+    InteractionTaskBillingIdentity | undefined;
   allowLocalPlanBypass(): boolean;
   currentActorCommercialAllowed(): boolean;
   isPrismaTableMissingError(error: unknown, tableName?: string): boolean;

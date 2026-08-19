@@ -57,7 +57,6 @@ export function GrowthWorkflowsPage() {
   const [deleteTarget, setDeleteTarget] = useState<GrowthWorkflow | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState<GrowthWorkflow | null>(null);
-  const [selected, setSelected] = useState<GrowthWorkflow | null>(null);
 
   const fetchWorkflows = useCallback(async () => {
     try {
@@ -87,20 +86,6 @@ export function GrowthWorkflowsPage() {
     void fetchPlaybooks();
   }, [fetchWorkflows, fetchPlaybooks]);
 
-  /** 一键从模板创建工作流（后端 createWorkflow 支持 template 参数） */
-  const handleCreateFromTemplate = async (templateKey: string) => {
-    setCreating(templateKey);
-    setError(null);
-    try {
-      await growthApi.createWorkflow({ template: templateKey });
-      await fetchWorkflows();
-    } catch (err: unknown) {
-      setError(toPublicError(err, "创建工作流失败，请稍后重试"));
-    } finally {
-      setCreating(null);
-    }
-  };
-
   /** 一键从行业方案库创建工作流（industry + scenario → 行业步骤链） */
   const handleCreateFromPlaybook = async (industry: string, scenario: string) => {
     const key = `${industry}-${scenario}`;
@@ -118,7 +103,6 @@ export function GrowthWorkflowsPage() {
 
   /** 打开画布编辑器（先刷新拿到最新数据，保证 status 状态着色正确） */
   const handleOpenEditor = async (workflow: GrowthWorkflow) => {
-    setSelected(workflow);
     setError(null);
     try {
       const latest = await growthApi.listWorkflows();
@@ -169,7 +153,6 @@ export function GrowthWorkflowsPage() {
           workflow={editing}
           onBack={() => {
             setEditing(null);
-            setSelected(null);
             void fetchWorkflows();
           }}
           onSaved={() => {

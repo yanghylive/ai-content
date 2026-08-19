@@ -74,7 +74,7 @@ export class ArticleScraperService {
               '该页面可能为 JS 动态渲染，服务端提取内容不完整。建议使用浏览器环境提取。',
           }
         : {}),
-    } as ScrapedArticle;
+    };
   }
 
   private async fetchHtml(url: string): Promise<string> {

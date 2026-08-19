@@ -98,8 +98,7 @@ export class WechatOfficialPublishAdapter
       await page
         .evaluate((html) => {
           const editor = document.querySelector('#ueditor_0') as
-            | HTMLIFrameElement
-            | undefined;
+            HTMLIFrameElement | undefined;
           if (editor?.contentWindow?.document?.body) {
             editor.contentWindow.document.body.innerHTML = html;
           } else {

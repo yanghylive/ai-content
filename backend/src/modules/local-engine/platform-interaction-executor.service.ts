@@ -485,7 +485,8 @@ export class PlatformInteractionExecutor {
         'wechat-channel-direct-message-reply':
           'textarea, [contenteditable="true"]',
       };
-      const editorSelector = editorSelectors[input.taskType] || 'textarea';
+      const editorSelector =
+        editorSelectors[`${input.platform}-${input.taskType}`] || 'textarea';
       const submitSelector = 'button:has-text("发送"), button:has-text("回复")';
 
       // 2026-06-04: MCP tools/call 不抛 isError=true, 需自己检查 result.isError
@@ -833,7 +834,7 @@ export class PlatformInteractionExecutor {
         void page.evaluate(() => window.stop()).catch(() => undefined);
         return fallback;
       }
-      return result as T;
+      return result;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(

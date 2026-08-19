@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -13,7 +13,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Save, RotateCcw, Trash2, ArrowLeft, Loader2, Workflow, Play, Settings2 } from "lucide-react";
+import { Save, RotateCcw, ArrowLeft, Loader2, Workflow, Play, Settings2 } from "lucide-react";
 import NodePanel from "./NodePanel";
 import { FLOW_NODE_TYPES, NODE_TYPE_META, type GrowthCanvasNode, type GrowthCanvasEdge, type GrowthCanvasNodeType } from "./nodeTypes";
 import { growthApi, type GrowthWorkflow } from "@/lib/api/growth";
@@ -187,14 +187,6 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
       onNodesChange(aligned);
     },
     [onNodesChange],
-  );
-
-  const handleDeleteNode = useCallback(
-    (nodeId: string) => {
-      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-      setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-    },
-    [setNodes, setEdges],
   );
 
   /** 节点被删除（Delete 键）后：重排流水线 y/序号 + 重建自动顺序边 */

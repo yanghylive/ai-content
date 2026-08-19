@@ -344,6 +344,11 @@ const modes: Array<{
     key: "manual-import",
     label: "手动导入获客",
   },
+  {
+    // P2 复核：推荐流独立模式（快手推荐流入口，与关键词搜索解耦）
+    key: "recommended",
+    label: "推荐流获客",
+  },
 ];
 
 const modeGuidance: Record<
@@ -399,6 +404,14 @@ const modeGuidance: Record<
     sourceHelp: "适合把人工整理的候选线索纳入同一套检查、去重和复盘。",
     intentHelp: "建议填写来源批次、需求标签和跟进优先级。",
     riskHelp: "手动导入任务默认不触发外部采集，需人工确认后再处理。",
+  },
+  recommended: {
+    sourceLabel: "推荐流来源",
+    sourcePlaceholder: "推荐流无需填写来源（可选：备注批次名称）。",
+    sourceHelp:
+      "直接读取平台推荐流里的公开内容与评论区互动，适合没有明确关键词时的泛发现。",
+    intentHelp: "建议填写需求词、地域词，用来筛掉泛流量。",
+    riskHelp: "推荐流候选面较大，建议保持人工确认后触达。",
   },
 };
 
