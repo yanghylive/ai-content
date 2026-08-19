@@ -45,6 +45,7 @@ export class AttributionService {
   }): Promise<{ layer: AttributionLayer; hops: AttributionHop[] }> {
     const direct = await this.findDirectUpstream(
       input.userId,
+      input.tenantId,
       input.type,
       input.id,
     );
@@ -59,12 +60,7 @@ export class AttributionService {
         userId: input.userId,
         toType: input.type,
         toId: input.id,
-        tenantId: {
-          in: [
-            input.tenantId || 'legacy-local-desktop',
-            'legacy-local-desktop',
-          ],
-        },
+        tenantId: input.tenantId || 'legacy-local-desktop',
       },
       orderBy: { createdAt: 'desc' },
       take: 10,
@@ -111,11 +107,12 @@ export class AttributionService {
     }>;
     opportunities: Array<{ id: string; stage: string; amountCents: number }>;
   }> {
-    const { userId, contentId } = input;
+    const { userId, contentId, tenantId } = input;
+    const scope = { tenantId: tenantId || 'legacy-local-desktop' };
 
     // 1. 内容 → 发布（PublishRecord.articleId 直连内容版本）
     const publishes = await this.prisma.publishRecord.findMany({
-      where: { userId, articleId: contentId },
+      where: { userId, articleId: contentId, ...scope },
       select: { id: true, status: true, readbackState: true },
     });
 
@@ -124,6 +121,7 @@ export class AttributionService {
       ? await this.prisma.interactionEvent.findMany({
           where: {
             userId,
+            ...scope,
             publishRecordId: { in: publishes.map((p) => p.id) },
           },
           select: { id: true },
@@ -135,6 +133,7 @@ export class AttributionService {
       ? await this.prisma.lead.findMany({
           where: {
             userId,
+            ...scope,
             sourceInteractionEventId: { in: interactions.map((i) => i.id) },
           },
           select: { id: true, customerId: true },
@@ -146,6 +145,7 @@ export class AttributionService {
       ? await this.prisma.crmOpportunity.findMany({
           where: {
             ownerId: userId,
+            ...scope,
             primaryCustomerId: {
               in: leads.map((l) => l.customerId).filter(Boolean) as string[],
             },
@@ -189,6 +189,7 @@ export class AttributionService {
   /** 主键直连（deterministic 层） */
   private async findDirectUpstream(
     userId: string,
+    tenantId: string,
     type: string,
     id: string,
   ): Promise<AttributionHop[]> {
@@ -196,7 +197,7 @@ export class AttributionService {
 
     if (type === 'lead') {
       const lead = await this.prisma.lead.findFirst({
-        where: { id, userId },
+        where: { id, userId, tenantId: tenantId || 'legacy-local-desktop' },
         select: {
           sourceInteractionEventId: true,
           sourcePublishRecordId: true,
@@ -256,7 +257,7 @@ export class AttributionService {
 
     if (type === 'interaction') {
       const ev = await this.prisma.interactionEvent.findFirst({
-        where: { id, userId },
+        where: { id, userId, tenantId: tenantId || 'legacy-local-desktop' },
         select: {
           sourceArticleId: true,
           publishRecordId: true,
@@ -266,10 +267,10 @@ export class AttributionService {
       if (!ev) return hops;
       if (ev.publishRecordId) {
         hops.push({
-          fromType: 'interaction',
-          fromId: id,
-          toType: 'publish',
-          toId: ev.publishRecordId,
+          fromType: 'publish',
+          fromId: ev.publishRecordId,
+          toType: 'interaction',
+          toId: id,
           model: 'deterministic',
           confidence: 'high',
           label: 'created_from',
@@ -278,10 +279,10 @@ export class AttributionService {
       }
       if (ev.contentId) {
         hops.push({
-          fromType: 'interaction',
-          fromId: id,
-          toType: 'content',
-          toId: ev.contentId,
+          fromType: 'content',
+          fromId: ev.contentId,
+          toType: 'interaction',
+          toId: id,
           model: 'deterministic',
           confidence: 'high',
           label: 'created_from',
@@ -289,10 +290,10 @@ export class AttributionService {
         });
       } else if (ev.sourceArticleId) {
         hops.push({
-          fromType: 'interaction',
-          fromId: id,
-          toType: 'content',
-          toId: ev.sourceArticleId,
+          fromType: 'content',
+          fromId: ev.sourceArticleId,
+          toType: 'interaction',
+          toId: id,
           model: 'deterministic',
           confidence: 'high',
           label: 'created_from',
@@ -304,7 +305,11 @@ export class AttributionService {
 
     if (type === 'customer') {
       const cust = await this.prisma.crmCustomer.findFirst({
-        where: { id, ownerId: userId },
+        where: {
+          id,
+          ownerId: userId,
+          tenantId: tenantId || 'legacy-local-desktop',
+        },
         select: { id: true },
       });
       if (!cust) return hops;
@@ -314,7 +319,11 @@ export class AttributionService {
 
     if (type === 'opportunity') {
       const opp = await this.prisma.crmOpportunity.findFirst({
-        where: { id, ownerId: userId },
+        where: {
+          id,
+          ownerId: userId,
+          tenantId: tenantId || 'legacy-local-desktop',
+        },
         select: { primaryCustomerId: true },
       });
       if (opp?.primaryCustomerId) {

@@ -75,6 +75,53 @@ const BUSINESS_ACTION_STEPS = [
   'reply-comment',
 ] as const;
 
+const RPA_EXECUTION_STATUSES = [
+  'running',
+  'paused',
+  'needs-human',
+  'reconcile_required',
+  'success',
+  'failed',
+  'cancelled',
+] as const;
+
+type RpaExecutionStatus = (typeof RPA_EXECUTION_STATUSES)[number];
+
+/**
+ * 状态变化只允许沿可恢复工作流前进。终态只可提升到 reconcile_required
+ * 用于审计对账，不能被任意调用重新激活或改写。
+ */
+const RPA_STATUS_TRANSITIONS: Readonly<
+  Record<RpaExecutionStatus, readonly RpaExecutionStatus[]>
+> = {
+  running: [
+    'paused',
+    'needs-human',
+    'reconcile_required',
+    'success',
+    'failed',
+    'cancelled',
+  ],
+  paused: [
+    'running',
+    'needs-human',
+    'reconcile_required',
+    'failed',
+    'cancelled',
+  ],
+  'needs-human': [
+    'running',
+    'paused',
+    'reconcile_required',
+    'failed',
+    'cancelled',
+  ],
+  reconcile_required: ['paused', 'needs-human', 'failed', 'cancelled'],
+  success: ['reconcile_required'],
+  failed: ['reconcile_required'],
+  cancelled: ['reconcile_required'],
+};
+
 @Injectable()
 export class RpaExecutionStore {
   constructor(private readonly prisma: PrismaService) {}
@@ -96,6 +143,10 @@ export class RpaExecutionStore {
         evidence: (input.evidence ?? []) as Prisma.InputJsonValue,
         inputJson: (input.inputJson ?? {}) as Prisma.InputJsonValue,
         status: input.status ?? 'running',
+        // P1-14 复核：create 也必须透传 source（与 createWithLock 一致）——
+        // growth 合成留痕走 create({source:'growth-synthesis'})，丢了会默认成
+        // 'driver' 冒充真实浏览器执行，审计按 source 过滤失效。
+        source: input.source ?? 'driver',
         driverVersion: input.driverVersion ?? null,
         runId: input.runId ?? null,
         userMessage: input.userMessage,
@@ -349,6 +400,13 @@ export class RpaExecutionStore {
         typeof ev.createdAt === 'string'
           ? ev.createdAt
           : new Date().toISOString();
+      // P1 复核（审查 #11）：createdAt 来源不可信（客户端/驱动传入）——
+      // 非法日期直接回退当前时间，防 Invalid Date 写入 PG 抛错回滚整个事务
+      const capturedAtDate = new Date(createdAt);
+      const capturedAtValid = !Number.isNaN(capturedAtDate.getTime());
+      const capturedAtIso = capturedAtValid
+        ? capturedAtDate.toISOString()
+        : new Date().toISOString();
       const sha =
         typeof ev.sha256 === 'string' && ev.sha256
           ? // P1-1 复核：driver/controller 侧已是捕获物字节 hash → 直接采用（可复验）
@@ -374,7 +432,10 @@ export class RpaExecutionStore {
           },
           update: {},
           create: {
-            id: `rev_${sha.slice(0, 20)}`,
+            // P0 复核（二次）：主键混入 executionId——原 id 只由 sha 派生，
+            // 复合唯一 (executionId, sha256) 允许跨执行同 sha，但相同 PK 会撞 P2002
+            // 重新引入「第二次执行证据写不入」的 bug。
+            id: `rev_${executionId.slice(0, 8)}_${sha.slice(0, 12)}`,
             sha256: sha,
             executionId,
             // P1 复核：stepId 解析为步骤记录真实 id（兼容 legacy sequenceNo 字符串），
@@ -396,7 +457,7 @@ export class RpaExecutionStore {
                 : typeof ev.path === 'string'
                   ? ev.path
                   : null,
-            capturedAt: new Date(createdAt),
+            capturedAt: new Date(capturedAtIso),
             metadata: ev as Prisma.InputJsonValue,
           },
         });
@@ -631,20 +692,14 @@ export class RpaExecutionStore {
   ) {
     const existing = await this.findOne(id, owner);
     if (!existing) return null;
-    const from = existing.status;
-    // 终态保护：success/failed/cancelled 不可再迁移（reconcile_required 除外——对账可升级）
-    if (['success', 'failed', 'cancelled'].includes(from)) {
-      if (status !== 'reconcile_required') {
-        throw new Error(
-          `非法状态迁移：${from} → ${status}（终态不可再迁移；如需人工核对请转 reconcile_required）`,
-        );
-      }
-    }
-    // running 不可直接跳终态之外（pause→running 恢复等正常路径由 controller 校验断点）
-    if (from === 'reconcile_required' && status === 'running') {
-      throw new Error(
-        `非法状态迁移：reconcile_required → running（待核对记录必须先人工处理后由 finalize/transition 到业务终态）`,
-      );
+    const from = existing.status as RpaExecutionStatus;
+    const to = status as RpaExecutionStatus;
+    if (
+      !RPA_EXECUTION_STATUSES.includes(from) ||
+      !RPA_EXECUTION_STATUSES.includes(to) ||
+      !RPA_STATUS_TRANSITIONS[from].includes(to)
+    ) {
+      throw new Error(`非法状态迁移：${existing.status} → ${status}`);
     }
     return this.prisma.rpaExecution.update({
       where: {

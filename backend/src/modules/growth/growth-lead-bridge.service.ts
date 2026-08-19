@@ -402,7 +402,12 @@ export class GrowthLeadBridgeService {
               dedupeKey: unifiedDedupeKey,
             },
           }
-        : { userId_dedupeKey: { userId: ctx.userId, dedupeKey: unifiedDedupeKey } },
+        : {
+            userId_dedupeKey: {
+              userId: ctx.userId,
+              dedupeKey: unifiedDedupeKey,
+            },
+          },
       create: {
         id: lead.id,
         tenantId: ctx.tenantId,
@@ -427,8 +432,7 @@ export class GrowthLeadBridgeService {
         avatarUrl: lead.avatarUrl ?? '',
         score: lead.score ?? 0,
         scoreReasons: (lead.scoreReasons ?? []) as Prisma.InputJsonValue,
-        matchedKeywords:
-          (lead.matchedKeywords ?? []) as Prisma.InputJsonValue,
+        matchedKeywords: (lead.matchedKeywords ?? []) as Prisma.InputJsonValue,
         signals: '[]' as unknown as Prisma.InputJsonValue,
         latestReply: lead.latestReply ?? null,
         status: lead.status ?? 'pending',
@@ -445,7 +449,7 @@ export class GrowthLeadBridgeService {
       },
     } as const;
     try {
-      await this.prisma.lead.upsert(scope as never);
+      await this.prisma.lead.upsert(scope);
       return unifiedDedupeKey;
     } catch (error) {
       if (

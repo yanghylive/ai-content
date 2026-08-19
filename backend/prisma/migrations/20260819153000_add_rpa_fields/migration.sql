@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS "rpa_executions" (
   "page_fingerprint" TEXT,
   "evidence" JSONB NOT NULL DEFAULT '[]',
   "status" TEXT NOT NULL DEFAULT 'running',
+  "source" TEXT NOT NULL DEFAULT 'driver',
   "driver_version" TEXT,
   "run_id" TEXT,
   "user_message" TEXT NOT NULL,
@@ -65,7 +66,7 @@ CREATE TABLE IF NOT EXISTS "rpa_evidence" (
   "account_id" TEXT,
   "kind" TEXT NOT NULL DEFAULT 'rpa-step',
   "uri" TEXT,
-  "sha256" TEXT NOT NULL UNIQUE,
+  "sha256" TEXT NOT NULL,
   "captured_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "page_url" TEXT,
   "page_fingerprint" TEXT,
@@ -73,6 +74,10 @@ CREATE TABLE IF NOT EXISTS "rpa_evidence" (
   "metadata" JSONB NOT NULL DEFAULT '{}',
   "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+-- P1 复核：证据幂等键 (execution_id, sha256) 复合唯一（不再 sha256 全局唯一——
+-- 同内容证据跨执行 hash 相同，全局唯一会吞掉第二次执行的证据行）。
+CREATE UNIQUE INDEX IF NOT EXISTS "rpa_evidence_execution_sha256_key"
+  ON "rpa_evidence"("execution_id", "sha256");
 CREATE INDEX IF NOT EXISTS "rpa_evidence_execution_id_idx"
   ON "rpa_evidence"("execution_id");
 CREATE INDEX IF NOT EXISTS "rpa_evidence_user_id_captured_at_idx"

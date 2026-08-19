@@ -624,6 +624,29 @@ describe('RpaExecutionStore 状态机合法迁移（P1-3 复核）', () => {
     ).rejects.toThrow('非法状态迁移');
     expect(prisma.rpaExecution.update).not.toHaveBeenCalled();
   });
+
+  it('拒绝未知状态和不在矩阵中的跳转', async () => {
+    const update = jest.fn();
+    const prisma = {
+      rpaExecution: {
+        findFirst: jest.fn().mockResolvedValue({
+          id: 'rpa-1',
+          userId: 'u1',
+          status: 'paused',
+        }),
+        update,
+      },
+    };
+    const store = new RpaExecutionStore(prisma as any);
+
+    await expect(store.transition('rpa-1', OWNER, 'bogus')).rejects.toThrow(
+      '非法状态迁移',
+    );
+    await expect(store.transition('rpa-1', OWNER, 'success')).rejects.toThrow(
+      '非法状态迁移',
+    );
+    expect(update).not.toHaveBeenCalled();
+  });
 });
 
 describe('RpaExecutionStore 证据 hash 采用（P1-1 复核）', () => {
@@ -805,5 +828,65 @@ describe('RpaExecutionStore finalize 终态保护（全面审查 P1-2 复核）'
     });
     await store.finalize('rpa-1', OWNER, { status: 'success', reasonCode: 'ok' });
     expect(tx.rpaExecution.update).toHaveBeenCalled();
+  });
+});
+
+describe('RpaExecutionStore 证据复合唯一键（全面审查 P1 复核）', () => {
+  const SAME_SHA = 'a'.repeat(64);
+  const makeEvidence = () => [
+    { type: 'rpa-step', sha256: SAME_SHA, url: 'https://evidence.example/shot.png' },
+  ];
+
+  it('证据 upsert where = executionId_sha256 复合键；update 为空（同执行重放幂等）', async () => {
+    const { store, tx } = createStore();
+
+    await store.finalize('rpa-1', OWNER, {
+      status: 'failed',
+      reasonCode: 'network_error',
+      evidence: makeEvidence(),
+    });
+
+    expect(tx.rpaEvidence.upsert).toHaveBeenCalledTimes(1);
+    const call = tx.rpaEvidence.upsert.mock.calls[0][0];
+    // P1 复核（全面审查）：幂等键必须是 (executionId, sha256) 复合——
+    // 若回退为 sha256 全局唯一，同内容证据跨执行会吞掉第二次执行的证据行
+    expect(call.where).toEqual({
+      executionId_sha256: { executionId: 'rpa-1', sha256: SAME_SHA },
+    });
+    // 同执行同 hash 重放 → upsert 命中 update 分支（空更新，不重复成行、不报错）
+    expect(call.update).toEqual({});
+    expect(call.create).toMatchObject({
+      executionId: 'rpa-1',
+      sha256: SAME_SHA,
+    });
+  });
+
+  it('同 sha256 跨执行各自成行（create.id 混入 executionId，不撞 PK）', async () => {
+    const { store, tx } = createStore();
+
+    await store.finalize('rpa-1', OWNER, {
+      status: 'failed',
+      reasonCode: 'network_error',
+      evidence: makeEvidence(),
+    });
+    await store.finalize('rpa-2', OWNER, {
+      status: 'failed',
+      reasonCode: 'network_error',
+      evidence: makeEvidence(),
+    });
+
+    expect(tx.rpaEvidence.upsert).toHaveBeenCalledTimes(2);
+    const first = tx.rpaEvidence.upsert.mock.calls[0][0];
+    const second = tx.rpaEvidence.upsert.mock.calls[1][0];
+    // 复合键各自指向本执行（跨执行不互吞）
+    expect(first.where.executionId_sha256.executionId).toBe('rpa-1');
+    expect(second.where.executionId_sha256.executionId).toBe('rpa-2');
+    expect(first.where.executionId_sha256.sha256).toBe(SAME_SHA);
+    expect(second.where.executionId_sha256.sha256).toBe(SAME_SHA);
+    // P0 复核（二次）：主键混入 executionId——复合唯一允许跨执行同 sha，
+    // 相同 PK 会撞 P2002 重新引入「第二次执行证据写不入」的 bug
+    expect(first.create.id).toMatch(/^rev_rpa-1_/);
+    expect(second.create.id).toMatch(/^rev_rpa-2_/);
+    expect(first.create.id).not.toBe(second.create.id);
   });
 });

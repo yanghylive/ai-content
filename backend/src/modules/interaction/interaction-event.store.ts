@@ -89,18 +89,29 @@ export class InteractionEventStore {
     };
   }
 
-  /** 去重键：tenantId + platform + accountId + (eventId??threadId??sourceUrl) + body */
+  /**
+   * 去重键：真实 event/thread ID 优先；没有平台 ID 时，加入作者、正文和
+   * 采集时间作为弱键。绝不由 URL+正文伪造“平台事件 ID”，否则同文评论会被
+   * 错误合并且无法回溯原始平台事件。
+   */
   computeDedupeKey(event: InteractionEventInput): string {
-    const identity =
-      event.externalEventId ?? event.externalThreadId ?? event.sourceUrl ?? '';
+    const identity = event.externalEventId ?? event.externalThreadId ?? '';
+    const fallback = identity
+      ? identity
+      : [
+          'unidentified',
+          event.sourceUrl ?? '',
+          event.authorExternalId ?? '',
+          event.body,
+          event.occurredAt?.toISOString() ?? '',
+        ].join('|');
     return createHash('sha256')
       .update(
         [
           event.tenantId ?? DEFAULT_TENANT,
           event.platform,
           event.accountId ?? '',
-          identity,
-          event.body,
+          fallback,
         ].join('|'),
       )
       .digest('hex');

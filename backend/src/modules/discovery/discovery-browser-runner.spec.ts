@@ -451,6 +451,153 @@ describe('DiscoveryBrowserRunner replyComment 安全门禁（P0-3 复核）', ()
   });
 });
 
+describe('DiscoveryBrowserRunner replyComment 发送前校验与截图证据（全面审查 P0/P1 复核）', () => {
+  function makeFullReplyPage(opts: { filledText: string }) {
+    // 完整链路 mock：目标评论命中 → 回复入口命中 → 编辑器（evaluate 返回 opts.filledText）→ 发送按钮命中
+    const editor = {
+      scrollIntoViewIfNeeded: jest.fn().mockResolvedValue(undefined),
+      click: jest.fn().mockResolvedValue(undefined),
+      fill: jest.fn().mockResolvedValue(undefined),
+      evaluate: jest.fn().mockResolvedValue(opts.filledText),
+    };
+    const page = {
+      url: jest.fn().mockReturnValue('https://www.kuaishou.com/short-video/v1'),
+      goto: jest.fn().mockResolvedValue(undefined),
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForSelector: jest.fn().mockResolvedValue(undefined),
+      // checkPageState 读取页面文本（正常内容，不触发验证码/风控/未登录拦截）
+      evaluate: jest.fn().mockResolvedValue('评论区正常内容'),
+      mouse: {
+        move: jest.fn().mockResolvedValue(undefined),
+        wheel: jest.fn().mockResolvedValue(undefined),
+        click: jest.fn().mockResolvedValue(undefined),
+      },
+      locator: jest.fn().mockImplementation((sel: string) => {
+        // 目标评论永远命中
+        if (sel.includes('comment-item')) {
+          return {
+            first: jest.fn().mockReturnValue({
+              boundingBox: jest.fn().mockResolvedValue({
+                x: 100, y: 200, width: 500, height: 80,
+              }),
+            }),
+          };
+        }
+        // 回复框编辑器（contenteditable/textarea，.last() 取用）
+        if (sel.includes('contenteditable') || sel.includes('textarea')) {
+          return { last: jest.fn().mockReturnValue(editor) };
+        }
+        // 发送按钮命中
+        if (sel.includes('发送')) {
+          return {
+            first: jest.fn().mockReturnValue({
+              boundingBox: jest.fn().mockResolvedValue({
+                x: 300, y: 400, width: 60, height: 28,
+              }),
+            }),
+          };
+        }
+        // 回复入口命中
+        return {
+          first: jest.fn().mockReturnValue({
+            boundingBox: jest.fn().mockResolvedValue({
+              x: 120, y: 220, width: 60, height: 24,
+            }),
+          }),
+        };
+      }),
+    };
+    return { page: page as any, editor };
+  }
+
+  function makeEvidenceBrowser(page: unknown, captureEvidence: jest.Mock) {
+    return {
+      getOrCreateSession: jest.fn().mockResolvedValue({ page }),
+      captureEvidence,
+    } as unknown as LocalBrowserEngine;
+  }
+
+  function makeQuota() {
+    return {
+      assertCanDiscover: jest.fn().mockResolvedValue(undefined),
+      recordDiscover: jest.fn().mockResolvedValue(undefined),
+    } as unknown as AcquisitionQuotaService;
+  }
+
+  const replyInput = {
+    platform: 'kuaishou',
+    accountId: 'ks-1',
+    contentUrl: 'https://www.kuaishou.com/short-video/v1',
+    targetText: '怎么收费',
+    replyText: '可以交流一下',
+    dryRun: false,
+  } as never;
+
+  it('发送前回复框文本 ≠ replyText → parse_failed 中止，发送按钮未点击、无证据截图', async () => {
+    const { page } = makeFullReplyPage({ filledText: '被编辑器吞掉的错误内容' });
+    const captureEvidence = jest
+      .fn()
+      .mockResolvedValue({ url: 'https://evidence.example/x.png' });
+    const runner = new DiscoveryBrowserRunner(
+      makeEvidenceBrowser(page, captureEvidence),
+      makeQuota(),
+    );
+
+    await expect(runner.replyComment(replyInput)).rejects.toMatchObject({
+      name: 'BrowserDiscoverError',
+      reasonCode: 'parse_failed',
+      message: expect.stringContaining('回复框内容校验失败'),
+    });
+    // P1 复核（全面审查）：只点了回复入口（第 1 次 mouse.click），
+    // 发送按钮的点击（第 2 次）绝不发生——防空/错内容真实外发
+    expect(page.mouse.click).toHaveBeenCalledTimes(1);
+    expect(captureEvidence).not.toHaveBeenCalled();
+  });
+
+  it('发送成功 → captureEvidence 截图（reply-comment）并返回 evidenceUrl', async () => {
+    const { page } = makeFullReplyPage({ filledText: '可以交流一下' });
+    const captureEvidence = jest
+      .fn()
+      .mockResolvedValue({ url: 'https://evidence.example/reply.png' });
+    const runner = new DiscoveryBrowserRunner(
+      makeEvidenceBrowser(page, captureEvidence),
+      makeQuota(),
+    );
+
+    const result = await runner.replyComment(replyInput);
+
+    // P0 复核（全面审查）：发送成功后截图 = 真实回读证据，evidenceUrl 回传
+    // （否则 finalize 证据门禁必降级 reconcile_required → sent 永远 false）
+    expect(result).toMatchObject({
+      ok: true,
+      sent: true,
+      evidenceUrl: 'https://evidence.example/reply.png',
+    });
+    expect(captureEvidence).toHaveBeenCalledWith({
+      sessionKey: 'kuaishou-ks-1',
+      label: 'reply-comment',
+    });
+    // 回复入口 + 发送按钮各点击一次
+    expect(page.mouse.click).toHaveBeenCalledTimes(2);
+  });
+
+  it('截图失败 → evidenceUrl 为 undefined 但不阻断发送结果（证据尽力而为）', async () => {
+    const { page } = makeFullReplyPage({ filledText: '可以交流一下' });
+    const captureEvidence = jest
+      .fn()
+      .mockRejectedValue(new Error('screenshot io failed'));
+    const runner = new DiscoveryBrowserRunner(
+      makeEvidenceBrowser(page, captureEvidence),
+      makeQuota(),
+    );
+
+    const result = await runner.replyComment(replyInput);
+
+    expect(result).toMatchObject({ ok: true, sent: true });
+    expect(result.evidenceUrl).toBeUndefined();
+  });
+});
+
 describe('DiscoveryBrowserRunner 会话关闭验证（P0-7 复核）', () => {
   function makeQuota() {
     return {

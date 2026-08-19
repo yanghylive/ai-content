@@ -13,6 +13,7 @@ import { ReplyEngineService } from './reply-engine.service';
 import { CircuitBreaker } from './circuit-breaker';
 import { LeadRepository } from '../leads/lead.repository';
 import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
+import { InteractionEventStore } from '../interaction/interaction-event.store';
 
 /**
  * CommentAcquisitionService —— 评论获客闭环
@@ -64,6 +65,7 @@ export class CommentAcquisitionService {
     private readonly replyEngine: ReplyEngineService,
     private readonly leadRepository: LeadRepository,
     private readonly interactionRegistry: InteractionAdapterRegistry,
+    private readonly interactionEventStore: InteractionEventStore,
   ) {}
 
   /**
@@ -119,12 +121,19 @@ export class CommentAcquisitionService {
 
     const comments = (readResult.items ?? [])
       .map((item, i) => ({
-        text: item.text,
+        item,
+        text: item.text.trim(),
         // 小红书通知条目序号（回复定位用）；其他平台无此概念
         commentIndex:
           input.platform === 'xiaohongshu' ? Number(item.ref ?? i) : undefined,
       }))
       .filter((c) => c.text.length > 0);
+    const sourceAttribution = await this.resolveCommentSourceAttribution(
+      scope,
+      input.platform,
+      input.accountId,
+      readResult.url,
+    );
 
     this.logger.log(
       `[comment-acquisition] ${platformName} account=${input.accountId} 扫描到 ${comments.length} 条评论`,
@@ -140,7 +149,7 @@ export class CommentAcquisitionService {
     }> = [];
 
     let leads = 0;
-    let replies = 0;
+    const replies = 0;
 
     for (const comment of comments) {
       // 2. 潜客评分
@@ -170,14 +179,38 @@ export class CommentAcquisitionService {
         );
       }
 
-      // 4. 单写统一 leads 表（去重写入，返回 lead.id 供后续回复/状态更新）
+      // 4. 先记录不可变的互动事实，再把真实事件 ID 写入 Lead。评论扫描
+      // 不能只产生一条文本线索，否则内容 -> 发布 -> 互动 -> 线索的归因链会断。
+      const interaction = await this.interactionEventStore.ingest({
+        ...this.interactionEventStore.fromInteractionItem(
+          input.platform,
+          input.accountId,
+          comment.item,
+          {
+            sourceUrl: comment.item.videoUrl ?? sourceAttribution.sourceUrl,
+            sourceArticleId: sourceAttribution.sourceArticleId ?? undefined,
+            publishRecordId:
+              sourceAttribution.sourcePublishRecordId ?? undefined,
+          },
+        ),
+        tenantId: scope.tenantId ?? 'legacy-local-desktop',
+        userId: scope.userId,
+      });
+
+      // 5. 单写统一 leads 表（去重写入，返回 lead.id 供后续回复/状态更新）
       const { lead } = await this.leadRepository.upsert({
         userId: scope.userId,
         tenantId: scope.tenantId,
         platform: input.platform,
         sourceType: 'comment',
         sourceAccountId: String(input.accountId),
+        sourceInteractionEventId: interaction.event.id,
+        sourceUrl: comment.item.videoUrl ?? sourceAttribution.sourceUrl,
+        sourceArticleId: sourceAttribution.sourceArticleId,
+        sourcePublishRecordId: sourceAttribution.sourcePublishRecordId,
         sourceText: comment.text,
+        externalUserId: comment.item.authorId ?? null,
+        nickname: comment.item.authorName ?? null,
         commentRef:
           comment.commentIndex !== undefined
             ? String(comment.commentIndex)
@@ -189,8 +222,10 @@ export class CommentAcquisitionService {
       });
       const leadId = lead.id;
 
-      // 5. 自动回复（可选；熔断中则跳过发送，标记 pending 待人工）
+      // 6. 自动回复（可选；熔断中则跳过发送，标记 pending 待人工）
       let status = 'pending';
+      // 扫描阶段只允许生成待审核线索；真实外发必须由 approved Lead 经过
+      // dispatchReply 的后端门禁触发。autoReply 仅保留兼容参数，不得绕过审批。
       if (autoReply && replyText) {
         if (circuit.open) {
           this.logger.warn(
@@ -198,25 +233,9 @@ export class CommentAcquisitionService {
           );
           status = 'pending';
         } else {
-          const dispatched = await this.dispatchReply(
-            leadId,
-            {
-              platform: input.platform,
-              accountId: input.accountId,
-              commentText: comment.text,
-              replyText,
-              sourceTitle: readResult.title || undefined,
-              commentIndex: comment.commentIndex,
-            },
-            scope,
-            circuitKey,
+          this.logger.log(
+            `[comment-acquisition] lead=${leadId} 已生成回复，等待人工审核后发送`,
           );
-          if (dispatched) {
-            status = 'replied';
-            replies += 1;
-          } else {
-            status = 'failed';
-          }
         }
       }
 
@@ -319,7 +338,7 @@ export class CommentAcquisitionService {
     }> = [];
 
     let leads = 0;
-    let replies = 0;
+    const replies = 0;
 
     for (const message of messages) {
       const { score, signals } = this.replyEngine.scoreLeadPotential(message);
@@ -361,27 +380,14 @@ export class CommentAcquisitionService {
       const leadId = lead.id;
 
       let status = 'pending';
+      // 私信扫描同样不得因 autoReply 参数绕过人工审批。
       if (autoReply && replyText) {
         if (circuit.open) {
           status = 'pending';
         } else {
-          const dispatched = await this.dispatchDm(
-            leadId,
-            {
-              platform: input.platform,
-              accountId: input.accountId,
-              messageText: message.text,
-              replyText,
-            },
-            scope,
-            circuitKey,
+          this.logger.log(
+            `[comment-acquisition] lead=${leadId} 已生成私信回复，等待人工审核后发送`,
           );
-          if (dispatched) {
-            status = 'replied';
-            replies += 1;
-          } else {
-            status = 'failed';
-          }
         }
       }
 
@@ -481,6 +487,15 @@ export class CommentAcquisitionService {
   ): Promise<boolean> {
     const resolvedScope = scope ?? (await this.resolveScope());
     await this.assertAccountOwnership(input.accountId, resolvedScope);
+    const lead = await this.assertReplyLead(leadId, input, resolvedScope);
+    // 防止调用方篡改回复内容：已审核线索的回复只能使用当前落库版本。
+    const replyText = input.replyText.trim();
+    if (
+      !replyText ||
+      (lead.latestReply && lead.latestReply.trim() !== replyText)
+    ) {
+      throw new UnauthorizedException('回复内容与已审核线索不一致');
+    }
     const key = circuitKey ?? `${input.platform}:${input.accountId}`;
 
     // 小红书手动回复：commentIndex 缺省时从 lead 行读取（自动回复已显式传入）
@@ -514,14 +529,27 @@ export class CommentAcquisitionService {
         sourceText: input.commentText,
         videoTitle: input.sourceTitle,
         commentRef: xhsIndex !== undefined ? String(xhsIndex) : undefined,
-        replyText: input.replyText,
+        replyText,
       })) ?? {
         status: 'failed' as const,
         message: '该平台未实现回复能力',
         evidenceUrl: undefined,
       };
 
-      const ok = result.status === 'sent';
+      // sent 只是适配器声明动作完成；没有回读文本或截图证据时不得形成
+      // replied，避免平台实际失败却被记录为假成功。
+      const hasVerifiedReadback = Boolean(
+        result.readbackText?.includes(replyText),
+      );
+      const hasEvidence =
+        hasVerifiedReadback || Boolean(result.evidenceUrl?.trim());
+      const ok = result.status === 'sent' && hasEvidence;
+      const resultMessage = ok
+        ? null
+        : result.message ||
+          (result.status === 'sent'
+            ? '平台未提供发送回读或截图证据'
+            : '平台回复失败');
       if (ok) {
         this.circuitBreaker.recordSuccess(key);
       } else {
@@ -535,7 +563,7 @@ export class CommentAcquisitionService {
       await this.leadRepository.updateReplyStatus(leadId, {
         userId: resolvedScope.userId,
         status: ok ? 'replied' : 'failed',
-        lastError: ok ? null : (result.message ?? null),
+        lastError: resultMessage,
         repliedAt: ok ? new Date() : null,
         evidenceUrls: result.evidenceUrl ? [result.evidenceUrl] : undefined,
       });
@@ -673,5 +701,95 @@ export class CommentAcquisitionService {
     if (!account) {
       throw new NotFoundException('发布账号不存在或无权操作');
     }
+  }
+
+  /**
+   * 回复前的最终授权门禁：线索必须属于当前用户/租户、来自同一平台账号，
+   * 且已经明确审核通过。扫描参数和前端状态都不构成发送授权。
+   */
+  private async assertReplyLead(
+    leadId: string,
+    input: {
+      platform: AcquisitionPlatform;
+      accountId: number | string;
+      commentText: string;
+    },
+    scope: { tenantId: string | null; userId: string },
+  ): Promise<{
+    status: string;
+    latestReply: string | null;
+    commentRef: string | null;
+  }> {
+    const lead = await this.prisma.lead.findFirst({
+      where: {
+        id: leadId,
+        userId: scope.userId,
+        ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+        platform: input.platform,
+        sourceAccountId: String(input.accountId),
+        sourceType: 'comment',
+      },
+      select: {
+        status: true,
+        latestReply: true,
+        commentRef: true,
+        sourceText: true,
+      },
+    });
+    if (!lead) {
+      throw new NotFoundException('线索不存在或无权操作');
+    }
+    if (lead.status !== 'approved') {
+      throw new UnauthorizedException('线索尚未审核通过，不能发送回复');
+    }
+    if ((lead.sourceText ?? '').trim() !== input.commentText.trim()) {
+      throw new UnauthorizedException('回复目标与已审核线索不一致');
+    }
+    return lead;
+  }
+
+  /**
+   * 当评论页正是本系统发布出去的内容时，按受控的平台 URL 反查发布记录和
+   * 文章 ID。查询没有命中并不伪造主键，仍保留 sourceUrl 作为弱归因证据。
+   */
+  private async resolveCommentSourceAttribution(
+    scope: { tenantId: string | null; userId: string },
+    platform: AcquisitionPlatform,
+    accountId: number | string,
+    sourceUrl?: string,
+  ): Promise<{
+    sourceUrl?: string;
+    sourceArticleId?: string | null;
+    sourcePublishRecordId?: string | null;
+  }> {
+    const normalizedUrl = sourceUrl?.trim();
+    if (!normalizedUrl) return {};
+    const publishRecord = (
+      this.prisma as unknown as {
+        publishRecord?: {
+          findFirst?: (args: unknown) => Promise<{
+            id: string;
+            articleId: string;
+          } | null>;
+        };
+      }
+    ).publishRecord;
+    if (!publishRecord?.findFirst) return { sourceUrl: normalizedUrl };
+
+    const published = await publishRecord.findFirst({
+      where: {
+        userId: scope.userId,
+        tenantId: scope.tenantId ?? 'legacy-local-desktop',
+        platform,
+        accountId: String(accountId),
+        publishUrl: normalizedUrl,
+      },
+      select: { id: true, articleId: true },
+    });
+    return {
+      sourceUrl: normalizedUrl,
+      sourceArticleId: published?.articleId ?? null,
+      sourcePublishRecordId: published?.id ?? null,
+    };
   }
 }

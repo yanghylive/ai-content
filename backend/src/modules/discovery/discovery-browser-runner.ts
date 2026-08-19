@@ -359,9 +359,12 @@ export class DiscoveryBrowserRunner {
    * 填回复框（contenteditable/textarea）→ dryRun=false 时点发送 → 截图证据。
    * 发送是真实平台操作：调用方必须经过人工确认（本方法默认不自动发送）。
    */
-  async replyComment(
-    input: BrowserReplyInput,
-  ): Promise<{ ok: boolean; sent: boolean; message: string; evidenceUrl?: string }> {
+  async replyComment(input: BrowserReplyInput): Promise<{
+    ok: boolean;
+    sent: boolean;
+    message: string;
+    evidenceUrl?: string;
+  }> {
     if (!input.targetText || !input.replyText) {
       throw new BrowserDiscoverError('parse_failed', '缺少目标评论或回复话术');
     }
@@ -397,9 +400,8 @@ export class DiscoveryBrowserRunner {
     try {
       // 滚到评论区
       await this.scrollComments(page, 5);
-      // 定位目标评论（按文本模糊匹配）
-      const commentSelector =
-        input.platform === 'kuaishou' ? '.comment-item' : '.comment-item';
+      // 定位目标评论（按文本模糊匹配；统一评论容器选择器——P1 复核清理死代码三元）
+      const commentSelector = '.comment-item';
       const target = page
         .locator(
           `${commentSelector}:has-text("${this.escapeCss(input.targetText)}")`,
@@ -454,7 +456,10 @@ export class DiscoveryBrowserRunner {
       // fill 失败（编辑器结构变化）时禁止点发送（防空/错内容真实外发）
       const filledText = await editor
         .evaluate((el: HTMLElement) => {
-          const t = el as HTMLElement & { value?: string; textContent?: string };
+          const t = el as HTMLElement & {
+            value?: string;
+            textContent?: string;
+          };
           return (
             t.value ??
             t.textContent ??
@@ -503,7 +508,12 @@ export class DiscoveryBrowserRunner {
         `${input.platform}-${input.accountId}`,
         'reply-comment',
       );
-      return { ok: true, sent: true, message: '评论回复已发送', evidenceUrl: shot };
+      return {
+        ok: true,
+        sent: true,
+        message: '评论回复已发送',
+        evidenceUrl: shot,
+      };
     } catch (error) {
       if (error instanceof BrowserDiscoverError) throw error;
       throw new BrowserDiscoverError(
@@ -539,7 +549,8 @@ export class DiscoveryBrowserRunner {
   async openSession(
     platform: string,
     accountId: string | number,
-  ): Promise<EngineSession> {    try {
+  ): Promise<EngineSession> {
+    try {
       return await this.browser.getOrCreateSession({
         platform: platform as never,
         accountId,
@@ -1095,7 +1106,10 @@ export class DiscoveryBrowserRunner {
         },
         interactionEvents: [
           {
-            externalEventId: createId(`${platform}:${url}:${text}`),
+            // 通用解析器只能拿到文本，不能把 URL+文本哈希伪装成平台评论 ID。
+            // 留空会让下游以 sourceUrl/body 做弱去重，并显式保留为待补事实，
+            // 避免同文评论误合并或无法回溯时仍显示为精确归因。
+            externalEventId: undefined,
             type: 'comment',
             text,
             sourceUrl: url,

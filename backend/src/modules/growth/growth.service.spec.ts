@@ -2873,7 +2873,13 @@ describe('GrowthService 跟进结果匹配（P1-17 复核）', () => {
 describe('GrowthService 保存层统一 dedupeKey 与归因字段（P1-11 复核）', () => {
   it('保存 Lead 用统一 dedupeKey（lead:sha256，非 lead:growth:{id}）+ 归因/质量字段落库', async () => {
     const leadUpsert = jest.fn().mockResolvedValue({ id: 'lead-1' });
-    const tx = { lead: { upsert: leadUpsert } };
+    const tx = {
+      lead: {
+        upsert: leadUpsert,
+        // P0 复核（二次）：保存层 update 前会 findUnique 判 converted 保护，mock 补齐
+        findUnique: jest.fn().mockResolvedValue(null),
+      },
+    };
     const service = makeService({
       $transaction: jest.fn(async (callback: (client: unknown) => unknown) =>
         callback(tx),
@@ -2949,7 +2955,13 @@ describe('GrowthService 保存层统一 dedupeKey 与归因字段（P1-11 复核
 
   it('无 externalUserId 时 dedupeKey 走 nick+text 规则（与统一侧一致）', async () => {
     const leadUpsert = jest.fn().mockResolvedValue({ id: 'lead-2' });
-    const tx = { lead: { upsert: leadUpsert } };
+    const tx = {
+      lead: {
+        upsert: leadUpsert,
+        // P0 复核（二次）：保存层 update 前会 findUnique 判 converted 保护，mock 补齐
+        findUnique: jest.fn().mockResolvedValue(null),
+      },
+    };
     const service = makeService({
       $transaction: jest.fn(async (callback: (client: unknown) => unknown) =>
         callback(tx),
@@ -2988,6 +3000,181 @@ describe('GrowthService 保存层统一 dedupeKey 与归因字段（P1-11 复核
     expect(call.create.dedupeKey).toMatch(/^lead:[0-9a-f]{64}$/);
     expect(call.create.enrichmentStatus).toBeUndefined();
     expect(call.create.identityConfidence).toBeUndefined();
+  });
+
+  it('已转化（converted）线索重跑 upsert：update 不覆盖 status/customerId（转化态保护）', async () => {
+    const leadUpsert = jest.fn().mockResolvedValue({ id: 'lead-3' });
+    const tx = {
+      lead: {
+        upsert: leadUpsert,
+        // 既有记录已转 CRM（status=converted + customerId 有值）
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'lead-3',
+          status: 'converted',
+          customerId: 'cust-1',
+        }),
+      },
+    };
+    const service = makeService({
+      $transaction: jest.fn(async (callback: (client: unknown) => unknown) =>
+        callback(tx),
+      ),
+    });
+    const now = new Date().toISOString();
+    const store = makeStore({
+      leads: [
+        {
+          id: 'lead-g3',
+          userId: 'user-1',
+          tenantId: 'tenant-1',
+          platform: 'douyin',
+          sourceType: 'auto-acquisition',
+          sourceTaskId: 'config-3',
+          nickname: '已转化用户',
+          externalUserId: 'dy-user-1',
+          sourceText: '怎么联系',
+          matchedKeywords: [],
+          score: 70,
+          scoreReasons: [],
+          // 重跑采集侧状态（非 converted），不得覆盖库内 converted
+          status: 'contacted',
+          evidenceUrls: [],
+          notes: [],
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+    });
+
+    await service.saveStoreToDatabase(store, {
+      scope: { userId: 'user-1', tenantId: 'tenant-1' },
+      collections: ['leads'],
+    });
+
+    const call = leadUpsert.mock.calls[0][0];
+    // P0 复核（二次）：converted 线索 update 不得携带 status/customerId（防降级/断链）
+    expect(call.update).not.toHaveProperty('status');
+    expect(call.update).not.toHaveProperty('customerId');
+    // 其余字段仍正常更新
+    expect(call.update).toMatchObject({ nickname: '已转化用户', score: 70 });
+  });
+
+  it('重跑命中已有 dedupeKey → upsert where 走 tenantId_dedupeKey 复合键（防 where:{id} 撞 P2002 回滚回归）', async () => {
+    const leadUpsert = jest.fn().mockResolvedValue({ id: 'lead-x' });
+    const leadFindUnique = jest
+      .fn()
+      .mockResolvedValue({ id: 'lead-x', status: 'contacted' });
+    const tx = { lead: { upsert: leadUpsert, findUnique: leadFindUnique } };
+    const service = makeService({
+      $transaction: jest.fn(async (callback: (client: unknown) => unknown) =>
+        callback(tx),
+      ),
+    });
+    const now = new Date().toISOString();
+    const store = makeStore({
+      leads: [
+        {
+          id: 'lead-g4',
+          userId: 'user-1',
+          tenantId: 'tenant-1',
+          platform: 'douyin',
+          sourceType: 'auto-acquisition',
+          sourceTaskId: 'config-4',
+          nickname: '重跑候选用户',
+          externalUserId: 'dy-user-dup',
+          sourceText: '怎么收费',
+          matchedKeywords: [],
+          score: 75,
+          scoreReasons: [],
+          status: 'contacted',
+          evidenceUrls: [],
+          notes: [],
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+    });
+
+    await service.saveStoreToDatabase(store, {
+      scope: { userId: 'user-1', tenantId: 'tenant-1' },
+      collections: ['leads'],
+    });
+
+    const call = leadUpsert.mock.calls[0][0];
+    // P0 复核（全面审查）：where 必须是 dedupeKey 复合唯一键——重跑命中历史记录走
+    // update 分支；若回退为 where:{id} 会 create 撞 P2002，整个事务一起回滚
+    expect(call.where).toEqual({
+      tenantId_dedupeKey: {
+        tenantId: 'tenant-1',
+        dedupeKey: expect.stringMatching(/^lead:[0-9a-f]{64}$/),
+      },
+    });
+    // converted 保护的 findUnique 与 upsert 用同一复合键（锁定同一条记录）
+    expect(leadFindUnique).toHaveBeenCalledWith({ where: call.where });
+    // create.dedupeKey 与 where 复合键一致（不分裂两套键）
+    expect(call.create.dedupeKey).toBe(
+      call.where.tenantId_dedupeKey.dedupeKey,
+    );
+  });
+
+  it('无租户 legacy 线索 → upsert where 走 userId_dedupeKey；非 converted 既有记录正常更新 status/customerId', async () => {
+    const leadUpsert = jest.fn().mockResolvedValue({ id: 'lead-y' });
+    const tx = {
+      lead: {
+        upsert: leadUpsert,
+        // 既有记录非 converted（采集跟进中）→ 允许正常更新状态与转化链字段
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ id: 'lead-y', status: 'new' }),
+      },
+    };
+    const service = makeService({
+      $transaction: jest.fn(async (callback: (client: unknown) => unknown) =>
+        callback(tx),
+      ),
+    });
+    const now = new Date().toISOString();
+    const store = makeStore({
+      leads: [
+        {
+          id: 'lead-g5',
+          userId: 'user-1',
+          tenantId: null,
+          platform: 'douyin',
+          sourceType: 'auto-acquisition',
+          sourceTaskId: 'config-5',
+          nickname: '个人版用户',
+          externalUserId: 'dy-user-legacy',
+          sourceText: '私聊一下',
+          matchedKeywords: [],
+          score: 66,
+          scoreReasons: [],
+          status: 'contacted',
+          crmCustomerId: 'cust-9',
+          evidenceUrls: [],
+          notes: [],
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+    });
+
+    await service.saveStoreToDatabase(store, {
+      scope: { userId: 'user-1', tenantId: 'tenant-1' },
+      collections: ['leads'],
+    });
+
+    const call = leadUpsert.mock.calls[0][0];
+    // legacy（无 tenantId）→ 复合键降级为 userId_dedupeKey（对齐 schema 唯一约束）
+    expect(call.where).toEqual({
+      userId_dedupeKey: {
+        userId: 'user-1',
+        dedupeKey: expect.stringMatching(/^lead:[0-9a-f]{64}$/),
+      },
+    });
+    // 非 converted：重跑正常刷新 status/customerId（转化保护只拦 converted，不误伤正常更新）
+    expect(call.update.status).toBe('contacted');
+    expect(call.update.customerId).toBe('cust-9');
   });
 });
 

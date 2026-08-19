@@ -3657,6 +3657,26 @@ export class GrowthService implements OnModuleInit {
     for (const lead of leads) {
       try {
         const bridgeResult = await this.leadBridge.bridgeAndEnrich(lead, ctx);
+        // 桥接结果是后续持久化的唯一事实来源。若只标 enrichmentStatus，
+        // sourceInteractionEventId/suppression/评分仍留在临时返回值，下一次
+        // saveStore 会用空字段覆盖统一 Lead，造成归因断链或误触达。
+        lead.sourceInteractionEventId =
+          bridgeResult.sourceInteractionEventId ??
+          lead.sourceInteractionEventId;
+        lead.suppressed = bridgeResult.suppressed;
+        if (bridgeResult.scoreTotal !== null) {
+          lead.score = bridgeResult.scoreTotal;
+        }
+        if (bridgeResult.scoreReasons) {
+          lead.scoreReasons = bridgeResult.scoreReasons;
+        }
+        if (bridgeResult.scoreIdentityConfidence !== null) {
+          lead.identityConfidence = bridgeResult.scoreIdentityConfidence;
+        }
+        // 被资格服务明确阻断的线索等同于抑制，绝不能进入自动 CRM/触达链路。
+        if (bridgeResult.qualification?.outcome === 'blocked') {
+          lead.suppressed = true;
+        }
         // P0-5 复核：桥接任一分段失败（事件/身份/归因/评分/抑制/资格）→ 不得标 ok，
         // 持久化 enrichmentStatus=failed（前端显示"采集完成但评分/归因未闭环"，禁止假闭环）。
         const failedSegments = bridgeResult?.failedSegments ?? [];
@@ -7620,17 +7640,22 @@ export class GrowthService implements OnModuleInit {
         // 原 where:{id} 在重跑任务命中历史 dedupeKey 时 create 撞 P2002，
         // 整个 $transaction（configs/runs/leads）一起回滚。
         const dedupeKey = this.unifiedLeadDedupeKey(item);
-        await tx.lead.upsert({
-          where: item.tenantId
-            ? {
-                tenantId_dedupeKey: {
-                  tenantId: item.tenantId,
-                  dedupeKey,
-                },
-              }
-            : {
-                userId_dedupeKey: { userId: item.userId, dedupeKey },
+        const dedupeWhere = item.tenantId
+          ? {
+              tenantId_dedupeKey: {
+                tenantId: item.tenantId,
+                dedupeKey,
               },
+            }
+          : {
+              userId_dedupeKey: { userId: item.userId, dedupeKey },
+            };
+        // P0 复核（二次）：update 前取既有记录——已转化（status=converted）的线索
+        // 不允许被任务重跑降级 status / 置空 customerId（转化链路数据不可被采集层抹掉）。
+        const existingLead = await tx.lead.findUnique({ where: dedupeWhere });
+        const preserveConverted = existingLead?.status === 'converted';
+        await tx.lead.upsert({
+          where: dedupeWhere,
           create: {
             id: item.id,
             userId: item.userId,
@@ -7680,7 +7705,13 @@ export class GrowthService implements OnModuleInit {
             sourceType: item.sourceType,
             sourceTaskId: item.sourceTaskId,
             sourceRunId: item.sourceRunId,
-            customerId: item.crmCustomerId ?? null,
+            // P0 复核（二次）：已转化线索保护——status/customerId 不被重跑覆盖
+            // （防 converted 降级回 new/pending、customerId 被置空断链）。
+            ...(preserveConverted
+              ? {}
+              : {
+                  customerId: item.crmCustomerId ?? null,
+                }),
             nickname: item.nickname,
             profileUrl: item.profileUrl,
             avatarUrl: item.avatarUrl,
@@ -7693,7 +7724,7 @@ export class GrowthService implements OnModuleInit {
             matchedKeywords: item.matchedKeywords ?? [],
             score: item.score,
             scoreReasons: item.scoreReasons ?? [],
-            status: item.status,
+            ...(preserveConverted ? {} : { status: item.status }),
             nextFollowUpAt: item.nextFollowUpAt
               ? new Date(item.nextFollowUpAt)
               : undefined,
@@ -9100,11 +9131,9 @@ export class GrowthService implements OnModuleInit {
       tenantId?: string | null;
     },
   ) {
-    const dedupeKey = `lead:${createHash('sha256')
-      .update(
-        `${item.platform}:${item.externalUserId ? `uid:${item.externalUserId}` : `nick:${item.nickname ?? ''}|${(item.sourceText ?? '').slice(0, 40)}`}`,
-      )
-      .digest('hex')}`;
+    // P1 复核（审查 #9）：统一调用 LeadRepository.dedupeKeyOf——原内联第三份算法
+    // 与 dedupeKeyOf 文本一致但重复实现，防再漂移
+    const dedupeKey = LeadRepository.dedupeKeyOf(item);
     if (item.tenantId) {
       return this.prisma.lead.findUnique({
         where: { tenantId_dedupeKey: { tenantId: item.tenantId, dedupeKey } },
