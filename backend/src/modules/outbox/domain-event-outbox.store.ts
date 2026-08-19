@@ -95,8 +95,14 @@ export class DomainEventOutboxStore {
   }
 
   /** 标记失败（可重试，指数退避由 worker 控制；超最大次数转 dead） */
-  async markFailed(id: string, lastError: string, maxAttempt = 5): Promise<void> {
-    const row = await this.prisma.domainEventOutbox.findUnique({ where: { id } });
+  async markFailed(
+    id: string,
+    lastError: string,
+    maxAttempt = 5,
+  ): Promise<void> {
+    const row = await this.prisma.domainEventOutbox.findUnique({
+      where: { id },
+    });
     if (!row) return;
     const attempt = row.attempt + 1;
     await this.prisma.domainEventOutbox.update({

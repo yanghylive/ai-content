@@ -15,6 +15,7 @@ function makePrisma(overrides: Record<string, unknown> = {}) {
       findMany: jest.fn().mockResolvedValue([]),
     },
     lead: {
+      findUnique: jest.fn().mockResolvedValue({ matchedKeywords: [] }),
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     ...overrides,
@@ -140,7 +141,7 @@ describe('LeadScoreService', () => {
     expect(prisma.leadScoreSnapshot.create).toHaveBeenCalledTimes(2);
   });
 
-  it('scoreAndPersist：全流程（信号 → 快照 → 回写 Lead.score）', async () => {
+  it('scoreAndPersist：全流程（信号 → 快照，不覆盖 lead.score）', async () => {
     const prisma = makePrisma();
     prisma.leadSignal.findMany = jest.fn().mockResolvedValue([
       { type: 'intent.price', value: 10, observedAt: new Date(), expiresAt: null, evidenceId: 'ev-1', source: 'x' },
@@ -149,8 +150,50 @@ describe('LeadScoreService', () => {
     const out = await svc.scoreAndPersist(base);
     expect(out.totalScore).toBe(10);
     expect(prisma.leadScoreSnapshot.create).toHaveBeenCalledTimes(1);
+    // 四维分只存快照，不覆盖 lead.score（裸分与质量分并存）
+    expect(prisma.lead.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('scoreLeadFromText：有文本 → 生成信号 + 快照 + 打标签，不覆盖 lead.score', async () => {
+    const prisma = makePrisma();
+    const svc = makeService(prisma);
+    const out = await svc.scoreLeadFromText({
+      tenantId: 't1',
+      userId: 'u1',
+      leadId: 'lead-1',
+      platform: 'douyin',
+      text: '你们这个怎么收费？',
+    });
+    expect(out.snapshotId).toBeTruthy();
+    expect(prisma.leadSignal.create).toHaveBeenCalled(); // 生成了意向信号
+    expect(prisma.leadScoreSnapshot.create).toHaveBeenCalledTimes(1);
+    // 打标签：updateMany 写入 matchedKeywords（价格意向/疑问咨询），但不写 score
     expect(prisma.lead.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ score: 10 }) }),
+      expect.objectContaining({
+        data: expect.objectContaining({
+          matchedKeywords: expect.arrayContaining(['价格意向', '疑问咨询']),
+        }),
+      }),
     );
+    const scoreWrite = prisma.lead.updateMany.mock.calls.some(
+      (call: Array<{ data?: Record<string, unknown> }>) =>
+        call[0]?.data && 'score' in call[0].data,
+    );
+    expect(scoreWrite).toBe(false); // 不覆盖 lead.score
+  });
+
+  it('scoreLeadFromText：空文本 → 不生成信号但仍有快照（0 分）', async () => {
+    const prisma = makePrisma();
+    const svc = makeService(prisma);
+    const out = await svc.scoreLeadFromText({
+      tenantId: 't1',
+      userId: 'u1',
+      leadId: 'lead-1',
+      platform: 'douyin',
+      text: '',
+    });
+    expect(out.totalScore).toBe(0);
+    expect(prisma.leadSignal.create).not.toHaveBeenCalled();
+    expect(prisma.leadScoreSnapshot.create).toHaveBeenCalledTimes(1);
   });
 });

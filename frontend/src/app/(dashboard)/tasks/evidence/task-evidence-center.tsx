@@ -41,13 +41,11 @@ export function TaskEvidenceCenter() {
     try {
       const [tasks, pubTasks, riskEvidence, agentSessions, workflowResult] =
         await Promise.all([
-          localEngineApi.tasks(30).catch(() => []),
-          autoUploadApi.tasks(30).catch(() => []),
-          dashboardApi.riskAuditEvidence(80).catch(() => []),
-          localEngineApi.agentSessions({ limit: 80 }).catch(() => []),
-          aiEmployeeApi
-            .workflows(80)
-            .catch(() => ({ definitions: [], runs: [] })),
+          localEngineApi.tasks(30),
+          autoUploadApi.tasks(30),
+          dashboardApi.riskAuditEvidence(80),
+          localEngineApi.agentSessions({ limit: 80 }),
+          aiEmployeeApi.workflows(80),
         ]);
 
       const evidence: EvidenceRow[] = [];

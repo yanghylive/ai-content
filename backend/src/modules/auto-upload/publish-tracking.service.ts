@@ -98,7 +98,12 @@ export class PublishTrackingService {
     };
     await this.persist(session);
     // 激活事件（报告 16.3 第 1 项）：首次发布成功 = 首个价值。幂等旁路，失败不阻断。
-    if (input.ok && this.activation && session.userId && session.userId !== 'legacy-local-user') {
+    if (
+      input.ok &&
+      this.activation &&
+      session.userId &&
+      session.userId !== 'legacy-local-user'
+    ) {
       void this.activation
         .recordFirstValue({
           userId: session.userId,

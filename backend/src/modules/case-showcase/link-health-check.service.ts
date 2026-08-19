@@ -122,9 +122,7 @@ export class LinkHealthCheckService {
       checked += 1;
     }
 
-    this.logger.log(
-      `链接健康检查完成：checked=${checked}, changed=${changed}`,
-    );
+    this.logger.log(`链接健康检查完成：checked=${checked}, changed=${changed}`);
     return { checked, changed };
   }
 
@@ -205,8 +203,7 @@ export class LinkHealthCheckService {
           (res) => {
             const socket = res.socket as {
               getPeerCertificate?: () =>
-                | { valid_to?: string }
-                | Record<string, never>;
+                { valid_to?: string } | Record<string, never>;
             } | null;
             const cert = socket?.getPeerCertificate?.();
             const validTo =
@@ -250,7 +247,9 @@ export class LinkHealthCheckService {
  *   - healthy：探测成功且无上述异常。
  * 成功探测重置连续失败计数。
  */
-export function computeHealthStatus(input: HealthCheckInput): HealthCheckOutput {
+export function computeHealthStatus(
+  input: HealthCheckInput,
+): HealthCheckOutput {
   if (isExpired(input.validUntil)) {
     return { healthStatus: 'expired', consecutiveFailures: 0 };
   }
@@ -282,10 +281,14 @@ export function computeHealthStatus(input: HealthCheckInput): HealthCheckOutput 
 }
 
 /** validUntil 是否已过期（null = 永久有效） */
-export function isExpired(validUntil: Date | string | null | undefined): boolean {
+export function isExpired(
+  validUntil: Date | string | null | undefined,
+): boolean {
   if (!validUntil) return false;
   const time =
-    validUntil instanceof Date ? validUntil.getTime() : new Date(validUntil).getTime();
+    validUntil instanceof Date
+      ? validUntil.getTime()
+      : new Date(validUntil).getTime();
   return Number.isNaN(time) ? false : time <= Date.now();
 }
 

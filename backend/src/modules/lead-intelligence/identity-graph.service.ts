@@ -64,7 +64,9 @@ export class IdentityGraphService {
       _count: { _all: true },
     });
     const identityIds = grouped.map((g) => g.identityId as string);
-    const countMap = new Map(grouped.map((g) => [g.identityId as string, g._count._all]));
+    const countMap = new Map(
+      grouped.map((g) => [g.identityId as string, g._count._all]),
+    );
 
     // 身份 → 线索数（通过 Lead.sourceInteractionEventId 属于该身份的互动）
     const eventIds = await this.prisma.interactionEvent.findMany({
@@ -78,7 +80,9 @@ export class IdentityGraphService {
       take: 5000,
     });
     const leadCountMap = new Map<string, number>();
-    const byEventId = new Map(eventIds.map((e) => [e.id, e.identityId as string]));
+    const byEventId = new Map(
+      eventIds.map((e) => [e.id, e.identityId as string]),
+    );
     if (eventIds.length > 0) {
       const leadRows = await this.prisma.lead.findMany({
         where: {
@@ -89,7 +93,9 @@ export class IdentityGraphService {
         select: { sourceInteractionEventId: true },
       });
       for (const l of leadRows) {
-        const identityId = l.sourceInteractionEventId ? byEventId.get(l.sourceInteractionEventId) : undefined;
+        const identityId = l.sourceInteractionEventId
+          ? byEventId.get(l.sourceInteractionEventId)
+          : undefined;
         if (identityId) {
           leadCountMap.set(identityId, (leadCountMap.get(identityId) ?? 0) + 1);
         }
@@ -121,8 +127,12 @@ export class IdentityGraphService {
       .slice(0, limit);
 
     const totalIdentities = identityIds.length;
-    const repeatIdentities = identityIds.filter((id) => (countMap.get(id) ?? 0) >= 2).length;
-    const identitiesWithLeads = identityIds.filter((id) => (leadCountMap.get(id) ?? 0) > 0).length;
+    const repeatIdentities = identityIds.filter(
+      (id) => (countMap.get(id) ?? 0) >= 2,
+    ).length;
+    const identitiesWithLeads = identityIds.filter(
+      (id) => (leadCountMap.get(id) ?? 0) > 0,
+    ).length;
 
     // 新增身份（firstSeenAt 在窗口内）
     const newIdentities = identityRows.filter(
@@ -134,7 +144,8 @@ export class IdentityGraphService {
       repeatIdentities,
       repeatRate: totalIdentities > 0 ? repeatIdentities / totalIdentities : 0,
       identitiesWithLeads,
-      leadConversionRate: totalIdentities > 0 ? identitiesWithLeads / totalIdentities : 0,
+      leadConversionRate:
+        totalIdentities > 0 ? identitiesWithLeads / totalIdentities : 0,
       newIdentities,
       topIdentities: nodes,
     };

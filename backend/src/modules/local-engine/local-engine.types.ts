@@ -164,10 +164,7 @@ export type LocalEngineBrowserStatus = {
 };
 
 export type LocalEngineExecutorStatus =
-  | 'ready'
-  | 'preflight_only'
-  | 'missing'
-  | 'optional';
+  'ready' | 'preflight_only' | 'missing' | 'optional';
 
 export type LocalEngineExecutorCapability = {
   key: string;
@@ -285,10 +282,7 @@ export type InteractionGroupBroadcastPlanStatus =
 export type LocalEnginePlanMode = 'trial' | 'commercial';
 
 export type LocalEnginePermissionStatus =
-  | 'allowed'
-  | 'approval_required'
-  | 'blocked'
-  | 'trial_limited';
+  'allowed' | 'approval_required' | 'blocked' | 'trial_limited';
 
 export type LocalEngineSafetyCheckStatus = 'ready' | 'warning' | 'blocked';
 
@@ -724,10 +718,7 @@ export type WechatChatSession = {
 };
 
 export type WechatChatMessageDirection =
-  | 'incoming'
-  | 'outgoing'
-  | 'system'
-  | 'unknown';
+  'incoming' | 'outgoing' | 'system' | 'unknown';
 
 export type WechatChatMessage = {
   id: string;
@@ -937,12 +928,7 @@ export type InteractionBatchTargetListResult = {
 };
 
 export type InteractionTaskResultKind =
-  | 'success'
-  | 'failure'
-  | 'skipped'
-  | 'no_target'
-  | 'waiting'
-  | 'running';
+  'success' | 'failure' | 'skipped' | 'no_target' | 'waiting' | 'running';
 
 export type InteractionTaskResultSummary = {
   kind: InteractionTaskResultKind;
@@ -963,10 +949,7 @@ export type InteractionTaskResultSummary = {
 };
 
 export type InteractionFollowUpMethod =
-  | 'wechat'
-  | 'message'
-  | 'phone'
-  | 'offline';
+  'wechat' | 'message' | 'phone' | 'offline';
 
 export type MomentsPromptConfig = {
   key?: string;
@@ -1224,11 +1207,7 @@ export type InteractionTaskBillingIdentity = {
 };
 
 export type InteractionTaskStepStatus =
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'blocked'
-  | 'skipped';
+  'pending' | 'running' | 'completed' | 'blocked' | 'skipped';
 
 export type InteractionTaskStep = {
   key: string;
@@ -1309,12 +1288,7 @@ export type InteractionTask = {
   approvalRecord?: InteractionApprovalRecord;
   diagnostics?: {
     status:
-      | 'normal'
-      | 'waiting'
-      | 'blocked'
-      | 'completed'
-      | 'skipped'
-      | 'no_target';
+      'normal' | 'waiting' | 'blocked' | 'completed' | 'skipped' | 'no_target';
     summary: string;
     account: string;
     platform: string;
@@ -1500,26 +1474,15 @@ export type AgentSessionStatus =
 export type AgentSessionEventLevel = 'info' | 'success' | 'warning' | 'error';
 
 export type AgentExecutionScope =
-  | 'browser'
-  | 'desktop'
-  | 'local-files'
-  | 'remote'
-  | 'mixed';
+  'browser' | 'desktop' | 'local-files' | 'remote' | 'mixed';
 
 export type AgentSessionSource =
-  | 'web'
-  | 'agent-console'
-  | 'publishing'
-  | 'interaction'
-  | 'system';
+  'web' | 'agent-console' | 'publishing' | 'interaction' | 'system';
 
 export type AgentRiskLevel = 'low' | 'medium' | 'high';
 
 export type AgentConfirmationStatus =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'expired';
+  'pending' | 'approved' | 'rejected' | 'expired';
 
 export type AgentSessionListFilter = {
   status?: AgentSessionStatus;

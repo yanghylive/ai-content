@@ -1,0 +1,87 @@
+{
+  "totalRoutes": 192,
+  "totalClicked": 3205,
+  "totalSkipped": 255,
+  "totalErrors": 10,
+  "routesWithErrors": [
+    {
+      "route": "/admin/redfox-skills",
+      "errors": [
+        {
+          "text": "通用 17 待归类功能 · 启用 0",
+          "error": "Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3010/api/redfox/skills/sync"
+        }
+      ]
+    },
+    {
+      "route": "/agent",
+      "errors": [
+        {
+          "text": "(pageerror)",
+          "error": "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors a"
+        }
+      ]
+    },
+    {
+      "route": "/distribution/tasks",
+      "errors": [
+        {
+          "text": "重试",
+          "error": "Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://127.0.0.1:3010/api/auto-upload/tasks/57/retry/confirmations"
+        },
+        {
+          "text": "重试",
+          "error": "Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://127.0.0.1:3010/api/auto-upload/tasks/57/retry/confirmations"
+        },
+        {
+          "text": "重试",
+          "error": "Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://127.0.0.1:3010/api/auto-upload/tasks/57/retry/confirmations"
+        },
+        {
+          "text": "重试",
+          "error": "Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://127.0.0.1:3010/api/auto-upload/tasks/57/retry/confirmations"
+        },
+        {
+          "text": "重试",
+          "error": "Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://127.0.0.1:3010/api/auto-upload/tasks/57/retry/confirmations"
+        }
+      ]
+    },
+    {
+      "route": "/engagement/wechat/chat-history",
+      "errors": [
+        {
+          "text": "同步历史",
+          "error": "Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://127.0.0.1:3010/api/local-engine/wechat/chat-history/sync"
+        }
+      ]
+    },
+    {
+      "route": "/engagement/wechat/contacts",
+      "errors": [
+        {
+          "text": "同步联系人",
+          "error": "Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://127.0.0.1:3010/api/local-engine/wechat/contacts/sync"
+        }
+      ]
+    },
+    {
+      "route": "/intelligence/skills",
+      "errors": [
+        {
+          "text": "风险审核 6 敏感、版权、夸大 · 启用 0",
+          "error": "Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:3010/api/redfox/skills/sync"
+        }
+      ]
+    },
+    {
+      "route": "/mine",
+      "errors": [
+        {
+          "text": "Agent 对话 Agent 会话工作台（对话规划助手）",
+          "error": "Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:3010/agent-conversation.txt?_rsc=sb25x || Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:3010/agent-conversation"
+        }
+      ]
+    }
+  ]
+}

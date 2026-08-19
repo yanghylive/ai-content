@@ -150,7 +150,9 @@ export class RedfoxSkillRunnerService {
     const { dto, skill, mapping, method, operation, estimatedCostPoints } =
       input;
     if (!this.agentS) {
-      throw new BadRequestException('情报数据服务尚未配置，请到「设置」添加数据源后使用。');
+      throw new BadRequestException(
+        '情报数据服务尚未配置，请到「设置」添加数据源后使用。',
+      );
     }
 
     const skillHubRef = this.resolveSkillHubRef(mapping, dto);

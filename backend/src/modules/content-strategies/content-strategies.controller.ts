@@ -87,10 +87,7 @@ export class ContentStrategiesController {
   }
 
   @Post(':id/rollback')
-  rollback(
-    @Param('id') id: string,
-    @Body() dto: { versionNo: number },
-  ) {
+  rollback(@Param('id') id: string, @Body() dto: { versionNo: number }) {
     return this.contentStrategiesService.rollback(id, dto.versionNo);
   }
 

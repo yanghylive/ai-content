@@ -395,17 +395,24 @@ export class VideoFaceSwapService {
       return [];
     }
 
-    return readdirSync(materialDir)
-      .map((name) => join(materialDir, name))
-      .filter((path) => existsSync(path) && statSync(path).isFile())
-      .map((path) => this.materialFileFromPath(path, 'public'))
-      .filter((item): item is VideoFaceSwapMaterialFile => Boolean(item))
-      .sort(
-        (left, right) =>
-          new Date(right.updatedAt).getTime() -
-          new Date(left.updatedAt).getTime(),
-      )
-      .slice(0, Math.max(1, Math.min(100, Math.round(limit))));
+    return (
+      readdirSync(materialDir)
+        .map((name) => join(materialDir, name))
+        .filter((path) => existsSync(path) && statSync(path).isFile())
+        // 过滤内部文件：目录可写性 probe（.kaypal-runcheck-*.probe）与渲染中间文件（.partial.*）
+        .filter((path) => {
+          const name = basename(path);
+          return !name.startsWith('.kaypal-') && !name.includes('.partial');
+        })
+        .map((path) => this.materialFileFromPath(path, 'public'))
+        .filter((item): item is VideoFaceSwapMaterialFile => Boolean(item))
+        .sort(
+          (left, right) =>
+            new Date(right.updatedAt).getTime() -
+            new Date(left.updatedAt).getTime(),
+        )
+        .slice(0, Math.max(1, Math.min(100, Math.round(limit))))
+    );
   }
 
   async importMaterialFile(

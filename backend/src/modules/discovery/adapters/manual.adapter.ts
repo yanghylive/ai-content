@@ -2,9 +2,7 @@
 // 最低风险模式：CSV/JSON 结构化导入 → 产出 DiscoveryItem（SourceContent + InteractionEvent + identityHint）。
 // 复用 csv.ts 状态机解析（引号/逗号/换行正确处理）；字段映射 + 去重（rawHash）+ 幂等 batch。
 import { createHash } from 'node:crypto';
-import type {
-  DiscoveryAdapter,
-} from '../discovery.adapter';
+import type { DiscoveryAdapter } from '../discovery.adapter';
 import type {
   DiscoveryCapability,
   DiscoveryContext,
@@ -13,6 +11,7 @@ import type {
   ExternalContentRef,
 } from '../discovery.types';
 import { parseCsv } from './csv';
+import { asyncIterableFromArray, emptyAsyncIterable } from './async-iterable';
 
 /** 人工导入的字段映射（列名 → 语义） */
 const FIELD_ALIASES: Record<string, string> = {
@@ -39,18 +38,18 @@ const FIELD_ALIASES: Record<string, string> = {
 export class ManualAdapter implements DiscoveryAdapter {
   readonly platform = 'manual';
 
-  async capabilities(): Promise<DiscoveryCapability> {
-    return {
+  capabilities(): Promise<DiscoveryCapability> {
+    return Promise.resolve<DiscoveryCapability>({
       platform: 'manual',
       modes: ['manual-import'],
       supportsComment: true,
       supportsDm: false,
       publishMode: 'manual',
       dailyQuota: 10000,
-    };
+    });
   }
 
-  async *discover(
+  discover(
     input: DiscoveryInput,
     _ctx: DiscoveryContext,
   ): AsyncIterable<DiscoveryItem> {
@@ -64,36 +63,48 @@ export class ManualAdapter implements DiscoveryAdapter {
       records = raw.rows as Array<Record<string, unknown>>;
     } else if (typeof raw.csvText === 'string') {
       const parsed = parseCsv(raw.csvText);
-      records = parsed.rows as unknown as Array<Record<string, unknown>>;
+      records = parsed.rows;
     }
 
+    const items: DiscoveryItem[] = [];
     for (const rec of records) {
       if (count >= limit) break;
       const item = this.mapRecord(rec, input.accountId);
       if (!item) continue;
-      yield item;
+      items.push(item);
       count += 1;
     }
+    return asyncIterableFromArray(items);
   }
 
-  async fetchContent(
-    ref: ExternalContentRef,
-    _ctx: DiscoveryContext,
-  ) {
-    return {
-      externalContentId: ref.externalContentId ?? createHash('sha1').update(ref.url ?? 'manual').digest('hex').slice(0, 24),
+  fetchContent(ref: ExternalContentRef, _ctx: DiscoveryContext) {
+    return Promise.resolve({
+      externalContentId:
+        ref.externalContentId ??
+        createHash('sha1')
+          .update(ref.url ?? 'manual')
+          .digest('hex')
+          .slice(0, 24),
       url: ref.url ?? '',
       contentType: 'manual',
       rawHash: createHash('sha256').update(JSON.stringify(ref)).digest('hex'),
-    };
+    });
   }
 
-  async *fetchInteractions(
+  fetchInteractions(
     _ref: ExternalContentRef,
     _ctx: DiscoveryContext,
-  ): AsyncIterable<{ externalEventId: string; type: string; authorExternalId?: string; text?: string; sourceUrl?: string; occurredAt: string; evidenceUrl?: string }> {
+  ): AsyncIterable<{
+    externalEventId: string;
+    type: string;
+    authorExternalId?: string;
+    text?: string;
+    sourceUrl?: string;
+    occurredAt: string;
+    evidenceUrl?: string;
+  }> {
     // 人工导入的互动随 discover 产出，不单独抓取
-    return;
+    return emptyAsyncIterable();
   }
 
   /** 记录 → DiscoveryItem（字段映射 + 去重 rawHash） */
@@ -117,7 +128,10 @@ export class ManualAdapter implements DiscoveryAdapter {
     const externalUserId = mapped.externalUserId || undefined;
     const externalContentId =
       mapped.externalContentId ||
-      createHash('sha1').update(`${platform}:${nickname}:${sourceText.slice(0, 40)}`).digest('hex').slice(0, 24);
+      createHash('sha1')
+        .update(`${platform}:${nickname}:${sourceText.slice(0, 40)}`)
+        .digest('hex')
+        .slice(0, 24);
 
     return {
       platform,

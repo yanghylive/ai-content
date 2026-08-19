@@ -34,7 +34,10 @@ export class LlmProxyController {
     @Body()
     body: {
       model?: string;
-      messages?: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+      messages?: Array<{
+        role: 'system' | 'user' | 'assistant';
+        content: string;
+      }>;
       stream?: boolean;
     } = {},
   ) {

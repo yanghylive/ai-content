@@ -632,7 +632,8 @@ export function resolveFirstExistingLocalPath(
 
 export function resolveWechatNativeRuntimePath(): string {
   const packagedResourcesRoot =
-    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath ||
+    '';
   const resourceCandidates = packagedResourcesRoot
     ? [
         join(

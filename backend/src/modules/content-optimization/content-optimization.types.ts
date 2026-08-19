@@ -1,18 +1,10 @@
 export type OptimizationPlatform =
-  | 'all'
-  | 'xiaohongshu'
-  | 'douyin'
-  | 'wechat'
-  | 'bilibili'
-  | 'tiktok';
+  'all' | 'xiaohongshu' | 'douyin' | 'wechat' | 'bilibili' | 'tiktok';
 
 export type OptimizationSource = 'local_scoring' | 'redfox';
 
 export type TitleQualityLevel =
-  | 'excellent'
-  | 'good'
-  | 'needs_improvement'
-  | 'weak';
+  'excellent' | 'good' | 'needs_improvement' | 'weak';
 
 export type ScoreDimension = {
   key: string;

@@ -39,7 +39,12 @@ export type LeadActionInput = {
 };
 
 export type LeadActionOutput = {
-  status: 'created' | 'awaiting_approval' | 'blocked' | 'failed' | 'reconcile_required';
+  status:
+    | 'created'
+    | 'awaiting_approval'
+    | 'blocked'
+    | 'failed'
+    | 'reconcile_required';
   actionId: string;
   taskId?: string;
   auditId: string;
@@ -48,7 +53,9 @@ export type LeadActionOutput = {
 };
 
 /** 动作风险等级（T3.3 approval-gate 复用） */
-export function actionRiskLevel(action: LeadActionType): 'low' | 'medium' | 'high' {
+export function actionRiskLevel(
+  action: LeadActionType,
+): 'low' | 'medium' | 'high' {
   switch (action) {
     case 'create_task':
     case 'draft_reply':
@@ -77,7 +84,10 @@ export function validateActionInput(input: LeadActionInput): void {
     throw new BadRequestException('reason 过短（至少 4 字），AI 必须给出理由');
   }
   // 需要文本的动作必须有 payload.text
-  if ((input.action === 'draft_reply' || input.action === 'send_reply') && !input.payload?.text?.trim()) {
+  if (
+    (input.action === 'draft_reply' || input.action === 'send_reply') &&
+    !input.payload?.text?.trim()
+  ) {
     throw new BadRequestException(`${input.action} 需要 payload.text`);
   }
   // 批量触达必须有目标

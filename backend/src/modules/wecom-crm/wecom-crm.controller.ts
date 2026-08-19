@@ -59,7 +59,10 @@ export class WecomCrmController {
     if (!body.configId) {
       return { ok: false, message: '缺少 configId' };
     }
-    return this.wecomCrmService.testConfig(this.getUserId(request), body.configId);
+    return this.wecomCrmService.testConfig(
+      this.getUserId(request),
+      body.configId,
+    );
   }
 
   @Delete('configs/:id')
@@ -92,7 +95,10 @@ export class WecomCrmController {
     @Req() request: AuthenticatedRequest,
     @Body() body: WecomGroupMsgTaskCreateDto,
   ) {
-    return this.wecomCrmService.createGroupMsgTask(this.getUserId(request), body);
+    return this.wecomCrmService.createGroupMsgTask(
+      this.getUserId(request),
+      body,
+    );
   }
 
   @Get('group-msgs')
@@ -105,7 +111,10 @@ export class WecomCrmController {
     @Req() request: AuthenticatedRequest,
     @Param('id') taskId: string,
   ) {
-    return this.wecomCrmService.queryGroupMsgResult(this.getUserId(request), taskId);
+    return this.wecomCrmService.queryGroupMsgResult(
+      this.getUserId(request),
+      taskId,
+    );
   }
 
   // ============ 客户朋友圈（需鉴权） ============
@@ -128,7 +137,10 @@ export class WecomCrmController {
     @Req() request: AuthenticatedRequest,
     @Param('id') taskId: string,
   ) {
-    return this.wecomCrmService.queryMomentResult(this.getUserId(request), taskId);
+    return this.wecomCrmService.queryMomentResult(
+      this.getUserId(request),
+      taskId,
+    );
   }
 
   // ============ 企业微信回调（免鉴权，纯文本回包） ============

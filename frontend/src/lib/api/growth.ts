@@ -15,7 +15,8 @@ export type GrowthAcquisitionMode =
     | "video-link"
     | "target-account"
     | "retention"
-    | "manual-import";
+    | "manual-import"
+    | "recommended";
 
 export type GrowthRiskMode = "auto" | "confirm-first" | "draft-only";
 
@@ -124,6 +125,15 @@ export interface GrowthAcquisitionRun {
     status: "queued" | "running" | "success" | "partial" | "failed" | "skipped";
     failureReason?: string;
     message: string;
+    /** P1-2：失败回退追踪（RPA 失败→回退本地适配器时如实标注来源） */
+    fallback?: {
+      attempted: boolean;
+      source: "rpa" | "legacy-adapter" | "manual-import" | "none";
+      rpaExecutionId: string | null;
+      reasonCode: string | null;
+      fallbackAllowed: boolean;
+      message: string;
+    };
     candidateCount: number;
     selectedCount: number;
     contactedCount: number;
@@ -379,6 +389,28 @@ export interface GrowthReports {
         status: GrowthLeadStatus;
         count: number;
     }>;
+    sixStage: {
+        content: number;
+        publish: number;
+        interaction: number;
+        lead: number;
+        customer: number;
+        opportunity: number;
+        wonAmountCents: number;
+        contentConversionRate: number;
+        attributedLeadCount: number;
+        attributedCustomerCount: number;
+        attributionConfidence: "high" | "medium" | "low";
+        platformComparison: Array<{
+            platform: string;
+            content: number;
+            publish: number;
+            interaction: number;
+            lead: number;
+            customer: number;
+            opportunity: number;
+        }>;
+    };
 }
 
 export interface GrowthReportQuery {
@@ -529,7 +561,10 @@ export interface LeadScoreSnapshotDto {
 export interface LeadScoreHistoryDto {
   available: boolean;
   leadId?: string;
+  /** 四维质量分（最新快照的 totalScore） */
   totalScore?: number;
+  /** 采集时的裸分/印象分（lead.score，与四维质量分并存） */
+  roughScore?: number;
   snapshots: LeadScoreSnapshotDto[];
   message?: string;
 }
@@ -550,4 +585,21 @@ export interface LeadAttributionDto {
     sourceInteractionEventId: string | null;
     sourceUrl: string | null;
   };
+}
+
+/** 曝光/纳管账号（RPA 账号选择器数据源） */
+export interface ExposureAccount {
+  id: string;
+  userId: string;
+  platform: string;
+  accountId: string;
+  name: string;
+  note?: string | null;
+  status?: string | null;
+  createdAt: string;
+}
+
+/** 已授权账号列表（账号选择器：不允许随意输入任意账号 ID 执行） */
+export async function fetchExposureAccounts(): Promise<ExposureAccount[]> {
+  return api.get<ExposureAccount[]>("/growth/exposure-accounts");
 }

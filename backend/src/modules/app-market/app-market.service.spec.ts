@@ -114,13 +114,14 @@ describe('AppMarketService', () => {
     expect(state.tenantId).toBe('tenant-1');
     expect(state.purchased).toBe(true);
     expect(state.commercialEntitled).toBe(true);
+    // CRM 已改为 installable:false（内置默认开放），购买/安装状态不再阻断 access，统一 open
     expect(state.access).toEqual(
       expect.objectContaining({
-        state: 'not_installed',
-        primaryAction: 'install',
-        allowedActions: ['install'],
+        state: 'installed',
+        primaryAction: 'open',
+        allowedActions: ['open', 'uninstall'],
         requiresPurchase: false,
-        requiresInstall: true,
+        requiresInstall: false,
         proofHash: expect.stringMatching(/^[a-f0-9]{64}$/),
       }),
     );
@@ -406,7 +407,7 @@ describe('AppMarketService', () => {
     });
   });
 
-  it('blocks CRM access when not installed', async () => {
+  it('opens CRM access even when not installed (built-in, default open)', async () => {
     const prisma = makePrismaMock();
     const service = new AppMarketService(
       prisma,
@@ -430,18 +431,16 @@ describe('AppMarketService', () => {
       uninstalledAt: null,
     } as any);
 
-    await expect(service.assertCrmInstalled(makeUser())).rejects.toMatchObject({
-      response: expect.objectContaining({
-        code: 'crm_app_access_blocked',
-        access: expect.objectContaining({
-          state: 'not_installed',
-          primaryAction: 'install',
-        }),
+    await expect(service.assertCrmInstalled(makeUser())).resolves.toMatchObject({
+      access: expect.objectContaining({
+        state: 'installed',
+        primaryAction: 'open',
+        allowedActions: ['open', 'uninstall'],
       }),
     });
   });
 
-  it('keeps an explicitly uninstalled CRM app blocked for an active cloud plan', async () => {
+  it('keeps an explicitly uninstalled CRM app open (built-in, default open)', async () => {
     const prisma = makePrismaMock();
     const service = new AppMarketService(
       prisma,
@@ -465,14 +464,11 @@ describe('AppMarketService', () => {
       uninstalledAt: new Date('2026-07-21T00:00:00.000Z'),
     } as any);
 
-    await expect(service.assertCrmInstalled(makeUser())).rejects.toMatchObject({
-      response: expect.objectContaining({
-        code: 'crm_app_access_blocked',
-        access: expect.objectContaining({
-          state: 'uninstalled',
-          primaryAction: 'install',
-          allowedActions: ['install'],
-        }),
+    await expect(service.assertCrmInstalled(makeUser())).resolves.toMatchObject({
+      access: expect.objectContaining({
+        state: 'installed',
+        primaryAction: 'open',
+        allowedActions: ['open', 'uninstall'],
       }),
     });
   });
@@ -582,7 +578,9 @@ describe('AppMarketService', () => {
 
     expect(state.appKey).toBe('crm');
     expect(state.name).toBe('CRM 客户管理');
-    expect(state.access.state).toBe('not_purchased');
+    // CRM 内置默认开放（installable:false），无购买/安装记录时 access 也直接 open
+    expect(state.access.state).toBe('installed');
+    expect(state.access.allowedActions).toContain('open');
   });
 
   it('getAppState 未知应用抛 400', async () => {

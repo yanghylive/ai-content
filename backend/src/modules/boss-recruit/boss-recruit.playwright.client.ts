@@ -1,7 +1,11 @@
-import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { chromium } from 'playwright';
-import type { Browser, BrowserContext, Page } from 'playwright';
+import type { Browser, BrowserContext } from 'playwright';
 import { existsSync } from 'node:fs';
 import { PlaywrightBrowserRuntimeService } from '../local-engine/playwright-browser-runtime.service';
 import type { BossLoginCheckResult } from './boss-recruit.types';
@@ -29,8 +33,13 @@ export class BossPlaywrightClient {
     const { browser, context } = await this.launch(storageStatePath);
     try {
       const page = await context.newPage();
-      await page.goto(BOSS_HOME_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => undefined);
+      await page.goto(BOSS_HOME_URL, {
+        waitUntil: 'domcontentloaded',
+        timeout: 30000,
+      });
+      await page
+        .waitForLoadState('networkidle', { timeout: 8000 })
+        .catch(() => undefined);
       await page.waitForTimeout(1200).catch(() => undefined);
       const url = page.url();
       const title = await page.title().catch(() => '');
@@ -38,7 +47,9 @@ export class BossPlaywrightClient {
       const notLoggedIn =
         url.includes('login') ||
         url.includes('passport') ||
-        (await page.locator('input[placeholder*="手机号"], input[placeholder*="手机"]').count()) > 0;
+        (await page
+          .locator('input[placeholder*="手机号"], input[placeholder*="手机"]')
+          .count()) > 0;
       return {
         ok: !notLoggedIn,
         status: notLoggedIn ? 'not_logged_in' : 'logged_in',
@@ -52,14 +63,20 @@ export class BossPlaywrightClient {
   }
 
   /** 刷新职位（招聘端职位管理页下拉刷新，保持职位活跃） */
-  async refreshPositions(storageStatePath: string, limit = 3): Promise<{
+  async refreshPositions(
+    storageStatePath: string,
+    limit = 3,
+  ): Promise<{
     refreshed: number;
     checkedAt: string;
   }> {
     const { browser, context } = await this.launch(storageStatePath);
     try {
       const page = await context.newPage();
-      await page.goto(BOSS_JOB_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.goto(BOSS_JOB_URL, {
+        waitUntil: 'domcontentloaded',
+        timeout: 30000,
+      });
       await page.waitForTimeout(2000).catch(() => undefined);
       // 定位"刷新"按钮（职位管理常见操作），点 limit 次
       let refreshed = 0;
@@ -67,7 +84,9 @@ export class BossPlaywrightClient {
         const refreshBtn = page
           .locator('text=刷新')
           .first()
-          .or(page.locator('[class*="refresh"], button:has-text("刷新")').first());
+          .or(
+            page.locator('[class*="refresh"], button:has-text("刷新")').first(),
+          );
         const visible = await refreshBtn.isVisible().catch(() => false);
         if (!visible) break;
         await refreshBtn.click({ timeout: 8000 }).catch(() => undefined);
@@ -90,10 +109,15 @@ export class BossPlaywrightClient {
     const { browser, context } = await this.launch(storageStatePath);
     try {
       const page = await context.newPage();
-      await page.goto(BOSS_CHAT_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.goto(BOSS_CHAT_URL, {
+        waitUntil: 'domcontentloaded',
+        timeout: 30000,
+      });
       await page.waitForTimeout(2000).catch(() => undefined);
       // 搜索候选人
-      const searchInput = page.locator('input[placeholder*="搜索"], input[type="search"]').first();
+      const searchInput = page
+        .locator('input[placeholder*="搜索"], input[type="search"]')
+        .first();
       if (await searchInput.isVisible().catch(() => false)) {
         await searchInput.fill(candidateName);
         await searchInput.press('Enter');
@@ -107,9 +131,7 @@ export class BossPlaywrightClient {
       await candidateRow.click({ timeout: 8000 }).catch(() => undefined);
       await page.waitForTimeout(1000).catch(() => undefined);
       // 输入并发送
-      const editor = page
-        .locator('textarea, [contenteditable="true"]')
-        .first();
+      const editor = page.locator('textarea, [contenteditable="true"]').first();
       if (!(await editor.isVisible().catch(() => false))) {
         return { ok: false, candidate: candidateName, messageSent: false };
       }

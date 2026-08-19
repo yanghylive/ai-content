@@ -214,7 +214,12 @@ export class CaseRepository {
         demoEndpoints: true,
         // 授权记录在查询层即 select 白名单字段，attachment 附件不进内存（深度防御）
         authorizations: {
-          select: { grantor: true, scope: true, licenseName: true, sourceUrl: true },
+          select: {
+            grantor: true,
+            scope: true,
+            licenseName: true,
+            sourceUrl: true,
+          },
         },
       },
     });
@@ -247,7 +252,7 @@ export class CaseRepository {
         }
         if (tags.length > 0) {
           const rowTags = Array.isArray(row.capabilityTags)
-            ? (row.capabilityTags as string[])
+            ? row.capabilityTags
             : [];
           return tags.some((t) => rowTags.includes(t));
         }
@@ -305,7 +310,7 @@ export class CaseRepository {
       validUntil: record.validUntil,
       updatedAt: record.updatedAt,
       cases: cases as ShowcaseCaseRecord[],
-    } as ShowcaseCollectionRecord;
+    };
   }
 
   /** 已启用分类（platform/industry/capability），按类型 + 排序号输出 */
@@ -314,6 +319,6 @@ export class CaseRepository {
       where: { enabled: true },
       orderBy: [{ type: 'asc' }, { sortOrder: 'asc' }, { name: 'asc' }],
     });
-    return rows as ShowcaseTaxonomyRecord[];
+    return rows;
   }
 }

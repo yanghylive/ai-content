@@ -43,12 +43,36 @@ export const FUNNEL_STAGE_META: Array<{
   definition: string;
   denominator: string;
 }> = [
-  { stage: 'content', definition: 'AI 生成/导入的内容数', denominator: '近 N 天创建的内容' },
-  { stage: 'publish', definition: '成功发布到平台的内容数', denominator: '内容数' },
-  { stage: 'interaction', definition: '评论/私信/提及等互动事件数', denominator: '发布数' },
-  { stage: 'lead', definition: '从互动转化的线索数', denominator: '互动事件数' },
-  { stage: 'customer', definition: '转成 CRM 客户的线索数', denominator: '线索数' },
-  { stage: 'opportunity', definition: '进入商机管道的客户数', denominator: '客户数' },
+  {
+    stage: 'content',
+    definition: 'AI 生成/导入的内容数',
+    denominator: '近 N 天创建的内容',
+  },
+  {
+    stage: 'publish',
+    definition: '成功发布到平台的内容数',
+    denominator: '内容数',
+  },
+  {
+    stage: 'interaction',
+    definition: '评论/私信/提及等互动事件数',
+    denominator: '发布数',
+  },
+  {
+    stage: 'lead',
+    definition: '从互动转化的线索数',
+    denominator: '互动事件数',
+  },
+  {
+    stage: 'customer',
+    definition: '转成 CRM 客户的线索数',
+    denominator: '线索数',
+  },
+  {
+    stage: 'opportunity',
+    definition: '进入商机管道的客户数',
+    denominator: '客户数',
+  },
 ];
 
 /**
@@ -66,13 +90,22 @@ export class ReviewRunService {
   /** 生成复盘：先算漏斗快照（带阶段 meta），再存洞察 + 动作 + 过滤条件 */
   async generate(
     input: ReviewRunInput,
-    owner: { userId: string; tenantId?: string | null; actorUserId?: string | null },
+    owner: {
+      userId: string;
+      tenantId?: string | null;
+      actorUserId?: string | null;
+    },
   ) {
     const funnel = input.generatedFrom
-      ? await this.funnelReport.articleFunnel(input.generatedFrom, owner.userId)
+      ? await this.funnelReport.articleFunnel(
+          input.generatedFrom,
+          owner.userId,
+          owner.tenantId,
+        )
       : await this.funnelReport.funnel(
           input.period === '30d' ? 30 : 7,
           owner.userId,
+          owner.tenantId,
         );
 
     // T4.4：给漏斗补阶段 meta（定义/分母/时间窗/最后同步/N/A 原因）
@@ -82,12 +115,14 @@ export class ReviewRunService {
         window: input.period,
         lastSyncedAt: new Date().toISOString(),
         stages: FUNNEL_STAGE_META.map((m) => {
-          const raw = (funnel as Record<string, unknown>)?.funnel as Record<string, number> | undefined;
+          const raw = (funnel as Record<string, unknown>)?.funnel as
+            Record<string, number> | undefined;
           const value = raw?.[m.stage];
           return {
             ...m,
             value: value ?? 0,
-            naReason: value === undefined ? '该阶段无数据（未开启对应采集）' : null,
+            naReason:
+              value === undefined ? '该阶段无数据（未开启对应采集）' : null,
           };
         }),
       },
@@ -100,7 +135,7 @@ export class ReviewRunService {
         actorUserId: owner.actorUserId ?? null,
         period: input.period,
         filters: (input.filters ?? {}) as Prisma.InputJsonValue,
-        funnel: funnelWithMeta as Prisma.InputJsonValue,
+        funnel: funnelWithMeta,
         insights: input.insights as unknown as Prisma.InputJsonValue,
         actions: input.actions as unknown as Prisma.InputJsonValue,
         generatedFrom: input.generatedFrom ?? null,
@@ -115,8 +150,19 @@ export class ReviewRunService {
     });
   }
 
-  async findOne(id: string) {
-    const run = await this.prisma.reviewRun.findUnique({ where: { id } });
+  async findOne(
+    id: string,
+    owner?: { userId: string; tenantId?: string | null },
+  ) {
+    const run = owner
+      ? await this.prisma.reviewRun.findFirst({
+          where: {
+            id,
+            userId: owner.userId,
+            ...(owner.tenantId ? { tenantId: owner.tenantId } : {}),
+          },
+        })
+      : await this.prisma.reviewRun.findUnique({ where: { id } });
     if (!run) throw new NotFoundException('复盘记录不存在');
     return run;
   }
@@ -125,9 +171,14 @@ export class ReviewRunService {
   async copyActionToContentPlan(
     runId: string,
     actionIndex: number,
-    owner: { userId: string; tenantId?: string | null; actorUserId?: string | null },
+    owner: {
+      userId: string;
+      tenantId?: string | null;
+      actorUserId?: string | null;
+    },
   ) {
-    const run = await this.findOne(runId);
+    // 复核：复制动作必须带 owner scope，防止读他人复盘（IDOR）
+    const run = await this.findOne(runId, owner);
     const actions = Array.isArray(run.actions) ? run.actions : [];
     const action = actions[actionIndex] as unknown as ReviewAction | undefined;
     if (!action) throw new NotFoundException('该复盘没有对应的动作');

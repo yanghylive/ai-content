@@ -356,7 +356,10 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       lastActivityAt: new Date().toISOString(),
     };
     this.sessions.set(key, session);
-    if (!input.probe && (await this.sessionLooksLoggedOut(session, input.platform))) {
+    if (
+      !input.probe &&
+      (await this.sessionLooksLoggedOut(session, input.platform))
+    ) {
       await this.recoverSessionFromSavedCookies(session, input.platform);
     }
     this.startedAt = this.startedAt ?? session.startedAt;
@@ -419,8 +422,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       if (existing.platform !== input.platform || existing.key === key)
         continue;
       // 多账号隔离：仅当会话本就属于该账号时才可复用，禁止跨账号抢占过户。
-      const existingAccountId =
-        existing.sourceAccountId ?? existing.accountId;
+      const existingAccountId = existing.sourceAccountId ?? existing.accountId;
       if (String(existingAccountId) !== String(input.accountId)) continue;
       if (excludedProfileDirs.has(existing.profileDir)) continue;
       try {
@@ -620,6 +622,15 @@ export class LocalBrowserEngine implements OnModuleDestroy {
 
   private isXiaohongshuAuthenticatedPage(url: string, text: string): boolean {
     const normalizedText = this.normalizePageText(text);
+    // 网页版（www.xiaohongshu.com，D 阶段验收）：登录用户有 发布/通知/消息/我
+    // 等账号工具栏；未登录出现 登录/注册/扫码。创作者后台独立判定。
+    if (/www\.xiaohongshu\.com/.test(url || '')) {
+      return (
+        !this.hasLoginPrompt('xiaohongshu', url, normalizedText) &&
+        /发布|通知|消息|我/.test(normalizedText) &&
+        !/登录后使用|立即登录/.test(normalizedText)
+      );
+    }
     if (!this.isXiaohongshuBackendUrl(url)) return false;
     if (this.isLoginLikeUrl(url)) return false;
     if (this.hasLoginPrompt('xiaohongshu', url, normalizedText)) return false;
@@ -874,7 +885,10 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     if (platform === 'douyin') return url.includes('douyin.com');
     if (platform === 'wechat-channel')
       return url.includes('channels.weixin.qq.com');
-    if (platform === 'xiaohongshu') return this.isXiaohongshuBackendUrl(url);
+    if (platform === 'xiaohongshu') {
+      // 网页版（www.xiaohongshu.com）与创作者后台都算小红书非登录页
+      return url.includes('xiaohongshu.com');
+    }
     if (platform === 'kuaishou') return url.includes('kuaishou.com');
     if (platform === 'bilibili') return url.includes('bilibili.com');
     return false;
@@ -1479,13 +1493,29 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     );
   }
 
-  async closeSession(key: string): Promise<void> {
+  /**
+   * P0-7 复核：关闭浏览器会话必须可验证——context.close/kill 失败时返回 false 并记 error，
+   * 不再静默吞掉（上层据此转 reconcile_required，避免「任务看似暂停/取消、浏览器仍在跑」）。
+   * browserReused（外部复用窗口）释放引用视为成功（登录态由用户管理，属设计内行为）。
+   */
+  async closeSession(key: string): Promise<boolean> {
     const session = this.sessions.get(key);
-    if (!session) return;
+    if (!session) return true;
+    if (session.browserReused === true) {
+      // 外部复用浏览器（用户手动登录的窗口）：不关闭 context/进程，
+      // 只释放引擎内部引用——避免误杀用户登录态与窗口（登录态由用户手动管理）。
+      this.sessions.delete(key);
+      return true;
+    }
     try {
       await session.context.close();
-    } catch {
-      // 忽略
+    } catch (error) {
+      this.logger.error(
+        `浏览器会话 context.close 失败（key=${key}）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return false;
     }
     if (session.browserProcess) {
       try {
@@ -1494,11 +1524,17 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         } else if (session.browserProcess.pid) {
           process.kill(-session.browserProcess.pid, 'SIGTERM');
         }
-      } catch {
-        // 忽略，可能已经退出。
+      } catch (error) {
+        this.logger.error(
+          `浏览器进程 kill 失败（key=${key}，pid=${session.browserProcess.pid}）：${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        return false;
       }
     }
     this.sessions.delete(key);
+    return true;
   }
 
   listSessions(): EngineSessionSummary[] {

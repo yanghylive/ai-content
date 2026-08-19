@@ -109,14 +109,20 @@ export class DeFlavorService {
 
     const prompt = template
       .replaceAll('{{TEXT}}', text)
-      .replaceAll('{{HITS}}', hits.length > 0 ? hits.join('\n') : '（无明显信号，凭经验消除通用 AI 味）');
+      .replaceAll(
+        '{{HITS}}',
+        hits.length > 0
+          ? hits.join('\n')
+          : '（无明显信号，凭经验消除通用 AI 味）',
+      );
 
     const model = await this.prisma.aIModel.findFirst({
       where: { enabled: true },
       orderBy: { updatedAt: 'desc' },
       select: { id: true },
     });
-    if (!model) throw new Error('未配置可用的 AI 模型，请在「AI 模型设置」中同步');
+    if (!model)
+      throw new Error('未配置可用的 AI 模型，请在「AI 模型设置」中同步');
 
     return this.aiClient.generate(
       model.id,

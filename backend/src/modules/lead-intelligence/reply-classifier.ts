@@ -30,25 +30,66 @@ export function triggersSuppression(category: ReplyCategory): boolean {
 }
 
 const UNSUBSCRIBE_KEYWORDS = [
-  '退订', '取消订阅', '别再发', '不要发了', '停止发送', 'unsubscribe', 'stop sending', 'opt out', 'no more',
+  '退订',
+  '取消订阅',
+  '别再发',
+  '不要发了',
+  '停止发送',
+  'unsubscribe',
+  'stop sending',
+  'opt out',
+  'no more',
 ];
 const NEGATIVE_KEYWORDS = [
-  '不感兴趣', '不需要', '不用了', '算了', '拒绝', '别联系', 'no thanks', 'not interested', 'don\'t contact',
+  '不感兴趣',
+  '不需要',
+  '不用了',
+  '算了',
+  '拒绝',
+  '别联系',
+  'no thanks',
+  'not interested',
+  "don't contact",
 ];
 const OOO_KEYWORDS = [
-  '休假', '出差', '不在', 'out of office', 'ooo', 'on vacation', 'away',
+  '休假',
+  '出差',
+  '不在',
+  'out of office',
+  'ooo',
+  'on vacation',
+  'away',
 ];
 const SPAM_KEYWORDS = [
-  '中奖', '恭喜您', '点击链接', '加群领', '免费领', '扫码', 'v我', '转发抽奖',
+  '中奖',
+  '恭喜您',
+  '点击链接',
+  '加群领',
+  '免费领',
+  '扫码',
+  'v我',
+  '转发抽奖',
 ];
-const QUESTION_MARKERS = ['？', '?', '怎么', '如何', '能否', '请问', '什么时候', '多少钱'];
+const QUESTION_MARKERS = [
+  '？',
+  '?',
+  '怎么',
+  '如何',
+  '能否',
+  '请问',
+  '什么时候',
+  '多少钱',
+];
 
 /**
  * 回复分类（规则初版，纯关键词；后续可升级 LLM 分类）。
  * 优先级：spam > unsubscribe > negative > out_of_office > question > positive > ambiguous。
  * 机器自动回复（spam 特征/纯广告语）不计入人工回复。
  */
-export function classifyReply(text: string): { category: ReplyCategory; reason: string } {
+export function classifyReply(text: string): {
+  category: ReplyCategory;
+  reason: string;
+} {
   const t = (text ?? '').toLowerCase();
 
   // 1. spam（机器/广告，优先——机器自动回复不算人工回复）
@@ -57,7 +98,10 @@ export function classifyReply(text: string): { category: ReplyCategory; reason: 
   }
   // 2. unsubscribe（退订 → suppression）
   if (UNSUBSCRIBE_KEYWORDS.some((k) => t.includes(k.toLowerCase()))) {
-    return { category: 'unsubscribe', reason: '退订意图明确，触发 suppression' };
+    return {
+      category: 'unsubscribe',
+      reason: '退订意图明确，触发 suppression',
+    };
   }
   // 3. negative
   if (NEGATIVE_KEYWORDS.some((k) => t.includes(k.toLowerCase()))) {
@@ -65,7 +109,10 @@ export function classifyReply(text: string): { category: ReplyCategory; reason: 
   }
   // 4. out_of_office
   if (OOO_KEYWORDS.some((k) => t.includes(k.toLowerCase()))) {
-    return { category: 'out_of_office', reason: '不在岗/休假，暂停 follow-up 但保留线索' };
+    return {
+      category: 'out_of_office',
+      reason: '不在岗/休假，暂停 follow-up 但保留线索',
+    };
   }
   // 5. question
   if (QUESTION_MARKERS.some((k) => t.includes(k))) {

@@ -160,7 +160,7 @@ export class InquiryService {
 
     // 6) 去重：已存在返回同一线索（不新增）
     const existing = await this.prisma.lead.findUnique({
-      where: where as Prisma.LeadWhereUniqueInput,
+      where: where,
       select: { id: true },
     });
     if (existing) {
@@ -217,7 +217,7 @@ export class InquiryService {
         error.code === 'P2002'
       ) {
         const raced = await this.prisma.lead.findUniqueOrThrow({
-          where: where as Prisma.LeadWhereUniqueInput,
+          where: where,
           select: { id: true },
         });
         return { inquiryId: raced.id };

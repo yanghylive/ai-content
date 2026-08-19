@@ -684,21 +684,15 @@ export function TaskCenterPage() {
         localEngineApi.agentSessions({ limit: 80 }),
         localEngineApi.confirmations("pending"),
         aiEmployeeApi.capabilities(),
-        autoUploadApi.tasks(80).catch(() => [] as AutoUploadPublishTask[]),
-        localEngineApi
-          .automationTasks({ limit: 80 })
-          .catch(() => [] as AutomationTaskView[]),
-        aiEmployeeApi.workflows(50).catch(() => ({
-          definitions: [] as AiEmployeeWorkflowDefinition[],
-          runs: [] as AiEmployeeWorkflowRun[],
-        })),
+        // 与发布中心同源（taskPage 分页），消除 listTasks 截断 vs taskPage 分页的口径冲突
+        autoUploadApi.taskPage({ page: 1, pageSize: 80 }),
+        localEngineApi.automationTasks({ limit: 80 }),
+        aiEmployeeApi.workflows(50),
       ]);
       setSessions(normalizeSessions(sessionResult || []));
       setConfirmations(confirmationResult || []);
       setCapabilities(capabilityResult);
-      setPublishTasks(
-        Array.isArray(publishTaskResult) ? publishTaskResult : [],
-      );
+      setPublishTasks(publishTaskResult?.items ?? []);
       setAutomationTasks(
         Array.isArray(automationTaskResult) ? automationTaskResult : [],
       );

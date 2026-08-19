@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { SavingsAdapterRegistry } from './savings-adapter/adapter.registry';
@@ -622,7 +623,7 @@ export class SavingsService {
         originalUrl: promo.originalUrl,
         promoUrl: promo.promoUrl,
         idempotencyKey: promo.idempotencyKey,
-        attribution: promo.attribution as object,
+        attribution: promo.attribution as Prisma.InputJsonValue,
       },
     });
     return {

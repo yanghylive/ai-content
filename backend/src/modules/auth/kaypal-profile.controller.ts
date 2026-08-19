@@ -324,7 +324,7 @@ export class KaypalProfileController {
         metadata: {
           ...currentMetadata,
           ...nextMetadata,
-        } as Prisma.InputJsonObject,
+        },
       },
     });
     return refreshed.access_token;
@@ -1285,7 +1285,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
           kaypalSubscriptionPlan: extracted.plan,
           kaypalSubscriptionPeriodEnd: extracted.periodEnd,
           kaypalMetadataSyncedAt: new Date().toISOString(),
-        } as Prisma.InputJsonObject,
+        },
       },
     });
   }
@@ -1375,7 +1375,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
           kaypalCreditBalance: extracted.balance,
           kaypalCreditBalanceUserId: extracted.userId || null,
           kaypalCreditBalanceSyncedAt: new Date().toISOString(),
-        } as Prisma.InputJsonObject,
+        },
       },
     });
   }

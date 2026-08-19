@@ -74,55 +74,69 @@ export class RedfoxSkillCatalogService {
     const syncedAt = new Date();
     let created = 0;
     let updated = 0;
+    let failed = 0;
 
     for (const item of remoteItems) {
-      const normalized = this.normalizeRemoteSkill(
-        item,
-        syncedAt.toISOString(),
-      );
-      const current = await this.prisma.redfoxSkill.findUnique({
-        where: { code: normalized.code },
-      });
-      const tags = current
-        ? this.mergeTags(
-            normalized.tags,
-            this.readJsonStringArray(current.tags),
-          )
-        : normalized.tags;
-      if (current) {
-        updated += 1;
-        await this.prisma.redfoxSkill.update({
-          where: { id: current.id },
-          data: {
-            skillNo: normalized.skillNo,
-            name: normalized.name,
-            platform: normalized.platform,
-            category: normalized.category,
-            tags,
-            summary: normalized.summary,
-            description: normalized.summary,
-            status: normalized.status,
-            raw: normalized.raw as Prisma.InputJsonValue,
-            syncedAt,
-          },
+      try {
+        const normalized = this.normalizeRemoteSkill(
+          item,
+          syncedAt.toISOString(),
+        );
+        const current = await this.prisma.redfoxSkill.findUnique({
+          where: { code: normalized.code },
         });
-      } else {
-        created += 1;
-        await this.prisma.redfoxSkill.create({
-          data: {
-            skillNo: normalized.skillNo,
-            code: normalized.code,
-            name: normalized.name,
-            platform: normalized.platform,
-            category: normalized.category,
-            tags,
-            summary: normalized.summary,
-            description: normalized.summary,
-            status: normalized.status,
-            raw: normalized.raw as Prisma.InputJsonValue,
-            syncedAt,
-          },
-        });
+        const tags = current
+          ? this.mergeTags(
+              normalized.tags,
+              this.readJsonStringArray(current.tags),
+            )
+          : normalized.tags;
+        if (current) {
+          updated += 1;
+          await this.prisma.redfoxSkill.update({
+            where: { id: current.id },
+            data: {
+              skillNo: normalized.skillNo,
+              name: normalized.name,
+              platform: normalized.platform,
+              category: normalized.category,
+              tags,
+              summary: normalized.summary,
+              description: normalized.summary,
+              status: normalized.status,
+              raw: normalized.raw as Prisma.InputJsonValue,
+              syncedAt,
+            },
+          });
+        } else {
+          // 修复：同名技能（无 skillNo 字段）会 fallback 到相同 skillNo，撞 skill_no 唯一约束。
+          // 冲突时用唯一 code 兜底，避免整批 sync 因单条冲突 500。
+          if (normalized.skillNo) {
+            const clash = await this.prisma.redfoxSkill.findUnique({
+              where: { skillNo: normalized.skillNo },
+            });
+            if (clash) normalized.skillNo = normalized.code;
+          }
+          created += 1;
+          await this.prisma.redfoxSkill.create({
+            data: {
+              skillNo: normalized.skillNo,
+              code: normalized.code,
+              name: normalized.name,
+              platform: normalized.platform,
+              category: normalized.category,
+              tags,
+              summary: normalized.summary,
+              description: normalized.summary,
+              status: normalized.status,
+              raw: normalized.raw as Prisma.InputJsonValue,
+              syncedAt,
+            },
+          });
+        }
+      } catch {
+        // 单条同步失败不阻断整批（唯一约束冲突等），继续处理其余项
+        failed += 1;
       }
     }
 
@@ -132,6 +146,7 @@ export class RedfoxSkillCatalogService {
       received: remoteItems.length,
       created,
       updated,
+      failed,
       total,
     };
   }

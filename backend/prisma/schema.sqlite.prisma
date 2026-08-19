@@ -2387,6 +2387,118 @@ model GrowthAcquisitionRun {
   @@map("growth_acquisition_runs")
 }
 
+/// 统一 RPA 获客执行记录（复核#2，对齐 3010-AI获客完整开发文档 §7.2）。
+/// 每次 RPA 任务持久化：账号、会话、模式、步骤、断点、证据、页面指纹、失败原因、下一动作。
+/// RPA 适配器只接触平台页面和账号上下文，不直接写 Lead/CRM。
+model RpaExecution {
+  id       String  @id @default(cuid())
+  tenantId String? @map("tenant_id")
+  userId   String  @map("user_id")
+  platform String
+
+  /// RPA 会话标识（openSession 返回的 sessionId）
+  sessionId        String?   @map("session_id")
+  /// 执行账号（平台账号 ID）
+  accountId        String?   @map("account_id")
+  /// 获客模式（keyword/account-works/manual-import...）
+  mode             String    @default("unknown")
+  /// 本次执行的动作序列（步骤）
+  steps            Json      @default("[]")
+  /// 断点：失败/暂停时记录的可恢复步骤名
+  resumeStep       String?   @map("resume_step")
+  /// 执行输入快照（keyword/sourceUrl/targetId 等，恢复断点时重建执行参数）
+  inputJson        Json      @default("{}") @map("input_json")
+  /// 乐观锁版本号（步骤写入并发安全，P1-5）
+  version          Int       @default(1)
+  /// 结构化失败原因码（§7.4 reasonCode）
+  reasonCode       String?   @map("reason_code")
+  /// 下一步动作建议（给前端的引导）
+  nextAction       String?   @map("next_action")
+  /// 页面/内容指纹（sha256，去重/对账用）
+  pageFingerprint  String?   @map("page_fingerprint")
+  /// 证据引用列表
+  evidence         Json      @default("[]")
+  /// 执行状态（running/success/failed/blocked/partial/reconcile_required）
+  status           String    @default("running")
+  /// P1-14 复核：记录来源审计语义（driver=真实浏览器执行 / growth-synthesis=获客合成留痕 /
+  /// legacy-adapter / manual-import），审计可按 source 过滤真实执行，合成记录不冒充 RPA success
+  source           String    @default("driver")
+  /// 驱动版本
+  driverVersion    String?   @map("driver_version")
+  /// 关联的获客运行（可选，指向 growth_acquisition_runs）
+  runId            String?   @map("run_id")
+  userMessage      String    @map("user_message")
+  technicalMessage String?   @map("technical_message")
+  startedAt        DateTime  @default(now()) @map("started_at")
+  endedAt          DateTime? @map("ended_at")
+
+  executionSteps RpaExecutionStep[]
+  evidenceItems  RpaEvidence[]
+
+  @@index([userId, startedAt])
+  @@index([tenantId, startedAt])
+  @@index([platform, status])
+  @@index([runId])
+  @@map("rpa_executions")
+}
+
+/// RPA 独立步骤表（复核 #3：独立步骤表，sequenceNo 唯一，可查询审计）
+model RpaExecutionStep {
+  id          String   @id @default(cuid())
+  executionId String   @map("execution_id")
+  sequenceNo  Int      @map("sequence_no")
+  stepName    String   @map("step_name")
+  status      String   @default("running")
+  attempt     Int      @default(1)
+  reasonCode  String?  @map("reason_code")
+  message     String?
+  resultHash  String?  @map("result_hash")
+  startedAt   DateTime @default(now()) @map("started_at")
+  endedAt     DateTime? @map("ended_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  execution RpaExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  // P1 复核：证据表通过真实外键引用步骤记录（onDelete SetNull：步骤删除时证据保留、step 置空）
+  evidences RpaEvidence[]
+
+  @@unique([executionId, sequenceNo])
+  @@index([executionId])
+  @@map("rpa_execution_steps")
+}
+
+/// RPA 独立证据表（复核 #3：独立证据主键 + stepId + 外键绑定，可查询审计）
+model RpaEvidence {
+  id              String   @id
+  executionId     String   @map("execution_id")
+  /// P1 复核：指向 rpa_execution_steps.id 的真实外键（此前为裸 sequenceNo 字符串，无引用完整性）。
+  /// 历史数据由迁移回填（sequenceNo → step id）；无法回填的置 NULL。
+  stepId          String?  @map("step_id")
+  tenantId        String?  @map("tenant_id")
+  userId          String   @map("user_id")
+  platform        String
+  accountId       String?  @map("account_id")
+  kind            String   @default("rpa-step")
+  uri             String?
+  sha256          String
+  capturedAt      DateTime @default(now()) @map("captured_at")
+  pageUrl         String?  @map("page_url")
+  pageFingerprint String?  @map("page_fingerprint")
+  source          String   @default("driver")
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  execution RpaExecution     @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  step      RpaExecutionStep? @relation(fields: [stepId], references: [id], onDelete: SetNull)
+
+  @@index([executionId])
+  // P1 复核（全面审查）：sha256 不再全局唯一——字节 hash 化后同内容证据跨执行
+  // hash 相同，全局唯一会吞掉第二次执行的证据行；改 (executionId, sha256) 复合唯一
+  @@unique([executionId, sha256])
+  @@index([stepId])
+  @@index([userId, capturedAt])
+  @@map("rpa_evidence")
+}
+
 /// 统一线索（一期）：吸收 growth_leads + comment_acquisition_leads 的重叠语义，
 /// 用统一 dedupeKey 去重，status=converted 时通过 customerId 关联 CrmCustomer。
 model Lead {
@@ -2435,6 +2547,10 @@ model Lead {
   customer   CrmCustomer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
   evidenceUrls   Json      @default("[]") @map("evidence_urls")
+  // P1-11 复核：统一侧桥接/评分状态（ok/failed）+ 身份置信度 + 缺失字段清单（此前不落库）
+  enrichmentStatus   String? @map("enrichment_status")
+  identityConfidence Int     @default(0) @map("identity_confidence") // 0-100
+  missingFields      Json    @default("[]") @map("missing_fields")
   ownerUserId    String?   @map("owner_user_id")
   nextFollowUpAt DateTime? @map("next_follow_up_at")
   createdAt      DateTime  @default(now()) @map("created_at")

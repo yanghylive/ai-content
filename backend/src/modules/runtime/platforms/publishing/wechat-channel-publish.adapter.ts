@@ -309,7 +309,9 @@ export class WechatChannelPublishAdapter
    * 找到含"裁剪封面图"的对话框并点击 primary 的「确定」按钮。
    * 安全设计：无弹窗直接返回；任何失败静默跳过（幂等），不阻断发布主流程。
    */
-  private async confirmWechatChannelCoverCropIfNeeded(page: Page): Promise<void> {
+  private async confirmWechatChannelCoverCropIfNeeded(
+    page: Page,
+  ): Promise<void> {
     try {
       const cropDialog = page.locator('.weui-desktop-dialog').filter({
         hasText: '裁剪封面图',
@@ -365,10 +367,7 @@ export class WechatChannelPublishAdapter
     }
   }
 
-  private async waitWechatChannelVideoUploaded(
-    page: Page,
-    videoPath?: string,
-  ) {
+  private async waitWechatChannelVideoUploaded(page: Page, videoPath?: string) {
     const deadline = Date.now() + 20 * 60 * 1000;
     let retried = false;
     while (Date.now() < deadline) {

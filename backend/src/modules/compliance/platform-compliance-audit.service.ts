@@ -2,9 +2,11 @@
 // 核查 6 大合规项在每个平台的落地状态，输出结构化审计报告。
 // 证据 = 代码机制名（可追溯），不空口承诺。
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export type ComplianceStatus = 'compliant' | 'partial' | 'not_applicable' | 'gap';
+export type ComplianceStatus =
+  'compliant' | 'partial' | 'not_applicable' | 'gap';
 
 export interface ComplianceFinding {
   item: string;
@@ -44,7 +46,13 @@ const AUDIT_ITEMS: Array<{
     assess: (platform) =>
       // 浏览器会话方案：用户登录态内辅助采集（DiscoveryBrowserRunner / auto-upload）
       {
-        const browserBased = ['douyin', 'xiaohongshu', 'kuaishou', 'wechat-channel', 'wechat'].includes(platform);
+        const browserBased = [
+          'douyin',
+          'xiaohongshu',
+          'kuaishou',
+          'wechat-channel',
+          'wechat',
+        ].includes(platform);
         return {
           item: 'authorization',
           status: browserBased ? 'partial' : 'not_applicable',
@@ -63,7 +71,8 @@ const AUDIT_ITEMS: Array<{
     assess: () => ({
       item: 'unsubscribe',
       status: 'compliant',
-      evidence: 'suppression.service.ts（SuppressionList 双检查：发送前查抑制名单）',
+      evidence:
+        'suppression.service.ts（SuppressionList 双检查：发送前查抑制名单）',
       note: null,
     }),
   },
@@ -83,7 +92,8 @@ const AUDIT_ITEMS: Array<{
     assess: () => ({
       item: 'consent',
       status: 'compliant',
-      evidence: 'approval-gate.service.ts（low 自动、medium confirm-first、high 强制人工）+ 前端审批中心',
+      evidence:
+        'approval-gate.service.ts（low 自动、medium confirm-first、high 强制人工）+ 前端审批中心',
       note: null,
     }),
   },
@@ -93,8 +103,10 @@ const AUDIT_ITEMS: Array<{
     assess: (platform) => ({
       item: 'privacy',
       status: platform === 'wechat' ? 'partial' : 'compliant',
-      evidence: 'schema 字段最小化（昵称/平台身份/来源文本，不存聊天全量；微信仅存会话摘要）',
-      note: platform === 'wechat' ? '微信会话摘要存储范围需与用户协议对齐' : null,
+      evidence:
+        'schema 字段最小化（昵称/平台身份/来源文本，不存聊天全量；微信仅存会话摘要）',
+      note:
+        platform === 'wechat' ? '微信会话摘要存储范围需与用户协议对齐' : null,
     }),
   },
   {
@@ -103,8 +115,12 @@ const AUDIT_ITEMS: Array<{
     assess: (platform) => ({
       item: 'terms',
       status: 'compliant',
-      evidence: 'capabilities().unavailableReason 置灰 + 原因码（DouyinAdapter/各 connector）',
-      note: platform === 'douyin' ? '搜索/主页浏览依赖用户会话，风控时明确转人工' : null,
+      evidence:
+        'capabilities().unavailableReason 置灰 + 原因码（DouyinAdapter/各 connector）',
+      note:
+        platform === 'douyin'
+          ? '搜索/主页浏览依赖用户会话，风控时明确转人工'
+          : null,
     }),
   },
 ];
@@ -114,8 +130,15 @@ export class PlatformComplianceAuditService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** 运行合规审计（6 项 × 全部平台） */
-  async audit(): Promise<PlatformComplianceReport> {
-    const platforms = ['douyin', 'xiaohongshu', 'kuaishou', 'wechat-channel', 'wechat', 'manual'];
+  audit(): PlatformComplianceReport {
+    const platforms = [
+      'douyin',
+      'xiaohongshu',
+      'kuaishou',
+      'wechat-channel',
+      'wechat',
+      'manual',
+    ];
     const rows = platforms.map((platform) => {
       const findings = AUDIT_ITEMS.map((item) => item.assess(platform));
       return {
@@ -140,7 +163,7 @@ export class PlatformComplianceAuditService {
 
   /** 持久化审计结果（可查历史） */
   async auditAndPersist(userId: string) {
-    const report = await this.audit();
+    const report = this.audit();
     try {
       await this.prisma.complianceCheck.create({
         data: {
@@ -149,8 +172,8 @@ export class PlatformComplianceAuditService {
           platform: 'multi',
           riskLevel: report.summary.gap > 0 ? 'high' : 'low',
           status: report.summary.gap > 0 ? 'blocked' : 'passed',
-          findings: report.platforms as object,
-          raw: report as object,
+          findings: report.platforms as unknown as Prisma.InputJsonValue,
+          raw: report as unknown as Prisma.InputJsonValue,
         },
       });
     } catch {

@@ -20,13 +20,17 @@ export class DashboardController {
   }
 
   @Get('weekly-report')
-  @ApiOperation({ summary: '周报：内容→发布→互动→线索→成交 聚合指标（报告 16.3 第 21 项）' })
+  @ApiOperation({
+    summary: '周报：内容→发布→互动→线索→成交 聚合指标（报告 16.3 第 21 项）',
+  })
   getWeeklyReport(@Query('days') days?: number) {
     return this.service.getWeeklyReport(days ? Number(days) : 7);
   }
 
   @Get('task-center')
-  @ApiOperation({ summary: '统一任务中心：聚合各模块任务（报告 16.3 第 14 项）' })
+  @ApiOperation({
+    summary: '统一任务中心：聚合各模块任务（报告 16.3 第 14 项）',
+  })
   getTaskCenter(@Query('limit') limit?: number) {
     return this.service.unifiedTaskCenter(limit ? Number(limit) : 50);
   }

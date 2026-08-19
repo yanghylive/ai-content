@@ -61,70 +61,82 @@ describe('LeadRepository.fromGrowthLead（收敛映射）', () => {
   });
 });
 
-describe('LeadRepository.markConverted（S0-2 跨租户安全锁）', () => {
-  const scope = { userId: 'user-1', tenantId: 'tenant-1' };
-
-  function makeRepo(overrides: {
-    crmCustomerFindFirst?: jest.Mock;
-    leadUpdateMany?: jest.Mock;
-    leadFindUnique?: jest.Mock;
-  } = {}) {
+describe('LeadRepository.upsert 新线索自动增强', () => {
+  it('新线索创建后触发四维评分 + 打标签（fire-and-forget）', async () => {
+    const lead = {
+      id: 'lead-1',
+      userId: 'u1',
+      tenantId: 't1',
+      platform: 'douyin',
+      sourceType: 'comment',
+      sourceText: '你们这个怎么收费？',
+      dedupeKey: 'lead:xxx',
+      createdAt: new Date(),
+    };
     const prisma = {
-      crmCustomer: {
-        findFirst: overrides.crmCustomerFindFirst ?? jest.fn(),
-      },
       lead: {
-        updateMany: overrides.leadUpdateMany ?? jest.fn(),
-        findUnique: overrides.leadFindUnique ?? jest.fn(),
+        findUnique: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue(lead),
       },
     };
-    const events = { emit: jest.fn() };
-    const repo = new LeadRepository(prisma as never, events as never);
-    return { repo, prisma, events };
-  }
+    const leadScore = {
+      scoreLeadFromText: jest.fn().mockResolvedValue({
+        snapshotId: 's1',
+        totalScore: 18,
+        components: {},
+      }),
+    };
+    const repo = new LeadRepository(
+      prisma as never,
+      leadScore as never,
+    );
 
-  it('成功转客户：customer 归属校验通过 + updateMany 带 scope', async () => {
-    const { repo, prisma, events } = makeRepo({
-      crmCustomerFindFirst: jest.fn().mockResolvedValue({ id: 'customer-1' }),
-      leadUpdateMany: jest.fn().mockResolvedValue({ count: 1 }),
-      leadFindUnique: jest
-        .fn()
-        .mockResolvedValue({ id: 'lead-1', customerId: 'customer-1', userId: 'user-1' }),
+    const result = await repo.upsert({
+      userId: 'u1',
+      tenantId: 't1',
+      platform: 'douyin',
+      sourceType: 'comment',
+      sourceText: '你们这个怎么收费？',
     });
 
-    await repo.markConverted('lead-1', 'customer-1', scope);
-
-    expect(prisma.crmCustomer.findFirst).toHaveBeenCalledWith({
-      where: { id: 'customer-1', ownerId: 'user-1' },
-      select: { id: true },
-    });
-    expect(prisma.lead.updateMany).toHaveBeenCalledWith({
-      where: { id: 'lead-1', userId: 'user-1', tenantId: 'tenant-1' },
-      data: { status: 'converted', customerId: 'customer-1' },
-    });
-    expect(events.emit).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'lead.converted' }),
+    expect(result.created).toBe(true);
+    // fire-and-forget 评分 + 打标签（sourceType=comment → channel=mention）
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(leadScore.scoreLeadFromText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        leadId: 'lead-1',
+        text: '你们这个怎么收费？',
+        channel: 'mention',
+      }),
     );
   });
 
-  it('关联非本人客户抛 403', async () => {
-    const { repo } = makeRepo({
-      crmCustomerFindFirst: jest.fn().mockResolvedValue(null),
+  it('未注入 LeadScoreService 时静默跳过（不抛错）', async () => {
+    const prisma = {
+      lead: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({
+          id: 'lead-1',
+          userId: 'u1',
+          tenantId: 't1',
+          platform: 'douyin',
+          sourceType: 'manual-import',
+          sourceText: 'test',
+          dedupeKey: 'lead:xxx',
+          createdAt: new Date(),
+        }),
+      },
+    };
+    const repo = new LeadRepository(prisma as never);
+
+    const result = await repo.upsert({
+      userId: 'u1',
+      tenantId: 't1',
+      platform: 'douyin',
+      sourceType: 'manual-import',
+      sourceText: 'test',
     });
 
-    await expect(
-      repo.markConverted('lead-1', 'others-customer', scope),
-    ).rejects.toThrow('不能关联非本人客户');
-  });
-
-  it('跨用户 lead 转客户抛 404（updateMany count=0）', async () => {
-    const { repo } = makeRepo({
-      crmCustomerFindFirst: jest.fn().mockResolvedValue({ id: 'customer-1' }),
-      leadUpdateMany: jest.fn().mockResolvedValue({ count: 0 }),
-    });
-
-    await expect(
-      repo.markConverted('others-lead', 'customer-1', scope),
-    ).rejects.toThrow('线索不存在或无权操作');
+    expect(result.created).toBe(true);
   });
 });

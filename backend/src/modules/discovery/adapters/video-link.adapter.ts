@@ -10,6 +10,7 @@ import type {
   DiscoveryItem,
   ExternalContentRef,
 } from '../discovery.types';
+import { asyncIterableFromArray, emptyAsyncIterable } from './async-iterable';
 
 /** 常见平台 URL 模式 → { platform, externalContentId } */
 const URL_PATTERNS: Array<{
@@ -51,7 +52,9 @@ const URL_PATTERNS: Array<{
   },
 ];
 
-export function parseVideoUrl(url: string): { platform: string; externalContentId: string } | null {
+export function parseVideoUrl(
+  url: string,
+): { platform: string; externalContentId: string } | null {
   const u = (url ?? '').trim();
   if (!u) return null;
   for (const p of URL_PATTERNS) {
@@ -66,8 +69,8 @@ export function parseVideoUrl(url: string): { platform: string; externalContentI
 export class VideoLinkAdapter implements DiscoveryAdapter {
   readonly platform = 'video-link';
 
-  async capabilities(): Promise<DiscoveryCapability> {
-    return {
+  capabilities(): Promise<DiscoveryCapability> {
+    return Promise.resolve<DiscoveryCapability>({
       platform: 'video-link',
       modes: ['video-link'],
       supportsComment: false, // 评论需平台官方 connector
@@ -76,46 +79,50 @@ export class VideoLinkAdapter implements DiscoveryAdapter {
       dailyQuota: 500,
       unavailableReason:
         '视频链接可解析来源内容；评论/私信抓取需对应平台的官方授权 connector',
-    };
+    });
   }
 
-  async *discover(
+  discover(
     input: DiscoveryInput,
     _ctx: DiscoveryContext,
   ): AsyncIterable<DiscoveryItem> {
     const url = typeof input.input?.url === 'string' ? input.input.url : '';
     const parsed = parseVideoUrl(url);
-    if (!parsed) return;
+    if (!parsed) return emptyAsyncIterable();
     const rawHash = createHash('sha256').update(url).digest('hex');
-    yield {
-      platform: parsed.platform,
-      accountId: input.accountId,
-      sourceContent: {
-        externalContentId: parsed.externalContentId,
-        url,
-        contentType: 'video',
-        rawHash,
+    return asyncIterableFromArray([
+      {
+        platform: parsed.platform,
+        accountId: input.accountId,
+        sourceContent: {
+          externalContentId: parsed.externalContentId,
+          url,
+          contentType: 'video',
+          rawHash,
+        },
       },
-    };
+    ]);
   }
 
-  async fetchContent(ref: ExternalContentRef, _ctx: DiscoveryContext) {
+  fetchContent(ref: ExternalContentRef, _ctx: DiscoveryContext) {
     const url = ref.url ?? '';
     const parsed = parseVideoUrl(url);
-    return {
+    return Promise.resolve({
       externalContentId:
-        ref.externalContentId ?? parsed?.externalContentId ?? createHash('sha1').update(url).digest('hex').slice(0, 24),
+        ref.externalContentId ??
+        parsed?.externalContentId ??
+        createHash('sha1').update(url).digest('hex').slice(0, 24),
       url,
       contentType: 'video',
       rawHash: createHash('sha256').update(JSON.stringify(ref)).digest('hex'),
-    };
+    });
   }
 
-  async *fetchInteractions(
+  fetchInteractions(
     _ref: ExternalContentRef,
     _ctx: DiscoveryContext,
   ): AsyncIterable<never> {
     // 评论抓取需要平台官方 connector；此处明确不产出，避免假数据
-    return;
+    return emptyAsyncIterable();
   }
 }

@@ -1177,18 +1177,16 @@ export class AiEmployeeWorkflowService
     }));
     const blockers = steps
       .filter((step) => step.availability === 'blocked')
-      .map(
-        (step): AiEmployeeWorkflowBlocker => ({
-          code:
-            step.capabilityStatus === 'real'
-              ? 'step-configuration-required'
-              : `capability-${step.capabilityStatus}`,
-          stepId: step.id,
-          title: step.title,
-          message: step.message,
-          nextAction: step.nextAction,
-        }),
-      );
+      .map((step): AiEmployeeWorkflowBlocker => ({
+        code:
+          step.capabilityStatus === 'real'
+            ? 'step-configuration-required'
+            : `capability-${step.capabilityStatus}`,
+        stepId: step.id,
+        title: step.title,
+        message: step.message,
+        nextAction: step.nextAction,
+      }));
     const availableCount = steps.length - blockers.length;
     const hasCustomerActions = steps.some(
       (step) => step.actionKind === 'customer_action',

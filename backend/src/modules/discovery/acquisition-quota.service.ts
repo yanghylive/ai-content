@@ -9,7 +9,9 @@ export class AcquisitionQuotaExceededError extends Error {
     public readonly limit: number,
     public readonly used: number,
   ) {
-    super(`今日采集配额已用完（${used}/${limit}），明天再试或调整 ACQUISITION_DAILY_LIMIT`);
+    super(
+      `今日采集配额已用完（${used}/${limit}），明天再试或调整 ACQUISITION_DAILY_LIMIT`,
+    );
     this.name = 'AcquisitionQuotaExceededError';
   }
 }
@@ -61,18 +63,25 @@ export class AcquisitionQuotaService {
     }
   }
 
-  /** 发现一次 +1（幂等 upsert 日行） */
+  /** 发现一次 +1（原子消费：单条事务内递增 + 判断，超限则回滚拒绝，消除并发超限窗口） */
   async recordDiscover(userId: string): Promise<void> {
-    await this.prisma.acquisitionQuota.upsert({
-      where: { userId_date: { userId, date: this.today() } },
-      create: { userId, date: this.today(), discoverCount: 1 },
-      update: { discoverCount: { increment: 1 }, updatedAt: new Date() },
+    const limit = dailyLimit();
+    const date = this.today();
+    await this.prisma.$transaction(async (tx) => {
+      const row = await tx.acquisitionQuota.upsert({
+        where: { userId_date: { userId, date } },
+        create: { userId, date, discoverCount: 1 },
+        update: { discoverCount: { increment: 1 }, updatedAt: new Date() },
+      });
+      if (row.discoverCount > limit) {
+        // 事务回滚，本次 +1 不生效，超限拒绝
+        throw new AcquisitionQuotaExceededError(limit, limit);
+      }
     });
   }
 
-  /** 计数 + 检查合并（防并发超限：先检查后计数，允许临界窗口） */
+  /** 计数 + 检查合并（原子：recordDiscover 内置超限判断，无「先检查后递增」的并发窗口） */
   async consumeDiscover(userId: string): Promise<void> {
-    await this.assertCanDiscover(userId);
     await this.recordDiscover(userId);
   }
 }

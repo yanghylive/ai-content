@@ -11,6 +11,7 @@ import {
 import { PublishingService } from './publishing.service';
 import { PlatformPreflightService } from './platform-preflight.service';
 import { RequirePlans } from '../auth/roles.decorator';
+import { safeText } from '../../common/text.utils';
 
 @Controller('publishing')
 export class PublishingController {
@@ -24,14 +25,13 @@ export class PublishingController {
   @Post('preflight')
   preflight(@Body() body: Record<string, unknown>) {
     return this.platformPreflightService.check({
-      platform: String(body.platform ?? ''),
-      title: String(body.title ?? ''),
-      content: String(body.content ?? ''),
+      platform: safeText(body.platform),
+      title: safeText(body.title),
+      content: safeText(body.content),
       tags: Array.isArray(body.tags)
         ? body.tags.map((tag) => String(tag))
         : undefined,
-      coverUrl:
-        typeof body.coverUrl === 'string' ? body.coverUrl : null,
+      coverUrl: typeof body.coverUrl === 'string' ? body.coverUrl : null,
     });
   }
 

@@ -74,7 +74,7 @@ export function resolveCommercialGrant(input: {
   const plan = normalizeKaypalPlan(input.subscriptionPlan);
   let expired = false;
   if (input.subscriptionPeriodEnd != null) {
-    const t = new Date(input.subscriptionPeriodEnd as string | number | Date).getTime();
+    const t = new Date(input.subscriptionPeriodEnd).getTime();
     expired = !Number.isNaN(t) && t < Date.now();
   }
   const commercial =

@@ -3,7 +3,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export type LicenseStatus = 'unknown' | 'authorized' | 'unauthorized' | 'pending';
+export type LicenseStatus =
+  'unknown' | 'authorized' | 'unauthorized' | 'pending';
 
 export interface LicenseCheckResult {
   licenseStatus: LicenseStatus;
@@ -81,7 +82,10 @@ export class ContentLicenseService {
         copyrightNotice: input.notice,
       },
     });
-    return { id: updated.id, licenseStatus: updated.licenseStatus as LicenseStatus };
+    return {
+      id: updated.id,
+      licenseStatus: updated.licenseStatus as LicenseStatus,
+    };
   }
 
   /** 批量检查（批量发布前；Bug 修复 2026-08-17：批量查询替代 N+1） */
@@ -91,8 +95,8 @@ export class ContentLicenseService {
       select: { id: true, licenseStatus: true, copyrightNotice: true },
     });
     const byId = new Map(variants.map((v) => [v.id, v]));
-    const results: Array<{ variantId: string } & LicenseCheckResult> = input.variantIds.map(
-      (variantId) => {
+    const results: Array<{ variantId: string } & LicenseCheckResult> =
+      input.variantIds.map((variantId) => {
         const v = byId.get(variantId);
         if (!v) {
           return {
@@ -102,15 +106,20 @@ export class ContentLicenseService {
             reason: '素材未登记版权状态（旧流程），建议补录授权信息',
           };
         }
-        return { variantId, ...this.resolveLicense(v.licenseStatus, v.copyrightNotice) };
-      },
-    );
+        return {
+          variantId,
+          ...this.resolveLicense(v.licenseStatus, v.copyrightNotice),
+        };
+      });
     const blocked = results.filter((r) => !r.allowedToPublish);
     return { results, blockedCount: blocked.length };
   }
 
   /** 版权状态判定（与 checkLicense 同规则，供 checkMany 复用） */
-  private resolveLicense(status: string, notice: string | null): LicenseCheckResult {
+  private resolveLicense(
+    status: string,
+    notice: string | null,
+  ): LicenseCheckResult {
     switch (status) {
       case 'unauthorized':
         return {
@@ -119,9 +128,17 @@ export class ContentLicenseService {
           reason: `素材未获授权（${notice ?? '无版权说明'}），禁止发布`,
         };
       case 'authorized':
-        return { licenseStatus: 'authorized', allowedToPublish: true, reason: null };
+        return {
+          licenseStatus: 'authorized',
+          allowedToPublish: true,
+          reason: null,
+        };
       case 'pending':
-        return { licenseStatus: 'pending', allowedToPublish: false, reason: '素材授权审核中，通过后放行' };
+        return {
+          licenseStatus: 'pending',
+          allowedToPublish: false,
+          reason: '素材授权审核中，通过后放行',
+        };
       case 'unknown':
       default:
         return {

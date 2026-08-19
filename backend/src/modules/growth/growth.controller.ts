@@ -61,8 +61,16 @@ export class GrowthController {
   }
 
   @Get('exposure/records')
-  listExposureRecords(@Query('limit') limit?: string) {
-    return this.growthService.listExposureRecords(limit ? Number(limit) : undefined);
+  listExposureRecords(
+    @Req() request: AuthenticatedRequest,
+    @Query('limit') limit?: string,
+  ) {
+    const userId = request.authUser?.id?.trim() || '';
+    if (!userId) throw new UnauthorizedException('请先登录');
+    return this.growthService.listExposureRecords(
+      userId,
+      limit ? Number(limit) : undefined,
+    );
   }
 
   @Get('exposure-accounts')
@@ -75,7 +83,8 @@ export class GrowthController {
   @Post('exposure-accounts')
   createExposureAccount(
     @Req() request: AuthenticatedRequest,
-    @Body() body: { platform?: string; accountId: string; name: string; note?: string },
+    @Body()
+    body: { platform?: string; accountId: string; name: string; note?: string },
   ) {
     const userId = request.authUser?.id?.trim() || '';
     if (!userId) throw new UnauthorizedException('请先登录');
@@ -94,7 +103,10 @@ export class GrowthController {
   }
 
   @Delete('exposure-accounts/:id')
-  removeExposureAccount(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+  removeExposureAccount(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
     const userId = request.authUser?.id?.trim() || '';
     if (!userId) throw new UnauthorizedException('请先登录');
     return this.growthService.removeExposureAccount(userId, id);
@@ -399,12 +411,18 @@ export class GrowthController {
   }
 
   @Get('leads/:id/score-history')
-  getLeadScoreHistory(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+  getLeadScoreHistory(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
     return this.growthService.getLeadScoreHistory(this.getUserId(request), id);
   }
 
   @Get('leads/:id/attribution')
-  getLeadAttribution(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+  getLeadAttribution(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
     return this.growthService.getLeadAttribution(this.getUserId(request), id);
   }
 

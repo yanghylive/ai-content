@@ -191,7 +191,9 @@ export class DouyinPublishAdapter
       throw new Error(`视频文件不存在或不可读：${videoPath}`);
     }
     if (stat.size < 1024) {
-      throw new Error(`视频文件过小（${stat.size} 字节），疑似损坏或占位文件，拒绝上传`);
+      throw new Error(
+        `视频文件过小（${stat.size} 字节），疑似损坏或占位文件，拒绝上传`,
+      );
     }
     try {
       const fd = openSync(videoPath, 'r');
@@ -204,10 +206,15 @@ export class DouyinPublishAdapter
         throw new Error(`视频文件魔数校验失败（非 mp4/mov 格式），拒绝上传`);
       }
     } catch (error) {
-      if (error instanceof Error && /魔数|文件不存在|过小/.test(error.message)) {
+      if (
+        error instanceof Error &&
+        /魔数|文件不存在|过小/.test(error.message)
+      ) {
         throw error;
       }
-      throw new Error(`视频文件读取失败：${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `视频文件读取失败：${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 

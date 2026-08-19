@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -14,7 +15,10 @@ import { join } from 'node:path';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { resolveProjectDataPath } from '../../common/project-paths';
-import { industryPlaybook, listWorkflowPlaybooks } from './growth-playbooks.data';
+import {
+  industryPlaybook,
+  listWorkflowPlaybooks,
+} from './growth-playbooks.data';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import {
   AiEmployeeService,
@@ -24,7 +28,20 @@ import {
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { CrmService } from '../crm/crm.service';
 import { ActivationService } from '../activation/activation.service';
+import { GrowthLeadBridgeService } from './growth-lead-bridge.service';
+import { LeadConvertService } from '../leads/lead-convert.service';
+import { LeadRepository } from '../leads/lead.repository';
+import { RpaExecutionStore } from '../rpa/rpa-execution-store.service';
+import type {
+  RpaExecutionFinalizeInput,
+  RpaExecutionStepInput,
+} from '../rpa/rpa-execution-store.service';
+import { RpaDriverRegistry } from '../rpa/rpa-driver-registry.service';
+import type { RpaDriver } from '../rpa/rpa-driver.interface';
+import type { RpaSession } from '../rpa/rpa.types';
+import type { RpaReasonCode, RpaStepResult } from '../rpa/rpa.types';
 import {
+  type ExecutorReasonCode,
   type ExecutorTask,
   type RuntimeExecutionResult,
 } from '../runtime/executor.interface';
@@ -104,7 +121,21 @@ type AiEmployeeLeadResponse = {
     createdAt?: string;
     raw?: Record<string, unknown>;
   }>;
+  /** 复核#4-6：driver 真实状态机记录 id（成功路径带出，供合成记录跳过；参数透传，不用单例字段） */
+  rpaRecordId?: string | null;
+  /** P1-2：失败回退可追责信息（前端展示"原始失败原因/是否回退/回退来源/执行 ID"） */
+  fallback?: FallbackTrace;
   raw?: unknown;
+};
+
+/** P1-2：失败回退追踪（RPA 失败→回退旧链路时如实标注来源） */
+type FallbackTrace = {
+  attempted: boolean;
+  source: 'rpa' | 'legacy-adapter' | 'manual-import' | 'none';
+  rpaExecutionId: string | null;
+  reasonCode: string | null;
+  fallbackAllowed: boolean;
+  message: string;
 };
 
 type AiEmployeeFollowUpPlan = Awaited<
@@ -132,6 +163,10 @@ export class GrowthService implements OnModuleInit {
     @Optional()
     private readonly authRequestContext?: AuthRequestContextService,
     @Optional() private readonly activation?: ActivationService,
+    @Optional() private readonly leadBridge?: GrowthLeadBridgeService,
+    @Optional() private readonly leadConvertService?: LeadConvertService,
+    @Optional() private readonly rpaExecutionStore?: RpaExecutionStore,
+    @Optional() private readonly rpaDriverRegistry?: RpaDriverRegistry,
   ) {}
 
   async onModuleInit() {
@@ -975,12 +1010,22 @@ export class GrowthService implements OnModuleInit {
       scheduleEnabled: input.scheduleEnabled === true,
       beginTime: this.text(input.beginTime) || '09:30',
       riskMode: this.riskMode(input.riskMode),
-      status: input.status === 'disabled' ? 'disabled' : 'enabled',
+      // 止血：新获客任务默认禁用，需用户显式启用（防保存即自动启用污染）
+      status: input.status === 'enabled' ? 'enabled' : 'disabled',
       exposureCount: 0,
       exposureDate: this.dateKey(),
       createdAt: now,
       updatedAt: now,
     };
+    // 复核#4：create 时 auto + 已启用 + 已过 controller 风险门 → 落审批留痕（daemon 执行依赖此字段）
+    if (
+      config.riskMode === 'auto' &&
+      config.status === 'enabled' &&
+      config.scheduleEnabled
+    ) {
+      config.autoApprovedAt = now;
+      config.autoApprovedBy = 'backend-risk-gate';
+    }
     this.assertValidConfig(config);
     await this.assertGrowthPlatformAccountScope(
       userId,
@@ -1057,6 +1102,13 @@ export class GrowthService implements OnModuleInit {
         input.riskMode === undefined
           ? existing.riskMode
           : this.riskMode(input.riskMode),
+      // 复核#4：riskMode 切到 auto 时落审批留痕（controller 已过后端风险确认门，operator 记录在 riskAudit）
+      ...(input.riskMode === 'auto' && existing.riskMode !== 'auto'
+        ? {
+            autoApprovedAt: new Date().toISOString(),
+            autoApprovedBy: 'backend-risk-gate',
+          }
+        : {}),
       status:
         input.status === undefined
           ? existing.status
@@ -1065,6 +1117,20 @@ export class GrowthService implements OnModuleInit {
             : 'enabled',
       updatedAt: new Date().toISOString(),
     };
+    // 复核#4 审批留痕完整化：
+    // - 切离 auto → 清除留痕（再启用需重新审批）；
+    // - 已是 auto 且本次由禁用改启用（setConfigStatus 走这里，已过风险门）→ 补记留痕。
+    if (updated.riskMode !== 'auto') {
+      delete updated.autoApprovedAt;
+      delete updated.autoApprovedBy;
+    } else if (
+      !updated.autoApprovedAt &&
+      input.status === 'enabled' &&
+      existing.status !== 'enabled'
+    ) {
+      updated.autoApprovedAt = new Date().toISOString();
+      updated.autoApprovedBy = 'backend-risk-gate';
+    }
     this.assertValidConfig(updated);
     await this.assertGrowthPlatformAccountScope(
       userId,
@@ -1117,8 +1183,13 @@ export class GrowthService implements OnModuleInit {
   async executeConfig(
     userId: string,
     id: string,
-    options: { confirmedExecution?: boolean } = {},
+    options: {
+      confirmedExecution?: boolean;
+      /** 复核#4 可追责：触发来源（默认 manual） */
+      trigger?: 'manual' | 'scheduled' | 'workflow' | 'api';
+    } = {},
   ) {
+    const trigger = options.trigger ?? 'manual';
     const membership = await this.requireGrowthMutationScope(userId, {
       platformAccount: true,
     });
@@ -1152,6 +1223,7 @@ export class GrowthService implements OnModuleInit {
     const executionEnabled = process.env.GROWTH_EXECUTION_ENABLED === 'true';
     if (!accountHealth) {
       return this.createRunResult(normalizedConfig, {
+        trigger,
         status: 'skipped',
         message: '未找到可验证的执行账号，已阻止增长获客执行。',
         failureReason: 'account_not_logged_in',
@@ -1162,6 +1234,7 @@ export class GrowthService implements OnModuleInit {
     }
     if (accountHealth?.loginStatus && accountHealth.loginStatus !== 'online') {
       return this.createRunResult(normalizedConfig, {
+        trigger,
         status: 'skipped',
         message:
           accountHealth.loginStatus === 'verification-required'
@@ -1178,6 +1251,7 @@ export class GrowthService implements OnModuleInit {
     }
     if (accountHealth?.riskStatus && accountHealth.riskStatus !== 'normal') {
       return this.createRunResult(normalizedConfig, {
+        trigger,
         status: 'skipped',
         message: `账号 ${accountHealth.accountName} 当前风险状态为 ${accountHealth.riskStatus}，已阻止自动获客执行。`,
         failureReason: 'account_risk_control',
@@ -1192,6 +1266,7 @@ export class GrowthService implements OnModuleInit {
     );
     if (remaining <= 0) {
       return this.createRunResult(normalizedConfig, {
+        trigger,
         status: 'skipped',
         message: '当天触达次数已达到上限',
         failureReason: 'daily_limit_reached',
@@ -1203,8 +1278,14 @@ export class GrowthService implements OnModuleInit {
 
     const executionCapability =
       this.growthAutoExecutionCapability(normalizedConfig);
-    if (!executionCapability.ready) {
+    // D 阶段：小红书/快手自动触达未接入 → auto 无人值守被能力门拒绝；
+    // 手动 confirm-first 确认执行允许走「发现 → 候选沉淀线索池（partial，触达待人工）」。
+    const isManualConfirmed =
+      normalizedConfig.riskMode === 'confirm-first' &&
+      options.confirmedExecution === true;
+    if (!executionCapability.ready && !isManualConfirmed) {
       return this.createRunResult(normalizedConfig, {
+        trigger,
         status: 'skipped',
         message: executionCapability.reason,
         failureReason: 'engine_unavailable',
@@ -1218,8 +1299,30 @@ export class GrowthService implements OnModuleInit {
       normalizedConfig.riskMode === 'auto' ||
       (normalizedConfig.riskMode === 'confirm-first' &&
         options.confirmedExecution === true);
+
+    // 复核#4：自动触发（daemon/workflow）执行 auto 任务必须有启用审批留痕，
+    // 无 autoApprovedAt 一律拒绝（manual 手动执行走逐次风险确认，不受此门限制）。
+    const automatedTrigger = trigger === 'scheduled' || trigger === 'workflow';
+    if (
+      normalizedConfig.riskMode === 'auto' &&
+      automatedTrigger &&
+      !normalizedConfig.autoApprovedAt
+    ) {
+      return this.createRunResult(normalizedConfig, {
+        trigger,
+        status: 'skipped',
+        message:
+          '自动触达任务缺少启用审批留痕（autoApprovedAt），已阻止自动执行；请在启用任务时完成风险确认后再运行。',
+        failureReason: 'engine_unavailable',
+        candidateCount: 0,
+        selectedCount: 0,
+        contactedCount: 0,
+      });
+    }
+
     if (!executionEnabled || !executionApproved) {
       return this.createRunResult(normalizedConfig, {
+        trigger,
         status: 'skipped',
         message: executionEnabled
           ? normalizedConfig.riskMode === 'draft-only'
@@ -1232,6 +1335,8 @@ export class GrowthService implements OnModuleInit {
       });
     }
 
+    // 复核#4-6：driver 成功路径的状态机记录 id（try 内赋值，catch 分支共用，防并发串单）
+    let driverRpaRecordId: string | null = null;
     try {
       const candidateResponse = await this.fetchCandidatesWithAiEmployee(
         normalizedConfig,
@@ -1240,11 +1345,14 @@ export class GrowthService implements OnModuleInit {
       const candidates = Array.isArray(candidateResponse.candidates)
         ? candidateResponse.candidates
         : [];
+      // 复核#4-6：driver 成功路径的状态机记录 id 参数透传（防并发串单）
+      driverRpaRecordId = candidateResponse.rpaRecordId ?? null;
       const candidateEvidenceUrls = this.evidenceUrls(
         candidateResponse.evidence,
       );
       if (!candidates.length) {
         return this.createRunResult(normalizedConfig, {
+          trigger,
           status: candidateResponse.ok === false ? 'failed' : 'skipped',
           failureReason:
             candidateResponse.ok === false
@@ -1257,6 +1365,8 @@ export class GrowthService implements OnModuleInit {
           selectedCount: 0,
           contactedCount: 0,
           evidenceUrls: candidateEvidenceUrls,
+          rpaRecordId: driverRpaRecordId,
+          fallback: candidateResponse.fallback,
         });
       }
 
@@ -1272,6 +1382,7 @@ export class GrowthService implements OnModuleInit {
           ),
         );
         return this.createRunResult(normalizedConfig, {
+          trigger,
           status: candidateResponse.ok === false ? 'failed' : 'success',
           failureReason:
             candidateResponse.ok === false
@@ -1285,30 +1396,79 @@ export class GrowthService implements OnModuleInit {
           contactedCount: 0,
           quotaConsumedCount: accountCandidates.length,
           evidenceUrls: candidateEvidenceUrls,
+          rpaRecordId: driverRpaRecordId,
           leads,
         });
       }
 
-      // planDouyinFollowUp 是 async（必须 await，否则拿到 Promise 导致 targets undefined）
-      const followUpPlan = await this.aiEmployeeService.planDouyinFollowUp({
-        candidates,
-        sourceLabel: this.platformLabel(normalizedConfig.platform),
-        sourceText:
-          normalizedConfig.sourceInputs.join('、') || normalizedConfig.taskName,
-        accountName: normalizedConfig.accountName || normalizedConfig.accountId,
-        commentTemplates: normalizedConfig.commentTemplates,
-        messageTemplates: normalizedConfig.privateMessageTemplates,
-        dailyLimit: normalizedConfig.dailyLimit,
-        maxTargets: remaining,
-        maxActionsPerTarget: normalizedConfig.perTargetLimit,
-        includeKeywords: normalizedConfig.includeKeywords,
-        blacklistKeywords: [
-          ...normalizedConfig.excludeKeywords,
-          ...normalizedConfig.blacklistNicknames,
-        ],
-      });
+      // D 阶段修正（大王纠错）：获客线索 = 评论区表达需求的用户（对齐抖音"读评论找客户"）。
+      // 发现层返回的是内容（笔记/视频），必须读评论拿用户；评论不可达 → 如实失败，不把内容当客户。
+      if (!this.platformTouchReady(normalizedConfig.platform)) {
+        // P1 复核：读评论关闭失败经 closeState 回传 → run 标注需人工核对（不静默）
+        const commentCloseState: { failed: boolean } = { failed: false };
+        const commentLeads = await this.fetchCommentUsersAsLeads(
+          normalizedConfig,
+          candidates,
+          remaining,
+          commentCloseState,
+        );
+        if (!commentLeads.length) {
+          return this.createRunResult(normalizedConfig, {
+            trigger,
+            status: 'failed',
+            failureReason: 'target_not_found',
+            fallback: candidateResponse.fallback,
+            message: `${this.platformLabel(normalizedConfig.platform)} 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。`,
+            candidateCount: candidates.length,
+            selectedCount: 0,
+            contactedCount: 0,
+            evidenceUrls: candidateEvidenceUrls,
+            rpaRecordId: driverRpaRecordId,
+          });
+        }
+        return this.createRunResult(normalizedConfig, {
+          trigger,
+          status: 'partial',
+          message: `发现 ${candidates.length} 条内容，读评论获得 ${commentLeads.length} 个评论用户线索；${this.platformLabel(normalizedConfig.platform)} 自动触达未接入，需人工跟进。${
+            commentCloseState.failed
+              ? '且浏览器会话关闭失败，需人工核对平台实际结果。'
+              : ''
+          }`,
+          candidateCount: candidates.length,
+          selectedCount: commentLeads.length,
+          contactedCount: 0,
+          evidenceUrls: candidateEvidenceUrls,
+          leadIds: commentLeads.map((lead) => lead.id),
+          leads: commentLeads,
+          rpaRecordId: driverRpaRecordId,
+        });
+      }
+
+      // planDouyinFollowUp 同步实现，但测试里 mock 为 async；用 Promise.resolve 包一层统一 await
+      const followUpPlan = await Promise.resolve(
+        this.aiEmployeeService.planDouyinFollowUp({
+          candidates,
+          sourceLabel: this.platformLabel(normalizedConfig.platform),
+          sourceText:
+            normalizedConfig.sourceInputs.join('、') ||
+            normalizedConfig.taskName,
+          accountName:
+            normalizedConfig.accountName || normalizedConfig.accountId,
+          commentTemplates: normalizedConfig.commentTemplates,
+          messageTemplates: normalizedConfig.privateMessageTemplates,
+          dailyLimit: normalizedConfig.dailyLimit,
+          maxTargets: remaining,
+          maxActionsPerTarget: normalizedConfig.perTargetLimit,
+          includeKeywords: normalizedConfig.includeKeywords,
+          blacklistKeywords: [
+            ...normalizedConfig.excludeKeywords,
+            ...normalizedConfig.blacklistNicknames,
+          ],
+        }),
+      );
       if (!followUpPlan.targets.length) {
         return this.createRunResult(normalizedConfig, {
+          trigger,
           status: 'skipped',
           failureReason: 'target_not_found',
           message:
@@ -1318,6 +1478,7 @@ export class GrowthService implements OnModuleInit {
           selectedCount: 0,
           contactedCount: 0,
           evidenceUrls: candidateEvidenceUrls,
+          rpaRecordId: driverRpaRecordId,
         });
       }
 
@@ -1355,6 +1516,7 @@ export class GrowthService implements OnModuleInit {
             )
           : undefined;
       return this.createRunResult(normalizedConfig, {
+        trigger,
         status: this.followUpStatusToRunStatus(execution.status),
         failureReason,
         message: execution.message,
@@ -1364,9 +1526,16 @@ export class GrowthService implements OnModuleInit {
         evidenceUrls: executionEvidenceUrls,
         leadIds: leads.map((lead) => lead.id),
         leads,
+        rpaRecordId: driverRpaRecordId,
       });
     } catch (error) {
+      // P1 复核：账号忙（并发执行同一账号被 createWithLock 拦截）→ 透传给 controller 转 409，
+      // 与主 RPA 控制器统一语义；不转 failed run（否则并发仍会绕过锁各建一条记录）。
+      if (error instanceof ConflictException) {
+        throw error;
+      }
       return this.createRunResult(normalizedConfig, {
+        trigger,
         status: 'failed',
         failureReason: this.mapReasonCode(
           error && typeof error === 'object'
@@ -1378,6 +1547,7 @@ export class GrowthService implements OnModuleInit {
         candidateCount: 0,
         selectedCount: 0,
         contactedCount: 0,
+        rpaRecordId: driverRpaRecordId,
       });
     }
   }
@@ -1509,10 +1679,13 @@ export class GrowthService implements OnModuleInit {
     const readyItems = plan.items
       .filter((item) => {
         const config = configById.get(item.configId);
+        // 复核#4：自动发送必须有审批留痕，无 autoApprovedAt 的 auto 任务拒绝 daemon 执行
+        const approved = Boolean(config?.autoApprovedAt);
         return (
           executionEnabled &&
           item.status === 'ready' &&
-          config?.riskMode === 'auto'
+          config?.riskMode === 'auto' &&
+          approved
         );
       })
       .slice(0, limit);
@@ -1522,7 +1695,11 @@ export class GrowthService implements OnModuleInit {
       leads: GrowthLead[];
     }> = [];
     for (const item of readyItems) {
-      results.push(await this.executeConfig(userId, item.configId));
+      results.push(
+        await this.executeConfig(userId, item.configId, {
+          trigger: 'scheduled',
+        }),
+      );
     }
     const response = {
       plan,
@@ -1553,13 +1730,34 @@ export class GrowthService implements OnModuleInit {
 
   async listRuns(userId: string, query: QueryInput = {}) {
     const configId = this.text(query.configId);
-    const store = await this.loadStore();
     const scope = await this.growthScope(userId);
-    return store.runs.filter(
-      (item) =>
-        this.inGrowthScope(item, scope) &&
-        (!configId || item.configId === configId),
-    );
+    const pageSize = this.queryPageSize(query.pageSize);
+    const offset = this.queryOffset(query.page, query.offset, pageSize);
+    // 六步闭环 P1-14：数据库分页 + 服务端筛选（不再全量 loadStore 后内存过滤）。
+    // 无数据库 delegate（测试环境 mock）时回退 loadStore，保持行为兼容。
+    if (!this.hasDbListDelegates()) {
+      const store = await this.loadStore();
+      return store.runs
+        .filter(
+          (item) =>
+            this.inGrowthScope(item, scope) &&
+            (!configId || item.configId === configId),
+        )
+        .slice(offset, offset + pageSize);
+    }
+    const where: Prisma.GrowthAcquisitionRunWhereInput = {
+      ...(this.growthScopeWhere(
+        scope,
+      ) as Prisma.GrowthAcquisitionRunWhereInput),
+      ...(configId ? { configId } : {}),
+    };
+    const rows = await this.prisma.growthAcquisitionRun.findMany({
+      where,
+      orderBy: { startedAt: 'desc' },
+      skip: offset,
+      take: pageSize,
+    });
+    return rows.map((item) => this.mapRunRow(item));
   }
 
   async getRun(userId: string, id: string) {
@@ -1576,23 +1774,53 @@ export class GrowthService implements OnModuleInit {
     const status = this.text(query.status);
     const platform = this.text(query.platform);
     const q = this.text(query.q).toLowerCase();
-    const store = await this.loadStore();
     const scope = await this.growthScope(userId);
-    return store.leads.filter((item) => {
-      if (!this.inGrowthScope(item, scope)) return false;
-      if (status && status !== 'all' && item.status !== status) return false;
-      if (platform && platform !== 'all' && item.platform !== platform)
-        return false;
-      if (
-        q &&
-        !`${item.nickname} ${item.sourceText} ${item.matchedKeywords.join(' ')}`
-          .toLowerCase()
-          .includes(q)
-      ) {
-        return false;
-      }
-      return true;
+    const pageSize = this.queryPageSize(query.pageSize);
+    const offset = this.queryOffset(query.page, query.offset, pageSize);
+    // 六步闭环 P1-14：数据库分页 + 服务端筛选（status/platform/q 下推）。
+    // 无数据库 delegate（测试环境 mock）时回退 loadStore，保持行为兼容。
+    if (!this.hasDbListDelegates()) {
+      const store = await this.loadStore();
+      return store.leads
+        .filter((item) => {
+          if (!this.inGrowthScope(item, scope)) return false;
+          if (status && status !== 'all' && item.status !== status)
+            return false;
+          if (platform && platform !== 'all' && item.platform !== platform)
+            return false;
+          if (
+            q &&
+            !`${item.nickname} ${item.sourceText} ${item.matchedKeywords.join(' ')}`
+              .toLowerCase()
+              .includes(q)
+          ) {
+            return false;
+          }
+          return true;
+        })
+        .slice(offset, offset + pageSize);
+    }
+    const where: Prisma.LeadWhereInput = {
+      ...(this.growthScopeWhere(scope) as Prisma.LeadWhereInput),
+      sourceType: { notIn: ['comment', 'dm'] },
+      ...(status && status !== 'all' ? { status } : {}),
+      ...(platform && platform !== 'all' ? { platform } : {}),
+      ...(q
+        ? {
+            OR: [
+              { nickname: { contains: q } },
+              { sourceText: { contains: q } },
+            ],
+          }
+        : {}),
+    };
+    const rows = await this.prisma.lead.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: offset,
+      take: pageSize,
     });
+    return rows.map((item) => this.mapLeadRow(item));
   }
 
   async createLead(userId: string, input: QueryInput) {
@@ -1761,7 +1989,6 @@ export class GrowthService implements OnModuleInit {
 
   async syncLeadToCrm(userId: string, id: string) {
     const membership = await this.requireGrowthMutationScope(userId);
-    if (!this.crmService) throw new BadRequestException('CRM 服务未接入');
     const store = await this.loadStore();
     const scope: GrowthScope = membership;
     const existing = store.leads.find((item) =>
@@ -1769,6 +1996,71 @@ export class GrowthService implements OnModuleInit {
     );
     if (!existing) throw new NotFoundException('线索不存在');
 
+    // 六步闭环 P1-7：优先走统一 LeadConvertService（原子转客户，10 步事务），
+    // 转换后回写 GrowthLead.customerId 保持两套对齐，并补线索→客户归因链。
+    if (this.leadConvertService) {
+      const converted = await this.leadConvertService.convert({
+        leadId: existing.id,
+        scope: { userId, tenantId: membership.tenantId ?? null },
+      });
+      const customer = converted.customer;
+      // 统一 Lead 已在 convert 内 status=converted，这里同步 GrowthLead.status 保持两套一致
+      const updated = this.withCrmCustomerNote(
+        userId,
+        existing,
+        customer.id,
+        customer.displayName,
+        'manual',
+      );
+      if (updated.status !== 'converted') {
+        updated.status = 'converted';
+        updated.notes = [
+          {
+            id: this.id('note'),
+            text: '状态从「已触达/培育」流转为「已转化」。',
+            type: 'status-change',
+            createdAt: new Date().toISOString(),
+            createdBy: userId,
+          },
+          ...(updated.notes || []),
+        ];
+      }
+      await this.saveStore(
+        {
+          ...store,
+          leads: store.leads.map((item) =>
+            this.sameGrowthRecord(item, scope, id) ? updated : item,
+          ),
+        },
+        { scope, collections: ['leads'] },
+      );
+      // 第 4 步（线索转换侧）：归因链落库（失败不阻断，错误不静默）
+      if (this.leadBridge) {
+        try {
+          await this.leadBridge.saveLeadResultChain({
+            tenantId: membership.tenantId ?? 'legacy-local-desktop',
+            userId,
+            leadId: existing.id,
+            customerId: customer.id,
+            opportunityId: converted.opportunityId ?? null,
+          });
+        } catch (error) {
+          this.logger.warn(
+            `线索转换归因链落库失败（lead=${existing.id}）：${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      }
+      return {
+        ok: true,
+        enabled: true,
+        lead: updated,
+        customerId: customer.id,
+        message: `已同步到 CRM 客户：${customer.displayName}`,
+      };
+    }
+
+    // 回退旧链路（leadConvertService 未注入时，保持原有 captureGrowthLead 行为）
+    if (!this.crmService) throw new BadRequestException('CRM 服务未接入');
     const capture = await this.crmService.captureGrowthLead(
       userId,
       this.growthLeadToCrmCaptureInput(existing),
@@ -2291,10 +2583,7 @@ export class GrowthService implements OnModuleInit {
         (total, run) => total + run.contactedCount,
         0,
       ),
-      todayCrmCapturedCount: runs.reduce(
-        (total, run) => total + run.crmCapturedCount,
-        0,
-      ),
+      todayCrmCapturedCount: leads.filter((lead) => lead.crmCustomerId).length,
       activeConfigCount: configs.filter((config) => config.status === 'enabled')
         .length,
       highIntentLeadCount: leads.filter(
@@ -2308,10 +2597,9 @@ export class GrowthService implements OnModuleInit {
         candidates: runs.reduce((total, run) => total + run.candidateCount, 0),
         selected: runs.reduce((total, run) => total + run.selectedCount, 0),
         contacted: runs.reduce((total, run) => total + run.contactedCount, 0),
-        crmCaptured: runs.reduce(
-          (total, run) => total + run.crmCapturedCount,
-          0,
-        ),
+        // 进 CRM 统一用 lead.crmCustomerId（线索真实关联 CRM 的证据），
+        // 与 /growth/overview 同口径；不再用 run.crmCapturedCount（运行时同步计数，语义易漂移）
+        crmCaptured: leads.filter((lead) => lead.crmCustomerId).length,
         converted: leads.filter((lead) => lead.status === 'converted').length,
       },
       recentRuns: runs.slice(0, 8),
@@ -2320,9 +2608,34 @@ export class GrowthService implements OnModuleInit {
         .slice(0, 6),
     };
     const copywriting = this.copywritingReport(leads);
+    // 六步闭环复盘：数据库 delegate 不可用（测试环境）时返回空闭环，不阻断报告
+    let sixStage: GrowthReports['sixStage'] = {
+      content: 0,
+      publish: 0,
+      interaction: 0,
+      lead: 0,
+      customer: 0,
+      opportunity: 0,
+      wonAmountCents: 0,
+      contentConversionRate: 0,
+      attributedLeadCount: 0,
+      attributedCustomerCount: 0,
+      attributionConfidence: 'low',
+      platformComparison: [],
+    };
+    if (this.hasDbListDelegates()) {
+      try {
+        sixStage = await this.computeSixStageFunnel(scope, platform);
+      } catch (error) {
+        this.logger.warn(
+          `六步闭环复盘计算失败：${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
     return {
       overview,
       funnel: overview.funnel,
+      sixStage,
       copywriting,
       accounts,
       tasks: runs,
@@ -2335,6 +2648,137 @@ export class GrowthService implements OnModuleInit {
       ),
       bottlenecks: this.bottleneckReport(overview, runs, leads, accounts),
       leadStatusDistribution: this.leadStatusDistribution(leads),
+    };
+  }
+
+  /**
+   * 六步闭环复盘（P1-15）：内容→发布→互动→线索→客户→商机。
+   * 数据来自统一侧事实表（article / publishRecord / interactionEvent / lead / crmCustomer / crmOpportunity），
+   * 含成交金额、内容转化率、平台对比、归因置信度。
+   */
+  private async computeSixStageFunnel(scope: GrowthScope, platform: string) {
+    const scopeWhere = this.growthScopeWhere(scope);
+    // CRM 客户/商机表用 ownerId 做归属（非 userId）；两者 where 结构一致，用宽松类型承载
+    const crmScopeWhere: {
+      ownerId?: string;
+      OR?: Array<Record<string, unknown>>;
+    } = scope.tenantId
+      ? {
+          OR: [
+            { tenantId: scope.tenantId },
+            { ownerId: scope.userId, tenantId: null },
+          ],
+        }
+      : { ownerId: scope.userId };
+    const platformFilter = platform && platform !== 'all' ? { platform } : {};
+
+    const [content, publish, interaction, customer, opportunity] =
+      await Promise.all([
+        this.prisma.article.count({ where: { ...scopeWhere } }),
+        this.prisma.publishRecord.count({
+          where: { ...scopeWhere, ...platformFilter },
+        }),
+        this.prisma.interactionEvent.count({
+          where: { ...scopeWhere, ...platformFilter },
+        }),
+        this.prisma.crmCustomer.count({ where: { ...crmScopeWhere } }),
+        this.prisma.crmOpportunity.count({ where: { ...crmScopeWhere } }),
+      ]);
+
+    const leadCount = await this.prisma.lead.count({
+      where: {
+        ...(scopeWhere as Prisma.LeadWhereInput),
+        sourceType: { notIn: ['comment', 'dm'] },
+        ...(platformFilter as Prisma.LeadWhereInput),
+      },
+    });
+
+    // 成交金额（已赢单商机的金额，分）
+    const wonAgg = await this.prisma.crmOpportunity.aggregate({
+      where: { ...crmScopeWhere, stage: 'won' },
+      _sum: { amountCents: true },
+    });
+    const wonAmountCents = wonAgg._sum?.amountCents ?? 0;
+
+    // 归因置信度：有确定性（deterministic）归因链为 high，规则/推断为 medium，否则 low
+    const deterministicLinks = await this.prisma.attributionLink.count({
+      where: { ...scopeWhere, model: 'deterministic' },
+    });
+    const anyLinks = await this.prisma.attributionLink.count({
+      where: { ...scopeWhere },
+    });
+    const attributionConfidence: 'high' | 'medium' | 'low' =
+      deterministicLinks > 0 ? 'high' : anyLinks > 0 ? 'medium' : 'low';
+
+    // 按主键归因：内容实际带动的线索/客户（通过归因链，而非简单 count 相除）。
+    // 归因到的线索数 = 有 interaction→lead / publish→lead / content→lead 归因链的 lead（去重）。
+    const attributedLeadRows = await this.prisma.attributionLink.findMany({
+      where: {
+        ...scopeWhere,
+        toType: 'lead',
+        fromType: { in: ['interaction', 'publish', 'content'] },
+      },
+      select: { toId: true },
+      distinct: ['toId'],
+    });
+    const attributedLeadCount = attributedLeadRows.length;
+    // 归因到的客户数 = 有 lead→customer 归因链的 customer（去重）。
+    const attributedCustomerRows = await this.prisma.attributionLink.findMany({
+      where: { ...scopeWhere, toType: 'customer', fromType: 'lead' },
+      select: { toId: true },
+      distinct: ['toId'],
+    });
+    const attributedCustomerCount = attributedCustomerRows.length;
+
+    // 平台对比（内容用 SourceContent 事实表按平台统计）
+    const platforms = await this.prisma.interactionEvent.groupBy({
+      by: ['platform'],
+      where: { ...scopeWhere },
+      _count: { _all: true },
+    });
+    const platformComparison = await Promise.all(
+      platforms.map(async (p) => {
+        const pf = p.platform;
+        return {
+          platform: pf,
+          content: await this.prisma.sourceContent.count({
+            where: { ...scopeWhere, platform: pf },
+          }),
+          publish: await this.prisma.publishRecord.count({
+            where: { ...scopeWhere, platform: pf },
+          }),
+          interaction: p._count._all,
+          lead: await this.prisma.lead.count({
+            where: {
+              ...(scopeWhere as Prisma.LeadWhereInput),
+              sourceType: { notIn: ['comment', 'dm'] },
+              platform: pf,
+            },
+          }),
+          customer: await this.prisma.crmCustomer.count({
+            where: { ...crmScopeWhere, sourcePlatform: pf },
+          }),
+          opportunity: await this.prisma.crmOpportunity.count({
+            where: { ...crmScopeWhere, source: { contains: pf } },
+          }),
+        };
+      }),
+    );
+
+    return {
+      content,
+      publish,
+      interaction,
+      lead: leadCount,
+      customer,
+      opportunity,
+      wonAmountCents,
+      // 按主键归因的转化率：有归因链的线索数 / 内容数（修复：原为 leadCount/content 直接相除）
+      contentConversionRate: content > 0 ? attributedLeadCount / content : 0,
+      attributedLeadCount,
+      attributedCustomerCount,
+      attributionConfidence,
+      platformComparison,
     };
   }
 
@@ -2354,7 +2798,9 @@ export class GrowthService implements OnModuleInit {
     // 行业方案库：industry + scenario → 行业 Playbook 步骤链（优先于通用模板）
     const industry = this.text(input.industry);
     const scenario = this.text(input.scenario);
-    const playbook = industry ? industryPlaybook(industry, scenario || undefined) : undefined;
+    const playbook = industry
+      ? industryPlaybook(industry, scenario || undefined)
+      : undefined;
     const workflow: GrowthWorkflow = {
       id: this.id('workflow'),
       userId,
@@ -2389,8 +2835,8 @@ export class GrowthService implements OnModuleInit {
   }
 
   /** 行业方案库：14 行业 × 场景 Playbook 清单（前端方案库渲染） */
-  async listWorkflowPlaybooks() {
-    return listWorkflowPlaybooks();
+  listWorkflowPlaybooks() {
+    return Promise.resolve(listWorkflowPlaybooks());
   }
 
   async updateWorkflow(userId: string, id: string, input: QueryInput) {
@@ -2418,7 +2864,9 @@ export class GrowthService implements OnModuleInit {
     const canvasSteps = Array.isArray(input.steps)
       ? (input.steps as GrowthWorkflow['steps']).map((step) => ({
           ...step,
-          dependencies: Array.isArray(step.dependencies) ? step.dependencies : [],
+          dependencies: Array.isArray(step.dependencies)
+            ? step.dependencies
+            : [],
           nodeType: this.text(step.nodeType) || step.type,
         }))
       : null;
@@ -2544,8 +2992,7 @@ export class GrowthService implements OnModuleInit {
         throw new BadRequestException(`步骤执行失败：${result.error}`);
       const advanced = this.transitionWorkflow(existing, 'advance', {
         stepId: step.id,
-        outputSummary:
-          result.summary || '人工确认，已继续执行',
+        outputSummary: result.summary || '人工确认，已继续执行',
       });
       await this.saveStore(
         {
@@ -2580,8 +3027,7 @@ export class GrowthService implements OnModuleInit {
     workflow: GrowthWorkflow,
     step: GrowthWorkflow['steps'][number],
   ): Promise<{ executed: boolean; summary?: string; error?: string }> {
-    const executionEnabled =
-      process.env.GROWTH_EXECUTION_ENABLED === 'true';
+    const executionEnabled = process.env.GROWTH_EXECUTION_ENABLED === 'true';
     const config = (step.config ?? {}) as Record<string, unknown>;
     const configId = config.acquisitionConfigId;
     if (
@@ -2593,6 +3039,7 @@ export class GrowthService implements OnModuleInit {
       try {
         const runResult = await this.executeConfig(workflow.userId, configId, {
           confirmedExecution: true,
+          trigger: 'workflow',
         });
         const run = runResult?.run;
         const summary =
@@ -2637,26 +3084,43 @@ export class GrowthService implements OnModuleInit {
           const step = workflow.steps[stepIndex];
           // confirm-first：转等待确认（不自动执行）
           if (step.riskMode === 'confirm-first') {
-            await this.applyWorkflowAction(workflow.userId, workflow.id, 'await-confirmation', {
-              stepId: step.id,
-            });
+            await this.applyWorkflowAction(
+              workflow.userId,
+              workflow.id,
+              'await-confirmation',
+              {
+                stepId: step.id,
+              },
+            );
             continue;
           }
           // auto 步骤：执行真实动作（若有），完成并推进下一步
           const result = await this.executeWorkflowStepAction(workflow, step);
           if (result.error) {
-            await this.applyWorkflowAction(workflow.userId, workflow.id, 'fail', {
-              stepId: step.id,
-              outputSummary: `执行失败：${result.error}`,
-            });
+            await this.applyWorkflowAction(
+              workflow.userId,
+              workflow.id,
+              'fail',
+              {
+                stepId: step.id,
+                outputSummary: `执行失败：${result.error}`,
+              },
+            );
             continue;
           }
-          await this.applyWorkflowAction(workflow.userId, workflow.id, 'advance', {
-            stepId: step.id,
-            outputSummary:
-              result.summary ||
-              (result.executed ? '步骤执行完成' : '步骤完成（无自动执行动作）'),
-          });
+          await this.applyWorkflowAction(
+            workflow.userId,
+            workflow.id,
+            'advance',
+            {
+              stepId: step.id,
+              outputSummary:
+                result.summary ||
+                (result.executed
+                  ? '步骤执行完成'
+                  : '步骤完成（无自动执行动作）'),
+            },
+          );
         } catch (error) {
           this.logger.warn(
             `工作流 ${workflow.id} 执行引擎异常：${
@@ -2986,6 +3450,13 @@ export class GrowthService implements OnModuleInit {
       evidenceUrls?: string[];
       leadIds?: string[];
       leads?: GrowthLead[];
+      /** 复核#4 可追责：触发来源（默认 api）与是否经审批（默认取 config 审批留痕） */
+      trigger?: GrowthAcquisitionRun['trigger'];
+      approved?: boolean;
+      /** 复核#4-6：driver 真实状态机记录 id（参数透传，防并发串单） */
+      rpaRecordId?: string | null;
+      /** P1-2：失败回退追踪（RPA 失败→回退本地适配器时如实标注来源） */
+      fallback?: FallbackTrace;
     },
   ) {
     const now = new Date().toISOString();
@@ -3007,6 +3478,10 @@ export class GrowthService implements OnModuleInit {
       crmCapturedCount: 0,
       evidenceUrls: input.evidenceUrls || [],
       leadIds: input.leadIds || (input.leads || []).map((lead) => lead.id),
+      trigger: input.trigger ?? 'api',
+      runRiskMode: config.riskMode,
+      approved: input.approved ?? Boolean(config.autoApprovedAt),
+      fallback: input.fallback,
       startedAt: now,
       endedAt: now,
     };
@@ -3024,10 +3499,38 @@ export class GrowthService implements OnModuleInit {
       lastRunAt: now,
       updatedAt: now,
     };
+    const scope: GrowthScope = { userId: config.userId, tenantId };
+    // 六步闭环 P1-6：先幂等桥接统一侧（lead 落库统一 leads 表 + 评分 + 归因），
+    // 再转 CRM（LeadConvertService.convert 内部 findUnique lead，需要 lead 已落库）。
+    // 桥接失败不阻断 JSON 主流程（审计尽力而为，错误不静默）。
+    await this.bridgeLeadsToUnified(config, leads, scope);
+
     leads = await this.captureRunLeadsToCrm(config, run, leads);
     run.leadIds = input.leadIds || leads.map((lead) => lead.id);
+
+    // 复核#2：每次获客执行持久化 RPA 执行记录（步骤/断点/证据/指纹/原因码/下一动作）。
+    // 复核#4-6：driver 成功路径的 rpaRecordId 参数透传（不用单例字段，防并发串单）。
+    // P1 复核：不再 fire-and-forget——await 等待审计落库；写失败时 run 不能显示成功
+    // （无审计记录的「成功」不可追责），降级为 failed 并标注原因。
+    // 关键：审计写入必须前置在 saveStore 之前——否则库/快照里的 run 已是 success，
+    // 审计失败后仅内存改状态不二次持久化，刷新任务列表仍显示成功。
+    const auditPersisted = await this.persistRpaExecution(
+      config,
+      run,
+      input,
+      tenantId ?? 'legacy-local-desktop',
+      input.rpaRecordId ?? null,
+    );
+    if (
+      !auditPersisted &&
+      (run.status === 'success' || run.status === 'partial')
+    ) {
+      run.status = 'failed';
+      run.failureReason = 'engine_unavailable';
+      run.message = `${run.message}（RPA 执行审计记录写入失败，已降级为失败，不可追责）`;
+    }
+
     const latestStore = await this.loadStore();
-    const scope: GrowthScope = { userId: config.userId, tenantId };
     const configExists = latestStore.configs.some((item) =>
       this.sameGrowthRecord(item, scope, config.id),
     );
@@ -3049,12 +3552,142 @@ export class GrowthService implements OnModuleInit {
     return { config: updatedConfig, run, leads };
   }
 
+  /** 复核#2：把本次获客执行落 rpa_executions（失败记 warn，不阻断） */
+  private async persistRpaExecution(
+    config: GrowthAcquisitionConfig,
+    run: GrowthAcquisitionRun,
+    input: {
+      status: GrowthAcquisitionRun['status'];
+      message: string;
+      failureReason?: GrowthExecutionFailureReason;
+      candidateCount: number;
+      selectedCount: number;
+      contactedCount: number;
+      evidenceUrls?: string[];
+      trigger?: GrowthAcquisitionRun['trigger'];
+      approved?: boolean;
+      /** 复核#4-6：driver 真实状态机记录 id（参数透传，防并发串单） */
+      rpaRecordId?: string | null;
+    },
+    tenantId: string,
+    driverRecordId?: string | null,
+  ): Promise<boolean> {
+    // P1 复核：store 未注入 = 本环境未启用 RPA 审计（如抖音 legacy 直连路径），
+    // 视为「无需 RPA 记录」，不降级 run；只有 store 存在但写入失败才返回 false。
+    if (!this.rpaExecutionStore) return true;
+    // 复核#4-6：driver 真实状态机已记录本次执行（成功路径，recordId 参数透传），
+    // 跳过合成记录防重复（审计已由 driver 状态机覆盖，视为成功）；
+    // 任务最终非成功（如后续流程失败）时仍写合成记录，如实反映最终结果。
+    if (driverRecordId) {
+      if (input.status === 'success' || input.status === 'partial') {
+        this.logger.log(
+          `本次获客走 driver 真实状态机（record=${driverRecordId}），跳过合成 RPA 记录（run=${run.id}）`,
+        );
+        return true;
+      }
+    }
+    try {
+      // 如实保留执行状态（success/failed/skipped/partial），不折叠
+      const failed = input.status === 'failed';
+      const stepTrace = [
+        { name: 'fetch-candidates', count: input.candidateCount },
+        { name: 'select-targets', count: input.selectedCount },
+        { name: 'follow-up', count: input.contactedCount },
+      ];
+      const fingerprint = createHash('sha256')
+        .update(
+          JSON.stringify({
+            runId: run.id,
+            configId: config.id,
+            mode: config.mode,
+            platform: config.platform,
+            status: input.status,
+            candidates: input.candidateCount,
+            contacted: input.contactedCount,
+          }),
+        )
+        .digest('hex');
+      await this.rpaExecutionStore.create({
+        tenantId,
+        userId: config.userId,
+        platform: config.platform,
+        sessionId: null,
+        accountId: config.accountId || null,
+        mode: config.mode,
+        // P1-14 复核：合成留痕显式标注 source=growth-synthesis——
+        // 不经 driver 真实步骤/独立 evidence/finalize 门禁的记录不得冒充「RPA 浏览器执行成功」，
+        // 审计查询按 source 区分真实执行与获客流程合成。
+        source: 'growth-synthesis',
+        steps: stepTrace,
+        resumeStep: failed ? 'fetch-candidates' : null,
+        reasonCode: input.failureReason ?? null,
+        nextAction: failed
+          ? '检查账号登录态与平台额度后重跑本次获客任务'
+          : null,
+        pageFingerprint: fingerprint,
+        evidence: input.evidenceUrls || [],
+        status: input.status,
+        driverVersion: '1.0.0',
+        runId: run.id,
+        userMessage: input.message,
+        technicalMessage: null,
+      });
+      // P1 复核：审计写入成功
+      return true;
+    } catch (error) {
+      this.logger.warn(
+        `增长获客 RPA 执行留痕失败（run=${run.id}）：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return false;
+    }
+  }
+
+  /** 事实来源桥接：把本次落库的 GrowthLead 幂等桥接到统一侧（失败不阻断） */
+  private async bridgeLeadsToUnified(
+    config: GrowthAcquisitionConfig,
+    leads: GrowthLead[],
+    scope: GrowthScope,
+  ) {
+    if (!this.leadBridge || !leads.length) return;
+    const ctx = {
+      tenantId: scope.tenantId ?? 'legacy-local-desktop',
+      userId: scope.userId,
+      accountId: config.accountId,
+    };
+    for (const lead of leads) {
+      try {
+        const bridgeResult = await this.leadBridge.bridgeAndEnrich(lead, ctx);
+        // P0-5 复核：桥接任一分段失败（事件/身份/归因/评分/抑制/资格）→ 不得标 ok，
+        // 持久化 enrichmentStatus=failed（前端显示"采集完成但评分/归因未闭环"，禁止假闭环）。
+        const failedSegments = bridgeResult?.failedSegments ?? [];
+        if (failedSegments.length > 0) {
+          lead.enrichmentStatus = 'failed';
+          lead.enrichmentFailure = failedSegments.join(',');
+          this.logger.warn(
+            `增长线索桥接统一侧分段失败（lead=${lead.id}）：${failedSegments.join(',')}`,
+          );
+        } else {
+          lead.enrichmentStatus = 'ok';
+        }
+      } catch (error) {
+        // P1-6：桥接失败不静默——线索如实标注 enrichment_failed，
+        // 前端显示"线索已采集，评分/归因未完成"，不允许显示为已完成闭环。
+        lead.enrichmentStatus = 'failed';
+        lead.enrichmentFailure =
+          error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `增长线索桥接统一侧失败（lead=${lead.id}）：${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+  }
+
   private async captureRunLeadsToCrm(
     config: GrowthAcquisitionConfig,
     run: GrowthAcquisitionRun,
     leads: GrowthLead[],
   ) {
-    if (!this.crmService || !leads.length || run.contactedCount <= 0) {
+    if (!leads.length || run.contactedCount <= 0) {
       return leads;
     }
     const nextLeads: GrowthLead[] = [];
@@ -3066,6 +3699,31 @@ export class GrowthService implements OnModuleInit {
         continue;
       }
       try {
+        // 六步闭环 P1-7：自动获客也统一走 LeadConvertService（与手动 sync-crm 同一套数据链）。
+        // 前置：bridgeLeadsToUnified 已把 lead 落库到统一 leads 表（convert 内部 findUnique lead）。
+        if (this.leadConvertService) {
+          const converted = await this.leadConvertService.convert({
+            leadId: lead.id,
+            scope: { userId: config.userId, tenantId: run.tenantId ?? null },
+          });
+          const customer = converted.customer;
+          capturedCount += 1;
+          nextLeads.push(
+            this.withCrmCustomerNote(
+              config.userId,
+              lead,
+              customer.id,
+              customer.displayName,
+              'auto',
+            ),
+          );
+          continue;
+        }
+        // 回退旧链路（leadConvertService 未注入时）
+        if (!this.crmService) {
+          nextLeads.push(lead);
+          continue;
+        }
         const capture = await this.crmService.captureGrowthLead(
           config.userId,
           this.growthLeadToCrmCaptureInput(lead),
@@ -3092,7 +3750,7 @@ export class GrowthService implements OnModuleInit {
         );
       } catch (error) {
         this.logger.warn(
-          `增长线索同步 CRM 失败：${error instanceof Error ? error.message : String(error)}`,
+          `增长线索同步 CRM 失败（lead=${lead.id}）：${error instanceof Error ? error.message : String(error)}`,
         );
         nextLeads.push(lead);
       }
@@ -3104,10 +3762,35 @@ export class GrowthService implements OnModuleInit {
     return nextLeads;
   }
 
+  /**
+   * P0-6 复核：CRM 资格门禁——不能只看 status 是 contacted/replied 就自动转 CRM。
+   * 低质量/桥接失败/缺关键身份字段/被抑制的线索必须强制留在人工池：
+   * - enrichmentStatus=failed（桥接/评分/归因未闭环）→ 不转 CRM；
+   * - 无 externalUserId 且无 sourceUrl（只有昵称/文本）→ 身份不可归因，不自动转 CRM；
+   * - suppressed（命中抑制名单）→ 不转 CRM；
+   * - missingFields 含关键身份字段 → 不自动转 CRM（留人工补录）。
+   */
   private isCrmCaptureEligibleLead(lead: GrowthLead) {
-    return ['contacted', 'replied', 'qualified', 'converted'].includes(
-      lead.status,
+    if (
+      !['contacted', 'replied', 'qualified', 'converted'].includes(lead.status)
+    ) {
+      return false;
+    }
+    if (lead.enrichmentStatus === 'failed') return false;
+    if (lead.suppressed === true) return false;
+    // 身份可归因门槛：有外部用户 ID，或至少可溯源内容 URL（仅昵称+文本不可自动转 CRM）
+    const hasIdentity = Boolean(
+      lead.externalUserId || lead.sourceUrl || lead.profileUrl,
     );
+    if (!hasIdentity) return false;
+    // missingFields 含关键身份字段 → 留人工池。
+    // externalEventId（评论事件 ID）缺失时降级即可（有 externalUserId/profileUrl/sourceUrl
+    // 仍可归因），不作为硬门槛；externalUserId/profileUrl 才是身份硬字段。
+    const criticalMissing = (lead.missingFields ?? []).filter((f) =>
+      ['externalUserId', 'profileUrl'].includes(f),
+    );
+    if (criticalMissing.length > 0) return false;
+    return true;
   }
 
   private growthLeadToCrmCaptureInput(lead: GrowthLead) {
@@ -3227,7 +3910,40 @@ export class GrowthService implements OnModuleInit {
     const limit = Math.min(Math.max(remaining, 20), 50);
     const primaryInput = await this.nextGrowthAcquisitionSourceInput(config);
     if (config.platform !== 'douyin') {
-      return this.fetchCandidatesWithPlatformAdapter(config);
+      // 阶段 A：非抖音平台优先走统一 RPA driver（快手/小红书浏览器搜索发现），
+      // 失败/不支持静默回退旧链路（fail-safe，不破坏现有行为）
+      const driverResult = await this.tryFetchCandidatesWithRpaDriver(
+        config,
+        remaining,
+      );
+      if (driverResult?.ok) return driverResult;
+      // P0 复核：RPA 执行了但审计落库失败（audit_record_failed/audit_persist_failed）
+      // → 不回退 legacy adapter（那会产生与 RPA 执行无关的误导性候选），干净返回失败。
+      // 仅当 RPA 执行本身失败/不可用时才回退 legacy adapter（fail-safe）。
+      const auditFailed =
+        driverResult?.fallback?.reasonCode === 'audit_record_failed' ||
+        driverResult?.fallback?.reasonCode === 'audit_persist_failed';
+      if (auditFailed) {
+        return {
+          ok: false,
+          fallback: driverResult?.fallback,
+          candidates: [],
+          message:
+            driverResult?.fallback?.message ||
+            'RPA 执行成功但审计落库失败，已阻断成功标记',
+        };
+      }
+      // P1-2：RPA 失败/不可用 → 回退旧链路，回退信息随响应带出（前端可展示来源与执行 ID）
+      const legacy = this.fetchCandidatesWithPlatformAdapter(config);
+      const fallback: FallbackTrace = driverResult?.fallback ?? {
+        attempted: false,
+        source: 'legacy-adapter',
+        rpaExecutionId: null,
+        reasonCode: null,
+        fallbackAllowed: true,
+        message: 'RPA 路径未尝试，直接使用本地适配器',
+      };
+      return { ...legacy, fallback };
     }
     if (config.mode === 'search-account') {
       return this.aiEmployeeService.findDouyinLeadsByKeyword({
@@ -3237,7 +3953,7 @@ export class GrowthService implements OnModuleInit {
         commentTimeMatch: '7days',
         nicknameKeywords: config.includeKeywords,
         blacklistNicknames: config.blacklistNicknames,
-      }) as Promise<AiEmployeeLeadResponse>;
+      });
     }
     if (config.mode === 'video-link') {
       return this.aiEmployeeService.findDouyinLeadsByLink({
@@ -3245,7 +3961,7 @@ export class GrowthService implements OnModuleInit {
         link: primaryInput,
         limit,
         commentTimeMatch: '7days',
-      }) as Promise<AiEmployeeLeadResponse>;
+      });
     }
     if (config.mode === 'target-account') {
       return this.aiEmployeeService.findDouyinTargetedLeads({
@@ -3255,7 +3971,7 @@ export class GrowthService implements OnModuleInit {
         limit,
         commentTimeMatch: '7days',
         perTargetLimit: config.perTargetLimit,
-      }) as Promise<AiEmployeeLeadResponse>;
+      });
     }
     if (config.mode === 'retention') {
       return this.aiEmployeeService.findDouyinRetentionLeads({
@@ -3264,7 +3980,7 @@ export class GrowthService implements OnModuleInit {
         keyword: primaryInput,
         limit,
         commentTimeMatch: '7days',
-      }) as Promise<AiEmployeeLeadResponse>;
+      });
     }
     if (config.mode === 'manual-import') {
       return {
@@ -3287,7 +4003,540 @@ export class GrowthService implements OnModuleInit {
       limit,
       commentTimeMatch: '7days',
       blacklistNicknames: config.blacklistNicknames,
-    }) as Promise<AiEmployeeLeadResponse>;
+    });
+  }
+
+  /**
+   * 阶段 A/B：尝试用统一 RPA driver 发现候选（快手/小红书浏览器搜索），
+   * 并把执行记录升级为真实状态机（openSession→create → execute→appendStep → finalize）。
+   * fail-safe：driver 不存在/不支持/失败 → 返回 null，调用方回退旧链路；
+   * 状态机写库失败（store 不可用/写失败）不阻断 driver 路径，仅记 warn。
+   */
+  private async tryFetchCandidatesWithRpaDriver(
+    config: GrowthAcquisitionConfig,
+    remaining: number,
+  ): Promise<
+    | ({ ok: true } & AiEmployeeLeadResponse & { fallback?: undefined })
+    | { ok: false; fallback: FallbackTrace }
+  > {
+    if (!this.rpaDriverRegistry) {
+      return {
+        ok: false,
+        fallback: {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: 'no_driver',
+          fallbackAllowed: true,
+          message: 'RPA driver 注册表不可用，回退本地适配器',
+        },
+      };
+    }
+    const driver = this.rpaDriverRegistry.get(config.platform);
+    if (!driver) {
+      return {
+        ok: false,
+        fallback: {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: 'no_driver',
+          fallbackAllowed: true,
+          message: `${config.platform} 无统一 RPA driver，回退本地适配器`,
+        },
+      };
+    }
+    // 仅用 driver 的能力声明判断是否支持，避免对抖音等成熟链路造成影响；
+    // 卡点1：增长后台执行也走账号级预检（未登录/风控 → 拒绝，防绕过）
+    const caps = await driver.capabilities({ accountId: config.accountId });
+    const probe = caps.accountProbe;
+    if (
+      probe &&
+      (!probe.loggedIn || probe.captchaRequired || probe.riskControl)
+    ) {
+      return {
+        ok: false,
+        fallback: {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: probe.reasonCode ?? 'not_logged_in',
+          fallbackAllowed: true,
+          message: `账号 ${config.accountId} 预检未通过（${probe.reasonCode ?? 'not_logged_in'}），回退本地适配器`,
+        },
+      };
+    }
+    const action = this.driverActionForMode(config.mode);
+    if (!action) {
+      return {
+        ok: false,
+        fallback: {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: 'unsupported_mode',
+          fallbackAllowed: true,
+          message: `模式 ${config.mode} 无对应 RPA 动作，回退本地适配器`,
+        },
+      };
+    }
+    const actionCap = caps.actions.find((a) => a.action === action);
+    if (!actionCap?.supported || !caps.runtimeReady) {
+      return {
+        ok: false,
+        fallback: {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: actionCap?.supported
+            ? 'runtime_not_ready'
+            : 'unsupported_action',
+          fallbackAllowed: true,
+          message: `${driver.displayName} 不支持 ${action} 或运行时未就绪，回退本地适配器`,
+        },
+      };
+    }
+
+    const owner = {
+      userId: config.userId,
+      tenantId: config.tenantId ?? 'legacy-local-desktop',
+    };
+    const sessionRunId = `growth-rpa-${config.id}-${Date.now()}`;
+    let recordId: string | null = null;
+    // 用对象引用保存 session：TS 对跨异步闭包的 let 收窄不可靠（会推断成 null/never），
+    // 对象属性访问可正确追踪类型。
+    const sessionRef: { current: RpaSession | null } = { current: null };
+    // P1 复核：try/catch 主体包进 IIFE（保留内部所有 return 语义），
+    // 会话收尾（原 finally）移到 IIFE 外——关闭失败时同步降级 run 返回值，
+    // 避免「任务列表成功、审计页待核对」状态不一致。
+    const outcome:
+      | ({ ok: true } & AiEmployeeLeadResponse & { fallback?: undefined })
+      | { ok: false; fallback: FallbackTrace } = await (async () => {
+      try {
+        sessionRef.current = await driver.openSession({
+          userId: config.userId,
+          accountId: config.accountId,
+          runId: sessionRunId,
+        });
+        // B 阶段：openSession 后立即建真实状态机记录（失败不阻断 driver 路径）
+        recordId = await this.openDriverExecutionRecord(
+          driver,
+          config,
+          sessionRef.current.sessionId,
+          sessionRunId,
+        );
+        const input =
+          action === 'discover-keyword'
+            ? {
+                keyword:
+                  config.sourceInputs[0] ??
+                  config.taskName ??
+                  config.includeKeywords?.join(' ') ??
+                  '',
+                limit: remaining,
+                userId: config.userId,
+              }
+            : action === 'read-comments'
+              ? {
+                  // 复核#4-5：video-link 打开视频详情页读评论区（评论者 = 候选）
+                  contentUrl: config.sourceInputs[0] ?? '',
+                  limit: remaining,
+                  userId: config.userId,
+                }
+              : action === 'discover-recommended'
+                ? {
+                    // P2 复核：推荐流不需要关键词/目标，keyword 仅作配额与审计标识
+                    keyword: config.taskName ?? 'recommended',
+                    limit: remaining,
+                    userId: config.userId,
+                  }
+                : {
+                    targetId: config.sourceInputs[0] ?? '',
+                    limit: remaining,
+                    userId: config.userId,
+                  };
+        const result = await driver.execute(sessionRef.current, {
+          name: action,
+          action,
+          input,
+        });
+        if (result.status !== 'success' || !result.items?.length) {
+          // 如实记录失败步骤 + 终态，再回退旧链路（合成记录仍会如实写最终结果）
+          const failReason = result.reasonCode ?? 'parse_failed';
+          await this.appendDriverStep(recordId, owner, {
+            stepName: action,
+            status: 'failed',
+            reasonCode: failReason,
+            message:
+              result.message ||
+              `${driver.displayName} 未发现候选，已回退本地适配器`,
+          });
+          await this.finalizeDriverRecord(recordId, owner, {
+            status: 'failed',
+            reasonCode: failReason,
+            nextAction: '已回退本地适配器；请检查浏览器登录态与页面结构后重试',
+          });
+          return {
+            ok: false,
+            fallback: {
+              attempted: true,
+              source: 'legacy-adapter',
+              rpaExecutionId: recordId,
+              reasonCode: failReason,
+              fallbackAllowed: true,
+              message:
+                result.message ||
+                `${driver.displayName} 未发现候选，已回退本地适配器（执行 ${recordId}）`,
+            },
+          };
+        }
+        // P0 复核：RPA 状态记录失败必须阻断成功——
+        // 记录创建失败（recordId=null）时不得标记成功（无可追责记录）。
+        if (!recordId) {
+          return {
+            ok: false,
+            fallback: {
+              attempted: true,
+              source: 'legacy-adapter',
+              rpaExecutionId: null,
+              reasonCode: 'audit_record_failed',
+              fallbackAllowed: true,
+              message:
+                'RPA 执行成功但状态记录创建失败（无可追责审计），已阻断成功标记，回退本地适配器',
+            },
+          };
+        }
+        // P1-9 复核：RPA 结果字段完整透传到候选——externalContentId/externalUserId/
+        // externalEventId/authorName/profileUrl/occurredAt/rawHash 不丢（Lead 归因/去重/CRM 依赖）
+        const candidates: DouyinFollowUpCandidateInput[] = result.items.map(
+          (item, index) => ({
+            text: item.title || item.text || item.url || '',
+            sourceUrl: item.url,
+            kind: `${config.platform}-${action}`,
+            index,
+            reason: '统一 RPA 浏览器发现',
+            score: this.scoreText(item.title || item.text || '').score,
+            // P1-4/P1-9：评论用户身份/事件字段贯穿（RPA → Lead → CRM 不丢）
+            externalContentId: item.externalContentId,
+            externalUserId: item.externalUserId,
+            externalEventId: item.externalEventId,
+            authorName: item.authorName,
+            profileUrl: item.profileUrl,
+            commentTime: item.occurredAt,
+            rawHash: item.rawHash,
+          }),
+        );
+        const stepPersisted = await this.appendDriverStep(recordId, owner, {
+          stepName: action,
+          status: 'success',
+          reasonCode: 'ok',
+          message: `${driver.displayName} 发现 ${result.items.length} 条候选`,
+          evidenceUrl: result.evidenceUrl,
+          pageFingerprint: result.pageFingerprint,
+        });
+        const finalizePersisted = await this.finalizeDriverRecord(
+          recordId,
+          owner,
+          {
+            status: 'success',
+            reasonCode: 'ok',
+            evidence: result.items.map((item) => ({
+              type: 'rpa-discover',
+              label: item.title || item.externalContentId,
+              url: item.url,
+              createdAt: new Date().toISOString(),
+            })),
+          },
+        );
+        // P0 复核：成功步骤/终态落库失败 → 不返回成功（证据不完整不能标成功）
+        if (!stepPersisted || !finalizePersisted) {
+          return {
+            ok: false,
+            fallback: {
+              attempted: true,
+              source: 'legacy-adapter',
+              rpaExecutionId: recordId,
+              reasonCode: 'audit_persist_failed',
+              fallbackAllowed: true,
+              message: `RPA 执行成功但审计落库失败（步骤=${stepPersisted} 终态=${finalizePersisted}），已阻断成功标记（执行 ${recordId}）`,
+            },
+          };
+        }
+        // driver 成功路径：rpaRecordId 参数透传给合成记录跳过（复核#4-6：不用单例字段，防并发串单）
+        return {
+          ok: true,
+          fallback: undefined,
+          status: 'success',
+          message: `统一 RPA 发现 ${candidates.length} 条候选`,
+          candidates,
+          rpaRecordId: recordId,
+          evidence: result.items.map((item) => ({
+            type: 'rpa-discover',
+            label: item.title || item.externalContentId,
+            url: item.url,
+            createdAt: new Date().toISOString(),
+          })),
+        };
+      } catch (error) {
+        // P1 复核：账号忙（createWithLock 抛 ConflictException）→ 透传给上层转 409，
+        // 不能当 driver 执行失败回退 legacy adapter（那会绕过账号锁并发执行）。
+        if (error instanceof ConflictException) {
+          throw error;
+        }
+        // fail-safe：driver 执行失败回退旧链路；状态机如实记录失败
+        await this.appendDriverStep(recordId, owner, {
+          stepName: action,
+          status: 'failed',
+          reasonCode: 'network_error',
+          message: error instanceof Error ? error.message : 'driver 执行异常',
+        });
+        await this.finalizeDriverRecord(recordId, owner, {
+          status: 'failed',
+          reasonCode: 'network_error',
+          nextAction: '已回退本地适配器；请检查平台会话后重试',
+        });
+        return {
+          ok: false,
+          fallback: {
+            attempted: true,
+            source: 'legacy-adapter',
+            rpaExecutionId: recordId,
+            reasonCode: 'network_error',
+            fallbackAllowed: true,
+            message: `RPA driver 执行异常，已回退本地适配器（执行 ${recordId}）：${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        };
+      }
+    })();
+    // P0 复核：发现路径统一收尾关闭会话（防浏览器残留/账号锁不释放）。
+    // P1 复核：关闭失败 → 执行记录转 reconcile_required（不能只留日志），
+    // 同时降级本函数返回值状态（run 列表不再显示「成功」，与审计页「待核对」一致）。
+    let sessionCloseFailed = false;
+    const activeSession: RpaSession | null = sessionRef.current;
+    if (activeSession) {
+      try {
+        await driver.closeSession({
+          sessionId: activeSession.sessionId,
+          platform: config.platform,
+          accountId: config.accountId,
+          engineSessionKey: `${config.platform}-${config.accountId}`,
+          pageAvailable: false,
+        });
+      } catch (closeErr) {
+        sessionCloseFailed = true;
+        this.logger.warn(
+          `[tryFetchCandidatesWithRpaDriver] 会话关闭失败 platform=${config.platform} account=${config.accountId}：${
+            closeErr instanceof Error ? closeErr.message : String(closeErr)
+          }`,
+        );
+        await this.markDriverSessionCloseFailure(
+          config,
+          recordId,
+          closeErr,
+          'tryFetchCandidatesWithRpaDriver',
+        );
+      }
+    }
+    if (sessionCloseFailed && outcome.ok === true) {
+      return {
+        ...outcome,
+        // 关闭失败：候选已发现但浏览器会话状态不可确认 → 降级 partial（需人工核对），
+        // 与 rpa_executions 的 reconcile_required 语义对齐，避免状态不一致。
+        status: 'partial',
+        reasonCode: 'session_close_failed',
+        message: `${outcome.message}；浏览器会话关闭失败，需人工核对平台实际结果`,
+      };
+    }
+    return outcome;
+  }
+
+  /** B 阶段：openSession 后建初始状态机记录（store 不可用/写失败返回 null，不阻断）。
+   *  P1 复核：走 createWithLock 原子锁，与主 RPA 控制器统一锁语义——并发同账号执行时
+   *  account_busy 抛 ConflictException，不静默绕过。 */
+  private async openDriverExecutionRecord(
+    driver: { displayName: string; driverVersion: string },
+    config: GrowthAcquisitionConfig,
+    sessionId: string,
+    runId: string,
+  ): Promise<string | null> {
+    if (!this.rpaExecutionStore) return null;
+    try {
+      const record = await this.rpaExecutionStore.createWithLock({
+        tenantId: config.tenantId ?? 'legacy-local-desktop',
+        userId: config.userId,
+        platform: config.platform,
+        sessionId,
+        accountId: config.accountId || null,
+        mode: config.mode,
+        steps: [
+          {
+            stepName: 'open-session',
+            status: 'success',
+            message: `${driver.displayName} 会话已打开`,
+            occurredAt: new Date().toISOString(),
+          },
+        ],
+        status: 'running',
+        driverVersion: driver.driverVersion,
+        runId,
+        userMessage: `${driver.displayName} 统一 RPA 发现开始`,
+      });
+      return record?.id ?? null;
+    } catch (error) {
+      // P1 复核：Growth 发现链路与主 RPA 控制器统一原子账号锁语义。
+      // account_busy（同账号已有活动执行，并发被事务锁拦截）→ 明确抛出由调用方转 ConflictException，
+      // 不能当普通创建失败吞掉（否则并发同账号仍会绕过锁）。
+      if (error instanceof Error && error.message === 'account_busy') {
+        throw new ConflictException(
+          `账号 ${config.accountId} 已有进行中的任务（Growth 发现被事务锁拦截）；请先处理现有任务`,
+        );
+      }
+      this.logger.warn(
+        `RPA 状态机记录创建失败（${config.platform}）：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  }
+
+  /** B 阶段：追加真实执行步骤（记录不存在/store 不可用 → false，不误判成功） */
+  private async appendDriverStep(
+    recordId: string | null,
+    owner: { userId: string; tenantId?: string | null },
+    step: RpaExecutionStepInput,
+  ): Promise<boolean> {
+    if (!recordId || !this.rpaExecutionStore) return false;
+    try {
+      // P0-1 复核：服务端 driver 执行上下文写入必须 internal=true，
+      // 否则成功步骤被门禁降级 running → 终态被强制 reconcile_required（破坏获客闭环）。
+      const result = await this.rpaExecutionStore.appendStep(
+        recordId,
+        owner,
+        step,
+        {
+          internal: true,
+        },
+      );
+      // P1 复核：appendStep 返回 null（记录不存在/租户不匹配）→ 不能误判审计成功
+      return result !== null;
+    } catch (error) {
+      this.logger.error(
+        `RPA 状态机步骤追加失败：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return false;
+    }
+  }
+
+  /** B 阶段：finalize 真实状态机记录（记录不存在/store 不可用 → false，不误判成功） */
+  private async finalizeDriverRecord(
+    recordId: string | null,
+    owner: { userId: string; tenantId?: string | null },
+    input: RpaExecutionFinalizeInput,
+  ): Promise<boolean> {
+    if (!recordId || !this.rpaExecutionStore) return false;
+    try {
+      const result = await this.rpaExecutionStore.finalize(
+        recordId,
+        owner,
+        input,
+      );
+      // P1 复核：finalize 返回 null（记录不存在/租户不匹配）→ 不能误判审计成功
+      return result !== null;
+    } catch (error) {
+      this.logger.error(
+        `RPA 状态机记录收尾失败：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return false;
+    }
+  }
+
+  /**
+   * P1 复核：会话关闭失败必须改变执行终态 → reconcile_required（不能只记日志）。
+   * 会话释放失败意味着「平台侧实际结果无法确认、浏览器可能仍在运行」，
+   * 即使业务步骤已报成功也需人工核对。
+   * - 有执行记录（发现路径）：transition 到 reconcile_required；
+   * - 无执行记录（触达/读评论路径）：落一条独立审计记录（status=reconcile_required），
+   *   保证关闭失败可追责、可进对账队列。
+   * 本方法自身异常只记 error（finally 内不得覆盖业务异常/返回值）。
+   */
+  private async markDriverSessionCloseFailure(
+    config: GrowthAcquisitionConfig,
+    recordId: string | null,
+    closeError: unknown,
+    context: string,
+  ): Promise<boolean> {
+    if (!this.rpaExecutionStore) {
+      this.logger.error(
+        `[${context}] 会话关闭失败且 RPA 执行记录服务不可用，无法落 reconcile_required：platform=${config.platform} account=${config.accountId}：${
+          closeError instanceof Error ? closeError.message : String(closeError)
+        }`,
+      );
+      return false;
+    }
+    const owner = {
+      userId: config.userId,
+      tenantId: config.tenantId ?? 'legacy-local-desktop',
+    };
+    const technicalMessage = `浏览器会话释放失败：${
+      closeError instanceof Error ? closeError.message : String(closeError)
+    }`;
+    try {
+      if (recordId) {
+        await this.rpaExecutionStore.transition(
+          recordId,
+          owner,
+          'reconcile_required',
+          {
+            reasonCode: 'session_close_failed',
+            nextAction:
+              '请人工确认浏览器会话是否已退出，并核对平台实际执行结果',
+            technicalMessage,
+          },
+        );
+      } else {
+        await this.rpaExecutionStore.create({
+          tenantId: owner.tenantId,
+          userId: owner.userId,
+          platform: config.platform,
+          accountId: config.accountId,
+          mode: 'session-close-audit',
+          status: 'reconcile_required',
+          reasonCode: 'session_close_failed',
+          nextAction: '请人工确认浏览器会话是否已退出，并核对平台实际执行结果',
+          userMessage: 'RPA 会话释放失败，需人工核对平台实际结果',
+          technicalMessage,
+        });
+      }
+      // P1 复核：标记成功 → 调用方据此同步 run 状态（避免列表「成功」与审计「待核对」不一致）
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `[${context}] 会话关闭失败落 reconcile_required 失败：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return false;
+    }
+  }
+
+  /** 获客模式 → RPA 动作映射（仅映射 driver 已支持的动作） */
+  private driverActionForMode(
+    mode: GrowthAcquisitionMode,
+  ):
+    | 'discover-keyword'
+    | 'discover-account-works'
+    | 'read-comments'
+    | 'discover-recommended'
+    | null {
+    if (mode === 'keyword') return 'discover-keyword';
+    // 复核#4-5：video-link 是打开视频详情页读评论区（评论者 = 候选），不是关键词搜索
+    if (mode === 'video-link') return 'read-comments';
+    if (mode === 'search-account' || mode === 'target-account')
+      return 'discover-account-works';
+    // P2 复核：推荐流独立模式（与关键词搜索解耦，对齐 rpa.controller.modeToAction）
+    if (mode === 'recommended') return 'discover-recommended';
+    return null;
   }
 
   private async nextGrowthAcquisitionSourceInput(
@@ -3346,6 +4595,8 @@ export class GrowthService implements OnModuleInit {
             index,
             kind: `${config.platform}-manual-import`,
             targetName: text,
+            // P1-12 复核：文本若是 URL 保留为来源证据；否则为 null（人工待补，不冒充来源）
+            sourceUrl: /^https?:\/\//i.test(text) ? text : undefined,
             reason: '微信类桌面执行需要明确会话目标，已先沉淀为候选线索。',
             score: this.scoreText(text).score,
           })),
@@ -3378,9 +4629,233 @@ export class GrowthService implements OnModuleInit {
     if (config.platform === 'wechat-channel') {
       return this.executeWechatChannelFollowUp(config, targets, remaining);
     }
+    // C 阶段：非抖音/企微平台查统一 RPA driver 触达能力。
+    // 当前 reply-comment/send-direct-message 均显式 unsupported（真实触达高风险），
+    // 代码路径已打通：driver 声明支持时走 driver 执行；否则保持诚实报错。
+    const driver = this.rpaDriverRegistry?.get(config.platform);
+    if (driver) {
+      // 卡点1：触达能力查询也带账号级预检
+      const caps = await driver.capabilities({ accountId: config.accountId });
+      const touch = caps.actions.find(
+        (item) =>
+          item.action === 'reply-comment' ||
+          item.action === 'send-direct-message',
+      );
+      if (touch?.supported) {
+        return this.executeFollowUpViaDriver(
+          driver,
+          caps.driverVersion,
+          config,
+          targets,
+          remaining,
+        );
+      }
+    }
     throw new BadRequestException(
-      `${this.platformLabel(config.platform)} 自动触达执行器尚未接入，请使用人工确认或草稿模式。`,
+      `${this.platformLabel(config.platform)} 自动触达执行器尚未接入（RPA 触达未实现或未授权），请使用人工确认或草稿模式。`,
     );
+  }
+
+  /**
+   * C 阶段：经统一 RPA driver 执行触达（回复评论/私信）。
+   * 逐 target 调 driver.execute，如实组装 AiEmployeeFollowUpExecution 结果。
+   * 真实执行依赖 driver 动作落地 + 用户已登录会话（D 阶段验收），
+   * 当前不伪装：driver 未声明支持时不会到达本方法（调用方已拦）。
+   * P1 复核：会话关闭失败必须降级本次执行结果（status→partial + message 标注），
+   * 上层据此创建「待核对/部分完成」run，不能关闭失败仍报成功。
+   */
+  private async executeFollowUpViaDriver(
+    driver: RpaDriver,
+    driverVersion: string,
+    config: GrowthAcquisitionConfig,
+    targets: AiEmployeeFollowUpPlan['targets'],
+    remaining: number,
+  ): Promise<AiEmployeeFollowUpExecution> {
+    const session = await driver.openSession({
+      userId: config.userId,
+      accountId: config.accountId,
+      runId: `growth-followup-${config.id}-${Date.now()}`,
+    });
+    const startedAt = Date.now();
+    const results: AiEmployeeFollowUpExecution['results'] = [];
+    // P1 复核：用引用容器携带「是否关闭失败」，finally 在 return 之后执行无法改返回值，
+    // 故 IIFE 内标记 closeFailed，IIFE 结束后统一降级返回值（与发现路径语义一致）。
+    const stateRef: {
+      value: AiEmployeeFollowUpExecution;
+      closeFailed: boolean;
+    } = { value: results as never, closeFailed: false };
+    const execution = await (async () => {
+      try {
+        const exec = await this.executeFollowUpLoop(
+          driver,
+          driverVersion,
+          config,
+          session,
+          targets,
+          remaining,
+          results,
+          startedAt,
+        );
+        stateRef.value = exec;
+        return exec;
+      } finally {
+        // 会话泄漏修复：增长批量触达成功/失败/异常都释放真实浏览器会话
+        try {
+          await driver.closeSession({
+            sessionId: session.sessionId,
+            platform: config.platform,
+            accountId: config.accountId,
+            engineSessionKey: `${config.platform}-${config.accountId}`,
+            pageAvailable: false,
+          });
+        } catch (closeErr) {
+          // P1 复核：关闭失败 → 落 reconcile_required 审计记录（触达路径无独立执行记录，
+          // 不能只静默——释放失败说明平台侧实际触达结果不可确认，需人工核对）
+          stateRef.closeFailed = true;
+          this.logger.warn(
+            `[executeFollowUpViaDriver] 会话关闭失败 platform=${config.platform} account=${config.accountId}：${
+              closeErr instanceof Error ? closeErr.message : String(closeErr)
+            }`,
+          );
+          await this.markDriverSessionCloseFailure(
+            config,
+            null,
+            closeErr,
+            'executeFollowUpViaDriver',
+          );
+        }
+      }
+    })();
+    // P1 复核：关闭失败 → 本次执行结果降级 partial（需人工核对），上层据此创建待核对 run
+    if (stateRef.closeFailed && execution.status === 'success') {
+      execution.status = 'partial';
+      execution.message = `${execution.message}；浏览器会话关闭失败，需人工核对平台实际结果`;
+    }
+    return execution;
+  }
+
+  /** 触达循环主体（便于 try/finally 统一释放会话） */
+  private async executeFollowUpLoop(
+    driver: RpaDriver,
+    driverVersion: string,
+    config: GrowthAcquisitionConfig,
+    session: RpaSession,
+    targets: AiEmployeeFollowUpPlan['targets'],
+    remaining: number,
+    results: AiEmployeeFollowUpExecution['results'],
+    startedAt: number,
+  ): Promise<AiEmployeeFollowUpExecution> {
+    for (const [index, target] of targets.slice(0, remaining).entries()) {
+      const replyText = this.text(
+        target.commentReplyText || target.directMessageText,
+      );
+      if (!replyText) continue;
+      const action: 'comment' | 'message' = target.directMessageText
+        ? 'message'
+        : 'comment';
+      const rpaAction = target.directMessageText
+        ? 'send-direct-message'
+        : 'reply-comment';
+      let stepResult: RpaStepResult;
+      try {
+        stepResult = await driver.execute(session, {
+          name: rpaAction,
+          action: rpaAction,
+          input: {
+            targetId: this.text(target.targetName) || undefined,
+            sourceUrl: this.text(target.sourceUrl),
+            targetText: this.text(target.text || target.sourceText),
+            replyText,
+            userId: config.userId,
+          },
+        });
+      } catch (error) {
+        stepResult = {
+          stepName: rpaAction,
+          status: 'failed',
+          reasonCode: 'network_error',
+          attempt: 1,
+          durationMs: Date.now() - startedAt,
+          driverVersion,
+          message: error instanceof Error ? error.message : 'driver 触达异常',
+        };
+      }
+      results.push({
+        index,
+        action,
+        targetName: this.text(target.targetName),
+        targetText: this.text(target.text || target.sourceText),
+        replyText,
+        ok: stepResult.status === 'success',
+        status:
+          stepResult.status === 'success' ? 'success' : ('failed' as const),
+        reasonCode: this.mapRpaReasonCodeToExecutor(stepResult.reasonCode),
+        message:
+          stepResult.message ||
+          `${this.platformLabel(config.platform)} ${rpaAction} ${stepResult.status}`,
+        evidence: stepResult.evidenceUrl
+          ? [
+              {
+                type: 'rpa-touch',
+                label: rpaAction,
+                url: stepResult.evidenceUrl,
+                createdAt: new Date().toISOString(),
+              },
+            ]
+          : [],
+      });
+    }
+    if (!results.length) {
+      throw new BadRequestException('没有可执行的 RPA 评论或私信跟进任务');
+    }
+    const successCount = results.filter((item) => item.ok).length;
+    const failedCount = results.length - successCount;
+    return {
+      ok: failedCount === 0,
+      status:
+        failedCount === 0 ? 'success' : successCount > 0 ? 'partial' : 'failed',
+      message:
+        failedCount === 0
+          ? `统一 RPA 已自动执行 ${successCount} 条触达`
+          : `统一 RPA 已执行 ${results.length} 条触达，成功 ${successCount} 条，失败 ${failedCount} 条`,
+      summary: {
+        totalTargets: targets.length,
+        attemptedCount: results.length,
+        successCount,
+        failedCount,
+        sendMode: 'auto-send',
+        videoCount: 0,
+      },
+      results,
+    };
+  }
+
+  /** RPA 原因码 → 执行器原因码（语义对齐，供 AiEmployeeFollowUpExecution.results） */
+  private mapRpaReasonCodeToExecutor(code: RpaReasonCode): ExecutorReasonCode {
+    switch (code) {
+      case 'ok':
+      case 'partial':
+        return 'success';
+      case 'unsupported':
+      case 'no_web_search_entry':
+        return 'not_integrated';
+      case 'no_browser_session':
+      case 'not_logged_in':
+        return 'account_not_logged_in';
+      case 'captcha_required':
+        return 'captcha_required';
+      case 'risk_control':
+      case 'reconcile_required':
+        return 'review_required';
+      case 'quota_exceeded':
+      case 'network_error':
+        return 'runtime_unavailable';
+      case 'parse_failed':
+      case 'page_not_found':
+        return 'platform_changed';
+      default:
+        return 'runtime_unavailable';
+    }
   }
 
   private douyinExposureCapability(mode: GrowthAcquisitionMode) {
@@ -3391,6 +4866,8 @@ export class GrowthService implements OnModuleInit {
       'target-account': 'douyin-targeted-exposure',
       retention: 'douyin-retention-exposure',
       'manual-import': 'douyin-hot-video-exposure',
+      // P2 复核：推荐流独立配额标识（快手推荐流走同一能力名，平台维度区分）
+      recommended: 'douyin-recommended-exposure',
     } as const;
     return capabilities[mode];
   }
@@ -3563,7 +5040,21 @@ export class GrowthService implements OnModuleInit {
     return {
       ...execution,
       billing,
-    } as unknown as AiEmployeeFollowUpExecution;
+    };
+  }
+
+  /**
+   * P1-11 复核：统一 dedupeKey——对齐 LeadRepository.dedupeKeyOf 规则
+   * （`lead:sha256(platform:uid|nick:...)`），保证 bridge/patchUnifiedLead
+   * 与 growth 保存层用同一把钥匙，统一 Lead 不再「找不到」。
+   */
+  private unifiedLeadDedupeKey(lead: GrowthLead): string {
+    return LeadRepository.dedupeKeyOf({
+      platform: lead.platform,
+      externalUserId: lead.externalUserId,
+      nickname: lead.nickname,
+      sourceText: lead.sourceText,
+    });
   }
 
   private createLeadFromCandidate(
@@ -3593,16 +5084,36 @@ export class GrowthService implements OnModuleInit {
       tenantId: config.tenantId,
       platform: config.platform,
       sourceType: 'auto-acquisition',
+      // P1-11 复核：账号维度归因（config.accountId → sourceAccountId）
+      sourceAccountId: config.accountId,
       sourceTaskId: config.id,
       nickname:
         candidate.targetName ||
         `${this.platformLabel(config.platform)}线索${index + 1}`,
+      // P1-4/P0-6 复核：评论用户外部身份必须透传到 Lead（去重/归因/CRM 资格依赖）
+      externalUserId: candidate.externalUserId,
       profileUrl: candidate.profileUrl,
       sourceText,
       sourceUrl: candidate.sourceUrl,
       videoTitle: candidate.videoTitle,
       videoUrl: candidate.videoUrl,
       commentTime: candidate.commentTime,
+      // 4.3：身份置信度分级（有稳定外部 ID 高置信；仅昵称+文本低置信待人工）
+      identityConfidence: candidate.externalUserId
+        ? 90
+        : candidate.profileUrl
+          ? 60
+          : 30,
+      missingFields: [
+        // P1-12 复核：无来源内容证据（URL）必须显式标注——视频号/微信/企微
+        // 手动候选可只有文本或账号名，缺 sourceUrl 不得进入可归因 Lead/CRM，
+        // 只能留人工池待补录。
+        ...(!candidate.sourceUrl ? ['sourceUrl'] : []),
+        ...(!candidate.externalUserId ? ['externalUserId'] : []),
+        ...(!candidate.profileUrl ? ['profileUrl'] : []),
+        ...(!candidate.externalEventId ? ['externalEventId'] : []),
+        ...(!candidate.commentTime ? ['commentTime'] : []),
+      ],
       matchedKeywords: config.includeKeywords.slice(0, 5),
       score: Math.max(candidate.score || 0, score.score),
       scoreReasons: [candidate.reason, ...score.reasons].filter(
@@ -3613,23 +5124,62 @@ export class GrowthService implements OnModuleInit {
       latestReply: candidate.commentReplyText || candidate.directMessageText,
       createdAt: now,
       updatedAt: now,
+      // P1-9/P1-10 复核：来源内容/事件指纹透传到 Lead 归因链（内容 → 发布 → 互动 → 线索）
+      sourceArticleId: candidate.externalContentId || null,
+      contentId: candidate.externalContentId || null,
     };
   }
 
+  /**
+   * P1-17 复核：跟进结果匹配升级——优先按执行目标 index 精确对应（leads 数组下标 =
+   * plan targets 下标，一一对应不串线），兜底用 sourceUrl+昵称+文本复合键；
+   * 不再仅按昵称/文本模糊匹配（相同昵称/同文评论会把结果写到错误线索）。
+   */
   private applyExecutionToLeads(
     leads: GrowthLead[],
     execution: AiEmployeeFollowUpExecution,
   ) {
     const results = execution.results || [];
-    for (const lead of leads) {
-      const matches = results.filter(
-        (item) =>
-          item.targetName === lead.nickname ||
-          item.targetText === lead.sourceText ||
-          lead.sourceText.includes(item.targetText || ''),
-      );
-      if (!matches.length) continue;
-      lead.status = matches.some((item) => item.ok) ? 'contacted' : 'blocked';
+    leads.forEach((lead, leadIndex) => {
+      // 1) 精确匹配：results 中 index 与 lead 创建下标一致（最可靠）
+      let matches = results.filter((item) => item.index === leadIndex);
+      // 2) 兜底复合键：sourceUrl 一致 + 昵称/文本一致（兼容无 index 的旧执行记录）
+      if (!matches.length) {
+        matches = results.filter(
+          (item) =>
+            (lead.sourceUrl &&
+              item.targetName &&
+              item.targetName === lead.nickname) ||
+            (item.targetName === lead.nickname &&
+              item.targetText === lead.sourceText) ||
+            (item.targetName === lead.nickname &&
+              lead.sourceText.includes(item.targetText || '')),
+        );
+      }
+      if (!matches.length) return;
+      // P0-6 复核：跟进成功但线索低质量/桥接失败/被抑制 → 不得标 contacted 自动进 CRM，
+      // 强制留人工池（blocked 语义 = 需人工核对，不触发自动转 CRM）。
+      const crmEligible = this.isCrmCaptureEligibleLead({
+        ...lead,
+        status: 'contacted',
+      });
+      lead.status = matches.some((item) => item.ok)
+        ? crmEligible
+          ? 'contacted'
+          : 'blocked'
+        : 'blocked';
+      if (lead.status === 'blocked' && matches.some((item) => item.ok)) {
+        lead.notes = [
+          ...(lead.notes ?? []),
+          {
+            id: this.id('note'),
+            text: '触达成功但线索缺少可归因身份/桥接未闭环，已留人工池待补录',
+            type: 'status-change',
+            createdAt: new Date().toISOString(),
+            createdBy: 'system',
+          },
+        ];
+      }
       lead.evidenceUrls = Array.from(
         new Set([
           ...lead.evidenceUrls,
@@ -3639,7 +5189,7 @@ export class GrowthService implements OnModuleInit {
       const successfulReply = matches.find((item) => item.ok)?.replyText;
       if (successfulReply) lead.latestReply = successfulReply;
       lead.updatedAt = new Date().toISOString();
-    }
+    });
   }
 
   private followUpStatusToRunStatus(
@@ -4229,10 +5779,176 @@ export class GrowthService implements OnModuleInit {
       };
     }
 
+    // D 阶段：小红书/快手浏览器发现已接入，但自动触达未接入 →
+    // auto 无人值守调度拒绝（不伪装自动获客）；手动 confirm-first 可执行（候选沉淀线索待人工）。
+    if (config.platform === 'xiaohongshu' || config.platform === 'kuaishou') {
+      if (
+        config.mode === 'manual-import' ||
+        config.mode === 'keyword' ||
+        config.mode === 'video-link' ||
+        config.mode === 'target-account' ||
+        config.mode === 'search-account'
+      ) {
+        return {
+          ready: false,
+          reason: `${this.platformLabel(config.platform)}自动触达执行器未接入，不能无人值守自动获客；可手动确认执行（候选将沉淀为线索待人工跟进）。`,
+        };
+      }
+      return {
+        ready: false,
+        reason: `${this.platformLabel(config.platform)}模式 ${config.mode} 暂不支持自动采集。`,
+      };
+    }
+
     return {
       ready: false,
       reason: `${this.platformLabel(config.platform)}当前仅支持账号纳管和发布前检查，增长自动触达执行器未接入；不能加入后台自动获客执行。`,
     };
+  }
+
+  /** D 阶段：平台是否已接入自动触达（抖音/企微已接入；小红书/快手 driver 触达未实现 → 候选沉淀待人工） */
+  private platformTouchReady(platform: string): boolean {
+    if (platform === 'douyin' || platform === 'wechat-channel') return true;
+    return false;
+  }
+
+  /**
+   * D 阶段修正（大王纠错）：读内容评论区，把「评论用户」映射为获客候选（对齐抖音）。
+   * 候选 = 评论者昵称 + 评论文本 + 来源内容 URL；评论不可达/无评论 → 返回空（调用方如实失败，不把内容当客户）。
+   * P1 复核：会话关闭失败通过 closeState out 引用回传（lead 数组本身无状态字段），
+   * 调用方据此把本次 run 标注为「需人工核对」，不把关闭失败静默吞掉。
+   */
+  private async fetchCommentUsersAsLeads(
+    config: GrowthAcquisitionConfig,
+    contentCandidates: DouyinFollowUpCandidateInput[],
+    remaining: number,
+    closeState?: { failed: boolean },
+  ): Promise<GrowthLead[]> {
+    if (!this.rpaDriverRegistry) return [];
+    const driver = this.rpaDriverRegistry.get(config.platform);
+    if (!driver) return [];
+    // 卡点1：评论读取也走账号级预检
+    const caps = await driver.capabilities({ accountId: config.accountId });
+    const cap = caps.actions.find((item) => item.action === 'read-comments');
+    if (!cap?.supported || !caps.runtimeReady) return [];
+    const leads: GrowthLead[] = [];
+    let session: RpaSession | null = null;
+    try {
+      session = await driver.openSession({
+        userId: config.userId,
+        accountId: config.accountId,
+        runId: `growth-comments-${config.id}-${Date.now()}`,
+      });
+      const seen = new Set<string>();
+      const commentUsers: DouyinFollowUpCandidateInput[] = [];
+      // D 阶段实测：小红书连续打开多个详情页会触发反爬（详情 404/评论区空）。
+      // 只读前 2 条内容 + 每条间隔，拿够剩余额度即停——少而稳，不伪装。
+      for (const content of contentCandidates.slice(0, 2)) {
+        const url = this.text(content.sourceUrl);
+        if (!url) continue;
+        const result = await driver.execute(session, {
+          name: 'read-comments',
+          action: 'read-comments',
+          input: {
+            contentUrl: url,
+            // 小红书详情页需从搜索页真实点击进入，用任务关键词作搜索入口
+            keyword:
+              this.text(config.sourceInputs[0]) ||
+              this.text(config.taskName) ||
+              undefined,
+            limit: 20,
+            userId: config.userId,
+          },
+        });
+        // 间隔 2s：避免连续请求触发平台反爬
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        if (result.status !== 'success' || !result.items?.length) {
+          this.logger.warn(
+            `[fetchCommentUsersAsLeads] ${config.platform} 读评论失败 url=${url} status=${result.status} reason=${result.reasonCode} msg=${result.message ?? ''}`,
+          );
+          continue;
+        }
+        this.logger.log(
+          `[fetchCommentUsersAsLeads] ${config.platform} 读评论成功 url=${url} items=${result.items?.length ?? 0}`,
+        );
+        for (const item of result.items) {
+          const rawNickname = this.text(item.authorName);
+          // 对齐抖音逻辑：评论者是作者/商家/客服，不作为客户线索（去"作者"标签后缀）
+          const nickname = rawNickname.replace(/作者$/, '').trim();
+          const commentText = this.text(item.text);
+          // P1-10 复核：去重键升级——昵称+文本+来源内容 URL+外部用户 ID 复合键，
+          // 避免「同一用户在不同内容上发相同评论」被误合并、或不同内容同文被合并。
+          const externalUserId = this.text(item.externalUserId) || '';
+          const dedupe = `${url}:${externalUserId}:${nickname}:${commentText}`;
+          if (!nickname || !commentText || seen.has(dedupe)) continue;
+          if (/作者|商家|客服|官方/.test(nickname)) continue;
+          seen.add(dedupe);
+          commentUsers.push({
+            text: commentText,
+            sourceUrl: url,
+            targetName: nickname,
+            kind: `${config.platform}-comment-user`,
+            index: commentUsers.length,
+            reason: `评论区用户：${nickname}`,
+            score: this.scoreText(commentText).score,
+            // P1-4：评论用户身份/事件字段贯穿（有则带，无则留空由人工补录）
+            externalUserId: this.text(item.externalUserId) || undefined,
+            profileUrl: this.text(item.profileUrl) || undefined,
+            commentTime: this.text(item.occurredAt) || undefined,
+            externalEventId: this.text(item.externalEventId) || undefined,
+            // P1-9/P1-10：来源内容/事件指纹透传（去重与 CRM 归因依赖）
+            externalContentId: this.text(item.externalContentId) || undefined,
+            rawHash: this.text(item.rawHash) || undefined,
+          });
+        }
+        if (commentUsers.length >= remaining) break;
+      }
+      for (const [index, candidate] of commentUsers
+        .slice(0, remaining)
+        .entries()) {
+        leads.push(
+          this.createLeadFromCandidate(
+            config.userId,
+            config,
+            candidate,
+            index,
+            // P1-10 复核：评论获客线索带来源内容证据（createLeadFromCandidate 此前传 [] 丢证据）
+            candidate.sourceUrl ? [candidate.sourceUrl] : [],
+          ),
+        );
+      }
+    } catch {
+      // 读评论异常返回已收集的（可能为空 → 调用方如实失败）
+    } finally {
+      // P0 复核：读评论路径统一 finally 关闭会话（防浏览器残留/账号锁不释放）
+      // P1 复核：关闭失败 → 落 reconcile_required 审计记录（读评论路径无独立执行记录）
+      if (session) {
+        try {
+          await driver.closeSession({
+            sessionId: session.sessionId,
+            platform: config.platform,
+            accountId: config.accountId,
+            engineSessionKey: `${config.platform}-${config.accountId}`,
+            pageAvailable: false,
+          });
+        } catch (closeErr) {
+          this.logger.warn(
+            `[fetchCommentUsersAsLeads] 会话关闭失败 platform=${config.platform} account=${config.accountId}：${
+              closeErr instanceof Error ? closeErr.message : String(closeErr)
+            }`,
+          );
+          // P1 复核：关闭失败回传调用方（上层 run 标注需人工核对，不静默）
+          if (closeState) closeState.failed = true;
+          await this.markDriverSessionCloseFailure(
+            config,
+            null,
+            closeErr,
+            'fetchCommentUsersAsLeads',
+          );
+        }
+      }
+    }
+    return leads;
   }
 
   private withStrategyDiagnostics(
@@ -4329,6 +6045,14 @@ export class GrowthService implements OnModuleInit {
       strategy.sourceKeywords.some((item) => /http|视频|作品/.test(item))
     ) {
       recommendedModes.push('video-link');
+    }
+    // P2 复核：推荐流模式纳入诊断推荐——当来源词不足、泛发现价值更高时，
+    // 推荐 recommended（快手等支持推荐流入口的平台，无需关键词即可发现公开内容互动）。
+    if (sourceCount < 3) {
+      recommendedModes.push('recommended');
+      suggestions.push(
+        '来源词偏少时可用「推荐流发现」泛采公开内容互动，再配合需求词筛选。',
+      );
     }
     return {
       score,
@@ -4631,6 +6355,7 @@ export class GrowthService implements OnModuleInit {
       enable: '启用工作流',
       advance: '推进到下一步',
       'complete-step': '完成当前步骤',
+      'confirm-step': '确认当前步骤',
       fail: '标记异常',
       reset: '重置工作流',
       'await-confirmation': '等待确认',
@@ -5510,59 +7235,8 @@ export class GrowthService implements OnModuleInit {
         createdAt: this.iso(item.createdAt),
         updatedAt: this.iso(item.updatedAt),
       })),
-      runs: runs.map((item) => ({
-        id: item.id,
-        userId: item.userId,
-        tenantId: item.tenantId || undefined,
-        configId: item.configId,
-        mode: this.mode(item.mode),
-        platform: this.platform(item.platform),
-        status: this.runStatus(item.status),
-        failureReason: this.failureReason(item.failureReason),
-        message: item.message,
-        candidateCount: item.candidateCount,
-        selectedCount: item.selectedCount,
-        contactedCount: item.contactedCount,
-        crmCapturedCount: item.crmCapturedCount,
-        evidenceUrls: this.jsonList(item.evidenceUrls),
-        leadIds: this.jsonList(item.leadIds),
-        startedAt: this.iso(item.startedAt),
-        endedAt: item.endedAt ? this.iso(item.endedAt) : undefined,
-      })),
-      leads: leads.map((item) => ({
-        id: item.id,
-        userId: item.userId,
-        tenantId: item.tenantId || undefined,
-        platform: this.platform(item.platform),
-        sourceType: this.leadSourceType(item.sourceType),
-        sourceTaskId: item.sourceTaskId ?? undefined,
-        sourceRunId: item.sourceRunId ?? undefined,
-        crmCustomerId: item.customerId ?? undefined,
-        nickname: item.nickname ?? '',
-        profileUrl: item.profileUrl ?? undefined,
-        avatarUrl: item.avatarUrl ?? undefined,
-        externalUserId: item.externalUserId ?? undefined,
-        sourceText: item.sourceText ?? '',
-        sourceUrl: item.sourceUrl ?? undefined,
-        videoTitle: item.videoTitle ?? undefined,
-        videoUrl: item.videoUrl ?? undefined,
-        commentTime: item.commentTime ?? undefined,
-        matchedKeywords: this.jsonList(item.matchedKeywords),
-        score: item.score,
-        scoreReasons: this.jsonList(item.scoreReasons),
-        status: this.leadStatus(item.status) ?? 'new',
-        nextFollowUpAt: item.nextFollowUpAt
-          ? this.iso(item.nextFollowUpAt)
-          : undefined,
-        ownerUserId: item.ownerUserId ?? undefined,
-        notes: (Array.isArray(item.notes)
-          ? item.notes
-          : []) as unknown as GrowthLeadNote[],
-        evidenceUrls: this.jsonList(item.evidenceUrls),
-        latestReply: item.latestReply ?? undefined,
-        createdAt: this.iso(item.createdAt),
-        updatedAt: this.iso(item.updatedAt),
-      })),
+      runs: runs.map((item) => this.mapRunRow(item)),
+      leads: leads.map((item) => this.mapLeadRow(item)),
       accountHealth: accountHealth.map((item) => ({
         id: item.id,
         userId: item.userId,
@@ -5602,6 +7276,179 @@ export class GrowthService implements OnModuleInit {
       })),
       commercialAudits,
     });
+  }
+
+  /** Prisma growthAcquisitionRun 行 → GrowthAcquisitionRun（供分页查询复用） */
+  private mapRunRow(item: {
+    id: string;
+    userId: string;
+    tenantId: string | null;
+    configId: string;
+    mode: string;
+    platform: string;
+    status: string;
+    failureReason: string | null;
+    message: string;
+    candidateCount: number;
+    selectedCount: number;
+    contactedCount: number;
+    crmCapturedCount: number;
+    evidenceUrls: unknown;
+    leadIds: unknown;
+    startedAt: Date;
+    endedAt: Date | null;
+  }) {
+    return {
+      id: item.id,
+      userId: item.userId,
+      tenantId: item.tenantId || undefined,
+      configId: item.configId,
+      mode: this.mode(item.mode),
+      platform: this.platform(item.platform),
+      status: this.runStatus(item.status),
+      failureReason: this.failureReason(item.failureReason),
+      message: item.message,
+      candidateCount: item.candidateCount,
+      selectedCount: item.selectedCount,
+      contactedCount: item.contactedCount,
+      crmCapturedCount: item.crmCapturedCount,
+      evidenceUrls: this.jsonList(item.evidenceUrls),
+      leadIds: this.jsonList(item.leadIds),
+      startedAt: this.iso(item.startedAt),
+      endedAt: item.endedAt ? this.iso(item.endedAt) : undefined,
+    };
+  }
+
+  /** Prisma lead 行 → GrowthLead（供分页查询复用） */
+  private mapLeadRow(item: {
+    id: string;
+    userId: string;
+    tenantId: string | null;
+    platform: string;
+    sourceType: string;
+    sourceTaskId: string | null;
+    sourceRunId: string | null;
+    sourceAccountId: string | null;
+    sourceArticleId: string | null;
+    sourcePublishRecordId: string | null;
+    sourceInteractionEventId: string | null;
+    customerId: string | null;
+    nickname: string | null;
+    profileUrl: string | null;
+    avatarUrl: string | null;
+    externalUserId: string | null;
+    sourceText: string | null;
+    sourceUrl: string | null;
+    videoTitle: string | null;
+    videoUrl: string | null;
+    commentTime: string | null;
+    matchedKeywords: unknown;
+    score: number;
+    scoreReasons: unknown;
+    status: string;
+    nextFollowUpAt: Date | null;
+    ownerUserId: string | null;
+    notes: unknown;
+    evidenceUrls: unknown;
+    latestReply: string | null;
+    enrichmentStatus: string | null;
+    missingFields: unknown;
+    identityConfidence: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): GrowthLead {
+    return {
+      id: item.id,
+      userId: item.userId,
+      tenantId: item.tenantId || undefined,
+      platform: this.platform(item.platform),
+      sourceType: this.leadSourceType(item.sourceType),
+      sourceTaskId: item.sourceTaskId ?? undefined,
+      sourceRunId: item.sourceRunId ?? undefined,
+      crmCustomerId: item.customerId ?? undefined,
+      nickname: item.nickname ?? '',
+      profileUrl: item.profileUrl ?? undefined,
+      avatarUrl: item.avatarUrl ?? undefined,
+      externalUserId: item.externalUserId ?? undefined,
+      sourceText: item.sourceText ?? '',
+      sourceUrl: item.sourceUrl ?? undefined,
+      videoTitle: item.videoTitle ?? undefined,
+      videoUrl: item.videoUrl ?? undefined,
+      commentTime: item.commentTime ?? undefined,
+      matchedKeywords: this.jsonList(item.matchedKeywords),
+      score: item.score,
+      scoreReasons: this.jsonList(item.scoreReasons),
+      status: this.leadStatus(item.status) ?? 'new',
+      nextFollowUpAt: item.nextFollowUpAt
+        ? this.iso(item.nextFollowUpAt)
+        : undefined,
+      ownerUserId: item.ownerUserId ?? undefined,
+      notes: Array.isArray(item.notes) ? item.notes : [],
+      evidenceUrls: this.jsonList(item.evidenceUrls),
+      latestReply: item.latestReply ?? undefined,
+      // P1 复核（全面审查）：DB→store 反向加载补齐归因/质量字段——
+      // 原 mapLeadRow 丢这些字段，isCrmCaptureEligibleLead 读到的
+      // enrichmentStatus/suppressed/missingFields 恒 undefined → 质量门禁失效
+      sourceAccountId: item.sourceAccountId ?? undefined,
+      sourceArticleId: item.sourceArticleId ?? null,
+      sourcePublishRecordId: item.sourcePublishRecordId ?? null,
+      sourceInteractionEventId: item.sourceInteractionEventId ?? null,
+      enrichmentStatus:
+        (item.enrichmentStatus as GrowthLead['enrichmentStatus']) ?? undefined,
+      missingFields: this.jsonList(item.missingFields),
+      identityConfidence: item.identityConfidence ?? undefined,
+      createdAt: this.iso(item.createdAt),
+      updatedAt: this.iso(item.updatedAt),
+    };
+  }
+
+  /** growth scope → Prisma where（数据库分页/服务端筛选共用） */
+  private growthScopeWhere(scope: GrowthScope): {
+    OR?: Array<Record<string, unknown>>;
+    userId?: string;
+  } {
+    if (scope.tenantId) {
+      return {
+        OR: [
+          { tenantId: scope.tenantId },
+          { userId: scope.userId, tenantId: null },
+        ],
+      };
+    }
+    return { userId: scope.userId };
+  }
+
+  /** 解析 pageSize（1-500，默认 500；非法值回退默认） */
+  private queryPageSize(value: unknown): number {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n < 1) return 500;
+    return Math.min(500, Math.floor(n));
+  }
+
+  /** 解析分页偏移：优先 offset，否则 (page-1)*pageSize */
+  private queryOffset(
+    page: unknown,
+    offset: unknown,
+    pageSize: number,
+  ): number {
+    const rawOffset = Number(offset);
+    if (Number.isFinite(rawOffset) && rawOffset >= 0) {
+      return Math.floor(rawOffset);
+    }
+    const pageNum = Number(page);
+    if (!Number.isFinite(pageNum) || pageNum < 1) return 0;
+    return (Math.floor(pageNum) - 1) * pageSize;
+  }
+
+  /** 数据库列表 delegate 是否可用（测试环境注入空 prisma 时为 false，回退 loadStore） */
+  private hasDbListDelegates(): boolean {
+    const prisma = this.prisma as unknown as {
+      growthAcquisitionRun?: { findMany?: unknown };
+      lead?: { findMany?: unknown };
+    };
+    return Boolean(
+      prisma?.growthAcquisitionRun?.findMany && prisma?.lead?.findMany,
+    );
   }
 
   private async saveStoreToDatabase(
@@ -5768,8 +7615,22 @@ export class GrowthService implements OnModuleInit {
         options,
         'leads',
       )) {
+        // P0 复核（全面审查）：upsert 用 dedupeKey 复合唯一键（对齐
+        // LeadRepository.dedupeWhere 与 schema @@unique([tenantId,dedupeKey])）——
+        // 原 where:{id} 在重跑任务命中历史 dedupeKey 时 create 撞 P2002，
+        // 整个 $transaction（configs/runs/leads）一起回滚。
+        const dedupeKey = this.unifiedLeadDedupeKey(item);
         await tx.lead.upsert({
-          where: { id: item.id },
+          where: item.tenantId
+            ? {
+                tenantId_dedupeKey: {
+                  tenantId: item.tenantId,
+                  dedupeKey,
+                },
+              }
+            : {
+                userId_dedupeKey: { userId: item.userId, dedupeKey },
+              },
           create: {
             id: item.id,
             userId: item.userId,
@@ -5788,21 +7649,28 @@ export class GrowthService implements OnModuleInit {
             videoTitle: item.videoTitle,
             videoUrl: item.videoUrl,
             commentTime: item.commentTime,
-            matchedKeywords: (item.matchedKeywords ??
-              []) as Prisma.InputJsonValue,
+            matchedKeywords: item.matchedKeywords ?? [],
             score: item.score,
-            scoreReasons: (item.scoreReasons ??
-              []) as Prisma.InputJsonValue,
+            scoreReasons: item.scoreReasons ?? [],
             status: item.status,
             nextFollowUpAt: item.nextFollowUpAt
               ? new Date(item.nextFollowUpAt)
               : undefined,
             ownerUserId: item.ownerUserId ?? undefined,
             notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
-            evidenceUrls: (item.evidenceUrls ??
-              []) as Prisma.InputJsonValue,
+            evidenceUrls: item.evidenceUrls ?? [],
             latestReply: item.latestReply,
-            dedupeKey: `lead:growth:${item.id}`,
+            // P1-11 复核：统一 dedupeKey（对齐 LeadRepository 规则 `lead:sha256(platform:uid|nick:...)`），
+            // 不再硬编码 `lead:growth:{id}`——否则 bridge/patchUnifiedLead 找不到统一 Lead。
+            dedupeKey,
+            // P1-11 复核：归因链上游 + 质量字段落库（此前丢失）
+            sourceAccountId: item.sourceAccountId ?? null,
+            sourceArticleId: item.sourceArticleId ?? null,
+            sourcePublishRecordId: item.sourcePublishRecordId ?? null,
+            sourceInteractionEventId: item.sourceInteractionEventId ?? null,
+            enrichmentStatus: item.enrichmentStatus ?? undefined,
+            identityConfidence: item.identityConfidence ?? undefined,
+            missingFields: item.missingFields ?? [],
             createdAt: new Date(item.createdAt),
             updatedAt: new Date(item.updatedAt),
           },
@@ -5822,20 +7690,26 @@ export class GrowthService implements OnModuleInit {
             videoTitle: item.videoTitle,
             videoUrl: item.videoUrl,
             commentTime: item.commentTime,
-            matchedKeywords: (item.matchedKeywords ??
-              []) as Prisma.InputJsonValue,
+            matchedKeywords: item.matchedKeywords ?? [],
             score: item.score,
-            scoreReasons: (item.scoreReasons ??
-              []) as Prisma.InputJsonValue,
+            scoreReasons: item.scoreReasons ?? [],
             status: item.status,
             nextFollowUpAt: item.nextFollowUpAt
               ? new Date(item.nextFollowUpAt)
               : undefined,
             ownerUserId: item.ownerUserId ?? undefined,
             notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
-            evidenceUrls: (item.evidenceUrls ??
-              []) as Prisma.InputJsonValue,
+            evidenceUrls: item.evidenceUrls ?? [],
             latestReply: item.latestReply,
+            // P1-11 复核：update 同样对齐统一 dedupeKey + 补归因/质量字段
+            dedupeKey,
+            sourceAccountId: item.sourceAccountId ?? null,
+            sourceArticleId: item.sourceArticleId ?? null,
+            sourcePublishRecordId: item.sourcePublishRecordId ?? null,
+            sourceInteractionEventId: item.sourceInteractionEventId ?? null,
+            enrichmentStatus: item.enrichmentStatus ?? undefined,
+            identityConfidence: item.identityConfidence ?? undefined,
+            missingFields: item.missingFields ?? [],
             updatedAt: new Date(item.updatedAt),
           },
         });
@@ -5994,8 +7868,7 @@ export class GrowthService implements OnModuleInit {
       const delegateName = delegates[collection];
       if (!delegateName || !ids?.length) continue;
       const delegate = (tx as Record<string, unknown>)[delegateName] as
-        | { deleteMany?: (args: unknown) => Promise<unknown> }
-        | undefined;
+        { deleteMany?: (args: unknown) => Promise<unknown> } | undefined;
       await delegate?.deleteMany?.({
         where: {
           ...scopedWhere,
@@ -6534,6 +8407,7 @@ export class GrowthService implements OnModuleInit {
         'target-account',
         'retention',
         'manual-import',
+        'recommended',
       ].includes(text)
     ) {
       return text as GrowthAcquisitionMode;
@@ -6885,6 +8759,7 @@ export class GrowthService implements OnModuleInit {
       'target-account': '目标账号获客',
       retention: '留资线索获客',
       'manual-import': '手动导入获客',
+      recommended: '推荐流获客',
     }[mode];
   }
 
@@ -6943,7 +8818,9 @@ export class GrowthService implements OnModuleInit {
   }
 
   async setExposureAccountStatus(userId: string, id: string, status: string) {
-    const account = await this.prisma.exposureAccount.findFirst({ where: { id, userId } });
+    const account = await this.prisma.exposureAccount.findFirst({
+      where: { id, userId },
+    });
     if (!account) throw new NotFoundException('曝光账号不存在');
     if (!['active', 'disabled'].includes(status)) {
       throw new BadRequestException('状态只能是 active / disabled');
@@ -6955,7 +8832,9 @@ export class GrowthService implements OnModuleInit {
   }
 
   async removeExposureAccount(userId: string, id: string) {
-    const account = await this.prisma.exposureAccount.findFirst({ where: { id, userId } });
+    const account = await this.prisma.exposureAccount.findFirst({
+      where: { id, userId },
+    });
     if (!account) throw new NotFoundException('曝光账号不存在');
     await this.prisma.exposureAccount.delete({ where: { id } });
     return { id, deleted: true };
@@ -6979,8 +8858,19 @@ export class GrowthService implements OnModuleInit {
     if (!text) throw new BadRequestException('文案不能为空');
     const count = Math.min(Math.max(input.count ?? 3, 1), 8);
     const variants: string[] = [text];
-    const openers = ['', '家人们，', '真的没想到，', '必须分享一下，', '最近发现，'];
-    const closers = ['', ' 感兴趣可以评论区聊聊。', ' 有需要的朋友扣1。', ' 你们觉得怎么样？'];
+    const openers = [
+      '',
+      '家人们，',
+      '真的没想到，',
+      '必须分享一下，',
+      '最近发现，',
+    ];
+    const closers = [
+      '',
+      ' 感兴趣可以评论区聊聊。',
+      ' 有需要的朋友扣1。',
+      ' 你们觉得怎么样？',
+    ];
     let guard = 0;
     while (variants.length < count && guard < 40) {
       guard++;
@@ -6995,20 +8885,21 @@ export class GrowthService implements OnModuleInit {
   }
 
   /** 曝光记录（等价炼刀 psg/record/list）：查询曝光类任务的执行记录 */
-  async listExposureRecords(limit = 50) {
+  async listExposureRecords(userId: string, limit = 50) {
     const safeLimit = Math.max(1, Math.min(200, Math.floor(limit)));
+    // P1 复核（全面审查）：加 userId scope——原裸查 taskType 导致跨用户读取执行记录
     const rows = await this.prisma.runtimeExecution.findMany({
-      where: { taskType: { contains: 'exposure' } },
+      where: { taskType: { contains: 'exposure' }, userId },
       orderBy: { createdAt: 'desc' },
       take: safeLimit,
     });
-    return rows.map((row: any) => ({
+    return rows.map((row) => ({
       id: row.id,
       taskType: row.taskType,
       status: row.status,
       createdAt: row.createdAt,
-      summary: row.summary ?? null,
-      diagnostics: row.diagnostics ?? null,
+      summary: null,
+      diagnostics: null,
     }));
   }
 
@@ -7020,12 +8911,18 @@ export class GrowthService implements OnModuleInit {
   async getLeadScoreHistory(userId: string, leadId: string) {
     const store = await this.loadStore();
     const scope = await this.growthScope(userId);
-    const item = store.leads.find((l) => this.sameGrowthRecord(l, scope, leadId));
+    const item = store.leads.find((l) =>
+      this.sameGrowthRecord(l, scope, leadId),
+    );
     if (!item) throw new NotFoundException('线索不存在');
 
     const lead = await this.findUnifiedLead(userId, item);
     if (!lead) {
-      return { available: false, snapshots: [], message: '该线索尚未接入统一评分（未走 LeadScoreService）' };
+      return {
+        available: false,
+        snapshots: [],
+        message: '该线索尚未接入统一评分（未走 LeadScoreService）',
+      };
     }
 
     const snapshots = await this.prisma.leadScoreSnapshot.findMany({
@@ -7036,7 +8933,9 @@ export class GrowthService implements OnModuleInit {
     return {
       available: true,
       leadId: lead.id,
-      totalScore: lead.score ?? 0,
+      // 裸分（采集印象）与质量分（四维 totalScore）并存：totalScore 取最新快照，roughScore 取 lead.score
+      totalScore: snapshots[0]?.totalScore ?? 0,
+      roughScore: lead.score ?? 0,
       snapshots: snapshots.map((s) => ({
         id: s.id,
         scoredAt: s.scoredAt,
@@ -7062,7 +8961,9 @@ export class GrowthService implements OnModuleInit {
   async getLeadAttribution(userId: string, leadId: string) {
     const store = await this.loadStore();
     const scope = await this.growthScope(userId);
-    const item = store.leads.find((l) => this.sameGrowthRecord(l, scope, leadId));
+    const item = store.leads.find((l) =>
+      this.sameGrowthRecord(l, scope, leadId),
+    );
     if (!item) throw new NotFoundException('线索不存在');
 
     const lead = await this.findUnifiedLead(userId, item);
@@ -7080,22 +8981,68 @@ export class GrowthService implements OnModuleInit {
     }
 
     // 主键直连链（deterministic 层）
-    const hops: Array<{ fromType: string; fromId: string; toType: string; toId: string; model: string; label: string | null }> = [];
+    const hops: Array<{
+      fromType: string;
+      fromId: string;
+      toType: string;
+      toId: string;
+      model: string;
+      label: string | null;
+    }> = [];
     if (lead.sourceInteractionEventId) {
-      hops.push({ fromType: 'interaction', fromId: lead.sourceInteractionEventId, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'created_from' });
+      hops.push({
+        fromType: 'interaction',
+        fromId: lead.sourceInteractionEventId,
+        toType: 'lead',
+        toId: lead.id,
+        model: 'deterministic',
+        label: 'created_from',
+      });
     } else if (lead.sourcePublishRecordId) {
-      hops.push({ fromType: 'publish', fromId: lead.sourcePublishRecordId, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'created_from' });
+      hops.push({
+        fromType: 'publish',
+        fromId: lead.sourcePublishRecordId,
+        toType: 'lead',
+        toId: lead.id,
+        model: 'deterministic',
+        label: 'created_from',
+      });
     } else if (lead.sourceArticleId) {
-      hops.push({ fromType: 'content', fromId: lead.sourceArticleId, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'created_from' });
+      hops.push({
+        fromType: 'content',
+        fromId: lead.sourceArticleId,
+        toType: 'lead',
+        toId: lead.id,
+        model: 'deterministic',
+        label: 'created_from',
+      });
     }
     if (lead.customerId) {
-      hops.push({ fromType: 'lead', fromId: lead.id, toType: 'customer', toId: lead.customerId, model: 'deterministic', label: 'qualified_by' });
+      hops.push({
+        fromType: 'lead',
+        fromId: lead.id,
+        toType: 'customer',
+        toId: lead.customerId,
+        model: 'deterministic',
+        label: 'qualified_by',
+      });
       const opp = await this.prisma.crmOpportunity.findFirst({
-        where: { ownerId: userId, primaryCustomerId: lead.customerId, archivedAt: null },
+        where: {
+          ownerId: userId,
+          primaryCustomerId: lead.customerId,
+          archivedAt: null,
+        },
         select: { id: true, stage: true },
       });
       if (opp) {
-        hops.push({ fromType: 'customer', fromId: lead.customerId, toType: 'opportunity', toId: opp.id, model: 'deterministic', label: 'created_from' });
+        hops.push({
+          fromType: 'customer',
+          fromId: lead.customerId,
+          toType: 'opportunity',
+          toId: opp.id,
+          model: 'deterministic',
+          label: 'created_from',
+        });
       }
     }
 
@@ -7113,10 +9060,19 @@ export class GrowthService implements OnModuleInit {
         return {
           layer: models.includes('rule_based') ? 'rule_matched' : 'inferred',
           hops: links.map((l) => ({
-            fromType: l.fromType, fromId: l.fromId, toType: l.toType, toId: l.toId,
-            model: l.model, label: l.label,
+            fromType: l.fromType,
+            fromId: l.fromId,
+            toType: l.toType,
+            toId: l.toId,
+            model: l.model,
+            label: l.label,
           })),
-          lead: { sourceArticleId: lead.sourceArticleId, sourcePublishRecordId: lead.sourcePublishRecordId, sourceInteractionEventId: lead.sourceInteractionEventId, sourceUrl: lead.sourceUrl },
+          lead: {
+            sourceArticleId: lead.sourceArticleId,
+            sourcePublishRecordId: lead.sourcePublishRecordId,
+            sourceInteractionEventId: lead.sourceInteractionEventId,
+            sourceUrl: lead.sourceUrl,
+          },
         };
       }
     }
@@ -7124,21 +9080,38 @@ export class GrowthService implements OnModuleInit {
     return {
       layer,
       hops,
-      lead: { sourceArticleId: lead.sourceArticleId, sourcePublishRecordId: lead.sourcePublishRecordId, sourceInteractionEventId: lead.sourceInteractionEventId, sourceUrl: lead.sourceUrl },
+      lead: {
+        sourceArticleId: lead.sourceArticleId,
+        sourcePublishRecordId: lead.sourcePublishRecordId,
+        sourceInteractionEventId: lead.sourceInteractionEventId,
+        sourceUrl: lead.sourceUrl,
+      },
     };
   }
 
   /** 按 dedupeKey 定位统一 Lead（GrowthLead → Lead 桥接） */
-  private async findUnifiedLead(userId: string, item: {
-    platform: string; externalUserId?: string | null; nickname?: string | null;
-    sourceText?: string | null; tenantId?: string | null;
-  }) {
+  private async findUnifiedLead(
+    userId: string,
+    item: {
+      platform: string;
+      externalUserId?: string | null;
+      nickname?: string | null;
+      sourceText?: string | null;
+      tenantId?: string | null;
+    },
+  ) {
     const dedupeKey = `lead:${createHash('sha256')
-      .update(`${item.platform}:${item.externalUserId ? `uid:${item.externalUserId}` : `nick:${item.nickname ?? ''}|${(item.sourceText ?? '').slice(0, 40)}`}`)
+      .update(
+        `${item.platform}:${item.externalUserId ? `uid:${item.externalUserId}` : `nick:${item.nickname ?? ''}|${(item.sourceText ?? '').slice(0, 40)}`}`,
+      )
       .digest('hex')}`;
     if (item.tenantId) {
-      return this.prisma.lead.findUnique({ where: { tenantId_dedupeKey: { tenantId: item.tenantId, dedupeKey } } });
+      return this.prisma.lead.findUnique({
+        where: { tenantId_dedupeKey: { tenantId: item.tenantId, dedupeKey } },
+      });
     }
-    return this.prisma.lead.findUnique({ where: { userId_dedupeKey: { userId, dedupeKey } } });
+    return this.prisma.lead.findUnique({
+      where: { userId_dedupeKey: { userId, dedupeKey } },
+    });
   }
 }

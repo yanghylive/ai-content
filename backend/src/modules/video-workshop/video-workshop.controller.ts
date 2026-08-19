@@ -41,12 +41,42 @@ export class VideoWorkshopController {
   @Get('bgm-presets')
   listBgmPresets() {
     return [
-      { id: 'upbeat', name: '轻快节奏', style: '节奏明快', scenes: ['带货', '探店', '开箱'] },
-      { id: 'narrative', name: '温和叙述', style: '平稳叙述', scenes: ['产品故事', '案例分享'] },
-      { id: 'ambient', name: '氛围留白', style: '轻柔氛围', scenes: ['高级感', '品牌宣传'] },
-      { id: 'energetic', name: '动感燃曲', style: '强节奏', scenes: ['促销', '活动'] },
-      { id: 'vlog', name: '生活 Vlog', style: '轻松日常', scenes: ['日常记录', '探店'] },
-      { id: 'corporate', name: '商务正式', style: '沉稳专业', scenes: ['企业宣传', '发布会'] },
+      {
+        id: 'upbeat',
+        name: '轻快节奏',
+        style: '节奏明快',
+        scenes: ['带货', '探店', '开箱'],
+      },
+      {
+        id: 'narrative',
+        name: '温和叙述',
+        style: '平稳叙述',
+        scenes: ['产品故事', '案例分享'],
+      },
+      {
+        id: 'ambient',
+        name: '氛围留白',
+        style: '轻柔氛围',
+        scenes: ['高级感', '品牌宣传'],
+      },
+      {
+        id: 'energetic',
+        name: '动感燃曲',
+        style: '强节奏',
+        scenes: ['促销', '活动'],
+      },
+      {
+        id: 'vlog',
+        name: '生活 Vlog',
+        style: '轻松日常',
+        scenes: ['日常记录', '探店'],
+      },
+      {
+        id: 'corporate',
+        name: '商务正式',
+        style: '沉稳专业',
+        scenes: ['企业宣传', '发布会'],
+      },
     ];
   }
 

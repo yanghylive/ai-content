@@ -48,18 +48,17 @@ export class RedfoxComplianceService {
           platforms: input.platforms ?? ['douyin', 'xiaohongshu'],
         },
         dryRun: false,
-      } as never);
+      });
 
       const summary = (result as { payloadSummary?: Record<string, unknown> })
         .payloadSummary;
       const sessionId = summary?.agentSessionId as string | undefined;
       const artifact = summary?.primaryArtifact as
-        | { artifactId?: string }
-        | undefined;
+        { artifactId?: string } | undefined;
       if (!sessionId || !artifact?.artifactId) {
-        this.logger.warn('违禁词技能未返回产物，降级为通过');
+        this.logger.warn('违禁词技能未返回产物，fail-closed（不通过）');
         return {
-          pass: true,
+          pass: false,
           violations: [],
           platform: input.platforms?.join(',') || 'multi',
           checkedAt: new Date().toISOString(),
@@ -82,9 +81,9 @@ export class RedfoxComplianceService {
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`违禁词检测失败（降级为通过）: ${message}`);
+      this.logger.warn(`违禁词检测失败（fail-closed 不通过）: ${message}`);
       return {
-        pass: true,
+        pass: false,
         violations: [],
         platform: input.platforms?.join(',') || 'multi',
         checkedAt: new Date().toISOString(),

@@ -66,23 +66,74 @@ export interface ScoreInput {
 const KEYWORDS: Record<string, { type: string; keywords: string[] }> = {
   price: {
     type: 'intent.price',
-    keywords: ['多少钱', '价格', '报价', '收费', '费用', '多少钱一个', '价格是多少', '怎么收费', '贵不贵'],
+    keywords: [
+      '多少钱',
+      '价格',
+      '报价',
+      '收费',
+      '费用',
+      '多少钱一个',
+      '价格是多少',
+      '怎么收费',
+      '贵不贵',
+    ],
   },
   explicitRequest: {
     type: 'intent.explicit_request',
-    keywords: ['加微信', '私聊', '联系我', '怎么联系', '想了解', '想合作', '找你们', '找您', '聊一聊', '约个时间', '安排一下'],
+    keywords: [
+      '加微信',
+      '私聊',
+      '联系我',
+      '怎么联系',
+      '想了解',
+      '想合作',
+      '找你们',
+      '找您',
+      '聊一聊',
+      '约个时间',
+      '安排一下',
+    ],
   },
   question: {
     type: 'intent.question',
-    keywords: ['？', '?', '怎么', '如何', '能不能', '是否可以', '行不行', '有没有'],
+    keywords: [
+      '？',
+      '?',
+      '怎么',
+      '如何',
+      '能不能',
+      '是否可以',
+      '行不行',
+      '有没有',
+    ],
   },
   timeline: {
     type: 'intent.timeline',
-    keywords: ['最近', '现在', '马上', '这个月', '这几天', '尽快', '急', '今天', '明天'],
+    keywords: [
+      '最近',
+      '现在',
+      '马上',
+      '这个月',
+      '这几天',
+      '尽快',
+      '急',
+      '今天',
+      '明天',
+    ],
   },
   spam: {
     type: 'risk.spam',
-    keywords: ['代发', '刷量', '免费领', '薅羊毛', '加群领', '点击链接', '中奖', '恭喜您', '扫码'],
+    keywords: [
+      '代发',
+      '刷量',
+      '免费领',
+      '薅羊毛',
+      '加群领',
+      '点击链接',
+      '中奖',
+      '恭喜您',
+      '扫码',
+    ],
   },
 };
 
@@ -111,12 +162,31 @@ function matchKeywordSignals(
       if (seen.has(rule.type)) continue;
       if (rule.keywords.some((k) => content.includes(k))) {
         const r = SIGNAL_RULES[rule.type];
-        found.push({ type: rule.type, value: r?.score ?? 1, source: `${label}:${rule.type}` });
+        found.push({
+          type: rule.type,
+          value: r?.score ?? 1,
+          source: `${label}:${rule.type}`,
+        });
         seen.add(rule.type);
       }
     }
   }
   return found;
+}
+
+/** 信号类型 → 中文标签（线索自动打标签用） */
+const SIGNAL_TYPE_LABELS: Record<string, string> = {
+  'intent.price': '价格意向',
+  'intent.explicit_request': '明确意向',
+  'intent.question': '疑问咨询',
+  'intent.timeline': '近期需求',
+  'risk.spam': '疑似垃圾',
+};
+
+/** 从线索文本提取命中的中文标签（供新线索自动打标签） */
+function extractLeadLabels(text: string | null | undefined): string[] {
+  const signals = matchKeywordSignals(text ?? '', null, null);
+  return signals.map((s) => SIGNAL_TYPE_LABELS[s.type] ?? s.type);
 }
 
 @Injectable()
@@ -127,7 +197,9 @@ export class LeadScoreService {
   ) {}
 
   /** 从事件/内容生成信号（T2.1 规则初版） */
-  async generateSignals(input: SignalGenerationInput): Promise<Array<{ type: string; value: number }>> {
+  async generateSignals(
+    input: SignalGenerationInput,
+  ): Promise<Array<{ type: string; value: number }>> {
     const { tenantId, userId, leadId, events } = input;
     const now = new Date();
     const toSave: Array<{
@@ -142,7 +214,11 @@ export class LeadScoreService {
     }> = [];
 
     for (const ev of events) {
-      const matched = matchKeywordSignals(ev.body, input.sourceContent?.title, input.sourceContent?.text);
+      const matched = matchKeywordSignals(
+        ev.body,
+        input.sourceContent?.title,
+        input.sourceContent?.text,
+      );
       for (const m of matched) {
         toSave.push({
           tenantId,
@@ -189,7 +265,7 @@ export class LeadScoreService {
   }
 
   /** 计算四分数（应用时间衰减 + 重复规则）→ 返回快照数据（未落库） */
-  async score(input: ScoreInput): Promise<{
+  score(input: ScoreInput): {
     fitScore: number;
     intentScore: number;
     identityConfidence: number;
@@ -199,19 +275,27 @@ export class LeadScoreService {
     reasons: string[];
     evidenceIds: string[];
     confidence: number;
-  }> {
+  } {
     const now = new Date();
     const signals = input.signals;
     const components = aggregateByDimension(signals, now);
 
     // 身份质量补充（来自 PlatformIdentity）
-    if (input.identity?.verified) components.identity = clamp(components.identity + DIMENSION_MAX.identity, DIMENSION_MAX.identity);
-    else if (input.identity?.hasProfileUrl) components.identity = Math.max(components.identity, 8);
-    else if (input.identity?.nicknameMatched) components.identity = Math.max(components.identity, 3);
+    if (input.identity?.verified)
+      components.identity = clamp(
+        components.identity + DIMENSION_MAX.identity,
+        DIMENSION_MAX.identity,
+      );
+    else if (input.identity?.hasProfileUrl)
+      components.identity = Math.max(components.identity, 8);
+    else if (input.identity?.nicknameMatched)
+      components.identity = Math.max(components.identity, 3);
 
     const totalScore = computeTotal(components);
     const reasons: string[] = [];
-    const evidenceIds = Array.from(new Set(signals.map((s) => s.evidenceId).filter(Boolean))) as string[];
+    const evidenceIds = Array.from(
+      new Set(signals.map((s) => s.evidenceId).filter(Boolean)),
+    ) as string[];
 
     // 证据链：逐条记录「为什么加减分」（T2.3，PRD SCORE-002）
     for (const s of signals) {
@@ -225,12 +309,16 @@ export class LeadScoreService {
       }
     }
     if (input.identity?.verified) reasons.push('身份已验证（externalUserId）');
-    if (input.identity?.hasProfileUrl) reasons.push('有稳定 profileUrl，身份高置信');
-    if (reasons.length === 0) reasons.push('暂无证据（none found）——不得补造来源/预算/身份/购买时间');
+    if (input.identity?.hasProfileUrl)
+      reasons.push('有稳定 profileUrl，身份高置信');
+    if (reasons.length === 0)
+      reasons.push('暂无证据（none found）——不得补造来源/预算/身份/购买时间');
 
     // 置信度：有身份证据加分，有证据链则整体置信
     const confidence = clamp(
-      50 + (input.identity?.verified ? 30 : 0) + (evidenceIds.length > 0 ? 20 : 0),
+      50 +
+        (input.identity?.verified ? 30 : 0) +
+        (evidenceIds.length > 0 ? 20 : 0),
       100,
     );
 
@@ -277,7 +365,7 @@ export class LeadScoreService {
         riskScore: input.snapshot.riskScore,
         totalScore: input.snapshot.totalScore,
         confidence: input.snapshot.confidence,
-        components: input.snapshot.components as object,
+        components: input.snapshot.components,
         reasons: input.snapshot.reasons,
         evidenceIds: input.snapshot.evidenceIds,
         modelVersion: input.modelVersion ?? 'rule-v1',
@@ -300,7 +388,9 @@ export class LeadScoreService {
     totalScore: number;
     components: Record<ScoreDimension, number>;
   }> {
-    const signals = (await this.signalStore.listSignals(input.tenantId, input.leadId)).map((s) => ({
+    const signals = (
+      await this.signalStore.listSignals(input.tenantId, input.leadId)
+    ).map((s) => ({
       type: s.type,
       value: s.value ?? 1,
       observedAt: s.observedAt,
@@ -308,7 +398,7 @@ export class LeadScoreService {
       evidenceId: s.evidenceId,
       source: s.source,
     }));
-    const result = await this.score({
+    const result = this.score({
       tenantId: input.tenantId,
       userId: input.userId,
       leadId: input.leadId,
@@ -322,12 +412,82 @@ export class LeadScoreService {
       snapshot: result,
       modelVersion: input.modelVersion,
     });
-    // 回写 Lead.score（旧单分数字段，保持列表排序可用）
-    await this.prisma.lead.updateMany({
-      where: { id: input.leadId, tenantId: input.tenantId },
-      data: { score: result.totalScore },
+    // 四维 totalScore 只存快照，不覆盖 lead.score（lead.score 保留采集时的裸分/印象分，两者并存）。
+    return {
+      snapshotId,
+      totalScore: result.totalScore,
+      components: result.components,
+    };
+  }
+
+  /** 统一评分入口：从线索文本生成信号 → 四维快照。
+   * 供无 InteractionEvent 的线索路径（手动导入 / 存量重算 / 评论获客）复用。
+   * 四维 totalScore 只存快照，不覆盖 lead.score（裸分与质量分并存）。 */
+  async scoreLeadFromText(input: {
+    tenantId: string;
+    userId: string;
+    leadId: string;
+    platform: string;
+    text: string;
+    /** 事件渠道，默认 manual；dm/mention 会额外计入 engagement.reply 信号 */
+    channel?: string;
+    occurredAt?: Date;
+    identity?: ScoreInput['identity'];
+  }): Promise<{
+    snapshotId: string;
+    totalScore: number;
+    components: Record<ScoreDimension, number>;
+  }> {
+    const text = input.text?.trim() ?? '';
+    if (text) {
+      // 自动打标签：从文本提取中文标签，合并写回 lead.matchedKeywords
+      const labels = extractLeadLabels(text);
+      if (labels.length > 0) {
+        await this.mergeLeadLabels(input.leadId, labels);
+      }
+      await this.generateSignals({
+        tenantId: input.tenantId,
+        userId: input.userId,
+        leadId: input.leadId,
+        platform: input.platform,
+        events: [
+          {
+            id: `lead:${input.leadId}`,
+            channel: input.channel ?? 'manual',
+            body: text,
+            occurredAt: input.occurredAt ?? new Date(),
+          },
+        ],
+        sourceContent: null,
+      });
+    }
+    const persisted = await this.scoreAndPersist({
+      tenantId: input.tenantId,
+      userId: input.userId,
+      leadId: input.leadId,
+      identity: input.identity,
     });
-    return { snapshotId, totalScore: result.totalScore, components: result.components };
+    // 四维分已存快照，不覆盖 lead.score（裸分与质量分并存）。
+    return persisted;
+  }
+
+  /** 合并写回线索标签（去重，不覆盖已有标签） */
+  private async mergeLeadLabels(
+    leadId: string,
+    labels: string[],
+  ): Promise<void> {
+    const lead = await this.prisma.lead.findUnique({
+      where: { id: leadId },
+      select: { matchedKeywords: true },
+    });
+    const existing = Array.isArray(lead?.matchedKeywords)
+      ? (lead.matchedKeywords as string[])
+      : [];
+    const merged = Array.from(new Set([...existing, ...labels]));
+    await this.prisma.lead.updateMany({
+      where: { id: leadId },
+      data: { matchedKeywords: merged },
+    });
   }
 
   /** 评分历史（倒序） */

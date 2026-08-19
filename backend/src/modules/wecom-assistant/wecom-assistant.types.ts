@@ -1,8 +1,5 @@
 export type WecomAssistantStatus =
-  | 'not_installed'
-  | 'active'
-  | 'test_failed'
-  | 'disabled';
+  'not_installed' | 'active' | 'test_failed' | 'disabled';
 export type WecomRiskLevel = 'low' | 'medium' | 'high';
 export type WecomOutboundStatus = 'pending' | 'sent' | 'failed' | 'skipped';
 

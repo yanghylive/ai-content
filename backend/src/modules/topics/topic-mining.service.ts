@@ -314,8 +314,14 @@ export class TopicMiningService {
 
     // 批量标记已消费（被 AI 模型选中）的素材为 mined
     if (allConsumedMaterialIds.size > 0) {
+      // P0 复核（全面审查）：加 visibility 过滤——素材池含用户私有素材
+      // （LocalKnowledge visibility=private），updateMany 只改系统公共素材，
+      // 防批量状态变更误伤用户私有素材
       await this.prisma.material.updateMany({
-        where: { id: { in: Array.from(allConsumedMaterialIds) } },
+        where: {
+          id: { in: Array.from(allConsumedMaterialIds) },
+          visibility: 'public',
+        },
         data: { status: 'mined' },
       });
     }
@@ -332,6 +338,8 @@ export class TopicMiningService {
           id: { in: notSelectedIds },
           miningCount: { gte: 2 },
           status: 'unmined',
+          // P0 复核：仅系统公共素材（防误弃用户私有素材）
+          visibility: 'public',
         },
         data: { status: 'failed' }, // 抛弃，因为最多分析2次
       });

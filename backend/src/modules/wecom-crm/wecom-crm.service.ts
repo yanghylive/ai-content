@@ -1,15 +1,15 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import crypto from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { safeText } from '../../common/text.utils';
-import {
-  verifyWecomSignature,
-  decryptWecomMsg,
-  encryptWecomMsg,
-  buildWecomMsgSignature,
-} from './wecom-crm.crypto';
+import { verifyWecomSignature, decryptWecomMsg } from './wecom-crm.crypto';
 import type {
   WecomCorpConfigDto,
   WecomGroupMsgTaskCreateDto,
@@ -61,7 +61,10 @@ export class WecomCrmService {
     };
   }
 
-  async saveConfig(userId: string, dto: WecomCorpConfigDto & { id?: string; name?: string }) {
+  async saveConfig(
+    userId: string,
+    dto: WecomCorpConfigDto & { id?: string; name?: string },
+  ) {
     if (!dto.corpId) throw new BadRequestException('缺少 corpid');
     const existing = dto.id
       ? await this.prisma.wecomCorpConfig.findFirst({
@@ -80,9 +83,12 @@ export class WecomCrmService {
       // 凭据变更后失效 token 缓存
       if (existing) this.tokenCache.delete(existing.id);
     }
-    if (dto.callbackToken) data.callbackToken = this.encryptSecret(dto.callbackToken.trim());
+    if (dto.callbackToken)
+      data.callbackToken = this.encryptSecret(dto.callbackToken.trim());
     if (dto.callbackEncodingAesKey) {
-      data.callbackEncodingAesKey = this.encryptSecret(dto.callbackEncodingAesKey.trim());
+      data.callbackEncodingAesKey = this.encryptSecret(
+        dto.callbackEncodingAesKey.trim(),
+      );
       data.callbackUrlVerifiedAt = null;
     }
 
@@ -164,11 +170,19 @@ export class WecomCrmService {
     }
 
     // 2. 事件推送：解析外层 XML → Encrypt 密文
-    const encryptMatch = /<Encrypt><!\[CDATA\[([\s\S]*?)\]\]><\/Encrypt>/.exec(rawBody);
+    const encryptMatch = /<Encrypt><!\[CDATA\[([\s\S]*?)\]\]><\/Encrypt>/.exec(
+      rawBody,
+    );
     if (!encryptMatch) throw new BadRequestException('缺少 Encrypt 字段');
     const encryptMsg = encryptMatch[1];
     if (
-      !verifyWecomSignature({ token, timestamp, nonce, encryptMsg, msgSignature })
+      !verifyWecomSignature({
+        token,
+        timestamp,
+        nonce,
+        encryptMsg,
+        msgSignature,
+      })
     ) {
       throw new BadRequestException('回调签名校验失败');
     }
@@ -181,13 +195,16 @@ export class WecomCrmService {
   }
 
   private async processCallbackEvent(configId: string, xmlMessage: string) {
-    const event = /<Event><\!\[CDATA\[([\s\S]*?)\]\]><\/Event>/.exec(xmlMessage)?.[1]
-      || /<Event>([\s\S]*?)<\/Event>/.exec(xmlMessage)?.[1]
-      || 'unknown';
-    const msgId = /<MsgID><\!\[CDATA\[([\s\S]*?)\]\]><\/MsgID>/.exec(xmlMessage)?.[1]
-      || /<MsgID>([\s\S]*?)<\/MsgID>/.exec(xmlMessage)?.[1];
-    const jobId = /<JobID><\!\[CDATA\[([\s\S]*?)\]\]><\/JobID>/.exec(xmlMessage)?.[1]
-      || /<JobID>([\s\S]*?)<\/JobID>/.exec(xmlMessage)?.[1];
+    const event =
+      /<Event><!\[CDATA\[([\s\S]*?)\]\]><\/Event>/.exec(xmlMessage)?.[1] ||
+      /<Event>([\s\S]*?)<\/Event>/.exec(xmlMessage)?.[1] ||
+      'unknown';
+    const msgId =
+      /<MsgID><!\[CDATA\[([\s\S]*?)\]\]><\/MsgID>/.exec(xmlMessage)?.[1] ||
+      /<MsgID>([\s\S]*?)<\/MsgID>/.exec(xmlMessage)?.[1];
+    const jobId =
+      /<JobID><!\[CDATA\[([\s\S]*?)\]\]><\/JobID>/.exec(xmlMessage)?.[1] ||
+      /<JobID>([\s\S]*?)<\/JobID>/.exec(xmlMessage)?.[1];
     this.logger.log(
       `企业微信回调事件: ${event}${msgId ? ' msgId=' + msgId : ''}${jobId ? ' jobId=' + jobId : ''}`,
     );
@@ -215,7 +232,11 @@ export class WecomCrmService {
     const cfg = await this.getOwnedConfig(userId, configId);
     const token = await this.getAccessToken(cfg);
     // 拉取全部企业成员（需通讯录读取权限），逐个拉客户
-    const members = await this.wecomGet('/externalcontact/get_follow_user_list', token, {});
+    const members = await this.wecomGet(
+      '/externalcontact/get_follow_user_list',
+      token,
+      {},
+    );
     const memberIds = Array.isArray(members?.follow_user)
       ? (members.follow_user as string[])
       : memberUserId
@@ -224,10 +245,18 @@ export class WecomCrmService {
     const targets = memberUserId ? [memberUserId] : memberIds.slice(0, 20);
     const contacts: Array<Record<string, unknown>> = [];
     for (const uid of targets) {
-      const res = await this.wecomGet('/externalcontact/list', token, { userid: uid });
-      const ids = Array.isArray(res?.external_userid) ? res.external_userid : [];
+      const res = await this.wecomGet('/externalcontact/list', token, {
+        userid: uid,
+      });
+      const ids = Array.isArray(res?.external_userid)
+        ? res.external_userid
+        : [];
       for (const extId of ids.slice(0, 50)) {
-        contacts.push({ externalUserId: extId, memberUserId: uid, name: extId });
+        contacts.push({
+          externalUserId: extId,
+          memberUserId: uid,
+          name: extId,
+        });
       }
     }
     // 落库缓存
@@ -262,13 +291,21 @@ export class WecomCrmService {
     if (!cfg) return;
     try {
       const token = await this.getAccessToken(cfg);
-      const members = await this.wecomGet('/externalcontact/get_follow_user_list', token, {});
+      const members = await this.wecomGet(
+        '/externalcontact/get_follow_user_list',
+        token,
+        {},
+      );
       const memberIds = Array.isArray(members?.follow_user)
         ? (members.follow_user as string[])
         : [];
       for (const uid of memberIds.slice(0, 10)) {
-        const res = await this.wecomGet('/externalcontact/list', token, { userid: uid });
-        const ids = Array.isArray(res?.external_userid) ? res.external_userid : [];
+        const res = await this.wecomGet('/externalcontact/list', token, {
+          userid: uid,
+        });
+        const ids = Array.isArray(res?.external_userid)
+          ? (res.external_userid as string[])
+          : [];
         for (const extId of ids) {
           await this.prisma.wecomContact.upsert({
             where: {
@@ -315,19 +352,32 @@ export class WecomCrmService {
     try {
       const token = await this.getAccessToken(cfg);
       const body = this.buildGroupMsgBody(dto);
-      const res = await this.wecomPost('/externalcontact/add_msg_template', token, body);
-      const msgId = String(res?.msgid || '');
+      const res = await this.wecomPost(
+        '/externalcontact/add_msg_template',
+        token,
+        body,
+      );
+      const rawMsgId = res?.msgid;
+      const msgId =
+        typeof rawMsgId === 'string' || typeof rawMsgId === 'number'
+          ? String(rawMsgId)
+          : '';
       await this.prisma.wecomGroupMsgTask.update({
         where: { id: task.id },
         data: { wecomMsgId: msgId, status: 'created' },
       });
-      return this.sanitizeTask(task.id, { wecomMsgId: msgId, status: 'created' });
+      return this.sanitizeTask(task.id, {
+        wecomMsgId: msgId,
+        status: 'created',
+      });
     } catch (error) {
       await this.prisma.wecomGroupMsgTask.update({
         where: { id: task.id },
         data: { status: 'failed', errorMessage: this.getErrorMessage(error) },
       });
-      throw new BadRequestException('群发任务创建失败: ' + this.getErrorMessage(error));
+      throw new BadRequestException(
+        '群发任务创建失败: ' + this.getErrorMessage(error),
+      );
     }
   }
 
@@ -336,12 +386,17 @@ export class WecomCrmService {
       where: { id: taskId, userId },
     });
     if (!task) throw new NotFoundException('群发任务不存在');
-    if (!task.wecomMsgId) throw new BadRequestException('任务尚未创建（无 msgid）');
+    if (!task.wecomMsgId)
+      throw new BadRequestException('任务尚未创建（无 msgid）');
     const cfg = await this.getOwnedConfig(userId, task.configId);
     const token = await this.getAccessToken(cfg);
-    const res = await this.wecomPost('/externalcontact/get_group_msg_result', token, {
-      msgid: task.wecomMsgId,
-    });
+    const res = await this.wecomPost(
+      '/externalcontact/get_group_msg_result',
+      token,
+      {
+        msgid: task.wecomMsgId,
+      },
+    );
     const status: WecomTaskStatus =
       res?.status === 1
         ? 'sending'
@@ -395,22 +450,38 @@ export class WecomCrmService {
       const body: Record<string, unknown> = {};
       if (dto.text) body.text = { content: dto.text };
       if (dto.attachments?.length) {
-        body.attachments = dto.attachments.map((a) => this.buildMomentAttachment(a));
+        body.attachments = dto.attachments.map((a) =>
+          this.buildMomentAttachment(a),
+        );
       }
-      if (dto.visibleRange) body.visible_range = this.buildVisibleRange(dto.visibleRange);
-      const res = await this.wecomPost('/externalcontact/add_moment_task', token, body);
-      const jobId = String(res?.jobid || '');
+      if (dto.visibleRange)
+        body.visible_range = this.buildVisibleRange(dto.visibleRange);
+      const res = await this.wecomPost(
+        '/externalcontact/add_moment_task',
+        token,
+        body,
+      );
+      const rawJobId = res?.jobid;
+      const jobId =
+        typeof rawJobId === 'string' || typeof rawJobId === 'number'
+          ? String(rawJobId)
+          : '';
       await this.prisma.wecomMomentTask.update({
         where: { id: task.id },
         data: { wecomJobId: jobId, status: 'created' },
       });
-      return this.sanitizeTask(task.id, { wecomJobId: jobId, status: 'created' });
+      return this.sanitizeTask(task.id, {
+        wecomJobId: jobId,
+        status: 'created',
+      });
     } catch (error) {
       await this.prisma.wecomMomentTask.update({
         where: { id: task.id },
         data: { status: 'failed', errorMessage: this.getErrorMessage(error) },
       });
-      throw new BadRequestException('朋友圈任务创建失败: ' + this.getErrorMessage(error));
+      throw new BadRequestException(
+        '朋友圈任务创建失败: ' + this.getErrorMessage(error),
+      );
     }
   }
 
@@ -419,19 +490,25 @@ export class WecomCrmService {
       where: { id: taskId, userId },
     });
     if (!task) throw new NotFoundException('朋友圈任务不存在');
-    if (!task.wecomJobId) throw new BadRequestException('任务尚未创建（无 jobid）');
+    if (!task.wecomJobId)
+      throw new BadRequestException('任务尚未创建（无 jobid）');
     const cfg = await this.getOwnedConfig(userId, task.configId);
     const token = await this.getAccessToken(cfg);
-    const res = await this.wecomPost('/externalcontact/get_moment_task_result', token, {
-      jobid: task.wecomJobId,
-    });
+    const res = await this.wecomPost(
+      '/externalcontact/get_moment_task_result',
+      token,
+      {
+        jobid: task.wecomJobId,
+      },
+    );
     const status: WecomTaskStatus =
       res?.status === 1
         ? 'sending'
         : res?.status === 2
           ? 'sent'
           : (task.status as WecomTaskStatus);
-    const result = res?.result && typeof res.result === 'object' ? res.result : {};
+    const result =
+      res?.result && typeof res.result === 'object' ? res.result : {};
     await this.prisma.wecomMomentTask.update({
       where: { id: task.id },
       data: { status, result: result as never, updatedAt: new Date() },
@@ -450,7 +527,16 @@ export class WecomCrmService {
 
   // ============ 内部工具 ============
 
-  private buildGroupMsgBody(dto: WecomGroupMsgTaskCreateDto): Record<string, unknown> {
+  /** 把 unknown 安全转成字符串：非 string/number 一律空串，避免把对象拼成 [object Object] */
+  private asString(value: unknown): string {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number') return String(value);
+    return '';
+  }
+
+  private buildGroupMsgBody(
+    dto: WecomGroupMsgTaskCreateDto,
+  ): Record<string, unknown> {
     const body: Record<string, unknown> = {
       chat_type: 'single',
       external_userid: dto.externalUserIds,
@@ -459,55 +545,67 @@ export class WecomCrmService {
     };
     switch (dto.msgType) {
       case 'text':
-        body.text = { content: String(dto.content?.content || '') };
+        body.text = { content: this.asString(dto.content?.content) };
         break;
       case 'image':
-        body.image = { media_id: String(dto.content?.mediaId || '') };
+        body.image = { media_id: this.asString(dto.content?.mediaId) };
         break;
       case 'link':
         body.link = {
-          title: String(dto.content?.title || ''),
-          url: String(dto.content?.url || ''),
-          picurl: String(dto.content?.picUrl || ''),
-          desc: String(dto.content?.desc || ''),
+          title: this.asString(dto.content?.title),
+          url: this.asString(dto.content?.url),
+          picurl: this.asString(dto.content?.picUrl),
+          desc: this.asString(dto.content?.desc),
         };
         break;
       case 'miniprogram':
         body.miniprogram = {
-          title: String(dto.content?.title || ''),
-          pic_media_id: String(dto.content?.picMediaId || ''),
-          appid: String(dto.content?.appid || ''),
-          page: String(dto.content?.page || ''),
+          title: this.asString(dto.content?.title),
+          pic_media_id: this.asString(dto.content?.picMediaId),
+          appid: this.asString(dto.content?.appid),
+          page: this.asString(dto.content?.page),
         };
         break;
       default:
-        throw new BadRequestException('不支持的群发消息类型: ' + dto.msgType);
+        throw new BadRequestException(
+          '不支持的群发消息类型: ' + String(dto.msgType),
+        );
     }
     return body;
   }
 
-  private buildMomentAttachment(a: Record<string, unknown>): Record<string, unknown> {
-    const type = String(a.type || 'image');
+  private buildMomentAttachment(
+    a: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const type = this.asString(a.type) || 'image';
     if (type === 'image') {
-      return { msgtype: 'image', image: { media_id: String(a.mediaId || '') } };
+      return {
+        msgtype: 'image',
+        image: { media_id: this.asString(a.mediaId) },
+      };
     }
     if (type === 'video') {
-      return { msgtype: 'video', video: { media_id: String(a.mediaId || '') } };
+      return {
+        msgtype: 'video',
+        video: { media_id: this.asString(a.mediaId) },
+      };
     }
     if (type === 'link') {
       return {
         msgtype: 'link',
         link: {
-          title: String(a.title || ''),
-          url: String(a.url || ''),
-          picurl: String(a.picUrl || ''),
+          title: this.asString(a.title),
+          url: this.asString(a.url),
+          picurl: this.asString(a.picUrl),
         },
       };
     }
     throw new BadRequestException('朋友圈附件类型不支持: ' + type);
   }
 
-  private buildVisibleRange(range: Record<string, unknown>): Record<string, unknown> {
+  private buildVisibleRange(
+    range: Record<string, unknown>,
+  ): Record<string, unknown> {
     return {
       sender_list: {
         users: Array.isArray(range.users) ? range.users : [],
@@ -540,19 +638,26 @@ export class WecomCrmService {
     }
     const secret = this.decryptSecret(cfg.encryptedCorpSecret);
     const token = await this.fetchAccessToken(cfg.corpId, secret);
-    this.tokenCache.set(cfg.id, { token, expiresAt: Date.now() + TOKEN_TTL_MS });
+    this.tokenCache.set(cfg.id, {
+      token,
+      expiresAt: Date.now() + TOKEN_TTL_MS,
+    });
     return token;
   }
 
-  private async fetchAccessToken(corpId: string, corpSecret: string): Promise<string> {
+  private async fetchAccessToken(
+    corpId: string,
+    corpSecret: string,
+  ): Promise<string> {
     try {
-      const { data } = await axios.get<{ errcode?: number; errmsg?: string; access_token?: string }>(
-        `${WECOM_API}/gettoken`,
-        {
-          params: { corpid: corpId, corpsecret: corpSecret },
-          timeout: 10000,
-        },
-      );
+      const { data } = await axios.get<{
+        errcode?: number;
+        errmsg?: string;
+        access_token?: string;
+      }>(`${WECOM_API}/gettoken`, {
+        params: { corpid: corpId, corpsecret: corpSecret },
+        timeout: 10000,
+      });
       if (data.errcode !== 0 || !data.access_token) {
         throw new Error(
           `获取 access_token 失败: ${data.errcode} ${data.errmsg || ''}`,
@@ -571,10 +676,12 @@ export class WecomCrmService {
     token: string,
     params: Record<string, string>,
   ): Promise<Record<string, unknown> | undefined> {
-    const { data } = await axios.get<{ errcode?: number; errmsg?: string } & Record<string, unknown>>(
-      `${WECOM_API}${path}`,
-      { params: { access_token: token, ...params }, timeout: 10000 },
-    );
+    const { data } = await axios.get<
+      { errcode?: number; errmsg?: string } & Record<string, unknown>
+    >(`${WECOM_API}${path}`, {
+      params: { access_token: token, ...params },
+      timeout: 10000,
+    });
     if (data.errcode !== 0) {
       throw new Error(`企业微信 ${path} 失败: ${data.errcode} ${data.errmsg}`);
     }
@@ -644,7 +751,10 @@ export class WecomCrmService {
     const key = this.getEncryptionKey();
     const iv = crypto.randomBytes(12);
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-    const encrypted = Buffer.concat([cipher.update(plainText, 'utf8'), cipher.final()]);
+    const encrypted = Buffer.concat([
+      cipher.update(plainText, 'utf8'),
+      cipher.final(),
+    ]);
     const authTag = cipher.getAuthTag();
     return [
       iv.toString('base64'),
@@ -688,9 +798,7 @@ export class WecomCrmService {
     } catch {
       // fall through
     }
-    return Buffer.from(
-      require('crypto').createHash('sha256').update(configured).digest(),
-    );
+    return Buffer.from(crypto.createHash('sha256').update(configured).digest());
   }
 
   private getErrorMessage(error: unknown): string {

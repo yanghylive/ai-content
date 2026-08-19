@@ -52,8 +52,8 @@ export function RiskCenter() {
     setError(null);
     try {
       const [policyData, confirmations] = await Promise.all([
-        api.get<RiskPolicy[]>("/risk-policies").catch(() => []),
-        localEngineApi.confirmations().catch(() => []),
+        api.get<RiskPolicy[]>("/risk-policies"),
+        localEngineApi.confirmations(),
       ]);
       setPolicies(Array.isArray(policyData) ? policyData : []);
       setDraft({});

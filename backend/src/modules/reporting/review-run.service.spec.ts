@@ -4,7 +4,7 @@ function makeService(overrides: {
   reviewRun?: {
     create?: jest.Mock;
     findMany?: jest.Mock;
-    findUnique?: jest.Mock;
+    findFirst?: jest.Mock;
   };
   contentPlan?: { create?: jest.Mock };
 } = {}) {
@@ -12,7 +12,7 @@ function makeService(overrides: {
     reviewRun: {
       create: overrides.reviewRun?.create ?? jest.fn(),
       findMany: overrides.reviewRun?.findMany ?? jest.fn().mockResolvedValue([]),
-      findUnique: overrides.reviewRun?.findUnique ?? jest.fn(),
+      findFirst: overrides.reviewRun?.findFirst ?? jest.fn(),
     },
     contentPlan: {
       create: overrides.contentPlan?.create ?? jest.fn(),
@@ -40,7 +40,7 @@ describe('ReviewRunService', () => {
       owner,
     );
 
-    expect(funnelReport.funnel).toHaveBeenCalledWith(7, 'user-1');
+    expect(funnelReport.funnel).toHaveBeenCalledWith(7, 'user-1', 'tenant-1');
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ period: '7d', userId: 'user-1' }),
@@ -54,14 +54,14 @@ describe('ReviewRunService', () => {
       { period: '7d', generatedFrom: 'article-1', insights: [], actions: [] },
       owner,
     );
-    expect(funnelReport.articleFunnel).toHaveBeenCalledWith('article-1', 'user-1');
+    expect(funnelReport.articleFunnel).toHaveBeenCalledWith('article-1', 'user-1', 'tenant-1');
   });
 
-  it('findOne 不存在抛 404', async () => {
+  it('findOne 不存在抛 404（带 owner scope）', async () => {
     const { service } = makeService({
-      reviewRun: { findUnique: jest.fn().mockResolvedValue(null) },
+      reviewRun: { findFirst: jest.fn().mockResolvedValue(null) },
     });
-    await expect(service.findOne('missing')).rejects.toThrow(/不存在/);
+    await expect(service.findOne('missing', owner)).rejects.toThrow(/不存在/);
   });
 
   it('copyActionToContentPlan 把动作回写为新内容计划', async () => {
@@ -72,7 +72,7 @@ describe('ReviewRunService', () => {
     };
     const create = jest.fn().mockResolvedValue({ id: 'plan-2' });
     const { service } = makeService({
-      reviewRun: { findUnique: jest.fn().mockResolvedValue(run) },
+      reviewRun: { findFirst: jest.fn().mockResolvedValue(run) },
       contentPlan: { create },
     });
 
@@ -92,7 +92,7 @@ describe('ReviewRunService', () => {
   it('copyActionToContentPlan 动作不存在抛 404', async () => {
     const { service } = makeService({
       reviewRun: {
-        findUnique: jest.fn().mockResolvedValue({ id: 'run-1', actions: [] }),
+        findFirst: jest.fn().mockResolvedValue({ id: 'run-1', actions: [] }),
       },
     });
     await expect(service.copyActionToContentPlan('run-1', 0, owner)).rejects.toThrow(

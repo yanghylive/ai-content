@@ -21,42 +21,63 @@ export type LeadSignalInput = {
 export class LeadSignalStore {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** 幂等写入多条信号：同 leadId+type+evidenceId 已存在则跳过 */
+  /** 幂等写入多条信号：同 leadId+type+evidenceId 只保留一条。批量查已存在 + catch 唯一约束兜底并发。 */
   async saveSignals(inputs: LeadSignalInput[]): Promise<number> {
     if (inputs.length === 0) return 0;
-    let created = 0;
-    for (const s of inputs) {
-      const existing = await this.prisma.leadSignal.findFirst({
-        where: {
+    const key = (s: LeadSignalInput) =>
+      `${s.tenantId}|${s.leadId}|${s.type}|${s.evidenceId ?? ''}`;
+    // 一次批量查已存在（避免逐条 findFirst 的 N 次查询）
+    const existing = await this.prisma.leadSignal.findMany({
+      where: {
+        OR: inputs.map((s) => ({
           tenantId: s.tenantId,
           leadId: s.leadId,
           type: s.type,
           evidenceId: s.evidenceId ?? '',
-        },
-        select: { id: true },
-      });
-      if (existing) continue;
-      await this.prisma.leadSignal.create({
-        data: {
-          tenantId: s.tenantId,
-          userId: s.userId,
-          leadId: s.leadId,
-          type: s.type,
-          value: s.value ?? 1,
-          evidenceId: s.evidenceId ?? undefined,
-          source: s.source ?? undefined,
-          observedAt: s.observedAt,
-          expiresAt: s.expiresAt ?? undefined,
-          confidence: s.confidence ?? 100,
-        },
-      });
-      created += 1;
+        })),
+      },
+      select: { tenantId: true, leadId: true, type: true, evidenceId: true },
+    });
+    const existingKeys = new Set(
+      existing.map(
+        (e) => `${e.tenantId}|${e.leadId}|${e.type}|${e.evidenceId}`,
+      ),
+    );
+    const toCreate = inputs.filter((s) => !existingKeys.has(key(s)));
+    if (toCreate.length === 0) return 0;
+
+    let created = 0;
+    for (const s of toCreate) {
+      try {
+        await this.prisma.leadSignal.create({
+          data: {
+            tenantId: s.tenantId,
+            userId: s.userId,
+            leadId: s.leadId,
+            type: s.type,
+            value: s.value ?? 1,
+            evidenceId: s.evidenceId ?? '',
+            source: s.source ?? undefined,
+            observedAt: s.observedAt,
+            expiresAt: s.expiresAt ?? undefined,
+            confidence: s.confidence ?? 100,
+          },
+        });
+        created += 1;
+      } catch (error) {
+        // 并发窗口内仍可能撞唯一约束（P2002）：跳过即幂等，不抛
+        if ((error as { code?: string })?.code === 'P2002') continue;
+        throw error;
+      }
     }
     return created;
   }
 
   /** 按 leadId 列出全部信号（未过期优先，最近优先） */
-  async listSignals(tenantId: string, leadId: string): Promise<LeadSignalInput[]> {
+  async listSignals(
+    tenantId: string,
+    leadId: string,
+  ): Promise<LeadSignalInput[]> {
     const rows = await this.prisma.leadSignal.findMany({
       where: { tenantId, leadId },
       orderBy: [{ observedAt: 'desc' }],

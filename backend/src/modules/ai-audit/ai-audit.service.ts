@@ -32,7 +32,9 @@ const COMPLETION_SNAPSHOT_LEN = 2000; // AI 回复快照截断长度（质量评
  * 成本积分 = token × TOKEN_COST_MULTIPLIER，写入 ai_tool_call_logs.cost_points。
  * 可经 env AI_TOKEN_COST_MULTIPLIER 覆盖（默认 20）。
  */
-export function resolveTokenCostMultiplier(env: Record<string, string | undefined> = process.env): number {
+export function resolveTokenCostMultiplier(
+  env: Record<string, string | undefined> = process.env,
+): number {
   const raw = env.AI_TOKEN_COST_MULTIPLIER ?? '20';
   const value = Number(raw);
   return Number.isFinite(value) && value > 0 ? value : 20;
@@ -271,7 +273,9 @@ export class AiAuditService {
       this.prisma.aiToolCallLog.aggregate({
         where: {
           createdAt: { gte: since },
-          ...(input.tenantId ? { userId: { in: await this.tenantUserIds(input.tenantId) } } : {}),
+          ...(input.tenantId
+            ? { userId: { in: await this.tenantUserIds(input.tenantId) } }
+            : {}),
         },
         _sum: { tokensUsed: true, costPoints: true },
         _count: true,
@@ -316,7 +320,11 @@ export class AiAuditService {
       })),
       daily: [...byDay.entries()]
         .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([day, v]) => ({ day, tokens: v.tokens, costPoints: v.costPoints })),
+        .map(([day, v]) => ({
+          day,
+          tokens: v.tokens,
+          costPoints: v.costPoints,
+        })),
     };
   }
 

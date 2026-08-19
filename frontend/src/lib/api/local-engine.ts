@@ -2055,6 +2055,15 @@ export const localEngineApi = {
     );
   },
 
+  /** 待发送确认的互动任务（后端 SQL 层按 status 过滤，不受 limit 截断影响）。
+   * 修复 P0-01：/message 与 /tasks/confirmations 之前用 tasks(limit) 先截断再前端 filter，
+   * 90 条待确认任务在 limit=50 下大量漏掉导致两页数量不一致。 */
+  tasksWaitingConfirmation(limit = 200) {
+    return api.get<InteractionTask[]>(
+      `/local-engine/tasks?limit=${limit}&status=waiting_for_send_confirmation`,
+    );
+  },
+
   automationTasks(params: { limit?: number; status?: AutomationTaskViewStatus } = {}) {
     const query = new URLSearchParams();
     query.set("limit", String(params.limit || 80));

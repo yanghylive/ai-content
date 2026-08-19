@@ -200,3 +200,12 @@ backend/prisma/data/
 # launchd 运行副本（含密钥 env 的 plist 派生文件，不入库）
 .ai-content-frontend/
 .ai-content-backend/
+
+# Python venv（sidecar 执行器）
+desktop/sidecars/agent-s-executor/venv-s3/
+
+# 构建临时残留（next/out 改名产物）
+frontend/.next-stale-*/
+frontend/.next-t*-*/
+frontend/out-stale-*/
+frontend/out-stale*/

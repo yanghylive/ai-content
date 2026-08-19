@@ -521,8 +521,7 @@ export class AutoUploadController {
   preflightPublishBatch(
     @Body()
     body:
-      | AutoUploadPublishPayload[]
-      | { payloads?: AutoUploadPublishPayload[] },
+      AutoUploadPublishPayload[] | { payloads?: AutoUploadPublishPayload[] },
   ) {
     const payloads = Array.isArray(body) ? body : body.payloads;
     if (!Array.isArray(payloads)) {
@@ -537,8 +536,7 @@ export class AutoUploadController {
   createPublishConfirmation(
     @Body()
     body:
-      | AutoUploadPublishPayload[]
-      | { payloads?: AutoUploadPublishPayload[] },
+      AutoUploadPublishPayload[] | { payloads?: AutoUploadPublishPayload[] },
     @Req() request?: RiskRequest,
   ) {
     const payloads = Array.isArray(body) ? body : body.payloads;

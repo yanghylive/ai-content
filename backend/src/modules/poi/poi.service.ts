@@ -119,7 +119,10 @@ export class PoiService {
     pageSize?: number;
   }) {
     const page = Math.max(Math.floor(input.page ?? 1), 1);
-    const pageSize = Math.min(Math.max(Math.floor(input.pageSize ?? 20), 1), 100);
+    const pageSize = Math.min(
+      Math.max(Math.floor(input.pageSize ?? 20), 1),
+      100,
+    );
     const where: Record<string, unknown> = {
       tenantId: input.tenantId,
       userId: input.userId,

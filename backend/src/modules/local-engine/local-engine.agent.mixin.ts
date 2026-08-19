@@ -1090,8 +1090,7 @@ export async function getAgentConfirmation(
     where: { id, ...scope },
   });
   const confirmation = confirmationRow?.confirmationJson as
-    | AgentConfirmation
-    | undefined;
+    AgentConfirmation | undefined;
   if (!confirmationRow || !confirmation?.id) {
     return null;
   }

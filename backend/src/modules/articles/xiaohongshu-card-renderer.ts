@@ -6,13 +6,7 @@ export type XiaohongshuSlideTemplate =
   | 'summary-card';
 
 export type XiaohongshuSlideRole =
-  | 'cover'
-  | 'hook'
-  | 'problem'
-  | 'solution'
-  | 'method'
-  | 'summary'
-  | 'cta';
+  'cover' | 'hook' | 'problem' | 'solution' | 'method' | 'summary' | 'cta';
 
 export type XiaohongshuRenderedSlideInput = {
   role: XiaohongshuSlideRole;

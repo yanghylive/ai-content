@@ -182,10 +182,7 @@ export class KaypalAuthClient {
       );
     }
     const payload = (await response.json().catch(() => null)) as
-      | string
-      | { url?: string }
-      | { error?: string }
-      | null;
+      string | { url?: string } | { error?: string } | null;
     if (!response.ok) {
       throw new ServiceUnavailableException(
         (payload as { error?: string })?.error ||
@@ -256,9 +253,7 @@ export class KaypalAuthClient {
     });
 
     const payload = (await response.json().catch(() => null)) as
-      | KaypalDesktopAuthStartResult
-      | { error?: string }
-      | null;
+      KaypalDesktopAuthStartResult | { error?: string } | null;
 
     if (!response.ok) {
       throw new ServiceUnavailableException(
@@ -316,15 +311,13 @@ export class KaypalAuthClient {
         platform: 'desktop',
       }),
     });
-    const payload = (await response.json().catch(() => null)) as
-      | {
-          access_token?: string;
-          refresh_token?: string;
-          expires_in?: number;
-          device?: { device_id?: string };
-          error?: string;
-        }
-      | null;
+    const payload = (await response.json().catch(() => null)) as {
+      access_token?: string;
+      refresh_token?: string;
+      expires_in?: number;
+      device?: { device_id?: string };
+      error?: string;
+    } | null;
     if (response.status === 401) {
       throw new UnauthorizedException('账号或密码错误');
     }
@@ -360,9 +353,7 @@ export class KaypalAuthClient {
     });
 
     const payload = (await response.json().catch(() => null)) as
-      | KaypalDesktopAuthPollResult
-      | { error?: string }
-      | null;
+      KaypalDesktopAuthPollResult | { error?: string } | null;
 
     if (response.status === 202 && payload && 'status' in payload) {
       return payload;
@@ -680,9 +671,7 @@ export class KaypalAuthClient {
       }),
     });
     const payload = (await response.json().catch(() => null)) as
-      | KaypalDesktopTokenRefreshResult
-      | { error?: string }
-      | null;
+      KaypalDesktopTokenRefreshResult | { error?: string } | null;
 
     if (!response.ok || !payload || !('access_token' in payload)) {
       throw new UnauthorizedException(
@@ -740,9 +729,7 @@ export class KaypalAuthClient {
       (error) => ({
         unavailable: true,
         message:
-          error instanceof Error
-            ? error.message
-            : 'Kaypal 订阅服务不可用',
+          error instanceof Error ? error.message : 'Kaypal 订阅服务不可用',
       }),
     );
     const balance = await this.getCloudBillingBalance(
@@ -810,8 +797,7 @@ export class KaypalAuthClient {
       return {
         ok: true,
         amount: this.toNumberOrNull(data?.amount) ?? undefined,
-        balanceAfter:
-          this.toNumberOrNull(data?.balanceAfter) ?? undefined,
+        balanceAfter: this.toNumberOrNull(data?.balanceAfter) ?? undefined,
         idempotentReplay: data?.idempotentReplay === true,
       };
     } catch {
@@ -875,13 +861,10 @@ export class KaypalAuthClient {
         quote: {
           managed: quote?.managed === true,
           amount: this.toNumberOrNull(quote?.amount) ?? 0,
-          estimatedCostCny:
-            this.toNumberOrNull(quote?.estimatedCostCny) ?? 0,
+          estimatedCostCny: this.toNumberOrNull(quote?.estimatedCostCny) ?? 0,
           category: typeof quote?.category === 'string' ? quote.category : '',
           pricingBasis:
-            typeof quote?.pricingBasis === 'string'
-              ? quote.pricingBasis
-              : '',
+            typeof quote?.pricingBasis === 'string' ? quote.pricingBasis : '',
           inputs: this.asRecord(quote?.inputs) || {},
         },
       };

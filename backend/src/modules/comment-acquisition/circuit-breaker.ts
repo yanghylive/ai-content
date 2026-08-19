@@ -97,9 +97,7 @@ export class CircuitBreaker {
     }
 
     // 窗口过期清理
-    entry.failures = entry.failures.filter(
-      (t) => now - t < this.windowMs,
-    );
+    entry.failures = entry.failures.filter((t) => now - t < this.windowMs);
 
     const openedAt = entry.openedAt;
     if (openedAt && now - openedAt < this.openDurationMs) {

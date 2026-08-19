@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import type { InteractionEvent } from '@prisma/client';
@@ -43,6 +43,7 @@ const DEFAULT_USER = 'legacy-local-user';
  */
 @Injectable()
 export class InteractionEventStore {
+  private readonly logger = new Logger(InteractionEventStore.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly authRequestContext: AuthRequestContextService,
@@ -72,8 +73,14 @@ export class InteractionEventStore {
           tenantId: tenantId ?? resolvedTenantId,
           userId: userId ?? contextUserId,
         };
-      } catch {
-        // 解析失败（如无 membership）回退默认，不阻断采集
+      } catch (error) {
+        // P0 复核（全面审查）：解析失败降级 legacy 但不静默——写审计日志，
+        // 否则事件落 legacy 租户后真实 scope 查不到（归因丢失/串租户），排查无痕
+        this.logger.warn(
+          `InteractionEvent 租户解析失败，降级 legacy 默认（user=${contextUserId}）：${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
       }
     }
     return {
@@ -132,7 +139,7 @@ export class InteractionEventStore {
           body: event.body,
           dedupeKey,
           occurredAt: event.occurredAt ?? new Date(),
-          raw: (event.raw ?? undefined) as Prisma.InputJsonValue | undefined,
+          raw: event.raw ?? undefined,
         },
       })
       .catch((error: unknown) => {
@@ -173,23 +180,23 @@ export class InteractionEventStore {
       publishRecordId: context.publishRecordId,
       body: item.text,
       occurredAt: item.commentTime ? new Date(item.commentTime) : undefined,
-      raw: item as unknown,
+      raw: item,
     };
   }
 
-  /** 按来源内容查事件（归因用） */
-  listByArticle(articleId: string, limit = 100) {
+  /** 按来源内容查事件（归因用，P1-15 复核：强制 tenant scope 防串租户） */
+  listByArticle(articleId: string, tenantId: string, limit = 100) {
     return this.prisma.interactionEvent.findMany({
-      where: { sourceArticleId: articleId },
+      where: { sourceArticleId: articleId, tenantId },
       orderBy: { occurredAt: 'desc' },
       take: limit,
     });
   }
 
-  /** 按作者查历史事件（识别同一人历史会话） */
-  listByAuthor(authorExternalId: string, limit = 50) {
+  /** 按作者查历史事件（识别同一人历史会话，P1-15 复核：强制 tenant scope 防串租户） */
+  listByAuthor(authorExternalId: string, tenantId: string, limit = 50) {
     return this.prisma.interactionEvent.findMany({
-      where: { authorExternalId },
+      where: { authorExternalId, tenantId },
       orderBy: { occurredAt: 'desc' },
       take: limit,
     });

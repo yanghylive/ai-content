@@ -19,10 +19,9 @@ import { useShellUser } from "@/components/shell/app-shell";
 import { Avatar } from "@/components/avatar";
 import { localEngineApi, type InteractionTask } from "@/lib/api/local-engine";
 import { autoUploadApi, type AutoUploadPublishTask } from "@/lib/api/auto-upload";
-import { growthApi } from "@/lib/api/growth";
-import { materialsApi } from "@/lib/api/materials";
 import { api } from "@/lib/api/client";
 import { dashboardApi } from "@/lib/api/dashboard";
+import { statsApi, type StatsSnapshot } from "@/lib/api/stats";
 import { redfoxApi, type RadarResult } from "@/lib/api/redfox";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -107,36 +106,54 @@ export default function TodayPage() {
   const [hotTopics, setHotTopics] = React.useState<HotTopic[]>([]);
   const [taskItems, setTaskItems] = React.useState<UnifiedTaskItem[]>([]);
   const [weeklyReport, setWeeklyReport] = React.useState<{
-    contentCount: number;
-    publishCount: number;
-    interactionCount: number;
-    leadCount: number;
-    qualifiedLeadCount: number;
-    convertedCount: number;
-    wonCount: number;
+    contentCount: number | null;
+    publishCount: number | null;
+    interactionCount: number | null;
+    leadCount: number | null;
+    qualifiedLeadCount: number | null;
+    convertedCount: number | null;
+    wonCount: number | null;
   } | null>(null);
 
   React.useEffect(() => {
     let active = true;
     (async () => {
-      const [tasks, pubTasks, overview, collect, intel, unified, weekly] =
-        await Promise.all([
-          localEngineApi.tasks(50).catch(() => [] as InteractionTask[]),
-          autoUploadApi.tasks(50).catch(() => [] as AutoUploadPublishTask[]),
-          growthApi.overview().catch(() => null),
-          materialsApi.collectStatus().catch(() => null),
-          api
-            .get<{ items?: HotTopic[] }>("/redfox/hot-topics")
-            .catch(() => null),
-          dashboardApi.taskCenter(20).catch(() => null),
-          dashboardApi.weeklyReport(7).catch(() => null),
-        ]);
+      const [tasks, pubTasks, stats, intel, unified] = await Promise.all([
+        localEngineApi.tasks(50).catch(() => [] as InteractionTask[]),
+        autoUploadApi.tasks(50).catch(() => [] as AutoUploadPublishTask[]),
+        statsApi.snapshot("today").catch(() => null),
+        api
+          .get<{ items?: HotTopic[] }>("/redfox/hot-topics")
+          .catch(() => null),
+        dashboardApi.taskCenter(20).catch(() => null),
+      ]);
       if (!active) return;
 
       const taskList = Array.isArray(tasks) ? tasks : [];
       const pubList = Array.isArray(pubTasks) ? pubTasks : [];
 
-      setWeeklyReport(weekly as typeof weeklyReport | null);
+      // 统一统计快照（方案 4.3）：计数统一走后端 StatsSnapshot，前端不再拼数
+      const statsData = stats as StatsSnapshot | null;
+      // stats 加载失败返回 null，展示层显示 N/A（方案 10.2/12.2：服务失败 ≠ 0）
+      const metricValue = (key: string): number | null => {
+        const found = statsData?.metrics?.find((m) => m.key === key);
+        return typeof found?.value === "number" ? found.value : null;
+      };
+
+      setWeeklyReport({
+        contentCount: metricValue("weekly.content"),
+        publishCount: metricValue("weekly.publish"),
+        interactionCount: metricValue("weekly.interaction"),
+        leadCount: metricValue("weekly.leads"),
+        qualifiedLeadCount: metricValue("weekly.qualified"),
+        convertedCount: metricValue("weekly.converted"),
+        wonCount: metricValue("weekly.won"),
+      });
+
+      setWaitingCount(metricValue("today.waiting") ?? 0);
+      setLeadCount(metricValue("today.leads") ?? 0);
+      setHighIntent(metricValue("today.high_intent") ?? 0);
+      setMaterialCount(metricValue("today.materials") ?? 0);
 
       const unifiedData = unified as {
         items?: UnifiedTaskItem[];
@@ -145,19 +162,8 @@ export default function TodayPage() {
         Array.isArray(unifiedData?.items) ? unifiedData.items.slice(0, 8) : [],
       );
 
-      setWaitingCount(
-        taskList.filter((t) => t.status === "waiting_for_send_confirmation")
-          .length,
-      );
       const failed = pubList.filter((t) => t.status === "failed");
       setFailedPublish(failed);
-
-      const ov = overview as {
-        todayLeadCount?: number;
-        highIntentLeadCount?: number;
-      } | null;
-      setLeadCount(ov?.todayLeadCount ?? 0);
-      setHighIntent(ov?.highIntentLeadCount ?? 0);
 
       // 报告 8.4：发布数按完成/发布时间（updated_at）统计，不用 created_at
       setPublishedToday(
@@ -165,10 +171,6 @@ export default function TodayPage() {
           (t) => t.status === "completed" && isToday(t.updated_at),
         ).length,
       );
-
-      const counts = (collect as { counts?: Record<string, number> } | null)
-        ?.counts;
-      setMaterialCount(counts?.total ?? counts?.new ?? 0);
 
       const done: string[] = [];
       pubList
@@ -452,33 +454,33 @@ export default function TodayPage() {
           </div>
           <div className="kx-progress-row">
             <div className="kx-stat-card">
-              <div className="kx-stat-num">{weeklyReport.contentCount}</div>
+              <div className="kx-stat-num">{weeklyReport.contentCount ?? "N/A"}</div>
               <div className="kx-stat-lbl">本周内容</div>
             </div>
             <div className="kx-stat-card">
-              <div className="kx-stat-num kx-stat-accent">{weeklyReport.publishCount}</div>
+              <div className="kx-stat-num kx-stat-accent">{weeklyReport.publishCount ?? "N/A"}</div>
               <div className="kx-stat-lbl">本周发布</div>
             </div>
             <div className="kx-stat-card">
-              <div className="kx-stat-num">{weeklyReport.interactionCount}</div>
+              <div className="kx-stat-num">{weeklyReport.interactionCount ?? "N/A"}</div>
               <div className="kx-stat-lbl">本周互动</div>
             </div>
             <div className="kx-stat-card">
-              <div className="kx-stat-num kx-stat-accent">{weeklyReport.leadCount}</div>
+              <div className="kx-stat-num kx-stat-accent">{weeklyReport.leadCount ?? "N/A"}</div>
               <div className="kx-stat-lbl">本周线索</div>
             </div>
           </div>
           <div className="kx-progress-row" style={{ marginTop: 10 }}>
             <div className="kx-stat-card">
-              <div className="kx-stat-num kx-stat-amber">{weeklyReport.qualifiedLeadCount}</div>
+              <div className="kx-stat-num kx-stat-amber">{weeklyReport.qualifiedLeadCount ?? "N/A"}</div>
               <div className="kx-stat-lbl">合格线索</div>
             </div>
             <div className="kx-stat-card">
-              <div className="kx-stat-num kx-stat-ok">{weeklyReport.convertedCount}</div>
+              <div className="kx-stat-num kx-stat-ok">{weeklyReport.convertedCount ?? "N/A"}</div>
               <div className="kx-stat-lbl">线索成交</div>
             </div>
             <div className="kx-stat-card">
-              <div className="kx-stat-num kx-stat-ok">{weeklyReport.wonCount}</div>
+              <div className="kx-stat-num kx-stat-ok">{weeklyReport.wonCount ?? "N/A"}</div>
               <div className="kx-stat-lbl">商机赢单</div>
             </div>
           </div>

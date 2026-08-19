@@ -20,11 +20,7 @@ export const DURABLE_PUBLISH_RECORD_TASK_TYPE = 'auto-upload-publish-record-v1';
 const LEGACY_MARKER_PREFIX = 'legacy:auto-upload-batch:';
 
 type PublishRecordStatus =
-  | 'completed'
-  | 'failed'
-  | 'waiting'
-  | 'claimed'
-  | 'cancelled';
+  'completed' | 'failed' | 'waiting' | 'claimed' | 'cancelled';
 
 export type DurablePublishExecutionStatus = 'completed' | 'failed' | 'waiting';
 
@@ -293,7 +289,7 @@ export class PublishRecordStore {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return row ? this.decode(row as DurablePublishRecordRow) : null;
+    return row ? this.decode(row) : null;
   }
 
   async resolveOwnerScope(): Promise<PublishOwnerScope> {
@@ -324,7 +320,7 @@ export class PublishRecordStore {
         },
       },
     });
-    return row ? this.decode(row as DurablePublishRecordRow) : null;
+    return row ? this.decode(row) : null;
   }
 
   async createClaim(
@@ -371,7 +367,7 @@ export class PublishRecordStore {
             createdAt: new Date(now),
           },
         });
-        const record = this.decode(created as DurablePublishRecordRow);
+        const record = this.decode(created);
         if (!record) {
           throw new Error('持久化发布任务格式无效');
         }
@@ -428,7 +424,7 @@ export class PublishRecordStore {
     const row = await this.prisma.runtimeExecution.findFirst({
       where: { id: candidate.id, claimToken },
     });
-    return row ? this.decode(row as DurablePublishRecordRow) : null;
+    return row ? this.decode(row) : null;
   }
 
   async completeClaimedTask(
@@ -528,7 +524,7 @@ export class PublishRecordStore {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return row ? this.decode(row as DurablePublishRecordRow) : null;
+    return row ? this.decode(row) : null;
   }
 
   async create(
@@ -578,7 +574,7 @@ export class PublishRecordStore {
       input.result,
     );
 
-    const record = this.decode(created as DurablePublishRecordRow);
+    const record = this.decode(created);
     if (!record) {
       throw new Error('持久化发布记录格式无效');
     }
@@ -645,7 +641,7 @@ export class PublishRecordStore {
     );
     await this.markVerifiedArticlesPublished(scope, result, envelope.payloads);
 
-    const decoded = this.decode(updated as DurablePublishRecordRow);
+    const decoded = this.decode(updated);
     if (!decoded) {
       throw new Error('更新后的发布记录格式无效');
     }
@@ -715,7 +711,7 @@ export class PublishRecordStore {
 
     const byDay = new Map<string, PublishCalendarTask[]>();
     for (const row of rows) {
-      const record = this.decode(row as DurablePublishRecordRow);
+      const record = this.decode(row);
       if (!record) continue;
       const envelope = record.envelope;
       const result = this.asRecord(envelope.result);
@@ -795,7 +791,7 @@ export class PublishRecordStore {
         runtimeJson: this.jsonValue(envelope),
       },
     });
-    const decoded = this.decode(updated as DurablePublishRecordRow);
+    const decoded = this.decode(updated);
     if (!decoded) throw new Error('取消后的发布记录格式无效');
     return decoded;
   }
@@ -886,7 +882,7 @@ export class PublishRecordStore {
         runtimeJson: this.jsonValue(envelope),
       },
     });
-    const decoded = this.decode(updated as DurablePublishRecordRow);
+    const decoded = this.decode(updated);
     if (!decoded) throw new Error('改期后的发布记录格式无效');
     return decoded;
   }

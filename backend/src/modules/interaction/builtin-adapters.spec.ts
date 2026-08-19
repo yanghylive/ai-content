@@ -5,6 +5,7 @@ import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-inte
 import {
   DouyinInteractionAdapter,
   InteractionAdapterRegistrar,
+  KuaishouInteractionAdapter,
   WechatChannelInteractionAdapter,
   XiaohongshuInteractionAdapter,
 } from './builtin-adapters';
@@ -33,6 +34,7 @@ describe('内置互动适配器', () => {
         DouyinInteractionAdapter,
         WechatChannelInteractionAdapter,
         XiaohongshuInteractionAdapter,
+        KuaishouInteractionAdapter,
         InteractionAdapterRegistrar,
       ],
     }).compile();
@@ -40,9 +42,10 @@ describe('内置互动适配器', () => {
     registry = moduleRef.get(InteractionAdapterRegistry);
   });
 
-  it('启动时注册抖音/视频号/小红书三个 adapter', () => {
+  it('启动时注册抖音/视频号/小红书/快手四个 adapter', () => {
     expect(registry.listPlatforms().sort()).toEqual([
       'douyin',
+      'kuaishou',
       'wechat-channel',
       'xiaohongshu',
     ]);

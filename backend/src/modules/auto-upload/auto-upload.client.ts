@@ -7,7 +7,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { assertMaterialFileSafe } from './material-file.guard';
-import { deriveAccountLifecycle, type AccountLifecycleStatus } from './account-lifecycle';
+import {
+  deriveAccountLifecycle,
+  type AccountLifecycleStatus,
+} from './account-lifecycle';
 import { ConfigService } from '@nestjs/config';
 import { safeText } from '../../common/text.utils';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
@@ -992,9 +995,7 @@ export class AutoUploadClient {
     return [
       explicitRoot ? join(explicitRoot, command) : '',
       // 打包后：resources/wechat-macos/bin（mac）或 resources/wechat-macos/bin（win 共享布局）
-      resourcesPath
-        ? join(resourcesPath, 'wechat-macos', 'bin', command)
-        : '',
+      resourcesPath ? join(resourcesPath, 'wechat-macos', 'bin', command) : '',
       // 打包后：resources/open-cowork-upstream/scripts（自动回复 mjs 脚本同目录可执行命令）
       resourcesPath
         ? join(resourcesPath, 'open-cowork-upstream', 'scripts', command)
@@ -2449,6 +2450,7 @@ export class AutoUploadClient {
             failure.technicalMessage ||
             '最近一次真实发布检测到平台要求重新登录',
         },
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- 防止 --fix 删除断言导致泛型类型错误
       } as T;
     });
   }
@@ -4005,7 +4007,8 @@ export class AutoUploadClient {
         accountId: engineAccountId,
         reuseLoggedInSession: false,
       });
-      let identity: { avatarPath?: string | null; userName?: string | null } = {};
+      let identity: { avatarPath?: string | null; userName?: string | null } =
+        {};
       try {
         await session.page
           .goto(profileUrl, {
@@ -4022,7 +4025,9 @@ export class AutoUploadClient {
         );
       } finally {
         // 刷新完即关，避免窗口残留抢前台
-        await this.localBrowser.closeSession(session.key).catch(() => undefined);
+        await this.localBrowser
+          .closeSession(session.key)
+          .catch(() => undefined);
       }
       this.logger.log(
         `refreshAccountAvatar identity: platform=${platform}(${platformType}) id=${engineAccountId} url=${profileUrl} avatar=${identity.avatarPath ?? 'null'} userName=${identity.userName ?? 'null'}`,
@@ -4426,8 +4431,7 @@ export class AutoUploadClient {
   private resolveBrowserPlatformSlug(
     type: number,
   ):
-    | Parameters<LocalBrowserEngine['getOrCreateSession']>[0]['platform']
-    | null {
+    Parameters<LocalBrowserEngine['getOrCreateSession']>[0]['platform'] | null {
     const map: Record<
       number,
       Parameters<LocalBrowserEngine['getOrCreateSession']>[0]['platform']
@@ -5034,10 +5038,7 @@ export class AutoUploadClient {
     );
     let valid = false;
     try {
-      valid = await this.validateCookieFile(
-        input.platformType,
-        storagePath,
-      );
+      valid = await this.validateCookieFile(input.platformType, storagePath);
     } catch (error) {
       // headless 打开平台页验证失败（抖音等重风控站点常见超时）——
       // 主浏览器会话已确认登录、cookie 已导出，验证仅兜底，降级为信任主会话。
@@ -6072,7 +6073,7 @@ export class AutoUploadClient {
             payload,
             result: {
               ok: false,
-              status: 'failed',
+              status: 'failed' as const,
               reasonCode: 'send_failed',
               userMessage: `平台发布失败：${message}`,
               technicalMessage: message,

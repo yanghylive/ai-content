@@ -47,7 +47,7 @@ export class XiaohongshuInteractionExecutor {
       platform: 'xiaohongshu',
       accountId: input.accountId,
     });
-    let page = session.page;
+    const page = session.page;
 
     // 确保在通知页
     if (!page.url().includes('notification')) {
@@ -78,7 +78,7 @@ export class XiaohongshuInteractionExecutor {
       platform: 'xiaohongshu',
       accountId: input.accountId,
     });
-    let page = session.page;
+    const page = session.page;
 
     if (!page.url().includes('notification')) {
       await this.gotoBestEffort(page, XHS_NOTIFICATION_URL, 30000);
@@ -97,7 +97,10 @@ export class XiaohongshuInteractionExecutor {
 
           const replyBtn = item.querySelector<HTMLElement>('.action-reply');
           if (!replyBtn) {
-            return { ok: false, message: '该通知没有回复入口（评论可能已删除）' };
+            return {
+              ok: false,
+              message: '该通知没有回复入口（评论可能已删除）',
+            };
           }
           replyBtn.click();
 
@@ -175,10 +178,15 @@ export class XiaohongshuInteractionExecutor {
           // 只保留"评论/回复"类通知（含回复按钮的）；点赞/关注/收藏等无回复入口，过滤掉
           const hasReply = item.querySelector('.action-reply') !== null;
           if (!hasReply) continue;
-          const nicknameEl = item.querySelector('.user-name, [class*="nickname"]');
-          const commentIdEl = item.querySelector('[data-comment-id], [class*="comment-id"]');
+          const nicknameEl = item.querySelector(
+            '.user-name, [class*="nickname"]',
+          );
+          const commentIdEl = item.querySelector(
+            '[data-comment-id], [class*="comment-id"]',
+          );
           result.push({
-            commentId: commentIdEl?.getAttribute('data-comment-id') || undefined,
+            commentId:
+              commentIdEl?.getAttribute('data-comment-id') || undefined,
             nickname: nicknameEl?.textContent?.trim() || undefined,
             content: text.slice(0, 200),
             index: i,

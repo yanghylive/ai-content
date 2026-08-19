@@ -80,7 +80,15 @@ export function reviewContent(input: ContentReviewInput): ContentReviewResult {
       });
     }
     // 标题含通用词/无钩子
-    const weakWords = ['介绍', '浅谈', '关于', '浅析', '简述', '之我见', '漫谈'];
+    const weakWords = [
+      '介绍',
+      '浅谈',
+      '关于',
+      '浅析',
+      '简述',
+      '之我见',
+      '漫谈',
+    ];
     if (weakWords.some((w) => primaryTitle.includes(w))) {
       breakdown.title = Math.max(0, breakdown.title - 5);
       issues.push({
@@ -100,7 +108,10 @@ export function reviewContent(input: ContentReviewInput): ContentReviewResult {
   }
 
   // ---- 2. 内容充实度（满分 25）----
-  const totalChars = input.pagesContent.reduce((a, c) => a + (c || '').length, 0);
+  const totalChars = input.pagesContent.reduce(
+    (a, c) => a + (c || '').length,
+    0,
+  );
   if (totalChars >= 500) {
     breakdown.content = 25;
   } else if (totalChars >= 250) {
@@ -154,11 +165,12 @@ export function reviewContent(input: ContentReviewInput): ContentReviewResult {
     issues.push({
       dimension: 'structure',
       severity: 'warn',
-      message: hasCover && !hasSummary
-        ? '缺少总结页'
-        : !hasCover && hasSummary
-          ? '缺少封面页'
-          : '结构不完整',
+      message:
+        hasCover && !hasSummary
+          ? '缺少总结页'
+          : !hasCover && hasSummary
+            ? '缺少封面页'
+            : '结构不完整',
       suggestion: '补充封面/总结页，形成完整图文结构',
     });
   } else {
@@ -242,7 +254,11 @@ export function reviewContent(input: ContentReviewInput): ContentReviewResult {
   }
 
   const score = Math.round(
-    breakdown.title + breakdown.content + breakdown.structure + breakdown.flavor + breakdown.image,
+    breakdown.title +
+      breakdown.content +
+      breakdown.structure +
+      breakdown.flavor +
+      breakdown.image,
   );
   const hasError = issues.some((i) => i.severity === 'error');
   return {
@@ -256,6 +272,9 @@ export function reviewContent(input: ContentReviewInput): ContentReviewResult {
 /** 问题清单转提示文本（供 LLM 定向修订） */
 export function issuesToPrompt(issues: ReviewIssue[]): string {
   return issues
-    .map((i) => `- [${i.dimension}/${i.severity}] ${i.message}${i.suggestion ? `（建议：${i.suggestion}）` : ''}`)
+    .map(
+      (i) =>
+        `- [${i.dimension}/${i.severity}] ${i.message}${i.suggestion ? `（建议：${i.suggestion}）` : ''}`,
+    )
     .join('\n');
 }

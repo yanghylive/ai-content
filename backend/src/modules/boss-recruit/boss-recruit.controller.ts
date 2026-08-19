@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { BossRecruitService } from './boss-recruit.service';
-import type { BossHelloInput, BossSyncPositionsInput } from './boss-recruit.types';
+import type {
+  BossHelloInput,
+  BossSyncPositionsInput,
+} from './boss-recruit.types';
 
 type AuthenticatedRequest = Request & {
   authUser?: { id?: string; name?: string; username?: string; role?: string };
@@ -24,12 +27,21 @@ export class BossRecruitController {
     if (!body?.storageState) {
       return { ok: false, message: '缺少 storageState（Boss 登录态 JSON）' };
     }
-    return this.bossRecruitService.saveCookie(this.getUserId(request), body.storageState);
+    return this.bossRecruitService.saveCookie(
+      this.getUserId(request),
+      body.storageState,
+    );
   }
 
   @Post('accounts/:id/check-login')
-  checkLogin(@Req() request: AuthenticatedRequest, @Param('id') accountId: string) {
-    return this.bossRecruitService.checkLogin(this.getUserId(request), accountId);
+  checkLogin(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') accountId: string,
+  ) {
+    return this.bossRecruitService.checkLogin(
+      this.getUserId(request),
+      accountId,
+    );
   }
 
   @Post('positions/refresh')
@@ -37,11 +49,17 @@ export class BossRecruitController {
     @Req() request: AuthenticatedRequest,
     @Body() body: BossSyncPositionsInput,
   ) {
-    return this.bossRecruitService.refreshPositions(this.getUserId(request), body);
+    return this.bossRecruitService.refreshPositions(
+      this.getUserId(request),
+      body,
+    );
   }
 
   @Post('hello')
-  sendHello(@Req() request: AuthenticatedRequest, @Body() body: BossHelloInput) {
+  sendHello(
+    @Req() request: AuthenticatedRequest,
+    @Body() body: BossHelloInput,
+  ) {
     return this.bossRecruitService.sendHello(this.getUserId(request), body);
   }
 

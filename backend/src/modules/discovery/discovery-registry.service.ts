@@ -2,7 +2,12 @@
 // 注册全部平台 adapter，提供能力声明与发现编排，空实现/未授权显式 unsupported。
 import { Injectable } from '@nestjs/common';
 import type { DiscoveryAdapter } from './discovery.adapter';
-import type { DiscoveryCapability, DiscoveryContext, DiscoveryInput, DiscoveryItem } from './discovery.types';
+import type {
+  DiscoveryCapability,
+  DiscoveryContext,
+  DiscoveryInput,
+  DiscoveryItem,
+} from './discovery.types';
 import { DouyinAdapter } from './adapters/douyin.adapter';
 import { ManualAdapter } from './adapters/manual.adapter';
 import { VideoLinkAdapter } from './adapters/video-link.adapter';
@@ -26,7 +31,15 @@ export class DiscoveryRegistry {
     kuaishou: KuaishouAdapter,
     xiaohongshu: XiaohongshuAdapter,
   ) {
-    for (const a of [douyin, manual, videoLink, shipinhao, wecom, kuaishou, xiaohongshu]) {
+    for (const a of [
+      douyin,
+      manual,
+      videoLink,
+      shipinhao,
+      wecom,
+      kuaishou,
+      xiaohongshu,
+    ]) {
       this.adapters.set(a.platform, a);
     }
   }
@@ -54,9 +67,14 @@ export class DiscoveryRegistry {
   }
 
   /** 发现编排：调用对应平台 adapter，收集为数组（limit 上限保护） */
-  async collect(input: DiscoveryInput, ctx: DiscoveryContext, maxItems = 50): Promise<DiscoveryItem[]> {
+  async collect(
+    input: DiscoveryInput,
+    ctx: DiscoveryContext,
+    maxItems = 50,
+  ): Promise<DiscoveryItem[]> {
     const adapter = this.adapters.get(input.platform);
-    if (!adapter) throw new Error(`unsupported: 平台 ${input.platform} 未注册发现能力`);
+    if (!adapter)
+      throw new Error(`unsupported: 平台 ${input.platform} 未注册发现能力`);
     const items: DiscoveryItem[] = [];
     for await (const item of adapter.discover(input, ctx)) {
       items.push(item);

@@ -43,7 +43,7 @@ export class VideoController {
    * POST /api/video/product-copy
    */
   @Post('product-copy')
-  async productCopy(
+  productCopy(
     @Body()
     body: {
       productName: string;
@@ -118,7 +118,9 @@ export class VideoController {
    */
   @Get('release-plans')
   listReleasePlans(@Query('limit') limit?: string) {
-    return this.videoService.listReleasePlans(limit ? Number(limit) : undefined);
+    return this.videoService.listReleasePlans(
+      limit ? Number(limit) : undefined,
+    );
   }
 
   @Post('product-cut')

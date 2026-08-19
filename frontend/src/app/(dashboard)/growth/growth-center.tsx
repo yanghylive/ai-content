@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Bot,
   ChartNoAxesCombined,
   ClipboardList,
   Route,
@@ -111,6 +112,13 @@ export function GrowthCenter() {
             description: "效果数据回顾",
             icon: TrendingUp,
             href: "/growth/reports",
+          },
+          {
+            key: "rpa-workbench",
+            title: "RPA 工作台",
+            description: "平台自动化执行与接管",
+            icon: Bot,
+            href: "/growth/rpa-workbench",
           },
         ]}
         advancedLinks={[

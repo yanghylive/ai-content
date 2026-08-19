@@ -9,10 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
-import {
-  ReplyEngineService,
-  type CommentInput,
-} from './reply-engine.service';
+import { ReplyEngineService } from './reply-engine.service';
 import { CircuitBreaker } from './circuit-breaker';
 import { LeadRepository } from '../leads/lead.repository';
 import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
@@ -29,8 +26,10 @@ import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.r
  * - ReplyEngineService（AI 回复生成，人格池 + 策略）
  */
 
-export type AcquisitionPlatform = 'douyin' | 'wechat-channel' | 'xiaohongshu';
-export type LeadStatus = 'pending' | 'approved' | 'replied' | 'skipped' | 'failed';
+export type AcquisitionPlatform =
+  'douyin' | 'wechat-channel' | 'xiaohongshu' | 'kuaishou';
+export type LeadStatus =
+  'pending' | 'approved' | 'replied' | 'skipped' | 'failed';
 
 export interface AcquisitionLeadRow {
   id: string;
@@ -70,15 +69,13 @@ export class CommentAcquisitionService {
   /**
    * 扫描账号最新评论 → 潜客评分 → 生成回复 → 入库（pending 待审核/自动发）
    */
-  async scanAccount(
-    input: {
-      platform: AcquisitionPlatform;
-      accountId: number | string;
-      limit?: number;
-      autoReply?: boolean;
-      minLeadScore?: number;
-    },
-  ): Promise<{
+  async scanAccount(input: {
+    platform: AcquisitionPlatform;
+    accountId: number | string;
+    limit?: number;
+    autoReply?: boolean;
+    minLeadScore?: number;
+  }): Promise<{
     scanned: number;
     leads: number;
     replies: number;
@@ -100,7 +97,9 @@ export class CommentAcquisitionService {
         ? '抖音'
         : input.platform === 'xiaohongshu'
           ? '小红书'
-          : '视频号';
+          : input.platform === 'kuaishou'
+            ? '快手'
+            : '视频号';
     const minScore = input.minLeadScore ?? 45;
     const autoReply = input.autoReply ?? false;
     const circuitKey = `${input.platform}:${input.accountId}`;
@@ -281,6 +280,9 @@ export class CommentAcquisitionService {
       });
       platform = accounts?.[0]?.type === 2 ? 'wechat-channel' : 'douyin';
     }
+    // P1 复核（全面审查）：scanDm 真实发私信前必须账号归属校验——
+    // 对齐 scanAccount（94 行），防凭他人 accountId 读私信并对他人账号自动回复
+    await this.assertAccountOwnership(input.accountId, scope);
     const platformName = platform === 'douyin' ? '抖音' : '视频号';
     const minScore = input.minLeadScore ?? 45;
     const autoReply = input.autoReply ?? false;
@@ -504,22 +506,20 @@ export class CommentAcquisitionService {
       // 统一互动契约：按平台从 registry 取 adapter 调用，消除平台分支。
       // 小红书 send 用 commentRef 定位通知条目；抖音/视频号 send 走 dispatch。
       const adapter = this.interactionRegistry.get(input.platform);
-      const result =
-        (await adapter.send?.({
-          platform: input.platform,
-          taskType: 'comment-reply',
-          accountId: input.accountId,
-          targetText: input.commentText,
-          sourceText: input.commentText,
-          videoTitle: input.sourceTitle,
-          commentRef: xhsIndex !== undefined ? String(xhsIndex) : undefined,
-          replyText: input.replyText,
-        })) ??
-        ({
-          status: 'failed' as const,
-          message: '该平台未实现回复能力',
-          evidenceUrl: undefined,
-        });
+      const result = (await adapter.send?.({
+        platform: input.platform,
+        taskType: 'comment-reply',
+        accountId: input.accountId,
+        targetText: input.commentText,
+        sourceText: input.commentText,
+        videoTitle: input.sourceTitle,
+        commentRef: xhsIndex !== undefined ? String(xhsIndex) : undefined,
+        replyText: input.replyText,
+      })) ?? {
+        status: 'failed' as const,
+        message: '该平台未实现回复能力',
+        evidenceUrl: undefined,
+      };
 
       const ok = result.status === 'sent';
       if (ok) {

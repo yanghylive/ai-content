@@ -102,11 +102,7 @@ function asStringArray(value: unknown): string[] {
 type ArticleContentFormat = 'markdown' | 'html';
 type ArticleContentType = 'article' | 'xiaohongshu';
 export type ArticleWorkspaceStep =
-  | 'brief'
-  | 'outline'
-  | 'draft'
-  | 'versions'
-  | 'review';
+  'brief' | 'outline' | 'draft' | 'versions' | 'review';
 
 export type ArticleWorkspaceBrief = {
   goal: string;

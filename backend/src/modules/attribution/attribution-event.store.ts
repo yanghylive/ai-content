@@ -33,7 +33,12 @@ export interface SaveAttributionLinkInput {
   /** deterministic（已确认）/ rule_based（规则匹配）/ inferred（推断） */
   model?: 'deterministic' | 'rule_based' | 'inferred';
   confidence?: 'high' | 'medium' | 'low';
-  label?: 'first_touch' | 'last_touch' | 'qualified_by' | 'created_from' | 'influenced_by';
+  label?:
+    | 'first_touch'
+    | 'last_touch'
+    | 'qualified_by'
+    | 'created_from'
+    | 'influenced_by';
   evidence?: Record<string, unknown>;
 }
 
@@ -65,7 +70,8 @@ export class AttributionEventStore {
         model,
         confidence: input.confidence ?? 'high',
         label: input.label,
-        evidence: (input.evidence ?? {}) as object,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- 防止 --fix 删除断言导致类型错误
+        evidence: (input.evidence ?? {}) as Prisma.InputJsonValue,
       },
       update: {
         confidence: input.confidence ?? undefined,
@@ -125,7 +131,9 @@ export class AttributionEventStore {
         toType: 'publish',
         toId: input.publishRecordId,
         label: 'created_from',
-        evidence: { platformExternalPostId: input.platformExternalPostId ?? null },
+        evidence: {
+          platformExternalPostId: input.platformExternalPostId ?? null,
+        },
       });
     }
     // 主键直连：事件 → 内容
@@ -138,7 +146,9 @@ export class AttributionEventStore {
         toType: 'content',
         toId: input.contentId,
         label: 'created_from',
-        evidence: { platformExternalPostId: input.platformExternalPostId ?? null },
+        evidence: {
+          platformExternalPostId: input.platformExternalPostId ?? null,
+        },
       });
     }
     // 仅 URL：rule_based（规则匹配，不伪造精确归因）
@@ -158,7 +168,10 @@ export class AttributionEventStore {
           model: 'rule_based',
           confidence: 'medium',
           label: 'influenced_by',
-          evidence: { sourceUrl: input.sourceUrl, note: '仅 URL 弱关联，规则匹配' },
+          evidence: {
+            sourceUrl: input.sourceUrl,
+            note: '仅 URL 弱关联，规则匹配',
+          },
         });
       }
     }

@@ -273,7 +273,7 @@ export function AiAssistant({
         abortRef.current = null;
       }
     },
-    [busy],
+    [busy, items],
   );
 
   const handleQuickPrompt = (prompt: string) => {

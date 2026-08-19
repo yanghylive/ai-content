@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { safeText } from '../../common/text.utils';
 import { CrmAppGuard } from './crm-app.guard';
 import { CrmService } from './crm.service';
 
@@ -84,7 +85,7 @@ export class CrmController {
     return this.crmService.mergeCustomer(
       this.getUserId(request),
       id,
-      String(body?.sourceCustomerId || ''),
+      safeText(body.sourceCustomerId),
     );
   }
 

@@ -278,11 +278,7 @@ export async function getBrowserStatus(
       );
       const sessionStatus = session?.status;
       const status:
-        | 'ready'
-        | 'expired'
-        | 'needs_login'
-        | 'blocked'
-        | 'unverified' =
+        'ready' | 'expired' | 'needs_login' | 'blocked' | 'unverified' =
         sessionStatus === 'ready'
           ? 'ready'
           : sessionStatus === 'needs_login' ||

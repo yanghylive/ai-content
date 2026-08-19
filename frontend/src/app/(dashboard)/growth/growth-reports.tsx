@@ -9,19 +9,26 @@ import {
   V2GhostButton,
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthReports } from "@/lib/api/growth";
+import { statsApi, type StatsSnapshot } from "@/lib/api/stats";
 import { toPublicError } from "@/lib/public-error";
 
 export function GrowthReportsPage() {
   const router = useRouter();
   const [reports, setReports] = useState<GrowthReports | null>(null);
+  const [stats, setStats] = useState<StatsSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await growthApi.reports();
+      // 漏斗统一走后端 StatsSnapshot（growth 域累计口径），其余（六阶段/文案/趋势）仍走 reports
+      const [data, snap] = await Promise.all([
+        growthApi.reports(),
+        statsApi.snapshot("growth").catch(() => null),
+      ]);
       setReports(data);
+      setStats(snap);
     } catch (err: unknown) {
       setError(toPublicError(err, "加载复盘数据失败"));
     } finally {
@@ -33,7 +40,19 @@ export function GrowthReportsPage() {
     void fetchReports();
   }, [fetchReports]);
 
-  const funnel = reports?.funnel;
+  // stats 加载失败返回 null，展示层显示 N/A（方案 10.2/12.2：服务失败 ≠ 0）
+  const metric = (key: string): number | null => {
+    const found = stats?.metrics?.find((m) => m.key === key);
+    return typeof found?.value === "number" ? found.value : null;
+  };
+  const funnel = {
+    candidates: metric("growth.funnel.candidates"),
+    selected: metric("growth.funnel.selected"),
+    contacted: metric("growth.funnel.contacted"),
+    crmCaptured: metric("growth.funnel.crm_captured"),
+    converted: metric("growth.funnel.converted"),
+  };
+  const sixStage = reports?.sixStage;
   const copywriting = reports?.copywriting || [];
   const trend = reports?.trend || [];
 
@@ -78,12 +97,64 @@ export function GrowthReportsPage() {
                 {i > 0 && <span className="text-[var(--kaypal-v3-muted)]">→</span>}
                 <div className="flex-1 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent-soft)] p-3 text-center" style={{ opacity: 1 - i * 0.15 }}>
                   <p className="text-xl font-bold text-[var(--kaypal-v3-accent-ink)]">
-                    {loading ? "-" : stage.value}
+                    {loading ? "-" : stage.value === null ? "N/A" : stage.value}
                   </p>
                   <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">{stage.label}</p>
                 </div>
               </div>
             ))}
+          </div>
+        </V2Section>
+      )}
+
+      {/* 六步闭环（内容→发布→互动→线索→客户→商机，按主键归因） */}
+      {sixStage && (
+        <V2Section
+          title="六步闭环"
+          description={`内容→发布→互动→线索→客户→商机 · 归因置信度${
+            sixStage.attributionConfidence === "high"
+              ? "高"
+              : sixStage.attributionConfidence === "medium"
+                ? "中"
+                : "低"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {[
+              { label: "内容", value: sixStage.content },
+              { label: "发布", value: sixStage.publish },
+              { label: "互动", value: sixStage.interaction },
+              { label: "线索", value: sixStage.lead },
+              { label: "客户", value: sixStage.customer },
+              { label: "商机", value: sixStage.opportunity },
+            ].map((stage, i) => (
+              <div key={stage.label} className="flex flex-1 items-center gap-2">
+                {i > 0 && <span className="text-[var(--kaypal-v3-muted)]">→</span>}
+                <div
+                  className="flex-1 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent-soft)] p-3 text-center"
+                  style={{ opacity: 1 - i * 0.12 }}
+                >
+                  <p className="text-xl font-bold text-[var(--kaypal-v3-accent-ink)]">
+                    {loading ? "-" : stage.value === 0 ? "N/A" : stage.value}
+                  </p>
+                  <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">{stage.label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-[var(--kaypal-v3-muted)]">
+            <span>
+              内容转化率{" "}
+              <b className="text-[var(--kaypal-v3-ink)]">
+                {Math.round((sixStage.contentConversionRate || 0) * 100)}%
+              </b>
+            </span>
+            <span>
+              归因线索 <b className="text-[var(--kaypal-v3-ink)]">{sixStage.attributedLeadCount}</b>
+            </span>
+            <span>
+              归因客户 <b className="text-[var(--kaypal-v3-ink)]">{sixStage.attributedCustomerCount}</b>
+            </span>
           </div>
         </V2Section>
       )}

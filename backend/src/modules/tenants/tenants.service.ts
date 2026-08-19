@@ -52,12 +52,12 @@ export class TenantsService {
         userId: user.id,
         role,
         status: 'active',
-        permissions: permissions as Prisma.InputJsonValue,
+        permissions: permissions,
       },
       update: {
         role,
         status: 'active',
-        permissions: permissions as Prisma.InputJsonValue,
+        permissions: permissions,
         updatedAt: now,
       },
     });
@@ -74,7 +74,7 @@ export class TenantsService {
         source: input.entitlement.source,
         plan: input.entitlement.plan,
         status: input.entitlement.status,
-        features: input.entitlement.features as Prisma.InputJsonValue,
+        features: input.entitlement.features,
         commercialExecutionAllowed:
           input.entitlement.commercialExecutionAllowed,
         metadata: input.entitlement.metadata as Prisma.InputJsonValue,
@@ -82,7 +82,7 @@ export class TenantsService {
       update: {
         plan: input.entitlement.plan,
         status: input.entitlement.status,
-        features: input.entitlement.features as Prisma.InputJsonValue,
+        features: input.entitlement.features,
         commercialExecutionAllowed:
           input.entitlement.commercialExecutionAllowed,
         metadata: input.entitlement.metadata as Prisma.InputJsonValue,

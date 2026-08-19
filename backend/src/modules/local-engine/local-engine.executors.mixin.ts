@@ -386,7 +386,7 @@ export function mapRuntimeHealthToExecutorCapability(
       : 'missing';
 
   return {
-    key: h.id as InteractionTaskType,
+    key: h.id,
     name: h.id,
     platformName: h.id === 'agent-s' ? '微信桌面' : '浏览器 CDP',
     status,

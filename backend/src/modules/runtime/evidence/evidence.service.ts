@@ -22,6 +22,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthRequestContextService } from '../../../common/auth-request-context.service';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { RuntimeExecutionResult } from '../executor.interface';
 
@@ -88,8 +89,8 @@ export class EvidenceService {
           reasonCode: result.reasonCode,
           userMessage: result.userMessage,
           technicalMessage: result.technicalMessage ?? null,
-          runtimeJson: result.runtime as unknown as object,
-          evidenceJson: result.evidence as unknown as object,
+          runtimeJson: result.runtime,
+          evidenceJson: result.evidence as unknown as Prisma.InputJsonValue,
           readbackJson: (result.readback as unknown as object) ?? null,
           agentSSessionId: result.runtime.agentSSessionId ?? null,
           engineUrl: result.runtime.engineUrl ?? null,

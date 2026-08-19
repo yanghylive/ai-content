@@ -96,6 +96,9 @@ describe('GrowthController commercial API acceptance', () => {
     const candidate = {
       text: '最近想装修改造，想问一下本地大概多少钱？',
       targetName: '本地装修咨询客户',
+      // P0-6 复核：可归因线索需真实外部身份（评论获客读评论会带 externalUserId，
+      // 缺身份字段会被 CRM 门禁拦入人工池）
+      externalUserId: 'douyin-user-commercial-001',
       profileUrl: 'https://www.douyin.com/user/MS4wLjABAAAA-commercial-api',
       sourceUrl: 'https://www.douyin.com/video/654321',
       videoUrl: 'https://www.douyin.com/video/654321',
@@ -486,6 +489,7 @@ describe('GrowthController commercial API acceptance', () => {
         scheduleEnabled: true,
         beginTime: '00:00',
         riskMode: 'auto',
+        status: 'enabled',
         riskConfirmation: scheduleEnableConfirmation(),
       })
       .expect(201);
@@ -521,6 +525,7 @@ describe('GrowthController commercial API acceptance', () => {
         scheduleEnabled: false,
         beginTime: '00:00',
         riskMode: 'confirm-first',
+        status: 'enabled',
       })
       .expect(201);
 
@@ -568,6 +573,7 @@ describe('GrowthController commercial API acceptance', () => {
         scheduleEnabled: true,
         beginTime: '00:00',
         riskMode: 'auto',
+        status: 'enabled',
         riskConfirmation: scheduleEnableConfirmation(),
       })
       .expect(201);
@@ -732,6 +738,7 @@ describe('GrowthController commercial API acceptance', () => {
         scheduleEnabled: true,
         beginTime: '00:00',
         riskMode: 'auto',
+        status: 'enabled',
         riskConfirmation: scheduleEnableConfirmation(),
       })
       .expect(201);
@@ -812,6 +819,7 @@ describe('GrowthController commercial API acceptance', () => {
         scheduleEnabled: true,
         beginTime: '00:00',
         riskMode: 'auto',
+        status: 'enabled',
         riskConfirmation: scheduleEnableConfirmation(),
       })
       .expect(201);
@@ -825,7 +833,7 @@ describe('GrowthController commercial API acceptance', () => {
       status: 'blocked',
     });
     expect(planResponse.body.items[0].reason).toContain(
-      '增长自动触达执行器未接入',
+      '自动触达执行器未接入',
     );
 
     const preflightResponse = await request(app.getHttpServer())
@@ -834,7 +842,7 @@ describe('GrowthController commercial API acceptance', () => {
     expect(preflightResponse.body.allowed).toBe(false);
     expect(preflightResponse.body.blockers).toEqual(
       expect.arrayContaining([
-        expect.stringContaining('增长自动触达执行器未接入'),
+        expect.stringContaining('自动触达执行器未接入'),
       ]),
     );
 
@@ -847,7 +855,7 @@ describe('GrowthController commercial API acceptance', () => {
       failureReason: 'engine_unavailable',
     });
     expect(executeResponse.body.run.message).toContain(
-      '增长自动触达执行器未接入',
+      '自动触达执行器未接入',
     );
     expect(aiEmployee.findDouyinHotVideoLeads).not.toHaveBeenCalled();
     expect(aiEmployee.executeDouyinFollowUp).not.toHaveBeenCalled();

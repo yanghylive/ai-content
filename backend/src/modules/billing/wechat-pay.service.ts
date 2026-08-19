@@ -8,9 +8,17 @@
 //   WXPAY_PRIVATE_KEY_PATH=<商户 API 私钥 apiclient_key.pem 路径>
 //   WXPAY_NOTIFY_URL=<回调通知地址>
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { createHmac, createSign, createDecipheriv, timingSafeEqual } from 'node:crypto';
+import {
+  createHmac,
+  createSign,
+  createDecipheriv,
+  timingSafeEqual,
+} from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { safeText } from '../../common/text.utils';
 
 export interface WechatPayConfig {
   mchid: string;
@@ -21,7 +29,9 @@ export interface WechatPayConfig {
   notifyUrl?: string;
 }
 
-export function resolveWechatPayConfig(env: Record<string, string | undefined> = process.env): WechatPayConfig {
+export function resolveWechatPayConfig(
+  env: Record<string, string | undefined> = process.env,
+): WechatPayConfig {
   return {
     mchid: env.WXPAY_MCHID ?? '1116143786',
     appId: env.WXPAY_APP_ID,
@@ -35,7 +45,11 @@ export function resolveWechatPayConfig(env: Record<string, string | undefined> =
 /** 配置是否齐全（缺任何一项 → 下单 need_config） */
 export function wechatPayConfigReady(config: WechatPayConfig): boolean {
   return Boolean(
-    config.appId && config.apiV3Key && config.serialNo && config.privateKeyPath && config.notifyUrl,
+    config.appId &&
+    config.apiV3Key &&
+    config.serialNo &&
+    config.privateKeyPath &&
+    config.notifyUrl,
   );
 }
 
@@ -84,7 +98,8 @@ export class WechatPayService {
     if (!wechatPayConfigReady(config)) {
       return {
         status: 'need_config',
-        message: '微信支付未配置完成（需 AppID/APIv3 密钥/商户证书/回调地址），配置后自动可用',
+        message:
+          '微信支付未配置完成（需 AppID/APIv3 密钥/商户证书/回调地址），配置后自动可用',
       };
     }
     const { tenantId, userId } = await this.resolveScope();
@@ -116,7 +131,8 @@ export class WechatPayService {
         outTradeNo: input.idempotencyKey,
         mchid: config.mchid,
         appid: config.appId,
-        description: input.description ?? `AI 积分充值 ¥${amountYuan.toFixed(2)}`,
+        description:
+          input.description ?? `AI 积分充值 ¥${amountYuan.toFixed(2)}`,
         amountCents,
         creditPoints,
         status: 'pending',
@@ -150,12 +166,15 @@ export class WechatPayService {
           body: payBody,
         },
       );
-      const wxResult = (await wxResponse.json().catch(() => ({}))) as Record<string, unknown>;
+      const wxResult = (await wxResponse.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
       if (!wxResponse.ok || !wxResult.code_url) {
         // 下单失败：把本地订单标记 closed，避免挂着 pending 假单
         await this.prisma.wechatPayOrder.update({
           where: { id: order.id },
-          data: { status: 'closed', notifyPayload: wxResult as object },
+          data: { status: 'closed', notifyPayload: wxResult as Prisma.InputJsonValue },
         });
         return {
           status: 'order_failed',
@@ -179,7 +198,9 @@ export class WechatPayService {
       };
     } catch (error) {
       // 网络异常：订单保留 pending（可重试查单），但告知调用方
-      this.logger.warn(`微信下单网络异常 ${order.outTradeNo}：${(error as Error).message}`);
+      this.logger.warn(
+        `微信下单网络异常 ${order.outTradeNo}：${(error as Error).message}`,
+      );
       return {
         status: 'order_pending_retry',
         outTradeNo: order.outTradeNo,
@@ -199,7 +220,10 @@ export class WechatPayService {
     body: unknown;
   }): Promise<{ code: string; message: string }> {
     const config = this.config();
-    const rawBody = typeof input.body === 'string' ? input.body : JSON.stringify(input.body ?? {});
+    const rawBody =
+      typeof input.body === 'string'
+        ? input.body
+        : JSON.stringify(input.body ?? {});
     let payload: Record<string, unknown>;
     try {
       payload = JSON.parse(rawBody) as Record<string, unknown>;
@@ -224,8 +248,12 @@ export class WechatPayService {
 
     // 解密 resource（AES-256-GCM，key=apiV3Key）
     const resource = payload.resource as Record<string, unknown> | undefined;
-    const outTradeNo = resource?.out_trade_no ? String(resource.out_trade_no) : String(payload.out_trade_no ?? '');
-    const transactionId = resource?.transaction_id ? String(resource.transaction_id) : String(payload.transaction_id ?? '');
+    const outTradeNo = resource?.out_trade_no
+      ? safeText(resource.out_trade_no)
+      : safeText(payload.out_trade_no);
+    const transactionId = resource?.transaction_id
+      ? safeText(resource.transaction_id)
+      : safeText(payload.transaction_id);
     if (!outTradeNo) {
       return { code: 'FAIL', message: '缺少订单号' };
     }
@@ -254,20 +282,33 @@ export class WechatPayService {
     // 安全修复（2026-08-17）：无 apiV3Key 或缺少可解密 resource 时，
     // 绝不能按订单金额静默充值——否则任何人 POST outTradeNo 即可伪造支付到账。
     // 必须解密出微信返回的真实金额才允许入账（且校验与订单一致）。
-    if (!config.apiV3Key || !resource?.ciphertext || !resource?.nonce || !resource?.associated_data) {
-      this.logger.warn(`微信回调缺少可验资源（apiV3Key=${Boolean(config.apiV3Key)} ciphertext=${Boolean(resource?.ciphertext)}），拒绝充值 ${outTradeNo}`);
+    if (
+      !config.apiV3Key ||
+      !resource?.ciphertext ||
+      !resource?.nonce ||
+      !resource?.associated_data
+    ) {
+      this.logger.warn(
+        `微信回调缺少可验资源（apiV3Key=${Boolean(config.apiV3Key)} ciphertext=${Boolean(resource?.ciphertext)}），拒绝充值 ${outTradeNo}`,
+      );
       return { code: 'FAIL', message: '回调资源不可验，拒绝入账' };
     }
     let paidCents: number;
     try {
-      paidCents = this.decryptAmount(resource, config.apiV3Key, order.amountCents);
+      paidCents = this.decryptAmount(
+        resource,
+        config.apiV3Key,
+        order.amountCents,
+      );
     } catch (error) {
       this.logger.warn(`微信回调解密失败：${(error as Error).message}`);
       return { code: 'FAIL', message: '解密失败' };
     }
     // 金额一致性校验：微信返回金额 ≠ 订单金额 → 拒绝（防篡改）
     if (paidCents !== order.amountCents) {
-      this.logger.warn(`微信回调金额不符：订单 ${order.amountCents} vs 回调 ${paidCents}，拒绝 ${outTradeNo}`);
+      this.logger.warn(
+        `微信回调金额不符：订单 ${order.amountCents} vs 回调 ${paidCents}，拒绝 ${outTradeNo}`,
+      );
       return { code: 'FAIL', message: '金额不一致，拒绝入账' };
     }
 
@@ -278,7 +319,9 @@ export class WechatPayService {
         data: { status: 'paid', paidAt: new Date() },
       });
       await tx.aiCreditAccount.upsert({
-        where: { tenantId_userId: { tenantId: order.tenantId, userId: order.userId } },
+        where: {
+          tenantId_userId: { tenantId: order.tenantId, userId: order.userId },
+        },
         create: {
           tenantId: order.tenantId,
           userId: order.userId,
@@ -291,7 +334,9 @@ export class WechatPayService {
         },
       });
     });
-    this.logger.log(`微信支付成功：${outTradeNo} 充值 ${order.creditPoints} 积分（金额 ${paidCents} 分）`);
+    this.logger.log(
+      `微信支付成功：${outTradeNo} 充值 ${order.creditPoints} 积分（金额 ${paidCents} 分）`,
+    );
     return { code: 'SUCCESS', message: 'OK' };
   }
 
@@ -319,12 +364,36 @@ export class WechatPayService {
   } {
     const config = this.config();
     const items = [
-      { key: 'mchid', ready: Boolean(config.mchid), hint: `商户号 ${config.mchid}` },
-      { key: 'appId', ready: Boolean(config.appId), hint: '关联公众号/小程序 AppID（微信公众平台）' },
-      { key: 'apiV3Key', ready: Boolean(config.apiV3Key), hint: 'APIv3 密钥（商户平台-账户中心-API 安全）' },
-      { key: 'serialNo', ready: Boolean(config.serialNo), hint: `证书序列号 ${config.serialNo ?? '未配置'}` },
-      { key: 'privateKeyPath', ready: Boolean(config.privateKeyPath), hint: config.privateKeyPath ?? 'apiclient_key.pem 路径' },
-      { key: 'notifyUrl', ready: Boolean(config.notifyUrl), hint: '回调通知公网地址' },
+      {
+        key: 'mchid',
+        ready: Boolean(config.mchid),
+        hint: `商户号 ${config.mchid}`,
+      },
+      {
+        key: 'appId',
+        ready: Boolean(config.appId),
+        hint: '关联公众号/小程序 AppID（微信公众平台）',
+      },
+      {
+        key: 'apiV3Key',
+        ready: Boolean(config.apiV3Key),
+        hint: 'APIv3 密钥（商户平台-账户中心-API 安全）',
+      },
+      {
+        key: 'serialNo',
+        ready: Boolean(config.serialNo),
+        hint: `证书序列号 ${config.serialNo ?? '未配置'}`,
+      },
+      {
+        key: 'privateKeyPath',
+        ready: Boolean(config.privateKeyPath),
+        hint: config.privateKeyPath ?? 'apiclient_key.pem 路径',
+      },
+      {
+        key: 'notifyUrl',
+        ready: Boolean(config.notifyUrl),
+        hint: '回调通知公网地址',
+      },
       {
         key: 'platformCert',
         ready: Boolean(process.env.WXPAY_PLATFORM_CERT_PATH),
@@ -338,7 +407,10 @@ export class WechatPayService {
     };
   }
 
-  private headerValue(headers: Record<string, string | string[] | undefined>, key: string): string {
+  private headerValue(
+    headers: Record<string, string | string[] | undefined>,
+    key: string,
+  ): string {
     const v = headers[key] ?? headers[key.toLowerCase()];
     if (Array.isArray(v)) return v[0] ?? '';
     return v ?? '';
@@ -357,13 +429,16 @@ export class WechatPayService {
       throw new Error('回调密文长度非法');
     }
     const nonce = Buffer.from(String(resource.nonce), 'utf8');
-    const aad = Buffer.from(String(resource.associated_data ?? ''), 'utf8');
+    const aad = Buffer.from(safeText(resource.associated_data), 'utf8');
     const authTag = ciphertext.subarray(ciphertext.length - 16);
     const data = ciphertext.subarray(0, ciphertext.length - 16);
     const decipher = createDecipheriv('aes-256-gcm', key, nonce);
     decipher.setAAD(aad);
     decipher.setAuthTag(authTag);
-    const decrypted = Buffer.concat([decipher.update(data), decipher.final()]).toString('utf8');
+    const decrypted = Buffer.concat([
+      decipher.update(data),
+      decipher.final(),
+    ]).toString('utf8');
     const parsed = JSON.parse(decrypted) as { amount?: { total?: number } };
     return Number(parsed.amount?.total ?? fallbackCents);
   }
@@ -374,10 +449,11 @@ export class WechatPayService {
     if (!config.serialNo || !config.privateKeyPath) {
       throw new BadRequestException('微信支付证书未配置');
     }
-    const fs = require('node:fs') as typeof import('node:fs');
-    const privateKey = fs.readFileSync(config.privateKeyPath, 'utf8');
+    const privateKey = readFileSync(config.privateKeyPath, 'utf8');
     const timestamp = Math.floor(Date.now() / 1000).toString();
-    const nonceStr = createHmac('sha256', `${timestamp}`).digest('hex').slice(0, 32);
+    const nonceStr = createHmac('sha256', `${timestamp}`)
+      .digest('hex')
+      .slice(0, 32);
     const message = `${method}\n${path}\n${timestamp}\n${nonceStr}\n${body}\n`;
     const signer = createSign('RSA-SHA256');
     signer.update(message);

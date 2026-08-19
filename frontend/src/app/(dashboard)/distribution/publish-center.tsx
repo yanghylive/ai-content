@@ -33,6 +33,7 @@ import {
   type AutoUploadAccountHealth,
   type AutoUploadCalendarDay,
 } from "@/lib/api/auto-upload";
+import { statsApi, type StatsSnapshot } from "@/lib/api/stats";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -633,6 +634,7 @@ function AccountHealthTab() {
   const [health, setHealth] = React.useState<AutoUploadAccountHealth | null>(
     null,
   );
+  const [stats, setStats] = React.useState<StatsSnapshot | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -640,7 +642,13 @@ function AccountHealthTab() {
     setLoading(true);
     setError(null);
     try {
-      const result = await autoUploadApi.accountHealth();
+      // 计数统一走后端 StatsSnapshot（account-health 域，含 dataQuality，本地引擎不可用返回 N/A）；
+      // 列表（issues/waitingTasks）用 accountHealth，validate:false 避免与 StatsSnapshot 重复实时检测。
+      const [snap, result] = await Promise.all([
+        statsApi.snapshot("account-health").catch(() => null),
+        autoUploadApi.accountHealth({ validate: false }),
+      ]);
+      setStats(snap);
       setHealth(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "账号健康检查失败");
@@ -652,6 +660,11 @@ function AccountHealthTab() {
   React.useEffect(() => {
     void load();
   }, [load]);
+
+  const statValue = (key: string): string => {
+    const found = stats?.metrics?.find((m) => m.key === key);
+    return typeof found?.value === "number" ? String(found.value) : "N/A";
+  };
 
   if (loading) {
     return (
@@ -685,19 +698,19 @@ function AccountHealthTab() {
         <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-5">
           <p className="text-sm text-[var(--kaypal-v3-muted)]">总账号</p>
           <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-ink)]">
-            {health.totalAccounts}
+            {statValue("account_health.total")}
           </p>
         </div>
         <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-5">
           <p className="text-sm text-[var(--kaypal-v3-muted)]">正常</p>
           <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-success)]">
-            {health.readyAccounts}
+            {statValue("account_health.ready")}
           </p>
         </div>
         <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-5">
           <p className="text-sm text-[var(--kaypal-v3-muted)]">需处理</p>
           <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-danger)]">
-            {health.expiredAccounts}
+            {statValue("account_health.expired")}
           </p>
         </div>
       </div>

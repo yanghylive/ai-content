@@ -1282,7 +1282,8 @@ export function getMacWechatCommandRoot(this: WechatContactsHost) {
   }
   // 打包后：cwd=resources/backend，wechat-macos 在 resources/wechat-macos/bin
   const packagedResourcesRoot =
-    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath ||
+    '';
   if (packagedResourcesRoot) {
     const packagedBin = join(packagedResourcesRoot, 'wechat-macos', 'bin');
     if (existsSync(packagedBin)) {
@@ -1577,7 +1578,7 @@ export async function buildWindowsWechatChatHistoryFromContacts(
       lastMessage: '已从 Windows 微信通讯录缓存建立会话入口。',
       lastMessageAt: contact.syncedAt || contact.updatedAt || now,
       updatedAt: contact.updatedAt || contact.syncedAt || now,
-      source: 'windows-wechat-contact-cache' as WechatChatHistorySource,
+      source: 'windows-wechat-contact-cache' as const,
       raw: {
         wxid: contact.wxid,
         nickname: contact.nickname,
@@ -1586,7 +1587,7 @@ export async function buildWindowsWechatChatHistoryFromContacts(
         contactsSource: contactsCache.source,
         contactsSyncedAt: contactsCache.syncedAt,
       },
-    };
+    } satisfies WechatChatSession;
   });
   const existingById = new Map(
     cached.sessions.map((session) => [session.id, session]),
@@ -3287,14 +3288,11 @@ export async function runWechatWindowsContactSyncScript(
 
 export function resolveWechatEnginePath(this: WechatContactsHost) {
   const packagedResourcesRoot =
-    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath ||
+    '';
   const resourceCandidates = packagedResourcesRoot
     ? [
-        join(
-          packagedResourcesRoot,
-          'wechat-engine',
-          'kaypal-wechat-engine.js',
-        ),
+        join(packagedResourcesRoot, 'wechat-engine', 'kaypal-wechat-engine.js'),
         join(
           packagedResourcesRoot,
           'wechat-engine',
@@ -3905,26 +3903,15 @@ export function runWechatEngineContactSyncScript(
   });
 }
 
-export function resolveWechatDbHelperPath(this: WechatContactsHost) {
+export function resolveWechatDbHelperPath(this: WechatContactsHost): string {
   const packagedResourcesRoot =
-    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath ||
+    '';
   const resourceCandidates = packagedResourcesRoot
     ? [
-        join(
-          packagedResourcesRoot,
-          'wechat-db-helper',
-          'wechat-db-helper.js',
-        ),
-        join(
-          packagedResourcesRoot,
-          'wechat-db-helper',
-          'wechat-db-helper.exe',
-        ),
-        join(
-          packagedResourcesRoot,
-          'wechat-db-helper',
-          'wechat-dump-rs.exe',
-        ),
+        join(packagedResourcesRoot, 'wechat-db-helper', 'wechat-db-helper.js'),
+        join(packagedResourcesRoot, 'wechat-db-helper', 'wechat-db-helper.exe'),
+        join(packagedResourcesRoot, 'wechat-db-helper', 'wechat-dump-rs.exe'),
       ]
     : [];
   // 按需下载目录（云端资源，随包隔离）：KAYPAL_DESKTOP_USER_DATA_DIR/wechat-db-helper
@@ -4011,7 +3998,7 @@ export function resolveWechatDbHelperPath(this: WechatContactsHost) {
 export function ensureWechatDbHelperDownloaded(
   this: WechatContactsHost,
 ): Promise<string> {
-  const existing = resolveWechatDbHelperPath.call(this);
+  const existing = resolveWechatDbHelperPath.call(this) as string;
   if (existing) {
     return Promise.resolve(existing);
   }
@@ -4020,7 +4007,8 @@ export function ensureWechatDbHelperDownloaded(
     return Promise.resolve('');
   }
   const packagedResourcesRoot =
-    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath ||
+    '';
   const downloadScript = packagedResourcesRoot
     ? join(packagedResourcesRoot, 'remote-assets', 'download.mjs')
     : join(
@@ -4054,22 +4042,19 @@ export function ensureWechatDbHelperDownloaded(
     );
     child.on('error', () => resolvePromise(''));
     child.on('close', () => {
-      resolvePromise(resolveWechatDbHelperPath.call(this) || '');
+      resolvePromise((resolveWechatDbHelperPath.call(this) as string) || '');
     });
   });
 }
 
 export function resolveWechatSqliteCliPath(this: WechatContactsHost) {
   const packagedResourcesRoot =
-    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath || '';
+    (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath ||
+    '';
   const resourceCandidates = packagedResourcesRoot
     ? [
         join(packagedResourcesRoot, 'wechat-db-helper', 'sqlite3.exe'),
-        join(
-          packagedResourcesRoot,
-          'wechat-db-helper',
-          'wechat-dump-rs.exe',
-        ),
+        join(packagedResourcesRoot, 'wechat-db-helper', 'wechat-dump-rs.exe'),
       ]
     : [];
   return resolveFirstExistingLocalPath([

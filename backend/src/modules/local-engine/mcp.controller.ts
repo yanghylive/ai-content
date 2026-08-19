@@ -219,8 +219,7 @@ export class McpController {
   ): void {
     if (level !== 'readonly') return;
     const body = req.body as
-      | { method?: string; params?: { name?: string } }
-      | undefined;
+      { method?: string; params?: { name?: string } } | undefined;
     if (!body || body.method !== 'tools/call') return;
     const name = body.params?.name;
     if (typeof name === 'string' && SENSITIVE_MCP_TOOLS.has(name)) {

@@ -28,8 +28,7 @@ export class VideoGenerationController {
   private resolveUser(): Record<string, unknown> | undefined {
     try {
       const ctx = this.authRequestContext?.get() as
-        | { user?: Record<string, unknown> }
-        | undefined;
+        { user?: Record<string, unknown> } | undefined;
       return ctx?.user;
     } catch {
       return undefined;
@@ -86,6 +85,6 @@ export class VideoGenerationController {
     res.setHeader('Content-Type', 'video/mp4');
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    (stream as unknown as NodeJS.ReadableStream).pipe(res);
+    stream.pipe(res);
   }
 }

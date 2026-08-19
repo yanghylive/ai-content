@@ -454,7 +454,7 @@ export class AuthService {
     const plainAccessToken = this.envelope
       ? decryptSessionToken(
           this.envelope,
-          sessionMetadata.kaypalDesktopAccessToken as string,
+          sessionMetadata.kaypalDesktopAccessToken,
         )
       : (sessionMetadata.kaypalDesktopAccessToken as string);
     if (plainAccessToken) {

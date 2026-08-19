@@ -98,6 +98,12 @@ export interface InteractionSendResult {
  */
 export interface InteractionAdapter {
   readonly capability: InteractionCapability;
-  read?(input: InteractionReadInput, page?: Page): Promise<InteractionReadResult>;
-  send?(input: InteractionSendInput, page?: Page): Promise<InteractionSendResult>;
+  read?(
+    input: InteractionReadInput,
+    page?: Page,
+  ): Promise<InteractionReadResult>;
+  send?(
+    input: InteractionSendInput,
+    page?: Page,
+  ): Promise<InteractionSendResult>;
 }

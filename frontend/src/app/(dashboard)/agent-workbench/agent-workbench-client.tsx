@@ -292,18 +292,19 @@ export function ConfirmationsPage() {
     try {
       // 两个数据源：①互动任务-等待发送确认（客服/消息流创建的）
       // ②agent 高风险确认（发布等高风险动作的确认令牌）
-      const [confirmations, allTasks] = await Promise.all([
+      // ①用 tasksWaitingConfirmation 后端 SQL 层按 status 过滤，与 /message 同口径（不受 limit 截断）
+      const [confirmations, pendingConfirmationTasks] = await Promise.all([
         localEngineApi.confirmations(),
-        localEngineApi.tasks(50).catch(() => [] as InteractionTask[]),
+        localEngineApi.tasksWaitingConfirmation(200),
       ]);
       const pendingConfirmations = confirmations.filter(
         (item) => item.status === "pending",
       );
       setItems(pendingConfirmations);
       setPendingTasks(
-        (Array.isArray(allTasks) ? allTasks : []).filter(
-          (t) => t.status === "waiting_for_send_confirmation",
-        ),
+        Array.isArray(pendingConfirmationTasks)
+          ? pendingConfirmationTasks
+          : [],
       );
     } catch (error: unknown) {
       addToast({

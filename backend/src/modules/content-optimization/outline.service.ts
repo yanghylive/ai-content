@@ -75,9 +75,7 @@ const DEFAULT_PAGE_COUNT = 5;
 
 function asStringArray(value: unknown): string[] {
   return Array.isArray(value)
-    ? value
-        .map((v) => (typeof v === 'string' ? v : String(v)))
-        .filter(Boolean)
+    ? value.map((v) => (typeof v === 'string' ? v : String(v))).filter(Boolean)
     : [];
 }
 
@@ -122,8 +120,7 @@ export class OutlineService {
       [
         {
           role: 'system',
-          content:
-            '你是资深图文内容主编，输出必须严格遵守用户指令的格式要求。',
+          content: '你是资深图文内容主编，输出必须严格遵守用户指令的格式要求。',
         },
         { role: 'user', content: prompt },
       ],
@@ -183,7 +180,11 @@ export class OutlineService {
       const modelId = await this.resolveDefaultModelId();
 
       // 2a. 调 content_prompt 生成 标题×3 + 文案（每页含 imagePrompt）+ 标签
-      send({ type: 'progress', stage: 'content', message: '正在生成文案与配图描述…' });
+      send({
+        type: 'progress',
+        stage: 'content',
+        message: '正在生成文案与配图描述…',
+      });
       const contentPrompt = this.loadPrompt('content_prompt.txt')
         .replaceAll('{topic}', topic)
         .replaceAll(
@@ -210,7 +211,11 @@ export class OutlineService {
 
       // P1 去 AI 味（可选后处理）：对每页文案做检测+改写，降低平台 AI 检测命中率
       if (input.deFlavor !== false && this.deFlavor) {
-        send({ type: 'progress', stage: 'deflavor', message: '正在去除 AI 味，让内容更像真人写的…' });
+        send({
+          type: 'progress',
+          stage: 'deflavor',
+          message: '正在去除 AI 味，让内容更像真人写的…',
+        });
         const deFlavored: string[] = [];
         for (const page of content.copywriting) {
           if (page.content && page.content.length >= 20) {
@@ -233,16 +238,14 @@ export class OutlineService {
       }
 
       // 2b. 逐页生图
-      const pages: GeneratedImagePage[] = content.copywriting.map(
-        (c, i) => ({
-          index: i,
-          type: c.type,
-          heading: c.heading || c.title || '',
-          content: c.content || '',
-          imagePrompt: c.imagePrompt || '',
-          status: 'pending' as const,
-        }),
-      );
+      const pages: GeneratedImagePage[] = content.copywriting.map((c, i) => ({
+        index: i,
+        type: c.type,
+        heading: c.heading || c.title || '',
+        content: c.content || '',
+        imagePrompt: c.imagePrompt || '',
+        status: 'pending' as const,
+      }));
 
       send({ type: 'titles', titles: content.titles, tags: content.tags });
       await this.updateTask(taskId, {
@@ -323,7 +326,11 @@ export class OutlineService {
           // 修订后的内容回写
           if (result.revised) {
             content.titles = result.titles;
-            for (let i = 0; i < result.pages.length && i < pages.length; i += 1) {
+            for (
+              let i = 0;
+              i < result.pages.length && i < pages.length;
+              i += 1
+            ) {
               if (result.pages[i].content) {
                 pages[i].content = result.pages[i].content;
                 pages[i].heading = result.pages[i].heading;
@@ -347,7 +354,8 @@ export class OutlineService {
         generatedAt: new Date().toISOString(),
         modelId,
         pageCount: pages.length,
-        deFlavorApplied: input.deFlavor !== false && this.deFlavor ? true : false,
+        deFlavorApplied:
+          input.deFlavor !== false && this.deFlavor ? true : false,
         reviewScore: review?.score ?? null,
         reviewPass: review?.pass ?? null,
         reviewIssues: review?.issues.length ?? 0,
@@ -373,7 +381,8 @@ export class OutlineService {
         pages,
         generated,
         failed,
-        coverRef: generated.find((g) => g.type === 'cover')?.imageFilename ?? null,
+        coverRef:
+          generated.find((g) => g.type === 'cover')?.imageFilename ?? null,
         error: isAllFailed ? '全部页面配图失败' : null,
         evidence,
         preview,
@@ -561,8 +570,7 @@ export class OutlineService {
                 ? c.title
                 : '',
           content: typeof c.content === 'string' ? c.content : '',
-          imagePrompt:
-            typeof c.imagePrompt === 'string' ? c.imagePrompt : '',
+          imagePrompt: typeof c.imagePrompt === 'string' ? c.imagePrompt : '',
         }))
       : [];
 
@@ -655,12 +663,14 @@ export class OutlineService {
       )
     `);
     // 兼容旧库（首次建表后新增的列）
-    await this.prisma.$executeRawUnsafe(
-      `ALTER TABLE image_gen_tasks ADD COLUMN evidence JSONB`,
-    ).catch(() => undefined);
-    await this.prisma.$executeRawUnsafe(
-      `ALTER TABLE image_gen_tasks ADD COLUMN preview JSONB`,
-    ).catch(() => undefined);
+    await this.prisma
+      .$executeRawUnsafe(
+        `ALTER TABLE image_gen_tasks ADD COLUMN evidence JSONB`,
+      )
+      .catch(() => undefined);
+    await this.prisma
+      .$executeRawUnsafe(`ALTER TABLE image_gen_tasks ADD COLUMN preview JSONB`)
+      .catch(() => undefined);
   }
 
   private async createTask(
@@ -746,7 +756,10 @@ export class OutlineService {
   }
 
   /** Prisma raw query 对 SQLite Json 列返回「已解析对象」，$executeRaw 写入/直接读库时是字符串 → 兼容两种输入 */
-  private safeJson<T>(value: string | object | null | undefined, fallback: T): T {
+  private safeJson<T>(
+    value: string | object | null | undefined,
+    fallback: T,
+  ): T {
     if (value === null || value === undefined) return fallback;
     if (typeof value === 'object') return value as T;
     try {

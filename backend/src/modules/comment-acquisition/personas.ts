@@ -221,9 +221,7 @@ export const REPLY_PERSONAS: ReplyPersona[] = [
   },
 ];
 
-export function pickReplyPersona(
-  excludeIds: string[] = [],
-): ReplyPersona {
+export function pickReplyPersona(excludeIds: string[] = []): ReplyPersona {
   const pool = REPLY_PERSONAS.filter((p) => !excludeIds.includes(p.id));
   const safe = pool.length > 0 ? pool : REPLY_PERSONAS;
   const total = safe.reduce((sum, p) => sum + p.weight, 0);

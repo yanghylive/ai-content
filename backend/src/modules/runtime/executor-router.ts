@@ -166,20 +166,19 @@ export class ExecutorRouter {
       }),
     );
 
-    const localRuntime = this.executors.find(
-      (e) => e.id === 'local-runtime',
-    ) as
-      | ((typeof this.executors)[number] & {
-          getPlatformHealths?: () => Promise<
-            Array<{ id: string; ok: boolean; details?: string }>
-          >;
-        })
-      | undefined;
+    const localRuntime = this.executors.find((e) => e.id === 'local-runtime');
 
     let subHealths: Array<{ id: string; ok: boolean; details?: string }> = [];
-    if (localRuntime && typeof localRuntime.getPlatformHealths === 'function') {
+    const localRuntimeHealths = (
+      localRuntime as unknown as {
+        getPlatformHealths?: () => Promise<
+          Array<{ id: string; ok: boolean; details?: string }>
+        >;
+      }
+    ).getPlatformHealths;
+    if (localRuntime && typeof localRuntimeHealths === 'function') {
       try {
-        subHealths = await localRuntime.getPlatformHealths();
+        subHealths = await localRuntimeHealths();
       } catch (error) {
         this.logger.warn(
           `getPlatformHealths failed: ${error instanceof Error ? error.message : String(error)}`,

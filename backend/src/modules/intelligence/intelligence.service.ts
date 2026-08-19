@@ -264,7 +264,7 @@ export class IntelligenceService {
     if (!skillInstallId && !dtoConfig.endpoint) {
       const endpoint = this.defaultEndpointForPlatform(dto.platform);
       if (endpoint) {
-        dto.config = { ...dtoConfig, endpoint } as never;
+        dto.config = { ...dtoConfig, endpoint };
       }
     }
 
@@ -2350,6 +2350,6 @@ export class IntelligenceService {
     if (value === undefined || value === null) {
       return fallback === null ? Prisma.JsonNull : fallback;
     }
-    return value as Prisma.InputJsonValue;
+    return value;
   }
 }

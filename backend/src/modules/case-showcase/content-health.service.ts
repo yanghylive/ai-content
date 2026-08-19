@@ -92,10 +92,7 @@ export function daysUntil(
 
 /** 授权到期窗口判定：0~7 天 → 7d；8~30 天 → 30d；其余（已过期/超 30 天）→ null */
 export function expiryWindowOf(daysRemaining: number): ExpiryWindow | null {
-  if (
-    daysRemaining < 0 ||
-    daysRemaining > AUTHORIZATION_EXPIRY_WINDOW_DAYS
-  ) {
+  if (daysRemaining < 0 || daysRemaining > AUTHORIZATION_EXPIRY_WINDOW_DAYS) {
     return null;
   }
   return daysRemaining <= AUTHORIZATION_EXPIRY_URGENT_DAYS ? '7d' : '30d';
@@ -135,9 +132,7 @@ export class ContentHealthService {
         reviewsDue,
       };
     } catch (error) {
-      this.logger.error(
-        `内容健康检查任务失败：${this.errorMessage(error)}`,
-      );
+      this.logger.error(`内容健康检查任务失败：${this.errorMessage(error)}`);
       return {
         generatedAt: new Date().toISOString(),
         authorizationsExpiring: [],
@@ -183,9 +178,7 @@ export class ContentHealthService {
           window,
         };
       })
-      .filter(
-        (item): item is AuthorizationExpiryItem => item.window !== null,
-      );
+      .filter((item): item is AuthorizationExpiryItem => item.window !== null);
   }
 
   /** 内容复核提醒：status=published 且 nextReviewAt 已过/7 天内到期 */

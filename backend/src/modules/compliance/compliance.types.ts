@@ -1,10 +1,5 @@
 export type CompliancePlatform =
-  | 'all'
-  | 'xiaohongshu'
-  | 'douyin'
-  | 'wechat'
-  | 'bilibili'
-  | 'tiktok';
+  'all' | 'xiaohongshu' | 'douyin' | 'wechat' | 'bilibili' | 'tiktok';
 
 export type ComplianceTargetType =
   | 'article'

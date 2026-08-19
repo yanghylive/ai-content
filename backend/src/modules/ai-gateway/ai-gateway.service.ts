@@ -355,7 +355,10 @@ const TOOLS = [
       parameters: {
         type: 'object' as const,
         properties: {
-          industry: { type: 'string', description: '行业名（如：美业、餐饮、教育，需来自方案库）' },
+          industry: {
+            type: 'string',
+            description: '行业名（如：美业、餐饮、教育，需来自方案库）',
+          },
           scenario: {
             type: 'string',
             description: '场景 key（content-to-growth 或 local-conversion）',
@@ -408,7 +411,11 @@ const TOOLS = [
       parameters: {
         type: 'object' as const,
         properties: {
-          platform: { type: 'string', description: '可选：平台筛选（douyin/wechat-channel/xiaohongshu 等）' },
+          platform: {
+            type: 'string',
+            description:
+              '可选：平台筛选（douyin/wechat-channel/xiaohongshu 等）',
+          },
         },
       },
     },
@@ -422,7 +429,10 @@ const TOOLS = [
       parameters: {
         type: 'object' as const,
         properties: {
-          status: { type: 'string', description: '可选：状态筛选（all/new/contacted/following 等）' },
+          status: {
+            type: 'string',
+            description: '可选：状态筛选（all/new/contacted/following 等）',
+          },
           limit: { type: 'number', description: '可选：返回条数（默认 10）' },
         },
       },
@@ -565,7 +575,11 @@ export class AiGatewayService {
       if (authUser?.id && lastUserMsg?.content) {
         const intent = this.matchIntentTool(lastUserMsg.content);
         if (intent) {
-          send({ type: 'tool_exec', name: intent.name, summary: `正在执行「${intent.name}」…` });
+          send({
+            type: 'tool_exec',
+            name: intent.name,
+            summary: `正在执行「${intent.name}」…`,
+          });
           const result = await this.executeTool(
             intent.name,
             intent.args,
@@ -592,8 +606,8 @@ export class AiGatewayService {
       for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
         const stream = await client.chat.completions.create({
           model: model.modelId,
-          messages: history as never,
-          tools: TOOLS as never,
+          messages: history,
+          tools: TOOLS,
           tool_choice: 'auto' as const,
           stream: true,
         });
@@ -614,7 +628,7 @@ export class AiGatewayService {
           if (delta?.content) {
             const piece = delta.content;
             // 标签探测：遇到 <f / <t / <i / </ 开头或裸 "<"（流式分片）时缓冲，确认是协议标签再进入协议模式
-            if (tagProbe !== '' || /<[fit\/]?$/.test(piece)) {
+            if (tagProbe !== '' || /<[fit/]?$/.test(piece)) {
               tagProbe += piece;
               const probeEnd = tagProbe.search(/>|\s/);
               if (probeEnd >= 0) {
@@ -628,9 +642,7 @@ export class AiGatewayService {
                   textProtoActive = true;
                   textProtoBuffer = tagProbe;
                 } else if (
-                  /^<\/(function_calls|tool_calls|tool_call|invoke)$/.test(
-                    head,
-                  )
+                  /^<\/(function_calls|tool_calls|tool_call|invoke)$/.test(head)
                 ) {
                   // 协议闭合标签：吞掉，不发给用户
                   tagProbe = '';
@@ -723,7 +735,9 @@ export class AiGatewayService {
 
       // B4 记忆捕获：异步写轮次 + 抽取原子记忆（不阻塞回包）
       if (authUser?.id) {
-        this.logger.log(`ai-gateway 触发记忆捕获 userId=${authUser.id} msgs=${messages.length}`);
+        this.logger.log(
+          `ai-gateway 触发记忆捕获 userId=${authUser.id} msgs=${messages.length}`,
+        );
         void this.memory.capture(authUser.id, messages);
       }
       // B6 审计：记录会话（ok）
@@ -760,9 +774,10 @@ export class AiGatewayService {
         });
       }
       // 授权过期/需重登类错误：ai-client 文案已是用户视角引导，直接透出，不再加「对话失败」前缀
-      const isAuthGuidance = /重新登录|重新授权|授权已失效|需要当前登录用户授权|账号与设备/i.test(
-        message,
-      );
+      const isAuthGuidance =
+        /重新登录|重新授权|授权已失效|需要当前登录用户授权|账号与设备/i.test(
+          message,
+        );
       send({
         type: 'error',
         message: isAuthGuidance
@@ -805,7 +820,7 @@ export class AiGatewayService {
       result = await this.runTool(name, args, authUser, rebateReceiptId);
       if (result && typeof result === 'object' && 'error' in result) {
         resultOk = false;
-        errorMsg = String((result as { error: unknown }).error).slice(0, 200);
+        errorMsg = String(result.error).slice(0, 200);
       }
     } catch (error) {
       resultOk = false;
@@ -835,7 +850,10 @@ export class AiGatewayService {
     switch (name) {
       case 'workflow_create':
         return r.workflowId
-          ? { label: '查看工作流', href: `/growth/workflows?id=${r.workflowId}` }
+          ? {
+              label: '查看工作流',
+              href: `/growth/workflows?id=${safeText(r.workflowId)}`,
+            }
           : { label: '查看工作流', href: '/growth/workflows' };
       case 'workflow_list':
         return { label: '查看工作流', href: '/growth/workflows' };
@@ -1252,7 +1270,9 @@ export class AiGatewayService {
             workflowId: updated.id,
             status: updated.status,
             lastAction: updated.lastAction,
-            currentStep: updated.steps.find((s) => s.status !== 'pending' && s.status !== 'completed')?.name,
+            currentStep: updated.steps.find(
+              (s) => s.status !== 'pending' && s.status !== 'completed',
+            )?.name,
             progress: `${updated.steps.filter((s) => s.status === 'completed').length}/${updated.steps.length}`,
           };
         } catch (e) {
@@ -1443,7 +1463,9 @@ export class AiGatewayService {
       return { name: 'workflow_list', args: {} };
     }
     // 工作流操作：启动/暂停/确认 + 工作流
-    if (/(启动|暂停|继续|确认).*(工作流|流水线)|工作流.*(启动|暂停|继续)/.test(u)) {
+    if (
+      /(启动|暂停|继续|确认).*(工作流|流水线)|工作流.*(启动|暂停|继续)/.test(u)
+    ) {
       const idMatch = u.match(/(workflow-[a-zA-Z0-9_-]+|[a-zA-Z0-9]{20,})/);
       // 没有明确 ID 时降级为列出工作流，让用户选定目标
       if (!idMatch) {
@@ -1453,7 +1475,11 @@ export class AiGatewayService {
         name: 'workflow_action',
         args: {
           workflowId: idMatch[1],
-          action: /暂停/.test(u) ? 'pause' : /继续|确认/.test(u) ? 'confirm-step' : 'start',
+          action: /暂停/.test(u)
+            ? 'pause'
+            : /继续|确认/.test(u)
+              ? 'confirm-step'
+              : 'start',
         },
       };
     }
@@ -1479,7 +1505,10 @@ export class AiGatewayService {
         .replace(/帮我|请|检查|文案|文本|违禁词|合规|一下|有没有|是否|含/g, '')
         .trim()
         .slice(0, 200);
-      return { name: 'compliance_check', args: { text: text || u.slice(0, 200) } };
+      return {
+        name: 'compliance_check',
+        args: { text: text || u.slice(0, 200) },
+      };
     }
     return null;
   }

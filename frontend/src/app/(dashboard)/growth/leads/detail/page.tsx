@@ -183,11 +183,18 @@ function LeadDetailClient() {
           </div>
           <div className="text-right">
             <div className="text-3xl font-black text-[var(--kaypal-v3-accent)]">
-              {scoreHistory?.available ? scoreHistory.totalScore ?? lead.score : lead.score}
+              {scoreHistory?.available && scoreHistory.totalScore != null
+                ? scoreHistory.totalScore
+                : lead.score}
             </div>
-            <div className="text-xs text-[var(--kaypal-v3-muted)]">
-              {scoreHistory?.available ? "统一评分" : "旧版评分"}
+            <div className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+              {scoreHistory?.available ? "质量分（四维）" : "印象分"}
             </div>
+            {scoreHistory?.available && (
+              <div className="mt-1 text-sm font-semibold text-[var(--kaypal-v3-muted)]">
+                印象分 {scoreHistory.roughScore ?? lead.score}
+              </div>
+            )}
           </div>
         </div>
         <p className="mt-3 rounded-lg bg-[var(--kaypal-v3-surface-2)] p-3 text-sm leading-relaxed text-[var(--kaypal-v3-ink)]">
@@ -237,7 +244,7 @@ function LeadDetailClient() {
         </button>
         {lead.crmCustomerId && (
           <Link
-            href={`/crm/customers/${lead.crmCustomerId}`}
+            href={`/crm/customer?id=${lead.crmCustomerId}`}
             className="kaypal-v3-panel px-4 py-2 text-sm font-medium text-[var(--kaypal-v3-accent)] transition hover:border-[var(--kaypal-v3-accent)]"
           >
             客户详情 →

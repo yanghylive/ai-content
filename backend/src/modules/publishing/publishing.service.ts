@@ -5,11 +5,13 @@ import {
   BadRequestException,
   ForbiddenException,
   UnauthorizedException,
+  Optional,
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { localEnginePublishAccountId } from './local-engine-account-id';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AttributionEventStore } from '../attribution/attribution-event.store';
 import {
   WechatPublisherService,
   type WechatPublishResult,
@@ -103,6 +105,7 @@ export class PublishingService {
     private readonly riskPolicyService: RiskPolicyService,
     private readonly credentialEnvelope: CredentialEnvelopeService,
     private readonly jpagePreviewClient: JpagePreviewClientService,
+    @Optional() private readonly attributionEventStore?: AttributionEventStore,
   ) {}
 
   // ================= 账号管理接口 =================
@@ -813,8 +816,7 @@ export class PublishingService {
         if (existing) {
           return {
             success: existing.status === 'success',
-            status:
-              existing.status === 'success' ? 'completed' : 'waiting',
+            status: existing.status === 'success' ? 'completed' : 'waiting',
             articleId: article.id,
             publishRecordId: existing.id,
             durableRecordId,
@@ -882,7 +884,7 @@ export class PublishingService {
         );
       }
 
-      const res = result!;
+      const res = result;
       const readbackMatched = res.readback?.matched === true;
       // 记录级回读状态（六步闭环 PublishReceipt 提列）：
       // 回读匹配=verified；平台返回外部 ID/URL 但未回读=uncertain（需人工确认，勿重复发布）
@@ -927,6 +929,23 @@ export class PublishingService {
             data: { status: 'published' },
           }),
         ]);
+        // 六步闭环 P1-9：发布成功 → 归因链落库（内容→发布），失败不阻断、错误不静默
+        if (this.attributionEventStore && attribution?.contentVersionId) {
+          try {
+            await this.attributionEventStore.savePublishChain({
+              tenantId: scope.tenantId,
+              userId: scope.userId,
+              contentVersionId: attribution.contentVersionId,
+              publishRecordId: record.id,
+              channelId: account.platform,
+              platformExternalPostId: res.articleId ?? null,
+            });
+          } catch (error) {
+            this.logger.warn(
+              `发布归因链落库失败 [articleId: ${article.id}, publishRecordId: ${record.id}]: ${error instanceof Error ? error.message : String(error)}`,
+            );
+          }
+        }
       } else {
         await recordUpdate;
       }
@@ -943,7 +962,9 @@ export class PublishingService {
       const message = error instanceof Error ? error.message : String(error);
       // S0-11：外部已返回 publishUrl/articleId 说明可能已发布成功，
       // 本地异常时标 uncertain（结果不确定，需回查），不得误标 failed（防重复发布）。
-      const externalSucceeded = Boolean(result?.publishUrl || result?.articleId);
+      const externalSucceeded = Boolean(
+        result?.publishUrl || result?.articleId,
+      );
       this.logger.error(
         `发布${externalSucceeded ? '结果不确定' : '失败'} [articleId: ${articleId}, accountId: ${accountId}]: ${message}`,
       );
@@ -1376,6 +1397,23 @@ export class PublishingService {
             data: { status: 'published' },
           }),
         ]);
+        // 六步闭环 P1-9：公众号正式发布成功 → 归因链（内容→发布），失败不阻断、错误不静默
+        if (this.attributionEventStore) {
+          try {
+            await this.attributionEventStore.savePublishChain({
+              tenantId: scope.tenantId,
+              userId: scope.userId,
+              contentVersionId: article.id,
+              publishRecordId: record.id,
+              channelId: 'wechat',
+              platformExternalPostId: status.articleId ?? null,
+            });
+          } catch (error) {
+            this.logger.warn(
+              `公众号发布归因链落库失败 [articleId: ${article.id}, publishRecordId: ${record.id}]: ${error instanceof Error ? error.message : String(error)}`,
+            );
+          }
+        }
       } else {
         await recordUpdate;
       }
@@ -1478,7 +1516,7 @@ export class PublishingService {
       return {
         ...record,
         account: record.account
-          ? this.toPublicAccount(record.account as Record<string, unknown>)
+          ? this.toPublicAccount(record.account)
           : record.account,
         errorMessage: metadata
           ? metadata.failureReason || null
@@ -1543,9 +1581,6 @@ export class PublishingService {
           account.config,
           'publishAccount.config',
         ),
-      } as Omit<T, 'apiToken' | 'config'> & {
-        apiToken: unknown;
-        config: unknown;
       };
     } catch (error) {
       if (
@@ -1895,9 +1930,7 @@ export class PublishingService {
       resultJson.mediaId || record.publishUrl,
       '草稿 media_id',
     );
-    const payload = this.readWechatDraftPayload(
-      record as Record<string, unknown>,
-    );
+    const payload = this.readWechatDraftPayload(record);
     return {
       id: record.id,
       articleId: record.articleId,

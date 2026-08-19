@@ -1,0 +1,14 @@
+{
+  "stats": {
+    "delete": 7,
+    "publish": 5,
+    "payment": 0,
+    "account": 0,
+    "other": 0,
+    "clicked": 12,
+    "dialogCancelled": 0,
+    "navigated": 4,
+    "errors": 0
+  },
+  "errorRoutes": []
+}

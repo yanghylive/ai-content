@@ -179,7 +179,7 @@ export default function MineScene() {
           tint: "kx-t-violet",
           title: "Agent 对话",
           desc: "Agent 会话工作台（对话规划助手）",
-          href: "/agent-conversation",
+          href: "/agent-workbench",
           group: "系统与服务",
         },
         {
@@ -277,7 +277,7 @@ const MOBILE_MORE_MENU: Array<{
   {
     group: "更多能力",
     items: [
-      { label: "Agent 对话", desc: "Agent 会话工作台", icon: "bot", tint: "#7c3aed", href: "/agent-conversation" },
+      { label: "Agent 对话", desc: "Agent 会话工作台", icon: "bot", tint: "#7c3aed", href: "/agent-workbench" },
       { label: "记忆设置", desc: "长期记忆、画像与偏好", icon: "layers", tint: "#2563eb", href: "/settings/memory" },
       { label: "任务证据", desc: "执行证据与留痕", icon: "checkCircle", tint: "#059669", href: "/task-evidence" },
       { label: "引擎权限", desc: "本地引擎权限管理", icon: "clipboard", tint: "#64748b", href: "/local-engine/permissions" },

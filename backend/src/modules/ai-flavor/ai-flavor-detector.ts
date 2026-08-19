@@ -147,9 +147,7 @@ function avgSentenceLength(text: string): number {
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
   if (sentences.length === 0) return 0;
-  return (
-    sentences.reduce((a, s) => a + s.length, 0) / sentences.length
-  );
+  return sentences.reduce((a, s) => a + s.length, 0) / sentences.length;
 }
 
 export function detectAIFlavor(text: string): AIFlavorDetection {
@@ -174,8 +172,10 @@ export function detectAIFlavor(text: string): AIFlavorDetection {
   detectParallel(normalized, hits);
 
   // 3. 结构特征
-  const { paragraphCount, paragraphLengthStdDev } =
-    detectStructure(normalized, hits);
+  const { paragraphCount, paragraphLengthStdDev } = detectStructure(
+    normalized,
+    hits,
+  );
 
   // 4. 平均句长过长（> 45 字/句 → 书面 AI 感）
   const avgLen = avgSentenceLength(normalized);
@@ -206,7 +206,9 @@ export function detectAIFlavor(text: string): AIFlavorDetection {
 }
 
 /** 只保留强/中信号词用于检测（供改写后复检） */
-export function extractTopFlavorHits(hits: AIFlavorDetection['hits']): string[] {
+export function extractTopFlavorHits(
+  hits: AIFlavorDetection['hits'],
+): string[] {
   return hits
     .filter((h) => h.weight >= 1.5)
     .map((h) => h.label)

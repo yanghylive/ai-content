@@ -8,6 +8,7 @@ import { AutoUploadModule } from '../auto-upload/auto-upload.module';
 import { AuthModule } from '../auth/auth.module';
 import { CredentialEnvelopeService } from '../../common/credential-envelope.service';
 import { JpagePreviewClientService } from './jpage-preview/jpage-preview-client.service';
+import { AttributionEventStore } from '../attribution/attribution-event.store';
 
 @Module({
   imports: [AutoUploadModule, AuthModule],
@@ -18,6 +19,7 @@ import { JpagePreviewClientService } from './jpage-preview/jpage-preview-client.
     WechatPublisherService,
     JpagePreviewClientService,
     PublishReconcileService,
+    AttributionEventStore,
   ],
   controllers: [PublishingController],
   exports: [PublishingService, PublishReconcileService],

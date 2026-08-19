@@ -59,6 +59,58 @@ http.createServer((req, res) => {
     req.pipe(proxyReq);
     return;
   }
+  /* next/image 优化端点回源：静态导出（output:export）下 <Image> 组件默认
+     请求 /_next/image?url=%2Fbrand%2Fxxx.png&w=640&q=75。静态服务器不提供
+     图片优化服务，直接解析 url 参数回源原始静态文件（忽略 w/q），
+     否则 logo/图片 404 破图（2026-08-19 登录页 logo 丢失根因）。 */
+  if (urlPath === "/_next/image") {
+    let imageUrl = "";
+    try {
+      imageUrl = new URL(req.url || "/", "http://localhost").searchParams.get(
+        "url",
+      ) || "";
+    } catch {
+      res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Bad Request");
+      return;
+    }
+    if (
+      !imageUrl.startsWith("/") ||
+      imageUrl.startsWith("//") ||
+      /^[a-z][a-z\d+.-]*:/i.test(imageUrl)
+    ) {
+      res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Bad Request");
+      return;
+    }
+    const decodedImageUrl = decodeURIComponent(imageUrl);
+    const rootResolved = path.resolve(ROOT);
+    const imageFile = path.resolve(
+      rootResolved,
+      decodedImageUrl.replace(/^[/\\]+/, ""),
+    );
+    if (
+      imageFile !== rootResolved &&
+      !imageFile.startsWith(rootResolved + path.sep)
+    ) {
+      res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Forbidden");
+      return;
+    }
+    if (fs.existsSync(imageFile) && fs.statSync(imageFile).isFile()) {
+      res.writeHead(200, {
+        "Content-Type":
+          MIME[path.extname(imageFile)] || "application/octet-stream",
+        "Cache-Control": "public, max-age=86400",
+      });
+      fs.createReadStream(imageFile).pipe(res);
+    } else {
+      res.writeHead(404);
+      res.end("not found");
+    }
+    return;
+  }
+
   let p;
   try {
     p = decodeURIComponent(urlPath);

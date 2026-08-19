@@ -1,9 +1,5 @@
 export type RedfoxConnectionStatus =
-  | 'missing_key'
-  | 'untested'
-  | 'connected'
-  | 'failed'
-  | 'disabled';
+  'missing_key' | 'untested' | 'connected' | 'failed' | 'disabled';
 
 export type RedfoxConnectionSource = 'saved' | 'env' | 'missing';
 
@@ -175,10 +171,7 @@ export type RedfoxListResult<T> = {
 };
 
 export type RedfoxSkillRunStatus =
-  | 'dry_run_ready'
-  | 'success'
-  | 'blocked'
-  | 'failed';
+  'dry_run_ready' | 'success' | 'blocked' | 'failed';
 
 export type RedfoxSkillRunResult = {
   id: string;

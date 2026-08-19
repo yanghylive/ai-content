@@ -4,6 +4,7 @@
 import type { Page } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { safeText } from '../../common/text.utils';
 
 export interface CapturedIdentity {
   /** 头像元素截图文件名（存于 avatarDir 下），未抓到为 null */
@@ -124,21 +125,16 @@ export async function fetchDisplayNameFromPlatformApi(
         const data = await page.evaluate<
           Record<string, unknown> | null,
           string
-        >(
-          async (url) => {
-            const res = await fetch(url, { credentials: 'include' });
-            if (!res.ok) return null;
-            return (await res.json()) as Record<string, unknown>;
-          },
-          endpoint,
-        );
+        >(async (url) => {
+          const res = await fetch(url, { credentials: 'include' });
+          if (!res.ok) return null;
+          return (await res.json()) as Record<string, unknown>;
+        }, endpoint);
         if (!data || typeof data !== 'object') continue;
         const userProfile = data.user_profile as
-          | Record<string, unknown>
-          | undefined;
+          Record<string, unknown> | undefined;
         const verifyInfo = data.douyin_user_verify_info as
-          | Record<string, unknown>
-          | undefined;
+          Record<string, unknown> | undefined;
         const user = data.user as Record<string, unknown> | undefined;
         const candidates = [
           userProfile?.nick_name,
@@ -146,8 +142,8 @@ export async function fetchDisplayNameFromPlatformApi(
           user?.nickname,
         ];
         for (const candidate of candidates) {
-          if (looksLikeDisplayName(String(candidate ?? ''))) {
-            return String(candidate).replace(/\s+/g, ' ').trim();
+          if (looksLikeDisplayName(safeText(candidate))) {
+            return safeText(candidate).replace(/\s+/g, ' ').trim();
           }
         }
       } catch {
@@ -159,16 +155,19 @@ export async function fetchDisplayNameFromPlatformApi(
     try {
       const data = await page.evaluate<{ data?: { uname?: unknown } } | null>(
         async () => {
-          const res = await fetch('https://api.bilibili.com/x/web-interface/nav', {
-            credentials: 'include',
-          });
+          const res = await fetch(
+            'https://api.bilibili.com/x/web-interface/nav',
+            {
+              credentials: 'include',
+            },
+          );
           if (!res.ok) return null;
           return (await res.json()) as { data?: { uname?: unknown } };
         },
       );
       const candidate = data?.data?.uname;
-      if (looksLikeDisplayName(String(candidate ?? ''))) {
-        return String(candidate).replace(/\s+/g, ' ').trim();
+      if (looksLikeDisplayName(safeText(candidate))) {
+        return safeText(candidate).replace(/\s+/g, ' ').trim();
       }
     } catch {
       // 忽略，落到选择器层
@@ -222,11 +221,14 @@ export async function captureAvatarFromPage(
   const avatarFile = join(avatarDir, safeName);
   try {
     await page.waitForTimeout(1800).catch(() => undefined);
-    const selectors = PLATFORM_IDENTITY_SELECTORS[platformType ?? 0]?.avatar ?? [];
+    const selectors =
+      PLATFORM_IDENTITY_SELECTORS[platformType ?? 0]?.avatar ?? [];
     const locator = await firstVisibleLocator(page, selectors);
     if (locator) {
       try {
-        await locator.scrollIntoViewIfNeeded({ timeout: 1500 }).catch(() => undefined);
+        await locator
+          .scrollIntoViewIfNeeded({ timeout: 1500 })
+          .catch(() => undefined);
         await locator.screenshot({ path: avatarFile });
         return safeName;
       } catch {
@@ -236,7 +238,9 @@ export async function captureAvatarFromPage(
     const found = await page.evaluate<boolean>(AVATAR_SCORING_SCRIPT);
     if (!found) return null;
     const target = page.locator('[data-sau-avatar-candidate="1"]').first();
-    await target.scrollIntoViewIfNeeded({ timeout: 1500 }).catch(() => undefined);
+    await target
+      .scrollIntoViewIfNeeded({ timeout: 1500 })
+      .catch(() => undefined);
     await target.screenshot({ path: avatarFile });
     return safeName;
   } catch {
@@ -351,7 +355,8 @@ export async function detectDisplayNameFromPage(
       }
     }
 
-    const selectors = PLATFORM_IDENTITY_SELECTORS[platformType ?? 0]?.name ?? [];
+    const selectors =
+      PLATFORM_IDENTITY_SELECTORS[platformType ?? 0]?.name ?? [];
     for (const selector of selectors) {
       try {
         const locator = page.locator(selector).first();
@@ -364,7 +369,8 @@ export async function detectDisplayNameFromPage(
         let name: string;
         if (platformType === 3 && selector === '#header-avatar') {
           name =
-            (await page.evaluate<string | null>(DOUYIN_HOVER_NAME_SCRIPT)) ?? '';
+            (await page.evaluate<string | null>(DOUYIN_HOVER_NAME_SCRIPT)) ??
+            '';
         } else {
           name = await locator.innerText({ timeout: 1000 });
         }

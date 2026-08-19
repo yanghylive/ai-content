@@ -1,0 +1,70 @@
+{
+  "totalRoutes": 2,
+  "totalClicked": 36,
+  "totalSkipped": 4,
+  "totalErrors": 13,
+  "routesWithErrors": [
+    {
+      "route": "/growth/leads",
+      "errors": [
+        {
+          "text": "今天\n7",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "全部8",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "新线索2",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "已触达5",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "已回复",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "高意向",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "已成交1",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "已忽略",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "已屏蔽",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "Playwright测试-1787023396828\n\n详情 →",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "集成测试-李四\n\n详情 →",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        },
+        {
+          "text": "未知线索\n\n详情 →",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        }
+      ]
+    },
+    {
+      "route": "/growth/reports",
+      "errors": [
+        {
+          "text": "今天\n7",
+          "error": "locator.click: Timeout 2500ms exceeded."
+        }
+      ]
+    }
+  ]
+}

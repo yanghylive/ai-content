@@ -90,15 +90,14 @@ export class CaseAdminController {
 
   @Post('cases/:id/publish')
   @ApiOperation({ summary: '发布案例（approved → published）' })
-  async publish(
-    @Param('id') id: string,
-    @Req() request: AuthenticatedRequest,
-  ) {
+  async publish(@Param('id') id: string, @Req() request: AuthenticatedRequest) {
     return this.admin.publishCase(id, request.authUser?.id);
   }
 
   @Post('cases/:id/unpublish')
-  @ApiOperation({ summary: '紧急下线案例（published → unpublished，必填原因）' })
+  @ApiOperation({
+    summary: '紧急下线案例（published → unpublished，必填原因）',
+  })
   async unpublish(
     @Param('id') id: string,
     @Body() dto: UnpublishCaseDto,

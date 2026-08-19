@@ -20,7 +20,8 @@ export const APP_CATALOG: AppCatalogEntry[] = [
     description: '承接自动获客线索、客户档案、跟进时间线和来源证据。',
     priceLabel: '高级版可购买',
     entitlementFeature: 'crm',
-    installable: true,
+    // CRM 是产品内置核心功能，默认就在、随套餐默认开放，不再作为「安装项」走购买/安装生命周期
+    installable: false,
   },
 ];
 
@@ -37,11 +38,7 @@ export type MarketAppAccessState =
   | 'uninstalled'
   | 'installed';
 export type MarketAppAction =
-  | 'purchase'
-  | 'install'
-  | 'open'
-  | 'uninstall'
-  | 'contact_sales';
+  'purchase' | 'install' | 'open' | 'uninstall' | 'contact_sales';
 
 export interface MarketAppAccessPolicy {
   state: MarketAppAccessState;

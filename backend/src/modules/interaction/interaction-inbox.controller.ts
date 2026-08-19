@@ -32,14 +32,19 @@ export class InteractionInboxController {
   }
 
   @Get('views')
-  @ApiOperation({ summary: '左栏视图计数（all/unassigned/pending/replied/needs_human/overdue）' })
+  @ApiOperation({
+    summary:
+      '左栏视图计数（all/unassigned/pending/replied/needs_human/overdue）',
+  })
   async views() {
     const result = await this.inbox.listInbox({ view: 'all', limit: 1 });
     return result.views;
   }
 
   @Get('detail')
-  @ApiOperation({ summary: '右栏会话详情（历史 + 任务状态 + 线索/CRM + 草稿）' })
+  @ApiOperation({
+    summary: '右栏会话详情（历史 + 任务状态 + 线索/CRM + 草稿）',
+  })
   detail(@Query('threadKey') threadKey: string) {
     return this.inbox.getThreadDetail(threadKey);
   }

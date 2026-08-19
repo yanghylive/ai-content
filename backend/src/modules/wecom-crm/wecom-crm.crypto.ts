@@ -35,7 +35,10 @@ function deriveKeyIv(encodingAesKey: string): { key: Buffer; iv: Buffer } {
 function aesDecrypt(encrypted: Buffer, key: Buffer, iv: Buffer): Buffer {
   const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   decipher.setAutoPadding(false);
-  const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+  const decrypted = Buffer.concat([
+    decipher.update(encrypted),
+    decipher.final(),
+  ]);
   // PKCS7 unpad
   const padLen = decrypted[decrypted.length - 1];
   if (padLen < 1 || padLen > 32) throw new Error('PKCS7 填充无效');
@@ -49,7 +52,7 @@ function aesDecrypt(encrypted: Buffer, key: Buffer, iv: Buffer): Buffer {
 export function decryptWecomMsg(
   encryptedBase64: string,
   encodingAesKey: string,
-  receiveId: string,
+  _receiveId: string,
 ): { message: string; receiveId: string } {
   const { key, iv } = deriveKeyIv(encodingAesKey);
   const decrypted = aesDecrypt(Buffer.from(encryptedBase64, 'base64'), key, iv);

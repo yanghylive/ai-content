@@ -246,7 +246,8 @@ export class AuthController {
     const callbackUrl = `${safeOrigin}/api/auth/wechat/callback?next=${encodeURIComponent(
       normalizeWechatNext(next),
     )}${origin ? `&origin=${encodeURIComponent(origin)}` : ''}`;
-    const result = await this.authService.getWechatLoginWithCookies(callbackUrl);
+    const result =
+      await this.authService.getWechatLoginWithCookies(callbackUrl);
     return { url: result.url };
   }
 
@@ -258,8 +259,10 @@ export class AuthController {
     @Query() query: Record<string, string | undefined>,
     @Res({ passthrough: true }) response: Response,
   ) {
-    let handled;
-    const cbOrigin = () => this.getCallbackOrigin(request, query.origin as string);
+    let handled:
+      | { sessionToken: string; expiresAt: Date; user: unknown }
+      | { sessionToken: null; error: string };
+    const cbOrigin = () => this.getCallbackOrigin(request, query.origin);
     try {
       handled = await this.authService.handleWechatCallback(query);
     } catch (error) {
@@ -299,7 +302,7 @@ export class AuthController {
     // 登录成功跳转必须用完整前端 origin URL，不能用相对 /agent：
     // 相对路径基于浏览器当前 URL 解析，回调若发生在后端端口(3011)会跳到
     // 后端的 /agent → 404「Cannot GET /agent」（2026-08-12 根治）。
-    const redirectTo = `${this.getCallbackOrigin(request, query.origin as string)}${normalizeWechatNext(query.next) || ''}`;
+    const redirectTo = `${this.getCallbackOrigin(request, query.origin)}${normalizeWechatNext(query.next) || ''}`;
     response.redirect(302, redirectTo);
     return;
   }

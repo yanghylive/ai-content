@@ -604,9 +604,7 @@ export class RuntimeOrchestrator {
 
   private async postRuntimeBillingJsonWithFallback(
     path:
-      | '/api/billing/reserve'
-      | '/api/billing/capture'
-      | '/api/billing/release',
+      '/api/billing/reserve' | '/api/billing/capture' | '/api/billing/release',
     identity: RuntimeBillingAuthIdentity,
     body: Record<string, unknown>,
   ): Promise<RuntimeBillingResponse> {
@@ -632,9 +630,7 @@ export class RuntimeOrchestrator {
 
   private async postRuntimeBillingJson(
     path:
-      | '/api/billing/reserve'
-      | '/api/billing/capture'
-      | '/api/billing/release',
+      '/api/billing/reserve' | '/api/billing/capture' | '/api/billing/release',
     identity: RuntimeBillingAuthIdentity,
     body: Record<string, unknown>,
   ): Promise<RuntimeBillingResponse> {

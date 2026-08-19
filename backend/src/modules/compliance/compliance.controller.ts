@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query, Req, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ComplianceService } from './compliance.service';
 import { PlatformComplianceAuditService } from './platform-compliance-audit.service';
@@ -28,7 +36,8 @@ export class ComplianceController {
   @Get('platform-audit')
   @ApiOperation({ summary: '平台合规审计（授权/退订/删除/同意/隐私/条款）' })
   runPlatformAudit(@Req() request: Request) {
-    const user = (request as unknown as { authUser?: { id?: string } }).authUser;
+    const user = (request as unknown as { authUser?: { id?: string } })
+      .authUser;
     const userId = user?.id?.trim() || '';
     if (!userId) throw new UnauthorizedException('请先登录');
     return this.platformAudit.auditAndPersist(userId);

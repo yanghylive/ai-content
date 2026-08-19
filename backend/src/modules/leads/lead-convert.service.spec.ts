@@ -110,6 +110,28 @@ describe('LeadConvertService', () => {
         data: expect.objectContaining({ status: 'converted' }),
       }),
     );
+    // 未传 task → 默认建「跟进新客户」待办，让商户在 CRM 待办里看到新客户
+    expect(tx.crmTask.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          title: '跟进新客户：张三',
+          customerId: 'cust-1',
+        }),
+      }),
+    );
+  });
+
+  it('task 传 null → 不建默认待办', async () => {
+    const { prisma, tx } = makePrisma();
+    const svc = makeService(prisma);
+
+    await svc.convert({
+      leadId: 'lead-1',
+      scope: { userId: 'u-1', tenantId: 'tenant-1' },
+      task: null,
+    });
+
+    expect(tx.crmTask.create).not.toHaveBeenCalled();
   });
 
   it('已转客户（customerId 存在）→ 幂等返回，不重复建客户', async () => {

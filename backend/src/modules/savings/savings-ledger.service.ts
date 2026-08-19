@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RebateLedger, RebateAccount } from '@prisma/client';
 
@@ -87,8 +87,11 @@ export class SavingsLedgerService {
               ? Number(updated.frozen)
               : Number(updated.available);
         if (realAfter < 0) {
-          throw new Error(
-            `返利余额不足：${input.target} 余额 ${realAfter + input.changeAmount}，变动 ${input.changeAmount}`,
+          // 余额不足是业务错误，抛 400 而非 500（修复：原来抛 Error 被全局过滤器映射成"服务器内部错误"）
+          // 原余额 = realAfter - changeAmount（changeAmount 为负数时即回加）
+          const before = realAfter - input.changeAmount;
+          throw new BadRequestException(
+            `返利余额不足：${input.target} 余额 ${before}，变动 ${input.changeAmount}`,
           );
         }
         const before = realAfter - input.changeAmount;

@@ -23,7 +23,6 @@ const OPPORTUNITY_STAGES = [
   'lost',
   'nurture',
 ] as const;
-type OpportunityStage = (typeof OPPORTUNITY_STAGES)[number];
 
 interface CollectionQuery {
   q?: string;
@@ -596,11 +595,12 @@ export class CrmService {
       throw new BadRequestException('不能把客户合并到自身');
     }
     const tenantId = await this.resolveCrmTenantId(userId);
-    const target = await this.getCustomer(userId, targetId);
+    // 校验 target 存在（不存在抛 NotFound），合并结果不直接使用 target 对象
+    await this.getCustomer(userId, targetId);
     const source = await this.getCustomer(userId, sourceId);
     const now = new Date();
 
-    let migrated = { tasks: 0, notes: 0, timeline: 0, opportunities: 0 };
+    const migrated = { tasks: 0, notes: 0, timeline: 0, opportunities: 0 };
     await this.runCrmWriteTransaction(async (tx) => {
       migrated.tasks = (
         await tx.crmTask.updateMany({
@@ -635,7 +635,7 @@ export class CrmService {
           metadata: {
             mergedInto: targetId,
             mergedAt: now.toISOString(),
-          } as Prisma.InputJsonObject,
+          },
         },
       });
 
@@ -649,7 +649,7 @@ export class CrmService {
           sourceCustomerId: sourceId,
           targetCustomerId: targetId,
           migrated,
-        } as Prisma.InputJsonObject,
+        },
       });
     });
 
@@ -957,7 +957,11 @@ export class CrmService {
    */
   private validateOpportunityStageForWrite(
     stage: string,
-    input: { amountCents?: number | null; closeDate?: Date | string | null; loseReason?: string | null },
+    input: {
+      amountCents?: number | null;
+      closeDate?: Date | string | null;
+      loseReason?: string | null;
+    },
   ): void {
     this.validateOpportunityStage(stage);
     if (stage === 'won') {
@@ -966,11 +970,15 @@ export class CrmService {
         throw new BadRequestException('商机阶段为 won 时，成交金额必须 > 0');
       }
       if (!input.closeDate) {
-        throw new BadRequestException('商机阶段为 won 时，必须填写成交日期 closeDate');
+        throw new BadRequestException(
+          '商机阶段为 won 时，必须填写成交日期 closeDate',
+        );
       }
     }
     if (stage === 'lost' && !input.loseReason?.trim()) {
-      throw new BadRequestException('商机阶段为 lost 时，必须填写失单原因 loseReason');
+      throw new BadRequestException(
+        '商机阶段为 lost 时，必须填写失单原因 loseReason',
+      );
     }
   }
 
@@ -978,7 +986,7 @@ export class CrmService {
     await this.requireCrmMutationScope(userId);
     const tenantId = await this.resolveCrmTenantId(userId);
     const name = this.requiredString(input.name, '商机名称不能为空');
-    const stage = (this.optionalString(input.stage) || 'qualified') as string;
+    const stage = this.optionalString(input.stage) || 'qualified';
     // Sprint 4 T4.2：won/lost 必填校验（金额/日期/原因）
     this.validateOpportunityStageForWrite(stage, {
       amountCents: this.optionalInt(input.amountCents),
@@ -1107,18 +1115,22 @@ export class CrmService {
     }
 
     // Sprint 4 T4.2：stage 变化 → won/lost 必填校验（用更新后的完整值）
-    const nextStage = (data as Record<string, unknown>).stage as string | undefined;
+    const nextStage = (data as Record<string, unknown>).stage as
+      string | undefined;
     if (nextStage && nextStage !== current.stage) {
       this.validateOpportunityStageForWrite(nextStage, {
-        amountCents: ('amountCents' in input)
-          ? (this.optionalInt(input.amountCents) ?? undefined)
-          : current.amountCents,
-        closeDate: ('closeDate' in input)
-          ? this.optionalDate(input.closeDate)
-          : current.closeDate,
-        loseReason: ('loseReason' in input)
-          ? this.optionalString(input.loseReason)
-          : current.loseReason,
+        amountCents:
+          'amountCents' in input
+            ? (this.optionalInt(input.amountCents) ?? undefined)
+            : current.amountCents,
+        closeDate:
+          'closeDate' in input
+            ? this.optionalDate(input.closeDate)
+            : current.closeDate,
+        loseReason:
+          'loseReason' in input
+            ? this.optionalString(input.loseReason)
+            : current.loseReason,
       });
     }
 
@@ -1719,6 +1731,26 @@ export class CrmService {
       },
     });
     return this.toWelcomeMessagePreparationDto(prepared, customer);
+  }
+
+  /**
+   * Outbox 消费者入口：线索转客户后（lead.action.executed / convert_crm），
+   * 追加一条「欢迎语待准备」时间线，供 CRM 页面识别并引导准备欢迎语。
+   */
+  async appendWelcomePendingTimeline(
+    userId: string,
+    customerId: string,
+  ): Promise<void> {
+    await this.appendTimeline(userId, {
+      customerId,
+      eventType: 'welcome_message_pending',
+      content: '线索已转换，欢迎语待准备',
+      status: 'pending',
+      metadata: {
+        source: 'lead.action.executed',
+        autoTriggered: true,
+      },
+    });
   }
 
   async getWelcomeMessagePreparation(
@@ -2668,7 +2700,7 @@ export class CrmService {
           objectResults: objectResults as unknown as Prisma.InputJsonArray,
           rawPayloadReturned: false,
           rawPayloadPersisted: false,
-        } as Prisma.InputJsonObject,
+        },
         metadata: {
           vaultRecordId: this.optionalString(vaultRecord.id),
           keyFingerprint: this.optionalString(vaultRecord.key_fingerprint),
@@ -2975,8 +3007,8 @@ export class CrmService {
           dryRunProofHash: this.optionalString(input.proofHash),
           commitProofHash: commitHash,
           rollbackToken,
-          mapping: mapping as Prisma.InputJsonObject,
-          qualityIssues: qualityIssues as unknown as Prisma.InputJsonArray,
+          mapping: mapping,
+          qualityIssues: qualityIssues,
           customerIds,
           writeTables,
           externalNetwork: false,
@@ -4639,9 +4671,7 @@ export class CrmService {
     const headers = new Set<string>();
     for (const row of rows.slice(0, 20)) {
       if (row && typeof row === 'object' && !Array.isArray(row)) {
-        Object.keys(row as Record<string, unknown>).forEach((key) =>
-          headers.add(key),
-        );
+        Object.keys(row).forEach((key) => headers.add(key));
       } else if (Array.isArray(row)) {
         row.forEach((_value, index) => headers.add(`column_${index + 1}`));
       }
@@ -5168,7 +5198,7 @@ export class CrmService {
     if (prismaWithTransaction.$transaction) {
       return prismaWithTransaction.$transaction(callback);
     }
-    return callback(this.prisma as unknown as Prisma.TransactionClient);
+    return callback(this.prisma);
   }
 
   private scopedCrmWhereForTenant<T extends object>(
@@ -5398,7 +5428,7 @@ export class CrmService {
     },
   ) {
     return this.appendTimelineWithClient(
-      this.prisma as unknown as Prisma.TransactionClient,
+      this.prisma,
       userId,
       await this.resolveCrmTenantId(userId),
       input,
@@ -5534,7 +5564,10 @@ export class CrmService {
   }
 
   /** 全功能开放（大王决策 2026-08-11）：登录用户默认可用所有功能，不按 role/permissions 拦截 */
-  private canMutateTenantDomain(_membership: CrmMembershipScope, _domain: 'crm') {
+  private canMutateTenantDomain(
+    _membership: CrmMembershipScope,
+    _domain: 'crm',
+  ) {
     return true;
   }
 
@@ -6323,7 +6356,7 @@ export class CrmService {
     const metadata = {
       ...this.toRecord(current),
       ...this.toRecord(input.metadata),
-    } as Prisma.InputJsonObject;
+    };
     const existingAccount = this.toRecord(metadata.sourceAccount);
     const hasAccountInput =
       'sourceAccountId' in input || 'sourceAccountName' in input;
@@ -6421,7 +6454,7 @@ export class CrmService {
 
   private toRecord(value: unknown): Prisma.InputJsonObject {
     return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Prisma.InputJsonObject)
+      ? value
       : {};
   }
 

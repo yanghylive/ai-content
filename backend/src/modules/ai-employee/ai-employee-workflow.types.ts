@@ -7,31 +7,18 @@ import type {
 } from '../runtime/executor.interface';
 
 export type AiEmployeeExposureMode =
-  | 'link'
-  | 'search_account'
-  | 'hot_video'
-  | 'targeted'
-  | 'retention';
+  'link' | 'search_account' | 'hot_video' | 'targeted' | 'retention';
 
 export type AiEmployeeExposureExecutionKind =
-  | 'candidate_read'
-  | 'customer_action';
+  'candidate_read' | 'customer_action';
 
 export type AiEmployeeWorkflowStepActionKind =
-  | 'local_operation'
-  | 'candidate_read'
-  | 'customer_action'
-  | 'platform_action';
+  'local_operation' | 'candidate_read' | 'customer_action' | 'platform_action';
 
 export type AiEmployeeWorkflowStepAvailability = 'available' | 'blocked';
 
 export type AiEmployeeWorkflowStepStatus =
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'blocked'
-  | 'failed'
-  | 'cancelled';
+  'pending' | 'running' | 'completed' | 'blocked' | 'failed' | 'cancelled';
 
 export type AiEmployeeWorkflowRunStatus =
   | 'queued'

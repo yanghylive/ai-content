@@ -1,0 +1,411 @@
+{
+  "name": "console-quality-browser-scan",
+  "scope": "browser-console-errors",
+  "startedAt": "2026-08-18T02:21:07.369Z",
+  "finishedAt": "2026-08-18T02:21:28.107Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "backendApiBase": "http://127.0.0.1:3011/api",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/backend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "routeCount": 10,
+  "discoveredRouteCount": 192,
+  "excludedRouteCount": 182,
+  "passCount": 8,
+  "failCount": 2,
+  "consoleErrorCount": 2,
+  "consoleWarningCount": 0,
+  "requestFailureCount": 0,
+  "systemFooterPassCount": 0,
+  "failures": [
+    {
+      "route": "/crm-closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 260,
+      "error": "",
+      "consoleErrors": [
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+          "location": {
+            "url": "http://127.0.0.1:3010/api/crm/opportunities?limit=200",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": true,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 260,
+      "error": "",
+      "consoleErrors": [
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+          "location": {
+            "url": "http://127.0.0.1:3010/api/crm/opportunities?limit=200",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": true,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    }
+  ],
+  "results": [
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 340,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": false,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/crm-closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 260,
+      "error": "",
+      "consoleErrors": [
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+          "location": {
+            "url": "http://127.0.0.1:3010/api/crm/opportunities?limit=200",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": true,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/crm-connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 750,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": false,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/crm-import",
+      "finalUrl": "http://127.0.0.1:3010/crm/import",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 271,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": true,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/crm/closer",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 260,
+      "error": "",
+      "consoleErrors": [
+        {
+          "level": "error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+          "location": {
+            "url": "http://127.0.0.1:3010/api/crm/opportunities?limit=200",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": true,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/crm/connectors",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 750,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": false,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/crm/import",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 271,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": true,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/customer",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 340,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": false,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/crm",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 340,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": false,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    },
+    {
+      "route": "/approvals",
+      "finalUrl": "http://127.0.0.1:3010/approvals",
+      "title": "JIUZHANG AI",
+      "httpStatus": 200,
+      "authRedirect": false,
+      "textLength": 202,
+      "error": "",
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "requestFailures": [],
+      "pageErrors": [],
+      "systemFooter": {
+        "ok": false,
+        "present": true,
+        "directChild": true,
+        "widthAligned": true,
+        "bottomAlignedWhenShort": true,
+        "noHorizontalOverflow": true,
+        "controlsComplete": false,
+        "brandReadable": false,
+        "shortPage": true,
+        "mainWidth": 1368,
+        "footerWidth": 1368,
+        "horizontalOverflow": 0,
+        "overflowElements": []
+      }
+    }
+  ]
+}
