@@ -1047,8 +1047,13 @@ function ReplyModal({
   onClose: () => void;
   onFlash: (message: string) => void;
 }) {
+  // 初始平台取第一个就绪平台：下拉只渲染 runtimeReady 项，
+  // 若取 capabilities[0]（可能未就绪）会导致显示与实际不一致，
+  // 用户可能对未就绪/错误平台真实发送回复；全部未就绪时保持原行为
   const [platform, setPlatform] = useState(
-    capabilities[0]?.platform ?? "",
+    capabilities.find((cap) => cap.runtimeReady)?.platform ??
+      capabilities[0]?.platform ??
+      "",
   );
   const [accountId, setAccountId] = useState("");
   const [contentUrl, setContentUrl] = useState("");

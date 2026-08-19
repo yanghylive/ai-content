@@ -87,12 +87,28 @@ export interface ApiRequestOptions extends RequestInit {
   timeoutMs?: number;
 }
 
+/**
+ * 底层原始响应（仅内部与特殊场景使用）
+ * 普通调用请走 api.get/post 等，语义化结果由 ApiError 承载；
+ * 需要读取原始响应体（如 WeChat 通讯录同步的诊断信息）时可用 api.raw。
+ */
+export interface RawApiResponse {
+  ok: boolean;
+  status: number;
+  text: string;
+  json: Record<string, unknown> | null;
+}
+
 class ApiClient {
-  // 通用请求方法
-  private async request<T>(
+  /**
+   * 底层请求：统一注入 x-tenant-id、超时控制与错误分类（网络/超时），
+   * 返回原始响应体。request() 与 api.raw 都复用它，保证所有请求
+   * 都走同一封装，避免绕过统一行为（缺租户头、无超时等）。
+   */
+  private async rawRequest(
     path: string,
     options?: ApiRequestOptions,
-  ): Promise<T> {
+  ): Promise<RawApiResponse> {
     const url = `${getApiBase()}${path}`;
     const {
       timeoutMs,
@@ -155,28 +171,48 @@ class ApiClient {
     }
 
     const text = await res.text();
-    let json: ApiResponse<T> | null = null;
+    let json: Record<string, unknown> | null = null;
 
     if (text) {
       try {
-        json = JSON.parse(text) as ApiResponse<T>;
+        json = JSON.parse(text) as Record<string, unknown>;
       } catch {
         json = null;
       }
     }
 
-    if (!res.ok || !json?.success) {
+    return { ok: res.ok, status: res.status, text, json };
+  }
+
+  // 通用请求方法（语义化：非 2xx / success:false 抛 ApiError，成功返回 data）
+  private async request<T>(
+    path: string,
+    options?: ApiRequestOptions,
+  ): Promise<T> {
+    const raw = await this.rawRequest(path, options);
+    const body = raw.json;
+    if (!raw.ok || !body || body.success !== true) {
       throw new ApiError(
-        json?.message || `请求失败: ${res.status}`,
-        res.status,
+        typeof body?.message === "string" && body.message
+          ? body.message
+          : `请求失败: ${raw.status}`,
+        raw.status,
         "HTTP_ERROR",
-        typeof json?.code === "string" ? json.code : null,
-        json?.details ?? null,
-        typeof json?.requestId === "string" ? json.requestId : null,
+        typeof body?.code === "string" ? body.code : null,
+        body?.details ?? null,
+        typeof body?.requestId === "string" ? body.requestId : null,
       );
     }
+    return body.data as T;
+  }
 
-    return json.data;
+  /**
+   * 暴露底层请求：返回原始响应（成功与否由调用方自行判定），
+   * 但仍走统一封装（x-tenant-id 注入 / 超时 / 错误分类）。
+   * 用于需要读取非标准响应结构的场景，避免直接用原生 fetch。
+   */
+  async raw(path: string, options?: ApiRequestOptions): Promise<RawApiResponse> {
+    return this.rawRequest(path, options);
   }
 
   async get<T>(path: string, options?: ApiRequestOptions): Promise<T> {

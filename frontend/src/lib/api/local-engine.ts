@@ -1,4 +1,4 @@
-import { api, type ApiRequestOptions, type ApiResponse } from "./client";
+import { api, type ApiRequestOptions } from "./client";
 
 type LocalEngineRiskAction =
   | "local-file-delete"
@@ -1836,35 +1836,31 @@ export const localEngineApi = {
   syncWechatContacts(input: boolean | WechatContactsSyncInput = false) {
     const payload =
       typeof input === "boolean" ? { force: input } : input;
-    return fetch(api.url("/local-engine/wechat/contacts/sync"), {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload || {}),
-    }).then(async (response) => {
-      const text = await response.text();
-      let json: ApiResponse<WechatContactsResult> | Record<string, unknown> | null = null;
-      if (text) {
-        try {
-          json = JSON.parse(text) as ApiResponse<WechatContactsResult>;
-        } catch {
-          json = null;
+    // 走统一 api client（x-tenant-id 注入 / 超时 / 错误分类），
+    // 但保留原始响应读取——同步接口的失败信息可能落在非标准结构里，
+    // 需自行解析诊断数据，故用 api.raw 而非 api.post。
+    return api
+      .raw("/local-engine/wechat/contacts/sync", {
+        method: "POST",
+        // 通讯录同步可能涉及本地引擎长流程，给足超时
+        timeoutMs: 120_000,
+        body: payload ? JSON.stringify(payload) : undefined,
+      })
+      .then(({ ok, status, text, json }) => {
+        if (!ok || !json || json.success !== true) {
+          const diagnostics = extractWechatContactsSyncDiagnostics(json);
+          const message =
+            extractWechatContactsSyncMessage(json) ||
+            (text && !text.trim().startsWith("{") ? text.trim() : "") ||
+            `请求失败: ${status}`;
+          throw new WechatContactsSyncError(message, {
+            diagnostics,
+            status,
+            response: json || text,
+          });
         }
-      }
-      if (!response.ok || !(json && "success" in json && json.success === true)) {
-        const diagnostics = extractWechatContactsSyncDiagnostics(json);
-        const message =
-          extractWechatContactsSyncMessage(json) ||
-          (text && !text.trim().startsWith("{") ? text.trim() : "") ||
-          `请求失败: ${response.status}`;
-        throw new WechatContactsSyncError(message, {
-          diagnostics,
-          status: response.status,
-          response: json || text,
-        });
-      }
-      return (json as ApiResponse<WechatContactsResult>).data;
-    });
+        return json.data as WechatContactsResult;
+      });
   },
   wechatChatSessions() {
     return api.get<WechatChatSessionsResult>(

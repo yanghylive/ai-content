@@ -94,6 +94,13 @@ export default function VideoWorkshopV2Page() {
 
   useEffect(() => {
     void checkEngine();
+    // 卸载时清理轮询定时器，避免组件销毁后仍持续轮询
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    };
   }, []);
 
   const startPolling = (pid: string) => {
@@ -103,11 +110,17 @@ export default function VideoWorkshopV2Page() {
         const data = await api.get<ProjectStatus>(`/video-workshop/jobs/${pid}`);
         setProject(data);
         if (data.stages?.every((s) => s.status === "done")) {
+          // 全部阶段完成：停止轮询并拉取成片
           if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
           const dv = await api
             .get<unknown[]>(`/video-workshop/projects/${pid}/deliverables`)
             .catch(() => null);
           setDeliverables(dv);
+        } else if (data.status === "failed" || data.status === "cancelled") {
+          // 任务失败/取消：终态，停止轮询避免 8s 空转
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
         }
       } catch {
         /* 轮询失败静默 */
