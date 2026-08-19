@@ -202,7 +202,7 @@ export function RpaWorkbenchPage() {
       {/* 能力总览 */}
       <V2Section
         title="六平台 RPA 能力"
-        description="浏览器会话就绪的平台可执行发现/读评论；回复评论与私信触达保持显式 unsupported（真实触达高风险）"
+        description="浏览器会话就绪的平台可执行发现/读评论；回复评论仅支持逐条人工确认，私信触达尚未接入"
       >
         {loading ? (
           <div className="py-8 text-center text-sm text-[var(--kaypal-v3-muted)]">

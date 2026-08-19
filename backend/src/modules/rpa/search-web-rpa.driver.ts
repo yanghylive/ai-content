@@ -16,7 +16,7 @@ type SearchPlatform = 'douyin' | 'xiaohongshu' | 'kuaishou';
  * 网页搜索类 RPA 驱动（抖音/快手/小红书，§7.3）。
  *
  * 包装 DiscoveryBrowserRunner（用户已登录浏览器会话）实现 keyword/account-works
- * 发现；读评论与触达动作当前不支持 → capabilities() 显式 unsupported，不伪装。
+ * 发现和读评论；回复评论仅允许工作台逐条人工确认，私信触达保持 unsupported。
  */
 export class SearchWebRpaDriver extends BaseRpaDriver {
   readonly platform: string;
