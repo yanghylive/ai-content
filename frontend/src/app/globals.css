@@ -12,6 +12,7 @@
     --bg-gradient-to: rgba(255, 255, 255, 0);
     --kaypal-v3-canvas: #f7f5fa;
     --kaypal-v3-paper: #ffffff;
+    --kaypal-v3-panel-bg: #ffffff;
     --kaypal-v3-paper-soft: #efecf4;
     --kaypal-v3-paper-muted: #e9e5f2;
     --kaypal-v3-table-head: #f4f1f9;
@@ -102,6 +103,7 @@
     --bg-gradient-to: rgba(0, 0, 0, 0);
     --kaypal-v3-canvas: #141218;
     --kaypal-v3-paper: #1c1923;
+    --kaypal-v3-panel-bg: #1c1923;
     --kaypal-v3-paper-soft: #1d1a24;
     --kaypal-v3-paper-muted: #2b2735;
     --kaypal-v3-table-head: #1d1a24;
