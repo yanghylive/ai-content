@@ -10,7 +10,7 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, type InteractionReplyRule } from '@prisma/client';
+import type { InteractionReplyRule } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';

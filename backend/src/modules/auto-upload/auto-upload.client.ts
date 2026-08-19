@@ -2450,8 +2450,7 @@ export class AutoUploadClient {
             failure.technicalMessage ||
             '最近一次真实发布检测到平台要求重新登录',
         },
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- 防止 --fix 删除断言导致泛型类型错误
-      } as T;
+      };
     });
   }
 
@@ -6069,17 +6068,18 @@ export class AutoUploadClient {
           this.logger.warn(
             `publishBatch 平台执行失败（短路，继续其他平台）: platform=${this.resolvePlatformName(payload.type)} ${message}`,
           );
+          const failedResult: RuntimeExecutionResult = {
+            ok: false,
+            status: 'failed',
+            reasonCode: 'send_failed',
+            userMessage: `平台发布失败：${message}`,
+            technicalMessage: message,
+            runtime: { mode: 'local-runtime', executor: 'platform-publish' },
+            evidence: [],
+          };
           return {
             payload,
-            result: {
-              ok: false,
-              status: 'failed' as const,
-              reasonCode: 'send_failed',
-              userMessage: `平台发布失败：${message}`,
-              technicalMessage: message,
-              runtime: { mode: 'local-runtime', executor: 'platform-publish' },
-              evidence: [],
-            } as RuntimeExecutionResult,
+            result: failedResult,
           };
         }
       }),

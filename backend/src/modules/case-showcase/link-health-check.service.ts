@@ -156,7 +156,9 @@ export class LinkHealthCheckService {
       stream?.destroy?.();
 
       const responseTimeMs = Date.now() - startedAt;
-      const finalUrl = response.request?.res?.responseUrl ?? url;
+      const responseRequest = response.request as
+        { res?: { responseUrl?: string } } | undefined;
+      const finalUrl = responseRequest?.res?.responseUrl ?? url;
       const httpStatus = response.status;
       const ok = httpStatus >= 200 && httpStatus < 400;
       const certExpiringSoon = await this.isCertExpiringSoon(finalUrl);

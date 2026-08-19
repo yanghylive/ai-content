@@ -70,7 +70,6 @@ export class AttributionEventStore {
         model,
         confidence: input.confidence ?? 'high',
         label: input.label,
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- 防止 --fix 删除断言导致类型错误
         evidence: (input.evidence ?? {}) as Prisma.InputJsonValue,
       },
       update: {

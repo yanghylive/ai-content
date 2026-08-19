@@ -212,7 +212,7 @@ export function RpaWorkbenchPage() {
           <V2EmptyState
             icon={Activity}
             title="暂无平台能力数据"
-            description="后端 /rpa/capabilities 未返回平台驱动信息"
+            description="平台能力信息暂不可用"
           />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -700,7 +700,7 @@ function DetailModal({
                 onClick={() => void onAction("finalize-success")}
               >
                 <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                完成回读
+                确认结果
               </V2PrimaryButton>
             )}
           </div>
@@ -915,7 +915,7 @@ function CreateModal({
                 className="flex-1"
               >
                 {accountsError && (
-                  <option value="">账号列表加载失败，请刷新重试（已阻断任意账号输入）</option>
+                    <option value="">账号列表加载失败，请刷新重试</option>
                 )}
                 {!accountsError && platformAccounts.length === 0 && (
                   <option value="__manual__">暂无可选账号（需先纳管平台账号）</option>
@@ -950,7 +950,7 @@ function CreateModal({
             </div>
             {platformAccounts.length > 0 && (
               <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
-                仅可使用已纳管账号（{platformAccounts.length} 个）；账号归属由后端强校验
+                仅可使用已授权账号（{platformAccounts.length} 个）
               </p>
             )}
             {probe && (
@@ -1131,7 +1131,7 @@ function ReplyModal({
             回复评论（人工确认式触达）
           </h3>
           <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
-            先「预览」（dry-run 填框不发送），确认后「确认发送」才会真实发到平台
+            先预览内容，确认后才会发送到平台
           </p>
         </div>
         <div className="space-y-4 p-5">

@@ -174,7 +174,10 @@ export class WechatPayService {
         // 下单失败：把本地订单标记 closed，避免挂着 pending 假单
         await this.prisma.wechatPayOrder.update({
           where: { id: order.id },
-          data: { status: 'closed', notifyPayload: wxResult as Prisma.InputJsonValue },
+          data: {
+            status: 'closed',
+            notifyPayload: wxResult as Prisma.InputJsonValue,
+          },
         });
         return {
           status: 'order_failed',

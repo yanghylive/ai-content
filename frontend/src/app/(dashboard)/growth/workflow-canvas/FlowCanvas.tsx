@@ -483,7 +483,7 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
                   ))}
                 </select>
                 <p className="mt-2 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
-                  选择后运行到此步骤将调用对应获客任务真实执行（需账号在线 + 执行开关开启）
+                  选择后运行到此步骤将按对应获客任务处理（需账号已授权）
                 </p>
               </div>
             ) : (

@@ -43,7 +43,7 @@ export class CaseAdminController {
 
   @Post('cases/validate')
   @ApiOperation({ summary: '表单完整性提示（复用发布校验规则子集）' })
-  async validateCompleteness(@Body() dto: CaseAdminInputDto) {
+  validateCompleteness(@Body() dto: CaseAdminInputDto) {
     const hints = this.admin.completenessHints(dto);
     return { complete: hints.length === 0, hints };
   }

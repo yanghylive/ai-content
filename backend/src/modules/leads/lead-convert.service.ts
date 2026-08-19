@@ -1,5 +1,4 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import crypto from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IdentityResolverService } from '../lead-intelligence/identity-resolver.service';
