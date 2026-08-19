@@ -1082,7 +1082,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 ))}
             </div>
             <p className="mb-3 text-xs text-[var(--kaypal-v3-muted)]">
-              发布前合规体检（分级：阻断 / 警告 / 提示）
+              发布前提醒
             </p>
             {compliance.status === "idle" && (
               <V2GhostButton icon={ShieldCheck} onClick={() => void runComplianceCheck()}>

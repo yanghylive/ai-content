@@ -709,7 +709,7 @@ function LoginPageContent() {
               <Stack className="login-preview-hero-copy" gap={2}>
                 <Text className="preview-kicker" type="supporting" weight="bold">INTELLIGENT GROWTH SYSTEM</Text>
                 <Heading level={1} textWrap="balance" type="display-3">让内容成为<br /><em>持续增长的系统。</em></Heading>
-                <Text as="p" color="secondary" textWrap="pretty" type="large">从发现市场机会，到内容生产、全域触达、互动获客与客户沉淀，九章智能把每一步连接为可执行、可追踪、可复用的增长闭环。</Text>
+                <Text as="p" color="secondary" textWrap="pretty" type="large">从发现市场机会，到内容生产、触达用户与沉淀客户，九章智能把每一步连接为可执行、可追踪、可复用的完整流程。</Text>
               </Stack>
 
               <Grid className="login-preview-features" columns={{ minWidth: 148, max: 3, repeat: "fit" }} gap={3}>
@@ -746,7 +746,7 @@ function LoginPageContent() {
                   </Stack>
                 ))}
               </Grid>
-              <div className="preview-system-visual" aria-label="九章智能增长闭环动态视觉">
+              <div className="preview-system-visual" aria-label="九章智能工作流预览">
                 <span className="preview-glow" /><span className="preview-ring preview-ring-one" /><span className="preview-ring preview-ring-two" /><span className="preview-ring preview-ring-three" /><span className="preview-ring preview-ring-four" /><span className="preview-pulse-ring" />
                 <span className="preview-core"><Image alt="" src="/brand/jiuzhang-ai-icon.png" width={512} height={512} /></span>
                 {[
@@ -758,7 +758,7 @@ function LoginPageContent() {
                 <span className="preview-connector preview-connector-one" /><span className="preview-connector preview-connector-two" /><span className="preview-connector preview-connector-three" /><span className="preview-connector preview-connector-four" />
               </div>
               <Stack className="preview-stage-footer" direction="horizontal" gap={4}>
-                <Text type="supporting"><i />中国主流内容平台</Text><Text type="supporting"><i />AI 与真实执行结合</Text><Text type="supporting"><i />关键任务全程留痕</Text>
+                <Text type="supporting"><i />中国主流内容平台</Text><Text type="supporting"><i />智能建议与实际操作结合</Text><Text type="supporting"><i />关键任务全程留痕</Text>
               </Stack>
             </Stack>
 

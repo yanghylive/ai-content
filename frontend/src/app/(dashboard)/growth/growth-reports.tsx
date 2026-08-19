@@ -107,10 +107,10 @@ export function GrowthReportsPage() {
         </V2Section>
       )}
 
-      {/* 六步闭环（内容→发布→互动→线索→客户→商机，按主键归因） */}
+      {/* 增长流程（内容→发布→互动→线索→客户→商机，按来源归因） */}
       {sixStage && (
         <V2Section
-          title="六步闭环"
+          title="增长流程"
           description={`内容→发布→互动→线索→客户→商机 · 归因置信度${
             sixStage.attributionConfidence === "high"
               ? "高"

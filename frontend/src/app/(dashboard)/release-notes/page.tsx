@@ -14,7 +14,7 @@ const currentVersion = "1.1.85";
 
 const highlights = [
   {
-    title: "发布中心修复闭环",
+    title: "发布中心体验更新",
     text: "「确认发布」「重试」按钮接上真实行为，失效账号可一键恢复任务；任务状态区分执行中/已取消，卡住的任务会提示并支持重试。",
     icon: <RefreshCw className="h-5 w-5" strokeWidth={1.8} />,
   },

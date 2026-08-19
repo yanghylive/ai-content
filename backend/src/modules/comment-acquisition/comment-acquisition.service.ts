@@ -411,62 +411,6 @@ export class CommentAcquisitionService {
     };
   }
 
-  /** 私信回复执行（走通用 dispatch direct-message-reply） */
-  private async dispatchDm(
-    leadId: string,
-    input: {
-      platform: 'douyin' | 'wechat-channel';
-      accountId: number | string;
-      messageText: string;
-      replyText: string;
-    },
-    scope: { tenantId: string | null; userId: string },
-    circuitKey: string,
-  ): Promise<boolean> {
-    try {
-      const result = await this.interactionExecutor.dispatch({
-        platform: input.platform,
-        taskType: 'direct-message-reply',
-        action: 'send',
-        accountId: input.accountId,
-        targetText: input.messageText,
-        sourceText: input.messageText,
-        replyText: input.replyText,
-      });
-
-      const ok = result.status === 'sent';
-      if (ok) {
-        this.circuitBreaker.recordSuccess(circuitKey);
-      } else {
-        const opened = this.circuitBreaker.recordFailure(circuitKey);
-        if (opened) {
-          this.logger.warn(
-            `[comment-acquisition] ${circuitKey} 私信触发风控熔断：窗口内失败 ≥3 次`,
-          );
-        }
-      }
-      await this.leadRepository.updateReplyStatus(leadId, {
-        userId: scope.userId,
-        status: ok ? 'replied' : 'failed',
-        lastError: ok ? null : (result.message ?? null),
-        repliedAt: ok ? new Date() : null,
-      });
-      return ok;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.circuitBreaker.recordFailure(circuitKey);
-      this.logger.error(
-        `[comment-acquisition] 私信回复执行失败 lead=${leadId}: ${message}`,
-      );
-      await this.leadRepository.updateReplyStatus(leadId, {
-        userId: scope.userId,
-        status: 'failed',
-        lastError: message,
-      });
-      return false;
-    }
-  }
-
   /**
    * 执行真实回复（CDP 会话 dispatch）。成功 → 标记 replied + 熔断器记成功。
    * 失败 → 标记 failed + 熔断器记失败（窗口内 ≥3 次触发熔断）。
