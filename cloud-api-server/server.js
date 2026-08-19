@@ -1,16 +1,56 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
 const Database = require('better-sqlite3');
 const OpenAI = require('openai');
 const path = require('path');
 
 const app = express();
-app.use(cors());
+
+// CORS 白名单：从 CORS_ORIGINS 环境变量读取（逗号分隔）。
+// 默认空 = 不允许任何跨域来源（仅同源 / 无 Origin 的请求可访问）。
+const allowedOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use(cors({
+  origin(origin, callback) {
+    // 无 Origin 头：同源请求 / curl / 服务端调用，允许。
+    // 有 Origin 头：必须在 CORS_ORIGINS 白名单内；白名单为空时拒绝一切跨域。
+    if (!origin || (allowedOrigins.length > 0 && allowedOrigins.includes(origin))) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+}));
 app.use(express.json());
 
 const PORT = process.env.PORT || 3100;
+// 显式绑定本机回环地址，防止暴露到局域网/公网；可用 HOST 环境变量覆盖。
+const HOST = process.env.HOST || '127.0.0.1';
 const DEDUP_TTL_HOURS = 72;
+
+// 共享密钥鉴权：请求头 x-api-key 必须与环境变量 API_KEY 严格一致。
+function apiKeyMatches(provided) {
+  const expected = process.env.API_KEY;
+  if (!expected || !provided) return false;
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+function requireAuth(req, res, next) {
+  if (!process.env.API_KEY) {
+    return res.status(503).json({ message: '服务端未配置 API_KEY，拒绝访问' });
+  }
+  const provided = req.headers['x-api-key'];
+  if (typeof provided !== 'string' || !apiKeyMatches(provided)) {
+    return res.status(401).json({ message: '未授权：x-api-key 缺失或无效' });
+  }
+  next();
+}
 
 const db = new Database(path.join(__dirname, 'cloud-api.db'));
 db.pragma('journal_mode = WAL');
@@ -77,6 +117,8 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use('/api/v1', requireAuth);
 
 app.post('/api/v1/generate-reply', async (req, res) => {
   try {
@@ -243,9 +285,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: '服务器内部错误' });
 });
 
-app.listen(PORT, () => {
-  console.log(`[Cloud API] Server running on port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`[Cloud API] Server running on ${HOST}:${PORT}`);
   console.log(`[Cloud API] AI Model: ${AI_MODEL}`);
   console.log(`[Cloud API] AI Base URL: ${process.env.AI_BASE_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1'}`);
   console.log(`[Cloud API] AI API Key: ${process.env.AI_API_KEY ? '***configured***' : 'NOT SET (will use fallback replies)'}`);
+  console.log(`[Cloud API] API Key Auth: ${process.env.API_KEY ? '***enabled***' : 'NOT CONFIGURED (rejecting /api/v1 requests)'}`);
+  console.log(`[Cloud API] CORS Origins: ${allowedOrigins.length ? allowedOrigins.join(', ') : 'same-origin only'}`);
 });

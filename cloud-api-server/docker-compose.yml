@@ -9,8 +9,10 @@ services:
     environment:
       - PORT=3100
       - AI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-      - AI_API_KEY=SK-REVOKED-PLACEHOLDER
+      - AI_API_KEY=${AI_API_KEY:-}
       - AI_MODEL=qwen-plus
+      - API_KEY=${API_KEY:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
     volumes:
       - cloud-api-data:/app/data
 
