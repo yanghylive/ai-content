@@ -388,18 +388,20 @@ const DEMO_ENDPOINTS: DemoEndpointSeed[] = [
   {
     slug: 'ai-content',
     endpointType: 'web',
-    targetUrl: 'https://kaypal.cn/',
+    targetUrl: 'https://cases.kaypal.cn/login',
     shortCode: 'jzaicontent',
     allowedDevices: ['desktop', 'mobile'],
-    accessInstruction: '九章 AI 内容生产系统，新窗口打开',
+    accessInstruction:
+      '九章 AI 内容生产系统，新窗口打开；演示账号 demo@kaypal.cn / Kaypal@123',
   },
   {
     slug: 'kaypal-geo-ui',
     endpointType: 'web',
-    targetUrl: 'https://geo-test.kaypal.cn/',
+    targetUrl: 'https://geo.opensource.kaypal.cn',
     shortCode: 'jzgeo',
     allowedDevices: ['desktop'],
-    accessInstruction: '九章 GEO 品牌可见度优化平台，新窗口打开',
+    accessInstruction:
+      '九章 GEO 品牌可见度优化平台，新窗口打开；演示账号 demo@kaypal.cn / Kaypal@123',
   },
   {
     slug: 'saas-jiuzhangai',
@@ -411,7 +413,8 @@ const DEMO_ENDPOINTS: DemoEndpointSeed[] = [
     slug: 'mingde-vp-chamber',
     endpointType: 'wechat_mini_program',
     allowedDevices: ['mobile'],
-    accessInstruction: '微信小程序，扫码体验',
+    accessInstruction:
+      '微信小程序，扫码体验；H5 在线体验 md.kaypal.cn，演示账号 demo / Demo@123456',
   },
   {
     slug: 'retail-private-domain-growth',
