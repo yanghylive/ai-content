@@ -31,7 +31,7 @@ All endpoints require the header:
 
 Default token:
 
-`change-me-local-token`
+(empty — no built-in default; the desktop main process generates a per-device token and injects it via `KAYPAL_AGENT_S_TOKEN`)
 
 Override it with:
 
@@ -389,7 +389,7 @@ Then it validates:
 ## Example
 
 ```bash
-TOKEN=change-me-local-token
+TOKEN="${KAYPAL_AGENT_S_TOKEN:-}"
 BASE=http://127.0.0.1:17777
 
 curl -s -H "x-kaypal-agent-s-token: ${TOKEN}" "${BASE}/healthz"
