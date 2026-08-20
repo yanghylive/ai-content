@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bot,
@@ -15,8 +15,95 @@ import {
   Wallet,
 } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
-import { growthApi, type GrowthOverview } from "@/lib/api/growth";
+import { growthApi, type GrowthAcquisitionRun, type GrowthHomeBlocker, type GrowthHomeResponse, type GrowthOverview } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+
+/** T05：把页码值显示成"暂无数据/不可用"（null ≠ 0，口径铁律） */
+function displayStat(value: number | null | undefined, emptyText = "暂无数据"): string {
+  if (value === null || value === undefined) return emptyText;
+  if (Number.isNaN(value)) return emptyText;
+  return String(value);
+}
+
+/** T05：最近运行六态标签（失败不伪装成功） */
+const RUN_STATUS_TONE: Record<string, { label: string; className: string }> = {
+  success: { label: "成功", className: "bg-[var(--kaypal-v3-success-soft)] text-[var(--kaypal-v3-success-ink)]" },
+  partial: { label: "部分成功", className: "bg-[var(--kaypal-v3-warning-soft)] text-[var(--kaypal-v3-warning-ink)]" },
+  failed: { label: "失败", className: "bg-[var(--kaypal-v3-danger-soft)] text-[var(--kaypal-v3-danger-ink)]" },
+  skipped: { label: "已跳过", className: "bg-[var(--kaypal-v3-muted-soft)] text-[var(--kaypal-v3-muted)]" },
+  queued: { label: "排队中", className: "bg-[var(--kaypal-v3-muted-soft)] text-[var(--kaypal-v3-muted)]" },
+  running: { label: "运行中", className: "bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]" },
+};
+
+function RunStatusBadge({ status }: { status: string }) {
+  const tone = RUN_STATUS_TONE[status] ?? { label: status, className: "bg-[var(--kaypal-v3-muted-soft)] text-[var(--kaypal-v3-muted)]" };
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${tone.className}`}>
+      {tone.label}
+    </span>
+  );
+}
+
+/** T05：阻断任务卡（blockers 空则不渲染） */
+function BlockersSection({ blockers }: { blockers: GrowthHomeBlocker[] }) {
+  if (!blockers || blockers.length === 0) return null;
+  return (
+    <section className="kaypal-v3-panel p-6" style={{ border: "1px solid var(--kaypal-v3-danger-border)" }}>
+      <h2 className="text-base font-semibold text-[var(--kaypal-v3-danger-ink)]">需要处理</h2>
+      <div className="mt-3 flex flex-col gap-2">
+        {blockers.map((blocker) => (
+          <div key={blocker.code} className="flex items-center justify-between gap-3 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-danger-soft)] px-3 py-2">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-[var(--kaypal-v3-danger-ink)]">{blocker.title}</p>
+              <p className="mt-0.5 truncate text-xs text-[var(--kaypal-v3-danger-ink)] opacity-70">{blocker.action}</p>
+            </div>
+            <span className="shrink-0 rounded bg-[var(--kaypal-v3-paper)] px-2 py-0.5 font-mono text-[10px] text-[var(--kaypal-v3-muted)]">{blocker.code}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** T05：最近运行列表（空 → 空态；六态标签） */
+function RecentRunsSection({ runs }: { runs: GrowthAcquisitionRun[] }) {
+  return (
+    <section className="kaypal-v3-panel p-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">最近运行</h2>
+        <button
+          type="button"
+          className="text-xs font-medium text-[var(--kaypal-v3-accent)] hover:underline"
+          onClick={() => { window.location.href = "/growth/acquisition"; }}
+        >
+          查看全部
+        </button>
+      </div>
+      {!runs || runs.length === 0 ? (
+        <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">暂无运行记录，创建获客任务后这里会展示执行情况。</p>
+      ) : (
+        <div className="mt-4 flex flex-col divide-y divide-[var(--kaypal-v3-border)]">
+          {runs.slice(0, 8).map((run) => (
+            <div key={run.id} className="flex items-center justify-between gap-3 py-2.5">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-[var(--kaypal-v3-ink)]">{run.message || run.platform || run.id}</p>
+                <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+                  {run.platform} · {run.startedAt ? new Date(run.startedAt).toLocaleString("zh-CN", { hour12: false }) : ""}
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <RunStatusBadge status={run.status} />
+                <span className="text-xs tabular-nums text-[var(--kaypal-v3-muted)]">
+                  {run.contactedCount ?? 0}/{run.candidateCount ?? 0} 触达
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
 
 /** T4-9：今日 AI 简报卡——一进门先看到 AI 在干什么 */
 function AiDailyBriefCard({ overview }: { overview: GrowthOverview | null }) {
@@ -158,13 +245,18 @@ function AiValueBill({ overview }: { overview: GrowthOverview | null }) {
 export function GrowthCenter() {
   const router = useRouter();
   const [overview, setOverview] = useState<GrowthOverview | null>(null);
+  const [home, setHome] = useState<GrowthHomeResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchOverview = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await growthApi.overview();
-      setOverview(data);
+      const [overviewData, homeData] = await Promise.all([
+        growthApi.overview(),
+        growthApi.getGrowthHome("today"),
+      ]);
+      setOverview(overviewData);
+      setHome(homeData);
     } catch (error: unknown) {
       console.error(toPublicError(error, "加载增长数据失败"));
     } finally {
@@ -176,7 +268,23 @@ export function GrowthCenter() {
     void fetchOverview();
   }, [fetchOverview]);
 
-  const funnel = overview?.funnel;
+  const homeFunnel = useMemo(() => home?.funnel, [home]);
+  const homeRuns = useMemo(() => home?.recentRuns ?? [], [home]);
+  const homeBlockers = useMemo(() => home?.blockers ?? [], [home]);
+
+  // 七段漏斗：candidates→selected→contacted→leads→customers→opportunities→won（/growth/home 口径）
+  const sevenStages = useMemo(() => {
+    if (!homeFunnel) return null;
+    return [
+      { label: "候选", value: homeFunnel.candidates },
+      { label: "已筛选", value: homeFunnel.selected },
+      { label: "已触达", value: homeFunnel.contacted },
+      { label: "线索", value: homeFunnel.leads },
+      { label: "客户", value: homeFunnel.customers },
+      { label: "商机", value: homeFunnel.opportunities },
+      { label: "成交", value: homeFunnel.won },
+    ];
+  }, [homeFunnel]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -267,53 +375,51 @@ export function GrowthCenter() {
         ]}
       />
 
-      {/* 转化漏斗 */}
-      {funnel && (
+      {/* 阻断任务（T05：/growth/home 的 blockers，空不渲染） */}
+      <BlockersSection blockers={homeBlockers} />
+
+      {/* 转化漏斗（T05：七段口径，null → 不可用） */}
+      {sevenStages && (
         <section className="kaypal-v3-panel p-6">
           <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
             转化漏斗
           </h2>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-            {[
-              { label: "候选人", value: funnel.candidates },
-              { label: "已筛选", value: funnel.selected },
-              { label: "已触达", value: funnel.contacted },
-              { label: "进 CRM", value: funnel.crmCaptured },
-              { label: "已成交", value: funnel.converted },
-            ].map((stage, i) => {
-              return (
-                <div
-                  key={stage.label}
-                  className="flex w-full items-center gap-2 sm:flex-1"
-                >
-                  {i > 0 && (
-                    <span className="text-[var(--kaypal-v3-muted)]">→</span>
-                  )}
-                  <div className="flex-1">
-                    <div
-                      className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent-soft)] p-3 text-center transition-all"
-                      style={{ opacity: 1 - i * 0.15 }}
-                    >
-                      <p className="text-xl font-bold text-[var(--kaypal-v3-accent-ink)]">
-                        {loading ? "-" : stage.value}
-                      </p>
-                      <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
-                        {stage.label}
-                      </p>
-                    </div>
+            {sevenStages.map((stage, i) => (
+              <div
+                key={stage.label}
+                className="flex w-full items-center gap-2 sm:flex-1"
+              >
+                {i > 0 && (
+                  <span className="text-[var(--kaypal-v3-muted)]">→</span>
+                )}
+                <div className="flex-1">
+                  <div
+                    className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent-soft)] p-3 text-center transition-all"
+                    style={{ opacity: 1 - i * 0.12 }}
+                  >
+                    <p className="text-xl font-bold text-[var(--kaypal-v3-accent-ink)]">
+                      {loading ? "-" : displayStat(stage.value, "不可用")}
+                    </p>
+                    <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+                      {stage.label}
+                    </p>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
           <p className="mt-3 text-xs text-[var(--kaypal-v3-muted)]">
             成交率：
-            {funnel.contacted > 0
-              ? `${((funnel.converted / funnel.contacted) * 100).toFixed(1)}%`
+            {homeFunnel && homeFunnel.contacted && homeFunnel.contacted > 0 && homeFunnel.won !== null
+              ? `${((homeFunnel.won / homeFunnel.contacted) * 100).toFixed(1)}%`
               : "暂无数据"}
           </p>
         </section>
       )}
+
+      {/* 最近运行（T05：六态标签，失败不伪装成功） */}
+      <RecentRunsSection runs={homeRuns} />
 
       {/* 热门策略 */}
       {overview?.hotStrategies && overview.hotStrategies.length > 0 && (
