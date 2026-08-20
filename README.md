@@ -222,3 +222,18 @@ npm run dev
 npm run build
 npm run lint
 ```
+
+### frontend
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+```
+
+## 运维与监控
+
+- **错误自动上报与修复闭环**（v1.1.89+）：桌面端任何运行异常自动上传 OSS `error-reports/`，每日自动检查并分类修复。详见 [错误自动上报与修复闭环](docs/错误自动上报与修复闭环.md)。
+- **发版前全量门禁**：`node scripts/pre-release-full.mjs`（15 项，全过才可发版）。
+- **Windows 真机测试**：使用无影云电脑远程环境（见 `wuying-clouddesktop-test` skill）。
