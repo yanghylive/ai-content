@@ -299,9 +299,32 @@ export default function CollectionCenterPage() {
           <input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="粘贴作品分享链接"
+            placeholder="粘贴作品链接或抖音/小红书分享口令，如：https://www.douyin.com/video/xxx"
             style={inputStyle}
           />
+          {/* 格式提示（与爆款拆解/视频去水印一致：纯净链接 或 整段分享口令） */}
+          <div
+            style={{
+              marginTop: 8,
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "var(--kx-card)",
+              border: "1px dashed var(--kx-border-strong, var(--kx-border))",
+              fontSize: 12,
+              color: "var(--kx-muted)",
+              lineHeight: 1.7,
+            }}
+          >
+            <div style={{ fontWeight: 600, color: "var(--kx-ink)", marginBottom: 4 }}>
+              📋 支持两种粘贴格式
+            </div>
+            <div>① 纯净作品链接，例如：</div>
+            <div className="v3-format-example">https://www.douyin.com/video/7649615187284833210</div>
+            <div style={{ marginTop: 6 }}>② 抖音 / 小红书分享口令（整段复制粘贴即可，自动提取链接）：</div>
+            <div className="v3-format-example">
+              4.38 Oxs:/ 复制打开抖音，看看这条作品～ https://v.douyin.com/pjE9uqFMK68/ 复制此链接，打开Dou音搜索，直接观看视频！
+            </div>
+          </div>
         </div>
       ) : null}
       {action === "list" ? (

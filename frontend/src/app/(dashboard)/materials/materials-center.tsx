@@ -5,6 +5,7 @@ import { SkeletonRow } from "@/components/skeleton";
 import { BrandLogo } from "@/components/brand-logo";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
@@ -194,17 +195,25 @@ export function MaterialsCenter() {
     void fetchCollectStatus(true);
   }, [fetchMaterials, fetchCollectStatus]);
 
-  /* 弹层直达：/materials?open=download|gen|video 自动弹对应弹层。
-     注意：打开时只 setState 不改 URL——同步清参会触发 Next 路由系统重评估
-     searchParams，导致刚 set 的弹层状态被丢弃（真机验证发现弹层从未渲染）。
-     参数在弹层关闭时清理（见 clearOpenParam），避免刷新重复弹。 */
+  /* 弹层直达：/materials?open=gen|video 自动弹对应弹层；
+     ?open=download 已拆分为独立页 /video-download（2026-08-20 起），命中后跳转
+     （同时清参，避免刷新反复跳转）。注意：打开弹层时只 setState 不改 URL——
+     同步清参会触发 Next 路由系统重评估 searchParams，导致刚 set 的弹层状态
+     被丢弃（真机验证发现弹层从未渲染）。参数在弹层关闭时清理（见 clearOpenParam），
+     避免刷新重复弹。 */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const open = params.get("open");
-    if (open === "download") setLinkSheetOpen(true);
-    else if (open === "gen") setGenSheetOpen(true);
+    if (open === "download") {
+      // 视频去水印已独立成 /video-download：直接跳转并清参
+      params.delete("open");
+      const next = params.toString();
+      router.replace(
+        "/video-download" + (next ? `?${next}` : ""),
+      );
+    } else if (open === "gen") setGenSheetOpen(true);
     else if (open === "video") setVideoSheetOpen(true);
-  }, []);
+  }, [router]);
 
   /* 清理 ?open= 参数（弹层关闭时调用，刷新不重复弹） */
   const clearOpenParam = () => {
@@ -636,13 +645,12 @@ export function MaterialsCenter() {
             >
               📤 上传
             </button>
-            <button
-              type="button"
-              onClick={openLinkSheet}
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap" }}
+            <Link
+              href="/video-download"
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none" }}
             >
               🔗 去水印
-            </button>
+            </Link>
             <button
               type="button"
               onClick={() => setGenSheetOpen(true)}
@@ -1137,13 +1145,12 @@ export function MaterialsCenter() {
           >
             {uploading ? "上传中…" : "📤 本地上传"}
           </button>
-          <button
-            type="button"
-            onClick={openLinkSheet}
-            style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap" }}
+          <Link
+            href="/video-download"
+            style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none" }}
           >
             🔗 去水印
-          </button>
+          </Link>
           <V2PrimaryButton
             icon={collecting ? Loader2 : Play}
             loading={collecting}
