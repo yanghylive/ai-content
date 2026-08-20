@@ -32,8 +32,16 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.89";
+const DESKTOP_APP_VERSION = "1.1.90";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.90",
+    date: "2026-08-20",
+    highlights: [
+      "修复非 C 盘安装（Program Files 等）导致的操作失败：数据/日志迁移到用户数据目录",
+      "错误自动上报：运行异常自动上传云端，无需手动收集日志",
+    ],
+  },
   {
     version: "v1.1.89",
     date: "2026-08-20",
