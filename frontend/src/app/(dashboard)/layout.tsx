@@ -32,8 +32,16 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.87";
+const DESKTOP_APP_VERSION = "1.1.88";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.88",
+    date: "2026-08-20",
+    highlights: [
+      "登录浏览器空白修复（Windows）：goto 不跳转时自动用浏览器自身 JS 导航兜底",
+      "登录导航增加诊断日志，便于真机定位",
+    ],
+  },
   {
     version: "v1.1.87",
     date: "2026-08-20",

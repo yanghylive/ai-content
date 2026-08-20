@@ -4540,6 +4540,25 @@ export class AutoUploadClient {
   ): Promise<void> {
     const url = this.platformLoginStartUrl(platformType);
     await this.gotoLoginPageBestEffort(page, url);
+    // 导航兜底（2026-08-20 Windows 真机：goto 后页面停在新标签页不跳转）。
+    // 若 CDP page.goto 没把页面带离新标签页，直接用浏览器自身 JS 导航（绕开 CDP navigation 协议）。
+    const current = page.url();
+    const targetHost = new URL(url).hostname;
+    if (!current.includes(targetHost) && targetHost !== 'about:blank') {
+      this.logger.warn(
+        `登录页 goto 后仍不在目标域（current=${current}, target=${url}），启用 JS 导航兜底`,
+      );
+      try {
+        await page.evaluate((href) => {
+          (window as { location?: { href?: string } }).location!.href = href;
+        }, url);
+      } catch (error) {
+        this.logger.warn(`JS 导航兜底失败: ${error instanceof Error ? error.message : String(error)}`);
+      }
+      // 给浏览器自身导航一点时间
+      await page.waitForTimeout(3000).catch(() => undefined);
+      this.logger.log(`JS 导航兜底后 URL: ${page.url()}`);
+    }
     if (platformType === 4) {
       await page
         .getByRole('link', { name: '立即登录' })
@@ -4578,10 +4597,16 @@ export class AutoUploadClient {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+        this.logger.log(
+          `登录页 goto 成功: target=${url}, landed=${page.url()}, attempt=${attempt}`,
+        );
         return;
       } catch (error) {
         lastError = error;
         const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `登录页 goto 失败: target=${url}, landed=${page.url()}, attempt=${attempt}, error=${message}`,
+        );
         const currentUrl = page.url();
         if (
           currentUrl &&
