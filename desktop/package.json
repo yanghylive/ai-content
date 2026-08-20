@@ -192,8 +192,7 @@
         "from": "../backend/node_modules/sharp",
         "to": "backend/node_modules/sharp",
         "filter": [
-          "package.json",
-          "lib/**/*"
+          "**/*"
         ]
       },
       {
@@ -242,6 +241,27 @@
           "licenses/**/*",
           "manifest.json",
           "SOURCE-OFFER.txt"
+        ]
+      },
+      {
+        "from": "../backend/node_modules/@img",
+        "to": "backend/node_modules/@img",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../backend/node_modules/detect-libc",
+        "to": "backend/node_modules/detect-libc",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../backend/node_modules/semver",
+        "to": "backend/node_modules/semver",
+        "filter": [
+          "**/*"
         ]
       }
     ],
