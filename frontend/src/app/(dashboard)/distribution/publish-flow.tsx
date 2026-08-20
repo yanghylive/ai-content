@@ -1068,15 +1068,15 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
               </p>
               {compliance.status === "done" &&
                 (compliance.result.degraded ? (
-                  <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-600">
+                  <span className="rounded-full bg-[var(--kaypal-v3-amber-soft)] px-2.5 py-0.5 text-xs font-semibold text-[var(--kaypal-v3-amber)]">
                     ⚠️ 检查不可用
                   </span>
                 ) : compliance.result.riskLevel === "pass" ? (
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">
+                  <span className="rounded-full bg-[var(--kaypal-v3-success-soft)] px-2.5 py-0.5 text-xs font-semibold text-[var(--kaypal-v3-success)]">
                     ✅ 通过
                   </span>
                 ) : (
-                  <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-600">
+                  <span className="rounded-full bg-[var(--kaypal-v3-danger-soft)] px-2.5 py-0.5 text-xs font-semibold text-[var(--kaypal-v3-danger)]">
                     ⚠️ {compliance.result.findings.length} 个风险
                   </span>
                 ))}
@@ -1103,17 +1103,17 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                       key={finding.id}
                       className={`flex items-start gap-2 rounded border px-3 py-2 text-xs ${
                         blocked
-                          ? "border-red-100 bg-red-50/60"
-                          : "border-amber-100 bg-amber-50/60"
+                          ? "border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)]"
+                          : "border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)]"
                       }`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className={`font-semibold ${blocked ? "text-red-700" : "text-amber-700"}`}>
+                        <p className={`font-semibold ${blocked ? "text-[var(--kaypal-v3-danger)]" : "text-[var(--kaypal-v3-amber)]"}`}>
                           {blocked ? "⛔ " : "⚠️ "}
                           「{finding.matchedText}」{finding.reason ? ` · ${finding.reason}` : ""}
                         </p>
                         {finding.suggestion && (
-                          <p className={`mt-0.5 ${blocked ? "text-red-500" : "text-amber-600"}`}>
+                          <p className={`mt-0.5 ${blocked ? "text-[var(--kaypal-v3-danger)]" : "text-[var(--kaypal-v3-amber)]"}`}>
                             建议：{finding.suggestion}
                           </p>
                         )}

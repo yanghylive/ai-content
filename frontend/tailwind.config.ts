@@ -55,7 +55,7 @@ const config: Config = {
                 light: {
                     layout: {
                         radius: {
-                            small: "8px",
+                            small: "10px",
                             medium: "10px",
                             large: "14px",
                         },
@@ -100,7 +100,7 @@ const config: Config = {
                 dark: {
                     layout: {
                         radius: {
-                            small: "8px",
+                            small: "10px",
                             medium: "10px",
                             large: "14px",
                         },

@@ -436,6 +436,8 @@ function SourcesSettings({ onFlash, onError }: { onFlash: (t: string) => void; o
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
+                    aria-label="编辑数据源"
+                    title="编辑数据源"
                     className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
                     onClick={() =>
                       setEditingSource({
@@ -450,6 +452,8 @@ function SourcesSettings({ onFlash, onError }: { onFlash: (t: string) => void; o
                   </button>
                   <button
                     type="button"
+                    aria-label="删除数据源"
+                    title="删除数据源"
                     className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)]"
                     onClick={() => setDeleteId(source.id)}
                   >

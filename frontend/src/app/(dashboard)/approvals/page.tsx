@@ -145,7 +145,7 @@ export default function ApprovalCenterPage() {
                     type="button"
                     disabled={actingId === rec.id}
                     onClick={() => void handleAct(rec, "reject")}
-                    className="flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-40"
+                    className="flex items-center gap-1 rounded-lg bg-[var(--kaypal-v3-danger-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--kaypal-v3-danger)] transition hover:bg-[var(--kaypal-v3-danger)] hover:text-white disabled:opacity-40"
                   >
                     <X className="h-3.5 w-3.5" /> 驳回
                   </button>
@@ -153,7 +153,7 @@ export default function ApprovalCenterPage() {
                     type="button"
                     disabled={actingId === rec.id}
                     onClick={() => void handleAct(rec, "request_changes")}
-                    className="flex items-center gap-1 rounded-lg bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-600 transition hover:bg-amber-100 disabled:opacity-40"
+                    className="flex items-center gap-1 rounded-lg bg-[var(--kaypal-v3-amber-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--kaypal-v3-amber)] transition hover:bg-[var(--kaypal-v3-amber)] hover:text-white disabled:opacity-40"
                   >
                     要求修改
                   </button>

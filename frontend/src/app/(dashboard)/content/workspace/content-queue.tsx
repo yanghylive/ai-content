@@ -226,6 +226,7 @@ export function ContentQueue({
           radius="sm"
           size="sm"
           variant="bordered"
+          className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
           onPress={() => onStatusFilterChange("all")}
         >
           查看全部

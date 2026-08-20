@@ -766,7 +766,7 @@ export function MaterialsCenter() {
                     {viewing.platform} · {viewing.publishDate?.slice(0, 10) ?? "未知日期"}
                   </p>
                 </div>
-                <button type="button" className="rounded-full p-1 text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-paper-soft)]" onClick={() => setViewing(null)}>
+                <button type="button" aria-label="关闭" className="rounded-full p-1 text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-paper-soft)]" onClick={() => setViewing(null)}>
                   <XCircle size={20} />
                 </button>
               </div>
@@ -1334,6 +1334,8 @@ export function MaterialsCenter() {
                     ) : (
                       <button
                         type="button"
+                        aria-label="删除素材"
+                        title="删除素材"
                         className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)]"
                         onClick={() => setDeleteTarget(material)}
                       >
@@ -1410,6 +1412,7 @@ export function MaterialsCenter() {
               </div>
               <button
                 type="button"
+                aria-label="关闭"
                 className="rounded-full p-1 text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                 onClick={() => setViewing(null)}
               >

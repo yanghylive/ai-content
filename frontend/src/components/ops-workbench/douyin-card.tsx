@@ -309,6 +309,7 @@ export function OpsWorkbenchDouyinCard({
           <div className="flex flex-wrap gap-2">
             <Button
               variant="bordered"
+              className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
               isDisabled={isBusy}
               onPress={onRefresh}
               startContent={
@@ -319,6 +320,7 @@ export function OpsWorkbenchDouyinCard({
             </Button>
             <Button
               variant="bordered"
+              className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
               isDisabled={isBusy || !canOpen}
               onPress={onOpenBackend}
               startContent={
@@ -330,6 +332,7 @@ export function OpsWorkbenchDouyinCard({
             {onStartCommentReply ? (
               <Button
                 variant="bordered"
+                className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                 isDisabled={isBusy || !canTertiary}
                 onPress={onStartCommentReply}
                 startContent={

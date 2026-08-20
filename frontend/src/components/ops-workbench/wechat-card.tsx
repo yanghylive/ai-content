@@ -367,6 +367,7 @@ export function OpsWorkbenchWechatCard({
                         key={candidate}
                         variant="bordered"
                         size="sm"
+                        className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                         isDisabled={disabled}
                         onPress={() => onUseCandidateContact?.(candidate)}
                       >
@@ -509,6 +510,7 @@ export function OpsWorkbenchWechatCard({
                 {canReadOnlyAnalyze ? (
                   <Button
                     variant="bordered"
+                    className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                     isDisabled={disabled}
                     onPress={onReadOnlyAnalyze}
                     startContent={
@@ -524,6 +526,7 @@ export function OpsWorkbenchWechatCard({
                 {canPrepareQueue ? (
                   <Button
                     variant="bordered"
+                    className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                     isDisabled={disabled}
                     onPress={onPrepareQueue}
                     startContent={
@@ -538,6 +541,7 @@ export function OpsWorkbenchWechatCard({
                 ) : null}
                 <Button
                   variant="bordered"
+                  className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                   isDisabled={disabled || !canUseLiveConversation}
                   onPress={onUseLiveConversation}
                   startContent={
@@ -552,6 +556,7 @@ export function OpsWorkbenchWechatCard({
                 {canAlignContact ? (
                   <Button
                     variant="bordered"
+                    className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                     isDisabled={disabled}
                     onPress={onAlignContact}
                     startContent={
@@ -566,6 +571,7 @@ export function OpsWorkbenchWechatCard({
                 ) : null}
                 <Button
                   variant="bordered"
+                  className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                   isDisabled={disabled || !canControlledSend}
                   onPress={onControlledSend}
                   startContent={
@@ -587,6 +593,7 @@ export function OpsWorkbenchWechatCard({
                 {canSkipCurrent ? (
                   <Button
                     variant="bordered"
+                    className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                     isDisabled={disabled}
                     onPress={onSkipCurrent}
                     startContent={
@@ -602,6 +609,7 @@ export function OpsWorkbenchWechatCard({
                 {onPause && (status === "sending" || status === "paused") ? (
                   <Button
                     variant="bordered"
+                    className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                     isDisabled={disabled}
                     onPress={onPause}
                     startContent={

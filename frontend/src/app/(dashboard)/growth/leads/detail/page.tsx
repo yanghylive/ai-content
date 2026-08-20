@@ -360,7 +360,7 @@ function LeadDetailClient() {
               className={`rounded-md px-2 py-1 text-xs font-semibold ${
                 attribution.layer === "confirmed"
                   ? "bg-emerald-50 text-emerald-700"
-                  : "bg-gray-100 text-gray-500"
+                  : "bg-[var(--kaypal-v3-paper-soft)] text-[var(--kaypal-v3-soft-ink)]"
               }`}
             >
               线索

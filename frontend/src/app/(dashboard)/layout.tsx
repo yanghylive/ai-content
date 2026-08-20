@@ -267,6 +267,7 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
         <Button
           size="sm"
           variant="flat"
+          color="primary"
           startContent={<RefreshCw size={14} />}
           onClick={() =>
             toast.success(`已是最新版本 ${current.version}`, {
