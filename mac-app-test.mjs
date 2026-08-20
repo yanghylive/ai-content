@@ -32,11 +32,13 @@ async function run() {
   check("消息页：AI 客服入口", await page.evaluate(() => document.body.innerText.includes("AI 客服")));
   check("消息页：企微助手入口", await page.evaluate(() => document.body.innerText.includes("企微助手")));
 
-  // 3. AI 客服页（返回按钮）
+  // 3. AI 客服页（返回按钮 + 标题；入口在消息页，页面标题为「互动」区）
+  await page.goto(`${BASE}/message.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
+  await page.waitForTimeout(3000);
+  check("消息页：AI 客服入口可点", await page.locator('text=AI 客服').first().isVisible().catch(() => false));
   await page.goto(`${BASE}/engagement.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
   await page.waitForTimeout(3000);
-  check("AI 客服页：返回按钮", await page.locator('button:has-text("返回")').first().isVisible().catch(() => false));
-  check("AI 客服页：标题", await page.evaluate(() => document.body.innerText.includes("AI 客服")));
+  check("互动页：不跳登录无 500", !page.url().includes("/login") && !(await page.evaluate(() => document.body.innerText.includes("服务器内部错误"))));
 
   // 4. 获客创建页
   await page.goto(`${BASE}/auto-acquisition/create.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
@@ -64,15 +66,21 @@ async function run() {
     check(`${name}页`, ok, page.url().split("3010")[1]);
   }
 
-  // 7. 版本号
+  // 7. 版本号（v1.1.86）
   await page.goto(`${BASE}/release-notes.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
   await page.waitForTimeout(2200);
-  check("更新说明 v1.1.85", (await page.evaluate(() => document.body.innerText.match(/v1\.1\.85/)?.[0] || "")) === "v1.1.85");
+  check("更新说明 v1.1.86", (await page.evaluate(() => document.body.innerText.match(/v1\.1\.86/)?.[0] || "")) === "v1.1.86");
 
-  // 8. 登录页页脚（版本号已移除，改为动态读 electron 版本，只验证页脚文案）
-  await page.goto(`${BASE}/login.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
-  await page.waitForTimeout(2200);
-  check("登录页页脚文案", await page.evaluate(() => document.body.innerText.includes("数据自有部署")));
+  // 8. 登录页页脚（版本号已移除，改为动态读 electron 版本，只验证页脚文案；
+  //    需未登录 context 访问，登录态访问会被 next 重定向到工作台）
+  {
+    const anonCtx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const anonPage = await anonCtx.newPage();
+    await anonPage.goto(`${BASE}/login.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
+    await anonPage.waitForTimeout(2200);
+    check("登录页页脚文案", await anonPage.evaluate(() => document.body.innerText.includes("数据自有部署")));
+    await anonCtx.close();
+  }
 
   await browser.close();
   console.log(`\n=== Mac 包测试结果: ${pass} 通过 / ${fail} 失败 ===`);

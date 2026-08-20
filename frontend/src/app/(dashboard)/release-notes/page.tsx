@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   RefreshCw,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
