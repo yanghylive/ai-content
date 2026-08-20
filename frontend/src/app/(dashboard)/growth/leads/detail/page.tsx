@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { growthApi, type GrowthLead, type LeadScoreHistoryDto, type LeadAttributionDto } from "@/lib/api/growth";
 import { V2BackButton } from "@/components/v2/v2-back-button";
@@ -214,10 +215,32 @@ function LeadDetailClient() {
           创建于 {fmtTime(lead.createdAt)}
           {lead.latestReply ? ` · 最新回复 ${fmtTime(lead.updatedAt)}` : ""}
         </div>
+
+        {/* T07：来源链路（显式展示 sourceRunId/sourceTaskId，收紧归因可信度） */}
+        {(lead.sourceTaskId || lead.sourceRunId) && (
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 rounded-lg bg-[var(--kaypal-v3-surface-2)] p-3 text-xs text-[var(--kaypal-v3-muted)]">
+            {lead.sourceTaskId && (
+              <span>
+                来源任务{" "}
+                <code className="font-mono text-[10px]">{lead.sourceTaskId}</code>
+              </span>
+            )}
+            {lead.sourceRunId && (
+              <span>
+                来源运行{" "}
+                <code className="font-mono text-[10px]">{lead.sourceRunId}</code>
+              </span>
+            )}
+            {lead.sourceType && <span>来源类型 {lead.sourceType}</span>}
+          </div>
+        )}
       </section>
 
-      {/* Top Lead 动作（T4.5） */}
-      <section className="mb-4 flex flex-wrap gap-2">
+      {/* Top Lead 动作（T4.5 + T07 风险分级：低=只读类、中=单条写操作、高=批量/外发） */}
+      <section className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--kaypal-v3-muted)]">
+          中风险动作
+        </span>
         <button
           type="button"
           disabled={acting || !!lead.crmCustomerId}
@@ -242,14 +265,35 @@ function LeadDetailClient() {
         >
           标记意向
         </button>
-        {lead.crmCustomerId && (
+        {lead.crmCustomerId ? (
           <Link
             href={`/crm/customer?id=${lead.crmCustomerId}`}
             className="kaypal-v3-panel px-4 py-2 text-sm font-medium text-[var(--kaypal-v3-accent)] transition hover:border-[var(--kaypal-v3-accent)]"
           >
             客户详情 →
           </Link>
+        ) : (
+          <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-1 text-[11px] text-[var(--kaypal-v3-muted)]">
+            转 CRM 后可从本页直达客户与商机
+          </span>
         )}
+      </section>
+
+      {/* T07：下一步建议（基于线索状态） */}
+      <section className="mb-4 rounded-lg border border-[var(--kaypal-v3-accent)]/30 bg-[var(--kaypal-v3-accent-soft)] p-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-[var(--kaypal-v3-accent)]" />
+          <h3 className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">下一步建议</h3>
+        </div>
+        <p className="mt-1.5 text-sm leading-relaxed text-[var(--kaypal-v3-soft-ink)]">
+          {lead.status === "converted"
+            ? "线索已转 CRM 客户，可从上方进入客户详情，创建商机与跟进任务。"
+            : lead.crmCustomerId
+              ? "线索已关联客户，建议创建商机并安排一次跟进。"
+              : lead.score >= 75
+                ? "高意向线索：建议立即处理（转 CRM 客户或安排跟进），避免错过窗口期。"
+                : "建议先处理来源评论/私信（生成回复草稿确认后发送），或标记资格后转 CRM。"}
+        </p>
       </section>
 
       {/* 评分历史（T2.6） */}
