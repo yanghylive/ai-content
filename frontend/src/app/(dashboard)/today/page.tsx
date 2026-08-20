@@ -552,11 +552,14 @@ export default function TodayPage() {
                     style={{
                       flex: 1,
                       minWidth: 0,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
+                      // 长标题（含错误详情）自动换行完整显示，不截断省略；
+                      // 短标题保持单行省略
+                      ...((t.title?.length ?? 0) > 40
+                        ? { whiteSpace: "normal", lineHeight: 1.5, overflow: "visible", wordBreak: "break-all" }
+                        : { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }),
                       color: "var(--kx-ink)",
                     }}
+                    title={t.title}
                   >
                     {t.title}
                   </span>
