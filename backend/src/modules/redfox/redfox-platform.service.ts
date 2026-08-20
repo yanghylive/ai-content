@@ -360,7 +360,11 @@ export class RedfoxPlatformService {
     let body: Record<string, unknown> = {};
     if (action === 'detail') {
       path = route.detail;
-      body = { workId: input.workId, url: input.url };
+      body = {
+        workId: input.workId,
+        // 与 download 保持一致：从整段分享口令里提取首个 http(s) 链接
+        url: this.extractFirstUrl((input.url || '').trim()) || input.url,
+      };
     } else if (action === 'list') {
       path = route.list;
       body = { accountId: input.accountId, page: input.page ?? 1 };
