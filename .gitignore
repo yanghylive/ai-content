@@ -209,3 +209,10 @@ frontend/.next-stale-*/
 frontend/.next-t*-*/
 frontend/out-stale-*/
 frontend/out-stale*/
+
+# 本地环境备份（含密钥/BYPASS 开关，禁止上传）
+backend/.env.bak*
+.env.bak*
+# 构建临时备份
+frontend/.next-bk-*/
+frontend/out-stale-*/
