@@ -307,51 +307,19 @@ export class AuthService {
    * openid 用确定性 username（wechat-<openid>）绑定，避免 schema 迁移。
    */
   async wechatAppLogin(code: string) {
-    const appId = process.env.WECHAT_APP_APPID?.trim();
-    const appSecret = process.env.WECHAT_APP_SECRET?.trim();
-    if (!appId || !appSecret) {
-      throw new ServiceUnavailableException(
-        '微信一键登录未开通（需微信开放平台企业资质 AppID），请先用账号密码或扫码登录',
-      );
-    }
-    if (!code) {
-      throw new BadRequestException('微信授权 code 不能为空');
-    }
-
-    // code 换 access_token + openid
-    const tokenUrl =
-      `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${encodeURIComponent(appId)}` +
-      `&secret=${encodeURIComponent(appSecret)}&code=${encodeURIComponent(code)}&grant_type=authorization_code`;
-    let tokenData: { openid?: string; errmsg?: string };
-    try {
-      const raw: unknown = await fetch(tokenUrl).then((r) => r.json());
-      tokenData = raw as { openid?: string; errmsg?: string };
-    } catch {
-      throw new ServiceUnavailableException('微信授权服务不可用，请稍后重试');
-    }
-    const openid = tokenData?.openid;
-    if (!openid) {
-      throw new UnauthorizedException(
-        tokenData?.errmsg
-          ? `微信授权失败：${tokenData.errmsg}`
-          : '微信授权失败，请重试',
-      );
-    }
-
+    // 统一账号收编（2026-08-19）：微信 App 内登录不再独立建号——
+    // 与九章账号（kaypal 统一身份）双轨会制造"同一个人多个本地账号"。
+    // 新用户一律走九章账号登录（设备授权/扫码，手机号/微信在 kaypal 侧统一）；
+    // 本端点仅兼容历史存量 `wechat-${openid}` 假号登录，不再创建新假号。
+    const openid = await this.resolveWechatOpenId(code);
     const wechatUsername = `wechat-${openid}`;
     let user = await this.prisma.user.findUnique({
       where: { username: wechatUsername },
     });
     if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          username: wechatUsername,
-          email: `${wechatUsername}@kaypal.invalid`,
-          passwordHash: randomUUID(), // 微信登录不依赖密码，随机占位
-          name: '微信用户',
-          status: 'active',
-        },
-      });
+      throw new UnauthorizedException(
+        '微信一键登录已并入九章统一账号：请使用「九章账号」登录（手机号/微信/密码均在统一账号中心完成）',
+      );
     }
     if (user.status !== 'active') {
       throw new UnauthorizedException('账号已被停用');
@@ -383,6 +351,43 @@ export class AuthService {
       expiresAt,
       user: this.toSafeUser(updatedUser),
     };
+  }
+
+  /**
+   * 微信授权 code → openid（保留原实现，供存量假号兼容登录解析）。
+   * 注意：仅用于识别存量 `wechat-${openid}` 假号；新用户一律走九章账号。
+   */
+  private async resolveWechatOpenId(code: string): Promise<string> {
+    const appId = process.env.WECHAT_APP_APPID?.trim();
+    const appSecret = process.env.WECHAT_APP_SECRET?.trim();
+    if (!appId || !appSecret) {
+      throw new ServiceUnavailableException(
+        '微信一键登录未开通（需微信开放平台企业资质 AppID），请使用九章账号登录',
+      );
+    }
+    if (!code) {
+      throw new BadRequestException('微信授权 code 不能为空');
+    }
+    // code 换 access_token + openid
+    const tokenUrl =
+      `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${encodeURIComponent(appId)}` +
+      `&secret=${encodeURIComponent(appSecret)}&code=${encodeURIComponent(code)}&grant_type=authorization_code`;
+    let tokenData: { openid?: string; errmsg?: string };
+    try {
+      const raw: unknown = await fetch(tokenUrl).then((r) => r.json());
+      tokenData = raw as { openid?: string; errmsg?: string };
+    } catch {
+      throw new ServiceUnavailableException('微信授权服务不可用，请稍后重试');
+    }
+    const openid = tokenData?.openid;
+    if (!openid) {
+      throw new UnauthorizedException(
+        tokenData?.errmsg
+          ? `微信授权失败：${tokenData.errmsg}`
+          : '微信授权失败，请重试',
+      );
+    }
+    return openid;
   }
 
   /**
