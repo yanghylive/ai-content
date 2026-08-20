@@ -212,7 +212,7 @@ function useNotificationItems(): TickerItem[] {
           dot: "warn",
           text:
             failedTasks.length > 1
-              ? `「${failedTasks.length} 个发布任务失败了」`
+              ? `「${failedTasks.length} 个发布任务失败了」，请到任务中心处理`
               : `「${first.title || `任务 #${first.id}`}」发布失败，待处理`,
           href: "/distribution/tasks",
         });

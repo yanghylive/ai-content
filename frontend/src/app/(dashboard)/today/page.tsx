@@ -12,6 +12,7 @@ import {
   Flame,
   PlusSquare,
   Search,
+  Settings,
 } from "lucide-react";
 import { ShellIcon } from "@/components/shell/icons";
 import { Ticker, type TickerItem } from "@/components/shell/tickers";
@@ -298,14 +299,42 @@ export default function TodayPage() {
 
       {/* 行业新闻滚动条（监控体系的真实产出） */}
       {newsItems.length > 0 ? (
-        <Ticker
-          label="行业动态"
-          icon="rss"
-          items={newsItems}
-          speed={60}
-          labelColor="var(--kx-cb-fg)"
-          style={{ marginTop: 16 }}
-        />
+        <div
+          style={{
+            marginTop: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Ticker
+              label="行业动态"
+              icon="rss"
+              items={newsItems}
+              speed={60}
+              labelColor="var(--kx-cb-fg)"
+            />
+          </div>
+          <button
+            type="button"
+            className="kx-btn kx-btn-ghost"
+            onClick={() => router.push("/intelligence/monitors")}
+            style={{
+              flexShrink: 0,
+              fontSize: 12,
+              padding: "5px 10px",
+              borderRadius: 999,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+            aria-label="设置监控行业"
+          >
+            <Settings size={13} aria-hidden="true" />
+            设置行业
+          </button>
+        </div>
       ) : null}
 
       {loading ? (
