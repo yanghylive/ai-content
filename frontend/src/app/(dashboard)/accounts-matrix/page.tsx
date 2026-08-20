@@ -16,6 +16,7 @@ import {
 } from "@/lib/mobile-bridge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { Avatar } from "@/components/avatar";
+import styles from "./accounts-matrix.module.css";
 
 /** 账号平台 key（douyin/wechat-channel 等）→ mobile-bridge 平台 key */
 const toBridgeKey = (platform: string): PlatformKey => {
@@ -189,7 +190,7 @@ export default function AccountsMatrixV2Page() {
   }, [load]);
 
   return (
-    <div>
+    <div className={styles.page}>
       <V2BackButton />
       {/* 页面头 */}
       <header className="mx-header">
