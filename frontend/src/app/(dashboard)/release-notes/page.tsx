@@ -11,18 +11,18 @@ import {
 import type { ReactNode } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
-const currentVersion = "1.1.89";
+const currentVersion = "1.1.90";
 
 const highlights = [
+  {
+    title: "修复非 C 盘安装导致的操作失败",
+    text: "应用安装在 D 盘等其他盘（尤其 Program Files 目录）时，因系统写权限保护导致创建获客任务、补充线索等操作报错。本版将数据与日志统一迁移到用户数据目录，彻底修复。",
+    icon: <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />,
+  },
   {
     title: "错误自动上报",
     text: "应用运行中出现异常（如创建任务失败）时会自动把错误详情上传到云端，无需手动收集日志，团队可以更快定位和修复问题。",
     icon: <RefreshCw className="h-5 w-5" strokeWidth={1.8} />,
-  },
-  {
-    title: "登录浏览器空白修复（Windows）",
-    text: "Windows 真机点「登录平台账号」浏览器停在空白新标签页不跳转。本版增加 JS 导航兜底：CDP goto 未离开新标签页时，自动用浏览器自身跳转能力打开平台登录页。",
-    icon: <BadgeCheck className="h-5 w-5" strokeWidth={1.8} />,
   },
 ];
 
