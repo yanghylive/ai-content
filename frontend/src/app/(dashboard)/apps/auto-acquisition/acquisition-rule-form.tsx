@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   BookOpen,
+  CheckCircle2,
   MessageCircle,
   Music2,
   Play,
+  PlayCircle,
   Save,
   Sparkles,
+  XCircle,
 } from "lucide-react";
 import {
   V2Section,
@@ -21,7 +24,7 @@ import {
   V2OptionCard,
   V2Disclosure,
 } from "@/components/v2/ui-kit";
-import { growthApi, type GrowthAccountHealth, type GrowthPlatform } from "@/lib/api/growth";
+import { growthApi, type GrowthAccountHealth, type GrowthAcquisitionPreflight, type GrowthPlatform } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -177,6 +180,28 @@ export function AcquisitionRuleForm() {
 
   const canSubmit = keywords.length > 0 && form.dailyLimit > 0;
 
+  /** T06：创建后持有的 configId（用于预检/执行） */
+  const [createdConfigId, setCreatedConfigId] = useState<string | null>(null);
+  const [preflight, setPreflight] = useState<GrowthAcquisitionPreflight | null>(null);
+  const [preflightLoading, setPreflightLoading] = useState(false);
+  const [executing, setExecuting] = useState(false);
+
+  /** T06：预检（Q9：先保存草稿拿 configId → 再 preflight） */
+  const runPreflight = useCallback(async (configId: string) => {
+    setPreflightLoading(true);
+    setPreflight(null);
+    try {
+      const result = await growthApi.preflightConfig(configId);
+      setPreflight(result);
+      return result;
+    } catch (err: unknown) {
+      setError(toPublicError(err, "预检失败，请稍后重试"));
+      return null;
+    } finally {
+      setPreflightLoading(false);
+    }
+  }, []);
+
   const handleSubmit = async () => {
     if (!canSubmit) return;
     if (!selectedAccount) {
@@ -186,7 +211,7 @@ export function AcquisitionRuleForm() {
     setSaving(true);
     setError(null);
     try {
-      await growthApi.createConfig({
+      const config = await growthApi.createConfig({
         taskName: autoTaskName,
         platform: form.platform,
         accountId: selectedAccount.accountId,
@@ -211,11 +236,31 @@ export function AcquisitionRuleForm() {
         riskMode: form.riskMode,
         status: "disabled",
       });
-      router.push("/apps/auto-acquisition");
+      if (config?.id) {
+        setCreatedConfigId(config.id);
+        await runPreflight(config.id);
+      } else {
+        router.push("/apps/auto-acquisition");
+      }
     } catch (err: unknown) {
       setError(toPublicError(err, "创建获客任务失败，请稍后重试"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  /** T06：强制执行（仅预检通过后可用） */
+  const handleExecute = async () => {
+    if (!createdConfigId || !preflight?.allowed) return;
+    setExecuting(true);
+    setError(null);
+    try {
+      await growthApi.executeConfig(createdConfigId);
+      router.push("/growth/acquisition");
+    } catch (err: unknown) {
+      setError(toPublicError(err, "任务执行失败，请稍后重试"));
+    } finally {
+      setExecuting(false);
     }
   };
 
@@ -442,6 +487,41 @@ export function AcquisitionRuleForm() {
               {saving ? "正在创建…" : "创建获客任务"}
             </button>
           </div>
+
+          {/* T06：移动端预检结果（创建成功后） */}
+          {createdConfigId && (
+            <div className="mx-card" style={{ marginTop: 12, padding: 12 }}>
+              {preflightLoading ? (
+                <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>正在预检任务…</p>
+              ) : preflight ? (
+                <>
+                  <p style={{ fontSize: 12.5, fontWeight: 700, color: preflight.allowed ? "#059669" : "#dc2626" }}>
+                    {preflight.allowed ? "✓ 预检通过" : "✗ 预检未通过"}
+                  </p>
+                  <p style={{ fontSize: 12, color: "var(--mx-ink)", marginTop: 4, lineHeight: 1.6 }}>{preflight.summary}</p>
+                  {preflight.blockers.length > 0 && (
+                    <ul style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
+                      {preflight.blockers.map((b) => (
+                        <li key={b} style={{ fontSize: 11.5, color: "#dc2626" }}>· {b}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {preflight.allowed && (
+                    <button
+                      type="button"
+                      className="mx-btn-gold"
+                      style={{ marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                      disabled={executing}
+                      onClick={() => void handleExecute()}
+                    >
+                      <PlayCircle width={15} height={15} />
+                      {executing ? "正在执行…" : "预检通过，立即执行"}
+                    </button>
+                  )}
+                </>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -760,18 +840,101 @@ export function AcquisitionRuleForm() {
         </ol>
       </section>
 
+      {/* T06：预检结果 / 执行（创建成功后显示；allowed=false 禁用执行） */}
+      {createdConfigId && (
+        <section className="kaypal-v3-panel p-6">
+          <div className="flex items-center gap-2">
+            {preflight?.allowed ? (
+              <CheckCircle2 className="h-5 w-5 text-[var(--kaypal-v3-success)]" />
+            ) : (
+              <XCircle className="h-5 w-5 text-[var(--kaypal-v3-danger)]" />
+            )}
+            <h3 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
+              任务预检
+            </h3>
+            {preflightLoading && (
+              <span className="text-xs text-[var(--kaypal-v3-muted)]">检查中…</span>
+            )}
+          </div>
+
+          {preflight && (
+            <>
+              <p className="mt-2 text-sm text-[var(--kaypal-v3-soft-ink)]">
+                {preflight.summary}
+              </p>
+
+              {preflight.checks.length > 0 && (
+                <ul className="mt-3 flex flex-col gap-1.5">
+                  {preflight.checks.map((check) => (
+                    <li key={check} className="flex items-start gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-success)]" />
+                      <span>{check}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {preflight.warnings.length > 0 && (
+                <ul className="mt-3 flex flex-col gap-1.5">
+                  {preflight.warnings.map((warning) => (
+                    <li key={warning} className="flex items-start gap-2 text-sm text-[var(--kaypal-v3-warning-ink)]">
+                      <span className="mt-0.5 text-[var(--kaypal-v3-warning)]">⚠</span>
+                      <span>{warning}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {preflight.blockers.length > 0 && (
+                <ul className="mt-3 flex flex-col gap-1.5">
+                  {preflight.blockers.map((blocker) => (
+                    <li key={blocker} className="flex items-start gap-2 text-sm text-[var(--kaypal-v3-danger)]">
+                      <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{blocker}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {!preflight.allowed && (
+                <p className="mt-3 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-danger-soft)] p-3 text-sm text-[var(--kaypal-v3-danger)]">
+                  任务已保存为草稿，但预检未通过，暂不能自动执行。请先处理上面的阻断项，或稍后在「获客任务」页手动执行。
+                </p>
+              )}
+            </>
+          )}
+
+          <div className="mt-4 flex items-center gap-3">
+            {preflight?.allowed && (
+              <V2PrimaryButton
+                icon={PlayCircle}
+                loading={executing}
+                onClick={() => void handleExecute()}
+              >
+                {executing ? "正在执行…" : "预检通过，立即执行"}
+              </V2PrimaryButton>
+            )}
+            <V2GhostButton icon={Save} onClick={() => router.push("/growth/acquisition")}>
+              保存草稿并返回
+            </V2GhostButton>
+          </div>
+        </section>
+      )}
+
       <section className="flex items-center justify-between">
         <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/apps/auto-acquisition")}>
           返回
         </V2GhostButton>
-        <V2PrimaryButton
-          icon={Save}
-          loading={saving}
-          disabled={!canSubmit}
-          onClick={handleSubmit}
-        >
-          {saving ? "正在创建..." : "创建获客任务"}
-        </V2PrimaryButton>
+        {!createdConfigId && (
+          <V2PrimaryButton
+            icon={Save}
+            loading={saving}
+            disabled={!canSubmit}
+            onClick={handleSubmit}
+          >
+            {saving ? "正在创建..." : "创建获客任务"}
+          </V2PrimaryButton>
+        )}
       </section>
     </div>
   );
