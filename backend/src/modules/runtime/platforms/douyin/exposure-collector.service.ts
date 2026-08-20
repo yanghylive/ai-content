@@ -1,7 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
-import sharp from 'sharp';
 import type { Page } from 'playwright';
 import { safeText } from '../../../../common/text.utils';
 import { LocalBrowserEngine } from '../../../local-engine/local-browser-engine.service';
@@ -129,6 +128,7 @@ export class DouyinExposureCollector {
           input.filters,
           snapshot.url || firstLink,
           'comments',
+          session.key,
         );
         if (visionCandidates) {
           return visionCandidates;
@@ -249,6 +249,8 @@ export class DouyinExposureCollector {
           input.limit ?? 20,
           input.filters,
           snapshot.url || searchUrl,
+          'search',
+          session.key,
         );
         if (visionCandidates) {
           return visionCandidates;
@@ -372,6 +374,8 @@ export class DouyinExposureCollector {
           input.limit ?? 20,
           input.filters,
           searchSnapshot.url || searchUrl,
+          'search',
+          session.key,
         );
         if (visionCandidates) {
           return visionCandidates;
@@ -2622,6 +2626,7 @@ export class DouyinExposureCollector {
     filters: Record<string, unknown> | undefined,
     sourceUrl: string,
     mode: 'search' | 'comments' = 'search',
+    sessionKey?: string,
   ): Promise<DouyinExposureCollectorResult | null> {
     // 视觉调用全局限频：不按 keyword 分桶（不同任务/关键词会绕过限频），
     // kaypal 网关幂等窗口内避免重放（409 BILLING_IDEMPOTENCY_REPLAY）
@@ -2653,17 +2658,59 @@ export class DouyinExposureCollector {
       // 压缩截图：全尺寸 1600x1000 PNG 直接传会超 qwen-vl-max 输入 token 限制
       // （实测 500x740 文字密集图 ≈10 万 token，>8 万即输出空/网关异常）。
       // 长边 ≤900 + jpeg q72，token 控制在 5 万内，识别率与成本平衡。
+      // ⚠️ 用浏览器页面 canvas 压缩（不用 sharp）——sharp 是 external 原生模块，
+      // 安装包 backend/ 未打包 node_modules，require('sharp') 会导致安装版后端
+      // 启动即崩（2026-08-20 发版实测 MODULE_NOT_FOUND）。canvas 零依赖跨平台。
       let base64: string;
-      try {
-        const compressed = await sharp(evidencePath)
-          .resize({ width: 900, withoutEnlargement: true })
-          .jpeg({ quality: 72 })
-          .toBuffer();
-        base64 = compressed.toString('base64');
-      } catch (compressError) {
-        const png = await readFile(evidencePath);
-        base64 = png.toString('base64');
-      }
+      const png = await readFile(evidencePath);
+      const pngBase64 = png.toString('base64');
+      const session = sessionKey
+        ? this.browser.getSession(sessionKey)
+        : undefined;
+      const compressInPage = async (
+        page: Page | undefined,
+        rawBase64: string,
+      ): Promise<string> => {
+        if (!page || page.isClosed()) return rawBase64;
+        try {
+          const dataUrl = await page.evaluate(
+            (src) =>
+              new Promise<string>((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                  try {
+                    const scale = Math.min(1, 900 / img.width);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.max(1, Math.round(img.width * scale));
+                    canvas.height = Math.max(
+                      1,
+                      Math.round(img.height * scale),
+                    );
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) {
+                      resolve('');
+                      return;
+                    }
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.72));
+                  } catch {
+                    resolve('');
+                  }
+                };
+                img.onerror = () => resolve('');
+                img.src = `data:image/png;base64,${src}`;
+              }),
+            rawBase64,
+          );
+          if (dataUrl && dataUrl.includes(',')) {
+            return dataUrl.split(',')[1] ?? rawBase64;
+          }
+        } catch {
+          // 页面 evaluate 失败（页面已关/导航中）→ 回退原图
+        }
+        return rawBase64;
+      };
+      base64 = await compressInPage(session?.page, pngBase64);
       const prompt =
         mode === 'comments'
           ? `这是抖音视频详情页的页面截图。请仔细识别画面中所有可见的视频评论用户，` +
