@@ -675,7 +675,9 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     reused: boolean;
   }> {
     try {
-      return await this.launchCdpContext(profileDir, platform, accountId);
+      return await this.launchCdpContext(profileDir, platform, accountId, {
+        probe,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (!this.isRecoverableCdpLaunchError(message)) {
@@ -700,6 +702,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       try {
         return await this.launchCdpContext(profileDir, platform, accountId, {
           forceNewPort: true,
+          probe,
         });
       } catch (retryError) {
         const retryMessage =
@@ -739,26 +742,30 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     profileDir: string,
     platform: string,
     accountId: string,
-    options: { forceNewPort?: boolean } = {},
+    options: { forceNewPort?: boolean; probe?: boolean } = {},
   ): Promise<{
     context: BrowserContext;
     debuggingPort: number;
     process?: ChildProcess;
     reused: boolean;
   }> {
+    // 探活档强制新端口：绝不复用现有 CDP 进程（可能是用户窗口或残留探活进程），
+    // 保证本会话 browserProcess 可记录、用完可杀，避免残留累积。
     const port = await this.pickCdpPort(
       platform,
       accountId,
       profileDir,
-      options,
+      { ...options, forceNewPort: options.forceNewPort || options.probe === true },
     );
     let proc: ChildProcess | undefined;
     let reused = false;
 
     if (!(await this.isCdpResponding(port))) {
-      const args = this.buildCdpLaunchArgs(profileDir, port);
+      const args = this.buildCdpLaunchArgs(profileDir, port, options.probe);
       this.logger.log(
-        `启动 5409 同款 CDP 浏览器: port=${port}, profile=${profileDir}`,
+        `启动 5409 同款 CDP 浏览器: port=${port}, profile=${profileDir}${
+          options.probe ? '（探活 headless）' : ''
+        }`,
       );
       proc = spawn(this.chromePath, args, {
         detached: process.platform !== 'win32',
@@ -815,11 +822,17 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     });
   }
 
-  private buildCdpLaunchArgs(profileDir: string, port: number): string[] {
+  private buildCdpLaunchArgs(
+    profileDir: string,
+    port: number,
+    probe = false,
+  ): string[] {
     return [
       `--remote-debugging-port=${port}`,
       '--remote-debugging-address=127.0.0.1',
       `--user-data-dir=${profileDir}`,
+      // 探活档强制 headless：账号健康检查/登录态验证不弹窗打扰用户
+      ...(probe ? ['--headless=new'] : []),
       '--window-size=1600,1000',
       '--window-position=48,36',
       '--autoplay-policy=no-user-gesture-required',
@@ -1532,9 +1545,61 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         );
         return false;
       }
+    } else if (session.debuggingPort) {
+      // 兜底：browserProcess 未记录时按 CDP 端口反查占用进程并杀（防探活进程残留）。
+      // 等待片刻让新启动的探活进程完成端口监听，避免竞态查不到。
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      try {
+        const pids = this.pidsListeningOnPort(session.debuggingPort);
+        for (const pid of pids) {
+          try {
+            process.kill(pid, 'SIGTERM');
+          } catch {
+            /* 进程可能已退出 */
+          }
+        }
+        // SIGTERM 可能被 headless chrome 忽略，补一发 SIGKILL
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        for (const pid of pids) {
+          try {
+            process.kill(pid, 'SIGKILL');
+          } catch {
+            /* 进程已退出 */
+          }
+        }
+      } catch (error) {
+        this.logger.error(
+          `按端口 ${session.debuggingPort} 兜底杀进程失败（key=${key}）：${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
     }
     this.sessions.delete(key);
     return true;
+  }
+
+  /** 反查监听指定端口的进程 pid（macOS/Linux：lsof 按端口过滤），排除自身 */
+  private pidsListeningOnPort(port: number): number[] {
+    if (process.platform === 'win32') return [];
+    try {
+      const output = execFileSync(
+        'lsof',
+        ['-ti', `tcp:${port}`],
+        { encoding: 'utf8' },
+      );
+      const currentPid = process.pid;
+      return output
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => /^\d+$/.test(line))
+        .map((line) => Number(line))
+        .filter(
+          (pid) => Number.isFinite(pid) && pid > 1 && pid !== currentPid,
+        );
+    } catch {
+      return [];
+    }
   }
 
   listSessions(): EngineSessionSummary[] {

@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { Page } from 'playwright';
+import { join } from 'node:path';
 import { LocalBrowserEngine } from '../../../local-engine/local-browser-engine.service';
 import { PlatformAdapterRegistry } from '../../../platform-registry/platform-adapter.registry';
+import { resolveProjectDataPath } from '../../../../common/project-paths';
 import type {
   GenericVideoPublishAdapter,
   ImageTextPublishAdapter,
@@ -138,6 +140,26 @@ export class PlatformPublishService implements TaskExecutor {
       coverPaths?: Record<string, string>;
       scheduleTime?: string;
     };
+    // 素材路径归一化：fileList 传入的是纯文件名（相对 3011 素材库），
+    // 统一解析为绝对路径，与 preflight 层 checkReadablePublishFile 保持一致，
+    // 避免 adapter 里 statSync(纯文件名) 相对后端 cwd 找不到文件。
+    const materialRoot =
+      process.env.AUTO_UPLOAD_MATERIALS_DIR ||
+      resolveProjectDataPath('materials');
+    const resolveMaterial = (filePath: string): string => {
+      if (!filePath) return filePath;
+      if (filePath.includes('/') || filePath.includes('\\')) return filePath;
+      return join(materialRoot, filePath);
+    };
+    if (Array.isArray(payload.materialFiles)) {
+      payload.materialFiles = payload.materialFiles.map(resolveMaterial);
+    }
+    if (payload.coverPath) payload.coverPath = resolveMaterial(payload.coverPath);
+    if (payload.coverPaths && typeof payload.coverPaths === 'object') {
+      for (const key of Object.keys(payload.coverPaths)) {
+        payload.coverPaths[key] = resolveMaterial(payload.coverPaths[key]);
+      }
+    }
     const platform =
       payload.platform || `平台 ${payload.platformType ?? ''}`.trim();
     const title = payload.title || '未命名内容';
