@@ -225,4 +225,58 @@ describe('AuthService', () => {
       }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
+
+  describe('wechatAppLogin 统一账号收编（2026-08-19）', () => {
+    const withWechatEnv = () => {
+      process.env.WECHAT_APP_APPID = 'wx-test-appid';
+      process.env.WECHAT_APP_SECRET = 'wx-test-secret';
+      const originalFetch = global.fetch;
+      global.fetch = jest.fn().mockResolvedValue({
+        json: () => Promise.resolve({ openid: 'openid-1' }),
+      }) as unknown as typeof fetch;
+      return () => {
+        global.fetch = originalFetch;
+        delete process.env.WECHAT_APP_APPID;
+        delete process.env.WECHAT_APP_SECRET;
+      };
+    };
+
+    it('openid 无存量假号 → 不再新建，返回引导九章账号', async () => {
+      const restore = withWechatEnv();
+      try {
+        const { service, prisma } = createService();
+        prisma.user.findUnique.mockResolvedValue(null);
+        await expect(
+          service.wechatAppLogin('valid-code'),
+        ).rejects.toThrow('已并入九章统一账号');
+        // 不再创建 wechat- 假号
+        expect(prisma.user.create).not.toHaveBeenCalled();
+      } finally {
+        restore();
+      }
+    });
+
+    it('openid 命中存量假号 → 兼容登录（不新建）', async () => {
+      const restore = withWechatEnv();
+      try {
+        const { service, prisma } = createService();
+        prisma.user.findUnique.mockResolvedValue({
+          id: 'legacy-wechat-user',
+          status: 'active',
+        });
+        prisma.userSession.create.mockResolvedValue({ id: 'session-1' });
+        prisma.user.update.mockResolvedValue({
+          id: 'legacy-wechat-user',
+          status: 'active',
+        });
+        const result = await service.wechatAppLogin('valid-code');
+        expect(result.user).toBeDefined();
+        expect(prisma.user.create).not.toHaveBeenCalled();
+      } finally {
+        restore();
+      }
+    });
+  });
+
 });
+

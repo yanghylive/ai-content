@@ -20,7 +20,6 @@ import {
   LayoutDashboard,
   LogIn,
   MapPinned,
-  MessageCircle,
   ShieldCheck,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,7 +27,7 @@ import toast from "@/lib/toast";
 import { authApi, kaypalApi, type AuthUser } from "@/lib/api/auth";
 import { ApiError, getApiBase } from "@/lib/api/client";
 import { toPublicError, toActionableError } from "@/lib/public-error";
-import { isMobileShell, wechatLogin } from "@/lib/mobile-bridge";
+import { isMobileShell } from "@/lib/mobile-bridge";
 
 const KAYPAL_DEVICE_AUTH_STATE_KEY = "kaypal_device_auth_state_v1";
 
@@ -949,30 +948,15 @@ function LoginPageContent() {
                         {!isMobileShell() && (
                           <Button className="qr-login-button" label="使用微信登录" onClick={handleWechatLogin} variant="primary" width="100%" />
                         )}
-                        {/* App 内微信一键登录仍走原有壳桥能力，但与账号密码表单分离。 */}
+                        {/* 统一账号收编（2026-08-19）：App 内登录并入九章统一账号
+                            （设备授权调起 kaypal 网页登录，手机号/微信/密码在统一账号中心完成），
+                            不再走微信开放平台 openid 独立建号。 */}
                         {isMobileShell() && (
                           <Button
                             className="qr-login-button"
-                            icon={<MessageCircle aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />}
-                            label="微信一键登录"
-                            onClick={() => {
-                              const result = wechatLogin();
-                              if (!result.ok || !result.code) {
-                                toast.error(result.message);
-                                return;
-                              }
-                              void authApi
-                                .wechatAppLogin(result.code)
-                                .then(() => navigateToNext())
-                                .catch((err: unknown) => {
-                                  const raw = err instanceof Error ? err.message : "";
-                                  toast.error(
-                                    raw
-                                      ? `微信登录失败：${raw}`
-                                      : toActionableError(err, "微信登录失败，请重试"),
-                                  );
-                                });
-                            }}
+                            icon={<LogIn aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />}
+                            label="微信一键登录（九章账号）"
+                            onClick={() => void startDeviceAuth()}
                             variant="secondary"
                             width="100%"
                           />
