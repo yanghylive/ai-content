@@ -11,17 +11,17 @@ import {
 import type { ReactNode } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
-const currentVersion = "1.1.87";
+const currentVersion = "1.1.88";
 
 const highlights = [
   {
-    title: "安装包稳定性修复",
-    text: "修复桌面端安装包启动崩溃（sqlite-empty-template 缺失）与登录页图标丢失（next/image 优化端点在桌面端 404）。本版为紧急修复版，升级后应用可正常打开。",
+    title: "登录浏览器空白修复（Windows）",
+    text: "Windows 真机点「登录平台账号」浏览器停在空白新标签页不跳转。本版增加 JS 导航兜底：CDP goto 未离开新标签页时，自动用浏览器自身跳转能力打开平台登录页。",
     icon: <RefreshCw className="h-5 w-5" strokeWidth={1.8} />,
   },
   {
-    title: "抖音登录浏览器空白修复",
-    text: "修复浏览器引擎层两个问题：探活进程无限堆积（资源耗尽导致页面加载不动）与 CDP 端口并发竞态（新会话连错浏览器）。点「登录抖音账号」现在能正常打开创作者登录页。",
+    title: "登录导航诊断日志",
+    text: "登录页跳转过程增加落点日志（成功/失败/兜底前后 URL），Windows 真机异常可凭日志快速定位。",
     icon: <BadgeCheck className="h-5 w-5" strokeWidth={1.8} />,
   },
 ];
