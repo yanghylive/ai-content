@@ -418,6 +418,14 @@ export class GrowthController {
     return this.growthService.getLeadScoreHistory(this.getUserId(request), id);
   }
 
+  @Post('leads/:id/rescore')
+  rescoreLead(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.growthService.rescoreLead(this.getUserId(request), id);
+  }
+
   @Get('leads/:id/attribution')
   getLeadAttribution(
     @Req() request: AuthenticatedRequest,

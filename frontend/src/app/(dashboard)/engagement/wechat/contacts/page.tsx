@@ -7,7 +7,7 @@ import { localEngineApi } from "@/lib/api/local-engine";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { toActionableError } from "@/lib/public-error";
-import { GrayTestBanner } from "@/components/v2/gray-test-banner";
+import { GrayTestOverlay } from "@/components/v2/gray-test-overlay";
 
 /** 商用授权引导条：同步联系人需要 STANDARD/PRO 及以上套餐 */
 function CommercialGateBanner() {
@@ -139,8 +139,8 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <GrayTestBanner feature="微信通讯录同步（桌面客户端）" />
+    <GrayTestOverlay feature="微信通讯录同步">
+      <div className="flex flex-col gap-4">
       {error && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
           <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
@@ -167,6 +167,7 @@ export default function ContactsPage() {
         onDelete={(id) => console.log("删除联系人:", id)}
         onCancel={() => router.push("/engagement/wechat")}
       />
-    </div>
+      </div>
+    </GrayTestOverlay>
   );
 }

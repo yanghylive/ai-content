@@ -1,7 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
+import { existsSync } from 'fs';
+import { readFile } from 'fs/promises';
+import sharp from 'sharp';
 import type { Page } from 'playwright';
 import { safeText } from '../../../../common/text.utils';
 import { LocalBrowserEngine } from '../../../local-engine/local-browser-engine.service';
+import { AiClientService } from '../../../ai-models/ai-client.service';
 
 export type DouyinExposureCollectorInput = {
   accountId: string | number;
@@ -78,7 +82,10 @@ type RawDouyinAccountLink = {
 export class DouyinExposureCollector {
   private readonly logger = new Logger(DouyinExposureCollector.name);
 
-  constructor(private readonly browser: LocalBrowserEngine) {}
+  constructor(
+    private readonly browser: LocalBrowserEngine,
+    @Optional() private readonly aiClient?: AiClientService,
+  ) {}
 
   async collectFromLinks(
     input: DouyinExposureCollectorInput,
@@ -111,6 +118,21 @@ export class DouyinExposureCollector {
       });
       const diagnosis = this.diagnose(snapshot.textSample, snapshot.url);
       if (diagnosis) {
+        // T2-4g 视觉兜底（评论页）：视频详情页被验证码/反爬拦截时，
+        // 用截图 + 视觉模型读画面中可见的评论用户（昵称+评论内容）。
+        // 截图时机在 scrollForComments 之后，评论已滚动加载，部分评论
+        // 在验证码弹层之外仍可见，qwen-vl-max 可从中提取评论用户。
+        const visionCandidates = await this.visionFallbackSearchCandidates(
+          snapshot.evidencePath,
+          snapshot.title || '抖音视频',
+          input.limit ?? 20,
+          input.filters,
+          snapshot.url || firstLink,
+          'comments',
+        );
+        if (visionCandidates) {
+          return visionCandidates;
+        }
         return {
           ok: false,
           status: diagnosis.status,
@@ -219,6 +241,18 @@ export class DouyinExposureCollector {
       });
       const diagnosis = this.diagnoseSearch(snapshot.textSample, snapshot.url);
       if (diagnosis) {
+        // T2-4 视觉兜底：DOM 被验证码/反爬拦截时，用截图 + 视觉模型读画面内容
+        // （反爬拦脚本读 DOM，不拦"人眼"；qwen-vl-max 可从截图提取搜索结果）
+        const visionCandidates = await this.visionFallbackSearchCandidates(
+          snapshot.evidencePath,
+          keyword,
+          input.limit ?? 20,
+          input.filters,
+          snapshot.url || searchUrl,
+        );
+        if (visionCandidates) {
+          return visionCandidates;
+        }
         return {
           ok: false,
           status: diagnosis.status,
@@ -331,6 +365,17 @@ export class DouyinExposureCollector {
         searchSnapshot.url,
       );
       if (searchDiagnosis) {
+        // T2-4 agent-s 视觉兜底：hot-video 搜索同样支持截图+视觉恢复
+        const visionCandidates = await this.visionFallbackSearchCandidates(
+          searchSnapshot.evidencePath,
+          keyword,
+          input.limit ?? 20,
+          input.filters,
+          searchSnapshot.url || searchUrl,
+        );
+        if (visionCandidates) {
+          return visionCandidates;
+        }
         return {
           ok: false,
           status: searchDiagnosis.status,
@@ -2562,5 +2607,133 @@ export class DouyinExposureCollector {
     return /^(搜索|综合|视频|用户|直播|音乐|话题|地点|筛选|最新|最热|推荐|关注|登录|打开抖音|打开看看|下载抖音|下载抖音精选|精选|朋友|我的|首页|商城|消息|我|清屏|复制链接|举报|加载中|广告投放|用户服务协议|隐私政策|账号找回|联系我们|加入我们|营业执照|友情链接|站点地图|抖音电商|客户端|壁纸|通知|私信|投稿|放映厅|短剧|充值|多列|单列|开启读屏标签|读屏标签已关闭|网络谣言曝光台|网上有害信息举报|违法和不良信息举报)$/.test(
       line,
     );
+  }
+
+  /** T2-4 agent-s 视觉兜底：DOM 被反爬/验证码拦截时，截图 + qwen-vl-max 读画面内容。
+   * mode='search'  读搜索结果（视频标题/账号）——搜索/热门视频被拦场景
+   * mode='comments' 读视频详情页评论用户（昵称+评论内容）——链接曝光被拦场景
+   * 返回解析出的候选；无法读取或无需兜底返回 null（调用方保持原拦截逻辑）。 */
+  private readonly visionFallbackLastCallAt = new Map<string, number>();
+  private static readonly VISION_FALLBACK_MIN_INTERVAL_MS = 60_000;
+  private async visionFallbackSearchCandidates(
+    evidencePath: string,
+    keyword: string,
+    limit: number,
+    filters: Record<string, unknown> | undefined,
+    sourceUrl: string,
+    mode: 'search' | 'comments' = 'search',
+  ): Promise<DouyinExposureCollectorResult | null> {
+    // 视觉调用全局限频：不按 keyword 分桶（不同任务/关键词会绕过限频），
+    // kaypal 网关幂等窗口内避免重放（409 BILLING_IDEMPOTENCY_REPLAY）
+    const visionKey = 'douyin:vision-fallback';
+    const lastCall = this.visionFallbackLastCallAt.get(visionKey);
+    if (
+      lastCall &&
+      Date.now() - lastCall <
+        DouyinExposureCollector.VISION_FALLBACK_MIN_INTERVAL_MS
+    ) {
+      this.logger.warn(
+        `[视觉兜底] 跳过：距上次视觉调用不足 ${
+          DouyinExposureCollector.VISION_FALLBACK_MIN_INTERVAL_MS / 1000
+        }s（防网关幂等冲突）`,
+      );
+      return null;
+    }
+    if (!this.aiClient) {
+      this.logger.warn('视觉兜底跳过：AiClientService 未注入');
+      return null;
+    }
+    if (!evidencePath || !existsSync(evidencePath)) {
+      this.logger.warn('视觉兜底跳过：无截图文件');
+      return null;
+    }
+    // 视觉模型：kaypal.cn 服务器注册的 qwen-vl-max（ai_models.kaypal-vision）
+    const visionModel = 'cmsvis0001visionkaypalvl';
+    try {
+      // 压缩截图：全尺寸 1600x1000 PNG 直接传会超 qwen-vl-max 输入 token 限制
+      // （实测 500x740 文字密集图 ≈10 万 token，>8 万即输出空/网关异常）。
+      // 长边 ≤900 + jpeg q72，token 控制在 5 万内，识别率与成本平衡。
+      let base64: string;
+      try {
+        const compressed = await sharp(evidencePath)
+          .resize({ width: 900, withoutEnlargement: true })
+          .jpeg({ quality: 72 })
+          .toBuffer();
+        base64 = compressed.toString('base64');
+      } catch (compressError) {
+        const png = await readFile(evidencePath);
+        base64 = png.toString('base64');
+      }
+      const prompt =
+        mode === 'comments'
+          ? `这是抖音视频详情页的页面截图。请仔细识别画面中所有可见的视频评论用户，` +
+            `列出每条：1) 评论者昵称 2) 评论内容（如有） 3) 视频标题（该评论所在的视频，如有）。` +
+            `以 JSON 数组输出，格式：[{"nickname":"评论者昵称","comment":"评论内容","videoTitle":"视频标题"}]。` +
+            `如果画面是验证码、登录页或没有可见评论，输出空数组 []。不要输出其他内容。`
+          : `这是抖音搜索「${keyword}」的页面截图。请仔细识别画面中所有可见的视频搜索结果，` +
+            `列出每条：1) 视频标题 2) 作者昵称（如有） 3) 视频链接（如有）。` +
+            `以 JSON 数组输出，格式：[{"videoTitle":"视频标题","authorName":"作者昵称","videoUrl":"视频链接"}]。` +
+            `如果画面是验证码、登录页或没有可见内容，输出空数组 []。不要输出其他内容。`;
+      const visionContent = await this.aiClient.generateWithImage(
+        visionModel,
+        {
+          system: '你是获客助手，负责从抖音页面截图提取用户线索。只输出 JSON。',
+          prompt,
+          imageBase64: base64,
+        },
+        { maxTokens: 1500 },
+      );
+      this.visionFallbackLastCallAt.set(visionKey, Date.now());
+      const match = visionContent.match(/\[[\s\S]*\]/);
+      if (!match) return null;
+      const parsed: Array<{
+        nickname?: string;
+        comment?: string;
+        videoTitle?: string;
+        authorName?: string;
+        videoUrl?: string;
+      }> = JSON.parse(match[0]);
+      const candidates = (Array.isArray(parsed) ? parsed : [])
+        .filter((item) => item?.nickname || item?.comment || item?.videoTitle)
+        .slice(0, limit)
+        .map((item, index) => ({
+          sourceUrl,
+          text:
+            item.comment ||
+            item.nickname ||
+            item.videoTitle ||
+            item.authorName ||
+            (mode === 'comments' ? '抖音评论用户' : '抖音搜索结果'),
+          index,
+          kind: mode === 'comments' ? ('comment' as const) : ('search-result' as const),
+          videoTitle: item.videoTitle,
+          targetName: item.nickname || item.authorName,
+        }));
+      if (!candidates.length) return null;
+      this.logger.log(
+        `[视觉兜底] 抖音「${keyword}」${mode === 'comments' ? '评论页' : '搜索页'}从截图识别 ${candidates.length} 条候选`,
+      );
+      return {
+        ok: true,
+        status: 'collected',
+        message: `验证码/反爬拦截后经视觉识别恢复：从截图提取 ${candidates.length} 条${mode === 'comments' ? '评论用户' : '搜索结果'}（qwen-vl-max）`,
+        currentUrl: sourceUrl,
+        candidates,
+        evidence: {
+          type: 'screenshot',
+          label:
+            mode === 'comments'
+              ? 'douyin-link-exposure-vision-fallback'
+              : 'douyin-search-vision-fallback',
+          path: evidencePath,
+          capturedAt: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      this.logger.warn(
+        `[视觉兜底] 失败：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
   }
 }

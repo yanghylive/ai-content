@@ -44,13 +44,11 @@ const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "default"> 
   new: "default",
 };
 
-/** DevTools 导出 storageState 的图文引导步骤 */
+/** 绑定引导说明（T2-11：不再展示 F12/EditThisCookie 等开发者级操作，改为合规的开放前说明） */
 const STORAGE_GUIDE_STEPS = [
-  "在电脑 Chrome 打开并登录 Boss 直聘网页版",
-  "按 F12 打开开发者工具，切到 Application（应用）面板",
-  "左侧选择 Storage → Local Storage（本地存储空间）下的站点",
-  "右键点击站点数据 → 选择 Export storageState（导出登录态）",
-  "把导出的 JSON 内容粘贴到下方输入框，点击上传并绑定",
+  "BOSS 直聘获客当前处于灰度验证阶段，正式开放前暂不支持自主绑定账号。",
+  "正式开放后，将提供合规的扫码登录绑定方式（需桌面客户端配合），无需导出任何数据。",
+  "如有体验需求，请联系运营申请灰度名单。",
 ];
 
 export function BossRecruitCenter() {
@@ -228,17 +226,16 @@ export function BossRecruitCenter() {
               ))}
             </ol>
             <p className="mt-2 text-xs text-default-400">
-              提示：如果浏览器没有“Export storageState”选项，可在 Application
-              面板中找到 Cookies，选中全部 Cookie
-              右键导出，或使用 Chrome 扩展“EditThisCookie”导出 JSON。
+              说明：为避免账号风险，不再支持手动导出浏览器登录态的方式；正式开放将提供官方扫码绑定。
             </p>
           </div>
           <Textarea
             label="登录态 JSON（storageState）"
-            placeholder='粘贴从浏览器导出的 storageState JSON，例如 {"cookies":[...],"origins":[...]}'
+            placeholder='灰度验证中暂不可用；正式开放后将改用扫码登录绑定'
             value={storageJson}
             onValueChange={setStorageJson}
             minRows={4}
+            isDisabled
           />
           <div className="flex flex-wrap items-center gap-3">
             <Button color="primary" startContent={<Upload className="h-4 w-4" />} isLoading={busy === "upload"} onPress={handleUpload}>

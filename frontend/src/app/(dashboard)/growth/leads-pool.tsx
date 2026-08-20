@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
+  BellRing,
   CheckCircle2,
   Trash2,
   UserRound,
@@ -63,6 +64,31 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "blocked", label: "已屏蔽" },
 ];
 
+/** T4-4：把"命中：xxx"机械拼接转成 AI 自然语言评分理由 */
+function naturalizeScoreReason(lead: {
+  nickname?: string | null;
+  sourceText?: string | null;
+  scoreReasons?: string[] | null;
+  matchedKeywords?: string[] | null;
+}): string {
+  const reasons = lead.scoreReasons || [];
+  const kws = lead.matchedKeywords || [];
+  const hasDemand = reasons.some((r) => /需求/.test(r));
+  const hasIndustry = reasons.some((r) => /行业/.test(r));
+  const priceKw = kws.find((k) =>
+    /多少钱|价格|报价|贵不贵|预算|费用|怎么收费/.test(k),
+  );
+  const comment = lead.sourceText
+    ? `在评论「${lead.sourceText.slice(0, 24)}」里`
+    : "在评论区";
+  const signals: string[] = [];
+  if (priceKw) signals.push(`主动问到了价格（${priceKw}）`);
+  if (hasDemand) signals.push("需求表达很明确");
+  if (hasIndustry) signals.push("行业匹配度高");
+  if (signals.length === 0) signals.push("对相关内容表现出兴趣");
+  return `这位用户${comment}${signals.join("，")}，是值得跟进的意向线索。`;
+}
+
 export function LeadsPool() {
   const { confirm, modal } = useConfirm();
   // 手动补充线索
@@ -77,7 +103,9 @@ export function LeadsPool() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [actingId, setActingId] = useState<string | null>(null);
+  const [rescoringId, setRescoringId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const fetchLeads = useCallback(async () => {
     try {
@@ -119,6 +147,30 @@ export function LeadsPool() {
     });
     return result;
   }, [leads]);
+
+  // T4-6 可验证性：让 AI 重新评一次——真实调用后端 rescore（scoreAndPersist 新快照）
+  const handleRescore = async (lead: GrowthLead) => {
+    setRescoringId(lead.id);
+    setError(null);
+    setInfo(null);
+    try {
+      const res = await growthApi.rescoreLead(lead.id);
+      if (!res.available) {
+        setInfo(`🧠 AI 说：${res.message || "该线索暂不支持重评"}`);
+        return;
+      }
+      setInfo(
+        `🧠 AI 已重新评分：${lead.score} 分 → ${res.totalScore ?? "—"} 分（快照 ${String(
+          res.snapshotId || "",
+        ).slice(-6)}）。评分依据已刷新，可下拉重看。`,
+      );
+      await fetchLeads();
+    } catch (err: unknown) {
+      setError(toPublicError(err, "重新评分失败"));
+    } finally {
+      setRescoringId(null);
+    }
+  };
 
   // 高意向/已回复 → 一键转为 CRM 客户（报告 6.3 P0：原子转客户，
   // 走 /growth/leads/:id/sync-crm，后端单事务建客户+写时间线，杜绝
@@ -179,12 +231,19 @@ export function LeadsPool() {
     if (selectedIds.size === 0) return;
     setBulkActing(status);
     setError(null);
+    setInfo(null);
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) => growthApi.updateLead(id, { status })),
       );
       setSelectedIds(new Set());
       await fetchLeads();
+      // T4-8 学习闭环：忽略/屏蔽时告知用户已反馈给 AI
+      if (status === "ignored" || status === "blocked") {
+        setInfo(
+          `已标记 ${label}，反馈已存入 AI 记忆——下次同类线索的评分会降低。`,
+        );
+      }
     } catch (err: unknown) {
       setError(toPublicError(err, `批量${label}失败`));
     } finally {
@@ -276,6 +335,51 @@ export function LeadsPool() {
         </div>
       )}
 
+      {info && (
+        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] p-4">
+          <p className="text-sm font-medium text-[var(--kaypal-v3-accent-ink)]">
+            🧠 {info}
+          </p>
+        </div>
+      )}
+
+      {/* T4-3 值班提醒：AI 主动提醒未跟进的高意向/已回复线索 */}
+      {counts.qualified + counts.replied > 0 && filter === "all" && (
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-warning)] bg-[var(--kaypal-v3-warning-soft)] px-4 py-3"
+        >
+          <div className="flex items-center gap-2">
+            <BellRing className="h-4 w-4 text-[var(--kaypal-v3-warning)]" />
+            <p className="text-sm text-[var(--kaypal-v3-warning)]">
+              AI 值班提醒：有{" "}
+              <b>{counts.qualified}</b> 条高意向
+              {counts.replied > 0 && <>、<b>{counts.replied}</b> 条已回复</>}{" "}
+              线索等待跟进，建议今天联系（间隔太久意向会降温）。
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {counts.qualified > 0 && (
+              <button
+                type="button"
+                className="rounded-full bg-[var(--kaypal-v3-warning)] px-3 py-1 text-xs font-semibold text-white"
+                onClick={() => setFilter("qualified")}
+              >
+                查看高意向
+              </button>
+            )}
+            {counts.replied > 0 && (
+              <button
+                type="button"
+                className="rounded-full border border-[var(--kaypal-v3-warning)] px-3 py-1 text-xs font-semibold text-[var(--kaypal-v3-warning)]"
+                onClick={() => setFilter("replied")}
+              >
+                查看已回复
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-2">
         {FILTERS.map(({ key, label }) => (
           <button
@@ -361,10 +465,33 @@ export function LeadsPool() {
                             {lead.score} 分
                           </span>
                         )}
+                        <button
+                          type="button"
+                          disabled={rescoringId === lead.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleRescore(lead);
+                          }}
+                          className="rounded-full border border-[var(--kaypal-v3-border)] px-2 py-0.5 text-[10px] text-[var(--kaypal-v3-muted)] transition hover:border-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-accent)] disabled:opacity-50"
+                          title="让 AI 基于最新信号重新评一次分，验证判断是否可靠"
+                        >
+                          {rescoringId === lead.id ? "重评中…" : "AI 重评"}
+                        </button>
                       </span>
                       {lead.scoreReasons?.length > 0 && (
-                        <p className="mt-0.5 line-clamp-1 text-xs text-[var(--kaypal-v3-muted)]">
-                          评分依据：{lead.scoreReasons.join("；")}
+                        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[var(--kaypal-v3-muted)]">
+                          {naturalizeScoreReason(lead)}
+                          {lead.createdAt
+                            ? ` · AI 于 ${new Date(lead.createdAt).toLocaleString(
+                                "zh-CN",
+                                {
+                                  month: "numeric",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )} 评分`
+                            : ""}
                         </p>
                       )}
                       <p className="mt-0.5 line-clamp-1 text-sm text-[var(--kaypal-v3-muted)]">
@@ -372,6 +499,18 @@ export function LeadsPool() {
                         {lead.matchedKeywords?.length
                           ? ` · 命中：${lead.matchedKeywords.slice(0, 3).join("、")}`
                           : ""}
+                        {lead.sourceUrl ? (
+                          <a
+                            href={lead.sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="ml-1 inline-flex items-center gap-0.5 text-[var(--kaypal-v3-accent)] underline underline-offset-2 hover:opacity-80"
+                            title="打开原始出处，核对 AI 判断"
+                          >
+                            原始出处 ↗
+                          </a>
+                        ) : null}
                       </p>
                       {lead.sourceText && (
                         <p className="mt-1 line-clamp-1 text-xs text-[var(--kaypal-v3-muted)]">
