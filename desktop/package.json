@@ -28,7 +28,8 @@
     "test:credential-key-store": "node --test test/credential-key-store.test.cjs",
     "test:local-bridge": "node --test test/local-bridge.test.cjs",
     "test:local-bridge:e2e": "node scripts/electron-local-bridge-e2e.mjs",
-    "release:verify": "node scripts/verify-oss-release.js"
+    "release:verify": "node scripts/verify-oss-release.js",
+    "check:package-contents": "node scripts/check-package-contents.js"
   },
   "keywords": [
     "ai",
