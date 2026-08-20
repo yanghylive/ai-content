@@ -11,23 +11,18 @@ import {
 import type { ReactNode } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
-const currentVersion = "1.1.86";
+const currentVersion = "1.1.87";
 
 const highlights = [
   {
-    title: "AI 获客体验升级",
-    text: "AI 获客全链路升级：AI 长期记忆接入（记得你的行业、关键词、话术风格，二次创建自动预填）、AI 价值感知 12 项落地（首页 AI 简报卡、工作轨迹、自然语言评分理由、证据链溯源、一键重评、价值账单）。",
+    title: "安装包稳定性修复",
+    text: "修复桌面端安装包启动崩溃（sqlite-empty-template 缺失）与登录页图标丢失（next/image 优化端点在桌面端 404）。本版为紧急修复版，升级后应用可正常打开。",
     icon: <RefreshCw className="h-5 w-5" strokeWidth={1.8} />,
   },
   {
-    title: "灰度功能整页遮罩",
-    text: "未开放功能（BOSS 直聘/企业微信/省钱比价/视频工作室/朋友圈发布等 10 页）改为「全貌可见 + 背景模糊 + 上层遮罩」，操作不可达、随时可返回。",
+    title: "抖音登录浏览器空白修复",
+    text: "修复浏览器引擎层两个问题：探活进程无限堆积（资源耗尽导致页面加载不动）与 CDP 端口并发竞态（新会话连错浏览器）。点「登录抖音账号」现在能正常打开创作者登录页。",
     icon: <BadgeCheck className="h-5 w-5" strokeWidth={1.8} />,
-  },
-  {
-    title: "抖音自动触达防风控 + 视觉兜底",
-    text: "同账号执行节流 + 人类化随机延迟防平台风控；反爬拦截时截图 + 视觉模型自动恢复候选线索（qwen-vl-max），采集不再因验证码空手而归。",
-    icon: <Sparkles className="h-5 w-5" strokeWidth={1.8} />,
   },
 ];
 
