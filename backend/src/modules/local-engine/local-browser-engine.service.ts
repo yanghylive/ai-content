@@ -103,6 +103,9 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   private readonly sessions = new Map<string, EngineSession>();
   private readonly sessionLaunches = new Map<string, Promise<EngineSession>>();
   private startedAt: string | null = null;
+  /** 端口挑选互斥链：串行化 pickCdpPort + launch，防止并发会话抢同一 CDP 端口
+   * （2026-08-20 实测 douyin-12/13 同抢 9287，导致新会话连到别人的浏览器 → 空网页）。 */
+  private cdpPortPickChain: Promise<unknown> = Promise.resolve();
   private readonly browserRuntime: PlaywrightBrowserRuntimeInfo;
   private readonly chromePath: string;
   private readonly profileRoot: string;
@@ -745,49 +748,55 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     options: { forceNewPort?: boolean; probe?: boolean } = {},
   ): Promise<{
     context: BrowserContext;
-    debuggingPort: number;
-    process?: ChildProcess;
+    debuggingPort: number;    process?: ChildProcess;
     reused: boolean;
   }> {
     // 探活档强制新端口：绝不复用现有 CDP 进程（可能是用户窗口或残留探活进程），
     // 保证本会话 browserProcess 可记录、用完可杀，避免残留累积。
-    const port = await this.pickCdpPort(
-      platform,
-      accountId,
-      profileDir,
-      { ...options, forceNewPort: options.forceNewPort || options.probe === true },
-    );
-    let proc: ChildProcess | undefined;
-    let reused = false;
-
-    if (!(await this.isCdpResponding(port))) {
-      const args = this.buildCdpLaunchArgs(profileDir, port, options.probe);
-      this.logger.log(
-        `启动 5409 同款 CDP 浏览器: port=${port}, profile=${profileDir}${
-          options.probe ? '（探活 headless）' : ''
-        }`,
+    // 端口挑选 + 启动整段串行化：并发 getOrCreateSession 时若各自 pickCdpPort，
+    // 会因 isPortAvailable 检查窗口竞态选到同一端口（2026-08-20 douyin-12/13 抢 9287）。
+    const runSerialized = this.cdpPortPickChain.then(async () => {
+      const port = await this.pickCdpPort(
+        platform,
+        accountId,
+        profileDir,
+        { ...options, forceNewPort: options.forceNewPort || options.probe === true },
       );
-      proc = spawn(this.chromePath, args, {
-        detached: process.platform !== 'win32',
-        stdio: 'ignore',
-      });
-      proc.unref();
-      await this.waitForCdp(port);
-    } else {
-      reused = true;
-      this.logger.log(
-        `复用已有 CDP 浏览器: port=${port}, profile=${profileDir}`,
-      );
-    }
+      let proc: ChildProcess | undefined;
+      let reused = false;
 
-    const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
-    const context =
-      browser.contexts()[0] ||
-      (await browser.newContext({
-        locale: 'zh-CN',
-        timezoneId: 'Asia/Shanghai',
-      }));
-    return { context, debuggingPort: port, process: proc, reused };
+      if (!(await this.isCdpResponding(port))) {
+        const args = this.buildCdpLaunchArgs(profileDir, port, options.probe);
+        this.logger.log(
+          `启动 5409 同款 CDP 浏览器: port=${port}, profile=${profileDir}${
+            options.probe ? '（探活 headless）' : ''
+          }`,
+        );
+        proc = spawn(this.chromePath, args, {
+          detached: process.platform !== 'win32',
+          stdio: 'ignore',
+        });
+        proc.unref();
+        await this.waitForCdp(port);
+      } else {
+        reused = true;
+        this.logger.log(
+          `复用已有 CDP 浏览器: port=${port}, profile=${profileDir}`,
+        );
+      }
+
+      const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
+      const context =
+        browser.contexts()[0] ||
+        (await browser.newContext({
+          locale: 'zh-CN',
+          timezoneId: 'Asia/Shanghai',
+        }));
+      return { context, debuggingPort: port, process: proc, reused };
+    });
+    // 链尾续接（即使前一个失败也不阻塞后续）
+    this.cdpPortPickChain = runSerialized.catch(() => undefined);
+    return runSerialized;
   }
 
   private async launchPersistentContext(
@@ -1523,12 +1532,14 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     try {
       await session.context.close();
     } catch (error) {
-      this.logger.error(
-        `浏览器会话 context.close 失败（key=${key}）：${
+      // context.close 失败不能提前 return：必须继续走浏览器进程 kill 兜底，
+      // 否则 CDP 已死但 chrome 进程残留 → 探活进程无限堆积（2026-08-20 实测
+      // 120 个 chrome 进程导致新登录浏览器页面空白/加载不动）。
+      this.logger.warn(
+        `浏览器会话 context.close 失败（key=${key}），继续杀进程兜底：${
           error instanceof Error ? error.message : String(error)
         }`,
       );
-      return false;
     }
     if (session.browserProcess) {
       try {
