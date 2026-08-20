@@ -140,6 +140,8 @@ export type AutoUploadCdpBrowserSession = {
   browser?: string;
   runtimeMode?: string;
   browserReused?: boolean;
+  /** 本次校验是否由探活档新启动的 headless 会话（用于校验后关闭，避免残留窗口） */
+  probeStarted?: boolean;
   startedAt?: string;
   lastActivityAt?: string;
 };
@@ -4334,68 +4336,102 @@ export class AutoUploadClient {
       return null;
     }
     this.lastValidationAt.set(cooldownKey, Date.now());
+    // 账号健康验证走探活档（headless 启动、不 bringToFront、不恢复登录态弹窗）：
+    // 验证只读检查登录态，无需可见窗口打扰用户（P 修复：validate 不再弹窗）
+    const session = await this.localBrowser.getOrCreateSession({
+      platform: input.platform,
+      accountId: input.accountId,
+      probe: true,
+    });
+    // 探活档本次新启动的 headless 会话（非复用）：验证完成后立即关闭，避免残留浏览器进程/窗口
+    const probeStarted = !session.browserReused;
+    // 探活验证整体 10s 硬超时：headless 页面偶发挂起（page.evaluate/url 不返回），
+    // 必须保证 finally 必然执行关闭探活进程，否则残留浏览器进程。
+    const validated = await this.withTimedResult(
+      (async () => {
+        if (input.url && input.url !== 'about:blank') {
+          await session.page
+            .goto(input.url, { waitUntil: 'commit', timeout: 8000 })
+            .catch(() => undefined);
+        }
+        session.lastActivityAt = new Date().toISOString();
+        const loginState = await this.withTimedResult(
+          this.inspectActiveSessionLoginState(
+            input.platform,
+            String(input.accountId),
+          ),
+          'unknown',
+          `账号校验探活登录态读取超时 ${input.platform}:${String(input.accountId)}`,
+          5000,
+        );
+        let currentUrl = '';
+        try {
+          currentUrl = session.page.url();
+        } catch {
+          currentUrl = '';
+        }
+        const currentUrlIsPlatformPage =
+          currentUrl.length > 0 &&
+          this.isPlatformPageUrl(input.platform, currentUrl);
+        const openedReady =
+          loginState === 'logged_in' ||
+          (input.platform !== 'wechat-channel' &&
+            currentUrlIsPlatformPage &&
+            loginState !== 'logged_out');
+        return {
+          platform: input.platform,
+          accountId: input.accountId,
+          profileDir: session.profileDir,
+          status:
+            loginState === 'logged_out' || this.isLoginPageUrl(currentUrl)
+              ? 'needs_login'
+              : openedReady
+                ? 'ready'
+                : 'unknown',
+          visibleWindow: session.visibleWindow,
+          currentUrl,
+          lastError:
+            loginState === 'logged_out' || this.isLoginPageUrl(currentUrl)
+              ? '平台页面要求重新登录'
+              : openedReady
+                ? undefined
+                : '当前 CDP 页面不在平台后台，尚未确认平台登录态',
+          activeProfile: true,
+          browser: session.browser,
+          debuggingPort: session.debuggingPort,
+          runtimeMode: 'persistent-cdp-browser',
+          browserReused: session.browserReused,
+          probeStarted,
+          lastActivityAt: session.lastActivityAt,
+          startedAt: session.startedAt,
+        };
+      })(),
+      null,
+      `账号校验探活整体超时 ${input.platform}:${String(input.accountId)}`,
+      10000,
+    );
     try {
-      const session = await this.localBrowser.getOrCreateSession({
-        platform: input.platform,
-        accountId: input.accountId,
-      });
-      if (input.url && input.url !== 'about:blank') {
-        await session.page
-          .goto(input.url, {
-            waitUntil: 'commit',
-            timeout: 30000,
-          })
-          .catch(() => undefined);
+      return validated;
+    } finally {
+      // 探活档新启动的 headless 会话：无论校验成功/失败/超时，用完即关
+      if (probeStarted) {
+        const probeKey = `${input.platform}:${String(input.accountId)}`;
+        const closed = await this.localBrowser
+          .closeSession(probeKey)
+          .catch((error) => {
+            this.logger.warn(
+              `探活会话关闭失败 ${probeKey}: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+            return false;
+          });
+        if (closed) {
+          this.logger.log(`探活会话已关闭 ${probeKey}`);
+        } else {
+          this.logger.warn(`探活会话关闭未生效 ${probeKey}`);
+        }
       }
-      await session.page.bringToFront().catch(() => undefined);
-      session.lastActivityAt = new Date().toISOString();
-      const loginState = await this.inspectActiveSessionLoginState(
-        input.platform,
-        String(input.accountId),
-      );
-      const currentUrl = session.page.url();
-      const currentUrlIsPlatformPage = this.isPlatformPageUrl(
-        input.platform,
-        currentUrl,
-      );
-      const openedReady =
-        loginState === 'logged_in' ||
-        (input.platform !== 'wechat-channel' &&
-          currentUrlIsPlatformPage &&
-          loginState !== 'logged_out');
-      return {
-        platform: input.platform,
-        accountId: input.accountId,
-        profileDir: session.profileDir,
-        status:
-          loginState === 'logged_out' || this.isLoginPageUrl(currentUrl)
-            ? 'needs_login'
-            : openedReady
-              ? 'ready'
-              : 'unknown',
-        visibleWindow: session.visibleWindow,
-        currentUrl,
-        lastError:
-          loginState === 'logged_out' || this.isLoginPageUrl(currentUrl)
-            ? '平台页面要求重新登录'
-            : openedReady
-              ? undefined
-              : '当前 CDP 页面不在平台后台，尚未确认平台登录态',
-        activeProfile: true,
-        browser: session.browser,
-        debuggingPort: session.debuggingPort,
-        runtimeMode: 'persistent-cdp-browser',
-        browserReused: session.browserReused,
-        lastActivityAt: session.lastActivityAt,
-        startedAt: session.startedAt,
-      };
-    } catch (error) {
-      this.logger.warn(
-        `账号校验打开 CDP profile 失败 ${input.platform}-${input.accountId}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
-      return null;
     }
   }
 

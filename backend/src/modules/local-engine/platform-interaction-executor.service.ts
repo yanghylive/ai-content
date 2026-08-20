@@ -6725,6 +6725,10 @@ export class PlatformInteractionExecutor {
 
     const replyRect: Record<string, number> = target.replyRect || {};
     const rootRect: Record<string, number> = target.rootRect || {};
+    // TRACE(2026-08-20)：楼中楼回复排查——定位/展开/fill/发送全链路日志
+    this.logger.log(
+      `[trace][douyin-reply] target=${JSON.stringify({ status: target.status, alreadyOpen: target.alreadyOpen, replyRect, rootRect })}`,
+    );
     if (!target.alreadyOpen) {
       await page.mouse.click(
         Number(replyRect.x || 0) +
@@ -6836,7 +6840,16 @@ export class PlatformInteractionExecutor {
               method: 'mouse',
               message: '未能重新定位目标评论回复按钮。',
             };
-          for (const type of ['mouseover', 'mousedown', 'mouseup', 'click']) {
+          // 2026-08-20 实测修复：补 mouseenter——创作者中心评论行的「回复」按钮
+          // 依赖完整 hover 事件序列才展开楼中楼输入框（缺 mouseenter 时点击无效，
+          // 回复会 fallback 到全局评论框误发为视频根评论）。
+          for (const type of [
+            'mouseover',
+            'mouseenter',
+            'mousedown',
+            'mouseup',
+            'click',
+          ]) {
             reply.dispatchEvent(
               new MouseEvent(type, {
                 bubbles: true,
@@ -6855,6 +6868,9 @@ export class PlatformInteractionExecutor {
     if (!replyOpened.opened) {
       await page.waitForTimeout(1000);
     }
+    this.logger.log(
+      `[trace][douyin-reply] replyOpened=${JSON.stringify(replyOpened)}`,
+    );
 
     const editor = await this.evaluateWithTimeout(
       page,
@@ -6953,6 +6969,19 @@ export class PlatformInteractionExecutor {
               status: 'editor_missing',
               message: '没有找到可编辑回复框。',
             };
+          // 安全兜底（2026-08-20 实测修复）：抖音楼中楼回复必须使用目标评论行的
+          // 回复框（placeholder 以「回复」开头）。fallback 可能选中页面全局评论框
+          // （placeholder「有爱评论，说点好听的~」），把回复误发成视频根评论。
+          const pickedPlaceholder = normalize(
+            picked.node.getAttribute('placeholder'),
+          );
+          if (!/^回复/.test(pickedPlaceholder)) {
+            return {
+              status: 'editor_missing',
+              message:
+                '未进入楼中楼回复模式（目标评论行未展开「回复 xxx」输入框），已中止发送以防误发为视频根评论。',
+            };
+          }
           picked.node.focus();
           if (typeof (picked.node as HTMLInputElement).select === 'function') {
             (picked.node as HTMLInputElement).select();
@@ -6971,6 +7000,9 @@ export class PlatformInteractionExecutor {
       ),
       6000,
       { status: 'editor_missing', message: '查找回复框超时。' },
+    );
+    this.logger.log(
+      `[trace][douyin-reply] editor=${JSON.stringify(editor).slice(0, 300)}`,
     );
     if (editor.status !== 'editor_found') {
       return {
@@ -7258,11 +7290,12 @@ export class PlatformInteractionExecutor {
           const editor =
             allEditors.find((item) => item.value.includes(replyPrefix)) ||
             allEditors.find((item) => /^回复/.test(item.placeholder)) ||
-            allEditors[0];
+            null;
           if (!editor)
             return {
               status: 'editor_missing',
-              message: '回复内容没有进入目标回复框。',
+              message:
+                '回复内容没有进入目标楼中楼回复框（未找到已填入内容或「回复 xxx」输入框），已中止发送以防误发为视频根评论。',
             };
           const redArrowNodes = Array.from(
             document.querySelectorAll(
@@ -7370,6 +7403,9 @@ export class PlatformInteractionExecutor {
       ),
       6000,
       { status: 'send_button_missing', message: '查找发送按钮超时。' },
+    );
+    this.logger.log(
+      `[trace][douyin-reply] sendButton=${JSON.stringify(sendButton).slice(0, 300)}`,
     );
     if (sendButton.status !== 'send_button_ready') {
       return {
