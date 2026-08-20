@@ -229,7 +229,7 @@ function InboxSection({
             <button
               type="button"
               onClick={() => router.push("/tasks/confirmations")}
-              style={{ background: "none", border: "none", color: "#722ed1", cursor: "pointer", padding: 0 }}
+              style={{ background: "none", border: "none", color: "var(--kx-accent-ink)", cursor: "pointer", padding: 0 }}
             >
               确认中心
             </button>

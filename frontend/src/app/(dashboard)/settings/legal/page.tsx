@@ -1,7 +1,5 @@
 "use client";
 
-import { BrandLogo } from "@/components/brand-logo";
-
 import React, { useState } from "react";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 
@@ -10,6 +8,7 @@ import { V2BackButton } from "@/components/v2/v2-back-button";
  * 用户协议 / 隐私政策 / AI 生成内容说明 / 投诉举报 / 备案公示。
  * 依据：《生成式人工智能服务管理暂行办法》《人工智能生成合成内容标识办法》
  *      《互联网信息服务深度合成管理规定》《个人信息保护法》
+ * 2026-08-20 亮色 VP 化：mx-* 深色沉浸 → kaypal-v3 亮色体系。
  */
 
 const TONGYI_FILING = {
@@ -34,20 +33,14 @@ export default function LegalPage() {
   return (
     <div>
       <V2BackButton />
-      <header className="mx-header">
-        <div className="mx-header-row">
-          <div>
-            <div className="mx-brand-eyebrow">
-              <BrandLogo />
-              JIUZHANG AI
-            </div>
-            <h1 className="mx-page-title">合规中心</h1>
-            <p className="mx-page-sub">用户协议、隐私保护、AI 生成说明与投诉举报</p>
-          </div>
+      <header className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <h1 className="kx-greet">合规中心</h1>
+          <p className="kx-greet-sub">用户协议、隐私保护、AI 生成说明与投诉举报</p>
         </div>
       </header>
 
-      <section className="mx-px" style={{ marginTop: 14 }}>
+      <section>
         {/* Tab 切换 */}
         <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
           {TABS.map((t) => (
@@ -59,10 +52,10 @@ export default function LegalPage() {
                 padding: "7px 14px",
                 borderRadius: 999,
                 fontSize: 12,
-                border: tab === t.key ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
-                background: tab === t.key ? "rgba(246,196,120,.12)" : "transparent",
-                color: tab === t.key ? "#f6c478" : "rgba(215,230,248,.7)",
                 cursor: "pointer",
+                border: tab === t.key ? "1px solid var(--kaypal-v3-accent-border)" : "1px solid var(--kaypal-v3-border-strong)",
+                background: tab === t.key ? "var(--kaypal-v3-accent-soft)" : "transparent",
+                color: tab === t.key ? "var(--kaypal-v3-accent-ink)" : "var(--kaypal-v3-muted)",
               }}
             >
               {t.label}
@@ -70,11 +63,11 @@ export default function LegalPage() {
           ))}
         </div>
 
-        <div className="mx-card" style={{ padding: 16 }}>
+        <div className="kaypal-v3-panel" style={{ padding: 16 }}>
           {tab === "terms" ? (
-            <div style={{ fontSize: 13, lineHeight: 1.9, color: "#dbe7f5" }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 10px" }}>用户协议</h2>
-              <p style={{ margin: "0 0 12px", color: "rgba(219,234,254,.6)" }}>更新日期：2026-08-09 ｜ 生效日期：2026-08-09</p>
+            <div style={{ fontSize: 13, lineHeight: 1.9, color: "var(--kaypal-v3-soft-ink)" }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--kaypal-v3-ink)", margin: "0 0 10px" }}>用户协议</h2>
+              <p style={{ margin: "0 0 12px", color: "var(--kaypal-v3-muted)" }}>更新日期：2026-08-09 ｜ 生效日期：2026-08-09</p>
               <ol style={{ margin: 0, paddingLeft: 20 }}>
                 <li style={{ marginBottom: 8 }}>
                   <b>服务说明</b>：本产品提供 AI 内容创作、素材管理、数据分析等功能。AI 生成内容基于大模型能力，可能存在不准确、不完整的情况，仅供创作参考，不构成专业建议。
@@ -99,9 +92,9 @@ export default function LegalPage() {
           ) : null}
 
           {tab === "privacy" ? (
-            <div style={{ fontSize: 13, lineHeight: 1.9, color: "#dbe7f5" }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 10px" }}>隐私政策</h2>
-              <p style={{ margin: "0 0 12px", color: "rgba(219,234,254,.6)" }}>更新日期：2026-08-09</p>
+            <div style={{ fontSize: 13, lineHeight: 1.9, color: "var(--kaypal-v3-soft-ink)" }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--kaypal-v3-ink)", margin: "0 0 10px" }}>隐私政策</h2>
+              <p style={{ margin: "0 0 12px", color: "var(--kaypal-v3-muted)" }}>更新日期：2026-08-09</p>
               <ol style={{ margin: 0, paddingLeft: 20 }}>
                 <li style={{ marginBottom: 8 }}>
                   <b>收集的信息</b>：为提供 AI 服务，我们会处理您输入的对话内容、创作指令、上传的素材等必要信息。我们仅收集与服务直接相关的必要数据（最小必要原则）。
@@ -123,41 +116,41 @@ export default function LegalPage() {
           ) : null}
 
           {tab === "ai" ? (
-            <div style={{ fontSize: 13, lineHeight: 1.9, color: "#dbe7f5" }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 10px" }}>AI 生成内容说明与备案公示</h2>
-              <p style={{ margin: "0 0 12px", color: "rgba(219,234,254,.6)" }}>
+            <div style={{ fontSize: 13, lineHeight: 1.9, color: "var(--kaypal-v3-soft-ink)" }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--kaypal-v3-ink)", margin: "0 0 10px" }}>AI 生成内容说明与备案公示</h2>
+              <p style={{ margin: "0 0 12px", color: "var(--kaypal-v3-muted)" }}>
                 本产品中所有 AI 生成内容（文本、图片、语音等）均带有「AI 生成」标识。AI 生成内容可能存在偏差，请理性判断、审慎使用。
               </p>
-              <h3 style={{ fontSize: 13, fontWeight: 600, margin: "14px 0 8px", color: "#f4bb67" }}>使用的生成式 AI 服务（备案公示）</h3>
-              <div style={{ padding: 12, borderRadius: 10, background: "rgba(255,255,255,.05)", border: "1px solid rgba(148,163,184,.25)", display: "flex", flexDirection: "column", gap: 6, fontSize: 12.5 }}>
+              <h3 style={{ fontSize: 13, fontWeight: 600, margin: "14px 0 8px", color: "var(--kaypal-v3-accent)" }}>使用的生成式 AI 服务（备案公示）</h3>
+              <div className="kaypal-v3-panel" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 6, fontSize: 12.5 }}>
                 <div>模型名称：<b>{TONGYI_FILING.modelName}</b></div>
                 <div>大模型备案号：<b>{TONGYI_FILING.modelNo}</b></div>
                 <div>算法名称：<b>{TONGYI_FILING.algorithmName}</b></div>
                 <div>算法备案号：<b>{TONGYI_FILING.algorithmNo}</b></div>
-                <div style={{ color: "rgba(219,234,254,.5)", marginTop: 4 }}>
+                <div style={{ color: "var(--kaypal-v3-muted)", marginTop: 4 }}>
                   备案信息可在「互联网信息服务算法备案系统」及国家网信办公示名单中查询核验。
                 </div>
               </div>
-              <p style={{ margin: "12px 0 0", fontSize: 12, color: "rgba(219,234,254,.5)" }}>
+              <p style={{ margin: "12px 0 0", fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
                 AI 生成的图片、视频等内容均按《人工智能生成合成内容标识办法》在元数据中携带生成标识，可溯源。
               </p>
             </div>
           ) : null}
 
           {tab === "report" ? (
-            <div style={{ fontSize: 13, lineHeight: 1.9, color: "#dbe7f5" }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 10px" }}>投诉与举报</h2>
-              <p style={{ margin: "0 0 12px", color: "rgba(219,234,254,.6)" }}>
+            <div style={{ fontSize: 13, lineHeight: 1.9, color: "var(--kaypal-v3-soft-ink)" }}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--kaypal-v3-ink)", margin: "0 0 10px" }}>投诉与举报</h2>
+              <p style={{ margin: "0 0 12px", color: "var(--kaypal-v3-muted)" }}>
                 如您发现本产品生成的内容存在违法违规、侵犯权益或使用体验问题，欢迎反馈。我们承诺 24 小时内响应，48 小时内处理完毕。
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
-                <div style={{ padding: 12, borderRadius: 10, background: "rgba(255,255,255,.05)", border: "1px solid rgba(148,163,184,.25)" }}>
-                  <div style={{ fontSize: 12, color: "rgba(219,234,254,.6)", marginBottom: 4 }}>投诉/举报渠道</div>
-                  <div style={{ fontSize: 13 }}>邮箱：<a href="mailto:support@jiuzhangai.com" style={{ color: "#f4bb67" }}>support@jiuzhangai.com</a></div>
+                <div className="kaypal-v3-panel" style={{ padding: 12 }}>
+                  <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginBottom: 4 }}>投诉/举报渠道</div>
+                  <div style={{ fontSize: 13 }}>邮箱：<a href="mailto:support@jiuzhangai.com" style={{ color: "var(--kaypal-v3-accent)" }}>support@jiuzhangai.com</a></div>
                   <div style={{ fontSize: 13, marginTop: 4 }}>联系电话：400-000-0000（工作日 9:00-18:00）</div>
                   <div style={{ fontSize: 13, marginTop: 4 }}>处理时限：24 小时内响应，48 小时内反馈处理结果</div>
                 </div>
-                <div style={{ fontSize: 12, color: "rgba(219,234,254,.5)" }}>
+                <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
                   投诉时请提供：问题类型、涉及内容（截图/链接）、您的联系方式，以便我们快速定位处理。
                 </div>
               </div>
