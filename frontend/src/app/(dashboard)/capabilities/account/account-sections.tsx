@@ -384,6 +384,7 @@ export function KaypalAccountSections() {
                 <Button
                   size="sm"
                   variant="bordered"
+                  className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                   onPress={() => setReloadKey((k) => k + 1)}
                 >
                   刷新余额

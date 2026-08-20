@@ -492,6 +492,7 @@ export function AgentSStatusPanel({
                                 </Button>
                                 <Button
                                     variant="bordered"
+                                    className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                                     isDisabled={isApprovalSubmitting}
                                     onPress={() => onDefer?.(approvalRequest)}
                                     startContent={

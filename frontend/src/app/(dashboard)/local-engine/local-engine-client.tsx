@@ -5920,7 +5920,7 @@ function ApprovalConfirmModal({
   return isOpen ? (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-        <div className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-[12px] bg-[var(--kaypal-v3-panel)]">
+        <div className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-panel)]">
           <div className="flex flex-col gap-1 border-b border-[var(--kaypal-v3-border)] p-5">
             <span className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
               {isWechatTask ? "继续微信会话执行" : "继续受控执行"}
@@ -6694,7 +6694,7 @@ function RecordsPanel({
             className="fixed inset-0 bg-black/50"
             onClick={() => setSelectedTask(null)}
           />
-          <div className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-[12px] bg-[var(--kaypal-v3-panel)]">
+          <div className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-panel)]">
             <div className="flex flex-col gap-1 border-b border-[var(--kaypal-v3-border)] p-5">
               <span className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
                 回复记录详情

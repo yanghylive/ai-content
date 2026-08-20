@@ -432,7 +432,7 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
             {BRIEF_PRESETS.map((preset) => (
               <Button
                 key={preset.id}
-                className="h-auto justify-start px-3 py-3 text-left"
+                className="h-auto justify-start border-[var(--kaypal-v3-border)] px-3 py-3 text-left text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
                 radius="sm"
                 variant="bordered"
                 onPress={() => applyPreset(preset)}
@@ -792,7 +792,7 @@ function OutlineStep({
           {OUTLINE_PRESETS.map((preset) => (
             <Button
               key={preset.id}
-              className="h-auto justify-start px-3 py-3 text-left"
+              className="h-auto justify-start border-[var(--kaypal-v3-border)] px-3 py-3 text-left text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
               radius="sm"
               variant="bordered"
               onPress={() => applyPreset(preset)}

@@ -196,19 +196,19 @@ export default function ScrapeArticlePage() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleScrape()}
-          className="flex-1 px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--kaypal-v3-accent)]"
         />
         <button
           onClick={handleScrape}
           disabled={loading || !url.trim()}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-blue-700"
+          className="px-6 py-2 bg-[var(--kaypal-v3-accent)] text-white rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-[var(--kaypal-v3-accent-ink)]"
         >
           {loading ? "提取中..." : "提取内容"}
         </button>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div className="p-4 border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] rounded-lg text-sm text-[var(--kaypal-v3-danger)]">
           {error}
         </div>
       )}
@@ -225,7 +225,7 @@ export default function ScrapeArticlePage() {
           </div>
 
           {article.warning && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
+            <div className="p-3 border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] rounded text-xs text-[var(--kaypal-v3-amber)]">
               {article.warning}
             </div>
           )}
@@ -259,13 +259,13 @@ export default function ScrapeArticlePage() {
           <div className="flex gap-3 pt-2">
             <button
               onClick={handleUseForPublish}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+              className="px-4 py-2 bg-[var(--kaypal-v3-accent)] text-white rounded-lg text-sm font-medium hover:bg-[var(--kaypal-v3-accent-ink)]"
             >
               用作发布素材
             </button>
             <button
               onClick={handleCopyContent}
-              className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50"
+              className="px-4 py-2 border border-[var(--kaypal-v3-border)] rounded-lg text-sm font-medium text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
             >
               复制正文
             </button>

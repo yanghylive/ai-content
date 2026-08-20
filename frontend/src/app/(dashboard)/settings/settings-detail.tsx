@@ -286,6 +286,8 @@ export function SettingsDetail() {
         <div className="flex items-center gap-4">
           <button
             type="button"
+            aria-label="返回"
+            title="返回"
             className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
             onClick={() => router.push("/")}
           >

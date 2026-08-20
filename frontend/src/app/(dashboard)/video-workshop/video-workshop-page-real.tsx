@@ -5,6 +5,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
 import { DesktopOnlyGate } from "@/components/v2/desktop-only-gate";
+import { GrayTestBanner } from "@/components/v2/gray-test-banner";
 
 interface EngineStatus {
   online: boolean;
@@ -192,6 +193,9 @@ export default function VideoWorkshopV2Page() {
       backHref="/content"
     >
       <div className="kx-mobile-ambient" style={{ minHeight: "100dvh", paddingBottom: 90 }}>
+      <div className="mx-container" style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 20px 0" }}>
+        <GrayTestBanner feature="视频引擎（studio_core）" />
+      </div>
       <header className="mx-header">
         <div className="mx-header-row">
           <div>

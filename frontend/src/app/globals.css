@@ -1113,6 +1113,32 @@
     box-shadow: var(--kaypal-v3-card-shadow) !important;
   }
 
+  /* 浅色模式：heroui primary 按钮回到品牌紫（NextUI beta DOM 无 data-slot/data-color，按真实类名命中；
+     [class~="bg-primary"] 用精确 token 匹配排除 bg-primary/20 与 data-[...]:bg-primary/20；
+     :not([data-slot="button"]) 排除 agent-cockpit-canvas 的按钮（其 Button 带 data-slot="button"） */
+  :is(button, a, [role="button"]):not([data-slot="button"])[class~="bg-primary"][class*="text-primary-foreground"] {
+    background: var(--kaypal-v3-accent) !important;
+    color: #ffffff !important;
+  }
+
+  :is(button, a, [role="button"]):not([data-slot="button"])[class~="bg-primary"][class*="text-primary-foreground"] * {
+    color: #ffffff !important;
+  }
+
+  :is(button, a, [role="button"]):not([data-slot="button"])[class~="bg-primary/20"] {
+    background: var(--kaypal-v3-accent-soft) !important;
+    color: var(--kaypal-v3-accent-ink) !important;
+  }
+
+  :is(button, a, [role="button"]):not([data-slot="button"])[class~="bg-primary/20"] * {
+    color: var(--kaypal-v3-accent-ink) !important;
+  }
+
+  /* Tabs 选中指示线（underlined 变体 after:bg-primary 也被劫持） */
+  [data-slot="tab"][data-selected="true"]:after {
+    background: var(--kaypal-v3-accent) !important;
+  }
+
   .dark :is(button, a[role="button"], [role="button"])[class*="bg-primary"],
   .dark :is(button, a[role="button"], [role="button"])[data-color="primary"] {
     background: var(--kaypal-v3-accent) !important;
