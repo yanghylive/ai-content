@@ -192,6 +192,30 @@ class ApiClient {
     const raw = await this.rawRequest(path, options);
     const body = raw.json;
     if (!raw.ok || !body || body.success !== true) {
+      const requestId =
+        typeof body?.requestId === "string" ? body.requestId : undefined;
+      // v1.1.89+：5xx 自动上报（带 requestId 精确定位后端日志），静默失败
+      if (raw.status >= 500 && typeof window !== "undefined") {
+        try {
+          void fetch("/api/error-report/client", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              requestId,
+              url: window.location.href,
+              message:
+                typeof body?.message === "string" && body.message
+                  ? body.message
+                  : `请求失败: ${raw.status}`,
+              status: raw.status,
+              context: `api:${path}`,
+            }),
+            keepalive: true,
+          }).catch(() => undefined);
+        } catch {
+          /* 静默 */
+        }
+      }
       throw new ApiError(
         typeof body?.message === "string" && body.message
           ? body.message
@@ -200,7 +224,7 @@ class ApiClient {
         "HTTP_ERROR",
         typeof body?.code === "string" ? body.code : null,
         body?.details ?? null,
-        typeof body?.requestId === "string" ? body.requestId : null,
+        requestId ?? null,
       );
     }
     return body.data as T;

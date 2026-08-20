@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto';
 import { Request, Response } from 'express';
 import { AUTH_COOKIE_NAME } from '../../modules/auth/auth.constants';
 import { shouldUseSecureAuthCookie } from '../../modules/auth/cookie-options';
+import { reportError } from './error-report';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -61,6 +62,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
         logMessage,
         exception instanceof Error ? exception.stack : '',
       );
+      // 自动错误上报（v1.1.89+）：500 级错误 fire-and-forget 传 OSS error-reports/，
+      // 无需用户手动收集日志；失败静默。
+      reportError({
+        requestId,
+        method: request.method,
+        url: request.url,
+        status,
+        message: Array.isArray(message) ? message.join('; ') : message,
+        stack: exception instanceof Error ? exception.stack : undefined,
+      });
     } else {
       this.logger.warn(logMessage);
     }

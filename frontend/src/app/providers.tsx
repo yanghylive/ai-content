@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { GlobalErrorBoundary } from "@/components/global-error-boundary";
 import { ClientConfigProvider } from "@/lib/hooks/use-client-config";
+import { ErrorReportBridge } from "@/lib/error-report-bridge";
 
 const neutralThemeWithPrebuiltCss = {
   ...neutralTheme,
@@ -49,6 +50,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <AstryxThemeBridge>
             <ToastProvider placement="top-right" />
             <GlobalErrorBoundary />
+            <ErrorReportBridge />
             {children}
           </AstryxThemeBridge>
         </ClientConfigProvider>
