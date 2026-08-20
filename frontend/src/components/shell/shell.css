@@ -394,10 +394,12 @@ html[data-theme="dark"] {
   }
 }
 
-/* ---------- 引擎工作台容器：padding 由父级统一供给 ---------- */
-/* WorkbenchCenter 根为 kx-view（自带 34px 内边距），但调用方页面多在
-   .kx-legacy-wrap（同为 34px）之内，造成 34+34=68px 双倍边距。
-   归零引擎容器自身内边距，单层边距统一由外层页框供给。 */
-.kx-view.kaypal-v2-engine {
+/* ---------- 引擎工作台容器：仅在 wrap 内归零 padding ---------- */
+/* WorkbenchCenter 根为 kx-view（自带 34px 内边距）。当调用方页面在
+   .kx-legacy-wrap（同为 34px）之内时造成 34+34=68px 双倍边距（如 /growth），
+   此时归零引擎容器内边距，单层边距由 wrap 供给。
+   但 distribution/crm 等场景路由把 WorkbenchCenter 直接挂 .kx-main（无 wrap），
+   页面根 kx-view 的 padding 必须保留 —— 故选择器限定 .kx-legacy-wrap 直接子级。 */
+.kx-legacy-wrap .kx-view.kaypal-v2-engine {
   padding: 0;
 }
