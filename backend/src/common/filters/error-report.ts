@@ -36,8 +36,14 @@ function rateLimited(key: string): boolean {
 
 function readVersion(): string {
   try {
-    const pkgPath = join(process.cwd(), 'package.json');
-    if (existsSync(pkgPath)) {
+    // 优先从后端入口所在目录读 package.json（bundle 场景 cwd 不可靠）
+    const candidates = [
+      join(__dirname, '..', '..', '..', 'package.json'), // dist/ 场景
+      join(__dirname, '..', 'package.json'), // bundle 场景
+      join(process.cwd(), 'package.json'),
+    ];
+    for (const pkgPath of candidates) {
+      if (!existsSync(pkgPath)) continue;
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
         version?: string;
       };
