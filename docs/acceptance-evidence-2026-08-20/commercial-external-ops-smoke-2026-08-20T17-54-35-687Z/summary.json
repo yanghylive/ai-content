@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2026-08-20T17:54:35.687Z",
+  "real": false,
+  "runRestore": false,
+  "downloadBackup": false,
+  "uploadLatestBackup": false,
+  "backupRoot": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness",
+  "objectStoreProvider": "unconfigured",
+  "alertProvider": "generic",
+  "alertWebhook": {
+    "configured": false,
+    "provider": "generic",
+    "protocol": null,
+    "host": null,
+    "category": "missing",
+    "productionCandidate": false,
+    "message": "未配置 webhook。"
+  },
+  "restoreDatabaseUrl": null,
+  "checks": [
+    {
+      "status": "PASS",
+      "name": "latest-local-backup",
+      "message": "commercial-readiness-postgres-pgdump; file=/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/postgres-dump.sql; size=2454800",
+      "nextAction": "",
+      "evidence": {
+        "latestDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z",
+        "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/manifest.json",
+        "backupFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/postgres-dump.sql"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "object-store-provider",
+      "message": "未配置对象存储 provider。",
+      "nextAction": "配置 COMMERCIAL_BACKUP_OBJECT_STORE_PROVIDER=aliyun-oss 和 OSS 凭据，或配置 COMMERCIAL_BACKUP_OBJECT_STORE_DIR 做本地镜像验收。"
+    },
+    {
+      "status": "BLOCKED",
+      "name": "alert-webhook-config",
+      "message": "未配置 COMMERCIAL_BACKUP_ALERT_WEBHOOK_URL。",
+      "nextAction": "填入企业微信/飞书/Slack 值班群 webhook 后再跑。"
+    },
+    {
+      "status": "BLOCKED",
+      "name": "restore-target-config",
+      "message": "未配置 COMMERCIAL_RESTORE_DATABASE_URL。",
+      "nextAction": "在干净机器或隔离库上配置一个独立恢复库，不能指向生产库。"
+    }
+  ],
+  "artifacts": {
+    "latestLocalBackup": {
+      "latestDir": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z",
+      "manifestFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/manifest.json",
+      "backupFile": "/Users/yanghy/Documents/New project/ai-content/.local-backups/commercial-readiness/2026-07-03T05-39-56-761Z/postgres-dump.sql"
+    }
+  }
+}

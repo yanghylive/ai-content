@@ -1,0 +1,2768 @@
+{
+  "generatedAt": "2026-08-20T17:53:26.605Z",
+  "readOnly": true,
+  "status": "BLOCKED",
+  "pass": 14,
+  "blockers": 2,
+  "checks": [
+    {
+      "status": "pass",
+      "name": "backend-process",
+      "detail": "Backend listening on 3011, pid=38276."
+    },
+    {
+      "status": "pass",
+      "name": "auth-cookie",
+      "detail": "Auth cookie/session token was provided to the gate."
+    },
+    {
+      "status": "pass",
+      "name": "auth-me",
+      "detail": "Authenticated as 验收用户."
+    },
+    {
+      "status": "pass",
+      "name": "commercial-permission",
+      "detail": "commercialExecutionAllowed=true, planMode=commercial, kaypalPlan=FLAGSHIP, expired=false."
+    },
+    {
+      "status": "pass",
+      "name": "growth-execution-switch",
+      "detail": "executionEnabled=true; runtimeStatus.executionEnabled=true; processEnv=true."
+    },
+    {
+      "status": "pass",
+      "name": "growth-scheduler-daemon-armed",
+      "detail": "schedulerDaemonEnabled=true; schedulerDaemonArmed=true; envDaemon=true; envRealAllowed=true."
+    },
+    {
+      "status": "pass",
+      "name": "verified-growth-account",
+      "detail": "visibleAccounts=14, onlineNormalAccountCount=11."
+    },
+    {
+      "status": "pass",
+      "name": "schedule-plan-api",
+      "detail": "items=8, readyCount=0, blocked=0, waiting=0."
+    },
+    {
+      "status": "blocker",
+      "name": "ready-auto-task",
+      "detail": "readyCount=0; a commercial live execution test needs at least one ready auto task bound to a verified account. Next step: Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota."
+    },
+    {
+      "status": "blocker",
+      "name": "commercial-live-prerequisites-read-only",
+      "detail": "executionEnabled=true; schedulerDaemonEnabled=true; schedulerDaemonArmed=true; readyCount=0; onlineNormalAccountCount=11. Next step: Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota."
+    },
+    {
+      "status": "pass",
+      "name": "overview-api",
+      "detail": "activeConfigCount=8, todayLeadCount=0, contacted=0."
+    },
+    {
+      "status": "pass",
+      "name": "report-diagnosis-honesty",
+      "detail": "bottlenecks=4; visibleAccounts=14; no-blocker-copy=false."
+    },
+    {
+      "status": "pass",
+      "name": "database-readable",
+      "detail": "Read SQLite database at /Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite."
+    },
+    {
+      "status": "pass",
+      "name": "database-account-health",
+      "detail": "growth_account_health rows=14."
+    },
+    {
+      "status": "pass",
+      "name": "database-configs",
+      "detail": "growth_acquisition_configs rows=10."
+    },
+    {
+      "status": "pass",
+      "name": "database-runs",
+      "detail": "growth_acquisition_runs rows=44."
+    }
+  ],
+  "evidence": {
+    "readOnly": true,
+    "apiBase": "http://127.0.0.1:3011/api",
+    "frontendUrl": "http://127.0.0.1:3010",
+    "databasePath": "/Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite",
+    "backend": {
+      "pid": "38276",
+      "command": "38276   ??  S      8:53.19 /Users/yanghy/.workbuddy/binaries/node/versions/22.22.2/bin/node dist-bundle-sqlite/index.js KAYPAL_NODE_AGENT_RUNTIME=1 SHELL=/bin/zsh AUTH_COOKIE_NAME=ai_content_session TMPDIR=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/ AGENT_S_BASE_URL=http://127.0.0.1:17777 NODE_OPTIONS= OLDPWD=/ KAYPAL_MEMORY_ENABLED=true USER=yanghy http_proxy= KAYPAL_AGENT_S_TOKEN=[REDACTED] KAYPAL_MEMORY_PASSWORD=[REDACTED] SSH_AUTH_SOCK=/var/run/com.apple.launchd.joiN31V6l1/Listeners SQLITE_DATABASE_URL=file:./kaypal-ai.sqlite KAYPAL_AI_PROXY_BASE_URL=https://kaypal.cn/api/ai CORS_ORIGIN=http://localhost:3010,http://127.0.0.1:3010 PATH=/usr/bin:/bin:/usr/sbin:/sbin MEMORY_CORE_USER_KEY=[REDACTED] MAYNOR1024_API_KEY=[REDACTED] KAYPAL_MEMORY_BASE_URL=https://kaypal.cn GROWTH_EXECUTION_ENABLED=true PWD=/Users/yanghy/Documents/New project/ai-content/backend KAYPAL_AI_PROXY_API_KEY=[REDACTED] GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED=true PUBLIC_ORIGIN=http://localhost:3010 GROWTH_SCHEDULER_DAEMON=true XPC_FLAGS=0x0 KAYPAL_DESKTOP_DATABASE_MODE=sqlite NODE_ENV=production AUTH_COOKIE_SECURE=false KAYPAL_AUTH_BASE_URL=https://kaypal.cn HTTPS_PROXY= https_proxy= XPC_SERVICE_NAME=com.jiuzhang.ai-content-backend SHLVL=0 HOME=/Users/yanghy KAYPAL_MEMORY_PHONE=18230326666 MEMORY_CORE_BASE_URL=http://127.0.0.1:8420 HTTP_PROXY= KAYPAL_RUNTIME_SHARED_SECRET=[REDACTED] LOGNAME=yanghy AUTH_SESSION_DAYS=14 PORT=3011 OSLogRateLimit=64 KAYPAL_CREDENTIAL_MASTER_KEY=[REDACTED] CRM_HUBSPOT_VAULT_KEY=[REDACTED] DATABASE_URL=file:./kaypal-ai.sqlite DASHSCOPE_API_KEY=[REDACTED]",
+      "env": {
+        "PORT": "3011",
+        "KAYPAL_DESKTOP_DATABASE_MODE": "sqlite",
+        "GROWTH_EXECUTION_ENABLED": "true",
+        "GROWTH_SCHEDULER_DAEMON": "true",
+        "GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED": "true"
+      }
+    },
+    "auth": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "id": "cms2ktllp03u9j1wprksvwy8w",
+          "username": "kaypal_cmo9p6i5x000a58uckbcyv45u",
+          "email": "phone-18230326666@kaypal.invalid",
+          "name": "验收用户",
+          "status": "active",
+          "lastLoginAt": "2026-08-20T11:51:15.122Z",
+          "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u",
+          "kaypalPlan": "FLAGSHIP",
+          "kaypalPlanExpired": false,
+          "kaypalRole": null,
+          "kaypalPlatformRole": null,
+          "kaypalPermissionNames": [],
+          "kaypalDesktopTokenExpiresAt": "[REDACTED]",
+          "kaypalDesktopDeviceId": "pwd_66d6f3e1-f572-49",
+          "kaypalLocalOnly": true,
+          "role": "admin",
+          "commercialExecutionAllowed": true,
+          "planMode": "commercial",
+          "createdAt": "2026-07-27T01:57:01.214Z",
+          "updatedAt": "2026-08-20T11:51:15.122Z",
+          "hasKaypalDesktopSession": true
+        },
+        "message": "ok",
+        "timestamp": "2026-08-20T17:53:26.384Z"
+      }
+    },
+    "runtimeStatus": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "executionEnabled": true,
+          "schedulerDaemonEnabled": true,
+          "schedulerDaemonArmed": true,
+          "schedulerLeaseMs": 300000,
+          "mode": "live-execution",
+          "ownerId": "growth-38276-1787234749692-fhnoeojugwc",
+          "running": false,
+          "targetCount": 0,
+          "dueReadyCount": 0,
+          "staleLeaseCount": 0,
+          "leases": []
+        },
+        "message": "ok",
+        "timestamp": "2026-08-20T17:53:26.408Z"
+      }
+    },
+    "commercialLiveGate": {
+      "readOnly": true,
+      "executionEnabled": true,
+      "schedulerDaemonEnabled": true,
+      "schedulerDaemonArmed": true,
+      "readyCount": 0,
+      "onlineNormalAccountCount": 11,
+      "nextSteps": [
+        "Enable at least one scheduled auto-risk acquisition task bound to an online-normal real account with remaining daily quota."
+      ]
+    },
+    "accountHealth": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": [
+          {
+            "id": "douyin:1",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "douyin",
+            "accountId": "1",
+            "accountName": "施主聒噪",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0.8,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "douyin:4",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "douyin",
+            "accountId": "4",
+            "accountName": "磊",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "douyin:2",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "douyin",
+            "accountId": "2",
+            "accountName": "大壮AI研究员",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "xiaohongshu:1",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "xiaohongshu",
+            "accountId": "1",
+            "accountName": "蚛",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0.65,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "wechat-channel:1",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "wechat-channel",
+            "accountId": "1",
+            "accountName": "视频号验收",
+            "loginStatus": "expired",
+            "todayActionCount": 0,
+            "failureRate": 0,
+            "riskStatus": "needs-human",
+            "recommendation": "请在本机浏览器重新登录 视频号，完成后点击校验状态，再恢复被阻断任务。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "douyin:6",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "douyin",
+            "accountId": "6",
+            "accountName": "森",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "douyin:11",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "douyin",
+            "accountId": "11",
+            "accountName": "44",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "kuaishou:2",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "kuaishou",
+            "accountId": "2",
+            "accountName": "杨宏宇",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0.7143,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "xiaohongshu:3",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "xiaohongshu",
+            "accountId": "3",
+            "accountName": "杨宏宇",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0.65,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "douyin:14",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "douyin",
+            "accountId": "14",
+            "accountName": "测试2",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+          },
+          {
+            "id": "kuaishou:1",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "kuaishou",
+            "accountId": "1",
+            "accountName": "快手1号",
+            "loginStatus": "expired",
+            "todayActionCount": 0,
+            "failureRate": 0,
+            "riskStatus": "needs-human",
+            "recommendation": "任务「快手装修获客验收」绑定的账号未在平台账号列表中找到。请到发布中心-平台账号完成登录或重新授权，账号恢复在线后才能真实执行。",
+            "lastCheckedAt": "2026-08-20T06:45:28.541Z"
+          },
+          {
+            "id": "douyin:5",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "douyin",
+            "accountId": "5",
+            "accountName": "sss",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-19T19:48:16.550Z"
+          },
+          {
+            "id": "douyin:test",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "douyin",
+            "accountId": "test",
+            "accountName": "抖音",
+            "loginStatus": "expired",
+            "todayActionCount": 0,
+            "failureRate": 1,
+            "riskStatus": "needs-human",
+            "recommendation": "任务「E2E测试获客」绑定的账号未在平台账号列表中找到。请到发布中心-平台账号完成登录或重新授权，账号恢复在线后才能真实执行。",
+            "lastCheckedAt": "2026-08-11T21:33:38.967Z"
+          },
+          {
+            "id": "douyin:3",
+            "userId": "cms2ktllp03u9j1wprksvwy8w",
+            "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+            "platform": "douyin",
+            "accountId": "3",
+            "accountName": "林",
+            "loginStatus": "online",
+            "todayActionCount": 0,
+            "failureRate": 0,
+            "riskStatus": "normal",
+            "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+            "lastCheckedAt": "2026-08-10T21:26:51.441Z"
+          }
+        ],
+        "message": "ok",
+        "timestamp": "2026-08-20T17:53:26.523Z"
+      }
+    },
+    "schedulePlan": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "generatedAt": "2026-08-20T17:53:26.531Z",
+          "readyCount": 0,
+          "blockedCount": 0,
+          "waitingCount": 0,
+          "items": [
+            {
+              "configId": "config-1787107720565-49965e",
+              "taskName": "快手获客（手动导入候选）",
+              "platform": "kuaishou",
+              "accountId": "2",
+              "accountName": "杨宏宇",
+              "mode": "manual-import",
+              "scheduleEnabled": false,
+              "beginTime": "09:30",
+              "dailyLimit": 10,
+              "exposureCount": 0,
+              "remainingToday": 10,
+              "status": "disabled",
+              "reason": "任务未加入执行计划，仅允许手动执行。",
+              "lastRunAt": "2026-08-20T06:59:54.378Z"
+            },
+            {
+              "configId": "config-1787103774143-ef0b87",
+              "taskName": "小红书装修获客验收",
+              "platform": "xiaohongshu",
+              "accountId": "3",
+              "accountName": "杨宏宇",
+              "mode": "keyword",
+              "scheduleEnabled": false,
+              "beginTime": "09:30",
+              "dailyLimit": 10,
+              "exposureCount": 0,
+              "remainingToday": 10,
+              "status": "disabled",
+              "reason": "任务未加入执行计划，仅允许手动执行。",
+              "lastRunAt": "2026-08-19T14:13:38.964Z"
+            },
+            {
+              "configId": "config-1786392027754-307bcc",
+              "taskName": "抖音获客：AI 手机",
+              "platform": "douyin",
+              "accountId": "1",
+              "accountName": "本机验收抖音账号",
+              "mode": "keyword",
+              "scheduleEnabled": false,
+              "beginTime": "09:30",
+              "dailyLimit": 20,
+              "exposureCount": 0,
+              "remainingToday": 20,
+              "status": "disabled",
+              "reason": "任务未加入执行计划，仅允许手动执行。",
+              "lastRunAt": "2026-08-20T08:03:38.673Z"
+            },
+            {
+              "configId": "config-1785393925969-34a4fd",
+              "taskName": "美业美甲店新客策略（获客任务）",
+              "platform": "douyin",
+              "accountId": "1",
+              "accountName": "2",
+              "mode": "keyword",
+              "scheduleEnabled": false,
+              "beginTime": "09:30",
+              "dailyLimit": 2,
+              "exposureCount": 0,
+              "remainingToday": 2,
+              "status": "disabled",
+              "reason": "任务未加入执行计划，仅允许手动执行。"
+            },
+            {
+              "configId": "config-1785387165005-87109c",
+              "taskName": "美业美甲店新客策略（获客任务）",
+              "platform": "douyin",
+              "accountId": "1",
+              "accountName": "2",
+              "mode": "search-account",
+              "scheduleEnabled": false,
+              "beginTime": "09:30",
+              "dailyLimit": 20,
+              "exposureCount": 0,
+              "remainingToday": 20,
+              "status": "disabled",
+              "reason": "任务未加入执行计划，仅允许手动执行。"
+            },
+            {
+              "configId": "config-1785373725145-4b573d",
+              "taskName": "教育小饭桌策略（获客任务）",
+              "platform": "douyin",
+              "accountId": "1",
+              "accountName": "2",
+              "mode": "keyword",
+              "scheduleEnabled": false,
+              "beginTime": "09:30",
+              "dailyLimit": 20,
+              "exposureCount": 0,
+              "remainingToday": 20,
+              "status": "disabled",
+              "reason": "任务未加入执行计划，仅允许手动执行。"
+            },
+            {
+              "configId": "config-1785354306612-48f9ed",
+              "taskName": "抖音获客：装修",
+              "platform": "douyin",
+              "accountId": "1",
+              "accountName": "本机验收抖音账号",
+              "mode": "keyword",
+              "scheduleEnabled": false,
+              "beginTime": "09:30",
+              "dailyLimit": 20,
+              "exposureCount": 0,
+              "remainingToday": 20,
+              "status": "disabled",
+              "reason": "任务未加入执行计划，仅允许手动执行。"
+            },
+            {
+              "configId": "config-1785354242210-e271b8",
+              "taskName": "抖音获客：新房装修",
+              "platform": "douyin",
+              "accountId": "1",
+              "accountName": "本机验收抖音账号",
+              "mode": "keyword",
+              "scheduleEnabled": false,
+              "beginTime": "09:30",
+              "dailyLimit": 20,
+              "exposureCount": 0,
+              "remainingToday": 20,
+              "status": "disabled",
+              "reason": "任务未加入执行计划，仅允许手动执行。"
+            }
+          ]
+        },
+        "message": "ok",
+        "timestamp": "2026-08-20T17:53:26.531Z"
+      }
+    },
+    "overview": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "todayLeadCount": 0,
+          "todayContactedCount": 0,
+          "todayCrmCapturedCount": 0,
+          "activeConfigCount": 8,
+          "highIntentLeadCount": 4,
+          "accountRiskCount": 3,
+          "funnel": {
+            "candidates": 10,
+            "selected": 0,
+            "contacted": 0,
+            "crmCaptured": 0,
+            "converted": 0
+          },
+          "recentRuns": [
+            {
+              "id": "run-1787213018673-15b598",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787213016642-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787213016642-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T08:03:38.673Z",
+              "endedAt": "2026-08-20T08:03:38.673Z"
+            },
+            {
+              "id": "run-1787211651925-59b6ed",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787211649142-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211649142-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:40:51.925Z",
+              "endedAt": "2026-08-20T07:40:51.925Z"
+            },
+            {
+              "id": "run-1787211566428-7c33d7",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787211563377-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211563377-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:39:26.427Z",
+              "endedAt": "2026-08-20T07:39:26.427Z"
+            },
+            {
+              "id": "run-1787211486148-cde615",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "skipped",
+              "message": "防平台风控：账号 本机验收抖音账号 距上次执行不足 60s，已节流（还需 28s），避免触发平台反爬。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:38:06.148Z",
+              "endedAt": "2026-08-20T07:38:06.148Z"
+            },
+            {
+              "id": "run-1787211463267-51a709",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787211459456-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211459456-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:37:43.267Z",
+              "endedAt": "2026-08-20T07:37:43.267Z"
+            },
+            {
+              "id": "run-1787211331394-fd1659",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "skipped",
+              "failureReason": "target_not_found",
+              "message": "本次候选评论没有达到跟进条件。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211277019-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:35:31.394Z",
+              "endedAt": "2026-08-20T07:35:31.394Z"
+            },
+            {
+              "id": "run-1787211136239-981083",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787211136130-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211136130-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:32:16.239Z",
+              "endedAt": "2026-08-20T07:32:16.239Z"
+            },
+            {
+              "id": "run-1787209690733-377cdf",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787209690655-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787209690655-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:08:10.733Z",
+              "endedAt": "2026-08-20T07:08:10.733Z"
+            }
+          ],
+          "hotStrategies": [
+            {
+              "id": "strategy-1785393888358-9d8d4a",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "industry": "美业",
+              "scenario": "美甲店新客",
+              "name": "美业美甲店新客策略",
+              "sourceKeywords": [
+                "皮肤管理",
+                "医美",
+                "美甲",
+                "祛痘"
+              ],
+              "demandKeywords": [
+                "求推荐",
+                "多少钱",
+                "哪里靠谱",
+                "有没有人做过"
+              ],
+              "excludeKeywords": [
+                "招聘",
+                "教程",
+                "同行",
+                "广告"
+              ],
+              "blacklistNicknames": [
+                "官方旗舰店",
+                "招商中心"
+              ],
+              "commentTemplates": [
+                "我这边刚好整理过这类问题，可以给你一个参考。",
+                "这个要看你的具体情况，方便的话我可以帮你拆一下。",
+                "你这个需求挺典型的，先别急着下决定，可以先对比几个关键点。"
+              ],
+              "privateMessageTemplates": [
+                "你好，看到你刚才在关注这个问题，我可以给你发个简单参考。"
+              ],
+              "defaultDailyLimit": 20,
+              "defaultRiskMode": "confirm-first",
+              "scoringRules": [
+                {
+                  "label": "需求明确",
+                  "keywords": [
+                    "想",
+                    "需要",
+                    "求推荐"
+                  ],
+                  "score": 25
+                },
+                {
+                  "label": "价格敏感",
+                  "keywords": [
+                    "多少钱",
+                    "预算",
+                    "贵吗"
+                  ],
+                  "score": 18
+                }
+              ],
+              "createdAt": "2026-07-30T06:44:48.358Z",
+              "updatedAt": "2026-07-30T06:44:48.358Z"
+            },
+            {
+              "id": "strategy-1785360653788-6d1391",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "industry": "教育",
+              "scenario": "小饭桌",
+              "name": "教育小饭桌策略",
+              "sourceKeywords": [
+                "补课",
+                "升学",
+                "考研",
+                "职业培训"
+              ],
+              "demandKeywords": [
+                "求推荐",
+                "多少钱",
+                "哪里靠谱",
+                "有没有人做过"
+              ],
+              "excludeKeywords": [
+                "招聘",
+                "教程",
+                "同行",
+                "广告"
+              ],
+              "blacklistNicknames": [
+                "官方旗舰店",
+                "招商中心"
+              ],
+              "commentTemplates": [
+                "我这边刚好整理过这类问题，可以给你一个参考。",
+                "这个要看你的具体情况，方便的话我可以帮你拆一下。",
+                "你这个需求挺典型的，先别急着下决定，可以先对比几个关键点。"
+              ],
+              "privateMessageTemplates": [
+                "你好，看到你刚才在关注这个问题，我可以给你发个简单参考。"
+              ],
+              "defaultDailyLimit": 20,
+              "defaultRiskMode": "confirm-first",
+              "scoringRules": [
+                {
+                  "label": "需求明确",
+                  "keywords": [
+                    "想",
+                    "需要",
+                    "求推荐"
+                  ],
+                  "score": 25
+                },
+                {
+                  "label": "价格敏感",
+                  "keywords": [
+                    "多少钱",
+                    "预算",
+                    "贵吗"
+                  ],
+                  "score": 18
+                }
+              ],
+              "createdAt": "2026-07-29T21:30:53.788Z",
+              "updatedAt": "2026-07-29T21:30:53.788Z"
+            }
+          ]
+        },
+        "message": "ok",
+        "timestamp": "2026-08-20T17:53:26.538Z"
+      }
+    },
+    "reports": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "overview": {
+            "todayLeadCount": 83,
+            "todayContactedCount": 14,
+            "todayCrmCapturedCount": 14,
+            "activeConfigCount": 8,
+            "highIntentLeadCount": 4,
+            "accountRiskCount": 3,
+            "funnel": {
+              "candidates": 188,
+              "selected": 100,
+              "contacted": 14,
+              "crmCaptured": 14,
+              "converted": 0
+            },
+            "recentRuns": [
+              {
+                "id": "run-1787213018673-15b598",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "configId": "config-1786392027754-307bcc",
+                "mode": "keyword",
+                "platform": "douyin",
+                "status": "failed",
+                "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+                "candidateCount": 0,
+                "selectedCount": 0,
+                "contactedCount": 0,
+                "crmCapturedCount": 0,
+                "evidenceUrls": [
+                  "/api/local-engine/browser/evidence/1787213016642-douyin-1.png",
+                  "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787213016642-douyin-1.png",
+                  "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+                ],
+                "leadIds": [],
+                "startedAt": "2026-08-20T08:03:38.673Z",
+                "endedAt": "2026-08-20T08:03:38.673Z"
+              },
+              {
+                "id": "run-1787211651925-59b6ed",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "configId": "config-1786392027754-307bcc",
+                "mode": "keyword",
+                "platform": "douyin",
+                "status": "failed",
+                "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+                "candidateCount": 0,
+                "selectedCount": 0,
+                "contactedCount": 0,
+                "crmCapturedCount": 0,
+                "evidenceUrls": [
+                  "/api/local-engine/browser/evidence/1787211649142-douyin-1.png",
+                  "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211649142-douyin-1.png",
+                  "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+                ],
+                "leadIds": [],
+                "startedAt": "2026-08-20T07:40:51.925Z",
+                "endedAt": "2026-08-20T07:40:51.925Z"
+              },
+              {
+                "id": "run-1787211566428-7c33d7",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "configId": "config-1786392027754-307bcc",
+                "mode": "keyword",
+                "platform": "douyin",
+                "status": "failed",
+                "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+                "candidateCount": 0,
+                "selectedCount": 0,
+                "contactedCount": 0,
+                "crmCapturedCount": 0,
+                "evidenceUrls": [
+                  "/api/local-engine/browser/evidence/1787211563377-douyin-1.png",
+                  "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211563377-douyin-1.png",
+                  "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+                ],
+                "leadIds": [],
+                "startedAt": "2026-08-20T07:39:26.427Z",
+                "endedAt": "2026-08-20T07:39:26.427Z"
+              },
+              {
+                "id": "run-1787211486148-cde615",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "configId": "config-1786392027754-307bcc",
+                "mode": "keyword",
+                "platform": "douyin",
+                "status": "skipped",
+                "message": "防平台风控：账号 本机验收抖音账号 距上次执行不足 60s，已节流（还需 28s），避免触发平台反爬。",
+                "candidateCount": 0,
+                "selectedCount": 0,
+                "contactedCount": 0,
+                "crmCapturedCount": 0,
+                "evidenceUrls": [],
+                "leadIds": [],
+                "startedAt": "2026-08-20T07:38:06.148Z",
+                "endedAt": "2026-08-20T07:38:06.148Z"
+              },
+              {
+                "id": "run-1787211463267-51a709",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "configId": "config-1786392027754-307bcc",
+                "mode": "keyword",
+                "platform": "douyin",
+                "status": "failed",
+                "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+                "candidateCount": 0,
+                "selectedCount": 0,
+                "contactedCount": 0,
+                "crmCapturedCount": 0,
+                "evidenceUrls": [
+                  "/api/local-engine/browser/evidence/1787211459456-douyin-1.png",
+                  "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211459456-douyin-1.png",
+                  "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+                ],
+                "leadIds": [],
+                "startedAt": "2026-08-20T07:37:43.267Z",
+                "endedAt": "2026-08-20T07:37:43.267Z"
+              },
+              {
+                "id": "run-1787211331394-fd1659",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "configId": "config-1786392027754-307bcc",
+                "mode": "keyword",
+                "platform": "douyin",
+                "status": "skipped",
+                "failureReason": "target_not_found",
+                "message": "本次候选评论没有达到跟进条件。",
+                "candidateCount": 10,
+                "selectedCount": 0,
+                "contactedCount": 0,
+                "crmCapturedCount": 0,
+                "evidenceUrls": [
+                  "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211277019-douyin-1.png",
+                  "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+                ],
+                "leadIds": [],
+                "startedAt": "2026-08-20T07:35:31.394Z",
+                "endedAt": "2026-08-20T07:35:31.394Z"
+              },
+              {
+                "id": "run-1787211136239-981083",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "configId": "config-1786392027754-307bcc",
+                "mode": "keyword",
+                "platform": "douyin",
+                "status": "failed",
+                "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+                "candidateCount": 0,
+                "selectedCount": 0,
+                "contactedCount": 0,
+                "crmCapturedCount": 0,
+                "evidenceUrls": [
+                  "/api/local-engine/browser/evidence/1787211136130-douyin-1.png",
+                  "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211136130-douyin-1.png",
+                  "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+                ],
+                "leadIds": [],
+                "startedAt": "2026-08-20T07:32:16.239Z",
+                "endedAt": "2026-08-20T07:32:16.239Z"
+              },
+              {
+                "id": "run-1787209690733-377cdf",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "configId": "config-1786392027754-307bcc",
+                "mode": "keyword",
+                "platform": "douyin",
+                "status": "failed",
+                "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+                "candidateCount": 0,
+                "selectedCount": 0,
+                "contactedCount": 0,
+                "crmCapturedCount": 0,
+                "evidenceUrls": [
+                  "/api/local-engine/browser/evidence/1787209690655-douyin-1.png",
+                  "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787209690655-douyin-1.png",
+                  "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+                ],
+                "leadIds": [],
+                "startedAt": "2026-08-20T07:08:10.733Z",
+                "endedAt": "2026-08-20T07:08:10.733Z"
+              }
+            ],
+            "hotStrategies": [
+              {
+                "id": "strategy-1785393888358-9d8d4a",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "industry": "美业",
+                "scenario": "美甲店新客",
+                "name": "美业美甲店新客策略",
+                "sourceKeywords": [
+                  "皮肤管理",
+                  "医美",
+                  "美甲",
+                  "祛痘"
+                ],
+                "demandKeywords": [
+                  "求推荐",
+                  "多少钱",
+                  "哪里靠谱",
+                  "有没有人做过"
+                ],
+                "excludeKeywords": [
+                  "招聘",
+                  "教程",
+                  "同行",
+                  "广告"
+                ],
+                "blacklistNicknames": [
+                  "官方旗舰店",
+                  "招商中心"
+                ],
+                "commentTemplates": [
+                  "我这边刚好整理过这类问题，可以给你一个参考。",
+                  "这个要看你的具体情况，方便的话我可以帮你拆一下。",
+                  "你这个需求挺典型的，先别急着下决定，可以先对比几个关键点。"
+                ],
+                "privateMessageTemplates": [
+                  "你好，看到你刚才在关注这个问题，我可以给你发个简单参考。"
+                ],
+                "defaultDailyLimit": 20,
+                "defaultRiskMode": "confirm-first",
+                "scoringRules": [
+                  {
+                    "label": "需求明确",
+                    "keywords": [
+                      "想",
+                      "需要",
+                      "求推荐"
+                    ],
+                    "score": 25
+                  },
+                  {
+                    "label": "价格敏感",
+                    "keywords": [
+                      "多少钱",
+                      "预算",
+                      "贵吗"
+                    ],
+                    "score": 18
+                  }
+                ],
+                "createdAt": "2026-07-30T06:44:48.358Z",
+                "updatedAt": "2026-07-30T06:44:48.358Z"
+              },
+              {
+                "id": "strategy-1785360653788-6d1391",
+                "userId": "cms2ktllp03u9j1wprksvwy8w",
+                "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+                "industry": "教育",
+                "scenario": "小饭桌",
+                "name": "教育小饭桌策略",
+                "sourceKeywords": [
+                  "补课",
+                  "升学",
+                  "考研",
+                  "职业培训"
+                ],
+                "demandKeywords": [
+                  "求推荐",
+                  "多少钱",
+                  "哪里靠谱",
+                  "有没有人做过"
+                ],
+                "excludeKeywords": [
+                  "招聘",
+                  "教程",
+                  "同行",
+                  "广告"
+                ],
+                "blacklistNicknames": [
+                  "官方旗舰店",
+                  "招商中心"
+                ],
+                "commentTemplates": [
+                  "我这边刚好整理过这类问题，可以给你一个参考。",
+                  "这个要看你的具体情况，方便的话我可以帮你拆一下。",
+                  "你这个需求挺典型的，先别急着下决定，可以先对比几个关键点。"
+                ],
+                "privateMessageTemplates": [
+                  "你好，看到你刚才在关注这个问题，我可以给你发个简单参考。"
+                ],
+                "defaultDailyLimit": 20,
+                "defaultRiskMode": "confirm-first",
+                "scoringRules": [
+                  {
+                    "label": "需求明确",
+                    "keywords": [
+                      "想",
+                      "需要",
+                      "求推荐"
+                    ],
+                    "score": 25
+                  },
+                  {
+                    "label": "价格敏感",
+                    "keywords": [
+                      "多少钱",
+                      "预算",
+                      "贵吗"
+                    ],
+                    "score": 18
+                  }
+                ],
+                "createdAt": "2026-07-29T21:30:53.788Z",
+                "updatedAt": "2026-07-29T21:30:53.788Z"
+              }
+            ]
+          },
+          "funnel": {
+            "candidates": 188,
+            "selected": 100,
+            "contacted": 14,
+            "crmCaptured": 14,
+            "converted": 0
+          },
+          "sixStage": {
+            "content": 0,
+            "publish": 0,
+            "interaction": 0,
+            "lead": 0,
+            "customer": 0,
+            "opportunity": 0,
+            "wonAmountCents": 0,
+            "contentConversionRate": 0,
+            "attributedLeadCount": 0,
+            "attributedCustomerCount": 0,
+            "attributionConfidence": "low",
+            "platformComparison": []
+          },
+          "copywriting": [
+            {
+              "text": "你好，看到你关注这个话题，我们正好在做这个，可以聊聊～",
+              "usageCount": 14,
+              "leadScoreTotal": 974,
+              "contactedCount": 14,
+              "averageLeadScore": 70,
+              "contactRate": 1,
+              "lowConfidence": true
+            }
+          ],
+          "accounts": [
+            {
+              "id": "douyin:1",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "douyin",
+              "accountId": "1",
+              "accountName": "施主聒噪",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0.8,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "douyin:2",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "douyin",
+              "accountId": "2",
+              "accountName": "大壮AI研究员",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "douyin:4",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "douyin",
+              "accountId": "4",
+              "accountName": "磊",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "xiaohongshu:1",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "xiaohongshu",
+              "accountId": "1",
+              "accountName": "蚛",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0.65,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "wechat-channel:1",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "wechat-channel",
+              "accountId": "1",
+              "accountName": "视频号验收",
+              "loginStatus": "expired",
+              "todayActionCount": 0,
+              "failureRate": 0,
+              "riskStatus": "needs-human",
+              "recommendation": "请在本机浏览器重新登录 视频号，完成后点击校验状态，再恢复被阻断任务。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "douyin:6",
+              "userId": "cmsmjmskh01xwi5opfmpmu30n",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "douyin",
+              "accountId": "6",
+              "accountName": "森",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "douyin:11",
+              "userId": "cmsmjmskh01xwi5opfmpmu30n",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "douyin",
+              "accountId": "11",
+              "accountName": "44",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "kuaishou:2",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "kuaishou",
+              "accountId": "2",
+              "accountName": "杨宏宇",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0.7143,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "xiaohongshu:3",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "xiaohongshu",
+              "accountId": "3",
+              "accountName": "杨宏宇",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0.65,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "douyin:14",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "douyin",
+              "accountId": "14",
+              "accountName": "测试2",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-20T17:53:26.510Z"
+            },
+            {
+              "id": "kuaishou:1",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "kuaishou",
+              "accountId": "1",
+              "accountName": "快手1号",
+              "loginStatus": "expired",
+              "todayActionCount": 0,
+              "failureRate": 0,
+              "riskStatus": "needs-human",
+              "recommendation": "任务「快手装修获客验收」绑定的账号未在平台账号列表中找到。请到发布中心-平台账号完成登录或重新授权，账号恢复在线后才能真实执行。",
+              "lastCheckedAt": "2026-08-20T06:45:28.541Z"
+            },
+            {
+              "id": "douyin:5",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "douyin",
+              "accountId": "5",
+              "accountName": "sss",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-19T19:48:16.550Z"
+            },
+            {
+              "id": "douyin:test",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "douyin",
+              "accountId": "test",
+              "accountName": "抖音",
+              "loginStatus": "expired",
+              "todayActionCount": 0,
+              "failureRate": 1,
+              "riskStatus": "needs-human",
+              "recommendation": "任务「E2E测试获客」绑定的账号未在平台账号列表中找到。请到发布中心-平台账号完成登录或重新授权，账号恢复在线后才能真实执行。",
+              "lastCheckedAt": "2026-08-11T21:33:38.967Z"
+            },
+            {
+              "id": "douyin:3",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "platform": "douyin",
+              "accountId": "3",
+              "accountName": "林",
+              "loginStatus": "online",
+              "todayActionCount": 0,
+              "failureRate": 0,
+              "riskStatus": "normal",
+              "recommendation": "账号可用于增长任务；仍需遵守每日上限和回读证据。",
+              "lastCheckedAt": "2026-08-10T21:26:51.441Z"
+            }
+          ],
+          "tasks": [
+            {
+              "id": "run-1787213018673-15b598",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787213016642-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787213016642-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T08:03:38.673Z",
+              "endedAt": "2026-08-20T08:03:38.673Z"
+            },
+            {
+              "id": "run-1787211651925-59b6ed",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787211649142-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211649142-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:40:51.925Z",
+              "endedAt": "2026-08-20T07:40:51.925Z"
+            },
+            {
+              "id": "run-1787211566428-7c33d7",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787211563377-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211563377-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:39:26.427Z",
+              "endedAt": "2026-08-20T07:39:26.427Z"
+            },
+            {
+              "id": "run-1787211486148-cde615",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "skipped",
+              "message": "防平台风控：账号 本机验收抖音账号 距上次执行不足 60s，已节流（还需 28s），避免触发平台反爬。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:38:06.148Z",
+              "endedAt": "2026-08-20T07:38:06.148Z"
+            },
+            {
+              "id": "run-1787211463267-51a709",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787211459456-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211459456-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:37:43.267Z",
+              "endedAt": "2026-08-20T07:37:43.267Z"
+            },
+            {
+              "id": "run-1787211331394-fd1659",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "skipped",
+              "failureReason": "target_not_found",
+              "message": "本次候选评论没有达到跟进条件。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211277019-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:35:31.394Z",
+              "endedAt": "2026-08-20T07:35:31.394Z"
+            },
+            {
+              "id": "run-1787211136239-981083",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787211136130-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787211136130-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:32:16.239Z",
+              "endedAt": "2026-08-20T07:32:16.239Z"
+            },
+            {
+              "id": "run-1787209690733-377cdf",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "message": "页面未出现搜索结果信号，可能页面结构变化或内容未加载。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1787209690655-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1787209690655-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-20T07:08:10.733Z",
+              "endedAt": "2026-08-20T07:08:10.733Z"
+            },
+            {
+              "id": "run-1787209194378-fd8a2b",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787107720565-49965e",
+              "mode": "keyword",
+              "platform": "kuaishou",
+              "status": "failed",
+              "message": "快手 获客互动执行器尚未接入，已阻止本次执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-20T06:59:54.378Z",
+              "endedAt": "2026-08-20T06:59:54.378Z"
+            },
+            {
+              "id": "run-1787209034222-90c5eb",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787107720565-49965e",
+              "mode": "keyword",
+              "platform": "kuaishou",
+              "status": "failed",
+              "message": "快手 获客互动执行器尚未接入，已阻止本次执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-20T06:57:14.222Z",
+              "endedAt": "2026-08-20T06:57:14.222Z"
+            },
+            {
+              "id": "run-1787148818964-c941ae",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "partial",
+              "message": "发现 10 条内容，读评论获得 10 个评论用户线索；小红书 自动触达未接入，需人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 10,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a8567970000000028006b31",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/6a2a8763000000003501c1ec",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/6a856712000000002800ac75",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/6a8567d4000000003303068e",
+                "https://www.xiaohongshu.com/explore/6a1195700000000008001c51",
+                "https://www.xiaohongshu.com/explore/6a257edd0000000035032c67",
+                "https://www.xiaohongshu.com/explore/69984932000000001b0149e0"
+              ],
+              "leadIds": [
+                "lead-1787148818963-c49b16",
+                "lead-1787148818963-a4318b",
+                "lead-1787148818963-0244a4",
+                "lead-1787148818963-832b08",
+                "lead-1787148818963-f8e4f6",
+                "lead-1787148818963-90c42b",
+                "lead-1787148818963-5bf89a",
+                "lead-1787148818963-b7f752",
+                "lead-1787148818963-c2108c",
+                "lead-1787148818964-4ceb18"
+              ],
+              "startedAt": "2026-08-19T14:13:38.964Z",
+              "endedAt": "2026-08-19T14:13:38.964Z"
+            },
+            {
+              "id": "run-1787109259732-2c14d3",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "partial",
+              "message": "发现 10 条内容，读评论获得 10 个评论用户线索；小红书 自动触达未接入，需人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 10,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/697d80dc000000000b00bc9c",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/6a448bfd0000000006030185",
+                "https://www.xiaohongshu.com/explore/6a737903000000000f03a800"
+              ],
+              "leadIds": [
+                "lead-1787109259731-bca282",
+                "lead-1787109259731-0bc498",
+                "lead-1787109259731-656231",
+                "lead-1787109259731-3c34a2",
+                "lead-1787109259731-25db8e",
+                "lead-1787109259732-327074",
+                "lead-1787109259732-d5b487",
+                "lead-1787109259732-1b7173",
+                "lead-1787109259732-d2f43e",
+                "lead-1787109259732-3b843d"
+              ],
+              "startedAt": "2026-08-19T03:14:19.732Z",
+              "endedAt": "2026-08-19T03:14:19.732Z"
+            },
+            {
+              "id": "run-1787109069294-f7e2db",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "partial",
+              "message": "发现 10 条内容，读评论获得 10 个评论用户线索；小红书 自动触达未接入，需人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 10,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/69fd7f88000000003503ac36",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/6a2ccee3000000001c0242ca",
+                "https://www.xiaohongshu.com/explore/6a257edd0000000035032c67",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda"
+              ],
+              "leadIds": [
+                "lead-1787109069293-ad2e87",
+                "lead-1787109069293-95c213",
+                "lead-1787109069293-987a97",
+                "lead-1787109069294-2ccdc4",
+                "lead-1787109069294-9e9b7c",
+                "lead-1787109069294-185f3b",
+                "lead-1787109069294-2ed115",
+                "lead-1787109069294-68284e",
+                "lead-1787109069294-f20239",
+                "lead-1787109069294-dd28f8"
+              ],
+              "startedAt": "2026-08-19T03:11:09.294Z",
+              "endedAt": "2026-08-19T03:11:09.294Z"
+            },
+            {
+              "id": "run-1787108927332-58afe4",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "partial",
+              "message": "发现 10 条内容，读评论获得 10 个评论用户线索；小红书 自动触达未接入，需人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 10,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/69fd7f88000000003503ac36",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a75746e00000000240249f0",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/6a257edd0000000035032c67",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda"
+              ],
+              "leadIds": [
+                "lead-1787108927331-df8f3e",
+                "lead-1787108927331-81cc96",
+                "lead-1787108927331-24560c",
+                "lead-1787108927331-510b3f",
+                "lead-1787108927331-893f3b",
+                "lead-1787108927331-9250c0",
+                "lead-1787108927331-f0f2cb",
+                "lead-1787108927331-d86fbd",
+                "lead-1787108927332-ea3719",
+                "lead-1787108927332-98915b"
+              ],
+              "startedAt": "2026-08-19T03:08:47.332Z",
+              "endedAt": "2026-08-19T03:08:47.332Z"
+            },
+            {
+              "id": "run-1787108517559-aee320",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "message": "小红书 获客互动执行器尚未接入，已阻止本次执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-19T03:01:57.559Z",
+              "endedAt": "2026-08-19T03:01:57.559Z"
+            },
+            {
+              "id": "run-1787108500143-f64267",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787107720565-49965e",
+              "mode": "keyword",
+              "platform": "kuaishou",
+              "status": "partial",
+              "message": "发现 2 条内容，读评论获得 10 个评论用户线索；快手 自动触达未接入，需人工跟进。",
+              "candidateCount": 2,
+              "selectedCount": 10,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.kuaishou.com/short-video/5230368220465747866",
+                "https://www.kuaishou.com/short-video/5241345737400794139"
+              ],
+              "leadIds": [
+                "lead-1787108500142-8e550a",
+                "lead-1787108500142-1642ae",
+                "lead-1787108500142-3ba649",
+                "lead-1787108500142-147750",
+                "lead-1787108500143-3d0e12",
+                "lead-1787108500143-490310",
+                "lead-1787108500143-5efabc",
+                "lead-1787108500143-e3b0ad",
+                "lead-1787108500143-fc021c",
+                "lead-1787108500143-807a07"
+              ],
+              "startedAt": "2026-08-19T03:01:40.143Z",
+              "endedAt": "2026-08-19T03:01:40.143Z"
+            },
+            {
+              "id": "run-1787108130193-969157",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787107720565-49965e",
+              "mode": "keyword",
+              "platform": "kuaishou",
+              "status": "partial",
+              "message": "发现 2 条内容，读评论获得 10 个评论用户线索；快手 自动触达未接入，需人工跟进。",
+              "candidateCount": 2,
+              "selectedCount": 10,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.kuaishou.com/short-video/5249789992491136686",
+                "https://www.kuaishou.com/short-video/5199405972708119271"
+              ],
+              "leadIds": [
+                "lead-1787108130192-962389",
+                "lead-1787108130192-c551f4",
+                "lead-1787108130192-22e9dc",
+                "lead-1787108130192-d66b38",
+                "lead-1787108130192-2167ef",
+                "lead-1787108130192-8d2992",
+                "lead-1787108130192-a3dc40",
+                "lead-1787108130192-27bff6",
+                "lead-1787108130192-3cb89f",
+                "lead-1787108130192-1be114"
+              ],
+              "startedAt": "2026-08-19T02:55:30.193Z",
+              "endedAt": "2026-08-19T02:55:30.193Z"
+            },
+            {
+              "id": "run-1787107969989-69fbd0",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787107720565-49965e",
+              "mode": "keyword",
+              "platform": "kuaishou",
+              "status": "failed",
+              "message": "快手 获客互动执行器尚未接入，已阻止本次执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:52:49.989Z",
+              "endedAt": "2026-08-19T02:52:49.989Z"
+            },
+            {
+              "id": "run-1787107777908-1124fe",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787107720565-49965e",
+              "mode": "keyword",
+              "platform": "kuaishou",
+              "status": "failed",
+              "message": "快手 获客互动执行器尚未接入，已阻止本次执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:49:37.908Z",
+              "endedAt": "2026-08-19T02:49:37.908Z"
+            },
+            {
+              "id": "run-1787107728977-507f61",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787107720565-49965e",
+              "mode": "keyword",
+              "platform": "kuaishou",
+              "status": "skipped",
+              "failureReason": "account_not_logged_in",
+              "message": "未找到可验证的执行账号，已阻止增长获客执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:48:48.977Z",
+              "endedAt": "2026-08-19T02:48:48.977Z"
+            },
+            {
+              "id": "run-1787107358444-4fb9b6",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "partial",
+              "message": "发现 10 条内容，读评论获得 6 个评论用户线索；小红书 自动触达未接入，需人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 6,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/6a11569f00000000060352f1",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/6a2ccee3000000001c0242ca",
+                "https://www.xiaohongshu.com/explore/6a257edd0000000035032c67",
+                "https://www.xiaohongshu.com/explore/69a4006b00000000150201bf",
+                "https://www.xiaohongshu.com/explore/6a3f3ecf0000000011016a98",
+                "https://www.xiaohongshu.com/explore/6973421d000000002801ea58",
+                "https://www.xiaohongshu.com/explore/69fb47140000000036019d7a"
+              ],
+              "leadIds": [
+                "lead-1787107358443-f78e38",
+                "lead-1787107358443-81f961",
+                "lead-1787107358443-3a8d0c",
+                "lead-1787107358443-928de2",
+                "lead-1787107358443-3ee481",
+                "lead-1787107358443-701d1d"
+              ],
+              "startedAt": "2026-08-19T02:42:38.444Z",
+              "endedAt": "2026-08-19T02:42:38.444Z"
+            },
+            {
+              "id": "run-1787107162619-3c2f74",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "failureReason": "target_not_found",
+              "message": "小红书 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/69d0f8eb0000000020039f2a",
+                "https://www.xiaohongshu.com/explore/6a4a2fb4000000001603c3fd",
+                "https://www.xiaohongshu.com/explore/67cac506000000002900dc9d",
+                "https://www.xiaohongshu.com/explore/690347c000000000040015b0",
+                "https://www.xiaohongshu.com/explore/6a4f71b5000000001702b277",
+                "https://www.xiaohongshu.com/explore/69de0437000000001d01a018",
+                "https://www.xiaohongshu.com/explore/6a3a495b000000000702d35e",
+                "https://www.xiaohongshu.com/explore/6a11569f00000000060352f1",
+                "https://www.xiaohongshu.com/explore/69d25e16000000001a02c8dc"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:39:22.619Z",
+              "endedAt": "2026-08-19T02:39:22.619Z"
+            },
+            {
+              "id": "run-1787107002936-93cc70",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "failureReason": "target_not_found",
+              "message": "小红书 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/697d80dc000000000b00bc9c",
+                "https://www.xiaohongshu.com/explore/6a75746e00000000240249f0",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/6a448bfd0000000006030185"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:36:42.936Z",
+              "endedAt": "2026-08-19T02:36:42.936Z"
+            },
+            {
+              "id": "run-1787106912137-348f45",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "failureReason": "target_not_found",
+              "message": "小红书 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/697d80dc000000000b00bc9c",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/6a448bfd0000000006030185",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/69a4006b00000000150201bf"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:35:12.137Z",
+              "endedAt": "2026-08-19T02:35:12.137Z"
+            },
+            {
+              "id": "run-1787106802093-66fd06",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "failureReason": "target_not_found",
+              "message": "小红书 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/697d80dc000000000b00bc9c",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/6a737903000000000f03a800",
+                "https://www.xiaohongshu.com/explore/6a448bfd0000000006030185"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:33:22.093Z",
+              "endedAt": "2026-08-19T02:33:22.093Z"
+            },
+            {
+              "id": "run-1787106604658-deea40",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "failureReason": "target_not_found",
+              "message": "小红书 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/697d80dc000000000b00bc9c",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/6a448bfd0000000006030185",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/67e4037d000000001e001c53"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:30:04.658Z",
+              "endedAt": "2026-08-19T02:30:04.658Z"
+            },
+            {
+              "id": "run-1787106365513-d18fba",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "failureReason": "target_not_found",
+              "message": "小红书 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/697d80dc000000000b00bc9c",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/6a448bfd0000000006030185",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/69a4006b00000000150201bf"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:26:05.513Z",
+              "endedAt": "2026-08-19T02:26:05.513Z"
+            },
+            {
+              "id": "run-1787106227935-b23985",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "failureReason": "target_not_found",
+              "message": "小红书 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/697d80dc000000000b00bc9c",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/6a276b6f0000000006036fff",
+                "https://www.xiaohongshu.com/explore/6a66b292000000000903668e"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:23:47.935Z",
+              "endedAt": "2026-08-19T02:23:47.935Z"
+            },
+            {
+              "id": "run-1787106070807-58ec56",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "message": "小红书 获客互动执行器尚未接入，已阻止本次执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:21:10.807Z",
+              "endedAt": "2026-08-19T02:21:10.807Z"
+            },
+            {
+              "id": "run-1787105982881-dfc975",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "failureReason": "target_not_found",
+              "message": "小红书 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/697d80dc000000000b00bc9c",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/6a448bfd0000000006030185",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/69a4006b00000000150201bf"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:19:42.881Z",
+              "endedAt": "2026-08-19T02:19:42.881Z"
+            },
+            {
+              "id": "run-1787105865923-05af7d",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "message": "小红书 获客互动执行器尚未接入，已阻止本次执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-19T02:17:45.923Z",
+              "endedAt": "2026-08-19T02:17:45.923Z"
+            },
+            {
+              "id": "run-1787104726004-a09064",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "failed",
+              "failureReason": "target_not_found",
+              "message": "小红书 网页版内容详情页被平台反爬拦截或无可读评论，无法获取评论用户线索；请改用抖音或人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/69fd7f88000000003503ac36",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/6a257edd0000000035032c67",
+                "https://www.xiaohongshu.com/explore/69ef0d2100000000380349c8"
+              ],
+              "leadIds": [],
+              "startedAt": "2026-08-19T01:58:46.004Z",
+              "endedAt": "2026-08-19T01:58:46.004Z"
+            },
+            {
+              "id": "run-1787104232586-0b0b76",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "partial",
+              "message": "统一 RPA 发现 10 条候选，已沉淀为线索；小红书 自动触达未接入，需人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 10,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/6a75746e00000000240249f0",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/6a257edd0000000035032c67",
+                "https://www.xiaohongshu.com/explore/69fd7f88000000003503ac36",
+                "https://www.xiaohongshu.com/explore/6a438fa10000000015025593"
+              ],
+              "leadIds": [
+                "lead-1787104232586-485689",
+                "lead-1787104232586-addaad",
+                "lead-1787104232586-b9e0ee",
+                "lead-1787104232586-81930f",
+                "lead-1787104232586-6ffc40",
+                "lead-1787104232586-72ade1",
+                "lead-1787104232586-992c3f",
+                "lead-1787104232586-d12bd0",
+                "lead-1787104232586-6e16c8",
+                "lead-1787104232586-3d8f89"
+              ],
+              "startedAt": "2026-08-19T01:50:32.586Z",
+              "endedAt": "2026-08-19T01:50:32.586Z"
+            },
+            {
+              "id": "run-1787104040441-7b149e",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "partial",
+              "message": "统一 RPA 发现 10 条候选，已沉淀为线索；小红书 自动触达未接入，需人工跟进。",
+              "candidateCount": 10,
+              "selectedCount": 10,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [
+                "https://www.xiaohongshu.com/explore/6a06f1a800000000350259b3",
+                "https://www.xiaohongshu.com/explore/6a40dd5b00000000160240bf",
+                "https://www.xiaohongshu.com/explore/68f21d0b000000000701752a",
+                "https://www.xiaohongshu.com/explore/6a4314c00000000011012075",
+                "https://www.xiaohongshu.com/explore/697d80dc000000000b00bc9c",
+                "https://www.xiaohongshu.com/explore/6a13d20000000000360300eb",
+                "https://www.xiaohongshu.com/explore/69c46570000000001a0275e9",
+                "https://www.xiaohongshu.com/explore/694a0d0c000000000d03d4c2",
+                "https://www.xiaohongshu.com/explore/69c7d276000000001f007dda",
+                "https://www.xiaohongshu.com/explore/6a448bfd0000000006030185"
+              ],
+              "leadIds": [
+                "lead-1787104040441-acede5",
+                "lead-1787104040441-792188",
+                "lead-1787104040441-b1a5ea",
+                "lead-1787104040441-4314d3",
+                "lead-1787104040441-1d8407",
+                "lead-1787104040441-1c4b48",
+                "lead-1787104040441-1c323c",
+                "lead-1787104040441-7feb92",
+                "lead-1787104040441-d7b235",
+                "lead-1787104040441-f7acda"
+              ],
+              "startedAt": "2026-08-19T01:47:20.441Z",
+              "endedAt": "2026-08-19T01:47:20.441Z"
+            },
+            {
+              "id": "run-1787103916525-d35531",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "skipped",
+              "failureReason": "engine_unavailable",
+              "message": "小红书当前仅支持账号纳管和发布前检查，增长自动触达执行器未接入；不能加入后台自动获客执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-19T01:45:16.525Z",
+              "endedAt": "2026-08-19T01:45:16.525Z"
+            },
+            {
+              "id": "run-1787103843868-1faa15",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1787103774143-ef0b87",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "status": "skipped",
+              "failureReason": "account_not_logged_in",
+              "message": "账号 蚛 未登录或已过期，已阻止自动获客执行。",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-19T01:44:03.868Z",
+              "endedAt": "2026-08-19T01:44:03.868Z"
+            },
+            {
+              "id": "run-1786432768801-efcda6",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "success",
+              "message": "已自动执行 14 条评论回复；已同步 14 条线索到 CRM",
+              "candidateCount": 14,
+              "selectedCount": 14,
+              "contactedCount": 14,
+              "crmCapturedCount": 14,
+              "evidenceUrls": [
+                "/api/local-engine/browser/evidence/1786432445782-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432445782-douyin-1.png",
+                "{\"taskType\":\"douyin-hot-video-exposure\",\"executionKind\":\"candidate_read\",\"requestedExecutionKind\":\"candidate_read\",\"exposureMode\":\"hot_video\",\"platformAction\":false,\"accountId\":\"1\",\"filters\":{\"resultLimit\":20,\"preferVideoResults\":true,\"preferHighEngagement\":true,\"commentTimeMatch\":\"7days\",\"blacklistNicknames\":[]},\"linkCount\":0,\"searchKeywordCount\":1,\"hotVideoMode\":true,\"targetedMode\":false,\"retentionMode\":false,\"targetAccountCount\":0,\"retentionSourceId\":\"\",\"messageTemplateCount\":0,\"appendCommentTemplateCount\":0}",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432497648-douyin-1.png",
+                "回读确认：你好，看到你关注这个话题，我们正好在做这个，可以聊聊～",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432519949-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432539854-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432560643-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432580715-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432601173-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432621889-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432642610-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432663591-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432683538-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432704352-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432724907-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432747488-douyin-1.png",
+                "/Users/yanghy/Documents/New project/ai-content/.local-logs/browser-evidence/1786432768500-douyin-1.png"
+              ],
+              "leadIds": [
+                "lead-1786432768801-b17085",
+                "lead-1786432768801-434ced",
+                "lead-1786432768801-b87bae",
+                "lead-1786432768801-12e549",
+                "lead-1786432768801-978790",
+                "lead-1786432768801-7c8fb3",
+                "lead-1786432768801-dd572e",
+                "lead-1786432768801-379ea9",
+                "lead-1786432768801-424531",
+                "lead-1786432768801-b27fc3",
+                "lead-1786432768801-75a7eb",
+                "lead-1786432768801-1faaab",
+                "lead-1786432768801-cd1f4f",
+                "lead-1786432768801-1d5a5b"
+              ],
+              "startedAt": "2026-08-11T07:19:28.801Z",
+              "endedAt": "2026-08-11T07:19:28.801Z"
+            },
+            {
+              "id": "run-1786432038633-2da185",
+              "userId": "cms2ktllp03u9j1wprksvwy8w",
+              "tenantId": "cms2ktllw03ubj1wp1vasmhdq",
+              "configId": "config-1786392027754-307bcc",
+              "mode": "keyword",
+              "platform": "douyin",
+              "status": "failed",
+              "failureReason": "engine_unavailable",
+              "message": "没有可用的执行器处理本任务",
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "crmCapturedCount": 0,
+              "evidenceUrls": [],
+              "leadIds": [],
+              "startedAt": "2026-08-11T07:07:18.633Z",
+              "endedAt": "2026-08-11T07:07:18.633Z"
+            }
+          ],
+          "trend": [
+            {
+              "date": "2026-08-14",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-08-15",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-08-16",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-08-17",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-08-18",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 0,
+              "skipped": 0
+            },
+            {
+              "date": "2026-08-19",
+              "leads": 66,
+              "selected": 86,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 14,
+              "skipped": 3
+            },
+            {
+              "date": "2026-08-20",
+              "leads": 0,
+              "selected": 0,
+              "contacted": 0,
+              "converted": 0,
+              "failed": 8,
+              "skipped": 2
+            }
+          ],
+          "taskPerformance": [
+            {
+              "configId": "config-1787103774143-ef0b87",
+              "taskName": "小红书装修获客验收",
+              "mode": "keyword",
+              "platform": "xiaohongshu",
+              "runCount": 21,
+              "candidateCount": 160,
+              "selectedCount": 66,
+              "contactedCount": 0,
+              "failedCount": 12,
+              "skippedCount": 2,
+              "lastRunAt": "2026-08-19T14:13:38.964Z"
+            },
+            {
+              "configId": "config-1786392027754-307bcc",
+              "taskName": "抖音获客：AI 手机",
+              "mode": "keyword",
+              "platform": "douyin",
+              "runCount": 10,
+              "candidateCount": 24,
+              "selectedCount": 14,
+              "contactedCount": 14,
+              "failedCount": 7,
+              "skippedCount": 2,
+              "lastRunAt": "2026-08-20T08:03:38.673Z"
+            },
+            {
+              "configId": "config-1787107720565-49965e",
+              "taskName": "快手获客（手动导入候选）",
+              "mode": "manual-import",
+              "platform": "kuaishou",
+              "runCount": 7,
+              "candidateCount": 4,
+              "selectedCount": 20,
+              "contactedCount": 0,
+              "failedCount": 4,
+              "skippedCount": 1,
+              "lastRunAt": "2026-08-20T06:59:54.378Z"
+            }
+          ],
+          "accountPerformance": [
+            {
+              "accountKey": "douyin:1",
+              "accountName": "本机验收抖音账号",
+              "platform": "douyin",
+              "runCount": 10,
+              "candidateCount": 24,
+              "selectedCount": 14,
+              "contactedCount": 14,
+              "failedCount": 7,
+              "skippedCount": 2,
+              "lastRunAt": "2026-08-20T08:03:38.673Z"
+            },
+            {
+              "accountKey": "kuaishou:2",
+              "accountName": "杨宏宇",
+              "platform": "kuaishou",
+              "runCount": 7,
+              "candidateCount": 4,
+              "selectedCount": 20,
+              "contactedCount": 0,
+              "failedCount": 4,
+              "skippedCount": 1,
+              "lastRunAt": "2026-08-20T06:59:54.378Z"
+            },
+            {
+              "accountKey": "xiaohongshu:3",
+              "accountName": "杨宏宇",
+              "platform": "xiaohongshu",
+              "runCount": 21,
+              "candidateCount": 160,
+              "selectedCount": 66,
+              "contactedCount": 0,
+              "failedCount": 12,
+              "skippedCount": 2,
+              "lastRunAt": "2026-08-19T14:13:38.964Z"
+            },
+            {
+              "accountKey": "douyin:2",
+              "accountName": "大壮AI研究员",
+              "platform": "douyin",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "douyin:4",
+              "accountName": "磊",
+              "platform": "douyin",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "xiaohongshu:1",
+              "accountName": "蚛",
+              "platform": "xiaohongshu",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "wechat-channel:1",
+              "accountName": "视频号验收",
+              "platform": "wechat-channel",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "douyin:6",
+              "accountName": "森",
+              "platform": "douyin",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "douyin:11",
+              "accountName": "44",
+              "platform": "douyin",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "douyin:14",
+              "accountName": "测试2",
+              "platform": "douyin",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "kuaishou:1",
+              "accountName": "快手1号",
+              "platform": "kuaishou",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "douyin:5",
+              "accountName": "sss",
+              "platform": "douyin",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "douyin:test",
+              "accountName": "抖音",
+              "platform": "douyin",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            },
+            {
+              "accountKey": "douyin:3",
+              "accountName": "林",
+              "platform": "douyin",
+              "runCount": 0,
+              "candidateCount": 0,
+              "selectedCount": 0,
+              "contactedCount": 0,
+              "failedCount": 0,
+              "skippedCount": 0
+            }
+          ],
+          "bottlenecks": [
+            {
+              "level": "danger",
+              "title": "账号健康正在限制获客执行",
+              "detail": "3 个账号登录或风控状态异常，自动任务会被安全闸跳过。",
+              "action": "先到发布中心-平台账号完成登录或重新授权；若账号已被风控，再回到账号健康处理验证、冷却或失败率。"
+            },
+            {
+              "level": "warning",
+              "title": "近期执行稳定性偏低",
+              "detail": "最近 20 次执行中有 14 次失败或跳过。",
+              "action": "优先检查失败原因、账号状态和平台页面结构变化，再扩大任务量。"
+            },
+            {
+              "level": "warning",
+              "title": "入池后触达不足",
+              "detail": "今日入池到触达约 14%，线索没有及时进入跟进动作。",
+              "action": "对高分线索开启人工确认触达，低分线索先进入草稿池。"
+            },
+            {
+              "level": "info",
+              "title": "高意向线索需要优先处理",
+              "detail": "4 条 75 分以上线索仍处于新线索状态。",
+              "action": "先处理高意向线索，把状态推进到已触达、已合格或已忽略。"
+            }
+          ],
+          "leadStatusDistribution": [
+            {
+              "status": "new",
+              "count": 66
+            },
+            {
+              "status": "contacted",
+              "count": 16
+            },
+            {
+              "status": "replied",
+              "count": 0
+            },
+            {
+              "status": "qualified",
+              "count": 0
+            },
+            {
+              "status": "converted",
+              "count": 0
+            },
+            {
+              "status": "ignored",
+              "count": 1
+            },
+            {
+              "status": "blocked",
+              "count": 0
+            }
+          ]
+        },
+        "message": "ok",
+        "timestamp": "2026-08-20T17:53:26.550Z"
+      }
+    },
+    "database": {
+      "ok": true,
+      "tables": {
+        "users": 4,
+        "growth_account_health": 14,
+        "growth_acquisition_configs": 10,
+        "growth_acquisition_runs": 44,
+        "growth_leads": 24,
+        "growth_scheduler_leases": 0
+      }
+    }
+  }
+}
