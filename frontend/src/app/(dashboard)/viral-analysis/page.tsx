@@ -228,17 +228,40 @@ export default function ViralAnalysisV2Page() {
       {/* 输入区 */}
       <section className="mx-px" style={{ marginTop: 14 }}>
         <div className="mx-card" style={{ padding: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>爆款作品链接</div>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: "var(--kaypal-v3-ink)" }}>爆款作品链接</div>
           <input
             type="text"
-            placeholder="粘贴抖音/小红书作品链接…"
+            placeholder="粘贴作品链接或抖音/小红书分享口令，如：https://www.douyin.com/video/xxx"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            style={{ width: "100%", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5", padding: "10px 12px", fontSize: 13, boxSizing: "border-box" }}
+            className="v3-link-input"
           />
+          {/* 格式提示（同视频去水印页：纯净链接 或 整段分享口令） */}
+          <div
+            style={{
+              marginTop: 10,
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "var(--kaypal-v3-paper-soft)",
+              border: "1px solid var(--kaypal-v3-border)",
+              fontSize: 12,
+              color: "var(--kaypal-v3-muted)",
+              lineHeight: 1.7,
+            }}
+          >
+            <div style={{ fontWeight: 600, color: "var(--kaypal-v3-soft-ink)", marginBottom: 4 }}>
+              📋 支持两种粘贴格式
+            </div>
+            <div>① 纯净作品链接，例如：</div>
+            <div className="v3-format-example">https://www.douyin.com/video/7649615187284833210</div>
+            <div style={{ marginTop: 6 }}>② 抖音 / 小红书分享口令（整段复制粘贴即可，自动提取链接）：</div>
+            <div className="v3-format-example">
+              4.38 Oxs:/ 复制打开抖音，看看这条作品～ https://v.douyin.com/pjE9uqFMK68/ 复制此链接，打开Dou音搜索，直接观看视频！
+            </div>
+          </div>
           <button
             type="button"
-            className="mx-btn-gold"
+            className="v3-primary-btn"
             style={{ marginTop: 12, width: "100%" }}
             disabled={loading}
             onClick={() => void analyze()}
@@ -254,10 +277,10 @@ export default function ViralAnalysisV2Page() {
               width: "100%",
               padding: "10px",
               borderRadius: 10,
-              border: "1px solid rgba(148,163,184,.35)",
-              background: "transparent",
+              border: "1px solid var(--kaypal-v3-border)",
+              background: "var(--kaypal-v3-paper-soft)",
               fontSize: 13,
-              color: "rgba(219,234,254,.75)",
+              color: "var(--kaypal-v3-soft-ink)",
               opacity: transcriptBusy || !url.trim() ? 0.6 : 1,
               cursor: "pointer",
             }}
@@ -386,7 +409,7 @@ export default function ViralAnalysisV2Page() {
             <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
               <button
                 type="button"
-                className="mx-btn-gold"
+                className="v3-primary-btn"
                 style={{ flex: 1 }}
                 onClick={() => void forward()}
               >
@@ -395,7 +418,7 @@ export default function ViralAnalysisV2Page() {
               {work?.title ? (
                 <button
                   type="button"
-                  className="mx-btn-gold"
+                  className="v3-primary-btn"
                   style={{ flex: 1 }}
                   onClick={toTopic}
                 >

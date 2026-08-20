@@ -2194,3 +2194,112 @@
     resize: none;
   }
 }
+
+/* ============================================================
+ * 视频去水印页（/video-download）样式 —— 桌面/移动端通用
+ * 替代旧版 mx-btn-gold（仅 <768px 生效），保证桌面端也有颜色
+ * ============================================================ */
+.v3-platform-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--kaypal-v3-border);
+  background: var(--kaypal-v3-paper);
+  color: var(--kaypal-v3-soft-ink);
+  transition: all 0.15s ease;
+}
+.v3-platform-chip:hover {
+  border-color: var(--kaypal-v3-accent-border);
+  color: var(--kaypal-v3-accent-ink);
+}
+.v3-platform-chip[data-active="true"] {
+  border-color: var(--kaypal-v3-accent);
+  background: var(--kaypal-v3-accent-soft);
+  color: var(--kaypal-v3-accent-ink);
+  font-weight: 600;
+}
+
+.v3-link-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--kaypal-v3-border);
+  background: var(--kaypal-v3-paper-soft);
+  color: var(--kaypal-v3-ink);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.v3-link-input::placeholder {
+  color: var(--kaypal-v3-muted);
+}
+.v3-link-input:focus {
+  border-color: var(--kaypal-v3-accent);
+  box-shadow: 0 0 0 3px var(--kaypal-v3-accent-soft);
+}
+
+.v3-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--kaypal-v3-accent);
+  border: 1px solid var(--kaypal-v3-accent);
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.v3-primary-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.v3-primary-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.v3-primary-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.v3-primary-btn[data-busy="true"] {
+  opacity: 0.85;
+  cursor: wait;
+}
+
+.v3-status-ok {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--kaypal-v3-success-soft);
+  border: 1px solid var(--kaypal-v3-success);
+  color: var(--kaypal-v3-success);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+.v3-status-err {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--kaypal-v3-danger-soft);
+  border: 1px solid var(--kaypal-v3-danger);
+  color: var(--kaypal-v3-danger);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+/* 去水印页：格式示例（链接/口令） */
+.v3-format-example {
+  margin-top: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--kaypal-v3-paper);
+  border: 1px dashed var(--kaypal-v3-border-strong);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--kaypal-v3-soft-ink);
+  word-break: break-all;
+  white-space: normal;
+}
