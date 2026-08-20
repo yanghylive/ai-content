@@ -67,6 +67,7 @@ export type GrowthExecutionFailureReason =
   | 'send_failed'
   | 'readback_failed'
   | 'daily_limit_reached'
+  | 'throttled'
   | 'duplicate_target'
   | 'content_policy_blocked'
   | 'platform_structure_changed'
@@ -627,6 +628,8 @@ export interface GrowthReports {
     usageCount: number;
     averageLeadScore: number;
     contactRate: number;
+    /** 样本 <30 时标注，前端显示"样本不足"（T2-2） */
+    lowConfidence?: boolean;
   }>;
   accounts: GrowthAccountHealth[];
   tasks: GrowthAcquisitionRun[];

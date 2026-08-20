@@ -15,6 +15,7 @@ import { join } from 'node:path';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { resolveProjectDataPath } from '../../common/project-paths';
+import { KaypalMemoryService } from '../memory/memory-kaypal.service';
 import {
   industryPlaybook,
   listWorkflowPlaybooks,
@@ -30,6 +31,7 @@ import { CrmService } from '../crm/crm.service';
 import { ActivationService } from '../activation/activation.service';
 import { GrowthLeadBridgeService } from './growth-lead-bridge.service';
 import { LeadConvertService } from '../leads/lead-convert.service';
+import { LeadScoreService } from '../lead-intelligence/lead-score.service';
 import { LeadRepository } from '../leads/lead.repository';
 import { RpaExecutionStore } from '../rpa/rpa-execution-store.service';
 import type {
@@ -153,12 +155,26 @@ export class GrowthService implements OnModuleInit {
   private dbMigrated = false;
   private storeSnapshotWrite: Promise<void> = Promise.resolve();
   private readonly schedulerOwnerId = `growth-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  /** T2-9：account-health 30s 短 TTL 缓存（listAccounts force 校验很慢，避免每次 2.6s） */
+  private readonly accountHealthCache = new Map<
+    string,
+    { data: unknown; at: number }
+  >();
+  private static readonly ACCOUNT_HEALTH_CACHE_TTL_MS = 30_000;
+
+  /** T2-4 防平台风控：同账号执行节流（记录最近执行时间，防连跑触发反爬） */
+  private readonly acquisitionThrottle = new Map<
+    string,
+    { lastRunAt: number }
+  >();
+  private static readonly ACQUISITION_THROTTLE_MS = 60_000;
 
   constructor(
     private readonly aiEmployeeService: AiEmployeeService,
     private readonly autoUploadService: AutoUploadService,
     private readonly prisma: PrismaService,
     private readonly runtime: RuntimeOrchestrator,
+    @Optional() private readonly kaypalMemory?: KaypalMemoryService,
     @Optional() private readonly crmService?: CrmService,
     @Optional()
     private readonly authRequestContext?: AuthRequestContextService,
@@ -167,6 +183,7 @@ export class GrowthService implements OnModuleInit {
     @Optional() private readonly leadConvertService?: LeadConvertService,
     @Optional() private readonly rpaExecutionStore?: RpaExecutionStore,
     @Optional() private readonly rpaDriverRegistry?: RpaDriverRegistry,
+    @Optional() private readonly leadScoreService?: LeadScoreService,
   ) {}
 
   async onModuleInit() {
@@ -1037,6 +1054,29 @@ export class GrowthService implements OnModuleInit {
       { ...store, configs: [config, ...store.configs] },
       { scope, collections: ['configs'] },
     );
+    // T3-3：创建获客任务 → 写用户长期记忆（kaypal 记忆系统，fire-and-forget 不阻塞主流程）
+    void this.kaypalMemory
+      ?.add(
+        'long',
+        `用户创建获客任务「${config.taskName}」：平台=${config.platform}，关键词=${(
+          config.includeKeywords || []
+        ).join('、') || '未填'}，每日上限=${config.dailyLimit}，话术风格=${(
+          config.commentTemplates || []
+        )
+          .join('；')
+          .slice(0, 80) || '未配置'}`,
+        {
+          summary: `获客任务「${config.taskName}」已创建`,
+          metadata: {
+            source: 'ai-content',
+            scope: 'acquisition-config',
+            configId: config.id,
+            platform: config.platform,
+            keywords: config.includeKeywords,
+          },
+        },
+      )
+      .catch(() => undefined);
     return config;
   }
 
@@ -1276,6 +1316,37 @@ export class GrowthService implements OnModuleInit {
       });
     }
 
+    // T2-4 防平台风控：同账号执行节流（防连跑触发平台反爬）+ 人类化随机延迟
+    const throttleKey = `${normalizedConfig.platform}:${normalizedConfig.accountId}`;
+    const throttle = this.acquisitionThrottle.get(throttleKey);
+    if (
+      throttle &&
+      Date.now() - throttle.lastRunAt <
+        GrowthService.ACQUISITION_THROTTLE_MS
+    ) {
+      const waitMs = Math.max(
+        0,
+        GrowthService.ACQUISITION_THROTTLE_MS -
+          (Date.now() - throttle.lastRunAt),
+      );
+      return this.createRunResult(normalizedConfig, {
+        trigger,
+        status: 'skipped',
+        message: `防平台风控：账号 ${normalizedConfig.accountName || normalizedConfig.accountId} 距上次执行不足 ${
+          GrowthService.ACQUISITION_THROTTLE_MS / 1000
+        }s，已节流（还需 ${Math.ceil(waitMs / 1000)}s），避免触发平台反爬。`,
+        failureReason: 'throttled',
+        candidateCount: 0,
+        selectedCount: 0,
+        contactedCount: 0,
+      });
+    }
+    // 人类化随机延迟（仅 daemon 自动执行时，模拟人工操作节奏）
+    if (trigger === 'scheduled' || trigger === 'workflow') {
+      const jitter = 2000 + Math.floor(Math.random() * 6000); // 2-8s
+      await new Promise((resolve) => setTimeout(resolve, jitter));
+    }
+
     const executionCapability =
       this.growthAutoExecutionCapability(normalizedConfig);
     // D 阶段：小红书/快手自动触达未接入 → auto 无人值守被能力门拒绝；
@@ -1283,7 +1354,13 @@ export class GrowthService implements OnModuleInit {
     const isManualConfirmed =
       normalizedConfig.riskMode === 'confirm-first' &&
       options.confirmedExecution === true;
-    if (!executionCapability.ready && !isManualConfirmed) {
+    // T2-4c：daemon 调度 + confirm-first/draft-only → 「自动采集 + 候选沉淀线索池」，
+    // 不真实触达（触达仍人工确认）。解决"任务 7 天 0 产出"，同时不触碰真实平台操作。
+    const collectOnly =
+      (trigger === 'scheduled' || trigger === 'workflow') &&
+      (normalizedConfig.riskMode === 'confirm-first' ||
+        normalizedConfig.riskMode === 'draft-only');
+    if (!executionCapability.ready && !isManualConfirmed && !collectOnly) {
       return this.createRunResult(normalizedConfig, {
         trigger,
         status: 'skipped',
@@ -1298,7 +1375,8 @@ export class GrowthService implements OnModuleInit {
     const executionApproved =
       normalizedConfig.riskMode === 'auto' ||
       (normalizedConfig.riskMode === 'confirm-first' &&
-        options.confirmedExecution === true);
+        options.confirmedExecution === true) ||
+      collectOnly;
 
     // 复核#4：自动触发（daemon/workflow）执行 auto 任务必须有启用审批留痕，
     // 无 autoApprovedAt 一律拒绝（manual 手动执行走逐次风险确认，不受此门限制）。
@@ -1338,6 +1416,8 @@ export class GrowthService implements OnModuleInit {
     // 复核#4-6：driver 成功路径的状态机记录 id（try 内赋值，catch 分支共用，防并发串单）
     let driverRpaRecordId: string | null = null;
     try {
+      // T2-4 防平台风控：真实执行前记录本次执行时间（供下次节流判断）
+      this.acquisitionThrottle.set(throttleKey, { lastRunAt: Date.now() });
       const candidateResponse = await this.fetchCandidatesWithAiEmployee(
         normalizedConfig,
         remaining,
@@ -1430,6 +1510,48 @@ export class GrowthService implements OnModuleInit {
           trigger,
           status: 'partial',
           message: `发现 ${candidates.length} 条内容，读评论获得 ${commentLeads.length} 个评论用户线索；${this.platformLabel(normalizedConfig.platform)} 自动触达未接入，需人工跟进。${
+            commentCloseState.failed
+              ? '且浏览器会话关闭失败，需人工核对平台实际结果。'
+              : ''
+          }`,
+          candidateCount: candidates.length,
+          selectedCount: commentLeads.length,
+          contactedCount: 0,
+          evidenceUrls: candidateEvidenceUrls,
+          leadIds: commentLeads.map((lead) => lead.id),
+          leads: commentLeads,
+          rpaRecordId: driverRpaRecordId,
+        });
+      }
+
+      // T2-4c：daemon 采集模式（confirm-first/draft-only）→ 抖音也走「读评论沉淀线索」，
+      // 不执行真实评论/私信触达；触达留在用户人工确认后执行。
+      if (collectOnly && this.platformTouchReady(normalizedConfig.platform)) {
+        const commentCloseState: { failed: boolean } = { failed: false };
+        const commentLeads = await this.fetchCommentUsersAsLeads(
+          normalizedConfig,
+          candidates,
+          remaining,
+          commentCloseState,
+        );
+        if (!commentLeads.length) {
+          return this.createRunResult(normalizedConfig, {
+            trigger,
+            status: 'partial',
+            failureReason: 'target_not_found',
+            fallback: candidateResponse.fallback,
+            message: `${this.platformLabel(normalizedConfig.platform)} 本次未读到评论用户线索；已保留采集证据，请在线索池人工确认后执行触达。`,
+            candidateCount: candidates.length,
+            selectedCount: 0,
+            contactedCount: 0,
+            evidenceUrls: candidateEvidenceUrls,
+            rpaRecordId: driverRpaRecordId,
+          });
+        }
+        return this.createRunResult(normalizedConfig, {
+          trigger,
+          status: 'partial',
+          message: `【自动采集】发现 ${candidates.length} 条内容，沉淀 ${commentLeads.length} 个评论用户候选线索；触达待你确认后执行。${
             commentCloseState.failed
               ? '且浏览器会话关闭失败，需人工核对平台实际结果。'
               : ''
@@ -1681,11 +1803,19 @@ export class GrowthService implements OnModuleInit {
         const config = configById.get(item.configId);
         // 复核#4：自动发送必须有审批留痕，无 autoApprovedAt 的 auto 任务拒绝 daemon 执行
         const approved = Boolean(config?.autoApprovedAt);
+        // T2-4c：confirm-first 任务允许 daemon 执行「自动采集 → 候选沉淀线索池」
+        // （不真实触达，触达仍人工确认），解决"任务 7 天 0 产出"问题；
+        // auto 任务仍须 autoApprovedAt 审批留痕。
+        const riskEligible =
+          config?.riskMode === 'auto'
+            ? approved
+            : config?.riskMode === 'confirm-first' ||
+              config?.riskMode === 'draft-only';
         return (
           executionEnabled &&
           item.status === 'ready' &&
-          config?.riskMode === 'auto' &&
-          approved
+          riskEligible &&
+          config?.status === 'enabled'
         );
       })
       .slice(0, limit);
@@ -1955,6 +2085,22 @@ export class GrowthService implements OnModuleInit {
       },
       { scope, collections: ['leads'] },
     );
+    // T4-8 学习闭环：用户把线索标记为无效（ignored/blocked）→ 写记忆反馈，AI 下次校准评分
+    if (
+      nextStatus &&
+      nextStatus !== existing.status &&
+      (nextStatus === 'ignored' || nextStatus === 'blocked')
+    ) {
+      const memoText = `用户将线索标记为无效（${nextStatus}）：平台=${updated.platform}，命中词=${(updated.matchedKeywords || []).slice(0, 3).join('、')}，评论摘要=${(updated.sourceText || '').slice(0, 60)}。评分需下调此类线索权重。`;
+      void this.kaypalMemory?.add?.(
+        'daily',
+        memoText,
+        {
+          summary: 'acquisition-learning',
+          metadata: { scope: 'lead-feedback', leadId: id, verdict: nextStatus },
+        },
+      );
+    }
     return updated;
   }
 
@@ -2237,6 +2383,15 @@ export class GrowthService implements OnModuleInit {
   }
 
   async listAccountHealth(userId: string) {
+    // T2-9：30s 内重复请求直接用缓存，避免每次触发 force 真实校验（实测 2.6s）
+    const cacheKey = `user:${userId}`;
+    const cached = this.accountHealthCache.get(cacheKey);
+    if (
+      cached &&
+      Date.now() - cached.at < GrowthService.ACCOUNT_HEALTH_CACHE_TTL_MS
+    ) {
+      return cached.data as GrowthAccountHealth[];
+    }
     const membership = await this.requireGrowthReadScope(userId);
     const store = await this.loadStore();
     const scope: GrowthScope = membership;
@@ -2380,7 +2535,12 @@ export class GrowthService implements OnModuleInit {
         },
         { scope, collections: ['accountHealth'] },
       );
-      return [...live, ...taskBlockers, ...scopedPersistedFallbacks];
+      const result = [...live, ...taskBlockers, ...scopedPersistedFallbacks];
+      this.accountHealthCache.set(cacheKey, {
+        data: result,
+        at: Date.now(),
+      });
+      return result;
     } catch {
       return this.ensureAccountHealth(userId, store, scope);
     }
@@ -2427,6 +2587,8 @@ export class GrowthService implements OnModuleInit {
       },
       { scope, collections: ['accountHealth'] },
     );
+    // T2-9：手动检查后清缓存，保证"重新检查"立即生效
+    this.accountHealthCache.delete(`user:${userId}`);
     return health;
   }
 
@@ -5542,7 +5704,9 @@ export class GrowthService implements OnModuleInit {
       }
     >();
     for (const lead of leads) {
-      const text = lead.latestReply || '未记录话术';
+      // T2-2 修复：无话术内容的线索不参与聚合，禁止生成"未记录话术"占位行上 TOP
+      const text = (lead.latestReply || '').trim();
+      if (!text) continue;
       const row = map.get(text) || {
         text,
         usageCount: 0,
@@ -5559,15 +5723,20 @@ export class GrowthService implements OnModuleInit {
         row.contactedCount += 1;
       map.set(text, row);
     }
-    return Array.from(map.values()).map((item) => ({
-      ...item,
-      averageLeadScore: item.usageCount
-        ? Math.round(item.leadScoreTotal / item.usageCount)
-        : 0,
-      contactRate: item.usageCount
-        ? Number((item.contactedCount / item.usageCount).toFixed(2))
-        : 0,
-    }));
+    // 按使用量降序；样本 <30 标注 lowConfidence（前端显示"样本不足"），避免小样本得出 100% 触达率的假结论
+    const MIN_RELIABLE_SAMPLE = 30;
+    return Array.from(map.values())
+      .sort((a, b) => b.usageCount - a.usageCount)
+      .map((item) => ({
+        ...item,
+        averageLeadScore: item.usageCount
+          ? Math.round(item.leadScoreTotal / item.usageCount)
+          : 0,
+        contactRate: item.usageCount
+          ? Number((item.contactedCount / item.usageCount).toFixed(2))
+          : 0,
+        lowConfidence: item.usageCount < MIN_RELIABLE_SAMPLE,
+      }));
   }
 
   private buildSchedulePlan(
@@ -5641,14 +5810,11 @@ export class GrowthService implements OnModuleInit {
 
         if (
           status === 'ready' &&
-          (config.riskMode !== 'auto' ||
+          (config.riskMode === 'auto' &&
             process.env.GROWTH_EXECUTION_ENABLED !== 'true')
         ) {
           status = 'waiting-confirmation';
-          reason =
-            config.riskMode === 'auto'
-              ? '真实执行开关未开启，当前只能进入安全预检确认单。'
-              : '任务配置为人工确认或草稿模式，需要人工复核，不会被后台自动执行。';
+          reason = '真实执行开关未开启，当前只能进入安全预检确认单。';
         }
 
         return {
@@ -5805,9 +5971,29 @@ export class GrowthService implements OnModuleInit {
       };
     }
 
-    // D 阶段：小红书/快手浏览器发现已接入，但自动触达未接入 →
-    // auto 无人值守调度拒绝（不伪装自动获客）；手动 confirm-first 可执行（候选沉淀线索待人工）。
-    if (config.platform === 'xiaohongshu' || config.platform === 'kuaishou') {
+    // T2-4b（2026-08-19 激进放行）：快手 RPA driver 已具备 reply-comment 真实执行
+    // （runner.replyComment 已实现：定位评论→填话术→发送，支持 dryRun），
+    // 放行 keyword/target-account/search-account 自动触达；私信（send-direct-message）
+    // 保持 unsupported（风控）。小红书评论反爬限制多，维持手动确认制。
+    if (config.platform === 'kuaishou') {
+      if (
+        config.mode === 'manual-import' ||
+        config.mode === 'keyword' ||
+        config.mode === 'video-link' ||
+        config.mode === 'target-account' ||
+        config.mode === 'search-account'
+      ) {
+        return {
+          ready: true,
+          reason: '快手浏览器获客已接入采集、评论回复触达与证据回读（私信未开放）。',
+        };
+      }
+      return {
+        ready: false,
+        reason: `快手模式 ${config.mode} 暂不支持自动采集。`,
+      };
+    }
+    if (config.platform === 'xiaohongshu') {
       if (
         config.mode === 'manual-import' ||
         config.mode === 'keyword' ||
@@ -5817,7 +6003,7 @@ export class GrowthService implements OnModuleInit {
       ) {
         return {
           ready: false,
-          reason: `${this.platformLabel(config.platform)}自动触达执行器未接入，不能无人值守自动获客；可手动确认执行（候选将沉淀为线索待人工跟进）。`,
+          reason: `${this.platformLabel(config.platform)}自动触达执行器未接入（评论反爬限制），不能无人值守自动获客；可手动确认执行（候选将沉淀为线索待人工跟进）。`,
         };
       }
       return {
@@ -5832,9 +6018,12 @@ export class GrowthService implements OnModuleInit {
     };
   }
 
-  /** D 阶段：平台是否已接入自动触达（抖音/企微已接入；小红书/快手 driver 触达未实现 → 候选沉淀待人工） */
+  /** D 阶段 → T2-4b：平台是否已接入自动触达。
+   * 抖音（专用执行器）与快手（RPA reply-comment 已实现）为 ready；
+   * 小红书评论反爬限制多 → 候选沉淀待人工；微信系走会话目标。 */
   private platformTouchReady(platform: string): boolean {
     if (platform === 'douyin' || platform === 'wechat-channel') return true;
+    if (platform === 'kuaishou') return true;
     return false;
   }
 
@@ -7659,7 +7848,21 @@ export class GrowthService implements OnModuleInit {
         // P0 复核（二次）：update 前取既有记录——已转化（status=converted）的线索
         // 不允许被任务重跑降级 status / 置空 customerId（转化链路数据不可被采集层抹掉）。
         const existingLead = await tx.lead.findUnique({ where: dedupeWhere });
-        const preserveConverted = existingLead?.status === 'converted';
+        // P0 复核（三次）：历史数据 dedupeKey 迁移兜底——旧库存的 dedupeKey 是
+        // `lead:growth:{id}`（旧格式），新算法算出 `lead:sha256(...)`，dedupeWhere 命中不到
+        // 会走 create 分支撞 id 唯一约束（P2002）。此处按 id 兜底找到旧记录，先修正 dedupeKey，
+        // 让后续 upsert 稳定走 update 分支。
+        let existingByAny = existingLead;
+        if (!existingByAny) {
+          existingByAny = await tx.lead.findUnique({ where: { id: item.id } });
+          if (existingByAny) {
+            await tx.lead.update({
+              where: { id: item.id },
+              data: { dedupeKey },
+            });
+          }
+        }
+        const preserveConverted = existingByAny?.status === 'converted';
         await tx.lead.upsert({
           where: dedupeWhere,
           create: {
@@ -8988,6 +9191,43 @@ export class GrowthService implements OnModuleInit {
         modelVersion: s.modelVersion,
         ruleVersion: s.ruleVersion,
       })),
+    };
+  }
+
+  /** T4-6：让 AI 重新评一次——真实触发统一评分（scoreAndPersist 生成新快照），
+   * 返回新 totalScore 与快照 id。无统一 Lead / 无评分服务时返回 available:false。 */
+  async rescoreLead(userId: string, leadId: string) {
+    const store = await this.loadStore();
+    const scope = await this.growthScope(userId);
+    const item = store.leads.find((l) =>
+      this.sameGrowthRecord(l, scope, leadId),
+    );
+    if (!item) throw new NotFoundException('线索不存在');
+    if (!this.leadScoreService) {
+      return { available: false, message: '评分服务未启用' };
+    }
+    const lead = await this.findUnifiedLead(userId, item);
+    if (!lead) {
+      return {
+        available: false,
+        message: '该线索尚未接入统一评分（未走 LeadScoreService）',
+      };
+    }
+    const tenantId = lead.tenantId ?? scope.tenantId;
+    if (!tenantId) {
+      return { available: false, message: '无法定位租户，暂不支持重评' };
+    }
+    const snapshot = await this.leadScoreService.scoreAndPersist({
+      tenantId,
+      userId,
+      leadId: lead.id,
+    });
+    return {
+      available: true,
+      snapshotId: snapshot.snapshotId,
+      totalScore: snapshot.totalScore,
+      components: snapshot.components,
+      scoredAt: new Date().toISOString(),
     };
   }
 

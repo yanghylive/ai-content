@@ -1,11 +1,10 @@
 import { WecomCrmCenter } from "./wecom-crm-center";
-import { GrayTestBanner } from "@/components/v2/gray-test-banner";
+import { GrayTestOverlay } from "@/components/v2/gray-test-overlay";
 
 export default function WecomCrmPage() {
   return (
-    <>
-      <GrayTestBanner feature="企业微信 CRM" />
+    <GrayTestOverlay feature="企业微信 CRM">
       <WecomCrmCenter />
-    </>
+    </GrayTestOverlay>
   );
 }

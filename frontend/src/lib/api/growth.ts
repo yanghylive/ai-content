@@ -342,6 +342,7 @@ export interface GrowthReports {
         usageCount: number;
         averageLeadScore: number;
         contactRate: number;
+        lowConfidence?: boolean;
     }>;
     accounts: GrowthAccountHealth[];
     tasks: GrowthAcquisitionRun[];
@@ -501,9 +502,18 @@ export const growthApi = {
         api.post<{ duplicate: boolean; matches: GrowthLeadDedupeMatch[] }>("/growth/leads/dedupe-preview", body),
     mergeLeads: (body: { primaryId: string; duplicateIds: string[] }) =>
         api.post<{ ok: boolean; lead: GrowthLead; mergedCount: number }>("/growth/leads/merge", body),
-    // Sprint 4 前端收尾：评分历史 + 归因链
+    // Sprint 4 前端收尾：评分历史 + 归因链 + T4-6 重评
     getLeadScoreHistory: (id: string) =>
         api.get<LeadScoreHistoryDto>(`/growth/leads/${id}/score-history`),
+    rescoreLead: (id: string) =>
+        api.post<{
+            available: boolean;
+            snapshotId?: string;
+            totalScore?: number;
+            components?: Record<string, number>;
+            scoredAt?: string;
+            message?: string;
+        }>(`/growth/leads/${id}/rescore`),
     getLeadAttribution: (id: string) =>
         api.get<LeadAttributionDto>(`/growth/leads/${id}/attribution`),
     listAccountHealth: () => api.get<GrowthAccountHealth[]>("/growth/account-health"),

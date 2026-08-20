@@ -5,7 +5,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
 import { DesktopOnlyGate } from "@/components/v2/desktop-only-gate";
-import { GrayTestBanner } from "@/components/v2/gray-test-banner";
+import { GrayTestOverlay } from "@/components/v2/gray-test-overlay";
 
 interface EngineStatus {
   online: boolean;
@@ -192,9 +192,9 @@ export default function VideoWorkshopV2Page() {
       desc="视频生成流水线（12 条）、实时进度与成片下载需要大屏与稳定网络，手机端暂不支持。你可以先在手机上用「素材采集」「AI 生图」「AI 配音」准备素材。"
       backHref="/content"
     >
+      <GrayTestOverlay feature="视频引擎">
       <div className="kx-mobile-ambient" style={{ minHeight: "100dvh", paddingBottom: 90 }}>
       <div className="mx-container" style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 20px 0" }}>
-        <GrayTestBanner feature="视频引擎（studio_core）" />
       </div>
       <header className="mx-header">
         <div className="mx-header-row">
@@ -444,6 +444,7 @@ export default function VideoWorkshopV2Page() {
         )}
       </section>
       </div>
+      </GrayTestOverlay>
     </DesktopOnlyGate>
   );
 }

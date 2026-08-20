@@ -512,6 +512,29 @@ function getTaskExposureLabel(
   );
 }
 
+/** T2-4e：同名任务消歧——同一 taskName 出现多次时追加 mode 区分，避免用户分不清 */
+function disambiguateTaskName(
+  taskName: string,
+  mode: GrowthAcquisitionMode | string,
+  occurrences: Map<string, number>,
+) {
+  const count = occurrences.get(taskName) ?? 0;
+  if (count <= 1) return taskName;
+  const modeLabel = getModeLabel(mode);
+  const shortMode = modeLabel.replace(/获客|采集|模式/g, "").trim();
+  return `${taskName}（${shortMode || mode} ${count}）`;
+}
+
+/** 统计同名任务出现次数（任务列表渲染前调用一次） */
+function countTaskNameOccurrences(configs: Array<{ taskName?: string }>) {
+  const map = new Map<string, number>();
+  for (const c of configs) {
+    const name = c.taskName || "";
+    map.set(name, (map.get(name) ?? 0) + 1);
+  }
+  return map;
+}
+
 function getConfigExposureDefinition(config: GrowthAcquisitionConfig) {
   return getExposureDefinitionFromTaskName(config.taskName);
 }
@@ -3102,6 +3125,7 @@ export function GrowthConsole({ view }: { view: GrowthView }) {
             onExport={exportReportCsv}
             onExportJson={exportReportJson}
           />
+          <AiDailyBriefCard overview={overview} reports={reports} />
           <MetricGrid
             overview={overview}
             reports={reports}
@@ -3844,7 +3868,7 @@ function TaskDetailModal({
               </div>
               <Divider />
               <div className="flex flex-col gap-2">
-                <h3 className="font-semibold">最近任务结果</h3>
+                <h3 className="font-semibold">AI 工作轨迹（最近 5 次执行）</h3>
                 {runs.length ? (
                   runs.slice(0, 5).map((run) => (
                     <div
@@ -3869,6 +3893,29 @@ function TaskDetailModal({
                           线索
                           {run.selectedCount}/{run.candidateCount}
                         </span>
+                      </div>
+                      {/* T4-1：AI 工作轨迹明细——过程可见 */}
+                      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-default-500">
+                        {run.candidateCount > 0 && (
+                          <span>
+                            扫描发现 <b className="text-foreground">{run.candidateCount}</b> 条候选
+                          </span>
+                        )}
+                        {run.selectedCount > 0 && (
+                          <span>
+                            AI 筛出 <b className="text-foreground">{run.selectedCount}</b> 条
+                          </span>
+                        )}
+                        {run.contactedCount > 0 && (
+                          <span>
+                            已触达 <b className="text-foreground">{run.contactedCount}</b> 条
+                          </span>
+                        )}
+                        {run.crmCapturedCount > 0 && (
+                          <span>
+                            沉淀 CRM <b className="text-foreground">{run.crmCapturedCount}</b> 条
+                          </span>
+                        )}
                       </div>
                       <p className="mt-1 text-sm text-default-500">
                         {displayText(run.message)}
@@ -4429,6 +4476,11 @@ function ExposurePreviewPanel({
   >("form");
   const [bulkSourceText, setBulkSourceText] =
     React.useState("装修\n旧房翻新\n全屋定制");
+  // T2-4e：全量任务同名计数（供同名消歧展示）
+  const taskNameOccurrences = React.useMemo(
+    () => countTaskNameOccurrences(configs),
+    [configs],
+  );
   const activeDefinition =
     definitions.find((definition) => definition.type === activeType) ||
     definitions[0];
@@ -4806,7 +4858,6 @@ function ExposurePreviewPanel({
                     </thead>
                     <tbody>
                       {activeConfigs.map((config) => {
-                        const latestRun = latestRunByConfig.get(config.id);
                         const executionBlockedReason =
                           config.status !== "enabled"
                             ? "任务已停用，请先点击“启用”"
@@ -4817,7 +4868,13 @@ function ExposurePreviewPanel({
                               : undefined;
                         return (
                           <tr key={config.id}>
-                            <td>{config.taskName}</td>
+                            <td>
+                              {disambiguateTaskName(
+                                config.taskName,
+                                config.mode,
+                                taskNameOccurrences,
+                              )}
+                            </td>
                             <td>{getConfigExposureLabel(config)}</td>
                             <td>
                               {config.accountName ||
@@ -4832,21 +4889,42 @@ function ExposurePreviewPanel({
                             <td>{config.perTargetLimit || 1} 条/轮</td>
                             <td>{config.dailyLimit} / 天</td>
                             <td>
-                              <OpsStatusPill
-                                tone={
-                                  latestRun
-                                    ? runStatusTone(latestRun.status)
-                                    : config.status === "enabled"
-                                      ? "brand"
-                                      : "default"
-                                }
-                              >
-                                {latestRun
-                                  ? statusLabels[latestRun.status] ||
-                                    latestRun.status
-                                  : statusLabels[config.status] ||
-                                    config.status}
-                              </OpsStatusPill>
+                              {(() => {
+                                // T2-6：运行中但 7 天无产出的任务不再"全绿"——明示状态，避免"系统在跑却啥也没干"
+                                const latestRun = latestRunByConfig.get(config.id);
+                                const runStaleDays = latestRun
+                                  ? Math.floor(
+                                      (Date.now() -
+                                        new Date(latestRun.startedAt).getTime()) /
+                                        86400000,
+                                    )
+                                  : null;
+                                const stale = runStaleDays !== null && runStaleDays >= 7;
+                                const noRunYet = !latestRun && config.status === "enabled";
+                                return (
+                                  <OpsStatusPill
+                                    tone={
+                                      stale || noRunYet
+                                        ? "warning"
+                                        : latestRun
+                                          ? runStatusTone(latestRun.status)
+                                          : config.status === "enabled"
+                                            ? "brand"
+                                            : "default"
+                                    }
+                                  >
+                                    {stale
+                                      ? `运行中 · ${runStaleDays} 天无产出`
+                                      : noRunYet
+                                        ? "运行中 · 尚无产出"
+                                        : latestRun
+                                          ? statusLabels[latestRun.status] ||
+                                            latestRun.status
+                                          : statusLabels[config.status] ||
+                                            config.status}
+                                  </OpsStatusPill>
+                                );
+                              })()}
                             </td>
                             <td>
                               <div className="flex min-w-[360px] flex-wrap gap-2">
@@ -7163,6 +7241,65 @@ function WorkflowCard({
   );
 }
 
+function AiDailyBriefCard({
+  overview,
+  reports,
+}: {
+  overview: GrowthOverview | null;
+  reports: GrowthReports | null;
+}) {
+  const metricSource = reports?.overview || overview;
+  const activeConfigs = metricSource?.activeConfigCount ?? 0;
+  const highIntent = metricSource?.highIntentLeadCount ?? 0;
+  const newLeads = metricSource?.todayLeadCount ?? 0;
+  const riskAccounts = metricSource?.accountRiskCount ?? 0;
+  // 线索总量（本期口径）用于"扫描"表述
+  const scanned = reports?.leadStatusDistribution?.reduce(
+    (acc, item) => acc + (item.count || 0),
+    0,
+  ) ?? newLeads;
+
+  const sentences: string[] = [];
+  if (activeConfigs > 0) {
+    sentences.push(`AI 正在监控 ${activeConfigs} 个获客任务`);
+  } else {
+    sentences.push("AI 尚未运行获客任务，可先创建一个");
+  }
+  if (scanned > 0) {
+    sentences.push(`本周期已扫描 ${scanned} 条线索`);
+  } else if (newLeads > 0) {
+    sentences.push(`今日发现 ${newLeads} 条新线索`);
+  }
+  if (highIntent > 0) {
+    sentences.push(`识别出 ${highIntent} 条高意向线索`);
+    sentences.push(`${highIntent} 条建议今天优先跟进`);
+  }
+  if (riskAccounts > 0) {
+    sentences.push(`${riskAccounts} 个账号需要处理`);
+  }
+  const summary =
+    sentences.length > 0
+      ? sentences.join("，")
+      : "AI 正在持续监控各平台线索，有发现会第一时间汇总到这里。";
+
+  return (
+    <Card className="border-small border-primary-100 bg-primary-50/40 shadow-sm">
+      <CardBody className="gap-2">
+        <div className="flex items-center gap-2">
+          <Sparkles size={18} className="text-primary" />
+          <h2 className="text-sm font-bold text-foreground">今日 AI 简报</h2>
+        </div>
+        <p className="text-sm leading-relaxed text-default-700">{summary}</p>
+        {highIntent > 0 && (
+          <p className="text-xs text-primary">
+            高意向线索的评分与理由见下方线索池，点击可查看 AI 判断依据。
+          </p>
+        )}
+      </CardBody>
+    </Card>
+  );
+}
+
 function MetricGrid({
   overview,
   reports,
@@ -7230,7 +7367,15 @@ function MetricGrid({
                 <span className="text-sm text-default-500">{item.label}</span>
                 <Icon size={18} className="text-primary" />
               </div>
-              <strong className="text-3xl">{item.value}</strong>
+              <strong
+                className={`text-3xl ${
+                  item.key === "risk" && Number(item.value) > 0
+                    ? "text-danger"
+                    : ""
+                }`}
+              >
+                {item.value}
+              </strong>
               <Progress
                 aria-label={`${item.label}进度`}
                 size="sm"

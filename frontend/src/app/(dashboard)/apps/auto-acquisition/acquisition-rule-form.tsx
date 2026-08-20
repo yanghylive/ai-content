@@ -9,6 +9,7 @@ import {
   Music2,
   Play,
   Save,
+  Sparkles,
 } from "lucide-react";
 import {
   V2Section,
@@ -91,6 +92,50 @@ export function AcquisitionRuleForm() {
     scheduleEnabled: false,
     beginTime: "09:00",
   });
+
+  // T3-4：AI 记得你上次——加载 kaypal 长期记忆，预填行业/关键词/话术
+  const [memoryHint, setMemoryHint] = useState<string | null>(null);
+  const [memoryLoaded, setMemoryLoaded] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const loadMemory = async () => {
+      try {
+        const res = await fetch("/api/memory/kaypal?query=获客&tier=long&limit=3", {
+          credentials: "include",
+        });
+        const body = (await res.json()) as {
+          data?: { items?: Array<{ content?: string; summary?: string }> };
+        };
+        const items = body?.data?.items || [];
+        if (cancelled || !items.length) return;
+        const content = items[0]?.content || "";
+        const kwMatch = content.match(/关键词=([^，,]+(?:、[^，,]+)*)/);
+        const tmplMatch = content.match(/话术风格=([^\n。]{2,80})/);
+        if (cancelled) return;
+        if (kwMatch?.[1]) {
+          setForm((p) => (p.keywords ? p : { ...p, keywords: kwMatch[1] }));
+        }
+        if (tmplMatch?.[1]) {
+          setForm((p) =>
+            p.commentTemplate && p.commentTemplate.includes("可以聊聊")
+              ? { ...p, commentTemplate: tmplMatch[1] }
+              : p,
+          );
+        }
+        setMemoryHint(
+          items[0]?.summary || `AI 记得你上次：${content.slice(0, 60)}…`,
+        );
+      } catch {
+        // 记忆不可用静默忽略，不影响创建流程
+      } finally {
+        if (!cancelled) setMemoryLoaded(true);
+      }
+    };
+    void loadMemory();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // 平台与账号联动：只展示当前所选平台的账号（微信任务兼容视频号账号）
   const visibleAccounts = useMemo(
@@ -204,6 +249,12 @@ export function AcquisitionRuleForm() {
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
               <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+
+          {memoryHint && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(246,196,120,.5)", background: "rgba(246,196,120,.08)" }}>
+              <p style={{ fontSize: 12.5, color: "#b45309" }}>🧠 {memoryHint}</p>
             </div>
           )}
 
@@ -424,6 +475,14 @@ export function AcquisitionRuleForm() {
         </div>
       )}
 
+      {memoryHint && (
+        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-warning)] bg-[var(--kaypal-v3-warning-soft)] p-4">
+          <p className="text-sm font-medium text-[var(--kaypal-v3-warning)]">
+            🧠 {memoryHint}
+          </p>
+        </div>
+      )}
+
       {/* 第 1 步：平台 */}
       <V2Section title="第 1 步：你的客户在哪个平台？">
         <div className="grid gap-3 sm:grid-cols-3">
@@ -638,6 +697,68 @@ export function AcquisitionRuleForm() {
           </div>
         </V2Disclosure>
       </V2Section>
+
+      {/* T4-2 AI 执行计划预览：开工前亮出 AI 将做的 5 件事 */}
+      <section className="kaypal-v3-panel p-5">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-[var(--kaypal-v3-accent)]" />
+          <h3 className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+            AI 执行计划（创建后将自动按此运行）
+          </h3>
+        </div>
+        <ol className="mt-3 space-y-2">
+          {[
+            {
+              n: "扫描",
+              desc: `在「${
+                PLATFORM_OPTIONS.find((p) => p.value === form.platform)?.label ||
+                form.platform
+              }」上按关键词「${
+                keywords.length ? keywords.join("、") : "待填写"
+              }」扫描最近 7 天的公开内容`,
+            },
+            {
+              n: "筛选",
+              desc: "用 AI 逐条识别真正有需求意向的内容，排除广告、无关与重复，避免浪费触达额度",
+            },
+            {
+              n: "评分",
+              desc: "按意向度打分排序（参考你历史标记的线索校准），选出每天最多 " +
+                form.dailyLimit +
+                " 条",
+            },
+            {
+              n: "触达",
+              desc:
+                form.riskMode === "auto"
+                  ? "按你的话术自动发送评论/私信（高风险：不经确认直接发）"
+                  : form.riskMode === "draft-only"
+                    ? "只把话术存成草稿，由你手动发送"
+                    : "每条先给你确认，你点头后 AI 才发送（推荐）",
+            },
+            {
+              n: "沉淀",
+              desc: "把有回复的线索沉淀进线索池与 CRM，并在增长复盘中标记归因，让你看到哪条打法有效",
+            },
+          ].map((step, i) => (
+            <li key={step.n} className="flex items-start gap-3">
+              <span
+                className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent-soft)] text-[11px] font-bold text-[var(--kaypal-v3-accent-ink)]"
+              >
+                {i + 1}
+              </span>
+              <div className="text-sm">
+                <span className="font-semibold text-[var(--kaypal-v3-ink)]">
+                  {step.n}
+                </span>
+                <span className="ml-2 text-[var(--kaypal-v3-soft-ink)]">
+                  {step.desc}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <section className="flex items-center justify-between">
         <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/apps/auto-acquisition")}>
