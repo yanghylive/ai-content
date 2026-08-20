@@ -23,12 +23,14 @@ type Contact = {
 export function ContactsPanel({
   contacts = [],
   syncing = false,
+  syncDisabled = false,
   onSync,
   onDelete,
   onCancel,
 }: {
   contacts?: Contact[];
   syncing?: boolean;
+  syncDisabled?: boolean;
   onSync?: () => void;
   onDelete?: (id: string) => void;
   onCancel?: () => void;
@@ -64,7 +66,7 @@ export function ContactsPanel({
               type="button"
               className="mx-btn-gold"
               style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px" }}
-              disabled={syncing}
+              disabled={syncing || syncDisabled}
               onClick={onSync}
             >
               <RefreshCcw width={15} height={15} className={syncing ? "animate-spin" : ""} />
@@ -178,7 +180,7 @@ export function ContactsPanel({
           <button
             type="button"
             className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:opacity-60"
-            disabled={syncing}
+            disabled={syncing || syncDisabled}
             onClick={onSync}
           >
             <RefreshCcw

@@ -22,8 +22,36 @@ import {
   type WechatChatSession,
   type WechatChatMessage,
 } from "@/lib/api/local-engine";
+import { authApi } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 import { toActionableError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+
+/** 商用授权引导条：同步历史需要 STANDARD/PRO 及以上套餐 */
+function CommercialGateBanner() {
+  return (
+    <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-warning)] bg-[var(--kaypal-v3-warning-soft)] p-4">
+      <p className="text-sm font-medium text-[var(--kaypal-v3-warning)]">
+        同步历史需要有效商用授权（STANDARD / PRO 及以上套餐）。
+      </p>
+      <a
+        href="/commercial-readiness"
+        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[var(--kaypal-v3-accent-ink)] underline underline-offset-2 hover:opacity-80"
+      >
+        去开通商用授权 →
+      </a>
+    </div>
+  );
+}
+
+/** 403 且为商用授权/套餐类报错（对应后端 PlanGuard） */
+function isCommercial403(err: unknown): boolean {
+  return (
+    err instanceof ApiError &&
+    err.status === 403 &&
+    /商用授权|套餐|升级/.test(err.message)
+  );
+}
 
 export function WechatChatHistory() {
   const router = useRouter();
@@ -38,6 +66,7 @@ export function WechatChatHistory() {
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [commercialBlocked, setCommercialBlocked] = useState(false);
 
   const flash = (text: string) => {
     setNotice(text);
@@ -63,6 +92,24 @@ export function WechatChatHistory() {
   useEffect(() => {
     void fetchSessions();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 商用授权预检：无授权时禁用同步并显示引导条（避免每次点击 403）
+  useEffect(() => {
+    let active = true;
+    authApi
+      .me()
+      .then((me) => {
+        if (active && me && me.commercialExecutionAllowed === false) {
+          setCommercialBlocked(true);
+        }
+      })
+      .catch(() => {
+        /* 预检失败不阻塞页面，由同步动作兜底 */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // 请求序号守卫：快速切换会话时，慢响应回来若序号已过期则丢弃，
   // 避免旧会话的响应覆盖新会话消息（标题 B 内容 A 的竞态）
@@ -98,7 +145,12 @@ export function WechatChatHistory() {
       await fetchSessions();
       if (selectedSessionId) await fetchMessages(selectedSessionId);
     } catch (err: unknown) {
-      setError(toActionableError(err, "同步失败，请稍后重试"));
+      if (isCommercial403(err)) {
+        setCommercialBlocked(true);
+        setError(null);
+      } else {
+        setError(toActionableError(err, "同步失败，请稍后重试"));
+      }
     } finally {
       setSyncing(false);
     }
@@ -207,7 +259,7 @@ export function WechatChatHistory() {
                 style={{ width: "100%", padding: "9px 11px 9px 32px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
               />
             </div>
-            <button type="button" className="mx-btn-gold" style={{ flexShrink: 0, padding: "9px 13px" }} disabled={syncing} onClick={() => void handleSync()}>
+            <button type="button" className="mx-btn-gold" style={{ flexShrink: 0, padding: "9px 13px" }} disabled={syncing || commercialBlocked} onClick={() => void handleSync()}>
               {syncing ? "同步中…" : "同步"}
             </button>
           </div>
@@ -220,6 +272,11 @@ export function WechatChatHistory() {
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 10, borderColor: "rgba(220,80,80,.4)" }}>
               <p style={{ fontSize: 12, color: "#dc2626" }}>{error}</p>
+            </div>
+          )}
+          {commercialBlocked && (
+            <div style={{ marginTop: 10 }}>
+              <CommercialGateBanner />
             </div>
           )}
 
@@ -305,6 +362,7 @@ export function WechatChatHistory() {
           <V2PrimaryButton
             icon={RefreshCcw}
             loading={syncing}
+            disabled={commercialBlocked}
             onClick={handleSync}
           >
             {syncing ? "正在同步..." : "同步历史"}
@@ -322,6 +380,7 @@ export function WechatChatHistory() {
           <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
         </div>
       )}
+      {commercialBlocked && <CommercialGateBanner />}
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         {/* 左：会话列表 */}

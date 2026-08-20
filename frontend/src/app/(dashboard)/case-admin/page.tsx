@@ -9,8 +9,10 @@ import {
   Check,
   ClipboardList,
   Heart,
+  Home,
   Loader2,
   Plus,
+  ShieldAlert,
   Star,
   Trash2,
 } from "lucide-react";
@@ -21,6 +23,9 @@ import {
   type ContentHealthOverview,
   type FeaturedCase,
 } from "@/lib/api/case-admin";
+import { ApiError } from "@/lib/api/client";
+import { authApi } from "@/lib/api/auth";
+import { isAdminUser } from "@/lib/admin-user";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import {
   OpsButton,
@@ -80,6 +85,27 @@ export default function CaseAdminPage() {
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [savingFeatured, setSavingFeatured] = useState(false);
+  const [permission, setPermission] = useState<
+    "checking" | "allowed" | "denied"
+  >("checking");
+
+  // 权限预检：非 admin/owner 不发任何 /admin/* 请求，直接渲染引导
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await authApi.me();
+        if (!cancelled) {
+          setPermission(isAdminUser(me) ? "allowed" : "denied");
+        }
+      } catch {
+        if (!cancelled) setPermission("denied");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const loadCases = useCallback(async () => {
     const list = await caseAdminApi.list();
@@ -99,6 +125,7 @@ export default function CaseAdminPage() {
   }, []);
 
   useEffect(() => {
+    if (permission !== "allowed") return;
     let cancelled = false;
     setLoading(true);
     (async () => {
@@ -107,8 +134,14 @@ export default function CaseAdminPage() {
         else if (tab === "featured") await loadFeatured();
         else if (tab === "health") await loadHealth();
         else if (tab === "audit") await loadAudit();
-      } catch {
-        if (!cancelled) addToast({ title: "加载失败", description: "请刷新后重试", color: "danger" });
+      } catch (err: unknown) {
+        if (!cancelled) {
+          if (err instanceof ApiError && err.status === 403) {
+            setPermission("denied");
+          } else {
+            addToast({ title: "加载失败", description: "请刷新后重试", color: "danger" });
+          }
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -116,7 +149,7 @@ export default function CaseAdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [tab, loadCases, loadFeatured, loadHealth, loadAudit]);
+  }, [tab, permission, loadCases, loadFeatured, loadHealth, loadAudit]);
 
   const publishedCases = useMemo(
     () => cases.filter((c) => c.status === "published"),
@@ -169,6 +202,41 @@ export default function CaseAdminPage() {
       setSavingFeatured(false);
     }
   };
+
+  if (permission === "checking") {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <V2BackButton label="返回" />
+        <div className="py-16 text-center">
+          <Loader2 className="mx-auto h-7 w-7 animate-spin text-[var(--kaypal-v3-accent)]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (permission === "denied") {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <V2BackButton label="返回" />
+        <div className="rounded-xl border border-dashed border-divider p-12 text-center">
+          <ShieldAlert className="mx-auto mb-3 h-10 w-10 text-warning" />
+          <h2 className="text-lg font-semibold text-foreground">
+            无权限访问案例管理
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-default-500">
+            案例管理仅限 admin/owner 角色使用。如需开通请联系管理员，或返回今日工作台继续。
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Link href="/today">
+              <OpsButton tone="brand">
+                <Home className="h-4 w-4" /> 返回今日工作台
+              </OpsButton>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">

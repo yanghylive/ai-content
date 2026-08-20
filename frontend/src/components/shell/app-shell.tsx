@@ -186,22 +186,45 @@ function useNotificationItems(): TickerItem[] {
           });
         });
 
-      (Array.isArray(pubTasks) ? pubTasks : []).slice(0, 3).forEach((t, i) => {
-        if (t.status === "completed") {
-          next.push({
-            id: `pub-ok-${i}`,
-            dot: "ok",
-            text: `「${t.title || `任务 #${t.id}`}」已发布完成`,
-            href: "/distribution/tasks",
-          });
-        } else if (t.status === "failed") {
-          next.push({
-            id: `pub-fail-${i}`,
-            dot: "warn",
-            text: `「${t.title || `任务 #${t.id}`}」发布失败，待处理`,
-            href: "/distribution/tasks",
-          });
-        }
+      // 发布任务通知：按任务 id 去重（同任务多轮/多平台发布只保留最新一条），
+      // 多条 failed 聚合为 1 条，避免 Marquee 视觉双份后出现「4× 相同通知」。
+      const pubList = Array.isArray(pubTasks)
+        ? (pubTasks as AutoUploadPublishTask[])
+        : [];
+      const seenTasks = new Set<number>();
+      const dedupedPubTasks: AutoUploadPublishTask[] = [];
+      for (const t of pubList) {
+        if (!t || seenTasks.has(t.id)) continue;
+        seenTasks.add(t.id);
+        dedupedPubTasks.push(t);
+      }
+      const failedTasks = dedupedPubTasks.filter(
+        (t) => t.status === "failed",
+      );
+      const completedTasks = dedupedPubTasks.filter(
+        (t) => t.status === "completed",
+      );
+
+      if (failedTasks.length > 0) {
+        const first = failedTasks[0];
+        next.push({
+          id: `pub-fail-${first.id}`,
+          dot: "warn",
+          text:
+            failedTasks.length > 1
+              ? `「${failedTasks.length} 个发布任务失败了」`
+              : `「${first.title || `任务 #${first.id}`}」发布失败，待处理`,
+          href: "/distribution/tasks",
+        });
+      }
+
+      completedTasks.slice(0, 3).forEach((t) => {
+        next.push({
+          id: `pub-ok-${t.id}`,
+          dot: "ok",
+          text: `「${t.title || `任务 #${t.id}`}」已发布完成`,
+          href: "/distribution/tasks",
+        });
       });
 
       const counts = (collect as { counts?: Record<string, number> } | null)

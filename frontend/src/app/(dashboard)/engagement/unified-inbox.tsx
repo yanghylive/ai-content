@@ -14,6 +14,7 @@ import {
   V2GhostButton,
   V2PrimaryButton,
   V2StatusChip,
+  V2Textarea,
 } from "@/components/v2/ui-kit";
 import {
   getInboxThreadDetail,
@@ -21,6 +22,10 @@ import {
   type InboxItem,
   type InboxView,
 } from "@/lib/api/interaction-inbox";
+import {
+  localEngineApi,
+  type InteractionTaskType,
+} from "@/lib/api/local-engine";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const PLATFORM_LABEL: Record<string, string> = {
@@ -71,6 +76,23 @@ function timeAgo(iso: string | null): string {
   if (h < 24) return `${h} 小时前`;
   const d = Math.floor(h / 24);
   return `${d} 天前`;
+}
+
+/** 线程平台/渠道 → 本地引擎互动任务类型（与 local-engine 后端契约一致）。
+ * 仅抖音/视频号有真实回复执行链路；其余平台回退到抖音类型避免报错。 */
+function replyTaskType(platform: string, channel: string): InteractionTaskType {
+  const isDm = channel === "dm";
+  if (platform === "douyin") {
+    return isDm
+      ? "douyin-direct-message-reply"
+      : "douyin-comment-reply";
+  }
+  if (platform === "wechat-channel" || platform === "shipinhao") {
+    return isDm
+      ? "wechat-channel-direct-message-reply"
+      : "wechat-channel-comment-reply";
+  }
+  return isDm ? "douyin-direct-message-reply" : "douyin-comment-reply";
 }
 
 /**
@@ -368,6 +390,9 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -384,6 +409,32 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  const handleReply = async () => {
+    const thread = detail?.thread;
+    const content = replyText.trim();
+    if (!thread || !content) return;
+    setSending(true);
+    setReplyError(null);
+    try {
+      const task = await localEngineApi.createTask({
+        type: replyTaskType(thread.platform, thread.channel),
+        accountId: thread.accountId ?? undefined,
+        platformName: thread.platform,
+        targetName: thread.authorName ?? thread.authorExternalId ?? undefined,
+        sourceText: thread.latestBody ?? undefined,
+        sourceUrl: thread.sourceUrl ?? undefined,
+        replyText: content,
+      });
+      await localEngineApi.approveTask(task.id, { replyText: content });
+      setReplyText("");
+      await load();
+    } catch (e) {
+      setReplyError((e as Error)?.message || "回复发送失败，请稍后重试");
+    } finally {
+      setSending(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -492,13 +543,36 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
           {thread.customerId && (
             <V2StatusChip tone="success">已入 CRM</V2StatusChip>
           )}
-          <div className="ml-auto flex gap-2">
-            <V2GhostButton icon={MessageSquare}>回复</V2GhostButton>
-            <V2PrimaryButton
+          <div className="ml-auto">
+            <V2GhostButton
               icon={UserCheck}
-              disabled={!thread.allowedActions.includes("assign")}
+              disabled
+              title="分配功能即将上线"
             >
               分配
+            </V2GhostButton>
+          </div>
+        </div>
+        <div className="mt-3">
+          <V2Textarea
+            placeholder="输入回复内容…（将通过本地引擎执行）"
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            rows={2}
+          />
+          {replyError && (
+            <p className="mt-1 text-xs text-[var(--kaypal-v3-danger)]">
+              {replyError}
+            </p>
+          )}
+          <div className="mt-2 flex items-center justify-end gap-2">
+            <V2PrimaryButton
+              icon={MessageSquare}
+              loading={sending}
+              disabled={!replyText.trim()}
+              onClick={() => void handleReply()}
+            >
+              发送回复
             </V2PrimaryButton>
           </div>
         </div>

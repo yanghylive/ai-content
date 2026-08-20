@@ -67,7 +67,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
         await purchaseCrmApp();
         setDone("购买成功，现在可以安装了");
       } else if (primaryAction === "open") {
-        router.push(`/apps/${app.appKey}`);
+        router.push(`/apps/detail?key=${app.appKey}`);
         return;
       }
       await loadApp();
