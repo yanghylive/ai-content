@@ -1,0 +1,231 @@
+@media (min-width: 768px) {
+.page {
+  color: var(--kx-ink);
+}
+
+.page :global(.mx-header) {
+  padding: 12px 0 18px;
+  border-bottom: 1px solid var(--kx-border);
+}
+
+.page :global(.mx-header-row) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.page :global(.mx-brand-eyebrow) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+  color: var(--kx-accent-ink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.page :global(.mx-page-title) {
+  margin: 0;
+  color: var(--kx-ink);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.page :global(.mx-page-sub) {
+  margin: 5px 0 0;
+  color: var(--kx-muted);
+  font-size: 13px;
+}
+
+.page :global(.mx-px) {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.page :global(.mx-mt-lg) {
+  margin-top: 18px;
+}
+
+.page :global(.mx-stat-grid) {
+  display: grid;
+  gap: 12px;
+}
+
+.page :global(.mx-stat-item) {
+  min-height: 78px;
+  padding: 15px 16px;
+  border: 1px solid var(--kx-border);
+  border-radius: 12px;
+  background: var(--kx-card);
+  box-shadow: var(--kx-shadow-card);
+  text-align: left;
+}
+
+.page :global(.mx-stat-num) {
+  color: var(--kx-ink);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.page :global(.mx-stat-label) {
+  margin-top: 5px;
+  color: var(--kx-muted);
+  font-size: 12px;
+}
+
+.page :global(.mx-gold-text) {
+  color: var(--kx-accent-ink);
+}
+
+.page :global(.mx-card) {
+  overflow: hidden;
+  border: 1px solid var(--kx-border);
+  border-radius: 14px;
+  background: var(--kx-card);
+  box-shadow: var(--kx-shadow-card);
+}
+
+.page :global(.mx-card > div:first-child[style*="border-bottom"]) {
+  border-bottom-color: var(--kx-border) !important;
+  background: var(--kx-paper-soft);
+}
+
+.page :global(.mx-card span[style*="rgba(219,234,254"]),
+.page :global(.mx-card div[style*="rgba(219,234,254"]),
+.page :global(.mx-card div[style*="rgba(251,191,36"] ) {
+  color: var(--kx-muted) !important;
+}
+
+.page :global(.mx-row) {
+  display: flex;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--kx-border);
+}
+
+.page :global(.mx-row:last-child) {
+  border-bottom: 0;
+}
+
+.page :global(.mx-row-ic) {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+}
+
+.page :global(.mx-row-main) {
+  min-width: 0;
+  flex: 1;
+}
+
+.page :global(.mx-row-title) {
+  overflow: hidden;
+  color: var(--kx-ink);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page :global(.mx-row-desc) {
+  margin-top: 3px;
+  color: var(--kx-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.page :global(.mx-row-right) {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.page :global(.mx-badge) {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.page :global(.mx-btn-gold) {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--kx-accent);
+  border-radius: 9px;
+  background: var(--kx-accent);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  transition: filter 0.16s ease, transform 0.16s ease;
+}
+
+.page :global(.mx-btn-gold:hover:not(:disabled)) {
+  filter: brightness(1.05);
+}
+
+.page :global(.mx-btn-gold:active:not(:disabled)) {
+  transform: translateY(1px);
+}
+
+.page :global(.mx-btn-gold:disabled) {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.page :global(.mx-empty) {
+  padding: 40px 20px;
+  color: var(--kx-muted);
+  text-align: center;
+}
+
+.page :global(.mx-empty p) {
+  margin: 0;
+}
+
+.page :global(.mx-list-card) {
+  padding: 4px 16px;
+}
+
+.page :global(.mx-skeleton-row) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--kx-border);
+}
+
+.page :global(.mx-skeleton-row:last-child) {
+  border-bottom: 0;
+}
+
+.page :global(.mx-skeleton) {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--kx-paper-soft);
+}
+
+.page :global(.mx-skeleton-ic) {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+}
+
+.page :global(.mx-skeleton-line) {
+  height: 12px;
+}
+
+}
