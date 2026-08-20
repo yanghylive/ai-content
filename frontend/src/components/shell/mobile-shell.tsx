@@ -9,49 +9,59 @@ import "./mobile.css";
 /**
  * 移动端底部导航（Mingde VP 玻璃拟态风格）。
  *
- * 5 个 Tab 对齐一级导航：
- *   今天 → /today · 内容 → /content · 发布 → /distribution
- *   互动 → /message · 线索 → /growth/leads
- * CRM/复盘在移动端从线索详情/首页卡片进入（Tab 数量封顶 5）。
+ * 5 个 Tab（Q5 拍板）：today / content / interaction / leads / customer。
+ *   today → /today · content → /content · interaction → /message
+ *   leads → /growth/leads（承载获客+线索，/growth* 归此）· customer → /crm（/crm*、/customer* 归此）
+ * publish 下沉内容运营（发布中心在 content 页内可访问）。
  * 「我的」移入右上角头像入口（不占底部 Tab）。
  * 视觉与交互由统一 MobileTabBar 组件承载（P2 架构沉淀）。
  */
 const MOBILE_TABS: Array<{ key: string; href: string; label: string; icon: Parameters<typeof ShellIcon>[0]["name"] }> = [
   { key: "today", href: "/today", label: "今天", icon: "home" as const },
   { key: "content", href: "/content", label: "内容", icon: "fileText" as const },
-  { key: "publish", href: "/distribution", label: "发布", icon: "send" as const },
   { key: "interaction", href: "/message", label: "互动", icon: "message" as const },
   { key: "leads", href: "/growth/leads", label: "线索", icon: "target" as const },
+  { key: "customer", href: "/crm", label: "客户", icon: "users" as const },
 ];
 
 function activeTabOf(pathname: string): string {
   if (pathname === "/" || pathname.startsWith("/today")) return "today";
   if (
     pathname.startsWith("/content") ||
-    pathname.startsWith("/materials")
+    pathname.startsWith("/materials") ||
+    pathname.startsWith("/topics") ||
+    pathname.startsWith("/distribution") ||
+    pathname.startsWith("/schedules") ||
+    pathname.startsWith("/compliance") ||
+    pathname.startsWith("/styles") ||
+    pathname.startsWith("/viral-analysis") ||
+    pathname.startsWith("/knowledge-base")
   )
     return "content";
-  if (
-    pathname.startsWith("/distribution") ||
-    pathname.startsWith("/compliance") ||
-    pathname.startsWith("/platforms")
-  )
-    return "publish";
-  // 线索（含 CRM/客户，从线索池进入）
-  if (
-    pathname.startsWith("/growth") ||
-    pathname.startsWith("/customer") ||
-    pathname.startsWith("/crm") ||
-    pathname.startsWith("/engagement/comment-acquisition")
-  )
-    return "leads";
+  // 互动（消息/互动/确认）
   if (
     pathname.startsWith("/message") ||
     pathname.startsWith("/engagement") ||
-    pathname.startsWith("/tasks") ||
     pathname.startsWith("/confirmations")
   )
     return "interaction";
+  // 线索（获客中心，含 /growth*）
+  if (
+    pathname.startsWith("/growth") ||
+    pathname.startsWith("/intelligence") ||
+    pathname.startsWith("/engagement/comment-acquisition") ||
+    pathname.startsWith("/effects")
+  )
+    return "leads";
+  // 客户（CRM/客户）
+  if (
+    pathname.startsWith("/crm") ||
+    pathname.startsWith("/customer") ||
+    pathname.startsWith("/crm-closer") ||
+    pathname.startsWith("/wecom-crm") ||
+    pathname.startsWith("/boss-recruit")
+  )
+    return "customer";
   if (pathname.startsWith("/mine") || pathname.startsWith("/settings")) return "mine";
   return "today";
 }
@@ -62,9 +72,9 @@ function activeTabOf(pathname: string): string {
 const BADGE_LABELS: Record<string, string> = {
   today: "待办",
   content: "草稿",
-  publish: "待发",
   interaction: "未读",
-  customer: "线索",
+  leads: "线索",
+  customer: "客户",
 };
 
 export function MobileShell({
@@ -73,7 +83,7 @@ export function MobileShell({
   onOpenPalette,
 }: {
   children: React.ReactNode;
-  badges?: { today?: number; publish?: number; interaction?: number };
+  badges?: { today?: number; interaction?: number };
   /** 移动端命令面板入口（替代桌面 ⌘K） */
   onOpenPalette?: () => void;
 }) {
@@ -84,7 +94,6 @@ export function MobileShell({
   const badgeOf = (key: string) => {
     if (!badges) return 0;
     if (key === "today") return badges.today ?? 0;
-    if (key === "publish") return badges.publish ?? 0;
     if (key === "interaction") return badges.interaction ?? 0;
     return 0;
   };

@@ -584,6 +584,55 @@ export interface GrowthOverview {
   hotStrategies: GrowthStrategyTemplate[];
 }
 
+// —— 3010「今日增长」首页聚合接口契约（开发文档 7.2 / P0-P1 计划 §2.1）——
+// null 语义：底层 service 抛错/不可用时返回 null（前端显示「暂无数据/不可用」），
+// 禁止降级成 0；0 仅表示真实统计为空。
+
+export interface GrowthHomeStats {
+  /** 今日新线索数（overview.todayLeadCount） */
+  newLeads: number | null;
+  /** 高意向线索数（overview.highIntentLeadCount） */
+  highIntentLeads: number | null;
+  /** 待触达：无成功互动事件且状态为 new/qualified 的线索数 */
+  pendingContact: number | null;
+  /** 今日进 CRM 数（overview.todayCrmCapturedCount） */
+  crmCaptured: number | null;
+  /** 未结商机金额（元）；无商机数据时为 null，不显示 ¥0 */
+  openOpportunityAmount: number | null;
+}
+
+export interface GrowthHomeFunnel {
+  candidates: number | null;
+  selected: number | null;
+  contacted: number | null;
+  leads: number | null;
+  customers: number | null;
+  opportunities: number | null;
+  won: number | null;
+}
+
+export interface GrowthHomeBlocker {
+  code: string;
+  title: string;
+  action: string;
+}
+
+export interface GrowthHomeNextAction {
+  code: string;
+  label: string;
+  href: string;
+}
+
+export interface GrowthHomeResponse {
+  /** ISO 8601，前端显示数据时间；聚合接口整体可用时始终返回 */
+  generatedAt: string;
+  stats: GrowthHomeStats;
+  funnel: GrowthHomeFunnel;
+  blockers: GrowthHomeBlocker[];
+  recentRuns: GrowthAcquisitionRun[];
+  nextActions: GrowthHomeNextAction[];
+}
+
 export interface GrowthSixStageFunnel {
   /** 内容数（article） */
   content: number;

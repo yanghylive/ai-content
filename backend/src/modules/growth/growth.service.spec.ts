@@ -3295,3 +3295,244 @@ describe('GrowthService 合成 RPA 记录审计标注（P1-14 复核）', () => 
     expect(create).not.toHaveBeenCalled();
   });
 });
+
+describe('GrowthService 今日增长首页聚合（T02 /growth/home）', () => {
+  const prismaDelegates = () => ({
+    lead: { count: jest.fn().mockResolvedValue(0) },
+    crmCustomer: { count: jest.fn().mockResolvedValue(0) },
+    crmOpportunity: {
+      // 按 where.stage 区分：won → 1，opening（notIn won/lost）→ 0，其他 → 0
+      count: jest.fn().mockImplementation(async ({ where }: any) => {
+        if (where?.stage === 'won') return 1;
+        return 0;
+      }),
+      aggregate: jest.fn().mockResolvedValue({ _sum: { amountCents: 0 } }),
+    },
+  });
+
+  function makeHomeStore(overrides: Record<string, unknown> = {}) {
+    const now = new Date().toISOString();
+    return makeStore({
+      leads: [
+        {
+          id: 'lead-1',
+          userId: 'user-1',
+          tenantId: undefined,
+          platform: 'douyin',
+          sourceType: 'manual-import',
+          score: 80,
+          status: 'new',
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+      runs: [
+        {
+          id: 'run-1',
+          userId: 'user-1',
+          tenantId: undefined,
+          status: 'success',
+          candidateCount: 3,
+          selectedCount: 2,
+          contactedCount: 1,
+          startedAt: now,
+        },
+      ],
+      accountHealth: [
+        makeAccountHealth({ riskStatus: 'cooldown', loginStatus: 'online' }),
+      ],
+      ...overrides,
+    });
+  }
+
+  async function makeHomeService(options: {
+    prisma?: ReturnType<typeof prismaDelegates>;
+    overviewError?: boolean;
+    readiness?: unknown;
+  } = {}) {
+    const service = makeService(options.prisma ?? prismaDelegates());
+    service.loadStore = jest.fn(async () => makeHomeStore());
+    service.saveStore = jest.fn();
+    service.resolveGrowthTenantId = jest.fn().mockResolvedValue(undefined);
+    if (options.overviewError) {
+      service.getOverview = jest.fn().mockRejectedValue(new Error('store down'));
+    }
+    service.getCommercialReadiness =
+      options.readiness === undefined
+        ? jest.fn().mockResolvedValue({ blockers: [] })
+        : jest.fn().mockResolvedValue(options.readiness);
+    return service;
+  }
+
+  it('返回完整契约结构（generatedAt/stats/funnel/blockers/recentRuns/nextActions）', async () => {
+    const prisma = prismaDelegates();
+    prisma.lead.count = jest.fn().mockResolvedValue(4);
+    prisma.crmCustomer.count = jest.fn().mockResolvedValue(5);
+    prisma.crmOpportunity.count = jest.fn().mockImplementation(async ({ where }: any) => {
+      if (where?.stage === 'won') return 1;
+      return 6;
+    });
+    prisma.crmOpportunity.aggregate = jest
+      .fn()
+      .mockResolvedValue({ _sum: { amountCents: 123456 } });
+
+    const service = await makeHomeService({
+      prisma,
+      readiness: {
+        blockers: [
+          { code: 'growth-execution-disabled', title: '真实执行开关未开启', action: '设置环境变量', detail: 'x' },
+        ],
+      },
+    });
+    const result = await service.getGrowthHome('user-1', { range: 'today' });
+
+    expect(typeof result.generatedAt).toBe('string');
+    expect(result).toMatchObject({
+      stats: {
+        newLeads: 1,
+        highIntentLeads: 1,
+        pendingContact: 4,
+        crmCaptured: 0,
+        openOpportunityAmount: 1234.56,
+      },
+      funnel: {
+        candidates: 3,
+        selected: 2,
+        contacted: 1,
+        leads: 4,
+        customers: 5,
+        opportunities: 6,
+        won: 1,
+      },
+      blockers: [
+        { code: 'growth-execution-disabled', title: '真实执行开关未开启', action: '设置环境变量' },
+      ],
+      nextActions: [
+        { code: 'create-task', label: '新建获客任务', href: '/auto-acquisition/create' },
+        { code: 'process-leads', label: '处理线索', href: '/growth/leads' },
+        { code: 'account-health', label: '检查账号健康', href: '/growth/account-health' },
+      ],
+    });
+    expect(result.recentRuns).toHaveLength(1);
+    expect(result.recentRuns[0]).toMatchObject({ id: 'run-1' });
+    // 金额分 → 元
+    expect(result.stats.openOpportunityAmount).toBe(1234.56);
+  });
+
+  it('null 语义：getOverview 抛错时 stats/funnel 相关字段为 null 且整体不抛 5xx', async () => {
+    const service = await makeHomeService({ overviewError: true });
+    const result = await service.getGrowthHome('user-1', { range: 'today' });
+
+    expect(result.generatedAt).toBeTruthy();
+    expect(result.stats).toMatchObject({
+      newLeads: null,
+      highIntentLeads: null,
+      crmCaptured: null,
+    });
+    expect(result.funnel).toMatchObject({
+      candidates: null,
+      selected: null,
+      contacted: null,
+    });
+    expect(result.recentRuns).toEqual([]);
+    expect(result.nextActions).toHaveLength(3);
+  });
+
+  it('null 语义：底层 CRM 查询抛错时 openOpportunityAmount/customers 为 null 不降级 0', async () => {
+    const prisma = prismaDelegates();
+    prisma.crmOpportunity.aggregate = jest
+      .fn()
+      .mockRejectedValue(new Error('db down'));
+    prisma.crmCustomer.count = jest.fn().mockRejectedValue(new Error('db down'));
+    prisma.crmOpportunity.count = jest
+      .fn()
+      .mockRejectedValue(new Error('db down'));
+    const service = await makeHomeService({ prisma });
+    const result = await service.getGrowthHome('user-1');
+
+    expect(result.stats.openOpportunityAmount).toBeNull();
+    expect(result.funnel.customers).toBeNull();
+    expect(result.funnel.opportunities).toBeNull();
+    expect(result.funnel.won).toBeNull();
+    expect(result.stats.newLeads).toBe(1);
+    expect(result.funnel.leads).toBe(0);
+  });
+
+  it('blockers 降级：commercial readiness 不可用时由账号健康聚合生成轻量 blocker', async () => {
+    const service = await makeHomeService();
+    // 覆盖默认 mock：readiness 抛错 → 触发降级路径
+    (service.getCommercialReadiness as jest.Mock).mockRejectedValue(
+      new Error('readiness down'),
+    );
+    const result = await service.getGrowthHome('user-1');
+
+    expect(result.blockers).toEqual([
+      {
+        code: 'account-health-risk',
+        title: '1 个平台账号健康异常',
+        action: expect.stringContaining('大壮抖音号'),
+      },
+    ]);
+  });
+
+  it('scope：两个 userId 数据隔离（各自只看自己的 leads/runs/health）', async () => {
+    const now = new Date().toISOString();
+    const store = makeHomeStore({
+      leads: [
+        {
+          id: 'lead-1',
+          userId: 'user-1',
+          tenantId: undefined,
+          platform: 'douyin',
+          sourceType: 'manual-import',
+          score: 80,
+          status: 'new',
+          createdAt: now,
+          updatedAt: now,
+        },
+        {
+          id: 'lead-other',
+          userId: 'user-2',
+          tenantId: undefined,
+          platform: 'douyin',
+          sourceType: 'manual-import',
+          score: 90,
+          status: 'new',
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
+      runs: [
+        { id: 'run-1', userId: 'user-1', tenantId: undefined, status: 'success', candidateCount: 3, selectedCount: 2, contactedCount: 1, startedAt: now },
+        { id: 'run-other', userId: 'user-2', tenantId: undefined, status: 'success', candidateCount: 99, selectedCount: 99, contactedCount: 99, startedAt: now },
+      ],
+      accountHealth: [
+        makeAccountHealth({ riskStatus: 'cooldown' }),
+        makeAccountHealth({ id: 'douyin:other', userId: 'user-2', riskStatus: 'normal' }),
+      ],
+    });
+    const service = makeService(prismaDelegates());
+    service.loadStore = jest.fn(async () => store);
+    service.saveStore = jest.fn();
+    service.resolveGrowthTenantId = jest.fn().mockResolvedValue(undefined);
+    // readiness 正常返回空 blockers，隔离验证只依赖 store 聚合层
+    service.getCommercialReadiness = jest
+      .fn()
+      .mockResolvedValue({ blockers: [] });
+
+    const resultA = await service.getGrowthHome('user-1', { range: 'today' });
+    const resultB = await service.getGrowthHome('user-2', { range: 'today' });
+
+    expect(resultA.stats.newLeads).toBe(1);
+    expect(resultA.funnel.candidates).toBe(3);
+    expect(resultA.recentRuns).toHaveLength(1);
+    expect(resultA.recentRuns[0].id).toBe('run-1');
+    expect(resultA.blockers).toEqual([]);
+
+    expect(resultB.stats.newLeads).toBe(1);
+    expect(resultB.funnel.candidates).toBe(99);
+    expect(resultB.recentRuns).toHaveLength(1);
+    expect(resultB.recentRuns[0].id).toBe('run-other');
+    expect(resultB.blockers).toEqual([]);
+  });
+});

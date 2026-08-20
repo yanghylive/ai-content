@@ -41,42 +41,66 @@ const snapshotPath = resolveInputPath(
 
 const contract = Object.freeze({
   schemaVersion: 2,
+  // 一级导航 SCENES 数组必须包含的业务场景 key（顺序由 snapshot 保护）
   requiredSceneKeys: [
-    "today",
+    "growth-home",
+    "growth",
+    "customer",
     "content",
-    "publish",
     "interaction",
-    "leads",
-    "crm",
-    "review",
+    "execution",
   ],
+  // Q2：review 移出一级导航但保留为 hidden deeplink key（命令面板可搜 /effects、/growth/reports）。
+  // 这些 key 不进 SCENES 数组，但必须在 app-shell 源码中存在对应可达性（sceneOfPath 分支或 rail 项）。
+  hiddenSceneKeys: ["review-hidden"],
+  // 固定 rail 底部项（不占业务一级导航），app-shell 源码必须含对应路由跳转。
+  pinnedRailHrefs: ["/settings", "/mine", "/agent"],
   // sceneOfPath 必须覆盖的关键路径前缀（抽查源码字面量）
   criticalScenePrefixes: [
-    "/content",
-    "/distribution",
+    "/today",
     "/growth",
+    "/intelligence",
     "/crm",
+    "/customer",
+    "/content",
+    "/materials",
+    "/distribution",
     "/message",
-    "/effects",
     "/engagement",
+    "/tasks",
+    "/approvals",
+    "/effects",
+    "/settings",
+    "/platforms",
   ],
   // 命令面板必须保留的关键子路由入口（防误删）
   criticalCommandHrefs: [
-    "/content/articles",
-    "/content/xiaohongshu",
-    "/materials",
+    "/today",
+    "/growth",
     "/growth/leads",
     "/growth/acquisition",
     "/growth/strategies",
     "/growth/workflows",
     "/growth/account-health",
     "/crm",
+    "/tasks",
     "/engagement/comment-acquisition",
     "/wecom-crm",
     "/boss-recruit",
     "/commercial-readiness",
+    "/content/articles",
+    "/content/xiaohongshu",
     "/content/ai-image-gen",
     "/content/collection-center",
+    "/materials",
+    "/intelligence",
+    "/intelligence/reports",
+    "/approvals",
+    "/task-evidence",
+    "/agent-workbench",
+    "/settings",
+    "/platforms",
+    "/local-engine",
   ],
 });
 
@@ -180,6 +204,24 @@ function validateScenes(scenes, shellText, addFailure) {
   for (const key of contract.requiredSceneKeys) {
     if (!scenes.some((scene) => scene.key === key)) {
       addFailure("SCENE_MISSING", `required scene is missing: ${key}`);
+    }
+  }
+  // Q2：hidden deeplink key 不进 SCENES 数组，但 app-shell 必须保留路径可达性
+  for (const key of contract.hiddenSceneKeys) {
+    if (scenes.some((scene) => scene.key === key)) {
+      addFailure(
+        "SCENE_HIDDEN",
+        `hidden deeplink key ${key} must not appear in the SCENES array`,
+      );
+    }
+  }
+  // 固定 rail 底部项（/settings、/mine、/agent）：不占业务 SCENES，但 app-shell 必须保留入口
+  for (const href of contract.pinnedRailHrefs) {
+    if (!shellText.includes(href)) {
+      addFailure(
+        "SCENE_MISSING",
+        `pinned rail entry missing from app-shell: ${href}`,
+      );
     }
   }
   // "我的"场景硬编码在 rail 末尾（不在 SCENES 数组），单独校验入口存在
