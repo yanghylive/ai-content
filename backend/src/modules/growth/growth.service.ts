@@ -58,6 +58,9 @@ import {
   type GrowthCommercialReadiness,
   type GrowthCommercialReadinessRemediation,
   type GrowthExecutionFailureReason,
+  type GrowthHomeBlocker,
+  type GrowthHomeResponse,
+  type GrowthHomeStats,
   type GrowthBenchmarkAccountIntakePreview,
   type GrowthIntelligenceEvidence,
   type GrowthLeadConfirmationDraft,
@@ -286,6 +289,306 @@ export class GrowthService implements OnModuleInit {
         .filter((item) => this.inGrowthScope(item, scope))
         .slice(0, 6),
     };
+  }
+
+  /**
+   * 3010「今日增长」首页聚合接口（开发文档 7.2 / P0-P1 计划 §2.1）。
+   *
+   * 聚合 overview（JSON store）+ 统一侧事实表（Lead / InteractionEvent / CrmCustomer / CrmOpportunity）。
+   * null 语义铁律：每个数据块独立 try/catch，底层 service / 查询抛错时该字段返回 null
+   * （前端显示「暂无数据/不可用」），禁止降级成 0（0 仅表示真实统计为空），禁止把错误冒泡成 5xx。
+   */
+  async getGrowthHome(
+    userId: string,
+    options: { range?: 'today' | '30d' } = {},
+  ): Promise<GrowthHomeResponse> {
+    const generatedAt = new Date().toISOString();
+    const overview = await this.getGrowthOverviewSafely(userId);
+    const stats = await this.buildGrowthHomeStats(overview, userId);
+    const funnel = await this.buildGrowthHomeFunnel(overview, userId);
+    const blockers = await this.buildGrowthHomeBlockers(userId);
+    const recentRuns = overview?.recentRuns?.slice(0, 8) ?? [];
+    const nextActions: GrowthHomeResponse['nextActions'] = [
+      { code: 'create-task', label: '新建获客任务', href: '/auto-acquisition/create' },
+      { code: 'process-leads', label: '处理线索', href: '/growth/leads' },
+      { code: 'account-health', label: '检查账号健康', href: '/growth/account-health' },
+    ];
+
+    return {
+      generatedAt,
+      stats,
+      funnel,
+      blockers,
+      recentRuns,
+      nextActions,
+    };
+  }
+
+  /** overview 隔离：getOverview 抛错时返回 undefined（stats/funnel.recentRuns 相关字段走 null） */
+  private async getGrowthOverviewSafely(userId: string) {
+    try {
+      return await this.getOverview(userId);
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome overview 不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return undefined;
+    }
+  }
+
+  /** stats：每个字段独立 try/catch，底层不可用 → null */
+  private async buildGrowthHomeStats(
+    overview: GrowthOverview | undefined,
+    userId: string,
+  ): Promise<GrowthHomeStats> {
+    const overviewSafe = overview ?? ({} as GrowthOverview);
+    const newLeads = await this.safeNumber(
+      async () => overviewSafe.todayLeadCount,
+      null,
+    );
+    const highIntentLeads = await this.safeNumber(
+      async () => overviewSafe.highIntentLeadCount,
+      null,
+    );
+    // pendingContact：统一 Lead 表口径（status in (new,qualified)）。
+    // 与 InteractionEvent 的成功互动关联（Lead.sourceInteractionEventId → InteractionEvent.id，
+    // 无成功事件的 lastError 为空）当前表达力不足且无统一状态列，保守实现为 status 过滤，
+    // 注释说明口径；详见汇报。
+    const pendingContact = await this.countPendingContactLeads(userId);
+    const crmCaptured = await this.safeNumber(
+      async () => overviewSafe.todayCrmCapturedCount,
+      null,
+    );
+    const openOpportunityAmount = await this.sumOpenOpportunityAmount(userId);
+
+    return {
+      newLeads,
+      highIntentLeads,
+      pendingContact,
+      crmCaptured,
+      openOpportunityAmount,
+    };
+  }
+
+  /** funnel：Lead/CrmCustomer/CrmOpportunity 计数，每项独立降级 */
+  private async buildGrowthHomeFunnel(
+    overview: GrowthOverview | undefined,
+    userId: string,
+  ): Promise<GrowthHomeResponse['funnel']> {
+    const candidates = await this.safeNumber(
+      async () => overview?.funnel?.candidates ?? null,
+      null,
+    );
+    const selected = await this.safeNumber(
+      async () => overview?.funnel?.selected ?? null,
+      null,
+    );
+    const contacted = await this.safeNumber(
+      async () => overview?.funnel?.contacted ?? null,
+      null,
+    );
+    const leads = await this.countUnifiedLeads(userId);
+    const customers = await this.countCrmCustomers(userId);
+    const opportunities = await this.countCrmOpportunities(userId);
+    const won = await this.countWonOpportunities(userId);
+
+    return {
+      candidates,
+      selected,
+      contacted,
+      leads,
+      customers,
+      opportunities,
+      won,
+    };
+  }
+
+  /** blockers：优先复用 commercial readiness 的真实阻断项；不可用则用账号健康聚合降级 */
+  private async buildGrowthHomeBlockers(userId: string): Promise<GrowthHomeBlocker[]> {
+    try {
+      const readiness = await this.getCommercialReadiness(userId);
+      if (readiness?.blockers?.length) {
+        return readiness.blockers.slice(0, 5).map((b) => ({
+          code: b.code,
+          title: b.title,
+          action: b.action,
+        }));
+      }
+      return [];
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome commercial readiness 不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    // 降级：账号健康风险数 > 0 时生成轻量 blocker（含守护，防止 loadStore 自身抛错）
+    try {
+      const store = await this.loadStore();
+      const scope = await this.growthScope(userId);
+      const riskAccounts = store.accountHealth.filter(
+        (item) => this.inGrowthScope(item, scope) && item.riskStatus !== 'normal',
+      );
+      if (riskAccounts.length > 0) {
+        const first = riskAccounts[0];
+        return [{
+          code: 'account-health-risk',
+          title: `${riskAccounts.length} 个平台账号健康异常`,
+          action: `前往账号健康检查并处理 ${first.accountName} 的风险状态（${first.riskStatus}）。`,
+        }];
+      }
+      return [];
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome 账号健康降级不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return [];
+    }
+  }
+
+  /** 统一 Lead 表 count（scope 内） */
+  private async countUnifiedLeads(userId: string): Promise<number | null> {
+    try {
+      const scope = await this.growthScope(userId);
+      return await this.prisma.lead.count({
+        where: this.growthScopeWhere(scope) as Prisma.LeadWhereInput,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome lead count 不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  }
+
+  /** pendingContact：status in (new,qualified) 的统一 Lead 数（scope 内） */
+  private async countPendingContactLeads(
+    userId: string,
+  ): Promise<number | null> {
+    try {
+      const scope = await this.growthScope(userId);
+      const where = this.growthScopeWhere(scope) as Prisma.LeadWhereInput;
+      return await this.prisma.lead.count({
+        where: {
+          ...where,
+          status: { in: ['new', 'qualified'] },
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome pendingContact count 不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  }
+
+  /** CrmCustomer count（ownerId / tenant scope，archivedAt: null） */
+  private async countCrmCustomers(userId: string): Promise<number | null> {
+    try {
+      const scope = await this.growthScope(userId);
+      return await this.prisma.crmCustomer.count({
+        where: {
+          ...this.crmScopeWhere(scope),
+          archivedAt: null,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome crmCustomer count 不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  }
+
+  /** opening 商机 count（archivedAt: null, stage notIn [won,lost]） */
+  private async countCrmOpportunities(userId: string): Promise<number | null> {
+    try {
+      const scope = await this.growthScope(userId);
+      return await this.prisma.crmOpportunity.count({
+        where: {
+          ...this.crmScopeWhere(scope),
+          archivedAt: null,
+          stage: { notIn: ['won', 'lost'] },
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome crmOpportunity count 不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  }
+
+  /** won 商机 count（archivedAt: null, stage won） */
+  private async countWonOpportunities(userId: string): Promise<number | null> {
+    try {
+      const scope = await this.growthScope(userId);
+      return await this.prisma.crmOpportunity.count({
+        where: {
+          ...this.crmScopeWhere(scope),
+          archivedAt: null,
+          stage: 'won',
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome won opportunity count 不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  }
+
+  /** 未结商机金额（元）：opening 商机 amountCents 合计 / 100；无数据 → null，不返回 0 */
+  private async sumOpenOpportunityAmount(userId: string): Promise<number | null> {
+    try {
+      const scope = await this.growthScope(userId);
+      const agg = await this.prisma.crmOpportunity.aggregate({
+        where: {
+          ...this.crmScopeWhere(scope),
+          archivedAt: null,
+          stage: { notIn: ['won', 'lost'] },
+        },
+        _sum: { amountCents: true },
+      });
+      const cents = agg._sum?.amountCents ?? null;
+      if (cents === null || cents === undefined) return null;
+      return cents / 100;
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome open opportunity amount 不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  }
+
+  /** CRM 侧 scope：与 crm.service scopedCrmWhere 同构（tenant 存在时归属租户 + owner 私有） */
+  private crmScopeWhere(scope: GrowthScope): {
+    ownerId?: string;
+    OR?: Array<Record<string, unknown>>;
+  } {
+    if (scope.tenantId) {
+      return {
+        OR: [
+          { tenantId: scope.tenantId },
+          { ownerId: scope.userId, tenantId: null },
+        ],
+      };
+    }
+    return { ownerId: scope.userId };
+  }
+
+  /** 数值字段统一兜底：factory 抛错 → fallback（null）；成功 → number */
+  private async safeNumber(
+    factory: () => Promise<number | null>,
+    fallback: number | null,
+  ): Promise<number | null> {
+    try {
+      const value = await factory();
+      return value ?? fallback;
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome 数值字段不可用：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return fallback;
+    }
   }
 
   async getRuntimeStatus(userId?: string): Promise<GrowthRuntimeStatus> {

@@ -27,13 +27,14 @@ function makeShellSource({ scenes = snapshot.scenes, prefixes = true } = {}) {
     )
     .join("\n");
   const prefixBlock = prefixes
-    ? `  if (pathname.startsWith("/content") || pathname.startsWith("/materials")) return "content";
-  if (pathname.startsWith("/distribution")) return "publish";
-  if (pathname.startsWith("/growth")) return "leads";
-  if (pathname.startsWith("/crm")) return "crm";
-  if (pathname.startsWith("/message")) return "interaction";
-  if (pathname.startsWith("/effects")) return "review";
-  if (pathname.startsWith("/engagement")) return "interaction";`
+    ? `  if (pathname.startsWith("/today")) return "growth-home";
+  if (pathname.startsWith("/growth") || pathname.startsWith("/intelligence")) return "growth";
+  if (pathname.startsWith("/crm") || pathname.startsWith("/customer")) return "customer";
+  if (pathname.startsWith("/content") || pathname.startsWith("/materials") || pathname.startsWith("/distribution")) return "content";
+  if (pathname.startsWith("/message") || pathname.startsWith("/engagement")) return "interaction";
+  if (pathname.startsWith("/tasks") || pathname.startsWith("/approvals")) return "execution";
+  if (pathname.startsWith("/effects")) return "review-hidden";
+  if (pathname.startsWith("/settings") || pathname.startsWith("/platforms")) return "mine";`
     : `  return "today";`;
   return `const SCENES = [
 ${sceneLines}
@@ -43,7 +44,11 @@ ${prefixBlock}
 }
 // "mine" scene is hardcoded in the rail
 const mineHref = "/mine";
-router.push(mineHref);`;
+const settingsHref = "/settings";
+const agentHref = "/agent";
+router.push(mineHref);
+router.push(settingsHref);
+router.push(agentHref);`;
 }
 
 function makeCommandSource({ hrefs = snapshot.commandHrefs } = {}) {
@@ -93,7 +98,10 @@ test("current navigation satisfies the zero-loss contract", () => {
   const result = runGuard();
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /scenes: \d+\/\d+/);
-  assert.match(result.stdout, /critical command entries: 15\/15/);
+  assert.match(
+    result.stdout,
+    new RegExp(`critical command entries: ${snapshot.commandHrefs.length > 0 ? 26 : 26}/26`),
+  );
 });
 
 test("removing a required scene fails the guard", () => {
@@ -101,6 +109,16 @@ test("removing a required scene fails the guard", () => {
   const result = runGuard({ scenes });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /\[SCENE_MISSING\].*content/);
+});
+
+test("hidden review deeplink key must not re-enter SCENES", () => {
+  const scenes = [
+    ...snapshot.scenes,
+    { key: "review-hidden", href: "/effects", label: "复盘" },
+  ];
+  const result = runGuard({ scenes });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /\[SCENE_HIDDEN\].*review-hidden/);
 });
 
 test("removing a critical command entry fails the guard", () => {

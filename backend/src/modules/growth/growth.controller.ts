@@ -117,6 +117,17 @@ export class GrowthController {
     return this.growthService.getOverview(this.getUserId(request));
   }
 
+  /** 3010「今日增长」首页聚合接口（开发文档 7.2 / P0-P1 计划 §2.1） */
+  @Get('home')
+  getGrowthHome(
+    @Req() request: AuthenticatedRequest,
+    @Query('range') range?: string,
+  ) {
+    return this.growthService.getGrowthHome(this.getUserId(request), {
+      range: range === '30d' ? '30d' : 'today',
+    });
+  }
+
   @Get('runtime-status')
   getRuntimeStatus(@Req() request: AuthenticatedRequest) {
     return this.growthService.getRuntimeStatus(this.getUserId(request));

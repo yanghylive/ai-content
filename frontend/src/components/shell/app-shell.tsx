@@ -23,73 +23,88 @@ import { OnboardingGuide } from "./onboarding-guide";
 import "./shell.css";
 import "./desktop-vp.css";
 
-/* ---------- 场景定义（顺序 = 快捷键 1-7；「我的」第 8 个硬编码在 rail 末尾） ---------- */
+/* ---------- 场景定义（顺序 = 快捷键 1-6；「系统设置/助手/我的」固定 rail 底部，不占业务一级导航） ---------- */
 const SCENES: Array<{
   key: string;
   href: string;
   label: string;
   icon: ShellIconName;
 }> = [
-  { key: "today", href: "/today", label: "今天", icon: "home" },
-  { key: "content", href: "/content", label: "内容", icon: "fileText" },
-  { key: "publish", href: "/distribution", label: "发布", icon: "send" },
-  { key: "interaction", href: "/message", label: "互动", icon: "messageSq" },
-  { key: "leads", href: "/growth/leads", label: "线索", icon: "target" },
-  { key: "crm", href: "/crm", label: "CRM", icon: "users" },
-  { key: "review", href: "/effects", label: "复盘", icon: "trending" },
+  { key: "growth-home", href: "/today", label: "今日增长", icon: "home" },
+  { key: "growth", href: "/growth", label: "获客中心", icon: "target" },
+  { key: "customer", href: "/crm", label: "客户管理", icon: "users" },
+  { key: "content", href: "/content", label: "内容运营", icon: "fileText" },
+  { key: "interaction", href: "/message", label: "互动中心", icon: "messageSq" },
+  { key: "execution", href: "/tasks", label: "执行中心", icon: "cpu" },
 ];
 
 /** 任意路径 → 所属场景（旧页面也能点亮正确的 rail 图标） */
 export function sceneOfPath(pathname: string): string {
-  if (pathname === "/" || pathname.startsWith("/today")) return "today";
-  if (
-    pathname.startsWith("/content") ||
-    pathname.startsWith("/materials") ||
-    pathname.startsWith("/solutions")
-  )
-    return "content";
-  if (
-    pathname.startsWith("/distribution") ||
-    pathname.startsWith("/compliance") ||
-    pathname.startsWith("/platforms")
-  )
-    return "publish";
-  // 线索运营（评论获客 → 线索池）
+  if (pathname === "/" || pathname.startsWith("/today")) return "growth-home";
+  // 获客中心：growth 全域 + 市场机会/情报（含报告归获客，Q2）
   if (
     pathname.startsWith("/growth") ||
-    pathname.startsWith("/engagement/comment-acquisition")
+    pathname.startsWith("/intelligence") ||
+    pathname.startsWith("/effects") ||
+    pathname.startsWith("/report-new")
   )
-    return "leads";
-  // CRM（客户/商机/导入/连接器/成交跟进）
+    return "growth";
+  // 客户管理：CRM 客户/商机/导入/连接器/成交跟进
   if (
     pathname.startsWith("/crm") ||
     pathname.startsWith("/customer") ||
-    pathname.startsWith("/crm-closer")
+    pathname.startsWith("/crm-closer") ||
+    pathname.startsWith("/wecom-crm") ||
+    pathname.startsWith("/boss-recruit")
   )
-    return "crm";
-  // 复盘（效果/报告/归因漏斗）
+    return "customer";
+  // 内容运营：内容/素材/主题/发布/排期/合规/样式
   if (
-    pathname.startsWith("/effects") ||
-    pathname.startsWith("/growth/reports") ||
-    pathname.startsWith("/intelligence/reports") ||
-    pathname.startsWith("/report-new")
+    pathname.startsWith("/content") ||
+    pathname.startsWith("/materials") ||
+    pathname.startsWith("/topics") ||
+    pathname.startsWith("/distribution") ||
+    pathname.startsWith("/schedules") ||
+    pathname.startsWith("/compliance") ||
+    pathname.startsWith("/styles") ||
+    pathname.startsWith("/viral-analysis") ||
+    pathname.startsWith("/knowledge-base")
   )
-    return "review";
+    return "content";
+  // 互动中心：消息/互动/确认/任务审批（任务执行归 execution，见下）
   if (
     pathname.startsWith("/message") ||
     pathname.startsWith("/engagement") ||
-    pathname.startsWith("/tasks") ||
-    pathname.startsWith("/confirmations") ||
     pathname.startsWith("/douyin") ||
-    pathname.startsWith("/wechat")
+    pathname.startsWith("/wechat") ||
+    pathname.startsWith("/confirmations")
   )
     return "interaction";
+  // 执行中心：任务/审批/证据/工作台（含 RPA 工作台，Q6：仅高亮不 alias）
+  if (
+    pathname.startsWith("/tasks") ||
+    pathname.startsWith("/approvals") ||
+    pathname.startsWith("/task-evidence") ||
+    pathname.startsWith("/agent-workbench") ||
+    pathname.startsWith("/rpa-workbench") ||
+    pathname.startsWith("/agent-console")
+  )
+    return "execution";
+  // 系统设置/平台账号/本地引擎/能力页 → mine（固定底部设置/我的）
+  if (
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/platforms") ||
+    pathname.startsWith("/local-engine") ||
+    pathname.startsWith("/capabilities") ||
+    pathname.startsWith("/accounts-matrix")
+  )
+    return "mine";
   // 助手保留场景 key（供全局助手 /agent 页高亮），但不占一级导航
   if (pathname.startsWith("/agent")) return "agent";
   return "mine";
 }
 
-/** 6 个场景路由（这些页面自带 .kx-view 内边距，不再套容器） */
+/** 6 个业务场景路由（这些页面自带 .kx-view 内边距，不再套容器） */
 const SCENE_ROUTES = new Set(SCENES.map((s) => s.href));
 function isSceneRoute(pathname: string | null) {
   return SCENE_ROUTES.has(pathname || "");
@@ -344,7 +359,7 @@ export function AppShell({
   }, [paletteOpen, router]);
 
   const badgeOf = (key: string) => {
-    if (key === "today") return badges.today;
+    if (key === "growth-home") return badges.today;
     if (key === "interaction") return badges.waiting;
     return 0;
   };
@@ -356,7 +371,6 @@ export function AppShell({
         <MobileShell
           badges={{
             today: badges.today,
-            publish: badges.failed,
             interaction: badges.waiting,
           }}
           onOpenPalette={() => setPaletteOpen(true)}
@@ -383,7 +397,7 @@ export function AppShell({
             className="kx-rail-logo"
             draggable={false}
           />
-          {SCENES.slice(0, 5).map((scene, i) => {
+          {SCENES.map((scene, i) => {
             const badge = badgeOf(scene.key);
             return (
               <button
@@ -415,6 +429,7 @@ export function AppShell({
           >
             <ShellIcon name={dark ? "sun" : "moon"} />
           </button>
+          {/* Q3：rail「助手」下沉为次级入口（与设置同排），不占业务一级导航；悬浮球 AI 入口保留（ai-assistant.tsx 不动） */}
           <button
             className={`kx-rail-item${activeScene === "agent" ? " kx-active" : ""}`}
             aria-label="助手"
@@ -426,7 +441,16 @@ export function AppShell({
           </button>
           <button
             className={`kx-rail-item${activeScene === "mine" ? " kx-active" : ""}`}
-            aria-label="我的（按 6）"
+            aria-label="系统设置"
+            aria-current={activeScene === "mine" ? "page" : undefined}
+            onClick={() => router.push("/settings")}
+          >
+            <ShellIcon name="settings" size={22} />
+            <span className="kx-rail-lbl">设置</span>
+          </button>
+          <button
+            className={`kx-rail-item${activeScene === "mine" ? " kx-active" : ""}`}
+            aria-label="我的"
             aria-current={activeScene === "mine" ? "page" : undefined}
             onClick={() => router.push("/mine")}
           >

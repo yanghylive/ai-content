@@ -394,6 +394,10 @@ type BreadcrumbRoute = {
 };
 
 const routeAliases: Record<string, string> = {
+  // 3010 P0-2：默认首页「今日增长」。根路径统一收敛到 /today，
+  // 与 app-shell SCENES 的 growth-home 场景保持一致。此规则只加不删，
+  // 历史 alias（/admin/*、/capabilities/*）与防重定向循环注释保持不动。
+  "/": "/today",
   "/admin": "/apps",
   "/admin/account": "/capabilities/account",
   "/admin/ai-employee": "/apps/ai-employee",

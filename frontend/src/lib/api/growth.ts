@@ -334,6 +334,54 @@ export interface GrowthOverview {
     hotStrategies: GrowthStrategyTemplate[];
 }
 
+/** 首页聚合接口 range 参数，缺省 today。 */
+export type GrowthHomeRange = "today" | "30d";
+
+export interface GrowthHomeStats {
+    /** 今日新线索数 */
+    newLeads: number | null;
+    /** 高意向线索数 */
+    highIntentLeads: number | null;
+    /** 待触达：无成功互动事件且状态为 new/qualified 的线索数 */
+    pendingContact: number | null;
+    /** 今日进 CRM 数 */
+    crmCaptured: number | null;
+    /** 未结商机金额（元）；无商机数据时为 null，不显示 ¥0 */
+    openOpportunityAmount: number | null;
+}
+
+export interface GrowthHomeFunnel {
+    candidates: number | null;
+    selected: number | null;
+    contacted: number | null;
+    leads: number | null;
+    customers: number | null;
+    opportunities: number | null;
+    won: number | null;
+}
+
+export interface GrowthHomeBlocker {
+    code: string;
+    title: string;
+    action: string;
+}
+
+export interface GrowthHomeNextAction {
+    code: string;
+    label: string;
+    href: string;
+}
+
+export interface GrowthHomeResponse {
+    /** ISO 8601，前端显示数据时间 */
+    generatedAt: string;
+    stats: GrowthHomeStats;
+    funnel: GrowthHomeFunnel;
+    blockers: GrowthHomeBlocker[];
+    recentRuns: GrowthAcquisitionRun[];
+    nextActions: GrowthHomeNextAction[];
+}
+
 export interface GrowthReports {
     overview: GrowthOverview;
     funnel: GrowthOverview["funnel"];
@@ -422,7 +470,13 @@ export interface GrowthReportQuery {
 }
 
 export const growthApi = {
-    overview: () => api.get<GrowthOverview>("/growth/overview"),
+    /**
+ * 今日增长首页聚合接口（T04 接入 GET /growth/home）。
+ * range 缺省 today；30d 时追加查询参数，与后端 GrowthHomeResponse 契约一致。
+ */
+getGrowthHome: (range: GrowthHomeRange = "today"): Promise<GrowthHomeResponse> =>
+  api.get<GrowthHomeResponse>(`/growth/home${range === "30d" ? "?range=30d" : ""}`),
+overview: () => api.get<GrowthOverview>("/growth/overview"),
     runtimeStatus: () => api.get<GrowthRuntimeStatus>("/growth/runtime-status"),
     commercialReadiness: () => api.get<GrowthCommercialReadiness>("/growth/commercial-readiness"),
     commercialAudits: () =>

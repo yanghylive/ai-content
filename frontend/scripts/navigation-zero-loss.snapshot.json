@@ -2,55 +2,55 @@
   "schemaVersion": 2,
   "scenes": [
     {
-      "key": "today",
+      "key": "growth-home",
       "href": "/today",
-      "label": "今天"
+      "label": "今日增长"
+    },
+    {
+      "key": "growth",
+      "href": "/growth",
+      "label": "获客中心"
+    },
+    {
+      "key": "customer",
+      "href": "/crm",
+      "label": "客户管理"
     },
     {
       "key": "content",
       "href": "/content",
-      "label": "内容"
-    },
-    {
-      "key": "publish",
-      "href": "/distribution",
-      "label": "发布"
+      "label": "内容运营"
     },
     {
       "key": "interaction",
       "href": "/message",
-      "label": "互动"
+      "label": "互动中心"
     },
     {
-      "key": "leads",
-      "href": "/growth/leads",
-      "label": "线索"
-    },
-    {
-      "key": "crm",
-      "href": "/crm",
-      "label": "CRM"
-    },
-    {
-      "key": "review",
-      "href": "/effects",
-      "label": "复盘"
+      "key": "execution",
+      "href": "/tasks",
+      "label": "执行中心"
     }
   ],
   "commandHrefs": [
     "/today",
     "/agent",
+    "/growth",
     "/growth/acquisition",
     "/growth/leads",
-    "/crm",
     "/growth/acquisition",
     "/growth/strategies",
     "/engagement/comment-acquisition",
-    "/wecom-crm",
-    "/boss-recruit",
+    "/intelligence",
+    "/intelligence/industries",
+    "/intelligence/trends",
+    "/intelligence/monitors",
+    "/intelligence/reports",
     "/growth/workflows",
     "/growth/account-health",
-    "/commercial-readiness",
+    "/crm",
+    "/wecom-crm",
+    "/boss-recruit",
     "/content/articles",
     "/content/xiaohongshu",
     "/materials",
@@ -63,24 +63,28 @@
     "/distribution/publish-video",
     "/engagement",
     "/tasks/confirmations",
-    "/approvals",
     "/engagement/douyin-comments",
     "/engagement/wechat-channel-comments",
     "/engagement/wechat",
     "/engagement/records",
     "/tasks/runs",
-    "/intelligence",
-    "/intelligence/industries",
-    "/intelligence/trends",
-    "/intelligence/monitors",
-    "/intelligence/reports",
+    "/tasks",
+    "/approvals",
+    "/task-evidence",
+    "/agent-workbench",
     "/platforms",
     "/accounts-matrix",
+    "/local-engine",
+    "/commercial-readiness",
     "/intelligence/costs",
     "/settings",
     "/savings"
   ],
   "routeAliases": [
+    {
+      "from": "/",
+      "to": "/today"
+    },
     {
       "from": "/admin",
       "to": "/apps"

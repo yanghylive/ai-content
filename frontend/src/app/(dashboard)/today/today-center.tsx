@@ -1,0 +1,541 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Inbox,
+  RefreshCw,
+  TrendingUp,
+} from "lucide-react";
+import { getApiBase } from "@/lib/api/client";
+import {
+  growthApi,
+  type GrowthAcquisitionRun,
+  type GrowthHomeBlocker,
+  type GrowthHomeFunnel,
+  type GrowthHomeNextAction,
+  type GrowthHomeResponse,
+} from "@/lib/api/growth";
+import { toPublicError } from "@/lib/public-error";
+
+/** 首页聚合接口轮询间隔：与 app-shell useBadges 的 30s 节奏对齐 */
+const HOME_POLL_INTERVAL_MS = 30_000;
+/** 今日增长首页曝光埋点事件名（PRD 10.3） */
+const GROWTH_HOME_VIEWED_EVENT = "growth_home_viewed" as const;
+/** 事件上报端点（与 lib/analytics/case-events.ts 的 /api/v1/events 对齐） */
+const EVENTS_PATH = "/v1/events";
+
+/** 七段漏斗定义（与 GrowthHomeFunnel 字段一一对应） */
+const HOME_FUNNEL_STAGES: Array<{
+  key: keyof GrowthHomeFunnel;
+  label: string;
+}> = [
+  { key: "candidates", label: "候选人" },
+  { key: "selected", label: "已筛选" },
+  { key: "contacted", label: "已触达" },
+  { key: "leads", label: "线索" },
+  { key: "customers", label: "客户" },
+  { key: "opportunities", label: "商机" },
+  { key: "won", label: "赢单" },
+];
+
+/** 运行状态 → 标签/色调（复用 kx-t-* 既有色调，失败/跳过/部分独立展示，不伪装成功） */
+const RUN_STATUS_META: Record<
+  GrowthAcquisitionRun["status"],
+  { label: string; className: string }
+> = {
+  queued: { label: "排队中", className: "kx-t-slate" },
+  running: { label: "执行中", className: "kx-t-blue" },
+  success: { label: "成功", className: "kx-t-green" },
+  partial: { label: "部分成功", className: "kx-t-amber" },
+  failed: { label: "失败", className: "kx-t-rose" },
+  skipped: { label: "已跳过", className: "kx-t-slate" },
+};
+
+/**
+ * 今日增长首页曝光埋点。
+ *
+ * 对齐现有轻量埋点封装（lib/analytics/case-events.ts 的 /api/v1/events fire-and-forget 模式）：
+ * 不引第三方库、失败静默、绝不阻塞页面。
+ *
+ * TODO(后端事件白名单)：growth_home_viewed 需加入后端 events 白名单
+ * （backend case-events.service.ts CASE_EVENT_NAMES）后才会被服务端记录；
+ * 当前事件名不在白名单时服务端返回 400，前端 fire-and-forget 静默忽略，对页面无影响。
+ */
+function trackGrowthHomeViewed(range: string, blockerCount: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    void fetch(`${getApiBase()}${EVENTS_PATH}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: GROWTH_HOME_VIEWED_EVENT,
+        props: { range, blockerCount },
+      }),
+      keepalive: true,
+    }).catch(() => {
+      /* 埋点失败静默 */
+    });
+  } catch {
+    /* 同步异常（序列化/超长等）不外抛 */
+  }
+}
+
+/** 数值展示：null/undefined → 空态文案（绝不显示 0）；0 → 真实 0 */
+function displayStat(
+  value: number | null | undefined,
+  emptyText: string,
+  formatter?: (value: number) => string,
+): string {
+  if (value === null || value === undefined) return emptyText;
+  return formatter ? formatter(value) : value.toLocaleString("zh-CN");
+}
+
+/** 商机金额格式化：单位元，千分位 + 两位小数 */
+function formatYuan(value: number): string {
+  return `¥${value.toLocaleString("zh-CN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+/** 数据时间展示：generatedAt ISO → 「08-20 14:30:00」 */
+function formatGeneratedAt(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+/** 运行开始时间：仅显示时分 */
+function formatRunTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/** 统计卡片骨架（首屏加载） */
+function StatCardSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <div
+          key={index}
+          className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-5"
+        >
+          <div className="h-3 w-16 animate-pulse rounded bg-[var(--kaypal-v3-accent-soft)]" />
+          <div className="mt-3 h-7 w-20 animate-pulse rounded bg-[var(--kaypal-v3-accent-soft)]" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 整页错误态 + 重试（不白屏） */
+function ErrorPanel({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-6 text-center">
+      <AlertTriangle className="mx-auto h-6 w-6 text-[var(--kaypal-v3-danger)]" />
+      <p className="mt-2 text-sm text-[var(--kaypal-v3-danger)]">{message}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-4 inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+      >
+        <RefreshCw className="h-4 w-4" />
+        重试
+      </button>
+    </div>
+  );
+}
+
+/** 顶部：标题 + 数据时间 + 刷新 + 主 CTA + 5 张统计卡（null≠0） */
+function HomeHeader({
+  home,
+  loading,
+  error,
+  onRefresh,
+  onCreateTask,
+}: {
+  home: GrowthHomeResponse | null;
+  loading: boolean;
+  error: string | null;
+  onRefresh: () => void;
+  onCreateTask: () => void;
+}) {
+  const stats: Array<{
+    label: string;
+    value: string;
+    emptyText: string;
+  }> = [
+    {
+      label: "今日新线索",
+      value: displayStat(home?.stats.newLeads, "暂无数据"),
+      emptyText: "暂无数据",
+    },
+    {
+      label: "高意向线索",
+      value: displayStat(home?.stats.highIntentLeads, "暂不可用"),
+      emptyText: "暂不可用",
+    },
+    {
+      label: "待触达",
+      value: displayStat(home?.stats.pendingContact, "暂不可用"),
+      emptyText: "暂不可用",
+    },
+    {
+      label: "今日进 CRM",
+      value: displayStat(home?.stats.crmCaptured, "暂无数据"),
+      emptyText: "暂无数据",
+    },
+    {
+      label: "商机金额",
+      value: displayStat(
+        home?.stats.openOpportunityAmount,
+        "暂无商机金额",
+        formatYuan,
+      ),
+      emptyText: "暂无商机金额",
+    },
+  ];
+
+  return (
+    <section className="kaypal-v3-panel p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-4">
+          <div className="kaypal-v3-icon-tile h-12 w-12">
+            <TrendingUp className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+              今日增长
+            </h1>
+            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
+              {home
+                ? `数据更新于 ${formatGeneratedAt(home.generatedAt)} · 30 秒自动刷新`
+                : "AI 获客进展与漏斗，30 秒自动刷新"}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-accent-ink)]"
+          >
+            <RefreshCw className="h-4 w-4" />
+            刷新
+          </button>
+          <button
+            type="button"
+            onClick={onCreateTask}
+            className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+          >
+            新建获客任务
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* 刷新失败但已有旧数据：保留旧数据，仅提示 */}
+      {error && home ? (
+        <p className="mt-3 text-xs text-[var(--kaypal-v3-danger)]">
+          刷新失败：{error}（当前展示上次数据）
+        </p>
+      ) : null}
+
+      {!home && loading ? (
+        <div className="mt-6">
+          <StatCardSkeleton />
+        </div>
+      ) : !home && error ? (
+        <div className="mt-6">
+          <ErrorPanel message={error} onRetry={onRefresh} />
+        </div>
+      ) : home ? (
+        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-5"
+            >
+              <p className="text-sm text-[var(--kaypal-v3-muted)]">
+                {stat.label}
+              </p>
+              <p
+                className="mt-2 text-2xl font-bold text-[var(--kaypal-v3-ink)]"
+                title={stat.value === stat.emptyText ? stat.emptyText : undefined}
+              >
+                {stat.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+/** 风险阻断卡（blockers 为空不渲染） */
+function BlockerCards({ blockers }: { blockers: GrowthHomeBlocker[] }) {
+  if (blockers.length === 0) return null;
+  return (
+    <section
+      className="rounded-[var(--kaypal-v3-radius)] p-4"
+      style={{ border: "1px solid var(--kaypal-v3-danger)" }}
+    >
+      <div className="flex items-center gap-2">
+        <AlertTriangle className="h-4 w-4 text-[var(--kaypal-v3-danger)]" />
+        <h2 className="text-sm font-bold text-[var(--kaypal-v3-danger)]">
+          需要处理的风险
+        </h2>
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {blockers.map((blocker) => (
+          <div
+            key={blocker.code}
+            className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-paper)] p-3"
+            style={{ border: "1px solid var(--kaypal-v3-border)" }}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+                {blocker.title}
+              </p>
+              <code className="shrink-0 rounded bg-[var(--kaypal-v3-danger-soft)] px-1.5 py-0.5 text-[10px] text-[var(--kaypal-v3-danger)]">
+                {blocker.code}
+              </code>
+            </div>
+            {blocker.action ? (
+              <p className="mt-1 text-xs leading-5 text-[var(--kaypal-v3-muted)]">
+                {blocker.action}
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** 七段漏斗：null 段显示「不可用」，保留整体形状 */
+function FunnelSection({
+  funnel,
+  loading,
+}: {
+  funnel: GrowthHomeFunnel | null;
+  loading: boolean;
+}) {
+  return (
+    <section className="kaypal-v3-panel p-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
+          转化漏斗
+        </h2>
+        <span className="text-xs text-[var(--kaypal-v3-muted)]">
+          候选人 → 赢单
+        </span>
+      </div>
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        {HOME_FUNNEL_STAGES.map((stage, index) => {
+          const value = funnel ? funnel[stage.key] : null;
+          const display =
+            value === null || value === undefined
+              ? "不可用"
+              : value.toLocaleString("zh-CN");
+          return (
+            <div
+              key={stage.key}
+              className="flex w-full items-center gap-2 sm:flex-1"
+            >
+              {index > 0 && (
+                <span className="text-[var(--kaypal-v3-muted)]">→</span>
+              )}
+              <div
+                className="flex-1 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent-soft)] p-3 text-center transition-all"
+                style={{ opacity: Math.max(1 - index * 0.12, 0.3) }}
+              >
+                <p className="text-xl font-bold text-[var(--kaypal-v3-accent-ink)]">
+                  {loading ? "-" : display}
+                </p>
+                <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+                  {stage.label}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/** 最近运行（简化列表，空 → 「暂无运行记录」） */
+function RecentRunsSection({
+  runs,
+  loading,
+}: {
+  runs: GrowthAcquisitionRun[] | null;
+  loading: boolean;
+}) {
+  return (
+    <section className="kaypal-v3-panel p-6">
+      <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
+        最近运行
+      </h2>
+      {loading ? (
+        <p className="mt-3 text-sm text-[var(--kaypal-v3-muted)]">加载中…</p>
+      ) : !runs || runs.length === 0 ? (
+        <div className="mt-3 flex items-center gap-2 text-sm text-[var(--kaypal-v3-muted)]">
+          <Inbox className="h-4 w-4" />
+          暂无运行记录
+        </div>
+      ) : (
+        <ul className="mt-3 divide-y divide-[var(--kaypal-v3-border)]">
+          {runs.slice(0, 8).map((run) => {
+            const meta = RUN_STATUS_META[run.status] ?? {
+              label: run.status,
+              className: "kx-t-slate",
+            };
+            const time = run.startedAt ? formatRunTime(run.startedAt) : "";
+            return (
+              <li
+                key={run.id}
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3"
+              >
+                <span className={`kx-tag ${meta.className}`}>{meta.label}</span>
+                <span
+                  className="min-w-0 flex-1 truncate text-sm text-[var(--kaypal-v3-soft-ink)]"
+                  title={run.message}
+                >
+                  {run.message}
+                </span>
+                <span className="text-xs text-[var(--kaypal-v3-muted)]">
+                  候选 {run.candidateCount ?? 0} · 筛选 {run.selectedCount ?? 0} ·
+                  触达 {run.contactedCount ?? 0} · CRM {run.crmCapturedCount ?? 0}
+                </span>
+                {time ? (
+                  <span className="text-xs text-[var(--kaypal-v3-muted)]">
+                    {time}
+                  </span>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** 下一步建议（来自后端 nextActions，渲染为按钮/链接） */
+function NextActionsSection({
+  actions,
+}: {
+  actions: GrowthHomeNextAction[] | null;
+}) {
+  if (!actions || actions.length === 0) return null;
+  return (
+    <section>
+      <div className="mb-3">
+        <h2 className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
+          下一步建议
+        </h2>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {actions.map((action) => (
+          <Link
+            key={action.code}
+            href={action.href}
+            className="kaypal-v3-panel group flex items-center justify-between gap-3 p-4 transition hover:border-[var(--kaypal-v3-accent)] hover:shadow-md"
+          >
+            <span className="text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition group-hover:text-[var(--kaypal-v3-accent-ink)]">
+              {action.label}
+            </span>
+            <ArrowRight className="h-4 w-4 text-[var(--kaypal-v3-muted)] transition group-hover:text-[var(--kaypal-v3-accent)]" />
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * 今日增长视图（T04）：读取 GET /growth/home，展示 stats / funnel / blockers /
+ * recentRuns / nextActions；主 CTA 新建获客任务 → /auto-acquisition/create；
+ * 30s 轮询刷新；null≠0、失败不伪装成功。
+ */
+export function TodayCenter() {
+  const router = useRouter();
+  const [home, setHome] = useState<GrowthHomeResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const viewedRef = useRef(false);
+
+  const loadHome = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const data = await growthApi.getGrowthHome("today");
+      setHome(data);
+      setError(null);
+    } catch (loadError: unknown) {
+      setError(toPublicError(loadError, "今日增长数据加载失败，请稍后重试。"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 首屏加载 + 30s 轮询（对齐 app-shell useBadges 节奏）
+  useEffect(() => {
+    void loadHome();
+    const timer = window.setInterval(() => void loadHome(true), HOME_POLL_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [loadHome]);
+
+  // 曝光埋点：仅首次拿到数据时上报一次
+  useEffect(() => {
+    if (viewedRef.current || !home) return;
+    viewedRef.current = true;
+    trackGrowthHomeViewed("today", home.blockers.length);
+  }, [home]);
+
+  const handleCreateTask = useCallback(() => {
+    void router.push("/auto-acquisition/create");
+  }, [router]);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <HomeHeader
+        home={home}
+        loading={loading}
+        error={error}
+        onRefresh={() => void loadHome()}
+        onCreateTask={handleCreateTask}
+      />
+      {home ? (
+        <>
+          <BlockerCards blockers={home.blockers} />
+          <FunnelSection funnel={home.funnel} loading={loading && !home} />
+          <RecentRunsSection runs={home.recentRuns} loading={loading && !home} />
+          <NextActionsSection actions={home.nextActions} />
+        </>
+      ) : null}
+    </div>
+  );
+}
