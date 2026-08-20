@@ -253,5 +253,40 @@ describe('ExecutorRouter', () => {
       expect(health.find((h) => h.id === 'local-runtime')?.ok).toBe(true);
       expect(health.find((h) => h.id === 'agent-s')?.ok).toBe(false);
     });
+
+    it('保留 local-runtime 子执行器的 this，返回抖音私信能力状态', async () => {
+      const local = createMockExecutor({
+        id: 'local-runtime',
+        canHandleResult: { ok: false, priority: 0 },
+        healthOk: true,
+      });
+      const platformHealths = jest
+        .fn()
+        .mockImplementation(function (this: { platformName?: string }) {
+          this.platformName = 'local-runtime';
+          return Promise.resolve([
+            {
+              id: 'douyin-direct-message-reply',
+              ok: true,
+              details: '抖音 × douyin-direct-message-reply 就绪',
+            },
+          ]);
+        });
+      (local as TaskExecutor & { getPlatformHealths?: typeof platformHealths }).getPlatformHealths =
+        platformHealths;
+
+      const router = buildRouter([local]);
+      const health = await router.healthCheck();
+
+      expect(platformHealths).toHaveBeenCalledTimes(1);
+      expect(health).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'douyin-direct-message-reply',
+            ok: true,
+          }),
+        ]),
+      );
+    });
   });
 });
