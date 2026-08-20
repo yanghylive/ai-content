@@ -48,8 +48,11 @@ export class PrismaService
 
     // 性能优化：SQLite 连接初始化即开启 WAL 日志模式 + busy_timeout，
     // 提升并发读写吞吐、避免写锁竞争时立即失败（journal_mode 持久化在库文件，busy_timeout 按连接生效）。
-    await this.$executeRawUnsafe('PRAGMA journal_mode = WAL');
-    await this.$executeRawUnsafe('PRAGMA busy_timeout = 5000');
+    // 注意：两个 PRAGMA 都会返回结果行（WAL 模式名 / busy_timeout 值），必须用
+    // $queryRawUnsafe——$executeRawUnsafe 执行返回行的 SQL 在 SQLite 下抛
+    //  "Execute returned results, which is not allowed in SQLite"（曾致启动崩溃）。
+    await this.$queryRawUnsafe('PRAGMA journal_mode = WAL');
+    await this.$queryRawUnsafe('PRAGMA busy_timeout = 5000');
 
     const statements = [
       `CREATE TABLE IF NOT EXISTS users (
