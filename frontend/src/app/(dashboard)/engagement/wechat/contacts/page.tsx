@@ -4,7 +4,36 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ContactsPanel } from "../../wechat/contacts-panel";
 import { localEngineApi } from "@/lib/api/local-engine";
+import { authApi } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 import { toActionableError } from "@/lib/public-error";
+import { GrayTestBanner } from "@/components/v2/gray-test-banner";
+
+/** 商用授权引导条：同步联系人需要 STANDARD/PRO 及以上套餐 */
+function CommercialGateBanner() {
+  return (
+    <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-warning)] bg-[var(--kaypal-v3-warning-soft)] p-4">
+      <p className="text-sm font-medium text-[var(--kaypal-v3-warning)]">
+        同步联系人需要有效商用授权（STANDARD / PRO 及以上套餐）。
+      </p>
+      <a
+        href="/commercial-readiness"
+        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[var(--kaypal-v3-accent-ink)] underline underline-offset-2 hover:opacity-80"
+      >
+        去开通商用授权 →
+      </a>
+    </div>
+  );
+}
+
+/** 403 且为商用授权/套餐类报错（对应后端 PlanGuard） */
+function isCommercial403(err: unknown): boolean {
+  return (
+    err instanceof ApiError &&
+    err.status === 403 &&
+    /商用授权|套餐|升级/.test(err.message)
+  );
+}
 
 export default function ContactsPage() {
   const router = useRouter();
@@ -14,6 +43,25 @@ export default function ContactsPage() {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preparingNote, setPreparingNote] = useState<string | null>(null);
+  const [commercialBlocked, setCommercialBlocked] = useState(false);
+
+  // 商用授权预检：无授权时禁用同步并显示引导条（避免每次点击 403）
+  useEffect(() => {
+    let active = true;
+    authApi
+      .me()
+      .then((me) => {
+        if (active && me && me.commercialExecutionAllowed === false) {
+          setCommercialBlocked(true);
+        }
+      })
+      .catch(() => {
+        /* 预检失败不阻塞页面，由同步动作兜底 */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const fetchContacts = useCallback(async () => {
     try {
@@ -38,6 +86,7 @@ export default function ContactsPage() {
   }, [fetchContacts]);
 
   const handleSync = async () => {
+    if (commercialBlocked) return;
     setSyncing(true);
     setError(null);
     setPreparingNote(null);
@@ -57,7 +106,12 @@ export default function ContactsPage() {
       await localEngineApi.syncWechatContacts();
       await fetchContacts();
     } catch (err: unknown) {
-      setError(toActionableError(err, "同步失败，请稍后重试"));
+      if (isCommercial403(err)) {
+        setCommercialBlocked(true);
+        setError(null);
+      } else {
+        setError(toActionableError(err, "同步失败，请稍后重试"));
+      }
     } finally {
       setSyncing(false);
       setPreparingNote(null);
@@ -86,6 +140,7 @@ export default function ContactsPage() {
 
   return (
     <div className="flex flex-col gap-4">
+      <GrayTestBanner feature="微信通讯录同步（桌面客户端）" />
       {error && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
           <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
@@ -103,9 +158,11 @@ export default function ContactsPage() {
           <p className="text-sm font-medium text-[var(--kaypal-v3-warning)]">{preparingNote}</p>
         </div>
       )}
+      {commercialBlocked && <CommercialGateBanner />}
       <ContactsPanel
         contacts={contacts}
         syncing={syncing}
+        syncDisabled={commercialBlocked}
         onSync={() => void handleSync()}
         onDelete={(id) => console.log("删除联系人:", id)}
         onCancel={() => router.push("/engagement/wechat")}

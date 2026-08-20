@@ -4,7 +4,12 @@
  * 兜底本地 role;与 capabilities/account 的 formatAccountRole 约定一致。
  */
 
-const ADMIN_ROLES = new Set(["admin", "administrator", "owner"]);
+const ADMIN_ROLES = new Set([
+  "admin",
+  "administrator",
+  "owner",
+  "super_admin",
+]);
 
 export function isAdminUser(user?: {
   kaypalRole?: string | null;

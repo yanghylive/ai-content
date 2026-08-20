@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Lock, PlayCircle, ShieldCheck } from "lucide-react";
-import { api } from "@/lib/api/client";
-import { toPublicError } from "@/lib/public-error";
+import { api, ApiError } from "@/lib/api/client";
+import { toActionableError, toPublicError } from "@/lib/public-error";
 import {
   V2Field,
   V2GhostButton,
@@ -87,22 +87,41 @@ export function HubSpotVaultPanel() {
   const active = status?.tokenState === "active";
 
   const saveToken = async () => {
-    if (!token.trim()) {
+    const trimmed = token.trim();
+    if (!trimmed) {
       setError("先填写 HubSpot 只读检查授权信息");
+      return;
+    }
+    // 与后端 assertHubSpotPrivateAppTokenShape 同规则：≥20 字符且无空白
+    if (trimmed.length < 20 || /\s/.test(trimmed)) {
+      setError(
+        "HubSpot token 需为无空格的 sandbox/private app token（≥20 字符），粘贴时不要带空格或换行",
+      );
       return;
     }
     setBusy("save");
     setError(null);
     try {
       await api.post("/crm/connectors/hubspot/vault-token", {
-        token: token.trim(),
+        token: trimmed,
         label: label.trim() || "HubSpot 只读检查环境",
         portalId: portalId.trim() || undefined,
       });
       setToken("");
       await loadStatus();
     } catch (err: unknown) {
-      setError(toPublicError(err, "HubSpot 授权信息未能保存，请稍后重试。"));
+      if (
+        err instanceof ApiError &&
+        err.errorCode === "crm_hubspot_token_invalid"
+      ) {
+        setError(
+          "HubSpot token 格式不正确，需使用无空格的 sandbox/private app token（≥20 字符）。",
+        );
+      } else {
+        setError(
+          toActionableError(err, "HubSpot 授权信息未能保存，请稍后重试。"),
+        );
+      }
     } finally {
       setBusy("");
     }
@@ -159,7 +178,7 @@ export function HubSpotVaultPanel() {
             type="password"
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            placeholder="HubSpot 只读访问令牌"
+            placeholder="HubSpot 只读访问令牌（粘贴时不要带空格或换行）"
             style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
           />
         </label>
@@ -274,7 +293,7 @@ export function HubSpotVaultPanel() {
             type="password"
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            placeholder="只读访问令牌"
+            placeholder="只读访问令牌（粘贴时不要带空格或换行）"
           />
         </V2Field>
         <V2Field label="备注（可选）">

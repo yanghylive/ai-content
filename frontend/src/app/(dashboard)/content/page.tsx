@@ -503,7 +503,7 @@ function MobileContentView({
                   background: "none",
                   border: "none",
                 }}
-                onClick={() => router.push(`/content/articles/${article.id}`)}
+                onClick={() => router.push(`/content/workspace?article=${article.id}`)}
               >
                 <span
                   className="mx-row-ic"

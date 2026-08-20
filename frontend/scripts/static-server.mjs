@@ -132,7 +132,18 @@ http.createServer((req, res) => {
   }
   if (!fs.existsSync(file)) {
     if (fs.existsSync(file + ".html")) file = file + ".html";
-    else { res.writeHead(404); res.end("not found"); return; }
+    else {
+      /* 品牌 404：回源 next export 生成的 out/404.html，而不是裸文本 "not found" */
+      const notFoundFile = path.join(ROOT, "404.html");
+      if (fs.existsSync(notFoundFile)) {
+        res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
+        fs.createReadStream(notFoundFile).pipe(res);
+      } else {
+        res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end("not found");
+      }
+      return;
+    }
   }
   if (fs.statSync(file).isDirectory()) {
     if (fs.existsSync(file + ".html")) file = file + ".html";
