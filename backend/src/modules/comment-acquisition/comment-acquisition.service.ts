@@ -93,7 +93,13 @@ export class CommentAcquisitionService {
     }>;
   }> {
     const scope = await this.resolveScope();
-    await this.assertAccountOwnership(input.accountId, scope);
+    // 归一化账号 ID：兼容纯数字（auto-upload 数字 id，前端表单形式）与 stableId（publish_accounts 主键）
+    const normalizedAccount = this.normalizeAccountId(input.accountId);
+    await this.assertAccountOwnership(
+      input.accountId,
+      scope,
+      input.platform,
+    );
     const platformName =
       input.platform === 'douyin'
         ? '抖音'
@@ -115,7 +121,7 @@ export class CommentAcquisitionService {
     const readResult = await adapter.read({
       platform: input.platform,
       taskType: 'comment-reply',
-      accountId: input.accountId,
+      accountId: normalizedAccount.numericId ?? input.accountId,
       limit: input.limit ?? 50,
     });
 
@@ -285,6 +291,8 @@ export class CommentAcquisitionService {
     }>;
   }> {
     const scope = await this.resolveScope();
+    // 归一化账号 ID（同 scanAccount：兼容数字 id 与 stableId）
+    const normalizedAccount = this.normalizeAccountId(input.accountId);
     // 平台兜底：未传 platform 时按账号 type 推断（2=视频号、其余=抖音），
     // 避免前端漏传导致误走视频号分支报「视频号账号未登录」。
     let platform: 'douyin' | 'wechat-channel' =
@@ -295,20 +303,21 @@ export class CommentAcquisitionService {
           : (undefined as unknown as 'douyin');
     if (!platform) {
       const accounts = await this.autoUpload.listAccounts({
-        ids: [Number(input.accountId)],
+        ids: [normalizedAccount.numericId ?? Number(input.accountId)],
       });
       platform = accounts?.[0]?.type === 2 ? 'wechat-channel' : 'douyin';
     }
     // P1 复核（全面审查）：scanDm 真实发私信前必须账号归属校验——
-    // 对齐 scanAccount（94 行），防凭他人 accountId 读私信并对他人账号自动回复
-    await this.assertAccountOwnership(input.accountId, scope);
+    // 对齐 scanAccount，防凭他人 accountId 读私信并对他人账号自动回复
+    await this.assertAccountOwnership(input.accountId, scope, platform);
     const platformName = platform === 'douyin' ? '抖音' : '视频号';
     const minScore = input.minLeadScore ?? 45;
     const autoReply = input.autoReply ?? false;
     const circuitKey = `${platform}:${input.accountId}`;
     const circuit = this.circuitBreaker.getStatus(circuitKey);
 
-    const numericAccountId = Number(input.accountId);
+    const numericAccountId =
+      normalizedAccount.numericId ?? Number(input.accountId);
     const readResult =
       platform === 'douyin'
         ? await this.autoUpload.readDouyinMessages({
@@ -430,7 +439,11 @@ export class CommentAcquisitionService {
     circuitKey?: string,
   ): Promise<boolean> {
     const resolvedScope = scope ?? (await this.resolveScope());
-    await this.assertAccountOwnership(input.accountId, resolvedScope);
+    await this.assertAccountOwnership(
+      input.accountId,
+      resolvedScope,
+      input.platform,
+    );
     const lead = await this.assertReplyLead(leadId, input, resolvedScope);
     // 防止调用方篡改回复内容：已审核线索的回复只能使用当前落库版本。
     const replyText = input.replyText.trim();
@@ -464,10 +477,15 @@ export class CommentAcquisitionService {
     try {
       // 统一互动契约：按平台从 registry 取 adapter 调用，消除平台分支。
       // 小红书 send 用 commentRef 定位通知条目；抖音/视频号 send 走 dispatch。
+      // 2026-08-20 修复：私信线索（sourceType='dm'）必须走 direct-message-reply，
+      // 此前硬编码 comment-reply 导致私信回复被发到评论区路径。
       const adapter = this.interactionRegistry.get(input.platform);
       const result = (await adapter.send?.({
         platform: input.platform,
-        taskType: 'comment-reply',
+        taskType:
+          lead.sourceType === 'dm'
+            ? 'direct-message-reply'
+            : 'comment-reply',
         accountId: input.accountId,
         targetText: input.commentText,
         sourceText: input.commentText,
@@ -632,11 +650,20 @@ export class CommentAcquisitionService {
   private async assertAccountOwnership(
     accountId: number | string,
     scope: { tenantId: string | null; userId: string },
+    platform?: string,
   ): Promise<void> {
     const id = String(accountId);
+    // 兼容两种账号 ID 形式：
+    // 1. stableId 精确匹配（publish_accounts 主键，如 local-engine-xxx-6-douyin）
+    // 2. 纯数字 id 按平台后缀匹配（auto-upload 数字 id，前端表单提示"如 3"）
+    const whereId = platform
+      ? {
+          OR: [{ id }, { id: { endsWith: `-${id}-${platform}` } }],
+        }
+      : { id };
     const account = await this.prisma.publishAccount.findFirst({
       where: {
-        id,
+        ...whereId,
         userId: scope.userId,
         ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
       },
@@ -645,6 +672,24 @@ export class CommentAcquisitionService {
     if (!account) {
       throw new NotFoundException('发布账号不存在或无权操作');
     }
+  }
+
+  /**
+   * 归一化账号 ID：兼容纯数字（auto-upload 数字 id，如 6）与
+   * stableId（publish_accounts 主键，如 local-engine-75b30f6c26f5fffe-6-douyin）。
+   * 修复契约断裂：前端表单提示输入数字，但 ownership 校验查 stableId、
+   * 适配器 Number() 解析——三种形式此前互不兼容。
+   */
+  private normalizeAccountId(accountId: number | string): {
+    raw: string;
+    numericId: number | null;
+  } {
+    const raw = String(accountId).trim();
+    if (/^\d+$/.test(raw)) {
+      return { raw, numericId: Number(raw) };
+    }
+    const m = raw.match(/-(\d+)-[a-z][a-z0-9-]*$/i);
+    return { raw, numericId: m ? Number(m[1]) : null };
   }
 
   /**
@@ -663,6 +708,7 @@ export class CommentAcquisitionService {
     status: string;
     latestReply: string | null;
     commentRef: string | null;
+    sourceType?: string | null;
   }> {
     const lead = await this.prisma.lead.findFirst({
       where: {
@@ -671,13 +717,16 @@ export class CommentAcquisitionService {
         ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
         platform: input.platform,
         sourceAccountId: String(input.accountId),
-        sourceType: 'comment',
+        // 2026-08-20 修复：对齐列表查询（559 行）——私信线索 sourceType='dm'，
+        // 硬编码 'comment' 会导致私信回复永远查不到线索
+        sourceType: { in: ['comment', 'dm'] },
       },
       select: {
         status: true,
         latestReply: true,
         commentRef: true,
         sourceText: true,
+        sourceType: true,
       },
     });
     if (!lead) {
