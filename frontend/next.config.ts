@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   output: "export",
   skipTrailingSlashRedirect: true,
+  // 静态导出（output: export）必须 unoptimized：next/image 默认生成 /_next/image
+  // 优化端点，Electron 内置静态服务器对该端点返回 404 → 桌面端图标全部挂掉
+  // （2026-08-20 登录页两个图标掉事故根因）。unoptimized 后 Image 直接输出原图 URL。
+  images: {
+    unoptimized: true,
+  },
   typescript: {
     ignoreBuildErrors: false,
   },

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Suspense } from "react";
-import Image from "next/image";
 import { AppShell } from "@astryxdesign/core/AppShell";
 import { Banner } from "@astryxdesign/core/Banner";
 import { Button } from "@astryxdesign/core/Button";
@@ -747,7 +746,7 @@ function LoginPageContent() {
               </Grid>
               <div className="preview-system-visual" aria-label="九章智能工作流预览">
                 <span className="preview-glow" /><span className="preview-ring preview-ring-one" /><span className="preview-ring preview-ring-two" /><span className="preview-ring preview-ring-three" /><span className="preview-ring preview-ring-four" /><span className="preview-pulse-ring" />
-                <span className="preview-core"><Image alt="" src="/brand/jiuzhang-ai-icon.png" width={512} height={512} /></span>
+                <span className="preview-core"><img alt="" src="/brand/jiuzhang-ai-icon.png" width={512} height={512} /></span>
                 {[
                   ["01", "发现机会", "情报 · 趋势 · 选题", "preview-node-one"],
                   ["02", "智能创作", "文字 · 图片 · 视频", "preview-node-two"],
@@ -821,7 +820,7 @@ function LoginPageContent() {
                       <Stack className="sso-pane" gap={3}>
                         <Stack className="sso-hero" gap={3}>
                           <Stack className="sso-head" direction="horizontal" gap={3} vAlign="center">
-                            <Image alt="" src="/brand/jiuzhang-ai-icon.png" width={512} height={512} />
+                            <img alt="" src="/brand/jiuzhang-ai-icon.png" width={512} height={512} />
                             <Stack gap={0}><Text type="label" weight="bold">使用 JIUZHANG AI 账号</Text><Text type="supporting">统一身份授权 · 无需再次输入密码</Text></Stack>
                           </Stack>
                           <Text as="p">像 Codex 使用 ChatGPT 账号一样，通过你的九章统一账号完成授权，并安全连接当前浏览器或桌面设备。</Text>
