@@ -245,7 +245,7 @@ export function WorkbenchCenter({
   }
 
   return (
-    <div className="kaypal-v2-engine flex flex-col gap-6">
+    <div className="kx-view kaypal-v2-engine flex flex-col gap-6">
       {backHref ? <V2BackButton to={backHref} /> : null}
       {/* 顶部：标题 + 单一主行动 */}
       <section className="kaypal-v3-panel p-6">
