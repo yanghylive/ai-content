@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
+import { ErrorReportModule } from './modules/error-report/error-report.module';
 import { AiModelsModule } from './modules/ai-models/ai-models.module';
 import { SourcesModule } from './modules/sources/sources.module';
 import { MaterialsModule } from './modules/materials/materials.module';
@@ -75,6 +76,7 @@ import { CaseShowcaseModule } from './modules/case-showcase/case-showcase.module
     AiGatewayModule,
     ReportingModule,
     SavingsModule,
+    ErrorReportModule,
     ScheduleModule.forRoot(),
     PrismaModule,
     AiModelsModule,
