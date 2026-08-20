@@ -252,7 +252,7 @@ export function SolutionsCenter() {
   }
 
   return (
-    <div className="kaypal-v2-engine flex flex-col gap-6">
+    <div className="kx-view kaypal-v2-engine flex flex-col gap-6">
       {/* 顶部 */}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center justify-between">
