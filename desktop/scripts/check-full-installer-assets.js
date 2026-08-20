@@ -91,6 +91,42 @@ function assertCleanDesktopSeedDatabase(label, filePath) {
   }
 }
 
+/**
+ * 大王铁律（2026-08-20）：安装包不得携带本地运行时数据。
+ * 打包产物 backend/ 下只允许：bundle js / schema / 种子库 prisma/dev.db /
+ * 引擎 / node_modules（sharp/playwright 等白名单）。
+ * 出现 kaypal-ai.sqlite、*.log、*.wal/*.shm、.local-logs/、browser-profiles/ 即 fail。
+ */
+function assertNoRuntimeDataFiles(label, backendRoot) {
+  const forbidden = [
+    /\.sqlite$/i, /\.sqlite-wal$/i, /\.sqlite-shm$/i,
+    /\.db$/i, /\.log$/i, /\.wal$/i, /\.shm$/i,
+    /\.local-logs$/i, /browser-profiles$/i,
+  ];
+  const hits = [];
+  (function walk(dir) {
+    let entries;
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      const full = path.join(dir, e.name);
+      const rel = path.relative(backendRoot, full);
+      // 白名单：prisma/dev.db 种子库
+      if (rel === path.join('prisma', 'dev.db')) continue;
+      if (e.isDirectory()) {
+        if (e.name === '.local-logs' || e.name === 'browser-profiles') {
+          hits.push(rel); continue;
+        }
+        walk(full);
+      } else if (forbidden.some((re) => re.test(e.name))) {
+        hits.push(rel);
+      }
+    }
+  })(backendRoot);
+  if (hits.length) {
+    fail(`${label}: ${hits.join(', ')}`);
+  }
+}
+
 function assertFileNotContains(label, filePath, pattern) {
   if (!fs.existsSync(filePath)) {
     fail(`${label}: ${filePath}`);
@@ -660,6 +696,10 @@ function checkPostBuildAssets() {
   assertCleanDesktopSeedDatabase(
     'packaged SQLite seed must not include a logged-in user',
     path.join(distResourcesRoot, 'backend', 'prisma', 'dev.db'),
+  );
+  assertNoRuntimeDataFiles(
+    'packaged backend must not include local runtime data',
+    path.join(distResourcesRoot, 'backend'),
   );
   assertBundledChromium(
     'packaged Playwright Chromium',
