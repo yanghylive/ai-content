@@ -181,7 +181,8 @@ export class AuthGuard implements CanActivate {
       session.expiresAt,
     );
 
-    // 角色检查：@RequireKaypalRoles('admin', 'owner') 声明的端点，仅允许匹配角色。
+    // 角色检查：@RequireKaypalRoles('admin', 'owner') 声明的端点，仅允许匹配角色，
+    // 或 SUPER_ADMIN 云角色（kaypalRole / kaypalPlatformRole）与本地 super_admin。
     // 默认 'operator' 是普通用户，不允许访问管理员端点。
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(
       KAYPAL_ROLES_KEY,
@@ -189,7 +190,11 @@ export class AuthGuard implements CanActivate {
     );
     if (requiredRoles && requiredRoles.length > 0) {
       const role = request.authUser.role ?? 'operator';
-      if (!requiredRoles.includes(role)) {
+      const cloudRole =
+        request.authUser.kaypalRole ?? request.authUser.kaypalPlatformRole ?? null;
+      const isSuperAdmin =
+        cloudRole === 'SUPER_ADMIN' || role === 'super_admin';
+      if (!requiredRoles.includes(role) && !isSuperAdmin) {
         throw new ForbiddenException('无权限执行此操作');
       }
     }

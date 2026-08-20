@@ -631,7 +631,7 @@ describe('AuthGuard', () => {
     );
   });
 
-  const buildRoleCheckFixture = (role: string) => {
+  const buildRoleCheckFixture = (role: string, cloudRole?: string) => {
     const sessionToken = 'session-token';
     const prisma = {
       userSession: {
@@ -640,7 +640,11 @@ describe('AuthGuard', () => {
           userId: 'user-1',
           tokenHash: hashSessionToken(sessionToken),
           expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60_000),
-          metadata: { localOnly: true, kaypalSubscriptionPlan: 'ADVANCED' },
+          metadata: {
+            localOnly: true,
+            kaypalSubscriptionPlan: 'ADVANCED',
+            ...(cloudRole ? { kaypalRole: cloudRole } : {}),
+          },
           user: {
             id: 'user-1',
             username: 'kaypal_user',
@@ -698,5 +702,26 @@ describe('AuthGuard', () => {
     await expect(
       guard.canActivate(createExecutionContext(request)),
     ).resolves.toBe(true);
+  });
+
+  it('允许 SUPER_ADMIN 云角色（kaypalRole）访问 @RequireKaypalRoles 端点', async () => {
+    const { guard, request } = buildRoleCheckFixture('operator', 'SUPER_ADMIN');
+    await expect(
+      guard.canActivate(createExecutionContext(request)),
+    ).resolves.toBe(true);
+  });
+
+  it('允许本地 super_admin 角色访问 @RequireKaypalRoles 端点', async () => {
+    const { guard, request } = buildRoleCheckFixture('super_admin');
+    await expect(
+      guard.canActivate(createExecutionContext(request)),
+    ).resolves.toBe(true);
+  });
+
+  it('拒绝其他云角色（如 MANAGER）访问 @RequireKaypalRoles 端点', async () => {
+    const { guard, request } = buildRoleCheckFixture('operator', 'MANAGER');
+    await expect(
+      guard.canActivate(createExecutionContext(request)),
+    ).rejects.toThrow(ForbiddenException);
   });
 });

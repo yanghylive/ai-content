@@ -510,8 +510,10 @@ export class AiGatewayService {
         where: { enabled: true },
         orderBy: { createdAt: 'desc' },
       });
+      // 2026-08-20 修复：模型选择必须过滤 enabled——管理界面禁用的模型
+      // （如网关已不支持的 kimi-k2）不应被 chat 选中，否则 400 报错
       let model = await this.prisma.aIModel.findFirst({
-        where: { platformId: platform?.id ?? '' },
+        where: { platformId: platform?.id ?? '', enabled: true },
         orderBy: { createdAt: 'desc' },
       });
       // 模型未配置 → 自动同步一次 Kaypal 默认模型（api-key / 登录态），
@@ -524,7 +526,7 @@ export class AiGatewayService {
             orderBy: { createdAt: 'desc' },
           });
           model = await this.prisma.aIModel.findFirst({
-            where: { platformId: platform?.id ?? '' },
+            where: { platformId: platform?.id ?? '', enabled: true },
             orderBy: { createdAt: 'desc' },
           });
         } catch {
