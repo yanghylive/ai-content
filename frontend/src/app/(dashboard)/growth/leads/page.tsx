@@ -8,5 +8,9 @@ export default function LeadsPoolPage() {
   const isMobile = useIsMobile();
   // 移动端（<768px）：只读线索列表（批量改状态请用电脑端）
   if (isMobile) return <GrowthMobileConsole view="leads" />;
-  return <LeadsPool />;
+  return (
+    <div className="kx-view">
+      <LeadsPool />
+    </div>
+  );
 }
