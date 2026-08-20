@@ -29,6 +29,21 @@ import {
   rejectResult,
 } from './executor.interface';
 
+type PlatformHealth = { id: string; ok: boolean; details?: string };
+
+type PlatformHealthExecutor = TaskExecutor & {
+  getPlatformHealths: () => Promise<PlatformHealth[]>;
+};
+
+function hasPlatformHealths(
+  executor: TaskExecutor | undefined,
+): executor is PlatformHealthExecutor {
+  return (
+    typeof (executor as { getPlatformHealths?: unknown } | undefined)
+      ?.getPlatformHealths === 'function'
+  );
+}
+
 @Injectable()
 export class ExecutorRouter {
   private readonly logger = new Logger(ExecutorRouter.name);
@@ -156,9 +171,7 @@ export class ExecutorRouter {
    * local-runtime 还内嵌 4 个 platform service（douyin-comment-reply 等），
    * 这些也算独立执行能力，UI 端要看到完整 7 个。
    */
-  async healthCheck(): Promise<
-    Array<{ id: string; ok: boolean; details?: string }>
-  > {
+  async healthCheck(): Promise<PlatformHealth[]> {
     const mainHealths = await Promise.all(
       this.executors.map(async (executor) => {
         const health = await executor.isHealthy();
@@ -168,17 +181,13 @@ export class ExecutorRouter {
 
     const localRuntime = this.executors.find((e) => e.id === 'local-runtime');
 
-    let subHealths: Array<{ id: string; ok: boolean; details?: string }> = [];
-    const localRuntimeHealths = (
-      localRuntime as unknown as {
-        getPlatformHealths?: () => Promise<
-          Array<{ id: string; ok: boolean; details?: string }>
-        >;
-      }
-    ).getPlatformHealths;
-    if (localRuntime && typeof localRuntimeHealths === 'function') {
+    let subHealths: PlatformHealth[] = [];
+    if (hasPlatformHealths(localRuntime)) {
       try {
-        subHealths = await localRuntimeHealths();
+        // Preserve the LocalRuntimeClient receiver. Calling the extracted
+        // method bare makes `this.engine` undefined and silently drops all
+        // platform capabilities from the health response.
+        subHealths = await localRuntime.getPlatformHealths();
       } catch (error) {
         this.logger.warn(
           `getPlatformHealths failed: ${error instanceof Error ? error.message : String(error)}`,
