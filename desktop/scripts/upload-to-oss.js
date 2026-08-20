@@ -41,13 +41,27 @@ const allowedExtensions = [
 ];
 
 async function uploadFile(client, localPath, remoteKey) {
+  const stat = fs.statSync(localPath);
+  const headers = {
+    "Cache-Control": "public, max-age=300, s-maxage=3600",
+  };
+  // 大文件（>50MB）必须 multipartUpload：put 对 300MB+ 文件会 TLS 读超时
+  // （2026-08-14/2026-08-20 实测 ETIMEDOUT）。分片 10MB + parallel 3 + retryMax 5 稳定。
+  if (stat.size > 50 * 1024 * 1024) {
+    const result = await client.multipartUpload(remoteKey, localPath, {
+      partSize: 10 * 1024 * 1024,
+      parallel: 3,
+      retryMax: 5,
+      timeout: 600000,
+      headers,
+    });
+    console.log(`  + ${remoteKey}  (${formatBytes(stat.size)}) [multipart]`);
+    return result;
+  }
   const result = await client.put(remoteKey, localPath, {
     timeout: 600000,
-    headers: {
-      "Cache-Control": "public, max-age=300, s-maxage=3600",
-    },
+    headers,
   });
-  const stat = fs.statSync(localPath);
   console.log(`  + ${remoteKey}  (${formatBytes(stat.size)})`);
   return result;
 }
