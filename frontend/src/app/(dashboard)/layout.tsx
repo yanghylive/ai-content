@@ -32,8 +32,17 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.85";
+const DESKTOP_APP_VERSION = "1.1.86";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.86",
+    date: "2026-08-20",
+    highlights: [
+      "AI 获客体验升级：AI 长期记忆接入，价值感知 12 项落地（简报卡/工作轨迹/自然语言评分理由/价值账单）",
+      "未开放功能整页遮罩（10 页）：全貌可见 + 背景模糊 + 操作锁定",
+      "抖音自动触达防风控 + 反爬拦截时视觉模型自动恢复候选",
+    ],
+  },
   {
     version: "v1.1.85",
     date: "2026-08-15",
