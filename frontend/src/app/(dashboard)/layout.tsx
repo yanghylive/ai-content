@@ -32,8 +32,16 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.86";
+const DESKTOP_APP_VERSION = "1.1.87";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.87",
+    date: "2026-08-20",
+    highlights: [
+      "安装包稳定性修复：启动崩溃（sqlite-empty-template 缺失）+ 登录页图标丢失",
+      "抖音登录浏览器空白修复：探活进程无限堆积 + CDP 端口并发竞态",
+    ],
+  },
   {
     version: "v1.1.86",
     date: "2026-08-20",
