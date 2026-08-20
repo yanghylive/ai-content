@@ -27,6 +27,17 @@ const TYPE_COLOR: Record<string, string> = {
 const PLACEHOLDER =
   "例如：品牌介绍、产品卖点、门店信息、常用话术……AI 创作时会自动引用这些真实资料，不再凭空编造。";
 
+const FIELD_INPUT: React.CSSProperties = {
+  width: "100%",
+  background: "var(--kaypal-v3-field-bg)",
+  border: "1px solid var(--kaypal-v3-field-border)",
+  borderRadius: 10,
+  color: "var(--kaypal-v3-ink)",
+  padding: "10px 12px",
+  fontSize: 13,
+  boxSizing: "border-box",
+};
+
 function KnowledgeList() {
   const { confirm, modal } = useConfirm();
   const [items, setItems] = useState<BrandKnowledgeItem[]>([]);
@@ -129,53 +140,47 @@ function KnowledgeList() {
   return (
     <div>
       <V2BackButton />
-      {/* 页面头 */}
-      <header className="mx-header">
-        <div className="mx-header-row">
-          <div>
-            <div className="mx-brand-eyebrow">
-              <BrandLogo />
-              JIUZHANG AI
-            </div>
-            <h1 className="mx-page-title">品牌知识库</h1>
-            <p className="mx-page-sub">上传产品/品牌资料 · AI 创作时自动引用</p>
-          </div>
-          <button
-            type="button"
-            className="mx-btn-gold"
-            style={{ fontSize: 12, padding: "8px 14px", textDecoration: "none" }}
-            onClick={() => setShowForm((value) => !value)}
-          >
-            {showForm ? "收起" : "＋ 添加知识"}
-          </button>
+      {/* 页面头：kx-greet 亮色规格 */}
+      <header className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <h1 className="kx-greet">品牌知识库</h1>
+          <p className="kx-greet-sub">上传产品/品牌资料 · AI 创作时自动引用</p>
         </div>
+        <button
+          type="button"
+          className="kx-btn-primary shrink-0"
+          style={{ fontSize: 13, padding: "8px 16px", border: "none", cursor: "pointer" }}
+          onClick={() => setShowForm((value) => !value)}
+        >
+          {showForm ? "收起" : "＋ 添加知识"}
+        </button>
       </header>
 
       {/* toast */}
       {toast ? (
-        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", zIndex: 100, background: "rgba(5,150,105,.92)", color: "#fff", padding: "9px 18px", borderRadius: 999, fontSize: 13, boxShadow: "0 8px 24px rgba(0,0,0,.25)" }}>
+        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", zIndex: 100, background: "var(--kaypal-v3-success)", color: "#fff", padding: "9px 18px", borderRadius: 999, fontSize: 13, boxShadow: "0 8px 24px rgba(0,0,0,.2)" }}>
           {toast}
         </div>
       ) : null}
 
       {/* 添加表单 */}
       {showForm ? (
-        <section className="mx-px" style={{ marginTop: 14 }}>
-          <div className="mx-card" style={{ padding: 16 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>添加知识条目</div>
+        <section style={{ marginTop: 14 }}>
+          <div className="kaypal-v3-panel" style={{ padding: 16 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 12 }}>添加知识条目</div>
             <input
               type="text"
               placeholder="标题，例如：品牌介绍 / 主推产品卖点"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              style={{ width: "100%", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5", padding: "10px 12px", fontSize: 13, boxSizing: "border-box" }}
+              style={FIELD_INPUT}
             />
             <textarea
               placeholder={PLACEHOLDER}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={5}
-              style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5", padding: "10px 12px", fontSize: 13, boxSizing: "border-box", resize: "vertical", lineHeight: 1.6 }}
+              style={{ ...FIELD_INPUT, marginTop: 10, resize: "vertical", lineHeight: 1.6 }}
             />
             <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
               {(["brand", "product", "copy", "manual"] as const).map((key) => (
@@ -184,10 +189,10 @@ function KnowledgeList() {
                   type="button"
                   onClick={() => setType(key)}
                   style={{
-                    fontSize: 12, padding: "6px 12px", borderRadius: 999,
-                    background: type === key ? "rgba(244,187,103,.16)" : "transparent",
-                    border: type === key ? "1px solid rgba(244,187,103,.6)" : "1px solid rgba(255,255,255,.18)",
-                    color: type === key ? "#f4bb67" : "#dbe7f5",
+                    fontSize: 12, padding: "6px 12px", borderRadius: 999, cursor: "pointer",
+                    background: type === key ? "var(--kaypal-v3-accent-soft)" : "transparent",
+                    border: type === key ? "1px solid var(--kaypal-v3-accent-border)" : "1px solid var(--kaypal-v3-border-strong)",
+                    color: type === key ? "var(--kaypal-v3-accent-ink)" : "var(--kaypal-v3-muted)",
                   }}
                 >
                   {TYPE_LABEL[key]}
@@ -199,12 +204,12 @@ function KnowledgeList() {
               placeholder="标签（逗号分隔），如：餐饮,火锅,新品"
               value={tagsText}
               onChange={(e) => setTagsText(e.target.value)}
-              style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5", padding: "10px 12px", fontSize: 13, boxSizing: "border-box" }}
+              style={{ ...FIELD_INPUT, marginTop: 10 }}
             />
             <button
               type="button"
-              className="mx-btn-gold"
-              style={{ marginTop: 14, width: "100%" }}
+              className="kx-btn-primary"
+              style={{ marginTop: 14, width: "100%", border: "none", cursor: "pointer" }}
               disabled={saving}
               onClick={() => void submit()}
             >
@@ -216,13 +221,18 @@ function KnowledgeList() {
 
       {/* 类型筛选 */}
       <section style={{ marginTop: 16 }}>
-        <div className="chip-row">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {(["all", "brand", "product", "copy", "manual"] as const).map((key) => (
             <button
               key={key}
               type="button"
-              className={`chip${typeFilter === key ? " active" : ""}`}
               onClick={() => setTypeFilter(key)}
+              style={{
+                fontSize: 12, padding: "6px 13px", borderRadius: 999, cursor: "pointer",
+                background: typeFilter === key ? "var(--kaypal-v3-accent-soft)" : "var(--kaypal-v3-paper)",
+                border: typeFilter === key ? "1px solid var(--kaypal-v3-accent-border)" : "1px solid var(--kaypal-v3-border)",
+                color: typeFilter === key ? "var(--kaypal-v3-accent-ink)" : "var(--kaypal-v3-soft-ink)",
+              }}
             >
               {key === "all" ? "全部" : TYPE_LABEL[key]}
             </button>
@@ -232,13 +242,13 @@ function KnowledgeList() {
 
       {/* 加载失败提示 */}
       {error ? (
-        <section className="mx-px" style={{ marginTop: 14 }}>
-          <div className="mx-card" style={{ padding: 14, border: "1px solid rgba(220,38,38,.4)" }}>
-            <div style={{ fontSize: 13, color: "#f87171" }}>{error}</div>
+        <section style={{ marginTop: 14 }}>
+          <div className="kaypal-v3-panel" style={{ padding: 14, borderColor: "var(--kaypal-v3-danger)" }}>
+            <div style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>{error}</div>
             <button
               type="button"
-              className="mx-btn-gold"
-              style={{ marginTop: 10, fontSize: 12, padding: "7px 14px" }}
+              className="kx-btn-primary"
+              style={{ marginTop: 10, fontSize: 12, padding: "7px 14px", border: "none", cursor: "pointer" }}
               onClick={() => void load()}
             >
               重试
@@ -248,18 +258,24 @@ function KnowledgeList() {
       ) : null}
 
       {/* 列表 */}
-      <section className="mx-px" style={{ paddingBottom: 28, marginTop: 14 }}>
-        <div className="mx-card mx-list-card">
+      <section style={{ paddingBottom: 28, marginTop: 14 }}>
+        <div className="kaypal-v3-panel" style={{ padding: "4px 14px" }}>
           {loading ? (
             <div>
-              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "60%" }} /></div></div>
-              <div className="mx-skeleton-row"><span className="mx-skeleton mx-skeleton-ic" /><div style={{ flex: 1 }}><div className="mx-skeleton mx-skeleton-line" style={{ width: "75%" }} /></div></div>
+              {[60, 75].map((w) => (
+                <div key={w} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 4px", borderBottom: "1px solid var(--kaypal-v3-border)" }}>
+                  <span style={{ width: 40, height: 40, borderRadius: 13, background: "var(--kaypal-v3-paper-soft)" }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ height: 12, width: `${w}%`, borderRadius: 6, background: "var(--kaypal-v3-paper-soft)" }} />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="mx-empty">
-              <p>{items.length === 0 ? "还没有知识条目，点右上角添加" : "该类型暂无条目"}</p>
+            <div style={{ textAlign: "center", padding: "30px 20px" }}>
+              <p style={{ fontSize: 13, color: "var(--kaypal-v3-muted)" }}>{items.length === 0 ? "还没有知识条目，点右上角添加" : "该类型暂无条目"}</p>
               {items.length === 0 ? (
-                <p style={{ fontSize: 12, color: "rgba(219,234,254,.5)", marginTop: 6 }}>
+                <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 6 }}>
                   告诉 AI 你的产品是什么，创作才会写对
                 </p>
               ) : null}
@@ -269,27 +285,27 @@ function KnowledgeList() {
               const color = TYPE_COLOR[item.type] ?? "#94a3b8";
               const tags = Array.isArray(item.tags) ? item.tags : [];
               return (
-                <div className="mx-row" key={item.id} style={{ alignItems: "flex-start" }}>
-                  <span className="mx-row-ic" style={{ background: `${color}1f`, color }}>
+                <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 4px", borderBottom: "1px solid var(--kaypal-v3-border)" }}>
+                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 13, flexShrink: 0, background: `${color}1a`, color }}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17">
                       <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2Z" />
                       <path d="M14 2v6h6" />
                     </svg>
                   </span>
-                  <div className="mx-row-main">
-                    <div className="mx-row-title" style={{ fontSize: 13.5 }}>{item.title}</div>
-                    <div className="mx-row-desc" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                      <span className="platform-dot" style={{ background: color, width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--kaypal-v3-ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.title}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 2, fontSize: 11, color: "var(--kaypal-v3-muted)" }}>
+                      <span style={{ background: color, width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
                       <span>{TYPE_LABEL[item.type] ?? item.type}</span>
                       {tags.length > 0 ? (
-                        <span style={{ color: "rgba(219,234,254,.55)" }}>{tags.slice(0, 3).join(" · ")}</span>
+                        <span>{tags.slice(0, 3).join(" · ")}</span>
                       ) : null}
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <button
                       type="button"
-                      style={{ fontSize: 11, padding: "4px 9px", background: "transparent", border: "1px solid rgba(220,38,38,.45)", borderRadius: 7, color: "#f87171" }}
+                      style={{ fontSize: 11, padding: "4px 9px", background: "var(--kaypal-v3-danger-soft)", border: "1px solid var(--kaypal-v3-danger)", borderRadius: 7, color: "var(--kaypal-v3-danger)", cursor: "pointer" }}
                       disabled={removingId === item.id}
                       onClick={() => void doRemove(item.id)}
                     >
@@ -304,9 +320,9 @@ function KnowledgeList() {
       </section>
 
       {/* 底部说明 */}
-      <section className="mx-px" style={{ paddingBottom: 28 }}>
-        <div className="mx-card" style={{ padding: 14 }}>
-          <div style={{ fontSize: 12, lineHeight: 1.7, color: "rgba(219,234,254,.62)" }}>
+      <section style={{ paddingBottom: 28 }}>
+        <div className="kaypal-v3-panel" style={{ padding: 14 }}>
+          <div style={{ fontSize: 12, lineHeight: 1.7, color: "var(--kaypal-v3-muted)" }}>
             💡 知识库用于 AI 创作。写内容时对 AI 说「写一条我们品牌的文案」，AI 会自动检索知识库并引用真实信息；没有知识库时，AI 只能凭常识写。
           </div>
         </div>

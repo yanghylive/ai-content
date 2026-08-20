@@ -364,14 +364,14 @@ export function GrowthMobileConsole({ view }: { view: string }) {
                   <button
                     type="button"
                     onClick={() => setGenOpen((v) => !v)}
-                    className="rounded-full bg-[#8b5cf6] px-3.5 py-1.5 text-[12px] font-bold text-white"
+                    className="rounded-full bg-[#e39a3e] px-3.5 py-1.5 text-[12px] font-bold text-white"
                   >
                     {genOpen ? "收起" : "AI 生成策略"}
                   </button>
                 </div>
                 {genOpen && (
-                  <div className="mb-3 rounded-xl border border-violet-200 bg-violet-50/60 p-3 dark:border-violet-500/20 dark:bg-violet-500/10">
-                    <p className="text-[12px] font-bold text-violet-800 dark:text-violet-200">
+                  <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
+                    <p className="text-[12px] font-bold text-amber-800 dark:text-amber-200">
                       AI 生成获客策略
                     </p>
                     <div className="mt-2 space-y-2">

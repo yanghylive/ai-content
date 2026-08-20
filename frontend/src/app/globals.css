@@ -795,7 +795,7 @@
 
   .growth-console {
     --growth-control-height: var(--kaypal-v3-field-height);
-    --growth-radius: 8px;
+    --growth-radius: 12px;
     --growth-table-min-width: 760px;
   }
 

@@ -8,13 +8,152 @@ import {
   ClipboardList,
   Route,
   ShieldCheck,
+  Sparkles,
   Target,
   TrendingUp,
   UsersRound,
+  Wallet,
 } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { growthApi, type GrowthOverview } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+
+/** T4-9：今日 AI 简报卡——一进门先看到 AI 在干什么 */
+function AiDailyBriefCard({ overview }: { overview: GrowthOverview | null }) {
+  const activeConfigs = overview?.activeConfigCount ?? 0;
+  const highIntent = overview?.highIntentLeadCount ?? 0;
+  const newLeads = overview?.todayLeadCount ?? 0;
+  const riskAccounts = overview?.accountRiskCount ?? 0;
+
+  const sentences: string[] = [];
+  if (activeConfigs > 0) {
+    sentences.push(`AI 正在监控 ${activeConfigs} 个获客任务`);
+  } else {
+    sentences.push("AI 尚未运行获客任务，可以先创建一个");
+  }
+  if (newLeads > 0) {
+    sentences.push(`今日发现 ${newLeads} 条新线索`);
+  }
+  if (highIntent > 0) {
+    sentences.push(`识别出 ${highIntent} 条高意向线索`);
+    sentences.push(`${highIntent} 条建议今天优先跟进`);
+  }
+  if (riskAccounts > 0) {
+    sentences.push(`${riskAccounts} 个账号需要处理`);
+  }
+  const summary =
+    sentences.length > 0
+      ? sentences.join("，")
+      : "AI 正在持续监控各平台线索，有发现会第一时间汇总到这里。";
+
+  return (
+    <div
+      className="kaypal-v3-panel p-5"
+      style={{ border: "1px solid var(--kaypal-v3-border)" }}
+    >
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-[var(--kaypal-v3-accent)]" />
+        <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
+          今日 AI 简报
+        </h2>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-[var(--kaypal-v3-soft-ink)]">
+        {summary}
+      </p>
+      {highIntent > 0 && (
+        <p className="mt-1 text-xs text-[var(--kaypal-v3-accent)]">
+          高意向线索的评分与理由见下方线索池，点击可查看 AI 判断依据。
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** T4-11 + T4-12：AI 价值账单——把 AI 干的活折算成时间和钱，让价值看得见 */
+function AiValueBill({ overview }: { overview: GrowthOverview | null }) {
+  const funnel = overview?.funnel;
+  if (!funnel) return null;
+
+  const candidates = funnel.candidates ?? 0;
+  const crmCaptured = funnel.crmCaptured ?? 0;
+  const converted = funnel.converted ?? 0;
+
+  // 估算口径（页面注明"估算"）：人工逐条看候选约 2 分钟/条；高意向线索按 ¥50/条估；进 CRM 按 ¥200/条估
+  const manualHours = Math.round((candidates * 2) / 60);
+  const leadValue = Math.round((candidates * 50) / 100) * 100;
+  const crmValue = crmCaptured * 200;
+  const totalValue = leadValue + crmValue;
+
+  const items: Array<{ label: string; value: string; hint?: string }> = [];
+  if (candidates > 0) {
+    items.push({
+      label: "AI 累计扫描",
+      value: `${candidates.toLocaleString()} 条候选`,
+      hint: "人工逐条看约需 2 分钟/条",
+    });
+    items.push({
+      label: "折算人工",
+      value: `≈ ${manualHours} 小时`,
+      hint: `=${candidates.toLocaleString()} 条 × 2 分钟 ÷ 60`,
+    });
+  }
+  if (crmCaptured > 0) {
+    items.push({
+      label: "已沉淀 CRM",
+      value: `${crmCaptured} 条`,
+      hint: "按 ¥200/条估",
+    });
+  }
+  if (totalValue > 0) {
+    items.push({
+      label: "累计价值",
+      value: `≈ ¥${totalValue.toLocaleString()}`,
+      hint: `${leadValue.toLocaleString()}+${crmValue.toLocaleString()}`,
+    });
+  }
+  if (!items.length) {
+    items.push({
+      label: "累计价值",
+      value: "数据收集中",
+      hint: "任务开始执行后，这里会换算 AI 帮你省下的时间与价值",
+    });
+  }
+
+  return (
+    <div className="kaypal-v3-panel p-5">
+      <div className="flex items-center gap-2">
+        <Wallet className="h-4 w-4 text-[var(--kaypal-v3-accent)]" />
+        <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
+          AI 价值账单
+        </h2>
+        <span className="rounded-full bg-[var(--kaypal-v3-accent-soft)] px-2 py-0.5 text-[10px] font-medium text-[var(--kaypal-v3-accent-ink)]">
+          估算
+        </span>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-paper-soft)] p-3"
+          >
+            <p className="text-xs text-[var(--kaypal-v3-muted)]">{item.label}</p>
+            <p className="mt-1 text-lg font-bold text-[var(--kaypal-v3-ink)]">
+              {item.value}
+            </p>
+            {item.hint && (
+              <p className="mt-0.5 text-[10px] text-[var(--kaypal-v3-muted)]">
+                {item.hint}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 text-[11px] text-[var(--kaypal-v3-muted)]">
+        * 估算口径：人工浏览 2 分钟/条、线索 ¥50/条、进 CRM ¥200/条，仅供参考，不代表实际成交。
+      </p>
+    </div>
+  );
+}
 
 export function GrowthCenter() {
   const router = useRouter();
@@ -41,6 +180,8 @@ export function GrowthCenter() {
 
   return (
     <div className="flex flex-col gap-6">
+      <AiDailyBriefCard overview={overview} />
+      <AiValueBill overview={overview} />
       <WorkbenchCenter
         title="增长控制台"
         subtitle="今天的获客进展和漏斗，一目了然"
@@ -49,17 +190,17 @@ export function GrowthCenter() {
           {
             label: "今日新线索",
             value: loading ? "-" : overview?.todayLeadCount ?? 0,
-            tone: "accent",
+            tone: "default",
           },
           {
             label: "今日已触达",
             value: loading ? "-" : overview?.todayContactedCount ?? 0,
-            tone: "success",
+            tone: "default",
           },
           {
             label: "今日进 CRM",
             value: loading ? "-" : overview?.todayCrmCapturedCount ?? 0,
-            tone: "success",
+            tone: "default",
           },
           {
             label: "高意向线索",

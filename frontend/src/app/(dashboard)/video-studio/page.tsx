@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { GrayTestOverlay } from "@/components/v2/gray-test-overlay";
 
 /**
  * 视频成片 —— 独立盈利商用产品（studio_core）
@@ -9,6 +10,7 @@ import { V2BackButton } from "@/components/v2/v2-back-button";
  * 不再内嵌「探测引擎 + 调用 studio_core API 生成成片」的引擎逻辑。
  * 本页只作为独立产品的介绍/入口：产品开发完成后，配置
  * NEXT_PUBLIC_STUDIO_CORE_SITE_URL 即可显示「前往使用」链接。
+ * 2026-08-20 亮色 VP 化：kx-mobile-ambient/mx-* 深色 → kx-view 亮色体系。
  */
 
 const PIPELINES: Array<{ label: string; desc: string }> = [
@@ -27,59 +29,22 @@ export default function VideoStudioPage() {
   const siteUrl = process.env.NEXT_PUBLIC_STUDIO_CORE_SITE_URL?.trim();
 
   return (
-    <div
-      className="kx-mobile-ambient"
-      style={{ minHeight: "100dvh", paddingBottom: 90 }}
-    >
-      <div className="mx-px" style={{ marginTop: 8 }}>
+    <GrayTestOverlay feature="视频工作室">
+      <div className="kx-view">
         <V2BackButton to="/content" />
-      </div>
-      <header className="mx-header">
-        <div className="mx-header-row">
+        <header className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <div className="mx-brand-eyebrow">
-              <svg
-                width={14}
-                height={14}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="2" y="4" width="20" height="16" rx="3" />
-                <path d="M10 9l5 3-5 3V9z" />
-              </svg>
-              JIUZHANG AI
-            </div>
-            <h1 className="mx-page-title">视频成片</h1>
-            <p className="mx-page-sub">AI 一键成片 · 独立产品</p>
+            <h1 className="kx-greet">视频成片</h1>
+            <p className="kx-greet-sub">AI 一键成片 · 独立产品</p>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <section className="mx-px" style={{ marginTop: 14 }}>
         {/* 产品状态卡片 */}
-        <div
-          style={{
-            borderRadius: 20,
-            padding: 20,
-            background: "rgba(255,255,255,.72)",
-            border: "1px solid rgba(148,163,184,.18)",
-          }}
-        >
-          <p
-            style={{
-              fontSize: 15,
-              fontWeight: 700,
-              margin: "0 0 6",
-              color: "#1f2a44",
-            }}
-          >
+        <div className="kaypal-v3-panel" style={{ padding: 20 }}>
+          <p style={{ fontSize: 15, fontWeight: 700, margin: "0 0 6", color: "var(--kaypal-v3-ink)" }}>
             视频成片
           </p>
-          <p style={{ fontSize: 13, color: "#6b7a93", margin: "0 0 14", lineHeight: 1.6 }}>
+          <p style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)", margin: "0 0 14", lineHeight: 1.6 }}>
             这是一款独立的 AI 视频生产产品：输入一个选题，自动完成脚本撰写 →
             分镜设计 → 画面合成 → 渲染成片，覆盖多条专业流水线。
           </p>
@@ -89,7 +54,7 @@ export default function VideoStudioPage() {
               href={siteUrl}
               target="_blank"
               rel="noreferrer"
-              className="mx-btn-gold"
+              className="kx-btn-primary"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -98,6 +63,7 @@ export default function VideoStudioPage() {
                 textDecoration: "none",
                 fontSize: 14,
                 padding: "12px",
+                border: "none",
               }}
             >
               前往使用
@@ -108,14 +74,14 @@ export default function VideoStudioPage() {
               style={{
                 borderRadius: 12,
                 padding: "12px 14px",
-                background: "rgba(245,158,11,.08)",
-                border: "1px solid rgba(245,158,11,.22)",
+                background: "var(--kaypal-v3-amber-soft)",
+                border: "1px solid var(--kaypal-v3-amber)",
               }}
             >
-              <p style={{ fontSize: 13, margin: 0, color: "#b45309", fontWeight: 600 }}>
+              <p style={{ fontSize: 13, margin: 0, color: "var(--kaypal-v3-amber)", fontWeight: 600 }}>
                 产品正在开发中，敬请期待
               </p>
-              <p style={{ fontSize: 12, margin: "4px 0 0", color: "#92400e", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 12, margin: "4px 0 0", color: "var(--kaypal-v3-amber)", lineHeight: 1.5, opacity: 0.8 }}>
                 上线后将在此提供访问入口。
               </p>
             </div>
@@ -132,27 +98,20 @@ export default function VideoStudioPage() {
             borderRadius: 14,
             padding: "12px 14px",
             marginTop: 12,
-            background: "rgba(124,58,237,.07)",
-            border: "1px solid rgba(124,58,237,.22)",
+            background: "var(--kaypal-v3-accent-soft)",
+            border: "1px solid var(--kaypal-v3-accent-border)",
             textDecoration: "none",
           }}
         >
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#7c3aed" }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-accent-ink)" }}>
             🎬 需要短视频？先用「AI 生视频」——文字直接生成 3-15 秒短视频
           </span>
-          <span style={{ fontSize: 14, color: "#7c3aed" }}>›</span>
+          <span style={{ fontSize: 14, color: "var(--kaypal-v3-accent-ink)" }}>›</span>
         </Link>
 
         {/* 能力预览 */}
         <div style={{ marginTop: 18 }}>
-          <p
-            style={{
-              fontSize: 13,
-              fontWeight: 700,
-              color: "#1f2a44",
-              margin: "0 0 10",
-            }}
-          >
+          <p style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", margin: "0 0 10" }}>
             产品能力预览
           </p>
           <div
@@ -163,33 +122,18 @@ export default function VideoStudioPage() {
             }}
           >
             {PIPELINES.map((p) => (
-              <div
-                key={p.label}
-                style={{
-                  borderRadius: 14,
-                  padding: "12px 14px",
-                  background: "rgba(255,255,255,.6)",
-                  border: "1px solid rgba(148,163,184,.15)",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    margin: 0,
-                    color: "#374151",
-                  }}
-                >
+              <div key={p.label} className="kaypal-v3-panel" style={{ padding: "12px 14px" }}>
+                <p style={{ fontSize: 13, fontWeight: 600, margin: 0, color: "var(--kaypal-v3-ink)" }}>
                   {p.label}
                 </p>
-                <p style={{ fontSize: 11, margin: "4px 0 0", color: "#94a3b8" }}>
+                <p style={{ fontSize: 11, margin: "4px 0 0", color: "var(--kaypal-v3-muted)" }}>
                   {p.desc}
                 </p>
               </div>
             ))}
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </GrayTestOverlay>
   );
 }

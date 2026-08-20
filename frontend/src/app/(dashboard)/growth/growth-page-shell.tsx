@@ -24,7 +24,7 @@ export function GrowthPageShell({ view }: GrowthPageShellProps) {
   }
 
   return (
-    <div className="growth-page-shell flex min-w-0 max-w-full flex-col gap-4">
+    <div className="growth-page-shell flex min-w-0 flex-col gap-4">
       <BusinessToolResultContext allowedTools={["account-diagnosis", "kol-screening"]} />
       <GrowthConsoleEntry view={view} />
     </div>

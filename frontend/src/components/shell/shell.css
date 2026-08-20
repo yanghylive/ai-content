@@ -18,6 +18,9 @@
   --kx-success: #16a34a;
   --kx-amber: #d97706;
   --kx-danger: #dc2626;
+  /* 页面统一水平 gutter（桌面端内容边距设计 token，S3 落地）：
+     .kx-view / .kx-legacy-wrap 引用，全站 34px 单点可调 */
+  --page-gutter: 34px;
   --kx-shadow-card: 0 3px 14px rgba(90, 70, 160, 0.08);
   --kx-shadow-hover: 0 6px 18px rgba(114, 46, 209, 0.12);
   --kx-overlay: rgba(24, 19, 38, 0.42);
@@ -135,7 +138,7 @@ html[data-theme="dark"] {
 .kx-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; letter-spacing: 0.5px; flex-shrink: 0; }
 
 /* ---------- 视图通用 ---------- */
-.kx-view { padding: 14px 34px 40px; max-width: 880px; margin: 0 auto; animation: kx-fade 0.25s ease; }
+.kx-view { padding: 14px var(--page-gutter) 40px; max-width: 880px; margin: 0 auto; animation: kx-fade 0.25s ease; }
 @keyframes kx-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
 .kx-greet { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; }
 .kx-greet-sub { color: var(--kx-muted); margin-top: 6px; font-size: 14px; }
@@ -271,7 +274,7 @@ html[data-theme="dark"] {
 
 /* ---------- 统一页框（所有功能页与场景页同一套规格） ---------- */
 /* 标准档：与 .kx-view 完全一致 */
-.kx-legacy-wrap { padding: 14px 34px 40px; max-width: 880px; margin: 0 auto; }
+.kx-legacy-wrap { padding: 14px var(--page-gutter) 40px; max-width: 880px; margin: 0 auto; }
 /* 宽档：多窗格工作台（渠道控制台/设备台），与对话页同宽 */
 .kx-legacy-wrap.kx-wide { max-width: 1080px; }
 /* 抹掉页面自带的宽度/外边距/水平内边距，服从统一页框 */
@@ -322,4 +325,79 @@ html[data-theme="dark"] {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+}
+
+/* ============================================================
+ * mx-* 桌面等价（≥768px）—— ⚠️ 弃用保留（2026-08-20 起）
+ * effects/knowledge/settings/video-studio 已全部亮色化，桌面端已无
+ * mx-* 深色使用者。本段仅保留以防移动分支复用 mx-* 时桌面裸奔，
+ * 新页面禁止使用 mx-* 深色沉浸类，统一走 kx 亮色体系。
+ * ============================================================ */
+@media (min-width: 768px) {
+  .mx-header {
+    padding: 22px 34px 16px;
+    background:
+      radial-gradient(circle at 88% -20%, rgba(238, 189, 114, 0.14), transparent 36%),
+      linear-gradient(165deg, rgba(16, 26, 44, 0.97), rgba(12, 21, 38, 0.99));
+    border-bottom: 1px solid rgba(142, 165, 190, 0.16);
+  }
+  .mx-header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .mx-brand-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #f6c478;
+    margin-bottom: 8px;
+  }
+  .mx-brand-eyebrow svg { width: 14px; height: 14px; }
+  .mx-page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; color: #e8f1fc; }
+  .mx-page-sub { margin-top: 4px; font-size: 13px; color: rgba(148, 163, 184, 0.78); }
+  .mx-btn-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    background: linear-gradient(135deg, #d98f2b, #efb45b);
+    color: #173052;
+    text-decoration: none;
+    box-shadow: 0 6px 16px rgba(185, 110, 29, 0.22);
+    transition: filter 0.15s ease;
+  }
+  .mx-btn-gold:hover { filter: brightness(1.05); }
+  .mx-px {
+    padding: 14px var(--page-gutter) 40px;
+    background:
+      radial-gradient(circle at 4% 10%, rgba(51, 97, 153, 0.16), transparent 34%),
+      linear-gradient(180deg, rgba(14, 24, 42, 0.99), rgba(11, 19, 34, 1));
+  }
+  .mx-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(244, 248, 252, 0.62)) padding-box,
+      linear-gradient(128deg, rgba(255, 255, 255, 0.9) 0%, rgba(183, 201, 221, 0.3) 50%, rgba(120, 148, 179, 0.22) 100%) border-box;
+    box-shadow:
+      0 20px 46px rgba(0, 0, 0, 0.32),
+      0 4px 12px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* ---------- 引擎工作台容器：padding 由父级统一供给 ---------- */
+/* WorkbenchCenter 根为 kx-view（自带 34px 内边距），但调用方页面多在
+   .kx-legacy-wrap（同为 34px）之内，造成 34+34=68px 双倍边距。
+   归零引擎容器自身内边距，单层边距统一由外层页框供给。 */
+.kx-view.kaypal-v2-engine {
+  padding: 0;
 }
