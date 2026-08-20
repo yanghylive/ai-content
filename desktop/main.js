@@ -1296,6 +1296,8 @@ async function startBackendService() {
   }
   envVars.KAYPAL_AUTH_BASE_URL = envVars.KAYPAL_AUTH_BASE_URL || 'https://kaypal.cn';
   envVars.KAYPAL_DESKTOP_USER_DATA_DIR = envVars.KAYPAL_DESKTOP_USER_DATA_DIR || app.getPath('userData');
+  // 错误自动上报用：把真实应用版本注入后端 env（bundle 无 package.json 可读）
+  envVars.APP_VERSION = app.getVersion();
 
   resolveDesktopDatabaseEnv(envVars);
   ensureDesktopSqliteDatabase(envVars, backendPath);
