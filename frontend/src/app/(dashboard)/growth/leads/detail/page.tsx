@@ -267,10 +267,10 @@ function LeadDetailClient() {
         </button>
         {lead.crmCustomerId ? (
           <Link
-            href={`/crm/customer?id=${lead.crmCustomerId}`}
+            href={`/crm/customer?id=${lead.crmCustomerId}&tab=profile`}
             className="kaypal-v3-panel px-4 py-2 text-sm font-medium text-[var(--kaypal-v3-accent)] transition hover:border-[var(--kaypal-v3-accent)]"
           >
-            客户详情 →
+            客户详情（含来源归因）→
           </Link>
         ) : (
           <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-1 text-[11px] text-[var(--kaypal-v3-muted)]">
