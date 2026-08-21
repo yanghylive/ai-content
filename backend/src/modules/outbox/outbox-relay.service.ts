@@ -29,6 +29,8 @@ export class OutboxRelayService implements OnModuleDestroy {
   private readonly typedListenerCount = new Map<string, number>();
   /** 未声明 types 的 listener 数（关注所有 type） */
   private wildcardListenerCount = 0;
+  /** 已告警过"无消费者"的事件 type（同一 type 只告警一次，避免每 30s 刷屏） */
+  private readonly noConsumerWarned = new Set<string>();
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -36,6 +38,7 @@ export class OutboxRelayService implements OnModuleDestroy {
     this.events.removeAllListeners();
     this.typedListenerCount.clear();
     this.wildcardListenerCount = 0;
+    this.noConsumerWarned.clear();
   }
 
   /** 订阅领域事件（供评分/CRM/复盘等模块注册 handler；支持 async，成功才 markConsumed）。
@@ -97,9 +100,13 @@ export class OutboxRelayService implements OnModuleDestroy {
     for (const row of rows) {
       if (!this.hasListenerFor(row.type)) {
         // 该 type 无消费者时不标记 consumed，事件保留 published 等待消费者接入，避免静默丢失。
-        this.logger.warn(
-          `domain outbox 无消费者，事件 ${row.id}（${row.type}）保留 published`,
-        );
+        // 同一 type 只告警一次（去重），避免无消费方的前瞻事件每 30s 刷 WARN。
+        if (!this.noConsumerWarned.has(row.type)) {
+          this.noConsumerWarned.add(row.type);
+          this.logger.warn(
+            `domain outbox 无消费者，事件 ${row.id}（${row.type}）保留 published（后续同 type 不再告警）`,
+          );
+        }
         continue;
       }
       try {
