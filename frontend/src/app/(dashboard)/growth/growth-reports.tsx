@@ -300,6 +300,11 @@ export function GrowthReportsPage() {
         </V2Section>
       )}
 
+      {/* P2 T06：成交复盘四维（平台/策略/内容/话术） */}
+      {reports?.attribution && (
+        <AttributionReportSection attribution={reports.attribution} />
+      )}
+
       <section className="flex items-center justify-between">
         <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/growth")}>
           返回增长控制台
@@ -309,5 +314,200 @@ export function GrowthReportsPage() {
         </V2GhostButton>
       </section>
     </div>
+  );
+}
+
+/** P2 T06：归因报告四维（null→N/A，低样本→样本不足，不显示 0 兜底） */
+function AttributionReportSection({
+  attribution,
+}: {
+  attribution: NonNullable<GrowthReports["attribution"]>;
+}) {
+  const [tab, setTab] = useState<"platform" | "strategy" | "content" | "script">(
+    "platform",
+  );
+  const fmtMoney = (cents: number) =>
+    `¥${(cents / 100).toLocaleString("zh-CN", { maximumFractionDigits: 2 })}`;
+  const rate = (v: number | null) =>
+    v === null ? "N/A" : `${(v * 100).toFixed(1)}%`;
+
+  const TABS: Array<{ key: typeof tab; label: string }> = [
+    { key: "platform", label: "按平台" },
+    { key: "strategy", label: "按策略" },
+    { key: "content", label: "按内容" },
+    { key: "script", label: "按话术" },
+  ];
+
+  return (
+    <V2Section
+      title="成交复盘"
+      description="按平台 / 策略 / 内容 / 话术归因成交，数据来自 CRM 商机 + 来源归因链"
+    >
+      <div className="mb-4 flex flex-wrap gap-2">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setTab(t.key)}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+              tab === t.key
+                ? "bg-[var(--kaypal-v3-accent)] text-white"
+                : "bg-[var(--kaypal-v3-paper-soft)] text-[var(--kaypal-v3-muted)]"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "platform" && (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[480px] text-sm">
+            <thead>
+              <tr className="border-b border-[var(--kaypal-v3-border)] text-left text-xs text-[var(--kaypal-v3-muted)]">
+                <th className="py-2 pr-4">平台</th>
+                <th className="py-2 pr-4">线索</th>
+                <th className="py-2 pr-4">客户</th>
+                <th className="py-2 pr-4">商机</th>
+                <th className="py-2 pr-4">成交</th>
+                <th className="py-2 pr-4">成交金额</th>
+                <th className="py-2">转化率</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attribution.byPlatform.map((row) => (
+                <tr key={row.platform} className="border-b border-[var(--kaypal-v3-border)]/50">
+                  <td className="py-2 pr-4 font-medium text-[var(--kaypal-v3-ink)]">{row.platform}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{row.leads}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{row.customers}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{row.opportunities}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-accent-ink)]">{row.won}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{fmtMoney(row.wonAmountCents)}</td>
+                  <td className="py-2 text-[var(--kaypal-v3-soft-ink)]">{rate(row.conversionRate)}</td>
+                </tr>
+              ))}
+              {attribution.byPlatform.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-6 text-center text-xs text-[var(--kaypal-v3-muted)]">
+                    暂无归因成交数据
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {tab === "strategy" && (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[480px] text-sm">
+            <thead>
+              <tr className="border-b border-[var(--kaypal-v3-border)] text-left text-xs text-[var(--kaypal-v3-muted)]">
+                <th className="py-2 pr-4">获客策略</th>
+                <th className="py-2 pr-4">平台</th>
+                <th className="py-2 pr-4">线索</th>
+                <th className="py-2 pr-4">成交</th>
+                <th className="py-2 pr-4">成交金额</th>
+                <th className="py-2">转化率</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attribution.byStrategy.map((row) => (
+                <tr key={row.strategyId} className="border-b border-[var(--kaypal-v3-border)]/50">
+                  <td className="py-2 pr-4 font-medium text-[var(--kaypal-v3-ink)]">{row.strategyName}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{row.platform}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{row.leads}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-accent-ink)]">{row.won}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{fmtMoney(row.wonAmountCents)}</td>
+                  <td className="py-2 text-[var(--kaypal-v3-soft-ink)]">{rate(row.conversionRate)}</td>
+                </tr>
+              ))}
+              {attribution.byStrategy.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center text-xs text-[var(--kaypal-v3-muted)]">
+                    暂无策略归因成交数据
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {tab === "content" && (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[480px] text-sm">
+            <thead>
+              <tr className="border-b border-[var(--kaypal-v3-border)] text-left text-xs text-[var(--kaypal-v3-muted)]">
+                <th className="py-2 pr-4">内容</th>
+                <th className="py-2 pr-4">线索</th>
+                <th className="py-2 pr-4">客户</th>
+                <th className="py-2 pr-4">成交</th>
+                <th className="py-2">成交金额</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attribution.byContent.map((row) => (
+                <tr key={row.articleId} className="border-b border-[var(--kaypal-v3-border)]/50">
+                  <td className="max-w-[260px] truncate py-2 pr-4 font-medium text-[var(--kaypal-v3-ink)]">{row.title}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{row.leads}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{row.customers}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-accent-ink)]">{row.won}</td>
+                  <td className="py-2 text-[var(--kaypal-v3-soft-ink)]">{fmtMoney(row.wonAmountCents)}</td>
+                </tr>
+              ))}
+              {attribution.byContent.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-xs text-[var(--kaypal-v3-muted)]">
+                    暂无内容归因成交数据
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {tab === "script" && (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[480px] text-sm">
+            <thead>
+              <tr className="border-b border-[var(--kaypal-v3-border)] text-left text-xs text-[var(--kaypal-v3-muted)]">
+                <th className="py-2 pr-4">话术</th>
+                <th className="py-2 pr-4">使用次数</th>
+                <th className="py-2 pr-4">线索</th>
+                <th className="py-2 pr-4">成交</th>
+                <th className="py-2">成交金额</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attribution.byScript.map((row) => (
+                <tr key={row.text} className="border-b border-[var(--kaypal-v3-border)]/50">
+                  <td className="max-w-[260px] truncate py-2 pr-4 font-medium text-[var(--kaypal-v3-ink)]">
+                    {row.text}
+                    {row.lowConfidence && (
+                      <span className="ml-2 rounded bg-[var(--kaypal-v3-warning-soft)] px-1.5 py-0.5 text-[10px] text-[var(--kaypal-v3-warning-ink)]">
+                        样本不足
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{row.usageCount}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-soft-ink)]">{row.leads}</td>
+                  <td className="py-2 pr-4 text-[var(--kaypal-v3-accent-ink)]">{row.won}</td>
+                  <td className="py-2 text-[var(--kaypal-v3-soft-ink)]">{fmtMoney(row.wonAmountCents)}</td>
+                </tr>
+              ))}
+              {attribution.byScript.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-xs text-[var(--kaypal-v3-muted)]">
+                    暂无话术归因成交数据
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </V2Section>
   );
 }
