@@ -193,6 +193,12 @@ function makePrismaMock() {
       create: jest.fn(),
       updateMany: jest.fn(),
     },
+    attributionLink: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      count: jest.fn(async () => 0),
+      findMany: jest.fn(async () => []),
+    },
     interactionTask: {
       findFirst: jest.fn(),
     },
@@ -1656,5 +1662,158 @@ describe('CrmService · Sprint 4 T4.2 Opportunity 规则强化', () => {
     expect(timelineCall.data.metadata).toEqual(
       expect.objectContaining({ fromStage: 'qualified', toStage: 'negotiation' }),
     );
+  });
+});
+
+// —— P2 T02 成交回写（2026-08-20）——
+describe('P2 成交回写（handleOpportunityWon / close）', () => {
+  function makeServiceWithOutbox(winOverride: Record<string, unknown> = {}) {
+    const prisma = makePrismaMock();
+    prisma.tenantMember.findFirst.mockResolvedValue({
+      tenantId: 'tenant-1',
+      role: 'admin',
+      permissions: [],
+    });
+    // updateOpportunity 读原始记录
+    prisma.crmOpportunity.findFirst.mockResolvedValue(
+      makeOpportunity({ stage: 'qualified' }),
+    );
+    prisma.crmOpportunity.update.mockResolvedValue(
+      makeOpportunity({ stage: 'won', primaryCustomerId: 'customer-1', ...winOverride }),
+    );
+    prisma.crmOpportunity.findMany.mockResolvedValue([]);
+    // 客户归因（handleOpportunityWon 读取）
+    prisma.crmCustomer.findFirst.mockResolvedValue({
+      id: 'customer-1',
+      sourceArticleId: 'article-1',
+      sourcePublishRecordId: null,
+      sourceInteractionEventId: null,
+      sourceTaskId: 'task-1',
+      sourceRunId: 'run-1',
+      metadata: { leadId: 'lead-1' },
+    });
+    prisma.crmTimelineEvent.create.mockResolvedValue({ id: 'tl-1' });
+    prisma.attributionLink.findFirst.mockResolvedValue(null);
+    prisma.attributionLink.create.mockResolvedValue({ id: 'link-1' });
+    const outbox = { publish: jest.fn().mockResolvedValue({ id: 'ev-1', created: true }) };
+    const service = new CrmService(
+      (prisma as unknown) as PrismaService,
+      makeAppMarketMock(),
+      undefined,
+      (outbox as unknown) as never,
+    );
+    return { prisma, service, outbox };
+  }
+
+  it('stage→won：写 metadata 归因 + opportunity_won 时间线 + outbox + attributionLink', async () => {
+    const { prisma, service, outbox } = makeServiceWithOutbox({
+      amountCents: 123456,
+      closeDate: new Date('2026-08-21T00:00:00.000Z'),
+    });
+
+    await service.updateOpportunity('user-1', 'opportunity-1', {
+      stage: 'won',
+      amountCents: 123456,
+      closeDate: '2026-08-21',
+    });
+
+    // metadata 归因更新（crmOpportunity.update 第二次调用）
+    const updates = prisma.crmOpportunity.update.mock.calls.map((c: unknown[]) => c[0]);
+    expect(updates.length).toBeGreaterThanOrEqual(2);
+    const metaUpdate = updates.find(
+      (c: { data?: { metadata?: Record<string, unknown> } }) =>
+        c?.data?.metadata && typeof c.data.metadata === 'object' && 'attribution' in (c.data.metadata as Record<string, unknown>),
+    );
+    expect(metaUpdate).toBeTruthy();
+    expect(metaUpdate.data.metadata.attribution).toEqual(
+      expect.objectContaining({ sourceArticleId: 'article-1', sourceTaskId: 'task-1', wonFromStage: 'qualified' }),
+    );
+
+    // opportunity_won 时间线
+    const wonTimeline = prisma.crmTimelineEvent.create.mock.calls
+      .map((c: unknown[]) => c[0])
+      .find((c: { data?: { eventType?: string } }) => c?.data?.eventType === 'opportunity_won');
+    expect(wonTimeline).toBeTruthy();
+
+    // outbox publish 用 crm.opportunity.won + 幂等键
+    expect(outbox.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'crm.opportunity.won',
+        idempotencyKey: 'opportunity-won:opportunity-1',
+      }),
+    );
+
+    // attributionLink create（customer→opportunity won_by）
+    expect(prisma.attributionLink.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ label: 'won_by', toId: 'opportunity-1' }),
+      }),
+    );
+  });
+
+  it('stage→lost：写 opportunity_lost 时间线 + outbox（无归因回写）', async () => {
+    const prisma = makePrismaMock();
+    prisma.tenantMember.findFirst.mockResolvedValue({
+      tenantId: 'tenant-1',
+      role: 'admin',
+      permissions: [],
+    });
+    prisma.crmOpportunity.findFirst.mockResolvedValue(
+      makeOpportunity({ stage: 'qualified', loseReason: null }),
+    );
+    prisma.crmOpportunity.update.mockResolvedValue(
+      makeOpportunity({ stage: 'lost' }),
+    );
+    prisma.crmOpportunity.findMany.mockResolvedValue([]);
+    prisma.crmCustomer.findFirst.mockResolvedValue(null);
+    prisma.crmTimelineEvent.create.mockResolvedValue({ id: 'tl-1' });
+    prisma.attributionLink.findFirst.mockResolvedValue(null);
+    prisma.attributionLink.create.mockResolvedValue({ id: 'link-1' });
+    const outbox = { publish: jest.fn().mockResolvedValue({ id: 'ev-1', created: true }) };
+    const service = new CrmService(
+      (prisma as unknown) as PrismaService,
+      makeAppMarketMock(),
+      undefined,
+      (outbox as unknown) as never,
+    );
+
+    await service.updateOpportunity('user-1', 'opportunity-1', {
+      stage: 'lost',
+      loseReason: '客户预算不足',
+    });
+
+    const lostTimeline = prisma.crmTimelineEvent.create.mock.calls
+      .map((c: unknown[]) => c[0])
+      .find((c: { data?: { eventType?: string } }) => c?.data?.eventType === 'opportunity_lost');
+    expect(lostTimeline).toBeTruthy();
+    expect(lostTimeline.data.content).toContain('商机输单');
+    expect(outbox.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'crm.opportunity.lost' }),
+    );
+    // lost 不落 attributionLink
+    expect(prisma.attributionLink.create).not.toHaveBeenCalled();
+  });
+
+  it('closeOpportunity：result=won 时复用 updateOpportunity 且必填校验生效', async () => {
+    const { prisma, service } = makeServiceWithOutbox({});
+    // won 缺金额 → 400
+    await expect(
+      service.closeOpportunity('user-1', 'opportunity-1', {
+        result: 'won',
+        closeDate: '2026-08-21',
+      }),
+    ).rejects.toThrow();
+    const updateCalls = prisma.crmOpportunity.update.mock.calls.length;
+    // 校验失败不应走到 update
+    expect(updateCalls).toBe(0);
+  });
+
+  it('closeOpportunity：result 非法 → 400', async () => {
+    const { service } = makeServiceWithOutbox({});
+    await expect(
+      service.closeOpportunity('user-1', 'opportunity-1', {
+        result: 'maybe',
+      } as never),
+    ).rejects.toThrow('result 必须为 won 或 lost');
   });
 });

@@ -11,6 +11,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { safeText } from '../../common/text.utils';
 import { AppMarketService } from '../app-market/app-market.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { DomainEventOutboxStore } from '../outbox/domain-event-outbox.store';
 
 /** S0-P1-8：商机阶段白名单（报告 7.2 C 的 new→qualified→…→won/lost/nurture） */
 const OPPORTUNITY_STAGES = [
@@ -320,6 +321,8 @@ export class CrmService {
     private readonly appMarketService: AppMarketService,
     @Optional()
     private readonly authRequestContext?: AuthRequestContextService,
+    @Optional()
+    private readonly outbox?: DomainEventOutboxStore,
   ) {}
 
   async getSummary(userId: string) {
@@ -1167,7 +1170,241 @@ export class CrmService {
         metadata: { changedFields: Object.keys(data) },
       });
     }
+
+    // P2 成交回写：stage 变为 won/lost 时补归因、时间线、outbox（拍板 R1：与更新同事务，失败整单回滚）
+    if (nextStage && nextStage !== current.stage && nextStage === 'won') {
+      await this.handleOpportunityWon(userId, opportunityId, opportunity, current);
+    } else if (
+      nextStage && nextStage !== current.stage && nextStage === 'lost'
+    ) {
+      await this.handleOpportunityLost(userId, opportunityId, opportunity, current);
+    }
+
     return this.getOpportunity(userId, opportunityId);
+  }
+
+  /**
+   * P2 成交回写：商机 stage→won 后的归因补全 + 时间线 + outbox + attributionLink。
+   * 拍板 R1：与 updateOpportunity 同事务上下文调用（失败整单回滚）；outbox 提交后写；
+   * attributionLink 落库失败仅告警不阻断。
+   */
+  private async handleOpportunityWon(
+    userId: string,
+    opportunityId: string,
+    opportunity: {
+      id: string;
+      name: string;
+      companyId: string | null;
+      primaryCustomerId: string | null;
+      stage: string;
+      amountCents: number;
+      closeDate: Date | null;
+    },
+    current: { stage: string; amountCents: number; closeDate: Date | null; loseReason: string | null },
+  ) {
+    // 1. 归因引用：从关联客户补 source* 链（R3：CrmCustomer 已有归因列）
+    let attribution: Record<string, unknown> = {};
+    if (opportunity.primaryCustomerId) {
+      const customer = await this.prisma.crmCustomer.findFirst({
+        where: { id: opportunity.primaryCustomerId },
+        select: {
+          sourceArticleId: true,
+          sourcePublishRecordId: true,
+          sourceInteractionEventId: true,
+          sourceTaskId: true,
+          sourceRunId: true,
+          metadata: true,
+        },
+      });
+      if (customer) {
+        const leadId =
+          typeof customer.metadata === 'object' && customer.metadata
+            ? ((customer.metadata as Record<string, unknown>).leadId as string | undefined)
+            : undefined;
+        attribution = {
+          sourceArticleId: customer.sourceArticleId ?? null,
+          sourcePublishRecordId: customer.sourcePublishRecordId ?? null,
+          sourceInteractionEventId: customer.sourceInteractionEventId ?? null,
+          sourceTaskId: customer.sourceTaskId ?? null,
+          sourceRunId: customer.sourceRunId ?? null,
+          leadId: leadId ?? null,
+          wonFromStage: current.stage,
+        };
+      }
+    } else {
+      attribution = { wonFromStage: current.stage };
+    }
+
+    // 2. 写商机 metadata 归因引用（R3：CrmOpportunity 不加列，metadata 承载）
+    const oppRow = await this.prisma.crmOpportunity.findFirst({
+      where: { id: opportunityId },
+      select: { metadata: true },
+    });
+    const mergedMeta = {
+      ...(oppRow?.metadata && typeof oppRow.metadata === 'object'
+        ? (oppRow.metadata as Record<string, unknown>)
+        : {}),
+      wonAt: new Date().toISOString(),
+      wonFromStage: current.stage,
+      attribution,
+    };
+    await this.prisma.crmOpportunity.update({
+      where: { id: opportunityId },
+      data: { metadata: mergedMeta as Prisma.InputJsonObject },
+    });
+
+    // 3. 时间线 opportunity_won
+    await this.appendTimeline(userId, {
+      companyId: opportunity.companyId,
+      customerId: opportunity.primaryCustomerId,
+      opportunityId,
+      eventType: 'opportunity_won',
+      channel: 'crm',
+      content: `商机成交：${opportunity.name}，金额 ¥${((opportunity.amountCents || 0) / 100).toFixed(2)}`,
+      status: 'won',
+      metadata: {
+        winReason: null,
+        amountCents: opportunity.amountCents,
+        closeDate: opportunity.closeDate?.toISOString() ?? null,
+        attribution: attribution as Prisma.InputJsonValue,
+      },
+    });
+
+    // 4. outbox：opportunity.won（幂等键 opportunity-won:{id}；提交后写，失败仅告警）
+    const tenantId = await this.resolveCrmTenantId(userId);
+    try {
+      await this.outbox?.publish({
+        eventId: crypto.randomUUID(),
+        schemaVersion: 1,
+        tenantId: tenantId ?? '',
+        userId,
+        aggregateType: 'crm.opportunity',
+        aggregateId: opportunityId,
+        type: 'crm.opportunity.won',
+        idempotencyKey: `opportunity-won:${opportunityId}`,
+        occurredAt: new Date().toISOString(),
+        payload: {
+          opportunityId,
+          name: opportunity.name,
+          amountCents: opportunity.amountCents,
+          winReason: null,
+          closeDate: opportunity.closeDate?.toISOString() ?? null,
+          ...attribution,
+        },
+      });
+    } catch (outboxError) {
+      console.warn(
+        `opportunity won outbox 写入失败（不阻断成交）：${String(outboxError)}`,
+      );
+    }
+
+    // 5. attributionLink（customer→opportunity won_by）——T04 报告成交维度用；失败仅告警
+    try {
+      if (opportunity.primaryCustomerId) {
+        const link = await this.prisma.attributionLink.findFirst({
+          where: { tenantId: tenantId ?? 'legacy-local-desktop', fromType: 'customer', fromId: opportunity.primaryCustomerId, toType: 'opportunity', toId: opportunityId, model: 'deterministic' },
+        });
+        if (!link) {
+          await this.prisma.attributionLink.create({
+            data: {
+              tenantId: tenantId ?? 'legacy-local-desktop',
+              userId,
+              fromType: 'customer',
+              fromId: opportunity.primaryCustomerId,
+              toType: 'opportunity',
+              toId: opportunityId,
+              model: 'deterministic',
+              confidence: 'high',
+              label: 'won_by',
+              evidence: { wonAt: new Date().toISOString(), amountCents: opportunity.amountCents },
+            },
+          });
+        }
+      }
+    } catch (linkError) {
+      console.warn(`attributionLink 落库失败（不阻断成交）：${String(linkError)}`);
+    }
+  }
+
+  /**
+   * P2 成交回写（lost）：本期只补时间线 + outbox（拍板：不做 lost 归因回写）。
+   */
+  private async handleOpportunityLost(
+    userId: string,
+    opportunityId: string,
+    opportunity: {
+      id: string;
+      name: string;
+      companyId: string | null;
+      primaryCustomerId: string | null;
+      stage: string;
+      amountCents: number;
+      closeDate: Date | null;
+    },
+    current: { stage: string; amountCents: number; closeDate: Date | null; loseReason: string | null },
+  ) {
+    await this.appendTimeline(userId, {
+      companyId: opportunity.companyId,
+      customerId: opportunity.primaryCustomerId,
+      opportunityId,
+      eventType: 'opportunity_lost',
+      channel: 'crm',
+      content: `商机输单：${opportunity.name}`,
+      status: 'lost',
+      metadata: { loseReason: current.loseReason, fromStage: current.stage },
+    });
+    const tenantId = await this.resolveCrmTenantId(userId);
+    try {
+      await this.outbox?.publish({
+        eventId: crypto.randomUUID(),
+        schemaVersion: 1,
+        tenantId: tenantId ?? '',
+        userId,
+        aggregateType: 'crm.opportunity',
+        aggregateId: opportunityId,
+        type: 'crm.opportunity.lost',
+        idempotencyKey: `opportunity-lost:${opportunityId}`,
+        occurredAt: new Date().toISOString(),
+        payload: { opportunityId, name: opportunity.name, loseReason: current.loseReason },
+      });
+    } catch (outboxError) {
+      console.warn(
+        `opportunity lost outbox 写入失败（不阻断）：${String(outboxError)}`,
+      );
+    }
+  }
+
+  /**
+   * P2 成交语义接口：POST /crm/opportunities/:id/close。
+   * result=won|lost；won 必须 amountCents>0 + closeDate，lost 必须 loseReason（沿用 updateOpportunity 校验）。
+   * 内部复用 updateOpportunity 同一路径 → 自动触发成交回写（不会漏）。
+   */
+  async closeOpportunity(
+    userId: string,
+    opportunityId: string,
+    body: {
+      result?: string;
+      winReason?: string;
+      loseReason?: string;
+      amountCents?: number;
+      closeDate?: string;
+    },
+  ) {
+    const result = body?.result;
+    if (result !== 'won' && result !== 'lost') {
+      throw new BadRequestException('result 必须为 won 或 lost');
+    }
+    const input: Record<string, unknown> = {};
+    if (result === 'won') {
+      input.stage = 'won';
+      if (body.winReason) input.winReason = body.winReason;
+      if (body.amountCents !== undefined) input.amountCents = body.amountCents;
+      if (body.closeDate) input.closeDate = body.closeDate;
+    } else {
+      input.stage = 'lost';
+      if (body.loseReason) input.loseReason = body.loseReason;
+    }
+    return this.updateOpportunity(userId, opportunityId, input);
   }
 
   async archiveOpportunity(userId: string, opportunityId: string) {
