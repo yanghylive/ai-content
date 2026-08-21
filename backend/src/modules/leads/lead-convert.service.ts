@@ -273,26 +273,33 @@ export class LeadConvertService {
         opportunityId = opp.id;
       }
 
-      // 7) 建 Task（默认「跟进新客户」待办，让商户在 CRM 待办里看到新客户；
-      //    调用方传 input.task 用其内容，传 null 则不建）
+      // 7) 建 Task（P2 T03：按 R1-R4 规则生成跟进任务；调用方传 input.task 用其内容，传 null 则不建）
       let taskId: string | undefined;
       if (input.task !== null) {
-        const followUpTitle = customer.displayName
-          ? `跟进新客户：${customer.displayName}`
-          : '跟进新客户';
+        // —— R1-R4 规则（P2 T03，拍板 R4：assigneeId=操作者，metadata 记 ruleId）——
+        const followUp = this.buildSuggestedFollowUpTask(lead, customer);
+        const explicitTask = input.task?.title?.trim()
+          ? {
+              title: input.task.title,
+              description: input.task.description,
+              priority: input.task.priority,
+              dueAt: input.task.dueAt,
+            }
+          : null;
         const task = await tx.crmTask.create({
           data: {
             ownerId: scope.userId,
             actorUserId: scope.userId,
             tenantId,
-            title: input.task?.title?.trim() || followUpTitle,
+            title: explicitTask?.title || followUp.title,
             description:
-              input.task?.description ?? '线索已转为客户，请及时跟进。',
-            priority: input.task?.priority ?? 'normal',
-            dueAt: input.task?.dueAt,
+              explicitTask?.description ?? followUp.description,
+            priority: explicitTask?.priority ?? followUp.priority,
+            dueAt: explicitTask?.dueAt ?? followUp.dueAt,
             customerId: customer.id,
             companyId,
             opportunityId,
+            metadata: followUp.metadata,
           },
         });
         taskId = task.id;
@@ -411,5 +418,81 @@ export class LeadConvertService {
     }
 
     return result;
+  }
+
+  /**
+   * P2 T03：自动跟进任务建议（R1-R4）。
+   * R1 高资质（score>=80 且已联系/回复/合格）→ 24h 内首次跟进，high 优先级
+   * R2 来源含私信（sourceType=dm 或 latestReply）→ 回复私信确认需求，48h
+   * R3 评论互动无回复 → 评论转私信推进，48h
+   * R4 兜底 → 跟进新客户，24h
+   */
+  private buildSuggestedFollowUpTask(
+    lead: {
+      score?: number | null;
+      status?: string | null;
+      sourceType?: string | null;
+      latestReply?: string | null;
+      platform?: string | null;
+    },
+    customer: { displayName?: string | null },
+  ) {
+    const displayName = customer.displayName || '新客户';
+    const score = lead.score ?? 0;
+    const status = lead.status ?? '';
+    const sourceType = (lead.sourceType ?? '').toLowerCase();
+    const hasReply = Boolean(lead.latestReply);
+    const isDm = sourceType === 'dm' || sourceType === 'private_message' || sourceType === '私信';
+    const isComment = sourceType === 'comment' || sourceType === '评论';
+
+    const base = {
+      sourceType,
+      score,
+      platform: lead.platform ?? null,
+    };
+
+    // R1：高资质
+    if (score >= 80 && ['contacted', 'replied', 'qualified'].includes(status)) {
+      return {
+        title: `首次跟进：${displayName}`,
+        description:
+          `该线索来自 ${lead.platform ?? '未知平台'} 来源内容，意向分 ${score}。` +
+          '建议 24h 内完成首次触达或报价沟通。',
+        priority: 'high',
+        dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        metadata: { kind: 'auto-suggest', ruleId: 'R1', ...base },
+      };
+    }
+    // R2：私信来源
+    if (isDm || hasReply) {
+      return {
+        title: `回复私信并确认需求：${displayName}`,
+        description:
+          `线索来源为私信（来源类型：${lead.sourceType ?? 'dm'}），` +
+          '建议 48h 内回复并确认对方真实需求。',
+        priority: 'normal',
+        dueAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+        metadata: { kind: 'auto-suggest', ruleId: 'R2', ...base },
+      };
+    }
+    // R3：评论来源且无回复
+    if (isComment && !hasReply) {
+      return {
+        title: `评论转私信推进：${displayName}`,
+        description:
+          '线索来自评论互动但尚未回复，建议 48h 内将对话推进到私信并确认意向。',
+        priority: 'normal',
+        dueAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+        metadata: { kind: 'auto-suggest', ruleId: 'R3', ...base },
+      };
+    }
+    // R4：兜底
+    return {
+      title: `跟进新客户：${displayName}`,
+      description: '线索已转为客户，请及时跟进。',
+      priority: 'normal',
+      dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      metadata: { kind: 'auto-suggest', ruleId: 'R4', ...base },
+    };
   }
 }
