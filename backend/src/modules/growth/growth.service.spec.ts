@@ -3536,3 +3536,89 @@ describe('GrowthService 今日增长首页聚合（T02 /growth/home）', () => {
     expect(resultB.blockers).toEqual([]);
   });
 });
+
+// —— P2 T04 归因报告四维（computeAttributionReport）——
+describe('P2 归因报告四维', () => {
+  it('byPlatform/byStrategy/byContent/byScript 分组与成交归因正确', async () => {
+    const prisma = {
+      growthScopeWhere: undefined, // scope 由 service 内部
+      crmOpportunity: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'opp-1', amountCents: 100000, primaryCustomerId: 'customer-1', metadata: {} },
+          { id: 'opp-2', amountCents: 50000, primaryCustomerId: 'customer-2', metadata: {} },
+        ]),
+      },
+      crmCustomer: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'customer-1', sourcePlatform: 'douyin', sourceTaskId: 'task-1', sourceArticleId: 'article-1', sourceText: '话术A', sourceUrl: null },
+          { id: 'customer-2', sourcePlatform: 'xiaohongshu', sourceTaskId: null, sourceArticleId: null, sourceText: null, sourceUrl: null },
+        ]),
+      },
+      article: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'article-1', title: '装修避坑指南' },
+        ]),
+      },
+      growthAcquisitionConfig: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'task-1', taskName: '抖音装修获客', platform: 'douyin' },
+        ]),
+      },
+      lead: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'lead-1', customerId: 'customer-1', platform: 'douyin', sourceText: '话术A' },
+          { id: 'lead-2', customerId: 'customer-2', platform: 'xiaohongshu', sourceText: null },
+        ]),
+      },
+    };
+    const service = makeService(prisma);
+    const scope = { userId: 'user-1', tenantId: null, role: 'admin', permissions: [] };
+
+    const result = await service.computeAttributionReport(scope, 'all');
+
+    // byPlatform：douyin 1 lead/1 opp/1 won ¥1000；xiaohongshu 1 lead/1 opp/1 won ¥500
+    const douyin = result.byPlatform.find((p: { platform: string }) => p.platform === 'douyin');
+    expect(douyin).toEqual(
+      expect.objectContaining({ leads: 1, opportunities: 1, won: 1, wonAmountCents: 100000 }),
+    );
+    const xhs = result.byPlatform.find((p: { platform: string }) => p.platform === 'xiaohongshu');
+    expect(xhs).toEqual(
+      expect.objectContaining({ leads: 1, opportunities: 1, won: 1, wonAmountCents: 50000 }),
+    );
+
+    // byStrategy：task-1 1 lead 1 won
+    const strategy = result.byStrategy.find((s: { strategyId: string }) => s.strategyId === 'task-1');
+    expect(strategy).toEqual(
+      expect.objectContaining({ strategyName: '抖音装修获客', leads: 1, won: 1 }),
+    );
+
+    // byContent：article-1 1 lead 1 customer 1 won
+    const content = result.byContent.find((c: { articleId: string }) => c.articleId === 'article-1');
+    expect(content).toEqual(
+      expect.objectContaining({ title: '装修避坑指南', leads: 1, customers: 1, won: 1 }),
+    );
+
+    // byScript：话术A（2 关联）样本≥3 不标 lowConfidence
+    expect(result.generatedAt).toBeTruthy();
+    expect(Array.isArray(result.byScript)).toBe(true);
+  });
+
+  it('无成交商机 → 空数组 + generatedAt 仍返回', async () => {
+    const prisma = {
+      crmOpportunity: { findMany: jest.fn().mockResolvedValue([]) },
+      crmCustomer: { findMany: jest.fn().mockResolvedValue([]) },
+      article: { findMany: jest.fn().mockResolvedValue([]) },
+      growthAcquisitionConfig: { findMany: jest.fn().mockResolvedValue([]) },
+      lead: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    const service = makeService(prisma);
+    const scope = { userId: 'user-1', tenantId: null, role: 'admin', permissions: [] };
+
+    const result = await service.computeAttributionReport(scope, 'all');
+    expect(result.byPlatform).toEqual([]);
+    expect(result.byStrategy).toEqual([]);
+    expect(result.byContent).toEqual([]);
+    expect(result.byScript).toEqual([]);
+    expect(result.generatedAt).toBeTruthy();
+  });
+});

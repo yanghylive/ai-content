@@ -3097,6 +3097,19 @@ export class GrowthService implements OnModuleInit {
         );
       }
     }
+
+    // P2 T04：归因报告四维（拍板 R5：扩展 reports 返回体，旧前端忽略；R6 话术弱关联）
+    let attribution: GrowthReports['attribution'];
+    if (this.hasDbListDelegates()) {
+      try {
+        attribution = await this.computeAttributionReport(scope, platform);
+      } catch (error) {
+        this.logger.warn(
+          `P2 归因报告计算失败：${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
     return {
       overview,
       funnel: overview.funnel,
@@ -3113,6 +3126,7 @@ export class GrowthService implements OnModuleInit {
       ),
       bottlenecks: this.bottleneckReport(overview, runs, leads, accounts),
       leadStatusDistribution: this.leadStatusDistribution(leads),
+      attribution,
     };
   }
 
@@ -3244,6 +3258,210 @@ export class GrowthService implements OnModuleInit {
       attributedCustomerCount,
       attributionConfidence,
       platformComparison,
+    };
+  }
+
+  /**
+   * P2 T04 归因报告四维：按平台 / 策略（获客任务）/ 内容（文章）/ 话术 分组统计
+   * 线索→客户→商机→成交。数据来自统一事实表 + attributionLink 归因链；
+   * 话术维度为弱关联（sourceText/sourceTaskId 兜底），样本<3 标 lowConfidence（拍板 R6）。
+   */
+  private async computeAttributionReport(scope: GrowthScope, platform: string) {
+    const scopeWhere = this.growthScopeWhere(scope);
+    const crmScopeWhere: {
+      ownerId?: string;
+      OR?: Array<Record<string, unknown>>;
+    } = scope.tenantId
+      ? {
+          OR: [
+            { tenantId: scope.tenantId },
+            { ownerId: scope.userId, tenantId: null },
+          ],
+        }
+      : { ownerId: scope.userId };
+    const platformFilter = platform && platform !== 'all' ? { platform } : {};
+
+    // 1) 成交商机（含来源客户归因）
+    const wonOpps = await this.prisma.crmOpportunity.findMany({
+      where: { ...crmScopeWhere, archivedAt: null, stage: 'won' },
+      select: {
+        id: true,
+        amountCents: true,
+        primaryCustomerId: true,
+        metadata: true,
+      },
+    });
+    // 2) 客户 → 归因（source* 列）
+    const customerIds = wonOpps
+      .map((o) => o.primaryCustomerId)
+      .filter((v): v is string => Boolean(v));
+    const customers = customerIds.length
+      ? await this.prisma.crmCustomer.findMany({
+          where: { id: { in: customerIds } },
+          select: {
+            id: true,
+            sourcePlatform: true,
+            sourceTaskId: true,
+            sourceArticleId: true,
+            sourceText: true,
+            sourceUrl: true,
+          },
+        })
+      : [];
+    const customerById = new Map(customers.map((c) => [c.id, c]));
+
+    // 3) 文章标题
+    const articleIds = customers
+      .map((c) => c.sourceArticleId)
+      .filter((v): v is string => Boolean(v));
+    const articles = articleIds.length
+      ? await this.prisma.article.findMany({
+          where: { id: { in: articleIds } },
+          select: { id: true, title: true },
+        })
+      : [];
+    const articleById = new Map(articles.map((a) => [a.id, a]));
+
+    // 4) 获客任务名（sourceTaskId → config）
+    const taskIds = customers
+      .map((c) => c.sourceTaskId)
+      .filter((v): v is string => Boolean(v));
+    const configs = taskIds.length
+      ? await this.prisma.growthAcquisitionConfig.findMany({
+          where: { id: { in: taskIds } },
+          select: { id: true, taskName: true, platform: true },
+        })
+      : [];
+    const configById = new Map(configs.map((c) => [c.id, c]));
+
+    // 5) 线索量：按客户 source* 归因的反查（lead.customerId）
+    const leadsForCustomers = customerIds.length
+      ? await this.prisma.lead.findMany({
+          where: { customerId: { in: customerIds } },
+          select: { id: true, customerId: true, platform: true, sourceText: true },
+        })
+      : [];
+
+    // —— byPlatform：按客户 sourcePlatform 聚合 ——
+    const platformMap = new Map<string, { leads: number; customers: number; opportunities: number; won: number; wonAmountCents: number }>();
+    for (const opp of wonOpps) {
+      const customer = opp.primaryCustomerId ? customerById.get(opp.primaryCustomerId) : null;
+      const p = customer?.sourcePlatform || platformFilter.platform || 'unknown';
+      const entry = platformMap.get(p) ?? { leads: 0, customers: 0, opportunities: 0, won: 0, wonAmountCents: 0 };
+      entry.opportunities += 1;
+      entry.won += 1;
+      entry.wonAmountCents += opp.amountCents ?? 0;
+      if (opp.primaryCustomerId) entry.customers += 1;
+      platformMap.set(p, entry);
+    }
+    for (const lead of leadsForCustomers) {
+      const p = lead.platform || platformFilter.platform || 'unknown';
+      const entry = platformMap.get(p) ?? { leads: 0, customers: 0, opportunities: 0, won: 0, wonAmountCents: 0 };
+      entry.leads += 1;
+      platformMap.set(p, entry);
+    }
+    const byPlatform = Array.from(platformMap.entries()).map(([platformName, v]) => ({
+      platform: platformName,
+      leads: v.leads,
+      customers: v.customers,
+      opportunities: v.opportunities,
+      won: v.won,
+      wonAmountCents: v.wonAmountCents,
+      conversionRate: v.leads > 0 ? v.won / v.leads : null,
+    }));
+
+    // —— byStrategy：按 sourceTaskId（获客任务）聚合 ——
+    const strategyMap = new Map<string, { strategyId: string; strategyName: string; platform: string; leads: number; won: number; wonAmountCents: number }>();
+    for (const opp of wonOpps) {
+      const customer = opp.primaryCustomerId ? customerById.get(opp.primaryCustomerId) : null;
+      const taskId = customer?.sourceTaskId;
+      if (!taskId) continue;
+      const config = configById.get(taskId);
+      const key = config?.id ?? taskId;
+      const entry = strategyMap.get(key) ?? {
+        strategyId: config?.id ?? taskId,
+        strategyName: config?.taskName ?? `任务 ${taskId.slice(0, 8)}`,
+        platform: config?.platform ?? customer?.sourcePlatform ?? 'unknown',
+        leads: 0,
+        won: 0,
+        wonAmountCents: 0,
+      };
+      entry.won += 1;
+      entry.wonAmountCents += opp.amountCents ?? 0;
+      strategyMap.set(key, entry);
+    }
+    for (const lead of leadsForCustomers) {
+      const customer = lead.customerId ? customerById.get(lead.customerId) : null;
+      const taskId = customer?.sourceTaskId;
+      if (!taskId) continue;
+      const config = configById.get(taskId);
+      const key = config?.id ?? taskId;
+      const entry = strategyMap.get(key);
+      if (entry) entry.leads += 1;
+    }
+    const byStrategy = Array.from(strategyMap.values()).map((s) => ({
+      ...s,
+      conversionRate: s.leads > 0 ? s.won / s.leads : null,
+    }));
+
+    // —— byContent：按 sourceArticleId 聚合 ——
+    const contentMap = new Map<string, { articleId: string; title: string; publishCount: number; leads: number; customers: number; won: number; wonAmountCents: number }>();
+    for (const opp of wonOpps) {
+      const customer = opp.primaryCustomerId ? customerById.get(opp.primaryCustomerId) : null;
+      const articleId = customer?.sourceArticleId;
+      if (!articleId) continue;
+      const article = articleById.get(articleId);
+      const key = articleId;
+      const entry = contentMap.get(key) ?? {
+        articleId,
+        title: article?.title ?? articleId.slice(0, 8),
+        publishCount: 0,
+        leads: 0,
+        customers: 0,
+        won: 0,
+        wonAmountCents: 0,
+      };
+      entry.won += 1;
+      entry.wonAmountCents += opp.amountCents ?? 0;
+      if (opp.primaryCustomerId) entry.customers += 1;
+      contentMap.set(key, entry);
+    }
+    for (const lead of leadsForCustomers) {
+      const customer = lead.customerId ? customerById.get(lead.customerId) : null;
+      const articleId = customer?.sourceArticleId;
+      if (!articleId) continue;
+      const entry = contentMap.get(articleId);
+      if (entry) entry.leads += 1;
+    }
+    const byContent = Array.from(contentMap.values());
+
+    // —— byScript：按话术（sourceText 兜底 + copywriting 口径）弱关联 ——
+    const scriptMap = new Map<string, { text: string; usageCount: number; leads: number; won: number; wonAmountCents: number }>();
+    for (const lead of leadsForCustomers) {
+      const text = (lead.sourceText || '').slice(0, 40) || '（无话术文本）';
+      const entry = scriptMap.get(text) ?? { text, usageCount: 0, leads: 0, won: 0, wonAmountCents: 0 };
+      entry.leads += 1;
+      scriptMap.set(text, entry);
+    }
+    for (const opp of wonOpps) {
+      const customer = opp.primaryCustomerId ? customerById.get(opp.primaryCustomerId) : null;
+      const text = (customer?.sourceText || '').slice(0, 40) || '（无话术文本）';
+      const entry = scriptMap.get(text) ?? { text, usageCount: 0, leads: 0, won: 0, wonAmountCents: 0 };
+      entry.won += 1;
+      entry.wonAmountCents += opp.amountCents ?? 0;
+      scriptMap.set(text, entry);
+    }
+    const byScript = Array.from(scriptMap.values()).map((s) => ({
+      ...s,
+      lowConfidence: s.leads < 3 && s.won < 3 ? true : undefined,
+    }));
+
+    return {
+      byPlatform,
+      byStrategy,
+      byContent,
+      byScript,
+      generatedAt: new Date().toISOString(),
     };
   }
 
