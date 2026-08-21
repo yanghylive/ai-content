@@ -43,11 +43,13 @@ import {
   type CrmCustomerContinuity,
   type CrmTimelineEvent,
   type CrmWelcomeMessageTemplate,
+
 } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
 import { useConfirm } from "@/hooks/use-confirm";
+import { CustomerAttributionPanel } from "./customer-attribution-panel";
 import { WelcomeMessagePanel } from "./welcome-message-panel";
 
 const statusLabels: Record<string, string> = {
@@ -901,6 +903,12 @@ export function CustomerDetailClient({
                   customer={customer}
                   timeline={continuity.timeline}
                 />
+              </div>
+
+              {/* P2 T05：来源归因链（内容→发布→互动→线索→客户） */}
+              <div className="border-t border-divider pt-5">
+                <h2 className="mb-3 text-base font-semibold">来源归因</h2>
+                <CustomerAttributionPanel customerId={customer.id} />
               </div>
 
               <div className="border-t border-divider pt-5">
