@@ -7,8 +7,8 @@ import {
 } from './case-events.service';
 
 describe('CaseEventsService（分析事件）', () => {
-  it('白名单包含 PRD §14.1 的 12 个事件名', () => {
-    expect(CASE_EVENT_NAMES).toHaveLength(12);
+  it('白名单包含 PRD §14.1 案例事件 + P0-P2 growth 事件（共 25 个）', () => {
+    expect(CASE_EVENT_NAMES).toHaveLength(25);
     expect(CASE_EVENT_NAMES).toEqual([
       'case_impression',
       'case_open',
@@ -22,6 +22,20 @@ describe('CaseEventsService（分析事件）', () => {
       'inquiry_start',
       'inquiry_submit',
       'case_feedback',
+      // P0-P2 growth 事件（PRD §10.3）
+      'growth_home_viewed',
+      'acquisition_task_created',
+      'acquisition_preflight_completed',
+      'acquisition_run_started',
+      'acquisition_run_finished',
+      'lead_opened',
+      'lead_contacted',
+      'lead_synced_to_crm',
+      'opportunity_created',
+      'opportunity_stage_changed',
+      'opportunity_won',
+      'execution_blocked',
+      'execution_taken_over',
     ]);
   });
 
