@@ -20,6 +20,7 @@ function makeConsumer() {
     onDomainEvent: jest.fn(),
   };
   const crm = {
+    getCustomer: jest.fn().mockResolvedValue({ id: 'c-1' }),
     appendWelcomePendingTimeline: jest.fn().mockResolvedValue(undefined),
   };
   const consumer = new CrmOutboxConsumer(outboxRelay as never, crm as never);
@@ -75,5 +76,15 @@ describe('CrmOutboxConsumer（lead.action.executed → 欢迎语时间线）', (
     await expect(handlerOf(outboxRelay)(makeEvent())).rejects.toThrow(
       'timeline write fail',
     );
+  });
+
+  it('handle：客户已删除 → 跳过（不写时间线，不抛错，防 outbox 重试到 dead）', async () => {
+    const { consumer, outboxRelay, crm } = makeConsumer();
+    consumer.onModuleInit();
+    crm.getCustomer.mockRejectedValue(
+      Object.assign(new Error('客户不存在'), { status: 404 }),
+    );
+    await expect(handlerOf(outboxRelay)(makeEvent())).resolves.toBeUndefined();
+    expect(crm.appendWelcomePendingTimeline).not.toHaveBeenCalled();
   });
 });
