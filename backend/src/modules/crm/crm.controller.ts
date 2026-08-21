@@ -251,6 +251,22 @@ export class CrmController {
     return this.crmService.updateOpportunity(this.getUserId(request), id, body);
   }
 
+  @Post('opportunities/:id/close')
+  closeOpportunity(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body()
+    body: {
+      result?: string;
+      winReason?: string;
+      loseReason?: string;
+      amountCents?: number;
+      closeDate?: string;
+    },
+  ) {
+    return this.crmService.closeOpportunity(this.getUserId(request), id, body);
+  }
+
   @Post('opportunities/:id/archive')
   archiveOpportunity(
     @Req() request: AuthenticatedRequest,
