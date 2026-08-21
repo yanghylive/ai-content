@@ -778,6 +778,47 @@ export function archiveCrmOpportunity(id: string) {
   return api.post<CrmOpportunity>(`/crm/opportunities/${id}/archive`, {});
 }
 
+/** P2 T05：商机成交/输单语义接口（won 必填金额+closeDate；lost 必填 loseReason） */
+export function closeCrmOpportunity(
+  id: string,
+  input: {
+    result: "won" | "lost";
+    winReason?: string;
+    loseReason?: string;
+    amountCents?: number;
+    closeDate?: string;
+  },
+) {
+  return api.post<CrmOpportunity>(`/crm/opportunities/${id}/close`, input);
+}
+
+/** P2 T05：客户来源归因（内容→发布→互动→线索→客户链；无 Lead → layer=manual） */
+export interface CrmCustomerAttribution {
+  layer: "confirmed" | "rule_matched" | "inferred" | "unknown" | "manual";
+  hops: Array<{
+    fromType: string;
+    fromId: string;
+    toType: string;
+    toId: string;
+    model: string;
+    label?: string;
+  }>;
+  lead?: {
+    id: string;
+    sourceArticleId: string | null;
+    sourcePublishRecordId: string | null;
+    sourceInteractionEventId: string | null;
+    sourceUrl: string | null;
+    sourceText: string | null;
+  } | null;
+  customer?: { id: string; displayName?: string };
+}
+export function getCrmCustomerAttribution(id: string) {
+  return api.get<CrmCustomerAttribution>(
+    `/crm/customers/${encodeURIComponent(id)}/attribution`,
+  );
+}
+
 export function listCrmTasks(
   params: { q?: string; status?: string; customerId?: string } = {},
 ) {
