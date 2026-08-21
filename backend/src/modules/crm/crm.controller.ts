@@ -59,6 +59,14 @@ export class CrmController {
     return this.crmService.getCustomerContinuity(this.getUserId(request), id);
   }
 
+  @Get('customers/:id/attribution')
+  getCustomerAttribution(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.crmService.getCustomerAttribution(this.getUserId(request), id);
+  }
+
   @Patch('customers/:id')
   updateCustomer(
     @Req() request: AuthenticatedRequest,

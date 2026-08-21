@@ -199,6 +199,22 @@ function makePrismaMock() {
       count: jest.fn(async () => 0),
       findMany: jest.fn(async () => []),
     },
+    lead: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    article: {
+      findFirst: jest.fn(),
+    },
+    publishRecord: {
+      findFirst: jest.fn(),
+    },
+    interactionEvent: {
+      findFirst: jest.fn(),
+    },
     interactionTask: {
       findFirst: jest.fn(),
     },
@@ -1815,5 +1831,78 @@ describe('P2 成交回写（handleOpportunityWon / close）', () => {
         result: 'maybe',
       } as never),
     ).rejects.toThrow('result 必须为 won 或 lost');
+  });
+});
+
+// —— P2 T03 客户来源归因接口 ——
+describe('P2 客户归因（getCustomerAttribution）', () => {
+  function makeAttributionService() {
+    const prisma = makePrismaMock();
+    prisma.tenantMember.findFirst.mockResolvedValue({
+      tenantId: 'tenant-1',
+      role: 'admin',
+      permissions: [],
+    });
+    const service = new CrmService(
+      (prisma as unknown) as PrismaService,
+      makeAppMarketMock(),
+    );
+    return { prisma, service };
+  }
+
+  it('有 Lead 关联 → 返回完整归因链（content→publish→interaction→lead→customer）', async () => {
+    const { prisma, service } = makeAttributionService();
+    prisma.crmCustomer.findFirst.mockResolvedValue({
+      id: 'customer-1',
+      ownerId: 'user-1',
+      displayName: '张三',
+    });
+    prisma.lead.findFirst.mockResolvedValue({
+      id: 'lead-1',
+      userId: 'user-1',
+      customerId: 'customer-1',
+      sourceArticleId: 'article-1',
+      sourcePublishRecordId: null,
+      sourceInteractionEventId: 'event-1',
+      sourceUrl: 'https://example.com/1',
+      sourceText: '怎么收费？',
+    });
+    prisma.article.findFirst.mockResolvedValue({ id: 'article-1', title: '装修避坑' });
+    prisma.publishRecord.findFirst.mockResolvedValue(null);
+    prisma.interactionEvent.findFirst.mockResolvedValue({ id: 'event-1', raw: '{}' });
+
+    const result = await service.getCustomerAttribution('user-1', 'customer-1');
+    expect(result.layer).toBe('confirmed');
+    expect(result.hops.length).toBe(3); // content→lead, interaction→lead, lead→customer
+    expect(result.hops[0]).toEqual(
+      expect.objectContaining({ fromType: 'content', fromId: 'article-1', label: 'first_touch' }),
+    );
+    expect(result.hops[2]).toEqual(
+      expect.objectContaining({ fromType: 'lead', toType: 'customer', label: 'qualified_by' }),
+    );
+    expect(result.lead.sourceUrl).toBe('https://example.com/1');
+  });
+
+  it('导入/手动客户无 Lead → layer=manual', async () => {
+    const { prisma, service } = makeAttributionService();
+    prisma.crmCustomer.findFirst.mockResolvedValue({
+      id: 'customer-1',
+      ownerId: 'user-1',
+      displayName: '手动客户',
+    });
+    prisma.lead.findFirst.mockResolvedValue(null);
+
+    const result = await service.getCustomerAttribution('user-1', 'customer-1');
+    expect(result.layer).toBe('manual');
+    expect(result.hops).toEqual([]);
+  });
+
+  it('他人客户 → 404（scope 堵 IDOR）', async () => {
+    const { prisma, service } = makeAttributionService();
+    prisma.crmCustomer.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.getCustomerAttribution('user-1', 'customer-other'),
+    ).rejects.toThrow('客户不存在');
   });
 });

@@ -1407,6 +1407,65 @@ export class CrmService {
     return this.updateOpportunity(userId, opportunityId, input);
   }
 
+  /**
+   * P2 T03：客户来源归因（GET /crm/customers/:id/attribution）。
+   * 通过 customerId 反查统一 Lead（带 ownerId scope 堵 IDOR），返回
+   * 内容 → 发布 → 互动 → 线索 → 客户 的归因链；导入/手动客户无 Lead → layer='manual'。
+   */
+  async getCustomerAttribution(userId: string, customerId: string) {
+    // scope 校验：客户必须属于当前用户
+    const customer = await this.prisma.crmCustomer.findFirst({
+      where: { ownerId: userId, id: customerId },
+    });
+    if (!customer) throw new NotFoundException('客户不存在');
+
+    const lead = await this.prisma.lead.findFirst({
+      where: { customerId, userId },
+    });
+
+    if (!lead) {
+      return { layer: 'manual', hops: [], customer: { id: customerId } };
+    }
+
+    const [article, publishRecord, interactionEvent] = await Promise.all([
+      lead.sourceArticleId
+        ? this.prisma.article.findFirst({ where: { id: lead.sourceArticleId } })
+        : Promise.resolve(null),
+      lead.sourcePublishRecordId
+        ? this.prisma.publishRecord.findFirst({ where: { id: lead.sourcePublishRecordId } })
+        : Promise.resolve(null),
+      lead.sourceInteractionEventId
+        ? this.prisma.interactionEvent.findFirst({ where: { id: lead.sourceInteractionEventId } })
+        : Promise.resolve(null),
+    ]);
+
+    const hops: Array<{ fromType: string; fromId: string; toType: string; toId: string; model: string; label?: string }> = [];
+    if (article) {
+      hops.push({ fromType: 'content', fromId: article.id, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'first_touch' });
+    }
+    if (publishRecord) {
+      hops.push({ fromType: 'publish', fromId: publishRecord.id, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'first_touch' });
+    }
+    if (interactionEvent) {
+      hops.push({ fromType: 'interaction', fromId: interactionEvent.id, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'created_from' });
+    }
+    hops.push({ fromType: 'lead', fromId: lead.id, toType: 'customer', toId: customerId, model: 'deterministic', label: 'qualified_by' });
+
+    return {
+      layer: hops.length > 0 ? 'confirmed' : 'unknown',
+      hops,
+      lead: {
+        id: lead.id,
+        sourceArticleId: lead.sourceArticleId,
+        sourcePublishRecordId: lead.sourcePublishRecordId,
+        sourceInteractionEventId: lead.sourceInteractionEventId,
+        sourceUrl: lead.sourceUrl ?? null,
+        sourceText: lead.sourceText ?? null,
+      },
+      customer: { id: customerId, displayName: customer.displayName },
+    };
+  }
+
   async archiveOpportunity(userId: string, opportunityId: string) {
     await this.requireCrmMutationScope(userId);
     const current = await this.getOpportunity(userId, opportunityId);

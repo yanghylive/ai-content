@@ -110,12 +110,14 @@ describe('LeadConvertService', () => {
         data: expect.objectContaining({ status: 'converted' }),
       }),
     );
-    // 未传 task → 默认建「跟进新客户」待办，让商户在 CRM 待办里看到新客户
+    // 未传 task → 按 P2 T03 R1-R4 规则默认建跟进待办（默认 LEAD score80/qualified → R1）
     expect(tx.crmTask.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          title: '跟进新客户：张三',
+          title: '首次跟进：张三',
           customerId: 'cust-1',
+          priority: 'high',
+          metadata: expect.objectContaining({ ruleId: 'R1' }),
         }),
       }),
     );
@@ -313,5 +315,96 @@ describe('LeadConvertService', () => {
     ).rejects.toThrow('company create failed');
     // 事务内后续步骤未执行（customer 已建但事务回滚 → 不产生 timeline）
     expect(prisma.crmTimelineEvent.create).not.toHaveBeenCalled();
+  });
+});
+
+// —— P2 T03 自动跟进任务规则（R1-R4）——
+describe('P2 自动跟进任务规则', () => {
+  it('R1：score>=80 且已联系/合格 → 首次跟进 high 优先级 24h', async () => {
+    const { prisma, tx } = makePrisma();
+    const svc = makeService(prisma);
+    await svc.convert({
+      leadId: 'lead-1',
+      scope: { userId: 'u-1', tenantId: 'tenant-1' },
+    });
+    const call = tx.crmTask.create.mock.calls[0][0];
+    expect(call.data.title).toBe('首次跟进：张三');
+    expect(call.data.priority).toBe('high');
+    expect(call.data.metadata.ruleId).toBe('R1');
+    const dueMs = new Date(call.data.dueAt).getTime();
+    const expected = Date.now() + 24 * 60 * 60 * 1000;
+    expect(Math.abs(dueMs - expected)).toBeLessThan(5000);
+  });
+
+  it('R2：私信来源（latestReply 有值）→ 回复私信 48h normal', async () => {
+    const { prisma, tx } = makePrisma();
+    prisma.$transaction = jest.fn(async (fn: (t: unknown) => Promise<unknown>) =>
+      fn(tx),
+    );
+    tx.lead.findFirst.mockResolvedValue(
+      LEAD({ score: 50, status: 'new', sourceType: 'comment', latestReply: '你好' }),
+    );
+    const svc = makeService(prisma);
+    await svc.convert({
+      leadId: 'lead-1',
+      scope: { userId: 'u-1', tenantId: 'tenant-1' },
+    });
+    const call = tx.crmTask.create.mock.calls[0][0];
+    expect(call.data.title).toBe('回复私信并确认需求：张三');
+    expect(call.data.priority).toBe('normal');
+    expect(call.data.metadata.ruleId).toBe('R2');
+  });
+
+  it('R3：评论来源无回复 → 评论转私信 48h', async () => {
+    const { prisma, tx } = makePrisma();
+    prisma.$transaction = jest.fn(async (fn: (t: unknown) => Promise<unknown>) =>
+      fn(tx),
+    );
+    tx.lead.findFirst.mockResolvedValue(
+      LEAD({ score: 30, status: 'new', sourceType: 'comment', latestReply: null }),
+    );
+    const svc = makeService(prisma);
+    await svc.convert({
+      leadId: 'lead-1',
+      scope: { userId: 'u-1', tenantId: 'tenant-1' },
+    });
+    const call = tx.crmTask.create.mock.calls[0][0];
+    expect(call.data.title).toBe('评论转私信推进：张三');
+    expect(call.data.metadata.ruleId).toBe('R3');
+  });
+
+  it('R4：兜底 → 跟进新客户 24h', async () => {
+    const { prisma, tx } = makePrisma();
+    prisma.$transaction = jest.fn(async (fn: (t: unknown) => Promise<unknown>) =>
+      fn(tx),
+    );
+    tx.lead.findFirst.mockResolvedValue(
+      LEAD({ score: 10, status: 'new', sourceType: 'search', latestReply: null }),
+    );
+    const svc = makeService(prisma);
+    await svc.convert({
+      leadId: 'lead-1',
+      scope: { userId: 'u-1', tenantId: 'tenant-1' },
+    });
+    const call = tx.crmTask.create.mock.calls[0][0];
+    expect(call.data.title).toBe('跟进新客户：张三');
+    expect(call.data.metadata.ruleId).toBe('R4');
+  });
+
+  it('input.task 显式覆盖 → 用调用方 title 不覆盖 metadata', async () => {
+    const { prisma, tx } = makePrisma();
+    const svc = makeService(prisma);
+    await svc.convert({
+      leadId: 'lead-1',
+      scope: { userId: 'u-1', tenantId: 'tenant-1' },
+      task: { title: '自定义跟进', description: '自定', priority: 'low', dueAt: new Date('2026-09-01') },
+    });
+    const call = tx.crmTask.create.mock.calls[0][0];
+    expect(call.data.title).toBe('自定义跟进');
+    expect(call.data.description).toBe('自定');
+    expect(call.data.priority).toBe('low');
+    expect(call.data.dueAt).toEqual(new Date('2026-09-01'));
+    // 未显式覆盖时 metadata 仍带规则信息（用于复盘）
+    expect(call.data.metadata.ruleId).toBeTruthy();
   });
 });
