@@ -93,6 +93,14 @@ export function CustomerAttributionPanel({ customerId }: { customerId: string })
           <ExternalLink size={12} /> 查看来源内容
         </a>
       )}
+      {data.lead?.sourceInteractionEventId && (
+        <a
+          href={`/engagement/records?eventId=${encodeURIComponent(data.lead.sourceInteractionEventId)}`}
+          className="ml-3 mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          <ExternalLink size={12} /> 查看互动记录
+        </a>
+      )}
       {data.lead?.sourceText && (
         <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-5 text-default-500">
           {data.lead.sourceText.slice(0, 200)}
