@@ -2055,6 +2055,12 @@ model CrmCustomer {
   profileUrl              String?            @map("profile_url") @db.Text
   externalUserId          String?            @map("external_user_id")
   dedupeKey               String?            @map("dedupe_key")
+  // P2 归因主键链：客户来源直接指向内容/发布/互动/获客任务/运行（2026-08-20 P2）
+  sourceArticleId          String? @map("source_article_id")
+  sourcePublishRecordId    String? @map("source_publish_record_id")
+  sourceInteractionEventId String? @map("source_interaction_event_id")
+  sourceTaskId             String? @map("source_task_id")
+  sourceRunId              String? @map("source_run_id")
   assignedUserId          String?            @map("assigned_user_id")
   firstInteractionTaskId  String?            @map("first_interaction_task_id")
   latestInteractionTaskId String?            @map("latest_interaction_task_id")

@@ -460,6 +460,47 @@ export interface GrowthReports {
             opportunity: number;
         }>;
     };
+    /**
+     * P2 归因报告四维（按平台/策略/内容/话术）。旧前端可忽略；null 语义与 sixStage 一致。
+     */
+    attribution?: {
+        byPlatform: Array<{
+            platform: string;
+            leads: number;
+            customers: number;
+            opportunities: number;
+            won: number;
+            wonAmountCents: number;
+            conversionRate: number | null;
+        }>;
+        byStrategy: Array<{
+            strategyId: string;
+            strategyName: string;
+            platform: string;
+            leads: number;
+            won: number;
+            wonAmountCents: number;
+            conversionRate: number | null;
+        }>;
+        byContent: Array<{
+            articleId: string;
+            title: string;
+            publishCount: number;
+            leads: number;
+            customers: number;
+            won: number;
+            wonAmountCents: number;
+        }>;
+        byScript: Array<{
+            text: string;
+            usageCount: number;
+            leads: number;
+            won: number;
+            wonAmountCents: number;
+            lowConfidence?: boolean;
+        }>;
+        generatedAt: string;
+    };
 }
 
 export interface GrowthReportQuery {

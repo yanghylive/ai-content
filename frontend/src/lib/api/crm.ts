@@ -43,6 +43,11 @@ export interface CrmCustomer {
   profileUrl: string | null;
   externalUserId: string | null;
   dedupeKey: string | null;
+  sourceArticleId: string | null;
+  sourcePublishRecordId: string | null;
+  sourceInteractionEventId: string | null;
+  sourceTaskId: string | null;
+  sourceRunId: string | null;
   assignedUserId: string | null;
   firstInteractionTaskId: string | null;
   latestInteractionTaskId: string | null;
@@ -92,6 +97,8 @@ export interface CrmOpportunity {
   nextStep: string | null;
   competitor: string | null;
   source: string | null;
+  winReason: string | null;
+  loseReason: string | null;
   archived: boolean;
   archivedAt: string | null;
   createdAt: string;
