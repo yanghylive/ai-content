@@ -19,6 +19,7 @@ function makeService(
     autoUpload as any,
     prisma as any,
     runtime as any,
+    undefined as any, // kaypalMemory（构造第 5 位；spec 不注入记忆服务）
     crm as any,
     authRequestContext as any,
     activation as any,
@@ -2451,12 +2452,12 @@ describe('GrowthService 跟进阶段接入 driver 触达（C 阶段）', () => {
 });
 
 describe('GrowthService 小红书获客执行（D 阶段：发现进线索池，触达待人工）', () => {
-  it('platformTouchReady：抖音/企微 true，小红书/快手 false', () => {
+  it('platformTouchReady：抖音/企微/快手 true，小红书 false（D 阶段快手已接入触达）', () => {
     const service = makeService({}, {}, {}, {}, {});
     expect(service.platformTouchReady('douyin')).toBe(true);
     expect(service.platformTouchReady('wechat-channel')).toBe(true);
     expect(service.platformTouchReady('xiaohongshu')).toBe(false);
-    expect(service.platformTouchReady('kuaishou')).toBe(false);
+    expect(service.platformTouchReady('kuaishou')).toBe(true);
   });
 
   it('growthAutoExecutionCapability：小红书 keyword → 不可无人值守（触达未接入，可手动确认）', () => {

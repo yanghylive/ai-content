@@ -18,7 +18,7 @@ import { InquiryRateLimiter } from './inquiry-rate-limiter';
  * 看板聚合（M7-02）或后续 reporting 再接。
  */
 
-/** 12 个允许上报的事件名白名单（PRD §14.1，与前端同步） */
+/** 事件名白名单（PRD §14.1 案例事件 + P0-P2 growth 事件；与前端同步） */
 export const CASE_EVENT_NAMES = [
   'case_impression',
   'case_open',
@@ -32,6 +32,20 @@ export const CASE_EVENT_NAMES = [
   'inquiry_start',
   'inquiry_submit',
   'case_feedback',
+  // —— 3010 AI 客户增长（P0-P2 埋点，PRD §10.3）——
+  'growth_home_viewed',
+  'acquisition_task_created',
+  'acquisition_preflight_completed',
+  'acquisition_run_started',
+  'acquisition_run_finished',
+  'lead_opened',
+  'lead_contacted',
+  'lead_synced_to_crm',
+  'opportunity_created',
+  'opportunity_stage_changed',
+  'opportunity_won',
+  'execution_blocked',
+  'execution_taken_over',
 ] as const;
 
 export type CaseEventName = (typeof CASE_EVENT_NAMES)[number];
