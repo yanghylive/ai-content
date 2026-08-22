@@ -1,8 +1,11 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { AiBrowserActionService } from './ai-browser-action.service';
+import { AiBrowserActionService, AiBrowserAction } from './ai-browser-action.service';
+import type { AgentBrowserSession } from './agent-browser.types';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
 import { PlaywrightMcpService } from './playwright-mcp.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { matchesConfirmedAction } from './ai-browser-action.service';
 import { detectPromptInjection } from '../ai-gateway/ai-gateway.service';
 
 export interface AgentBrowserStepEvent {
@@ -34,6 +37,7 @@ export class AgentBrowserLoopService {
     private readonly actions: AiBrowserActionService,
     private readonly policy: AgentBrowserPolicyService,
     private readonly playwrightMcp?: PlaywrightMcpService,
+    private readonly prisma?: PrismaService,
   ) {}
 
   /**
@@ -44,7 +48,10 @@ export class AgentBrowserLoopService {
   async run(
     sessionId: string,
     instruction: string,
-    options: { onStep?: (event: AgentBrowserStepEvent) => void; confirmedTools?: string[] } = {},
+    options: {
+      onStep?: (event: AgentBrowserStepEvent) => void;
+      confirmedTools?: Array<{ action: string; target?: string; url?: string }>;
+    } = {},
   ): Promise<{ ok: boolean; steps: AgentBrowserStepEvent[] }> {
     const { onStep, confirmedTools } = options;
     const session = this.sessions.get(sessionId);
@@ -103,6 +110,25 @@ export class AgentBrowserLoopService {
           { url: 'url' in action ? (action.url ?? session.url) : session.url },
           { url: session.url, allowDomains: session.allowDomains },
         );
+        // P1-3 高风险需确认：未在已确认列表 → 持久化 AgentConfirmation（pending）
+        // 供用户通过既有 confirmations 接口审批（绑定会话+精确 target/url）
+        if (audit.requiresConfirmation) {
+          const matched = (confirmedTools ?? []).some((c) =>
+            matchesConfirmedAction(c, action),
+          );
+          if (!matched) {
+            const confirmationId = await this.persistPendingConfirmation(
+              session,
+              action,
+              audit.riskLevel,
+            );
+            return {
+              allowed: false,
+              reason: `需用户确认后执行（高风险动作${confirmationId ? `，确认单 ${confirmationId}` : ''}）`,
+              requiresConfirmation: true,
+            };
+          }
+        }
         return {
           allowed: audit.allowed,
           reason: audit.allowed ? undefined : audit.reason,
@@ -255,6 +281,64 @@ export class AgentBrowserLoopService {
       .map((item) => (typeof item.text === 'string' ? item.text : ''))
       .join('\n')
       .trim();
+  }
+
+  /**
+   * P1-3 确认持久化：高风险动作未确认时写 AgentConfirmation 表（pending）。
+   * 返回确认单 id；prisma 不可用时仅内存提示（不落库）。
+   */
+  private async persistPendingConfirmation(
+    session: AgentBrowserSession,
+    action: AiBrowserAction,
+    riskLevel: string,
+  ): Promise<string | undefined> {
+    try {
+      const delegate = (
+        this.prisma as unknown as {
+          agentConfirmation?: {
+            create?: (args: {
+              data: {
+                tenantId: string;
+                userId: string;
+                sessionId: string;
+                action: string;
+                status: string;
+                riskLevel: string;
+                target?: string | null;
+                content?: string | null;
+                confirmationJson: unknown;
+              };
+            }) => Promise<{ id: string }>;
+          };
+        }
+      )?.agentConfirmation;
+      if (!delegate?.create) return undefined;
+      const created = await delegate.create({
+        data: {
+          tenantId: session.lease?.tenantId ?? 'legacy-local-desktop',
+          userId: session.lease?.ownerId ?? 'legacy-local-user',
+          sessionId: session.id,
+          action: action.action,
+          status: 'pending',
+          riskLevel,
+          target: 'selector' in action ? action.selector : null,
+          content: 'url' in action ? action.url : null,
+          confirmationJson: {
+            sessionId: session.id,
+            action: action.action,
+            target: 'selector' in action ? action.selector : undefined,
+            url: 'url' in action ? action.url : undefined,
+            createdAt: new Date().toISOString(),
+          },
+        },
+      });
+      return created.id;
+    } catch (error) {
+      this.logger.warn(
+        `AgentConfirmation 持久化失败（不阻断，仅内存提示）：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return undefined;
+    }
   }
 
   /** §14.2 读取 Agent Browser 灰度配置（环境变量，缺省=dom-agent 开启/读操作为主） */

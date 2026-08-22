@@ -439,3 +439,38 @@ describe('AiBrowserActionService §14.2 限制参数', () => {
     expect(result.results[0].ok).toBe(true);
   });
 });
+
+describe('AiBrowserActionService 精确确认匹配', () => {
+  it('同 action 不同 selector：不匹配（不放行）', async () => {
+    const { matchesConfirmedAction } = require('./ai-browser-action.service');
+    const step = { action: 'click', selector: '#btn-a' };
+    expect(
+      matchesConfirmedAction({ action: 'click', target: '#btn-b' }, step as never),
+    ).toBe(false);
+  });
+
+  it('同 action 同 selector：匹配放行', async () => {
+    const { matchesConfirmedAction } = require('./ai-browser-action.service');
+    const step = { action: 'click', selector: '#btn-a' };
+    expect(
+      matchesConfirmedAction({ action: 'click', target: '#btn-a' }, step as never),
+    ).toBe(true);
+  });
+
+  it('同 action 不同 url：不匹配（导航目标不同）', async () => {
+    const { matchesConfirmedAction } = require('./ai-browser-action.service');
+    const step = { action: 'goto', url: 'https://a.com' };
+    expect(
+      matchesConfirmedAction(
+        { action: 'goto', url: 'https://b.com' },
+        step as never,
+      ),
+    ).toBe(false);
+  });
+
+  it('仅 action 匹配（无 target/url）：放行', async () => {
+    const { matchesConfirmedAction } = require('./ai-browser-action.service');
+    const step = { action: 'click', selector: '#btn-a' };
+    expect(matchesConfirmedAction({ action: 'click' }, step as never)).toBe(true);
+  });
+});

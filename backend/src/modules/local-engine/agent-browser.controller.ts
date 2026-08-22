@@ -79,7 +79,11 @@ export class AgentBrowserController {
   async run(
     @Req() request: AuthRequest,
     @Param('id') id: string,
-    @Body() body: { instruction?: string; confirmedTools?: string[] } = {},
+    @Body()
+    body: {
+      instruction?: string;
+      confirmedTools?: Array<{ action: string; target?: string; url?: string }>;
+    } = {},
   ) {
     const tenantId = await this.resolveTenantId();
     this.sessions.assertOwner(id, this.getUserId(request), tenantId);
