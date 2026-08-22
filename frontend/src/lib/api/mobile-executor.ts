@@ -75,6 +75,31 @@ export async function listDevices(): Promise<MobileDeviceInfo[]> {
   return api.get<MobileDeviceInfo[]>("/mobile-executor/devices");
 }
 
+/** 任务证据 */
+export interface ExecutorEvidence {
+  id: string;
+  stepIndex: number;
+  type: string;
+  content: Record<string, unknown>;
+  createdAt: string;
+}
+
+/** 上传任务执行证据（截图 dataURL / 结构化内容） */
+export async function addTaskEvidence(
+  taskId: string,
+  input: { type: string; stepIndex?: number; content: Record<string, unknown> },
+): Promise<{ id: string; taskId: string; type: string }> {
+  return api.post<{ id: string; taskId: string; type: string }>(
+    `/mobile-executor/tasks/${taskId}/evidence`,
+    input,
+  );
+}
+
+/** 查询任务证据 */
+export async function listTaskEvidence(taskId: string): Promise<ExecutorEvidence[]> {
+  return api.get<ExecutorEvidence[]>(`/mobile-executor/tasks/${taskId}/evidence`);
+}
+
 /** 活跃租约列表 */
 export async function listActiveLeases(): Promise<ExecutorLeaseView[]> {
   return api.get<ExecutorLeaseView[]>("/mobile-executor/leases");

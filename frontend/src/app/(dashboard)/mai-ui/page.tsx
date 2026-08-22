@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { rpaStatus, captureScreen, executeActions, resumeAfterAsk, cancelActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
 import { planMaiUiActions, sinkMaiUiTaskToCrm, type MaiUiAction } from "@/lib/api/mai-ui";
-import { createMaiUiTask, reportTaskStatus } from "@/lib/api/mobile-executor";
+import { createMaiUiTask, reportTaskStatus, addTaskEvidence } from "@/lib/api/mobile-executor";
 
 /** MAI-UI 手机端工作台：截屏 → 指令 → 规划动作 → 无障碍执行 → 人工确认 */
 export default function MaiUiWorkbenchPage() {
@@ -109,6 +109,22 @@ export default function MaiUiWorkbenchPage() {
       pushLog(`⚠️ 任务创建失败（继续直接执行）：${e instanceof Error ? e.message : String(e)}`);
     }
     const result = executeActions(mapped as MaiUiAction[]);
+    // P1 证据链：执行完成后截屏存证（审计留痕，2026-08-22）
+    if (taskId && result.ok) {
+      try {
+        const shotAfter = captureScreen();
+        if (shotAfter.ok && shotAfter.message.startsWith("data:")) {
+          await addTaskEvidence(taskId, {
+            type: "screenshot",
+            stepIndex: -1,
+            content: { dataUrl: shotAfter.message, stage: "after-execution" },
+          });
+          pushLog(`📸 执行后截图已存证`);
+        }
+      } catch {
+        /* 存证失败不阻塞 */
+      }
+    }
     // 回传执行结果
     if (taskId) {
       try {

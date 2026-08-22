@@ -16,6 +16,7 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { DeviceRegistryService } from './device-registry.service';
 import { TaskDispatchService } from './task-dispatch.service';
 import { ExecutorStatusService } from './executor-status.service';
+import { ExecutorEvidenceService } from './executor-evidence.service';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
 
@@ -30,6 +31,7 @@ export class MobileExecutorController {
     private readonly devices: DeviceRegistryService,
     private readonly dispatch: TaskDispatchService,
     private readonly status: ExecutorStatusService,
+    private readonly evidence: ExecutorEvidenceService,
   ) {}
 
   private requireUser(request: AuthenticatedRequest): AuthenticatedUser {
@@ -131,6 +133,32 @@ export class MobileExecutorController {
   ) {
     const user = this.requireUser(request);
     return this.dispatch.cancelTask(user.id, taskId);
+  }
+
+  @Post('tasks/:id/evidence')
+  @ApiOperation({ summary: '上传任务执行证据（截图/节点树/结果）' })
+  addEvidence(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') taskId: string,
+    @Body()
+    input: {
+      type: string;
+      stepIndex?: number;
+      content: Record<string, unknown>;
+    },
+  ) {
+    const user = this.requireUser(request);
+    return this.evidence.addEvidence(user.id, taskId, input);
+  }
+
+  @Get('tasks/:id/evidence')
+  @ApiOperation({ summary: '查询任务证据列表' })
+  listEvidence(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') taskId: string,
+  ) {
+    const user = this.requireUser(request);
+    return this.evidence.listEvidence(user.id, taskId);
   }
 
   @Post('tasks/:id/status')

@@ -3,6 +3,7 @@ import { MobileExecutorController } from './mobile-executor.controller';
 import { DeviceRegistryService } from './device-registry.service';
 import { TaskDispatchService } from './task-dispatch.service';
 import { ExecutorStatusService } from './executor-status.service';
+import { ExecutorEvidenceService } from './executor-evidence.service';
 
 /**
  * 手机执行器服务器侧（C 组/P5，主文档 4.3）
@@ -15,6 +16,7 @@ import { ExecutorStatusService } from './executor-status.service';
     DeviceRegistryService,
     TaskDispatchService,
     ExecutorStatusService,
+    ExecutorEvidenceService,
   ],
   exports: [TaskDispatchService, DeviceRegistryService],
 })
