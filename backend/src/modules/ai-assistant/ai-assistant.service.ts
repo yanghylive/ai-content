@@ -429,26 +429,26 @@ export class AiAssistantService {
           status: 'disabled', // 止血：确认草稿创建的配置默认禁用，需手动启用
         });
         configId = created.id;
-        const wrote = await this.prisma.growthTaskDraft.updateMany({
-          where: { id, status: 'confirmed' },
-          data: { configId },
-        });
+        // P1（复查第三轮）：关联更新本身可能 throw（DB 异常）——单独捕获，
+        // 任何路径（throw / count!==1）都必须删除刚创建的配置防孤儿再回滚
+        let wrote: { count: number };
+        try {
+          wrote = await this.prisma.growthTaskDraft.updateMany({
+            where: { id, status: 'confirmed' },
+            data: { configId },
+          });
+        } catch (writeError) {
+          await this.cleanupOrphanConfig(userId, configId);
+          await this.rollbackDraftToDraft(id);
+          throw new ConflictException(
+            `配置关联草稿失败（${writeError instanceof Error ? writeError.message : String(writeError)}），已清理配置并回滚，请重试`,
+          );
+        }
         if (wrote.count !== 1) {
           // P1（复查第二轮）：configId 回写失败——删除刚创建的配置（防孤儿），
           // 回滚草稿到 draft 允许重试
-          await this.growth
-            .deleteConfig(userId, configId)
-            .catch((e: unknown) =>
-              this.logger.error(
-                `孤儿配置清理失败（${configId}，需人工删除）：${e instanceof Error ? e.message : String(e)}`,
-              ),
-            );
-          await this.prisma.growthTaskDraft
-            .updateMany({
-              where: { id, status: 'confirmed' },
-              data: { status: 'draft' },
-            })
-            .catch(() => undefined);
+          await this.cleanupOrphanConfig(userId, configId);
+          await this.rollbackDraftToDraft(id);
           throw new ConflictException(
             '配置关联草稿失败，已清理配置并回滚，请重试',
           );
@@ -456,12 +456,7 @@ export class AiAssistantService {
       } catch (error) {
         if (error instanceof ConflictException) throw error;
         // 回滚占位：配置未创建成功，草稿恢复 draft 允许重新确认（无孤儿配置）
-        await this.prisma.growthTaskDraft
-          .updateMany({
-            where: { id, status: 'confirmed' },
-            data: { status: 'draft' },
-          })
-          .catch(() => undefined);
+        await this.rollbackDraftToDraft(id);
         throw new ConflictException(
           `配置创建失败，草稿已回滚可重新确认：${(error as Error).message ?? String(error)}`,
         );
@@ -483,6 +478,33 @@ export class AiAssistantService {
     const highRisk = actions.filter((a) => a.risk === 'high').length;
     const mediumRisk = actions.filter((a) => a.risk === 'medium').length;
     return `意图 ${row.intent}：${highRisk} 项高风险、${mediumRisk} 项中风险动作需确认后执行`;
+  }
+
+  /**
+   * P1（复查第三轮）：孤儿配置清理——删除刚创建但未成功关联草稿的配置。
+   * 删除失败仅记录错误（需人工在数据目录删除），不抛断主流程。
+   */
+  private async cleanupOrphanConfig(
+    userId: string,
+    configId: string,
+  ): Promise<void> {
+    await this.growth
+      .deleteConfig(userId, configId)
+      .catch((e: unknown) =>
+        this.logger.error(
+          `孤儿配置清理失败（${configId}，需人工删除）：${e instanceof Error ? e.message : String(e)}`,
+        ),
+      );
+  }
+
+  /** P1（复查第三轮）：草稿回滚 confirmed → draft（失败仅记录，不阻断主流程） */
+  private async rollbackDraftToDraft(id: string): Promise<void> {
+    await this.prisma.growthTaskDraft
+      .updateMany({
+        where: { id, status: 'confirmed' },
+        data: { status: 'draft' },
+      })
+      .catch(() => undefined);
   }
 
   /** 执行已确认草稿：走 GrowthService 统一风险门与执行器 */
@@ -582,6 +604,10 @@ export class AiAssistantService {
       executed = true;
     } else if (row.intent === 'find_leads' || row.intent === 'contact_leads') {
       // 确认时配置创建失败则补偿创建（仍走风险门）
+      // P1（复查第三轮）：先创建配置并**立即关联草稿**（configId 回写），再执行——
+      // 执行失败回滚 confirmed 后，下次重试走已有 configId 分支复用同一配置，
+      // 不再补偿重建产生重复配置；关联失败则删除刚建配置（防孤儿）
+      let compensationConfigId: string | undefined;
       try {
         const cfgInput = (row.configJson ?? {}) as Record<string, unknown>;
         const created = await this.growth.createConfig(userId, {
@@ -596,10 +622,38 @@ export class AiAssistantService {
           riskMode: 'confirm-first',
           status: 'disabled',
         });
-        await this.growth.executeConfig(userId, created.id, {
-          confirmedExecution: true,
+        compensationConfigId = created.id;
+        const linked = await this.prisma.growthTaskDraft.updateMany({
+          where: { id, status: 'executing' },
+          data: { configId: compensationConfigId },
         });
+        if (linked.count !== 1) {
+          // 关联失败：删除刚建配置，置 error 交人工（草稿回滚后重试会再建一份）
+          await this.cleanupOrphanConfig(userId, compensationConfigId);
+          throw new ConflictException(
+            '补偿配置关联草稿失败，已清理配置，请重试',
+          );
+        }
+        // 配置已关联草稿：此后执行失败不回滚重试——执行的外部副作用
+        // （评论/私信触达）无法判定未产生，置 error 交人工核对（防重复触达）
+        try {
+          await this.growth.executeConfig(userId, compensationConfigId, {
+            confirmedExecution: true,
+          });
+        } catch (execError) {
+          throw new SideEffectCommittedError(
+            `补偿配置已关联草稿且执行中断，副作用可能已部分产生：${execError instanceof Error ? execError.message : String(execError)}`,
+          );
+        }
       } catch (error) {
+        if (
+          error instanceof ConflictException ||
+          error instanceof SideEffectCommittedError
+        ) {
+          throw error;
+        }
+        // 创建/关联失败（配置未关联草稿）：回滚 confirmed 允许重试补偿创建，
+        // 重试仍只有一份配置（关联失败时已删除孤儿）
         const message = (error as Error).message ?? String(error);
         if (/不属于可用组织|平台账号|授权/.test(message)) {
           throw new BadRequestException(

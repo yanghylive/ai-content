@@ -1183,20 +1183,27 @@ describe('文档 §6.3/§9.2/§12.2 补充项（对照开发文档检查 2026-08
     ).rejects.toThrow(/任务执行中/);
   });
 
-  it('P1（复查第二轮）partial_success 重试：带断点 resumeFrom 续跑（不重放已成功动作）', async () => {
+  it('P1（复查第三轮）partial_success 重试：带断点 + 已完成集合 + 来源 URL 续跑', async () => {
     const { AgentBrowserController } = require('./agent-browser.controller');
     const ctrl = Object.create(AgentBrowserController.prototype) as any;
     const savedActions = [
       { action: 'goto', url: 'https://a.com' }, // 已成功（index 0）
       { action: 'goto', url: 'https://b.com' }, // 失败（index 1，从这里重试）
+      { action: 'goto', url: 'https://c.com' }, // 已成功（index 2，重试跳过）
     ];
     const sessions = {
       assertOwner: jest.fn(),
       get: jest.fn().mockReturnValue({
         status: 'partial_success',
-        pendingInstruction: '访问两个页面',
+        pendingInstruction: '访问三个页面',
         pendingActions: savedActions,
         pendingStepIndex: 1,
+        pendingCompletedIndices: [0, 2],
+        pendingActionOriginUrls: [
+          'https://a.com',
+          'https://a.com',
+          'https://a.com',
+        ],
       }),
       updateStatus: jest.fn(),
       acquireEngineSession: jest.fn().mockResolvedValue({ engineKey: 'k' }),
@@ -1206,15 +1213,39 @@ describe('文档 §6.3/§9.2/§12.2 补充项（对照开发文档检查 2026-08
     ctrl.resolveTenantId = jest.fn().mockResolvedValue('t-1');
     ctrl.getUserId = jest.fn().mockReturnValue('u-1');
     ctrl.loop = { run: jest.fn().mockResolvedValue({ ok: true, steps: [] }) };
-    await ctrl.run({}, 's-1', { instruction: '访问两个页面' });
-    // 用保存的动作序列 + 第一个失败索引续跑，不重新解析
+    await ctrl.run({}, 's-1', { instruction: '访问三个页面' });
+    // 保存的动作序列 + 已完成集合 + 来源 URL 一并透传（幂等重试凭据）
     expect(ctrl.loop.run).toHaveBeenCalledWith(
       's-1',
-      '访问两个页面',
+      '访问三个页面',
       expect.objectContaining({
-        resumeFrom: { stepIndex: 1, actions: savedActions },
+        resumeFrom: {
+          stepIndex: 1,
+          actions: savedActions,
+          completedIndices: [0, 2],
+          actionOriginUrls: ['https://a.com', 'https://a.com', 'https://a.com'],
+        },
       }),
     );
+  });
+
+  it('P1（复查第三轮）error 终态：不能重新运行（防重放副作用）', async () => {
+    const { AgentBrowserController } = require('./agent-browser.controller');
+    const ctrl = Object.create(AgentBrowserController.prototype) as any;
+    const sessions = {
+      assertOwner: jest.fn(),
+      get: jest.fn().mockReturnValue({ status: 'error', error: 'boom' }),
+      updateStatus: jest.fn(),
+      acquireEngineSession: jest.fn(),
+      toPublicDto: jest.fn().mockReturnValue({}),
+    };
+    ctrl.sessions = sessions;
+    ctrl.resolveTenantId = jest.fn().mockResolvedValue('t-1');
+    ctrl.getUserId = jest.fn().mockReturnValue('u-1');
+    ctrl.loop = {};
+    await expect(
+      ctrl.run({}, 's-1', { instruction: '再次执行' }),
+    ).rejects.toThrow(/终态 error/);
   });
 });
 
@@ -1448,6 +1479,54 @@ describe('复查 2026-08-22 专项（确认消费/终态/中断/门禁）', () =
     expect(partial.pendingStepIndex).toBe(1);
     expect(partial.pendingActions).toHaveLength(3);
     expect(partial.pendingInstruction).toBe('访问三个页面');
+    // P1（复查第三轮）：已完成动作集合 [0, 2]（成功A/失败B/成功C）
+    expect(partial.pendingCompletedIndices).toEqual([0, 2]);
+  });
+
+  it('P1（复查第三轮）幂等重试：带已完成集合续跑，跳过已成功动作只补失败动作', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', { allowDomains: ['a.com', 'b.com', 'c.com'] });
+    await sessionSvc.acquireEngineSession(s.id);
+    const savedActions = [
+      { action: 'goto', url: 'https://a.com' }, // 已成功
+      { action: 'goto', url: 'https://b.com' }, // 曾失败（本次补跑成功）
+      { action: 'goto', url: 'https://c.com' }, // 已成功
+    ];
+    const actionsMock = {
+      parseActions: jest.fn(), // 续跑不应重新解析
+      executeSingle: jest.fn().mockResolvedValue({ ok: true }),
+    };
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      actionsMock as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+    );
+    const events: unknown[] = [];
+    const r = await loop.run(s.id, '访问三个页面', {
+      onStep: (e) => events.push(e),
+      resumeFrom: {
+        stepIndex: 1,
+        actions: savedActions,
+        completedIndices: [0, 2],
+        actionOriginUrls: ['https://a.com', 'https://a.com', 'https://a.com'],
+      },
+    });
+    expect(r.ok).toBe(true);
+    // 只补跑失败动作（index 1）——已成功动作未重放
+    expect(actionsMock.executeSingle).toHaveBeenCalledTimes(1);
+    // 断点之后已成功动作（index 2）以"幂等重试跳过"事件体现（index 0 在断点之前不再遍历）
+    const skipped = events.filter(
+      (e) =>
+        (e as { type?: string }).type === 'step' &&
+        (e as { message?: string }).message?.includes('幂等重试跳过'),
+    );
+    expect(skipped).toHaveLength(1);
+    // 不重新解析（续跑沿用保存的动作序列）
+    expect(actionsMock.parseActions).not.toHaveBeenCalled();
+    // 全部完成 → succeeded（重试语义闭环）
+    expect(sessionSvc.get(s.id).status).toBe('succeeded');
+    // 成功会话清除断点
+    expect(sessionSvc.get(s.id).pendingCompletedIndices).toBeUndefined();
   });
 
   it('P2（复查第二轮）终态竞态：最后一步执行期间 stop 到达，不被 succeeded 覆盖', async () => {
