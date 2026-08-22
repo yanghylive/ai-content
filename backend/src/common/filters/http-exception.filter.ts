@@ -12,6 +12,11 @@ import { AUTH_COOKIE_NAME } from '../../modules/auth/auth.constants';
 import { shouldUseSecureAuthCookie } from '../../modules/auth/cookie-options';
 import { reportError } from './error-report';
 
+/** §10.2 可重试语义：瞬时错误可安全重试（429/503/504） */
+function isRetryableStatus(status: number): boolean {
+  return status === 429 || status === 503 || status === 504;
+}
+
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
@@ -96,6 +101,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       requestId,
+      traceId: requestId, // §10.2 链路追踪字段（与 X-Request-Id 对齐）
+      retryable: isRetryableStatus(status), // §10.2 可重试语义（429/503/504）
       ...(code ? { code } : {}),
       ...(publicDetails !== undefined ? { details: publicDetails } : {}),
     });

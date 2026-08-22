@@ -193,6 +193,12 @@ export interface RuntimeExecutionResult {
   /** 执行器返回的具体阻断原因，失败时用于保留真实平台/桌面错误。 */
   blockers?: string[];
 
+  /** §10.2 可重试语义：瞬时错误（runtime 断连/限流）可安全重试 */
+  retryable?: boolean;
+
+  /** §10.2 链路追踪：与请求/执行 traceId 对齐 */
+  traceId?: string;
+
   runtime: {
     /** 执行器标识 */
     mode: 'local-runtime' | 'agent-s';
@@ -308,6 +314,8 @@ export function rejectResult(
     reasonCode,
     userMessage,
     technicalMessage,
+    retryable: reasonCode === 'runtime_unavailable', // §10.2 瞬时错误可重试
+    traceId: undefined,
     runtime: {
       mode: 'local-runtime',
       executor: 'browser-cdp',
