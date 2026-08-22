@@ -4042,3 +4042,18 @@ model ExecutorLease {
   @@index([taskId])
   @@map("executor_leases")
 }
+
+// ============ P1 证据链：每次执行留证（PRD §6.6，审计要求） ============
+model ExecutorEvidence {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  taskId    String   @map("task_id")
+  stepIndex Int      @default(-1) @map("step_index") // -1=任务级，0+ 为步骤级
+  type      String   @default("screenshot") // screenshot | nodeTree | result | note
+  content   Json     @map("content") // 截图 dataURL / 结构化 JSON
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([taskId])
+  @@index([userId, taskId])
+  @@map("executor_evidences")
+}
