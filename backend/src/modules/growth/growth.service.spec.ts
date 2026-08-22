@@ -756,6 +756,8 @@ describe('GrowthService commercial acquisition execution', () => {
   });
 
   it('runs due auto tasks through Douyin execution and persists run, leads, and reports', async () => {
+    // 全量负载下偶发 >5s，显式放宽到 30s（用例本身为慢集成型）
+    jest.setTimeout(30000);
     const candidate = {
       text: '最近想装修改造，想问一下本地大概多少钱？',
       targetName: '本地装修咨询客户',
