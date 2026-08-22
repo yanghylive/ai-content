@@ -28,12 +28,11 @@ export class AgentBrowserSessionService implements OnModuleInit {
   /** P4 持久化：会话/事件落盘路径（进程重启可恢复审计与证据链） */
   private readonly storePath: string;
 
-  constructor(
-    private readonly browser: LocalBrowserEngine,
-    storePath?: string,
-  ) {
+  constructor(private readonly browser: LocalBrowserEngine) {
+    // 测试可设 AGENT_BROWSER_STORE_PATH 隔离；生产用项目数据目录
     this.storePath =
-      storePath ?? resolveProjectDataPath('agent-browser', 'sessions.json');
+      process.env.AGENT_BROWSER_STORE_PATH ??
+      resolveProjectDataPath('agent-browser', 'sessions.json');
   }
 
   onModuleInit(): void {
