@@ -407,17 +407,44 @@ export function cancelActions(): MaiUiExecResult {
   }
 }
 
+export interface CaptureScreenResult extends MaiUiExecResult {
+  /** 缩放后截图尺寸（规划坐标体系） */
+  width?: number;
+  height?: number;
+  /** 真实屏幕尺寸（执行坐标映射基准） */
+  screenWidth?: number;
+  screenHeight?: number;
+}
+
 /** 截取当前屏幕（需 Android 11+ 且无障碍已开启），成功时 message 为 data:image/jpeg;base64 */
-export function captureScreen(): MaiUiExecResult {
+export function captureScreen(): CaptureScreenResult {
   const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
   if (!bridge?.captureScreen) return { ok: false, message: "当前不在 JIUZHANG AI App 内，无法截屏" };
   try {
     const raw = bridge.captureScreen();
     const parsed = typeof raw === "string" && raw.trim().startsWith("{")
-      ? (JSON.parse(raw) as MaiUiExecResult)
+      ? (JSON.parse(raw) as CaptureScreenResult)
       : null;
     return parsed ?? { ok: false, message: "截图结果解析失败" };
   } catch {
     return { ok: false, message: "截图调用失败" };
   }
+}
+
+/** 把规划返回的 bounds（缩放坐标）映射到真实屏幕坐标 */
+export function mapBoundsToScreen(
+  bounds: number[] | undefined,
+  shot: Partial<CaptureScreenResult>,
+): number[] | undefined {
+  if (!bounds || bounds.length !== 4) return bounds;
+  if (!shot.width || !shot.screenWidth) return bounds;
+  const rx = shot.screenWidth / shot.width;
+  const sh = shot.screenHeight || shot.height || shot.width;
+  const ry = sh / (shot.height || shot.width);
+  return [
+    Math.round(bounds[0] * rx),
+    Math.round(bounds[1] * ry),
+    Math.round(bounds[2] * rx),
+    Math.round(bounds[3] * ry),
+  ];
 }

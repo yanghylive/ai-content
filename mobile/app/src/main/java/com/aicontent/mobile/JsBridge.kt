@@ -197,7 +197,16 @@ class JsBridge(private val activity: Activity) {
         val holder = arrayOfNulls<String>(1)
         com.aicontent.mobile.agent.RpaAccessibilityService.captureScreen { result ->
             holder[0] = if (result.ok) {
-                "{\"ok\":true,\"message\":\"${escapeJson(result.message)}\"}"
+                // 消息格式: data:image/jpeg;base64,xxx|w=540&h=1200&sw=1080&sh=2400
+                val meta = Regex("\\|w=(\\d+)&h=(\\d+)&sw=(\\d+)&sh=(\\d+)\$").find(result.message)
+                if (meta != null) {
+                    val dataUrl = result.message.substring(0, meta.range.first)
+                    "{\"ok\":true,\"message\":\"${escapeJson(dataUrl)}\"," +
+                        "\"width\":${meta.groupValues[1]},\"height\":${meta.groupValues[2]}," +
+                        "\"screenWidth\":${meta.groupValues[3]},\"screenHeight\":${meta.groupValues[4]}}"
+                } else {
+                    "{\"ok\":true,\"message\":\"${escapeJson(result.message)}\"}"
+                }
             } else {
                 "{\"ok\":false,\"message\":\"${escapeJson(result.message)}\"}"
             }
