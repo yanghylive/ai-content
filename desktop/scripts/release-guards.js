@@ -526,10 +526,57 @@ function assertBackendEnvPolicy(ctx, envPath) {
   }
 }
 
+/**
+ * P0（安全 2026-08-22）：打包交付的 env 只允许占位符，绝不允许真实凭据。
+ * 对已知敏感键：值必须为空或 <...> 占位符；同时全局扫描真实凭据指纹。
+ * 任何命中都阻断发布（防止服务端密钥被打进客户端安装包）。
+ */
+function assertNoShippedSecrets(ctx, envPath) {
+  const content = readFileText(envPath);
+  if (!content) {
+    ctx.fail(`shipped backend env missing: ${envPath}`);
+    return;
+  }
+  const SECRET_KEYS = [
+    'KAYPAL_AI_PROXY_API_KEY',
+    'KAYPAL_API_KEY',
+    'MEMORY_CORE_USER_KEY',
+    'REDFOX_API_KEY',
+    'HAODANKU_APIKEY',
+    'JUTUIKE_APIKEY',
+    'JUTUIKE_PUB_ID',
+    'JUTUIKE_SID',
+    'OSS_ACCESS_KEY_ID',
+    'OSS_ACCESS_KEY_SECRET',
+    'KAYPAL_BILLING_USER_ID',
+  ];
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq <= 0) continue;
+    const key = trimmed.slice(0, eq).trim();
+    const value = trimmed.slice(eq + 1).trim();
+    if (!SECRET_KEYS.includes(key)) continue;
+    const isPlaceholder = value === '' || /^<.*>$/.test(value);
+    if (!isPlaceholder) {
+      ctx.fail(`shipped backend env must not contain a real value for ${key} (found non-placeholder secret)`);
+    }
+  }
+  // 全局真实凭据指纹（即使出现在注释/其他键也拦截）
+  const fingerprint =
+    /kaypalcred_[A-Za-z0-9]{16,}|geo_[0-9a-f]{32,}|ak_[0-9a-f]{32,}|LTAI[0-9A-Za-z]{12,}|sk-mem-[A-Za-z0-9]{16,}/;
+  if (fingerprint.test(content)) {
+    ctx.fail('shipped backend env contains a real credential fingerprint; secrets must never be packaged');
+  }
+}
+
 function assertSourceReleaseGuards(ctx, paths, platform) {
   const backendRoot = paths.backendRoot || path.resolve(path.dirname(paths.backendBundle), '..');
   assertMainRuntimePolicy(ctx, paths.mainJs);
   assertBackendEnvPolicy(ctx, paths.backendEnv);
+  // P0（安全 2026-08-22）：打包交付的 env（占位符模板）不得含任何真实凭据
+  assertNoShippedSecrets(ctx, paths.backendEnv);
   assertNodeRuntimeLayout(ctx, paths.desktopRoot, platform);
   const sourcePlaywrightRequired = [
     path.join(backendRoot, 'node_modules', '@playwright', 'mcp', 'cli.js'),
@@ -663,6 +710,7 @@ module.exports = {
   assertLivePlaywrightMcp,
   assertMainRuntimePolicy,
   assertNoLegacyPythonRequirements,
+  assertNoShippedSecrets,
   assertNodeRuntimeLayout,
   assertPackagedReleaseGuards,
   assertPlaywrightAssets,

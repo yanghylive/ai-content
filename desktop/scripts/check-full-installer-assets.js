@@ -448,7 +448,7 @@ function checkPreBuildAssets() {
     {
       desktopRoot,
       mainJs: path.join(desktopRoot, 'main.js'),
-      backendEnv: path.join(desktopRoot, 'backend.env'),
+      backendEnv: path.join(desktopRoot, 'backend.env.example'),
       backendBundle: path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'index.js'),
       sqliteSeed: path.join(repoRoot, 'backend', 'prisma', 'dev.db'),
     },
@@ -482,27 +482,27 @@ function checkPreBuildAssets() {
 
   assertFileContains(
     'desktop SQLite DATABASE_URL',
-    path.join(desktopRoot, 'backend.env'),
+    path.join(desktopRoot, 'backend.env.example'),
     /^DATABASE_URL=file:\.\/kaypal-ai\.sqlite/m
   );
   assertFileContains(
     'desktop SQLite database mode switch',
-    path.join(desktopRoot, 'backend.env'),
+    path.join(desktopRoot, 'backend.env.example'),
     /^KAYPAL_DESKTOP_DATABASE_MODE=sqlite/m
   );
   assertFileContains(
     'desktop SQLite database URL',
-    path.join(desktopRoot, 'backend.env'),
+    path.join(desktopRoot, 'backend.env.example'),
     /^SQLITE_DATABASE_URL=file:\.\/kaypal-ai\.sqlite/m
   );
   assertFileContains(
     'desktop Kaypal auth base URL',
-    path.join(desktopRoot, 'backend.env'),
+    path.join(desktopRoot, 'backend.env.example'),
     /^KAYPAL_AUTH_BASE_URL=https:\/\/(test\.)?kaypal\.cn/m
   );
   assertFileContains(
     'desktop uses Node interaction runtime',
-    path.join(desktopRoot, 'backend.env'),
+    path.join(desktopRoot, 'backend.env.example'),
     /^KAYPAL_NODE_AGENT_RUNTIME=1/m
   );
   assertFileNotContains(
