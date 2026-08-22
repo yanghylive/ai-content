@@ -350,18 +350,41 @@ export class AgentBrowserLoopService {
     timeoutMs: number;
     allowWrite: boolean;
   } {
-    const mode = (process.env.AGENT_BROWSER_MODE ?? 'legacy') as
-      | 'legacy'
-      | 'dom-agent';
+    const rawMode = (process.env.AGENT_BROWSER_MODE ?? 'legacy').trim();
+    if (rawMode !== 'legacy' && rawMode !== 'dom-agent') {
+      throw new BadRequestException(
+        `非法的 AGENT_BROWSER_MODE=${rawMode}，仅允许 legacy/dom-agent`,
+      );
+    }
+    const mode = rawMode as 'legacy' | 'dom-agent';
+    // §14.2 安全校验：非法数值（<=0/NaN）拒绝，不允许静默关闭限制
+    const maxSteps = Number(process.env.AGENT_BROWSER_MAX_STEPS ?? 30);
+    const maxRetries = Number(process.env.AGENT_BROWSER_MAX_RETRIES ?? 2);
+    const timeoutMs = Number(process.env.AGENT_BROWSER_TIMEOUT_MS ?? 120000);
+    if (!Number.isFinite(maxSteps) || maxSteps <= 0) {
+      throw new BadRequestException(
+        `非法的 AGENT_BROWSER_MAX_STEPS=${process.env.AGENT_BROWSER_MAX_STEPS}，必须为正整数`,
+      );
+    }
+    if (!Number.isFinite(maxRetries) || maxRetries < 0) {
+      throw new BadRequestException(
+        `非法的 AGENT_BROWSER_MAX_RETRIES=${process.env.AGENT_BROWSER_MAX_RETRIES}，必须为非负整数`,
+      );
+    }
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+      throw new BadRequestException(
+        `非法的 AGENT_BROWSER_TIMEOUT_MS=${process.env.AGENT_BROWSER_TIMEOUT_MS}，必须为正整数`,
+      );
+    }
     return {
       mode,
       allowedDomains: (process.env.AGENT_BROWSER_ALLOWED_DOMAINS ?? '')
         .split(',')
         .map((d) => d.trim())
         .filter(Boolean),
-      maxSteps: Number(process.env.AGENT_BROWSER_MAX_STEPS ?? 30),
-      maxRetries: Number(process.env.AGENT_BROWSER_MAX_RETRIES ?? 2),
-      timeoutMs: Number(process.env.AGENT_BROWSER_TIMEOUT_MS ?? 120000),
+      maxSteps,
+      maxRetries,
+      timeoutMs,
       allowWrite: (process.env.AGENT_BROWSER_ALLOW_WRITE ?? 'false') === 'true',
     };
   }

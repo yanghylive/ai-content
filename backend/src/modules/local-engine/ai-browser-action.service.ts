@@ -24,7 +24,9 @@ export type AiBrowserAction =
   | { action: 'click'; selector: string }
   | { action: 'screenshot'; name?: string }
   | { action: 'extract'; selector: string }
-  | { action: 'wait'; ms: number };
+  | { action: 'wait'; ms: number }
+  | { action: 'press_key'; key: string }
+  | { action: 'tabs'; operation: 'new' | 'switch' | 'close'; index?: number };
 
 export interface AiBrowserRunInput {
   instruction: string;
@@ -516,6 +518,28 @@ export class AiBrowserActionService {
         );
         break;
       case 'screenshot':
+        break;
+      case 'press_key':
+        await page.keyboard.press(step.key).catch(() => undefined);
+        break;
+      case 'tabs':
+        if (step.operation === 'new') {
+          const popup = await page
+            .context()
+            .newPage()
+            .catch(() => undefined);
+          if (popup) await popup.bringToFront().catch(() => undefined);
+        } else if (step.operation === 'switch') {
+          const pages = page.context().pages();
+          const target = pages[step.index ?? 0] ?? pages[0];
+          if (target) await target.bringToFront().catch(() => undefined);
+        } else if (step.operation === 'close') {
+          const pages = page.context().pages();
+          const target = pages[step.index ?? 0];
+          if (target && target !== pages[0]) {
+            await target.close().catch(() => undefined);
+          }
+        }
         break;
     }
     // 每步执行后截图证据

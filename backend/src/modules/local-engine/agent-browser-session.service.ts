@@ -266,12 +266,14 @@ export class AgentBrowserSessionService implements OnModuleInit {
     session.status = 'error';
     session.error = error;
     session.updatedAt = new Date().toISOString();
+    this.persist();
   }
 
   bumpStep(id: string): void {
     const session = this.get(id);
     session.stepCount += 1;
     session.lastActivityAt = new Date().toISOString();
+    this.persist();
   }
 
   /** 记录循环事件（Observe-Act-Verify 过程） */
@@ -295,6 +297,7 @@ export class AgentBrowserSessionService implements OnModuleInit {
     const session = this.get(id);
     session.lease!.expiresAt = new Date(Date.now() + leaseMs).toISOString();
     session.updatedAt = new Date().toISOString();
+    this.persist();
   }
 
   async stop(id: string): Promise<void> {
