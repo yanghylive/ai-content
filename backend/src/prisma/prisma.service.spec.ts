@@ -244,3 +244,44 @@ describe('PrismaService SQLite startup safety', () => {
     expect(service.$queryRawUnsafe).not.toHaveBeenCalled();
   });
 });
+
+describe('PrismaService SQLite 列级收敛（真机 500 修复）', () => {
+  it('ensureSqliteSchemaColumns：缺列时补列，已存在跳过', async () => {
+    const { PrismaService } = require('./prisma.service');
+    const svc = Object.create(PrismaService.prototype) as any;
+    // mock raw 查询：每次迭代都返回 表存在 + PRAGMA 旧列（缺归因列）
+    let rawCall = 0;
+    svc.$queryRawUnsafe = jest.fn().mockImplementation(async () => {
+      rawCall += 1;
+      // 奇数次 = sqlite_master 表检查；偶数次 = PRAGMA table_info
+      return rawCall % 2 === 1
+        ? [{ name: 'crm_customers' }]
+        : [
+            { name: 'id' },
+            { name: 'owner_id' },
+            { name: 'source_url' },
+          ];
+    });
+    svc.$executeRawUnsafe = jest.fn().mockResolvedValue(undefined);
+    svc.logger = { log: jest.fn(), warn: jest.fn() };
+    process.env.SQLITE_DATABASE_URL = 'file:./test.sqlite';
+    await svc.ensureSqliteSchemaColumns();
+    // 5 个归因列应触发 ADD COLUMN
+    expect(svc.$executeRawUnsafe).toHaveBeenCalledWith(
+      expect.stringContaining('ALTER TABLE crm_customers ADD COLUMN source_article_id'),
+    );
+    expect(svc.$executeRawUnsafe.mock.calls.length).toBe(5);
+    delete process.env.SQLITE_DATABASE_URL;
+  });
+
+  it('ensureSqliteSchemaColumns：非 SQLite 跳过', async () => {
+    const { PrismaService } = require('./prisma.service');
+    const svc = Object.create(PrismaService.prototype) as any;
+    svc.$queryRawUnsafe = jest.fn();
+    svc.$executeRawUnsafe = jest.fn();
+    process.env.DATABASE_URL = 'postgres://x';
+    await svc.ensureSqliteSchemaColumns();
+    expect(svc.$executeRawUnsafe).not.toHaveBeenCalled();
+    delete process.env.DATABASE_URL;
+  });
+});

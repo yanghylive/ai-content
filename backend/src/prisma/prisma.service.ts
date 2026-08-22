@@ -20,6 +20,7 @@ export class PrismaService
       try {
         await this.$connect();
         await this.ensureSqliteCoreTables();
+        await this.ensureSqliteSchemaColumns();
         return;
       } catch (error) {
         lastError = error;
@@ -3253,6 +3254,51 @@ export class PrismaService
         continue;
       }
       await this.$executeRawUnsafe(statement);
+    }
+  }
+
+  /**
+   * 桌面端 SQLite 列级收敛（2026-08-22 真机 500 根因修复）：
+   * 新 schema 加列后，已装用户的旧库不自动加列 → Prisma 查询报
+   * "column does not exist"。启动时对已知演进列做 PRAGMA 检查 + ALTER ADD。
+   */
+  private async ensureSqliteSchemaColumns(): Promise<void> {
+    const databaseUrl = `${process.env.SQLITE_DATABASE_URL || process.env.DATABASE_URL || ''}`;
+    if (!databaseUrl.startsWith('file:')) {
+      return;
+    }
+    // 表 → 需保证存在的列（含类型声明；ADD COLUMN 不支持默认值表达式外复杂约束，保持简单）
+    const columnMigrations: Array<{ table: string; column: string; ddl: string }> = [
+      // CrmCustomer P2 归因主键链（2026-08-20 新增）
+      { table: 'crm_customers', column: 'source_article_id', ddl: 'TEXT' },
+      { table: 'crm_customers', column: 'source_publish_record_id', ddl: 'TEXT' },
+      { table: 'crm_customers', column: 'source_interaction_event_id', ddl: 'TEXT' },
+      { table: 'crm_customers', column: 'source_task_id', ddl: 'TEXT' },
+      { table: 'crm_customers', column: 'source_run_id', ddl: 'TEXT' },
+    ];
+    for (const mig of columnMigrations) {
+      try {
+        // 表不存在则跳过（ensureSqliteCoreTables 会建核心表，业务表由各自模块懒建）
+        const rows = await this.$queryRawUnsafe(
+          `SELECT name FROM sqlite_master WHERE type='table' AND name=$1`,
+          mig.table,
+        ) as Array<{ name: string }>;
+        if (!rows.length) continue;
+        const cols = await this.$queryRawUnsafe(
+          `PRAGMA table_info(${mig.table})`,
+        ) as Array<{ name: string }>;
+        if (cols.some((col) => col.name === mig.column)) continue;
+        await this.$executeRawUnsafe(
+          `ALTER TABLE ${mig.table} ADD COLUMN ${mig.column} ${mig.ddl}`,
+        );
+        this.logger.log(
+          `SQLite 列收敛：${mig.table}.${mig.column} 已补（旧库升级）`,
+        );
+      } catch (error) {
+        this.logger.warn(
+          `SQLite 列收敛失败 ${mig.table}.${mig.column}：${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     }
   }
 
