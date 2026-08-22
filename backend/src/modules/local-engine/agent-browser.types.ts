@@ -51,6 +51,20 @@ export interface AgentBrowserLease {
   ownerId: string;
 }
 
+/** Agent Browser 循环事件（Observe-Act-Verify 过程记录） */
+export type AgentBrowserEvent =
+  | {
+      type: 'snapshot' | 'step' | 'done' | 'error';
+      stepIndex?: number;
+      action?: string;
+      ok?: boolean;
+      message?: string;
+      url?: string;
+      extractText?: string;
+      error?: string;
+      at: string;
+    };
+
 /** 会话（对外 DTO） */
 export interface AgentBrowserSessionDto {
   id: string;
@@ -69,6 +83,8 @@ export interface AgentBrowserSessionDto {
 export interface AgentBrowserSession extends AgentBrowserSessionDto {
   engineKey: string;
   allowDomains: string[];
+  /** 循环事件缓冲（Observe-Act-Verify 过程记录，供 events 接口/回放） */
+  events: AgentBrowserEvent[];
 }
 
 /** 创建一个会话的输入 */

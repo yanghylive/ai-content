@@ -62,6 +62,7 @@ export class AgentBrowserLoopService {
     const snapshot = await this.observe(sessionId);
     steps.push(snapshot);
     onStep?.(snapshot);
+    this.sessions.appendEvent(sessionId, snapshot);
 
     // 2. Act：执行指令（复用 AiBrowserActionService：AI 解析 + 逐部执行 + 证据）
     //    Observe 到当前 URL 注入 context（供域名审计用）
@@ -89,6 +90,7 @@ export class AgentBrowserLoopService {
       steps.push(stepEvent);
       onStep?.(stepEvent);
       this.sessions.bumpStep(sessionId);
+      this.sessions.appendEvent(sessionId, stepEvent);
     }
 
     this.logger.log(
@@ -104,6 +106,7 @@ export class AgentBrowserLoopService {
     };
     steps.push(done);
     onStep?.(done);
+    this.sessions.appendEvent(sessionId, done);
     return { ok: actResult.ok, steps };
   }
 

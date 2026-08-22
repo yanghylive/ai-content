@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { randomUUID } from 'node:crypto';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import {
+  AgentBrowserEvent,
   AgentBrowserSession,
   AgentBrowserSessionDto,
   AgentBrowserSessionStatus,
@@ -52,6 +53,7 @@ export class AgentBrowserSessionService {
       stepCount: 0,
       engineKey: '',
       allowDomains,
+      events: [],
       lease: {
         acquiredAt: now,
         expiresAt: new Date(Date.now() + leaseMs).toISOString(),
@@ -127,6 +129,21 @@ export class AgentBrowserSessionService {
     const session = this.get(id);
     session.stepCount += 1;
     session.lastActivityAt = new Date().toISOString();
+  }
+
+  /** 记录循环事件（Observe-Act-Verify 过程） */
+  appendEvent(id: string, event: Omit<AgentBrowserEvent, 'at'>): void {
+    const session = this.get(id);
+    session.events.push({ ...event, at: new Date().toISOString() });
+    // 事件缓冲上限（防内存膨胀）
+    if (session.events.length > 500) {
+      session.events.splice(0, session.events.length - 500);
+    }
+    session.lastActivityAt = new Date().toISOString();
+  }
+
+  listEvents(id: string): AgentBrowserEvent[] {
+    return this.get(id).events;
   }
 
   /** 租约续期 */

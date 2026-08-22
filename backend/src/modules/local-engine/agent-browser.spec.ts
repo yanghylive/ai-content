@@ -213,4 +213,16 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     expect(d.allowed).toBe(true);
     expect(() => loop.auditStep('evaluate_js' as never, {}, [])).toThrow();
   });
+
+  it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const s = sessionSvc.create('u-1', {});
+    sessionSvc.appendEvent(s.id, { type: 'snapshot', ok: true } as never);
+    sessionSvc.appendEvent(s.id, { type: 'done', ok: true } as never);
+    const events = sessionSvc.listEvents(s.id);
+    expect(events).toHaveLength(2);
+    expect(events[0]).toMatchObject({ type: 'snapshot', ok: true });
+    expect(events[0].at).toBeTruthy();
+  });
 });
