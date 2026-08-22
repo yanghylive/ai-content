@@ -88,33 +88,45 @@ export class AgentBrowserLoopService {
     onStep?.(snapshot);
     this.sessions.appendEvent(sessionId, snapshot);
 
-    // 2. Act：执行指令（复用 AiBrowserActionService：AI 解析 + 逐部执行 + 证据）
-    //    Observe 到当前 URL 注入 context（供域名审计用）
-    const currentUrl = snapshot.url ?? undefined;
-    const actResult = await this.actions.run({
-      instruction,
-      ...(currentUrl && !currentUrl.startsWith('chrome://')
-        ? { url: currentUrl }
-        : {}),
-      timeoutMs: cfg.timeoutMs,
-      maxActions: cfg.maxSteps,
-      maxRetries: cfg.maxRetries,
-      // P4：用会话独立 accountId（独立 Profile 隔离，不共享 ai-agent）
-      accountId: session.accountId,
-      // §7.4 执行前策略拦截：每步动作执行前过审计，allowed=false 不执行
-      policyGate: async (action) => {
-        const tool = this.mapTool(action.action);
-        if (!tool) return { allowed: true };
+    // 2. Act：解析指令为动作序列（供逐步 re-observe 循环）
+    let actions: AiBrowserAction[] = [];
+    try {
+      actions = await this.actions.parseActions(instruction);
+    } catch (error) {
+      // 解析失败直接抛（指令无法拆解为动作，阻断执行）
+      throw new BadRequestException(
+        `无法解析指令步骤：${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    // §14.2 maxSteps 截断
+    actions = actions.slice(0, cfg.maxSteps);
+
+    // 3. 逐步 Observe→策略→单动作执行→验证（§7.4 DOM Agent 循环）
+    for (let i = 0; i < actions.length; i++) {
+      const action = actions[i];
+      // 3.1 每步 re-observe（页面可能已因上一步导航改变）
+      const stepSnapshot = await this.observe(sessionId);
+      steps.push(stepSnapshot);
+      onStep?.(stepSnapshot);
+      this.sessions.appendEvent(sessionId, stepSnapshot);
+      // 更新会话 url（导航后不再用旧 url）
+      if (stepSnapshot.url && stepSnapshot.url !== session.url) {
+        session.url = stepSnapshot.url;
+      }
+
+      // 3.2 执行前策略审计（工具映射 + 高风险确认闸门）
+      const tool = this.mapTool(action.action);
+      let allowed = true;
+      let gateMessage: string | undefined;
+      if (tool) {
         const audit = this.policy.audit(
           tool,
           { url: 'url' in action ? (action.url ?? session.url) : session.url },
           { url: session.url, allowDomains: session.allowDomains },
         );
-        // P1-3 高风险需确认：未在已确认列表 → 持久化 AgentConfirmation（pending）
-        // 供用户通过既有 confirmations 接口审批（绑定会话+精确 target/url）
         if (audit.requiresConfirmation) {
-          const matched = (confirmedTools ?? []).some((c) =>
-            matchesConfirmedAction(c, action),
+          const matched = (confirmedTools ?? []).some((cc) =>
+            matchesConfirmedAction(cc, action),
           );
           if (!matched) {
             const confirmationId = await this.persistPendingConfirmation(
@@ -122,51 +134,39 @@ export class AgentBrowserLoopService {
               action,
               audit.riskLevel,
             );
-            return {
-              allowed: false,
-              reason: `需用户确认后执行（高风险动作${confirmationId ? `，确认单 ${confirmationId}` : ''}）`,
-              requiresConfirmation: true,
-            };
+            allowed = false;
+            gateMessage = `需用户确认后执行（高风险动作${confirmationId ? `，确认单 ${confirmationId}` : ''}）`;
           }
+        } else if (!audit.allowed) {
+          allowed = false;
+          gateMessage = `策略阻断：${audit.reason ?? '不在白名单'}`;
         }
-        return {
-          allowed: audit.allowed,
-          reason: audit.allowed ? undefined : audit.reason,
-          requiresConfirmation: audit.requiresConfirmation,
-        };
-      },
-      // 前端/调用方可传已确认的动作（如点击/填表），经确认闸门才放行
-      confirmedTools: confirmedTools ?? [],
-    });
+      }
 
-    // 3. Verify：逐步骤生成事件 + 逐步策略审计（§7.4 文档要求每步过策略）
-    for (let i = 0; i < actResult.results.length; i++) {
-      const r = actResult.results[i];
-      // 每步动作过 PolicyService 审计（工具映射：goto→navigate 等）
-      const policyTool = this.mapTool(r.action);
-      const audit = policyTool
-        ? this.policy.audit(
-            policyTool,
-            // navigate 用会话 URL（evidenceUrl 是截图路径，不能当导航目标）
-            { url: policyTool === 'navigate' ? session.url : (r.evidenceUrl ?? session.url) },
-            { url: session.url, allowDomains: session.allowDomains },
-          )
-        : null;
+      // 3.3 单动作执行（allowed 才执行；否则记录 blocked）
+      const r = allowed
+        ? await this.actions.executeSingle({
+            action,
+            accountId: session.accountId,
+            timeoutMs: cfg.timeoutMs,
+          })
+        : {
+            index: i,
+            action: action.action,
+            ok: false,
+            message: gateMessage ?? '策略阻断',
+            evidenceUrl: undefined,
+            extractText: undefined,
+            blocked: true,
+          };
+
+      // 3.4 验证：生成步骤事件
       const stepEvent: AgentBrowserStepEvent = {
         type: 'step',
         stepIndex: i,
         action: r.action,
         ok: r.ok,
-        message: [
-          r.message,
-          audit && !audit.allowed
-            ? `（策略阻断：${audit.reason ?? '不在白名单'}）`
-            : audit?.requiresConfirmation
-              ? `（${audit.riskLevel}风险动作，已标记需确认）`
-              : undefined,
-        ]
-          .filter(Boolean)
-          .join(' '),
+        message: r.message,
         url: r.evidenceUrl,
         extractText: r.extractText,
       };
@@ -176,24 +176,24 @@ export class AgentBrowserLoopService {
       this.sessions.appendEvent(sessionId, stepEvent);
     }
 
+    const successCount = steps.filter(
+      (s) => s.type === 'step' && s.ok,
+    ).length;
     this.logger.log(
-      `AgentBrowser ${sessionId} 完成：${actResult.actions.length} 个动作，${actResult.results.filter((r) => r.ok).length} 成功`,
+      `AgentBrowser ${sessionId} 完成：${actions.length} 个动作，${successCount} 成功`,
     );
 
     const done: AgentBrowserStepEvent = {
       type: 'done',
-      ok: actResult.ok,
-      message: actResult.actions.length
-        ? `已执行 ${actResult.results.length} 步`
-        : '无可用动作',
+      ok: successCount > 0,
+      message: actions.length ? `已执行 ${actions.length} 步` : '无可用动作',
     };
     steps.push(done);
     onStep?.(done);
     this.sessions.appendEvent(sessionId, done);
-    return { ok: actResult.ok, steps };
+    return { ok: successCount > 0, steps };
   }
 
-  /** Observe：快照当前页状态（URL + 可交互文本片段） */
   /** Observe：真实 DOM/accessibility 快照（playwright-mcp browser_snapshot），失败回落 URL */
   async observe(
     sessionId: string,

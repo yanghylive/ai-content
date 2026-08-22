@@ -215,6 +215,14 @@ export class AiBrowserActionService {
   /**
    * 自然语言指令 → 动作序列（规则解析，确定性可测；AI 解析后续增强）
    */
+  /** P1-4 解析指令为动作序列（供逐步 re-observe 循环使用） */
+  async parseActions(instruction: string): Promise<AiBrowserAction[]> {
+    const actions =
+      (await this.parseWithAi(instruction)) ??
+      this.parseInstruction(instruction);
+    return actions;
+  }
+
   parseInstruction(instruction: string): AiBrowserAction[] {
     const text = instruction?.trim();
     if (!text) {
@@ -432,6 +440,46 @@ export class AiBrowserActionService {
       results,
       sessionKey: session.key,
     };
+  }
+
+  /**
+   * P1-4 单动作执行（逐步循环：每步单独执行+验证）：
+   * 创建/复用会话，执行单个动作并返回证据结果。
+   */
+  async executeSingle(input: {
+    action: AiBrowserAction;
+    accountId?: string;
+    timeoutMs?: number;
+  }): Promise<{ index: number; action: string; ok: boolean; message?: string; evidenceUrl?: string; extractText?: string }> {
+    const timeoutMs = input.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const session = await this.browser.getOrCreateSession({
+      platform: 'general-web',
+      accountId: input.accountId ?? 'ai-agent',
+    });
+    try {
+      const stepResult = await this.executeStep(
+        session.key,
+        session.page,
+        input.action,
+        timeoutMs,
+      );
+      return {
+        index: 0,
+        action: input.action.action,
+        ok: true,
+        ...stepResult,
+      };
+    } catch (error) {
+      this.logger.warn(
+        `ai-action single (${input.action.action}) 失败: ${error}`,
+      );
+      return {
+        index: 0,
+        action: input.action.action,
+        ok: false,
+        message: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 
   private async executeStep(
