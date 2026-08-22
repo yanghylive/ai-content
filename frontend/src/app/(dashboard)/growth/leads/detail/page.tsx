@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { growthApi, type GrowthLead, type LeadScoreHistoryDto, type LeadAttributionDto } from "@/lib/api/growth";
+import { api } from "@/lib/api/client";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { V2StatusChip } from "@/components/v2/ui-kit";
 
@@ -80,6 +81,9 @@ function LeadDetailClient() {
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
   const [acting, setActing] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!leadId) return;
@@ -135,6 +139,70 @@ function LeadDetailClient() {
     },
     [lead, load],
   );
+
+  // §8.2-C 低风险：加备注（内部可见，仅追加 notes）
+  const handleAddNote = useCallback(async () => {
+    if (!lead || !noteText.trim()) return;
+    setActing(true);
+    try {
+      const existing = (lead as unknown as { notes?: Array<{ content: string; at: string }> })
+        .notes ?? [];
+      await growthApi.updateLead(lead.id, {
+        notes: [
+          ...existing,
+          { content: noteText.trim(), at: new Date().toISOString() },
+        ],
+      } as never);
+      setNoteText("");
+      setNoteOpen(false);
+      setMsg("备注已保存");
+      await load();
+    } catch {
+      setMsg("保存备注失败");
+    } finally {
+      setActing(false);
+    }
+  }, [lead, noteText, load]);
+
+  // §8.2-C 低风险：生成回复草稿（基于来源内容，提示走 AI 助手/任务草稿）
+  const handleReplyDraft = useCallback(async () => {
+    if (!lead) return;
+    setMsg(
+      `已基于来源生成回复草稿思路：针对「${(lead.sourceText ?? "").slice(0, 40)}…」。
+      建议在「AI 助手」中发送：帮我写一条回复这条评论的消息。`,
+    );
+  }, [lead]);
+
+  // §8.2-C 高风险：批量触达（强制确认后，走统一执行链）
+  const handleBatchTouch = useCallback(async () => {
+    if (!lead) return;
+    setActing(true);
+    try {
+      // 高风险外发：先走风险确认链（与执行中心 batch-touch 一致）
+      const confirmation = await api.post<{ confirmationId?: string }>(
+        "/growth/risk-confirmations",
+        {
+          action: "batch-touch",
+          riskLevel: "high",
+          target: { leadId: lead.id },
+        },
+      );
+      if (!confirmation?.confirmationId) {
+        setMsg("高风险操作需先完成风险确认（未获取确认单）");
+        return;
+      }
+      setBatchConfirmOpen(false);
+      setMsg(
+        `高风险批量触达已确认（${confirmation.confirmationId}）。
+        当前账号需绑定真实平台账号后，由执行中心统一调度触达。`,
+      );
+      await load();
+    } catch (e) {
+      setMsg(`风险确认失败：${(e as Error).message ?? "未知错误"}`);
+    } finally {
+      setActing(false);
+    }
+  }, [lead, load]);
 
   if (loading) {
     return (
@@ -236,7 +304,52 @@ function LeadDetailClient() {
         )}
       </section>
 
-      {/* Top Lead 动作（T4.5 + T07 风险分级：低=只读类、中=单条写操作、高=批量/外发） */}
+      {/* Top Lead 动作（T4.5 + T07 风险分级：低=只读/备注类、中=单条写操作、高=批量/外发强制确认） */}
+      <section className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--kaypal-v3-muted)]">
+          低风险动作
+        </span>
+        <button
+          type="button"
+          disabled={acting}
+          onClick={() => setNoteOpen((v) => !v)}
+          className="kaypal-v3-panel px-4 py-2 text-sm font-medium text-[var(--kaypal-v3-ink)] transition hover:border-[var(--kaypal-v3-accent)]"
+        >
+          {noteOpen ? "收起备注" : "＋ 加备注"}
+        </button>
+        <button
+          type="button"
+          disabled={acting || !lead.sourceText}
+          onClick={() => void handleReplyDraft()}
+          className="kaypal-v3-panel px-4 py-2 text-sm font-medium text-[var(--kaypal-v3-ink)] transition hover:border-[var(--kaypal-v3-accent)] disabled:opacity-40"
+        >
+          生成回复草稿
+        </button>
+      </section>
+
+      {noteOpen && (
+        <section className="kaypal-v3-panel mb-4 p-4">
+          <textarea
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            placeholder="记录这条线索的补充信息（低风险，仅内部可见）…"
+            rows={2}
+            className="w-full rounded-lg border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-2 text-sm text-[var(--kaypal-v3-ink)] outline-none focus:border-[var(--kaypal-v3-accent)]"
+          />
+          <div className="mt-2 flex justify-end">
+            <button
+              type="button"
+              disabled={acting || !noteText.trim()}
+              onClick={() => void handleAddNote()}
+              className="rounded-lg bg-[var(--kaypal-v3-accent)] px-4 py-1.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+            >
+              保存备注
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* 中风险动作 */}
       <section className="mb-4 flex flex-wrap items-center gap-2">
         <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--kaypal-v3-muted)]">
           中风险动作
@@ -278,6 +391,56 @@ function LeadDetailClient() {
           </span>
         )}
       </section>
+
+      {/* 高风险动作（批量/外发，强制确认） */}
+      <section className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--kaypal-v3-muted)]">
+          高风险动作
+        </span>
+        <button
+          type="button"
+          disabled={acting || !lead.sourceText}
+          onClick={() => setBatchConfirmOpen(true)}
+          className="rounded-lg border border-[var(--kaypal-v3-danger)] px-4 py-2 text-sm font-semibold text-[var(--kaypal-v3-danger)] transition hover:bg-[var(--kaypal-v3-danger-soft)] disabled:opacity-40"
+        >
+          批量触达（需确认）
+        </button>
+        <span className="text-[11px] text-[var(--kaypal-v3-muted)]">
+          批量私信/群发属高风险，将弹出风险确认后方可执行
+        </span>
+      </section>
+
+      {batchConfirmOpen && (
+        <section
+          className="mb-4 rounded-lg border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4"
+          style={{ position: "relative" }}
+        >
+          <p className="text-sm font-semibold text-[var(--kaypal-v3-danger)]">
+            ⚠️ 高风险操作确认：批量触达该线索（及相似线索）
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-[var(--kaypal-v3-soft-ink)]">
+            此操作将向线索来源（评论/私信）发送批量触达消息，可能影响账号权重。
+            请确认已通过预检（账号在线 + 风控正常 + 额度充足）后再执行。
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              disabled={acting}
+              onClick={() => void handleBatchTouch()}
+              className="rounded-lg bg-[var(--kaypal-v3-danger)] px-4 py-1.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+            >
+              我已确认，执行
+            </button>
+            <button
+              type="button"
+              onClick={() => setBatchConfirmOpen(false)}
+              className="kaypal-v3-panel px-4 py-1.5 text-sm font-medium text-[var(--kaypal-v3-ink)]"
+            >
+              取消
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* T07：下一步建议（基于线索状态） */}
       <section className="mb-4 rounded-lg border border-[var(--kaypal-v3-accent)]/30 bg-[var(--kaypal-v3-accent-soft)] p-4">
