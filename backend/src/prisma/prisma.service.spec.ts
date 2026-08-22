@@ -102,6 +102,18 @@ describe('PrismaService SQLite startup safety', () => {
         new RegExp(`CREATE TABLE IF NOT EXISTS ${table} \\(`),
       );
     }
+    // P1（P5 门禁 2026-08-22）：growth_task_drafts 建表回归——
+    // 字段映射对齐 schema.prisma GrowthTaskDraft，3 个索引齐全
+    expect(sql).toMatch(
+      /CREATE TABLE IF NOT EXISTS growth_task_drafts \([\s\S]*intent TEXT NOT NULL[\s\S]*config_json JSONB NOT NULL DEFAULT '\{\}'[\s\S]*planned_actions JSONB NOT NULL DEFAULT '\[\]'[\s\S]*readiness TEXT NOT NULL DEFAULT 'needs-input'[\s\S]*draft_hash TEXT[\s\S]*status TEXT NOT NULL DEFAULT 'draft'[\s\S]*expires_at DATETIME NOT NULL/,
+    );
+    for (const index of [
+      'growth_task_drafts_user_id_status_idx',
+      'growth_task_drafts_tenant_id_status_idx',
+      'growth_task_drafts_intent_status_idx',
+    ]) {
+      expect(sql).toContain(index);
+    }
   });
 
   it('upgrades older SQLite tables with the recent tenant columns and rule fields', async () => {

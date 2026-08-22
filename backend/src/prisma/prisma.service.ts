@@ -2988,6 +2988,35 @@ export class PrismaService
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
       )`,
       `CREATE INDEX IF NOT EXISTS publish_receipts_tenant_job_idx ON publish_receipts(tenant_id, job_id)`,
+      // P1（P5 门禁 2026-08-22）：GrowthTaskDraft（schema.prisma:3999）此前缺表，
+      // SQLite 守卫 150 模型/149 表不匹配，移动端回归 R1 失败——补齐建表+索引
+      `CREATE TABLE IF NOT EXISTS growth_task_drafts (
+        id TEXT PRIMARY KEY NOT NULL,
+        tenant_id TEXT NOT NULL DEFAULT 'legacy-local-desktop',
+        user_id TEXT NOT NULL,
+        actor_user_id TEXT,
+        intent TEXT NOT NULL,
+        goal TEXT NOT NULL,
+        platform TEXT,
+        account_id TEXT,
+        config_json JSONB NOT NULL DEFAULT '{}',
+        planned_actions JSONB NOT NULL DEFAULT '[]',
+        missing_fields JSONB NOT NULL DEFAULT '[]',
+        readiness TEXT NOT NULL DEFAULT 'needs-input',
+        blockers JSONB NOT NULL DEFAULT '[]',
+        draft_hash TEXT,
+        risk_summary TEXT,
+        config_id TEXT,
+        status TEXT NOT NULL DEFAULT 'draft',
+        expires_at DATETIME NOT NULL,
+        confirmed_at DATETIME,
+        executed_at DATETIME,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS growth_task_drafts_user_id_status_idx ON growth_task_drafts(user_id, status)`,
+      `CREATE INDEX IF NOT EXISTS growth_task_drafts_tenant_id_status_idx ON growth_task_drafts(tenant_id, status)`,
+      `CREATE INDEX IF NOT EXISTS growth_task_drafts_intent_status_idx ON growth_task_drafts(intent, status)`,
     ];
 
     for (const statement of statements) {
