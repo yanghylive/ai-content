@@ -970,3 +970,106 @@ describe('P4 DOM 闭环（审计 2026-08-22 导航后重新决策）', () => {
     );
   });
 });
+
+describe('文档 §6.3/§9.2/§12.2 补充项（对照开发文档检查 2026-08-22）', () => {
+  const ORIG_ENV = { ...process.env };
+  beforeAll(() => {
+    process.env.AGENT_BROWSER_MODE = 'dom-agent';
+    process.env.AGENT_BROWSER_ALLOW_WRITE = 'true';
+  });
+  afterAll(() => {
+    process.env = ORIG_ENV;
+  });
+
+  function makeSvc() {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    return { browser, sessionSvc };
+  }
+
+  it('§6.3 导航后旧快照 selector 引用被拒绝（stale）', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', {
+      startUrl: 'https://a.com',
+      allowDomains: ['a.com', 'b.com'],
+    });
+    await sessionSvc.acquireEngineSession(s.id);
+    // 初始解析：click 动作基于 a.com 生成；observe 第二次返回 b.com（已导航）
+    const parseActions = jest
+      .fn()
+      .mockResolvedValueOnce([{ action: 'click', selector: '#a-btn' }]);
+    const executeSingle = jest.fn().mockResolvedValue({
+      index: 0,
+      action: 'click',
+      ok: true,
+    });
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      { parseActions, executeSingle } as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+    );
+    const observe = jest.fn().mockResolvedValue({
+      type: 'snapshot',
+      ok: true,
+      url: 'https://b.com',
+      snapshot: '页面B',
+      injected: false,
+    });
+    (loop as unknown as { observe: () => Promise<never> }).observe = observe as never;
+    const events: unknown[] = [];
+    await loop.run(s.id, '点击按钮', { onStep: (e) => events.push(e) });
+    expect(executeSingle).not.toHaveBeenCalled(); // stale selector 不执行
+    const step = events.find(
+      (e) => (e as { type?: string }).type === 'step',
+    ) as { message?: string } | undefined;
+    expect(step?.message).toContain('元素引用已失效');
+  });
+
+  it('§9.2 引擎断开 → needs-human（不伪造执行）', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', {}, 't-1');
+    await sessionSvc.acquireEngineSession(s.id);
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      {
+        parseActions: jest.fn().mockResolvedValue([]),
+        executeSingle: jest.fn(),
+        isEngineAlive: jest.fn().mockResolvedValue(false), // 引擎已断开
+      } as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+    );
+    const events: unknown[] = [];
+    const result = await loop.run(s.id, '访问页面', {
+      onStep: (e) => events.push(e),
+    });
+    expect(result.ok).toBe(false);
+    const nh = events.find(
+      (e) => (e as { type?: string }).type === 'needs-human',
+    ) as { reasonCode?: string } | undefined;
+    expect(nh?.reasonCode).toBe('engine_unavailable');
+    expect(sessionSvc.get(s.id).status).toBe('needs-human');
+  });
+
+  it('§12.2 重复点击执行按钮：running 中重复 run 被拒绝', async () => {
+    const { AgentBrowserController } = require('./agent-browser.controller');
+    const ctrl = Object.create(AgentBrowserController.prototype) as any;
+    const sessions = {
+      assertOwner: jest.fn(),
+      get: jest.fn().mockReturnValue({ status: 'running' }),
+      updateStatus: jest.fn(),
+      acquireEngineSession: jest.fn(),
+      toPublicDto: jest.fn().mockReturnValue({}),
+    };
+    ctrl.sessions = sessions;
+    ctrl.resolveTenantId = jest.fn().mockResolvedValue('t-1');
+    ctrl.getUserId = jest.fn().mockReturnValue('u-1');
+    ctrl.loop = {};
+    await expect(
+      ctrl.run({}, 's-1', { instruction: '再次执行' }),
+    ).rejects.toThrow(/任务执行中/);
+  });
+});

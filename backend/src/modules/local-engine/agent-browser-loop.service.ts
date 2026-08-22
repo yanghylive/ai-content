@@ -109,6 +109,32 @@ export class AgentBrowserLoopService {
 
     const steps: AgentBrowserStepEvent[] = [];
 
+    // §9.2 引擎探活：浏览器/sidecar 已退出 → 释放任务进入 needs-human（不伪造执行）
+    // 执行器未提供探活（测试/mock）时默认存活
+    if (session.engineKey) {
+      const alive =
+        typeof this.actions.isEngineAlive === 'function'
+          ? await this.actions
+              .isEngineAlive(session.accountId)
+              .catch(() => false)
+          : true;
+      if (!alive) {
+        this.sessions.updateStatus(sessionId, 'needs-human');
+        const eh: AgentBrowserStepEvent = {
+          type: 'needs-human',
+          ok: false,
+          status: 'needs-human',
+          reasonCode: 'engine_unavailable',
+          message: '浏览器引擎已断开，任务已暂停，等待人工接管后恢复',
+          url: session.url,
+        };
+        steps.push(eh);
+        onStep?.(eh);
+        this.sessions.appendEvent(sessionId, eh);
+        return { ok: false, steps };
+      }
+    }
+
     // 1. Observe：快照当前页
     const snapshot = await this.observe(sessionId);
     steps.push(snapshot);
@@ -127,6 +153,9 @@ export class AgentBrowserLoopService {
     }
     // §14.2 maxSteps 截断
     actions = actions.slice(0, cfg.maxSteps);
+    // §6.3 元素引用只在当前快照版本内有效：记录每个动作生成时的页面 URL，
+    // 导航后旧快照的 selector 引用拒绝执行（等待重新决策）
+    let actionOriginUrls: string[] = actions.map(() => session.url ?? '');
 
     // 3. 逐步 Observe→策略→单动作执行→验证（§7.4 DOM Agent 循环）
     // P0-2：当前步被确认闸门拦截时的确认单信息（供 blocked 事件带出真实 selector）
@@ -169,6 +198,17 @@ export class AgentBrowserLoopService {
       if (!cfg.allowWrite && isWriteAction(action)) {
         allowed = false;
         gateMessage = 'AGENT_BROWSER_ALLOW_WRITE=false：写操作未开启，仅允许导航/读取类任务';
+      }
+      // §6.3 元素引用只在当前快照版本内有效：导航后旧快照的 selector 引用拒绝执行
+      if (
+        allowed &&
+        'selector' in action &&
+        stepSnapshot.url &&
+        actionOriginUrls[i] &&
+        actionOriginUrls[i] !== stepSnapshot.url
+      ) {
+        allowed = false;
+        gateMessage = `页面已导航至 ${stepSnapshot.url}，旧快照中的元素引用已失效（origin=${actionOriginUrls[i]}），等待基于当前快照重新决策`;
       }
       if (tool && allowed) {
         const audit = this.policy.audit(
@@ -267,6 +307,11 @@ export class AgentBrowserLoopService {
             actions = actions
               .slice(0, done)
               .concat(redecided.slice(0, Math.max(1, cfg.maxSteps - done)));
+            // 新动作基于当前（导航后）快照生成
+            actionOriginUrls = [
+              ...actionOriginUrls.slice(0, done),
+              ...Array(redecided.length).fill(stepSnapshot.url ?? session.url),
+            ].slice(0, actions.length);
             this.logger.log(
               `AgentBrowser ${sessionId} 导航至 ${stepSnapshot.url}，基于新快照重新决策（${redecided.length} 个新动作）`,
             );

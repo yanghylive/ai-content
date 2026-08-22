@@ -105,6 +105,10 @@ export class AgentBrowserController {
         `会话已处于终态 ${cur.status}，不能重新运行`,
       );
     }
+    // §12.2 反例"重复点击执行按钮"：running 中重复提交直接拒绝（幂等防重）
+    if (cur.status === 'running') {
+      throw new BadRequestException('任务执行中，请等待完成或先停止再重试');
+    }
     // 1. 懒创建引擎会话 + 置 running
     this.sessions.updateStatus(id, 'created');
     await this.sessions.acquireEngineSession(id);

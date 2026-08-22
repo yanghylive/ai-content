@@ -489,6 +489,20 @@ ${context.snapshot.slice(0, 2000)}
    * P1-4 单动作执行（逐步循环：每步单独执行+验证）：
    * 创建/复用会话，执行单个动作并返回证据结果。
    */
+  /** §9.2 引擎探活：浏览器/sidecar 退出检测（供 Loop 转 needs-human） */
+  async isEngineAlive(accountId: string): Promise<boolean> {
+    try {
+      const session = await this.browser.getOrCreateSession({
+        platform: 'general-web',
+        accountId,
+        probe: true,
+      });
+      return !session.page.isClosed();
+    } catch {
+      return false;
+    }
+  }
+
   async executeSingle(input: {
     action: AiBrowserAction;
     accountId?: string;
