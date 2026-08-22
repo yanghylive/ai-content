@@ -184,6 +184,22 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
         ],
         sessionKey: 'general-web-abc',
       }),
+      // 逐步循环：parseActions 解析（用 argsOpts.actions 或默认 goto）+ executeSingle
+      parseActions: jest
+        .fn()
+        .mockResolvedValue(
+          argsOpts?.actions?.length
+            ? (argsOpts.actions as { action: string }[])
+            : [{ action: 'goto', url: 'https://example.com' }],
+        ),
+      executeSingle: jest.fn().mockImplementation(
+        async ({ action }: { action: { action: string } }) => ({
+          index: 0,
+          action: action.action,
+          ok: true,
+          evidenceUrl: 'https://ev/1',
+        }),
+      ),
     };
     const policySvc = new AgentBrowserPolicyService();
     const loop = new AgentBrowserLoopService(sessionSvc, actionsMock as never, policySvc);
@@ -219,21 +235,20 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     });
 
     expect(result.ok).toBe(true);
-    // 事件序列：snapshot -> 2 step -> done
+    // 事件序列（逐步循环）：首 snapshot -> [步1 snapshot -> step(goto)] -> done
     expect(events[0]).toMatchObject({ type: 'snapshot' });
-    expect(events[1]).toMatchObject({ type: 'step', action: 'goto', ok: true });
-    expect(events[2]).toMatchObject({ type: 'step', action: 'click', ok: false });
+    expect(events[1]).toMatchObject({ type: 'snapshot' }); // 步1 re-observe
+    expect(events[2]).toMatchObject({ type: 'step', action: 'goto', ok: true });
     expect(events[3]).toMatchObject({ type: 'done' });
-    // actions.run 被调用且注入当前 URL + 会话独立 accountId
-    expect(actionsMock.run).toHaveBeenCalledWith(
+    // 逐步循环：parseActions 解析 + executeSingle 单步执行（注入会话独立 accountId）
+    expect(actionsMock.parseActions).toHaveBeenCalledWith('搜索装修公司');
+    expect(actionsMock.executeSingle).toHaveBeenCalledWith(
       expect.objectContaining({
-        instruction: '搜索装修公司',
-        url: 'https://example.com',
         accountId: s.accountId,
       }),
     );
-    // stepCount 累计
-    expect(sessionSvc.get(s.id).stepCount).toBe(2);
+    // stepCount 累计（逐步循环默认 1 个动作）
+    expect(sessionSvc.get(s.id).stepCount).toBe(1);
   });
 
   it('run：actions.run 失败时 done.ok=false 但流程不断', async () => {
@@ -282,15 +297,18 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
     await sessionSvc.acquireEngineSession(s.id);
     const { loop } = makeLoop(sessionSvc, {
+      actions: [{ action: 'click', selector: '#btn' }],
       results: [
         { index: 0, action: 'click', ok: true, evidenceUrl: 'ev/1' },
       ],
     });
     const events: unknown[] = [];
     await loop.run(s.id, '点击按钮', { onStep: (e) => events.push(e) });
-    // Verify 阶段：click 标记风险需确认
-    const step = events[1] as { message?: string };
-    expect(step.message).toContain('风险动作');
+    // 逐步循环：click 未确认 → 确认闸门阻断
+    const step = events.find((e) => (e as { type?: string }).type === 'step') as
+      | { message?: string }
+      | undefined;
+    expect(step?.message).toContain('需用户确认');
   });
 
   it('observe：playwright-mcp 可用时返回真实 DOM 快照', async () => {
@@ -452,6 +470,16 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
         ],
         sessionKey: 'general-web-abc',
       }),
+      parseActions: jest.fn().mockResolvedValue([
+        { action: 'click', selector: '#btn' },
+      ]),
+      executeSingle: jest.fn().mockResolvedValue({
+        index: 0,
+        action: 'click',
+        ok: false,
+        message: '需用户确认后执行（高风险动作，确认单 confirm-1）',
+        blocked: true,
+      }),
     };
     const loop = new AgentBrowserLoopService(
       sessionSvc,
@@ -466,12 +494,41 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
       onStep: (e) => events.push(e),
       confirmedTools: [],
     });
-    // 验证 Verify 阶段事件携带确认单提示
-    const step = events[1] as { message?: string };
-    expect(step.message).toContain('确认单 confirm-1');
+    // 验证 Verify 阶段事件携带确认单提示（find step 事件，前面有 re-observe snapshot）
+    const step = events.find(
+      (e) => (e as { type?: string }).type === 'step',
+    ) as { message?: string } | undefined;
+    expect(step?.message).toContain('确认单 confirm-1');
     // 验证持久化器被调用（persistPendingConfirmation 由 run 的 policyGate 触发——
     // 但 actionsMock.run 是 mock 不走真实 policyGate；改为直接验证方法存在）
     expect(typeof (loop as unknown as { persistPendingConfirmation?: unknown }).persistPendingConfirmation).toBe('function');
+  });
+
+  it('逐步 re-observe：导航后会话 URL 更新 + 每步先快照', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop } = makeLoop(sessionSvc, {
+      actions: [
+        { action: 'goto', url: 'https://example.com' },
+        { action: 'goto', url: 'https://target.com' },
+      ],
+    });
+    const events: unknown[] = [];
+    await loop.run(s.id, '访问 example 和 target', {
+      onStep: (e) => events.push(e),
+      confirmedTools: [{ action: 'goto' }],
+    });
+    // 每步前都有 re-observe snapshot：snapshot(首) + snapshot(步1) + step + snapshot(步2) + step + done
+    const snapshots = events.filter((e) => (e as { type?: string }).type === 'snapshot');
+    const steps = events.filter((e) => (e as { type?: string }).type === 'step');
+    expect(snapshots.length).toBe(3); // 首 + 每步前
+    expect(steps.length).toBe(2);
   });
 
   it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
