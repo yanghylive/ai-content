@@ -20,6 +20,9 @@ export interface AgentBrowserStepEvent {
   url?: string;
   extractText?: string;
   error?: string;
+  // P0-2（审计 2026-08-22）：确认单 id + 真实 selector，供前端精确批准
+  confirmationId?: string;
+  selector?: string;
 }
 
 /**
@@ -54,9 +57,10 @@ export class AgentBrowserLoopService {
     options: {
       onStep?: (event: AgentBrowserStepEvent) => void;
       confirmedTools?: Array<{ action: string; target?: string; url?: string }>;
+      confirmationIds?: string[];
     } = {},
   ): Promise<{ ok: boolean; steps: AgentBrowserStepEvent[] }> {
-    const { onStep, confirmedTools } = options;
+    const { onStep, confirmedTools, confirmationIds } = options;
     const session = this.sessions.get(sessionId);
     if (session.status !== 'running') {
       throw new BadRequestException(
@@ -108,6 +112,8 @@ export class AgentBrowserLoopService {
     actions = actions.slice(0, cfg.maxSteps);
 
     // 3. 逐步 Observe→策略→单动作执行→验证（§7.4 DOM Agent 循环）
+    // P0-2：当前步被确认闸门拦截时的确认单信息（供 blocked 事件带出真实 selector）
+    let blockedConfirmation: { id?: string; selector?: string } | undefined;
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
       // 3.1 每步 re-observe（页面可能已因上一步导航改变）
@@ -131,8 +137,13 @@ export class AgentBrowserLoopService {
           { url: session.url, allowDomains: session.allowDomains },
         );
         if (audit.requiresConfirmation) {
-          const matched = (confirmedTools ?? []).some((cc) =>
-            matchesConfirmedAction(cc, action),
+          // P0-2：服务端确认校验——confirmationIds 查 AgentConfirmation 表（绑定
+          // sessionId/tenantId/userId + fingerprint 一致）才放行；不信任客户端裸确认。
+          const matched = await this.resolveConfirmation(
+            session,
+            action,
+            confirmedTools,
+            confirmationIds,
           );
           if (!matched) {
             const confirmationId = await this.persistPendingConfirmation(
@@ -141,6 +152,10 @@ export class AgentBrowserLoopService {
               audit.riskLevel,
             );
             allowed = false;
+            blockedConfirmation = {
+              id: confirmationId,
+              selector: 'selector' in action ? action.selector : undefined,
+            };
             gateMessage = `需用户确认后执行（高风险动作${confirmationId ? `，确认单 ${confirmationId}` : ''}）`;
           }
         } else if (!audit.allowed) {
@@ -164,6 +179,12 @@ export class AgentBrowserLoopService {
             evidenceUrl: undefined,
             extractText: undefined,
             blocked: true,
+            ...(blockedConfirmation?.id
+              ? { confirmationId: blockedConfirmation.id }
+              : {}),
+            ...(blockedConfirmation?.selector
+              ? { selector: blockedConfirmation.selector }
+              : {}),
           };
 
       // 3.4 验证：生成步骤事件
@@ -175,6 +196,10 @@ export class AgentBrowserLoopService {
         message: r.message,
         url: r.evidenceUrl,
         extractText: r.extractText,
+        ...('confirmationId' in r && r.confirmationId
+          ? { confirmationId: r.confirmationId }
+          : {}),
+        ...('selector' in r && r.selector ? { selector: r.selector } : {}),
       };
       steps.push(stepEvent);
       onStep?.(stepEvent);
@@ -286,6 +311,73 @@ export class AgentBrowserLoopService {
       .map((item) => (typeof item.text === 'string' ? item.text : ''))
       .join('\n')
       .trim();
+  }
+
+  /**
+   * P0-2 服务端确认校验：不信任客户端裸 confirmedTools。
+   * 优先按 confirmationIds 查 AgentConfirmation 表——记录必须：
+   * - status = pending
+   * - sessionId / tenantId / userId 与会话绑定一致（防跨会话复用）
+   * - action + target/url fingerprint 与当前动作完全一致（防模糊放行）
+   * 全部匹配才放行。查库不可用时回落精确 confirmedTools（已收紧，缺失关键字段不放行）。
+   */
+  private async resolveConfirmation(
+    session: AgentBrowserSession,
+    action: AiBrowserAction,
+    confirmedTools: Array<{ action: string; target?: string; url?: string }> | undefined,
+    confirmationIds: string[] | undefined,
+  ): Promise<boolean> {
+    if (confirmationIds?.length && this.prisma) {
+      try {
+        const delegate = (
+          this.prisma as unknown as {
+            agentConfirmation?: {
+              findMany?: (args: {
+                where: { id: { in: string[] } };
+              }) => Promise<
+                Array<{
+                  id: string;
+                  status: string;
+                  sessionId: string;
+                  tenantId: string;
+                  userId: string;
+                  action: string;
+                  target?: string | null;
+                  content?: string | null;
+                }>
+              >;
+            };
+          }
+        )?.agentConfirmation;
+        if (delegate?.findMany) {
+          const records = await delegate.findMany({
+            where: { id: { in: confirmationIds } },
+          });
+          const matched = records.some((rec) => {
+            if (rec.status !== 'pending') return false;
+            if (rec.sessionId !== session.id) return false;
+            if (session.lease?.tenantId && rec.tenantId !== session.lease.tenantId)
+              return false;
+            if (session.lease?.ownerId && rec.userId !== session.lease.ownerId)
+              return false;
+            if (rec.action !== action.action) return false;
+            if ('selector' in action && rec.target !== action.selector)
+              return false;
+            if ('url' in action && rec.content !== action.url) return false;
+            return true;
+          });
+          if (matched) return true;
+        }
+      } catch (error) {
+        this.logger.warn(
+          `AgentConfirmation 校验查询失败（回落精确确认）：${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+    // 回落：精确 confirmedTools（P0-2 已收紧——click/type 必须 target、goto 必须 url）
+    return (confirmedTools ?? []).some((cc) =>
+      matchesConfirmedAction(cc, action),
+    );
   }
 
   /**

@@ -543,3 +543,116 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     expect(events[0].at).toBeTruthy();
   });
 });
+
+describe('P0-2 服务端确认校验（审计 2026-08-22）', () => {
+  const ORIG_ENV = { ...process.env };
+  beforeAll(() => {
+    process.env.AGENT_BROWSER_MODE = 'dom-agent';
+    process.env.AGENT_BROWSER_ALLOW_WRITE = 'true';
+  });
+  afterAll(() => {
+    process.env = ORIG_ENV;
+  });
+
+  function makeSession() {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    const s = sessionSvc.create('u-1', {}, 't-1');
+    return { sessionSvc, s };
+  }
+
+  function makeLoop(
+    sessionSvc: AgentBrowserSessionService,
+    prismaMock: unknown,
+    actions: unknown[],
+  ) {
+    const actionsMock = {
+      parseActions: jest.fn().mockResolvedValue(actions),
+      executeSingle: jest.fn().mockResolvedValue({
+        index: 0,
+        action: 'click',
+        ok: true,
+      }),
+    };
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      actionsMock as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+      undefined,
+      prismaMock as never,
+    );
+    return { loop, actionsMock };
+  }
+
+  it('confirmationIds 查库：绑定+指纹一致 → 放行（执行）', async () => {
+    const { sessionSvc, s } = makeSession();
+    const prismaMock = {
+      agentConfirmation: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'c-1',
+            status: 'pending',
+            sessionId: s.id,
+            tenantId: 't-1',
+            userId: 'u-1',
+            action: 'click',
+            target: '#btn',
+            content: null,
+          },
+        ]),
+      },
+    };
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop, actionsMock } = makeLoop(
+      sessionSvc,
+      prismaMock,
+      [{ action: 'click', selector: '#btn' }],
+    );
+    const result = await loop.run(s.id, '点击按钮', {
+      confirmationIds: ['c-1'],
+    });
+    expect(actionsMock.executeSingle).toHaveBeenCalled(); // 确认通过→执行
+    expect(result.ok).toBe(true);
+  });
+
+  it('confirmationIds 查库：跨会话确认单 → 拒绝（不执行）', async () => {
+    const { sessionSvc, s } = makeSession();
+    const prismaMock = {
+      agentConfirmation: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'c-other',
+            status: 'pending',
+            sessionId: 'other-session', // 绑定别的会话
+            tenantId: 't-1',
+            userId: 'u-1',
+            action: 'click',
+            target: '#btn',
+            content: null,
+          },
+        ]),
+      },
+    };
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop, actionsMock } = makeLoop(
+      sessionSvc,
+      prismaMock,
+      [{ action: 'click', selector: '#btn' }],
+    );
+    const events: unknown[] = [];
+    await loop.run(s.id, '点击按钮', {
+      onStep: (e) => events.push(e),
+      confirmationIds: ['c-other'],
+    });
+    expect(actionsMock.executeSingle).not.toHaveBeenCalled(); // 拒绝→不执行
+    const step = events.find((e) => (e as { type?: string }).type === 'step') as
+      | { message?: string; selector?: string }
+      | undefined;
+    expect(step?.message).toContain('需用户确认');
+    expect(step?.selector).toBe('#btn'); // 事件带真实 selector（P0-3 前端用）
+  });
+});

@@ -468,9 +468,15 @@ describe('AiBrowserActionService 精确确认匹配', () => {
     ).toBe(false);
   });
 
-  it('仅 action 匹配（无 target/url）：放行', async () => {
+  it('仅 action 匹配（无 target）：不匹配（P0-2 收紧，防伪造放行任意点击）', async () => {
     const { matchesConfirmedAction } = require('./ai-browser-action.service');
     const step = { action: 'click', selector: '#btn-a' };
-    expect(matchesConfirmedAction({ action: 'click' }, step as never)).toBe(true);
+    expect(matchesConfirmedAction({ action: 'click' }, step as never)).toBe(false);
+  });
+
+  it('goto 仅 action（无 url）：不匹配（防放行任意导航）', async () => {
+    const { matchesConfirmedAction } = require('./ai-browser-action.service');
+    const step = { action: 'goto', url: 'https://a.com' };
+    expect(matchesConfirmedAction({ action: 'goto' }, step as never)).toBe(false);
   });
 });

@@ -9,16 +9,23 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { UnauthorizedException } from '@nestjs/common';
 import { AiAssistantNestService } from './ai-assistant.service';
 
-type AuthRequest = Request & { user?: { id: string } };
+type AuthRequest = Request & { authUser?: { id: string } };
 
 @Controller('ai/assistant')
 export class AiAssistantController {
   constructor(private readonly drafts: AiAssistantNestService) {}
 
   private getUserId(request: AuthRequest): string {
-    return request.user?.id ?? 'local-user';
+    // P0-1（审计 2026-08-22）：AuthGuard 写入 request.authUser，读 request.user 恒空
+    // 回落 local-user 导致用户级隔离失效。无身份直接 401，禁止回落。
+    const userId = request.authUser?.id?.trim();
+    if (!userId) {
+      throw new UnauthorizedException('请先登录');
+    }
+    return userId;
   }
 
   /** 创建任务草稿（NL -> 结构化草稿，不执行） */
