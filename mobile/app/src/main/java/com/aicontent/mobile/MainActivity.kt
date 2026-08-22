@@ -357,4 +357,22 @@ class MainActivity : AppCompatActivity() {
             startService(intent)
         }
     }
+
+    /** MediaProjection 授权结果转发（老设备截图，API<30 fallback） */
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == com.aicontent.mobile.agent.MediaProjectionCapture.REQ_CODE) {
+            com.aicontent.mobile.agent.MediaProjectionCapture.onActivityResult(
+                this,
+                resultCode,
+                data,
+            )
+        }
+    }
+
+    /** 发起屏幕录制授权（MediaProjectionCapture.requestAuthWithCallback 调用） */
+    fun requestScreenCaptureAuth() {
+        com.aicontent.mobile.agent.MediaProjectionCapture.requestAuth(this)
+    }
 }
