@@ -188,6 +188,31 @@ export class TaskDispatchService {
     });
   }
 
+  /** 活跃租约列表（设备中心展示：账号/设备/任务/过期时间） */
+  async listActiveLeases(userId: string): Promise<
+    Array<{
+      id: string;
+      accountId: string;
+      deviceId: string;
+      taskId: string;
+      expiresAt: Date;
+      createdAt: Date;
+    }>
+  > {
+    const rows = await this.prisma.executorLease.findMany({
+      where: { userId, status: 'active' },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      accountId: r.accountId,
+      deviceId: r.deviceId,
+      taskId: r.taskId,
+      expiresAt: r.expiresAt,
+      createdAt: r.createdAt,
+    }));
+  }
+
   /** 释放任务租约（终态回传时调用；executor-status 也调用） */
   async releaseLease(taskId: string): Promise<void> {
     await this.prisma.executorLease.updateMany({

@@ -50,3 +50,32 @@ export async function listExecutorTasks(limit = 10): Promise<ExecutorTaskView[]>
   );
   return data;
 }
+
+/** 设备信息（mobile-executor DeviceInfo） */
+export interface MobileDeviceInfo {
+  id: string;
+  deviceName: string;
+  platform: string;
+  status: "online" | "offline";
+  lastHeartbeatAt: string | null;
+}
+
+/** 活跃租约 */
+export interface ExecutorLeaseView {
+  id: string;
+  accountId: string;
+  deviceId: string;
+  taskId: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+/** 我的设备列表 */
+export async function listDevices(): Promise<MobileDeviceInfo[]> {
+  return api.get<MobileDeviceInfo[]>("/mobile-executor/devices");
+}
+
+/** 活跃租约列表 */
+export async function listActiveLeases(): Promise<ExecutorLeaseView[]> {
+  return api.get<ExecutorLeaseView[]>("/mobile-executor/leases");
+}
