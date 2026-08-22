@@ -187,6 +187,32 @@ class JsBridge(private val activity: Activity) {
         return "{\"ok\":true,\"message\":\"已取消\"}"
     }
 
+    /**
+     * 截取当前屏幕（无障碍 takeScreenshot，Android 11+）。
+     * 返回 {"ok":true,"message":"data:image/jpeg;base64,..."} 或错误。
+     */
+    @JavascriptInterface
+    fun captureScreen(): String {
+        val latch = CountDownLatch(1)
+        val holder = arrayOfNulls<String>(1)
+        com.aicontent.mobile.agent.RpaAccessibilityService.captureScreen { result ->
+            holder[0] = if (result.ok) {
+                "{\"ok\":true,\"message\":\"${escapeJson(result.message)}\"}"
+            } else {
+                "{\"ok\":false,\"message\":\"${escapeJson(result.message)}\"}"
+            }
+            latch.countDown()
+        }
+        try {
+            if (!latch.await(15, TimeUnit.SECONDS)) {
+                return "{\"ok\":false,\"message\":\"截图超时\"}"
+            }
+        } catch (_: InterruptedException) {
+            return "{\"ok\":false,\"message\":\"截图被中断\"}"
+        }
+        return holder[0] ?: "{\"ok\":false,\"message\":\"截图结果丢失\"}"
+    }
+
     private fun escapeJson(s: String): String =
         s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", " ").replace("\r", " ")
 
