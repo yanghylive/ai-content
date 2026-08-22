@@ -191,7 +191,9 @@ export class AuthGuard implements CanActivate {
     if (requiredRoles && requiredRoles.length > 0) {
       const role = request.authUser.role ?? 'operator';
       const cloudRole =
-        request.authUser.kaypalRole ?? request.authUser.kaypalPlatformRole ?? null;
+        request.authUser.kaypalRole ??
+        request.authUser.kaypalPlatformRole ??
+        null;
       const isSuperAdmin =
         cloudRole === 'SUPER_ADMIN' || role === 'super_admin';
       if (!requiredRoles.includes(role) && !isSuperAdmin) {

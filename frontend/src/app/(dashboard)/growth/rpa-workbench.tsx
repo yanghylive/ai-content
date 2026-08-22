@@ -100,8 +100,9 @@ function ActionChip({
 
 export function RpaWorkbenchPage() {
   const [capabilities, setCapabilities] = useState<RpaCapabilityRow[]>([]);
-  const [accountProbes, setAccountProbes] = useState<Record<string, RpaAccountProbe>>({});
   const [executions, setExecutions] = useState<RpaExecutionRecord[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [accountProbes, setAccountProbes] = useState<Record<string, RpaAccountProbe>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [detail, setDetail] = useState<RpaExecutionRecord | null>(null);

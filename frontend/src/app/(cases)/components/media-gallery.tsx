@@ -94,7 +94,7 @@ function MediaView({
   if (media.mediaType === "video") {
     const poster = mediaPoster(media);
     return (
-      // eslint-disable-next-line jsx-a11y/media-has-caption
+       
       <video
         className={className}
         src={src}

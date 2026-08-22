@@ -9,10 +9,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
-import {
-  BadRequestException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
 import { AgentBrowserLoopService } from './agent-browser-loop.service';
@@ -43,9 +40,8 @@ export class AgentBrowserController {
     if (!this.authRequestContext) {
       throw new ForbiddenException('缺少租户上下文');
     }
-    const prisma = (
-      this.sessions as unknown as { prisma?: unknown }
-    ).prisma as never;
+    const prisma = (this.sessions as unknown as { prisma?: unknown })
+      .prisma as never;
     if (!prisma) {
       throw new ForbiddenException('缺少数据库租户上下文');
     }
@@ -55,7 +51,10 @@ export class AgentBrowserController {
   /** 创建会话（Profile/租约/域名白名单） */
   @Post('sessions')
   @HttpCode(201)
-  async create(@Req() request: AuthRequest, @Body() body: CreateAgentBrowserSessionInput = {}) {
+  async create(
+    @Req() request: AuthRequest,
+    @Body() body: CreateAgentBrowserSessionInput = {},
+  ) {
     const tenantId = await this.resolveTenantId();
     return this.sessions.create(this.getUserId(request), body, tenantId);
   }
@@ -95,7 +94,7 @@ export class AgentBrowserController {
       );
     }
     // 1. 懒创建引擎会话 + 置 running
-    await this.sessions.updateStatus(id, 'created');
+    this.sessions.updateStatus(id, 'created');
     await this.sessions.acquireEngineSession(id);
     // 2. 若有指令则跑一轮 Observe-Act-Verify（confirmedTools 放行需确认动作）
     if (body.instruction?.trim()) {
@@ -147,10 +146,16 @@ export class AgentBrowserController {
   @Post('policy/audit')
   audit(
     @Param() _unused: undefined,
-    @Body() body: { tool: string; args?: Record<string, unknown>; url?: string; allowDomains?: string[] },
+    @Body()
+    body: {
+      tool: string;
+      args?: Record<string, unknown>;
+      url?: string;
+      allowDomains?: string[];
+    },
   ) {
     this.policy.assertToolAllowed(body.tool);
-    return this.policy.audit(body.tool as never, body.args ?? {}, {
+    return this.policy.audit(body.tool, body.args ?? {}, {
       url: body.url,
       allowDomains: body.allowDomains ?? [],
     });

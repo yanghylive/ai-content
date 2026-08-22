@@ -32,10 +32,7 @@ export class AiAssistantController {
   }
 
   @Get('task-drafts')
-  listDrafts(
-    @Req() request: AuthRequest,
-    @Query('status') status?: string,
-  ) {
+  listDrafts(@Req() request: AuthRequest, @Query('status') status?: string) {
     return this.drafts.listDrafts(this.getUserId(request), status);
   }
 

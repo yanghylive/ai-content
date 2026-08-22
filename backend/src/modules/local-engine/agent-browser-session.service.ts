@@ -1,4 +1,11 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -106,7 +113,12 @@ export class AgentBrowserSessionService implements OnModuleInit {
     const allowDomains =
       input.allowDomains && input.allowDomains.length > 0
         ? [...new Set(input.allowDomains)]
-        : [...new Set([...(startOrigin ? [startOrigin] : []), ...globalDomains])];
+        : [
+            ...new Set([
+              ...(startOrigin ? [startOrigin] : []),
+              ...globalDomains,
+            ]),
+          ];
 
     const session: AgentBrowserSession = {
       id: randomUUID(),
@@ -143,13 +155,21 @@ export class AgentBrowserSessionService implements OnModuleInit {
   }
 
   /** P4 安全：校验会话所有者（防 IDOR——知道 sessionId 不能操作他人会话） */
-  assertOwner(id: string, ownerId: string, tenantId?: string): AgentBrowserSession {
+  assertOwner(
+    id: string,
+    ownerId: string,
+    tenantId?: string,
+  ): AgentBrowserSession {
     const session = this.get(id);
     if (session.lease?.ownerId && session.lease.ownerId !== ownerId) {
       throw new ForbiddenException('无权访问该 Agent Browser 会话');
     }
     // 租户级隔离：请求租户必须与会话租约一致（多租户用户跨租户访问阻断）
-    if (tenantId && session.lease?.tenantId && session.lease.tenantId !== tenantId) {
+    if (
+      tenantId &&
+      session.lease?.tenantId &&
+      session.lease.tenantId !== tenantId
+    ) {
       throw new ForbiddenException('无权访问其他租户的 Agent Browser 会话');
     }
     return session;

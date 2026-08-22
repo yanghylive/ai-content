@@ -4553,7 +4553,9 @@ export class AutoUploadClient {
           (window as { location?: { href?: string } }).location!.href = href;
         }, url);
       } catch (error) {
-        this.logger.warn(`JS 导航兜底失败: ${error instanceof Error ? error.message : String(error)}`);
+        this.logger.warn(
+          `JS 导航兜底失败: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
       // 给浏览器自身导航一点时间
       await page.waitForTimeout(3000).catch(() => undefined);

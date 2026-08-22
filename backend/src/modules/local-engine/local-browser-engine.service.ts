@@ -748,7 +748,8 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     options: { forceNewPort?: boolean; probe?: boolean } = {},
   ): Promise<{
     context: BrowserContext;
-    debuggingPort: number;    process?: ChildProcess;
+    debuggingPort: number;
+    process?: ChildProcess;
     reused: boolean;
   }> {
     // 探活档强制新端口：绝不复用现有 CDP 进程（可能是用户窗口或残留探活进程），
@@ -756,12 +757,10 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     // 端口挑选 + 启动整段串行化：并发 getOrCreateSession 时若各自 pickCdpPort，
     // 会因 isPortAvailable 检查窗口竞态选到同一端口（2026-08-20 douyin-12/13 抢 9287）。
     const runSerialized = this.cdpPortPickChain.then(async () => {
-      const port = await this.pickCdpPort(
-        platform,
-        accountId,
-        profileDir,
-        { ...options, forceNewPort: options.forceNewPort || options.probe === true },
-      );
+      const port = await this.pickCdpPort(platform, accountId, profileDir, {
+        ...options,
+        forceNewPort: options.forceNewPort || options.probe === true,
+      });
       let proc: ChildProcess | undefined;
       let reused = false;
 
@@ -1594,20 +1593,16 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   private pidsListeningOnPort(port: number): number[] {
     if (process.platform === 'win32') return [];
     try {
-      const output = execFileSync(
-        'lsof',
-        ['-ti', `tcp:${port}`],
-        { encoding: 'utf8' },
-      );
+      const output = execFileSync('lsof', ['-ti', `tcp:${port}`], {
+        encoding: 'utf8',
+      });
       const currentPid = process.pid;
       return output
         .split('\n')
         .map((line) => line.trim())
         .filter((line) => /^\d+$/.test(line))
         .map((line) => Number(line))
-        .filter(
-          (pid) => Number.isFinite(pid) && pid > 1 && pid !== currentPid,
-        );
+        .filter((pid) => Number.isFinite(pid) && pid > 1 && pid !== currentPid);
     } catch {
       return [];
     }

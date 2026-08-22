@@ -2682,10 +2682,7 @@ export class DouyinExposureCollector {
                     const scale = Math.min(1, 900 / img.width);
                     const canvas = document.createElement('canvas');
                     canvas.width = Math.max(1, Math.round(img.width * scale));
-                    canvas.height = Math.max(
-                      1,
-                      Math.round(img.height * scale),
-                    );
+                    canvas.height = Math.max(1, Math.round(img.height * scale));
                     const ctx = canvas.getContext('2d');
                     if (!ctx) {
                       resolve('');
@@ -2710,6 +2707,7 @@ export class DouyinExposureCollector {
         }
         return rawBase64;
       };
+      // eslint-disable-next-line prefer-const
       base64 = await compressInPage(session?.page, pngBase64);
       const prompt =
         mode === 'comments'
@@ -2733,13 +2731,13 @@ export class DouyinExposureCollector {
       this.visionFallbackLastCallAt.set(visionKey, Date.now());
       const match = visionContent.match(/\[[\s\S]*\]/);
       if (!match) return null;
-      const parsed: Array<{
+      const parsed = JSON.parse(match[0]) as Array<{
         nickname?: string;
         comment?: string;
         videoTitle?: string;
         authorName?: string;
         videoUrl?: string;
-      }> = JSON.parse(match[0]);
+      }>;
       const candidates = (Array.isArray(parsed) ? parsed : [])
         .filter((item) => item?.nickname || item?.comment || item?.videoTitle)
         .slice(0, limit)
@@ -2752,7 +2750,10 @@ export class DouyinExposureCollector {
             item.authorName ||
             (mode === 'comments' ? '抖音评论用户' : '抖音搜索结果'),
           index,
-          kind: mode === 'comments' ? ('comment' as const) : ('search-result' as const),
+          kind:
+            mode === 'comments'
+              ? ('comment' as const)
+              : ('search-result' as const),
           videoTitle: item.videoTitle,
           targetName: item.nickname || item.authorName,
         }));

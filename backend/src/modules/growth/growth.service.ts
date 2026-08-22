@@ -300,7 +300,7 @@ export class GrowthService implements OnModuleInit {
    */
   async getGrowthHome(
     userId: string,
-    options: { range?: 'today' | '30d' } = {},
+    _options: { range?: 'today' | '30d' } = {},
   ): Promise<GrowthHomeResponse> {
     const generatedAt = new Date().toISOString();
     const overview = await this.getGrowthOverviewSafely(userId);
@@ -309,9 +309,17 @@ export class GrowthService implements OnModuleInit {
     const blockers = await this.buildGrowthHomeBlockers(userId);
     const recentRuns = overview?.recentRuns?.slice(0, 8) ?? [];
     const nextActions: GrowthHomeResponse['nextActions'] = [
-      { code: 'create-task', label: '新建获客任务', href: '/auto-acquisition/create' },
+      {
+        code: 'create-task',
+        label: '新建获客任务',
+        href: '/auto-acquisition/create',
+      },
       { code: 'process-leads', label: '处理线索', href: '/growth/leads' },
-      { code: 'account-health', label: '检查账号健康', href: '/growth/account-health' },
+      {
+        code: 'account-health',
+        label: '检查账号健康',
+        href: '/growth/account-health',
+      },
     ];
 
     return {
@@ -343,10 +351,12 @@ export class GrowthService implements OnModuleInit {
   ): Promise<GrowthHomeStats> {
     const overviewSafe = overview ?? ({} as GrowthOverview);
     const newLeads = await this.safeNumber(
+      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overviewSafe.todayLeadCount,
       null,
     );
     const highIntentLeads = await this.safeNumber(
+      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overviewSafe.highIntentLeadCount,
       null,
     );
@@ -356,6 +366,7 @@ export class GrowthService implements OnModuleInit {
     // 注释说明口径；详见汇报。
     const pendingContact = await this.countPendingContactLeads(userId);
     const crmCaptured = await this.safeNumber(
+      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overviewSafe.todayCrmCapturedCount,
       null,
     );
@@ -376,14 +387,17 @@ export class GrowthService implements OnModuleInit {
     userId: string,
   ): Promise<GrowthHomeResponse['funnel']> {
     const candidates = await this.safeNumber(
+      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overview?.funnel?.candidates ?? null,
       null,
     );
     const selected = await this.safeNumber(
+      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overview?.funnel?.selected ?? null,
       null,
     );
     const contacted = await this.safeNumber(
+      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overview?.funnel?.contacted ?? null,
       null,
     );
@@ -404,7 +418,9 @@ export class GrowthService implements OnModuleInit {
   }
 
   /** blockers：优先复用 commercial readiness 的真实阻断项；不可用则用账号健康聚合降级 */
-  private async buildGrowthHomeBlockers(userId: string): Promise<GrowthHomeBlocker[]> {
+  private async buildGrowthHomeBlockers(
+    userId: string,
+  ): Promise<GrowthHomeBlocker[]> {
     try {
       const readiness = await this.getCommercialReadiness(userId);
       if (readiness?.blockers?.length) {
@@ -425,15 +441,18 @@ export class GrowthService implements OnModuleInit {
       const store = await this.loadStore();
       const scope = await this.growthScope(userId);
       const riskAccounts = store.accountHealth.filter(
-        (item) => this.inGrowthScope(item, scope) && item.riskStatus !== 'normal',
+        (item) =>
+          this.inGrowthScope(item, scope) && item.riskStatus !== 'normal',
       );
       if (riskAccounts.length > 0) {
         const first = riskAccounts[0];
-        return [{
-          code: 'account-health-risk',
-          title: `${riskAccounts.length} 个平台账号健康异常`,
-          action: `前往账号健康检查并处理 ${first.accountName} 的风险状态（${first.riskStatus}）。`,
-        }];
+        return [
+          {
+            code: 'account-health-risk',
+            title: `${riskAccounts.length} 个平台账号健康异常`,
+            action: `前往账号健康检查并处理 ${first.accountName} 的风险状态（${first.riskStatus}）。`,
+          },
+        ];
       }
       return [];
     } catch (error) {
@@ -449,7 +468,7 @@ export class GrowthService implements OnModuleInit {
     try {
       const scope = await this.growthScope(userId);
       return await this.prisma.lead.count({
-        where: this.growthScopeWhere(scope) as Prisma.LeadWhereInput,
+        where: this.growthScopeWhere(scope),
       });
     } catch (error) {
       this.logger.warn(
@@ -537,7 +556,9 @@ export class GrowthService implements OnModuleInit {
   }
 
   /** 未结商机金额（元）：opening 商机 amountCents 合计 / 100；无数据 → null，不返回 0 */
-  private async sumOpenOpportunityAmount(userId: string): Promise<number | null> {
+  private async sumOpenOpportunityAmount(
+    userId: string,
+  ): Promise<number | null> {
     try {
       const scope = await this.growthScope(userId);
       const agg = await this.prisma.crmOpportunity.aggregate({
@@ -1361,13 +1382,11 @@ export class GrowthService implements OnModuleInit {
     void this.kaypalMemory
       ?.add(
         'long',
-        `用户创建获客任务「${config.taskName}」：平台=${config.platform}，关键词=${(
-          config.includeKeywords || []
-        ).join('、') || '未填'}，每日上限=${config.dailyLimit}，话术风格=${(
-          config.commentTemplates || []
-        )
-          .join('；')
-          .slice(0, 80) || '未配置'}`,
+        `用户创建获客任务「${config.taskName}」：平台=${config.platform}，关键词=${
+          (config.includeKeywords || []).join('、') || '未填'
+        }，每日上限=${config.dailyLimit}，话术风格=${
+          (config.commentTemplates || []).join('；').slice(0, 80) || '未配置'
+        }`,
         {
           summary: `获客任务「${config.taskName}」已创建`,
           metadata: {
@@ -1624,8 +1643,7 @@ export class GrowthService implements OnModuleInit {
     const throttle = this.acquisitionThrottle.get(throttleKey);
     if (
       throttle &&
-      Date.now() - throttle.lastRunAt <
-        GrowthService.ACQUISITION_THROTTLE_MS
+      Date.now() - throttle.lastRunAt < GrowthService.ACQUISITION_THROTTLE_MS
     ) {
       const waitMs = Math.max(
         0,
@@ -1985,7 +2003,7 @@ export class GrowthService implements OnModuleInit {
     );
     if (!config) throw new NotFoundException('获客任务不存在');
     const accounts = await this.listAccountHealth(userId);
-    const plan = await this.buildSchedulePlan([config], accounts);
+    const plan = this.buildSchedulePlan([config], accounts);
     const account = accounts.find(
       (item) =>
         item.platform === config.platform &&
@@ -2429,14 +2447,10 @@ export class GrowthService implements OnModuleInit {
       (nextStatus === 'ignored' || nextStatus === 'blocked')
     ) {
       const memoText = `用户将线索标记为无效（${nextStatus}）：平台=${updated.platform}，命中词=${(updated.matchedKeywords || []).slice(0, 3).join('、')}，评论摘要=${(updated.sourceText || '').slice(0, 60)}。评分需下调此类线索权重。`;
-      void this.kaypalMemory?.add?.(
-        'daily',
-        memoText,
-        {
-          summary: 'acquisition-learning',
-          metadata: { scope: 'lead-feedback', leadId: id, verdict: nextStatus },
-        },
-      );
+      void this.kaypalMemory?.add?.('daily', memoText, {
+        summary: 'acquisition-learning',
+        metadata: { scope: 'lead-feedback', leadId: id, verdict: nextStatus },
+      });
     }
     return updated;
   }
@@ -3301,7 +3315,6 @@ export class GrowthService implements OnModuleInit {
    * 话术维度为弱关联（sourceText/sourceTaskId 兜底），样本<3 标 lowConfidence（拍板 R6）。
    */
   private async computeAttributionReport(scope: GrowthScope, platform: string) {
-    const scopeWhere = this.growthScopeWhere(scope);
     const crmScopeWhere: {
       ownerId?: string;
       OR?: Array<Record<string, unknown>>;
@@ -3372,16 +3385,39 @@ export class GrowthService implements OnModuleInit {
     const leadsForCustomers = customerIds.length
       ? await this.prisma.lead.findMany({
           where: { customerId: { in: customerIds } },
-          select: { id: true, customerId: true, platform: true, sourceText: true },
+          select: {
+            id: true,
+            customerId: true,
+            platform: true,
+            sourceText: true,
+          },
         })
       : [];
 
     // —— byPlatform：按客户 sourcePlatform 聚合 ——
-    const platformMap = new Map<string, { leads: number; customers: number; opportunities: number; won: number; wonAmountCents: number }>();
+    const platformMap = new Map<
+      string,
+      {
+        leads: number;
+        customers: number;
+        opportunities: number;
+        won: number;
+        wonAmountCents: number;
+      }
+    >();
     for (const opp of wonOpps) {
-      const customer = opp.primaryCustomerId ? customerById.get(opp.primaryCustomerId) : null;
-      const p = customer?.sourcePlatform || platformFilter.platform || 'unknown';
-      const entry = platformMap.get(p) ?? { leads: 0, customers: 0, opportunities: 0, won: 0, wonAmountCents: 0 };
+      const customer = opp.primaryCustomerId
+        ? customerById.get(opp.primaryCustomerId)
+        : null;
+      const p =
+        customer?.sourcePlatform || platformFilter.platform || 'unknown';
+      const entry = platformMap.get(p) ?? {
+        leads: 0,
+        customers: 0,
+        opportunities: 0,
+        won: 0,
+        wonAmountCents: 0,
+      };
       entry.opportunities += 1;
       entry.won += 1;
       entry.wonAmountCents += opp.amountCents ?? 0;
@@ -3390,24 +3426,44 @@ export class GrowthService implements OnModuleInit {
     }
     for (const lead of leadsForCustomers) {
       const p = lead.platform || platformFilter.platform || 'unknown';
-      const entry = platformMap.get(p) ?? { leads: 0, customers: 0, opportunities: 0, won: 0, wonAmountCents: 0 };
+      const entry = platformMap.get(p) ?? {
+        leads: 0,
+        customers: 0,
+        opportunities: 0,
+        won: 0,
+        wonAmountCents: 0,
+      };
       entry.leads += 1;
       platformMap.set(p, entry);
     }
-    const byPlatform = Array.from(platformMap.entries()).map(([platformName, v]) => ({
-      platform: platformName,
-      leads: v.leads,
-      customers: v.customers,
-      opportunities: v.opportunities,
-      won: v.won,
-      wonAmountCents: v.wonAmountCents,
-      conversionRate: v.leads > 0 ? v.won / v.leads : null,
-    }));
+    const byPlatform = Array.from(platformMap.entries()).map(
+      ([platformName, v]) => ({
+        platform: platformName,
+        leads: v.leads,
+        customers: v.customers,
+        opportunities: v.opportunities,
+        won: v.won,
+        wonAmountCents: v.wonAmountCents,
+        conversionRate: v.leads > 0 ? v.won / v.leads : null,
+      }),
+    );
 
     // —— byStrategy：按 sourceTaskId（获客任务）聚合 ——
-    const strategyMap = new Map<string, { strategyId: string; strategyName: string; platform: string; leads: number; won: number; wonAmountCents: number }>();
+    const strategyMap = new Map<
+      string,
+      {
+        strategyId: string;
+        strategyName: string;
+        platform: string;
+        leads: number;
+        won: number;
+        wonAmountCents: number;
+      }
+    >();
     for (const opp of wonOpps) {
-      const customer = opp.primaryCustomerId ? customerById.get(opp.primaryCustomerId) : null;
+      const customer = opp.primaryCustomerId
+        ? customerById.get(opp.primaryCustomerId)
+        : null;
       const taskId = customer?.sourceTaskId;
       if (!taskId) continue;
       const config = configById.get(taskId);
@@ -3425,7 +3481,9 @@ export class GrowthService implements OnModuleInit {
       strategyMap.set(key, entry);
     }
     for (const lead of leadsForCustomers) {
-      const customer = lead.customerId ? customerById.get(lead.customerId) : null;
+      const customer = lead.customerId
+        ? customerById.get(lead.customerId)
+        : null;
       const taskId = customer?.sourceTaskId;
       if (!taskId) continue;
       const config = configById.get(taskId);
@@ -3439,9 +3497,22 @@ export class GrowthService implements OnModuleInit {
     }));
 
     // —— byContent：按 sourceArticleId 聚合 ——
-    const contentMap = new Map<string, { articleId: string; title: string; publishCount: number; leads: number; customers: number; won: number; wonAmountCents: number }>();
+    const contentMap = new Map<
+      string,
+      {
+        articleId: string;
+        title: string;
+        publishCount: number;
+        leads: number;
+        customers: number;
+        won: number;
+        wonAmountCents: number;
+      }
+    >();
     for (const opp of wonOpps) {
-      const customer = opp.primaryCustomerId ? customerById.get(opp.primaryCustomerId) : null;
+      const customer = opp.primaryCustomerId
+        ? customerById.get(opp.primaryCustomerId)
+        : null;
       const articleId = customer?.sourceArticleId;
       if (!articleId) continue;
       const article = articleById.get(articleId);
@@ -3461,7 +3532,9 @@ export class GrowthService implements OnModuleInit {
       contentMap.set(key, entry);
     }
     for (const lead of leadsForCustomers) {
-      const customer = lead.customerId ? customerById.get(lead.customerId) : null;
+      const customer = lead.customerId
+        ? customerById.get(lead.customerId)
+        : null;
       const articleId = customer?.sourceArticleId;
       if (!articleId) continue;
       const entry = contentMap.get(articleId);
@@ -3470,17 +3543,41 @@ export class GrowthService implements OnModuleInit {
     const byContent = Array.from(contentMap.values());
 
     // —— byScript：按话术（sourceText 兜底 + copywriting 口径）弱关联 ——
-    const scriptMap = new Map<string, { text: string; usageCount: number; leads: number; won: number; wonAmountCents: number }>();
+    const scriptMap = new Map<
+      string,
+      {
+        text: string;
+        usageCount: number;
+        leads: number;
+        won: number;
+        wonAmountCents: number;
+      }
+    >();
     for (const lead of leadsForCustomers) {
       const text = (lead.sourceText || '').slice(0, 40) || '（无话术文本）';
-      const entry = scriptMap.get(text) ?? { text, usageCount: 0, leads: 0, won: 0, wonAmountCents: 0 };
+      const entry = scriptMap.get(text) ?? {
+        text,
+        usageCount: 0,
+        leads: 0,
+        won: 0,
+        wonAmountCents: 0,
+      };
       entry.leads += 1;
       scriptMap.set(text, entry);
     }
     for (const opp of wonOpps) {
-      const customer = opp.primaryCustomerId ? customerById.get(opp.primaryCustomerId) : null;
-      const text = (customer?.sourceText || '').slice(0, 40) || '（无话术文本）';
-      const entry = scriptMap.get(text) ?? { text, usageCount: 0, leads: 0, won: 0, wonAmountCents: 0 };
+      const customer = opp.primaryCustomerId
+        ? customerById.get(opp.primaryCustomerId)
+        : null;
+      const text =
+        (customer?.sourceText || '').slice(0, 40) || '（无话术文本）';
+      const entry = scriptMap.get(text) ?? {
+        text,
+        usageCount: 0,
+        leads: 0,
+        won: 0,
+        wonAmountCents: 0,
+      };
       entry.won += 1;
       entry.wonAmountCents += opp.amountCents ?? 0;
       scriptMap.set(text, entry);
@@ -5651,7 +5748,12 @@ export class GrowthService implements OnModuleInit {
             : []),
         ].join('\n');
         // 指纹匹配：目标文本出现在历史 run 摘要/证据中，且动作类型一致（由 message 携带）
-        return haystack.includes(needle) && (haystack.includes(actionType) || haystack.includes('触达') || haystack.includes('已完成'));
+        return (
+          haystack.includes(needle) &&
+          (haystack.includes(actionType) ||
+            haystack.includes('触达') ||
+            haystack.includes('已完成'))
+        );
       });
     } catch (error) {
       this.logger.warn(
@@ -6435,8 +6537,8 @@ export class GrowthService implements OnModuleInit {
 
         if (
           status === 'ready' &&
-          (config.riskMode === 'auto' &&
-            process.env.GROWTH_EXECUTION_ENABLED !== 'true')
+          config.riskMode === 'auto' &&
+          process.env.GROWTH_EXECUTION_ENABLED !== 'true'
         ) {
           status = 'waiting-confirmation';
           reason = '真实执行开关未开启，当前只能进入安全预检确认单。';
@@ -6610,7 +6712,8 @@ export class GrowthService implements OnModuleInit {
       ) {
         return {
           ready: true,
-          reason: '快手浏览器获客已接入采集、评论回复触达与证据回读（私信未开放）。',
+          reason:
+            '快手浏览器获客已接入采集、评论回复触达与证据回读（私信未开放）。',
         };
       }
       return {

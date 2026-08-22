@@ -154,7 +154,8 @@ export class PlatformPublishService implements TaskExecutor {
     if (Array.isArray(payload.materialFiles)) {
       payload.materialFiles = payload.materialFiles.map(resolveMaterial);
     }
-    if (payload.coverPath) payload.coverPath = resolveMaterial(payload.coverPath);
+    if (payload.coverPath)
+      payload.coverPath = resolveMaterial(payload.coverPath);
     if (payload.coverPaths && typeof payload.coverPaths === 'object') {
       for (const key of Object.keys(payload.coverPaths)) {
         payload.coverPaths[key] = resolveMaterial(payload.coverPaths[key]);

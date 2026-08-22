@@ -1173,11 +1173,23 @@ export class CrmService {
 
     // P2 成交回写：stage 变为 won/lost 时补归因、时间线、outbox（拍板 R1：与更新同事务，失败整单回滚）
     if (nextStage && nextStage !== current.stage && nextStage === 'won') {
-      await this.handleOpportunityWon(userId, opportunityId, opportunity, current);
+      await this.handleOpportunityWon(
+        userId,
+        opportunityId,
+        opportunity,
+        current,
+      );
     } else if (
-      nextStage && nextStage !== current.stage && nextStage === 'lost'
+      nextStage &&
+      nextStage !== current.stage &&
+      nextStage === 'lost'
     ) {
-      await this.handleOpportunityLost(userId, opportunityId, opportunity, current);
+      await this.handleOpportunityLost(
+        userId,
+        opportunityId,
+        opportunity,
+        current,
+      );
     }
 
     return this.getOpportunity(userId, opportunityId);
@@ -1200,7 +1212,12 @@ export class CrmService {
       amountCents: number;
       closeDate: Date | null;
     },
-    current: { stage: string; amountCents: number; closeDate: Date | null; loseReason: string | null },
+    current: {
+      stage: string;
+      amountCents: number;
+      closeDate: Date | null;
+      loseReason: string | null;
+    },
   ) {
     // 1. 归因引用：从关联客户补 source* 链（R3：CrmCustomer 已有归因列）
     let attribution: Record<string, unknown> = {};
@@ -1219,7 +1236,8 @@ export class CrmService {
       if (customer) {
         const leadId =
           typeof customer.metadata === 'object' && customer.metadata
-            ? ((customer.metadata as Record<string, unknown>).leadId as string | undefined)
+            ? ((customer.metadata as Record<string, unknown>).leadId as
+                string | undefined)
             : undefined;
         attribution = {
           sourceArticleId: customer.sourceArticleId ?? null,
@@ -1302,7 +1320,14 @@ export class CrmService {
     try {
       if (opportunity.primaryCustomerId) {
         const link = await this.prisma.attributionLink.findFirst({
-          where: { tenantId: tenantId ?? 'legacy-local-desktop', fromType: 'customer', fromId: opportunity.primaryCustomerId, toType: 'opportunity', toId: opportunityId, model: 'deterministic' },
+          where: {
+            tenantId: tenantId ?? 'legacy-local-desktop',
+            fromType: 'customer',
+            fromId: opportunity.primaryCustomerId,
+            toType: 'opportunity',
+            toId: opportunityId,
+            model: 'deterministic',
+          },
         });
         if (!link) {
           await this.prisma.attributionLink.create({
@@ -1316,13 +1341,18 @@ export class CrmService {
               model: 'deterministic',
               confidence: 'high',
               label: 'won_by',
-              evidence: { wonAt: new Date().toISOString(), amountCents: opportunity.amountCents },
+              evidence: {
+                wonAt: new Date().toISOString(),
+                amountCents: opportunity.amountCents,
+              },
             },
           });
         }
       }
     } catch (linkError) {
-      console.warn(`attributionLink 落库失败（不阻断成交）：${String(linkError)}`);
+      console.warn(
+        `attributionLink 落库失败（不阻断成交）：${String(linkError)}`,
+      );
     }
   }
 
@@ -1341,7 +1371,12 @@ export class CrmService {
       amountCents: number;
       closeDate: Date | null;
     },
-    current: { stage: string; amountCents: number; closeDate: Date | null; loseReason: string | null },
+    current: {
+      stage: string;
+      amountCents: number;
+      closeDate: Date | null;
+      loseReason: string | null;
+    },
   ) {
     await this.appendTimeline(userId, {
       companyId: opportunity.companyId,
@@ -1365,7 +1400,11 @@ export class CrmService {
         type: 'crm.opportunity.lost',
         idempotencyKey: `opportunity-lost:${opportunityId}`,
         occurredAt: new Date().toISOString(),
-        payload: { opportunityId, name: opportunity.name, loseReason: current.loseReason },
+        payload: {
+          opportunityId,
+          name: opportunity.name,
+          loseReason: current.loseReason,
+        },
       });
     } catch (outboxError) {
       console.warn(
@@ -1432,24 +1471,63 @@ export class CrmService {
         ? this.prisma.article.findFirst({ where: { id: lead.sourceArticleId } })
         : Promise.resolve(null),
       lead.sourcePublishRecordId
-        ? this.prisma.publishRecord.findFirst({ where: { id: lead.sourcePublishRecordId } })
+        ? this.prisma.publishRecord.findFirst({
+            where: { id: lead.sourcePublishRecordId },
+          })
         : Promise.resolve(null),
       lead.sourceInteractionEventId
-        ? this.prisma.interactionEvent.findFirst({ where: { id: lead.sourceInteractionEventId } })
+        ? this.prisma.interactionEvent.findFirst({
+            where: { id: lead.sourceInteractionEventId },
+          })
         : Promise.resolve(null),
     ]);
 
-    const hops: Array<{ fromType: string; fromId: string; toType: string; toId: string; model: string; label?: string }> = [];
+    const hops: Array<{
+      fromType: string;
+      fromId: string;
+      toType: string;
+      toId: string;
+      model: string;
+      label?: string;
+    }> = [];
     if (article) {
-      hops.push({ fromType: 'content', fromId: article.id, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'first_touch' });
+      hops.push({
+        fromType: 'content',
+        fromId: article.id,
+        toType: 'lead',
+        toId: lead.id,
+        model: 'deterministic',
+        label: 'first_touch',
+      });
     }
     if (publishRecord) {
-      hops.push({ fromType: 'publish', fromId: publishRecord.id, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'first_touch' });
+      hops.push({
+        fromType: 'publish',
+        fromId: publishRecord.id,
+        toType: 'lead',
+        toId: lead.id,
+        model: 'deterministic',
+        label: 'first_touch',
+      });
     }
     if (interactionEvent) {
-      hops.push({ fromType: 'interaction', fromId: interactionEvent.id, toType: 'lead', toId: lead.id, model: 'deterministic', label: 'created_from' });
+      hops.push({
+        fromType: 'interaction',
+        fromId: interactionEvent.id,
+        toType: 'lead',
+        toId: lead.id,
+        model: 'deterministic',
+        label: 'created_from',
+      });
     }
-    hops.push({ fromType: 'lead', fromId: lead.id, toType: 'customer', toId: customerId, model: 'deterministic', label: 'qualified_by' });
+    hops.push({
+      fromType: 'lead',
+      fromId: lead.id,
+      toType: 'customer',
+      toId: customerId,
+      model: 'deterministic',
+      label: 'qualified_by',
+    });
 
     return {
       layer: hops.length > 0 ? 'confirmed' : 'unknown',

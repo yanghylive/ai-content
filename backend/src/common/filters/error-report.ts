@@ -119,7 +119,7 @@ export function reportError(input: {
 
   const report = buildReport(input);
   const ymd = new Date().toISOString().slice(0, 10);
-  const key = `error-reports/${ymd}/${report.reportId}.json`;
+  const key = `error-reports/${ymd}/${String(report.reportId)}.json`;
 
   void client
     .put(key, Buffer.from(JSON.stringify(report, null, 2)))

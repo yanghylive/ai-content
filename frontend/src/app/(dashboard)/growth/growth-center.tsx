@@ -163,7 +163,6 @@ function AiValueBill({ overview }: { overview: GrowthOverview | null }) {
 
   const candidates = funnel.candidates ?? 0;
   const crmCaptured = funnel.crmCaptured ?? 0;
-  const converted = funnel.converted ?? 0;
 
   // 估算口径（页面注明"估算"）：人工逐条看候选约 2 分钟/条；高意向线索按 ¥50/条估；进 CRM 按 ¥200/条估
   const manualHours = Math.round((candidates * 2) / 60);
