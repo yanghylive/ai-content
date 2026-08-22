@@ -36,6 +36,7 @@ const SCENES: Array<{
   { key: "content", href: "/content", label: "内容运营", icon: "fileText" },
   { key: "interaction", href: "/message", label: "互动中心", icon: "messageSq" },
   { key: "execution", href: "/tasks", label: "执行中心", icon: "cpu" },
+  { key: "device", href: "/device-center", label: "设备中心", icon: "cpu" },
 ];
 
 /** 任意路径 → 所属场景（旧页面也能点亮正确的 rail 图标） */
@@ -58,6 +59,7 @@ export function sceneOfPath(pathname: string): string {
     pathname.startsWith("/boss-recruit")
   )
     return "customer";
+  if (pathname.startsWith("/device-center") || pathname.startsWith("/mai-ui")) return "execution";
   // 内容运营：内容/素材/主题/发布/排期/合规/样式
   if (
     pathname.startsWith("/content") ||

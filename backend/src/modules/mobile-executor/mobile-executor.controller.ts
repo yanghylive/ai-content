@@ -106,6 +106,13 @@ export class MobileExecutorController {
     return this.dispatch.claimNext(user.id, input.deviceId);
   }
 
+  @Get('leases')
+  @ApiOperation({ summary: '活跃租约列表（设备中心）' })
+  listLeases(@Req() request: AuthenticatedRequest) {
+    const user = this.requireUser(request);
+    return this.dispatch.listActiveLeases(user.id);
+  }
+
   @Get('tasks')
   @ApiOperation({ summary: '我的任务列表' })
   listTasks(
