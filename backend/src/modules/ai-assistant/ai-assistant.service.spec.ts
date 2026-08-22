@@ -299,6 +299,8 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
     const growth = {
       createConfig: jest.fn(),
       executeConfig: jest.fn(),
+      // P1（复查第二轮）：confirmDraft 孤儿配置清理路径
+      deleteConfig: jest.fn().mockResolvedValue({ ok: true }),
       ...(overrides.growth || {}),
     };
     const leadConvert = overrides.leadConvert ?? { convert: jest.fn() };
@@ -425,6 +427,70 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
       expect.objectContaining({
         where: { id: 'd1', status: 'executing' },
         data: expect.objectContaining({ status: 'error' }),
+      }),
+    );
+  });
+
+  it('P1（复查第二轮）executing 陈旧回收：崩溃残留置 error（不静默重试）', async () => {
+    const { svc, prisma } = makeService({});
+    // executing 且 updatedAt 在 20 分钟前（超过 EXECUTING_STALE_MS=10min）
+    prisma.growthTaskDraft.findFirst.mockResolvedValue(
+      draftRow({
+        status: 'executing',
+        updatedAt: new Date(Date.now() - 20 * 60 * 1000),
+      }),
+    );
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
+    await expect(svc.executeDraft('u-1', 'd1')).rejects.toThrow(
+      '执行中断的残留任务',
+    );
+    // 回收：executing → error（交人工核对）
+    expect(prisma.growthTaskDraft.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'd1', status: 'executing' },
+        data: expect.objectContaining({ status: 'error' }),
+      }),
+    );
+  });
+
+  it('P1（复查第二轮）executing 未超时：直接冲突拒绝（不回收）', async () => {
+    const { svc, prisma } = makeService({});
+    // executing 且 updatedAt 刚刚（未超时——正在执行）
+    prisma.growthTaskDraft.findFirst.mockResolvedValue(
+      draftRow({
+        status: 'executing',
+        updatedAt: new Date(Date.now() - 30 * 1000),
+      }),
+    );
+    await expect(svc.executeDraft('u-1', 'd1')).rejects.toThrow(
+      '任务正在执行或已完成',
+    );
+    // 不做回收更新
+    expect(prisma.growthTaskDraft.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('P1（复查第二轮）confirmDraft configId 回写失败：删除孤儿配置并回滚草稿', async () => {
+    const { svc, prisma, growth } = makeService({});
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ draftHash: null, intent: 'find_leads' }),
+      )
+      .mockResolvedValue(draftRow({ status: 'draft' }));
+    growth.createConfig.mockResolvedValue({ id: 'cfg-orphan' });
+    // 抢占成功；configId 回写失败（count=0）
+    prisma.growthTaskDraft.updateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 0 });
+    await expect(svc.confirmDraft('u-1', 'd1', {})).rejects.toThrow(
+      '配置关联草稿失败',
+    );
+    // 孤儿配置被清理
+    expect(growth.deleteConfig).toHaveBeenCalledWith('u-1', 'cfg-orphan');
+    // 草稿回滚 draft 允许重试
+    expect(prisma.growthTaskDraft.updateMany).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: { id: 'd1', status: 'confirmed' },
+        data: expect.objectContaining({ status: 'draft' }),
       }),
     );
   });

@@ -52,24 +52,33 @@ export class AgentBrowserSessionService implements OnModuleInit {
     this.loadFromDisk();
   }
 
-  /** 启动时从磁盘恢复会话（引擎 key 失效置 stopped，事件保留） */
+  /** 启动时从磁盘恢复会话（可恢复状态保留；引擎失效的活跃态置 stopped，事件保留） */
   private loadFromDisk(): void {
     try {
       if (!existsSync(this.storePath)) return;
       const raw = readFileSync(this.storePath, 'utf8');
       const list = JSON.parse(raw) as Array<Record<string, unknown>>;
       if (!Array.isArray(list)) return;
+      // P1（复查第二轮）：可恢复状态保留原状——paused/needs-human 可 resume
+      // 断点续跑、partial_success 可重新 run（断点在 pending 上下文里已落盘）；
+      // 只有 running/created 等执行中状态才因引擎失效置 stopped（执行已断）。
+      const recoverable: readonly string[] = [
+        'paused',
+        'needs-human',
+        'partial_success',
+      ];
       for (const item of list) {
         const session = item as unknown as AgentBrowserSession;
         if (!session?.id) continue;
-        // 重启后引擎会话已失效：标记 stopped（审计与事件保留）
-        session.status = 'stopped';
+        if (!recoverable.includes(session.status)) {
+          session.status = 'stopped';
+        }
         session.engineKey = '';
         session.updatedAt = new Date().toISOString();
         this.sessions.set(session.id, session);
       }
       this.logger.log(
-        `Agent Browser 会话已从磁盘恢复 ${this.sessions.size} 个（审计/事件保留，引擎态置 stopped）`,
+        `Agent Browser 会话已从磁盘恢复 ${this.sessions.size} 个（paused/needs-human/partial_success 保留可恢复，其余置 stopped）`,
       );
     } catch (error) {
       this.logger.warn(

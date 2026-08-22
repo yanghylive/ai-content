@@ -63,6 +63,12 @@ class SideEffectCommittedError extends Error {
   }
 }
 
+/**
+ * P1（复查第二轮）：executing 状态的陈旧阈值——超过视为执行进程崩溃残留，
+ * 回收置 error 终态（副作用是否已执行未知，交人工核对，不允许静默重试）。
+ */
+const EXECUTING_STALE_MS = 10 * 60 * 1000;
+
 /** 意图 -> 平台/动作的默认映射（NL 解析用） */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const INTENT_PLATFORM_HINT: Record<TaskDraftIntent, string[]> = {
@@ -423,11 +429,32 @@ export class AiAssistantService {
           status: 'disabled', // 止血：确认草稿创建的配置默认禁用，需手动启用
         });
         configId = created.id;
-        await this.prisma.growthTaskDraft.updateMany({
+        const wrote = await this.prisma.growthTaskDraft.updateMany({
           where: { id, status: 'confirmed' },
           data: { configId },
         });
+        if (wrote.count !== 1) {
+          // P1（复查第二轮）：configId 回写失败——删除刚创建的配置（防孤儿），
+          // 回滚草稿到 draft 允许重试
+          await this.growth
+            .deleteConfig(userId, configId)
+            .catch((e: unknown) =>
+              this.logger.error(
+                `孤儿配置清理失败（${configId}，需人工删除）：${e instanceof Error ? e.message : String(e)}`,
+              ),
+            );
+          await this.prisma.growthTaskDraft
+            .updateMany({
+              where: { id, status: 'confirmed' },
+              data: { status: 'draft' },
+            })
+            .catch(() => undefined);
+          throw new ConflictException(
+            '配置关联草稿失败，已清理配置并回滚，请重试',
+          );
+        }
       } catch (error) {
+        if (error instanceof ConflictException) throw error;
         // 回滚占位：配置未创建成功，草稿恢复 draft 允许重新确认（无孤儿配置）
         await this.prisma.growthTaskDraft
           .updateMany({
@@ -461,10 +488,32 @@ export class AiAssistantService {
   /** 执行已确认草稿：走 GrowthService 统一风险门与执行器 */
   async executeDraft(userId: string, id: string): Promise<GrowthTaskDraft> {
     const tenantId = await this.resolveTenantId(userId);
-    const row = await this.prisma.growthTaskDraft.findFirst({
-      where: { id, userId: userId, tenantId, status: 'confirmed' },
+    // P1（复查第二轮）：先按 id+user+tenant 查任意状态——检测 executing 崩溃残留
+    const existing = await this.prisma.growthTaskDraft.findFirst({
+      where: { id, userId: userId, tenantId },
     });
-    if (!row) throw new NotFoundException('任务草稿不存在或未确认');
+    if (!existing) throw new NotFoundException('任务草稿不存在或未确认');
+    if (existing.status === 'executing') {
+      const staleMs = new Date(existing.updatedAt ?? 0).getTime();
+      // updatedAt 缺失/非法 → NaN → 视为陈旧（防御：不允许永久卡 executing）
+      const stale = !Number.isFinite(staleMs);
+      const isStale = stale || Date.now() - staleMs > EXECUTING_STALE_MS;
+      if (isStale) {
+        // 进程崩溃残留：副作用是否已执行未知 → 置 error 终态交人工核对（不静默重试）
+        await this.prisma.growthTaskDraft.updateMany({
+          where: { id, status: 'executing' },
+          data: { status: 'error' },
+        });
+        throw new ConflictException(
+          '检测到执行中断的残留任务（执行进程可能已崩溃），已标记为 error，请人工核对副作用后重新发起',
+        );
+      }
+      throw new ConflictException('任务正在执行或已完成，请勿重复提交');
+    }
+    if (existing.status !== 'confirmed') {
+      throw new NotFoundException('任务草稿不存在或未确认');
+    }
+    const row = existing;
 
     if (new Date(row.expiresAt).getTime() < Date.now()) {
       await this.prisma.growthTaskDraft.update({

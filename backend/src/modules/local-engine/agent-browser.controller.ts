@@ -116,6 +116,18 @@ export class AgentBrowserController {
         `会话处于 ${cur.status} 状态，请先人工接管（resume）恢复后再运行`,
       );
     }
+    // P1（复查第二轮）：partial_success 重试从断点续跑——沿用保存的动作序列与
+    // 第一个失败动作的索引，不重新解析、不重放已成功动作（避免重复外部副作用）
+    const resumeFrom =
+      cur.status === 'partial_success' && cur.pendingActions?.length
+        ? {
+            stepIndex: cur.pendingStepIndex ?? 0,
+            actions: cur.pendingActions,
+          }
+        : undefined;
+    const instruction = resumeFrom
+      ? (cur.pendingInstruction ?? body.instruction ?? '')
+      : body.instruction;
     // 1. 懒创建引擎会话 + 置 running
     this.sessions.updateStatus(id, 'created');
     // P1（复查 2026-08-22）：解析/观察/执行器抛异常时必须 markError——
@@ -123,10 +135,11 @@ export class AgentBrowserController {
     try {
       await this.sessions.acquireEngineSession(id);
       // 2. 若有指令则跑一轮 Observe-Act-Verify（confirmationIds/confirmedTools 放行需确认动作）
-      if (body.instruction?.trim()) {
-        await this.loop.run(id, body.instruction, {
+      if (instruction?.trim()) {
+        await this.loop.run(id, instruction, {
           confirmedTools: body.confirmedTools ?? [],
           confirmationIds: body.confirmationIds,
+          ...(resumeFrom ? { resumeFrom } : {}),
         });
         // 终态由 loop 设置（success→succeeded / partial_success / failed）；
         // 不再对 !ok 误 markError（否则正常失败也被标成 error）
