@@ -10,6 +10,7 @@ import {
 import type { Request } from 'express';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
+import { AgentBrowserLoopService } from './agent-browser-loop.service';
 import type { CreateAgentBrowserSessionInput } from './agent-browser.types';
 
 type AuthRequest = Request & { user?: { id: string } };
@@ -24,6 +25,7 @@ export class AgentBrowserController {
   constructor(
     private readonly sessions: AgentBrowserSessionService,
     private readonly policy: AgentBrowserPolicyService,
+    private readonly loop: AgentBrowserLoopService,
   ) {}
 
   private getUserId(request: AuthRequest): string {
@@ -50,9 +52,20 @@ export class AgentBrowserController {
   /** 运行：进入 Observe-Act-Verify 循环（P4-B 实现执行体） */
   @Post('sessions/:id/run')
   @HttpCode(202)
-  async run(@Param('id') id: string) {
-    // P4-B：暂只获取引擎会话 + 状态置 running（LoopService 接入后替换）
+  async run(
+    @Param('id') id: string,
+    @Body() body: { instruction?: string } = {},
+  ) {
+    // 1. 懒创建引擎会话 + 置 running
+    await this.sessions.updateStatus(id, 'created');
     await this.sessions.acquireEngineSession(id);
+    // 2. 若有指令则跑一轮 Observe-Act-Verify
+    if (body.instruction?.trim()) {
+      const result = await this.loop.run(id, body.instruction);
+      if (!result.ok) {
+        this.sessions.markError(id, 'Agent 循环未完成任务');
+      }
+    }
     return this.sessions.get(id);
   }
 
