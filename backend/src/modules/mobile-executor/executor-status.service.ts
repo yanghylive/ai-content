@@ -41,6 +41,13 @@ export class ExecutorStatusService {
       where: { id: taskId },
       data: data as never,
     });
+    // P1 Lease：终态（done/failed）释放账号租约
+    if (input.status === 'done' || input.status === 'failed') {
+      await this.prisma.executorLease.updateMany({
+        where: { taskId, status: 'active' },
+        data: { status: 'released', updatedAt: new Date() },
+      });
+    }
     this.logger.log(
       `任务状态回传：${taskId} → ${input.status}${input.error ? `（${input.error.slice(0, 80)}）` : ''}`,
     );

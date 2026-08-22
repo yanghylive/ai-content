@@ -47,6 +47,26 @@ export class TaskDispatchService {
       );
     }
     this.validatePayload(payload, input.type || 'publish');
+    // P1 Lease：账号级外发租约——同账号已有活跃租约（未过期）时拒绝创建（防并发外发）
+    const leaseAccountId = this.extractAccountId(
+      payload,
+      input.type || 'publish',
+    );
+    if (leaseAccountId) {
+      const active = await this.prisma.executorLease.findFirst({
+        where: {
+          userId,
+          accountId: leaseAccountId,
+          status: 'active',
+          expiresAt: { gt: new Date() },
+        },
+      });
+      if (active) {
+        throw new BadRequestException(
+          `账号 ${leaseAccountId} 已有任务执行中（租约 ${active.taskId}，设备 ${active.deviceId}），请等待完成或释放后重试`,
+        );
+      }
+    }
     const row = await this.prisma.executorTask.create({
       data: {
         userId,
@@ -126,8 +146,64 @@ export class TaskDispatchService {
       where: { id: candidate.id },
     });
     if (!row) return null;
+    // P1 Lease：领取后为账号建租约（默认 10 分钟，agent 心跳续租；终态回传释放）
+    const leaseAccountId = this.extractAccountId(
+      (row.payload as Record<string, unknown>) ?? {},
+      row.type,
+    );
+    if (leaseAccountId) {
+      await this.acquireLease(userId, leaseAccountId, deviceId, row.id);
+    }
     this.logger.log(`任务被领取：${row.id} ← 设备 ${deviceId}`);
     return this.toView(row);
+  }
+
+  /** 建/续租约（同账号同任务幂等） */
+  private async acquireLease(
+    userId: string,
+    accountId: string,
+    deviceId: string,
+    taskId: string,
+  ): Promise<void> {
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 分钟
+    const existing = await this.prisma.executorLease.findFirst({
+      where: { taskId },
+    });
+    if (existing) {
+      await this.prisma.executorLease.update({
+        where: { id: existing.id },
+        data: { status: 'active', expiresAt, deviceId, updatedAt: new Date() },
+      });
+      return;
+    }
+    await this.prisma.executorLease.create({
+      data: {
+        userId,
+        accountId,
+        deviceId,
+        taskId,
+        status: 'active',
+        expiresAt,
+      },
+    });
+  }
+
+  /** 释放任务租约（终态回传时调用；executor-status 也调用） */
+  async releaseLease(taskId: string): Promise<void> {
+    await this.prisma.executorLease.updateMany({
+      where: { taskId, status: 'active' },
+      data: { status: 'released', updatedAt: new Date() },
+    });
+  }
+
+  /** 提取账号标识（publish 任务 payload.accountId；custom 无） */
+  private extractAccountId(
+    payload: Record<string, unknown>,
+    type: string,
+  ): string {
+    if (type !== 'publish') return '';
+    const v = payload['accountId'];
+    return typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '';
   }
 
   /** 我的任务列表 */
