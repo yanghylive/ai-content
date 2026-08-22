@@ -411,8 +411,9 @@ export class AiAssistantService {
     userId: string,
     id: string,
   ): Promise<GrowthTaskDraft> {
+    const tenantId = await this.resolveTenantId(userId);
     const row = await this.prisma.growthTaskDraft.findFirst({
-      where: { id, userId: userId, status: 'confirmed' },
+      where: { id, userId: userId, tenantId, status: 'confirmed' },
     });
     if (!row) throw new NotFoundException('任务草稿不存在或未确认');
 
@@ -480,8 +481,9 @@ export class AiAssistantService {
     userId: string,
     status?: string,
   ): Promise<GrowthTaskDraft[]> {
+    const tenantId = await this.resolveTenantId(userId);
     const rows = await this.prisma.growthTaskDraft.findMany({
-      where: { userId: userId, ...(status ? { status } : {}) },
+      where: { userId: userId, tenantId, ...(status ? { status } : {}) },
       orderBy: { createdAt: 'desc' },
       take: 20,
     });
