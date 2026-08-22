@@ -536,7 +536,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     // 每步前都有 re-observe snapshot：snapshot(首) + snapshot(步1) + step + snapshot(步2) + step + done
     const snapshots = events.filter((e) => (e as { type?: string }).type === 'snapshot');
     const steps = events.filter((e) => (e as { type?: string }).type === 'step');
-    expect(snapshots.length).toBe(3); // 首 + 每步前
+    expect(snapshots.length).toBe(4); // 首 + 每步前 + 执行后导航观察（DOM 闭环复查）
     expect(steps.length).toBe(2);
   });
 
@@ -1071,5 +1071,135 @@ describe('文档 §6.3/§9.2/§12.2 补充项（对照开发文档检查 2026-08
     await expect(
       ctrl.run({}, 's-1', { instruction: '再次执行' }),
     ).rejects.toThrow(/任务执行中/);
+  });
+});
+
+describe('复查 2026-08-22 专项（确认消费/终态/中断/门禁）', () => {
+  const ORIG_ENV = { ...process.env };
+  beforeAll(() => {
+    process.env.AGENT_BROWSER_MODE = 'dom-agent';
+    process.env.AGENT_BROWSER_ALLOW_WRITE = 'true';
+  });
+  afterAll(() => {
+    process.env = ORIG_ENV;
+  });
+
+  function makeLoop(
+    sessionSvc: AgentBrowserSessionService,
+    argsOpts?: { actions?: unknown[] },
+  ) {
+    const actionsMock = {
+      run: jest.fn(),
+      parseActions: jest.fn().mockResolvedValue(
+        argsOpts?.actions?.length
+          ? (argsOpts.actions as { action: string }[])
+          : [{ action: 'goto', url: 'https://example.com' }],
+      ),
+      executeSingle: jest.fn().mockResolvedValue({ ok: true }),
+    };
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      actionsMock as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+    );
+    return { loop, actionsMock };
+  }
+
+  function makeSvc() {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    return { browser, sessionSvc };
+  }
+
+  it('P1 确认单消费：匹配后原子更新 pending→consumed（同 id 不可复用）', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', {}, 't-1');
+    await sessionSvc.acquireEngineSession(s.id);
+    const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    const prismaMock = {
+      agentConfirmation: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'c-1',
+            status: 'pending',
+            sessionId: s.id,
+            tenantId: 't-1',
+            userId: 'u-1',
+            action: 'click',
+            target: '#btn',
+            content: null,
+          },
+        ]),
+        updateMany,
+      },
+    };
+    const actionsMock = {
+      parseActions: jest.fn().mockResolvedValue([
+        { action: 'click', selector: '#btn' },
+      ]),
+      executeSingle: jest.fn().mockResolvedValue({ ok: true }),
+    };
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      actionsMock as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+      undefined,
+      prismaMock as never,
+    );
+    const r = await loop.run(s.id, '点击按钮', { confirmationIds: ['c-1'] });
+    expect(r.ok).toBe(true);
+    // 消费：pending → consumed
+    expect(updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'c-1', status: 'pending' },
+        data: expect.objectContaining({ status: 'consumed' }),
+      }),
+    );
+    // 已被消费：updateMany count=0 → 不放行（重置 running 后第二次 run）
+    updateMany.mockResolvedValue({ count: 0 });
+    sessionSvc.updateStatus(s.id, 'running');
+    const r2 = await loop.run(s.id, '点击按钮', { confirmationIds: ['c-1'] });
+    expect(r2.ok).toBe(false);
+  });
+
+  it('P1 成功后置 succeeded 终态（不再停留 running）', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', {
+      allowDomains: ['a.com'],
+    });
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop } = makeLoop(sessionSvc, {
+      actions: [{ action: 'goto', url: 'https://a.com' }],
+    });
+    await loop.run(s.id, '访问页面');
+    expect(sessionSvc.get(s.id).status).toBe('succeeded');
+  });
+
+  it('P1 每步检查状态：循环中 pause 到达立即中断', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', { allowDomains: ['a.com'] });
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop, actionsMock } = makeLoop(sessionSvc, {
+      actions: [
+        { action: 'goto', url: 'https://a.com' },
+        { action: 'goto', url: 'https://b.com' },
+      ],
+    });
+    // 第一个动作执行成功后模拟 pause 请求到达（状态变 paused），
+    // 第二步循环检查到 paused 立即中断
+    actionsMock.executeSingle.mockImplementationOnce(async () => {
+      sessionSvc.updateStatus(s.id, 'paused');
+      return { index: 0, action: 'goto', ok: true };
+    });
+    const result = await loop.run(s.id, '访问两个页面');
+    expect(actionsMock.executeSingle).toHaveBeenCalledTimes(1); // 只执行第一步
+    const interrupt = result.steps.find(
+      (e) => e.type === 'error',
+    ) as { message?: string } | undefined;
+    expect(interrupt?.message).toContain('中断');
   });
 });

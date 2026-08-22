@@ -161,16 +161,26 @@ export class AgentBrowserSessionService implements OnModuleInit {
     tenantId?: string,
   ): AgentBrowserSession {
     const session = this.get(id);
-    if (session.lease?.ownerId && session.lease.ownerId !== ownerId) {
+    // P1（复查 2026-08-22）：fail-closed——历史会话缺失 ownerId/tenantId 时
+    // 一律拒绝（不允许"字段缺失就放行"），防止借旧数据绕过隔离
+    if (!session.lease?.ownerId) {
+      throw new ForbiddenException(
+        '会话缺少所有者信息（历史异常数据），禁止访问',
+      );
+    }
+    if (session.lease.ownerId !== ownerId) {
       throw new ForbiddenException('无权访问该 Agent Browser 会话');
     }
     // 租户级隔离：请求租户必须与会话租约一致（多租户用户跨租户访问阻断）
-    if (
-      tenantId &&
-      session.lease?.tenantId &&
-      session.lease.tenantId !== tenantId
-    ) {
-      throw new ForbiddenException('无权访问其他租户的 Agent Browser 会话');
+    if (tenantId) {
+      if (!session.lease.tenantId) {
+        throw new ForbiddenException(
+          '会话缺少租户信息（历史异常数据），禁止访问',
+        );
+      }
+      if (session.lease.tenantId !== tenantId) {
+        throw new ForbiddenException('无权访问其他租户的 Agent Browser 会话');
+      }
     }
     return session;
   }
