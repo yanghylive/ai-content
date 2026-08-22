@@ -4,9 +4,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MAI_UI_SYSTEM_PROMPT } from './mai-ui.prompt';
+
+/** kaypal 平台固定名（与 kaypal-model-sync.service 一致） */
+const KAYPAL_PLATFORM_NAME = 'Kaypal 模型台';
 
 /**
  * 视觉模型别名（ai_models.modelId）。
@@ -110,10 +114,20 @@ function validateMaiUiActions(
         const pad = 10;
         if (b.length === 2) {
           const [x, y] = b;
-          rec.bounds = [Math.max(0, x - pad), Math.max(0, y - pad), x + pad, y + pad];
+          rec.bounds = [
+            Math.max(0, x - pad),
+            Math.max(0, y - pad),
+            x + pad,
+            y + pad,
+          ];
         } else if (b.length === 4 && b[0] === b[2] && b[1] === b[3]) {
           const [x1, y1] = b;
-          rec.bounds = [Math.max(0, x1 - pad), Math.max(0, y1 - pad), x1 + pad, y1 + pad];
+          rec.bounds = [
+            Math.max(0, x1 - pad),
+            Math.max(0, y1 - pad),
+            x1 + pad,
+            y1 + pad,
+          ];
         }
       }
     }
@@ -192,7 +206,68 @@ export class MaiUiService {
   constructor(
     private readonly aiClient: AiClientService,
     private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
   ) {}
+
+  /**
+   * P1（P5 门禁 2026-08-22）：视觉模型懒创建——干净环境（新库/新装）没有
+   * kaypal-vision 记录时，用 env 的 kaypal 代理配置自动落地一条启用记录。
+   * 避免"代码兼容了别名但库里没有模型 → 首用即 404"的断链。
+   */
+  private async ensureVisionModel(): Promise<void> {
+    const baseUrl = this.config.get<string>('KAYPAL_AI_PROXY_BASE_URL')?.trim();
+    const apiKey = this.config.get<string>('KAYPAL_AI_PROXY_API_KEY')?.trim();
+    if (!baseUrl || !apiKey) {
+      this.logger.warn(
+        'MAI-UI 视觉模型缺失且缺少 KAYPAL_AI_PROXY_BASE_URL/API_KEY（无法懒创建，保持 404）',
+      );
+      return;
+    }
+    try {
+      const platform = await this.prisma.aIPlatform.upsert({
+        where: { name: KAYPAL_PLATFORM_NAME },
+        create: {
+          name: KAYPAL_PLATFORM_NAME,
+          baseUrl,
+          apiKey,
+          enabled: true,
+          config: {
+            source: 'kaypal',
+            defaultHeaders: { 'x-kaypal-api-key': apiKey },
+            visionSeed: new Date().toISOString(),
+          },
+        },
+        update: {
+          // 只补 baseUrl/apiKey（若为空），不覆盖已有配置
+          ...(baseUrl ? { baseUrl } : {}),
+          ...(apiKey ? { apiKey } : {}),
+        },
+      });
+      await this.prisma.aIModel.upsert({
+        where: {
+          platformId_modelId: {
+            platformId: platform.id,
+            modelId: VISION_MODEL_ALIASES[0],
+          },
+        },
+        create: {
+          name: 'Kaypal 视觉（qwen-vl-max）',
+          modelId: VISION_MODEL_ALIASES[0],
+          platformId: platform.id,
+          enabled: true,
+          config: { source: 'kaypal', visionSeed: new Date().toISOString() },
+        },
+        update: { enabled: true },
+      });
+      this.logger.log(
+        `MAI-UI 视觉模型已懒创建（${VISION_MODEL_ALIASES[0]} @ ${baseUrl}）`,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `MAI-UI 视觉模型懒创建失败：${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
 
   /**
    * 截图 + 指令 → 结构化候选动作（MAI-UI 最小可用）。
@@ -213,13 +288,24 @@ export class MaiUiService {
     // P1（P5 门禁 2026-08-22）：视觉模型按别名列表查找——
     // 服务端别名 kaypal-vision 与本机注册名 cmsvis0001visionkaypalvl 任一命中即可，
     // 并过滤 enabled（禁用模型不参与规划）。单一别名查不到即 404 是断链根因。
-    const model = await this.prisma.aIModel.findFirst({
+    let model = await this.prisma.aIModel.findFirst({
       where: {
         modelId: { in: VISION_MODEL_ALIASES },
         enabled: true,
       },
       include: { platform: true },
     });
+    if (!model) {
+      // P1（P5 门禁 2026-08-22）：干净环境懒创建后重查一次，仍无才 404
+      await this.ensureVisionModel();
+      model = await this.prisma.aIModel.findFirst({
+        where: {
+          modelId: { in: VISION_MODEL_ALIASES },
+          enabled: true,
+        },
+        include: { platform: true },
+      });
+    }
     if (!model) {
       throw new NotFoundException(
         `未找到可用的视觉模型（ai_models 缺少任一启用的 ${VISION_MODEL_ALIASES.join(' / ')} 记录）`,

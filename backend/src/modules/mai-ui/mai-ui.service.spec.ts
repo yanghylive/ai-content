@@ -6,17 +6,27 @@ describe('MaiUiService', () => {
   function makeService(overrides: {
     prisma?: Record<string, jest.Mock>;
     aiClient?: Record<string, jest.Mock>;
+    config?: Record<string, jest.Mock>;
   }) {
     const prisma = {
       aIModel: { findFirst: jest.fn() },
+      aIPlatform: { upsert: jest.fn() },
       ...(overrides.prisma || {}),
     };
     const aiClient = {
       generateWithImage: jest.fn(),
       ...(overrides.aiClient || {}),
     };
-    const service = new MaiUiService(aiClient as never, prisma as never);
-    return { service, prisma, aiClient };
+    const config = {
+      get: jest.fn().mockReturnValue(undefined),
+      ...(overrides.config || {}),
+    };
+    const service = new MaiUiService(
+      aiClient as never,
+      prisma as never,
+      config as never,
+    );
+    return { service, prisma, aiClient, config };
   }
 
   const validInput = {
@@ -51,13 +61,59 @@ describe('MaiUiService', () => {
   });
 
   it('模型不存在/全部禁用：抛 404（含两个别名提示）', async () => {
-    const { service, prisma } = makeService({});
+    const { service, prisma, config } = makeService({});
     prisma.aIModel.findFirst.mockResolvedValue(null);
+    config.get.mockReturnValue(undefined); // 无 kaypal env → 不懒创建
     await expect(service.planActions(validInput)).rejects.toThrow(
       NotFoundException,
     );
     await expect(service.planActions(validInput)).rejects.toThrow(
       /kaypal-vision \/ cmsvis0001visionkaypalvl/,
+    );
+    // 懒创建未触发（无 env 配置）
+    expect(prisma.aIPlatform.upsert).not.toHaveBeenCalled();
+  });
+
+  it('P1 懒创建：干净环境缺模型但有 kaypal env 时自动落地启用记录', async () => {
+    const { service, prisma, config, aiClient } = makeService({});
+    // 第一次查不到（干净库）→ ensureVisionModel 创建 → 第二次查到
+    prisma.aIModel.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: 'm-seeded',
+        modelId: 'kaypal-vision',
+        enabled: true,
+        platform: { id: 'p-kaypal' },
+      });
+    prisma.aIPlatform.upsert.mockResolvedValue({ id: 'p-kaypal' });
+    prisma.aIModel.upsert = jest.fn().mockResolvedValue({ id: 'm-seeded' });
+    config.get.mockImplementation((key: string) =>
+      key === 'KAYPAL_AI_PROXY_BASE_URL'
+        ? 'https://kaypal.cn/api/ai'
+        : key === 'KAYPAL_AI_PROXY_API_KEY'
+          ? 'server-key'
+          : undefined,
+    );
+    aiClient.generateWithImage.mockResolvedValue('[{"action":"back"}]');
+    const result = await service.planActions(validInput);
+    expect(result.ok).toBe(true);
+    // 平台 + 模型均被 upsert（懒创建落地）
+    expect(prisma.aIPlatform.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { name: 'Kaypal 模型台' },
+        create: expect.objectContaining({ baseUrl: 'https://kaypal.cn/api/ai' }),
+      }),
+    );
+    expect(prisma.aIModel.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          platformId_modelId: {
+            platformId: 'p-kaypal',
+            modelId: 'kaypal-vision',
+          },
+        },
+        create: expect.objectContaining({ enabled: true }),
+      }),
     );
   });
 

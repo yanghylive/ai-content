@@ -3,7 +3,8 @@ const require = createRequire("/Users/yanghy/Documents/New project/ai-content/ba
 const { chromium } = require("playwright");
 
 const BASE = "http://localhost:3010";
-const TOKEN = "WfVBkA-aPsTlZUKQBgK1UMRm7Pv1-zYnn-w2Qp3-vcI";
+const TOKEN = process.env.TEST_SESSION_TOKEN;
+if (!TOKEN) { console.error("缺少 TEST_SESSION_TOKEN 环境变量（会话 token 不再硬编码入库）"); process.exit(1); }
 
 async function run() {
   const browser = await chromium.launch({ headless: true });

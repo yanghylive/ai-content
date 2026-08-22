@@ -443,6 +443,15 @@ class RpaAccessibilityService : AccessibilityService() {
             return
         }
         val act = actions[maiIndex]
+        // P1（复查 2026-08-22）：wait 不阻塞无障碍服务主线程——原实现
+        // Thread.sleep 最长 10s 会卡死事件处理与后续动作。改为 postDelayed
+        // 异步延时后继续下一步，期间主线程仍可响应暂停/超时/新无障碍事件。
+        if (act.action == "wait") {
+            val ms = (act.ms?.toLong() ?: 1000L).coerceIn(0L, 10000L)
+            maiIndex++
+            handler.postDelayed({ stepMaiActions() }, ms)
+            return
+        }
         val result = performOneAction(act)
         when {
             result.ok && act.action != "done" -> {
@@ -475,9 +484,9 @@ class RpaAccessibilityService : AccessibilityService() {
             "input" -> performInput(act)
             "swipe" -> performSwipe(act)
             "wait" -> {
-                val ms = act.ms ?: 1000
-                try { Thread.sleep(ms.toLong().coerceIn(0L, 10000L)) } catch (_: InterruptedException) {}
-                RpaResult.success("wait ${ms}ms")
+                // P1（复查 2026-08-22）：wait 已由 stepMaiActions 异步处理
+                // （postDelayed），这里不再阻塞主线程；防御性直接成功返回。
+                RpaResult.success("wait（异步）")
             }
             "back" -> {
                 if (performGlobalAction(GLOBAL_ACTION_BACK)) RpaResult.success("back")

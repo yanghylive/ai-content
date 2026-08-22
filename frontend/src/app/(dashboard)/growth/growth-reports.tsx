@@ -129,8 +129,8 @@ export function GrowthReportsPage() {
                 归因数据尚未采集
               </p>
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[var(--kaypal-v3-muted)]">
-                增长流程需要内容→发布→互动→线索→客户→商机的归因链数据。
-                当前尚未建立可靠的归因记录，等任务真实执行并沉淀归因链后自动呈现，
+                增长流程需要内容→发布→互动→线索→客户→商机的归因数据。
+                当前尚未建立可靠的归因记录，等任务执行并沉淀归因数据后自动呈现，
                 不会显示占位的 0 或 N/A。
               </p>
             </div>
