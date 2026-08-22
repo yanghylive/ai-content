@@ -2,6 +2,9 @@ package com.aicontent.mobile.agent
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import android.graphics.Bitmap
+import android.os.Build
+import android.util.Base64
 import android.content.Intent
 import android.graphics.Path
 import android.os.Bundle
@@ -10,6 +13,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import java.io.ByteArrayOutputStream
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -214,6 +218,67 @@ class RpaAccessibilityService : AccessibilityService() {
             val cb = maiCallback ?: return
             if (maiPausedForAsk) return // ask_user 等待中不算超时
             finishMai(cb, RpaResult.failure("动作执行超时（90s）"))
+        }
+
+        /** 截取当前屏幕（无障碍 takeScreenshot，需 Android 11+ / API 30+）。回调返回 base64 PNG。 */
+        fun captureScreen(callback: (RpaResult) -> Unit) {
+            val svc = instance
+            if (svc == null) {
+                callback(RpaResult.failure("无障碍服务未开启（请在系统设置中开启 JIUZHANG AI 的无障碍权限）"))
+                return
+            }
+            if (Build.VERSION.SDK_INT < 30) {
+                callback(RpaResult.failure("当前系统不支持系统截图（需 Android 11+），请升级系统"))
+                return
+            }
+            try {
+                val callbackExecutor = java.util.concurrent.Executor { r -> r.run() }
+                svc.takeScreenshot(
+                    android.view.Display.DEFAULT_DISPLAY,
+                    callbackExecutor,
+                    object : AccessibilityService.TakeScreenshotCallback {
+                        override fun onSuccess(screenshot: AccessibilityService.ScreenshotResult) {
+                            try {
+                                val hb = screenshot.hardwareBuffer
+                                val wrapped = Bitmap.wrapHardwareBuffer(hb, screenshot.colorSpace)
+                                if (wrapped == null) {
+                                    hb.close()
+                                    callback(RpaResult.failure("截图位图转换失败"))
+                                    return
+                                }
+                                val bmp = wrapped.copy(Bitmap.Config.ARGB_8888, false)
+                                wrapped.recycle()
+                                hb.close()
+                                val out = ByteArrayOutputStream()
+                                val scaled = scaleForShare(bmp)
+                                scaled.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                                if (!scaled.isRecycled && scaled !== bmp) scaled.recycle()
+                                bmp.recycle()
+                                val b64 = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
+                                callback(RpaResult.success("data:image/jpeg;base64,$b64"))
+                            } catch (e: Exception) {
+                                callback(RpaResult.failure("截图编码失败：${e.message}"))
+                            }
+                        }
+
+                        override fun onFailure(errorCode: Int) {
+                            callback(RpaResult.failure("系统截图失败（code=$errorCode）"))
+                        }
+                    },
+                )
+            } catch (e: Exception) {
+                callback(RpaResult.failure("截图调用失败：${e.message}"))
+            }
+        }
+
+        /** 大图等比缩到宽 ≤1080 再编码（控制 base64 体积） */
+        private fun scaleForShare(bmp: Bitmap): Bitmap {
+            val maxW = 1080
+            val w = bmp.width
+            val h = bmp.height
+            if (w <= maxW) return bmp
+            val nh = (h.toLong() * maxW / w).toInt()
+            return Bitmap.createScaledBitmap(bmp, maxW, nh, true)
         }
 
         private fun finishMai(cb: (RpaResult) -> Unit, result: RpaResult) {

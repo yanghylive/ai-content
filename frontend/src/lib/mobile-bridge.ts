@@ -33,6 +33,8 @@ interface JiuZhangBridge {
   resumeAfterAsk?(proceed: boolean): string;
   /** 中止正在执行的动作序列 */
   cancelActions?(): string;
+  /** 截取当前屏幕（无障碍，Android 11+），返回 { ok, message: dataURL } */
+  captureScreen?(): string;
 }
 
 declare global {
@@ -269,7 +271,7 @@ export function bridgeInfo(): { isShell: boolean; methods: string[] } {
   return {
     isShell: Boolean(bridge),
     methods: bridge
-      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus", "wechatLogin", "executeActions", "resumeAfterAsk", "cancelActions"].filter(
+      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus", "wechatLogin", "executeActions", "resumeAfterAsk", "cancelActions", "captureScreen"].filter(
           (m) => typeof (bridge as unknown as Record<string, unknown>)[m] === "function",
         )
       : [],
@@ -402,5 +404,20 @@ export function cancelActions(): MaiUiExecResult {
     return parsed ?? { ok: false, message: "解析失败" };
   } catch {
     return { ok: false, message: "调用失败" };
+  }
+}
+
+/** 截取当前屏幕（需 Android 11+ 且无障碍已开启），成功时 message 为 data:image/jpeg;base64 */
+export function captureScreen(): MaiUiExecResult {
+  const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
+  if (!bridge?.captureScreen) return { ok: false, message: "当前不在 JIUZHANG AI App 内，无法截屏" };
+  try {
+    const raw = bridge.captureScreen();
+    const parsed = typeof raw === "string" && raw.trim().startsWith("{")
+      ? (JSON.parse(raw) as MaiUiExecResult)
+      : null;
+    return parsed ?? { ok: false, message: "截图结果解析失败" };
+  } catch {
+    return { ok: false, message: "截图调用失败" };
   }
 }
