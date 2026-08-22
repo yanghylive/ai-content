@@ -76,11 +76,13 @@ const BUSINESS_ACTION_STEPS = [
 ] as const;
 
 const RPA_EXECUTION_STATUSES = [
+  'created', // §6.2 初始态（store 记录创建；实际引擎启动后转 running）
   'running',
   'paused',
   'needs-human',
   'reconcile_required',
   'success',
+  'succeeded', // §6.2 文档命名别名（与 success 等价）
   'failed',
   'cancelled',
 ] as const;
@@ -94,6 +96,7 @@ type RpaExecutionStatus = (typeof RPA_EXECUTION_STATUSES)[number];
 const RPA_STATUS_TRANSITIONS: Readonly<
   Record<RpaExecutionStatus, readonly RpaExecutionStatus[]>
 > = {
+  created: ['running', 'failed', 'cancelled'],
   running: [
     'paused',
     'needs-human',
@@ -118,6 +121,7 @@ const RPA_STATUS_TRANSITIONS: Readonly<
   ],
   reconcile_required: ['paused', 'needs-human', 'failed', 'cancelled'],
   success: ['reconcile_required'],
+  succeeded: ['reconcile_required'],
   failed: ['reconcile_required'],
   cancelled: ['reconcile_required'],
 };
