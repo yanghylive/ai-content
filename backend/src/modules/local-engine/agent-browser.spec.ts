@@ -186,9 +186,13 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     expect(events[1]).toMatchObject({ type: 'step', action: 'goto', ok: true });
     expect(events[2]).toMatchObject({ type: 'step', action: 'click', ok: false });
     expect(events[3]).toMatchObject({ type: 'done' });
-    // actions.run 被调用且注入当前 URL
+    // actions.run 被调用且注入当前 URL + 会话独立 accountId
     expect(actionsMock.run).toHaveBeenCalledWith(
-      expect.objectContaining({ instruction: '搜索装修公司', url: 'https://example.com' }),
+      expect.objectContaining({
+        instruction: '搜索装修公司',
+        url: 'https://example.com',
+        accountId: s.accountId,
+      }),
     );
     // stepCount 累计
     expect(sessionSvc.get(s.id).stepCount).toBe(2);
