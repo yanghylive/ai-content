@@ -3,6 +3,7 @@ import { ValidationPipe, RequestMethod } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import type { NextFunction, Request, Response } from 'express';
+import * as bodyParser from 'body-parser';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { AppModule } from './app.module';
@@ -131,7 +132,11 @@ function isLanOrigin(origin: string): boolean {
 async function bootstrap() {
   loadDesktopEnvBeforeNestConfig();
   normalizeDesktopSqliteEnv();
-  const app = await NestFactory.create(AppModule);
+  // bodyParser 手动挂载：全局默认 1mb；/api/mai-ui 放宽到 15mb（截图 base64 提交，2026-08-22）
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.use(bodyParser.json({ limit: '1mb' }));
+  app.use('/api/mai-ui', bodyParser.json({ limit: '15mb' }));
+  app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }));
   const authRequestContext = app.get(AuthRequestContextService);
   const configuredOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000')
     .split(',')
