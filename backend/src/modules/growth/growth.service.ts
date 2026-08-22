@@ -1985,7 +1985,7 @@ export class GrowthService implements OnModuleInit {
     );
     if (!config) throw new NotFoundException('获客任务不存在');
     const accounts = await this.listAccountHealth(userId);
-    const plan = this.buildSchedulePlan([config], accounts);
+    const plan = await this.buildSchedulePlan([config], accounts);
     const account = accounts.find(
       (item) =>
         item.platform === config.platform &&
