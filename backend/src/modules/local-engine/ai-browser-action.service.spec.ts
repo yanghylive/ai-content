@@ -221,3 +221,58 @@ describe('AiBrowserActionService validateAiActions (AI-LLM 解析)', () => {
     expect(await svcWithPrisma.parseWithAi('打开 https://a.com')).toBeNull();
   });
 });
+
+describe('AiBrowserActionService §7.4 状态语义', () => {
+  it('部分失败返回 partial_success（不再一个成功就整体成功）', async () => {
+    // 直接用真实服务测状态计算：通过私有方法不可达，用构造+mock executeStep
+    const { AiBrowserActionService } = require('./ai-browser-action.service');
+    const svc = Object.create(AiBrowserActionService.prototype) as any;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    svc.parseWithAi = jest.fn().mockResolvedValue([
+      { action: 'goto', url: 'https://example.com' },
+      { action: 'click', selector: '#x' },
+    ]);
+    svc.browser = {
+      getOrCreateSession: jest.fn().mockResolvedValue({
+        key: 'k-1',
+        page: { url: () => '', goto: jest.fn() },
+      }),
+      captureEvidence: jest.fn().mockResolvedValue({ url: 'ev' }),
+    };
+    // executeStep：第 1 步成功，第 2 步失败
+    svc.executeStep = jest
+      .fn()
+      .mockResolvedValueOnce({ evidenceUrl: 'ev1' })
+      .mockRejectedValueOnce(new Error('selector not found'));
+    const result = await svc.run({
+      instruction: '打开并点击',
+      url: 'https://example.com',
+    });
+    expect(result.status).toBe('partial_success');
+    expect(result.ok).toBe(false);
+    expect(result.results.filter((r: { ok: boolean }) => r.ok).length).toBe(1);
+  });
+
+  it('全部成功返回 success', async () => {
+    const { AiBrowserActionService } = require('./ai-browser-action.service');
+    const svc = Object.create(AiBrowserActionService.prototype) as any;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    svc.parseWithAi = jest.fn().mockResolvedValue([
+      { action: 'goto', url: 'https://example.com' },
+    ]);
+    svc.browser = {
+      getOrCreateSession: jest.fn().mockResolvedValue({
+        key: 'k-2',
+        page: { url: () => '', goto: jest.fn() },
+      }),
+      captureEvidence: jest.fn().mockResolvedValue({ url: 'ev' }),
+    };
+    svc.executeStep = jest.fn().mockResolvedValue({ evidenceUrl: 'ev1' });
+    const result = await svc.run({
+      instruction: '打开',
+      url: 'https://example.com',
+    });
+    expect(result.status).toBe('success');
+    expect(result.ok).toBe(true);
+  });
+});
