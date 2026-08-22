@@ -70,6 +70,33 @@ export class AiAssistantService {
     private readonly growth: GrowthService,
   ) {}
 
+  /**
+   * P3 租户隔离：解析用户真实租户（tenantMember 表）。
+   * 无租户归属（本地/legacy）时回落 legacy-local-desktop，保证兼容。
+   */
+  async resolveTenantId(userId: string): Promise<string> {
+    try {
+      const delegate = (
+        this.prisma as unknown as {
+          tenantMember?: {
+            findFirst?: (args: {
+              where: { userId: string };
+              select: { tenantId: boolean };
+            }) => Promise<{ tenantId: string } | null>;
+          };
+        }
+      ).tenantMember;
+      if (!delegate?.findFirst) return 'legacy-local-desktop';
+      const membership = await delegate.findFirst({
+        where: { userId },
+        select: { tenantId: true },
+      });
+      return membership?.tenantId || 'legacy-local-desktop';
+    } catch {
+      return 'legacy-local-desktop';
+    }
+  }
+
   /** 解析 NL 意图（关键词启发式；不确定时归为 needs-input 由用户澄清） */
   parseIntent(raw: string): TaskDraftIntent {
     const text = raw.toLowerCase();
@@ -194,9 +221,10 @@ export class AiAssistantService {
       actions: plannedActions,
     });
 
+    const tenantId = await this.resolveTenantId(userId);
     const saved = await this.prisma.growthTaskDraft.create({
       data: {
-        tenantId: 'legacy-local-desktop', // 由调用方(controller)从请求上下文注入更精确值
+        tenantId,
         userId: userId,
         intent,
         goal,
@@ -287,8 +315,9 @@ export class AiAssistantService {
   }
 
   async getDraft(userId: string, id: string): Promise<GrowthTaskDraft> {
+    const tenantId = await this.resolveTenantId(userId);
     const row = await this.prisma.growthTaskDraft.findFirst({
-      where: { id, userId: userId },
+      where: { id, userId: userId, tenantId },
     });
     if (!row) throw new NotFoundException('任务草稿不存在');
     return this.toDto(row);
@@ -303,8 +332,9 @@ export class AiAssistantService {
     id: string,
     input: { riskSummary?: string } = {},
   ): Promise<GrowthTaskDraft> {
+    const tenantId = await this.resolveTenantId(userId);
     const row = await this.prisma.growthTaskDraft.findFirst({
-      where: { id, userId: userId, status: 'draft' },
+      where: { id, userId: userId, tenantId, status: 'draft' },
     });
     if (!row) throw new NotFoundException('任务草稿不存在或已处理');
 
