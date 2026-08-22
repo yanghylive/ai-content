@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { rpaStatus, captureScreen, executeActions, resumeAfterAsk, cancelActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
 import { planMaiUiActions, sinkMaiUiTaskToCrm, type MaiUiAction } from "@/lib/api/mai-ui";
-import { createMaiUiTask, reportTaskStatus, addTaskEvidence } from "@/lib/api/mobile-executor";
+import { createMaiUiTask, reportTaskStatus, addTaskEvidence, createApproval, actApproval, sha256Hex } from "@/lib/api/mobile-executor";
 
 /** MAI-UI 手机端工作台：截屏 → 指令 → 规划动作 → 无障碍执行 → 人工确认 */
 export default function MaiUiWorkbenchPage() {
@@ -149,19 +149,42 @@ export default function MaiUiWorkbenchPage() {
   }, [actions, shotMeta, instruction, pushLog]);
 
   const handleAskAnswer = useCallback(
-    (proceed: boolean) => {
+    async (proceed: boolean) => {
       setPendingAsk("");
-      const result = resumeAfterAsk(proceed);
-      if (proceed) {
-        // 继续执行剩余动作（重新发一次完整序列会从头跑——改用续跑：直接再执行当前序列不可行，
-        // 因为执行器已消费。这里提示：确认后由执行器内部继续，若执行器已结束则重新规划）
-        pushLog(result.ok ? "⏩ 已确认，继续执行…" : `❌ ${result.message}`);
-        // 执行器 resume 后会自动继续，无需再次调用 executeActions
-      } else {
+      if (!proceed) {
+        resumeAfterAsk(false);
         pushLog("⛔ 已中止动作序列");
+        return;
+      }
+      // P2 ApprovalToken：继续前走一次性审批（短时 + 内容 hash 绑定防篡改，2026-08-22）
+      if (!lastTask) {
+        pushLog("⚠️ 无关联任务，无法审批（已直接继续）");
+        resumeAfterAsk(true);
+        return;
+      }
+      pushLog("🛂 申请外发审批…");
+      try {
+        const contentText = JSON.stringify({
+          instruction: instruction.trim(),
+          actions: actions.map((a) => ({ action: a.action, target: a.target, text: a.text })),
+        });
+        const hash = await sha256Hex(contentText);
+        const approval = await createApproval({
+          actionType: "mai_ui_execute",
+          riskLevel: "medium",
+          inputHash: hash,
+          actionId: lastTask.id,
+          reason: `MAI-UI 外发确认：${instruction.trim().slice(0, 40)}`,
+        });
+        await actApproval(approval.id, "approve");
+        pushLog(`✅ 审批通过（${approval.id.slice(-6)}），继续执行`);
+        resumeAfterAsk(true);
+      } catch (e) {
+        pushLog(`⛔ 审批未通过：${e instanceof Error ? e.message : String(e)}（已中止）`);
+        resumeAfterAsk(false);
       }
     },
-    [pushLog],
+    [lastTask, instruction, actions, pushLog],
   );
 
   const handleCancel = useCallback(() => {
