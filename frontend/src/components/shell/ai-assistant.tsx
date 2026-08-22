@@ -421,7 +421,7 @@ export function AiAssistant({
               <div style={{ color: "#f6c478", fontSize: 15, fontWeight: 700 }}>
                 AI 助手
               </div>
-              <div style={{ color: "rgba(215,230,248,.55)", fontSize: 11 }}>
+              <div style={{ color: "rgba(230,240,255,.85)", fontSize: 11 }}>
                 正在与 AI 对话，内容由 AI 生成，请注意甄别
               </div>
             </div>
@@ -642,7 +642,7 @@ export function AiAssistant({
             )}
 
             {busy && (
-              <div style={{ color: "rgba(215,230,248,.45)", fontSize: 12 }}>
+              <div style={{ color: "rgba(225,238,255,.75)", fontSize: 12 }}>
                 <span
                   style={{
                     display: "inline-block",
@@ -1007,7 +1007,7 @@ function DraftCard({
                 </span>
                 <span style={{ color: "#e2e8f0" }}>{a.label}</span>
                 {a.requiresConfirmation && (
-                  <span style={{ color: "#94a3b8", fontSize: 10.5 }}>需确认</span>
+                  <span style={{ color: "#cbd5e1", fontSize: 10.5 }}>需确认</span>
                 )}
               </div>
             );
@@ -1016,7 +1016,7 @@ function DraftCard({
       )}
 
       {draft.riskSummary && (
-        <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 8 }}>
+        <div style={{ fontSize: 11.5, color: "#cbd5e1", marginBottom: 8 }}>
           风险：{draft.riskSummary}
         </div>
       )}
