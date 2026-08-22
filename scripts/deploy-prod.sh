@@ -92,6 +92,9 @@ sync_prisma() {
   rsync_retry "$REPO_ROOT/backend/prisma/migrations/" "$HOST:$REMOTE_BACKEND_DIR/prisma/migrations/"
   # 云端 prisma generate（幂等）
   ssh_retry "cd $REMOTE_BACKEND_DIR && env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy npx prisma generate 2>&1 | grep -q Generated && echo 'prisma generate OK'"
+  # 应用未执行的 migration（2026-08-22 线上事故根因：缺这步导致 schema 漂移累积、
+  # 后端启动时查询缺失列崩溃 502）。migrate deploy 幂等，只应用未执行的。
+  ssh_retry "cd $REMOTE_BACKEND_DIR && set -a && source .env && set +a && env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy -u NODE_OPTIONS npx prisma migrate deploy 2>&1 | tail -3 | grep -qE 'No pending migrations|Applied migration|successfully applied' && echo 'prisma migrate deploy OK' || echo '[warn] migrate deploy 有失败（需人工处理，参考 scripts/fix-schema-drift.py）'"
   echo "prisma 同步 + generate 完成 ✅"
 }
 
