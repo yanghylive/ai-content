@@ -715,8 +715,11 @@ export class AiAssistantService {
       const existing = crmFindFirst
         ? await crmFindFirst({
             where: { metadata: { path: ['draftId'], equals: id } },
-          }).catch(() => undefined)
+          })
         : undefined;
+      // P2（P5 门禁 2026-08-22）：查重失败必须 fail-closed——原来的
+      // `.catch(() => undefined)` 会把 DB 异常吞掉导致 existing=undefined，
+      // 数据库异常时重复创建 CRM 跟进任务。改为：查重抛错则终止执行。
       if (!existing) {
         const dueAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
         await this.prisma.crmTask.create({
