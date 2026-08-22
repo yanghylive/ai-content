@@ -3683,3 +3683,46 @@ describe('GrowthService §10.1 幂等门', () => {
     expect(result).toBe(false);
   });
 });
+
+describe('GrowthService §6.1 取消执行', () => {
+  it('cancelRun：running → cancelled + 释放租约', async () => {
+    const { GrowthService } = require('./growth.service');
+    const svc = Object.create(GrowthService.prototype) as any;
+    const run = {
+      id: 'run-1',
+      userId: 'u-1',
+      configId: 'cfg-1',
+      status: 'running',
+      startedAt: new Date().toISOString(),
+    };
+    svc.requireGrowthMutationScope = jest.fn().mockResolvedValue({});
+    svc.loadStore = jest.fn().mockResolvedValue({ runs: [run] });
+    svc.growthScope = jest.fn().mockResolvedValue({ userId: 'u-1', tenantId: 't-1' });
+    svc.sameGrowthRecord = (item: { id: string }) => item.id === 'run-1';
+    svc.saveStore = jest.fn().mockResolvedValue(undefined);
+    svc.releaseGrowthSchedulerLease = jest.fn().mockResolvedValue(undefined);
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+
+    const result = await svc.cancelRun('u-1', 'run-1');
+    expect(result.status).toBe('cancelled');
+    expect(result.message).toContain('已由用户取消');
+    expect(svc.releaseGrowthSchedulerLease).toHaveBeenCalledWith(
+      { userId: 'u-1', lockKey: 'growth-scheduler:u-1' },
+      'failed',
+      'cancelled by user',
+    );
+  });
+
+  it('cancelRun：终态不可取消抛 BadRequest', async () => {
+    const { GrowthService } = require('./growth.service');
+    const svc = Object.create(GrowthService.prototype) as any;
+    svc.requireGrowthMutationScope = jest.fn().mockResolvedValue({});
+    svc.loadStore = jest.fn().mockResolvedValue({
+      runs: [{ id: 'run-2', status: 'success' }],
+    });
+    svc.growthScope = jest.fn().mockResolvedValue({ userId: 'u-1' });
+    svc.sameGrowthRecord = () => true;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    await expect(svc.cancelRun('u-1', 'run-2')).rejects.toThrow('只有运行中或排队中');
+  });
+});
