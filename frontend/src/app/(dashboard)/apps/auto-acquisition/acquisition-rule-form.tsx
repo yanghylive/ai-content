@@ -12,6 +12,7 @@ import {
   PlayCircle,
   Save,
   Sparkles,
+  Target,
   XCircle,
 } from "lucide-react";
 import {
@@ -33,6 +34,76 @@ const PLATFORM_OPTIONS = [
   { value: "xiaohongshu", label: "小红书", desc: "笔记和评论", icon: BookOpen },
   { value: "kuaishou", label: "快手", desc: "评论区找客户", icon: Play },
   { value: "wechat", label: "微信", desc: "微信群和朋友圈", icon: MessageCircle },
+] as const;
+
+// §8.2-B 第 1 步：场景和客户类型预设（选中后预填平台/关键词/话术）
+const SCENARIO_OPTIONS = [
+  {
+    value: "home-renovation",
+    label: "家装/装修",
+    desc: "本地装修咨询客户",
+    preset: {
+      platform: "douyin" as const,
+      keywords: "装修,旧房翻新,全屋定制",
+      commentTemplate: "你好，看到你也在关注装修，我们做本地装修服务，方便聊聊吗？",
+      privateTemplate: "你好，我是{品牌}，做本地装修的，看你对装修感兴趣，方便加微信详细聊聊吗？",
+    },
+  },
+  {
+    value: "beauty-makeup",
+    label: "美业/护肤",
+    desc: "美甲护肤客户",
+    preset: {
+      platform: "xiaohongshu" as const,
+      keywords: "美甲,护肤,医美",
+      commentTemplate: "姐妹，看到你关注这个，我们这有性价比方案，想了解下吗？",
+      privateTemplate: "你好，我是{品牌}，专业美业服务，看你感兴趣，方便聊聊吗？",
+    },
+  },
+  {
+    value: "edu-training",
+    label: "教育培训",
+    desc: "课程咨询客户",
+    preset: {
+      platform: "douyin" as const,
+      keywords: "课程,培训,报名",
+      commentTemplate: "你好，看到你问这个课程，我们有试听课，需要了解吗？",
+      privateTemplate: "你好，我是{品牌}的课程顾问，看你关注这个领域，方便加微信了解下吗？",
+    },
+  },
+  {
+    value: "local-life",
+    label: "本地生活",
+    desc: "同城到店客户",
+    preset: {
+      platform: "douyin" as const,
+      keywords: "同城,探店,到店",
+      commentTemplate: "你好，我们在本地，看到你关注这个，欢迎来体验～",
+      privateTemplate: "你好，我是{品牌}，本地实体店，看你感兴趣，方便加微信预约吗？",
+    },
+  },
+  {
+    value: "ecommerce",
+    label: "电商带货",
+    desc: "购物种草客户",
+    preset: {
+      platform: "xiaohongshu" as const,
+      keywords: "好物,测评,种草",
+      commentTemplate: "你好，看到你也在种草这个，我们有同款好物，想了解下吗？",
+      privateTemplate: "你好，我是{品牌}，专注好物推荐，看你感兴趣，方便聊聊吗？",
+    },
+  },
+  {
+    value: "b2b-leads",
+    label: "B2B 线索",
+    desc: "企业采购决策人",
+    preset: {
+      platform: "kuaishou" as const,
+      keywords: "供应链,采购,合作",
+      commentTemplate: "您好，看到您关注供应链话题，我们有合作方案，方便聊聊吗？",
+      privateTemplate: "您好，我是{品牌}商务，看您对供应链感兴趣，方便加微信对接吗？",
+    },
+  },
 ] as const;
 
 // 平台与执行账号联动：只展示与所选平台匹配的账号。
@@ -83,6 +154,7 @@ export function AcquisitionRuleForm() {
   // 智能默认值
   const [form, setForm] = useState({
     taskName: "",
+    scene: "",
     platform: "douyin" as GrowthPlatform,
     keywords: "",
     dailyLimit: 20,
@@ -563,8 +635,103 @@ export function AcquisitionRuleForm() {
         </div>
       )}
 
-      {/* 第 1 步：平台 */}
-      <V2Section title="第 1 步：你的客户在哪个平台？">
+      {/* 5 步向导指示器（§8.2-B） */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "12px 16px",
+          borderRadius: 12,
+          border: "1px solid var(--kaypal-v3-border)",
+          background: "var(--kaypal-v3-paper)",
+          flexWrap: "wrap",
+        }}
+      >
+        {[
+          ["1", "场景和客户类型"],
+          ["2", "平台/账号/关键词"],
+          ["3", "策略和话术"],
+          ["4", "账号/额度/风控预检"],
+          ["5", "草稿确认执行"],
+        ].map(([num, label], i, arr) => (
+          <div key={num} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 999,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: i === 0 ? "#fff" : "var(--kaypal-v3-muted)",
+                  background:
+                    i === 0
+                      ? "var(--kaypal-v3-accent)"
+                      : "var(--kaypal-v3-paper-soft)",
+                }}
+              >
+                {num}
+              </span>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: i === 0 ? "var(--kaypal-v3-ink)" : "var(--kaypal-v3-muted)",
+                  fontWeight: i === 0 ? 700 : 400,
+                }}
+              >
+                {label}
+              </span>
+            </div>
+            {i < arr.length - 1 && (
+              <span style={{ color: "var(--kaypal-v3-border)", fontSize: 12 }}>→</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 第 1 步：场景和客户类型（§8.2-B，选中预填平台/关键词/话术） */}
+      <V2Section title="第 1 步：场景和客户类型" description="选择一个常见场景，自动帮你预填平台、关键词和话术">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {SCENARIO_OPTIONS.map(({ value, label, desc, preset }) => (
+            <V2OptionCard
+              key={value}
+              icon={Target}
+              title={label}
+              description={desc}
+              selected={form.scene === value}
+              onClick={() =>
+                setForm((p) => ({
+                  ...p,
+                  scene: value,
+                  platform: preset.platform,
+                  keywords: preset.keywords,
+                  commentTemplate: preset.commentTemplate,
+                  privateTemplate: preset.privateTemplate,
+                }))
+              }
+            />
+          ))}
+        </div>
+        {form.scene && (
+          <p
+            style={{
+              marginTop: 8,
+              fontSize: 12,
+              color: "var(--kaypal-v3-success)",
+            }}
+          >
+            ✓ 已选择「{SCENARIO_OPTIONS.find((s) => s.value === form.scene)?.label}
+            」，平台/关键词/话术已预填，可继续微调
+          </p>
+        )}
+      </V2Section>
+
+      {/* 第 2 步：平台 */}
+      <V2Section title="第 2 步：你的客户在哪个平台？">
         <div className="grid gap-3 sm:grid-cols-3">
           {PLATFORM_OPTIONS.map(({ value, label, desc, icon }) => (
             <V2OptionCard
@@ -645,7 +812,7 @@ export function AcquisitionRuleForm() {
       </V2Section>
 
       {/* 第 2 步：关键词 */}
-      <V2Section title="第 2 步：他们会搜/聊什么词？">
+      <V2Section title="第 3 步：他们会搜/聊什么词？">
         <V2Field
           label="关键词"
           required
@@ -665,7 +832,7 @@ export function AcquisitionRuleForm() {
       </V2Section>
 
       {/* 第 3 步：说什么 */}
-      <V2Section title="第 3 步：找到后说什么？" description="已帮你写好一版，改成你的风格">
+      <V2Section title="第 4 步：找到后说什么？（策略和话术）" description="已帮你写好一版，改成你的风格">
         <div className="grid gap-5">
           <V2Field label="评论话术" hint="在对方内容下的第一条评论">
             <V2Textarea
