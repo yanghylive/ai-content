@@ -5581,6 +5581,52 @@ export class GrowthService implements OnModuleInit {
     return capabilities[mode];
   }
 
+  /**
+   * §10.1 幂等门：查询该 config 最近的成功 run 是否已触达过目标（文本指纹）。
+   * 组合键：tenantId + configId + targetExternalId(文本指纹) + actionType。
+   * 命中则返回 true（调用方跳过，避免重复评论/私信）。
+   */
+  private async isGrowthTouchAlreadyCompleted(
+    userId: string,
+    config: GrowthAcquisitionConfig,
+    targetFingerprint: string,
+    actionType: string,
+  ): Promise<boolean> {
+    const fingerprint = this.text(targetFingerprint).trim().slice(0, 120);
+    if (!fingerprint) return false;
+    try {
+      const recentRuns = await this.prisma.growthAcquisitionRun.findMany({
+        where: {
+          configId: config.id,
+          userId,
+          status: { in: ['success', 'partial'] },
+        },
+        orderBy: { startedAt: 'desc' },
+        take: 5,
+        select: { message: true, evidenceUrls: true },
+      });
+      if (!recentRuns.length) return false;
+      const needle = fingerprint;
+      return recentRuns.some((run) => {
+        const haystack = [
+          run.message ?? '',
+          ...(Array.isArray(run.evidenceUrls)
+            ? (run.evidenceUrls as unknown[]).map((e) =>
+                typeof e === 'string' ? e : JSON.stringify(e),
+              )
+            : []),
+        ].join('\n');
+        // 指纹匹配：目标文本出现在历史 run 摘要/证据中，且动作类型一致（由 message 携带）
+        return haystack.includes(needle) && (haystack.includes(actionType) || haystack.includes('触达') || haystack.includes('已完成'));
+      });
+    } catch (error) {
+      this.logger.warn(
+        `幂等检查失败（放行，避免误阻断）：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return false;
+    }
+  }
+
   private async executeWechatChannelFollowUp(
     config: GrowthAcquisitionConfig,
     targets: AiEmployeeFollowUpPlan['targets'],
@@ -5620,8 +5666,32 @@ export class GrowthService implements OnModuleInit {
         const replyText = this.text(
           target.commentReplyText || target.directMessageText,
         );
+        // §10.1 幂等键：tenantId+configId+targetExternalId+actionType。
+        // 同一 config 对同一目标（文本指纹）已触达成功则跳过，返回 already_completed。
+        if (
+          await this.isGrowthTouchAlreadyCompleted(
+            config.userId,
+            config,
+            this.text(target.text || target.sourceText),
+            target.directMessageText ? 'direct-message' : 'comment-reply',
+          )
+        ) {
+          results.push({
+            index: target.index ?? index,
+            action: target.directMessageText ? 'message' : 'comment',
+            targetName: target.targetName,
+            targetText: target.text || target.sourceText,
+            replyText,
+            ok: true,
+            status: 'skipped',
+            reasonCode: 'already_completed',
+            message: '该目标此前已触达成功，幂等跳过（不重复发送）',
+            evidence: [],
+          });
+          continue;
+        }
         const task: ExecutorTask = {
-          relatedId: `growth-wechat-channel-${Date.now()}-${index}`,
+          relatedId: `growth-wechat-channel-${config.id}-${Date.now()}-${index}`,
           relatedType: 'agent-session',
           type: target.directMessageText
             ? 'wechat-channel-direct-message-reply'

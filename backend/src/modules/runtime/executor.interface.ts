@@ -150,7 +150,8 @@ export type ExecutorReasonCode =
   | 'send_failed'
   | 'readback_failed'
   | 'not_integrated'
-  | 'platform_changed';
+  | 'platform_changed'
+  | 'already_completed'; // §10.1 幂等键：目标已触达成功，不重复发送
 
 /**
  * 证据类型
