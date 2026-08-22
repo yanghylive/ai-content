@@ -555,7 +555,7 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
         </div>
         <div className="mt-3">
           <V2Textarea
-            placeholder="输入回复内容…（将通过本地引擎执行）"
+            placeholder="输入回复内容…（将自动发送）"
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             rows={2}

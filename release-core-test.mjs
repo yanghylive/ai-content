@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 /**
- * 桌面端发版核心功能测试（v1.1.79）
+ * 桌面端发版核心功能测试（版本号动态读取 desktop/package.json）
  * 覆盖：登录态、消息页入口、AI客服返回、获客创建、CRM/内容等核心页面
  */
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 const require = createRequire("/Users/yanghy/Documents/New project/ai-content/backend/package.json");
 const { chromium } = require("playwright");
+
+// P2（复查 2026-08-22）：版本号从 desktop/package.json 动态读取，不再硬编码旧版
+const EXPECTED_VERSION = JSON.parse(
+  readFileSync("/Users/yanghy/Documents/New project/ai-content/desktop/package.json", "utf8"),
+).version;
 
 const BASE = "http://127.0.0.1:3010";
 const TOKEN = process.env.TEST_SESSION_TOKEN;
@@ -65,8 +71,14 @@ async function run() {
   // 7. 版本号显示
   await page.goto(`${BASE}/release-notes.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
   await page.waitForTimeout(2500);
-  const verText = await page.evaluate(() => document.body.innerText.match(/v1\.1\.79/)?.[0] || "");
-  check("更新说明页：显示 v1.1.79", verText === "v1.1.79", verText || "未找到");
+  const verText = await page.evaluate(
+    () => document.body.innerText.match(/v\d+\.\d+\.\d+/)?.[0] || "",
+  );
+  check(
+    `更新说明页：显示 v${EXPECTED_VERSION}`,
+    verText === `v${EXPECTED_VERSION}`,
+    verText || "未找到",
+  );
 
   await browser.close();
   console.log(`\n=== 结果: ${pass} 通过 / ${fail} 失败 ===`);

@@ -209,7 +209,7 @@ export default function MaiUiWorkbenchPage() {
           className="mx-card"
           style={{ marginTop: 12, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}
         >
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>无障碍执行器</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>无障碍操作</span>
           <span
             style={{
               display: "inline-flex",

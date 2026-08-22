@@ -1066,7 +1066,7 @@ export function AcquisitionRuleForm() {
 
               {!preflight.allowed && (
                 <p className="mt-3 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-danger-soft)] p-3 text-sm text-[var(--kaypal-v3-danger)]">
-                  任务已保存为草稿，但预检未通过，暂不能自动执行。请先处理上面的阻断项，或稍后在「获客任务」页手动执行。
+                  任务已保存为草稿，但预检未通过，暂不能自动执行。请先处理上方列出的问题项，或稍后在「获客任务」页手动执行。
                 </p>
               )}
             </>
