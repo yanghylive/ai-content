@@ -40,7 +40,10 @@ function step(name, fn) {
 
 function run(cmd, opts = {}) {
   const base = { stdio: "pipe", shell: "/bin/zsh", encoding: "utf8", env: { ...process.env, ...envClean } };
-  const child = execSync(cmd, { ...base, ...opts });
+  // P1（P5 门禁 2026-08-22）：启用 pipefail——不加的话 `cmd | tail` 管道里
+  // 上游测试/构建失败会被 tail 的成功退出码掩盖，导致门禁误报通过。
+  // 显式 `|| true` 的步骤（有意容忍失败）不受影响。
+  const child = execSync(`set -o pipefail; ${cmd}`, { ...base, ...opts });
   return child;
 }
 

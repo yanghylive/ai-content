@@ -53,6 +53,9 @@
     "appId": "com.aicontent.desktop",
     "productName": "JIUZHANG AI 内容创作平台",
     "afterPack": "scripts/sign-mac-app.js",
+    "releaseInfo": {
+      "releaseNotesFile": "release-notes.md"
+    },
     "directories": {
       "output": "dist"
     },

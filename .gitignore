@@ -216,3 +216,4 @@ backend/.env.bak*
 # 构建临时备份
 frontend/.next-bk-*/
 frontend/out-stale-*/
+backend/prisma/schema.sqlite.prisma
