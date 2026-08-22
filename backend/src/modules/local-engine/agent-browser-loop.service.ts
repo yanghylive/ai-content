@@ -78,6 +78,20 @@ export class AgentBrowserLoopService {
       timeoutMs: 30_000,
       // P4：用会话独立 accountId（独立 Profile 隔离，不共享 ai-agent）
       accountId: session.accountId,
+      // §7.4 执行前策略拦截：每步动作执行前过审计，allowed=false 不执行
+      policyGate: async (action) => {
+        const tool = this.mapTool(action.action);
+        if (!tool) return { allowed: true };
+        const audit = this.policy.audit(
+          tool,
+          { url: 'url' in action ? (action.url ?? session.url) : session.url },
+          { url: session.url, allowDomains: session.allowDomains },
+        );
+        return {
+          allowed: audit.allowed,
+          reason: audit.allowed ? undefined : audit.reason,
+        };
+      },
     });
 
     // 3. Verify：逐步骤生成事件 + 逐步策略审计（§7.4 文档要求每步过策略）
