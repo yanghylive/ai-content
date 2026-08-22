@@ -7,6 +7,7 @@ import type { AgentBrowserSession } from './agent-browser.types';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
 import { PlaywrightMcpService } from './playwright-mcp.service';
+import { AgentBrowserExecutor } from './agent-browser-executor.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { matchesConfirmedAction } from './ai-browser-action.service';
 import { detectPromptInjection } from '../ai-gateway/ai-gateway.service';
@@ -67,6 +68,8 @@ export class AgentBrowserLoopService {
     private readonly policy: AgentBrowserPolicyService,
     private readonly playwrightMcp?: PlaywrightMcpService,
     private readonly prisma?: PrismaService,
+    /** §7.4 统一执行器路由（可选；注入时经 AgentBrowserExecutor 执行） */
+    private readonly executor?: AgentBrowserExecutor,
   ) {}
 
   /**
@@ -112,12 +115,15 @@ export class AgentBrowserLoopService {
     // §9.2 引擎探活：浏览器/sidecar 已退出 → 释放任务进入 needs-human（不伪造执行）
     // 执行器未提供探活（测试/mock）时默认存活
     if (session.engineKey) {
-      const alive =
-        typeof this.actions.isEngineAlive === 'function'
-          ? await this.actions
-              .isEngineAlive(session.accountId)
-              .catch(() => false)
-          : true;
+      const exec = this.executor ?? {
+        execute: (input: Parameters<AiBrowserActionService['executeSingle']>[0]) =>
+          this.actions.executeSingle(input),
+        isAlive: async (accountId: string) =>
+          typeof this.actions.isEngineAlive === 'function'
+            ? this.actions.isEngineAlive(accountId).catch(() => false)
+            : true,
+      };
+      const alive = await exec.isAlive(session.accountId);
       if (!alive) {
         this.sessions.updateStatus(sessionId, 'needs-human');
         const eh: AgentBrowserStepEvent = {
@@ -483,9 +489,17 @@ export class AgentBrowserLoopService {
     evidenceUrl?: string;
     extractText?: string;
   }> {
+    const exec = this.executor ?? {
+      execute: (input: Parameters<AiBrowserActionService['executeSingle']>[0]) =>
+        this.actions.executeSingle(input),
+      isAlive: async (accountId: string) =>
+        typeof this.actions.isEngineAlive === 'function'
+          ? this.actions.isEngineAlive(accountId).catch(() => false)
+          : true,
+    };
     let lastResult: Awaited<ReturnType<AiBrowserActionService['executeSingle']>>;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      const r = await this.actions.executeSingle({
+      const r = await exec.execute({
         action,
         accountId,
         timeoutMs,

@@ -18,6 +18,7 @@ import { LocalControllerBridgeService } from './local-controller-bridge.service'
 import { CdpBrowserProfileService } from './cdp-browser-profile.service';
 import { CdpBrowserSessionService } from './cdp-browser-session.service';
 import { AiBrowserActionService } from './ai-browser-action.service';
+import { AgentBrowserExecutor } from './agent-browser-executor.service';
 import { AgentBrowserController } from './agent-browser.controller';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
@@ -64,6 +65,7 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     AiBrowserActionService,
     AgentBrowserSessionService,
     AgentBrowserPolicyService,
+    AgentBrowserExecutor,
     AgentBrowserLoopService,
     WechatPlanSchedulerService,
     WechatPlanEditorService,
