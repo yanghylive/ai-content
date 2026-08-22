@@ -2127,6 +2127,7 @@ describe('AutoUploadClient', () => {
     expect(localBrowser.getOrCreateSession).toHaveBeenCalledWith({
       platform: 'wechat-channel',
       accountId: '4',
+      probe: true,
     });
     expect(page.goto).toHaveBeenCalledWith(
       'https://channels.weixin.qq.com/platform/post/list',
