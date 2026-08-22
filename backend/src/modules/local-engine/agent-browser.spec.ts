@@ -613,6 +613,8 @@ describe('P0-2 服务端确认校验（审计 2026-08-22）', () => {
             content: null,
           },
         ]),
+        // P1（复查第二轮）：锁定必需——缺 updateMany 时 fail-closed 拒绝
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
     };
     await sessionSvc.acquireEngineSession(s.id);
@@ -626,6 +628,44 @@ describe('P0-2 服务端确认校验（审计 2026-08-22）', () => {
     });
     expect(actionsMock.executeSingle).toHaveBeenCalled(); // 确认通过→执行
     expect(result.ok).toBe(true);
+  });
+
+  it('P1 确认锁 fail-closed：缺 updateMany（无原子锁定能力）→ 拒绝放行', async () => {
+    const { sessionSvc, s } = makeSession();
+    const prismaMock = {
+      agentConfirmation: {
+        // 只有 findMany，没有 updateMany——无原子锁定能力
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'c-1',
+            status: 'pending',
+            sessionId: s.id,
+            tenantId: 't-1',
+            userId: 'u-1',
+            action: 'click',
+            target: '#btn',
+            content: null,
+          },
+        ]),
+      },
+    };
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop, actionsMock } = makeLoop(
+      sessionSvc,
+      prismaMock,
+      [{ action: 'click', selector: '#btn' }],
+    );
+    const events: unknown[] = [];
+    await loop.run(s.id, '点击按钮', {
+      onStep: (e) => events.push(e),
+      confirmationIds: ['c-1'],
+    });
+    // fail-closed：不能绕过原子锁定放行（否则确认单可被并发复用）
+    expect(actionsMock.executeSingle).not.toHaveBeenCalled();
+    const step = events.find((e) => (e as { type?: string }).type === 'step') as
+      | { message?: string }
+      | undefined;
+    expect(step?.message).toContain('需用户确认');
   });
 
   it('confirmationIds 查库：跨会话确认单 → 拒绝（不执行）', async () => {
@@ -843,6 +883,76 @@ describe('P4-4 生命周期（审计 2026-08-22）', () => {
     const listed = sessionSvc.list('u-1', 't-a');
     expect(listed.length).toBe(1);
     expect(listed[0].id).toBe(sessionSvc.list('u-1', 't-a')[0].id);
+  });
+
+  it('P1（复查第二轮）重启恢复：paused/needs-human/partial_success 保留，running 置 stopped', async () => {
+    const storePath =
+      '/tmp/agent-browser-recover-' +
+      Math.random().toString(36).slice(2) +
+      '.json';
+    const now = new Date().toISOString();
+    const mk = (id: string, status: string) => ({
+      id,
+      accountId: `agent-browser-${id}`,
+      status,
+      createdAt: now,
+      updatedAt: now,
+      lastActivityAt: now,
+      stepCount: 1,
+      engineKey: 'old-key',
+      allowDomains: ['a.com'],
+      events: [],
+      lease: {
+        acquiredAt: now,
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        ownerId: 'u-1',
+        tenantId: 't-1',
+      },
+      // partial_success 带断点上下文（落盘恢复后可续跑/重试）
+      pendingInstruction: status === 'partial_success' ? '访问页面' : undefined,
+      pendingActions: status === 'partial_success' ? [{ action: 'goto', url: 'https://a.com' }] : undefined,
+      pendingStepIndex: status === 'partial_success' ? 1 : undefined,
+    });
+    require('node:fs').writeFileSync(
+      storePath,
+      JSON.stringify([
+        mk('s-paused', 'paused'),
+        mk('s-human', 'needs-human'),
+        mk('s-partial', 'partial_success'),
+        mk('s-running', 'running'),
+        mk('s-succeeded', 'succeeded'),
+      ]),
+      'utf8',
+    );
+    const prevStore = process.env.AGENT_BROWSER_STORE_PATH;
+    process.env.AGENT_BROWSER_STORE_PATH = storePath;
+    try {
+      const { AgentBrowserSessionService } = require('./agent-browser-session.service');
+      const svc = new AgentBrowserSessionService(
+        makeBrowserMock() as never,
+        makePrismaMock() as never,
+        makeTenantContextMock() as never,
+      );
+      svc.onModuleInit();
+      // 可恢复状态保留（可 resume 断点续跑 / 重新 run）
+      expect(svc.get('s-paused').status).toBe('paused');
+      expect(svc.get('s-human').status).toBe('needs-human');
+      expect(svc.get('s-partial').status).toBe('partial_success');
+      // partial_success 的断点上下文恢复后仍在
+      expect(svc.get('s-partial').pendingInstruction).toBe('访问页面');
+      expect(svc.get('s-partial').pendingStepIndex).toBe(1);
+      // 引擎失效的执行中/终态 → stopped（引擎句柄已清）
+      expect(svc.get('s-running').status).toBe('stopped');
+      expect(svc.get('s-succeeded').status).toBe('stopped');
+      expect(svc.get('s-paused').engineKey).toBe('');
+      // paused 恢复后可 resume（重新拉起引擎）
+      await svc.resume('s-paused');
+      expect(svc.get('s-paused').status).toBe('running');
+    } finally {
+      if (prevStore === undefined) delete process.env.AGENT_BROWSER_STORE_PATH;
+      else process.env.AGENT_BROWSER_STORE_PATH = prevStore;
+      require('node:fs').rmSync(storePath, { force: true });
+    }
   });
 
   it('配置边界：MAX_RETRIES 超范围（>5）拒绝', async () => {
@@ -1072,6 +1182,40 @@ describe('文档 §6.3/§9.2/§12.2 补充项（对照开发文档检查 2026-08
       ctrl.run({}, 's-1', { instruction: '再次执行' }),
     ).rejects.toThrow(/任务执行中/);
   });
+
+  it('P1（复查第二轮）partial_success 重试：带断点 resumeFrom 续跑（不重放已成功动作）', async () => {
+    const { AgentBrowserController } = require('./agent-browser.controller');
+    const ctrl = Object.create(AgentBrowserController.prototype) as any;
+    const savedActions = [
+      { action: 'goto', url: 'https://a.com' }, // 已成功（index 0）
+      { action: 'goto', url: 'https://b.com' }, // 失败（index 1，从这里重试）
+    ];
+    const sessions = {
+      assertOwner: jest.fn(),
+      get: jest.fn().mockReturnValue({
+        status: 'partial_success',
+        pendingInstruction: '访问两个页面',
+        pendingActions: savedActions,
+        pendingStepIndex: 1,
+      }),
+      updateStatus: jest.fn(),
+      acquireEngineSession: jest.fn().mockResolvedValue({ engineKey: 'k' }),
+      toPublicDto: jest.fn().mockReturnValue({}),
+    };
+    ctrl.sessions = sessions;
+    ctrl.resolveTenantId = jest.fn().mockResolvedValue('t-1');
+    ctrl.getUserId = jest.fn().mockReturnValue('u-1');
+    ctrl.loop = { run: jest.fn().mockResolvedValue({ ok: true, steps: [] }) };
+    await ctrl.run({}, 's-1', { instruction: '访问两个页面' });
+    // 用保存的动作序列 + 第一个失败索引续跑，不重新解析
+    expect(ctrl.loop.run).toHaveBeenCalledWith(
+      's-1',
+      '访问两个页面',
+      expect.objectContaining({
+        resumeFrom: { stepIndex: 1, actions: savedActions },
+      }),
+    );
+  });
 });
 
 describe('复查 2026-08-22 专项（确认消费/终态/中断/门禁）', () => {
@@ -1267,6 +1411,67 @@ describe('复查 2026-08-22 专项（确认消费/终态/中断/门禁）', () =
     );
     await loop.run(s.id, '访问两个页面');
     expect(sessionSvc.get(s.id).status).toBe('partial_success');
+  });
+
+  it('P1（复查第二轮）partial_success 保留断点：pendingStepIndex=第一个失败动作，重试不重放已成功动作', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', { allowDomains: ['a.com', 'b.com', 'c.com'] });
+    await sessionSvc.acquireEngineSession(s.id);
+    // 动作 0 成功；动作 1 持续失败（含 executeWithRetry 的 2 次重试共 3 次调用）；
+    // 动作 2 成功 —— 序列：成功/失败/成功 → partial_success，断点=动作 1
+    let callCount = 0;
+    const executeSingle = jest.fn().mockImplementation(async () => {
+      callCount += 1;
+      if (callCount === 1) return { index: 0, action: 'goto', ok: true };
+      if (callCount <= 4) {
+        return { index: 0, action: 'goto', ok: false, message: '导航失败' };
+      }
+      return { index: 0, action: 'goto', ok: true };
+    });
+    const actionsMock = {
+      parseActions: jest.fn().mockResolvedValue([
+        { action: 'goto', url: 'https://a.com' },
+        { action: 'goto', url: 'https://b.com' },
+        { action: 'goto', url: 'https://c.com' },
+      ]),
+      executeSingle,
+    };
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      actionsMock as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+    );
+    await loop.run(s.id, '访问三个页面');
+    const partial = sessionSvc.get(s.id);
+    expect(partial.status).toBe('partial_success');
+    // 断点指向第一个失败动作（index 1），而非最后位置
+    expect(partial.pendingStepIndex).toBe(1);
+    expect(partial.pendingActions).toHaveLength(3);
+    expect(partial.pendingInstruction).toBe('访问三个页面');
+  });
+
+  it('P2（复查第二轮）终态竞态：最后一步执行期间 stop 到达，不被 succeeded 覆盖', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', { allowDomains: ['a.com'] });
+    await sessionSvc.acquireEngineSession(s.id);
+    const actionsMock = {
+      parseActions: jest.fn().mockResolvedValue([
+        { action: 'goto', url: 'https://a.com' },
+      ]),
+      executeSingle: jest.fn().mockImplementationOnce(async () => {
+        // 最后一步执行期间用户 stop（终态意图）
+        sessionSvc.updateStatus(s.id, 'stopped');
+        return { index: 0, action: 'goto', ok: true };
+      }),
+    };
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      actionsMock as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+    );
+    await loop.run(s.id, '访问页面');
+    // 用户停止意图优先，不被 succeeded 覆盖
+    expect(sessionSvc.get(s.id).status).toBe('stopped');
   });
 
   it('P1 pause 后 resume：从断点续跑（不再从头解析、不被重复执行保护拒绝）', async () => {

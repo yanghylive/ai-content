@@ -181,6 +181,9 @@ export class AgentBrowserLoopService {
     // §6.3 元素引用只在当前快照版本内有效：记录每个动作生成时的页面 URL，
     // 导航后旧快照的 selector 引用拒绝执行（等待重新决策）
     let actionOriginUrls: string[] = actions.map(() => session.url ?? '');
+    // P1（复查第二轮）：第一个失败动作的索引——partial_success 重试从此续跑
+    // （不重放之前的已成功动作，避免重复外部副作用）
+    let firstFailedIndex: number | undefined;
 
     // 3. 逐步 Observe→策略→单动作执行→验证（§7.4 DOM Agent 循环）
     for (let i = startIndex; i < actions.length; i++) {
@@ -339,6 +342,14 @@ export class AgentBrowserLoopService {
       this.sessions.bumpStep(sessionId);
       this.sessions.appendEvent(sessionId, stepEvent);
 
+      // P1（复查第二轮）：断点推进——成功动作跳过（重试不重放），
+      // 失败动作记 firstFailedIndex（partial_success 重试从此开始）
+      if (r.ok) {
+        session.pendingStepIndex = i + 1;
+      } else if (firstFailedIndex === undefined) {
+        firstFailedIndex = i;
+      }
+
       // P1（复查 2026-08-22）：导航闭环——动作执行后的真实页面 URL（executeStep 返回
       // page.url()）回写会话；observe/重决策基于新页面，不再停留在执行前旧 session.url。
       // 测试 mock 未返回 url 时跳过（不回写），不影响已有快照驱动路径。
@@ -431,18 +442,38 @@ export class AgentBrowserLoopService {
     steps.push(done);
     onStep?.(done);
     this.sessions.appendEvent(sessionId, done);
-    // P1/P2（复查 2026-08-22）：任务结束清除断点上下文（resume 不再续跑已完成任务）；
-    // 终态区分——全部成功=succeeded（终态）；部分成功=partial_success（保留"待重试"
-    // 语义，非终态，可再次 run）；全部失败=failed（终态，避免停留 running 误判执行中）
-    session.pendingInstruction = undefined;
-    session.pendingActions = undefined;
-    session.pendingStepIndex = undefined;
-    if (status === 'success') {
-      this.sessions.updateStatus(sessionId, 'succeeded');
-    } else if (status === 'partial_success') {
-      this.sessions.updateStatus(sessionId, 'partial_success');
+    // P1/P2（复查第二轮）：终态写入前重查会话状态——最后一步执行期间用户可能
+    // 已 pause/stop（循环只在每步开始检查），用户意图优先，不被 succeeded/failed 覆盖。
+    const finalStatus = this.sessions.get(sessionId).status;
+    const clearPending = () => {
+      session.pendingInstruction = undefined;
+      session.pendingActions = undefined;
+      session.pendingStepIndex = undefined;
+    };
+    if (finalStatus === 'running') {
+      // 正常完成：全部成功=succeeded（终态）；部分成功=partial_success（保留断点，
+      // 重试从第一个失败动作续跑，不重放已成功动作）；全部失败=failed（终态）
+      if (status === 'success') {
+        clearPending();
+        this.sessions.updateStatus(sessionId, 'succeeded');
+      } else if (status === 'partial_success') {
+        session.pendingActions = actions;
+        session.pendingStepIndex = firstFailedIndex ?? actions.length;
+        this.sessions.updateStatus(sessionId, 'partial_success');
+      } else {
+        clearPending();
+        this.sessions.updateStatus(sessionId, 'failed');
+      }
+    } else if (finalStatus === 'stopped') {
+      // 用户已停止（终态）：清除断点（放弃任务）
+      clearPending();
     } else {
-      this.sessions.updateStatus(sessionId, 'failed');
+      // paused / needs-human（最后一步执行期间到达）：保留用户暂停态 + 断点，
+      // resume 从断点续跑；partial 语义下同样指向第一个失败动作
+      if (status === 'partial_success') {
+        session.pendingActions = actions;
+        session.pendingStepIndex = firstFailedIndex ?? actions.length;
+      }
     }
     return { ok: status === 'success' || status === 'partial_success', steps };
   }
@@ -674,16 +705,16 @@ export class AgentBrowserLoopService {
       if (!matched) return { ok: false };
       // P1（复查 2026-08-22）：原子锁定——pending → in_use，并发时 updateMany 匹配
       // 0 条 = 已被其他请求锁定/消费 → 拒绝（同 id 不可并发复用）
-      if (delegate.updateMany) {
-        const res = await delegate.updateMany({
-          where: { id: matched.id, status: 'pending' },
-          data: { status: 'in_use', decidedAt: new Date() },
-        });
-        return res.count === 1
-          ? { ok: true, confirmationId: matched.id }
-          : { ok: false };
-      }
-      return { ok: true, confirmationId: matched.id };
+      // P1（复查第二轮）：缺 updateMany 时同样 fail-closed 拒绝——
+      // 没有原子锁定能力就不能安全放行（绕过锁定 = 确认单可被并发复用）
+      if (!delegate.updateMany) return { ok: false };
+      const res = await delegate.updateMany({
+        where: { id: matched.id, status: 'pending' },
+        data: { status: 'in_use', decidedAt: new Date() },
+      });
+      return res.count === 1
+        ? { ok: true, confirmationId: matched.id }
+        : { ok: false };
     } catch (error) {
       this.logger.warn(
         `AgentConfirmation 校验查询失败（fail-closed 拒绝）：${error instanceof Error ? error.message : String(error)}`,
@@ -694,28 +725,18 @@ export class AgentBrowserLoopService {
 
   /**
    * P2（复查 2026-08-22）：确认单消费——动作执行成功后 in_use → consumed（一次性）。
-   * 失败静默（不阻断循环；下次同 id 锁定会因 status 非 pending 拒绝）。
+   * P2（复查第二轮）：消费失败不再静默——内部重试 3 次，最终失败显式告警人工核对。
+   * （确认单停留 in_use 不可被再次锁定，不会导致动作重放；仅审计态需人工收尾。）
    */
   private async consumeConfirmation(id: string | undefined): Promise<void> {
     if (!id || !this.prisma) return;
-    try {
-      const delegate = (
-        this.prisma as unknown as {
-          agentConfirmation?: {
-            updateMany?: (args: {
-              where: { id: string; status: string };
-              data: { status: string; decidedAt: Date };
-            }) => Promise<{ count: number }>;
-          };
-        }
-      )?.agentConfirmation;
-      await delegate?.updateMany?.({
-        where: { id, status: 'in_use' },
-        data: { status: 'consumed', decidedAt: new Date() },
-      });
-    } catch (error) {
+    const err = await this.updateConfirmationWithRetry(id, 'in_use', {
+      status: 'consumed',
+      decidedAt: new Date(),
+    });
+    if (err) {
       this.logger.warn(
-        `AgentConfirmation 消费失败（忽略）：${error instanceof Error ? error.message : String(error)}`,
+        `AgentConfirmation ${id} 消费失败（已重试 3 次）：确认单停留 in_use（不可复用），请人工核对数据库 local_engine_agent_confirmations`,
       );
     }
   }
@@ -723,29 +744,52 @@ export class AgentBrowserLoopService {
   /**
    * P2（复查 2026-08-22）：确认单释放——动作执行失败后 in_use → pending，
    * 原确认单可安全用于重试（不提前烧掉确认）。
+   * P2（复查第二轮）：释放失败同样重试 3 次，最终失败显式告警
+   * （停留 in_use 不可复用，安全；重试会走新确认单，仅原确认单作废需人工收尾）。
    */
   private async releaseConfirmation(id: string | undefined): Promise<void> {
     if (!id || !this.prisma) return;
-    try {
-      const delegate = (
-        this.prisma as unknown as {
-          agentConfirmation?: {
-            updateMany?: (args: {
-              where: { id: string; status: string };
-              data: { status: string };
-            }) => Promise<{ count: number }>;
-          };
-        }
-      )?.agentConfirmation;
-      await delegate?.updateMany?.({
-        where: { id, status: 'in_use' },
-        data: { status: 'pending' },
-      });
-    } catch (error) {
+    const err = await this.updateConfirmationWithRetry(id, 'in_use', {
+      status: 'pending',
+    });
+    if (err) {
       this.logger.warn(
-        `AgentConfirmation 释放失败（忽略）：${error instanceof Error ? error.message : String(error)}`,
+        `AgentConfirmation ${id} 释放失败（已重试 3 次）：确认单停留 in_use（不可复用，安全作废），请人工核对数据库 local_engine_agent_confirmations`,
       );
     }
+  }
+
+  /** 确认单状态更新（带 3 次重试的补偿），成功返回 null、失败返回最后一个错误 */
+  private async updateConfirmationWithRetry(
+    id: string,
+    fromStatus: string,
+    data: { status: string; decidedAt?: Date },
+  ): Promise<unknown> {
+    const delegate = (
+      this.prisma as unknown as {
+        agentConfirmation?: {
+          updateMany?: (args: {
+            where: { id: string; status: string };
+            data: { status: string; decidedAt?: Date };
+          }) => Promise<{ count: number }>;
+        };
+      }
+    )?.agentConfirmation;
+    if (!delegate?.updateMany) return new Error('updateMany unavailable');
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await delegate.updateMany({
+          where: { id, status: fromStatus },
+          data,
+        });
+        return null;
+      } catch (error) {
+        lastError = error;
+        if (attempt < 2) await new Promise((r) => setTimeout(r, 200));
+      }
+    }
+    return lastError;
   }
 
   /**
