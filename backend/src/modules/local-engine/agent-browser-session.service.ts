@@ -224,7 +224,9 @@ export class AgentBrowserSessionService implements OnModuleInit {
       .filter(
         (s) =>
           s.lease?.ownerId === ownerId &&
-          (!tenantId || !s.lease?.tenantId || s.lease.tenantId === tenantId),
+          // P4-4（审计 2026-08-22）：fail-closed——请求带租户时，
+          // 无 tenantId 的旧会话不返回（不允许继续操作）
+          (!tenantId || s.lease?.tenantId === tenantId),
       )
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
       .map((s) => this.toDto(s));
@@ -240,6 +242,14 @@ export class AgentBrowserSessionService implements OnModuleInit {
     const session = this.get(id);
     this.assertLeaseValid(session);
 
+    // P4-4（审计 2026-08-22）：先解析租户（fail-closed），失败则不启动浏览器、
+    // 不置 running（避免留下脏的 running 会话 + 已启动浏览器）。
+    if (!session.lease?.tenantId) {
+      session.lease!.tenantId = await this.resolveTenantId(
+        session.lease?.ownerId ?? '',
+      );
+    }
+
     // 引擎会话以 platform-accountId 为 key，每 agent 会话独立 accountId 实现隔离
     const engine = await this.browser.getOrCreateSession({
       platform: 'general-web',
@@ -249,11 +259,6 @@ export class AgentBrowserSessionService implements OnModuleInit {
     session.status = 'running';
     session.updatedAt = new Date().toISOString();
     session.lastActivityAt = session.updatedAt;
-    // 补齐租户（多租户隔离：acquire 时 fail-closed 解析）
-    if (!session.lease?.tenantId) {
-      const tenantId = await this.resolveTenantId(session.lease?.ownerId ?? '');
-      session.lease!.tenantId = tenantId;
-    }
     if (session.url && engine.page.url() !== session.url) {
       try {
         await engine.page.goto(session.url, {
@@ -271,6 +276,27 @@ export class AgentBrowserSessionService implements OnModuleInit {
     );
     this.persist();
     return { engineKey: engine.key };
+  }
+
+  /** P4-4（审计 2026-08-22）：状态机迁移校验——非法迁移抛 400 */
+  assertTransition(
+    id: string,
+    from: AgentBrowserSessionStatus[],
+    to: AgentBrowserSessionStatus,
+  ): void {
+    const session = this.get(id);
+    if (!from.includes(session.status)) {
+      throw new BadRequestException(
+        `会话状态 ${session.status} 不能迁移到 ${to}（允许来源：${from.join('/')}）`,
+      );
+    }
+  }
+
+  /** P4-4：resume——校验 paused/needs-human，重新获取引擎会话（幂等复用） */
+  async resume(id: string): Promise<void> {
+    this.assertTransition(id, ['paused', 'needs-human'], 'running');
+    // 重新 acquire：getOrCreateSession 幂等复用现有引擎；浏览器已退出时重新拉起
+    await this.acquireEngineSession(id);
   }
 
   updateStatus(id: string, status: AgentBrowserSessionStatus): void {

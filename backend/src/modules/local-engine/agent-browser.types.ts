@@ -10,6 +10,7 @@ export type AgentBrowserSessionStatus =
   | 'created' // 已创建（profile 就绪，未运行）
   | 'running' // observe-act-verify 循环运行中
   | 'paused' // 已暂停（可恢复）
+  | 'needs-human' // 审计发现异常（提示注入/引擎断开）待人工接管（可恢复）
   | 'stopped' // 已停止（终态）
   | 'error'; // 异常终止（终态）
 
@@ -55,7 +56,7 @@ export interface AgentBrowserLease {
 
 /** Agent Browser 循环事件（Observe-Act-Verify 过程记录） */
 export type AgentBrowserEvent = {
-  type: 'snapshot' | 'step' | 'done' | 'error';
+  type: 'snapshot' | 'step' | 'done' | 'error' | 'needs-human';
   stepIndex?: number;
   action?: string;
   ok?: boolean;
