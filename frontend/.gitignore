@@ -1,4 +1,4 @@
 
 # build 备份目录（勿入库）
-frontend/.next-old-bak/
-frontend/out-old-bak/
+.next-old-bak/
+out-old-bak/
