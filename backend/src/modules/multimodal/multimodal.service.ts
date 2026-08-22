@@ -163,21 +163,10 @@ export class MultimodalService {
     if (!prompt)
       throw new ServiceUnavailableException('请提供生图描述（prompt）');
 
-    const dashscopeKey = this.readConfig('DASHSCOPE_API_KEY');
+    // 2026-08-22 大王指示：必须走 kaypal 云端计费（用户熵积分），
+    // 不允许 DASHSCOPE 直连（绕过计费）。移除直连分支，强制 kaypal 网关。
     let imageUrl = '';
-    if (dashscopeKey) {
-      imageUrl = await this.generateImageViaDashscope(
-        prompt,
-        input.size || '1024*1024',
-        dashscopeKey,
-      );
-    } else {
-      imageUrl = await this.generateImageViaKaypal(
-        authUser,
-        prompt,
-        input.size,
-      );
-    }
+    imageUrl = await this.generateImageViaKaypal(authUser, prompt, input.size);
 
     const buffer = Buffer.from(
       new Uint8Array(
@@ -196,59 +185,6 @@ export class MultimodalService {
     };
   }
 
-  /** 百炼直连通道（qwen-image-3.0-pro，文生图 T2I，同步返回图片 URL） */
-  private async generateImageViaDashscope(
-    prompt: string,
-    size: string,
-    apiKey: string,
-  ): Promise<string> {
-    try {
-      const resp = await fetch(
-        'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: DEFAULT_IMAGE_MODEL,
-            input: {
-              messages: [{ role: 'user', content: [{ text: prompt }] }],
-            },
-            parameters: { size },
-          }),
-          signal: AbortSignal.timeout(180_000),
-        },
-      );
-      const payload = (await resp.json().catch(() => null)) as {
-        code?: string;
-        message?: string;
-        output?: {
-          choices?: Array<{
-            message?: { content?: Array<{ image?: string }> };
-          }>;
-        };
-      } | null;
-      if (!resp.ok || payload?.code) {
-        throw new ServiceUnavailableException(
-          `生图失败：${payload?.message || `HTTP ${resp.status}`}`,
-        );
-      }
-      const imageUrl =
-        payload?.output?.choices?.[0]?.message?.content?.find((c) => c?.image)
-          ?.image || '';
-      if (!imageUrl) {
-        throw new ServiceUnavailableException('生图失败：响应中无图片 URL');
-      }
-      return imageUrl;
-    } catch (err) {
-      if (err instanceof ServiceUnavailableException) throw err;
-      const message = err instanceof Error ? err.message : String(err);
-      this.logger.error(`百炼生图异常: ${message}`);
-      throw new ServiceUnavailableException(`生图失败：${message}`);
-    }
-  }
 
   /** kaypal 网关通道（回退） */
   private async generateImageViaKaypal(
@@ -374,125 +310,11 @@ export class MultimodalService {
       );
     }
 
-    const dashscopeKey = this.readConfig('DASHSCOPE_API_KEY');
-    if (dashscopeKey) {
-      return this.generateVideoViaDashscope(prompt, input, dashscopeKey);
-    }
+    // 2026-08-22 大王指示：必须走 kaypal 云端计费（用户熵积分），
+    // 不允许 DASHSCOPE 直连（绕过计费）。移除直连分支，强制 kaypal 网关。
     return this.generateVideoViaKaypal(authUser, prompt, input);
   }
 
-  /** 百炼直连：happyhorse-1.1 文生/图生视频（有首帧图走 i2v，无则直接 t2v，不出首帧） */
-  private async generateVideoViaDashscope(
-    prompt: string,
-    input: { duration?: number; ratio?: string; imageUrl?: string },
-    apiKey: string,
-  ): Promise<VideoGenResult> {
-    const duration = Math.min(
-      Math.max(Math.round(input.duration ?? 5) || 5, 3),
-      15,
-    );
-    const isI2v = Boolean(input.imageUrl);
-    const model = isI2v ? DEFAULT_VIDEO_I2V_MODEL : DEFAULT_VIDEO_T2V_MODEL;
-    const videoInput = isI2v
-      ? {
-          prompt,
-          media: [{ type: 'first_frame', url: input.imageUrl as string }],
-        }
-      : { prompt };
-    let taskId = '';
-    try {
-      const submitResp = await fetch(
-        'https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-            'X-DashScope-Async': 'enable',
-          },
-          body: JSON.stringify({
-            model,
-            input: videoInput,
-            parameters: { resolution: '720P', duration },
-          }),
-          signal: AbortSignal.timeout(60_000),
-        },
-      );
-      const payload = (await submitResp.json().catch(() => null)) as {
-        code?: string;
-        message?: string;
-        output?: { task_id?: string };
-      } | null;
-      if (!submitResp.ok || payload?.code) {
-        throw new ServiceUnavailableException(
-          `视频提交失败：${payload?.message || `HTTP ${submitResp.status}`}`,
-        );
-      }
-      taskId = payload?.output?.task_id || '';
-      if (!taskId) {
-        throw new ServiceUnavailableException('视频提交失败：未返回任务 ID');
-      }
-    } catch (err) {
-      if (err instanceof ServiceUnavailableException) throw err;
-      throw new ServiceUnavailableException(
-        `视频提交异常：${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-
-    // 轮询（最多 60 次 × 5s ≈ 5 分钟，wan 视频生成通常 1-5 分钟）
-    let videoUrl = '';
-    for (let i = 0; i < 60; i++) {
-      await new Promise((r) => setTimeout(r, 5000));
-      try {
-        const qResp = await fetch(
-          `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`,
-          {
-            headers: { Authorization: `Bearer ${apiKey}` },
-            signal: AbortSignal.timeout(30_000),
-          },
-        );
-        const q = (await qResp.json().catch(() => null)) as {
-          output?: {
-            task_status?: string;
-            video_url?: string;
-            message?: string;
-          };
-        } | null;
-        const status = (q?.output?.task_status || '').toUpperCase();
-        if (status === 'SUCCEEDED') {
-          videoUrl = q?.output?.video_url || '';
-          if (videoUrl) break;
-        } else if (status === 'FAILED') {
-          throw new ServiceUnavailableException(
-            `视频生成失败：${q?.output?.message || '未知错误'}`,
-          );
-        }
-      } catch (err) {
-        if (err instanceof ServiceUnavailableException) throw err;
-        this.logger.warn(`视频任务轮询异常 ${taskId}: ${String(err)}`);
-      }
-    }
-    if (!videoUrl) {
-      throw new ServiceUnavailableException('视频生成超时，请稍后重试');
-    }
-
-    const buffer = Buffer.from(
-      new Uint8Array(
-        await (
-          await fetch(videoUrl, { signal: AbortSignal.timeout(90_000) })
-        ).arrayBuffer(),
-      ),
-    );
-    const filename = `wan-${Date.now()}.mp4`;
-    const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
-    this.logger.log(`视频已入素材库：${saved.filename}`);
-    return {
-      filename: saved.filename,
-      sizeBytes: buffer.byteLength,
-      url: videoUrl,
-      prompt,
-    };
-  }
 
   /** kaypal 网关通道（计费走 kaypal.cn，未配置百炼直连 Key 时的主路径） */
   private async generateVideoViaKaypal(
