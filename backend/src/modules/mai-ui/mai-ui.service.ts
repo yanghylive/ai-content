@@ -45,12 +45,19 @@ function validateMaiUiAction(
   }
   const action = item as Record<string, unknown>;
   const type = action.action;
-  if (typeof type !== 'string' || !ALLOWED_ACTION_TYPES.includes(type as MaiUiActionType)) {
+  if (
+    typeof type !== 'string' ||
+    !ALLOWED_ACTION_TYPES.includes(type as MaiUiActionType)
+  ) {
     return `未知动作类型：${String(type)}`;
   }
   if ('bounds' in action && action.bounds !== undefined) {
     const b = action.bounds;
-    if (!Array.isArray(b) || b.length !== 4 || !b.every((v) => typeof v === 'number' && Number.isFinite(v))) {
+    if (
+      !Array.isArray(b) ||
+      b.length !== 4 ||
+      !b.every((v) => typeof v === 'number' && Number.isFinite(v))
+    ) {
       return `bounds 必须是 4 个数字 [x1, y1, x2, y2]：${JSON.stringify(b)}`;
     }
     const [x1, y1, x2, y2] = b as number[];
@@ -71,10 +78,16 @@ function validateMaiUiAction(
   if (type === 'input' && typeof action.text !== 'string') {
     return 'input 动作缺少 text 字段';
   }
-  if (type === 'swipe' && !SWIPE_DIRECTIONS.includes(String(action.direction))) {
+  if (
+    type === 'swipe' &&
+    !SWIPE_DIRECTIONS.includes(String(action.direction))
+  ) {
     return `swipe direction 必须是 ${SWIPE_DIRECTIONS.join('/')}`;
   }
-  if (type === 'wait' && (typeof action.ms !== 'number' || action.ms < 0 || action.ms > 60_000)) {
+  if (
+    type === 'wait' &&
+    (typeof action.ms !== 'number' || action.ms < 0 || action.ms > 60_000)
+  ) {
     return 'wait.ms 必须是 0-60000 的毫秒数';
   }
   return null;
@@ -86,6 +99,30 @@ function validateMaiUiActions(
   width?: number,
   height?: number,
 ): { actions: unknown[]; rejected: string[] } {
+  // 单点 bounds（x1==x2 且 y1==y2）归一化为 ±10px 小矩形：
+  // 模型常输出点击点而非矩形（2026-08-22 验收发现），先归一化再走范围校验
+  for (const item of items) {
+    if (item && typeof item === 'object' && !Array.isArray(item)) {
+      const rec = item as Record<string, unknown>;
+      const b = rec.bounds;
+      if (
+        Array.isArray(b) &&
+        b.length === 4 &&
+        b.every((v) => typeof v === 'number')
+      ) {
+        const [x1, y1, x2, y2] = b as number[];
+        if (x1 === x2 && y1 === y2) {
+          const pad = 10;
+          rec.bounds = [
+            Math.max(0, x1 - pad),
+            Math.max(0, y1 - pad),
+            x1 + pad,
+            y1 + pad,
+          ];
+        }
+      }
+    }
+  }
   const rejected: string[] = [];
   if (items.length > MAX_PLAN_ACTIONS) {
     rejected.push(
