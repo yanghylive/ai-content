@@ -21,7 +21,9 @@ function makeService(overrides: {
     executeConfig: jest.fn(),
     ...(overrides.growth || {}),
   };
-  const svc = new AiAssistantService(prisma as never, growth as never);
+  const svc = new AiAssistantService(prisma as never, growth as never, {
+    resolveTenantId: jest.fn().mockResolvedValue('t-test'),
+  } as never);
   return { svc, prisma, growth };
 }
 
@@ -196,12 +198,24 @@ describe('AiAssistantService P3 租户隔离', () => {
     expect(result).toBe('t-real-123');
   });
 
-  it('resolveTenantId：无 delegate 回落 legacy', async () => {
+  it('resolveTenantId：无 delegate 抛 Forbidden（fail-closed）', async () => {
     const { AiAssistantService } = require('./ai-assistant.service');
     const svc = Object.create(AiAssistantService.prototype) as any;
     svc.prisma = {};
-    const result = await svc.resolveTenantId('u-1');
-    expect(result).toBe('legacy-local-desktop');
+    await expect(svc.resolveTenantId('u-1')).rejects.toThrow(
+      '缺少租户上下文',
+    );
+  });
+
+  it('resolveTenantId：DB 异常抛 Forbidden（fail-closed 不回落）', async () => {
+    const { AiAssistantService } = require('./ai-assistant.service');
+    const svc = Object.create(AiAssistantService.prototype) as any;
+    svc.prisma = {
+      tenantMember: {
+        findFirst: jest.fn().mockRejectedValue(new Error('db down')),
+      },
+    };
+    await expect(svc.resolveTenantId('u-1')).rejects.toThrow('租户解析失败');
   });
 
   it('listDrafts：查询带 tenantId 条件（防跨租户读）', async () => {
@@ -224,7 +238,7 @@ describe('AiAssistantService P3 租户隔离', () => {
     );
   });
 
-  it('resolveTenantId：异常回落 legacy（不阻断）', async () => {
+  it('resolveTenantId：DB 异常抛 Forbidden（fail-closed 不回落）', async () => {
     const { AiAssistantService } = require('./ai-assistant.service');
     const svc = Object.create(AiAssistantService.prototype) as any;
     svc.prisma = {
@@ -232,7 +246,6 @@ describe('AiAssistantService P3 租户隔离', () => {
         findFirst: jest.fn().mockRejectedValue(new Error('db down')),
       },
     };
-    const result = await svc.resolveTenantId('u-1');
-    expect(result).toBe('legacy-local-desktop');
+    await expect(svc.resolveTenantId('u-1')).rejects.toThrow('租户解析失败');
   });
 });

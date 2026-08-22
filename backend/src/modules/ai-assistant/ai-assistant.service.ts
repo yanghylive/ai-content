@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -8,6 +9,7 @@ import {
 import { createHash, randomUUID } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { GrowthService } from '../growth/growth.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 
 
 // ============================================================
@@ -68,13 +70,22 @@ export class AiAssistantService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly growth: GrowthService,
+    protected readonly authRequestContext?: AuthRequestContextService,
   ) {}
 
   /**
    * P3 租户隔离：解析用户真实租户（tenantMember 表）。
    * 无租户归属（本地/legacy）时回落 legacy-local-desktop，保证兼容。
    */
+  /**
+   * P3 租户 fail-closed：用请求租户上下文（x-tenant-id / membership）解析。
+   * 无登录上下文、无租户归属、DB 异常 → 抛 403/401（文档要求跨租户失败必须阻断）。
+   */
   async resolveTenantId(userId: string): Promise<string> {
+    if (this.authRequestContext) {
+      return await this.authRequestContext.resolveTenantId(this.prisma);
+    }
+    // 无上下文服务（测试/本地）：显式归属才放行，否则拒绝（不回落 legacy）
     try {
       const delegate = (
         this.prisma as unknown as {
@@ -86,14 +97,22 @@ export class AiAssistantService {
           };
         }
       ).tenantMember;
-      if (!delegate?.findFirst) return 'legacy-local-desktop';
+      if (!delegate?.findFirst) {
+        throw new ForbiddenException('缺少租户上下文，任务草稿无法确定租户归属');
+      }
       const membership = await delegate.findFirst({
         where: { userId },
         select: { tenantId: true },
       });
-      return membership?.tenantId || 'legacy-local-desktop';
-    } catch {
-      return 'legacy-local-desktop';
+      if (!membership?.tenantId) {
+        throw new ForbiddenException('当前账号未归属任何租户，不能创建任务草稿');
+      }
+      return membership.tenantId;
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
+      throw new ForbiddenException(
+        `租户解析失败（fail-closed）：${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -534,7 +553,11 @@ export class AiAssistantService {
 /** Nest 可注入包装（依赖构造） */
 @Injectable()
 export class AiAssistantNestService extends AiAssistantService {
-  constructor(prisma: PrismaService, growth: GrowthService) {
-    super(prisma, growth);
+  constructor(
+    prisma: PrismaService,
+    growth: GrowthService,
+    authRequestContext?: AuthRequestContextService,
+  ) {
+    super(prisma, growth, authRequestContext);
   }
 }
