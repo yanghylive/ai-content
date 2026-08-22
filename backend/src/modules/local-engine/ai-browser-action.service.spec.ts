@@ -328,3 +328,59 @@ describe('AiBrowserActionService §7.4 执行前策略拦截', () => {
     expect(result.results[0].blocked).toBeUndefined();
   });
 });
+
+describe('AiBrowserActionService 确认闸门', () => {
+  it('requiresConfirmation 未确认：动作阻断（executeStep 不调用）', async () => {
+    const { AiBrowserActionService } = require('./ai-browser-action.service');
+    const svc = Object.create(AiBrowserActionService.prototype) as any;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    svc.parseWithAi = jest.fn().mockResolvedValue([
+      { action: 'click', selector: '#btn' },
+    ]);
+    svc.browser = {
+      getOrCreateSession: jest.fn().mockResolvedValue({
+        key: 'k-5',
+        page: { url: () => '', goto: jest.fn() },
+      }),
+      captureEvidence: jest.fn().mockResolvedValue({ url: 'ev' }),
+    };
+    svc.executeStep = jest.fn().mockResolvedValue({ evidenceUrl: 'ev1' });
+    const result = await svc.run({
+      instruction: '点击按钮',
+      url: 'https://example.com',
+      policyGate: async () => ({ allowed: true, requiresConfirmation: true }),
+      confirmedTools: [],
+    });
+    expect(svc.executeStep).not.toHaveBeenCalled();
+    expect(result.results[0].blocked).toBe(true);
+    expect(result.results[0].message).toContain('需用户确认');
+  });
+
+  it('requiresConfirmation 已确认（confirmedTools 含 click）：放行', async () => {
+    const { AiBrowserActionService } = require('./ai-browser-action.service');
+    const svc = Object.create(AiBrowserActionService.prototype) as any;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    svc.parseWithAi = jest.fn().mockResolvedValue([
+      { action: 'click', selector: '#btn' },
+    ]);
+    svc.browser = {
+      getOrCreateSession: jest.fn().mockResolvedValue({
+        key: 'k-6',
+        page: { url: () => '', goto: jest.fn() },
+      }),
+      captureEvidence: jest.fn().mockResolvedValue({ url: 'ev' }),
+    };
+    svc.executeStep = jest.fn().mockResolvedValue({ evidenceUrl: 'ev1' });
+    const result = await svc.run({
+      instruction: '点击按钮',
+      url: 'https://example.com',
+      policyGate: async (action) =>
+        action.action === 'goto'
+          ? { allowed: true }
+          : { allowed: true, requiresConfirmation: true },
+      confirmedTools: ['click'],
+    });
+    expect(svc.executeStep).toHaveBeenCalled();
+    expect(result.results.some((r: { ok: boolean }) => r.ok)).toBe(true);
+  });
+});

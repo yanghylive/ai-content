@@ -56,15 +56,17 @@ export class AgentBrowserController {
   async run(
     @Req() request: AuthRequest,
     @Param('id') id: string,
-    @Body() body: { instruction?: string } = {},
+    @Body() body: { instruction?: string; confirmedTools?: string[] } = {},
   ) {
     this.sessions.assertOwner(id, this.getUserId(request));
     // 1. 懒创建引擎会话 + 置 running
     await this.sessions.updateStatus(id, 'created');
     await this.sessions.acquireEngineSession(id);
-    // 2. 若有指令则跑一轮 Observe-Act-Verify
+    // 2. 若有指令则跑一轮 Observe-Act-Verify（confirmedTools 放行需确认动作）
     if (body.instruction?.trim()) {
-      const result = await this.loop.run(id, body.instruction);
+      const result = await this.loop.run(id, body.instruction, {
+        confirmedTools: body.confirmedTools ?? [],
+      });
       if (!result.ok) {
         this.sessions.markError(id, 'Agent 循环未完成任务');
       }
