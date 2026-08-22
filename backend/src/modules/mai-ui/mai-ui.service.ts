@@ -99,26 +99,21 @@ function validateMaiUiActions(
   width?: number,
   height?: number,
 ): { actions: unknown[]; rejected: string[] } {
-  // 单点 bounds（x1==x2 且 y1==y2）归一化为 ±10px 小矩形：
-  // 模型常输出点击点而非矩形（2026-08-22 验收发现），先归一化再走范围校验
+  // bounds 归一化（模型输出格式不稳定，2026-08-22 验收发现）：
+  // 1) 2 数字 [x, y] = 点坐标 → ±10px 矩形
+  // 2) 4 数字且 x1==x2 && y1==y2（单点）→ ±10px 矩形
   for (const item of items) {
     if (item && typeof item === 'object' && !Array.isArray(item)) {
       const rec = item as Record<string, unknown>;
       const b = rec.bounds;
-      if (
-        Array.isArray(b) &&
-        b.length === 4 &&
-        b.every((v) => typeof v === 'number')
-      ) {
-        const [x1, y1, x2, y2] = b;
-        if (x1 === x2 && y1 === y2) {
-          const pad = 10;
-          rec.bounds = [
-            Math.max(0, x1 - pad),
-            Math.max(0, y1 - pad),
-            x1 + pad,
-            y1 + pad,
-          ];
+      if (Array.isArray(b) && b.every((v) => typeof v === 'number')) {
+        const pad = 10;
+        if (b.length === 2) {
+          const [x, y] = b;
+          rec.bounds = [Math.max(0, x - pad), Math.max(0, y - pad), x + pad, y + pad];
+        } else if (b.length === 4 && b[0] === b[2] && b[1] === b[3]) {
+          const [x1, y1] = b;
+          rec.bounds = [Math.max(0, x1 - pad), Math.max(0, y1 - pad), x1 + pad, y1 + pad];
         }
       }
     }
