@@ -9,7 +9,6 @@ import { AgentBrowserPolicyService } from './agent-browser-policy.service';
 import { PlaywrightMcpService } from './playwright-mcp.service';
 import { AgentBrowserExecutor } from './agent-browser-executor.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { matchesConfirmedAction } from './ai-browser-action.service';
 import { detectPromptInjection } from '../ai-gateway/ai-gateway.service';
 
 /** P4-1：按动作类型判断写操作（allowWrite 门禁用，不依赖自然语言） */
@@ -86,7 +85,7 @@ export class AgentBrowserLoopService {
       confirmationIds?: string[];
     } = {},
   ): Promise<{ ok: boolean; steps: AgentBrowserStepEvent[] }> {
-    const { onStep, confirmedTools, confirmationIds } = options;
+    const { onStep, confirmationIds } = options;
     const session = this.sessions.get(sessionId);
     if (session.status !== 'running') {
       throw new BadRequestException(
@@ -116,8 +115,9 @@ export class AgentBrowserLoopService {
     // 执行器未提供探活（测试/mock）时默认存活
     if (session.engineKey) {
       const exec = this.executor ?? {
-        execute: (input: Parameters<AiBrowserActionService['executeSingle']>[0]) =>
-          this.actions.executeSingle(input),
+        execute: (
+          input: Parameters<AiBrowserActionService['executeSingle']>[0],
+        ) => this.actions.executeSingle(input),
         isAlive: async (accountId: string) =>
           typeof this.actions.isEngineAlive === 'function'
             ? this.actions.isEngineAlive(accountId).catch(() => false)
@@ -197,8 +197,7 @@ export class AgentBrowserLoopService {
           ok: false,
           status: 'needs-human',
           reasonCode: 'prompt_injection',
-          message:
-            '页面内容疑似提示注入，已暂停循环，等待人工接管确认后恢复',
+          message: '页面内容疑似提示注入，已暂停循环，等待人工接管确认后恢复',
           url: stepSnapshot.url,
         };
         steps.push(nh);
@@ -218,7 +217,8 @@ export class AgentBrowserLoopService {
       // P4-1：allowWrite=false 时写动作按类型阻断（type/click/press_key Enter/tabs new|close）
       if (!cfg.allowWrite && isWriteAction(action)) {
         allowed = false;
-        gateMessage = 'AGENT_BROWSER_ALLOW_WRITE=false：写操作未开启，仅允许导航/读取类任务';
+        gateMessage =
+          'AGENT_BROWSER_ALLOW_WRITE=false：写操作未开启，仅允许导航/读取类任务';
       }
       // §6.3 元素引用只在当前快照版本内有效：导航后旧快照的 selector 引用拒绝执行
       if (
@@ -331,11 +331,12 @@ export class AgentBrowserLoopService {
               .slice(0, done)
               .concat(redecided.slice(0, Math.max(1, cfg.maxSteps - done)));
             // 新动作基于当前（导航后）快照生成
+            const newOrigins: string[] = Array(redecided.length).fill(
+              afterSnapshot.url ?? session.url,
+            ) as string[];
             actionOriginUrls = [
               ...actionOriginUrls.slice(0, done),
-              ...Array(redecided.length).fill(
-                afterSnapshot.url ?? session.url,
-              ),
+              ...newOrigins,
             ].slice(0, actions.length);
             this.logger.log(
               `AgentBrowser ${sessionId} 导航至 ${afterSnapshot.url}，基于新快照重新决策（${redecided.length} 个新动作）`,
@@ -357,8 +358,7 @@ export class AgentBrowserLoopService {
     // P4-3（审计 2026-08-22）：三态结果——全部成功=success / 部分=partial_success /
     // 全部失败或无动作=failed（不再"1 成功 4 失败也算成功"）
     const stepResults = steps.filter(
-      (s): s is AgentBrowserStepEvent & { type: 'step' } =>
-        s.type === 'step',
+      (s): s is AgentBrowserStepEvent & { type: 'step' } => s.type === 'step',
     );
     const okCount = stepResults.filter((s) => s.ok).length;
     const failCount = stepResults.filter((s) => !s.ok).length;
@@ -516,14 +516,17 @@ export class AgentBrowserLoopService {
     extractText?: string;
   }> {
     const exec = this.executor ?? {
-      execute: (input: Parameters<AiBrowserActionService['executeSingle']>[0]) =>
-        this.actions.executeSingle(input),
+      execute: (
+        input: Parameters<AiBrowserActionService['executeSingle']>[0],
+      ) => this.actions.executeSingle(input),
       isAlive: async (accountId: string) =>
         typeof this.actions.isEngineAlive === 'function'
           ? this.actions.isEngineAlive(accountId).catch(() => false)
           : true,
     };
-    let lastResult: Awaited<ReturnType<AiBrowserActionService['executeSingle']>>;
+    let lastResult: Awaited<
+      ReturnType<AiBrowserActionService['executeSingle']>
+    >;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const r = await exec.execute({
         action,
@@ -573,9 +576,7 @@ export class AgentBrowserLoopService {
       const delegate = (
         this.prisma as unknown as {
           agentConfirmation?: {
-            findMany?: (args: {
-              where: { id: { in: string[] } };
-            }) => Promise<
+            findMany?: (args: { where: { id: { in: string[] } } }) => Promise<
               Array<{
                 id: string;
                 status: string;
@@ -601,7 +602,8 @@ export class AgentBrowserLoopService {
       const matched = records.find((rec) => {
         if (rec.status !== 'pending') return false;
         if (rec.sessionId !== session.id) return false;
-        if (rec.tenantId !== (session.lease?.tenantId ?? rec.tenantId)) return false;
+        if (rec.tenantId !== (session.lease?.tenantId ?? rec.tenantId))
+          return false;
         if (rec.userId !== (session.lease?.ownerId ?? rec.userId)) return false;
         if (rec.action !== action.action) return false;
         if ('selector' in action && rec.target !== action.selector)
@@ -712,11 +714,7 @@ export class AgentBrowserLoopService {
         `非法的 AGENT_BROWSER_MAX_STEPS=${process.env.AGENT_BROWSER_MAX_STEPS}，必须为 1-100 整数`,
       );
     }
-    if (
-      !Number.isInteger(maxRetries) ||
-      maxRetries < 0 ||
-      maxRetries > 5
-    ) {
+    if (!Number.isInteger(maxRetries) || maxRetries < 0 || maxRetries > 5) {
       throw new BadRequestException(
         `非法的 AGENT_BROWSER_MAX_RETRIES=${process.env.AGENT_BROWSER_MAX_RETRIES}，必须为 0-5 整数`,
       );

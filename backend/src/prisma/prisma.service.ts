@@ -3268,25 +3268,39 @@ export class PrismaService
       return;
     }
     // 表 → 需保证存在的列（含类型声明；ADD COLUMN 不支持默认值表达式外复杂约束，保持简单）
-    const columnMigrations: Array<{ table: string; column: string; ddl: string }> = [
+    const columnMigrations: Array<{
+      table: string;
+      column: string;
+      ddl: string;
+    }> = [
       // CrmCustomer P2 归因主键链（2026-08-20 新增）
       { table: 'crm_customers', column: 'source_article_id', ddl: 'TEXT' },
-      { table: 'crm_customers', column: 'source_publish_record_id', ddl: 'TEXT' },
-      { table: 'crm_customers', column: 'source_interaction_event_id', ddl: 'TEXT' },
+      {
+        table: 'crm_customers',
+        column: 'source_publish_record_id',
+        ddl: 'TEXT',
+      },
+      {
+        table: 'crm_customers',
+        column: 'source_interaction_event_id',
+        ddl: 'TEXT',
+      },
       { table: 'crm_customers', column: 'source_task_id', ddl: 'TEXT' },
       { table: 'crm_customers', column: 'source_run_id', ddl: 'TEXT' },
     ];
     for (const mig of columnMigrations) {
       try {
         // 表不存在则跳过（ensureSqliteCoreTables 会建核心表，业务表由各自模块懒建）
-        const rows = await this.$queryRawUnsafe(
+        const rowsRaw: unknown = await this.$queryRawUnsafe(
           `SELECT name FROM sqlite_master WHERE type='table' AND name=$1`,
           mig.table,
-        ) as Array<{ name: string }>;
+        );
+        const rows = rowsRaw as Array<{ name: string }>;
         if (!rows.length) continue;
-        const cols = await this.$queryRawUnsafe(
+        const colsRaw: unknown = await this.$queryRawUnsafe(
           `PRAGMA table_info(${mig.table})`,
-        ) as Array<{ name: string }>;
+        );
+        const cols = colsRaw as Array<{ name: string }>;
         if (cols.some((col) => col.name === mig.column)) continue;
         await this.$executeRawUnsafe(
           `ALTER TABLE ${mig.table} ADD COLUMN ${mig.column} ${mig.ddl}`,

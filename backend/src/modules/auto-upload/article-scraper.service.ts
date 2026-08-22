@@ -124,7 +124,9 @@ export class ArticleScraperService {
 
       const buffer = Buffer.from(await response.arrayBuffer());
       if (buffer.length > MAX_HTML_BYTES) {
-        throw new Error(`页面过大（${(buffer.length / 1024 / 1024).toFixed(1)}MB > 8MB 上限），请改用移动端页面或原文链接`);
+        throw new Error(
+          `页面过大（${(buffer.length / 1024 / 1024).toFixed(1)}MB > 8MB 上限），请改用移动端页面或原文链接`,
+        );
       }
 
       return buffer.toString('utf8');

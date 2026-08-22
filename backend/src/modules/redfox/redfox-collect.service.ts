@@ -276,10 +276,14 @@ export class RedfoxCollectService {
     const videoMatch = url.match(/(?:video|share\/video|note)\/(\d{8,})/i);
     if (videoMatch?.[1]) return videoMatch[1];
     // 小红书 explore/作品路径（noteId 32 位 hex 或纯数字）
-    const noteMatch = url.match(/(?:explore\/|discovery\/item\/)([0-9a-f]{24,32}|\d{8,})/i);
+    const noteMatch = url.match(
+      /(?:explore\/|discovery\/item\/)([0-9a-f]{24,32}|\d{8,})/i,
+    );
     if (noteMatch?.[1]) return noteMatch[1];
     // 明显不是作品页（个人主页/搜索/直播/合集）→ 空（上游会给出明确 400 提示）
-    if (/(?:user|profile|share\/user|search|live|collection|\/user\/)/i.test(url)) {
+    if (
+      /(?:user|profile|share\/user|search|live|collection|\/user\/)/i.test(url)
+    ) {
       return '';
     }
     // v.douyin.com 短链：无法离线提取 → 空（提示用户先展开短链）
