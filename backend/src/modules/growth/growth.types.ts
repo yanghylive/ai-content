@@ -17,7 +17,13 @@ export type GrowthRiskMode = 'auto' | 'confirm-first' | 'draft-only';
 export type GrowthTaskStatus = 'enabled' | 'disabled' | 'running';
 
 export type GrowthRunStatus =
-  'queued' | 'running' | 'success' | 'partial' | 'failed' | 'skipped';
+  | 'queued'
+  | 'running'
+  | 'success'
+  | 'partial'
+  | 'failed'
+  | 'skipped'
+  | 'cancelled'; // §6.1 用户取消（running→cancelled）
 
 export type GrowthLeadStatus =
   | 'new'

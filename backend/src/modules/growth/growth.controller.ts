@@ -387,6 +387,12 @@ export class GrowthController {
     return this.growthService.getRun(this.getUserId(request), id);
   }
 
+  @Post('acquisition/runs/:id/cancel')
+  @HttpCode(202)
+  cancelRun(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    return this.growthService.cancelRun(this.getUserId(request), id);
+  }
+
   @Get('leads')
   listLeads(
     @Req() request: AuthenticatedRequest,

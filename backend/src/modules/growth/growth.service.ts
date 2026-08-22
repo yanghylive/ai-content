@@ -2203,6 +2203,40 @@ export class GrowthService implements OnModuleInit {
     return run;
   }
 
+  /** §6.1 取消执行：running/queued → cancelled（释放租约，不再调度） */
+  async cancelRun(userId: string, id: string) {
+    await this.requireGrowthMutationScope(userId);
+    const store = await this.loadStore();
+    const scope = await this.growthScope(userId);
+    const run = store.runs.find((item) =>
+      this.sameGrowthRecord(item, scope, id),
+    );
+    if (!run) throw new NotFoundException('获客执行记录不存在');
+    if (run.status !== 'running' && run.status !== 'queued') {
+      throw new BadRequestException(
+        `只有运行中或排队中的执行可取消（当前 ${run.status}）`,
+      );
+    }
+    run.status = 'cancelled';
+    run.endedAt = new Date().toISOString();
+    run.message = `已由用户取消（${new Date().toISOString()}）`;
+    await this.saveStore(store);
+    // 释放该用户调度租约（若持有），避免残留调度
+    try {
+      await this.releaseGrowthSchedulerLease(
+        { userId, lockKey: `growth-scheduler:${userId}` },
+        'failed',
+        'cancelled by user',
+      );
+    } catch (error) {
+      this.logger.warn(
+        `取消执行后释放调度租约失败（不阻断）：${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    this.logger.log(`获客执行 ${id} 已取消（userId=${userId}）`);
+    return run;
+  }
+
   async listLeads(userId: string, query: QueryInput = {}) {
     const status = this.text(query.status);
     const platform = this.text(query.platform);
