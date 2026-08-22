@@ -297,11 +297,13 @@ export class KaypalAuthClient {
   }> {
     const identifier = input.identifier.trim();
     const isEmail = identifier.includes('@');
+    const serverApiKey = this.getServerBillingApiKey();
     const response = await this.fetchKaypal('/api/desktop-auth/password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        ...(serverApiKey ? { 'x-kaypal-api-key': serverApiKey } : {}),
       },
       body: JSON.stringify({
         ...(isEmail ? { email: identifier } : { phone: identifier }),
@@ -474,15 +476,24 @@ export class KaypalAuthClient {
 
     let response: Response;
     try {
+      const serverApiKey = this.getServerBillingApiKey();
       response = await this.fetchWithTimeout(
-        new URL('/api/auth/login', baseUrl),
+        // 2026-08-22 修复：kaypal.cn 桌面认证端点是 /api/desktop-auth/password
+        //（旧 /api/auth/login 已下线返回 401），且必须带 x-kaypal-api-key 应用凭据
+        new URL('/api/desktop-auth/password', baseUrl),
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            ...(serverApiKey ? { 'x-kaypal-api-key': serverApiKey } : {}),
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify({
+            ...body,
+            device_id: 'ai-content-bind',
+            device_name: 'ai-content-workbench',
+            platform: 'desktop',
+          }),
         },
       );
     } catch {
