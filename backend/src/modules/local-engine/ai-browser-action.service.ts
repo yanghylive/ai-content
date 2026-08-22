@@ -28,6 +28,19 @@ export type AiBrowserAction =
   | { action: 'press_key'; key: string }
   | { action: 'tabs'; operation: 'new' | 'switch' | 'close'; index?: number };
 
+/** P4-2（审计 2026-08-22）：动作执行失败的错误类型——带机器可读错误码，
+ *  供调用方判定 retryable / 语义（不把失败伪装成成功）。 */
+export class BrowserActionError extends Error {
+  readonly code: string;
+  readonly cause?: unknown;
+  constructor(code: string, message: string, cause?: unknown) {
+    super(message);
+    this.name = 'BrowserActionError';
+    this.code = code;
+    this.cause = cause;
+  }
+}
+
 export interface AiBrowserRunInput {
   instruction: string;
   url?: string;
@@ -473,6 +486,17 @@ export class AiBrowserActionService {
     evidenceUrl?: string;
     extractText?: string;
   }> {
+    // P4-2（审计 2026-08-22）：mock 模式统一拦截——DISPATCH_MOCK=true 时
+    // 真实浏览器执行必须硬失败（不能伪造成功），与 run() 语义一致。
+    if (this.mockMode) {
+      return {
+        index: 0,
+        action: input.action.action,
+        ok: false,
+        message:
+          'DISPATCH_MOCK=true：已阻断 AI 网页代操作，不能跳过真实浏览器执行后返回成功。请关闭 DISPATCH_MOCK。',
+      };
+    }
     const timeoutMs = input.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     const session = await this.browser.getOrCreateSession({
       platform: 'general-web',
@@ -514,8 +538,16 @@ export class AiBrowserActionService {
     let extractText: string | undefined;
     switch (step.action) {
       case 'goto':
-        await page.goto(step.url, waitOptions).catch(() => undefined);
-        await page.waitForLoadState('domcontentloaded').catch(() => undefined);
+        try {
+          await page.goto(step.url, waitOptions);
+          await page.waitForLoadState('domcontentloaded').catch(() => undefined);
+        } catch (error) {
+          throw new BrowserActionError(
+            'navigation_failed',
+            `页面导航失败：${step.url}`,
+            error,
+          );
+        }
         break;
       case 'type':
         await page.locator(step.selector).first().fill(step.text, waitOptions);
@@ -528,8 +560,14 @@ export class AiBrowserActionService {
           .locator(step.selector)
           .first()
           .textContent()
-          .catch(() => '');
-        extractText = (text ?? '').trim().slice(0, 2000);
+          .catch(() => undefined);
+        if (text === undefined || text === null) {
+          throw new BrowserActionError(
+            'extract_failed',
+            `提取失败：选择器 ${step.selector} 无文本内容`,
+          );
+        }
+        extractText = text.trim().slice(0, 2000);
         break;
       }
       case 'wait':
@@ -540,25 +578,41 @@ export class AiBrowserActionService {
       case 'screenshot':
         break;
       case 'press_key':
-        await page.keyboard.press(step.key).catch(() => undefined);
+        try {
+          await page.keyboard.press(step.key);
+        } catch (error) {
+          throw new BrowserActionError(
+            'key_press_failed',
+            `按键失败：${step.key}`,
+            error,
+          );
+        }
         break;
       case 'tabs':
-        if (step.operation === 'new') {
-          const popup = await page
-            .context()
-            .newPage()
-            .catch(() => undefined);
-          if (popup) await popup.bringToFront().catch(() => undefined);
-        } else if (step.operation === 'switch') {
-          const pages = page.context().pages();
-          const target = pages[step.index ?? 0] ?? pages[0];
-          if (target) await target.bringToFront().catch(() => undefined);
-        } else if (step.operation === 'close') {
-          const pages = page.context().pages();
-          const target = pages[step.index ?? 0];
-          if (target && target !== pages[0]) {
-            await target.close().catch(() => undefined);
+        try {
+          if (step.operation === 'new') {
+            const popup = await page.context().newPage();
+            await popup.bringToFront();
+          } else if (step.operation === 'switch') {
+            const pages = page.context().pages();
+            const target = pages[step.index ?? 0] ?? pages[0];
+            if (!target) {
+              throw new Error('无目标标签页可切换');
+            }
+            await target.bringToFront();
+          } else if (step.operation === 'close') {
+            const pages = page.context().pages();
+            const target = pages[step.index ?? 0];
+            if (target && target !== pages[0]) {
+              await target.close();
+            }
           }
+        } catch (error) {
+          throw new BrowserActionError(
+            'tabs_operation_failed',
+            `标签页操作失败：${step.operation}`,
+            error,
+          );
         }
         break;
     }

@@ -11,8 +11,23 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { matchesConfirmedAction } from './ai-browser-action.service';
 import { detectPromptInjection } from '../ai-gateway/ai-gateway.service';
 
+/** P4-1：按动作类型判断写操作（allowWrite 门禁用，不依赖自然语言） */
+function isWriteAction(action: AiBrowserAction): boolean {
+  switch (action.action) {
+    case 'type':
+    case 'click':
+      return true;
+    case 'press_key':
+      return action.key === 'Enter' || action.key === 'Tab';
+    case 'tabs':
+      return action.operation === 'new' || action.operation === 'close';
+    default:
+      return false;
+  }
+}
+
 export interface AgentBrowserStepEvent {
-  type: 'step' | 'snapshot' | 'done' | 'error';
+  type: 'step' | 'snapshot' | 'done' | 'error' | 'needs-human';
   stepIndex?: number;
   action?: string;
   ok?: boolean;
@@ -20,6 +35,9 @@ export interface AgentBrowserStepEvent {
   url?: string;
   extractText?: string;
   error?: string;
+  // P4-3（审计 2026-08-22）：三态结果（success/partial_success/failed）
+  status?: 'success' | 'partial_success' | 'failed' | 'needs-human';
+  reasonCode?: string;
   // P0-2（审计 2026-08-22）：确认单 id + 真实 selector，供前端精确批准
   confirmationId?: string;
   selector?: string;
@@ -81,14 +99,8 @@ export class AgentBrowserLoopService {
         'AGENT_BROWSER_MODE=legacy：Agent Browser 循环未开启（灰度开关关闭），请使用现有动作执行',
       );
     }
-    if (
-      !cfg.allowWrite &&
-      /(填写|输入|提交|点击|发送|发评论|发私信)/.test(instruction)
-    ) {
-      throw new BadRequestException(
-        'AGENT_BROWSER_ALLOW_WRITE=false：写操作未开启，仅允许导航/读取类任务',
-      );
-    }
+    // §14.2 allowWrite 门禁（P4-1 审计 2026-08-22）：不再按自然语言中文关键词判断
+    // （英文指令可绕过），改为循环内按解析后动作类型判断（isWriteAction）。
 
     const steps: AgentBrowserStepEvent[] = [];
 
@@ -121,16 +133,38 @@ export class AgentBrowserLoopService {
       steps.push(stepSnapshot);
       onStep?.(stepSnapshot);
       this.sessions.appendEvent(sessionId, stepSnapshot);
+      // P4-3：检测到提示注入 → 暂停进入人工确认（不再继续循环）
+      if (stepSnapshot.injected) {
+        this.sessions.updateStatus(sessionId, 'needs-human');
+        const nh: AgentBrowserStepEvent = {
+          type: 'needs-human',
+          ok: false,
+          status: 'needs-human',
+          reasonCode: 'prompt_injection',
+          message:
+            '页面内容疑似提示注入，已暂停循环，等待人工接管确认后恢复',
+          url: stepSnapshot.url,
+        };
+        steps.push(nh);
+        onStep?.(nh);
+        this.sessions.appendEvent(sessionId, nh);
+        return { ok: false, steps };
+      }
       // 更新会话 url（导航后不再用旧 url）
       if (stepSnapshot.url && stepSnapshot.url !== session.url) {
         session.url = stepSnapshot.url;
       }
 
-      // 3.2 执行前策略审计（工具映射 + 高风险确认闸门）
+      // 3.2 执行前策略审计（工具映射 + allowWrite + 高风险确认闸门）
       const tool = this.mapTool(action.action);
       let allowed = true;
       let gateMessage: string | undefined;
-      if (tool) {
+      // P4-1：allowWrite=false 时写动作按类型阻断（type/click/press_key Enter/tabs new|close）
+      if (!cfg.allowWrite && isWriteAction(action)) {
+        allowed = false;
+        gateMessage = 'AGENT_BROWSER_ALLOW_WRITE=false：写操作未开启，仅允许导航/读取类任务';
+      }
+      if (tool && allowed) {
         const audit = this.policy.audit(
           tool,
           { url: 'url' in action ? (action.url ?? session.url) : session.url },
@@ -165,12 +199,15 @@ export class AgentBrowserLoopService {
       }
 
       // 3.3 单动作执行（allowed 才执行；否则记录 blocked）
+      // P4-2：maxRetries 接入——可重试错误（导航/提取/按键等执行类失败）重试，
+      // 门禁类（策略阻断/需确认/写操作未开启/mock）不重试
       const r = allowed
-        ? await this.actions.executeSingle({
+        ? await this.executeWithRetry(
             action,
-            accountId: session.accountId,
-            timeoutMs: cfg.timeoutMs,
-          })
+            session.accountId,
+            cfg.timeoutMs,
+            cfg.maxRetries,
+          )
         : {
             index: i,
             action: action.action,
@@ -212,15 +249,36 @@ export class AgentBrowserLoopService {
       `AgentBrowser ${sessionId} 完成：${actions.length} 个动作，${successCount} 成功`,
     );
 
+    // P4-3（审计 2026-08-22）：三态结果——全部成功=success / 部分=partial_success /
+    // 全部失败或无动作=failed（不再"1 成功 4 失败也算成功"）
+    const stepResults = steps.filter(
+      (s): s is AgentBrowserStepEvent & { type: 'step' } =>
+        s.type === 'step',
+    );
+    const okCount = stepResults.filter((s) => s.ok).length;
+    const failCount = stepResults.filter((s) => !s.ok).length;
+    let status: NonNullable<AgentBrowserStepEvent['status']> = 'failed';
+    if (actions.length === 0) {
+      status = 'failed';
+    } else if (failCount === 0) {
+      status = 'success';
+    } else if (okCount > 0) {
+      status = 'partial_success';
+    }
     const done: AgentBrowserStepEvent = {
       type: 'done',
-      ok: successCount > 0,
-      message: actions.length ? `已执行 ${actions.length} 步` : '无可用动作',
+      ok: status === 'success' || status === 'partial_success',
+      status,
+      message: {
+        success: `全部动作成功（${okCount}/${stepResults.length} 步）`,
+        partial_success: `部分成功（${okCount} 成功 / ${failCount} 失败 / ${stepResults.length} 步）`,
+        failed: `全部失败或未执行（${failCount} 失败 / ${stepResults.length} 步）`,
+      }[status],
     };
     steps.push(done);
     onStep?.(done);
     this.sessions.appendEvent(sessionId, done);
-    return { ok: successCount > 0, steps };
+    return { ok: status === 'success' || status === 'partial_success', steps };
   }
 
   /** Observe：真实 DOM/accessibility 快照（playwright-mcp browser_snapshot），失败回落 URL */
@@ -230,6 +288,7 @@ export class AgentBrowserLoopService {
     url?: string;
     message?: string;
     snapshot?: string;
+    injected?: boolean;
   }> {
     const session = this.sessions.get(sessionId);
     try {
@@ -271,6 +330,7 @@ export class AgentBrowserLoopService {
               ok: true,
               url: session.url,
               snapshot: injected ? undefined : text.slice(0, 4000),
+              injected,
               message: injected
                 ? `快照（会话 ${sessionId}）— 检测到可疑注入内容，已隔离，不进入模型上下文`
                 : `DOM 快照（会话 ${sessionId}，${text.length} 字符，可交互元素已提取）`,
@@ -311,6 +371,48 @@ export class AgentBrowserLoopService {
       .map((item) => (typeof item.text === 'string' ? item.text : ''))
       .join('\n')
       .trim();
+  }
+
+  /** P4-2：带重试的单动作执行——只重试可重试执行类错误，门禁类失败不重试 */
+  private async executeWithRetry(
+    action: AiBrowserAction,
+    accountId: string,
+    timeoutMs: number,
+    maxRetries: number,
+  ): Promise<{
+    index: number;
+    action: string;
+    ok: boolean;
+    message?: string;
+    evidenceUrl?: string;
+    extractText?: string;
+  }> {
+    let lastResult: Awaited<ReturnType<AiBrowserActionService['executeSingle']>>;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const r = await this.actions.executeSingle({
+        action,
+        accountId,
+        timeoutMs,
+      });
+      lastResult = r;
+      if (r.ok) return r;
+      // 门禁类失败不重试（策略阻断/需确认/写操作未开启/mock 阻断）
+      if (
+        r.message?.includes('需用户确认') ||
+        r.message?.includes('策略阻断') ||
+        r.message?.includes('写操作未开启') ||
+        r.message?.includes('DISPATCH_MOCK')
+      ) {
+        return r;
+      }
+      if (attempt < maxRetries) {
+        this.logger.warn(
+          `AgentBrowser 动作 ${action.action} 第 ${attempt + 1} 次失败，重试：${r.message}`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 400));
+      }
+    }
+    return lastResult!;
   }
 
   /**
@@ -454,23 +556,32 @@ export class AgentBrowserLoopService {
       );
     }
     const mode = rawMode;
-    // §14.2 安全校验：非法数值（<=0/NaN）拒绝，不允许静默关闭限制
+    // §14.2 安全校验（P4-4 审计 2026-08-22）：整数 + 安全范围边界，非法配置拒绝
+    // （不允许静默采用危险值，如极大 timeout / 无限重试）
     const maxSteps = Number(process.env.AGENT_BROWSER_MAX_STEPS ?? 30);
     const maxRetries = Number(process.env.AGENT_BROWSER_MAX_RETRIES ?? 2);
     const timeoutMs = Number(process.env.AGENT_BROWSER_TIMEOUT_MS ?? 120000);
-    if (!Number.isFinite(maxSteps) || maxSteps <= 0) {
+    if (!Number.isInteger(maxSteps) || maxSteps < 1 || maxSteps > 100) {
       throw new BadRequestException(
-        `非法的 AGENT_BROWSER_MAX_STEPS=${process.env.AGENT_BROWSER_MAX_STEPS}，必须为正整数`,
+        `非法的 AGENT_BROWSER_MAX_STEPS=${process.env.AGENT_BROWSER_MAX_STEPS}，必须为 1-100 整数`,
       );
     }
-    if (!Number.isFinite(maxRetries) || maxRetries < 0) {
+    if (
+      !Number.isInteger(maxRetries) ||
+      maxRetries < 0 ||
+      maxRetries > 5
+    ) {
       throw new BadRequestException(
-        `非法的 AGENT_BROWSER_MAX_RETRIES=${process.env.AGENT_BROWSER_MAX_RETRIES}，必须为非负整数`,
+        `非法的 AGENT_BROWSER_MAX_RETRIES=${process.env.AGENT_BROWSER_MAX_RETRIES}，必须为 0-5 整数`,
       );
     }
-    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    if (
+      !Number.isInteger(timeoutMs) ||
+      timeoutMs < 1000 ||
+      timeoutMs > 300000
+    ) {
       throw new BadRequestException(
-        `非法的 AGENT_BROWSER_TIMEOUT_MS=${process.env.AGENT_BROWSER_TIMEOUT_MS}，必须为正整数`,
+        `非法的 AGENT_BROWSER_TIMEOUT_MS=${process.env.AGENT_BROWSER_TIMEOUT_MS}，必须为 1000-300000 整数`,
       );
     }
     return {
@@ -512,6 +623,10 @@ export class AgentBrowserLoopService {
         return 'wait_for';
       case 'screenshot':
         return 'snapshot';
+      case 'press_key':
+        return 'press_key';
+      case 'tabs':
+        return 'tabs';
       default:
         return null;
     }

@@ -360,18 +360,27 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     }
   });
 
-  it('feature flag：ALLOW_WRITE=false 拒绝写指令', async () => {
+  it('feature flag：ALLOW_WRITE=false 按动作类型阻断写操作（P4-1 审计修复，不再按中文指令）', async () => {
     const browser = makeBrowserMock();
     const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = sessionSvc.create('u-1', {});
     await sessionSvc.acquireEngineSession(s.id);
-    const { loop } = makeLoop(sessionSvc);
+    const { loop, actionsMock } = makeLoop(sessionSvc, {
+      actions: [{ action: 'type', selector: '#email', text: 'a@b.com' }],
+    });
     const saved = process.env.AGENT_BROWSER_ALLOW_WRITE;
     process.env.AGENT_BROWSER_ALLOW_WRITE = 'false';
     try {
-      await expect(loop.run(s.id, '在输入框填写内容并提交')).rejects.toThrow(
-        '写操作未开启',
-      );
+      // 英文指令也不再绕过：type 动作按类型阻断（不执行 + 事件提示）
+      const events: unknown[] = [];
+      await loop.run(s.id, 'type email into the form', {
+        onStep: (e) => events.push(e),
+      });
+      expect(actionsMock.executeSingle).not.toHaveBeenCalled();
+      const step = events.find(
+        (e) => (e as { type?: string }).type === 'step',
+      ) as { message?: string } | undefined;
+      expect(step?.message).toContain('写操作未开启');
     } finally {
       if (saved === undefined) delete process.env.AGENT_BROWSER_ALLOW_WRITE;
       else process.env.AGENT_BROWSER_ALLOW_WRITE = saved;
@@ -654,5 +663,208 @@ describe('P0-2 服务端确认校验（审计 2026-08-22）', () => {
       | undefined;
     expect(step?.message).toContain('需用户确认');
     expect(step?.selector).toBe('#btn'); // 事件带真实 selector（P0-3 前端用）
+  });
+});
+
+describe('P4-3 状态语义（审计 2026-08-22）', () => {
+  const ORIG_ENV = { ...process.env };
+  beforeAll(() => {
+    process.env.AGENT_BROWSER_MODE = 'dom-agent';
+    process.env.AGENT_BROWSER_ALLOW_WRITE = 'true';
+  });
+  afterAll(() => {
+    process.env = ORIG_ENV;
+  });
+
+  // 局部 makeLoop（与其他 describe 独立）
+  function makeLoop(
+    sessionSvc: AgentBrowserSessionService,
+    argsOpts?: { actions?: unknown[] },
+  ) {
+    const actionsMock = {
+      run: jest.fn(),
+      parseActions: jest.fn().mockResolvedValue(
+        argsOpts?.actions?.length
+          ? (argsOpts.actions as { action: string }[])
+          : [{ action: 'goto', url: 'https://example.com' }],
+      ),
+      executeSingle: jest.fn().mockResolvedValue({
+        index: 0,
+        action: 'goto',
+        ok: true,
+      }),
+    };
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      actionsMock as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+    );
+    return { loop, actionsMock };
+  }
+
+  it('部分失败 → partial_success（不再 1 成功 4 失败算成功）', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    const s = sessionSvc.create('u-1', {
+      allowDomains: ['a.com', 'b.com'],
+    });
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop, actionsMock } = makeLoop(sessionSvc, {
+      actions: [
+        { action: 'goto', url: 'https://a.com' },
+        { action: 'goto', url: 'https://b.com' },
+      ],
+    });
+    // 第一个成功；第二个持续失败（重试也失败）→ 部分成功
+    actionsMock.executeSingle
+      .mockResolvedValueOnce({ index: 0, action: 'goto', ok: true })
+      .mockResolvedValue({
+        index: 1,
+        action: 'goto',
+        ok: false,
+        message: 'navigation_failed',
+      });
+    const result = await loop.run(s.id, '访问两个页面');
+    const done = result.steps.find(
+      (e) => e.type === 'done',
+    ) as { status?: string; ok?: boolean } | undefined;
+    expect(done?.status).toBe('partial_success');
+    expect(done?.ok).toBe(true);
+  });
+
+  it('全部失败 → failed', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    const s = sessionSvc.create('u-1', { allowDomains: ['a.com'] });
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop, actionsMock } = makeLoop(sessionSvc, {
+      actions: [{ action: 'goto', url: 'https://a.com' }],
+    });
+    actionsMock.executeSingle.mockResolvedValue({
+      index: 0,
+      action: 'goto',
+      ok: false,
+      message: 'navigation_failed',
+    });
+    const result = await loop.run(s.id, '访问页面');
+    const done = result.steps.find(
+      (e) => e.type === 'done',
+    ) as { status?: string; ok?: boolean } | undefined;
+    expect(done?.status).toBe('failed');
+    expect(done?.ok).toBe(false);
+  });
+
+  it('提示注入 → needs-human 事件 + 会话状态 needs-human', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    const s = sessionSvc.create('u-1', {
+      startUrl: 'https://inject.example.com',
+      allowDomains: ['a.com'],
+    });
+    await sessionSvc.acquireEngineSession(s.id);
+    // observe 被 mock 成注入命中？——直接调用 loop 的 observe 依赖 playwright-mcp。
+    // 这里改为验证 observe 不可用时正常；注入分支用 stub observe。
+    const { loop } = makeLoop(sessionSvc, {
+      actions: [{ action: 'goto', url: 'https://a.com' }],
+    });
+    // 覆写 observe 返回 injected=true
+    (loop as unknown as { observe: () => Promise<never> }).observe = jest
+      .fn()
+      .mockResolvedValue({
+        type: 'snapshot',
+        ok: true,
+        url: 'https://inject.example.com',
+        injected: true,
+        message: '检测到注入',
+      }) as never;
+    const events: unknown[] = [];
+    const result = await loop.run(s.id, '访问页面', {
+      onStep: (e) => events.push(e),
+    });
+    expect(result.ok).toBe(false);
+    const nh = events.find(
+      (e) => (e as { type?: string }).type === 'needs-human',
+    ) as { reasonCode?: string } | undefined;
+    expect(nh?.reasonCode).toBe('prompt_injection');
+    expect(sessionSvc.get(s.id).status).toBe('needs-human');
+  });
+});
+
+describe('P4-4 生命周期（审计 2026-08-22）', () => {
+  function makeSvc() {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    return { browser, sessionSvc };
+  }
+
+  it('assertTransition：created → paused 非法（抛 400）', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', {}, 't-1');
+    expect(() =>
+      sessionSvc.assertTransition(s.id, ['running', 'needs-human'], 'paused'),
+    ).toThrow(/不能迁移/);
+  });
+
+  it('pause（running）→ resume：重新获取引擎会话置 running', async () => {
+    const { browser, sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', {}, 't-1');
+    await sessionSvc.acquireEngineSession(s.id);
+    expect(sessionSvc.get(s.id).status).toBe('running');
+    // 模拟运行中暂停
+    sessionSvc.assertTransition(s.id, ['running', 'needs-human'], 'paused');
+    sessionSvc.updateStatus(s.id, 'paused');
+    expect(sessionSvc.get(s.id).status).toBe('paused');
+    // resume：paused → running + 引擎重新获取
+    await sessionSvc.resume(s.id);
+    expect(sessionSvc.get(s.id).status).toBe('running');
+    expect(sessionSvc.get(s.id).engineKey).toBeTruthy();
+  });
+
+  it('list fail-closed：请求带租户时不返回无 tenantId 的旧会话', async () => {
+    const { sessionSvc } = makeSvc();
+    sessionSvc.create('u-1', {}, 't-a'); // 有租户
+    sessionSvc.create('u-1', {}); // 无租户（旧数据）
+    const listed = sessionSvc.list('u-1', 't-a');
+    expect(listed.length).toBe(1);
+    expect(listed[0].id).toBe(sessionSvc.list('u-1', 't-a')[0].id);
+  });
+
+  it('配置边界：MAX_RETRIES 超范围（>5）拒绝', async () => {
+    const { sessionSvc } = makeSvc();
+    const s = sessionSvc.create('u-1', {}, 't-1');
+    await sessionSvc.acquireEngineSession(s.id);
+    const { AgentBrowserLoopService } = require('./agent-browser-loop.service');
+    const loop = new AgentBrowserLoopService(
+      sessionSvc,
+      {
+        parseActions: jest.fn().mockResolvedValue([]),
+        executeSingle: jest.fn(),
+      } as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+    );
+    const saved = process.env.AGENT_BROWSER_MAX_RETRIES;
+    process.env.AGENT_BROWSER_MAX_RETRIES = '99';
+    try {
+      await expect(loop.run(s.id, '测试')).rejects.toThrow(/MAX_RETRIES/);
+    } finally {
+      if (saved === undefined) delete process.env.AGENT_BROWSER_MAX_RETRIES;
+      else process.env.AGENT_BROWSER_MAX_RETRIES = saved;
+    }
   });
 });

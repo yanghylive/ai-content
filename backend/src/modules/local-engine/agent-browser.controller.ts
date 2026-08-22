@@ -126,6 +126,8 @@ export class AgentBrowserController {
   async pause(@Req() request: AuthRequest, @Param('id') id: string) {
     const tenantId = await this.resolveTenantId();
     this.sessions.assertOwner(id, this.getUserId(request), tenantId);
+    // P4-4：只允许 running/needs-human → paused
+    this.sessions.assertTransition(id, ['running', 'needs-human'], 'paused');
     this.sessions.updateStatus(id, 'paused');
     return this.sessions.toPublicDto(this.sessions.get(id));
   }
@@ -135,7 +137,8 @@ export class AgentBrowserController {
   async resume(@Req() request: AuthRequest, @Param('id') id: string) {
     const tenantId = await this.resolveTenantId();
     this.sessions.assertOwner(id, this.getUserId(request), tenantId);
-    this.sessions.updateStatus(id, 'running');
+    // P4-4：resume 走 SessionService.resume——校验 paused/needs-human 并重新获取引擎会话
+    await this.sessions.resume(id);
     return this.sessions.toPublicDto(this.sessions.get(id));
   }
 
