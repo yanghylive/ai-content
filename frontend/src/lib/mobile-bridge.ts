@@ -35,6 +35,8 @@ interface JiuZhangBridge {
   cancelActions?(): string;
   /** 截取当前屏幕（无障碍，Android 11+），返回 { ok, message: dataURL } */
   captureScreen?(): string;
+  /** 发起屏幕录制授权（老设备 Android 8-10 截屏前需授权） */
+  requestScreenCapture?(): string;
 }
 
 declare global {
@@ -271,7 +273,7 @@ export function bridgeInfo(): { isShell: boolean; methods: string[] } {
   return {
     isShell: Boolean(bridge),
     methods: bridge
-      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus", "wechatLogin", "executeActions", "resumeAfterAsk", "cancelActions", "captureScreen"].filter(
+      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus", "wechatLogin", "executeActions", "resumeAfterAsk", "cancelActions", "captureScreen", "requestScreenCapture"].filter(
           (m) => typeof (bridge as unknown as Record<string, unknown>)[m] === "function",
         )
       : [],
@@ -383,6 +385,21 @@ export function resumeAfterAsk(proceed: boolean): MaiUiExecResult {
   if (!bridge?.resumeAfterAsk) return { ok: false, message: "桥方法不可用" };
   try {
     const raw = bridge.resumeAfterAsk(proceed);
+    const parsed = typeof raw === "string" && raw.trim().startsWith("{")
+      ? (JSON.parse(raw) as MaiUiExecResult)
+      : null;
+    return parsed ?? { ok: false, message: "解析失败" };
+  } catch {
+    return { ok: false, message: "调用失败" };
+  }
+}
+
+/** 发起屏幕录制授权（Android 8-10 老设备截屏前需用户授权） */
+export function requestScreenCapture(): MaiUiExecResult {
+  const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
+  if (!bridge?.requestScreenCapture) return { ok: false, message: "桥方法不可用" };
+  try {
+    const raw = bridge.requestScreenCapture();
     const parsed = typeof raw === "string" && raw.trim().startsWith("{")
       ? (JSON.parse(raw) as MaiUiExecResult)
       : null;

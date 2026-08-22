@@ -188,14 +188,15 @@ class JsBridge(private val activity: Activity) {
     }
 
     /**
-     * 截取当前屏幕（无障碍 takeScreenshot，Android 11+）。
-     * 返回 {"ok":true,"message":"data:image/jpeg;base64,..."} 或错误。
+     * 截取当前屏幕。
+     * 优先级：MediaProjection（兼容 Android 8+，需授权）→ 无障碍 takeScreenshot（Android 11+）。
+     * 返回 {"ok":true,"message":"data:image/jpeg;base64,xxx","width":540,...} 或错误。
      */
     @JavascriptInterface
     fun captureScreen(): String {
         val latch = CountDownLatch(1)
         val holder = arrayOfNulls<String>(1)
-        com.aicontent.mobile.agent.RpaAccessibilityService.captureScreen { result ->
+        val done: (com.aicontent.mobile.agent.RpaResult) -> Unit = { result ->
             holder[0] = if (result.ok) {
                 // 消息格式: data:image/jpeg;base64,xxx|w=540&h=1200&sw=1080&sh=2400
                 val meta = Regex("\\|w=(\\d+)&h=(\\d+)&sw=(\\d+)&sh=(\\d+)\$").find(result.message)
@@ -212,6 +213,13 @@ class JsBridge(private val activity: Activity) {
             }
             latch.countDown()
         }
+        // 1) 已授权 MediaProjection → 优先（覆盖 Android 8+）
+        if (com.aicontent.mobile.agent.MediaProjectionCapture.hasPermission()) {
+            com.aicontent.mobile.agent.MediaProjectionCapture.capture(activity, 540, 1200, done)
+        } else {
+            // 2) Android 11+ 无障碍截图
+            com.aicontent.mobile.agent.RpaAccessibilityService.captureScreen(done)
+        }
         try {
             if (!latch.await(15, TimeUnit.SECONDS)) {
                 return "{\"ok\":false,\"message\":\"截图超时\"}"
@@ -220,6 +228,17 @@ class JsBridge(private val activity: Activity) {
             return "{\"ok\":false,\"message\":\"截图被中断\"}"
         }
         return holder[0] ?: "{\"ok\":false,\"message\":\"截图结果丢失\"}"
+    }
+
+    /** 发起屏幕录制授权（老设备 Android 8-10 截屏前需用户授权系统弹窗） */
+    @JavascriptInterface
+    fun requestScreenCapture(): String {
+        val activity = activity as? android.app.Activity
+        if (activity == null) return "{\"ok\":false,\"message\":\"当前无 Activity 上下文\"}"
+        activity.runOnUiThread {
+            com.aicontent.mobile.agent.MediaProjectionCapture.requestAuth(activity)
+        }
+        return "{\"ok\":true,\"message\":\"已发起屏幕录制授权，请在系统弹窗点击允许\"}"
     }
 
     private fun escapeJson(s: String): String =
