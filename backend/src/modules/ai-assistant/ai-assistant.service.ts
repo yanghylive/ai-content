@@ -103,14 +103,33 @@ export class AiAssistantService {
   }): string {
     return createHash('sha256')
       .update(
-        JSON.stringify({
-          intent: draft.intent,
-          goal: draft.goal,
-          config: draft.config,
-          actions: draft.actions,
-        }),
+        JSON.stringify(
+          this.sortJson({
+            intent: draft.intent,
+            goal: draft.goal,
+            config: draft.config,
+            actions: draft.actions,
+          }),
+        ),
       )
       .digest('hex');
+  }
+
+  /** 递归按键排序（JSON 规范化）：Prisma JSONB 会重排对象键序，哈希前必须稳定化 */
+  private sortJson(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map((v) => this.sortJson(v));
+    }
+    if (value !== null && typeof value === 'object') {
+      const obj = value as Record<string, unknown>;
+      return Object.keys(obj)
+        .sort()
+        .reduce<Record<string, unknown>>((acc, key) => {
+          acc[key] = this.sortJson(obj[key]);
+          return acc;
+        }, {});
+    }
+    return value;
   }
 
   /**
@@ -132,7 +151,7 @@ export class AiAssistantService {
 
     if (!platform) missingFields.push('platform');
     // 关键词/来源词：从 NL 粗提取（引号内容或"装修/美业"等词），缺失则提示
-    const keywordMatch = nl.match(/["'“”《]([^"'"“”》]{1,20})["'“”》]/);
+    const keywordMatch = nl.match(/["'“”《「]([^"'"“”》」]{1,20})["'“”》」]/);
     if (!keywordMatch) missingFields.push('includeKeywords');
 
     const plannedActions: PlannedAction[] = this.buildPlannedActions(
@@ -315,7 +334,11 @@ export class AiAssistantService {
         const created = await this.growth.createConfig(userId, {
           platform: row.platform,
           taskName: row.goal.slice(0, 40),
+          sourceInputs: Array.isArray(config.includeKeywords)
+            ? (config.includeKeywords as string[])
+            : [],
           includeKeywords: config.includeKeywords,
+          commentTemplates: ['您的需求已收到，稍后专属顾问联系您'],
           mode: 'draft-only',
           riskMode: 'confirm-first',
           status: 'disabled', // 止血：确认草稿创建的配置默认禁用，需手动启用
@@ -381,18 +404,32 @@ export class AiAssistantService {
       executed = true;
     } else if (row.intent === 'find_leads' || row.intent === 'contact_leads') {
       // 确认时配置创建失败则补偿创建（仍走风险门）
-      const created = await this.growth.createConfig(userId, {
-        platform: row.platform,
-        taskName: row.goal.slice(0, 40),
-        includeKeywords: (row.configJson as Record<string, unknown>)
-          .includeKeywords,
-        mode: 'draft-only',
-        riskMode: 'confirm-first',
-        status: 'disabled',
-      });
-      await this.growth.executeConfig(userId, created.id, {
-        confirmedExecution: true,
-      });
+      try {
+        const cfgInput = (row.configJson ?? {}) as Record<string, unknown>;
+        const created = await this.growth.createConfig(userId, {
+          platform: row.platform,
+          taskName: row.goal.slice(0, 40),
+          sourceInputs: Array.isArray(cfgInput.includeKeywords)
+            ? (cfgInput.includeKeywords as string[])
+            : [],
+          includeKeywords: cfgInput.includeKeywords,
+          commentTemplates: ['您的需求已收到，稍后专属顾问联系您'],
+          mode: 'draft-only',
+          riskMode: 'confirm-first',
+          status: 'disabled',
+        });
+        await this.growth.executeConfig(userId, created.id, {
+          confirmedExecution: true,
+        });
+      } catch (error) {
+        const message = (error as Error).message ?? String(error);
+        if (/不属于可用组织|平台账号|授权/.test(message)) {
+          throw new BadRequestException(
+            `执行前请先在「发布中心-账号管理」绑定 ${this.platformLabel(row.platform ?? '')} 平台账号：${message}`,
+          );
+        }
+        throw new BadRequestException(`任务执行失败：${message}`);
+      }
       executed = true;
     }
 
@@ -462,4 +499,8 @@ export class AiAssistantService {
 
 /** Nest 可注入包装（依赖构造） */
 @Injectable()
-export class AiAssistantNestService extends AiAssistantService {}
+export class AiAssistantNestService extends AiAssistantService {
+  constructor(prisma: PrismaService, growth: GrowthService) {
+    super(prisma, growth);
+  }
+}
