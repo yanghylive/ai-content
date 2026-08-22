@@ -115,7 +115,8 @@ export class AgentBrowserLoopService {
       const audit = policyTool
         ? this.policy.audit(
             policyTool,
-            { url: r.evidenceUrl ?? session.url },
+            // navigate 用会话 URL（evidenceUrl 是截图路径，不能当导航目标）
+            { url: policyTool === 'navigate' ? session.url : (r.evidenceUrl ?? session.url) },
             { url: session.url, allowDomains: session.allowDomains },
           )
         : null;
@@ -177,11 +178,17 @@ export class AgentBrowserLoopService {
       if (this.playwrightMcp) {
         try {
           // §7.4 绑定当前 Agent 会话的 profile（确保 snapshot 与执行同页面，
-          // 避免"动作在 A 页面、快照读 B 页面"）
-          await this.playwrightMcp.ensureProfile({
-            platform: 'general-web',
-            accountId: session.accountId,
-          });
+          // 避免"动作在 A 页面、快照读 B 页面"）。
+          // 8s 超时：sidecar 启动慢/失败时快速回落 URL 快照，不阻塞循环。
+          await Promise.race([
+            this.playwrightMcp.ensureProfile({
+              platform: 'general-web',
+              accountId: session.accountId,
+            }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('ensureProfile timeout')), 8000),
+            ),
+          ]);
           const res = await this.playwrightMcp.rpcCall(
             {
               jsonrpc: '2.0',
