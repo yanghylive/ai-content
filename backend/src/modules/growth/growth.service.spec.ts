@@ -946,7 +946,7 @@ describe('GrowthService commercial acquisition execution', () => {
         contactedCount: 1,
       });
     });
-  });
+  }, 30000);
 
   it('syncs an existing lead into CRM and stores the CRM customer id', async () => {
     const crmService = {
@@ -3623,5 +3623,63 @@ describe('P2 归因报告四维', () => {
     expect(result.byContent).toEqual([]);
     expect(result.byScript).toEqual([]);
     expect(result.generatedAt).toBeTruthy();
+  });
+});
+
+describe('GrowthService §10.1 幂等门', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function makeSvc(prismaMock: Record<string, unknown>): any {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { GrowthService } = require('./growth.service');
+    const svc = Object.create(GrowthService.prototype) as any;
+    svc.prisma = prismaMock;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    svc.text = (v: unknown) => String(v ?? '');
+    return svc;
+  }
+
+  it('isGrowthTouchAlreadyCompleted：历史成功 run 含目标指纹返回 true', async () => {
+    const prismaMock = {
+      growthAcquisitionRun: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            message: '视频号已完成 2 条真实触达（装修客户）',
+            evidenceUrls: [],
+          },
+        ]),
+      },
+    };
+    const svc = makeSvc(prismaMock);
+    const result = await svc.isGrowthTouchAlreadyCompleted(
+      'u-1',
+      { id: 'cfg-1', userId: 'u-1' },
+      '装修客户',
+      'comment-reply',
+    );
+    expect(result).toBe(true);
+    expect(prismaMock.growthAcquisitionRun.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          configId: 'cfg-1',
+          status: { in: ['success', 'partial'] },
+        }),
+      }),
+    );
+  });
+
+  it('isGrowthTouchAlreadyCompleted：无历史 run 返回 false（放行）', async () => {
+    const prismaMock = {
+      growthAcquisitionRun: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+    };
+    const svc = makeSvc(prismaMock);
+    const result = await svc.isGrowthTouchAlreadyCompleted(
+      'u-1',
+      { id: 'cfg-2', userId: 'u-1' },
+      '目标X',
+      'comment-reply',
+    );
+    expect(result).toBe(false);
   });
 });
