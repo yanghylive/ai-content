@@ -283,6 +283,7 @@ export class AiBrowserActionService {
    */
   async run(input: AiBrowserRunInput): Promise<{
     ok: boolean;
+    status: 'success' | 'partial_success' | 'failed';
     instruction: string;
     actions: AiBrowserAction[];
     results: AiBrowserStepResult[];
@@ -340,9 +341,18 @@ export class AiBrowserActionService {
       session.lastActivityAt = new Date().toISOString();
     }
 
-    const ok = results.some((r) => r.ok);
+    // §7.4 状态语义：全部成功=success、部分失败=partial_success、全失败=failed
+    const succeeded = results.filter((r) => r.ok).length;
+    const ok = succeeded === results.length && results.length > 0;
+    const status: 'success' | 'partial_success' | 'failed' =
+      results.length === 0
+        ? 'failed'
+        : succeeded === results.length
+          ? 'success'
+          : 'partial_success';
     return {
       ok,
+      status,
       instruction: input.instruction,
       actions,
       results,
