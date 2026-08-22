@@ -91,12 +91,15 @@ export class AgentBrowserSessionService implements OnModuleInit {
     const startOrigin = input.startUrl
       ? this.extractOrigin(input.startUrl)
       : undefined;
+    // 显式 allowDomains 完全覆盖；未显式时 = startOrigin + 全局白名单（§14.2）
+    const globalDomains = (process.env.AGENT_BROWSER_ALLOWED_DOMAINS ?? '')
+      .split(',')
+      .map((d) => d.trim())
+      .filter(Boolean);
     const allowDomains =
       input.allowDomains && input.allowDomains.length > 0
-        ? input.allowDomains
-        : startOrigin
-          ? [startOrigin]
-          : [];
+        ? [...new Set(input.allowDomains)]
+        : [...new Set([...(startOrigin ? [startOrigin] : []), ...globalDomains])];
 
     const session: AgentBrowserSession = {
       id: randomUUID(),

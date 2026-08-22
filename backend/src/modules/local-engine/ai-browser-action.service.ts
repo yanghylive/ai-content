@@ -40,6 +40,10 @@ export interface AiBrowserRunInput {
   }>;
   /** P4：已获用户确认的工具名（requiresConfirmation 的动作若在此列表才放行） */
   confirmedTools?: string[];
+  /** §14.2 最大动作数（超过截断） */
+  maxActions?: number;
+  /** §14.2 失败重试次数 */
+  maxRetries?: number;
 }
 
 export interface AiBrowserStepResult {
@@ -319,8 +323,13 @@ export class AiBrowserActionService {
     const results: AiBrowserStepResult[] = [];
 
     try {
-      for (let i = 0; i < actions.length; i++) {
-        const step = actions[i];
+      // §14.2 maxActions：截断超出上限的动作
+      const cappedActions = input.maxActions
+        ? actions.slice(0, input.maxActions)
+        : actions;
+      for (let i = 0; i < cappedActions.length; i++) {
+        const step = cappedActions[i];
+        const maxRetries = Math.max(0, input.maxRetries ?? 0);
         try {
           // §7.4 执行前策略拦截：policyGate 拒绝则跳过该步（不执行）
           if (input.policyGate) {
@@ -345,12 +354,24 @@ export class AiBrowserActionService {
               continue;
             }
           }
-          const stepResult = await this.executeStep(
-            session.key,
-            session.page,
-            step,
-            timeoutMs,
-          );
+          // §14.2 maxRetries：单步失败重试
+          let stepResult: Awaited<ReturnType<typeof this.executeStep>> | undefined;
+          for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+              stepResult = await this.executeStep(
+                session.key,
+                session.page,
+                step,
+                timeoutMs,
+              );
+              break;
+            } catch (error) {
+              if (attempt >= maxRetries) throw error;
+              this.logger.warn(
+                `ai-action step ${i} (${step.action}) 第 ${attempt + 1} 次重试`,
+              );
+            }
+          }
           results.push({
             index: i,
             action: step.action,

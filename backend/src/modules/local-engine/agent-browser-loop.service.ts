@@ -89,7 +89,9 @@ export class AgentBrowserLoopService {
       ...(currentUrl && !currentUrl.startsWith('chrome://')
         ? { url: currentUrl }
         : {}),
-      timeoutMs: 30_000,
+      timeoutMs: cfg.timeoutMs,
+      maxActions: cfg.maxSteps,
+      maxRetries: cfg.maxRetries,
       // P4：用会话独立 accountId（独立 Profile 隔离，不共享 ai-agent）
       accountId: session.accountId,
       // §7.4 执行前策略拦截：每步动作执行前过审计，allowed=false 不执行

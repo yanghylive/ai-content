@@ -384,3 +384,58 @@ describe('AiBrowserActionService 确认闸门', () => {
     expect(result.results.some((r: { ok: boolean }) => r.ok)).toBe(true);
   });
 });
+
+describe('AiBrowserActionService §14.2 限制参数', () => {
+  it('maxActions：超过上限的动作截断不执行', async () => {
+    const { AiBrowserActionService } = require('./ai-browser-action.service');
+    const svc = Object.create(AiBrowserActionService.prototype) as any;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    svc.parseWithAi = jest.fn().mockResolvedValue([
+      { action: 'goto', url: 'https://a.com' },
+      { action: 'goto', url: 'https://b.com' },
+      { action: 'goto', url: 'https://c.com' },
+    ]);
+    svc.browser = {
+      getOrCreateSession: jest.fn().mockResolvedValue({
+        key: 'k-7',
+        page: { url: () => '', goto: jest.fn() },
+      }),
+      captureEvidence: jest.fn().mockResolvedValue({ url: 'ev' }),
+    };
+    svc.executeStep = jest.fn().mockResolvedValue({ evidenceUrl: 'ev1' });
+    const result = await svc.run({
+      instruction: '访问三个站',
+      url: 'https://a.com',
+      maxActions: 2,
+    });
+    expect(svc.executeStep).toHaveBeenCalledTimes(2);
+    expect(result.results).toHaveLength(2);
+  });
+
+  it('maxRetries：失败重试后成功', async () => {
+    const { AiBrowserActionService } = require('./ai-browser-action.service');
+    const svc = Object.create(AiBrowserActionService.prototype) as any;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    svc.parseWithAi = jest.fn().mockResolvedValue([
+      { action: 'goto', url: 'https://a.com' },
+    ]);
+    svc.browser = {
+      getOrCreateSession: jest.fn().mockResolvedValue({
+        key: 'k-8',
+        page: { url: () => '', goto: jest.fn() },
+      }),
+      captureEvidence: jest.fn().mockResolvedValue({ url: 'ev' }),
+    };
+    svc.executeStep = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('网络抖动'))
+      .mockResolvedValueOnce({ evidenceUrl: 'ev1' });
+    const result = await svc.run({
+      instruction: '访问',
+      url: 'https://a.com',
+      maxRetries: 2,
+    });
+    expect(svc.executeStep).toHaveBeenCalledTimes(2);
+    expect(result.results[0].ok).toBe(true);
+  });
+});
