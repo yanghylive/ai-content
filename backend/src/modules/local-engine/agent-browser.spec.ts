@@ -14,17 +14,18 @@ function makeBrowserMock() {
 
 describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
   it('create：生成会话，域名白名单默认取 startUrl origin', () => {
-    const svc = new AgentBrowserSessionService(makeBrowserMock() as never);
+    const svc = new AgentBrowserSessionService(makeBrowserMock() as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = svc.create('u-1', { startUrl: 'https://example.com/abc' });
     expect(s.status).toBe('created');
     expect(s.engineKey).toBeUndefined();
-    expect(s.lease?.ownerId).toBe('u-1');
+    // toDto 已剔除 ownerId（防泄露）；allowDomains 保留
+    expect(JSON.stringify(s)).not.toContain('ownerId');
     expect(s.allowDomains).toEqual(['example.com']);
     expect(s.id).toMatch(/^[0-9a-f-]{36}$/);
   });
 
   it('create：显式 allowDomains 覆盖默认', () => {
-    const svc = new AgentBrowserSessionService(makeBrowserMock() as never);
+    const svc = new AgentBrowserSessionService(makeBrowserMock() as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = svc.create('u-1', {
       startUrl: 'https://a.com',
       allowDomains: ['b.com', 'c.com'],
@@ -33,13 +34,13 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
   });
 
   it('get：不存在抛 NotFound', () => {
-    const svc = new AgentBrowserSessionService(makeBrowserMock() as never);
+    const svc = new AgentBrowserSessionService(makeBrowserMock() as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     expect(() => svc.get('nope')).toThrow(NotFoundException);
   });
 
   it('acquireEngineSession：复用 general-web 引擎 + 状态置 running', async () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = svc.create('u-1', { startUrl: 'https://example.com' });
     const { engineKey } = await svc.acquireEngineSession(s.id);
     expect(engineKey).toBe('general-web-abc');
@@ -52,10 +53,11 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
 
   it('租约过期：acquire 抛 BadRequest', async () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = svc.create('u-1', {});
-    // 手动把租约改成已过期
-    s.lease!.expiresAt = new Date(Date.now() - 1000).toISOString();
+    // 手动把内部会话租约改成已过期（DTO 是副本，须改内部）
+    const inner = svc.get(s.id);
+    inner.lease!.expiresAt = new Date(Date.now() - 1000).toISOString();
     await expect(svc.acquireEngineSession(s.id)).rejects.toThrow(
       BadRequestException,
     );
@@ -63,7 +65,7 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
 
   it('stop：关闭引擎 + 状态 stopped', async () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = svc.create('u-1', {});
     await svc.stop(s.id);
     expect(browser.closeSession).not.toHaveBeenCalled(); // 未 acquire 不关闭
@@ -72,7 +74,7 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
 
   it('stop：已 acquire 后关闭引擎', async () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = svc.create('u-1', {});
     await svc.acquireEngineSession(s.id);
     await svc.stop(s.id);
@@ -157,7 +159,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('run：非 running 状态抛 BadRequest', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = sessionSvc.create('u-1', {});
     // status 是 created（未 run），直接 loop.run 应拒绝
     const { loop } = makeLoop(sessionSvc);
@@ -166,7 +168,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('run：执行 Observe(快照) -> Act(动作) -> Verify(步骤事件)', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
     await sessionSvc.acquireEngineSession(s.id);
     expect(sessionSvc.get(s.id).status).toBe('running');
@@ -200,7 +202,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('run：actions.run 失败时 done.ok=false 但流程不断', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = sessionSvc.create('u-1', {});
     await sessionSvc.acquireEngineSession(s.id);
 
@@ -211,16 +213,28 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('auditStep：合法工具返回审计，非法抛错', () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const { loop } = makeLoop(sessionSvc);
     const d = loop.auditStep('navigate', { url: 'https://ok.com' }, ['ok.com']);
     expect(d.allowed).toBe(true);
     expect(() => loop.auditStep('evaluate_js' as never, {}, [])).toThrow();
   });
 
+  it('list：只返回当前用户会话 + DTO 不含 ownerId', () => {
+    const browser = makeBrowserMock();
+    const svc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
+    const s1 = svc.create('u-1', {});
+    svc.create('u-2', {});
+    const list = svc.list('u-1');
+    expect(list).toHaveLength(1);
+    expect(list[0].id).toBe(s1.id);
+    const raw = JSON.stringify(list[0]);
+    expect(raw).not.toContain('ownerId');
+  });
+
   it('assertOwner：他人会话抛 Forbidden，本人放行', () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = svc.create('u-owner', {});
     expect(() => svc.assertOwner(s.id, 'u-owner')).not.toThrow();
     expect(() => svc.assertOwner(s.id, 'u-attacker')).toThrow();
@@ -228,7 +242,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('逐步审计：click 步骤被标记中风险需确认', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
     await sessionSvc.acquireEngineSession(s.id);
     const { loop } = makeLoop(sessionSvc, {
@@ -245,7 +259,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('observe：playwright-mcp 可用时返回真实 DOM 快照', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
     await sessionSvc.acquireEngineSession(s.id);
     const playwrightMcpMock = {
@@ -272,7 +286,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
     const s = sessionSvc.create('u-1', {});
     sessionSvc.appendEvent(s.id, { type: 'snapshot', ok: true } as never);
     sessionSvc.appendEvent(s.id, { type: 'done', ok: true } as never);

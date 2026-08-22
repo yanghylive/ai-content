@@ -40,8 +40,8 @@ export class AgentBrowserController {
   }
 
   @Get('sessions')
-  list() {
-    return this.sessions.list();
+  list(@Req() request: AuthRequest) {
+    return this.sessions.list(this.getUserId(request));
   }
 
   @Get('sessions/:id')
