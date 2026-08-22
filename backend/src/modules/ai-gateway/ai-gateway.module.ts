@@ -8,6 +8,7 @@ import { MemoryModule } from '../memory/memory.module';
 import { AiAuditModule } from '../ai-audit/ai-audit.module';
 import { SavingsModule } from '../savings/savings.module';
 import { GrowthModule } from '../growth/growth.module';
+import { AiAssistantModule } from '../ai-assistant/ai-assistant.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { GrowthModule } from '../growth/growth.module';
     AiAuditModule,
     SavingsModule,
     GrowthModule,
+    AiAssistantModule,
   ],
   controllers: [AiGatewayController],
   providers: [AiGatewayService],

@@ -15,6 +15,7 @@ import { SavingsService } from '../savings/savings.service';
 import { SavingsExchangeService } from '../savings/savings-exchange.service';
 import { SavingsWithdrawalService } from '../savings/savings-withdrawal.service';
 import { GrowthService } from '../growth/growth.service';
+import { AiAssistantNestService } from '../ai-assistant/ai-assistant.service';
 
 /** AI 助手系统提示词（工具使用指南，function calling 触发） */
 const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户完成内容创作与运营工作。
@@ -41,6 +42,7 @@ const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户�
 20. workflow_action：对工作流执行操作（参数 workflowId 工作流 ID、action 为 start/pause/confirm-step）。用户说"启动工作流/暂停/确认继续"时调用。
 21. acquisition_config_list：查看已创建的获客任务（评论/私信获客）。用户问"我的获客任务/获客配置"时调用。
 22. lead_list：查看获客线索（参数 status 可选、limit 可选）。用户问"我的线索/潜在客户"时调用。
+23. task_draft：把用户的获客/触达/复盘意图转换为结构化任务草稿（参数 naturalLanguage 为用户的自然语言描述）。用户说"帮我找抖音装修客户""联系这批线索""出一份复盘报告"等意图时调用——只生成草稿供确认，不直接执行，草稿确认后才走执行。
 调用工具后，把结果整理成简洁、友好的中文回复给用户。
 如果用户请求不在工具能力范围内，直接给出建议，不要编造工具结果。
 
@@ -438,6 +440,24 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'task_draft',
+      description:
+        '把用户意图转换为结构化任务草稿（获客/触达/复盘等）。只生成草稿不执行，草稿需用户确认后才走执行（P3）。用户表达"帮我找…用户""联系…线索""出复盘报告"等获客增长意图时调用',
+      parameters: {
+        type: 'object' as const,
+        properties: {
+          naturalLanguage: {
+            type: 'string',
+            description: '用户的自然语言描述（含平台/关键词/目标）',
+          },
+        },
+        required: ['naturalLanguage'],
+      },
+    },
+  },
 ];
 
 const MAX_TOOL_ROUNDS = 4;
@@ -465,6 +485,7 @@ export class AiGatewayService {
     private readonly savingsExchange: SavingsExchangeService,
     private readonly savingsWithdrawal: SavingsWithdrawalService,
     private readonly growth: GrowthService,
+    private readonly aiAssistant: AiAssistantNestService,
   ) {}
 
   /**
@@ -861,6 +882,11 @@ export class AiGatewayService {
         return { label: '查看工作流', href: '/growth/workflows' };
       case 'lead_list':
         return { label: '查看线索', href: '/growth/leads' };
+      case 'task_draft':
+        return {
+          label: '查看任务草稿',
+          href: `/growth/ai-assistant?draftId=${safeText(r.draftId ?? '')}`,
+        };
       case 'material_save':
         return { label: '查看素材', href: '/materials' };
       default:
@@ -1322,6 +1348,35 @@ export class AiGatewayService {
           };
         } catch (e) {
           return { error: `线索列表获取失败：${(e as Error).message}` };
+        }
+      }
+      case 'task_draft': {
+        const naturalLanguage = safeText(args.naturalLanguage ?? '').trim();
+        if (!naturalLanguage) {
+          return { error: '缺少自然语言描述（naturalLanguage）' };
+        }
+        try {
+          const draft = await this.aiAssistant.createDraft(userId, {
+            naturalLanguage,
+          });
+          return {
+            draftId: draft.id,
+            intent: draft.intent,
+            goal: draft.goal,
+            platform: draft.platform ?? null,
+            readiness: draft.readiness,
+            missingFields: draft.missingFields,
+            plannedActions: draft.plannedActions,
+            riskSummary: draft.riskSummary ?? null,
+            hint:
+              draft.readiness === 'needs-input'
+                ? `请补充缺失字段：${draft.missingFields.join('、')}`
+                : draft.readiness === 'needs-confirmation'
+                  ? '请用户确认后执行（草稿 30 分钟内有效）'
+                  : '草稿已就绪，请用户确认后执行',
+          };
+        } catch (e) {
+          return { error: `任务草稿生成失败：${(e as Error).message}` };
         }
       }
       default:

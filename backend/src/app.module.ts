@@ -25,6 +25,7 @@ import { RuntimeModule } from './modules/runtime/runtime.module';
 import { GeoBridgeModule } from './modules/geo-bridge/geo-bridge.module';
 import { AuthRequestContextModule } from './common/auth-request-context.module';
 import { AiGatewayModule } from './modules/ai-gateway/ai-gateway.module';
+import { AiAssistantModule } from './modules/ai-assistant/ai-assistant.module';
 import { ReportingModule } from './modules/reporting/reporting.module';
 import { SavingsModule } from './modules/savings/savings.module';
 import { WecomAssistantModule } from './modules/wecom-assistant/wecom-assistant.module';
@@ -74,6 +75,7 @@ import { CaseShowcaseModule } from './modules/case-showcase/case-showcase.module
     }),
     AuthRequestContextModule,
     AiGatewayModule,
+    AiAssistantModule,
     ReportingModule,
     SavingsModule,
     ErrorReportModule,
