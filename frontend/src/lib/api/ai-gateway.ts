@@ -8,7 +8,27 @@ export interface AiChatMessage {
 export type AiGatewayEvent =
   | { type: "text"; content: string }
   | { type: "tool_exec"; name: string; summary: string }
-  | { type: "tool_done"; name: string; jump: { label: string; href: string } }
+  | {
+      type: "tool_done";
+      name: string;
+      jump: { label: string; href: string };
+      draft?: {
+        draftId?: string;
+        intent?: string;
+        goal?: string;
+        platform?: string | null;
+        readiness?: string;
+        missingFields?: string[];
+        plannedActions?: Array<{
+          type: string;
+          label: string;
+          risk: string;
+          requiresConfirmation: boolean;
+        }>;
+        riskSummary?: string | null;
+        hint?: string;
+      };
+    }
   | { type: "done" }
   | { type: "error"; message: string };
 

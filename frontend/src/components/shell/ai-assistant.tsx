@@ -21,6 +21,22 @@ interface ChatItem {
   toolName?: string;
   streaming?: boolean;
   jump?: { label: string; href: string };
+  draft?: {
+    draftId?: string;
+    intent?: string;
+    goal?: string;
+    platform?: string | null;
+    readiness?: string;
+    missingFields?: string[];
+    plannedActions?: Array<{
+      type: string;
+      label: string;
+      risk: string;
+      requiresConfirmation: boolean;
+    }>;
+    riskSummary?: string | null;
+    hint?: string;
+  };
 }
 
 const QUICK_PROMPTS = ["今天有什么热点选题？", "帮我检查一段文案有没有违禁词", "怎么提升内容质量？"];
@@ -199,6 +215,7 @@ export function AiAssistant({
                       ...item,
                       text: `已完成「${event.name}」`,
                       jump: event.jump,
+                      draft: event.draft,
                     };
                   }
                   return item;
@@ -547,6 +564,25 @@ export function AiAssistant({
                 >
                   {item.text}
                 </div>
+              ) : item.kind === "tool" && item.draft ? (
+                <DraftCard
+                  key={item.id}
+                  draft={item.draft}
+                  onDone={(msg) =>
+                    setItems((prev) => [
+                      ...prev.map((x) =>
+                        x.id === item.id
+                          ? { ...x, text: msg, draft: undefined }
+                          : x,
+                      ),
+                      {
+                        id: `a-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                        kind: "assistant",
+                        text: msg,
+                      },
+                    ])
+                  }
+                />
               ) : item.kind === "tool" ? (
                 <div
                   key={item.id}
@@ -820,5 +856,220 @@ export function AiAssistant({
         @keyframes kx-blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
       `}</style>
     </>
+  );
+}
+
+/** P3：任务草稿卡片（确认/执行）。意图 -> 草稿 -> 确认 -> 执行 */
+function DraftCard({
+  draft,
+  onDone,
+}: {
+  draft: NonNullable<ChatItem["draft"]>;
+  onDone: (msg: string) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [state, setState] = useState<
+    "draft" | "confirmed" | "executed" | "error"
+  >("draft");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const intentLabel: Record<string, string> = {
+    find_leads: "发现线索",
+    contact_leads: "触达线索",
+    sync_crm: "同步 CRM",
+    follow_up: "老客跟进",
+    report: "复盘报告",
+  };
+  const platformLabel: Record<string, string> = {
+    douyin: "抖音",
+    xiaohongshu: "小红书",
+    kuaishou: "快手",
+    "wechat-channel": "视频号",
+    bilibili: "B站",
+  };
+  const riskTone: Record<string, { bg: string; fg: string }> = {
+    low: { bg: "rgba(52,211,153,.16)", fg: "#6ee7b7" },
+    medium: { bg: "rgba(251,191,36,.16)", fg: "#fcd34d" },
+    high: { bg: "rgba(248,113,113,.18)", fg: "#fca5a5" },
+    blocked: { bg: "rgba(148,163,184,.2)", fg: "#cbd5e1" },
+  };
+
+  const confirm = async () => {
+    if (!draft.draftId || busy) return;
+    setBusy(true);
+    setErrorMsg("");
+    try {
+      const res = await fetch(`/api/ai/assistant/task-drafts/${draft.draftId}/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const json = (await res.json()) as { success?: boolean; message?: string };
+      if (!json.success) throw new Error(json.message || "确认失败");
+      setState("confirmed");
+    } catch (e) {
+      setState("error");
+      setErrorMsg((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const execute = async () => {
+    if (!draft.draftId || busy) return;
+    setBusy(true);
+    setErrorMsg("");
+    try {
+      const res = await fetch(`/api/ai/assistant/task-drafts/${draft.draftId}/execute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const json = (await res.json()) as { success?: boolean; message?: string };
+      if (!json.success) throw new Error(json.message || "执行失败");
+      setState("executed");
+      onDone("任务草稿已执行 ✅");
+    } catch (e) {
+      setState("error");
+      setErrorMsg((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        alignSelf: "flex-start",
+        maxWidth: "92%",
+        width: 380,
+        background: "rgba(30,30,46,.9)",
+        border: "1px solid rgba(139,92,246,.35)",
+        borderRadius: 14,
+        padding: "12px 14px",
+        fontSize: 13,
+        color: "#e2e8f0",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <span style={{ fontSize: 15 }}>📋</span>
+        <span style={{ fontWeight: 700, fontSize: 13.5 }}>
+          {intentLabel[draft.intent || ""] || "任务草稿"}
+        </span>
+        <span
+          style={{
+            marginLeft: "auto",
+            fontSize: 11,
+            padding: "2px 8px",
+            borderRadius: 999,
+            background: "rgba(139,92,246,.2)",
+            color: "#c4b5fd",
+          }}
+        >
+          {draft.platform ? platformLabel[draft.platform] || draft.platform : "未选平台"}
+        </span>
+      </div>
+
+      <div style={{ fontSize: 12.5, lineHeight: 1.6, color: "#cbd5e1", marginBottom: 8 }}>
+        {draft.goal}
+      </div>
+
+      {draft.readiness === "needs-input" && (
+        <div style={{ fontSize: 12, color: "#fcd34d", marginBottom: 8 }}>
+          ⚠️ 需要补充：{draft.missingFields?.join("、")}
+        </div>
+      )}
+
+      {draft.plannedActions && draft.plannedActions.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
+          {draft.plannedActions.map((a, i) => {
+            const tone = riskTone[a.risk] || riskTone.low;
+            return (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 12,
+                }}
+              >
+                <span
+                  style={{
+                    padding: "1px 7px",
+                    borderRadius: 999,
+                    background: tone.bg,
+                    color: tone.fg,
+                    fontSize: 10.5,
+                    flexShrink: 0,
+                  }}
+                >
+                  {a.risk}
+                </span>
+                <span style={{ color: "#e2e8f0" }}>{a.label}</span>
+                {a.requiresConfirmation && (
+                  <span style={{ color: "#94a3b8", fontSize: 10.5 }}>需确认</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {draft.riskSummary && (
+        <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 8 }}>
+          风险：{draft.riskSummary}
+        </div>
+      )}
+
+      {state === "error" && (
+        <div style={{ fontSize: 11.5, color: "#fca5a5", marginBottom: 8 }}>
+          ❌ {errorMsg}
+        </div>
+      )}
+
+      {state !== "executed" && (
+        <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+          {state === "draft" && (
+            <button
+              onClick={confirm}
+              disabled={busy}
+              style={{
+                flex: 1,
+                padding: "7px 0",
+                borderRadius: 8,
+                border: "1px solid rgba(139,92,246,.5)",
+                background: "rgba(139,92,246,.18)",
+                color: "#c4b5fd",
+                fontSize: 12.5,
+                cursor: busy ? "not-allowed" : "pointer",
+              }}
+            >
+              {busy ? "处理中…" : "确认草稿"}
+            </button>
+          )}
+          {state === "confirmed" && (
+            <button
+              onClick={execute}
+              disabled={busy}
+              style={{
+                flex: 1,
+                padding: "7px 0",
+                borderRadius: 8,
+                border: "1px solid rgba(52,211,153,.5)",
+                background: "rgba(52,211,153,.18)",
+                color: "#6ee7b7",
+                fontSize: 12.5,
+                cursor: busy ? "not-allowed" : "pointer",
+              }}
+            >
+              {busy ? "执行中…" : "执行任务"}
+            </button>
+          )}
+        </div>
+      )}
+      {state === "executed" && (
+        <span style={{ fontSize: 12.5, color: "#6ee7b7" }}>✅ 已执行</span>
+      )}
+    </div>
   );
 }

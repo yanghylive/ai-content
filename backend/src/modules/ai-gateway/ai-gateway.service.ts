@@ -611,7 +611,17 @@ export class AiGatewayService {
           );
           const jump = this.buildToolJump(intent.name, result);
           if (jump) {
-            send({ type: 'tool_done', name: intent.name, jump });
+            // task_draft 额外附草稿摘要供前端渲染草稿卡片（意图/风险/缺失字段）
+            const draftData =
+              intent.name === 'task_draft'
+                ? this.extractDraftCardData(result)
+                : undefined;
+            send({
+              type: 'tool_done',
+              name: intent.name,
+              jump,
+              ...(draftData ? { draft: draftData } : {}),
+            });
           }
           const serialized =
             typeof result === 'string' ? result : JSON.stringify(result);
@@ -862,6 +872,38 @@ export class AiGatewayService {
       });
     }
     return result;
+  }
+
+  /** 提取 task_draft 草稿卡片数据（前端渲染用） */
+  private extractDraftCardData(result: unknown): {
+    draftId?: string;
+    intent?: string;
+    goal?: string;
+    platform?: string | null;
+    readiness?: string;
+    missingFields?: string[];
+    plannedActions?: unknown[];
+    riskSummary?: string | null;
+    hint?: string;
+  } {
+    const r = (result ?? {}) as Record<string, unknown>;
+    return {
+      draftId: typeof r.draftId === 'string' ? r.draftId : undefined,
+      intent: typeof r.intent === 'string' ? r.intent : undefined,
+      goal: typeof r.goal === 'string' ? r.goal : undefined,
+      platform:
+        typeof r.platform === 'string' ? r.platform : (r.platform as string | null),
+      readiness: typeof r.readiness === 'string' ? r.readiness : undefined,
+      missingFields: Array.isArray(r.missingFields)
+        ? (r.missingFields as string[])
+        : undefined,
+      plannedActions: Array.isArray(r.plannedActions)
+        ? (r.plannedActions as unknown[])
+        : undefined,
+      riskSummary:
+        typeof r.riskSummary === 'string' ? r.riskSummary : (r.riskSummary as string | null),
+      hint: typeof r.hint === 'string' ? r.hint : undefined,
+    };
   }
 
   /** 工具执行完成后，给前端一个「查看结果」跳转（让用户能验证 AI 真干了） */
