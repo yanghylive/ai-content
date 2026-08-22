@@ -4025,3 +4025,20 @@ model GrowthTaskDraft {
   @@index([intent, status])
   @@map("growth_task_drafts")
 }
+
+// ============ P1 Lease：账号级外发租约（PRD §5 Lease，防同账号并发外发） ============
+model ExecutorLease {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  accountId String   @map("account_id") // 平台账号标识（payload.accountId）
+  deviceId  String   @map("device_id") // 执行设备
+  taskId    String   @map("task_id") // 关联任务
+  status    String   @default("active") // active | released
+  expiresAt DateTime @map("expires_at") // 租约过期时间（心跳续租）
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, accountId, status])
+  @@index([taskId])
+  @@map("executor_leases")
+}
