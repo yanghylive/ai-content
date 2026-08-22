@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { rpaStatus, captureScreen, executeActions, resumeAfterAsk, cancelActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
 import { planMaiUiActions, type MaiUiAction } from "@/lib/api/mai-ui";
+import { createMaiUiTask, reportTaskStatus } from "@/lib/api/mobile-executor";
 
 /** MAI-UI 手机端工作台：截屏 → 指令 → 规划动作 → 无障碍执行 → 人工确认 */
 export default function MaiUiWorkbenchPage() {
@@ -92,9 +93,30 @@ export default function MaiUiWorkbenchPage() {
         ? { ...a, bounds: mapBoundsToScreen(a.bounds, shotMeta) }
         : a,
     );
+    // P0-1：接入 ExecutorTask 受控任务流——建任务留痕 + running 占位防 agent 误领（2026-08-22）
+    let taskId = "";
+    try {
+      const task = await createMaiUiTask({
+        instruction: instruction.trim() || "手动执行动作序列",
+        actions: mapped as MaiUiAction[],
+      });
+      taskId = task.id;
+      await reportTaskStatus(taskId, { status: "running" });
+      pushLog(`📋 任务 ${taskId.slice(-6)} 已创建`);
+    } catch (e) {
+      pushLog(`⚠️ 任务创建失败（继续直接执行）：${e instanceof Error ? e.message : String(e)}`);
+    }
     const result = executeActions(mapped as MaiUiAction[]);
+    // 回传执行结果
+    if (taskId) {
+      try {
+        await reportTaskStatus(taskId, result.ok
+          ? { status: "done", result: { message: result.message } }
+          : { status: "failed", error: result.message });
+      } catch { /* 回传失败不阻塞 */ }
+    }
     if (result.ok) {
-      pushLog(`✅ ${result.message}`);
+      pushLog(`✅ ${result.message}${taskId ? `（任务 ${taskId.slice(-6)}）` : ""}`);
     } else if (result.message.startsWith("ASK_USER:")) {
       const question = result.message.replace(/^ASK_USER:/, "").split("|")[0];
       setPendingAsk(question);
@@ -103,7 +125,7 @@ export default function MaiUiWorkbenchPage() {
       pushLog(`❌ ${result.message}`);
     }
     setExecuting(false);
-  }, [actions, shotMeta, pushLog]);
+  }, [actions, shotMeta, instruction, pushLog]);
 
   const handleAskAnswer = useCallback(
     (proceed: boolean) => {
