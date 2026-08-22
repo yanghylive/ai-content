@@ -185,7 +185,6 @@ export class MultimodalService {
     };
   }
 
-
   /** kaypal 网关通道（回退） */
   private async generateImageViaKaypal(
     authUser: AuthenticatedUser,
@@ -314,7 +313,6 @@ export class MultimodalService {
     // 不允许 DASHSCOPE 直连（绕过计费）。移除直连分支，强制 kaypal 网关。
     return this.generateVideoViaKaypal(authUser, prompt, input);
   }
-
 
   /** kaypal 网关通道（计费走 kaypal.cn，未配置百炼直连 Key 时的主路径） */
   private async generateVideoViaKaypal(

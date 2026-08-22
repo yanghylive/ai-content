@@ -557,7 +557,9 @@ export class AiAssistantService {
         }
       }
       if (synced === 0) {
-        throw new BadRequestException('线索同步 CRM 失败，请检查线索数据后重试');
+        throw new BadRequestException(
+          '线索同步 CRM 失败，请检查线索数据后重试',
+        );
       }
       executed = true;
     } else if (row.intent === 'follow_up') {

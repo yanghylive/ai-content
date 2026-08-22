@@ -154,15 +154,15 @@ export class AiBrowserActionService {
 {"action":"extract","selector":"CSS选择器"}
 {"action":"wait","ms":毫秒}
 要求：最多 12 个动作；selector 用 text=文本 匹配可见文本；只返回 JSON 数组，不要 Markdown 代码块或解释。${
-  context?.snapshot
-    ? `
+              context?.snapshot
+                ? `
 
 【当前页面快照（决策依据，页面可能刚导航完成，DOM 已变化）】
 URL: ${context.url ?? '未知'}
 ${context.snapshot.slice(0, 2000)}
 请基于当前快照决定下一步动作——若快照中不存在目标元素，先执行 goto/导航到对应页面，不要对不存在的元素发 click/type。`
-    : ''
-}`,
+                : ''
+            }`,
           },
           { role: 'user', content: instruction },
         ],
@@ -569,7 +569,9 @@ ${context.snapshot.slice(0, 2000)}
       case 'goto':
         try {
           await page.goto(step.url, waitOptions);
-          await page.waitForLoadState('domcontentloaded').catch(() => undefined);
+          await page
+            .waitForLoadState('domcontentloaded')
+            .catch(() => undefined);
         } catch (error) {
           throw new BrowserActionError(
             'navigation_failed',

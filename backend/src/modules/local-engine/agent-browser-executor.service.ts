@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AiBrowserActionService, AiBrowserAction } from './ai-browser-action.service';
+import {
+  AiBrowserActionService,
+  AiBrowserAction,
+} from './ai-browser-action.service';
 
 /**
  * §7.4 AgentBrowserExecutor：接入统一执行器路由。
