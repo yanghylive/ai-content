@@ -18,6 +18,9 @@ import { LocalControllerBridgeService } from './local-controller-bridge.service'
 import { CdpBrowserProfileService } from './cdp-browser-profile.service';
 import { CdpBrowserSessionService } from './cdp-browser-session.service';
 import { AiBrowserActionService } from './ai-browser-action.service';
+import { AgentBrowserController } from './agent-browser.controller';
+import { AgentBrowserSessionService } from './agent-browser-session.service';
+import { AgentBrowserPolicyService } from './agent-browser-policy.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import { PlatformInteractionExecutor } from './platform-interaction-executor.service';
 import { XiaohongshuInteractionExecutor } from './xiaohongshu-interaction.executor';
@@ -43,6 +46,7 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     WechatPlanEditorController,
     AgentSController,
     McpController,
+    AgentBrowserController,
   ],
   providers: [
     KaypalRuntimeService,
@@ -57,6 +61,8 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     PlatformInteractionExecutor,
     XiaohongshuInteractionExecutor,
     AiBrowserActionService,
+    AgentBrowserSessionService,
+    AgentBrowserPolicyService,
     WechatPlanSchedulerService,
     WechatPlanEditorService,
     AgentSidecarService,
@@ -76,6 +82,8 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     PlatformInteractionExecutor,
     XiaohongshuInteractionExecutor,
     AiBrowserActionService,
+    AgentBrowserSessionService,
+    AgentBrowserPolicyService,
   ],
 })
 export class LocalEngineModule {}
