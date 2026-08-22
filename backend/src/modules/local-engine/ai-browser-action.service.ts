@@ -38,6 +38,8 @@ export interface AiBrowserRunInput {
     reason?: string;
     requiresConfirmation?: boolean;
   }>;
+  /** P4：已获用户确认的工具名（requiresConfirmation 的动作若在此列表才放行） */
+  confirmedTools?: string[];
 }
 
 export interface AiBrowserStepResult {
@@ -323,15 +325,21 @@ export class AiBrowserActionService {
           // §7.4 执行前策略拦截：policyGate 拒绝则跳过该步（不执行）
           if (input.policyGate) {
             const gate = await input.policyGate(step);
-            if (!gate.allowed) {
+            // 确认闸门：requiresConfirmation 的动作须在 confirmedTools 才放行
+            const confirmed = gate.requiresConfirmation
+              ? (input.confirmedTools ?? []).includes(step.action)
+              : true;
+            if (!gate.allowed || !confirmed) {
               this.logger.warn(
-                `ai-action step ${i} (${step.action}) 被策略阻断: ${gate.reason ?? '不在白名单'}`,
+                `ai-action step ${i} (${step.action}) 被策略阻断: ${gate.requiresConfirmation && !confirmed ? '需用户确认' : (gate.reason ?? '不在白名单')}`,
               );
               results.push({
                 index: i,
                 action: step.action,
                 ok: false,
-                message: `策略阻断：${gate.reason ?? '不在白名单'}`,
+                message: gate.requiresConfirmation && !confirmed
+                  ? `需用户确认后执行（高风险动作）`
+                  : `策略阻断：${gate.reason ?? '不在白名单'}`,
                 blocked: true,
               });
               continue;

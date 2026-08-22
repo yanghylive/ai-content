@@ -44,8 +44,9 @@ export class AgentBrowserLoopService {
   async run(
     sessionId: string,
     instruction: string,
-    onStep?: (event: AgentBrowserStepEvent) => void,
+    options: { onStep?: (event: AgentBrowserStepEvent) => void; confirmedTools?: string[] } = {},
   ): Promise<{ ok: boolean; steps: AgentBrowserStepEvent[] }> {
+    const { onStep, confirmedTools } = options;
     const session = this.sessions.get(sessionId);
     if (session.status !== 'running') {
       throw new BadRequestException(
@@ -103,8 +104,11 @@ export class AgentBrowserLoopService {
         return {
           allowed: audit.allowed,
           reason: audit.allowed ? undefined : audit.reason,
+          requiresConfirmation: audit.requiresConfirmation,
         };
       },
+      // 前端/调用方可传已确认的动作（如点击/填表），经确认闸门才放行
+      confirmedTools: confirmedTools ?? [],
     });
 
     // 3. Verify：逐步骤生成事件 + 逐步策略审计（§7.4 文档要求每步过策略）

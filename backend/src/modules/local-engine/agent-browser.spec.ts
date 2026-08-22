@@ -197,7 +197,10 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
       ],
     });
     const events: unknown[] = [];
-    const result = await loop.run(s.id, '搜索装修公司', (e) => events.push(e));
+    const result = await loop.run(s.id, '搜索装修公司', {
+      onStep: (e) => events.push(e),
+      confirmedTools: ['goto', 'click', 'type'],
+    });
 
     expect(result.ok).toBe(true);
     // 事件序列：snapshot -> 2 step -> done
@@ -268,8 +271,8 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
       ],
     });
     const events: unknown[] = [];
-    await loop.run(s.id, '点击按钮', (e) => events.push(e));
-    // click 步骤 message 应含策略标记
+    await loop.run(s.id, '点击按钮', { onStep: (e) => events.push(e) });
+    // Verify 阶段：click 标记风险需确认
     const step = events[1] as { message?: string };
     expect(step.message).toContain('风险动作');
   });
