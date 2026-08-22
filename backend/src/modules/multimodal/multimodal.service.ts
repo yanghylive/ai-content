@@ -529,12 +529,20 @@ export class MultimodalService {
         message?: string;
       } | null;
       if (!resp.ok || !payload?.taskId) {
-        const message =
+        const rawMessage =
           (typeof payload?.error === 'object' && payload.error?.message) ||
           (typeof payload?.error === 'string' ? payload.error : '') ||
           payload?.message ||
-          `HTTP ${resp.status}`;
-        throw new ServiceUnavailableException(`视频生成失败：${message}`);
+          '';
+        // 401/403：网关未授权（服务商 key 无视频权限/失效）→ 明确指引而非笼统失败
+        if (resp.status === 401 || resp.status === 403) {
+          throw new ServiceUnavailableException(
+            `视频生成未授权（HTTP ${resp.status}）：当前 kaypal 网关凭据无视频生成权限或已失效，请检查 KAYPAL_AI_PROXY_API_KEY 配置/账号权限后重试`,
+          );
+        }
+        throw new ServiceUnavailableException(
+          `视频生成失败：${rawMessage || `HTTP ${resp.status}`}`,
+        );
       }
       taskId = payload.taskId;
     } catch (err) {

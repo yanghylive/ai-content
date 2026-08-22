@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   ServiceUnavailableException,
@@ -161,7 +162,7 @@ export class RedfoxCollectService {
     input: { url: string },
   ): Promise<Record<string, unknown>> {
     const url = (input.url || '').trim();
-    if (!url) throw new ServiceUnavailableException('请提供爆款作品链接');
+    if (!url) throw new BadRequestException('请提供爆款作品链接');
 
     const scope = await this.redfoxService.resolveScope(authUser);
     const connection = await this.redfoxService.getEffectiveConnection(scope);
@@ -188,8 +189,8 @@ export class RedfoxCollectService {
     }
 
     if (!workData && !parseData) {
-      throw new ServiceUnavailableException(
-        '作品解析失败，请检查链接是否有效（抖音精选/视频作品链接）',
+      throw new BadRequestException(
+        '作品解析失败：链接无法识别为抖音视频作品（支持 video/note/modal_id 作品链接）',
       );
     }
 
@@ -197,8 +198,8 @@ export class RedfoxCollectService {
 
     // 解析出空数据（个人主页 / 收藏页 / 无效链接）→ 给明确提示，而不是返回空 work
     if (!summary.title && !summary.author) {
-      throw new ServiceUnavailableException(
-        '没有解析到作品信息，请复制具体视频作品的分享链接（个人主页或收藏页地址无法拆解）',
+      throw new BadRequestException(
+        '无法解析作品信息：请复制具体视频作品的分享链接。个人主页、收藏页、图集列表无法拆解；短视频短链（v.douyin.com/...）请先打开后再复制地址栏链接',
       );
     }
 
@@ -274,6 +275,17 @@ export class RedfoxCollectService {
     if (modalMatch?.[1]) return modalMatch[1];
     const videoMatch = url.match(/(?:video|share\/video|note)\/(\d{8,})/i);
     if (videoMatch?.[1]) return videoMatch[1];
+    // 小红书 explore/作品路径（noteId 32 位 hex 或纯数字）
+    const noteMatch = url.match(/(?:explore\/|discovery\/item\/)([0-9a-f]{24,32}|\d{8,})/i);
+    if (noteMatch?.[1]) return noteMatch[1];
+    // 明显不是作品页（个人主页/搜索/直播/合集）→ 空（上游会给出明确 400 提示）
+    if (/(?:user|profile|share\/user|search|live|collection|\/user\/)/i.test(url)) {
+      return '';
+    }
+    // v.douyin.com 短链：无法离线提取 → 空（提示用户先展开短链）
+    if (/v\.douyin\.com|iesdouyin|share\.douyin\.com/i.test(url)) {
+      return '';
+    }
     return '';
   }
 
