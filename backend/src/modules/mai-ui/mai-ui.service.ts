@@ -8,8 +8,101 @@ import { AiClientService } from '../ai-models/ai-client.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MAI_UI_SYSTEM_PROMPT } from './mai-ui.prompt';
 
-/** 视觉模型别名（ai_models.modelId），网关映射 qwen-vl-max */
-const VISION_MODEL_ALIAS = 'kaypal-vision';
+/**
+ * 视觉模型别名（ai_models.modelId）。
+ * kaypal-vision = kaypal 网关侧别名（映射 qwen-vl-max）；
+ * cmsvis0001visionkaypalvl = 本机/桌面库注册的 Kaypal 视觉模型（同映射）。
+ * P1（P5 门禁 2026-08-22）：单一 alias 查不到即 404，按别名列表逐个查找。
+ */
+const VISION_MODEL_ALIASES = ['kaypal-vision', 'cmsvis0001visionkaypalvl'];
+
+/** P2：单次规划最多返回的候选动作数（防止模型输出爆炸序列拖垮执行器） */
+const MAX_PLAN_ACTIONS = 20;
+
+/** P2：合法动作类型白名单（与 mai-ui.prompt.ts 的动作 schema 对齐） */
+const ALLOWED_ACTION_TYPES = [
+  'click',
+  'input',
+  'swipe',
+  'wait',
+  'back',
+  'home',
+  'ask_user',
+  'done',
+] as const;
+type MaiUiActionType = (typeof ALLOWED_ACTION_TYPES)[number];
+
+const SWIPE_DIRECTIONS = ['up', 'down', 'left', 'right'];
+
+/** 校验单个动作对象：类型白名单 + 字段形态 + bounds 坐标范围 */
+function validateMaiUiAction(
+  item: unknown,
+  width?: number,
+  height?: number,
+): string | null {
+  if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+    return '动作不是对象';
+  }
+  const action = item as Record<string, unknown>;
+  const type = action.action;
+  if (typeof type !== 'string' || !ALLOWED_ACTION_TYPES.includes(type as MaiUiActionType)) {
+    return `未知动作类型：${String(type)}`;
+  }
+  if ('bounds' in action && action.bounds !== undefined) {
+    const b = action.bounds;
+    if (!Array.isArray(b) || b.length !== 4 || !b.every((v) => typeof v === 'number' && Number.isFinite(v))) {
+      return `bounds 必须是 4 个数字 [x1, y1, x2, y2]：${JSON.stringify(b)}`;
+    }
+    const [x1, y1, x2, y2] = b as number[];
+    if (x1 >= x2 || y1 >= y2) {
+      return `bounds 非法：左上角必须小于右下角 [${x1}, ${y1}, ${x2}, ${y2}]`;
+    }
+    if (x1 < 0 || y1 < 0) {
+      return `bounds 不能为负：[${x1}, ${y1}, ${x2}, ${y2}]`;
+    }
+    // 提供截图尺寸时，坐标必须落在截图范围内
+    if (width && height && (x2 > width || y2 > height)) {
+      return `bounds 超出截图范围（${width}×${height}）：[${x1}, ${y1}, ${x2}, ${y2}]`;
+    }
+  }
+  if (type === 'click' && !('target' in action) && !('bounds' in action)) {
+    return 'click 动作缺少 target/bounds，执行器无法定位元素';
+  }
+  if (type === 'input' && typeof action.text !== 'string') {
+    return 'input 动作缺少 text 字段';
+  }
+  if (type === 'swipe' && !SWIPE_DIRECTIONS.includes(String(action.direction))) {
+    return `swipe direction 必须是 ${SWIPE_DIRECTIONS.join('/')}`;
+  }
+  if (type === 'wait' && (typeof action.ms !== 'number' || action.ms < 0 || action.ms > 60_000)) {
+    return 'wait.ms 必须是 0-60000 的毫秒数';
+  }
+  return null;
+}
+
+/** P2：校验动作序列——数量上限 + 逐项校验，返回合法动作与违规明细 */
+function validateMaiUiActions(
+  items: unknown[],
+  width?: number,
+  height?: number,
+): { actions: unknown[]; rejected: string[] } {
+  const rejected: string[] = [];
+  if (items.length > MAX_PLAN_ACTIONS) {
+    rejected.push(
+      `动作数 ${items.length} 超过上限 ${MAX_PLAN_ACTIONS}，仅取前 ${MAX_PLAN_ACTIONS} 个`,
+    );
+  }
+  const actions: unknown[] = [];
+  for (const item of items.slice(0, MAX_PLAN_ACTIONS)) {
+    const error = validateMaiUiAction(item, width, height);
+    if (error) {
+      rejected.push(error);
+      continue;
+    }
+    actions.push(item);
+  }
+  return { actions, rejected };
+}
 
 export interface MaiUiPlanInput {
   /** 手机截图 base64（png/jpeg） */
@@ -30,6 +123,8 @@ export interface MaiUiPlanResult {
   raw: string;
   model: string;
   parseError?: string;
+  /** P2：被校验拒绝的动作明细（类型白名单/坐标范围/数量上限） */
+  rejectedActions?: string[];
 }
 
 /** 从模型文本中稳健提取 JSON 数组（容忍 ```json 包裹与前后杂音） */
@@ -83,14 +178,19 @@ export class MaiUiService {
       throw new BadRequestException('imageBase64 内容过短，请传入完整截图');
     }
 
-    // 视觉模型按别名查（modelId=kaypal-vision，网关映射 qwen-vl-max）
+    // P1（P5 门禁 2026-08-22）：视觉模型按别名列表查找——
+    // 服务端别名 kaypal-vision 与本机注册名 cmsvis0001visionkaypalvl 任一命中即可，
+    // 并过滤 enabled（禁用模型不参与规划）。单一别名查不到即 404 是断链根因。
     const model = await this.prisma.aIModel.findFirst({
-      where: { modelId: VISION_MODEL_ALIAS },
+      where: {
+        modelId: { in: VISION_MODEL_ALIASES },
+        enabled: true,
+      },
       include: { platform: true },
     });
     if (!model) {
       throw new NotFoundException(
-        `未找到视觉模型 ${VISION_MODEL_ALIAS}（ai_models 表缺少该模型记录）`,
+        `未找到可用的视觉模型（ai_models 缺少任一启用的 ${VISION_MODEL_ALIASES.join(' / ')} 记录）`,
       );
     }
 
@@ -111,8 +211,8 @@ export class MaiUiService {
         imageBase64: input.imageBase64,
       });
 
-      const { value: actions, error } = extractJsonArray(raw);
-      if (!actions) {
+      const { value: parsedActions, error } = extractJsonArray(raw);
+      if (!parsedActions) {
         this.logger.warn(
           `MAI-UI 输出非 JSON（${error}），raw 前 120 字: ${raw.slice(0, 120)}`,
         );
@@ -125,10 +225,29 @@ export class MaiUiService {
         };
       }
 
+      // P2（P5 门禁 2026-08-22）：动作序列校验——类型白名单/坐标范围/数量上限，
+      // 违规项剔除并在 rejectedActions 留痕，避免把脏动作喂给执行器
+      const { actions, rejected } = validateMaiUiActions(
+        parsedActions,
+        input.width,
+        input.height,
+      );
+
+      if (rejected.length) {
+        this.logger.warn(
+          `MAI-UI 剔除 ${rejected.length} 个非法动作：${rejected.join('；')}`,
+        );
+      }
       this.logger.log(
         `MAI-UI 规划成功: ${actions.length} 个候选动作（${model.modelId}）`,
       );
-      return { ok: true, actions, raw, model: model.modelId };
+      return {
+        ok: actions.length > 0,
+        actions,
+        raw,
+        model: model.modelId,
+        ...(rejected.length ? { rejectedActions: rejected } : {}),
+      };
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       this.logger.error(`MAI-UI 视觉模型调用失败: ${message}`);

@@ -144,4 +144,56 @@ describe('PlanGuard', () => {
       ),
     ).rejects.toThrow(ForbiddenException);
   });
+
+  // P1（P5 门禁 2026-08-22）：本地套餐旁路必须绑定运行环境，
+  // 生产配置误继承时不得绕过授权检查
+  describe('local plan bypass environment binding', () => {
+    const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
+    afterEach(() => {
+      process.env.NODE_ENV = ORIGINAL_NODE_ENV;
+    });
+
+    it('bypass 开关 + 开发环境 → 放行（本地调试）', async () => {
+      process.env.NODE_ENV = 'development';
+      const guard = makeGuard(['FLAGSHIP'], true);
+      await expect(
+        guard.canActivate(makeContext(makeUser({ kaypalPlan: 'FREE' }))),
+      ).resolves.toBe(true);
+    });
+
+    it('bypass 开关 + 生产环境 → 不放行（走真实授权检查）', async () => {
+      process.env.NODE_ENV = 'production';
+      const guard = makeGuard(['STANDARD'], true);
+      // FREE 无商用授权 → 即使开了旁路也必须被拦
+      await expect(
+        guard.canActivate(
+          makeContext(
+            makeUser({
+              kaypalUserId: null,
+              kaypalPlan: 'FREE',
+              commercialExecutionAllowed: false,
+              planMode: 'trial',
+            }),
+          ),
+        ),
+      ).rejects.toThrow('缺少有效商用授权');
+    });
+
+    it('bypass 开关 + 空 NODE_ENV → 视为生产，不放行', async () => {
+      delete process.env.NODE_ENV;
+      const guard = makeGuard(['STANDARD'], true);
+      await expect(
+        guard.canActivate(
+          makeContext(
+            makeUser({
+              kaypalUserId: null,
+              kaypalPlan: 'FREE',
+              commercialExecutionAllowed: false,
+              planMode: 'trial',
+            }),
+          ),
+        ),
+      ).rejects.toThrow('缺少有效商用授权');
+    });
+  });
 });

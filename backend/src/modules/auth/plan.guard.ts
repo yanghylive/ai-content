@@ -58,7 +58,17 @@ export class PlanGuard implements CanActivate {
     return true;
   }
 
+  /**
+   * P1（P5 门禁 2026-08-22）：本地套餐门禁旁路只在开发环境生效——
+   * 仅检查环境变量会导致生产配置误继承后**所有套餐门禁被绕过**。
+   * 加双条件：bypass 开关 = true 且 NODE_ENV 为 development/test；
+   * 生产（production/空→视为生产）一律走真实授权检查。
+   */
   private allowLocalPlanBypass() {
-    return this.config.get<string>('KAYPAL_ALLOW_LOCAL_PLAN_BYPASS') === 'true';
+    if (this.config.get<string>('KAYPAL_ALLOW_LOCAL_PLAN_BYPASS') !== 'true') {
+      return false;
+    }
+    const nodeEnv = (process.env.NODE_ENV ?? '').trim();
+    return nodeEnv === 'development' || nodeEnv === 'test';
   }
 }
