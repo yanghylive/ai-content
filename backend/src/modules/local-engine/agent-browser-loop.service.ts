@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AiBrowserActionService } from './ai-browser-action.service';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
+import { PlaywrightMcpService } from './playwright-mcp.service';
 import { detectPromptInjection } from '../ai-gateway/ai-gateway.service';
 
 export interface AgentBrowserStepEvent {
@@ -32,6 +33,7 @@ export class AgentBrowserLoopService {
     private readonly sessions: AgentBrowserSessionService,
     private readonly actions: AiBrowserActionService,
     private readonly policy: AgentBrowserPolicyService,
+    private readonly playwrightMcp?: PlaywrightMcpService,
   ) {}
 
   /**
@@ -132,15 +134,50 @@ export class AgentBrowserLoopService {
   }
 
   /** Observe：快照当前页状态（URL + 可交互文本片段） */
+  /** Observe：真实 DOM/accessibility 快照（playwright-mcp browser_snapshot），失败回落 URL */
   async observe(
     sessionId: string,
-  ): Promise<{ type: 'snapshot'; ok: boolean; url?: string; message?: string }> {
+  ): Promise<{
+    type: 'snapshot';
+    ok: boolean;
+    url?: string;
+    message?: string;
+    snapshot?: string;
+  }> {
     const session = this.sessions.get(sessionId);
     try {
-      // 引擎 page 详情由 SessionService 维护的 engineKey 当前页 URL 近似；
-      // 更精确的 DOM snapshot 由 AiBrowserActionService 的 extract/截图承担。
-      // 这里只返回会话记录的当前 URL（避免重复打开浏览器页）。
-      // §9.3：快照内容若含注入模式，标记隔离（未来接入模型决策循环时先过此门）
+      // 真实无障碍树快照（若 playwright-mcp 可用）
+      if (this.playwrightMcp) {
+        try {
+          const res = await this.playwrightMcp.rpcCall(
+            {
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'tools/call',
+              params: {
+                name: 'browser_snapshot',
+                arguments: {},
+              },
+            } as never,
+            15_000,
+          );
+          const text = this.extractSnapshotText(res);
+          if (text) {
+            const injected = detectPromptInjection(text);
+            return {
+              type: 'snapshot',
+              ok: true,
+              url: session.url,
+              snapshot: injected ? undefined : text.slice(0, 4000),
+              message: injected
+                ? `快照（会话 ${sessionId}）— 检测到可疑注入内容，已隔离，不进入模型上下文`
+                : `DOM 快照（会话 ${sessionId}，${text.length} 字符，可交互元素已提取）`,
+            };
+          }
+        } catch {
+          // playwright-mcp 不可用则回落 URL 快照
+        }
+      }
       const snapshotText = `快照（会话 ${sessionId}，当前页 ${session.url || '未导航'}）`;
       const injected = detectPromptInjection(
         [snapshotText, session.url ?? ''].join('\n'),
@@ -160,6 +197,18 @@ export class AgentBrowserLoopService {
         message: `快照失败：${(error as Error).message}`,
       };
     }
+  }
+
+  /** 从 MCP tools/call 响应提取 snapshot 文本 */
+  private extractSnapshotText(
+    res: { result?: { content?: Array<{ type?: string; text?: string }> } },
+  ): string {
+    const content = res?.result?.content;
+    if (!Array.isArray(content)) return '';
+    return content
+      .map((item) => (typeof item.text === 'string' ? item.text : ''))
+      .join('\n')
+      .trim();
   }
 
   /** 执行器动作 → P4 工具白名单映射（用于逐步策略审计） */
