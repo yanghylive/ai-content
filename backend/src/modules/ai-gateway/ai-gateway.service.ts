@@ -680,7 +680,7 @@ export class AiGatewayService {
                   // 协议闭合标签：吞掉，不发给用户
                   tagProbe = '';
                 } else {
-                  send({ type: 'text', content: tagProbe });
+                  send({ type: 'text', content: this.sanitizeTextPiece(tagProbe) });
                 }
                 tagProbe = '';
               }
@@ -708,7 +708,7 @@ export class AiGatewayService {
               }
               continue;
             }
-            send({ type: 'text', content: piece });
+            send({ type: 'text', content: this.sanitizeTextPiece(piece) });
           }
           for (const tc of delta?.tool_calls ?? []) {
             const index = tc.index ?? 0;
@@ -723,7 +723,7 @@ export class AiGatewayService {
 
         // 流结束：补发探测缓冲中残留的普通文本
         if (tagProbe) {
-          send({ type: 'text', content: tagProbe });
+          send({ type: 'text', content: this.sanitizeTextPiece(tagProbe) });
         }
 
         const calls = toolCalls.filter((t) => t.id && t.name);
@@ -1500,6 +1500,32 @@ export class AiGatewayService {
         content: `\n\n📊 工具结果：${userFacing.join('；')}`,
       });
     }
+  }
+
+  /**
+   * 清洗发给用户的文本中的协议标签残片（P3 修复 2026-08-22）：
+   * 模型偶发输出畸形/残缺的 <function_calls><invoke> 片段（丢开始标签、裸 </invoke>、
+   * "}</invoke>" 等），此前原样发给用户导致看到原始 XML。只在明确的协议标签模式上清洗，
+   * 不触碰正常文本（裸 } 或括号不受影响）。
+   */
+  private sanitizeTextPiece(piece: string): string {
+    if (!piece) return piece;
+    return (
+      piece
+        // 完整或残缺的 <invoke name="...">...</invoke> 块
+        .replace(/<invoke\s+name="[^"]*"\s*>[\s\S]*?<\/invoke>/g, '')
+        // 裸协议标签（含带 `}` 前缀的闭合，如 `}</invoke>` / `}></invoke>`）
+        .replace(/\}?>\s*<\/?(?:invoke|function_calls|tool_calls|tool_call)\s*\/?>/g, '')
+        // 孤立 <invoke / <function_calls 开头（无闭合的残片）
+        .replace(/<invoke\s+name="?[^>]*$/g, '')
+        .replace(/<function_calls>/g, '')
+        .replace(/<tool_calls[^>]*>/g, '')
+        .replace(/<tool_call[^>]*>/g, '')
+        // 标签后紧跟的冗余 }（协议残留）
+        .replace(/<\/invoke>\s*\}/g, '')
+        .replace(/<\/function_calls>\s*\}/g, '')
+        .trim()
+    );
   }
 
   private xmlEscape(value: string): string {

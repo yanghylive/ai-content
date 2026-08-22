@@ -64,7 +64,7 @@ const SAVINGS_PROMPTS = [
 export const markdownComponents = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- node 是 react-markdown 内部注入属性，需从 props 剔除
   a: ({ node: _node, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => (
-    <a {...props} target="_blank" rel="noopener noreferrer" style={{ color: "#a5b4fc", textDecoration: "underline" }} />
+    <a {...props} target="_blank" rel="noopener noreferrer" style={{ color: "#c9d4ff", textDecoration: "underline" }} />
   ),
 };
 
@@ -435,7 +435,7 @@ export function AiAssistant({
                 aria-label="合规中心"
                 title="用户协议 · 隐私 · 投诉"
                 style={{
-                  background: "rgba(255,255,255,.08)",
+                  background: "#1a1d24",
                   border: "none",
                   color: "#d7e6f8",
                   width: 32,
@@ -451,7 +451,7 @@ export function AiAssistant({
                 type="button"
                 onClick={() => setOpen(false)}
                 style={{
-                  background: "rgba(255,255,255,.08)",
+                  background: "#1a1d24",
                   border: "none",
                   color: "#d7e6f8",
                   width: 32,
@@ -591,9 +591,9 @@ export function AiAssistant({
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
-                    background: "rgba(99,102,241,.14)",
+                    background: "#221e3a",
                     border: "1px solid rgba(129,140,248,.3)",
-                    color: "#a5b4fc",
+                    color: "#c9d4ff",
                     borderRadius: 12,
                     padding: "8px 12px",
                     fontSize: 12,
@@ -605,7 +605,7 @@ export function AiAssistant({
                     <a
                       href={item.jump.href}
                       style={{
-                        color: "#a5b4fc",
+                        color: "#c9d4ff",
                         textDecoration: "underline",
                         textUnderlineOffset: 3,
                       }}
@@ -620,9 +620,9 @@ export function AiAssistant({
                   style={{
                     alignSelf: "flex-start",
                     maxWidth: "88%",
-                    background: "rgba(255,255,255,.08)",
+                    background: "#1a1d24",
                     border: "1px solid rgba(142,165,190,.18)",
-                    color: "#e8f1fc",
+                    color: "#f4f8ff",
                     borderRadius: "16px 16px 16px 4px",
                     padding: "10px 14px",
                     fontSize: 14,
@@ -745,7 +745,7 @@ export function AiAssistant({
                     width: 44,
                     height: 44,
                     borderRadius: 22,
-                    background: "rgba(255,255,255,.08)",
+                    background: "#1a1d24",
                     border: "1px solid rgba(142,165,190,.25)",
                     color: "#d7e6f8",
                     fontSize: 17,
@@ -795,7 +795,7 @@ export function AiAssistant({
                     width: 44,
                     height: 44,
                     borderRadius: 22,
-                    background: "rgba(255,255,255,.08)",
+                    background: "#1a1d24",
                     border: "1px solid rgba(142,165,190,.25)",
                     color: "#d7e6f8",
                     fontSize: 17,
@@ -820,8 +820,8 @@ export function AiAssistant({
                     height: 44,
                     borderRadius: 22,
                     border: "1px solid rgba(142,165,190,.3)",
-                    background: "rgba(255,255,255,.08)",
-                    color: "#e8f1fc",
+                    background: "#1a1d24",
+                    color: "#f4f8ff",
                     fontSize: 14,
                     outline: "none",
                   }}
@@ -969,7 +969,7 @@ function DraftCard({
         </span>
       </div>
 
-      <div style={{ fontSize: 12.5, lineHeight: 1.6, color: "#cbd5e1", marginBottom: 8 }}>
+      <div style={{ fontSize: 12.5, lineHeight: 1.6, color: "#e2e8f0", marginBottom: 8 }}>
         {draft.goal}
       </div>
 
