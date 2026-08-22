@@ -344,6 +344,23 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     }
   });
 
+  it('acquire 补齐租约 tenantId（多租户隔离）', async () => {
+    const browser = makeBrowserMock();
+    const prismaMock = {
+      tenantMember: {
+        findFirst: jest.fn().mockResolvedValue({ tenantId: 't-tenant-1' }),
+      },
+    };
+    const svc = new AgentBrowserSessionService(
+      browser as never,
+      prismaMock as never,
+    );
+    const s = svc.create('u-1', {});
+    expect(s.lease?.tenantId).toBeUndefined();
+    await svc.acquireEngineSession(s.id);
+    expect(svc.get(s.id).lease?.tenantId).toBe('t-tenant-1');
+  });
+
   it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
     const browser = makeBrowserMock();
     const sessionSvc = new AgentBrowserSessionService(browser as never);
