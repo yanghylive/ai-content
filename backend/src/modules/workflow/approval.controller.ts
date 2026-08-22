@@ -1,6 +1,7 @@
 // 审批中心端点（Sprint 3 ApprovalGateService + 前端入口打通，Sprint 5）
 // 高风险动作（首次私信/批量评论/批量触达/商机阶段变化）的审批列表与操作。
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -44,6 +45,47 @@ export class ApprovalController {
       tenantId,
       Math.min(Number(limit) || 50, 200),
     );
+  }
+
+  @Post()
+  @ApiOperation({
+    summary: '创建审批（MAI-UI 外发动作：一次性+短时+内容 hash 绑定）',
+  })
+  async createApproval(
+    @Body()
+    body: {
+      actionType: string;
+      riskLevel?: string;
+      inputHash: string;
+      actionId: string;
+      reason?: string;
+    },
+  ) {
+    const { userId, tenantId } = await this.requireUser();
+    if (!body.actionType || !body.inputHash || !body.actionId) {
+      throw new BadRequestException('缺少 actionType/inputHash/actionId');
+    }
+    const riskLevel = body.riskLevel || 'medium';
+    const created = await this.prisma.approval.create({
+      data: {
+        tenantId,
+        userId,
+        actionId: body.actionId,
+        actionType: body.actionType,
+        riskLevel,
+        inputHash: body.inputHash,
+        affectedLeadIds: [],
+        excludedLeadIds: [],
+        status: 'pending',
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 分钟短时
+      },
+    });
+    return {
+      id: created.id,
+      status: created.status,
+      riskLevel: created.riskLevel,
+      expiresAt: created.expiresAt,
+    };
   }
 
   @Post(':id/act')

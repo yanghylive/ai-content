@@ -104,3 +104,41 @@ export async function listTaskEvidence(taskId: string): Promise<ExecutorEvidence
 export async function listActiveLeases(): Promise<ExecutorLeaseView[]> {
   return api.get<ExecutorLeaseView[]>("/mobile-executor/leases");
 }
+
+/** 创建一次性审批（MAI-UI 外发动作：短时 5min + inputHash 绑定） */
+export async function createApproval(input: {
+  actionType: string;
+  riskLevel?: string;
+  inputHash: string;
+  actionId: string;
+  reason?: string;
+}): Promise<{ id: string; status: string; riskLevel: string; expiresAt: string }> {
+  return api.post<{ id: string; status: string; riskLevel: string; expiresAt: string }>(
+    "/approvals",
+    input,
+  );
+}
+
+/** 审批操作（approve/reject/...）；重复操作被拒绝（一次性） */
+export async function actApproval(
+  approvalId: string,
+  action: "approve" | "reject" | "expire",
+  reason?: string,
+): Promise<{ status: string }> {
+  return api.post<{ status: string }>(`/approvals/${approvalId}/act`, {
+    action,
+    reason,
+  });
+}
+
+/** SHA-256 摘要（内容 hash，审批绑定防篡改） */
+export async function sha256Hex(text: string): Promise<string> {
+  if (typeof crypto !== "undefined" && crypto.subtle) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  // 无 WebCrypto 兜底（简单 djb2）
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(16);
+}
