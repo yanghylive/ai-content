@@ -263,6 +263,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
     await sessionSvc.acquireEngineSession(s.id);
     const playwrightMcpMock = {
+      ensureProfile: jest.fn().mockResolvedValue({}),
       rpcCall: jest.fn().mockResolvedValue({
         result: {
           content: [{ type: 'text', text: 'button 搜索\ninput 关键词' }],
@@ -282,6 +283,11 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     expect(snap.ok).toBe(true);
     expect(snap.snapshot).toContain('搜索');
     expect(snap.message).toContain('DOM 快照');
+    // 先绑定会话 profile（同页面快照）
+    expect(playwrightMcpMock.ensureProfile).toHaveBeenCalledWith({
+      platform: 'general-web',
+      accountId: s.accountId,
+    });
   });
 
   it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
