@@ -22,7 +22,7 @@ export type ScrapedArticle = {
 };
 
 const FETCH_TIMEOUT_MS = 10_000;
-const MAX_HTML_BYTES = 2 * 1024 * 1024;
+const MAX_HTML_BYTES = 8 * 1024 * 1024;
 const MAX_REDIRECTS = 5;
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
@@ -124,7 +124,7 @@ export class ArticleScraperService {
 
       const buffer = Buffer.from(await response.arrayBuffer());
       if (buffer.length > MAX_HTML_BYTES) {
-        throw new Error(`页面过大 (${buffer.length} bytes)`);
+        throw new Error(`页面过大（${(buffer.length / 1024 / 1024).toFixed(1)}MB > 8MB 上限），请改用移动端页面或原文链接`);
       }
 
       return buffer.toString('utf8');

@@ -92,3 +92,20 @@ describe('ArticleScraperService', () => {
     }
   });
 });
+
+describe('ArticleScraperService E 类页面阈值（真机上报修复）', () => {
+  it('大页面拒绝信息含友好提示（含 8MB 上限说明）', async () => {
+    const { ArticleScraperService } = require('./article-scraper.service');
+    const svc = new ArticleScraperService();
+    // mock fetch 返回 9MB 页面 → 触发阈值拒绝
+    const big = Buffer.alloc(9 * 1024 * 1024, 'a');
+    (globalThis as Record<string, unknown>).fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(big),
+    }) as never;
+    const scraper = svc as unknown as { fetchHtml(url: string): Promise<string> };
+    await expect(
+      (scraper.fetchHtml as (u: string) => Promise<string>)('https://example.com/article'),
+    ).rejects.toThrow(/8MB 上限|页面过大/);
+  });
+});
