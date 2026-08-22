@@ -78,15 +78,33 @@ export class AgentBrowserLoopService {
       accountId: session.accountId,
     });
 
-    // 3. Verify：逐步骤生成事件 + 域名审计（白名单外的 URL 变更标记风险）
+    // 3. Verify：逐步骤生成事件 + 逐步策略审计（§7.4 文档要求每步过策略）
     for (let i = 0; i < actResult.results.length; i++) {
       const r = actResult.results[i];
+      // 每步动作过 PolicyService 审计（工具映射：goto→navigate 等）
+      const policyTool = this.mapTool(r.action);
+      const audit = policyTool
+        ? this.policy.audit(
+            policyTool,
+            { url: r.evidenceUrl ?? session.url },
+            { url: session.url, allowDomains: session.allowDomains },
+          )
+        : null;
       const stepEvent: AgentBrowserStepEvent = {
         type: 'step',
         stepIndex: i,
         action: r.action,
         ok: r.ok,
-        message: r.message,
+        message: [
+          r.message,
+          audit && !audit.allowed
+            ? `（策略阻断：${audit.reason ?? '不在白名单'}）`
+            : audit?.requiresConfirmation
+              ? `（${audit.riskLevel}风险动作，已标记需确认）`
+              : undefined,
+        ]
+          .filter(Boolean)
+          .join(' '),
         url: r.evidenceUrl,
         extractText: r.extractText,
       };
@@ -141,6 +159,26 @@ export class AgentBrowserLoopService {
         ok: false,
         message: `快照失败：${(error as Error).message}`,
       };
+    }
+  }
+
+  /** 执行器动作 → P4 工具白名单映射（用于逐步策略审计） */
+  private mapTool(action: string): 'navigate' | 'snapshot' | 'click' | 'fill_form' | 'press_key' | 'wait_for' | 'tabs' | 'extract_text' | null {
+    switch (action) {
+      case 'goto':
+        return 'navigate';
+      case 'type':
+        return 'fill_form';
+      case 'click':
+        return 'click';
+      case 'extract':
+        return 'extract_text';
+      case 'wait':
+        return 'wait_for';
+      case 'screenshot':
+        return 'snapshot';
+      default:
+        return null;
     }
   }
 

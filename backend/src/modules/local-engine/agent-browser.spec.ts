@@ -226,6 +226,23 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     expect(() => svc.assertOwner(s.id, 'u-attacker')).toThrow();
   });
 
+  it('逐步审计：click 步骤被标记中风险需确认', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop } = makeLoop(sessionSvc, {
+      results: [
+        { index: 0, action: 'click', ok: true, evidenceUrl: 'ev/1' },
+      ],
+    });
+    const events: unknown[] = [];
+    await loop.run(s.id, '点击按钮', (e) => events.push(e));
+    // click 步骤 message 应含策略标记
+    const step = events[1] as { message?: string };
+    expect(step.message).toContain('风险动作');
+  });
+
   it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
     const browser = makeBrowserMock();
     const sessionSvc = new AgentBrowserSessionService(browser as never);
