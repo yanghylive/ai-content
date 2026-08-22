@@ -38,12 +38,30 @@ export interface AiBrowserRunInput {
     reason?: string;
     requiresConfirmation?: boolean;
   }>;
-  /** P4：已获用户确认的工具名（requiresConfirmation 的动作若在此列表才放行） */
-  confirmedTools?: string[];
+  /**
+   * P4：已获用户确认的精确动作（绑定 action+target+url，避免放行整类工具）。
+   * requiresConfirmation 的动作须有精确匹配的确认项才放行。
+   */
+  confirmedTools?: Array<{
+    action: string;
+    target?: string;
+    url?: string;
+  }>;
   /** §14.2 最大动作数（超过截断） */
   maxActions?: number;
   /** §14.2 失败重试次数 */
   maxRetries?: number;
+}
+
+/** 精确确认匹配：action 必匹配，target/url 提供则必须一致 */
+export function matchesConfirmedAction(
+  confirmed: { action: string; target?: string; url?: string },
+  step: AiBrowserAction,
+): boolean {
+  if (confirmed.action !== step.action) return false;
+  if ('url' in step && confirmed.url && confirmed.url !== step.url) return false;
+  if ('selector' in step && confirmed.target && confirmed.target !== step.selector) return false;
+  return true;
 }
 
 export interface AiBrowserStepResult {
@@ -334,9 +352,11 @@ export class AiBrowserActionService {
           // §7.4 执行前策略拦截：policyGate 拒绝则跳过该步（不执行）
           if (input.policyGate) {
             const gate = await input.policyGate(step);
-            // 确认闸门：requiresConfirmation 的动作须在 confirmedTools 才放行
+            // 确认闸门：requiresConfirmation 的动作须精确匹配确认项（action+target+url）
             const confirmed = gate.requiresConfirmation
-              ? (input.confirmedTools ?? []).includes(step.action)
+              ? (input.confirmedTools ?? []).some((c) =>
+                  matchesConfirmedAction(c, step),
+                )
               : true;
             if (!gate.allowed || !confirmed) {
               this.logger.warn(
