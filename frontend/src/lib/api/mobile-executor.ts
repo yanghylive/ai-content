@@ -1,53 +1,52 @@
-import { api } from "./client";
+import { api } from "@/lib/api/client";
+import type { MaiUiAction } from "@/lib/mobile-bridge";
 
-/** 手机执行器设备（agent 注册的心跳设备） */
-export interface MobileExecutorDevice {
-  id: string;
-  deviceName: string;
-  platform: string;
-  status: "online" | "offline";
-  lastHeartbeatAt?: string | null;
-}
-
-/** 手机执行器任务 */
-export interface MobileExecutorTask {
+/** ExecutorTask 视图（mobile-executor 任务） */
+export interface ExecutorTaskView {
   id: string;
   type: string;
-  payload: Record<string, unknown>;
+  payload: unknown;
   status: "queued" | "claimed" | "running" | "done" | "failed" | "cancelled";
+  result?: unknown;
   createdAt: string;
 }
 
-export interface CreateDeviceTaskInput {
-  platform: string;
-  action: "dm-reply";
-  content: string;
+/** 创建 MAI-UI 执行任务（type=custom，payload 携带动作序列，留痕+防 agent 误领） */
+export async function createMaiUiTask(input: {
+  instruction: string;
+  actions: MaiUiAction[];
+}): Promise<ExecutorTaskView> {
+  const data = await api.post<ExecutorTaskView>("/mobile-executor/tasks", {
+    type: "custom",
+    payload: {
+      mode: "mai-ui",
+      instruction: input.instruction,
+      actionCount: input.actions.length,
+      actions: input.actions,
+    },
+  });
+  return data;
 }
 
-/**
- * 手机执行器 API（全自动 RPA）：
- * 设备列表 + 创建自动执行任务（设备 agent 领取后由无障碍驱动目标 App 执行）。
- */
-export const mobileExecutorApi = {
-  /** 我的设备列表（含在线状态） */
-  devices(): Promise<MobileExecutorDevice[]> {
-    return api.get<MobileExecutorDevice[]>("/mobile-executor/devices");
+/** 回传任务状态（running 占位 / done / failed） */
+export async function reportTaskStatus(
+  taskId: string,
+  input: {
+    status: "running" | "done" | "failed";
+    result?: Record<string, unknown>;
+    error?: string;
   },
+): Promise<{ id: string; status: string }> {
+  return api.post<{ id: string; status: string }>(
+    `/mobile-executor/tasks/${taskId}/status`,
+    input,
+  );
+}
 
-  /** 我的任务列表 */
-  tasks(limit = 10): Promise<MobileExecutorTask[]> {
-    return api.get<MobileExecutorTask[]>(`/mobile-executor/tasks?limit=${limit}`);
-  },
-
-  /** 创建自动回复任务（type=custom，设备领取后 RPA 执行） */
-  createDmReplyTask(input: CreateDeviceTaskInput): Promise<MobileExecutorTask> {
-    return api.post<MobileExecutorTask>("/mobile-executor/tasks", {
-      type: "custom",
-      payload: {
-        platform: input.platform,
-        action: input.action,
-        content: input.content,
-      },
-    });
-  },
-};
+/** 我的任务列表 */
+export async function listExecutorTasks(limit = 10): Promise<ExecutorTaskView[]> {
+  const data = await api.get<ExecutorTaskView[]>(
+    `/mobile-executor/tasks?limit=${limit}`,
+  );
+  return data;
+}
