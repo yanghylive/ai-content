@@ -83,6 +83,11 @@ export class AgentBrowserController {
     return this.sessions.get(id);
   }
 
+  @Get('sessions/:id/events')
+  events(@Param('id') id: string) {
+    return this.sessions.listEvents(id);
+  }
+
   @Post('sessions/:id/stop')
   @HttpCode(202)
   async stop(@Param('id') id: string) {
