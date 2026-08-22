@@ -243,6 +243,33 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     expect(step.message).toContain('风险动作');
   });
 
+  it('observe：playwright-mcp 可用时返回真实 DOM 快照', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
+    await sessionSvc.acquireEngineSession(s.id);
+    const playwrightMcpMock = {
+      rpcCall: jest.fn().mockResolvedValue({
+        result: {
+          content: [{ type: 'text', text: 'button 搜索\ninput 关键词' }],
+        },
+      }),
+    };
+    const { AgentBrowserLoopService } = require('./agent-browser-loop.service');
+    const { AiBrowserActionService } = require('./ai-browser-action.service');
+    const { AgentBrowserPolicyService } = require('./agent-browser-policy.service');
+    const loop = new AgentBrowserLoopService(
+      sessionSvc,
+      Object.create(AiBrowserActionService.prototype) as never,
+      new AgentBrowserPolicyService(),
+      playwrightMcpMock as never,
+    );
+    const snap = await loop.observe(s.id);
+    expect(snap.ok).toBe(true);
+    expect(snap.snapshot).toContain('搜索');
+    expect(snap.message).toContain('DOM 快照');
+  });
+
   it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
     const browser = makeBrowserMock();
     const sessionSvc = new AgentBrowserSessionService(browser as never);
