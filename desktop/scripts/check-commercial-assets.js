@@ -53,7 +53,7 @@ const requiredPaths = [
         ],
       ]
     : []),
-  ['desktop backend env', path.join(desktopRoot, 'backend.env')],
+  ['desktop backend env (shipped placeholder template)', path.join(desktopRoot, 'backend.env.example')],
   ['Playwright MCP CLI', path.join(repoRoot, 'backend', 'node_modules', '@playwright', 'mcp', 'cli.js')],
   ['Playwright MCP bundled dependencies', path.join(repoRoot, 'backend', 'node_modules', '@playwright', 'mcp', 'node_modules')],
   ['Playwright package', path.join(repoRoot, 'backend', 'node_modules', 'playwright', 'package.json')],
@@ -81,7 +81,7 @@ assertSourceReleaseGuards(
   {
     desktopRoot,
     mainJs: path.join(desktopRoot, 'main.js'),
-    backendEnv: path.join(desktopRoot, 'backend.env'),
+    backendEnv: path.join(desktopRoot, 'backend.env.example'),
     backendBundle: backendBundlePath,
     sqliteSeed: path.join(repoRoot, 'backend', 'prisma', 'dev.db'),
   },

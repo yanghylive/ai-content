@@ -9,7 +9,8 @@ const require = createRequire("/Users/yanghy/Documents/New project/ai-content/ba
 const { chromium } = require("playwright");
 
 const BASE = "http://127.0.0.1:3010";
-const TOKEN = "u4-DdJ0_-KBI4T0Nh9KUN3re2vMVIrzNuDhB3wRajbw";
+const TOKEN = process.env.TEST_SESSION_TOKEN;
+if (!TOKEN) { console.error("缺少 TEST_SESSION_TOKEN 环境变量（会话 token 不再硬编码入库）"); process.exit(1); }
 const ROUTES = fs.readFileSync("/tmp/all-routes.txt", "utf8").split("\n").filter(Boolean);
 
 // 跳过需要外部设备/特殊环境的（本地引擎设备、重交互页）
