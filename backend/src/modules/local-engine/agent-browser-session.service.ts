@@ -28,8 +28,12 @@ export class AgentBrowserSessionService implements OnModuleInit {
   /** P4 持久化：会话/事件落盘路径（进程重启可恢复审计与证据链） */
   private readonly storePath: string;
 
-  constructor(private readonly browser: LocalBrowserEngine) {
-    this.storePath = resolveProjectDataPath('agent-browser', 'sessions.json');
+  constructor(
+    private readonly browser: LocalBrowserEngine,
+    storePath?: string,
+  ) {
+    this.storePath =
+      storePath ?? resolveProjectDataPath('agent-browser', 'sessions.json');
   }
 
   onModuleInit(): void {
@@ -136,8 +140,10 @@ export class AgentBrowserSessionService implements OnModuleInit {
     return session;
   }
 
-  list(): AgentBrowserSessionDto[] {
+  /** 只返回当前用户（owner）的会话——防跨用户泄露 */
+  list(ownerId: string): AgentBrowserSessionDto[] {
     return [...this.sessions.values()]
+      .filter((s) => s.lease?.ownerId === ownerId)
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
       .map((s) => this.toDto(s));
   }
@@ -257,6 +263,11 @@ export class AgentBrowserSessionService implements OnModuleInit {
 
   private toDto(s: AgentBrowserSession): AgentBrowserSessionDto {
     const { engineKey: _engineKey, ...dto } = s;
+    // 剔除 ownerId（防跨用户信息泄露）；保留租约其余字段（过期时间等）
+    if (dto.lease) {
+      const { ownerId: _ownerId, ...leaseRest } = dto.lease;
+      dto.lease = leaseRest as AgentBrowserSessionDto['lease'];
+    }
     return dto;
   }
 }
