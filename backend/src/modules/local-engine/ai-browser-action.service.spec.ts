@@ -276,3 +276,55 @@ describe('AiBrowserActionService §7.4 状态语义', () => {
     expect(result.ok).toBe(true);
   });
 });
+
+describe('AiBrowserActionService §7.4 执行前策略拦截', () => {
+  it('policyGate 拒绝时动作不执行（executeStep 不调用）', async () => {
+    const { AiBrowserActionService } = require('./ai-browser-action.service');
+    const svc = Object.create(AiBrowserActionService.prototype) as any;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    svc.parseWithAi = jest.fn().mockResolvedValue([
+      { action: 'goto', url: 'https://example.com' },
+    ]);
+    svc.browser = {
+      getOrCreateSession: jest.fn().mockResolvedValue({
+        key: 'k-3',
+        page: { url: () => '', goto: jest.fn() },
+      }),
+      captureEvidence: jest.fn().mockResolvedValue({ url: 'ev' }),
+    };
+    svc.executeStep = jest.fn().mockResolvedValue({ evidenceUrl: 'ev1' });
+    const result = await svc.run({
+      instruction: '打开',
+      url: 'https://example.com',
+      policyGate: async () => ({ allowed: false, reason: '域名不在白名单' }),
+    });
+    expect(svc.executeStep).not.toHaveBeenCalled();
+    expect(result.results[0].blocked).toBe(true);
+    expect(result.results[0].message).toContain('策略阻断');
+  });
+
+  it('policyGate 放行时正常执行', async () => {
+    const { AiBrowserActionService } = require('./ai-browser-action.service');
+    const svc = Object.create(AiBrowserActionService.prototype) as any;
+    svc.logger = { warn: jest.fn(), log: jest.fn() };
+    svc.parseWithAi = jest.fn().mockResolvedValue([
+      { action: 'goto', url: 'https://example.com' },
+    ]);
+    svc.browser = {
+      getOrCreateSession: jest.fn().mockResolvedValue({
+        key: 'k-4',
+        page: { url: () => '', goto: jest.fn() },
+      }),
+      captureEvidence: jest.fn().mockResolvedValue({ url: 'ev' }),
+    };
+    svc.executeStep = jest.fn().mockResolvedValue({ evidenceUrl: 'ev1' });
+    const result = await svc.run({
+      instruction: '打开',
+      url: 'https://example.com',
+      policyGate: async () => ({ allowed: true }),
+    });
+    expect(svc.executeStep).toHaveBeenCalled();
+    expect(result.results[0].ok).toBe(true);
+    expect(result.results[0].blocked).toBeUndefined();
+  });
+});

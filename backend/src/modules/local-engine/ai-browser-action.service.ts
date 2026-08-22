@@ -32,6 +32,12 @@ export interface AiBrowserRunInput {
   timeoutMs?: number;
   /** P4：会话独立 accountId（缺省回落 ai-agent 保兼容）——真正用会话自己的 Profile 执行 */
   accountId?: string;
+  /** P4：执行前策略门——每步动作执行前调用，allowed=false 阻断该步（不执行） */
+  policyGate?: (action: AiBrowserAction) => Promise<{
+    allowed: boolean;
+    reason?: string;
+    requiresConfirmation?: boolean;
+  }>;
 }
 
 export interface AiBrowserStepResult {
@@ -41,6 +47,8 @@ export interface AiBrowserStepResult {
   message?: string;
   evidenceUrl?: string;
   extractText?: string;
+  /** §7.4 执行前被策略阻断（未执行） */
+  blocked?: boolean;
 }
 
 interface RawAiActionItem {
@@ -312,6 +320,23 @@ export class AiBrowserActionService {
       for (let i = 0; i < actions.length; i++) {
         const step = actions[i];
         try {
+          // §7.4 执行前策略拦截：policyGate 拒绝则跳过该步（不执行）
+          if (input.policyGate) {
+            const gate = await input.policyGate(step);
+            if (!gate.allowed) {
+              this.logger.warn(
+                `ai-action step ${i} (${step.action}) 被策略阻断: ${gate.reason ?? '不在白名单'}`,
+              );
+              results.push({
+                index: i,
+                action: step.action,
+                ok: false,
+                message: `策略阻断：${gate.reason ?? '不在白名单'}`,
+                blocked: true,
+              });
+              continue;
+            }
+          }
           const stepResult = await this.executeStep(
             session.key,
             session.page,
