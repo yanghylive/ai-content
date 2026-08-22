@@ -140,6 +140,16 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
   const { AiBrowserActionService } = require('./ai-browser-action.service');
   const { AgentBrowserPolicyService } = require('./agent-browser-policy.service');
 
+  // feature flag：测试用 dom-agent 模式 + 允许写（跑通 Observe-Act-Verify）
+  const ORIG_ENV = { ...process.env };
+  beforeAll(() => {
+    process.env.AGENT_BROWSER_MODE = 'dom-agent';
+    process.env.AGENT_BROWSER_ALLOW_WRITE = 'true';
+  });
+  afterAll(() => {
+    process.env = ORIG_ENV;
+  });
+
   function makeLoop(sessionSvc: AgentBrowserSessionService, argsOpts?: { results?: unknown[]; ok?: boolean; actions?: unknown[] }) {
     const actionsMock = {
       run: jest.fn().mockResolvedValue({
@@ -288,6 +298,40 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
       platform: 'general-web',
       accountId: s.accountId,
     });
+  });
+
+  it('feature flag：AGENT_BROWSER_MODE=legacy 拒绝 run', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
+    const s = sessionSvc.create('u-1', {});
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop } = makeLoop(sessionSvc);
+    const saved = process.env.AGENT_BROWSER_MODE;
+    process.env.AGENT_BROWSER_MODE = 'legacy';
+    try {
+      await expect(loop.run(s.id, '搜索')).rejects.toThrow('灰度开关关闭');
+    } finally {
+      if (saved === undefined) delete process.env.AGENT_BROWSER_MODE;
+      else process.env.AGENT_BROWSER_MODE = saved;
+    }
+  });
+
+  it('feature flag：ALLOW_WRITE=false 拒绝写指令', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(browser as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
+    const s = sessionSvc.create('u-1', {});
+    await sessionSvc.acquireEngineSession(s.id);
+    const { loop } = makeLoop(sessionSvc);
+    const saved = process.env.AGENT_BROWSER_ALLOW_WRITE;
+    process.env.AGENT_BROWSER_ALLOW_WRITE = 'false';
+    try {
+      await expect(loop.run(s.id, '在输入框填写内容并提交')).rejects.toThrow(
+        '写操作未开启',
+      );
+    } finally {
+      if (saved === undefined) delete process.env.AGENT_BROWSER_ALLOW_WRITE;
+      else process.env.AGENT_BROWSER_ALLOW_WRITE = saved;
+    }
   });
 
   it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
