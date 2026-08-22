@@ -204,6 +204,26 @@ describe('AiAssistantService P3 租户隔离', () => {
     expect(result).toBe('legacy-local-desktop');
   });
 
+  it('listDrafts：查询带 tenantId 条件（防跨租户读）', async () => {
+    const { AiAssistantService } = require('./ai-assistant.service');
+    const svc = Object.create(AiAssistantService.prototype) as any;
+    const findMany = jest.fn().mockResolvedValue([]);
+    svc.prisma = {
+      growthTaskDraft: { findMany },
+    };
+    svc.toDto = (r: unknown) => r;
+    svc.resolveTenantId = jest.fn().mockResolvedValue('t-real-1');
+    await svc.listDrafts('u-1', 'draft');
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: 'u-1',
+          tenantId: 't-real-1',
+        }),
+      }),
+    );
+  });
+
   it('resolveTenantId：异常回落 legacy（不阻断）', async () => {
     const { AiAssistantService } = require('./ai-assistant.service');
     const svc = Object.create(AiAssistantService.prototype) as any;
