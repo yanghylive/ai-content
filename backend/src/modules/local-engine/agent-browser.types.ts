@@ -49,6 +49,8 @@ export interface AgentBrowserLease {
   acquiredAt: string;
   expiresAt: string;
   ownerId: string;
+  /** §7.4 租户级隔离：会话所属租户（多租户用户可区分） */
+  tenantId?: string;
 }
 
 /** Agent Browser 循环事件（Observe-Act-Verify 过程记录） */
@@ -83,6 +85,8 @@ export interface AgentBrowserSessionDto {
 export interface AgentBrowserSession extends AgentBrowserSessionDto {
   engineKey: string;
   allowDomains: string[];
+  /** §7.4 会话租户（多租户隔离） */
+  tenantId?: string;
   /** 循环事件缓冲（Observe-Act-Verify 过程记录，供 events 接口/回放） */
   events: AgentBrowserEvent[];
 }

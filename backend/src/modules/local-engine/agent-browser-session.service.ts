@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { resolveProjectDataPath } from '../../common/project-paths';
+import { PrismaService } from '../../prisma/prisma.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import {
   AgentBrowserEvent,
@@ -28,7 +29,10 @@ export class AgentBrowserSessionService implements OnModuleInit {
   /** P4 持久化：会话/事件落盘路径（进程重启可恢复审计与证据链） */
   private readonly storePath: string;
 
-  constructor(private readonly browser: LocalBrowserEngine) {
+  constructor(
+    private readonly browser: LocalBrowserEngine,
+    private readonly prisma?: PrismaService,
+  ) {
     // 测试可设 AGENT_BROWSER_STORE_PATH 隔离；生产用项目数据目录
     this.storePath =
       process.env.AGENT_BROWSER_STORE_PATH ??
@@ -106,6 +110,7 @@ export class AgentBrowserSessionService implements OnModuleInit {
       accountId: `${engineAccountPrefix}-${randomUUID().slice(0, 8)}`,
       status: 'created',
       url: input.startUrl,
+      tenantId: undefined,
       createdAt: now,
       updatedAt: now,
       lastActivityAt: now,
@@ -117,6 +122,7 @@ export class AgentBrowserSessionService implements OnModuleInit {
         acquiredAt: now,
         expiresAt: new Date(Date.now() + leaseMs).toISOString(),
         ownerId,
+        tenantId: undefined,
       },
     };
     this.sessions.set(session.id, session);
@@ -142,6 +148,30 @@ export class AgentBrowserSessionService implements OnModuleInit {
     return session;
   }
 
+  /** 解析用户真实租户（无 prisma 或未归属回落 undefined=单租户） */
+  async resolveTenantId(userId: string): Promise<string | undefined> {
+    try {
+      const delegate = (
+        this.prisma as unknown as {
+          tenantMember?: {
+            findFirst?: (args: {
+              where: { userId: string };
+              select: { tenantId: boolean };
+            }) => Promise<{ tenantId: string } | null>;
+          };
+        }
+      )?.tenantMember;
+      if (!delegate?.findFirst) return undefined;
+      const membership = await delegate.findFirst({
+        where: { userId },
+        select: { tenantId: true },
+      });
+      return membership?.tenantId || undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
   /** 只返回当前用户（owner）的会话——防跨用户泄露 */
   list(ownerId: string): AgentBrowserSessionDto[] {
     return [...this.sessions.values()]
@@ -164,6 +194,11 @@ export class AgentBrowserSessionService implements OnModuleInit {
     session.status = 'running';
     session.updatedAt = new Date().toISOString();
     session.lastActivityAt = session.updatedAt;
+    // 补齐租户（多租户隔离：acquire 时解析）
+    if (!session.lease?.tenantId) {
+      const tenantId = await this.resolveTenantId(session.lease?.ownerId ?? '');
+      if (tenantId && session.lease) session.lease.tenantId = tenantId;
+    }
     if (session.url && engine.page.url() !== session.url) {
       try {
         await engine.page.goto(session.url, {
