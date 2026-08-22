@@ -1514,16 +1514,15 @@ export class AiGatewayService {
       piece
         // 完整或残缺的 <invoke name="...">...</invoke> 块
         .replace(/<invoke\s+name="[^"]*"\s*>[\s\S]*?<\/invoke>/g, '')
-        // 裸协议标签（含带 `}` 前缀的闭合，如 `}</invoke>` / `}></invoke>`）
-        .replace(/\}?>\s*<\/?(?:invoke|function_calls|tool_calls|tool_call)\s*\/?>/g, '')
+        // 裸协议闭合标签（含 `}`/`}>` 前缀，如 `}</invoke>` `～}</invoke>` `}></invoke>`）
+        .replace(/[}>)\]]*<\/?(?:invoke|function_calls|tool_calls|tool_call)\s*\/?>/g, '')
         // 孤立 <invoke / <function_calls 开头（无闭合的残片）
         .replace(/<invoke\s+name="?[^>]*$/g, '')
         .replace(/<function_calls>/g, '')
         .replace(/<tool_calls[^>]*>/g, '')
         .replace(/<tool_call[^>]*>/g, '')
-        // 标签后紧跟的冗余 }（协议残留）
-        .replace(/<\/invoke>\s*\}/g, '')
-        .replace(/<\/function_calls>\s*\}/g, '')
+        // 残余独立 }（协议残留的 JSON 结束符，前面是协议活动时遗留）
+        .replace(/<\/?function_calls>/g, '')
         .trim()
     );
   }
