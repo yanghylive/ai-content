@@ -30,3 +30,21 @@ export async function planMaiUiActions(
   );
   return data;
 }
+
+/** 沉淀执行任务到 CRM（来源=MAI-UI 设备执行，关联 taskId） */
+export async function sinkMaiUiTaskToCrm(input: {
+  displayName: string;
+  taskId: string;
+  instruction: string;
+  actionCount: number;
+  resultMessage: string;
+}): Promise<{ id: string; displayName: string }> {
+  return api.post<{ id: string; displayName: string }>("/crm/customers", {
+    displayName: input.displayName,
+    sourcePlatform: "manual",
+    notes: `[MAI-UI] 任务 ${input.taskId}
+指令：${input.instruction}
+动作数：${input.actionCount}
+结果：${input.resultMessage}`,
+  });
+}
