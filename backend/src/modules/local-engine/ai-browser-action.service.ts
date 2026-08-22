@@ -30,6 +30,8 @@ export interface AiBrowserRunInput {
   instruction: string;
   url?: string;
   timeoutMs?: number;
+  /** P4：会话独立 accountId（缺省回落 ai-agent 保兼容）——真正用会话自己的 Profile 执行 */
+  accountId?: string;
 }
 
 export interface AiBrowserStepResult {
@@ -301,7 +303,7 @@ export class AiBrowserActionService {
 
     const session = await this.browser.getOrCreateSession({
       platform: 'general-web',
-      accountId: 'ai-agent',
+      accountId: input.accountId ?? 'ai-agent',
     });
     const results: AiBrowserStepResult[] = [];
 

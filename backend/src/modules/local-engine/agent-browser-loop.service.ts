@@ -74,6 +74,8 @@ export class AgentBrowserLoopService {
         ? { url: currentUrl }
         : {}),
       timeoutMs: 30_000,
+      // P4：用会话独立 accountId（独立 Profile 隔离，不共享 ai-agent）
+      accountId: session.accountId,
     });
 
     // 3. Verify：逐步骤生成事件 + 域名审计（白名单外的 URL 变更标记风险）
