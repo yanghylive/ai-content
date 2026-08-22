@@ -142,6 +142,20 @@ export class AiClientService {
     if (!platform || !platform.enabled) {
       throw new Error('AI 平台未配置或已禁用');
     }
+    // 2026-08-22 大王指示：封死自定义第三方平台（用户自配 key 绕过 kaypal 计费）。
+    // 所有 AI 调用只允许 Kaypal 模型台（云端记账），第三方直连一律拒绝。
+    const baseUrl = `${platform.baseUrl ?? ''}`;
+    const cfg = (platform.config ?? {}) as Record<string, unknown>;
+    const isKaypal =
+      baseUrl.includes('kaypal.cn') ||
+      baseUrl.includes('kaypal.com') ||
+      `${platform.name ?? ''}`.includes('Kaypal') ||
+      cfg.source === 'kaypal';
+    if (!isKaypal) {
+      throw new Error(
+        '仅支持 Kaypal 模型台（统一计费），用户自定义第三方 AI 平台已关闭',
+      );
+    }
 
     this.throwIfAborted(signal);
     const dynamicHeaders = await this.resolveDynamicHeaders(platform, signal);
