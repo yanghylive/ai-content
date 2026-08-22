@@ -110,7 +110,7 @@ function validateMaiUiActions(
         b.length === 4 &&
         b.every((v) => typeof v === 'number')
       ) {
-        const [x1, y1, x2, y2] = b as number[];
+        const [x1, y1, x2, y2] = b;
         if (x1 === x2 && y1 === y2) {
           const pad = 10;
           rec.bounds = [
@@ -242,30 +242,45 @@ export class MaiUiService {
     const prompt = `${input.instruction.trim()}${dimHint}${ctxHint}`;
 
     try {
-      const raw = await this.aiClient.generateWithImage(model.id, {
-        system: MAI_UI_SYSTEM_PROMPT,
-        prompt,
-        imageBase64: input.imageBase64,
-      });
-
-      const { value: parsedActions, error } = extractJsonArray(raw);
-      if (!parsedActions) {
-        this.logger.warn(
-          `MAI-UI 输出非 JSON（${error}），raw 前 120 字: ${raw.slice(0, 120)}`,
+      // 生成 + 解析，LLM 偶发截断时重试一次（2026-08-22 验收发现 raw 仅 "[" 的情况）
+      let raw = '';
+      let parsed: unknown[] | null = null;
+      let parseError: string | undefined;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        raw = await this.aiClient.generateWithImage(
+          model.id,
+          {
+            system: MAI_UI_SYSTEM_PROMPT,
+            prompt,
+            imageBase64: input.imageBase64,
+          },
+          { maxTokens: 2000 }, // 2026-08-22：qwen-vl-max 输出 1200 偶发截断，放宽
         );
+        const r = extractJsonArray(raw);
+        if (r.value) {
+          parsed = r.value;
+          break;
+        }
+        parseError = r.error;
+        this.logger.warn(
+          `MAI-UI 第 ${attempt + 1} 次输出非 JSON（${r.error}），raw 前 120 字: ${raw.slice(0, 120)}`,
+        );
+      }
+
+      if (!parsed) {
         return {
           ok: false,
           actions: [],
           raw,
           model: model.modelId,
-          parseError: error,
+          parseError,
         };
       }
 
       // P2（P5 门禁 2026-08-22）：动作序列校验——类型白名单/坐标范围/数量上限，
       // 违规项剔除并在 rejectedActions 留痕，避免把脏动作喂给执行器
       const { actions, rejected } = validateMaiUiActions(
-        parsedActions,
+        parsed,
         input.width,
         input.height,
       );
