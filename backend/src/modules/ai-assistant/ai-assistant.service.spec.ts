@@ -494,4 +494,89 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
       }),
     );
   });
+
+  it('P1（复查第三轮）configId 回写 throw：同样删除孤儿配置并回滚', async () => {
+    const { svc, prisma, growth } = makeService({});
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ draftHash: null, intent: 'find_leads' }),
+      )
+      .mockResolvedValue(draftRow({ status: 'draft' }));
+    growth.createConfig.mockResolvedValue({ id: 'cfg-throw' });
+    // 抢占成功；configId 回写直接 throw（DB 异常——复查第三轮指出的漏网路径）
+    prisma.growthTaskDraft.updateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockRejectedValueOnce(new Error('db write failed'));
+    await expect(svc.confirmDraft('u-1', 'd1', {})).rejects.toThrow(
+      '配置关联草稿失败',
+    );
+    // 孤儿配置被清理（不只是 count!==1 才删）
+    expect(growth.deleteConfig).toHaveBeenCalledWith('u-1', 'cfg-throw');
+  });
+
+  it('P1（复查第三轮）补偿创建立即关联：重试复用同一配置（不重复创建）', async () => {
+    const { svc, prisma, growth } = makeService({});
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ intent: 'find_leads', configId: null, status: 'confirmed' }),
+      )
+      .mockResolvedValue(draftRow({ status: 'executed' }));
+    growth.createConfig.mockResolvedValue({ id: 'cfg-comp' });
+    growth.executeConfig.mockResolvedValue({ ok: true });
+    // claim → 关联 configId → 终态
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
+    await svc.executeDraft('u-1', 'd1');
+    // 配置创建后先关联草稿（重试时 configId 非空走复用分支，不再重建）
+    expect(prisma.growthTaskDraft.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'd1', status: 'executing' },
+        data: expect.objectContaining({ configId: 'cfg-comp' }),
+      }),
+    );
+    expect(growth.executeConfig).toHaveBeenCalledWith('u-1', 'cfg-comp', {
+      confirmedExecution: true,
+    });
+  });
+
+  it('P1（复查第三轮）补偿创建关联失败：删除配置 + 冲突（不产生孤儿/重复配置）', async () => {
+    const { svc, prisma, growth } = makeService({});
+    prisma.growthTaskDraft.findFirst.mockResolvedValue(
+      draftRow({ intent: 'find_leads', configId: null, status: 'confirmed' }),
+    );
+    growth.createConfig.mockResolvedValue({ id: 'cfg-unlinked' });
+    // claim 成功；关联 configId 失败（count=0）
+    prisma.growthTaskDraft.updateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 0 });
+    await expect(svc.executeDraft('u-1', 'd1')).rejects.toThrow(
+      '补偿配置关联草稿失败',
+    );
+    // 未关联的配置被删除（下次重试补偿创建不会叠加）
+    expect(growth.deleteConfig).toHaveBeenCalledWith('u-1', 'cfg-unlinked');
+    // 未执行
+    expect(growth.executeConfig).not.toHaveBeenCalled();
+  });
+
+  it('P1（复查第三轮）补偿配置已关联但执行失败：置 error 不回滚（防重复触达）', async () => {
+    const { svc, prisma, growth } = makeService({});
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ intent: 'find_leads', configId: null, status: 'confirmed' }),
+      )
+      .mockResolvedValue(draftRow({ status: 'error' }));
+    growth.createConfig.mockResolvedValue({ id: 'cfg-exec-fail' });
+    // claim 成功；关联成功；执行失败 → 外层置 error
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
+    growth.executeConfig.mockRejectedValue(new Error('触达中途失败'));
+    await expect(svc.executeDraft('u-1', 'd1')).rejects.toThrow(
+      '副作用可能已部分产生',
+    );
+    // 不回滚 confirmed；置 error 交人工核对（副作用可能已发生）
+    expect(prisma.growthTaskDraft.updateMany).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: { id: 'd1', status: 'executing' },
+        data: expect.objectContaining({ status: 'error' }),
+      }),
+    );
+  });
 });

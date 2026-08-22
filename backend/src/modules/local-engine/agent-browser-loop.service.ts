@@ -84,7 +84,14 @@ export class AgentBrowserLoopService {
       confirmedTools?: Array<{ action: string; target?: string; url?: string }>;
       confirmationIds?: string[];
       /** P1（复查 2026-08-22）：resume 续跑——从断点动作序列继续，不再从头解析 */
-      resumeFrom?: { stepIndex: number; actions: AiBrowserAction[] };
+      resumeFrom?: {
+        stepIndex: number;
+        actions: AiBrowserAction[];
+        /** P1（复查第三轮）：已成功动作索引——重试跳过（幂等，不重放副作用） */
+        completedIndices?: number[];
+        /** P1（复查第三轮）：每个动作生成时的页面来源 URL（§6.3 门禁依据） */
+        actionOriginUrls?: string[];
+      };
     } = {},
   ): Promise<{ ok: boolean; steps: AgentBrowserStepEvent[] }> {
     const { onStep, confirmationIds, resumeFrom } = options;
@@ -157,11 +164,15 @@ export class AgentBrowserLoopService {
     // 恢复的指令与断点一致，避免 AI 解析漂移），仅首次 run 才走 parseActions
     let actions: AiBrowserAction[] = [];
     let startIndex = 0;
+    // P1（复查第三轮）：已成功动作索引集合——重试/恢复时跳过（幂等重试，
+    // 不重放已成功动作的外部副作用）
+    const completedIndices = new Set<number>();
     if (resumeFrom?.actions?.length) {
       actions = resumeFrom.actions;
       startIndex = Math.max(0, resumeFrom.stepIndex ?? 0);
+      resumeFrom.completedIndices?.forEach((i) => completedIndices.add(i));
       this.logger.log(
-        `AgentBrowser ${sessionId} resume：从动作 ${startIndex}/${actions.length} 续跑`,
+        `AgentBrowser ${sessionId} resume：从动作 ${startIndex}/${actions.length} 续跑（已成功 ${completedIndices.size} 个，跳过不重放）`,
       );
     } else {
       try {
@@ -178,12 +189,18 @@ export class AgentBrowserLoopService {
     // P1：记录当前动作序列到会话（resume 从断点续跑的凭据）
     session.pendingActions = actions;
     session.pendingStepIndex = startIndex;
+    session.pendingCompletedIndices = [...completedIndices];
     // §6.3 元素引用只在当前快照版本内有效：记录每个动作生成时的页面 URL，
     // 导航后旧快照的 selector 引用拒绝执行（等待重新决策）
-    let actionOriginUrls: string[] = actions.map(() => session.url ?? '');
-    // P1（复查第二轮）：第一个失败动作的索引——partial_success 重试从此续跑
-    // （不重放之前的已成功动作，避免重复外部副作用）
-    let firstFailedIndex: number | undefined;
+    // P1（复查第三轮）：恢复时沿用保存的来源——不重置为当前 URL，
+    // 否则旧页面 selector 会在新页面通过门禁被错误执行
+    let actionOriginUrls: string[] = resumeFrom?.actionOriginUrls?.length
+      ? [...resumeFrom.actionOriginUrls].slice(0, actions.length)
+      : actions.map(() => session.url ?? '');
+    while (actionOriginUrls.length < actions.length) {
+      actionOriginUrls.push(session.url ?? '');
+    }
+    session.pendingActionOriginUrls = actionOriginUrls;
 
     // 3. 逐步 Observe→策略→单动作执行→验证（§7.4 DOM Agent 循环）
     for (let i = startIndex; i < actions.length; i++) {
@@ -200,6 +217,8 @@ export class AgentBrowserLoopService {
         // P1：记录断点（当前未执行的 stepIndex + 动作序列），resume 从此续跑
         session.pendingStepIndex = i;
         session.pendingActions = actions;
+        session.pendingCompletedIndices = [...completedIndices];
+        session.pendingActionOriginUrls = actionOriginUrls;
         const interrupt: AgentBrowserStepEvent = {
           type: 'error',
           ok: false,
@@ -209,6 +228,22 @@ export class AgentBrowserLoopService {
         onStep?.(interrupt);
         this.sessions.appendEvent(sessionId, interrupt);
         return { ok: false, steps };
+      }
+
+      // P1（复查第三轮）：幂等重试——已完成动作直接跳过（不重放外部副作用）。
+      // 例如 成功A/失败B/成功C 的 partial 重试：A、C 跳过，只补执行 B。
+      if (completedIndices.has(i)) {
+        const skipped: AgentBrowserStepEvent = {
+          type: 'step',
+          stepIndex: i,
+          action: action.action,
+          ok: true,
+          message: '已成功动作（幂等重试跳过，不重放）',
+        };
+        steps.push(skipped);
+        onStep?.(skipped);
+        this.sessions.appendEvent(sessionId, skipped);
+        continue;
       }
 
       // 3.1 每步 re-observe（页面可能已因上一步导航改变）
@@ -342,13 +377,15 @@ export class AgentBrowserLoopService {
       this.sessions.bumpStep(sessionId);
       this.sessions.appendEvent(sessionId, stepEvent);
 
-      // P1（复查第二轮）：断点推进——成功动作跳过（重试不重放），
-      // 失败动作记 firstFailedIndex（partial_success 重试从此开始）
+      // P1（复查第三轮）：断点推进——成功动作记入完成集合（重试幂等跳过），
+      // 失败动作不记录（重试起点由完成集合推导：第一个未完成动作）
       if (r.ok) {
-        session.pendingStepIndex = i + 1;
-      } else if (firstFailedIndex === undefined) {
-        firstFailedIndex = i;
+        completedIndices.add(i);
+        session.pendingCompletedIndices = [...completedIndices];
       }
+      // 实时持久化断点凭据（进程崩溃后重启可从磁盘恢复续跑）
+      session.pendingStepIndex = i + 1;
+      session.pendingActionOriginUrls = actionOriginUrls;
 
       // P1（复查 2026-08-22）：导航闭环——动作执行后的真实页面 URL（executeStep 返回
       // page.url()）回写会话；observe/重决策基于新页面，不再停留在执行前旧 session.url。
@@ -395,8 +432,11 @@ export class AgentBrowserLoopService {
               ...actionOriginUrls.slice(0, done),
               ...newOrigins,
             ].slice(0, actions.length);
-            // P1：同步断点上下文（resume 从重决策后的序列续跑）
+            // P1：同步断点上下文（重决策后新动作未执行过，完成集合语义不变；
+            // resume 从重决策后的序列续跑）
             session.pendingActions = actions;
+            session.pendingActionOriginUrls = actionOriginUrls;
+            session.pendingCompletedIndices = [...completedIndices];
             this.logger.log(
               `AgentBrowser ${sessionId} 导航至 ${afterSnapshot.url}，基于新快照重新决策（${redecided.length} 个新动作）`,
             );
@@ -449,16 +489,29 @@ export class AgentBrowserLoopService {
       session.pendingInstruction = undefined;
       session.pendingActions = undefined;
       session.pendingStepIndex = undefined;
+      session.pendingCompletedIndices = undefined;
+      session.pendingActionOriginUrls = undefined;
     };
+    // P1（复查第三轮）：重试起点=第一个未完成动作（完成集合之外），
+    // 重试循环中已完成动作被跳过——幂等重试，不重放任何已成功动作
+    let retryFrom = actions.length;
+    for (let i = 0; i < actions.length; i++) {
+      if (!completedIndices.has(i)) {
+        retryFrom = i;
+        break;
+      }
+    }
     if (finalStatus === 'running') {
       // 正常完成：全部成功=succeeded（终态）；部分成功=partial_success（保留断点，
-      // 重试从第一个失败动作续跑，不重放已成功动作）；全部失败=failed（终态）
+      // 重试只补失败动作）；全部失败=failed（终态）
       if (status === 'success') {
         clearPending();
         this.sessions.updateStatus(sessionId, 'succeeded');
       } else if (status === 'partial_success') {
         session.pendingActions = actions;
-        session.pendingStepIndex = firstFailedIndex ?? actions.length;
+        session.pendingStepIndex = retryFrom;
+        session.pendingCompletedIndices = [...completedIndices];
+        session.pendingActionOriginUrls = actionOriginUrls;
         this.sessions.updateStatus(sessionId, 'partial_success');
       } else {
         clearPending();
@@ -469,11 +522,11 @@ export class AgentBrowserLoopService {
       clearPending();
     } else {
       // paused / needs-human（最后一步执行期间到达）：保留用户暂停态 + 断点，
-      // resume 从断点续跑；partial 语义下同样指向第一个失败动作
-      if (status === 'partial_success') {
-        session.pendingActions = actions;
-        session.pendingStepIndex = firstFailedIndex ?? actions.length;
-      }
+      // resume 从断点续跑；重试同样只补失败动作
+      session.pendingActions = actions;
+      session.pendingStepIndex = retryFrom;
+      session.pendingCompletedIndices = [...completedIndices];
+      session.pendingActionOriginUrls = actionOriginUrls;
     }
     return { ok: status === 'success' || status === 'partial_success', steps };
   }

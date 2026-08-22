@@ -97,6 +97,11 @@ export interface AgentBrowserSession extends AgentBrowserSessionDto {
   pendingInstruction?: string;
   pendingActions?: import('./ai-browser-action.service').AiBrowserAction[];
   pendingStepIndex?: number;
+  // P1（复查第三轮）：恢复执行的幂等凭据——
+  // 已成功动作的索引集合（重试跳过，不重放外部副作用）+
+  // 每个动作生成时的页面来源 URL（恢复后 §6.3 旧快照 selector 门禁仍有效）
+  pendingCompletedIndices?: number[];
+  pendingActionOriginUrls?: string[];
 }
 
 /** 创建一个会话的输入 */

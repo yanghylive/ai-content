@@ -98,9 +98,15 @@ export class AgentBrowserController {
   ) {
     const tenantId = await this.resolveTenantId();
     this.sessions.assertOwner(id, this.getUserId(request), tenantId);
-    // §7.4 状态机校验：终态（succeeded/stopped/failed/cancelled）不可重跑
+    // §7.4 状态机校验：终态不可重跑——
+    // P1（复查第三轮）：error 也是终态（类型定义如此），原来漏判导致异常会话
+    // 可再次 run 重放已有副作用（重复点击/提交/发送），补进终态列表
     const cur = this.sessions.get(id);
-    if (['succeeded', 'stopped', 'failed', 'cancelled'].includes(cur.status)) {
+    if (
+      ['succeeded', 'stopped', 'failed', 'cancelled', 'error'].includes(
+        cur.status,
+      )
+    ) {
       throw new BadRequestException(
         `会话已处于终态 ${cur.status}，不能重新运行`,
       );
@@ -116,13 +122,16 @@ export class AgentBrowserController {
         `会话处于 ${cur.status} 状态，请先人工接管（resume）恢复后再运行`,
       );
     }
-    // P1（复查第二轮）：partial_success 重试从断点续跑——沿用保存的动作序列与
-    // 第一个失败动作的索引，不重新解析、不重放已成功动作（避免重复外部副作用）
+    // P1（复查第三轮）：partial_success 重试幂等续跑——沿用保存的动作序列 +
+    // 已完成动作索引（循环内跳过，不重放副作用）+ 动作来源 URL（§6.3 门禁依据，
+    // 不重置为当前 URL 防止旧页面 selector 被误执行）
     const resumeFrom =
       cur.status === 'partial_success' && cur.pendingActions?.length
         ? {
             stepIndex: cur.pendingStepIndex ?? 0,
             actions: cur.pendingActions,
+            completedIndices: cur.pendingCompletedIndices,
+            actionOriginUrls: cur.pendingActionOriginUrls,
           }
         : undefined;
     const instruction = resumeFrom
@@ -186,6 +195,10 @@ export class AgentBrowserController {
             resumeFrom: {
               stepIndex: s.pendingStepIndex ?? 0,
               actions: s.pendingActions,
+              // P1（复查第三轮）：恢复时透传已完成动作（幂等跳过）+
+              // 动作来源 URL（§6.3 门禁，不重置为当前 URL）
+              completedIndices: s.pendingCompletedIndices,
+              actionOriginUrls: s.pendingActionOriginUrls,
             },
           });
         } else {
