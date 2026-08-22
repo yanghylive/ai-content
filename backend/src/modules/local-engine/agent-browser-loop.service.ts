@@ -59,6 +59,19 @@ export class AgentBrowserLoopService {
       throw new BadRequestException('缺少任务指令（instruction）');
     }
 
+    // §14.2 feature flag：mode 门禁（legacy=继续现有执行器；dom-agent=本循环灰度）
+    const cfg = this.readAgentBrowserConfig();
+    if (cfg.mode === 'legacy') {
+      throw new BadRequestException(
+        'AGENT_BROWSER_MODE=legacy：Agent Browser 循环未开启（灰度开关关闭），请使用现有动作执行',
+      );
+    }
+    if (!cfg.allowWrite && /(填写|输入|提交|点击|发送|发评论|发私信)/.test(instruction)) {
+      throw new BadRequestException(
+        'AGENT_BROWSER_ALLOW_WRITE=false：写操作未开启，仅允许导航/读取类任务',
+      );
+    }
+
     const steps: AgentBrowserStepEvent[] = [];
 
     // 1. Observe：快照当前页
@@ -229,6 +242,31 @@ export class AgentBrowserLoopService {
       .map((item) => (typeof item.text === 'string' ? item.text : ''))
       .join('\n')
       .trim();
+  }
+
+  /** §14.2 读取 Agent Browser 灰度配置（环境变量，缺省=dom-agent 开启/读操作为主） */
+  private readAgentBrowserConfig(): {
+    mode: 'legacy' | 'dom-agent';
+    allowedDomains: string[];
+    maxSteps: number;
+    maxRetries: number;
+    timeoutMs: number;
+    allowWrite: boolean;
+  } {
+    const mode = (process.env.AGENT_BROWSER_MODE ?? 'legacy') as
+      | 'legacy'
+      | 'dom-agent';
+    return {
+      mode,
+      allowedDomains: (process.env.AGENT_BROWSER_ALLOWED_DOMAINS ?? '')
+        .split(',')
+        .map((d) => d.trim())
+        .filter(Boolean),
+      maxSteps: Number(process.env.AGENT_BROWSER_MAX_STEPS ?? 30),
+      maxRetries: Number(process.env.AGENT_BROWSER_MAX_RETRIES ?? 2),
+      timeoutMs: Number(process.env.AGENT_BROWSER_TIMEOUT_MS ?? 120000),
+      allowWrite: (process.env.AGENT_BROWSER_ALLOW_WRITE ?? 'false') === 'true',
+    };
   }
 
   /** 执行器动作 → P4 工具白名单映射（用于逐步策略审计） */
