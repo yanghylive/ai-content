@@ -182,3 +182,37 @@ describe('AiAssistantService（P3 任务草稿）', () => {
     await expect(svc.getDraft('u-1', 'nope')).rejects.toThrow(NotFoundException);
   });
 });
+
+describe('AiAssistantService P3 租户隔离', () => {
+  it('resolveTenantId：tenantMember 有归属返回真实租户', async () => {
+    const { AiAssistantService } = require('./ai-assistant.service');
+    const svc = Object.create(AiAssistantService.prototype) as any;
+    svc.prisma = {
+      tenantMember: {
+        findFirst: jest.fn().mockResolvedValue({ tenantId: 't-real-123' }),
+      },
+    };
+    const result = await svc.resolveTenantId('u-1');
+    expect(result).toBe('t-real-123');
+  });
+
+  it('resolveTenantId：无 delegate 回落 legacy', async () => {
+    const { AiAssistantService } = require('./ai-assistant.service');
+    const svc = Object.create(AiAssistantService.prototype) as any;
+    svc.prisma = {};
+    const result = await svc.resolveTenantId('u-1');
+    expect(result).toBe('legacy-local-desktop');
+  });
+
+  it('resolveTenantId：异常回落 legacy（不阻断）', async () => {
+    const { AiAssistantService } = require('./ai-assistant.service');
+    const svc = Object.create(AiAssistantService.prototype) as any;
+    svc.prisma = {
+      tenantMember: {
+        findFirst: jest.fn().mockRejectedValue(new Error('db down')),
+      },
+    };
+    const result = await svc.resolveTenantId('u-1');
+    expect(result).toBe('legacy-local-desktop');
+  });
+});
