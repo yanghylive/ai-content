@@ -375,6 +375,21 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
     expect(prisma.crmTask.create).not.toHaveBeenCalled();
   });
 
+  it('P2 follow_up 查重失败：fail-closed 抛错，不盲目创建（防重复任务）', async () => {
+    const { svc, prisma } = makeService({});
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ intent: 'follow_up', configId: null, goal: '回访老客户' }),
+      )
+      .mockResolvedValue(draftRow({ intent: 'follow_up', status: 'confirmed' }));
+    // 查重 DB 异常：原来被 .catch 吞掉 → existing=undefined → 重复创建；
+    // 现在必须抛错终止，且 crmTask.create 不被调用
+    prisma.crmTask.findFirst.mockRejectedValue(new Error('db down'));
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
+    await expect(svc.executeDraft('u-1', 'd1')).rejects.toThrow('db down');
+    expect(prisma.crmTask.create).not.toHaveBeenCalled();
+  });
+
   it('P1 confirmDraft 并发：抢占失败方不创建配置（无孤儿配置）', async () => {
     const { svc, prisma, growth } = makeService({});
     prisma.growthTaskDraft.findFirst.mockResolvedValue(
