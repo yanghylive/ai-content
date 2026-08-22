@@ -71,6 +71,9 @@ function makeConfig(overrides: Record<string, unknown> = {}) {
 }
 
 describe('GrowthController commercial API acceptance', () => {
+  // P1（复查 2026-08-22）：文件级超时提到 describe 顶层——beforeAll 的 Nest
+  // 模块初始化即接近 5s，用例内 jest.setTimeout 不覆盖 beforeAll（默认命令仍会 5s 超时）
+  jest.setTimeout(30_000);
   let app: INestApplication;
   let service: any;
   let store: any;
@@ -553,7 +556,6 @@ describe('GrowthController commercial API acceptance', () => {
   });
 
   it('executes the full commercial acquisition API flow and persists visible business results', async () => {
-    jest.setTimeout(30_000); // 完整商业流程（预检→执行→线索→CRM→赢单）真实路径超 5 秒（6016ms），提高单用例超时
     process.env.GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED = 'true';
     const createResponse = await request(app.getHttpServer())
       .post('/growth/acquisition/configs')

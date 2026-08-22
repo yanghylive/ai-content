@@ -289,7 +289,11 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
       lead: { findMany: jest.fn() },
-      crmTask: { create: jest.fn() },
+      crmTask: {
+        create: jest.fn(),
+        // P1（复查 2026-08-22）：follow_up 幂等查重——默认无既有任务
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
       ...(overrides.prisma || {}),
     };
     const growth = {
@@ -328,7 +332,7 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
     );
   });
 
-  it('follow_up：创建 CRM 跟进任务', async () => {
+  it('follow_up：创建 CRM 跟进任务（带 draftId 幂等键）', async () => {
     const { svc, prisma } = makeService({});
     prisma.growthTaskDraft.findFirst
       .mockResolvedValueOnce(
@@ -339,6 +343,11 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
     prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
     const draft = await svc.executeDraft('u-1', 'd1');
     expect(draft.status).toBe('executed');
+    expect(prisma.crmTask.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { metadata: { path: ['draftId'], equals: 'd1' } },
+      }),
+    );
     expect(prisma.crmTask.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -346,6 +355,76 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
           title: '回访老客户',
           metadata: { source: 'ai-assistant-draft', draftId: 'd1' },
         }),
+      }),
+    );
+  });
+
+  it('P1 follow_up 幂等：同 draftId 已建任务时不重复创建', async () => {
+    const { svc, prisma } = makeService({});
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ intent: 'follow_up', configId: null, goal: '回访老客户' }),
+      )
+      .mockResolvedValue(draftRow({ intent: 'follow_up', status: 'executed' }));
+    // 幂等键命中：已存在任务
+    prisma.crmTask.findFirst.mockResolvedValue({ id: 'task-existing' });
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
+    await svc.executeDraft('u-1', 'd1');
+    expect(prisma.crmTask.create).not.toHaveBeenCalled();
+  });
+
+  it('P1 confirmDraft 并发：抢占失败方不创建配置（无孤儿配置）', async () => {
+    const { svc, prisma, growth } = makeService({});
+    prisma.growthTaskDraft.findFirst.mockResolvedValue(
+      draftRow({ draftHash: null, intent: 'find_leads' }),
+    );
+    // 抢占失败（已被并发方确认）
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 0 });
+    await expect(svc.confirmDraft('u-1', 'd1', {})).rejects.toThrow(
+      ConflictException,
+    );
+    // 抢占失败 → 配置未创建（无孤儿）
+    expect(growth.createConfig).not.toHaveBeenCalled();
+  });
+
+  it('P1 confirmDraft 配置创建失败：回滚 confirmed→draft，不留孤儿', async () => {
+    const { svc, prisma, growth } = makeService({});
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(draftRow({ draftHash: null, intent: 'find_leads' }))
+      .mockResolvedValue(draftRow({ status: 'draft' }));
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
+    growth.createConfig.mockRejectedValue(new Error('配置创建失败'));
+    await expect(svc.confirmDraft('u-1', 'd1', {})).rejects.toThrow(
+      ConflictException,
+    );
+    // 回滚到 draft：updateMany 第二次调用 where status='confirmed' → data status='draft'
+    expect(prisma.growthTaskDraft.updateMany).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: { id: 'd1', status: 'confirmed' },
+        data: expect.objectContaining({ status: 'draft' }),
+      }),
+    );
+  });
+
+  it('P1 executeDraft 副作用已提交：不回滚 confirmed（防重试重复副作用）', async () => {
+    const { svc, prisma } = makeService({});
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ intent: 'report', configId: null, status: 'confirmed' }),
+      )
+      .mockResolvedValue(draftRow({ intent: 'report', status: 'executing' }));
+    // claim（confirmed→executing）成功；最终状态更新（executing→executed）失败
+    prisma.growthTaskDraft.updateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 0 });
+    await expect(svc.executeDraft('u-1', 'd1')).rejects.toThrow(
+      '副作用已执行',
+    );
+    // 不回滚 confirmed；置 error 终态
+    expect(prisma.growthTaskDraft.updateMany).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: { id: 'd1', status: 'executing' },
+        data: expect.objectContaining({ status: 'error' }),
       }),
     );
   });

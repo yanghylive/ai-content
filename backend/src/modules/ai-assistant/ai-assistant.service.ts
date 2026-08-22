@@ -51,6 +51,18 @@ export type GrowthTaskDraft = {
 /** 草稿有效期（未确认自动过期，秒） */
 const DRAFT_TTL_MS = 30 * 60 * 1000;
 
+/**
+ * P1（复查 2026-08-22）：副作用已提交但最终状态更新失败的内部标记——
+ * executeDraft 捕获到它时**不回滚**到 confirmed（回滚会导致重试重复执行外部副作用，
+ * 如 follow_up 重复创建 CRM 任务），而是把草稿置为 error 终态，提示人工介入。
+ */
+class SideEffectCommittedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SideEffectCommittedError';
+  }
+}
+
 /** 意图 -> 平台/动作的默认映射（NL 解析用） */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const INTENT_PLATFORM_HINT: Record<TaskDraftIntent, string[]> = {
@@ -377,7 +389,23 @@ export class AiAssistantService {
       throw new ConflictException('任务草稿内容已被修改，请重新确认');
     }
 
-    // 创建对应的获客配置（draft 态，不执行）
+    // P1（复查 2026-08-22）：并发幂等——先原子抢占（仅 status='draft' 可确认），
+    // 抢占成功后才创建配置；并发确认只有一个成功，失败方不产生任何外部副作用（无孤儿配置）
+    const claimed = await this.prisma.growthTaskDraft.updateMany({
+      where: { id, status: 'draft' },
+      data: {
+        status: 'confirmed',
+        actorUserId: userId,
+        riskSummary: input.riskSummary ?? this.buildRiskSummary(row),
+        confirmedAt: new Date(),
+      },
+    });
+    if (claimed.count !== 1) {
+      throw new ConflictException('任务草稿已被确认或处理中，请勿重复提交');
+    }
+
+    // 抢占成功后创建对应的获客配置（draft 态，不执行）
+    // 失败回滚 confirmed → draft：允许用户重试，且不留孤儿配置
     const config = row.configJson as Record<string, unknown>;
     let configId: string | undefined;
     if (row.intent === 'find_leads' || row.intent === 'contact_leads') {
@@ -395,28 +423,24 @@ export class AiAssistantService {
           status: 'disabled', // 止血：确认草稿创建的配置默认禁用，需手动启用
         });
         configId = created.id;
+        await this.prisma.growthTaskDraft.updateMany({
+          where: { id, status: 'confirmed' },
+          data: { configId },
+        });
       } catch (error) {
-        this.logger.warn(
-          `草稿确认时创建配置失败（不阻断确认）：${(error as Error).message}`,
+        // 回滚占位：配置未创建成功，草稿恢复 draft 允许重新确认（无孤儿配置）
+        await this.prisma.growthTaskDraft
+          .updateMany({
+            where: { id, status: 'confirmed' },
+            data: { status: 'draft' },
+          })
+          .catch(() => undefined);
+        throw new ConflictException(
+          `配置创建失败，草稿已回滚可重新确认：${(error as Error).message ?? String(error)}`,
         );
       }
     }
 
-    // P1（复查 2026-08-22）：并发幂等——条件更新占位（仅 status='draft' 可确认），
-    // 重复确认只成功一次，避免并发重复创建获客配置
-    const claimed = await this.prisma.growthTaskDraft.updateMany({
-      where: { id, status: 'draft' },
-      data: {
-        status: 'confirmed',
-        actorUserId: userId,
-        riskSummary: input.riskSummary ?? this.buildRiskSummary(row),
-        configId: configId ?? null,
-        confirmedAt: new Date(),
-      },
-    });
-    if (claimed.count !== 1) {
-      throw new ConflictException('任务草稿已被确认或处理中，请勿重复提交');
-    }
     const updated = await this.prisma.growthTaskDraft.findFirst({
       where: { id },
     });
@@ -462,7 +486,19 @@ export class AiAssistantService {
     try {
       return await this.executeDraftInner(userId, id, row, tenantId);
     } catch (error) {
-      // 副作用失败：回滚 executing → confirmed（允许重试），不吞原始错误
+      // P1（复查 2026-08-22）：副作用已提交但状态更新失败——绝不回滚到 confirmed，
+      // 否则重试会**重复执行外部副作用**（如 follow_up 重复建 CRM 任务）。
+      // 置 error 终态（副作用已发生，提示人工核对），不再允许无脑重试。
+      if (error instanceof SideEffectCommittedError) {
+        await this.prisma.growthTaskDraft
+          .updateMany({
+            where: { id, status: 'executing' },
+            data: { status: 'error' },
+          })
+          .catch(() => undefined);
+        throw error;
+      }
+      // 副作用未产生（执行器/预检失败）：回滚 executing → confirmed（允许重试，无重复副作用）
       await this.prisma.growthTaskDraft
         .updateMany({
           where: { id, status: 'executing' },
@@ -564,19 +600,39 @@ export class AiAssistantService {
       executed = true;
     } else if (row.intent === 'follow_up') {
       // P3 意图闭环：创建跟进任务（7 天后到期，来源标记草稿）
-      const dueAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
-      await this.prisma.crmTask.create({
-        data: {
-          ownerId: userId,
-          ...(tenantId ? { tenantId } : {}),
-          title: row.goal.slice(0, 80),
-          description: `AI 任务草稿自动创建（${id}）：${row.goal}`,
-          status: 'open',
-          priority: 'normal',
-          dueAt,
-          metadata: { source: 'ai-assistant-draft', draftId: id },
-        },
-      });
+      // P1（复查 2026-08-22）：唯一幂等键——按 metadata.draftId 查重，
+      // 重复执行（回滚重试/异常重放）不再创建第二个任务
+      const crmFindFirst = (
+        this.prisma.crmTask as unknown as {
+          findFirst?: (args: {
+            where: { metadata: { path: string[]; equals: string } };
+          }) => Promise<unknown>;
+        }
+      ).findFirst;
+      const existing = crmFindFirst
+        ? await crmFindFirst({
+            where: { metadata: { path: ['draftId'], equals: id } },
+          }).catch(() => undefined)
+        : undefined;
+      if (!existing) {
+        const dueAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+        await this.prisma.crmTask.create({
+          data: {
+            ownerId: userId,
+            ...(tenantId ? { tenantId } : {}),
+            title: row.goal.slice(0, 80),
+            description: `AI 任务草稿自动创建（${id}）：${row.goal}`,
+            status: 'open',
+            priority: 'normal',
+            dueAt,
+            metadata: { source: 'ai-assistant-draft', draftId: id },
+          },
+        });
+      } else {
+        this.logger.warn(
+          `follow_up 幂等跳过：草稿 ${id} 已存在跟进任务，不重复创建`,
+        );
+      }
       executed = true;
     }
 
@@ -589,7 +645,11 @@ export class AiAssistantService {
       data: { status: 'executed', executedAt: new Date() },
     });
     if (done.count !== 1) {
-      throw new ConflictException('任务状态异常，无法标记完成');
+      // P1（复查 2026-08-22）：副作用已产生但最终状态更新失败——
+      // 抛 SideEffectCommittedError，外层不回滚（防重试重复副作用）
+      throw new SideEffectCommittedError(
+        `任务草稿 ${id} 的副作用已执行，但最终状态更新失败（当前状态非 executing），请人工核对`,
+      );
     }
     return this.toDto(
       (await this.prisma.growthTaskDraft.findFirst({ where: { id } }))!,
