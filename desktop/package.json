@@ -1,6 +1,6 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.1.90",
+  "version": "1.1.94",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
   "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
@@ -110,7 +110,8 @@
           "schema.prisma",
           "schema.sqlite.prisma",
           "libquery_engine*.node",
-          "query_engine-windows.dll.node"
+          "query_engine-windows.dll.node",
+          "prompts/**/*"
         ]
       },
       {
