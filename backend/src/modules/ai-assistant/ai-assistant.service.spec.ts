@@ -249,3 +249,97 @@ describe('AiAssistantService P3 租户隔离', () => {
     await expect(svc.resolveTenantId('u-1')).rejects.toThrow('租户解析失败');
   });
 });
+
+describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
+  function draftRow(over: Record<string, unknown> = {}) {
+    return {
+      id: 'd1',
+      userId: 'u-1',
+      tenantId: 't-test',
+      status: 'confirmed',
+      intent: 'report',
+      goal: '测试',
+      configId: null,
+      configJson: {},
+      platform: null,
+      expiresAt: new Date(Date.now() + 3600_000),
+      ...over,
+    };
+  }
+
+  function makeService(overrides: {
+    prisma?: Partial<Record<string, jest.Mock>>;
+    growth?: Partial<Record<string, jest.Mock>>;
+    leadConvert?: { convert: jest.Mock };
+  }) {
+    const prisma = {
+      growthTaskDraft: {
+        create: jest.fn(),
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        update: jest.fn(),
+      },
+      lead: { findMany: jest.fn() },
+      crmTask: { create: jest.fn() },
+      ...(overrides.prisma || {}),
+    };
+    const growth = {
+      createConfig: jest.fn(),
+      executeConfig: jest.fn(),
+      ...(overrides.growth || {}),
+    };
+    const leadConvert = overrides.leadConvert ?? { convert: jest.fn() };
+    const svc = new (require('./ai-assistant.service').AiAssistantService)(
+      prisma as never,
+      growth as never,
+      { resolveTenantId: jest.fn().mockResolvedValue('t-test') } as never,
+      leadConvert as never,
+    );
+    return { svc, prisma, growth, leadConvert };
+  }
+
+  it('sync_crm：未转线索批量转 CRM 客户', async () => {
+    const { svc, prisma, leadConvert } = makeService({});
+    prisma.growthTaskDraft.findFirst.mockResolvedValue(
+      draftRow({ intent: 'sync_crm', configId: null }),
+    );
+    prisma.lead.findMany.mockResolvedValue([
+      { id: 'lead-1' },
+      { id: 'lead-2' },
+    ]);
+    leadConvert.convert.mockResolvedValue({ ok: true });
+    prisma.growthTaskDraft.update.mockResolvedValue(
+      draftRow({ intent: 'sync_crm', status: 'executed' }),
+    );
+    await svc.executeDraft('u-1', 'd1');
+    expect(leadConvert.convert).toHaveBeenCalledTimes(2);
+    expect(leadConvert.convert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        leadId: 'lead-1',
+        scope: { userId: 'u-1', tenantId: 't-test' },
+      }),
+    );
+  });
+
+  it('follow_up：创建 CRM 跟进任务', async () => {
+    const { svc, prisma } = makeService({});
+    prisma.growthTaskDraft.findFirst.mockResolvedValue(
+      draftRow({ intent: 'follow_up', configId: null, goal: '回访老客户' }),
+    );
+    prisma.crmTask.create.mockResolvedValue({ id: 'task-1' });
+    prisma.growthTaskDraft.update.mockResolvedValue(
+      draftRow({ intent: 'follow_up', status: 'executed' }),
+    );
+    const draft = await svc.executeDraft('u-1', 'd1');
+    expect(draft.status).toBe('executed');
+    expect(prisma.crmTask.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          ownerId: 'u-1',
+          title: '回访老客户',
+          metadata: { source: 'ai-assistant-draft', draftId: 'd1' },
+        }),
+      }),
+    );
+  });
+});

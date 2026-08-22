@@ -55,6 +55,11 @@ export interface AgentBrowserStepEvent {
 @Injectable()
 export class AgentBrowserLoopService {
   private readonly logger = new Logger(AgentBrowserLoopService.name);
+  // P4（审计 2026-08-22）：Playwright MCP sidecar 是单例（一个 child/profile）。
+  // 并发会话同时 ensureProfile 会互相切换 profile 导致串读——用全局互斥锁
+  // 串行化 MCP 观察（观察串行，隔离正确）。真实执行路径（executeSingle 走
+  // LocalBrowserEngine 的 platform-accountId 独立会话）不受影响。
+  private static mcpLock: Promise<void> = Promise.resolve();
 
   constructor(
     private readonly sessions: AgentBrowserSessionService,
@@ -281,6 +286,19 @@ export class AgentBrowserLoopService {
     return { ok: status === 'success' || status === 'partial_success', steps };
   }
 
+  /** 串行化 Playwright MCP 访问（单例 sidecar 并发安全） */
+  private async withMcpLock<T>(fn: () => Promise<T>): Promise<T> {
+    const prev = AgentBrowserLoopService.mcpLock;
+    let release!: () => void;
+    AgentBrowserLoopService.mcpLock = new Promise<void>((r) => (release = r));
+    await prev;
+    try {
+      return await fn();
+    } finally {
+      release();
+    }
+  }
+
   /** Observe：真实 DOM/accessibility 快照（playwright-mcp browser_snapshot），失败回落 URL */
   async observe(sessionId: string): Promise<{
     type: 'snapshot';
@@ -295,34 +313,37 @@ export class AgentBrowserLoopService {
       // 真实无障碍树快照（若 playwright-mcp 可用）
       if (this.playwrightMcp) {
         try {
-          // §7.4 绑定当前 Agent 会话的 profile（确保 snapshot 与执行同页面，
-          // 避免"动作在 A 页面、快照读 B 页面"）。
-          // 8s 超时：sidecar 启动慢/失败时快速回落 URL 快照，不阻塞循环。
-          await Promise.race([
-            this.playwrightMcp.ensureProfile({
-              platform: 'general-web',
-              accountId: session.accountId,
-            }),
-            new Promise((_, reject) =>
-              setTimeout(
-                () => reject(new Error('ensureProfile timeout')),
-                8000,
+          // P4（审计 2026-08-22）：MCP sidecar 单例——并发会话互斥，防 profile 串读
+          const text = await this.withMcpLock(async () => {
+            // §7.4 绑定当前 Agent 会话的 profile（确保 snapshot 与执行同页面，
+            // 避免"动作在 A 页面、快照读 B 页面"）。
+            // 8s 超时：sidecar 启动慢/失败时快速回落 URL 快照，不阻塞循环。
+            await Promise.race([
+              this.playwrightMcp!.ensureProfile({
+                platform: 'general-web',
+                accountId: session.accountId,
+              }),
+              new Promise((_, reject) =>
+                setTimeout(
+                  () => reject(new Error('ensureProfile timeout')),
+                  8000,
+                ),
               ),
-            ),
-          ]);
-          const res = await this.playwrightMcp.rpcCall(
-            {
-              jsonrpc: '2.0',
-              id: 1,
-              method: 'tools/call',
-              params: {
-                name: 'browser_snapshot',
-                arguments: {},
+            ]);
+            const res = await this.playwrightMcp!.rpcCall(
+              {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                  name: 'browser_snapshot',
+                  arguments: {},
+                },
               },
-            },
-            15_000,
-          );
-          const text = this.extractSnapshotText(res);
+              15_000,
+            );
+            return this.extractSnapshotText(res);
+          });
           if (text) {
             const injected = detectPromptInjection(text);
             return {
