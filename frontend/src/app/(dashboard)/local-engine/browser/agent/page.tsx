@@ -58,6 +58,13 @@ export default function AgentBrowserPage() {
   const [instruction, setInstruction] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // 确认闸门：待确认的高风险动作（从 blocked step 提取）+ 已确认动作
+  const [pendingConfirmations, setPendingConfirmations] = useState<
+    { action: string; target?: string; url?: string; message?: string }[]
+  >([]);
+  const [confirmedTools, setConfirmedTools] = useState<
+    { action: string; target?: string; url?: string }[]
+  >([]);
   const eventsRef = useRef<HTMLDivElement>(null);
 
   const refresh = useCallback(async () => {
@@ -102,7 +109,10 @@ export default function AgentBrowserPage() {
         method: "POST",
         body:
           action === "run"
-            ? JSON.stringify({ instruction: instruction.trim() || undefined })
+            ? JSON.stringify({
+                instruction: instruction.trim() || undefined,
+                confirmedTools,
+              })
             : JSON.stringify({}),
       });
       if (action === "run" || action === "stop" || action === "pause" || action === "resume") {
@@ -112,12 +122,52 @@ export default function AgentBrowserPage() {
       if (action === "run") {
         const ev = await jfetch<EventDto[]>(`${B}/sessions/${id}/events`);
         setEvents(ev);
+        // 提取待确认的高风险动作（blocked step，message 含"需用户确认"）
+        const pending = (ev as Array<EventDto & { blocked?: boolean }>)
+          .filter(
+            (e) =>
+              e.type === "step" &&
+              !e.ok &&
+              e.message?.includes("需用户确认"),
+          )
+          .map((e) => ({
+            action: e.action ?? "unknown",
+            target:
+              e.action === "click" || e.action === "type" ? "?" : undefined,
+            url: e.url,
+            message: e.message,
+          }));
+        if (pending.length > 0) {
+          setPendingConfirmations(pending);
+        }
       }
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setBusy(false);
     }
+  };
+
+  const approveConfirmation = async () => {
+    if (pendingConfirmations.length === 0) return;
+    // 将待确认动作加入已确认列表（绑定精确 target/url）
+    setConfirmedTools((prev) => [
+      ...prev,
+      ...pendingConfirmations.map((p) => ({
+        action: p.action,
+        target: p.target,
+        url: p.url,
+      })),
+    ]);
+    setPendingConfirmations([]);
+    // 重跑当前会话（带新确认）
+    if (activeId) {
+      await act(activeId, "run");
+    }
+  };
+
+  const rejectConfirmation = () => {
+    setPendingConfirmations([]);
   };
 
   const loadEvents = async (id: string) => {
@@ -157,6 +207,66 @@ export default function AgentBrowserPage() {
       {error && (
         <div style={{ padding: "10px 14px", marginBottom: 14, borderRadius: 8, background: "rgba(248,113,113,.14)", color: "#f87171", fontSize: 12.5 }}>
           ❌ {error}
+        </div>
+      )}
+
+      {/* 高风险动作确认弹窗（§7.4 确认闸门） */}
+      {pendingConfirmations.length > 0 && (
+        <div
+          style={{
+            padding: "14px 16px",
+            marginBottom: 14,
+            borderRadius: 12,
+            border: "1px solid rgba(251,191,36,.5)",
+            background: "rgba(251,191,36,.08)",
+          }}
+        >
+          <div style={{ fontSize: 13.5, fontWeight: 800, color: "#fbbf24", marginBottom: 8 }}>
+            ⚠️ 高风险动作待确认
+          </div>
+          {pendingConfirmations.map((p, i) => (
+            <div key={i} style={{ fontSize: 12.5, color: "inherit", marginBottom: 4 }}>
+              {p.action}
+              {p.target ? ` → ${p.target}` : ""}
+              {p.url ? ` @ ${p.url}` : ""}
+            </div>
+          ))}
+          <div style={{ fontSize: 12, color: "#94a3b8", margin: "8px 0" }}>
+            批准后仅放行以上精确动作（绑定 selector/URL），不会放行整类操作。
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              onClick={approveConfirmation}
+              disabled={busy}
+              style={{
+                padding: "7px 16px",
+                borderRadius: 8,
+                border: "none",
+                background: "linear-gradient(135deg,#f59e0b,#d97706)",
+                color: "#fff",
+                fontSize: 12.5,
+                fontWeight: 700,
+                cursor: busy ? "not-allowed" : "pointer",
+              }}
+            >
+              {busy ? "执行中…" : "✓ 批准并重跑"}
+            </button>
+            <button
+              onClick={rejectConfirmation}
+              disabled={busy}
+              style={{
+                padding: "7px 16px",
+                borderRadius: 8,
+                border: "1px solid rgba(148,163,184,.4)",
+                background: "transparent",
+                color: "inherit",
+                fontSize: 12.5,
+                cursor: busy ? "not-allowed" : "pointer",
+              }}
+            >
+              拒绝
+            </button>
+          </div>
         </div>
       )}
 
