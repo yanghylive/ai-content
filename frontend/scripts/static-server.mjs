@@ -21,7 +21,7 @@ function parseArg(name, def) {
 
 const PORT = Number(parseArg("--port", "3421"));
 const ROOT = path.join(FRONTEND_ROOT, parseArg("--root", "out"));
-const API_BASE = "http://127.0.0.1:3011";
+const API_BASE = process.env.API_BASE || "http://127.0.0.1:3011";
 
 if (!fs.existsSync(ROOT)) {
   console.error(`❌ root 不存在: ${ROOT}`);
