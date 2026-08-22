@@ -133,3 +133,84 @@ describe('AgentBrowserPolicyService（P4 策略审计）', () => {
     expect(enter.requiresConfirmation).toBe(true);
   });
 });
+describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
+  const { AgentBrowserLoopService } = require('./agent-browser-loop.service');
+  const { AiBrowserActionService } = require('./ai-browser-action.service');
+  const { AgentBrowserPolicyService } = require('./agent-browser-policy.service');
+
+  function makeLoop(sessionSvc: AgentBrowserSessionService, argsOpts?: { results?: unknown[]; ok?: boolean; actions?: unknown[] }) {
+    const actionsMock = {
+      run: jest.fn().mockResolvedValue({
+        ok: argsOpts?.ok ?? true,
+        instruction: '搜索装修公司',
+        actions: argsOpts?.actions ?? [{ action: 'goto', url: 'https://example.com' }],
+        results: argsOpts?.results ?? [
+          { index: 0, action: 'goto', ok: true, evidenceUrl: 'https://ev/1' },
+        ],
+        sessionKey: 'general-web-abc',
+      }),
+    };
+    const policySvc = new AgentBrowserPolicyService();
+    const loop = new AgentBrowserLoopService(sessionSvc, actionsMock as never, policySvc);
+    return { loop, actionsMock };
+  }
+
+  it('run：非 running 状态抛 BadRequest', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const s = sessionSvc.create('u-1', {});
+    // status 是 created（未 run），直接 loop.run 应拒绝
+    const { loop } = makeLoop(sessionSvc);
+    await expect(loop.run(s.id, '指令')).rejects.toThrow('需先 run');
+  });
+
+  it('run：执行 Observe(快照) -> Act(动作) -> Verify(步骤事件)', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
+    await sessionSvc.acquireEngineSession(s.id);
+    expect(sessionSvc.get(s.id).status).toBe('running');
+
+    const { loop, actionsMock } = makeLoop(sessionSvc, {
+      results: [
+        { index: 0, action: 'goto', ok: true, message: 'ok', evidenceUrl: 'ev/1' },
+        { index: 1, action: 'click', ok: false, message: 'not found' },
+      ],
+    });
+    const events: unknown[] = [];
+    const result = await loop.run(s.id, '搜索装修公司', (e) => events.push(e));
+
+    expect(result.ok).toBe(true);
+    // 事件序列：snapshot -> 2 step -> done
+    expect(events[0]).toMatchObject({ type: 'snapshot' });
+    expect(events[1]).toMatchObject({ type: 'step', action: 'goto', ok: true });
+    expect(events[2]).toMatchObject({ type: 'step', action: 'click', ok: false });
+    expect(events[3]).toMatchObject({ type: 'done' });
+    // actions.run 被调用且注入当前 URL
+    expect(actionsMock.run).toHaveBeenCalledWith(
+      expect.objectContaining({ instruction: '搜索装修公司', url: 'https://example.com' }),
+    );
+    // stepCount 累计
+    expect(sessionSvc.get(s.id).stepCount).toBe(2);
+  });
+
+  it('run：actions.run 失败时 done.ok=false 但流程不断', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const s = sessionSvc.create('u-1', {});
+    await sessionSvc.acquireEngineSession(s.id);
+
+    const { loop } = makeLoop(sessionSvc, { ok: false, results: [], actions: [] });
+    const result = await loop.run(s.id, '指令');
+    expect(result.ok).toBe(false);
+  });
+
+  it('auditStep：合法工具返回审计，非法抛错', () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const { loop } = makeLoop(sessionSvc);
+    const d = loop.auditStep('navigate', { url: 'https://ok.com' }, ['ok.com']);
+    expect(d.allowed).toBe(true);
+    expect(() => loop.auditStep('evaluate_js' as never, {}, [])).toThrow();
+  });
+});

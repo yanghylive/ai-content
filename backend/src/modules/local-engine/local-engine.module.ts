@@ -21,6 +21,7 @@ import { AiBrowserActionService } from './ai-browser-action.service';
 import { AgentBrowserController } from './agent-browser.controller';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
+import { AgentBrowserLoopService } from './agent-browser-loop.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import { PlatformInteractionExecutor } from './platform-interaction-executor.service';
 import { XiaohongshuInteractionExecutor } from './xiaohongshu-interaction.executor';
@@ -63,6 +64,7 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     AiBrowserActionService,
     AgentBrowserSessionService,
     AgentBrowserPolicyService,
+    AgentBrowserLoopService,
     WechatPlanSchedulerService,
     WechatPlanEditorService,
     AgentSidecarService,
