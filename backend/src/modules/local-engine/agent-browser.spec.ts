@@ -868,3 +868,30 @@ describe('P4-4 生命周期（审计 2026-08-22）', () => {
     }
   });
 });
+
+describe('P4 MCP 互斥锁（审计 2026-08-22 并发 profile 串读修复）', () => {
+  it('并发 MCP 访问被串行化（单例 sidecar 防串 profile）', async () => {
+    const { AgentBrowserLoopService } = require('./agent-browser-loop.service');
+    const loop = Object.create(
+      AgentBrowserLoopService.prototype,
+    ) as {
+      withMcpLock<T>(fn: () => Promise<T>): Promise<T>;
+      logger: { warn: jest.Mock };
+    };
+    loop.logger = { warn: jest.fn() };
+    let active = 0;
+    let maxActive = 0;
+    const tick = async (name: string) => {
+      return loop.withMcpLock(async () => {
+        active += 1;
+        maxActive = Math.max(maxActive, active);
+        await new Promise((r) => setTimeout(r, 20));
+        active -= 1;
+        return name;
+      });
+    };
+    const results = await Promise.all([tick('a'), tick('b'), tick('c')]);
+    expect(results).toEqual(['a', 'b', 'c']);
+    expect(maxActive).toBe(1); // 任意时刻最多 1 个 MCP 访问在跑
+  });
+});

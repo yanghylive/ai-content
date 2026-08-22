@@ -9,6 +9,7 @@ import {
 import { createHash, randomUUID } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { GrowthService } from '../growth/growth.service';
+import { LeadConvertService } from '../leads/lead-convert.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 
 // ============================================================
@@ -67,6 +68,7 @@ export class AiAssistantService {
     private readonly prisma: PrismaService,
     private readonly growth: GrowthService,
     protected readonly authRequestContext?: AuthRequestContextService,
+    protected readonly leadConvert?: LeadConvertService,
   ) {}
 
   /**
@@ -478,6 +480,58 @@ export class AiAssistantService {
         throw new BadRequestException(`任务执行失败：${message}`);
       }
       executed = true;
+    } else if (row.intent === 'sync_crm') {
+      // P3 意图闭环（审计 2026-08-22）：把当前租户未同步线索批量转 CRM 客户
+      // （LeadConvertService 原子转客户，幂等由 lead.customerId 保证）
+      if (!this.leadConvert) {
+        throw new BadRequestException('CRM 转换服务不可用，请稍后重试');
+      }
+      const leads = await this.prisma.lead.findMany({
+        where: {
+          userId,
+          ...(tenantId ? { tenantId } : {}),
+          customerId: null,
+        },
+        take: 20,
+      });
+      if (leads.length === 0) {
+        throw new BadRequestException('当前没有待同步 CRM 的线索');
+      }
+      let synced = 0;
+      for (const lead of leads) {
+        try {
+          await this.leadConvert.convert({
+            leadId: lead.id,
+            idempotencyKey: `draft-${id}-${lead.id}`,
+            scope: { userId, tenantId: tenantId ?? null },
+          });
+          synced += 1;
+        } catch (error) {
+          this.logger.warn(
+            `sync_crm 单条失败（线索 ${lead.id}）：${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      }
+      if (synced === 0) {
+        throw new BadRequestException('线索同步 CRM 失败，请检查线索数据后重试');
+      }
+      executed = true;
+    } else if (row.intent === 'follow_up') {
+      // P3 意图闭环：创建跟进任务（7 天后到期，来源标记草稿）
+      const dueAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+      await this.prisma.crmTask.create({
+        data: {
+          ownerId: userId,
+          ...(tenantId ? { tenantId } : {}),
+          title: row.goal.slice(0, 80),
+          description: `AI 任务草稿自动创建（${id}）：${row.goal}`,
+          status: 'open',
+          priority: 'normal',
+          dueAt,
+          metadata: { source: 'ai-assistant-draft', draftId: id },
+        },
+      });
+      executed = true;
     }
 
     if (!executed) {
@@ -553,7 +607,8 @@ export class AiAssistantNestService extends AiAssistantService {
     prisma: PrismaService,
     growth: GrowthService,
     authRequestContext?: AuthRequestContextService,
+    leadConvert?: LeadConvertService,
   ) {
-    super(prisma, growth, authRequestContext);
+    super(prisma, growth, authRequestContext, leadConvert);
   }
 }
