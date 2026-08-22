@@ -12,9 +12,25 @@ function makeBrowserMock() {
   };
 }
 
+/** 测试租户上下文（fail-closed 测试注入） */
+function makeTenantContextMock(tenantId = 't-test') {
+  return {
+    resolveTenantId: jest.fn().mockResolvedValue(tenantId),
+  };
+}
+
+/** 测试 prisma（tenantMember 归属） */
+function makePrismaMock(tenantId = 't-test') {
+  return {
+    tenantMember: {
+      findFirst: jest.fn().mockResolvedValue({ tenantId }),
+    },
+  };
+}
+
 describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
   it('create：生成会话，域名白名单默认取 startUrl origin', () => {
-    const svc = new AgentBrowserSessionService(makeBrowserMock() as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
+    const svc = new AgentBrowserSessionService(makeBrowserMock() as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = svc.create('u-1', { startUrl: 'https://example.com/abc' });
     expect(s.status).toBe('created');
     expect(s.engineKey).toBeUndefined();
@@ -25,7 +41,7 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
   });
 
   it('create：显式 allowDomains 覆盖默认', () => {
-    const svc = new AgentBrowserSessionService(makeBrowserMock() as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
+    const svc = new AgentBrowserSessionService(makeBrowserMock() as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = svc.create('u-1', {
       startUrl: 'https://a.com',
       allowDomains: ['b.com', 'c.com'],
@@ -34,13 +50,13 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
   });
 
   it('get：不存在抛 NotFound', () => {
-    const svc = new AgentBrowserSessionService(makeBrowserMock() as never, "/tmp/agent-browser-spec-" + Math.random().toString(36).slice(2) + ".json");
+    const svc = new AgentBrowserSessionService(makeBrowserMock() as never, makePrismaMock() as never, makeTenantContextMock() as never);
     expect(() => svc.get('nope')).toThrow(NotFoundException);
   });
 
   it('acquireEngineSession：复用 general-web 引擎 + 状态置 running', async () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = svc.create('u-1', { startUrl: 'https://example.com' });
     const { engineKey } = await svc.acquireEngineSession(s.id);
     expect(engineKey).toBe('general-web-abc');
@@ -53,7 +69,7 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
 
   it('租约过期：acquire 抛 BadRequest', async () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = svc.create('u-1', {});
     // 手动把内部会话租约改成已过期（DTO 是副本，须改内部）
     const inner = svc.get(s.id);
@@ -65,7 +81,7 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
 
   it('stop：关闭引擎 + 状态 stopped', async () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = svc.create('u-1', {});
     await svc.stop(s.id);
     expect(browser.closeSession).not.toHaveBeenCalled(); // 未 acquire 不关闭
@@ -74,7 +90,7 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
 
   it('stop：已 acquire 后关闭引擎', async () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = svc.create('u-1', {});
     await svc.acquireEngineSession(s.id);
     await svc.stop(s.id);
@@ -176,7 +192,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('run：非 running 状态抛 BadRequest', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = sessionSvc.create('u-1', {});
     // status 是 created（未 run），直接 loop.run 应拒绝
     const { loop } = makeLoop(sessionSvc);
@@ -185,7 +201,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('run：执行 Observe(快照) -> Act(动作) -> Verify(步骤事件)', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
     await sessionSvc.acquireEngineSession(s.id);
     expect(sessionSvc.get(s.id).status).toBe('running');
@@ -222,7 +238,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('run：actions.run 失败时 done.ok=false 但流程不断', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = sessionSvc.create('u-1', {});
     await sessionSvc.acquireEngineSession(s.id);
 
@@ -233,7 +249,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('auditStep：合法工具返回审计，非法抛错', () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const { loop } = makeLoop(sessionSvc);
     const d = loop.auditStep('navigate', { url: 'https://ok.com' }, ['ok.com']);
     expect(d.allowed).toBe(true);
@@ -242,7 +258,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('list：只返回当前用户会话 + DTO 不含 ownerId', () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s1 = svc.create('u-1', {});
     svc.create('u-2', {});
     const list = svc.list('u-1');
@@ -254,7 +270,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('assertOwner：他人会话抛 Forbidden，本人放行', () => {
     const browser = makeBrowserMock();
-    const svc = new AgentBrowserSessionService(browser as never);
+    const svc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = svc.create('u-owner', {});
     expect(() => svc.assertOwner(s.id, 'u-owner')).not.toThrow();
     expect(() => svc.assertOwner(s.id, 'u-attacker')).toThrow();
@@ -262,7 +278,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('逐步审计：click 步骤被标记中风险需确认', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
     await sessionSvc.acquireEngineSession(s.id);
     const { loop } = makeLoop(sessionSvc, {
@@ -279,7 +295,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('observe：playwright-mcp 可用时返回真实 DOM 快照', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = sessionSvc.create('u-1', { startUrl: 'https://example.com' });
     await sessionSvc.acquireEngineSession(s.id);
     const playwrightMcpMock = {
@@ -312,7 +328,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('feature flag：AGENT_BROWSER_MODE=legacy 拒绝 run', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = sessionSvc.create('u-1', {});
     await sessionSvc.acquireEngineSession(s.id);
     const { loop } = makeLoop(sessionSvc);
@@ -328,7 +344,7 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
 
   it('feature flag：ALLOW_WRITE=false 拒绝写指令', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = sessionSvc.create('u-1', {});
     await sessionSvc.acquireEngineSession(s.id);
     const { loop } = makeLoop(sessionSvc);
@@ -361,9 +377,51 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     expect(svc.get(s.id).lease?.tenantId).toBe('t-tenant-1');
   });
 
+  it('fail-closed：无租户上下文 acquire 抛 Forbidden', async () => {
+    const browser = makeBrowserMock();
+    // prisma 无 tenantMember delegate → 租户解析失败必须阻断
+    const svc = new AgentBrowserSessionService(
+      browser as never,
+      {} as never,
+    );
+    const s = svc.create('u-1', {});
+    await expect(svc.acquireEngineSession(s.id)).rejects.toThrow(
+      '缺少租户上下文',
+    );
+  });
+
+  it('fail-closed：跨租户 assertOwner 拒绝', async () => {
+    const browser = makeBrowserMock();
+    const svc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock('t-a') as never,
+      makeTenantContextMock('t-a') as never,
+    );
+    const s = svc.create('u-1', {}, 't-a');
+    // 请求租户 t-b ≠ 会话租约 t-a → 拒绝
+    expect(() => svc.assertOwner(s.id, 'u-1', 't-b')).toThrow();
+    // 同租户放行
+    expect(() => svc.assertOwner(s.id, 'u-1', 't-a')).not.toThrow();
+  });
+
+  it('list：按租户过滤（多租户用户只见当前租户会话）', () => {
+    const browser = makeBrowserMock();
+    const svc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    svc.create('u-1', {}, 't-a');
+    svc.create('u-1', {}, 't-b');
+    const listA = svc.list('u-1', 't-a');
+    const listB = svc.list('u-1', 't-b');
+    expect(listA).toHaveLength(1);
+    expect(listB).toHaveLength(1);
+  });
+
   it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
     const browser = makeBrowserMock();
-    const sessionSvc = new AgentBrowserSessionService(browser as never);
+    const sessionSvc = new AgentBrowserSessionService(browser as never, makePrismaMock() as never, makeTenantContextMock() as never);
     const s = sessionSvc.create('u-1', {});
     sessionSvc.appendEvent(s.id, { type: 'snapshot', ok: true } as never);
     sessionSvc.appendEvent(s.id, { type: 'done', ok: true } as never);

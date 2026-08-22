@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { resolveProjectDataPath } from '../../common/project-paths';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import {
   AgentBrowserEvent,
@@ -32,6 +33,7 @@ export class AgentBrowserSessionService implements OnModuleInit {
   constructor(
     private readonly browser: LocalBrowserEngine,
     private readonly prisma?: PrismaService,
+    private readonly authRequestContext?: AuthRequestContextService,
   ) {
     // 测试可设 AGENT_BROWSER_STORE_PATH 隔离；生产用项目数据目录
     this.storePath =
@@ -89,6 +91,7 @@ export class AgentBrowserSessionService implements OnModuleInit {
   create(
     ownerId: string,
     input: CreateAgentBrowserSessionInput = {},
+    tenantId?: string,
   ): AgentBrowserSessionDto {
     const now = new Date().toISOString();
     const leaseMs = input.leaseMs ?? DEFAULT_LEASE_MS;
@@ -122,7 +125,7 @@ export class AgentBrowserSessionService implements OnModuleInit {
         acquiredAt: now,
         expiresAt: new Date(Date.now() + leaseMs).toISOString(),
         ownerId,
-        tenantId: undefined,
+        tenantId,
       },
     };
     this.sessions.set(session.id, session);
@@ -140,16 +143,27 @@ export class AgentBrowserSessionService implements OnModuleInit {
   }
 
   /** P4 安全：校验会话所有者（防 IDOR——知道 sessionId 不能操作他人会话） */
-  assertOwner(id: string, ownerId: string): AgentBrowserSession {
+  assertOwner(id: string, ownerId: string, tenantId?: string): AgentBrowserSession {
     const session = this.get(id);
     if (session.lease?.ownerId && session.lease.ownerId !== ownerId) {
       throw new ForbiddenException('无权访问该 Agent Browser 会话');
     }
+    // 租户级隔离：请求租户必须与会话租约一致（多租户用户跨租户访问阻断）
+    if (tenantId && session.lease?.tenantId && session.lease.tenantId !== tenantId) {
+      throw new ForbiddenException('无权访问其他租户的 Agent Browser 会话');
+    }
     return session;
   }
 
-  /** 解析用户真实租户（无 prisma 或未归属回落 undefined=单租户） */
-  async resolveTenantId(userId: string): Promise<string | undefined> {
+  /**
+   * §7.4 租户 fail-closed：用请求租户上下文（x-tenant-id / membership）解析。
+   * 无登录上下文、无租户归属、DB 异常 → 抛 403/401（不允许回落宽松模式）。
+   */
+  async resolveTenantId(userId: string): Promise<string> {
+    if (this.authRequestContext) {
+      return await this.authRequestContext.resolveTenantId(this.prisma!);
+    }
+    // 无上下文服务（测试/单租户兼容）：显式单租户才放行，否则拒绝
     try {
       const delegate = (
         this.prisma as unknown as {
@@ -161,23 +175,44 @@ export class AgentBrowserSessionService implements OnModuleInit {
           };
         }
       )?.tenantMember;
-      if (!delegate?.findFirst) return undefined;
+      if (!delegate?.findFirst) {
+        throw new ForbiddenException(
+          '缺少租户上下文，Agent Browser 会话无法确定租户归属',
+        );
+      }
       const membership = await delegate.findFirst({
         where: { userId },
         select: { tenantId: true },
       });
-      return membership?.tenantId || undefined;
-    } catch {
-      return undefined;
+      if (!membership?.tenantId) {
+        throw new ForbiddenException(
+          '当前账号未归属任何租户，不能创建 Agent Browser 会话',
+        );
+      }
+      return membership.tenantId;
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
+      throw new ForbiddenException(
+        `租户解析失败（fail-closed）：${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  /** 只返回当前用户（owner）的会话——防跨用户泄露 */
-  list(ownerId: string): AgentBrowserSessionDto[] {
+  /** 只返回当前用户（owner）+ 当前租户的会话——防跨用户/跨租户泄露 */
+  list(ownerId: string, tenantId?: string): AgentBrowserSessionDto[] {
     return [...this.sessions.values()]
-      .filter((s) => s.lease?.ownerId === ownerId)
+      .filter(
+        (s) =>
+          s.lease?.ownerId === ownerId &&
+          (!tenantId || !s.lease?.tenantId || s.lease.tenantId === tenantId),
+      )
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
       .map((s) => this.toDto(s));
+  }
+
+  /** 对外 DTO（剔除 engineKey/ownerId 等内部字段）——controller 响应统一走这里 */
+  toPublicDto(s: AgentBrowserSession): AgentBrowserSessionDto {
+    return this.toDto(s);
   }
 
   /** 会话进入运行态前：懒创建引擎会话（复用 general-web） */
@@ -194,10 +229,10 @@ export class AgentBrowserSessionService implements OnModuleInit {
     session.status = 'running';
     session.updatedAt = new Date().toISOString();
     session.lastActivityAt = session.updatedAt;
-    // 补齐租户（多租户隔离：acquire 时解析）
+    // 补齐租户（多租户隔离：acquire 时 fail-closed 解析）
     if (!session.lease?.tenantId) {
       const tenantId = await this.resolveTenantId(session.lease?.ownerId ?? '');
-      if (tenantId && session.lease) session.lease.tenantId = tenantId;
+      session.lease!.tenantId = tenantId;
     }
     if (session.url && engine.page.url() !== session.url) {
       try {
