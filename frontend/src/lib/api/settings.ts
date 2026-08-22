@@ -76,6 +76,8 @@ export const settingsApi = {
   listPlatforms() {
     return api.get<AIPlatform[]>('/ai-platforms');
   },
+  // 2026-08-22：用户自定义第三方 AI 平台已关闭（大王指示，统一走 Kaypal 计费），
+  // 该接口仅保留 Kaypal 模型台，第三方创建一律拒绝（后端 ai-platforms 已封）
   createPlatform(data: { name: string; baseUrl: string; apiKey: string }) {
     return api.post<AIPlatform>('/ai-platforms', data);
   },

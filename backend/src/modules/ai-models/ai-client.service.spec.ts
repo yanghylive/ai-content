@@ -348,3 +348,47 @@ describe('AiClientService token usage auto-report (P0)', () => {
     expect(aiAudit.recordTokenUsage).not.toHaveBeenCalled();
   });
 });
+
+describe('AiClientService 第三方平台封禁（大王指示 2026-08-22）', () => {
+  it('getClient：非 kaypal 平台被拒（用户自定义第三方已关闭）', async () => {
+    const { AiClientService } = require('./ai-client.service');
+    const svc = Object.create(AiClientService.prototype) as any;
+    svc.prisma = {
+      aIPlatform: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'p-custom',
+          name: '自定义 OpenAI',
+          baseUrl: 'https://api.thirdparty.com/v1',
+          apiKey: 'sk-xxx',
+          enabled: true,
+          config: {},
+        }),
+      },
+    };
+    await expect(svc.getClient('p-custom')).rejects.toThrow(
+      /仅支持 Kaypal 模型台/,
+    );
+  });
+
+  it('getClient：kaypal 平台正常放行', async () => {
+    const { AiClientService } = require('./ai-client.service');
+    const svc = Object.create(AiClientService.prototype) as any;
+    svc.prisma = {
+      aIPlatform: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'p-kaypal',
+          name: 'Kaypal 模型台',
+          baseUrl: 'https://kaypal.cn/api/ai',
+          apiKey: 'kaypalcred_test',
+          enabled: true,
+          config: { source: 'kaypal' },
+        }),
+      },
+    };
+    svc.resolveDynamicHeaders = jest.fn().mockResolvedValue({});
+    svc.clients = new Map();
+    svc.throwIfAborted = jest.fn();
+    const client = await svc.getClient('p-kaypal');
+    expect(client.baseURL).toContain('kaypal.cn');
+  });
+});

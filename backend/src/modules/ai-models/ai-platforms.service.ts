@@ -1,7 +1,8 @@
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -29,6 +30,18 @@ export class AiPlatformsService {
   }
 
   async create(dto: CreatePlatformDto) {
+    // 2026-08-22 大王指示：只允许 Kaypal 模型台，自定义第三方平台关闭
+    const baseUrl = `${dto.baseUrl ?? ''}`;
+    const name = `${dto.name ?? ''}`;
+    if (
+      !baseUrl.includes('kaypal.cn') &&
+      !baseUrl.includes('kaypal.com') &&
+      !name.includes('Kaypal')
+    ) {
+      throw new BadRequestException(
+        '仅支持 Kaypal 模型台（统一计费），用户自定义第三方 AI 平台已关闭',
+      );
+    }
     try {
       return await this.prisma.aIPlatform.create({ data: dto });
     } catch (error: unknown) {
