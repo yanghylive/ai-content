@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AiBrowserActionService } from './ai-browser-action.service';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
+import { detectPromptInjection } from '../ai-gateway/ai-gateway.service';
 
 export interface AgentBrowserStepEvent {
   type: 'step' | 'snapshot' | 'done' | 'error';
@@ -119,11 +120,18 @@ export class AgentBrowserLoopService {
       // 引擎 page 详情由 SessionService 维护的 engineKey 当前页 URL 近似；
       // 更精确的 DOM snapshot 由 AiBrowserActionService 的 extract/截图承担。
       // 这里只返回会话记录的当前 URL（避免重复打开浏览器页）。
+      // §9.3：快照内容若含注入模式，标记隔离（未来接入模型决策循环时先过此门）
+      const snapshotText = `快照（会话 ${sessionId}，当前页 ${session.url || '未导航'}）`;
+      const injected = detectPromptInjection(
+        [snapshotText, session.url ?? ''].join('\n'),
+      );
       return {
         type: 'snapshot',
         ok: true,
         url: session.url,
-        message: `快照（会话 ${sessionId}，当前页 ${session.url || '未导航'}）`,
+        message: injected
+          ? `快照（会话 ${sessionId}）— 检测到可疑注入内容，已隔离，不进入模型上下文`
+          : snapshotText,
       };
     } catch (error) {
       return {
