@@ -32,8 +32,18 @@ import { toPublicError } from "@/lib/public-error";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.90";
+const DESKTOP_APP_VERSION = "1.1.96";
 const RELEASE_NOTES = [
+  {
+    version: "v1.1.96",
+    date: "2026-08-22",
+    highlights: [
+      "安全加固：桌面安装包不再携带服务端凭据（打包源切换占位模板 + 发布守卫拦截真实密钥），脚本内硬编码会话 token 全部清除",
+      "Agent Browser 三轮 20 项修复：导航后真实 URL 闭环 / 断点续跑 / 幂等重试（只补失败动作）/ 确认单两阶段消费 / error 终态拒绝重跑 / 重启保留可恢复会话",
+      "AI 草稿幂等：并发确认原子抢占无孤儿配置 / 执行副作用防重复 / 崩溃残留自动回收",
+      "SQLite 桌面库补全 growth_task_drafts 表（150 模型全对齐）；MAI-UI 视觉模型断链修复（别名列表 + enabled 过滤）；套餐门禁本地旁路绑定开发环境",
+    ],
+  },
   {
     version: "v1.1.90",
     date: "2026-08-20",

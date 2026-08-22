@@ -23,6 +23,23 @@ const buildPlatform =
         ? 'win-x64'
         : 'linux-x64');
 
+// P1（P5 门禁 2026-08-22）：schema.sqlite.prisma 是 prepare-sqlite-schema.mjs
+// 的生成产物（按 BUILD_PLATFORM 决定 binaryTargets），不再入库。
+// 干净 checkout 时缺失属预期——先按当前平台生成再检查，保证可复现构建。
+const sqliteSchemaPath = path.join(repoRoot, 'backend', 'prisma', 'schema.sqlite.prisma');
+if (!fs.existsSync(sqliteSchemaPath)) {
+  const { execSync } = require('child_process');
+  console.log('⊘ schema.sqlite.prisma 缺失（生成产物），按 BUILD_PLATFORM 重新生成…');
+  execSync(`cd ${JSON.stringify(path.join(repoRoot, 'backend'))} && npm run db:prepare:sqlite`, {
+    stdio: 'inherit',
+    env: { ...process.env, BUILD_PLATFORM: buildPlatform },
+  });
+  if (!fs.existsSync(sqliteSchemaPath)) {
+    console.error('schema.sqlite.prisma 生成失败，阻断构建');
+    process.exit(1);
+  }
+}
+
 function prismaEngineFileForPlatform(platform) {
   switch (platform) {
     case 'win-x64':
