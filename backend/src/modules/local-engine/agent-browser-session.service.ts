@@ -1,5 +1,8 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { resolveProjectDataPath } from '../../common/project-paths';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import {
   AgentBrowserEvent,
@@ -19,11 +22,61 @@ const engineAccountPrefix = 'agent-browser';
  * 引擎层复用 LocalBrowserEngine 的 general-web 持久会话。
  */
 @Injectable()
-export class AgentBrowserSessionService {
+export class AgentBrowserSessionService implements OnModuleInit {
   private readonly logger = new Logger(AgentBrowserSessionService.name);
   private readonly sessions = new Map<string, AgentBrowserSession>();
+  /** P4 持久化：会话/事件落盘路径（进程重启可恢复审计与证据链） */
+  private readonly storePath: string;
 
-  constructor(private readonly browser: LocalBrowserEngine) {}
+  constructor(private readonly browser: LocalBrowserEngine) {
+    this.storePath = resolveProjectDataPath('agent-browser', 'sessions.json');
+  }
+
+  onModuleInit(): void {
+    this.loadFromDisk();
+  }
+
+  /** 启动时从磁盘恢复会话（引擎 key 失效置 stopped，事件保留） */
+  private loadFromDisk(): void {
+    try {
+      if (!existsSync(this.storePath)) return;
+      const raw = readFileSync(this.storePath, 'utf8');
+      const list = JSON.parse(raw) as Array<Record<string, unknown>>;
+      if (!Array.isArray(list)) return;
+      for (const item of list) {
+        const session = item as unknown as AgentBrowserSession;
+        if (!session?.id) continue;
+        // 重启后引擎会话已失效：标记 stopped（审计与事件保留）
+        session.status = 'stopped';
+        session.engineKey = '';
+        session.updatedAt = new Date().toISOString();
+        this.sessions.set(session.id, session);
+      }
+      this.logger.log(
+        `Agent Browser 会话已从磁盘恢复 ${this.sessions.size} 个（审计/事件保留，引擎态置 stopped）`,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Agent Browser 会话恢复失败（忽略，重新开始）：${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /** 落盘（每次状态变更调用，保证审计链不丢） */
+  private persist(): void {
+    try {
+      mkdirSync(dirname(this.storePath), { recursive: true });
+      const list = [...this.sessions.values()].map((s) => ({
+        ...s,
+        engineKey: '', // 不持久化引擎句柄（重启失效）
+      }));
+      writeFileSync(this.storePath, JSON.stringify(list, null, 2), 'utf8');
+    } catch (error) {
+      this.logger.warn(
+        `Agent Browser 会话持久化失败（不阻断）：${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
 
   /** 创建会话（不立即启动浏览器，run 时懒创建） */
   create(
@@ -64,6 +117,7 @@ export class AgentBrowserSessionService {
     this.logger.log(
       `AgentBrowser 会话创建 ${session.id} 域名白名单=${allowDomains.join(',') || '(未配置,导航需确认)'}`,
     );
+    this.persist();
     return this.toDto(session);
   }
 
@@ -117,6 +171,7 @@ export class AgentBrowserSessionService {
     this.logger.log(
       `AgentBrowser 会话 ${id} 引擎就绪 ${engine.key} 当前页 ${engine.page.url()}`,
     );
+    this.persist();
     return { engineKey: engine.key };
   }
 
@@ -125,6 +180,7 @@ export class AgentBrowserSessionService {
     session.status = status;
     session.updatedAt = new Date().toISOString();
     session.lastActivityAt = session.updatedAt;
+    this.persist();
   }
 
   markError(id: string, error: string): void {
@@ -149,6 +205,7 @@ export class AgentBrowserSessionService {
       session.events.splice(0, session.events.length - 500);
     }
     session.lastActivityAt = new Date().toISOString();
+    this.persist();
   }
 
   listEvents(id: string): AgentBrowserEvent[] {
@@ -176,6 +233,7 @@ export class AgentBrowserSessionService {
     }
     session.status = 'stopped';
     session.updatedAt = new Date().toISOString();
+    this.persist();
   }
 
   private assertLeaseValid(session: AgentBrowserSession): void {
