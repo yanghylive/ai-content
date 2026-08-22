@@ -1,5 +1,8 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { AiBrowserActionService, AiBrowserAction } from './ai-browser-action.service';
+import {
+  AiBrowserActionService,
+  AiBrowserAction,
+} from './ai-browser-action.service';
 import type { AgentBrowserSession } from './agent-browser.types';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
@@ -74,7 +77,10 @@ export class AgentBrowserLoopService {
         'AGENT_BROWSER_MODE=legacy：Agent Browser 循环未开启（灰度开关关闭），请使用现有动作执行',
       );
     }
-    if (!cfg.allowWrite && /(填写|输入|提交|点击|发送|发评论|发私信)/.test(instruction)) {
+    if (
+      !cfg.allowWrite &&
+      /(填写|输入|提交|点击|发送|发评论|发私信)/.test(instruction)
+    ) {
       throw new BadRequestException(
         'AGENT_BROWSER_ALLOW_WRITE=false：写操作未开启，仅允许导航/读取类任务',
       );
@@ -176,9 +182,7 @@ export class AgentBrowserLoopService {
       this.sessions.appendEvent(sessionId, stepEvent);
     }
 
-    const successCount = steps.filter(
-      (s) => s.type === 'step' && s.ok,
-    ).length;
+    const successCount = steps.filter((s) => s.type === 'step' && s.ok).length;
     this.logger.log(
       `AgentBrowser ${sessionId} 完成：${actions.length} 个动作，${successCount} 成功`,
     );
@@ -195,9 +199,7 @@ export class AgentBrowserLoopService {
   }
 
   /** Observe：真实 DOM/accessibility 快照（playwright-mcp browser_snapshot），失败回落 URL */
-  async observe(
-    sessionId: string,
-  ): Promise<{
+  async observe(sessionId: string): Promise<{
     type: 'snapshot';
     ok: boolean;
     url?: string;
@@ -218,7 +220,10 @@ export class AgentBrowserLoopService {
               accountId: session.accountId,
             }),
             new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('ensureProfile timeout')), 8000),
+              setTimeout(
+                () => reject(new Error('ensureProfile timeout')),
+                8000,
+              ),
             ),
           ]);
           const res = await this.playwrightMcp.rpcCall(
@@ -230,7 +235,7 @@ export class AgentBrowserLoopService {
                 name: 'browser_snapshot',
                 arguments: {},
               },
-            } as never,
+            },
             15_000,
           );
           const text = this.extractSnapshotText(res);
@@ -272,9 +277,9 @@ export class AgentBrowserLoopService {
   }
 
   /** 从 MCP tools/call 响应提取 snapshot 文本 */
-  private extractSnapshotText(
-    res: { result?: { content?: Array<{ type?: string; text?: string }> } },
-  ): string {
+  private extractSnapshotText(res: {
+    result?: { content?: Array<{ type?: string; text?: string }> };
+  }): string {
     const content = res?.result?.content;
     if (!Array.isArray(content)) return '';
     return content
@@ -356,7 +361,7 @@ export class AgentBrowserLoopService {
         `非法的 AGENT_BROWSER_MODE=${rawMode}，仅允许 legacy/dom-agent`,
       );
     }
-    const mode = rawMode as 'legacy' | 'dom-agent';
+    const mode = rawMode;
     // §14.2 安全校验：非法数值（<=0/NaN）拒绝，不允许静默关闭限制
     const maxSteps = Number(process.env.AGENT_BROWSER_MAX_STEPS ?? 30);
     const maxRetries = Number(process.env.AGENT_BROWSER_MAX_RETRIES ?? 2);
@@ -390,7 +395,18 @@ export class AgentBrowserLoopService {
   }
 
   /** 执行器动作 → P4 工具白名单映射（用于逐步策略审计） */
-  private mapTool(action: string): 'navigate' | 'snapshot' | 'click' | 'fill_form' | 'press_key' | 'wait_for' | 'tabs' | 'extract_text' | null {
+  private mapTool(
+    action: string,
+  ):
+    | 'navigate'
+    | 'snapshot'
+    | 'click'
+    | 'fill_form'
+    | 'press_key'
+    | 'wait_for'
+    | 'tabs'
+    | 'extract_text'
+    | null {
     switch (action) {
       case 'goto':
         return 'navigate';
@@ -416,6 +432,6 @@ export class AgentBrowserLoopService {
     allowDomains: string[],
   ) {
     this.policy.assertToolAllowed(tool);
-    return this.policy.audit(tool as never, args, { allowDomains });
+    return this.policy.audit(tool, args, { allowDomains });
   }
 }

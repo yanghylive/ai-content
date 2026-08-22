@@ -313,7 +313,7 @@ export class AuthService {
     // 本端点仅兼容历史存量 `wechat-${openid}` 假号登录，不再创建新假号。
     const openid = await this.resolveWechatOpenId(code);
     const wechatUsername = `wechat-${openid}`;
-    let user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { username: wechatUsername },
     });
     if (!user) {

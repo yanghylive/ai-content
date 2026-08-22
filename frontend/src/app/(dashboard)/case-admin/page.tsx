@@ -3,19 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { addToast } from "@heroui/react";
-import {
-  ArrowDown,
-  ArrowUp,
-  Check,
-  ClipboardList,
-  Heart,
-  Home,
-  Loader2,
-  Plus,
-  ShieldAlert,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ClipboardList, Heart, Home, Loader2, Plus, ShieldAlert, Star, Trash2 } from "lucide-react";
 import {
   caseAdminApi,
   type AdminCase,
@@ -27,15 +15,13 @@ import { ApiError } from "@/lib/api/client";
 import { authApi } from "@/lib/api/auth";
 import { isAdminUser } from "@/lib/admin-user";
 import { V2BackButton } from "@/components/v2/v2-back-button";
-import {
-  OpsButton,
+import {OpsButton,
   OpsDenseTable,
   OpsDesktopPage,
   OpsMetric,
   OpsPanel,
   OpsStatusPill,
-  OpsTabs,
-  OpsToolbar,
+  OpsTabs
 } from "../components/desktop-ops-ui";
 
 const PROVENANCE_LABEL: Record<string, string> = {

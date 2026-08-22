@@ -94,7 +94,7 @@ export function ShortLinkQrCode({
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [url]);
+  }, [url, caseId, endpointId]);
 
   if (!shortCode) return null;
 

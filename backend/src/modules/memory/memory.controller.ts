@@ -42,7 +42,9 @@ export class MemoryController {
   }
 
   @Get('kaypal')
-  @ApiOperation({ summary: '检索 kaypal 长期记忆（AI 记得你上次，获客表单预填用）' })
+  @ApiOperation({
+    summary: '检索 kaypal 长期记忆（AI 记得你上次，获客表单预填用）',
+  })
   async kaypalSearch(
     @Req() request: AuthenticatedRequest,
     @Query('query') query?: string,

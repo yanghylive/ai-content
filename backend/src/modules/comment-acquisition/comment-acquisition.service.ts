@@ -95,11 +95,7 @@ export class CommentAcquisitionService {
     const scope = await this.resolveScope();
     // 归一化账号 ID：兼容纯数字（auto-upload 数字 id，前端表单形式）与 stableId（publish_accounts 主键）
     const normalizedAccount = this.normalizeAccountId(input.accountId);
-    await this.assertAccountOwnership(
-      input.accountId,
-      scope,
-      input.platform,
-    );
+    await this.assertAccountOwnership(input.accountId, scope, input.platform);
     const platformName =
       input.platform === 'douyin'
         ? '抖音'
@@ -483,9 +479,7 @@ export class CommentAcquisitionService {
       const result = (await adapter.send?.({
         platform: input.platform,
         taskType:
-          lead.sourceType === 'dm'
-            ? 'direct-message-reply'
-            : 'comment-reply',
+          lead.sourceType === 'dm' ? 'direct-message-reply' : 'comment-reply',
         accountId: input.accountId,
         targetText: input.commentText,
         sourceText: input.commentText,

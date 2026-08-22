@@ -61,8 +61,14 @@ export function matchesConfirmedAction(
   step: AiBrowserAction,
 ): boolean {
   if (confirmed.action !== step.action) return false;
-  if ('url' in step && confirmed.url && confirmed.url !== step.url) return false;
-  if ('selector' in step && confirmed.target && confirmed.target !== step.selector) return false;
+  if ('url' in step && confirmed.url && confirmed.url !== step.url)
+    return false;
+  if (
+    'selector' in step &&
+    confirmed.target &&
+    confirmed.target !== step.selector
+  )
+    return false;
   return true;
 }
 
@@ -376,16 +382,18 @@ export class AiBrowserActionService {
                 index: i,
                 action: step.action,
                 ok: false,
-                message: gate.requiresConfirmation && !confirmed
-                  ? `需用户确认后执行（高风险动作）`
-                  : `策略阻断：${gate.reason ?? '不在白名单'}`,
+                message:
+                  gate.requiresConfirmation && !confirmed
+                    ? `需用户确认后执行（高风险动作）`
+                    : `策略阻断：${gate.reason ?? '不在白名单'}`,
                 blocked: true,
               });
               continue;
             }
           }
           // §14.2 maxRetries：单步失败重试
-          let stepResult: Awaited<ReturnType<typeof this.executeStep>> | undefined;
+          let stepResult:
+            Awaited<ReturnType<typeof this.executeStep>> | undefined;
           for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
               stepResult = await this.executeStep(
@@ -452,7 +460,14 @@ export class AiBrowserActionService {
     action: AiBrowserAction;
     accountId?: string;
     timeoutMs?: number;
-  }): Promise<{ index: number; action: string; ok: boolean; message?: string; evidenceUrl?: string; extractText?: string }> {
+  }): Promise<{
+    index: number;
+    action: string;
+    ok: boolean;
+    message?: string;
+    evidenceUrl?: string;
+    extractText?: string;
+  }> {
     const timeoutMs = input.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     const session = await this.browser.getOrCreateSession({
       platform: 'general-web',

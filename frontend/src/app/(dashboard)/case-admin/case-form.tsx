@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Select, SelectItem, Textarea, addToast } from "@heroui/react";
-import { Check, Loader2, Plus, Send, Trash2 } from "lucide-react";
+import { Check, Plus, Send, Trash2 } from "lucide-react";
 import {
   caseAdminApi,
   type AdminCase,

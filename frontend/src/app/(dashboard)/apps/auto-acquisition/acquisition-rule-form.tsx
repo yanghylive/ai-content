@@ -122,6 +122,8 @@ export function AcquisitionRuleForm() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [memoryLoaded, setMemoryLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // 执行账号：自动拉取账号健康列表，按所选平台联动过滤，默认选中该平台
@@ -170,7 +172,6 @@ export function AcquisitionRuleForm() {
 
   // T3-4：AI 记得你上次——加载 kaypal 长期记忆，预填行业/关键词/话术
   const [memoryHint, setMemoryHint] = useState<string | null>(null);
-  const [memoryLoaded, setMemoryLoaded] = useState(false);
   useEffect(() => {
     let cancelled = false;
     const loadMemory = async () => {

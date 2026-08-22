@@ -712,7 +712,10 @@ export class AiGatewayService {
                   // 协议闭合标签：吞掉，不发给用户
                   tagProbe = '';
                 } else {
-                  send({ type: 'text', content: this.sanitizeTextPiece(tagProbe) });
+                  send({
+                    type: 'text',
+                    content: this.sanitizeTextPiece(tagProbe),
+                  });
                 }
                 tagProbe = '';
               }
@@ -924,7 +927,9 @@ export class AiGatewayService {
       intent: typeof r.intent === 'string' ? r.intent : undefined,
       goal: typeof r.goal === 'string' ? r.goal : undefined,
       platform:
-        typeof r.platform === 'string' ? r.platform : (r.platform as string | null),
+        typeof r.platform === 'string'
+          ? r.platform
+          : (r.platform as string | null),
       readiness: typeof r.readiness === 'string' ? r.readiness : undefined,
       missingFields: Array.isArray(r.missingFields)
         ? (r.missingFields as string[])
@@ -933,7 +938,9 @@ export class AiGatewayService {
         ? (r.plannedActions as unknown[])
         : undefined,
       riskSummary:
-        typeof r.riskSummary === 'string' ? r.riskSummary : (r.riskSummary as string | null),
+        typeof r.riskSummary === 'string'
+          ? r.riskSummary
+          : (r.riskSummary as string | null),
       hint: typeof r.hint === 'string' ? r.hint : undefined,
     };
   }
@@ -1547,7 +1554,10 @@ export class AiGatewayService {
         // 完整或残缺的 <invoke name="...">...</invoke> 块
         .replace(/<invoke\s+name="[^"]*"\s*>[\s\S]*?<\/invoke>/g, '')
         // 裸协议闭合标签（含 `}`/`}>` 前缀，如 `}</invoke>` `～}</invoke>` `}></invoke>`）
-        .replace(/[}>)\]]*<\/?(?:invoke|function_calls|tool_calls|tool_call)\s*\/?>/g, '')
+        .replace(
+          /[}>)\]]*<\/?(?:invoke|function_calls|tool_calls|tool_call)\s*\/?>/g,
+          '',
+        )
         // 孤立 <invoke / <function_calls 开头（无闭合的残片）
         .replace(/<invoke\s+name="?[^>]*$/g, '')
         .replace(/<function_calls>/g, '')

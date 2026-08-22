@@ -54,18 +54,17 @@ export interface AgentBrowserLease {
 }
 
 /** Agent Browser 循环事件（Observe-Act-Verify 过程记录） */
-export type AgentBrowserEvent =
-  | {
-      type: 'snapshot' | 'step' | 'done' | 'error';
-      stepIndex?: number;
-      action?: string;
-      ok?: boolean;
-      message?: string;
-      url?: string;
-      extractText?: string;
-      error?: string;
-      at: string;
-    };
+export type AgentBrowserEvent = {
+  type: 'snapshot' | 'step' | 'done' | 'error';
+  stepIndex?: number;
+  action?: string;
+  ok?: boolean;
+  message?: string;
+  url?: string;
+  extractText?: string;
+  error?: string;
+  at: string;
+};
 
 /** 会话（对外 DTO） */
 export interface AgentBrowserSessionDto {

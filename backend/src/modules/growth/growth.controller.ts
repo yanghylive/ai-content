@@ -436,10 +436,7 @@ export class GrowthController {
   }
 
   @Post('leads/:id/rescore')
-  rescoreLead(
-    @Req() request: AuthenticatedRequest,
-    @Param('id') id: string,
-  ) {
+  rescoreLead(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
     return this.growthService.rescoreLead(this.getUserId(request), id);
   }
 

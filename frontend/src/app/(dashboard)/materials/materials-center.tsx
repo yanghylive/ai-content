@@ -100,8 +100,10 @@ export function MaterialsCenter() {
   const [linkInput, setLinkInput] = useState("");
   const [linkBusy, setLinkBusy] = useState(false);
   const [linkPlatform, setLinkPlatform] = useState("auto");
+  // downloadPlatforms：采集平台列表（列表渲染仍用；加载入口已移除）
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [downloadPlatforms, setDownloadPlatforms] = useState<
-    Array<{ key: string; label: string }>
+    { key: string; label: string }[]
   >([]);
   const [genSheetOpen, setGenSheetOpen] = useState(false);
   const [genPrompt, setGenPrompt] = useState("");
@@ -291,15 +293,6 @@ export function MaterialsCenter() {
       setLinkBusy(false);
     }
   };
-
-  /** 打开采集弹层：拉取支持平台列表 */
-  const openLinkSheet = useCallback(() => {
-    setLinkSheetOpen(true);
-    void redfoxApi
-      .listDownloadPlatforms()
-      .then((r) => setDownloadPlatforms(r.items || []))
-      .catch(() => setDownloadPlatforms([]));
-  }, []);
 
   /** A5：AI 生图（RedFox image2-GPT → 素材库；可选返利直付 1:1 抵扣） */
   const handleGenImage = async () => {

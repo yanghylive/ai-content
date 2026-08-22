@@ -11,7 +11,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { GrowthService } from '../growth/growth.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 
-
 // ============================================================
 // P3 AI 助手任务草稿（文档 §7.3 GrowthTaskDraft 契约）
 // 意图 -> 结构化草稿 -> 缺失字段/风险 -> 用户确认 -> 后端执行
@@ -19,11 +18,7 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
 // ============================================================
 
 export type TaskDraftIntent =
-  | 'find_leads'
-  | 'contact_leads'
-  | 'sync_crm'
-  | 'follow_up'
-  | 'report';
+  'find_leads' | 'contact_leads' | 'sync_crm' | 'follow_up' | 'report';
 
 export type PlannedAction = {
   type: string;
@@ -56,6 +51,7 @@ export type GrowthTaskDraft = {
 const DRAFT_TTL_MS = 30 * 60 * 1000;
 
 /** 意图 -> 平台/动作的默认映射（NL 解析用） */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const INTENT_PLATFORM_HINT: Record<TaskDraftIntent, string[]> = {
   find_leads: ['douyin', 'xiaohongshu', 'kuaishou'],
   contact_leads: ['wechat-channel'],
@@ -98,14 +94,18 @@ export class AiAssistantService {
         }
       ).tenantMember;
       if (!delegate?.findFirst) {
-        throw new ForbiddenException('缺少租户上下文，任务草稿无法确定租户归属');
+        throw new ForbiddenException(
+          '缺少租户上下文，任务草稿无法确定租户归属',
+        );
       }
       const membership = await delegate.findFirst({
         where: { userId },
         select: { tenantId: true },
       });
       if (!membership?.tenantId) {
-        throw new ForbiddenException('当前账号未归属任何租户，不能创建任务草稿');
+        throw new ForbiddenException(
+          '当前账号未归属任何租户，不能创建任务草稿',
+        );
       }
       return membership.tenantId;
     } catch (error) {
@@ -214,14 +214,13 @@ export class AiAssistantService {
 
     const config: Record<string, unknown> = {
       platform,
-      ...(keywordMatch
-        ? { includeKeywords: [keywordMatch[1].trim()] }
-        : {}),
+      ...(keywordMatch ? { includeKeywords: [keywordMatch[1].trim()] } : {}),
       ...(intent === 'find_leads'
         ? { mode: 'draft-only', riskMode: 'confirm-first' }
         : {}),
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const draftRow = {
       id: randomUUID(),
       intent,
@@ -369,7 +368,7 @@ export class AiAssistantService {
     const currentHash = this.hashDraft({
       intent: row.intent,
       goal: row.goal,
-      config: row.configJson as Record<string, unknown>,
+      config: row.configJson,
       actions: (row.plannedActions ?? []) as PlannedAction[],
     });
     if (row.draftHash && currentHash !== row.draftHash) {
@@ -426,10 +425,7 @@ export class AiAssistantService {
   }
 
   /** 执行已确认草稿：走 GrowthService 统一风险门与执行器 */
-  async executeDraft(
-    userId: string,
-    id: string,
-  ): Promise<GrowthTaskDraft> {
+  async executeDraft(userId: string, id: string): Promise<GrowthTaskDraft> {
     const tenantId = await this.resolveTenantId(userId);
     const row = await this.prisma.growthTaskDraft.findFirst({
       where: { id, userId: userId, tenantId, status: 'confirmed' },

@@ -33,11 +33,7 @@ export class AgentBrowserPolicyService {
     context: { url?: string; allowDomains: string[] },
   ): AgentBrowserPolicyDecision {
     // 1. 高危能力硬拦截（即使模型请求）
-    if (
-      (AGENT_BROWSER_FORBIDDEN as readonly unknown[]).includes(
-        tool as unknown,
-      )
-    ) {
+    if ((AGENT_BROWSER_FORBIDDEN as readonly unknown[]).includes(tool)) {
       return {
         allowed: false,
         tool,
@@ -48,7 +44,8 @@ export class AgentBrowserPolicyService {
 
     // 2. navigate 域名校验（白名单）
     if (tool === 'navigate') {
-      const url = String(args.url ?? '');
+      const rawUrl = args.url;
+      const url = typeof rawUrl === 'string' ? rawUrl : '';
       if (!url) {
         return {
           allowed: false,
@@ -102,9 +99,7 @@ export class AgentBrowserPolicyService {
         reason: `未配置域名白名单，访问 ${host} 需确认`,
       };
     }
-    const ok = allowDomains.some(
-      (d) => host === d || host.endsWith(`.${d}`),
-    );
+    const ok = allowDomains.some((d) => host === d || host.endsWith(`.${d}`));
     return ok
       ? { allowed: true, tool: 'navigate', riskLevel: 'low' }
       : {

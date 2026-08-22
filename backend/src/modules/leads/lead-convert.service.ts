@@ -292,8 +292,7 @@ export class LeadConvertService {
             actorUserId: scope.userId,
             tenantId,
             title: explicitTask?.title || followUp.title,
-            description:
-              explicitTask?.description ?? followUp.description,
+            description: explicitTask?.description ?? followUp.description,
             priority: explicitTask?.priority ?? followUp.priority,
             dueAt: explicitTask?.dueAt ?? followUp.dueAt,
             customerId: customer.id,
@@ -442,7 +441,10 @@ export class LeadConvertService {
     const status = lead.status ?? '';
     const sourceType = (lead.sourceType ?? '').toLowerCase();
     const hasReply = Boolean(lead.latestReply);
-    const isDm = sourceType === 'dm' || sourceType === 'private_message' || sourceType === '私信';
+    const isDm =
+      sourceType === 'dm' ||
+      sourceType === 'private_message' ||
+      sourceType === '私信';
     const isComment = sourceType === 'comment' || sourceType === '评论';
 
     const base = {
