@@ -98,9 +98,9 @@ export class AgentBrowserController {
   ) {
     const tenantId = await this.resolveTenantId();
     this.sessions.assertOwner(id, this.getUserId(request), tenantId);
-    // §7.4 状态机校验：终态（stopped/failed/cancelled）不可重跑
+    // §7.4 状态机校验：终态（succeeded/stopped/failed/cancelled）不可重跑
     const cur = this.sessions.get(id);
-    if (['stopped', 'failed', 'cancelled'].includes(cur.status)) {
+    if (['succeeded', 'stopped', 'failed', 'cancelled'].includes(cur.status)) {
       throw new BadRequestException(
         `会话已处于终态 ${cur.status}，不能重新运行`,
       );
@@ -108,6 +108,13 @@ export class AgentBrowserController {
     // §12.2 反例"重复点击执行按钮"：running 中重复提交直接拒绝（幂等防重）
     if (cur.status === 'running') {
       throw new BadRequestException('任务执行中，请等待完成或先停止再重试');
+    }
+    // P1（复查 2026-08-22）：needs-human（提示注入/引擎断开）/ paused 必须
+    // 经人工接管 resume 恢复，不允许客户端直接 run 绕过
+    if (cur.status === 'needs-human' || cur.status === 'paused') {
+      throw new BadRequestException(
+        `会话处于 ${cur.status} 状态，请先人工接管（resume）恢复后再运行`,
+      );
     }
     // 1. 懒创建引擎会话 + 置 running
     this.sessions.updateStatus(id, 'created');

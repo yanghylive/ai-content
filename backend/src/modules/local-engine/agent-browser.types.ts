@@ -11,6 +11,7 @@ export type AgentBrowserSessionStatus =
   | 'running' // observe-act-verify 循环运行中
   | 'paused' // 已暂停（可恢复）
   | 'needs-human' // 审计发现异常（提示注入/引擎断开）待人工接管（可恢复）
+  | 'succeeded' // 执行成功（终态，文档 §6.1 running -> succeeded）
   | 'stopped' // 已停止（终态）
   | 'error'; // 异常终止（终态）
 

@@ -402,8 +402,10 @@ export class AiAssistantService {
       }
     }
 
-    const updated = await this.prisma.growthTaskDraft.update({
-      where: { id },
+    // P1（复查 2026-08-22）：并发幂等——条件更新占位（仅 status='draft' 可确认），
+    // 重复确认只成功一次，避免并发重复创建获客配置
+    const claimed = await this.prisma.growthTaskDraft.updateMany({
+      where: { id, status: 'draft' },
       data: {
         status: 'confirmed',
         actorUserId: userId,
@@ -412,7 +414,13 @@ export class AiAssistantService {
         confirmedAt: new Date(),
       },
     });
-    return this.toDto(updated);
+    if (claimed.count !== 1) {
+      throw new ConflictException('任务草稿已被确认或处理中，请勿重复提交');
+    }
+    const updated = await this.prisma.growthTaskDraft.findFirst({
+      where: { id },
+    });
+    return this.toDto(updated!);
   }
 
   private buildRiskSummary(row: {
@@ -442,6 +450,42 @@ export class AiAssistantService {
       throw new ConflictException('任务草稿已过期，请重新确认');
     }
 
+    // P1（复查 2026-08-22）：并发幂等——先原子占位（仅 confirmed 可执行），
+    // 重复执行只成功一次；副作用失败回滚占位允许重试
+    const claim = await this.prisma.growthTaskDraft.updateMany({
+      where: { id, status: 'confirmed' },
+      data: { status: 'executing' },
+    });
+    if (claim.count !== 1) {
+      throw new ConflictException('任务正在执行或已完成，请勿重复提交');
+    }
+    try {
+      return await this.executeDraftInner(userId, id, row, tenantId);
+    } catch (error) {
+      // 副作用失败：回滚 executing → confirmed（允许重试），不吞原始错误
+      await this.prisma.growthTaskDraft
+        .updateMany({
+          where: { id, status: 'executing' },
+          data: { status: 'confirmed' },
+        })
+        .catch(() => undefined);
+      throw error;
+    }
+  }
+
+  /** executeDraft 的副作用主体（占位成功后执行，最终置 executed） */
+  private async executeDraftInner(
+    userId: string,
+    id: string,
+    row: {
+      intent: string;
+      configId: string | null;
+      configJson: unknown;
+      platform: string | null;
+      goal: string;
+    },
+    tenantId: string,
+  ): Promise<GrowthTaskDraft> {
     // 同步执行（report 意图直接读报告；获客意图走配置 execute）
     let executed = false;
     if (row.intent === 'report') {
@@ -538,11 +582,15 @@ export class AiAssistantService {
       throw new BadRequestException('该意图暂不支持自动执行，请手动操作');
     }
 
+    const done = await this.prisma.growthTaskDraft.updateMany({
+      where: { id, status: 'executing' },
+      data: { status: 'executed', executedAt: new Date() },
+    });
+    if (done.count !== 1) {
+      throw new ConflictException('任务状态异常，无法标记完成');
+    }
     return this.toDto(
-      await this.prisma.growthTaskDraft.update({
-        where: { id },
-        data: { status: 'executed', executedAt: new Date() },
-      }),
+      (await this.prisma.growthTaskDraft.findFirst({ where: { id } }))!,
     );
   }
 

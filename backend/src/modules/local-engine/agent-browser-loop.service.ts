@@ -168,6 +168,21 @@ export class AgentBrowserLoopService {
     let blockedConfirmation: { id?: string; selector?: string } | undefined;
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
+      // P1（复查 2026-08-22）：每步执行前检查会话状态——paused/stopped/
+      // needs-human 时立即中断循环（否则 pause/stop 只改状态不中断执行）
+      const stepStatus = this.sessions.get(sessionId).status;
+      if (stepStatus !== 'running') {
+        const interrupt: AgentBrowserStepEvent = {
+          type: 'error',
+          ok: false,
+          message: `执行已中断（会话状态 ${stepStatus}）`,
+        };
+        steps.push(interrupt);
+        onStep?.(interrupt);
+        this.sessions.appendEvent(sessionId, interrupt);
+        return { ok: false, steps };
+      }
+
       // 3.1 每步 re-observe（页面可能已因上一步导航改变）
       const stepPrevUrl = session.url; // 记录执行前 URL（判断是否发生导航）
       const stepSnapshot = await this.observe(sessionId);
@@ -228,7 +243,6 @@ export class AgentBrowserLoopService {
           const matched = await this.resolveConfirmation(
             session,
             action,
-            confirmedTools,
             confirmationIds,
           );
           if (!matched) {
@@ -295,20 +309,23 @@ export class AgentBrowserLoopService {
       this.sessions.bumpStep(sessionId);
       this.sessions.appendEvent(sessionId, stepEvent);
 
-      // P4 DOM 闭环（审计 2026-08-22）：导航发生后（URL 变化）基于当前
-      // DOM 快照重新决策后续动作——不再盲执行旧动作序列的剩余部分
-      if (
-        r.ok &&
-        stepSnapshot.url &&
-        stepSnapshot.url !== stepPrevUrl &&
-        i + 1 < actions.length
-      ) {
+      // P4 DOM 闭环（复查 2026-08-22）：导航判断必须用执行后的真实页面——
+      // 执行前的 snapshot 与执行前 URL 相同，goto 后不会触发。改为执行后重新
+      // observe 拿新 URL，与执行前 URL 比较，导航发生才基于新快照重新决策。
+      if (r.ok && i + 1 < actions.length) {
         try {
-          const redecided = await this.actions.parseActions(instruction, {
-            snapshot: stepSnapshot.snapshot,
-            url: stepSnapshot.url,
-          });
-          if (redecided.length) {
+          const afterSnapshot = await this.observe(sessionId);
+          steps.push(afterSnapshot);
+          onStep?.(afterSnapshot);
+          this.sessions.appendEvent(sessionId, afterSnapshot);
+          if (afterSnapshot.url && afterSnapshot.url !== stepPrevUrl) {
+            const redecided = await this.actions.parseActions(instruction, {
+              snapshot: afterSnapshot.snapshot,
+              url: afterSnapshot.url,
+            });
+            if (!redecided.length) {
+              return { ok: r.ok, steps };
+            }
             const done = i + 1;
             actions = actions
               .slice(0, done)
@@ -316,10 +333,12 @@ export class AgentBrowserLoopService {
             // 新动作基于当前（导航后）快照生成
             actionOriginUrls = [
               ...actionOriginUrls.slice(0, done),
-              ...Array(redecided.length).fill(stepSnapshot.url ?? session.url),
+              ...Array(redecided.length).fill(
+                afterSnapshot.url ?? session.url,
+              ),
             ].slice(0, actions.length);
             this.logger.log(
-              `AgentBrowser ${sessionId} 导航至 ${stepSnapshot.url}，基于新快照重新决策（${redecided.length} 个新动作）`,
+              `AgentBrowser ${sessionId} 导航至 ${afterSnapshot.url}，基于新快照重新决策（${redecided.length} 个新动作）`,
             );
           }
         } catch (error) {
@@ -364,6 +383,11 @@ export class AgentBrowserLoopService {
     steps.push(done);
     onStep?.(done);
     this.sessions.appendEvent(sessionId, done);
+    // P1（复查）：执行完成后置终态 succeeded（文档 running -> succeeded），
+    // 避免成功会话停留 running 被误判"重复执行"
+    if (status === 'success' || status === 'partial_success') {
+      this.sessions.updateStatus(sessionId, 'succeeded');
+    }
     return { ok: status === 'success' || status === 'partial_success', steps };
   }
 
@@ -450,6 +474,8 @@ export class AgentBrowserLoopService {
         type: 'snapshot',
         ok: true,
         url: session.url,
+        injected, // P2（复查 2026-08-22）：fallback 路径同样带注入标记，
+        // 否则回落 URL 快照时无法触发 needs-human 暂停
         message: injected
           ? `快照（会话 ${sessionId}）— 检测到可疑注入内容，已隔离，不进入模型上下文`
           : snapshotText,
@@ -536,60 +562,70 @@ export class AgentBrowserLoopService {
   private async resolveConfirmation(
     session: AgentBrowserSession,
     action: AiBrowserAction,
-    confirmedTools: Array<{ action: string; target?: string; url?: string }> | undefined,
     confirmationIds: string[] | undefined,
   ): Promise<boolean> {
-    if (confirmationIds?.length && this.prisma) {
-      try {
-        const delegate = (
-          this.prisma as unknown as {
-            agentConfirmation?: {
-              findMany?: (args: {
-                where: { id: { in: string[] } };
-              }) => Promise<
-                Array<{
-                  id: string;
-                  status: string;
-                  sessionId: string;
-                  tenantId: string;
-                  userId: string;
-                  action: string;
-                  target?: string | null;
-                  content?: string | null;
-                }>
-              >;
-            };
-          }
-        )?.agentConfirmation;
-        if (delegate?.findMany) {
-          const records = await delegate.findMany({
-            where: { id: { in: confirmationIds } },
-          });
-          const matched = records.some((rec) => {
-            if (rec.status !== 'pending') return false;
-            if (rec.sessionId !== session.id) return false;
-            if (session.lease?.tenantId && rec.tenantId !== session.lease.tenantId)
-              return false;
-            if (session.lease?.ownerId && rec.userId !== session.lease.ownerId)
-              return false;
-            if (rec.action !== action.action) return false;
-            if ('selector' in action && rec.target !== action.selector)
-              return false;
-            if ('url' in action && rec.content !== action.url) return false;
-            return true;
-          });
-          if (matched) return true;
+    // P0（复查 2026-08-22）：高风险动作必须服务端确认记录放行——
+    // 未传 confirmationIds / 查库失败 / 查不到匹配 / prisma 不可用，一律拒绝，
+    // 绝不回退客户端传入的 confirmedTools（客户端可伪造）。
+    if (!confirmationIds?.length) return false;
+    if (!this.prisma) return false;
+    try {
+      const delegate = (
+        this.prisma as unknown as {
+          agentConfirmation?: {
+            findMany?: (args: {
+              where: { id: { in: string[] } };
+            }) => Promise<
+              Array<{
+                id: string;
+                status: string;
+                sessionId: string;
+                tenantId: string;
+                userId: string;
+                action: string;
+                target?: string | null;
+                content?: string | null;
+              }>
+            >;
+            updateMany?: (args: {
+              where: { id: string; status: string };
+              data: { status: string; decidedAt: Date };
+            }) => Promise<{ count: number }>;
+          };
         }
-      } catch (error) {
-        this.logger.warn(
-          `AgentConfirmation 校验查询失败（回落精确确认）：${error instanceof Error ? error.message : String(error)}`,
-        );
+      )?.agentConfirmation;
+      if (!delegate?.findMany) return false;
+      const records = await delegate.findMany({
+        where: { id: { in: confirmationIds } },
+      });
+      const matched = records.find((rec) => {
+        if (rec.status !== 'pending') return false;
+        if (rec.sessionId !== session.id) return false;
+        if (rec.tenantId !== (session.lease?.tenantId ?? rec.tenantId)) return false;
+        if (rec.userId !== (session.lease?.ownerId ?? rec.userId)) return false;
+        if (rec.action !== action.action) return false;
+        if ('selector' in action && rec.target !== action.selector)
+          return false;
+        if ('url' in action && rec.content !== action.url) return false;
+        return true;
+      });
+      if (!matched) return false;
+      // P1（复查）：原子消费——pending → consumed，防止同一确认单重复执行
+      // 产生外部副作用（并发时 updateMany 匹配 0 条 = 已被消费 → 拒绝）
+      if (delegate.updateMany) {
+        const res = await delegate.updateMany({
+          where: { id: matched.id, status: 'pending' },
+          data: { status: 'consumed', decidedAt: new Date() },
+        });
+        return res.count === 1;
       }
+      return true;
+    } catch (error) {
+      this.logger.warn(
+        `AgentConfirmation 校验查询失败（fail-closed 拒绝）：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return false;
     }
-    // 回落：精确 confirmedTools（P0-2 已收紧——click/type 必须 target、goto 必须 url）
-    return (confirmedTools ?? []).some((cc) =>
-      matchesConfirmedAction(cc, action),
-    );
   }
 
   /**

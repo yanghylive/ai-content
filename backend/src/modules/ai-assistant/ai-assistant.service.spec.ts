@@ -13,6 +13,7 @@ function makeService(overrides: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     ...(overrides.prisma || {}),
   };
@@ -134,11 +135,13 @@ describe('AiAssistantService（P3 任务草稿）', () => {
   it('confirmDraft：成功保存操作者+风险摘要+创建配置（draft 态）', async () => {
     const { svc, prisma, growth } = makeService({});
     // 不设 draftHash（null 时跳过哈希校验），专注确认+配置创建断言
-    prisma.growthTaskDraft.findFirst.mockResolvedValue(draftRow({ draftHash: null }));
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(draftRow({ draftHash: null }))
+      .mockResolvedValue(
+        draftRow({ status: 'confirmed', actorUserId: 'u-1', riskSummary: '意图 find_leads：1 项中风险动作需确认后执行', configId: 'cfg-1' }),
+      );
     growth.createConfig.mockResolvedValue({ id: 'cfg-1' });
-    prisma.growthTaskDraft.update.mockResolvedValue(
-      draftRow({ status: 'confirmed', actorUserId: 'u-1', riskSummary: '意图 find_leads：1 项中风险动作需确认后执行', configId: 'cfg-1' }),
-    );
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
     const draft = await svc.confirmDraft('u-1', 'd1', {});
     expect(draft.status).toBe('confirmed');
     expect(draft.configId).toBe('cfg-1');
@@ -146,8 +149,9 @@ describe('AiAssistantService（P3 任务草稿）', () => {
       'u-1',
       expect.objectContaining({ mode: 'draft-only', riskMode: 'confirm-first', status: 'disabled' }),
     );
-    expect(prisma.growthTaskDraft.update).toHaveBeenCalledWith(
+    expect(prisma.growthTaskDraft.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
+        where: { id: 'd1', status: 'draft' },
         data: expect.objectContaining({ actorUserId: 'u-1', riskSummary: expect.any(String), confirmedAt: expect.any(Date) }),
       }),
     );
@@ -155,10 +159,12 @@ describe('AiAssistantService（P3 任务草稿）', () => {
 
   it('executeDraft：report 意图直接标记执行（不建配置）', async () => {
     const { svc, prisma, growth } = makeService({});
-    prisma.growthTaskDraft.findFirst.mockResolvedValue(
-      draftRow({ intent: 'report', configId: null, status: 'confirmed' }),
-    );
-    prisma.growthTaskDraft.update.mockResolvedValue(draftRow({ intent: 'report', status: 'executed' }));
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ intent: 'report', configId: null, status: 'confirmed' }),
+      )
+      .mockResolvedValue(draftRow({ intent: 'report', status: 'executed' }));
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
     const draft = await svc.executeDraft('u-1', 'd1');
     expect(draft.status).toBe('executed');
     expect(growth.executeConfig).not.toHaveBeenCalled();
@@ -166,12 +172,14 @@ describe('AiAssistantService（P3 任务草稿）', () => {
 
   it('executeDraft：find_leads 走配置 execute（补偿创建+执行）', async () => {
     const { svc, prisma, growth } = makeService({});
-    prisma.growthTaskDraft.findFirst.mockResolvedValue(
-      draftRow({ intent: 'find_leads', configId: null, status: 'confirmed' }),
-    );
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ intent: 'find_leads', configId: null, status: 'confirmed' }),
+      )
+      .mockResolvedValue(draftRow({ status: 'executed' }));
     growth.createConfig.mockResolvedValue({ id: 'cfg-2' });
     growth.executeConfig.mockResolvedValue({ ok: true });
-    prisma.growthTaskDraft.update.mockResolvedValue(draftRow({ status: 'executed' }));
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
     await svc.executeDraft('u-1', 'd1');
     expect(growth.executeConfig).toHaveBeenCalledWith('u-1', 'cfg-2', {
       confirmedExecution: true,
@@ -278,6 +286,7 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
         findFirst: jest.fn(),
         findMany: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
       lead: { findMany: jest.fn() },
       crmTask: { create: jest.fn() },
@@ -300,17 +309,15 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
 
   it('sync_crm：未转线索批量转 CRM 客户', async () => {
     const { svc, prisma, leadConvert } = makeService({});
-    prisma.growthTaskDraft.findFirst.mockResolvedValue(
-      draftRow({ intent: 'sync_crm', configId: null }),
-    );
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(draftRow({ intent: 'sync_crm', configId: null }))
+      .mockResolvedValue(draftRow({ intent: 'sync_crm', status: 'executed' }));
     prisma.lead.findMany.mockResolvedValue([
       { id: 'lead-1' },
       { id: 'lead-2' },
     ]);
     leadConvert.convert.mockResolvedValue({ ok: true });
-    prisma.growthTaskDraft.update.mockResolvedValue(
-      draftRow({ intent: 'sync_crm', status: 'executed' }),
-    );
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
     await svc.executeDraft('u-1', 'd1');
     expect(leadConvert.convert).toHaveBeenCalledTimes(2);
     expect(leadConvert.convert).toHaveBeenCalledWith(
@@ -323,13 +330,13 @@ describe('AiAssistantService P3 意图闭环（审计 2026-08-22）', () => {
 
   it('follow_up：创建 CRM 跟进任务', async () => {
     const { svc, prisma } = makeService({});
-    prisma.growthTaskDraft.findFirst.mockResolvedValue(
-      draftRow({ intent: 'follow_up', configId: null, goal: '回访老客户' }),
-    );
+    prisma.growthTaskDraft.findFirst
+      .mockResolvedValueOnce(
+        draftRow({ intent: 'follow_up', configId: null, goal: '回访老客户' }),
+      )
+      .mockResolvedValue(draftRow({ intent: 'follow_up', status: 'executed' }));
     prisma.crmTask.create.mockResolvedValue({ id: 'task-1' });
-    prisma.growthTaskDraft.update.mockResolvedValue(
-      draftRow({ intent: 'follow_up', status: 'executed' }),
-    );
+    prisma.growthTaskDraft.updateMany.mockResolvedValue({ count: 1 });
     const draft = await svc.executeDraft('u-1', 'd1');
     expect(draft.status).toBe('executed');
     expect(prisma.crmTask.create).toHaveBeenCalledWith(
