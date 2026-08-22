@@ -9,13 +9,17 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
 import { AgentBrowserLoopService } from './agent-browser-loop.service';
 import type { CreateAgentBrowserSessionInput } from './agent-browser.types';
 
-type AuthRequest = Request & { user?: { id: string } };
+type AuthRequest = Request & { authUser?: { id: string } };
 
 /**
  * P4 Agent Browser 接口（文档 §7.4）。
@@ -32,7 +36,13 @@ export class AgentBrowserController {
   ) {}
 
   private getUserId(request: AuthRequest): string {
-    return request.user?.id ?? 'local-user';
+    // P0-1（审计 2026-08-22）：AuthGuard 写入 request.authUser，读 request.user 恒空
+    // 回落 local-user 导致用户级隔离失效。无身份直接 401，禁止回落。
+    const userId = request.authUser?.id?.trim();
+    if (!userId) {
+      throw new UnauthorizedException('请先登录');
+    }
+    return userId;
   }
 
   /** §7.4 请求租户（fail-closed：无上下文/无归属抛 403） */
@@ -82,6 +92,8 @@ export class AgentBrowserController {
     body: {
       instruction?: string;
       confirmedTools?: Array<{ action: string; target?: string; url?: string }>;
+      // P0-2：服务端确认——批准时传确认单 id，后端查库校验（不信任裸 confirmedTools）
+      confirmationIds?: string[];
     } = {},
   ) {
     const tenantId = await this.resolveTenantId();
@@ -96,10 +108,11 @@ export class AgentBrowserController {
     // 1. 懒创建引擎会话 + 置 running
     this.sessions.updateStatus(id, 'created');
     await this.sessions.acquireEngineSession(id);
-    // 2. 若有指令则跑一轮 Observe-Act-Verify（confirmedTools 放行需确认动作）
+    // 2. 若有指令则跑一轮 Observe-Act-Verify（confirmationIds/confirmedTools 放行需确认动作）
     if (body.instruction?.trim()) {
       const result = await this.loop.run(id, body.instruction, {
         confirmedTools: body.confirmedTools ?? [],
+        confirmationIds: body.confirmationIds,
       });
       if (!result.ok) {
         this.sessions.markError(id, 'Agent 循环未完成任务');

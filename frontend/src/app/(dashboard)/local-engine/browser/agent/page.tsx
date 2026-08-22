@@ -27,6 +27,9 @@ interface EventDto {
   url?: string;
   extractText?: string;
   error?: string;
+  // P0-2（审计 2026-08-22）：确认单 id + 真实 selector，供精确批准
+  confirmationId?: string;
+  selector?: string;
   at: string;
 }
 
@@ -58,13 +61,18 @@ export default function AgentBrowserPage() {
   const [instruction, setInstruction] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  // 确认闸门：待确认的高风险动作（从 blocked step 提取）+ 已确认动作
+  // 确认闸门（P0-2/P0-3 审计修复）：待确认动作（含确认单 id + 真实 selector）
+  // + 已确认的确认单 id（服务端查库校验，不再构造裸 confirmedTools）
   const [pendingConfirmations, setPendingConfirmations] = useState<
-    { action: string; target?: string; url?: string; message?: string }[]
+    {
+      confirmationId?: string;
+      action: string;
+      selector?: string;
+      url?: string;
+      message?: string;
+    }[]
   >([]);
-  const [confirmedTools, setConfirmedTools] = useState<
-    { action: string; target?: string; url?: string }[]
-  >([]);
+  const [confirmedIds, setConfirmedIds] = useState<string[]>([]);
   const eventsRef = useRef<HTMLDivElement>(null);
 
   const refresh = useCallback(async () => {
@@ -101,7 +109,11 @@ export default function AgentBrowserPage() {
     }
   };
 
-  const act = async (id: string, action: "run" | "pause" | "resume" | "stop") => {
+  const act = async (
+    id: string,
+    action: "run" | "pause" | "resume" | "stop",
+    extra?: { confirmationIds?: string[] },
+  ) => {
     setBusy(true);
     setError("");
     try {
@@ -111,7 +123,10 @@ export default function AgentBrowserPage() {
           action === "run"
             ? JSON.stringify({
                 instruction: instruction.trim() || undefined,
-                confirmedTools,
+                // 兼容后端旧参数（确认已走 confirmationIds 服务端查库校验）
+                confirmedTools: [],
+                // P0-2：服务端确认——传确认单 id，后端查库校验（防伪造）
+                confirmationIds: extra?.confirmationIds ?? confirmedIds,
               })
             : JSON.stringify({}),
       });
@@ -131,9 +146,10 @@ export default function AgentBrowserPage() {
               e.message?.includes("需用户确认"),
           )
           .map((e) => ({
+            // P0-3：后端 blocked 事件已带真实 selector + confirmationId（不再用 "?"）
+            confirmationId: e.confirmationId,
             action: e.action ?? "unknown",
-            target:
-              e.action === "click" || e.action === "type" ? "?" : undefined,
+            selector: e.selector,
             url: e.url,
             message: e.message,
           }));
@@ -150,19 +166,16 @@ export default function AgentBrowserPage() {
 
   const approveConfirmation = async () => {
     if (pendingConfirmations.length === 0) return;
-    // 将待确认动作加入已确认列表（绑定精确 target/url）
-    setConfirmedTools((prev) => [
-      ...prev,
-      ...pendingConfirmations.map((p) => ({
-        action: p.action,
-        target: p.target,
-        url: p.url,
-      })),
-    ]);
+    // P0-2：批准 = 把确认单 id 交给服务端查库校验（不构造裸 confirmedTools）
+    const ids = pendingConfirmations
+      .map((p) => p.confirmationId)
+      .filter((x): x is string => !!x);
+    const nextIds = [...confirmedIds, ...ids];
+    setConfirmedIds(nextIds);
     setPendingConfirmations([]);
-    // 重跑当前会话（带新确认）
+    // P0-3：显式传参重跑，不依赖 React setState 异步时序（旧实现重跑仍带空确认）
     if (activeId) {
-      await act(activeId, "run");
+      await act(activeId, "run", { confirmationIds: nextIds });
     }
   };
 
@@ -227,7 +240,7 @@ export default function AgentBrowserPage() {
           {pendingConfirmations.map((p, i) => (
             <div key={i} style={{ fontSize: 12.5, color: "inherit", marginBottom: 4 }}>
               {p.action}
-              {p.target ? ` → ${p.target}` : ""}
+              {p.selector ? ` → ${p.selector}` : ""}
               {p.url ? ` @ ${p.url}` : ""}
             </div>
           ))}

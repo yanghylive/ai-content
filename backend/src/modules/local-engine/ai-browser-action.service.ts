@@ -55,20 +55,25 @@ export interface AiBrowserRunInput {
   maxRetries?: number;
 }
 
-/** 精确确认匹配：action 必匹配，target/url 提供则必须一致 */
+/**
+ * 精确确认匹配（P0-2 审计 2026-08-22 收紧）：
+ * - action 必匹配；
+ * - 动作带 url（goto）→ confirmed.url 必须提供且一致（缺 url 不放行，防 {action:'goto'} 放行任意 URL）；
+ * - 动作带 selector（click/type）→ confirmed.target 必须提供且一致（缺 target 不放行，
+ *   防 {action:'click'} 放行任意点击）。
+ * 禁止"仅 action 匹配"放行——那等于确认闸门失效。
+ */
 export function matchesConfirmedAction(
   confirmed: { action: string; target?: string; url?: string },
   step: AiBrowserAction,
 ): boolean {
   if (confirmed.action !== step.action) return false;
-  if ('url' in step && confirmed.url && confirmed.url !== step.url)
-    return false;
-  if (
-    'selector' in step &&
-    confirmed.target &&
-    confirmed.target !== step.selector
-  )
-    return false;
+  if ('url' in step) {
+    if (!confirmed.url || confirmed.url !== step.url) return false;
+  }
+  if ('selector' in step) {
+    if (!confirmed.target || confirmed.target !== step.selector) return false;
+  }
   return true;
 }
 
