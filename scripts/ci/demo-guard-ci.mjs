@@ -201,6 +201,9 @@ function checkNoDemoInArtifacts() {
   if (existsSync(outDir)) {
     for (const f of walk(outDir)) {
       const rel = relative(ROOT, f).split(sep).join('/');
+      // demo-request 是商务询盘页（src/app/(cases)/demo-request/，案例详情"申请演示"
+      // 按钮跳转），不是演示舱——白名单排除；其余含 demo 的 html 入口判违规
+      if (rel.includes('demo-request')) continue;
       if (/\bdemo\b/.test(rel) && /\.html$/.test(rel)) {
         addViolation('demo_in_artifacts', rel, '构建产物含 demo 页面入口');
       }
