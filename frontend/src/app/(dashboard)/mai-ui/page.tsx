@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { rpaStatus, captureScreen, executeActions, resumeAfterAsk, cancelActions } from "@/lib/mobile-bridge";
+import { rpaStatus, captureScreen, executeActions, resumeAfterAsk, cancelActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
 import { planMaiUiActions, type MaiUiAction } from "@/lib/api/mai-ui";
 
 /** MAI-UI 手机端工作台：截屏 → 指令 → 规划动作 → 无障碍执行 → 人工确认 */
@@ -11,6 +11,7 @@ export default function MaiUiWorkbenchPage() {
   const [rpa, setRpa] = useState<{ enabled: boolean; available: boolean }>({ enabled: false, available: false });
   const [instruction, setInstruction] = useState("");
   const [screenShot, setScreenShot] = useState<string>("");
+  const [shotMeta, setShotMeta] = useState<Partial<CaptureScreenResult>>({});
   const [planning, setPlanning] = useState(false);
   const [executing, setExecuting] = useState(false);
   const [actions, setActions] = useState<MaiUiAction[]>([]);
@@ -31,7 +32,12 @@ export default function MaiUiWorkbenchPage() {
     const result = captureScreen();
     if (result.ok && result.message.startsWith("data:")) {
       setScreenShot(result.message);
-      pushLog("✅ 截屏成功");
+      setShotMeta(result);
+      pushLog(
+        result.width
+          ? `✅ 截屏成功（${result.width}×${result.height}，屏幕 ${result.screenWidth}×${result.screenHeight}）`
+          : "✅ 截屏成功",
+      );
     } else {
       pushLog(`❌ ${result.message}`);
     }
@@ -53,6 +59,8 @@ export default function MaiUiWorkbenchPage() {
       const result = await planMaiUiActions({
         imageBase64: base64,
         instruction: instruction.trim(),
+        width: shotMeta.width,
+        height: shotMeta.height,
       });
       if (result.ok && result.actions.length > 0) {
         setActions(result.actions);
@@ -67,7 +75,7 @@ export default function MaiUiWorkbenchPage() {
     } finally {
       setPlanning(false);
     }
-  }, [screenShot, instruction, pushLog]);
+  }, [screenShot, instruction, shotMeta.width, shotMeta.height, pushLog]);
 
   const handleExecute = useCallback(async () => {
     if (actions.length === 0) {
@@ -76,7 +84,13 @@ export default function MaiUiWorkbenchPage() {
     }
     setExecuting(true);
     pushLog(`执行 ${actions.length} 个动作…（请勿操作手机）`);
-    const result = executeActions(actions);
+    // 规划坐标基于缩放截图，执行前映射到真实屏幕坐标（2026-08-22）
+    const mapped = actions.map((a) =>
+      a.bounds
+        ? { ...a, bounds: mapBoundsToScreen(a.bounds, shotMeta) }
+        : a,
+    );
+    const result = executeActions(mapped as MaiUiAction[]);
     if (result.ok) {
       pushLog(`✅ ${result.message}`);
     } else if (result.message.startsWith("ASK_USER:")) {
@@ -87,7 +101,7 @@ export default function MaiUiWorkbenchPage() {
       pushLog(`❌ ${result.message}`);
     }
     setExecuting(false);
-  }, [actions, pushLog]);
+  }, [actions, shotMeta, pushLog]);
 
   const handleAskAnswer = useCallback(
     (proceed: boolean) => {

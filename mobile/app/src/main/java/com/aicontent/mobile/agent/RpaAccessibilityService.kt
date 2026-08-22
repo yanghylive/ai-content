@@ -255,7 +255,14 @@ class RpaAccessibilityService : AccessibilityService() {
                                 if (!scaled.isRecycled && scaled !== bmp) scaled.recycle()
                                 bmp.recycle()
                                 val b64 = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
-                                callback(RpaResult.success("data:image/jpeg;base64,$b64"))
+                                val dm = svc.resources.displayMetrics
+                                callback(
+                                    RpaResult.success(
+                                        "data:image/jpeg;base64,$b64" +
+                                            "|w=${scaled.width}&h=${scaled.height}" +
+                                            "&sw=${dm.widthPixels}&sh=${dm.heightPixels}",
+                                    ),
+                                )
                             } catch (e: Exception) {
                                 callback(RpaResult.failure("截图编码失败：${e.message}"))
                             }
@@ -271,9 +278,9 @@ class RpaAccessibilityService : AccessibilityService() {
             }
         }
 
-        /** 大图等比缩到宽 ≤1080 再编码（控制 base64 体积） */
+        /** 大图等比缩到宽 ≤540 再编码（控制 base64 体积 + qwen-vl-max 视觉输入稳定性） */
         private fun scaleForShare(bmp: Bitmap): Bitmap {
-            val maxW = 1080
+            val maxW = 540
             val w = bmp.width
             val h = bmp.height
             if (w <= maxW) return bmp
