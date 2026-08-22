@@ -134,6 +134,7 @@ export class AgentBrowserLoopService {
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
       // 3.1 每步 re-observe（页面可能已因上一步导航改变）
+      const stepPrevUrl = session.url; // 记录执行前 URL（判断是否发生导航）
       const stepSnapshot = await this.observe(sessionId);
       steps.push(stepSnapshot);
       onStep?.(stepSnapshot);
@@ -247,6 +248,35 @@ export class AgentBrowserLoopService {
       onStep?.(stepEvent);
       this.sessions.bumpStep(sessionId);
       this.sessions.appendEvent(sessionId, stepEvent);
+
+      // P4 DOM 闭环（审计 2026-08-22）：导航发生后（URL 变化）基于当前
+      // DOM 快照重新决策后续动作——不再盲执行旧动作序列的剩余部分
+      if (
+        r.ok &&
+        stepSnapshot.url &&
+        stepSnapshot.url !== stepPrevUrl &&
+        i + 1 < actions.length
+      ) {
+        try {
+          const redecided = await this.actions.parseActions(instruction, {
+            snapshot: stepSnapshot.snapshot,
+            url: stepSnapshot.url,
+          });
+          if (redecided.length) {
+            const done = i + 1;
+            actions = actions
+              .slice(0, done)
+              .concat(redecided.slice(0, Math.max(1, cfg.maxSteps - done)));
+            this.logger.log(
+              `AgentBrowser ${sessionId} 导航至 ${stepSnapshot.url}，基于新快照重新决策（${redecided.length} 个新动作）`,
+            );
+          }
+        } catch (error) {
+          this.logger.warn(
+            `AgentBrowser ${sessionId} 导航后重新决策失败（沿用原动作序列）：${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
+      }
     }
 
     const successCount = steps.filter((s) => s.type === 'step' && s.ok).length;

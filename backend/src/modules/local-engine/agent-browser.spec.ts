@@ -895,3 +895,78 @@ describe('P4 MCP 互斥锁（审计 2026-08-22 并发 profile 串读修复）', 
     expect(maxActive).toBe(1); // 任意时刻最多 1 个 MCP 访问在跑
   });
 });
+
+describe('P4 DOM 闭环（审计 2026-08-22 导航后重新决策）', () => {
+  const ORIG_ENV = { ...process.env };
+  beforeAll(() => {
+    process.env.AGENT_BROWSER_MODE = 'dom-agent';
+    process.env.AGENT_BROWSER_ALLOW_WRITE = 'true';
+  });
+  afterAll(() => {
+    process.env = ORIG_ENV;
+  });
+
+  it('导航后 URL 变化：用新快照重新解析后续动作（不再盲执行旧序列）', async () => {
+    const browser = makeBrowserMock();
+    const sessionSvc = new AgentBrowserSessionService(
+      browser as never,
+      makePrismaMock() as never,
+      makeTenantContextMock() as never,
+    );
+    const s = sessionSvc.create('u-1', {
+      startUrl: 'https://a.com',
+      allowDomains: ['a.com', 'b.com'],
+    });
+    await sessionSvc.acquireEngineSession(s.id);
+    // 初始解析 2 个动作；导航后重新解析返回 1 个新动作（基于快照）
+    const parseActions = jest
+      .fn()
+      .mockResolvedValueOnce([
+        { action: 'goto', url: 'https://a.com' },
+        { action: 'click', selector: '#old-btn' },
+      ])
+      .mockResolvedValueOnce([{ action: 'click', selector: '#new-btn' }]);
+    const executeSingle = jest.fn().mockResolvedValue({
+      index: 0,
+      action: 'goto',
+      ok: true,
+    });
+    const loop = new (require('./agent-browser-loop.service').AgentBrowserLoopService)(
+      sessionSvc,
+      { parseActions, executeSingle } as never,
+      new (require('./agent-browser-policy.service').AgentBrowserPolicyService)(),
+    );
+    // 覆写 observe：第一次返回 a.com，执行 goto 后返回 b.com（导航发生）
+    const observe = jest
+      .fn()
+      .mockResolvedValueOnce({
+        type: 'snapshot',
+        ok: true,
+        url: 'https://a.com',
+        snapshot: '页面A',
+        injected: false,
+      })
+      .mockResolvedValueOnce({
+        type: 'snapshot',
+        ok: true,
+        url: 'https://b.com',
+        snapshot: '页面B（新 DOM）',
+        injected: false,
+      })
+      .mockResolvedValue({
+        type: 'snapshot',
+        ok: true,
+        url: 'https://b.com',
+        snapshot: '页面B（新 DOM）',
+        injected: false,
+      });
+    (loop as unknown as { observe: () => Promise<never> }).observe = observe as never;
+    const result = await loop.run(s.id, '访问 a 然后点击按钮');
+    // 第二次解析携带新快照上下文
+    expect(parseActions).toHaveBeenCalledTimes(2);
+    expect(parseActions).toHaveBeenLastCalledWith(
+      '访问 a 然后点击按钮',
+      expect.objectContaining({ url: 'https://b.com', snapshot: '页面B（新 DOM）' }),
+    );
+  });
+});
