@@ -80,6 +80,7 @@ describe('AiAssistantService（P3 任务草稿）', () => {
     });
     expect(draft.readiness).toBe('needs-input');
     expect(draft.missingFields).toContain('platform');
+    expect(draft.draftHash).toEqual(expect.any(String)); // §7.3 草稿指纹暴露
     expect(prisma.growthTaskDraft.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({

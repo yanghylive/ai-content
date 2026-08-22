@@ -43,6 +43,7 @@ export type GrowthTaskDraft = {
   blockers: string[];
   expiresAt: string;
   status: string;
+  draftHash?: string; // §7.3 草稿内容指纹（前端内容比对/防篡改）
   riskSummary?: string;
   configId?: string;
   confirmedAt?: string;
@@ -489,6 +490,7 @@ export class AiAssistantService {
       blockers: (row.blockers ?? []) as string[],
       expiresAt: row.expiresAt.toISOString(),
       status: row.status,
+      draftHash: row.draftHash ?? undefined,
       riskSummary: row.riskSummary ?? undefined,
       configId: row.configId ?? undefined,
       confirmedAt: row.confirmedAt?.toISOString(),
