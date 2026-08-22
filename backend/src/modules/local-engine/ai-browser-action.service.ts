@@ -514,6 +514,8 @@ ${context.snapshot.slice(0, 2000)}
     message?: string;
     evidenceUrl?: string;
     extractText?: string;
+    /** P1（复查 2026-08-22）：动作执行后的真实页面 URL（导航回写用） */
+    url?: string;
   }> {
     // P4-2（审计 2026-08-22）：mock 模式统一拦截——DISPATCH_MOCK=true 时
     // 真实浏览器执行必须硬失败（不能伪造成功），与 run() 语义一致。
@@ -562,7 +564,7 @@ ${context.snapshot.slice(0, 2000)}
     page: Page,
     step: AiBrowserAction,
     timeoutMs: number,
-  ): Promise<{ evidenceUrl?: string; extractText?: string }> {
+  ): Promise<{ evidenceUrl?: string; extractText?: string; url?: string }> {
     const waitOptions = { timeout: timeoutMs };
     let extractText: string | undefined;
     switch (step.action) {
@@ -658,6 +660,8 @@ ${context.snapshot.slice(0, 2000)}
     } catch {
       evidenceUrl = undefined;
     }
-    return { evidenceUrl, extractText };
+    // P1（复查 2026-08-22）：回传动作执行后的真实页面 URL——导航（goto/click/tabs）
+    // 后 Loop 用它回写 session.url，observe/重决策基于新页面，不再停留在旧 session.url
+    return { evidenceUrl, extractText, url: page.url() };
   }
 }

@@ -26,6 +26,8 @@ export class AgentBrowserExecutor {
     message?: string;
     evidenceUrl?: string;
     extractText?: string;
+    /** P1（复查 2026-08-22）：动作执行后的真实页面 URL（导航回写用） */
+    url?: string;
   }> {
     return this.actions.executeSingle(input);
   }

@@ -12,6 +12,8 @@ export type AgentBrowserSessionStatus =
   | 'paused' // 已暂停（可恢复）
   | 'needs-human' // 审计发现异常（提示注入/引擎断开）待人工接管（可恢复）
   | 'succeeded' // 执行成功（终态，文档 §6.1 running -> succeeded）
+  | 'partial_success' // 部分成功（P2 复查 2026-08-22：保留"待重试"语义，非终态，可再次 run）
+  | 'failed' // 全部失败（终态）
   | 'stopped' // 已停止（终态）
   | 'error'; // 异常终止（终态）
 
@@ -90,6 +92,11 @@ export interface AgentBrowserSession extends AgentBrowserSessionDto {
   tenantId?: string;
   /** 循环事件缓冲（Observe-Act-Verify 过程记录，供 events 接口/回放） */
   events: AgentBrowserEvent[];
+  // P1（复查 2026-08-22）：暂停/中断时的任务上下文——resume 后从断点续跑
+  // （不再丢失 instruction / 剩余动作），恢复后再次 run 不会被重复执行保护拒绝
+  pendingInstruction?: string;
+  pendingActions?: import('./ai-browser-action.service').AiBrowserAction[];
+  pendingStepIndex?: number;
 }
 
 /** 创建一个会话的输入 */

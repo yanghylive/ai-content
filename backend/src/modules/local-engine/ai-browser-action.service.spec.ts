@@ -5,6 +5,8 @@ function makePage() {
   return {
     goto: jest.fn(async () => undefined),
     waitForLoadState: jest.fn(async () => undefined),
+    // P1（复查 2026-08-22）：executeStep 回传 page.url() 作为动作后真实 URL
+    url: jest.fn(() => 'https://example.com'),
     locator: jest.fn((selector: string) => ({
       first: () => ({
         fill: jest.fn(async () => undefined),

@@ -83,9 +83,11 @@ export class AgentBrowserLoopService {
       onStep?: (event: AgentBrowserStepEvent) => void;
       confirmedTools?: Array<{ action: string; target?: string; url?: string }>;
       confirmationIds?: string[];
+      /** P1（复查 2026-08-22）：resume 续跑——从断点动作序列继续，不再从头解析 */
+      resumeFrom?: { stepIndex: number; actions: AiBrowserAction[] };
     } = {},
   ): Promise<{ ok: boolean; steps: AgentBrowserStepEvent[] }> {
-    const { onStep, confirmationIds } = options;
+    const { onStep, confirmationIds, resumeFrom } = options;
     const session = this.sessions.get(sessionId);
     if (session.status !== 'running') {
       throw new BadRequestException(
@@ -98,6 +100,9 @@ export class AgentBrowserLoopService {
     if (!instruction?.trim()) {
       throw new BadRequestException('缺少任务指令（instruction）');
     }
+    // P1（复查 2026-08-22）：持久化任务上下文——pause/resume 后从断点续跑
+    // （resume 端点读取 pendingInstruction/pendingActions 继续，不再丢失任务）
+    session.pendingInstruction = instruction;
 
     // §14.2 feature flag：mode 门禁（legacy=继续现有执行器；dom-agent=本循环灰度）
     const cfg = this.readAgentBrowserConfig();
@@ -148,30 +153,50 @@ export class AgentBrowserLoopService {
     this.sessions.appendEvent(sessionId, snapshot);
 
     // 2. Act：解析指令为动作序列（供逐步 re-observe 循环）
+    // P1（复查 2026-08-22）：resume 续跑直接用保存的动作序列（不重新解析——
+    // 恢复的指令与断点一致，避免 AI 解析漂移），仅首次 run 才走 parseActions
     let actions: AiBrowserAction[] = [];
-    try {
-      actions = await this.actions.parseActions(instruction);
-    } catch (error) {
-      // 解析失败直接抛（指令无法拆解为动作，阻断执行）
-      throw new BadRequestException(
-        `无法解析指令步骤：${error instanceof Error ? error.message : String(error)}`,
+    let startIndex = 0;
+    if (resumeFrom?.actions?.length) {
+      actions = resumeFrom.actions;
+      startIndex = Math.max(0, resumeFrom.stepIndex ?? 0);
+      this.logger.log(
+        `AgentBrowser ${sessionId} resume：从动作 ${startIndex}/${actions.length} 续跑`,
       );
+    } else {
+      try {
+        actions = await this.actions.parseActions(instruction);
+      } catch (error) {
+        // 解析失败直接抛（指令无法拆解为动作，阻断执行）
+        throw new BadRequestException(
+          `无法解析指令步骤：${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      // §14.2 maxSteps 截断
+      actions = actions.slice(0, cfg.maxSteps);
     }
-    // §14.2 maxSteps 截断
-    actions = actions.slice(0, cfg.maxSteps);
+    // P1：记录当前动作序列到会话（resume 从断点续跑的凭据）
+    session.pendingActions = actions;
+    session.pendingStepIndex = startIndex;
     // §6.3 元素引用只在当前快照版本内有效：记录每个动作生成时的页面 URL，
     // 导航后旧快照的 selector 引用拒绝执行（等待重新决策）
     let actionOriginUrls: string[] = actions.map(() => session.url ?? '');
 
     // 3. 逐步 Observe→策略→单动作执行→验证（§7.4 DOM Agent 循环）
-    // P0-2：当前步被确认闸门拦截时的确认单信息（供 blocked 事件带出真实 selector）
-    let blockedConfirmation: { id?: string; selector?: string } | undefined;
-    for (let i = 0; i < actions.length; i++) {
+    for (let i = startIndex; i < actions.length; i++) {
       const action = actions[i];
+      // P2（复查 2026-08-22）：确认单信息每步独立——定义在循环内，
+      // 防止上一动作的 confirmationId 串到后续非确认阻断动作（前端显示错配）
+      let blockedConfirmation: { id?: string; selector?: string } | undefined;
+      // P2（复查 2026-08-22）：本步锁定成功的确认单 id（动作成功→consumed；失败→释放回 pending）
+      let lockedConfirmationId: string | undefined;
       // P1（复查 2026-08-22）：每步执行前检查会话状态——paused/stopped/
       // needs-human 时立即中断循环（否则 pause/stop 只改状态不中断执行）
       const stepStatus = this.sessions.get(sessionId).status;
       if (stepStatus !== 'running') {
+        // P1：记录断点（当前未执行的 stepIndex + 动作序列），resume 从此续跑
+        session.pendingStepIndex = i;
+        session.pendingActions = actions;
         const interrupt: AgentBrowserStepEvent = {
           type: 'error',
           ok: false,
@@ -240,12 +265,14 @@ export class AgentBrowserLoopService {
         if (audit.requiresConfirmation) {
           // P0-2：服务端确认校验——confirmationIds 查 AgentConfirmation 表（绑定
           // sessionId/tenantId/userId + fingerprint 一致）才放行；不信任客户端裸确认。
-          const matched = await this.resolveConfirmation(
+          // P2（复查 2026-08-22）：两阶段——此处仅"锁定"（pending→in_use，原子防并发），
+          // 动作成功后才消费（in_use→consumed）；失败释放（in_use→pending）可安全重试。
+          const conf = await this.resolveConfirmation(
             session,
             action,
             confirmationIds,
           );
-          if (!matched) {
+          if (!conf.ok) {
             const confirmationId = await this.persistPendingConfirmation(
               session,
               action,
@@ -257,6 +284,8 @@ export class AgentBrowserLoopService {
               selector: 'selector' in action ? action.selector : undefined,
             };
             gateMessage = `需用户确认后执行（高风险动作${confirmationId ? `，确认单 ${confirmationId}` : ''}）`;
+          } else {
+            lockedConfirmationId = conf.confirmationId;
           }
         } else if (!audit.allowed) {
           allowed = false;
@@ -281,6 +310,7 @@ export class AgentBrowserLoopService {
             message: gateMessage ?? '策略阻断',
             evidenceUrl: undefined,
             extractText: undefined,
+            url: undefined, // P1：blocked 未执行，无真实页面 URL
             blocked: true,
             ...(blockedConfirmation?.id
               ? { confirmationId: blockedConfirmation.id }
@@ -308,6 +338,22 @@ export class AgentBrowserLoopService {
       onStep?.(stepEvent);
       this.sessions.bumpStep(sessionId);
       this.sessions.appendEvent(sessionId, stepEvent);
+
+      // P1（复查 2026-08-22）：导航闭环——动作执行后的真实页面 URL（executeStep 返回
+      // page.url()）回写会话；observe/重决策基于新页面，不再停留在执行前旧 session.url。
+      // 测试 mock 未返回 url 时跳过（不回写），不影响已有快照驱动路径。
+      if (r.ok && r.url && r.url !== session.url) {
+        session.url = r.url;
+      }
+      // P2（复查 2026-08-22）：确认单消费时机延后——动作成功才 consumed；
+      // 执行失败/阻断释放回 pending，原确认可用于安全重试（不再提前烧掉）
+      if (lockedConfirmationId) {
+        if (r.ok) {
+          await this.consumeConfirmation(lockedConfirmationId);
+        } else {
+          await this.releaseConfirmation(lockedConfirmationId);
+        }
+      }
 
       // P4 DOM 闭环（复查 2026-08-22）：导航判断必须用执行后的真实页面——
       // 执行前的 snapshot 与执行前 URL 相同，goto 后不会触发。改为执行后重新
@@ -338,6 +384,8 @@ export class AgentBrowserLoopService {
               ...actionOriginUrls.slice(0, done),
               ...newOrigins,
             ].slice(0, actions.length);
+            // P1：同步断点上下文（resume 从重决策后的序列续跑）
+            session.pendingActions = actions;
             this.logger.log(
               `AgentBrowser ${sessionId} 导航至 ${afterSnapshot.url}，基于新快照重新决策（${redecided.length} 个新动作）`,
             );
@@ -383,10 +431,18 @@ export class AgentBrowserLoopService {
     steps.push(done);
     onStep?.(done);
     this.sessions.appendEvent(sessionId, done);
-    // P1（复查）：执行完成后置终态 succeeded（文档 running -> succeeded），
-    // 避免成功会话停留 running 被误判"重复执行"
-    if (status === 'success' || status === 'partial_success') {
+    // P1/P2（复查 2026-08-22）：任务结束清除断点上下文（resume 不再续跑已完成任务）；
+    // 终态区分——全部成功=succeeded（终态）；部分成功=partial_success（保留"待重试"
+    // 语义，非终态，可再次 run）；全部失败=failed（终态，避免停留 running 误判执行中）
+    session.pendingInstruction = undefined;
+    session.pendingActions = undefined;
+    session.pendingStepIndex = undefined;
+    if (status === 'success') {
       this.sessions.updateStatus(sessionId, 'succeeded');
+    } else if (status === 'partial_success') {
+      this.sessions.updateStatus(sessionId, 'partial_success');
+    } else {
+      this.sessions.updateStatus(sessionId, 'failed');
     }
     return { ok: status === 'success' || status === 'partial_success', steps };
   }
@@ -514,6 +570,8 @@ export class AgentBrowserLoopService {
     message?: string;
     evidenceUrl?: string;
     extractText?: string;
+    /** P1（复查 2026-08-22）：动作执行后的真实页面 URL（导航回写用） */
+    url?: string;
   }> {
     const exec = this.executor ?? {
       execute: (
@@ -561,17 +619,19 @@ export class AgentBrowserLoopService {
    * - sessionId / tenantId / userId 与会话绑定一致（防跨会话复用）
    * - action + target/url fingerprint 与当前动作完全一致（防模糊放行）
    * 全部匹配才放行。查库不可用时回落精确 confirmedTools（已收紧，缺失关键字段不放行）。
+   * P2（复查 2026-08-22）：匹配后原子锁定 pending → in_use（并发只有一方锁定成功），
+   * 不直接 consumed——动作成功后才消费（consumeConfirmation），失败释放回 pending 可重试。
    */
   private async resolveConfirmation(
     session: AgentBrowserSession,
     action: AiBrowserAction,
     confirmationIds: string[] | undefined,
-  ): Promise<boolean> {
+  ): Promise<{ ok: boolean; confirmationId?: string }> {
     // P0（复查 2026-08-22）：高风险动作必须服务端确认记录放行——
     // 未传 confirmationIds / 查库失败 / 查不到匹配 / prisma 不可用，一律拒绝，
     // 绝不回退客户端传入的 confirmedTools（客户端可伪造）。
-    if (!confirmationIds?.length) return false;
-    if (!this.prisma) return false;
+    if (!confirmationIds?.length) return { ok: false };
+    if (!this.prisma) return { ok: false };
     try {
       const delegate = (
         this.prisma as unknown as {
@@ -595,7 +655,7 @@ export class AgentBrowserLoopService {
           };
         }
       )?.agentConfirmation;
-      if (!delegate?.findMany) return false;
+      if (!delegate?.findMany) return { ok: false };
       const records = await delegate.findMany({
         where: { id: { in: confirmationIds } },
       });
@@ -611,22 +671,80 @@ export class AgentBrowserLoopService {
         if ('url' in action && rec.content !== action.url) return false;
         return true;
       });
-      if (!matched) return false;
-      // P1（复查）：原子消费——pending → consumed，防止同一确认单重复执行
-      // 产生外部副作用（并发时 updateMany 匹配 0 条 = 已被消费 → 拒绝）
+      if (!matched) return { ok: false };
+      // P1（复查 2026-08-22）：原子锁定——pending → in_use，并发时 updateMany 匹配
+      // 0 条 = 已被其他请求锁定/消费 → 拒绝（同 id 不可并发复用）
       if (delegate.updateMany) {
         const res = await delegate.updateMany({
           where: { id: matched.id, status: 'pending' },
-          data: { status: 'consumed', decidedAt: new Date() },
+          data: { status: 'in_use', decidedAt: new Date() },
         });
-        return res.count === 1;
+        return res.count === 1
+          ? { ok: true, confirmationId: matched.id }
+          : { ok: false };
       }
-      return true;
+      return { ok: true, confirmationId: matched.id };
     } catch (error) {
       this.logger.warn(
         `AgentConfirmation 校验查询失败（fail-closed 拒绝）：${error instanceof Error ? error.message : String(error)}`,
       );
-      return false;
+      return { ok: false };
+    }
+  }
+
+  /**
+   * P2（复查 2026-08-22）：确认单消费——动作执行成功后 in_use → consumed（一次性）。
+   * 失败静默（不阻断循环；下次同 id 锁定会因 status 非 pending 拒绝）。
+   */
+  private async consumeConfirmation(id: string | undefined): Promise<void> {
+    if (!id || !this.prisma) return;
+    try {
+      const delegate = (
+        this.prisma as unknown as {
+          agentConfirmation?: {
+            updateMany?: (args: {
+              where: { id: string; status: string };
+              data: { status: string; decidedAt: Date };
+            }) => Promise<{ count: number }>;
+          };
+        }
+      )?.agentConfirmation;
+      await delegate?.updateMany?.({
+        where: { id, status: 'in_use' },
+        data: { status: 'consumed', decidedAt: new Date() },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `AgentConfirmation 消费失败（忽略）：${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * P2（复查 2026-08-22）：确认单释放——动作执行失败后 in_use → pending，
+   * 原确认单可安全用于重试（不提前烧掉确认）。
+   */
+  private async releaseConfirmation(id: string | undefined): Promise<void> {
+    if (!id || !this.prisma) return;
+    try {
+      const delegate = (
+        this.prisma as unknown as {
+          agentConfirmation?: {
+            updateMany?: (args: {
+              where: { id: string; status: string };
+              data: { status: string };
+            }) => Promise<{ count: number }>;
+          };
+        }
+      )?.agentConfirmation;
+      await delegate?.updateMany?.({
+        where: { id, status: 'in_use' },
+        data: { status: 'pending' },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `AgentConfirmation 释放失败（忽略）：${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 

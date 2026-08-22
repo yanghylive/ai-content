@@ -118,16 +118,26 @@ export class AgentBrowserController {
     }
     // 1. 懒创建引擎会话 + 置 running
     this.sessions.updateStatus(id, 'created');
-    await this.sessions.acquireEngineSession(id);
-    // 2. 若有指令则跑一轮 Observe-Act-Verify（confirmationIds/confirmedTools 放行需确认动作）
-    if (body.instruction?.trim()) {
-      const result = await this.loop.run(id, body.instruction, {
-        confirmedTools: body.confirmedTools ?? [],
-        confirmationIds: body.confirmationIds,
-      });
-      if (!result.ok) {
-        this.sessions.markError(id, 'Agent 循环未完成任务');
+    // P1（复查 2026-08-22）：解析/观察/执行器抛异常时必须 markError——
+    // 否则会话长期停留 running（脏会话），前端无法恢复
+    try {
+      await this.sessions.acquireEngineSession(id);
+      // 2. 若有指令则跑一轮 Observe-Act-Verify（confirmationIds/confirmedTools 放行需确认动作）
+      if (body.instruction?.trim()) {
+        await this.loop.run(id, body.instruction, {
+          confirmedTools: body.confirmedTools ?? [],
+          confirmationIds: body.confirmationIds,
+        });
+        // 终态由 loop 设置（success→succeeded / partial_success / failed）；
+        // 不再对 !ok 误 markError（否则正常失败也被标成 error）
       }
+    } catch (error) {
+      // P1：任何异常 → 标记 error 终态（不留脏 running），再抛回给前端
+      this.sessions.markError(
+        id,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
     }
     return this.sessions.toPublicDto(this.sessions.get(id));
   }
@@ -150,6 +160,35 @@ export class AgentBrowserController {
     this.sessions.assertOwner(id, this.getUserId(request), tenantId);
     // P4-4：resume 走 SessionService.resume——校验 paused/needs-human 并重新获取引擎会话
     await this.sessions.resume(id);
+    // P1（复查 2026-08-22）：恢复原任务——若暂停时留有未完成任务上下文，
+    // 自动从断点续跑（不再丢失 instruction/剩余动作；也不会因 running 被重复执行保护拒绝）
+    try {
+      const s = this.sessions.get(id);
+      const pending = s.pendingInstruction?.trim();
+      if (pending) {
+        if (s.pendingActions?.length) {
+          await this.loop.run(id, pending, {
+            confirmedTools: [],
+            confirmationIds: undefined,
+            resumeFrom: {
+              stepIndex: s.pendingStepIndex ?? 0,
+              actions: s.pendingActions,
+            },
+          });
+        } else {
+          await this.loop.run(id, pending, {
+            confirmedTools: [],
+            confirmationIds: undefined,
+          });
+        }
+      }
+    } catch (error) {
+      this.sessions.markError(
+        id,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
+    }
     return this.sessions.toPublicDto(this.sessions.get(id));
   }
 
