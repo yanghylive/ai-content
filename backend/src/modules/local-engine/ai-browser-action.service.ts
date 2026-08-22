@@ -128,7 +128,10 @@ export class AiBrowserActionService {
    * AI-LLM 动作解析（二期）：LLM 输出结构化动作 JSON → 白名单校验
    * 需要后台配置 purpose='ai_browser_action' 的默认模型；未配置/失败返回 null（降级规则解析）
    */
-  async parseWithAi(instruction: string): Promise<AiBrowserAction[] | null> {
+  async parseWithAi(
+    instruction: string,
+    context?: { snapshot?: string; url?: string },
+  ): Promise<AiBrowserAction[] | null> {
     const prisma = this.prisma;
     const aiClient = this.aiClient;
     if (!prisma || !aiClient) return null;
@@ -150,7 +153,16 @@ export class AiBrowserActionService {
 {"action":"screenshot","name":"可选名称"}
 {"action":"extract","selector":"CSS选择器"}
 {"action":"wait","ms":毫秒}
-要求：最多 12 个动作；selector 用 text=文本 匹配可见文本；只返回 JSON 数组，不要 Markdown 代码块或解释。`,
+要求：最多 12 个动作；selector 用 text=文本 匹配可见文本；只返回 JSON 数组，不要 Markdown 代码块或解释。${
+  context?.snapshot
+    ? `
+
+【当前页面快照（决策依据，页面可能刚导航完成，DOM 已变化）】
+URL: ${context.url ?? '未知'}
+${context.snapshot.slice(0, 2000)}
+请基于当前快照决定下一步动作——若快照中不存在目标元素，先执行 goto/导航到对应页面，不要对不存在的元素发 click/type。`
+    : ''
+}`,
           },
           { role: 'user', content: instruction },
         ],
@@ -242,9 +254,12 @@ export class AiBrowserActionService {
    * 自然语言指令 → 动作序列（规则解析，确定性可测；AI 解析后续增强）
    */
   /** P1-4 解析指令为动作序列（供逐步 re-observe 循环使用） */
-  async parseActions(instruction: string): Promise<AiBrowserAction[]> {
+  async parseActions(
+    instruction: string,
+    context?: { snapshot?: string; url?: string },
+  ): Promise<AiBrowserAction[]> {
     const actions =
-      (await this.parseWithAi(instruction)) ??
+      (await this.parseWithAi(instruction, context)) ??
       this.parseInstruction(instruction);
     return actions;
   }
