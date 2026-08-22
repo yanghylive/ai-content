@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import {
@@ -70,6 +70,15 @@ export class AgentBrowserSessionService {
   get(id: string): AgentBrowserSession {
     const session = this.sessions.get(id);
     if (!session) throw new NotFoundException('Agent Browser 会话不存在');
+    return session;
+  }
+
+  /** P4 安全：校验会话所有者（防 IDOR——知道 sessionId 不能操作他人会话） */
+  assertOwner(id: string, ownerId: string): AgentBrowserSession {
+    const session = this.get(id);
+    if (session.lease?.ownerId && session.lease.ownerId !== ownerId) {
+      throw new ForbiddenException('无权访问该 Agent Browser 会话');
+    }
     return session;
   }
 

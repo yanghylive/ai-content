@@ -45,7 +45,8 @@ export class AgentBrowserController {
   }
 
   @Get('sessions/:id')
-  get(@Param('id') id: string) {
+  get(@Req() request: AuthRequest, @Param('id') id: string) {
+    this.sessions.assertOwner(id, this.getUserId(request));
     return this.sessions.get(id);
   }
 
@@ -53,9 +54,11 @@ export class AgentBrowserController {
   @Post('sessions/:id/run')
   @HttpCode(202)
   async run(
+    @Req() request: AuthRequest,
     @Param('id') id: string,
     @Body() body: { instruction?: string } = {},
   ) {
+    this.sessions.assertOwner(id, this.getUserId(request));
     // 1. 懒创建引擎会话 + 置 running
     await this.sessions.updateStatus(id, 'created');
     await this.sessions.acquireEngineSession(id);
@@ -71,26 +74,30 @@ export class AgentBrowserController {
 
   @Post('sessions/:id/pause')
   @HttpCode(202)
-  pause(@Param('id') id: string) {
+  pause(@Req() request: AuthRequest, @Param('id') id: string) {
+    this.sessions.assertOwner(id, this.getUserId(request));
     this.sessions.updateStatus(id, 'paused');
     return this.sessions.get(id);
   }
 
   @Post('sessions/:id/resume')
   @HttpCode(202)
-  resume(@Param('id') id: string) {
+  resume(@Req() request: AuthRequest, @Param('id') id: string) {
+    this.sessions.assertOwner(id, this.getUserId(request));
     this.sessions.updateStatus(id, 'running');
     return this.sessions.get(id);
   }
 
   @Get('sessions/:id/events')
-  events(@Param('id') id: string) {
+  events(@Req() request: AuthRequest, @Param('id') id: string) {
+    this.sessions.assertOwner(id, this.getUserId(request));
     return this.sessions.listEvents(id);
   }
 
   @Post('sessions/:id/stop')
   @HttpCode(202)
-  async stop(@Param('id') id: string) {
+  async stop(@Req() request: AuthRequest, @Param('id') id: string) {
+    this.sessions.assertOwner(id, this.getUserId(request));
     await this.sessions.stop(id);
     return this.sessions.get(id);
   }

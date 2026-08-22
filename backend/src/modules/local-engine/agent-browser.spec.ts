@@ -214,6 +214,14 @@ describe('AgentBrowserLoopService（P4 Observe-Act-Verify）', () => {
     expect(() => loop.auditStep('evaluate_js' as never, {}, [])).toThrow();
   });
 
+  it('assertOwner：他人会话抛 Forbidden，本人放行', () => {
+    const browser = makeBrowserMock();
+    const svc = new AgentBrowserSessionService(browser as never);
+    const s = svc.create('u-owner', {});
+    expect(() => svc.assertOwner(s.id, 'u-owner')).not.toThrow();
+    expect(() => svc.assertOwner(s.id, 'u-attacker')).toThrow();
+  });
+
   it('事件缓冲：appendEvent/listEvents 记录循环过程', async () => {
     const browser = makeBrowserMock();
     const sessionSvc = new AgentBrowserSessionService(browser as never);
