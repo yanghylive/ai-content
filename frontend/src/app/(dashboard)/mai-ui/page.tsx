@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { rpaStatus, captureScreen, executeActions, resumeAfterAsk, cancelActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
-import { planMaiUiActions, type MaiUiAction } from "@/lib/api/mai-ui";
+import { planMaiUiActions, sinkMaiUiTaskToCrm, type MaiUiAction } from "@/lib/api/mai-ui";
 import { createMaiUiTask, reportTaskStatus } from "@/lib/api/mobile-executor";
 
 /** MAI-UI 手机端工作台：截屏 → 指令 → 规划动作 → 无障碍执行 → 人工确认 */
@@ -19,6 +19,8 @@ export default function MaiUiWorkbenchPage() {
   const [pendingAsk, setPendingAsk] = useState<string>("");
   const [selRect, setSelRect] = useState<[number, number, number, number] | null>(null);
   const selRef = useRef<{ startX: number; startY: number; drawing: boolean }>({ startX: 0, startY: 0, drawing: false });
+  const [lastTask, setLastTask] = useState<{ id: string; resultMessage: string; actionCount: number } | null>(null);
+  const [sinking, setSinking] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [model, setModel] = useState("");
 
@@ -117,6 +119,9 @@ export default function MaiUiWorkbenchPage() {
     }
     if (result.ok) {
       pushLog(`✅ ${result.message}${taskId ? `（任务 ${taskId.slice(-6)}）` : ""}`);
+      if (taskId) {
+        setLastTask({ id: taskId, resultMessage: result.message, actionCount: actions.length });
+      }
     } else if (result.message.startsWith("ASK_USER:")) {
       const question = result.message.replace(/^ASK_USER:/, "").split("|")[0];
       setPendingAsk(question);
@@ -148,6 +153,28 @@ export default function MaiUiWorkbenchPage() {
     setExecuting(false);
     pushLog("⛔ 已请求中止");
   }, [pushLog]);
+
+  /** 沉淀本次执行到 CRM（来源=MAI-UI 设备执行） */
+  const handleSinkCrm = useCallback(async () => {
+    if (!lastTask) return;
+    setSinking(true);
+    pushLog("沉淀到 CRM…");
+    try {
+      const customer = await sinkMaiUiTaskToCrm({
+        displayName: (instruction.trim() || "MAI-UI 设备执行").slice(0, 30),
+        taskId: lastTask.id,
+        instruction: instruction.trim() || "手动执行",
+        actionCount: lastTask.actionCount,
+        resultMessage: lastTask.resultMessage,
+      });
+      pushLog(`✅ 已沉淀到 CRM：${customer.displayName}`);
+      setLastTask(null);
+    } catch (e) {
+      pushLog(`❌ 沉淀失败：${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setSinking(false);
+    }
+  }, [lastTask, instruction, pushLog]);
 
   /** 圈选开始（截图预览容器 pointerdown） */
   const handleSelectStart = useCallback(
@@ -397,6 +424,15 @@ export default function MaiUiWorkbenchPage() {
                 中止
               </button>
             </div>
+            {lastTask && (
+              <button
+                onClick={() => void handleSinkCrm()}
+                disabled={sinking}
+                style={{ marginTop: 10, width: "100%", ...btnStyle("#7c3aed"), opacity: sinking ? 0.6 : 1 }}
+              >
+                {sinking ? "沉淀中…" : "📥 沉淀到 CRM"}
+              </button>
+            )}
           </div>
         )}
 
