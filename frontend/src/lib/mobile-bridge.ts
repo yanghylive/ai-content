@@ -27,6 +27,12 @@ interface JiuZhangBridge {
   rpaStatus?(): string;
   /** App 内微信一键登录：拉起微信 SDK 授权，返回 { ok, code?, message }（需企业资质 AppID） */
   wechatLogin?(): string;
+  /** MAI-UI 动作执行（PRD M2/M3）：同步执行结构化动作序列，返回 { ok, message } */
+  executeActions?(actionsJson: string): string;
+  /** ask_user 暂停后继续（true）/ 中止（false） */
+  resumeAfterAsk?(proceed: boolean): string;
+  /** 中止正在执行的动作序列 */
+  cancelActions?(): string;
 }
 
 declare global {
@@ -263,7 +269,7 @@ export function bridgeInfo(): { isShell: boolean; methods: string[] } {
   return {
     isShell: Boolean(bridge),
     methods: bridge
-      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus", "wechatLogin"].filter(
+      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus", "wechatLogin", "executeActions", "resumeAfterAsk", "cancelActions"].filter(
           (m) => typeof (bridge as unknown as Record<string, unknown>)[m] === "function",
         )
       : [],
@@ -328,4 +334,73 @@ export function rpaStatus(): { enabled: boolean; available: boolean } {
     }
   }
   return { enabled: false, available: false };
+}
+
+/** MAI-UI 结构化动作（与 /api/mai-ui/actions 返回对齐） */
+export interface MaiUiAction {
+  action: "click" | "input" | "swipe" | "wait" | "back" | "home" | "ask_user" | "done" | string;
+  target?: string;
+  bounds?: [number, number, number, number];
+  text?: string;
+  direction?: "up" | "down" | "left" | "right";
+  distance?: number;
+  ms?: number;
+  question?: string;
+  summary?: string;
+}
+
+export interface MaiUiExecResult {
+  ok: boolean;
+  message: string;
+}
+
+/**
+ * 在手机壳执行 MAI-UI 动作序列（需无障碍权限已开启）。
+ * 同步等待结果；ask_user 时返回 message 以 "ASK_USER:" 开头，需调 resumeAfterAsk 继续。
+ */
+export function executeActions(actions: MaiUiAction[]): MaiUiExecResult {
+  const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
+  if (!bridge?.executeActions) {
+    return { ok: false, message: "当前不在 JIUZHANG AI App 内，无法执行设备操作" };
+  }
+  try {
+    const raw = bridge.executeActions(JSON.stringify(actions));
+    const parsed =
+      typeof raw === "string" && raw.trim().startsWith("{")
+        ? (JSON.parse(raw) as MaiUiExecResult)
+        : null;
+    return parsed ?? { ok: false, message: "执行结果解析失败" };
+  } catch {
+    return { ok: false, message: "动作执行调用失败" };
+  }
+}
+
+/** ask_user 暂停后继续执行 */
+export function resumeAfterAsk(proceed: boolean): MaiUiExecResult {
+  const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
+  if (!bridge?.resumeAfterAsk) return { ok: false, message: "桥方法不可用" };
+  try {
+    const raw = bridge.resumeAfterAsk(proceed);
+    const parsed = typeof raw === "string" && raw.trim().startsWith("{")
+      ? (JSON.parse(raw) as MaiUiExecResult)
+      : null;
+    return parsed ?? { ok: false, message: "解析失败" };
+  } catch {
+    return { ok: false, message: "调用失败" };
+  }
+}
+
+/** 中止动作执行 */
+export function cancelActions(): MaiUiExecResult {
+  const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
+  if (!bridge?.cancelActions) return { ok: false, message: "桥方法不可用" };
+  try {
+    const raw = bridge.cancelActions();
+    const parsed = typeof raw === "string" && raw.trim().startsWith("{")
+      ? (JSON.parse(raw) as MaiUiExecResult)
+      : null;
+    return parsed ?? { ok: false, message: "解析失败" };
+  } catch {
+    return { ok: false, message: "调用失败" };
+  }
 }

@@ -9,6 +9,8 @@ import android.content.Intent
 import android.net.Uri
 import android.webkit.JavascriptInterface
 import org.json.JSONObject
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * JS 桥（H5 与壳交互，挂 window.JiuZhang）：
@@ -137,6 +139,56 @@ class JsBridge(private val activity: Activity) {
         val enabled = com.aicontent.mobile.agent.RpaAccessibilityService.isEnabled()
         return "{\"ok\":true,\"enabled\":$enabled}"
     }
+
+    /**
+     * 执行 MAI-UI 结构化动作序列（PRD M2/M3）。
+     * 同步等待执行结果（最长 95s）：H5 调 window.JiuZhang.executeActions(json) 直接拿结果。
+     * 动作来自 /api/mai-ui/actions 规划；ask_user 会暂停并返回 ASK_USER: 前缀，
+     * H5 用 resumeAfterAsk 继续/中止。
+     */
+    @JavascriptInterface
+    fun executeActions(actionsJson: String): String {
+        val latch = CountDownLatch(1)
+        val holder = arrayOfNulls<String>(1)
+        com.aicontent.mobile.agent.RpaAccessibilityService.executeActions(actionsJson) { result ->
+            holder[0] = "{\"ok\":${result.ok},\"message\":\"${escapeJson(result.message)}\"}"
+            latch.countDown()
+        }
+        try {
+            if (!latch.await(95, TimeUnit.SECONDS)) {
+                return "{\"ok\":false,\"message\":\"动作执行超时\"}"
+            }
+        } catch (_: InterruptedException) {
+            return "{\"ok\":false,\"message\":\"动作执行被中断\"}"
+        }
+        return holder[0] ?: "{\"ok\":false,\"message\":\"执行结果丢失\"}"
+    }
+
+    /** ask_user 暂停后：H5 答复继续（true）或中止（false）。 */
+    @JavascriptInterface
+    fun resumeAfterAsk(proceed: Boolean): String {
+        val latch = CountDownLatch(1)
+        val holder = arrayOfNulls<String>(1)
+        com.aicontent.mobile.agent.RpaAccessibilityService.resumeAfterAsk(proceed) { result ->
+            holder[0] = "{\"ok\":${result.ok},\"message\":\"${escapeJson(result.message)}\"}"
+            latch.countDown()
+        }
+        try {
+            latch.await(5, TimeUnit.SECONDS)
+        } catch (_: InterruptedException) {
+        }
+        return holder[0] ?: "{\"ok\":false,\"message\":\"无响应\"}"
+    }
+
+    /** 中止正在执行的动作序列。 */
+    @JavascriptInterface
+    fun cancelActions(): String {
+        com.aicontent.mobile.agent.RpaAccessibilityService.cancelActions()
+        return "{\"ok\":true,\"message\":\"已取消\"}"
+    }
+
+    private fun escapeJson(s: String): String =
+        s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", " ").replace("\r", " ")
 
     /**
      * H5 主题切换时同步原生状态栏（沉浸式下状态栏图标/底色需随浅深色反色）。
