@@ -21,6 +21,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContentStrategiesModule } from './modules/content-strategies/content-strategies.module';
 import { LocalEngineModule } from './modules/local-engine/local-engine.module';
+import { MaiUiModule } from './modules/mai-ui/mai-ui.module';
 import { RuntimeModule } from './modules/runtime/runtime.module';
 import { GeoBridgeModule } from './modules/geo-bridge/geo-bridge.module';
 import { AuthRequestContextModule } from './common/auth-request-context.module';
@@ -97,6 +98,7 @@ import { CaseShowcaseModule } from './modules/case-showcase/case-showcase.module
     AuthModule,
     ContentStrategiesModule,
     LocalEngineModule,
+    MaiUiModule,
     RuntimeModule,
     GeoBridgeModule,
     AppMarketModule,
