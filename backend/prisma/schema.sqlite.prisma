@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["windows"]
 }
 
 datasource db {
@@ -3938,4 +3939,38 @@ model ShowcaseCaseReview {
   @@index([caseId, createdAt])
   @@index([decision])
   @@map("showcase_case_reviews")
+}
+
+// ============================================================
+// P3 AI 助手任务草稿（文档 §7.3 GrowthTaskDraft 契约）
+// NL → 结构化草稿 → 确认（记录操作者/租户/风险摘要/哈希/过期）→ 执行
+// ============================================================
+model GrowthTaskDraft {
+  id             String   @id @default(cuid())
+  tenantId       String   @default("legacy-local-desktop") @map("tenant_id")
+  userId         String   @map("user_id") // 操作者（创建者）
+  actorUserId    String?  @map("actor_user_id") // 确认/执行操作者（与创建者分离，审计用）
+  intent         String // find_leads/contact_leads/sync_crm/follow_up/report
+  goal           String  
+  platform       String?
+  accountId      String?  @map("account_id")
+  configJson     Json     @default("{}") @map("config_json") // 对齐 GrowthAcquisitionConfig 的输入
+  plannedActions Json     @default("[]") @map("planned_actions") // [{type,label,risk,requiresConfirmation}]
+  missingFields  Json     @default("[]") @map("missing_fields")
+  readiness      String   @default("needs-input") // ready/needs-confirmation/needs-input/blocked
+  blockers       Json     @default("[]")
+  draftHash      String?  @map("draft_hash") // 草稿哈希（确认内容防篡改）
+  riskSummary    String?  @map("risk_summary") // 确认时保存的风险摘要
+  configId       String?  @map("config_id") // 确认后关联的 GrowthAcquisitionConfig
+  status         String   @default("draft") // draft/confirmed/executed/expired/cancelled
+  expiresAt      DateTime @map("expires_at")
+  confirmedAt    DateTime? @map("confirmed_at")
+  executedAt     DateTime? @map("executed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@index([tenantId, status])
+  @@index([intent, status])
+  @@map("growth_task_drafts")
 }
