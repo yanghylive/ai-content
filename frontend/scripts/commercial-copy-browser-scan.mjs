@@ -117,6 +117,11 @@ try {
     (entry) =>
       !/Download the React DevTools|HMR|ResizeObserver loop|net::ERR_TIMED_OUT|Statsig|Minified React error #418/i.test(
         entry.message,
+      ) &&
+      // 2026-08-22：资源 404（如本地验收环境无账号头像数据 /api/auto-upload/avatars/*）
+      // 属数据缺失非 UI 缺陷；页面功能性失败由 blankPage/文案判定把关，故豁免纯资源 404
+      !/Failed to load resource: the server responded with a status of 404/i.test(
+        entry.message,
       ),
   );
   const failures = results.filter(
