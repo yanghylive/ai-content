@@ -19,6 +19,54 @@ describe('KaypalAuthClient', () => {
       json: jest.fn().mockResolvedValue(body),
     }) as unknown as Response;
 
+  // Stage 1A 回归：登录/鉴权是凭据主链路，KAYPAL_AUTH_BASE_URL 被改成
+  // 非网关域名时必须在拼 URL 阶段就 fail-closed，绝不能把设备码/口令发出去。
+  it('refuses a non-kaypal auth base url without issuing any request (fail-closed)', async () => {
+    const fetchMock = jest.fn();
+    global.fetch = fetchMock as unknown as typeof global.fetch;
+
+    const client = new KaypalAuthClient({
+      get: jest.fn((key: string) =>
+        // 典型子串绕过样本：includes('kaypal.cn') 会误判为合法
+        key === 'KAYPAL_AUTH_BASE_URL' ? 'https://kaypal.cn.evil.com' : '',
+      ),
+    } as any);
+
+    await expect(
+      client.startDesktopAuth({
+        deviceId: 'device-1',
+        deviceName: 'AI 内容工作台',
+        platform: 'darwin',
+      }),
+    ).rejects.toThrow(/非法|不可用/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('accepts a kaypal.cn subdomain auth base url', async () => {
+    const client = new KaypalAuthClient({
+      get: jest.fn((key: string) =>
+        key === 'KAYPAL_AUTH_BASE_URL' ? 'https://enterprise.kaypal.cn' : '',
+      ),
+    } as any);
+    global.fetch = jest.fn().mockResolvedValue(
+      jsonResponse({
+        device_code: 'device-code',
+        user_code: 'KAYPAL',
+        verification_url:
+          'https://enterprise.kaypal.cn/api/desktop-auth/authorize?device_code=device-code&user_code=KAYPAL',
+        expires_in: 600,
+        interval: 2,
+      }),
+    );
+
+    const result = await client.startDesktopAuth({
+      deviceId: 'device-1',
+      deviceName: 'AI 内容工作台',
+      platform: 'darwin',
+    });
+    expect(result.device_code).toBe('device-code');
+  });
+
   it('normalizes desktop verification url to configured Kaypal origin', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,

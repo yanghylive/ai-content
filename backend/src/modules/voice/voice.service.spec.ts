@@ -231,7 +231,9 @@ describe('VoiceService', () => {
     try {
       const config = {
         get: jest.fn((key: string) => {
-          if (key === 'KAYPAL_AUTH_BASE_URL') return 'https://kaypal.test';
+          // Stage 1A：base url 必须是 kaypal.cn 根域或其子域，
+          // 原来的 https://kaypal.test 已被 KaypalProviderResolver 拒绝（fail-closed）
+          if (key === 'KAYPAL_AUTH_BASE_URL') return 'https://test.kaypal.cn';
           if (key === 'KAYPAL_VOICE_ASR_CREDIT_COST') return '2';
           return '';
         }),
@@ -262,7 +264,7 @@ describe('VoiceService', () => {
 
       expect(fetchMock).toHaveBeenCalledTimes(1);
       const [url, options] = fetchMock.mock.calls[0];
-      expect(String(url)).toBe('https://kaypal.test/api/billing/deduct');
+      expect(String(url)).toBe('https://test.kaypal.cn/api/billing/deduct');
       expect(options.headers).toMatchObject({
         Authorization: 'Bearer desktop-token-1',
       });
@@ -286,6 +288,49 @@ describe('VoiceService', () => {
         usageMode: 'kaypal-subscription-credits',
         sessionId: 'asr-session-1',
       });
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  // Stage 1A 回归：KAYPAL_AUTH_BASE_URL 被改成非网关域名时，
+  // 绝不能带着用户 token 把计费请求打到第三方，必须在拼 URL 阶段就拒绝。
+  it('refuses to bill through a non-kaypal gateway host (fail-closed)', async () => {
+    const originalFetch = global.fetch;
+    const fetchMock = jest.fn();
+    (global as unknown as { fetch: typeof fetchMock }).fetch = fetchMock;
+
+    try {
+      const config = {
+        get: jest.fn((key: string) => {
+          if (key === 'KAYPAL_AUTH_BASE_URL') return 'https://kaypal.cn.evil.com';
+          if (key === 'KAYPAL_VOICE_ASR_CREDIT_COST') return '2';
+          return '';
+        }),
+      };
+      const service = new VoiceService(
+        {} as never,
+        {} as never,
+        {} as never,
+        {} as never,
+        undefined,
+        undefined,
+        undefined,
+        config as never,
+      );
+
+      await expect(
+        service.meterAsr(
+          { ...user, kaypalDesktopAccessToken: 'desktop-token-1' },
+          {
+            clientKind: 'bailongma-desktop',
+            sessionId: 'asr-session-evil',
+            durationMs: 1500,
+            lang: 'zh',
+          },
+        ),
+      ).rejects.toThrow(/暂时不可用|非法/);
+      expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       global.fetch = originalFetch;
     }

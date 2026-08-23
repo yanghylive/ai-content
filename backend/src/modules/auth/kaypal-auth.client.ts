@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { safeText } from '../../common/text.utils';
+import { KaypalProviderResolver } from '../ai-models/kaypal-provider.resolver';
 
 export interface KaypalAuthenticatedUser {
   id: string;
@@ -609,11 +610,13 @@ export class KaypalAuthClient {
   }
 
   private getBaseUrl() {
-    return (
-      this.config
-        .get<string>('KAYPAL_AUTH_BASE_URL')
-        ?.trim()
-        .replace(/\/+$/, '') || DEFAULT_KAYPAL_AUTH_BASE_URL
+    // Stage 1A：host 统一经 KaypalProviderResolver 校验（fail-closed）。
+    // 这是登录/鉴权/扣费主链路，env 一旦被改成第三方域名会直接泄露用户凭据，
+    // 所以非法 host 必须在拼 URL 阶段抛错，而不是发出请求后再看响应。
+    return KaypalProviderResolver.resolveBaseUrlFrom(
+      [this.config?.get<string>('KAYPAL_AUTH_BASE_URL')],
+      DEFAULT_KAYPAL_AUTH_BASE_URL,
+      this.config?.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
     );
   }
 

@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { KaypalAuthClient } from '../auth/kaypal-auth.client';
+import { KaypalProviderResolver } from '../ai-models/kaypal-provider.resolver';
 
 export interface ImageGenResult {
   filename: string;
@@ -117,11 +118,15 @@ export class MultimodalService {
   }
 
   private getGatewayBaseUrl(): string {
-    const authBase =
-      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn';
-    return (
-      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') || `${authBase}/api/ai`
-    ).replace(/\/+$/, '');
+    // Stage 1A：base url 统一经 KaypalProviderResolver 校验 host（fail-closed），
+    // 避免 env 被改成第三方/恶意域名后请求带着凭据直接打过去。
+    const authBase = KaypalProviderResolver.resolveBaseUrlFrom([
+      this.readConfig('KAYPAL_AUTH_BASE_URL'),
+    ]);
+    return KaypalProviderResolver.resolveBaseUrlFrom([
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL'),
+      `${authBase}/api/ai`,
+    ]);
   }
 
   private getServerApiKey(): string {

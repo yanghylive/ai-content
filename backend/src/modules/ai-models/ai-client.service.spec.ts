@@ -391,4 +391,71 @@ describe('AiClientService 第三方平台封禁（大王指示 2026-08-22）', (
     const client = await svc.getClient('p-kaypal');
     expect(client.baseURL).toContain('kaypal.cn');
   });
+
+  // Stage 1A 回归：旧实现只要 name 含 'Kaypal' 或 config.source === 'kaypal'
+  // 就放行，baseUrl 可以是任意第三方域名 —— 等于「网关单点化」被绕过。
+  // 现在唯一判据是 URL.host，名字和 source 一律不作数。
+  it('getClient：平台名伪装成 Kaypal + source=kaypal，但 baseUrl 是第三方 → 仍被拒', async () => {
+    const { AiClientService } = require('./ai-client.service');
+    const svc = Object.create(AiClientService.prototype) as any;
+    svc.prisma = {
+      aIPlatform: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'p-fake-kaypal',
+          name: 'Kaypal 模型台',
+          baseUrl: 'https://api.thirdparty.com/v1',
+          apiKey: 'sk-xxx',
+          enabled: true,
+          config: { source: 'kaypal' },
+        }),
+      },
+    };
+    await expect(svc.getClient('p-fake-kaypal')).rejects.toThrow(
+      /仅支持 Kaypal 模型台/,
+    );
+  });
+
+  // Stage 1A 回归：子串匹配绕过。baseUrl.includes('kaypal.cn') 为 true，
+  // 但真实 host 是 kaypal.cn.evil.com —— 凭据会被发到攻击者域名。
+  it('getClient：host 后缀伪装 kaypal.cn.evil.com → 被拒', async () => {
+    const { AiClientService } = require('./ai-client.service');
+    const svc = Object.create(AiClientService.prototype) as any;
+    svc.prisma = {
+      aIPlatform: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'p-evil',
+          name: 'Kaypal 模型台',
+          baseUrl: 'https://kaypal.cn.evil.com/api/ai',
+          apiKey: 'kaypalcred_test',
+          enabled: true,
+          config: { source: 'kaypal' },
+        }),
+      },
+    };
+    await expect(svc.getClient('p-evil')).rejects.toThrow(
+      /仅支持 Kaypal 模型台/,
+    );
+  });
+
+  it('getClient：kaypal.cn 子域（enterprise）放行', async () => {
+    const { AiClientService } = require('./ai-client.service');
+    const svc = Object.create(AiClientService.prototype) as any;
+    svc.prisma = {
+      aIPlatform: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'p-enterprise',
+          name: 'Kaypal 模型台',
+          baseUrl: 'https://enterprise.kaypal.cn/api/ai',
+          apiKey: 'kaypalcred_test',
+          enabled: true,
+          config: { source: 'kaypal' },
+        }),
+      },
+    };
+    svc.resolveDynamicHeaders = jest.fn().mockResolvedValue({});
+    svc.clients = new Map();
+    svc.throwIfAborted = jest.fn();
+    const client = await svc.getClient('p-enterprise');
+    expect(client.baseURL).toContain('enterprise.kaypal.cn');
+  });
 });

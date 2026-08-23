@@ -19,6 +19,10 @@ import type {
 import { randomUUID } from 'node:crypto';
 import { StorageService } from '../storage/storage.service';
 import {
+  KaypalHostNotAllowedError,
+  KaypalProviderResolver,
+} from './kaypal-provider.resolver';
+import {
   AuthRequestContextService,
   type AuthRequestContextUser,
 } from '../../common/auth-request-context.service';
@@ -144,17 +148,28 @@ export class AiClientService {
     }
     // 2026-08-22 大王指示：封死自定义第三方平台（用户自配 key 绕过 kaypal 计费）。
     // 所有 AI 调用只允许 Kaypal 模型台（云端记账），第三方直连一律拒绝。
-    const baseUrl = `${platform.baseUrl ?? ''}`;
-    const cfg = (platform.config ?? {}) as Record<string, unknown>;
-    const isKaypal =
-      baseUrl.includes('kaypal.cn') ||
-      baseUrl.includes('kaypal.com') ||
-      `${platform.name ?? ''}`.includes('Kaypal') ||
-      cfg.source === 'kaypal';
-    if (!isKaypal) {
-      throw new Error(
-        '仅支持 Kaypal 模型台（统一计费），用户自定义第三方 AI 平台已关闭',
+    //
+    // 2026-08-23 Stage 1A：改为经 KaypalProviderResolver 做 host 精确校验。
+    // 旧实现有三个可绕过的口子，等于「单点化」形同虚设：
+    //   ① baseUrl.includes('kaypal.cn') 是子串匹配 ——
+    //      https://kaypal.cn.evil.com/v1 与 https://evil.com/?x=kaypal.cn 都能过；
+    //   ② platform.name 含 'Kaypal' 就放行 —— 平台改个名即可直连任意第三方域名；
+    //   ③ config.source === 'kaypal' 就放行 —— 同上，与真实 baseUrl 无关。
+    // 现在唯一判据是 URL.host 属于 kaypal.cn 根域或其子域，名字/source 一律不作数。
+    try {
+      KaypalProviderResolver.assertAllowedUrl(
+        `${platform.baseUrl ?? ''}`,
+        // config 用可选链：本方法在部分测试/工具路径下以 Object.create 直接构造，
+        // 未经 DI 注入 ConfigService；逃生阀取不到时按「无额外白名单」处理（更严格）。
+        this.config?.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
       );
+    } catch (error) {
+      if (error instanceof KaypalHostNotAllowedError) {
+        throw new Error(
+          `仅支持 Kaypal 模型台（统一计费），用户自定义第三方 AI 平台已关闭。${error.message}`,
+        );
+      }
+      throw error;
     }
 
     this.throwIfAborted(signal);
@@ -361,11 +376,15 @@ export class AiClientService {
   private getKaypalCloudBaseUrl() {
     // 模型台/AI 网关独立于认证 base：KAYPAL_AI_PROXY_BASE_URL 优先，
     // 否则回退 KAYPAL_AUTH_BASE_URL（认证切生产时 AI 能力可继续走 test 网关）
-    return (
-      this.config.get<string>('KAYPAL_AI_PROXY_BASE_URL')?.trim() ||
-      this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
-      DEFAULT_KAYPAL_AUTH_BASE_URL
-    ).replace(/\/+$/, '');
+    // Stage 1A：host 统一经 KaypalProviderResolver 校验（fail-closed）
+    return KaypalProviderResolver.resolveBaseUrlFrom(
+      [
+        this.config.get<string>('KAYPAL_AI_PROXY_BASE_URL'),
+        this.config.get<string>('KAYPAL_AUTH_BASE_URL'),
+      ],
+      DEFAULT_KAYPAL_AUTH_BASE_URL,
+      this.config?.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
+    );
   }
 
   private isCloudAiBillingEnabled() {
@@ -860,9 +879,11 @@ export class AiClientService {
       return accessToken;
     }
 
-    const baseUrl =
-      this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
-      DEFAULT_KAYPAL_AUTH_BASE_URL;
+    const baseUrl = KaypalProviderResolver.resolveBaseUrlFrom(
+      [this.config.get<string>('KAYPAL_AUTH_BASE_URL')],
+      DEFAULT_KAYPAL_AUTH_BASE_URL,
+      this.config?.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
+    );
     if (!baseUrl) {
       return accessToken;
     }
@@ -975,9 +996,11 @@ export class AiClientService {
     if (!token) {
       return localContext;
     }
-    const baseUrl =
-      this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
-      DEFAULT_KAYPAL_AUTH_BASE_URL;
+    const baseUrl = KaypalProviderResolver.resolveBaseUrlFrom(
+      [this.config.get<string>('KAYPAL_AUTH_BASE_URL')],
+      DEFAULT_KAYPAL_AUTH_BASE_URL,
+      this.config?.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
+    );
     const request = createRequestSignal(
       signal,
       Number(

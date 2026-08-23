@@ -11,6 +11,7 @@ import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AUTH_COOKIE_NAME } from '../auth/auth.constants';
 import { hashSessionToken, parseCookieHeader } from '../auth/auth.utils';
+import { KaypalProviderResolver } from './kaypal-provider.resolver';
 
 type KaypalProviderStatus = {
   id?: string;
@@ -568,20 +569,29 @@ export class KaypalModelSyncService implements OnApplicationBootstrap {
   }
 
   private getKaypalBaseUrl() {
-    const baseUrl =
-      this.config.get<string>('KAYPAL_MODEL_SYNC_BASE_URL')?.trim() ||
-      this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
-      DEFAULT_KAYPAL_AUTH_BASE_URL;
+    // Stage 1A：host 统一经 KaypalProviderResolver 校验（fail-closed）
+    const baseUrl = KaypalProviderResolver.resolveBaseUrlFrom(
+      [
+        this.config.get<string>('KAYPAL_MODEL_SYNC_BASE_URL'),
+        this.config.get<string>('KAYPAL_AUTH_BASE_URL'),
+      ],
+      DEFAULT_KAYPAL_AUTH_BASE_URL,
+      this.config.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
+    );
     if (!baseUrl) {
       throw new ServiceUnavailableException('KAYPAL_AUTH_BASE_URL 未配置。');
     }
-    return baseUrl.replace(/\/+$/, '');
+    return baseUrl;
   }
 
   private getKaypalAiProxyBaseUrl() {
-    return (
-      this.config.get<string>('KAYPAL_AI_PROXY_BASE_URL')?.trim() ||
-      `${this.getKaypalBaseUrl()}/api/ai`
-    ).replace(/\/+$/, '');
+    return KaypalProviderResolver.resolveBaseUrlFrom(
+      [
+        this.config.get<string>('KAYPAL_AI_PROXY_BASE_URL'),
+        `${this.getKaypalBaseUrl()}/api/ai`,
+      ],
+      undefined,
+      this.config.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
+    );
   }
 }
