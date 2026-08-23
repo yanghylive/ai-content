@@ -7,6 +7,7 @@ import { PrismaUsageSink } from './prisma-store/prisma-usage.sink';
 import { PrismaMirror } from './prisma-store/prisma-mirror';
 import { PrismaHydrator } from './prisma-store/prisma-hydrator';
 import { PrismaOutboxStore } from './prisma-store/prisma-outbox.store';
+import { RealOctopAdapter } from './adapters/real-octop-adapter';
 
 /**
  * Agent Gateway 服务：单例持有核心引擎实例。
@@ -39,6 +40,8 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
       usageSink: this.persist ? (ev) => this.usageSink.record(ev) : undefined,
       mirror: this.persist ? this.mirror : undefined,
       outboxDb: this.persist ? this.outboxStore : undefined,
+      // 真实 Octop 适配器：OCTOP_BASE_URL 配置后启用（凭据 OCTOP_API_PASSWORD / OCTOP_ACCESS_TOKEN）
+      octop: process.env.OCTOP_BASE_URL ? new RealOctopAdapter() : undefined,
     });
   }
 
