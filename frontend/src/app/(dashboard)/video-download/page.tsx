@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Link2, Loader2, Sparkles } from "lucide-react";
+import { Link2, Loader2 } from "lucide-react";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { redfoxApi } from "@/lib/api/redfox";
 

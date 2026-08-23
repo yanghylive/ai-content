@@ -148,28 +148,15 @@ export function GrowthStrategies() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="kaypal-v3-panel p-6">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/growth")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
-              获客策略
-            </h1>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              按行业预置的获客打法，选一个直接用
-            </p>
-          </div>
-          <V2PrimaryButton icon={Sparkles} onClick={() => setGenerateOpen(true)}>
-            AI 生成策略
-          </V2PrimaryButton>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">获客策略</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">按行业预置的获客打法，选一个直接用</p>
         </div>
-      </section>
+        <V2PrimaryButton icon={Sparkles} onClick={() => setGenerateOpen(true)}>
+          AI 生成策略
+        </V2PrimaryButton>
+      </div>
 
       {appliedId && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4">

@@ -60,23 +60,12 @@ export function GrowthReportsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="kaypal-v3-panel p-6">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/growth")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">增长复盘</h1>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              看看哪些打法有效、哪些话术转化高
-            </p>
-          </div>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">增长复盘</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">看看哪些打法有效、哪些话术转化高</p>
         </div>
-      </section>
+      </div>
 
       {error && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">

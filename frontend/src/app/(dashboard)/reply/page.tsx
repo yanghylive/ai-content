@@ -1,7 +1,5 @@
 "use client";
 
-import { BrandLogo } from "@/components/brand-logo";
-
 import React, { useCallback, useState } from "react";
 import { replyApi, type ReplySuggestionItem } from "@/lib/api/reply";
 import { shareText } from "@/lib/mobile-bridge";
