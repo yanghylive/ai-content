@@ -494,6 +494,14 @@ class RpaAccessibilityService : AccessibilityService() {
             val maiStatus =
                 if (result.ok) "completed"
                 else if (result.status == "unknown") "unknown" else "failed"
+            // 回传 task 最终状态（done/failed）；MAI-UI 审批 resume 后前端拿不到结果，由壳代码回传
+            val tid = maiTaskId
+            if (tid != null) {
+                reportTaskStatusRemote(
+                    tid,
+                    if (result.ok) "done" else "failed",
+                )
+            }
             val maiRid = maiRunId
             maiRunId = null
             if (maiRid != null) {
@@ -597,6 +605,25 @@ class RpaAccessibilityService : AccessibilityService() {
                     httpClient.newCall(req).execute().use { }
                 } catch (e: Exception) {
                     Log.w(TAG, "setRunStatusRemote failed: ${e.message}")
+                }
+            }.start()
+        }
+
+        /** 异步回传 task 最终状态（MAI-UI 审批 resume 后前端拿不到结果，由壳代码回传 done/failed） */
+        private fun reportTaskStatusRemote(taskId: String, status: String) {
+            val token = deviceToken() ?: return
+            Thread {
+                try {
+                    val body = JSONObject().put("status", status).toString()
+                        .toRequestBody("application/json; charset=utf-8".toMediaType())
+                    val req = Request.Builder()
+                        .url("$EXEC_BASE_URL/api/mobile-executor/tasks/$taskId/status")
+                        .header("x-device-token", token)
+                        .post(body)
+                        .build()
+                    httpClient.newCall(req).execute().use { }
+                } catch (e: Exception) {
+                    Log.w(TAG, "reportTaskStatusRemote failed: ${e.message}")
                 }
             }.start()
         }
