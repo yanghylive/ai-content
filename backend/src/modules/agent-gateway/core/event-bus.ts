@@ -17,7 +17,7 @@ export class EventBus {
   /** 重放窗口（事件保留上限），超出之后 lastEventId 视为过期 */
   private windowSize: number;
 
-  constructor(windowSize = 1000) {
+  constructor(windowSize = 1000, private readonly publishSink?: (event: AgentEvent) => void | Promise<void>) {
     this.windowSize = windowSize;
   }
 
@@ -48,6 +48,14 @@ export class EventBus {
 
     const ls = this.listeners.get(sessionId);
     if (ls) for (const fn of ls) fn(event);
+    // 可选持久化 sink（fire-and-forget，DB 副本/审计）
+    if (this.publishSink) {
+      try {
+        void Promise.resolve(this.publishSink(event)).catch(() => undefined);
+      } catch {
+        /* 忽略 */
+      }
+    }
     return event;
   }
 

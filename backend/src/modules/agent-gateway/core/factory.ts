@@ -5,6 +5,7 @@ import { ApprovalService } from './approval';
 import { EventBus } from './event-bus';
 import { MemoryOrchestrator } from './memory-orchestrator';
 import { PayloadValidator } from './payload-validator';
+import { AgentGatewayMirror } from './mirror';
 import { UsageEvent } from './types';
 import { MockOctopAdapter } from '../adapters/octop-mock';
 import { MockKaypalMemoryAdapter } from '../adapters/kaypal-memory-mock';
@@ -27,13 +28,17 @@ export function createAgentGateway(opts: {
   approvals?: { create: (...a: unknown[]) => unknown; get?: (...a: unknown[]) => unknown; validate: (...a: unknown[]) => unknown; consume: (...a: unknown[]) => unknown; reject?: (...a: unknown[]) => unknown };
   /** usage 持久化 sink（真实仓库落 agent_gateway_usage_events） */
   usageSink?: (ev: UsageEvent) => void | Promise<void>;
+  /** 写路径持久化镜像（session/task/event/artifact；真实仓库 PrismaMirror） */
+  mirror?: AgentGatewayMirror;
 } = {}) {
   const registry = new ToolRegistry();
   registry.registerMany(STANDARD_TOOL_SPECS);
 
   const idempotency = (opts.idempotency ?? new IdempotencyStore()) as IdempotencyStore;
   const approvals = (opts.approvals ?? new ApprovalService()) as ApprovalService;
-  const bus = new EventBus();
+  const bus = new EventBus(1000, (e) => {
+    opts.mirror?.eventPublished?.(e);
+  });
   const validator = new PayloadValidator();
   const octop = new MockOctopAdapter(registry.list().map((s) => s.name));
   const memoryRemote = new MockKaypalMemoryAdapter();
@@ -46,7 +51,7 @@ export function createAgentGateway(opts: {
     stopOutboxWorker = memory.startOutboxWorker(2000);
   }
 
-  const gateway = new AgentGateway({ registry, idempotency, approvals, bus, octop, memory, business, validator, usageSink: opts.usageSink });
+  const gateway = new AgentGateway({ registry, idempotency, approvals, bus, octop, memory, business, validator, usageSink: opts.usageSink, mirror: opts.mirror });
   for (const spec of STANDARD_TOOL_SPECS) gateway.registerToolSpec(spec);
 
   return { gateway, registry, idempotency, approvals, bus, octop, memory, memoryRemote, business, validator, stopOutboxWorker };

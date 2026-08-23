@@ -20,6 +20,7 @@ import { ApprovalService } from './approval';
 import { EventBus } from './event-bus';
 import { MemoryOrchestrator } from './memory-orchestrator';
 import { PayloadValidator } from './payload-validator';
+import { AgentGatewayMirror } from './mirror';
 import { makeError, AppErrorError } from '../contracts/error-codes';
 import { AppError } from './types';
 import { genId, nowIso, hashJson } from './util';
@@ -46,6 +47,8 @@ export interface GatewayDeps {
   validator: PayloadValidator;
   /** 可选持久化 sink：每次 usage 落库后回调（真实仓库接 agent_gateway_usage_events） */
   usageSink?: (ev: UsageEvent) => void | Promise<void>;
+  /** 写路径持久化镜像（session/task/event/artifact；内存态仍权威） */
+  mirror?: AgentGatewayMirror;
   sessionTtlMs?: number;
   approvalTtlMs?: number;
 }
@@ -99,6 +102,7 @@ export class AgentGateway {
     this.deps.bus.publish(session.id, 'message', session.id, {
       content: `已创建${mode === 'advanced' ? '高级' : '业务'}会话`,
     });
+    this.fireMirror((m) => m.sessionCreated?.(session));
     return session;
   }
 
@@ -114,6 +118,7 @@ export class AgentGateway {
     if (events.length > 0) {
       session.lastEventId = events[events.length - 1].eventId;
       session.lastSequence = events[events.length - 1].sequence;
+      this.fireMirror((m) => m.sessionUpdated?.(session));
     }
     return { session, events };
   }
@@ -139,6 +144,7 @@ export class AgentGateway {
       step: 'plan',
       summary: `已规划任务 ${type}`,
     });
+    this.fireMirror((m) => m.taskCreated?.(task));
     return task;
   }
 
@@ -467,6 +473,7 @@ export class AgentGateway {
     const artifact: Artifact = {
       id,
       taskId: task.id,
+      tenantId: task.tenantId,
       type: a.type,
       uri: a.uri,
       checksum: a.checksum,
@@ -475,6 +482,7 @@ export class AgentGateway {
       createdAt: nowIso(),
     };
     this.artifacts.set(id, artifact);
+    this.fireMirror((m) => m.artifactStored?.(artifact));
     return artifact;
   }
 
@@ -526,12 +534,26 @@ export class AgentGateway {
     }
   }
 
+  /** 写路径镜像（fire-and-forget，失败静默——内存态仍是权威，DB 为持久化副本） */
+  private fireMirror(fn: (m: AgentGatewayMirror) => void | Promise<void>): void {
+    if (!this.deps.mirror) return;
+    try {
+      const r = fn(this.deps.mirror);
+      if (r && typeof (r as Promise<void>).then === 'function') {
+        void (r as Promise<void>).catch(() => undefined);
+      }
+    } catch {
+      /* 镜像失败不阻断主链路 */
+    }
+  }
+
   private mutateTask(task: AgentTask, action: Parameters<typeof transition>[1]): void {
     const next = transition(task.status, action);
     task.status = next;
     if (next === 'running') task.startedAt = nowIso();
     if (['succeeded', 'failed_terminal', 'cancelled'].includes(next)) task.finishedAt = nowIso();
     this.deps.bus.publish(task.sessionId, 'thinking', task.id, { step: next, summary: `任务状态 → ${next}` });
+    this.fireMirror((m) => m.taskUpdated?.(task));
   }
 
   /** 安全迁移：并发控制面已改状态时，忽略非法迁移异常，绝不静默吞掉原始错误 */

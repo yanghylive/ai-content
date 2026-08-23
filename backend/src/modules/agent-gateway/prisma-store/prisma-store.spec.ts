@@ -2,7 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaIdempotencyStore } from './prisma-idempotency.store';
 import { PrismaApprovalStore } from './prisma-approval.store';
 import { PrismaUsageSink } from './prisma-usage.sink';
-import { UsageEvent } from '../core/types';
+import { PrismaMirror } from './prisma-mirror';
+import { UsageEvent, AgentSession, AgentTask, AgentEvent, Artifact } from '../core/types';
 
 /**
  * Prisma 仓储集成测试（需本地 pg：DATABASE_URL 指向已 deploy agent_gateway_entities 的库）。
@@ -126,5 +127,74 @@ describe('AgentGateway Prisma 仓储（幂等/审批/usage）', () => {
     expect(row).not.toBeNull();
     expect(row?.inputTokens).toBe(999);
     expect(row?.tenantId).toBe('t1');
+  });
+
+  test('镜像：session/task/event/artifact 落库（写路径持久化）', async () => {
+    const mirror = new PrismaMirror(prisma as never);
+    const session: AgentSession = {
+      id: 'sess_mirror_1',
+      tenantId: 't1',
+      userId: 'u1',
+      agentId: 'a1',
+      mode: 'business',
+      status: 'active',
+      lastEventId: '',
+      lastSequence: 0,
+      expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    await mirror.sessionCreated(session);
+
+    const task: AgentTask = {
+      id: 'task_mirror_1',
+      sessionId: session.id,
+      tenantId: 't1',
+      userId: 'u1',
+      agentId: 'a1',
+      type: 'lead',
+      status: 'planned',
+      planJson: { platform: 'xhs' },
+      checkpointJson: {},
+      createdAt: new Date().toISOString(),
+    };
+    await mirror.taskCreated(task);
+
+    const event: AgentEvent = {
+      eventId: 'evt_mirror_1',
+      sequence: 1,
+      type: 'thinking',
+      taskId: task.id,
+      sessionId: session.id,
+      occurredAt: new Date().toISOString(),
+      payload: { step: 'plan' },
+    };
+    await mirror.eventPublished(event);
+    await mirror.taskUpdated({ ...task, status: 'succeeded' });
+
+    const artifact: Artifact = {
+      id: 'art_mirror_1',
+      taskId: task.id,
+      tenantId: 't1',
+      type: 'content_draft',
+      uri: '/artifacts/x.md',
+      checksum: 'abc',
+      version: 1,
+      metadataJson: {},
+      createdAt: new Date().toISOString(),
+    };
+    await mirror.artifactStored(artifact);
+
+    const [sRow, tRow, eRow, aRow] = await Promise.all([
+      prisma.agentGatewaySession.findUnique({ where: { id: session.id } }),
+      prisma.agentGatewayTask.findUnique({ where: { id: task.id } }),
+      prisma.agentGatewayEvent.findUnique({ where: { eventId: event.eventId } }),
+      prisma.agentGatewayArtifact.findUnique({ where: { id: artifact.id } }),
+    ]);
+    expect(sRow?.tenantId).toBe('t1');
+    expect(tRow?.status).toBe('succeeded'); // taskUpdated 生效
+    expect(tRow?.planJson).toMatchObject({ platform: 'xhs' });
+    expect(eRow?.tenantId).toBe('t1'); // 事件按 session 归属反查
+    expect(eRow?.type).toBe('thinking');
+    expect(aRow?.checksum).toBe('abc');
   });
 });

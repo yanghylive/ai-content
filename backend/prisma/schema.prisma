@@ -4319,3 +4319,20 @@ model AgentGatewayDeviceLease {
   @@index([tenantId])
   @@map("agent_gateway_device_leases")
 }
+
+model AgentGatewayEvent {
+  id         String   @id @default(cuid())
+  eventId    String   @unique @map("event_id")
+  sessionId  String   @map("session_id")
+  tenantId   String   @map("tenant_id")
+  sequence   Int
+  type       String
+  taskId     String   @map("task_id")
+  payload    Json
+  occurredAt DateTime @map("occurred_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([sessionId, sequence])
+  @@index([tenantId, occurredAt])
+  @@map("agent_gateway_events")
+}
