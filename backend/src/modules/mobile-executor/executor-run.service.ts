@@ -97,6 +97,26 @@ export class ExecutorRunService {
     return { id: updated.id, status: updated.status };
   }
 
+  /** 更新执行会话状态（P1-11：ask_user 时 awaiting_approval，恢复时 running） */
+  async setStatus(
+    userId: string,
+    runId: string,
+    status: 'running' | 'awaiting_approval',
+  ): Promise<{ id: string; status: string }> {
+    if (status !== 'running' && status !== 'awaiting_approval') {
+      throw new BadRequestException(`非法状态：${String(status)}`);
+    }
+    const run = await this.prisma.executorRun.findFirst({
+      where: { id: runId, userId },
+    });
+    if (!run) throw new BadRequestException('执行会话不存在');
+    const updated = await this.prisma.executorRun.update({
+      where: { id: runId },
+      data: { status },
+    });
+    return { id: updated.id, status: updated.status };
+  }
+
   /** 查询执行会话（断点恢复：设备重启后按 taskId 找最近 run + checkpoint） */
   async getRun(
     userId: string,

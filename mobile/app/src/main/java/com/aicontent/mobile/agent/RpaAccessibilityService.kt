@@ -329,6 +329,8 @@ class RpaAccessibilityService : AccessibilityService() {
                 Thread {
                     val ok = consumeApproval(approvalId)
                     if (ok) {
+                        // P1-11：审批通过 → Run 恢复 running
+                        setRunStatusRemote("running")
                         handler.post { svc.stepMaiActions() }
                         callback(RpaResult.success("审批校验通过，已继续执行"))
                     } else {
@@ -338,6 +340,8 @@ class RpaAccessibilityService : AccessibilityService() {
                 }.start()
                 return
             }
+            // P1-11：无审批直接继续 → Run 恢复 running
+            setRunStatusRemote("running")
             handler.post { svc.stepMaiActions() }
             callback(RpaResult.success("已继续执行"))
         }
@@ -529,6 +533,26 @@ class RpaAccessibilityService : AccessibilityService() {
                     httpClient.newCall(req).execute().use { }
                 } catch (e: Exception) {
                     Log.w(TAG, "finishRunRemote failed: ${e.message}")
+                }
+            }.start()
+        }
+
+        /** 异步更新 Run 状态（P1-11：ask_user→awaiting_approval，恢复→running） */
+        private fun setRunStatusRemote(status: String) {
+            val runId = maiRunId ?: return
+            val token = deviceToken() ?: return
+            Thread {
+                try {
+                    val body = JSONObject().put("status", status).toString()
+                        .toRequestBody("application/json; charset=utf-8".toMediaType())
+                    val req = Request.Builder()
+                        .url("$EXEC_BASE_URL/api/mobile-executor/runs/$runId/status")
+                        .header("x-device-token", token)
+                        .post(body)
+                        .build()
+                    httpClient.newCall(req).execute().use { }
+                } catch (e: Exception) {
+                    Log.w(TAG, "setRunStatusRemote failed: ${e.message}")
                 }
             }.start()
         }
@@ -820,6 +844,8 @@ class RpaAccessibilityService : AccessibilityService() {
             act.action == "ask_user" -> {
                 reportStepRemote(maiIndex, "ask_user", "pending")
                 persistCheckpoint(maiTaskId, maiRunId, maiIndex)
+                // P1-11：服务端标记 Run 为 awaiting_approval（审批状态持久化）
+                setRunStatusRemote("awaiting_approval")
                 maiPausedForAsk = true
                 // 暂停，等 H5 resumeAfterAsk
                 cb(

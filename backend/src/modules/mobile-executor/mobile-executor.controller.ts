@@ -212,6 +212,21 @@ export class MobileExecutorController {
     return this.run.finishRun(dev.userId, runId, body.status, body.checkpoint);
   }
 
+  @Post('runs/:id/status')
+  @ApiOperation({
+    summary:
+      '更新执行会话状态（P1-11：ask_user→awaiting_approval，恢复→running；x-device-token 认证）',
+  })
+  async setRunStatus(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') runId: string,
+    @Body() body: { status: 'running' | 'awaiting_approval' },
+  ) {
+    const dev = await this.requireDevice(request);
+    if (!body?.status) throw new BadRequestException('缺少 status');
+    return this.run.setStatus(dev.userId, runId, body.status);
+  }
+
   @Get('tasks/:id/run')
   @ApiOperation({ summary: '查询执行会话断点（P1-12 断点恢复）' })
   getRun(@Req() request: AuthenticatedRequest, @Param('id') taskId: string) {
