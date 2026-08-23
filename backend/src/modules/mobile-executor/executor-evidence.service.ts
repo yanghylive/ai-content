@@ -38,6 +38,12 @@ export class ExecutorEvidenceService {
       where: { id: taskId, userId },
     });
     if (!task) throw new BadRequestException('任务不存在');
+    // 归属校验：任务已被其他设备 claim 时，仅该设备可上传证据（防审计链污染）
+    if (task.deviceId && input.deviceId && task.deviceId !== input.deviceId) {
+      throw new BadRequestException(
+        `任务由设备 ${task.deviceId} 执行，当前设备 ${input.deviceId} 无权上传证据`,
+      );
+    }
     const type = input.type || 'screenshot';
     let content = input.content;
     if (!content || typeof content !== 'object' || Array.isArray(content)) {
