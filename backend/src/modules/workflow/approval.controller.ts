@@ -88,6 +88,19 @@ export class ApprovalController {
     };
   }
 
+  @Post(':id/consume')
+  @ApiOperation({
+    summary:
+      '执行前消费审批（执行器校验：批准+未消费+hash 未变+未过期，一次性）',
+  })
+  async consumeApproval(
+    @Param('id') id: string,
+    @Body() body: { currentHash?: string },
+  ) {
+    const { tenantId } = await this.requireUser();
+    return this.approvalGate.consume(tenantId, id, body?.currentHash);
+  }
+
   @Post(':id/act')
   @ApiOperation({
     summary: '审批操作：approve/reject/request_changes/expire/resubmit',
