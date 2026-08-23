@@ -32,6 +32,11 @@
     --kx-overlay: rgba(25, 15, 45, 0.45);
     --kx-radius: 20px;
     --kx-radius-sm: 14px;
+    /* 磨砂 blur 走 CSS 变量：lightningcss 构建会删裸 backdrop-filter 标准属性
+       只留 -webkit- 前缀（Chrome 不认 → blur 失效），var() 引用可绕过 */
+    --kx-blur-glass: blur(22px) saturate(145%);
+    --kx-blur-bar: blur(20px) saturate(150%);
+    --kx-blur-soft: blur(16px) saturate(140%);
     /* 图标 chip 七色：第一色回归品牌紫，其余保留低饱和描边 */
     --kx-cv-bg: #f9f0ff; --kx-cv-fg: #722ed1; --kx-cv-bd: #e2d5f5;
     --kx-cb-bg: #eff6ff; --kx-cb-fg: #1d4ed8; --kx-cb-bd: #bfdbfe;
@@ -228,9 +233,8 @@
   .kx-topbar {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.48));
     border-bottom: 1px solid rgba(205, 195, 228, 0.4);
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-  }
+    backdrop-filter: var(--kx-blur-bar);
+    }
   html[data-theme="dark"] .kx-topbar,
   html.dark .kx-topbar {
     background: linear-gradient(180deg, rgba(19, 16, 25, 0.72), rgba(19, 16, 25, 0.5));
@@ -240,9 +244,8 @@
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(250, 248, 253, 0.72));
     border-color: rgba(210, 198, 235, 0.65);
     box-shadow: 0 6px 18px rgba(60, 30, 100, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-  }
+    backdrop-filter: var(--kx-blur-soft);
+    }
   html[data-theme="dark"] .kx-search-pill,
   html.dark .kx-search-pill {
     background: linear-gradient(145deg, rgba(28, 23, 38, 0.88), rgba(24, 19, 34, 0.75));
@@ -251,9 +254,8 @@
   .kx-topbar-select {
     background: rgba(255, 255, 255, 0.78);
     border-color: rgba(210, 198, 235, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
+    backdrop-filter: var(--kx-blur-soft);
+    }
   html[data-theme="dark"] .kx-topbar-select,
   html.dark .kx-topbar-select {
     background: rgba(28, 23, 38, 0.8);
@@ -268,19 +270,20 @@
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(250, 248, 253, 0.62));
     border-color: rgba(210, 198, 235, 0.55);
     box-shadow: 0 8px 22px rgba(60, 30, 100, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(18px) saturate(145%);
-    -webkit-backdrop-filter: blur(18px) saturate(145%);
-  }
+    backdrop-filter: var(--kx-blur-glass);
+    }
   html[data-theme="dark"] .kx-ticker,
   html.dark .kx-ticker {
     background: linear-gradient(145deg, rgba(28, 23, 38, 0.85), rgba(24, 19, 34, 0.72));
     border-color: rgba(110, 95, 150, 0.35);
   }
 
-  /* ---------- 7. 高频组件：卡片玻璃化（磨砂） ---------- */
+  /* ---------- 7. 高频组件：卡片玻璃化（磨砂） ----------
+     含 .kaypal-v3-panel（旧体系标准卡，全站使用面最广）——全站卡片统一磨砂玻璃 */
   .kx-todo-card,
   .kx-card,
   .kx-card-lg,
+  .kaypal-v3-panel,
   .kx-action-card,
   .kx-agg-card,
   .kx-stat-card,
@@ -296,11 +299,12 @@
       0 20px 46px rgba(60, 30, 100, 0.09),
       0 4px 12px rgba(60, 30, 100, 0.04),
       inset 0 1px 0 rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(22px) saturate(145%);
-    -webkit-backdrop-filter: blur(22px) saturate(145%);
-  }
+    backdrop-filter: var(--kx-blur-glass);
+    }
   html[data-theme="dark"] .kx-todo-card,
   html.dark .kx-todo-card,
+  html[data-theme="dark"] .kaypal-v3-panel,
+  html.dark .kaypal-v3-panel,
   html[data-theme="dark"] .kx-card,
   html.dark .kx-card,
   html[data-theme="dark"] .kx-card-lg,

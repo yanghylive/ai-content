@@ -116,7 +116,7 @@ html[data-theme="dark"] {
 .kx-rail-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ---------- 顶条（吸顶毛玻璃） ---------- */
-.kx-topbar { position: sticky; top: 0; z-index: 20; padding: 14px 34px 10px; background: color-mix(in srgb, var(--kx-paper) 82%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; gap: 10px; align-items: center; }
+.kx-topbar { position: sticky; top: 0; z-index: 20; padding: 14px 34px 10px; background: color-mix(in srgb, var(--kx-paper) 82%, transparent); backdrop-filter: var(--kx-blur-soft, blur(12px)); display: flex; gap: 10px; align-items: center; }
 .kx-search-pill { flex: 1; max-width: 520px; display: flex; align-items: center; gap: 10px; background: var(--kx-card); border: 1px solid var(--kx-border); border-radius: 12px; padding: 10px 14px; color: var(--kx-muted); font-size: 13.5px; cursor: text; transition: all 0.18s ease; }
 .kx-search-pill:hover { border-color: var(--kx-border-strong); box-shadow: var(--kx-shadow-card); }
 .kx-search-pill .kx-grow { flex: 1; text-align: left; }
@@ -259,7 +259,7 @@ html[data-theme="dark"] {
 .kx-chat-send .kx-ic { width: 16px; height: 16px; }
 
 /* ---------- ⌘K 命令面板 ---------- */
-.kx-palette-overlay { position: fixed; inset: 0; z-index: 100; background: var(--kx-overlay); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: flex-start; justify-content: center; padding-top: 16vh; animation: kx-pal-fade 0.16s ease; }
+.kx-palette-overlay { position: fixed; inset: 0; z-index: 100; background: var(--kx-overlay); backdrop-filter: var(--kx-blur-soft, blur(4px)); display: flex; align-items: flex-start; justify-content: center; padding-top: 16vh; animation: kx-pal-fade 0.16s ease; }
 @keyframes kx-pal-fade { from { opacity: 0; } to { opacity: 1; } }
 .kx-palette { width: 580px; max-width: calc(100vw - 48px); background: var(--kx-card); border: 1px solid var(--kx-border); border-radius: 16px; overflow: hidden; box-shadow: 0 24px 64px rgba(10, 6, 30, 0.28); animation: kx-pal-in 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
 @keyframes kx-pal-in { from { opacity: 0; transform: translateY(-10px) scale(0.98); } to { opacity: 1; } }
