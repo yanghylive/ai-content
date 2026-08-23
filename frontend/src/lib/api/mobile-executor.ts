@@ -131,14 +131,11 @@ export async function actApproval(
   });
 }
 
-/** SHA-256 摘要（内容 hash，审批绑定防篡改） */
+/** SHA-256 摘要（内容 hash，审批绑定防篡改）。P2-28：无 WebCrypto 时抛错，不静默降级 */
 export async function sha256Hex(text: string): Promise<string> {
-  if (typeof crypto !== "undefined" && crypto.subtle) {
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  if (typeof crypto === "undefined" || !crypto.subtle) {
+    throw new Error("当前环境不支持 WebCrypto（SHA-256），无法进行安全的审批防篡改");
   }
-  // 无 WebCrypto 兜底（简单 djb2）
-  let h = 5381;
-  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
-  return (h >>> 0).toString(16);
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
