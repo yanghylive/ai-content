@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -26,6 +27,7 @@ const PLATFORMS = [
 ] as const;
 
 export function PlatformAccountForm() {
+  const { confirm, modal } = useConfirm();
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
@@ -132,7 +134,8 @@ export function PlatformAccountForm() {
 
   const handleDelete = async () => {
     if (!isEdit || !accountId) return;
-    if (!window.confirm("确定删除这个平台授权吗？删除后需要重新添加。")) return;
+    const ok = await confirm({ kind: "danger", title: "删除平台授权", description: "确定删除这个平台授权吗？删除后需要重新添加。" });
+    if (!ok) return;
     setDeleting(true);
     setError(null);
     try {
@@ -301,6 +304,7 @@ export function PlatformAccountForm() {
 
   return (
     <div className="flex flex-col gap-6">
+      {modal}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">
           <button

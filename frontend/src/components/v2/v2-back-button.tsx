@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-/** 统一返回按钮:默认 router.back(),可指定目标路由(2026-08-11 返回按钮缺口补齐) */
+/**
+ * 全站唯一返回按钮（B4 2026-08-23 升级：样式接 kx token，告别 inline style）。
+ * 规格：页头左上、胶囊 ghost、13px/600、图标 16。
+ * 所有页面禁止自写返回（ArrowLeft + router.back 拼装），一律用本组件。
+ */
 export function V2BackButton({
   label = "返回",
   to,
@@ -16,21 +20,8 @@ export function V2BackButton({
     <button
       type="button"
       onClick={() => (to ? router.push(to) : router.back())}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "6px 12px",
-        marginBottom: 12,
-        borderRadius: 999,
-        fontSize: 13,
-        fontWeight: 600,
-        cursor: "pointer",
-        fontFamily: "inherit",
-        border: "none",
-        background: "transparent",
-        color: "var(--kx-muted, rgba(215,230,248,.62))",
-      }}
+      className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--kx-border)] bg-[var(--kx-card)] px-3 py-1.5 text-[13px] font-semibold text-[var(--kx-muted)] transition hover:border-[var(--kx-border-strong)] hover:text-[var(--kx-ink)]"
+      aria-label={label}
     >
       <ArrowLeft size={15} strokeWidth={2.2} />
       {label}

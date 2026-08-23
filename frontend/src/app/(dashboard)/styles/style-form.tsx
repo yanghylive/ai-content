@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
@@ -32,6 +33,7 @@ export function StyleForm({
   styleId?: string;
   fixedType?: Style["type"];
 }) {
+  const { confirm, modal } = useConfirm();
   const router = useRouter();
   const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
@@ -91,7 +93,8 @@ export function StyleForm({
 
   const handleDelete = async () => {
     if (!styleId) return;
-    if (!window.confirm("确定删除吗？删除后无法恢复。")) return;
+    const ok = await confirm({ kind: "danger", title: "删除样式", description: "确定删除吗？删除后无法恢复。" });
+    if (!ok) return;
     setSaving(true);
     setError(null);
     try {
@@ -238,6 +241,7 @@ export function StyleForm({
 
   return (
     <div className="flex flex-col gap-6">
+      {modal}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">
           <button

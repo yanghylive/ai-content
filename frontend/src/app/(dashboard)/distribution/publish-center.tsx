@@ -1,5 +1,6 @@
 "use client";
 
+import toast from "@/lib/toast";
 import { SkeletonRow } from "@/components/skeleton";
 import { BrandLogo } from "@/components/brand-logo";
 import {
@@ -993,7 +994,7 @@ function PublishCalendarView() {
         await autoUploadApi.cancelTask(id);
         await load();
       } catch (e) {
-        window.alert(e instanceof Error ? e.message : "取消失败");
+        toast.error(e instanceof Error ? e.message : "取消失败");
       } finally {
         setActingId(null);
       }
@@ -1009,7 +1010,7 @@ function PublishCalendarView() {
   const submitReschedule = useCallback(async () => {
     if (rescheduleId === null) return;
     if (!rescheduleAt) {
-      window.alert("请选择新的计划发布时间");
+      toast.error("请选择新的计划发布时间");
       return;
     }
     setActingId(rescheduleId);
@@ -1018,7 +1019,7 @@ function PublishCalendarView() {
       setRescheduleId(null);
       await load();
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : "改期失败");
+      toast.error(e instanceof Error ? e.message : "改期失败");
     } finally {
       setActingId(null);
     }

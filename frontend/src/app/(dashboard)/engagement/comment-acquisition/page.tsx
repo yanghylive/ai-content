@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { useCallback, useEffect, useState } from "react";
 import {
   CheckCircle2,
@@ -60,6 +61,7 @@ const STATUS_COLOR: Record<LeadStatus, string> = {
 };
 
 export default function CommentAcquisitionPage() {
+  const { confirm, modal } = useConfirm();
   const [scanMode, setScanMode] = useState<"comment" | "dm">("comment");
   const [platform, setPlatform] = useState<AcquisitionPlatform>("douyin");
   const [accountId, setAccountId] = useState("");
@@ -105,9 +107,11 @@ export default function CommentAcquisitionPage() {
     }
     // 报告 5.4 P1：扫描后自动回复会直接造成外部动作，必须二次确认
     if (autoReply) {
-      const ok = window.confirm(
-        "开启「扫描后自动回复」会直接向真实用户发送消息，可能触发平台风控。确认要扫描并自动回复吗？",
-      );
+      const ok = await confirm({
+        kind: "warning",
+        title: "扫描并自动回复",
+        description: "开启「扫描后自动回复」会直接向真实用户发送消息，可能触发平台风控。确认要扫描并自动回复吗？",
+      });
       if (!ok) return;
     }
     setScanning(true);
@@ -174,6 +178,7 @@ export default function CommentAcquisitionPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
+      {modal}
       <V2BackButton />
       <div>
         <h1 className="text-xl font-semibold text-[var(--kaypal-v3-ink)]">

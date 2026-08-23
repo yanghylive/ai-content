@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { SkeletonRow } from "@/components/skeleton";
 
 import { BrandLogo } from "@/components/brand-logo";
@@ -23,6 +24,7 @@ const SCORE_LABELS: Array<{ key: keyof NonNullable<Topic["scoreDetails"]>; label
 ];
 
 export function TopicsCenter() {
+  const { confirm, modal } = useConfirm();
   const router = useRouter();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,7 +160,8 @@ export function TopicsCenter() {
 
   // 删除选题
   const handleDelete = async (id: string) => {
-    if (!window.confirm("确定删除这个选题吗？")) return;
+    const ok = await confirm({ kind: "danger", title: "删除选题", description: "确定删除这个选题吗？" });
+    if (!ok) return;
     setActing(true);
     setActionError(null);
     try {
@@ -412,6 +415,7 @@ export function TopicsCenter() {
 
   return (
     <>
+      {modal}
       {notice ? (
         <p className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4 text-sm text-[var(--kaypal-v3-success)]">
           {notice}

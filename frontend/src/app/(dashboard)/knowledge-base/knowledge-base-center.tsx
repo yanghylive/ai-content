@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -55,6 +56,7 @@ function scoreLabel(score: number) {
 }
 
 export function KnowledgeBaseCenter() {
+  const { confirm, modal } = useConfirm();
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -133,7 +135,8 @@ export function KnowledgeBaseCenter() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("确定从本机知识库删除这条知识吗？")) return;
+    const ok = await confirm({ kind: "danger", title: "删除知识", description: "确定从本机知识库删除这条知识吗？" });
+    if (!ok) return;
     setDeletingId(id);
     setError(null);
     try {
@@ -267,6 +270,7 @@ export function KnowledgeBaseCenter() {
   /* 桌面端 */
   return (
     <div className="flex flex-col gap-6">
+      {modal}
       <section className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="kaypal-v3-icon-tile h-12 w-12">

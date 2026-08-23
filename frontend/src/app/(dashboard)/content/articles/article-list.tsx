@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { SkeletonRow } from "@/components/skeleton";
 
 import { BrandLogo } from "@/components/brand-logo";
@@ -56,6 +57,7 @@ export function ArticleList({
   backHref?: string;
   backLabel?: string;
 }) {
+  const { confirm, modal } = useConfirm();
   const router = useRouter();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +106,8 @@ export function ArticleList({
   const handleDelete = useCallback(
     async (article: Article) => {
       const title = article.title || "未命名";
-      if (!window.confirm(`确定删除「${title}」吗？删除后不可恢复。`)) {
+      const ok = await confirm({ kind: "danger", title: "删除文章", description: `确定删除「${title}」吗？删除后不可恢复。` });
+      if (!ok) {
         return;
       }
       try {
@@ -229,6 +232,7 @@ export function ArticleList({
 
   return (
     <div className="flex flex-col gap-6">
+      {modal}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">
           <button
