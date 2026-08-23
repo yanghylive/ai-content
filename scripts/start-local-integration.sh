@@ -8,6 +8,40 @@ SCREEN_BIN="$(command -v screen || true)"
 FRONTEND_GUARD="${LOG_DIR}/frontend-guard.sh"
 LOCAL_ENV_FILE="${LOG_DIR}/local-integration.env"
 
+BACKEND_PORT="${KAYPAL_LOCAL_BACKEND_PORT:-3011}"
+FRONTEND_PORT="${KAYPAL_LOCAL_FRONTEND_PORT:-3010}"
+# 进程身份标记（ERE 正则）：用于校验「占着端口的进程确实是本项目的服务」。
+# 前端有两种合法形态：next dev（本脚本启动）与 static-server.mjs（serve out/ 静态产物）。
+BACKEND_MARKER='dist-bundle-sqlite/index\.js'
+FRONTEND_MARKER='(next-server|next dev|node_modules/\.bin/next|frontend/scripts/static-server\.mjs)'
+
+port_listen_pid() {
+  lsof -tiTCP:"$1" -sTCP:LISTEN 2>/dev/null | head -1
+}
+
+# kill 后必须等端口真正释放；否则新进程绑定失败退出、旧进程继续应答健康检查，
+# 脚本会打印 All services running —— 这就是最典型的假绿。
+wait_port_free() {
+  local port="$1"
+  local pids
+  for attempt in {1..30}; do
+    pids="$(lsof -tiTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true)"
+    [[ -z "${pids}" ]] && return 0
+    if [[ "${attempt}" -eq 10 ]]; then
+      echo "Port ${port} still held by ${pids}, escalating to SIGKILL"
+      kill -9 ${pids} 2>/dev/null || true
+    fi
+    sleep 0.5
+  done
+  pids="$(lsof -tiTCP:"${port}" -sTCP:LISTEN 2>/dev/null || true)"
+  if [[ -n "${pids}" ]]; then
+    echo "Failed to free port ${port}; still held by PID(s): ${pids}" >&2
+    ps -o pid=,command= -p ${pids} >&2 2>/dev/null || true
+    return 1
+  fi
+  return 0
+}
+
 kill_port() {
   local port="$1"
   local pids
@@ -16,7 +50,68 @@ kill_port() {
     echo "Stopping port ${port}: ${pids}"
     kill ${pids} 2>/dev/null || true
   fi
+  wait_port_free "${port}"
 }
+
+# 三重一致校验：端口有 LISTEN 持有者 + 该进程存活 + 该进程命令行含本服务身份标记。
+# 只做 curl 健康检查是不够的——3011 上可能是没杀干净的旧后端 / 别的项目的服务，
+# 照样返回 200，于是「验证的不是本次构建的产物」。
+assert_port_owner() {
+  local port="$1"
+  local marker="$2"
+  local name="$3"
+  local pid
+  pid="$(port_listen_pid "${port}")"
+  if [[ -z "${pid}" ]]; then
+    echo "${name} check failed: nothing is LISTENing on port ${port}." >&2
+    return 1
+  fi
+  if ! kill -0 "${pid}" 2>/dev/null; then
+    echo "${name} check failed: PID ${pid} on port ${port} is not alive." >&2
+    return 1
+  fi
+  local cmd
+  cmd="$(ps -o command= -p "${pid}" 2>/dev/null || true)"
+  if [[ -z "${cmd}" ]]; then
+    echo "${name} check failed: cannot read command line of PID ${pid}." >&2
+    return 1
+  fi
+  if [[ ! "${cmd}" =~ ${marker} ]]; then
+    echo "${name} check failed: port ${port} is held by an unrelated process." >&2
+    echo "  expected command to match  : ${marker}" >&2
+    echo "  actual PID ${pid} command    : ${cmd}" >&2
+    echo "  => 端口有人应答不等于服务正确，拒绝报告启动成功。" >&2
+    return 1
+  fi
+  echo "${name} owner verified: PID ${pid} on port ${port}"
+  return 0
+}
+
+# 只跑校验、不启动服务。用于随时体检本机 3010/3011，也用于门禁负向验证。
+verify_services() {
+  local failed=0
+  curl -fsS "http://localhost:${BACKEND_PORT}/api/auth/setup-status" >/dev/null 2>&1 \
+    || { echo "Backend health endpoint failed: /api/auth/setup-status" >&2; failed=1; }
+  curl -fsS "http://localhost:${BACKEND_PORT}/api/auto-upload/health" >/dev/null 2>&1 \
+    || { echo "Runtime health endpoint failed: /api/auto-upload/health" >&2; failed=1; }
+  assert_port_owner "${BACKEND_PORT}" "${BACKEND_MARKER}" "AI Content backend" || failed=1
+  curl -fsS "http://localhost:${FRONTEND_PORT}/login" >/dev/null 2>&1 \
+    || { echo "Frontend endpoint failed: /login" >&2; failed=1; }
+  assert_port_owner "${FRONTEND_PORT}" "${FRONTEND_MARKER}" "AI Content frontend" || failed=1
+
+  if [[ "${failed}" -ne 0 ]]; then
+    echo "" >&2
+    echo "Local integration verification FAILED — services are not healthy." >&2
+    return 1
+  fi
+  echo "Local integration verification passed (backend ${BACKEND_PORT}, frontend ${FRONTEND_PORT})."
+  return 0
+}
+
+if [[ "${1:-}" == "--verify" ]]; then
+  verify_services
+  exit $?
+fi
 
 wait_url() {
   local url="$1"
@@ -61,8 +156,8 @@ KAYPAL_DESKTOP_USER_DATA_DIR=${USER_DATA_DIR}
 SQLITE_DATABASE_URL=file:./kaypal-ai.sqlite
 EOF
 
-kill_port 3010
-kill_port 3011
+kill_port "${FRONTEND_PORT}"
+kill_port "${BACKEND_PORT}"
 if [[ -n "${SCREEN_BIN}" ]]; then
   "${SCREEN_BIN}" -S ai-content-backend -X quit >/dev/null 2>&1 || true
   "${SCREEN_BIN}" -S ai-content-frontend -X quit >/dev/null 2>&1 || true
@@ -97,7 +192,8 @@ if [[ ! -f "${SQLITE_BUNDLE}" ]]; then
 fi
 
 "${SCREEN_BIN}" -dmS ai-content-backend bash -lc "cd '${ROOT_DIR}/backend' && exec env PORT=3011 AUTO_START_KAYPAL_RUNTIME=false KAYPAL_DESKTOP_DATABASE_MODE=sqlite KAYPAL_DESKTOP_USER_DATA_DIR='${USER_DATA_DIR}' DATABASE_URL='file:./kaypal-ai.sqlite' SQLITE_DATABASE_URL='file:./kaypal-ai.sqlite' KAYPAL_CREDENTIAL_MASTER_KEY='${KAYPAL_CREDENTIAL_MASTER_KEY:-}' node --enable-source-maps '${SQLITE_BUNDLE}' >> '${LOG_DIR}/backend-3011.log' 2>&1"
-echo "screen:ai-content-backend" > "${LOG_DIR}/backend-3011.pid"
+# 真实 PID 在健康检查通过后统一回写（见文件末尾）；此处仅记录 screen 会话名
+echo "screen:ai-content-backend" > "${LOG_DIR}/backend-3011.session"
 
 cat > "${FRONTEND_GUARD}" <<EOF
 #!/usr/bin/env bash
@@ -124,19 +220,31 @@ EOF
 chmod +x "${FRONTEND_GUARD}"
 
 "${SCREEN_BIN}" -dmS ai-content-frontend bash -lc "exec '${FRONTEND_GUARD}'"
-echo "screen:ai-content-frontend" > "${LOG_DIR}/frontend-3010.pid"
+echo "screen:ai-content-frontend" > "${LOG_DIR}/frontend-3010.session"
 
-wait_url "http://localhost:3011/api/auth/setup-status" "AI Content backend" "${LOG_DIR}/backend-3011.log"
-wait_url "http://localhost:3011/api/auto-upload/health" "AI Content in-process Runtime" "${LOG_DIR}/backend-3011.log"
-wait_url "http://localhost:3010/login" "AI Content frontend" "${LOG_DIR}/frontend-3010.log"
+wait_url "http://localhost:${BACKEND_PORT}/api/auth/setup-status" "AI Content backend" "${LOG_DIR}/backend-3011.log"
+wait_url "http://localhost:${BACKEND_PORT}/api/auto-upload/health" "AI Content in-process Runtime" "${LOG_DIR}/backend-3011.log"
+wait_url "http://localhost:${FRONTEND_PORT}/login" "AI Content frontend" "${LOG_DIR}/frontend-3010.log"
+
+# 健康接口 200 只说明「有人应答」。这里补齐身份校验：占端口的进程必须是本次启动的
+# backend bundle / next 前端，否则拒绝报告成功（set -e 会在此终止脚本）。
+assert_port_owner "${BACKEND_PORT}" "${BACKEND_MARKER}" "AI Content backend"
+assert_port_owner "${FRONTEND_PORT}" "${FRONTEND_MARKER}" "AI Content frontend"
+
+# 回写真实 PID（旧版写的是 "screen:xxx" 字符串，无法用于存活判断）
+port_listen_pid "${BACKEND_PORT}" > "${LOG_DIR}/backend-3011.pid"
+port_listen_pid "${FRONTEND_PORT}" > "${LOG_DIR}/frontend-3010.pid"
 
 cat <<EOF
 
 All services are running.
-- Frontend: http://localhost:3010/distribution
-- Backend:  http://localhost:3011/api
-- Runtime:  http://localhost:3011/api/auto-upload/health
+- Frontend: http://localhost:${FRONTEND_PORT}/distribution
+- Backend:  http://localhost:${BACKEND_PORT}/api
+- Runtime:  http://localhost:${BACKEND_PORT}/api/auto-upload/health
+- Backend PID:  $(cat "${LOG_DIR}/backend-3011.pid")
+- Frontend PID: $(cat "${LOG_DIR}/frontend-3010.pid")
 - Local env: ${LOCAL_ENV_FILE}
 - Logs:     ${LOG_DIR}
+- Re-verify: scripts/start-local-integration.sh --verify
 
 EOF
