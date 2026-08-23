@@ -45,8 +45,7 @@
       0 4px 12px rgba(16, 43, 80, 0.045),
       inset 0 1px 0 rgba(255, 255, 255, 0.72),
       inset 0 -1px 0 rgba(82, 112, 146, 0.07);
-    -webkit-backdrop-filter: blur(24px) saturate(145%);
-    backdrop-filter: blur(24px) saturate(145%);
+    backdrop-filter: var(--kx-blur-glass, blur(24px) saturate(145%));
   }
   .mx-card::before {
     content: "";
@@ -75,8 +74,7 @@
       0 24px 54px rgba(8, 29, 60, 0.27),
       0 3px 10px rgba(8, 29, 60, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    -webkit-backdrop-filter: blur(24px) saturate(135%);
-    backdrop-filter: blur(24px) saturate(135%);
+    backdrop-filter: var(--kx-blur-glass, blur(24px) saturate(135%));
   }
   .mx-hero::after {
     content: "";
@@ -105,8 +103,7 @@
       0 10px 24px rgba(17, 47, 86, 0.075),
       inset 0 1px 0 rgba(255, 255, 255, 0.69),
       inset 0 -1px 0 rgba(68, 99, 133, 0.055);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-    backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: var(--kx-blur-glass, blur(18px) saturate(140%));
   }
 
   /* 金色渐变文字 */
@@ -211,8 +208,7 @@
     border-top: 1px solid rgba(135, 158, 184, 0.22);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(238, 244, 250, 0.86));
     box-shadow: 0 -16px 42px rgba(12, 41, 78, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.62);
-    -webkit-backdrop-filter: blur(26px) saturate(150%);
-    backdrop-filter: blur(26px) saturate(150%);
+    backdrop-filter: var(--kx-blur-glass, blur(26px) saturate(150%));
     padding: 8px 10px calc(6px + env(safe-area-inset-bottom));
   }
   .mx-tabbar-inner { display: grid; grid-template-columns: repeat(5, 1fr); }
@@ -277,8 +273,7 @@
     border-bottom: 1px solid rgba(142, 165, 190, 0.2);
     background: linear-gradient(180deg, rgba(244, 248, 252, 0.9), rgba(244, 248, 252, 0.64));
     box-shadow: 0 10px 30px rgba(18, 45, 80, 0.055);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: var(--kx-blur-glass, blur(24px) saturate(150%));
     /* 沉浸式下状态栏覆盖在顶部，header 需让出安全区高度 */
     padding: calc(14px + env(safe-area-inset-top)) 16px 12px;
   }
