@@ -1,4 +1,24 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+
+/** 获客语义动作（PRD §6.4/P0-1：搜索→读结果→识别→开主页→草稿→私信→存线索） */
+export const ACQUISITION_ACTION_TYPES = [
+  'search',
+  'read_results',
+  'identify_lead',
+  'open_profile',
+  'generate_draft',
+  'send_dm',
+  'save_lead',
+] as const;
+export type AcquisitionActionType = (typeof ACQUISITION_ACTION_TYPES)[number];
+
+/** 获客平台白名单（PRD §6.3 按平台/能力调度） */
+const ACQUISITION_PLATFORMS = [
+  'xiaohongshu',
+  'douyin',
+  'kuaishou',
+  'shipinhao',
+];
 import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -81,6 +101,43 @@ export class TaskDispatchService {
     return this.toView(row);
   }
 
+  /** 获客任务 payload 契约（P0-1 阶段 A：语义动作白名单 + 字段校验） */
+  private validateAcquisitionPayload(payload: Record<string, unknown>): void {
+    const platform = safeText(payload.platform || '');
+    if (!ACQUISITION_PLATFORMS.includes(platform)) {
+      throw new BadRequestException(
+        `获客平台不支持（${platform || '空'}），应为 ${ACQUISITION_PLATFORMS.join('/')}`,
+      );
+    }
+    const actions = Array.isArray(payload.actions) ? payload.actions : [];
+    if (actions.length === 0) {
+      throw new BadRequestException(
+        '获客任务 actions 不能为空（需至少一个语义动作）',
+      );
+    }
+    for (const item of actions) {
+      const act = (item ?? {}) as Record<string, unknown>;
+      const t = safeText(act.type || '');
+      if (!(ACQUISITION_ACTION_TYPES as readonly string[]).includes(t)) {
+        throw new BadRequestException(
+          `不支持的获客动作（${t || '空'}），应为 ${ACQUISITION_ACTION_TYPES.join('/')}`,
+        );
+      }
+      if (t === 'search' && !safeText(act.keyword || '')) {
+        throw new BadRequestException('search 动作缺少 keyword');
+      }
+      if (t === 'send_dm' && !safeText(act.content || '')) {
+        throw new BadRequestException('send_dm 动作缺少 content（私信内容）');
+      }
+    }
+    // 必须含 search 作为起点（获客闭环从搜索开始）
+    if (
+      !actions.some((a) => (a as Record<string, unknown>)?.type === 'search')
+    ) {
+      throw new BadRequestException('获客任务必须以 search 动作开始');
+    }
+  }
+
   /**
    * 发布任务 payload 契约（P5 C2 设计评估 §三）：
    * platform 白名单 / content 或 media 至少一个 / media 1-9 个 https URL / 总大小 < 10KB
@@ -89,6 +146,10 @@ export class TaskDispatchService {
     payload: Record<string, unknown>,
     type: string,
   ): void {
+    if (type === 'acquisition') {
+      this.validateAcquisitionPayload(payload);
+      return;
+    }
     if (type !== 'publish') return; // 自定义任务不校验
     if (JSON.stringify(payload).length > 10 * 1024) {
       throw new BadRequestException('任务 payload 过大（>10KB）');

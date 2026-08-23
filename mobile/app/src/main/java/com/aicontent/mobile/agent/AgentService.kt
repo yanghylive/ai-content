@@ -158,9 +158,10 @@ class AgentService : Service() {
 
         val taskId = task.optString("id")
         val payload = task.optJSONObject("payload") ?: JSONObject()
+        val type = task.optString("type", "publish")
         val platform = payload.optString("platform", "")
         val content = payload.optString("content", "")
-        Log.i(TAG, "task claimed: $taskId platform=$platform content=${content.take(30)}")
+        Log.i(TAG, "task claimed: $taskId type=$type platform=$platform content=${content.take(30)}")
 
         // running
         try {
@@ -172,11 +173,19 @@ class AgentService : Service() {
             Log.w(TAG, "report running failed: ${e.message}")
         }
 
-        // 执行 RPA（主线程编排）
+        // 执行 RPA（主线程编排）：按任务 type 分发
         val result = withContext(Dispatchers.Main) {
             suspendCancellableCoroutine { cont ->
-                RpaAccessibilityService.execute(platform, content) { r ->
-                    cont.resume(r)
+                if (type == "acquisition") {
+                    // P0-1 获客语义动作序列（阶段 A 骨架）
+                    val actionsJson = payload.optJSONArray("actions")?.toString() ?: "[]"
+                    RpaAccessibilityService.executeAcquisition(platform, actionsJson) { r ->
+                        cont.resume(r)
+                    }
+                } else {
+                    RpaAccessibilityService.execute(platform, content) { r ->
+                        cont.resume(r)
+                    }
                 }
             }
         }

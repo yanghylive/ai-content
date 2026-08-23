@@ -34,6 +34,13 @@ data class RpaResult(
     }
 }
 
+/** 获客语义动作（P0-1 阶段 A：与后端 ACQUISITION_ACTION_TYPES 对齐） */
+data class AcqAction(
+    val type: String, // search/read_results/identify_lead/open_profile/generate_draft/send_dm/save_lead
+    val keyword: String = "",
+    val content: String = "",
+)
+
 /**
  * RPA 无障碍执行引擎（C2 全自动）：
  * 驱动目标平台 App 完成「回复私信（dm-reply）」：
@@ -149,6 +156,66 @@ class RpaAccessibilityService : AccessibilityService() {
             cb(RpaResult.failure("RPA 执行超时（30s）"))
         }
 
+
+        @Volatile
+        private var acqCallback: ((RpaResult) -> Unit)? = null
+        @Volatile
+        private var acqActions: List<AcqAction>? = null
+        @Volatile
+        private var acqIndex = 0
+
+        /**
+         * 执行获客语义动作序列（P0-1 阶段 A 骨架）。
+         * search/send_dm 复用现有无障碍输入能力；read_results/identify_lead 等
+         * 需真机定位小红书 UI，阶段 A 记录 TODO 后跳过（不中断）。
+         */
+        fun executeAcquisition(platform: String, actionsJson: String, callback: (RpaResult) -> Unit) {
+            val svc = instance ?: run {
+                callback(RpaResult.failure("无障碍服务未开启"))
+                return
+            }
+            val pkg = PLATFORM_PACKAGES[platform] ?: run {
+                callback(RpaResult.failure("不支持的平台：$platform"))
+                return
+            }
+            val actions = try {
+                parseAcquisitionActions(actionsJson)
+            } catch (e: Exception) {
+                callback(RpaResult.failure("获客动作解析失败：${e.message}"))
+                return
+            }
+            if (actions.isEmpty()) {
+                callback(RpaResult.failure("获客动作序列为空"))
+                return
+            }
+            acqCallback = callback
+            acqActions = actions
+            acqIndex = 0
+            handler.post { svc.launchAppForAcquisition(pkg) }
+        }
+
+        private fun parseAcquisitionActions(json: String): List<AcqAction> {
+            val arr = JSONArray(json)
+            val out = ArrayList<AcqAction>(arr.length())
+            for (i in 0 until arr.length()) {
+                val o = arr.optJSONObject(i) ?: continue
+                out.add(
+                    AcqAction(
+                        type = o.optString("type", ""),
+                        keyword = o.optString("keyword", ""),
+                        content = o.optString("content", ""),
+                    ),
+                )
+            }
+            return out
+        }
+
+        private fun finishAcquisition(result: RpaResult) {
+            val cb = acqCallback ?: return
+            acqCallback = null
+            acqActions = null
+            cb(result)
+        }
 
         private const val MAI_UI_TIMEOUT_MS = 90_000L
 
@@ -396,6 +463,72 @@ class RpaAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {}
+
+    /** 获客：启动平台 App（阶段 A，自管理窗口等待，不复用 publish 的 finishWith） */
+    private fun launchAppForAcquisition(pkg: String) {
+        try {
+            val intent = packageManager.getLaunchIntentForPackage(pkg)
+            if (intent == null) {
+                finishAcquisition(RpaResult.failure("未安装该应用：$pkg（请在手机安装对应平台 App）"))
+                return
+            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            handler.postDelayed({ stepAcquisition() }, 2500L)
+        } catch (e: Exception) {
+            finishAcquisition(RpaResult.failure("调起失败：${e.message}"))
+        }
+    }
+
+    /** 获客语义动作串行执行（阶段 A 骨架） */
+    private fun stepAcquisition() {
+        val actions = acqActions ?: return
+        if (acqIndex >= actions.size) {
+            finishAcquisition(RpaResult.success("获客动作序列完成（${actions.size} 步，阶段A骨架）"))
+            return
+        }
+        val act = actions[acqIndex]
+        val root = rootInActiveWindow
+        when (act.type) {
+            "search" -> {
+                val input = root?.let { findInput(it) }
+                if (input == null) {
+                    finishAcquisition(RpaResult.failure("search：未找到输入框（需真机定位平台搜索入口）"))
+                    return
+                }
+                val args = Bundle()
+                args.putCharSequence(
+                    AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
+                    act.keyword,
+                )
+                input.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                Log.i(TAG, "acq search: 已输入关键词 ${act.keyword}")
+            }
+            "send_dm" -> {
+                val input = root?.let { findInput(it) }
+                if (input == null) {
+                    finishAcquisition(RpaResult.failure("send_dm：未找到输入框（需真机定位私信输入框）"))
+                    return
+                }
+                val args = Bundle()
+                args.putCharSequence(
+                    AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
+                    act.content,
+                )
+                input.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                val send = root?.let { findButton(it, "发送") ?: findButton(it, "Send") }
+                send?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "acq send_dm: 已尝试发送")
+            }
+            else -> {
+                // 阶段 A 骨架：read_results/identify_lead/open_profile/generate_draft/save_lead
+                // 需真机定位小红书 UI，先记录并跳过（不中断整个序列）
+                Log.w(TAG, "acq 阶段A骨架：动作 ${act.type} 待真机实现（跳过）")
+            }
+        }
+        acqIndex++
+        handler.postDelayed({ stepAcquisition() }, 1200L)
+    }
 
     private fun launchApp(pkg: String) {
         try {
