@@ -168,9 +168,10 @@ export class MobileExecutorController {
     @Param('id') taskId: string,
     @Body()
     input: {
-      status: 'running' | 'done' | 'failed';
+      status: 'running' | 'done' | 'failed' | 'unknown';
       result?: Record<string, unknown>;
       error?: string;
+      deviceId?: string;
     },
   ) {
     const user = this.requireUser(request);

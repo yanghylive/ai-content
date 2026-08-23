@@ -143,24 +143,22 @@ class AgentService : Service() {
             }
         }
 
-        // 回传
+        // 回传（P0-5 归属校验带 deviceId + P0-7 unknown 三态）
         try {
-            if (result.ok) {
-                val msg = result.message.replace("\"", "\\\"")
-                postJson(
+            val msg = result.message.replace("\"", "\\\"")
+            when {
+                result.ok -> postJson(
                     "$BASE_URL/api/mobile-executor/tasks/$taskId/status",
-                    """{"status":"done","result":{"message":"$msg","platform":"$platform"}}""",
-                ).use { resp ->
-                    Log.i(TAG, "report done: ${resp.code}")
-                }
-            } else {
-                val msg = result.message.replace("\"", "\\\"")
-                postJson(
+                    """{"status":"done","deviceId":"$did","result":{"message":"$msg","platform":"$platform"}}""",
+                ).use { resp -> Log.i(TAG, "report done: ${resp.code}") }
+                result.status == "unknown" -> postJson(
                     "$BASE_URL/api/mobile-executor/tasks/$taskId/status",
-                    """{"status":"failed","error":"$msg"}""",
-                ).use { resp ->
-                    Log.i(TAG, "report failed: ${resp.code}")
-                }
+                    """{"status":"unknown","deviceId":"$did","error":"$msg"}""",
+                ).use { resp -> Log.i(TAG, "report unknown: ${resp.code}") }
+                else -> postJson(
+                    "$BASE_URL/api/mobile-executor/tasks/$taskId/status",
+                    """{"status":"failed","deviceId":"$did","error":"$msg"}""",
+                ).use { resp -> Log.i(TAG, "report failed: ${resp.code}") }
             }
         } catch (e: Exception) {
             Log.w(TAG, "report failed: ${e.message}")

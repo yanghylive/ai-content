@@ -18,10 +18,15 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /** RPA 执行结果 */
-data class RpaResult(val ok: Boolean, val message: String) {
+data class RpaResult(
+    val ok: Boolean,
+    val message: String,
+    val status: String = if (ok) "success" else "failure", // success | failure | unknown
+) {
     companion object {
-        fun success(m: String) = RpaResult(true, m)
-        fun failure(m: String) = RpaResult(false, m)
+        fun success(m: String) = RpaResult(true, m, "success")
+        fun failure(m: String) = RpaResult(false, m, "failure")
+        fun unknown(m: String) = RpaResult(false, m, "unknown")
     }
 }
 
@@ -375,14 +380,35 @@ class RpaAccessibilityService : AccessibilityService() {
             return
         }
         val content = pendingContent ?: return
-        finishWith(performDmReply(root, content))
+        // 输入 + 点击发送；点击成功后异步回读确认（P0-7 防重复外发）
+        val clicked = performDmReplyClick(root, content)
+        if (clicked) {
+            handler.postDelayed({
+                if (pendingCallback == null) return@postDelayed
+                val r2 = rootInActiveWindow
+                val result = if (r2 != null && inputCleared(r2, content)) {
+                    RpaResult.success("已回复并确认发送成功")
+                } else {
+                    RpaResult.unknown("已点击发送，但无法确认是否成功（请人工核对，避免重复发送）")
+                }
+                finishWith(result)
+            }, 1500L)
+        }
     }
 
-    /** 回复私信：找输入框 → 输入 → 找发送按钮 → 点击 */
-    private fun performDmReply(root: AccessibilityNodeInfo, content: String): RpaResult {
+    /** 发送后回读：输入框文本已清空（或不再等于待发内容）视为发送成功 */
+    private fun inputCleared(root: AccessibilityNodeInfo, content: String): Boolean {
+        val input = findInput(root) ?: return true // 输入框消失（可能发送后收起）视为成功
+        val text = input.text?.toString()?.trim() ?: ""
+        return text.isEmpty() || text != content
+    }
+
+    /** 回复私信：找输入框 → 输入 → 找发送按钮 → 点击；失败直接 finishWith，成功返回 true 交回读确认 */
+    private fun performDmReplyClick(root: AccessibilityNodeInfo, content: String): Boolean {
         val input = findInput(root)
         if (input == null) {
-            return RpaResult.failure("已打开目标 App，但未找到输入框（可能不在会话页，请先进入会话）")
+            finishWith(RpaResult.failure("已打开目标 App，但未找到输入框（可能不在会话页，请先进入会话）"))
+            return false
         }
         val args = Bundle()
         args.putCharSequence(
@@ -391,20 +417,23 @@ class RpaAccessibilityService : AccessibilityService() {
         )
         val setOk = input.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
         if (!setOk) {
-            return RpaResult.failure("输入回复内容失败")
+            finishWith(RpaResult.failure("输入回复内容失败"))
+            return false
         }
         // 找发送按钮（中文优先，英文兜底）
         val send = findButton(root, "发送") ?: findButton(root, "Send")
         if (send == null) {
             // P0-6：未找到发送按钮 = 失败，不得报成功（假成功率=0）
-            return RpaResult.failure("已输入回复内容，但未找到发送按钮，未发送")
+            finishWith(RpaResult.failure("已输入回复内容，但未找到发送按钮，未发送"))
+            return false
         }
         val clickOk = send.performAction(AccessibilityNodeInfo.ACTION_CLICK)
         if (!clickOk) {
             // P0-6：点击失败 = 失败，不得报成功（否则错误释放租约）
-            return RpaResult.failure("已输入回复内容，但发送按钮点击失败，未发送")
+            finishWith(RpaResult.failure("已输入回复内容，但发送按钮点击失败，未发送"))
+            return false
         }
-        return RpaResult.success("已输入回复并点击发送")
+        return true
     }
 
     private fun findInput(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
