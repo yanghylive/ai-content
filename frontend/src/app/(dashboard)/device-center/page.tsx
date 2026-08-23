@@ -7,9 +7,11 @@ import {
   listDevices,
   listActiveLeases,
   listExecutorTasks,
+  getTaskRun,
   type MobileDeviceInfo,
   type ExecutorLeaseView,
   type ExecutorTaskView,
+  type ExecutorRunView,
 } from "@/lib/api/mobile-executor";
 
 /** 设备中心：设备在线状态 / 账号租约 / 最近任务（PRD §6.2） */
@@ -20,6 +22,8 @@ export default function DeviceCenterPage() {
   const [tasks, setTasks] = useState<ExecutorTaskView[]>([]);
   const [error, setError] = useState("");
   const [now, setNow] = useState(() => Date.now());
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [taskRun, setTaskRun] = useState<ExecutorRunView | null>(null);
 
   const load = useCallback(async () => {
     setError("");
@@ -55,6 +59,23 @@ export default function DeviceCenterPage() {
 
   const statusColor = (status: string) =>
     status === "online" ? "#059669" : "#dc2626";
+
+  /** 展开/收起任务执行进度（P2-26 检查点 UI） */
+  const handleExpandTask = useCallback(async (taskId: string) => {
+    if (expandedTaskId === taskId) {
+      setExpandedTaskId(null);
+      setTaskRun(null);
+      return;
+    }
+    setExpandedTaskId(taskId);
+    setTaskRun(null);
+    try {
+      const run = await getTaskRun(taskId);
+      setTaskRun(run);
+    } catch {
+      setTaskRun(null);
+    }
+  }, [expandedTaskId]);
 
   return (
     <div style={{ minHeight: "100dvh", paddingBottom: 90, background: isMobile ? undefined : "#f1f5f9" }}>
@@ -175,31 +196,55 @@ export default function DeviceCenterPage() {
               {tasks.map((t) => {
                 const err = taskError(t);
                 const needsAttention = t.status === "failed" || t.status === "unknown";
+                const expanded = expandedTaskId === t.id;
                 return (
-                  <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 8, background: needsAttention ? "#fef2f2" : "#f8fafc", border: `1px solid ${needsAttention ? "#fecaca" : "#e2e8f0"}` }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>
-                        {t.type === "custom" ? "MAI-UI 任务" : "发布任务"} · {t.id.slice(-6)}
-                      </div>
-                      <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>
-                        {new Date(t.createdAt).toLocaleString()}
-                      </div>
-                      {needsAttention && err && (
-                        <div style={{ fontSize: 11, color: "#dc2626", marginTop: 2, wordBreak: "break-all" }}>
-                          {t.status === "unknown" ? "⚠️ 结果不确定：" : "失败原因："}{err}
+                  <div key={t.id} style={{ padding: "8px 10px", borderRadius: 8, background: needsAttention ? "#fef2f2" : "#f8fafc", border: `1px solid ${needsAttention ? "#fecaca" : "#e2e8f0"}` }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>
+                          {t.type === "custom" ? "MAI-UI 任务" : "发布任务"} · {t.id.slice(-6)}
                         </div>
-                      )}
+                        <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>
+                          {new Date(t.createdAt).toLocaleString()}
+                        </div>
+                        {needsAttention && err && (
+                          <div style={{ fontSize: 11, color: "#dc2626", marginTop: 2, wordBreak: "break-all" }}>
+                            {t.status === "unknown" ? "⚠️ 结果不确定：" : "失败原因："}{err}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                        <span style={{ fontSize: 11.5, fontWeight: 700, color: taskStatusColor(t.status), background: taskStatusBg(t.status), padding: "3px 8px", borderRadius: 6 }}>
+                          {t.status}
+                        </span>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <button
+                            onClick={() => void handleExpandTask(t.id)}
+                            style={{ fontSize: 11.5, color: "#7c3aed", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                          >
+                            {expanded ? "收起进度" : "执行进度"}
+                          </button>
+                          {needsAttention && (
+                            <Link href="/mai-ui" style={{ fontSize: 11.5, color: "#2563eb", textDecoration: "none", whiteSpace: "nowrap" }}>
+                              去 MAI-UI 重试 →
+                            </Link>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: taskStatusColor(t.status), background: taskStatusBg(t.status), padding: "3px 8px", borderRadius: 6 }}>
-                        {t.status}
-                      </span>
-                      {needsAttention && (
-                        <Link href="/mai-ui" style={{ fontSize: 11.5, color: "#2563eb", textDecoration: "none", whiteSpace: "nowrap" }}>
-                          去 MAI-UI 重试 →
-                        </Link>
-                      )}
-                    </div>
+
+                    {/* P2-26 检查点：展开显示执行步骤 */}
+                    {expanded && (
+                      <div style={{ marginTop: 8, borderTop: "1px solid #e2e8f0", paddingTop: 8 }}>
+                        {taskRun && taskRun.taskId === t.id ? (
+                          <RunSteps run={taskRun} />
+                        ) : (
+                          <div style={{ fontSize: 11.5, color: "#94a3b8", padding: "6px 0", textAlign: "center" }}>
+                            {taskRun === null ? "该任务无执行会话记录" : "加载中…"}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -238,4 +283,57 @@ function taskError(t: { result?: unknown }): string {
   const r = t.result as { error?: string; message?: string } | null | undefined;
   if (!r) return "";
   return r.error || r.message || "";
+}
+
+/** 步骤状态颜色 */
+function stepStatusColor(status: string): string {
+  switch (status) {
+    case "done": return "#059669";
+    case "failed": return "#dc2626";
+    case "running": return "#2563eb";
+    case "pending": case "unknown": return "#d97706";
+    case "skipped": return "#64748b";
+    default: return "#94a3b8";
+  }
+}
+
+/** P2-26 检查点 UI：执行会话步骤进度 */
+function RunSteps({ run }: { run: ExecutorRunView }) {
+  if (run.steps.length === 0) {
+    return (
+      <div style={{ fontSize: 11.5, color: "#94a3b8", padding: "6px 0", textAlign: "center" }}>
+        暂无步骤记录（会话状态 {run.status}）
+      </div>
+    );
+  }
+  return (
+    <div>
+      <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6 }}>
+        断点 checkpoint：{run.checkpoint || "—"} · 会话 {run.status}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {run.steps.map((s) => (
+          <div key={s.stepIndex} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11.5 }}>
+            <span style={{ width: 22, textAlign: "right", color: "#94a3b8", flexShrink: 0 }}>#{s.stepIndex}</span>
+            <span style={{ width: 64, color: "var(--mx-ink)", flexShrink: 0 }}>{s.type}</span>
+            <span
+              style={{
+                fontSize: 10.5,
+                fontWeight: 700,
+                color: stepStatusColor(s.status),
+                background: stepStatusColor(s.status) + "18",
+                padding: "1px 7px",
+                borderRadius: 5,
+              }}
+            >
+              {s.status}
+            </span>
+            <span style={{ color: "#94a3b8", fontSize: 10.5, marginLeft: "auto" }}>
+              {new Date(s.createdAt).toLocaleTimeString()}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
