@@ -312,29 +312,7 @@ export function AppShell({
   }, [dark, mounted]);
   const toggleTheme = () => setTheme(dark ? "light" : "dark");
 
-  /* 明德 VP 皮肤（桌面端）：默认开启，localStorage 可关（"off" 回退紫色系） */
-  const [vp, setVp] = React.useState(true);
-  React.useEffect(() => {
-    try {
-      setVp(localStorage.getItem("jiuzhang.vp") !== "off");
-    } catch {
-      /* localStorage 不可用时保持默认开启 */
-    }
-  }, []);
-  React.useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.setAttribute("data-vp", vp ? "on" : "off");
-  }, [vp, mounted]);
-  const toggleVp = () =>
-    setVp((v) => {
-      const next = !v;
-      try {
-        localStorage.setItem("jiuzhang.vp", next ? "on" : "off");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
+  /* 唯一品牌主题（2026-08-23 定稿）：磨砂紫金，无切换无回退；深浅双档走 next-themes。 */
 
   /* 全局快捷键：⌘K / 1-6 */
   React.useEffect(() => {
@@ -416,14 +394,6 @@ export function AppShell({
             );
           })}
           <div className="kx-rail-spacer" />
-          <button
-            className={`kx-rail-tool${vp ? " kx-vp-on" : ""}`}
-            aria-label={vp ? "切换回经典主题" : "切换明德 VP 主题"}
-            title={vp ? "明德 VP 主题（点击切回经典）" : "经典主题（点击切换明德 VP）"}
-            onClick={toggleVp}
-          >
-            <ShellIcon name="sparkles" />
-          </button>
           <button
             className="kx-rail-tool"
             aria-label="切换暗色模式"

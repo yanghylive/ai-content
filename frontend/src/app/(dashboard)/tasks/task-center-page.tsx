@@ -1384,19 +1384,22 @@ export function TaskCenterPage() {
   }
 
   return (
+    /* B0 容器收编（2026-08-23）：/tasks 为场景路由，根统一 kx-view（34px gutter + 880 居中），
+       astryx Layout 仅作内部布局组件，页面级边距由 kx-view 供给 */
+    <div className="kx-view">
     <Layout height="fill">
-      <LayoutContent padding={6}>
+      <LayoutContent padding={0}>
           <VStack gap={3}>
             <HStack gap={3} hAlign="between" vAlign="start" wrap="wrap">
               <VStack gap={2}>
                 <Text color="secondary" type="supporting">
                   商业增长 · 任务中心
                 </Text>
-                <Heading level={1}>任务中心</Heading>
+                <Heading level={1} className="kx-greet">任务中心</Heading>
                 <Text color="secondary">
                   自动工作流、正在运行、待确认、失败修复和结果留存在同一个操作台处理。
                 </Text>
-              </VStack>
+                </VStack>
               <div className="flex flex-wrap items-center gap-1.5">
                 <Button
                   as={Link}
@@ -2598,6 +2601,7 @@ export function TaskCenterPage() {
       />
     </OpsDesktopPage>
     </Layout>
+    </div>
   );
 }
 

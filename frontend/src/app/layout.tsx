@@ -46,13 +46,7 @@ export default function RootLayout({
               "try { var _s = Number(localStorage.getItem('jiuzhang.fontScale') || '1'); if (_s >= 1 && _s <= 1.5 && _s !== 1) { document.documentElement.style.zoom = String(_s); } } catch (e) {}",
           }}
         />
-        {/* 明德 VP 皮肤（默认开启）：首屏即应用，避免主题闪烁；localStorage "off" 回退紫色系 */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "try { if (localStorage.getItem('jiuzhang.vp') !== 'off') { document.documentElement.setAttribute('data-vp', 'on'); } } catch (e) {}",
-          }}
-        />
+        {/* 唯一品牌主题（2026-08-23 定稿）：磨砂紫金为默认样式，无 data-vp 注入与切换 */}
         {/* PWA service worker：仅生产环境注册（PRD MOB-PWA-001） */}
         <script
           dangerouslySetInnerHTML={{

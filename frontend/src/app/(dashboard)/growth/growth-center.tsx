@@ -286,7 +286,7 @@ export function GrowthCenter() {
   }, [homeFunnel]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="kx-view flex flex-col gap-6">
       <AiDailyBriefCard overview={overview} />
       <AiValueBill overview={overview} />
       <WorkbenchCenter

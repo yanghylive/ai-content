@@ -77,23 +77,25 @@
       "Segoe UI", sans-serif;
     --kaypal-v3-font-mono:
       "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-    --agent-cockpit-background: 220 33% 97%;
-    --agent-cockpit-foreground: 222 47% 11%;
+    /* agent-cockpit（tailwind colors 映射源）：2026-08-23 唯一品牌主题定稿，
+       与 --kx-accent 品牌紫 #722ed1 同源，杜绝 VP 皮肤下第三套变量逃逸 */
+    --agent-cockpit-background: 258 30% 97%;
+    --agent-cockpit-foreground: 252 30% 15%;
     --agent-cockpit-card: 0 0% 100%;
-    --agent-cockpit-card-foreground: 210 29% 13%;
-    --agent-cockpit-muted: 210 40% 96%;
-    --agent-cockpit-muted-foreground: 215 16% 47%;
-    --agent-cockpit-accent: 257 84% 65%;
+    --agent-cockpit-card-foreground: 252 30% 15%;
+    --agent-cockpit-muted: 256 25% 95%;
+    --agent-cockpit-muted-foreground: 254 12% 45%;
+    --agent-cockpit-accent: 258 64% 50%;
     --agent-cockpit-accent-foreground: 0 0% 100%;
-    --agent-cockpit-primary: 257 84% 65%;
+    --agent-cockpit-primary: 258 64% 50%;
     --agent-cockpit-primary-foreground: 0 0% 100%;
-    --agent-cockpit-secondary: 210 40% 96%;
-    --agent-cockpit-secondary-foreground: 222 47% 11%;
+    --agent-cockpit-secondary: 256 25% 95%;
+    --agent-cockpit-secondary-foreground: 252 30% 15%;
     --agent-cockpit-destructive: 359 100% 65%;
     --agent-cockpit-destructive-foreground: 0 0% 100%;
-    --agent-cockpit-border: 214 32% 91%;
-    --agent-cockpit-input: 214 32% 91%;
-    --agent-cockpit-ring: 257 84% 65%;
+    --agent-cockpit-border: 256 20% 91%;
+    --agent-cockpit-input: 256 20% 91%;
+    --agent-cockpit-ring: 258 64% 50%;
   }
 
   /* KAYPAL v2 零学习成本改造页 · 浅色模式紫色主题覆盖（已升格为全局 :root 主色，此作用域保留为空不再覆盖） */
@@ -152,23 +154,24 @@
     --kaypal-v3-nav-shadow: 2px 0 12px rgba(0, 0, 0, 0.22);
     --kaypal-v3-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
     --kaypal-v3-elevated-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
-    --agent-cockpit-background: 0 0% 0%;
-    --agent-cockpit-foreground: 210 20% 98%;
-    --agent-cockpit-card: 240 6% 10%;
-    --agent-cockpit-card-foreground: 210 20% 98%;
-    --agent-cockpit-muted: 240 4% 16%;
-    --agent-cockpit-muted-foreground: 240 5% 65%;
-    --agent-cockpit-accent: 257 86% 70%;
-    --agent-cockpit-accent-foreground: 0 0% 100%;
-    --agent-cockpit-primary: 257 86% 70%;
-    --agent-cockpit-primary-foreground: 0 0% 100%;
-    --agent-cockpit-secondary: 240 4% 16%;
-    --agent-cockpit-secondary-foreground: 210 20% 98%;
+    /* dark：品牌紫阶（亮紫 #b885f7 = hsl(263 88% 75%)） */
+    --agent-cockpit-background: 255 20% 7%;
+    --agent-cockpit-foreground: 255 20% 96%;
+    --agent-cockpit-card: 254 16% 12%;
+    --agent-cockpit-card-foreground: 255 20% 96%;
+    --agent-cockpit-muted: 254 12% 16%;
+    --agent-cockpit-muted-foreground: 254 10% 65%;
+    --agent-cockpit-accent: 263 88% 75%;
+    --agent-cockpit-accent-foreground: 260 40% 10%;
+    --agent-cockpit-primary: 263 88% 75%;
+    --agent-cockpit-primary-foreground: 260 40% 10%;
+    --agent-cockpit-secondary: 254 12% 16%;
+    --agent-cockpit-secondary-foreground: 255 20% 96%;
     --agent-cockpit-destructive: 0 63% 46%;
     --agent-cockpit-destructive-foreground: 0 0% 100%;
-    --agent-cockpit-border: 240 4% 20%;
-    --agent-cockpit-input: 240 4% 20%;
-    --agent-cockpit-ring: 257 86% 70%;
+    --agent-cockpit-border: 254 12% 20%;
+    --agent-cockpit-input: 254 12% 20%;
+    --agent-cockpit-ring: 263 88% 75%;
   }
 
   html {

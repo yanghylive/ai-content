@@ -224,7 +224,7 @@ function HomeHeader({
             <TrendingUp className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               今日增长
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
@@ -520,7 +520,7 @@ export function TodayCenter() {
   }, [router]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="kx-view flex flex-col gap-6">
       <HomeHeader
         home={home}
         loading={loading}

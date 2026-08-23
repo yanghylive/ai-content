@@ -255,7 +255,7 @@ export function WorkbenchCenter({
               <Icon className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+              <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
                 {title}
               </h1>
               <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
