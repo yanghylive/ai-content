@@ -9,6 +9,8 @@ const runtimeRoot = path.join(desktopRoot, 'runtime', 'node');
 const platform = process.platform;
 const arch = process.arch;
 const targetPlatform = process.env.BUILD_PLATFORM || (platform === 'win32' ? 'win-x64' : platform === 'darwin' && arch === 'arm64' ? 'mac-arm64' : platform === 'darwin' ? 'mac-x64' : 'linux-x64');
+const NODE_RUNTIME_VERSION = '20.20.2';
+const runtimeCacheRoot = path.join(desktopRoot, '.runtime-cache', 'node');
 
 function fail(message) {
   console.error(message);
@@ -28,20 +30,17 @@ function resolveSourceRuntime() {
   const explicit = process.env.KAYPAL_NODE_RUNTIME_SOURCE;
   if (explicit) return path.resolve(explicit);
 
-  if (targetPlatform === 'mac-arm64') {
-    return path.join(repoRoot, 'kaypal-ai', '.runtime', 'node-v20.20.2-darwin-arm64');
-  }
-
-  if (targetPlatform === 'win-x64') {
-    return path.join(repoRoot, 'kaypal-ai', '.runtime', 'node-v20.20.2-win-x64');
-  }
-
-  if (targetPlatform === 'mac-x64') {
-    return path.join(repoRoot, 'kaypal-ai', '.runtime', 'node-v20.20.2-darwin-x64');
-  }
-
-  if (targetPlatform === 'linux-x64') {
-    return path.join(repoRoot, 'kaypal-ai', '.runtime', 'node-v20.20.2-linux-x64');
+  const suffix = {
+    'mac-arm64': 'darwin-arm64',
+    'win-x64': 'win-x64',
+    'mac-x64': 'darwin-x64',
+    'linux-x64': 'linux-x64',
+  }[targetPlatform];
+  if (suffix) {
+    const name = `node-v${NODE_RUNTIME_VERSION}-${suffix}`;
+    const workspaceSource = path.join(repoRoot, 'kaypal-ai', '.runtime', name);
+    const cacheSource = path.join(runtimeCacheRoot, name);
+    return fs.existsSync(workspaceSource) ? workspaceSource : cacheSource;
   }
 
   return null;
@@ -53,6 +52,31 @@ function currentNodeMatchesTarget() {
   if (targetPlatform === 'mac-x64') return platform === 'darwin' && arch === 'x64';
   if (targetPlatform === 'linux-x64') return platform === 'linux' && arch === 'x64';
   return false;
+}
+
+function downloadNodeRuntime(target) {
+  const suffix = {
+    'mac-arm64': 'darwin-arm64',
+    'win-x64': 'win-x64',
+    'mac-x64': 'darwin-x64',
+    'linux-x64': 'linux-x64',
+  }[target];
+  if (!suffix) return null;
+  const archiveName = `node-v${NODE_RUNTIME_VERSION}-${suffix}.${target === 'win-x64' ? 'zip' : 'tar.gz'}`;
+  const archiveUrl = `https://nodejs.org/dist/v${NODE_RUNTIME_VERSION}/${archiveName}`;
+  const archivePath = path.join(runtimeCacheRoot, archiveName);
+  const extractedRoot = path.join(runtimeCacheRoot, `node-v${NODE_RUNTIME_VERSION}-${suffix}`);
+  fs.mkdirSync(runtimeCacheRoot, { recursive: true });
+  if (!fs.existsSync(extractedRoot)) {
+    console.log(`Downloading Node.js ${NODE_RUNTIME_VERSION} runtime for ${target}: ${archiveUrl}`);
+    execFileSync('curl', ['-fL', '--retry', '3', '-o', archivePath, archiveUrl], { stdio: 'inherit' });
+    if (target === 'win-x64') {
+      execFileSync('unzip', ['-q', '-o', archivePath, '-d', runtimeCacheRoot], { stdio: 'inherit' });
+    } else {
+      execFileSync('tar', ['-xzf', archivePath, '-C', runtimeCacheRoot], { stdio: 'inherit' });
+    }
+  }
+  return fs.existsSync(extractedRoot) ? extractedRoot : null;
 }
 
 function copyCurrentNodeRuntime() {
@@ -89,15 +113,17 @@ function copyCurrentNodeRuntime() {
   return true;
 }
 
-const sourceRuntime = resolveSourceRuntime();
+let sourceRuntime = resolveSourceRuntime();
 const explicitSource = Boolean(process.env.KAYPAL_NODE_RUNTIME_SOURCE);
 const isTargetWindows = targetPlatform === 'win-x64';
 
 if (!sourceRuntime || !fs.existsSync(sourceRuntime)) {
-  if (explicitSource || !copyCurrentNodeRuntime()) {
+  sourceRuntime = downloadNodeRuntime(targetPlatform);
+  if (!sourceRuntime && (explicitSource || !copyCurrentNodeRuntime())) {
     fail(`Node runtime source is missing for ${targetPlatform}: ${sourceRuntime || '<not configured>'}`);
   }
-} else {
+}
+if (sourceRuntime && fs.existsSync(sourceRuntime)) {
   const sourceNode = path.join(sourceRuntime, 'bin', isTargetWindows ? 'node.exe' : 'node');
   const windowsRootNode = isTargetWindows ? path.join(sourceRuntime, 'node.exe') : null;
   if (!fs.existsSync(sourceNode) && (!windowsRootNode || !fs.existsSync(windowsRootNode))) {
@@ -128,6 +154,7 @@ try {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
       timeout: 10000,
+      env: { ...process.env, NODE_OPTIONS: '' },
     }).trim();
     console.log(`Bundled Node runtime: ${runtimeNode} (${version})`);
   }
