@@ -355,7 +355,7 @@ export default function CollectionCenterPage() {
             fontFamily: "inherit",
             border: "none",
             background: "linear-gradient(135deg, #d98f2b, #efb45b)",
-            color: "#173052",
+            color: "var(--kaypal-v3-accent-ink)",
           }}
         >
           {busy ? "采集中…" : "开始采集"}

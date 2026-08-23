@@ -588,7 +588,7 @@ export function MaterialsCenter() {
                 borderRadius: 12,
                 border: "1px solid rgba(142,165,190,.3)",
                 background: "rgba(255,255,255,.08)",
-                color: "#e8f1fc",
+                color: "var(--kaypal-v3-paper)",
                 fontSize: 14,
                 outline: "none",
                 marginBottom: 12,
@@ -812,7 +812,7 @@ export function MaterialsCenter() {
               value={videoPrompt}
               onChange={(e) => setVideoPrompt(e.target.value)}
               placeholder="描述你要的视频画面，如：产品特写，暖光，缓慢推镜头…"
-              style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.08)", color: "#e8f1fc", fontSize: 14, outline: "none", marginBottom: 12 }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.08)", color: "var(--kaypal-v3-paper)", fontSize: 14, outline: "none", marginBottom: 12 }}
             />
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
               <span style={{ fontSize: 12, color: "rgba(215,230,248,.55)", lineHeight: "28px" }}>时长</span>
@@ -853,7 +853,7 @@ export function MaterialsCenter() {
               }}
               style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", marginBottom: 10, borderRadius: 10, border: videoPayByRebate ? "1px solid rgba(126,226,168,.6)" : "1px solid rgba(142,165,190,.3)", background: videoPayByRebate ? "rgba(126,226,168,.12)" : "rgba(255,255,255,.05)", cursor: "pointer" }}
             >
-              <span style={{ fontSize: 12, color: "#e8f1fc", fontWeight: 600 }}>
+              <span style={{ fontSize: 12, color: "var(--kaypal-v3-paper)", fontWeight: 600 }}>
                 {videoPayByRebate ? "✅ 用返利支付 ¥5/次" : "💰 用返利支付（返利抵现金）"}
               </span>
               <span style={{ fontSize: 11, color: videoPayInfo?.canCover ? "#7ee2a8" : "rgba(215,230,248,.55)" }}>
@@ -916,7 +916,7 @@ export function MaterialsCenter() {
                 borderRadius: 12,
                 border: "1px solid rgba(142,165,190,.3)",
                 background: "rgba(255,255,255,.08)",
-                color: "#e8f1fc",
+                color: "var(--kaypal-v3-paper)",
                 fontSize: 14,
                 outline: "none",
                 marginBottom: 12,
@@ -976,7 +976,7 @@ export function MaterialsCenter() {
                 cursor: "pointer",
               }}
             >
-              <span style={{ fontSize: 12, color: "#e8f1fc", fontWeight: 600 }}>
+              <span style={{ fontSize: 12, color: "var(--kaypal-v3-paper)", fontWeight: 600 }}>
                 {genPayByRebate ? "✅ 用返利支付 ¥1/次" : "💰 用返利支付（返利抵现金）"}
               </span>
               <span style={{ fontSize: 11, color: genPayInfo?.canCover ? "#7ee2a8" : "rgba(215,230,248,.55)" }}>

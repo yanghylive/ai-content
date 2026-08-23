@@ -11,15 +11,27 @@ import { ArrowLeft } from "lucide-react";
 export function V2BackButton({
   label = "返回",
   to,
+  onClick,
 }: {
   label?: string;
   to?: string;
+  onClick?: () => void;
 }) {
   const router = useRouter();
   return (
     <button
       type="button"
-      onClick={() => (to ? router.push(to) : router.back())}
+      onClick={() => {
+        if (onClick) {
+          onClick();
+          return;
+        }
+        if (to) {
+          router.push(to);
+          return;
+        }
+        router.back();
+      }}
       className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--kx-border)] bg-[var(--kx-card)] px-3 py-1.5 text-13 font-semibold text-[var(--kx-muted)] transition hover:border-[var(--kx-border-strong)] hover:text-[var(--kx-ink)]"
       aria-label={label}
     >

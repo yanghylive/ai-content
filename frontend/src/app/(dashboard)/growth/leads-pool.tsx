@@ -302,7 +302,7 @@ export function LeadsPool() {
         <div>
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">线索池</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">系统抓到的潜在客户，高意向的转成 CRM 客户重点跟进</p>
-          <p className="mt-1 text-[12px] text-[var(--kaypal-v3-muted)]">评分在抓取时由 AI 自动给出；你可以通过「转为客户 / 忽略」人工复核评分</p>
+          <p className="mt-1 text-12 text-[var(--kaypal-v3-muted)]">评分在抓取时由 AI 自动给出；你可以通过「转为客户 / 忽略」人工复核评分</p>
         </div>
         <div className="flex items-center gap-3">
           <V2PrimaryButton onClick={() => setAddOpen(true)}>手动补充线索</V2PrimaryButton>

@@ -32,7 +32,9 @@
     "console-quality:browser": "node scripts/console-quality-browser-scan.mjs",
     "astryx": "node node_modules/@astryxdesign/cli/bin/astryx.mjs",
     "astryx:doctor": "npm run astryx -- --json doctor",
-    "astryx:migration:guard": "node scripts/astryx-migration-guard.mjs"
+    "astryx:migration:guard": "node scripts/astryx-migration-guard.mjs",
+    "ui:gate": "node scripts/ui-gate.mjs",
+    "ui:gate:changed": "node scripts/ui-gate.mjs --changed"
   },
   "dependencies": {
     "@astryxdesign/core": "0.1.7",

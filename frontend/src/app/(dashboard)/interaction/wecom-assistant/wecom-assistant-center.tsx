@@ -273,7 +273,7 @@ export function WecomAssistantCenter() {
               style={{
                 ...smallBtn,
                 background: "linear-gradient(135deg,#e39a3e,#f6c478)",
-                color: "#173052",
+                color: "var(--kaypal-v3-accent-ink)",
                 opacity: busy ? 0.6 : 1,
               }}
             >
@@ -435,7 +435,7 @@ export function WecomAssistantCenter() {
               style={{
                 ...smallBtn,
                 background: "linear-gradient(135deg,#e39a3e,#f6c478)",
-                color: "#173052",
+                color: "var(--kaypal-v3-accent-ink)",
                 opacity: busy ? 0.6 : 1,
               }}
             >

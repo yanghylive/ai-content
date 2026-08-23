@@ -101,7 +101,7 @@ export default function AiVideoGenPage() {
           fontFamily: "inherit",
           border: "none",
           background: "linear-gradient(135deg, #d98f2b, #efb45b)",
-          color: "#173052",
+          color: "var(--kaypal-v3-accent-ink)",
         }}
       >
         {busy ? "生成中…" : "生成视频"}

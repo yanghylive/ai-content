@@ -198,7 +198,7 @@ export default function AccountsMatrixV2Page() {
         </div>
         <button
           type="button"
-          className="kx-btn-primary px-4 py-2 text-[13px]"
+          className="kx-btn-primary px-4 py-2 text-13"
           disabled={validating}
           onClick={() => void revalidate()}
         >

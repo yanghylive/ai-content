@@ -239,7 +239,7 @@ function LeadDetailClient() {
         </div>
         <div className="flex items-center gap-3">
           <V2BackButton to="/growth/leads" label="返回线索" />
-          <Link href="/growth/leads" className="text-[12px] text-[var(--kaypal-v3-accent)] hover:underline">
+          <Link href="/growth/leads" className="text-12 text-[var(--kaypal-v3-accent)] hover:underline">
             线索列表
           </Link>
         </div>
