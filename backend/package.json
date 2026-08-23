@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prebuild": "node scripts/check-prisma-client-provider.mjs",
     "build": "nest build",
     "build:bundle": "prisma generate && ncc build src/main.ts -o dist-bundle --quiet",
     "build:bundle:sqlite": "node scripts/build-sqlite-bundle.mjs",
@@ -44,7 +45,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "verify:clean-replace": "node scripts/verify-clean-replace.mjs",
-    "check:no-direct-provider": "node scripts/check-no-direct-provider.mjs"
+    "check:no-direct-provider": "node scripts/check-no-direct-provider.mjs",
+    "check:prisma-client": "node scripts/check-prisma-client-provider.mjs"
   },
   "dependencies": {
     "@effing/ffmpeg": "^0.39.0",
