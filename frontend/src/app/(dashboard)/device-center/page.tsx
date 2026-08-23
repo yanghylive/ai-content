@@ -195,7 +195,7 @@ export default function DeviceCenterPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {tasks.map((t) => {
                 const err = taskError(t);
-                const needsAttention = t.status === "failed" || t.status === "unknown";
+                const needsAttention = t.status === "failed" || t.status === "unknown" || t.status === "awaiting_approval";
                 const expanded = expandedTaskId === t.id;
                 return (
                   <div key={t.id} style={{ padding: "8px 10px", borderRadius: 8, background: needsAttention ? "#fef2f2" : "#f8fafc", border: `1px solid ${needsAttention ? "#fecaca" : "#e2e8f0"}` }}>

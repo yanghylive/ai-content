@@ -154,8 +154,19 @@ class RpaAccessibilityService : AccessibilityService() {
             // P1-12：publish 路径也建 Run（发布任务可追溯 + 断点）
             pubTaskId = taskId.ifBlank { null }
             pubRunId = null
+            pubFinishStatus = null
             if (pubTaskId != null) {
-                startRunRemote(pubTaskId!!) { pubRunId = it }
+                startRunRemote(pubTaskId!!) { rid ->
+                    pubRunId = rid
+                    // 快速失败时 finish 先于 runId 就绪，这里补 finish（防 Run 泄漏）
+                    if (rid != null) {
+                        pubFinishStatus?.let {
+                            finishRunRemote(rid, it)
+                            pubFinishStatus = null
+                            pubRunId = null
+                        }
+                    }
+                }
             }
             handler.post { svc.launchApp(pkg) }
             handler.postDelayed({ timeoutIfPending() }, EXEC_TIMEOUT_MS)
@@ -248,6 +259,10 @@ class RpaAccessibilityService : AccessibilityService() {
         private var pubTaskId: String? = null
         @Volatile
         private var pubRunId: String? = null
+        @Volatile
+        private var pubFinishStatus: String? = null
+        @Volatile
+        private var maiFinishStatus: String? = null
 
         /**
          * 执行 MAI-UI 规划的结构化动作序列（H5 调 window.JiuZhang.executeActions）。
@@ -282,8 +297,19 @@ class RpaAccessibilityService : AccessibilityService() {
             // P1-12：绑定任务 → 创建 Run（异步），执行中逐步上报 + 本地 checkpoint
             maiTaskId = taskId.ifBlank { null }
             maiRunId = null
+            maiFinishStatus = null
             if (maiTaskId != null) {
-                startRunRemote(maiTaskId!!) { maiRunId = it }
+                startRunRemote(maiTaskId!!) { rid ->
+                    maiRunId = rid
+                    // 快速失败时 finish 先于 runId 就绪，这里补 finish（防 Run 泄漏）
+                    if (rid != null) {
+                        maiFinishStatus?.let {
+                            finishRunRemote(rid, it)
+                            maiFinishStatus = null
+                            maiRunId = null
+                        }
+                    }
+                }
             }
             handler.post { svc.stepMaiActions() }
             handler.postDelayed({ timeoutMaiIfPending() }, MAI_UI_TIMEOUT_MS)
@@ -461,13 +487,16 @@ class RpaAccessibilityService : AccessibilityService() {
         }
 
         private fun finishMai(cb: (RpaResult) -> Unit, result: RpaResult) {
-            // P1-12：收尾 Run（completed/failed/unknown）
-            maiRunId?.let {
-                finishRunRemote(
-                    it,
-                    if (result.ok) "completed"
-                    else if (result.status == "unknown") "unknown" else "failed",
-                )
+            // P1-12：收尾 Run（completed/failed/unknown）；runId 未就绪时缓存 status 待补
+            val maiStatus =
+                if (result.ok) "completed"
+                else if (result.status == "unknown") "unknown" else "failed"
+            val maiRid = maiRunId
+            maiRunId = null
+            if (maiRid != null) {
+                finishRunRemote(maiRid, maiStatus)
+            } else {
+                maiFinishStatus = maiStatus
             }
             clearCheckpoint()
             maiCallback = null
@@ -822,16 +851,18 @@ class RpaAccessibilityService : AccessibilityService() {
         pendingPackage = null
         pendingContent = null
         pendingPlatform = null
-        // P1-12：publish 收尾 Run（completed/failed/unknown）
-        pubRunId?.let {
-            finishRunRemote(
-                it,
-                if (result.ok) "completed"
-                else if (result.status == "unknown") "unknown" else "failed",
-            )
-        }
+        // P1-12：publish 收尾 Run（completed/failed/unknown）；runId 未就绪时缓存 status 待补
+        val pubStatus =
+            if (result.ok) "completed"
+            else if (result.status == "unknown") "unknown" else "failed"
+        val pubRid = pubRunId
         pubTaskId = null
         pubRunId = null
+        if (pubRid != null) {
+            finishRunRemote(pubRid, pubStatus)
+        } else {
+            pubFinishStatus = pubStatus
+        }
         cb(result)
     }
 
