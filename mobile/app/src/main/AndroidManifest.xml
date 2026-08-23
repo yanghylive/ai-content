@@ -7,6 +7,8 @@
     <!-- agent 前台服务（任务执行） -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- MediaProjection 前台服务（P1-20：Android 14+ 屏幕采集要求） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 录音（B3 语音输入） -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -37,7 +39,7 @@
         <service
             android:name=".agent.AgentService"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="dataSync|mediaProjection" />
 
         <!-- 无障碍服务（C2 RPA，用户设置中开启；暂注册，S3 激活逻辑） -->
         <service

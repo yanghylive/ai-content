@@ -118,6 +118,10 @@ class RpaAccessibilityService : AccessibilityService() {
 
         fun isEnabled(): Boolean = instance != null
 
+        /** 当前前台 App 包名（供设备能力上报 P1-14；无障碍未开启返回 null） */
+        fun foregroundPackage(): String? =
+            instance?.rootInActiveWindow?.packageName?.toString()
+
         /**
          * 执行 RPA 动作（AgentService 调用）。
          * @param platform 平台 key（douyin/xiaohongshu/shipinhao...）
