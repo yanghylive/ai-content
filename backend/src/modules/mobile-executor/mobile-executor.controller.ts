@@ -315,7 +315,10 @@ export class MobileExecutorController {
   }
 
   @Post('tasks/:id/evidence')
-  @ApiOperation({ summary: '上传任务执行证据（x-device-token 认证）' })
+  @ApiOperation({
+    summary:
+      '上传任务执行证据（优先 x-device-token；无 token 回落 session，供前端 MAI-UI 截图存证）',
+  })
   async addEvidence(
     @Req() request: AuthenticatedRequest,
     @Param('id') taskId: string,
@@ -330,10 +333,21 @@ export class MobileExecutorController {
       collectedAt?: string;
     },
   ) {
-    const dev = await this.requireDevice(request);
-    return this.evidence.addEvidence(dev.userId, taskId, {
+    // 认证：优先设备 token（壳代码），无 token 回落 session（前端 MAI-UI 截图存证）
+    const token = String(request.headers['x-device-token'] || '');
+    const dev = token ? await this.devices.verifyDeviceToken(token) : null;
+    let userId: string;
+    let deviceId: string | undefined;
+    if (dev) {
+      userId = dev.userId;
+      deviceId = dev.deviceId;
+    } else {
+      const user = this.requireUser(request);
+      userId = user.id;
+    }
+    return this.evidence.addEvidence(userId, taskId, {
       ...input,
-      deviceId: dev.deviceId,
+      deviceId,
     });
   }
 
