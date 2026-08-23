@@ -172,6 +172,42 @@ export class ApprovalGateService {
     };
   }
 
+  /**
+   * 执行前消费审批（P0-3）：校验审批已批准且未消费、内容 hash 未变、未过期，
+   * 通过后标记 applied（一次性）。执行器在执行外发动作前调用。
+   */
+  async consume(
+    tenantId: string,
+    approvalId: string,
+    currentHash?: string,
+  ): Promise<{ status: string; appliedAt: Date }> {
+    const approval = await this.prisma.approval.findUnique({
+      where: { id: approvalId },
+    });
+    if (!approval || approval.tenantId !== tenantId) {
+      throw new BadRequestException('审批不存在或不在当前租户');
+    }
+    if (approval.status !== 'approved') {
+      throw new BadRequestException(
+        `审批不可执行（当前 ${approval.status}），仅已批准且未消费的审批可执行`,
+      );
+    }
+    if (currentHash && currentHash !== approval.inputHash) {
+      throw new BadRequestException(
+        '审批内容已变化（inputHash 不匹配），审批失效，请重新审批',
+      );
+    }
+    if (approval.expiresAt && approval.expiresAt.getTime() < Date.now()) {
+      throw new BadRequestException('审批已过期，请重新审批');
+    }
+    const now = new Date();
+    await this.prisma.approval.update({
+      where: { id: approvalId },
+      data: { status: 'applied', appliedAt: now },
+    });
+    return { status: 'applied', appliedAt: now };
+  }
+
   /** 待审批列表 */
   async listPending(tenantId: string, limit = 50) {
     return this.prisma.approval.findMany({
