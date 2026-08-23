@@ -1,6 +1,7 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import type { Server as HttpServer } from 'http';
 import { AuthService, requireAuth } from './core/auth';
+import { TenantContext } from './core/types';
 import { AgentGatewayService } from './agent-gateway.service';
 
 /**
@@ -35,37 +36,40 @@ export function attachAgentGatewayWs(
       ?.slice('kaypal-auth.'.length);
     const token = protoToken ?? req.headers['authorization']?.toString() ?? url.searchParams.get('token') ?? undefined;
 
-    let ctx: ReturnType<AuthService['verify']>;
-    try {
-      ctx = requireAuth(auth, token);
-    } catch {
-      ws.send(JSON.stringify({ error: 'UNAUTHORIZED' }));
-      ws.close();
-      return;
-    }
+    void (async () => {
+      // 身份：HMAC 签名令牌或 Kaypal 正式 access_token（P0-2）
+      let ctx: TenantContext;
+      try {
+        ctx = await requireAuth(auth, token);
+      } catch {
+        ws.send(JSON.stringify({ error: 'UNAUTHORIZED' }));
+        ws.close();
+        return;
+      }
 
-    const session = agent.gateway.getSession(sessionId);
-    if (!session || session.tenantId !== ctx.tenantId || session.userId !== ctx.userId || session.agentId !== ctx.agentId) {
-      ws.send(JSON.stringify({ error: 'FORBIDDEN' }));
-      ws.close();
-      return;
-    }
+      const session = agent.gateway.getSession(sessionId);
+      if (!session || session.tenantId !== ctx.tenantId || session.userId !== ctx.userId || session.agentId !== ctx.agentId) {
+        ws.send(JSON.stringify({ error: 'FORBIDDEN' }));
+        ws.close();
+        return;
+      }
 
-    try {
-      const history = lastEventId
-        ? agent.gateway.getEventsSince(sessionId, lastEventId)
-        : agent.gateway.snapshotEvents(sessionId);
-      for (const e of history) ws.send(JSON.stringify(e));
-    } catch {
-      ws.send(JSON.stringify({ error: 'RESUME_WINDOW_EXPIRED' }));
-      ws.close();
-      return;
-    }
+      try {
+        const history = lastEventId
+          ? agent.gateway.getEventsSince(sessionId, lastEventId)
+          : agent.gateway.snapshotEvents(sessionId);
+        for (const e of history) ws.send(JSON.stringify(e));
+      } catch {
+        ws.send(JSON.stringify({ error: 'RESUME_WINDOW_EXPIRED' }));
+        ws.close();
+        return;
+      }
 
-    const unsub = agent.gateway.subscribeEvents(sessionId, (event) => {
-      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(event));
-    });
-    ws.on('close', () => unsub());
+      const unsub = agent.gateway.subscribeEvents(sessionId, (event) => {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(event));
+      });
+      ws.on('close', () => unsub());
+    })();
   });
 
   return wss;

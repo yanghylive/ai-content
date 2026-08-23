@@ -11,8 +11,16 @@ import { makeError } from '../contracts/error-codes';
  * 校验失败（缺 token / 篡改 / 过期 / secret 不匹配）一律抛 UNAUTHORIZED / AUTH_INVALID，
  * 不存在“回退默认租户”的分支。
  */
+export interface KaypalTokenConfig {
+  baseUrl: string;
+  apiKey: string;
+}
+
 export class AuthService {
-  constructor(private readonly secret: string) {}
+  constructor(
+    private readonly secret: string,
+    private readonly kaypal?: KaypalTokenConfig,
+  ) {}
 
   /** 签发令牌（真实环境由 Kaypal 网关完成，这里给 mock 用） */
   issue(ctx: TenantContext, ttlMs = 3_600_000): string {
@@ -22,10 +30,17 @@ export class AuthService {
     return `${body}.${sig}`;
   }
 
-  /** 校验令牌并返回派生的租户上下文；失败抛异常 */
-  verify(token: string): TenantContext {
+  /** 校验令牌并返回派生的租户上下文；失败抛异常。
+   * 1) 本地 HMAC 签名（内部/测试/旧客户端，向后兼容）
+   * 2) Kaypal 正式 access_token（kaypal.cn /api/auth/me 验证，派生 tenant/user）——P0-2 */
+  async verify(token: string): Promise<TenantContext> {
     const dot = token.indexOf('.');
-    if (dot <= 0) throw makeError('AUTH_INVALID', { details: { reason: '令牌格式非法' } });
+    if (dot <= 0) {
+      // 非 HMAC 格式（单段）：先尝试 Kaypal 正式 access_token（P0-2）
+      const kaypalCtx = await this.kaypalVerify(token);
+      if (kaypalCtx) return kaypalCtx;
+      throw makeError('AUTH_INVALID', { details: { reason: '令牌格式非法' } });
+    }
     const body = token.slice(0, dot);
     const sig = token.slice(dot + 1);
     const expected = crypto.createHmac('sha256', this.secret).update(body).digest('base64url');
@@ -33,6 +48,9 @@ export class AuthService {
     const a = Buffer.from(sig);
     const b = Buffer.from(expected);
     if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      // HMAC 不匹配：尝试 Kaypal 正式 token 验证（P0-2）
+      const kaypalCtx = await this.kaypalVerify(token);
+      if (kaypalCtx) return kaypalCtx;
       throw makeError('AUTH_INVALID', { details: { reason: '签名校验失败' } });
     }
     let payload: Record<string, unknown>;
@@ -58,10 +76,33 @@ export class AuthService {
     }
     return ctx;
   }
+
+  /** Kaypal 正式 access_token 验证（kaypal.cn /api/auth/me）——P0-2 */
+  private async kaypalVerify(token: string): Promise<TenantContext | undefined> {
+    if (!this.kaypal) return undefined;
+    try {
+      const res = await fetch(`${this.kaypal.baseUrl}/api/auth/me`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          'x-kaypal-api-key': this.kaypal.apiKey,
+          accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!res.ok) return undefined;
+      const d = (await res.json()) as { user?: Record<string, unknown> } | Record<string, unknown>;
+      const user = (d as { user?: Record<string, unknown> }).user ?? (d as Record<string, unknown>);
+      const id = String((user as Record<string, unknown>).id ?? '');
+      if (!id) return undefined;
+      return { tenantId: id, userId: id, agentId: 'agent_default' };
+    } catch {
+      return undefined;
+    }
+  }
 }
 
 /** 从 Authorization: Bearer <token> 或裸 x-kaypal-ctx 抽取令牌并校验；缺失/非法一律拒绝 */
-export function requireAuth(auth: AuthService, headerValue: string | undefined): TenantContext {
+export async function requireAuth(auth: AuthService, headerValue: string | undefined): Promise<TenantContext> {
   if (!headerValue) throw makeError('UNAUTHORIZED', { details: { reason: '缺少身份令牌' } });
   let token = headerValue;
   if (headerValue.toLowerCase().startsWith('bearer ')) {
