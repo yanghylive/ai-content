@@ -147,10 +147,10 @@ class JsBridge(private val activity: Activity) {
      * H5 用 resumeAfterAsk 继续/中止。
      */
     @JavascriptInterface
-    fun executeActions(actionsJson: String): String {
+    fun executeActions(actionsJson: String, taskId: String): String {
         val latch = CountDownLatch(1)
         val holder = arrayOfNulls<String>(1)
-        com.aicontent.mobile.agent.RpaAccessibilityService.executeActions(actionsJson) { result ->
+        com.aicontent.mobile.agent.RpaAccessibilityService.executeActions(actionsJson, taskId) { result ->
             holder[0] = "{\"ok\":${result.ok},\"message\":\"${escapeJson(result.message)}\"}"
             latch.countDown()
         }

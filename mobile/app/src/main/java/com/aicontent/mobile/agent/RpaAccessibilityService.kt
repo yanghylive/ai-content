@@ -233,13 +233,17 @@ class RpaAccessibilityService : AccessibilityService() {
         private var maiPausedForAsk = false
         @Volatile
         private var maiPaused = false
+        @Volatile
+        private var maiTaskId: String? = null
+        @Volatile
+        private var maiRunId: String? = null
 
         /**
          * 执行 MAI-UI 规划的结构化动作序列（H5 调 window.JiuZhang.executeActions）。
          * 动作：click/input/swipe/wait/back/home/ask_user/done。
          * ask_user 不自动执行，暂停并回调（由 H5 弹人工确认）。
          */
-        fun executeActions(actionsJson: String, callback: (RpaResult) -> Unit) {
+        fun executeActions(actionsJson: String, taskId: String, callback: (RpaResult) -> Unit) {
             val svc = instance
             if (svc == null) {
                 callback(RpaResult.failure("无障碍服务未开启（请在系统设置中开启 JIUZHANG AI 的无障碍权限）"))
@@ -264,6 +268,12 @@ class RpaAccessibilityService : AccessibilityService() {
             maiCallback = callback
             maiPausedForAsk = false
             maiPaused = false
+            // P1-12：绑定任务 → 创建 Run（异步），执行中逐步上报 + 本地 checkpoint
+            maiTaskId = taskId.ifBlank { null }
+            maiRunId = null
+            if (maiTaskId != null) {
+                startRunRemote(maiTaskId!!)
+            }
             handler.post { svc.stepMaiActions() }
             handler.postDelayed({ timeoutMaiIfPending() }, MAI_UI_TIMEOUT_MS)
         }
@@ -436,11 +446,112 @@ class RpaAccessibilityService : AccessibilityService() {
         }
 
         private fun finishMai(cb: (RpaResult) -> Unit, result: RpaResult) {
+            // P1-12：收尾 Run（completed/failed/unknown）
+            finishRunRemote(
+                if (result.ok) "completed"
+                else if (result.status == "unknown") "unknown" else "failed",
+            )
+            clearCheckpoint()
             maiCallback = null
             maiActions = null
             maiPausedForAsk = false
             maiPaused = false
+            maiTaskId = null
+            maiRunId = null
             cb(result)
+        }
+
+        // ===== P1-12 Run/Step 持久化（后端上报 + 本地 checkpoint） =====
+
+        /** 异步创建 Run（领取执行会话） */
+        private fun startRunRemote(taskId: String) {
+            val token = deviceToken() ?: return
+            Thread {
+                try {
+                    val body = "{}".toRequestBody("application/json; charset=utf-8".toMediaType())
+                    val req = Request.Builder()
+                        .url("$EXEC_BASE_URL/api/mobile-executor/tasks/$taskId/run")
+                        .header("x-device-token", token)
+                        .post(body)
+                        .build()
+                    httpClient.newCall(req).execute().use { resp ->
+                        if (resp.isSuccessful) {
+                            val json = JSONObject(resp.body?.string() ?: "{}")
+                            val data = json.optJSONObject("data") ?: json
+                            maiRunId = data.optString("id").ifBlank { null }
+                            persistCheckpoint(taskId, maiRunId, 0)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "startRunRemote failed: ${e.message}")
+                }
+            }.start()
+        }
+
+        /** 异步上报单步进度（fire-and-forget，不阻塞执行） */
+        private fun reportStepRemote(stepIndex: Int, type: String, status: String) {
+            val runId = maiRunId ?: return
+            val token = deviceToken() ?: return
+            Thread {
+                try {
+                    val body = JSONObject()
+                        .put("stepIndex", stepIndex)
+                        .put("type", type)
+                        .put("status", status)
+                        .put("checkpoint", "$stepIndex:$type")
+                        .toString()
+                        .toRequestBody("application/json; charset=utf-8".toMediaType())
+                    val req = Request.Builder()
+                        .url("$EXEC_BASE_URL/api/mobile-executor/runs/$runId/step")
+                        .header("x-device-token", token)
+                        .post(body)
+                        .build()
+                    httpClient.newCall(req).execute().use { }
+                } catch (e: Exception) {
+                    Log.w(TAG, "reportStepRemote failed: ${e.message}")
+                }
+            }.start()
+        }
+
+        /** 异步收尾 Run */
+        private fun finishRunRemote(status: String) {
+            val runId = maiRunId ?: return
+            val token = deviceToken() ?: return
+            Thread {
+                try {
+                    val body = JSONObject().put("status", status).toString()
+                        .toRequestBody("application/json; charset=utf-8".toMediaType())
+                    val req = Request.Builder()
+                        .url("$EXEC_BASE_URL/api/mobile-executor/runs/$runId/finish")
+                        .header("x-device-token", token)
+                        .post(body)
+                        .build()
+                    httpClient.newCall(req).execute().use { }
+                } catch (e: Exception) {
+                    Log.w(TAG, "finishRunRemote failed: ${e.message}")
+                }
+            }.start()
+        }
+
+        /** 本地 checkpoint 持久化（断点恢复：App 被杀后能读回执行到哪一步） */
+        private fun persistCheckpoint(taskId: String?, runId: String?, stepIndex: Int) {
+            val svc = instance ?: return
+            val prefs = svc.getSharedPreferences("jz_agent", android.content.Context.MODE_PRIVATE)
+            prefs.edit()
+                .putString("checkpoint_task_id", taskId)
+                .putString("checkpoint_run_id", runId)
+                .putInt("checkpoint_step_index", stepIndex)
+                .apply()
+        }
+
+        private fun clearCheckpoint() {
+            val svc = instance ?: return
+            val prefs = svc.getSharedPreferences("jz_agent", android.content.Context.MODE_PRIVATE)
+            prefs.edit()
+                .remove("checkpoint_task_id")
+                .remove("checkpoint_run_id")
+                .remove("checkpoint_step_index")
+                .apply()
         }
     }
 
@@ -692,17 +803,23 @@ class RpaAccessibilityService : AccessibilityService() {
         // 异步延时后继续下一步，期间主线程仍可响应暂停/超时/新无障碍事件。
         if (act.action == "wait") {
             val ms = (act.ms?.toLong() ?: 1000L).coerceIn(0L, 10000L)
+            reportStepRemote(maiIndex, "wait", "done")
             maiIndex++
+            persistCheckpoint(maiTaskId, maiRunId, maiIndex)
             handler.postDelayed({ stepMaiActions() }, ms)
             return
         }
         val result = performOneAction(act)
         when {
             result.ok && act.action != "done" -> {
+                reportStepRemote(maiIndex, act.action, "done")
                 maiIndex++
+                persistCheckpoint(maiTaskId, maiRunId, maiIndex)
                 handler.postDelayed({ stepMaiActions() }, 250L)
             }
             act.action == "ask_user" -> {
+                reportStepRemote(maiIndex, "ask_user", "pending")
+                persistCheckpoint(maiTaskId, maiRunId, maiIndex)
                 maiPausedForAsk = true
                 // 暂停，等 H5 resumeAfterAsk
                 cb(
@@ -712,10 +829,12 @@ class RpaAccessibilityService : AccessibilityService() {
                 )
             }
             act.action == "done" -> {
+                reportStepRemote(maiIndex, "done", "done")
                 finishMai(cb, RpaResult.success("任务完成：${act.summary ?: "done"}"))
             }
             else -> {
                 // 失败但非 done/ask_user：带步号返回错误
+                reportStepRemote(maiIndex, act.action, "failed")
                 finishMai(cb, RpaResult.failure("第 ${maiIndex + 1} 步（${act.action}）执行失败：${result.message}"))
             }
         }

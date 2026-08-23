@@ -4069,3 +4069,37 @@ model ExecutorEvidence {
   @@index([contentHash])
   @@map("executor_evidences")
 }
+
+// ============ P1-12 Run/Step 持久化：一次执行会话 + 单步记录（断点恢复基础） ============
+model ExecutorRun {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  taskId     String    @map("task_id")
+  deviceId   String    @map("device_id")
+  accountId  String?   @map("account_id")
+  status     String    @default("running") // running | awaiting_approval | completed | failed | unknown
+  checkpoint String?   @map("checkpoint") // 断点 JSON：{ stepIndex, totalSteps, remaining }
+  startedAt  DateTime  @default(now()) @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([taskId])
+  @@index([deviceId, status])
+  @@map("executor_runs")
+}
+
+model ExecutorStep {
+  id        String   @id @default(cuid())
+  runId     String   @map("run_id")
+  taskId    String   @map("task_id")
+  stepIndex Int      @map("step_index")
+  type      String   @map("type") // click | input | swipe | wait | back | home | ask_user | done | ...
+  status    String   @default("done") // pending | running | done | failed | unknown | skipped
+  detail    Json?    @map("detail") // 动作参数/结果
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([runId])
+  @@index([taskId, stepIndex])
+  @@map("executor_steps")
+}

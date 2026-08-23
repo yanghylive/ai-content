@@ -108,7 +108,7 @@ export default function MaiUiWorkbenchPage() {
     } catch (e) {
       pushLog(`⚠️ 任务创建失败（继续直接执行）：${e instanceof Error ? e.message : String(e)}`);
     }
-    const result = executeActions(mapped as MaiUiAction[]);
+    const result = executeActions(mapped as MaiUiAction[], taskId);
     // P1 证据链：执行完成后截屏存证（审计留痕，2026-08-22）
     if (taskId && result.ok) {
       try {
