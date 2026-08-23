@@ -12,7 +12,7 @@
   },
   "backend": {
     "type": "bundle",
-    "entry": "../backend/dist-bundle/index.js"
+    "entry": "../backend/dist-bundle-sqlite/index.js"
   },
   "sidecars": [],
   "build": {

@@ -180,7 +180,8 @@ export class AiClientService {
     safeBaseUrl = safeBaseUrl.replace(/\/$/, '');
 
     // 如果没有自带 /v1 且没有说明具体版本路径（通常用于判断那些忘记写 v1 的），由于无法 100% 确定，这里只把明确错误的后缀移除，尽量相信用户的输入
-    // 官方的标准是 baseURL 指向到 API 版本这一级，比如 https://api.openai.com/v1
+    // OpenAI 兼容协议的约定是 baseURL 指到 API 版本这一级（如 .../api/v1）。
+    // 2026-08-23 Stage 1D：注释不再举第三方直连域名为例，生产只走 KAYPAL 网关。
 
     const client = new OpenAI({
       apiKey: platform.apiKey,

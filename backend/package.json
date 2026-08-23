@@ -43,7 +43,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "verify:clean-replace": "node scripts/verify-clean-replace.mjs"
+    "verify:clean-replace": "node scripts/verify-clean-replace.mjs",
+    "check:no-direct-provider": "node scripts/check-no-direct-provider.mjs"
   },
   "dependencies": {
     "@effing/ffmpeg": "^0.39.0",

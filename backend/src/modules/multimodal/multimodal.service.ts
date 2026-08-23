@@ -151,9 +151,9 @@ export class MultimodalService {
   }
 
   /** Qwen-Image 生图（提示词 → 图 → 素材库）：
-   *  2026-08-12 起支持双通道——配置 DASHSCOPE_API_KEY（阿里百炼）时优先直连
-   *  百炼 multimodal-generation（qwen-image-3.0-pro 实测可用，kaypal 网关图生图权限未开通）；
-   *  未配置时回退 kaypal 云端网关（积分模式）。
+   *  强制走 KAYPAL 云端网关（用户熵积分计费）。
+   *  2026-08-23 Stage 1D：删除历史「百炼直连双通道」注释——该分支已于 2026-08-22
+   *  按大王指示移除，任何第三方直连都会绕过计费，不允许存在（含文档示例）。
    */
   async generateImage(
     authUser: AuthenticatedUser,
@@ -290,8 +290,8 @@ export class MultimodalService {
   }
 
   /** 万相 Wan 文生视频（提示词 → 视频入素材库）：
-   *  配置 DASHSCOPE_API_KEY 时直连百炼 video-synthesis（异步 submit + 轮询）；
-   *  未配置时走 kaypal 网关（回退，可能 Unauthorized）。
+   *  强制走 KAYPAL 网关（异步 submit + 轮询）。
+   *  2026-08-23 Stage 1D：删除历史「百炼直连」注释，直连分支已移除（绕过计费）。
    */
   async generateVideo(
     authUser: AuthenticatedUser,
