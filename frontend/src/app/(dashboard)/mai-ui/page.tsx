@@ -125,12 +125,15 @@ export default function MaiUiWorkbenchPage() {
         /* 存证失败不阻塞 */
       }
     }
-    // 回传执行结果
+    // 回传执行结果（ASK_USER 暂停不标终态，保持 executing 等 resume 后定论）
     if (taskId) {
       try {
-        await reportTaskStatus(taskId, result.ok
-          ? { status: "done", result: { message: result.message } }
-          : { status: "failed", error: result.message });
+        const isAskUser = result.message.startsWith("ASK_USER:");
+        if (!isAskUser) {
+          await reportTaskStatus(taskId, result.ok
+            ? { status: "done", result: { message: result.message } }
+            : { status: "failed", error: result.message });
+        }
       } catch { /* 回传失败不阻塞 */ }
     }
     if (result.ok) {
