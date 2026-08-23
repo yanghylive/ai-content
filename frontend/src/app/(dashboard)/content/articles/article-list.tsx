@@ -122,7 +122,7 @@ export function ArticleList({
         });
       }
     },
-    [fetchArticles],
+    [fetchArticles, confirm],
   );
 
   useEffect(() => {

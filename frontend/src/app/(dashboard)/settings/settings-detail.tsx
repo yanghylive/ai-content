@@ -1,5 +1,6 @@
 "use client";
 
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -282,27 +283,17 @@ export function SettingsDetail() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="kaypal-v3-panel p-6">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            aria-label="返回"
-            title="返回"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
-              设置
-            </h1>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              账号、通知、数据，都在这一个页面管好
-            </p>
-          </div>
+      <div className="kx-page-head">
+        <div>
+          <V2BackButton />
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
+            设置
+          </h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            账号、通知、数据，都在这一个页面管好
+          </p>
         </div>
-      </section>
+      </div>
 
       {message && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4">

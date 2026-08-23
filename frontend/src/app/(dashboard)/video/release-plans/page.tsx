@@ -134,7 +134,7 @@ export default function ReleasePlansPage() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 p-6">
       <header>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>视频发布计划</h2>
+        <div className="kx-page-head"><div><h1 className="kx-greet text-[var(--kaypal-v3-ink)]">视频发布计划</h1><p className="kx-greet-sub text-[var(--kaypal-v3-muted)]">定时发布任务与计划管理</p></div></div>
         <p style={{ fontSize: 13, opacity: 0.7, marginTop: 2 }}>
           定时发布的视频任务列表（开启定时发布的发布任务会在这里显示）
         </p>

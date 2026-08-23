@@ -277,6 +277,20 @@ html[data-theme="dark"] {
 .kx-palette-foot { border-top: 1px solid var(--kx-border); padding: 10px 16px; display: flex; gap: 16px; font-size: 11.5px; color: var(--kx-muted); }
 .kx-palette-empty { padding: 30px; text-align: center; color: var(--kx-muted); font-size: 13.5px; }
 
+/* ---------- 统一页头（2026-08-23 全站页头规范）----------
+   唯一形态：无卡片、标题独立大字（h1 kx-greet 26/800）+ 副标题 + 右侧操作区。
+   禁止页头嵌卡/小字标题/div 伪标题。 */
+.kx-page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 6px 0 10px;
+}
+.kx-page-head .kx-greet { margin: 0; }
+.kx-page-head .kx-greet-sub { margin: 4px 0 0; }
+
 /* ---------- 统一页框（所有功能页与场景页同一套规格） ---------- */
 /* 标准档：与 .kx-view 完全一致 */
 .kx-legacy-wrap { padding: 14px var(--page-gutter) 40px; max-width: 880px; margin: 0 auto; }

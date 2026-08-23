@@ -67,7 +67,9 @@ const TONE_STYLES: Record<
 export function WorkbenchCenter({
   title,
   subtitle,
-  icon: Icon,
+  /* icon prop 保留兼容既有调用方（页头统一无卡后不再渲染 icon tile） */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  icon: _icon,
   stats = [],
   statsNote,
   primaryAction,
@@ -247,67 +249,61 @@ export function WorkbenchCenter({
   return (
     <div className="kx-view kaypal-v2-engine flex flex-col gap-6">
       {backHref ? <V2BackButton to={backHref} /> : null}
-      {/* 顶部：标题 + 单一主行动 */}
-      <section className="kaypal-v3-panel p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="kaypal-v3-icon-tile h-12 w-12">
-              <Icon className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
-                {title}
-              </h1>
-              <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-                {subtitle}
-              </p>
-            </div>
-          </div>
-          {primaryAction &&
-            (primaryAction.href ? (
-              <Link
-                href={primaryAction.href}
-                className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)]"
-              >
-                {primaryAction.label}
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-            ) : (
-              <button
-                type="button"
-                disabled={primaryAction.loading}
-                onClick={primaryAction.onClick}
-                className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:opacity-60"
-              >
-                {primaryAction.label}
-              </button>
-            ))}
+      {/* 顶部：统一页头（无卡大字——2026-08-23 全站页头规范：标题独立、
+          h1 kx-greet 26/800 + 副标题，磨砂卡留给内容区；主 CTA 右置金渐变） */}
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
+            {title}
+          </h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            {subtitle}
+          </p>
         </div>
-
-        {/* 统计卡片 */}
-        {stats.length > 0 && (
-          <div className="mt-6">
-            {statsNote && (
-              <p className="mb-2 text-right text-xs text-[var(--kaypal-v3-muted)]">
-                {statsNote}
-              </p>
-            )}
-            <div
-              className={`grid gap-4 ${
-                stats.length === 2
-                  ? "grid-cols-2"
-                  : stats.length === 3
-                    ? "grid-cols-3"
-                    : "grid-cols-2 lg:grid-cols-4"
-              }`}
+        {primaryAction &&
+          (primaryAction.href ? (
+            <Link
+              href={primaryAction.href}
+              className="kx-btn-primary inline-flex items-center gap-2 px-6 py-3 text-base font-semibold"
             >
-              {stats.map((stat) => {
+              {primaryAction.label}
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled={primaryAction.loading}
+              onClick={primaryAction.onClick}
+              className="kx-btn-primary inline-flex items-center gap-2 px-6 py-3 text-base font-semibold disabled:opacity-60"
+            >
+              {primaryAction.label}
+            </button>
+          ))}
+      </div>
+
+      {/* 统计卡片（独立区块，磨砂玻璃卡） */}
+      {stats.length > 0 && (
+        <div>
+          {statsNote && (
+            <p className="mb-2 text-right text-xs text-[var(--kaypal-v3-muted)]">
+              {statsNote}
+            </p>
+          )}
+          <div
+            className={`grid gap-[var(--space-card)] ${
+              stats.length === 2
+                ? "grid-cols-2"
+                : stats.length === 3
+                  ? "grid-cols-3"
+                  : "grid-cols-2 lg:grid-cols-4"
+            }`}
+          >
+            {stats.map((stat) => {
               const tone = TONE_STYLES[stat.tone || "default"];
               return (
                 <div
                   key={stat.label}
-                  className="rounded-[var(--kaypal-v3-radius)] border p-5"
-                  style={{ borderColor: tone.border, background: tone.bg }}
+                  className="kaypal-v3-panel p-5"
                 >
                   <p className="text-sm text-[var(--kaypal-v3-muted)]">
                     {stat.label}
@@ -321,10 +317,9 @@ export function WorkbenchCenter({
                 </div>
               );
             })}
-            </div>
           </div>
-        )}
-      </section>
+        </div>
+      )}
 
       {error && (
         <p className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4 text-sm text-[var(--kaypal-v3-danger)]">

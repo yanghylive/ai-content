@@ -233,19 +233,18 @@ export function PublishCenter() {
 
   return (
     <div className="kx-view kaypal-v2-engine flex flex-col gap-6">
-      {/* 顶部统计 */}
-      <section className="kaypal-v3-panel p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
-              发布中心
-            </h1>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              {loading
-                ? "正在加载..."
-                : `你有 ${stats.pending} 个内容计划中，到点自动发布`}
-            </p>
-          </div>
+      {/* 顶部：统一页头（无卡大字） */}
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
+            发布中心
+          </h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            {loading
+              ? "正在加载..."
+              : `你有 ${stats.pending} 个内容计划中，到点自动发布`}
+          </p>
+        </div>
           {/* 单一主行动 */}
           <Link
             href="/distribution/articles"
@@ -254,20 +253,21 @@ export function PublishCenter() {
             <Plus className="h-5 w-5" />
             新建发布
           </Link>
+      </div>
+
+      {notice && (
+        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-4 py-2.5 text-sm text-[var(--kaypal-v3-success-ink)]">
+          {notice}
         </div>
+      )}
+      {error && (
+        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-4 py-2.5 text-sm text-[var(--kaypal-v3-danger-ink)]">
+          {error}
+        </div>
+      )}
 
-        {notice && (
-          <div className="mt-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-4 py-2.5 text-sm text-[var(--kaypal-v3-success-ink)]">
-            {notice}
-          </div>
-        )}
-        {error && (
-          <div className="mt-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-4 py-2.5 text-sm text-[var(--kaypal-v3-danger-ink)]">
-            {error}
-          </div>
-        )}
-
-        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+      {/* 统计五卡（独立区块，磨砂玻璃卡） */}
+      <div className="grid grid-cols-2 gap-[var(--space-card)] lg:grid-cols-5">
           <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -323,8 +323,7 @@ export function PublishCenter() {
               <XCircle className="h-6 w-6 text-[var(--kaypal-v3-danger)]" />
             </div>
           </div>
-        </div>
-      </section>
+      </div>
 
       {/* 四视图 Tab（报告 4.1：看板 + 失败队列 + 日历 + 账号健康） */}
       <div className="flex items-center gap-1 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-1">
