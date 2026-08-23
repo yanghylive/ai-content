@@ -1,6 +1,18 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { createHash, randomBytes } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+
+/** 已领取且未终态的任务状态（心跳超时 → 标 unknown 人工回读，PRD §7） */
+const ACTIVE_TASK_STATUSES = [
+  'leasing',
+  'preparing',
+  'observing',
+  'awaiting_approval',
+  'executing',
+  'verifying',
+  'crm_sync',
+] as const;
 
 export interface DeviceInfo {
   id: string;
@@ -26,6 +38,8 @@ export class DeviceRegistryService {
   private readonly heartbeatTimeoutMs = 5 * 60 * 1000; // 5 分钟无心跳视为离线
   private readonly leaseTtlMs = 10 * 60 * 1000; // 租约 TTL（与 task-dispatch 一致，心跳续租）
   private readonly recoveryProtectionMs = 5 * 60 * 1000; // 恢复保护期（心跳超时后冻结外发 5 分钟，防重复外发）
+  /** 进程内防重入：定时扫描与 list() 触发并发时避免重复处理 */
+  private timeoutCheckRunning = false;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -134,26 +148,86 @@ export class DeviceRegistryService {
         row.lastHeartbeatAt &&
         now - row.lastHeartbeatAt.getTime() < this.heartbeatTimeoutMs;
       if (!online && row.status === 'online') {
-        await this.prisma.mobileDevice.update({
-          where: { id: row.id },
-          data: { status: 'offline' },
-        });
-        // 心跳超时：撤销该设备活跃租约 + 冻结外发保护期（PRD §7：防旧设备网络恢复后重复外发）
-        await this.prisma.executorLease.updateMany({
-          where: { deviceId: row.id, status: 'active' },
-          data: {
-            status: 'released',
-            frozenUntil: new Date(now + this.recoveryProtectionMs),
-            updatedAt: new Date(),
-          },
-        });
-        this.logger.warn(
-          `设备心跳超时：${row.id} 已离线，其活跃租约已撤销（冻结外发 ${this.recoveryProtectionMs / 60000} 分钟）`,
-        );
+        await this.markOffline(row.id, now);
       }
       out.push(this.toInfo({ ...row, status: online ? 'online' : 'offline' }));
     }
     return out;
+  }
+
+  /**
+   * 定时扫描心跳超时（每分钟）：把「冻结外发」从惰性（依赖前端打开设备中心）
+   * 改为主动兜底——设备失联后无需用户访问设备中心也能及时撤销租约 + 冻结外发。
+   */
+  @Cron('0 * * * * *')
+  async scheduledTimeoutCheck(): Promise<void> {
+    if (this.timeoutCheckRunning) return;
+    this.timeoutCheckRunning = true;
+    try {
+      await this.detectTimeouts();
+    } catch (error) {
+      this.logger.warn(`心跳超时扫描失败：${(error as Error).message}`);
+    } finally {
+      this.timeoutCheckRunning = false;
+    }
+  }
+
+  /** 扫描所有在线设备，超时者标记离线并处理租约/任务 */
+  private async detectTimeouts(): Promise<void> {
+    const now = Date.now();
+    const rows = await this.prisma.mobileDevice.findMany({
+      where: { status: 'online' },
+    });
+    for (const row of rows) {
+      const online =
+        row.lastHeartbeatAt &&
+        now - row.lastHeartbeatAt.getTime() < this.heartbeatTimeoutMs;
+      if (!online) {
+        await this.markOffline(row.id, now);
+      }
+    }
+  }
+
+  /**
+   * 心跳超时处理（幂等）：标记离线 + 撤销活跃租约 + 冻结外发保护期 +
+   * 非终态任务标 unknown（结果不确定，需人工回读，防僵尸任务 + 防重复外发）。
+   */
+  private async markOffline(deviceId: string, now: number): Promise<void> {
+    await this.prisma.mobileDevice.update({
+      where: { id: deviceId },
+      data: { status: 'offline' },
+    });
+    // 撤销该设备活跃租约 + 冻结外发保护期（PRD §7：防旧设备网络恢复后重复外发）
+    await this.prisma.executorLease.updateMany({
+      where: { deviceId, status: 'active' },
+      data: {
+        status: 'released',
+        frozenUntil: new Date(now + this.recoveryProtectionMs),
+        updatedAt: new Date(),
+      },
+    });
+    // ① 修复：该设备非终态任务标 unknown（此前只释放租约，任务卡 leasing/executing
+    // 成僵尸，设备恢复后 claimNext 只认 queued → 永久卡死）
+    const activeTasks = await this.prisma.executorTask.findMany({
+      where: { deviceId, status: { in: [...ACTIVE_TASK_STATUSES] } },
+    });
+    if (activeTasks.length > 0) {
+      await this.prisma.executorTask.updateMany({
+        where: { deviceId, status: { in: [...ACTIVE_TASK_STATUSES] } },
+        data: {
+          status: 'unknown',
+          result: {
+            error: '设备心跳超时，执行结果不确定，请人工回读确认',
+            unknown: true,
+            heartbeatTimeoutAt: new Date().toISOString(),
+          },
+          updatedAt: new Date(),
+        },
+      });
+    }
+    this.logger.warn(
+      `设备心跳超时：${deviceId} 已离线，活跃租约撤销（冻结外发 ${this.recoveryProtectionMs / 60000} 分钟），非终态任务 ${activeTasks.length} 个标 unknown`,
+    );
   }
 
   /** 注销设备 */
