@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import crypto from 'crypto';
 import { createAgentGateway } from './core/factory';
 import { EventBus } from './core/event-bus';
 import { TenantContext, ToolRequest } from './core/types';
 import { leadDiscover, ToolExecution } from './adapters/business-tools';
 import { deriveNamespace } from './adapters/kaypal-memory-mock';
+import { AuthService } from './core/auth';
 import { makeError } from './contracts/error-codes';
 
 const ctxA: TenantContext = { tenantId: 'tenant_1', userId: 'user_1', agentId: 'agent_default' };
@@ -170,6 +172,7 @@ describe('安全加固（P0/P1 复查项）', () => {
   });
 
   it('Memory outbox 自动重试：远程恢复后 worker 自动 flush 到 done', async () => {
+    g.memory.stopOutboxWorker(); // 停掉 factory 自动起的 worker，测试自控 fake timer
     jest.useFakeTimers();
     g.memoryRemote.setDegraded(true);
     await g.gateway.memoryAdd(ctxA, 'user_preference', '待同步记忆');
@@ -185,6 +188,85 @@ describe('安全加固（P0/P1 复查项）', () => {
     expect(after.outbox.status).toBe('done');
     stop();
     jest.useRealTimers();
+  });
+
+  it('factory 默认启动 outbox worker；可显式关闭（P1-3）', () => {
+    expect(g.memory.isOutboxWorkerRunning()).toBe(true);
+    const g2 = createAgentGateway({ startOutboxWorker: false });
+    expect(g2.memory.isOutboxWorkerRunning()).toBe(false);
+  });
+
+  it('删除记忆后 pending outbox 被作废，worker 不再重建（P1-4）', async () => {
+    g.memory.stopOutboxWorker();
+    g.memoryRemote.setDegraded(true);
+    const { outboxId } = await g.gateway.memoryAdd(ctxA, 'user_preference', '将被删除');
+    const all = await g.gateway.memorySearch(ctxA, 'user_preference', '');
+    const item = all.items.find((i) => i.content.includes('将被删除'))!;
+    g.memoryRemote.setDegraded(false);
+    const del = await g.gateway.memoryDelete(ctxA, item.id);
+    expect(del.deleted).toBe(true);
+    const entry = g.memory.pendingOutbox().find((e) => e.outbox.id === outboxId);
+    expect(entry?.outbox.status).toBe('done'); // 已作废，禁止重放
+    const ns = deriveNamespace(ctxA, 'user_preference', 'confirmed_user_statement');
+    expect((await g.memoryRemote.search(ns, '将被删除')).length).toBe(0);
+  });
+
+  it('删除使用精确 scope（itemIndex），不固定 user_preference（P1-5）', async () => {
+    await g.gateway.memoryAdd(ctxA, 'conversation', '对话记忆X');
+    const all = await g.gateway.memorySearch(ctxA, 'conversation', '');
+    const item = all.items.find((i) => i.content.includes('对话记忆X'))!;
+    const del = await g.gateway.memoryDelete(ctxA, item.id); // 不传 scope，靠 itemIndex 定位
+    expect(del.deleted).toBe(true);
+    const ns = deriveNamespace(ctxA, 'conversation', 'confirmed_user_statement');
+    expect((await g.memoryRemote.search(ns, '对话记忆X')).length).toBe(0);
+  });
+
+  it('token 缺 exp（签名正确）→ AUTH_INVALID（P1-6）', () => {
+    const auth = new AuthService('secret');
+    const body = Buffer.from(JSON.stringify({ tenantId: 't1', userId: 'u1', agentId: 'a1' })).toString('base64url'); // 无 exp
+    const sig = crypto.createHmac('sha256', 'secret').update(body).digest('base64url');
+    let code = '';
+    try {
+      auth.verify(`${body}.${sig}`);
+    } catch (e) {
+      code = (e as { code: string }).code;
+    }
+    expect(code).toBe('AUTH_INVALID');
+  });
+
+  it('resumeSession 实时更新 lastEventId/lastSequence（P2-8）', async () => {
+    const session = await g.gateway.createSession(ctxA);
+    const task = g.gateway.createTask(ctxA, session.id, 'lead', {});
+    await g.gateway.executeTool(ctxA, req(g, session.id, task.id, 'lead_discover', 'idem_prog', { limit: 1 }));
+    const r = g.gateway.resumeSession(session.id, ctxA);
+    expect(r.session.lastEventId).not.toBe('');
+    expect(r.session.lastSequence).toBeGreaterThan(0);
+  });
+
+  it('过期会话审批/暂停/恢复/取消 → SESSION_EXPIRED（P1-1）', async () => {
+    const session = await g.gateway.createSession(ctxA);
+    const task = g.gateway.createTask(ctxA, session.id, 'publish', {});
+    const out = await g.gateway.executeTool(ctxA, req(g, session.id, task.id, 'publish_execute', 'idem_p1ctrl', { platform: 'douyin' }));
+    if (out.kind !== 'awaiting_approval') throw new Error('expect awaiting');
+    const s = g.gateway.getSession(session.id)!;
+    s.expiresAt = new Date(Date.now() - 1000).toISOString();
+    s.status = 'expired';
+
+    await expect(
+      g.gateway.approveTask(ctxA, task.id, out.approvalId, { toolName: 'publish_execute', payload: { platform: 'douyin' } }),
+    ).rejects.toMatchObject({ code: 'SESSION_EXPIRED' });
+    await expect(g.gateway.resumeTask(ctxA, task.id)).rejects.toMatchObject({ code: 'SESSION_EXPIRED' });
+
+    const codeOf = (fn: () => unknown): string => {
+      try {
+        fn();
+      } catch (e) {
+        return (e as { code: string }).code;
+      }
+      return 'NO_THROW';
+    };
+    expect(codeOf(() => g.gateway.pauseTask(ctxA, task.id))).toBe('SESSION_EXPIRED');
+    expect(codeOf(() => g.gateway.cancelTask(ctxA, task.id))).toBe('SESSION_EXPIRED');
   });
 
   it('能力检查 fail-closed：拼错能力名 → 不满足', () => {

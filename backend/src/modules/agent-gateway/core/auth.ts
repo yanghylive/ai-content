@@ -41,7 +41,11 @@ export class AuthService {
     } catch {
       throw makeError('AUTH_INVALID', { details: { reason: '载荷解析失败' } });
     }
-    if (typeof payload.exp === 'number' && payload.exp <= Date.now()) {
+    // P1-6：exp 必须存在且未过期——签名正确但无过期时间的令牌一律拒绝
+    if (typeof payload.exp !== 'number') {
+      throw makeError('AUTH_INVALID', { details: { reason: '令牌缺少过期时间(exp)' } });
+    }
+    if (payload.exp <= Date.now()) {
       throw makeError('SESSION_EXPIRED', { details: { reason: '令牌已过期' } });
     }
     const ctx: TenantContext = {

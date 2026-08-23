@@ -24,6 +24,8 @@ interface OutboxEntry {
 export class MemoryOrchestrator {
   private local = new Map<string, MemoryItem[]>();
   private outboxItems = new Map<string, OutboxEntry>();
+  /** itemId → 精确 namespace（P1-5：删除时无需猜测 scope） */
+  private itemIndex = new Map<string, MemoryNamespace>();
   private readonly tokenBudget: number;
   private readonly maxAttempts = 5;
 
@@ -72,6 +74,7 @@ export class MemoryOrchestrator {
     const arr = this.local.get(key) ?? [];
     arr.push(localItem);
     this.local.set(key, arr);
+    this.itemIndex.set(localItem.id, ns);
 
     const memoryEventId = genId('mem');
     const outbox: MemoryOutbox = {
@@ -120,7 +123,7 @@ export class MemoryOrchestrator {
     return n;
   }
 
-  async delete(ctx: TenantContext, id: string): Promise<{ deleted: boolean }> {
+  async delete(ctx: TenantContext, id: string, scope?: string): Promise<{ deleted: boolean }> {
     // 只在本租户/用户命名空间前缀下查找，杜绝跨租户删除
     const prefix = `${ctx.tenantId}/${ctx.userId}/${ctx.agentId}/`;
     let localRemoved = false;
@@ -138,11 +141,13 @@ export class MemoryOrchestrator {
       }
     }
 
-    // 远程：仅在派生 namespace 内删除；找不到或越界一律返回 false
-    if (!itemNs) {
-      // 本地都没有，远程大概率也没有；仍以防万一按派生 ns 试删（不会越界）
-      itemNs = deriveNamespace(ctx, 'user_preference', 'delete');
+    // P1-5：精确 namespace 优先（本地命中 → 索引（必须租户归属匹配）→ 显式 scope → 兜底）
+    const idxNs = this.itemIndex.get(id);
+    if (idxNs && idxNs.tenantId === ctx.tenantId && idxNs.userId === ctx.userId && idxNs.agentId === ctx.agentId) {
+      itemNs = idxNs;
     }
+    itemNs = itemNs ?? (scope ? deriveNamespace(ctx, scope, 'delete') : deriveNamespace(ctx, 'user_preference', 'delete'));
+
     let remoteRemoved = false;
     try {
       remoteRemoved = await this.remote.delete(itemNs, id);
@@ -152,9 +157,22 @@ export class MemoryOrchestrator {
     }
 
     // 准确标志：本地或远程任一实际删除成功即 deleted=true（P1-6）
-    // （远程故障抛错 → 不宣称成功；两端都没有 → false）
     const deleted = localRemoved || remoteRemoved;
+    if (deleted) {
+      this.itemIndex.delete(id);
+      // P1-4：作废该 item 未发送成功的 outbox，防止 worker 恢复后把已删除内容写回远端
+      this.voidPendingOutboxForItem(id);
+    }
     return { deleted };
+  }
+
+  /** P1-4：删除成功后作废匹配 itemId 的 pending/dead outbox（置 done，禁止重放） */
+  private voidPendingOutboxForItem(itemId: string): void {
+    for (const entry of this.outboxItems.values()) {
+      if (entry.itemId === itemId && entry.outbox.status !== 'done') {
+        entry.outbox.status = 'done';
+      }
+    }
   }
 
   // ---------------------------------------------------------------- outbox 自动重试
@@ -177,6 +195,10 @@ export class MemoryOrchestrator {
       clearInterval(this.workerTimer);
       this.workerTimer = undefined;
     }
+  }
+
+  isOutboxWorkerRunning(): boolean {
+    return this.workerTimer !== undefined;
   }
 
   private async scanOutbox(): Promise<void> {
