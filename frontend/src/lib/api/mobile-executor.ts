@@ -105,6 +105,21 @@ export async function listActiveLeases(): Promise<ExecutorLeaseView[]> {
   return api.get<ExecutorLeaseView[]>("/mobile-executor/leases");
 }
 
+/** 执行会话（Run）+ 步骤（P1-12 断点） */
+export interface ExecutorRunView {
+  id: string;
+  taskId: string;
+  deviceId: string;
+  status: string;
+  checkpoint: string | null;
+  steps: Array<{ stepIndex: number; type: string; status: string; createdAt: string }>;
+}
+
+/** 查询任务执行会话断点（P2-26 检查点 UI） */
+export async function getTaskRun(taskId: string): Promise<ExecutorRunView | null> {
+  return api.get<ExecutorRunView | null>(`/mobile-executor/tasks/${taskId}/run`);
+}
+
 /** 创建一次性审批（MAI-UI 外发动作：短时 5min + inputHash 绑定） */
 export async function createApproval(input: {
   actionType: string;
