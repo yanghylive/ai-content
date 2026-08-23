@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Mac 包（.app）本机完整用户侧功能测试 v1.1.79
+ * Mac 包（.app）本机完整用户侧功能测试（版本号动态读取 desktop/package.json）
  * 针对 .app 内置 frontend（3010）+ 内置 backend（3011）真实产物
  */
 import { createRequire } from "node:module";
@@ -8,8 +8,14 @@ import fs from "node:fs";
 const require = createRequire("/Users/yanghy/Documents/New project/ai-content/backend/package.json");
 const { chromium } = require("playwright");
 
-const BASE = "http://127.0.0.1:3010";
+// BASE 可用 MAC_TEST_BASE 覆盖（本机 3010 常被外部注入 API_BASE=3012 污染，
+// 验收时用干净 3015：MAC_TEST_BASE=http://127.0.0.1:3015）
+const BASE = process.env.MAC_TEST_BASE || "http://127.0.0.1:3010";
 const TOKEN = fs.readFileSync("/tmp/electron-test-token.txt", "utf8").trim();
+// P5 复查（2026-08-23）：版本号动态读取，不再硬编码旧版 v1.1.86
+const EXPECTED_VERSION = JSON.parse(
+  fs.readFileSync("/Users/yanghy/Documents/New project/ai-content/desktop/package.json", "utf8"),
+).version;
 
 async function run() {
   const browser = await chromium.launch({ headless: true });
@@ -66,10 +72,11 @@ async function run() {
     check(`${name}页`, ok, page.url().split("3010")[1]);
   }
 
-  // 7. 版本号（v1.1.86）
+  // 7. 版本号（动态：EXPECTED_VERSION）
   await page.goto(`${BASE}/release-notes.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
   await page.waitForTimeout(2200);
-  check("更新说明 v1.1.86", (await page.evaluate(() => document.body.innerText.match(/v1\.1\.86/)?.[0] || "")) === "v1.1.86");
+  const verText = await page.evaluate(() => document.body.innerText.match(/v\d+\.\d+\.\d+/)?.[0] || "");
+  check(`更新说明 v${EXPECTED_VERSION}`, verText === `v${EXPECTED_VERSION}`, verText || "未找到");
 
   // 8. 登录页页脚（版本号已移除，改为动态读 electron 版本，只验证页脚文案；
   //    需未登录 context 访问，登录态访问会被 next 重定向到工作台）
