@@ -1,13 +1,33 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 import { createAgentGateway } from './core/factory';
+import { PrismaIdempotencyStore } from './prisma-store/prisma-idempotency.store';
+import { PrismaApprovalStore } from './prisma-store/prisma-approval.store';
+import { PrismaUsageSink } from './prisma-store/prisma-usage.sink';
 
 /**
- * Agent Gateway 服务：单例持有核心引擎（内存态）实例。
- * 后续用 PrismaService 替换内存存储（见 docs/contracts Prisma 草案）时只改这里。
+ * Agent Gateway 服务：单例持有核心引擎实例。
+ * 持久化开关：env `AGENT_GATEWAY_PERSISTENCE=prisma` 时，幂等/审批走 DB
+ * （agent_gateway_tool_calls / agent_gateway_approvals），usage 落库
+ * （agent_gateway_usage_events，计费对账副本）；默认内存态（与原型一致）。
+ * 引擎其余存储（sessions/tasks/events/artifacts/evidence/outbox）仍内存态，逐步替换。
  */
 @Injectable()
 export class AgentGatewayService implements OnModuleDestroy {
-  readonly engine = createAgentGateway();
+  readonly engine: ReturnType<typeof createAgentGateway>;
+  private readonly persist: boolean;
+  private readonly usageSink: PrismaUsageSink;
+
+  constructor(private readonly prisma: PrismaService) {
+    this.persist = process.env.AGENT_GATEWAY_PERSISTENCE === 'prisma';
+    this.usageSink = new PrismaUsageSink(this.prisma);
+    this.engine = createAgentGateway({
+      ...(this.persist
+        ? { idempotency: new PrismaIdempotencyStore(this.prisma), approvals: new PrismaApprovalStore(this.prisma) }
+        : {}),
+      usageSink: this.persist ? (ev) => this.usageSink.record(ev) : undefined,
+    });
+  }
 
   get gateway() {
     return this.engine.gateway;

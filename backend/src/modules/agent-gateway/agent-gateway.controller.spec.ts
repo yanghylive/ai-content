@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AgentGatewayModule } from './agent-gateway.module';
+import { PrismaModule } from '../../prisma/prisma.module';
 import { AllExceptionsFilter } from '../../common/filters/http-exception.filter';
 import { AuthService } from './core/auth';
 
@@ -11,7 +12,7 @@ describe('AgentGatewayController（Nest 接线，首批冻结接口）', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AgentGatewayModule],
+      imports: [AgentGatewayModule, PrismaModule],
     })
       .overrideProvider(AuthService)
       .useValue(new AuthService('test-secret'))

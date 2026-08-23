@@ -5,6 +5,7 @@ import { ApprovalService } from './approval';
 import { EventBus } from './event-bus';
 import { MemoryOrchestrator } from './memory-orchestrator';
 import { PayloadValidator } from './payload-validator';
+import { UsageEvent } from './types';
 import { MockOctopAdapter } from '../adapters/octop-mock';
 import { MockKaypalMemoryAdapter } from '../adapters/kaypal-memory-mock';
 import { buildBusinessTools } from '../adapters/business-tools';
@@ -18,12 +19,20 @@ import { STANDARD_TOOL_SPECS } from './tool-specs';
  * P1-3：默认启动 MemoryOutbox 后台重试 worker（可传 opts.startOutboxWorker=false 关闭，
  * 测试里需要自行控制 timer 时使用）。
  */
-export function createAgentGateway(opts: { startOutboxWorker?: boolean } = {}) {
+export function createAgentGateway(opts: {
+  startOutboxWorker?: boolean;
+  /** 可注入 DB 幂等仓储（同 IdempotencyStore 语义，sync/async 均兼容；真实仓库用 agent_gateway_tool_calls） */
+  idempotency?: { claim: (...a: unknown[]) => unknown; markDone: (...a: unknown[]) => unknown; release?: (...a: unknown[]) => unknown; get?: (...a: unknown[]) => unknown };
+  /** 可注入 DB 审批仓储（同 ApprovalService 语义；真实仓库用 agent_gateway_approvals） */
+  approvals?: { create: (...a: unknown[]) => unknown; get?: (...a: unknown[]) => unknown; validate: (...a: unknown[]) => unknown; consume: (...a: unknown[]) => unknown; reject?: (...a: unknown[]) => unknown };
+  /** usage 持久化 sink（真实仓库落 agent_gateway_usage_events） */
+  usageSink?: (ev: UsageEvent) => void | Promise<void>;
+} = {}) {
   const registry = new ToolRegistry();
   registry.registerMany(STANDARD_TOOL_SPECS);
 
-  const idempotency = new IdempotencyStore();
-  const approvals = new ApprovalService();
+  const idempotency = (opts.idempotency ?? new IdempotencyStore()) as IdempotencyStore;
+  const approvals = (opts.approvals ?? new ApprovalService()) as ApprovalService;
   const bus = new EventBus();
   const validator = new PayloadValidator();
   const octop = new MockOctopAdapter(registry.list().map((s) => s.name));
@@ -37,7 +46,7 @@ export function createAgentGateway(opts: { startOutboxWorker?: boolean } = {}) {
     stopOutboxWorker = memory.startOutboxWorker(2000);
   }
 
-  const gateway = new AgentGateway({ registry, idempotency, approvals, bus, octop, memory, business, validator });
+  const gateway = new AgentGateway({ registry, idempotency, approvals, bus, octop, memory, business, validator, usageSink: opts.usageSink });
   for (const spec of STANDARD_TOOL_SPECS) gateway.registerToolSpec(spec);
 
   return { gateway, registry, idempotency, approvals, bus, octop, memory, memoryRemote, business, validator, stopOutboxWorker };

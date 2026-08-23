@@ -5,6 +5,9 @@ import { AgentMemoryController } from './agent-memory.controller';
 import { AgentGatewayService } from './agent-gateway.service';
 import { KaypalAuthGuard } from './kaypal-auth.guard';
 import { AgentGatewayExceptionFilter } from './agent-gateway.filter';
+import { PrismaIdempotencyStore } from './prisma-store/prisma-idempotency.store';
+import { PrismaApprovalStore } from './prisma-store/prisma-approval.store';
+import { PrismaUsageSink } from './prisma-store/prisma-usage.sink';
 import { AuthService } from './core/auth';
 
 /**
@@ -18,6 +21,9 @@ import { AuthService } from './core/auth';
     AgentGatewayService,
     KaypalAuthGuard,
     AgentGatewayExceptionFilter,
+    PrismaIdempotencyStore,
+    PrismaApprovalStore,
+    PrismaUsageSink,
     {
       provide: AuthService,
       inject: [ConfigService],
