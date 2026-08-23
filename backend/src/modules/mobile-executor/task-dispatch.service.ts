@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 export interface TaskView {
   id: string;
@@ -117,7 +118,7 @@ export class TaskDispatchService {
     }
   }
 
-  /** agent 领取待办任务（原子化：updateMany 条件更新，并发安全） */
+  /** agent 领取待办任务（原子化 + 事务：任务 claim 与租约建 在同一事务，PRD P1-17） */
   async claimNext(userId: string, deviceId: string): Promise<TaskView | null> {
     const candidate = await this.prisma.executorTask.findFirst({
       where: {
@@ -128,55 +129,64 @@ export class TaskDispatchService {
       orderBy: { createdAt: 'asc' },
     });
     if (!candidate) return null;
-    // 原子领取：仅当仍为 queued 时才更新（防止多设备并发重复领取同一任务）
-    const claimed = await this.prisma.executorTask.updateMany({
-      where: { id: candidate.id, status: 'queued' },
-      data: {
-        status: 'claimed',
-        deviceId,
-        attempts: { increment: 1 },
-        updatedAt: new Date(),
-      },
+    const row = await this.prisma.$transaction(async (tx) => {
+      // 原子领取：仅当仍为 queued 时才更新（防止多设备并发重复领取同一任务）
+      const claimed = await tx.executorTask.updateMany({
+        where: { id: candidate.id, status: 'queued' },
+        data: {
+          status: 'claimed',
+          deviceId,
+          attempts: { increment: 1 },
+          updatedAt: new Date(),
+        },
+      });
+      if (claimed.count === 0) return null;
+      const claimedRow = await tx.executorTask.findUnique({
+        where: { id: candidate.id },
+      });
+      if (!claimedRow) return null;
+      // P1 Lease：领取后为账号建租约（默认 10 分钟，agent 心跳续租；终态回传释放）
+      const leaseAccountId = this.extractAccountId(
+        (claimedRow.payload as Record<string, unknown>) ?? {},
+        claimedRow.type,
+      );
+      if (leaseAccountId) {
+        await this.acquireLeaseTx(
+          tx,
+          userId,
+          leaseAccountId,
+          deviceId,
+          claimedRow.id,
+        );
+      }
+      return claimedRow;
     });
-    if (claimed.count === 0) {
+    if (!row) {
       // 已被其他设备抢走，递归取下一个
       return this.claimNext(userId, deviceId);
-    }
-    const row = await this.prisma.executorTask.findUnique({
-      where: { id: candidate.id },
-    });
-    if (!row) return null;
-    // P1 Lease：领取后为账号建租约（默认 10 分钟，agent 心跳续租；终态回传释放）
-    const leaseAccountId = this.extractAccountId(
-      (row.payload as Record<string, unknown>) ?? {},
-      row.type,
-    );
-    if (leaseAccountId) {
-      await this.acquireLease(userId, leaseAccountId, deviceId, row.id);
     }
     this.logger.log(`任务被领取：${row.id} ← 设备 ${deviceId}`);
     return this.toView(row);
   }
 
-  /** 建/续租约（同账号同任务幂等） */
-  private async acquireLease(
+  /** 建/续租约（事务内；同账号同任务幂等） */
+  private async acquireLeaseTx(
+    tx: Prisma.TransactionClient,
     userId: string,
     accountId: string,
     deviceId: string,
     taskId: string,
   ): Promise<void> {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 分钟
-    const existing = await this.prisma.executorLease.findFirst({
-      where: { taskId },
-    });
+    const existing = await tx.executorLease.findFirst({ where: { taskId } });
     if (existing) {
-      await this.prisma.executorLease.update({
+      await tx.executorLease.update({
         where: { id: existing.id },
         data: { status: 'active', expiresAt, deviceId, updatedAt: new Date() },
       });
       return;
     }
-    await this.prisma.executorLease.create({
+    await tx.executorLease.create({
       data: {
         userId,
         accountId,
@@ -224,9 +234,9 @@ export class TaskDispatchService {
   /** 提取账号标识（publish 任务 payload.accountId；custom 无） */
   private extractAccountId(
     payload: Record<string, unknown>,
-    type: string,
+    _type: string,
   ): string {
-    if (type !== 'publish') return '';
+    // P1-16：custom（MAI-UI）任务也受账号租约保护——payload.accountId 存在即锁
     const v = payload['accountId'];
     return typeof v === 'string' ? v : typeof v === 'number' ? String(v) : '';
   }

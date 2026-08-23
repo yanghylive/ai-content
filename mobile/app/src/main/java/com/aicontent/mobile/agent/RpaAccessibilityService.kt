@@ -395,15 +395,16 @@ class RpaAccessibilityService : AccessibilityService() {
         }
         // 找发送按钮（中文优先，英文兜底）
         val send = findButton(root, "发送") ?: findButton(root, "Send")
-        if (send != null) {
-            val clickOk = send.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            return if (clickOk) {
-                RpaResult.success("已输入回复并点击发送")
-            } else {
-                RpaResult.success("已输入回复内容，但发送按钮点击失败，请人工发送")
-            }
+        if (send == null) {
+            // P0-6：未找到发送按钮 = 失败，不得报成功（假成功率=0）
+            return RpaResult.failure("已输入回复内容，但未找到发送按钮，未发送")
         }
-        return RpaResult.success("已输入回复内容（未找到发送按钮，请人工发送）")
+        val clickOk = send.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        if (!clickOk) {
+            // P0-6：点击失败 = 失败，不得报成功（否则错误释放租约）
+            return RpaResult.failure("已输入回复内容，但发送按钮点击失败，未发送")
+        }
+        return RpaResult.success("已输入回复并点击发送")
     }
 
     private fun findInput(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
