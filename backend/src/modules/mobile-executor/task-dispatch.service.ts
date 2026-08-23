@@ -196,16 +196,17 @@ export class TaskDispatchService {
 
   /** agent 领取待办任务（原子化 + 事务：任务 claim 与租约建 在同一事务，PRD P1-17） */
   async claimNext(userId: string, deviceId: string): Promise<TaskView | null> {
-    return this.claimNextExcluding(userId, deviceId, []);
+    return this.claimNextExcluding(userId, deviceId, [], 0);
   }
 
-  /** 领取待办（排除已跳过候选，供账号忙/冻结递归） */
+  /** 领取待办（排除已跳过候选 + 分页偏移，供账号忙/冻结递归 + 批量忙账号分页） */
   private async claimNextExcluding(
     userId: string,
     deviceId: string,
     excludeIds: string[],
+    skip: number,
   ): Promise<TaskView | null> {
-    // 取候选队列（最多 20 个），逐个跳过冻结期/执行中账号，避免卡死队列头
+    // 取候选队列（分页 20 个），逐个跳过冻结期/执行中账号，避免卡死队列头
     const candidates = await this.prisma.executorTask.findMany({
       where: {
         userId,
@@ -216,6 +217,7 @@ export class TaskDispatchService {
         ...(excludeIds.length ? { NOT: { id: { in: excludeIds } } } : {}),
       },
       orderBy: { createdAt: 'asc' },
+      skip,
       take: 20,
     });
     if (candidates.length === 0) return null;
@@ -250,7 +252,10 @@ export class TaskDispatchService {
       candidate = c;
       break;
     }
-    if (!candidate) return null;
+    if (!candidate) {
+      // 本批（20 个）全部忙/冻结，翻页取下一批，避免后面的空闲账号任务饿死
+      return this.claimNextExcluding(userId, deviceId, excludeIds, skip + 20);
+    }
     try {
       const row = await this.prisma.$transaction(async (tx) => {
         // 原子领取：仅当仍为 queued 时才更新（防止多设备并发重复领取同一任务）
@@ -306,15 +311,17 @@ export class TaskDispatchService {
         this.logger.log(
           `候选任务 ${candidate.id} 账号 ${e.accountId} 执行中，跳过取下一个`,
         );
-        return this.claimNextExcluding(userId, deviceId, [
-          ...excludeIds,
-          candidate.id,
-        ]);
+        return this.claimNextExcluding(
+          userId,
+          deviceId,
+          [...excludeIds, candidate.id],
+          skip,
+        );
       }
       throw e;
     }
     // 已被其他设备抢走，递归取下一个
-    return this.claimNextExcluding(userId, deviceId, excludeIds);
+    return this.claimNextExcluding(userId, deviceId, excludeIds, skip);
   }
 
   /** 建/续租约（事务内；同账号同任务幂等） */
