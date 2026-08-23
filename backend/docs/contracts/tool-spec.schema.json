@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ai-content.local/docs/contracts/tool-spec.schema.json",
+  "title": "ToolSpec",
+  "description": "业务工具注册规范，对齐《开发前补充文档包》5.1。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "version",
+    "domain",
+    "readOnly",
+    "risk",
+    "requiresConfirmation",
+    "supportsPause",
+    "supportsResume",
+    "requiredCapabilities",
+    "inputSchema",
+    "outputSchema",
+    "idempotencyScope",
+    "evidenceTypes",
+    "compensation"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "content",
+        "publish",
+        "interaction",
+        "lead",
+        "crm",
+        "review"
+      ]
+    },
+    "readOnly": {
+      "type": "boolean"
+    },
+    "risk": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "requiresConfirmation": {
+      "type": "boolean"
+    },
+    "supportsPause": {
+      "type": "boolean"
+    },
+    "supportsResume": {
+      "type": "boolean"
+    },
+    "requiredCapabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "idempotencyScope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceTypes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "compensation": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

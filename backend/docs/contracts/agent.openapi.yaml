@@ -1,0 +1,689 @@
+openapi: 3.0.3
+info:
+  title: 3010 Agent Gateway API
+  version: 0.1.0
+  description: >-
+    3010 × Octop 整合的冻结 REST 契约（P0-2 机器可读协议）。
+    对齐《开发前补充文档包》第三/四/五章与《整合 PRD》第八/十章。
+
+    契约版本号与实现版本独立演进：本协议为 `contractVersion: 0.1.0`。
+    字段变更必须带版本号与兼容说明，见 compatibility-matrix.md。
+
+    身份(tenant/user/agent)永远由服务端从 Kaypal 签名 token 派生；
+    `x-kaypal-ctx` 仅接受 HMAC 签名令牌，裸 JSON 一律 AUTH_INVALID 拒绝，不存在默认租户回退。
+  x-contract-version: "0.1.0"
+  contact:
+    name: 3010 后端负责人
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:3011
+    description: 3010×Octop 集成契约（实现：ai-content/backend）
+
+security:
+  - kaypalAuth: []
+
+tags:
+  - name: agent
+    description: 会话、任务、工具执行、审批、暂停/恢复/取消
+  - name: memory
+    description: 远程记忆检索/写入（由 3010 服务端代理 Kaypal Memory）
+  - name: octop
+    description: Octop 能力探测与同源 WS 事件代理
+
+# ---------------------------------------------------------------------------
+# 路径：严格覆盖《补充包》3.2 全部 11 个冻结接口
+# ---------------------------------------------------------------------------
+paths:
+  /api/agent/sessions:
+    post:
+      tags: [agent]
+      operationId: createSession
+      summary: 创建业务 Agent 会话
+      description: 服务端验证 Kaypal token 后派生租户上下文并创建会话。
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+      responses:
+        '201':
+          description: 会话已创建
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [session]
+                properties:
+                  session: { $ref: '#/components/schemas/Session' }
+                  octopCapabilities:
+                    $ref: '#/components/schemas/Capabilities'
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '403': { $ref: '#/components/responses/ErrorResponse' }
+        '429': { $ref: '#/components/responses/ErrorResponse' }
+        '502':
+          description: Octop 不可用（OCTOP_UNAVAILABLE，已降级为 3010 原生工具）
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/sessions/{id}/resume:
+    post:
+      tags: [agent]
+      operationId: resumeSession
+      summary: 恢复任务与事件游标
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: 返回断线前的事件窗口（按 lastEventId 重放，前端按 eventId 去重）
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sessionId, lastEventId, events]
+                properties:
+                  sessionId: { type: string }
+                  lastEventId: { type: string }
+                  lastSequence: { type: integer }
+                  events:
+                    type: array
+                    items: { $ref: './agent-events.schema.json' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+        '401':
+          description: SESSION_EXPIRED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+        '409':
+          description: TASK_TERMINAL（存在终态任务阻止恢复）
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/tasks:
+    post:
+      tags: [agent]
+      operationId: createTask
+      summary: 创建计划任务
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId, type]
+              properties:
+                sessionId: { type: string }
+                type:
+                  type: string
+                  enum: [content, publish, interaction, lead, crm, review]
+                plan: { type: object }
+      responses:
+        '202':
+          description: 任务已创建（draft/planned）
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [taskId, task]
+                properties:
+                  taskId: { type: string }
+                  task: { $ref: '#/components/schemas/Task' }
+        '422':
+          description: INVALID_PLAN
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+        '409':
+          description: DUPLICATE_REQUEST
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/tasks/{id}/approve:
+    post:
+      tags: [agent]
+      operationId: approveTask
+      summary: 确认高风险步骤
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [approvalId, currentPreview]
+              properties:
+                approvalId: { type: string }
+                currentPreview:
+                  type: object
+                  required: [toolName, payload]
+                  properties:
+                    toolName: { type: string }
+                    payload: { type: object }
+      responses:
+        '202':
+          description: 已确认，工具进入执行
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [result]
+                properties:
+                  result: { $ref: './tool-result.schema.json' }
+        '410':
+          description: APPROVAL_EXPIRED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+        '409':
+          description: PREVIEW_CHANGED（预览 hash 不一致）
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/tasks/{id}/pause:
+    post:
+      tags: [agent]
+      operationId: pauseTask
+      summary: 安全暂停
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '202':
+          description: 已暂停
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { $ref: '#/components/schemas/TaskStatus' }
+        '409':
+          description: NOT_PAUSABLE / TASK_TERMINAL
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/tasks/{id}/resume:
+    post:
+      tags: [agent]
+      operationId: resumeTask
+      summary: 从检查点继续
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '202':
+          description: 已从 checkpoint 恢复
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { $ref: '#/components/schemas/TaskStatus' }
+        '409':
+          description: CHECKPOINT_MISSING / DEVICE_OFFLINE
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/tasks/{id}/cancel:
+    post:
+      tags: [agent]
+      operationId: cancelTask
+      summary: 取消并停止 RPA
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '202':
+          description: 已取消
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { $ref: '#/components/schemas/TaskStatus' }
+        '504':
+          description: CANCEL_TIMEOUT
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/tools/{name}:
+    post:
+      tags: [agent]
+      operationId: executeTool
+      summary: 调用注册业务工具
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: name
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId, taskId, idempotencyKey, payload]
+              properties:
+                sessionId: { type: string }
+                taskId: { type: string }
+                idempotencyKey: { type: string }
+                payload: { type: object }
+      responses:
+        '200':
+          description: 同步完成（只读/低风险工具）
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [result]
+                properties:
+                  result: { $ref: './tool-result.schema.json' }
+        '202':
+          description: 已受理（需确认或异步）
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [result]
+                properties:
+                  result: { $ref: './tool-result.schema.json' }
+        '403':
+          description: TOOL_NOT_ALLOWED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+        '409':
+          description: IDEMPOTENCY_CONFLICT
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/memory/search:
+    post:
+      tags: [memory]
+      operationId: memorySearch
+      summary: 服务端代理远程记忆检索
+      description: 本地 session 与远程 Kaypal 并行召回，合并去重，超时降级为本地。
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query: { type: string }
+                topK: { type: integer, minimum: 1, maximum: 50, default: 10 }
+                namespace: { $ref: '#/components/schemas/MemoryNamespace' }
+      responses:
+        '200':
+          description: 召回结果（可能带 degraded 标记）
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/MemoryItem' }
+                  degraded: { type: boolean }
+                  reason: { type: string }
+        '400':
+          description: NAMESPACE_INVALID
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+        '200#timeout':
+          description: MEMORY_TIMEOUT（已降级，httpStatus=200 带 degraded=true）
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/memory/add:
+    post:
+      tags: [memory]
+      operationId: memoryAdd
+      summary: 服务端代理远程记忆写入
+      description: 先写本地摘要，再进入 MemoryOutbox 异步写远程（指数退避、死信可重放）。
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [namespace, content]
+              properties:
+                namespace: { $ref: '#/components/schemas/MemoryNamespace' }
+                content: { type: string }
+                metadata: { type: object }
+      responses:
+        '202':
+          description: 已入 outbox
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [memoryEventId]
+                properties:
+                  memoryEventId: { type: string }
+        '502':
+          description: MEMORY_REJECTED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+        '200#dup':
+          description: DUPLICATE_EVENT（已忽略）
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/octop/capabilities:
+    get:
+      tags: [octop]
+      operationId: octopCapabilities
+      summary: 能力探测
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+      responses:
+        '200':
+          description: 能力清单
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [capabilities]
+                properties:
+                  capabilities: { $ref: '#/components/schemas/Capabilities' }
+        '200#degraded':
+          description: OCTOP_DEGRADED（httpStatus=200 带 degraded）
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/memory/{id}:
+    delete:
+      tags: [memory]
+      operationId: memoryDelete
+      summary: 删除记忆（严格限定在派生命名空间内，跨租户一律 deleted=false）
+      parameters:
+        - $ref: '#/components/parameters/XRequestIdHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: 删除结果
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [deleted]
+                properties:
+                  deleted: { type: boolean }
+        '401':
+          description: UNAUTHORIZED / AUTH_INVALID
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+        '403':
+          description: FORBIDDEN
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/octop/session:
+    post:
+      tags: [octop]
+      operationId: octopCreateSession
+      summary: 创建原生 Octop 会话（高级模式入口）
+      responses:
+        '201':
+          description: octopSessionId
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [octopSessionId]
+                properties:
+                  octopSessionId: { type: string }
+        '401':
+          description: UNAUTHORIZED / AUTH_INVALID
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /api/agent/octop/token-exchange:
+    post:
+      tags: [octop]
+      operationId: octopTokenExchange
+      summary: 用 agent 会话换 Octop 运行令牌（高级模式）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sessionId]
+              properties:
+                sessionId: { type: string }
+      responses:
+        '200':
+          description: 运行令牌
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token, expiresAt]
+                properties:
+                  token: { type: string }
+                  expiresAt: { type: string, format: date-time }
+        '401':
+          description: UNAUTHORIZED / AUTH_INVALID / SESSION_EXPIRED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+        '403':
+          description: FORBIDDEN
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+# ---------------------------------------------------------------------------
+# WebSocket（OpenAPI 不原生描述，用扩展声明；事件结构见 agent-events.schema.json）
+# ---------------------------------------------------------------------------
+x-websocket:
+  path: /api/agent/octop/ws
+  description: >-
+    同源 WS 事件代理。客户端连接带 `lastEventId` 进行重放；
+    服务端保留最近事件窗口，超出返回 RESUME_WINDOW_EXPIRED（前端改拉取任务快照）。
+    事件可重复消费，前端按 eventId 去重。
+  query:
+    lastEventId:
+      type: string
+      description: 断线前的最后事件 id，用于重放窗口内的事件
+  messageSchema: './agent-events.schema.json'
+
+# ---------------------------------------------------------------------------
+# 组件
+# ---------------------------------------------------------------------------
+components:
+  securitySchemes:
+    kaypalAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Kaypal access token；服务端据此派生 tenant/user/agent 命名空间。
+
+  parameters:
+    XRequestIdHeader:
+      name: X-Request-Id
+      in: header
+      required: false
+      schema: { type: string }
+      description: 全链路追踪 id；写操作强烈建议携带。
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string }
+      description: 写操作必须携带；tenant + idempotencyKey 唯一，重复提交返回 IDEMPOTENCY_CONFLICT。
+    KaypalCtxHeader:
+      name: x-kaypal-ctx
+      in: header
+      required: false
+      schema: { type: string }
+      description: >-
+        【草案阶段】与 Authorization 等价：必须携带 HMAC 签名令牌
+        （base64url(payload).base64url(hmac)），裸 JSON 一律 AUTH_INVALID 拒绝。
+        生产环境身份只能从 Kaypal 签名 token 派生，本头必须删除。
+
+  responses:
+    ErrorResponse:
+      description: 统一错误响应（对齐《补充包》3.4）
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  schemas:
+    TaskStatus:
+      type: string
+      enum:
+        - draft
+        - planned
+        - awaiting_confirmation
+        - running
+        - partially_succeeded
+        - succeeded
+        - paused
+        - failed_retryable
+        - failed_terminal
+        - cancelled
+
+    TenantContext:
+      type: object
+      required: [tenantId, userId, agentId]
+      properties:
+        tenantId: { type: string }
+        userId: { type: string }
+        agentId: { type: string }
+
+    Session:
+      type: object
+      required: [id, tenantId, userId, agentId, mode, status, lastEventId, expiresAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        userId: { type: string }
+        agentId: { type: string }
+        octopSessionId: { type: string }
+        mode: { type: string, enum: [business, advanced] }
+        status: { type: string, enum: [active, expired] }
+        lastEventId: { type: string }
+        lastSequence: { type: integer }
+        expiresAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+
+    Task:
+      type: object
+      required: [id, sessionId, tenantId, userId, type, status]
+      properties:
+        id: { type: string }
+        sessionId: { type: string }
+        tenantId: { type: string }
+        userId: { type: string }
+        type: { type: string }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        planJson: { type: object }
+        checkpointJson: { type: object }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+
+    CapabilityStatus:
+      type: object
+      required: [available]
+      properties:
+        available: { type: boolean }
+        degraded: { type: boolean }
+        reason: { type: string }
+
+    Capabilities:
+      type: object
+      required: [browser, computer, mobile, file, businessTools]
+      properties:
+        browser: { $ref: '#/components/schemas/CapabilityStatus' }
+        computer: { $ref: '#/components/schemas/CapabilityStatus' }
+        mobile: { $ref: '#/components/schemas/CapabilityStatus' }
+        file: { $ref: '#/components/schemas/CapabilityStatus' }
+        businessTools:
+          type: array
+          items: { type: string }
+
+    MemoryNamespace:
+      type: object
+      required: [tenantId, userId, agentId, scope, source, retention]
+      properties:
+        tenantId: { type: string }
+        userId: { type: string }
+        agentId: { type: string }
+        scope: { type: string }
+        source: { type: string }
+        retention: { type: string, enum: [session, long_term] }
+
+    MemoryItem:
+      type: object
+      required: [id, content]
+      properties:
+        id: { type: string }
+        content: { type: string }
+        scope: { type: string }
+        source: { type: string }
+        score: { type: number }
+        createdAt: { type: string, format: date-time }
+
+    ErrorBody:
+      type: object
+      required: [code, message, retryable]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        retryable: { type: boolean }
+        requestId: { type: string }
+        taskId: { type: string }
+        details: { type: object }
