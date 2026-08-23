@@ -15,6 +15,22 @@ import { AuthService } from './core/auth';
  * 注册 AgentGatewayModule 即挂载 /api/agent/* 控制面 + /api/memory/* 记忆控制面；
  * WS 由 main.ts 在 listen 前 attach。
  */
+/**
+ * 密钥解析（与原型 requireSecret 严格策略一致，P1）：
+ * 仅显式开发/测试环境（NODE_ENV=development|test|dev）允许默认密钥；
+ * production / staging / 未设置 NODE_ENV 等一切其他情况，缺 AGENT_GATEWAY_SECRET → 启动失败。
+ */
+export function resolveAgentSecret(config: ConfigService): string {
+  const secret = config.get<string>('AGENT_GATEWAY_SECRET');
+  if (secret) return secret;
+  const env = process.env.NODE_ENV ?? '';
+  const devLike = env === 'development' || env === 'test' || env === 'dev';
+  if (!devLike) {
+    throw new Error('AGENT_GATEWAY_SECRET 未配置：非开发环境禁止使用默认密钥');
+  }
+  return 'dev-only-secret-do-not-use-in-prod';
+}
+
 @Module({
   controllers: [AgentGatewayController, AgentMemoryController],
   providers: [
@@ -27,16 +43,7 @@ import { AuthService } from './core/auth';
     {
       provide: AuthService,
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const secret = config.get<string>('AGENT_GATEWAY_SECRET');
-        if (secret) return new AuthService(secret);
-        // P1-2：生产环境缺密钥 → 启动失败；开发/test 用 dev 默认（受控部署）
-        const env = process.env.NODE_ENV ?? '';
-        if (env === 'production') {
-          throw new Error('AGENT_GATEWAY_SECRET 未配置：生产环境禁止使用默认密钥');
-        }
-        return new AuthService('dev-only-secret-do-not-use-in-prod');
-      },
+      useFactory: (config: ConfigService) => new AuthService(resolveAgentSecret(config)),
     },
   ],
   exports: [AgentGatewayService, AuthService],

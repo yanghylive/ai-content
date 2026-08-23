@@ -211,6 +211,31 @@ describe('安全加固（P0/P1 复查项）', () => {
     expect((await g.memoryRemote.search(ns, '将被删除')).length).toBe(0);
   });
 
+  it('outbox in-flight 锁：慢远端时同一条不重复提交', async () => {
+    g.memory.stopOutboxWorker();
+    jest.useFakeTimers();
+    let addCalls = 0;
+    let release!: () => void;
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
+    const orig = g.memoryRemote.add.bind(g.memoryRemote);
+    (g.memoryRemote as unknown as { add: unknown }).add = async (ns: unknown, content: string, id?: string) => {
+      addCalls += 1;
+      await gate;
+      return orig(ns as never, content, id);
+    };
+    await g.gateway.memoryAdd(ctxA, 'user_preference', '并发记忆'); // capture → 即时 flush 挂起（inflight 锁持有）
+    await jest.advanceTimersByTimeAsync(0);
+    const stop = g.memory.startOutboxWorker(100);
+    await jest.advanceTimersByTimeAsync(300); // 多个 worker tick 被 inflight 挡住
+    release!();
+    await jest.advanceTimersByTimeAsync(0);
+    expect(addCalls).toBe(1); // 只提交一次
+    stop();
+    jest.useRealTimers();
+  });
+
   it('删除使用精确 scope（itemIndex），不固定 user_preference（P1-5）', async () => {
     await g.gateway.memoryAdd(ctxA, 'conversation', '对话记忆X');
     const all = await g.gateway.memorySearch(ctxA, 'conversation', '');
