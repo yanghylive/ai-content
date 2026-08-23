@@ -121,6 +121,8 @@ class RpaAccessibilityService : AccessibilityService() {
         private var maiCallback: ((RpaResult) -> Unit)? = null
         @Volatile
         private var maiPausedForAsk = false
+        @Volatile
+        private var maiPaused = false
 
         /**
          * 执行 MAI-UI 规划的结构化动作序列（H5 调 window.JiuZhang.executeActions）。
@@ -151,6 +153,7 @@ class RpaAccessibilityService : AccessibilityService() {
             maiIndex = 0
             maiCallback = callback
             maiPausedForAsk = false
+            maiPaused = false
             handler.post { svc.stepMaiActions() }
             handler.postDelayed({ timeoutMaiIfPending() }, MAI_UI_TIMEOUT_MS)
         }
@@ -159,7 +162,27 @@ class RpaAccessibilityService : AccessibilityService() {
             val cb = maiCallback ?: return
             maiCallback = null
             maiActions = null
+            maiPaused = false
             cb(RpaResult.failure("动作执行已取消"))
+        }
+
+        /** 暂停执行（M2：等待中不推进，resumeActions 继续） */
+        fun pauseActions(): RpaResult {
+            if (maiCallback == null) return RpaResult.failure("当前无执行中的动作")
+            if (maiPausedForAsk) return RpaResult.failure("当前等待人工确认中，无需暂停")
+            maiPaused = true
+            return RpaResult.success("已暂停（剩余 ${(maiActions?.size ?: 0) - maiIndex} 步）")
+        }
+
+        /** 继续执行 */
+        fun resumeActions(): RpaResult {
+            val svc = instance
+            if (svc == null) return RpaResult.failure("无障碍服务未开启")
+            if (maiCallback == null) return RpaResult.failure("当前无执行中的动作")
+            if (!maiPaused) return RpaResult.failure("当前未处于暂停状态")
+            maiPaused = false
+            handler.post { svc.stepMaiActions() }
+            return RpaResult.success("已继续执行")
         }
 
         /** H5 对 ask_user 的答复：true=继续，false=中止 */
@@ -292,6 +315,7 @@ class RpaAccessibilityService : AccessibilityService() {
             maiCallback = null
             maiActions = null
             maiPausedForAsk = false
+            maiPaused = false
             cb(result)
         }
     }
@@ -436,6 +460,11 @@ class RpaAccessibilityService : AccessibilityService() {
     }
 
     private fun stepMaiActions() {
+        // M2 暂停：不推进，轮询等待 resume
+        if (maiPaused) {
+            handler.postDelayed({ stepMaiActions() }, 300L)
+            return
+        }
         val actions = maiActions ?: return
         val cb = maiCallback ?: return
         if (maiIndex >= actions.size) {

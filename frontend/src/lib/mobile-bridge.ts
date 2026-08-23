@@ -33,6 +33,9 @@ interface JiuZhangBridge {
   resumeAfterAsk?(proceed: boolean): string;
   /** 中止正在执行的动作序列 */
   cancelActions?(): string;
+  /** 暂停/继续执行（M2） */
+  pauseActions?(): string;
+  resumeActions?(): string;
   /** 截取当前屏幕（无障碍，Android 11+），返回 { ok, message: dataURL } */
   captureScreen?(): string;
   /** 发起屏幕录制授权（老设备 Android 8-10 截屏前需授权） */
@@ -273,7 +276,7 @@ export function bridgeInfo(): { isShell: boolean; methods: string[] } {
   return {
     isShell: Boolean(bridge),
     methods: bridge
-      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus", "wechatLogin", "executeActions", "resumeAfterAsk", "cancelActions", "captureScreen", "requestScreenCapture"].filter(
+      ? ["version", "agentStatus", "asrUpload", "openApp", "shareText", "copyToClipboard", "getInstalledApps", "rpaStatus", "wechatLogin", "executeActions", "resumeAfterAsk", "cancelActions", "pauseActions", "resumeActions", "captureScreen", "requestScreenCapture"].filter(
           (m) => typeof (bridge as unknown as Record<string, unknown>)[m] === "function",
         )
       : [],
@@ -400,6 +403,36 @@ export function requestScreenCapture(): MaiUiExecResult {
   if (!bridge?.requestScreenCapture) return { ok: false, message: "桥方法不可用" };
   try {
     const raw = bridge.requestScreenCapture();
+    const parsed = typeof raw === "string" && raw.trim().startsWith("{")
+      ? (JSON.parse(raw) as MaiUiExecResult)
+      : null;
+    return parsed ?? { ok: false, message: "解析失败" };
+  } catch {
+    return { ok: false, message: "调用失败" };
+  }
+}
+
+/** 暂停执行（M2：执行中暂停，resumeActions 继续） */
+export function pauseActions(): MaiUiExecResult {
+  const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
+  if (!bridge?.pauseActions) return { ok: false, message: "桥方法不可用" };
+  try {
+    const raw = bridge.pauseActions();
+    const parsed = typeof raw === "string" && raw.trim().startsWith("{")
+      ? (JSON.parse(raw) as MaiUiExecResult)
+      : null;
+    return parsed ?? { ok: false, message: "解析失败" };
+  } catch {
+    return { ok: false, message: "调用失败" };
+  }
+}
+
+/** 继续执行（M2） */
+export function resumeActions(): MaiUiExecResult {
+  const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
+  if (!bridge?.resumeActions) return { ok: false, message: "桥方法不可用" };
+  try {
+    const raw = bridge.resumeActions();
     const parsed = typeof raw === "string" && raw.trim().startsWith("{")
       ? (JSON.parse(raw) as MaiUiExecResult)
       : null;
