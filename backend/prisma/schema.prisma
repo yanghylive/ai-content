@@ -4103,3 +4103,21 @@ model ExecutorStep {
   @@index([taskId, stepIndex])
   @@map("executor_steps")
 }
+
+// ============ P2-27 平台账号实体：发送前确认「登录的是哪个账号」 ============
+model PlatformAccount {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  platform      String    // xiaohongshu | douyin | kuaishou | shipinhao | ...
+  accountId     String    @map("account_id") // 平台账号标识（如 xhs uid）
+  nickname      String?   // 账号昵称
+  loginStatus   String    @default("unknown") @map("login_status") // unknown | logged_in | expired | offline
+  boundDeviceId String?   @map("bound_device_id") // 当前绑定设备
+  riskStatus    String    @default("normal") @map("risk_status") // normal | warning | restricted
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, platform, accountId])
+  @@index([userId])
+  @@map("platform_accounts")
+}

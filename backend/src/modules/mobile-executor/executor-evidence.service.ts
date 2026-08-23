@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { createHash } from 'node:crypto';
+import OSS from 'ali-oss';
 import { PrismaService } from '../../prisma/prisma.service';
 
 /**
@@ -38,11 +39,12 @@ export class ExecutorEvidenceService {
     });
     if (!task) throw new BadRequestException('任务不存在');
     const type = input.type || 'screenshot';
-    const content = input.content;
+    let content = input.content;
     if (!content || typeof content !== 'object' || Array.isArray(content)) {
       throw new BadRequestException('证据内容不能为空');
     }
-    // 截图证据：校验 dataURL 格式（避免脏数据）
+    let contentHash: string;
+    // 截图证据：校验 dataURL + 上传 OSS（DB 只存 URL）+ 二进制内容 hash
     if (type === 'screenshot') {
       const raw = content.dataUrl;
       const dataUrl = typeof raw === 'string' ? raw : '';
@@ -54,10 +56,27 @@ export class ExecutorEvidenceService {
       if (dataUrl.length > 2 * 1024 * 1024) {
         throw new BadRequestException('截图证据过大（>2MB）');
       }
+      const b64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+      const buf = Buffer.from(b64, 'base64');
+      // 内容 hash 基于截图二进制（真正防篡改）
+      contentHash = createHash('sha256').update(buf).digest('hex');
+      // P1-19：上传 OSS，DB 存 URL；失败降级存 dataUrl（不丢证据）
+      const url = await this.uploadScreenshotToOss(
+        taskId,
+        buf,
+        input.stepIndex ?? -1,
+      );
+      const meta = { ...content };
+      delete meta.dataUrl;
+      content = url
+        ? { ...meta, url, imageHash: contentHash, storage: 'oss' }
+        : { ...content, storage: 'db-fallback' };
+    } else {
+      // 非截图：hash 基于 JSON 序列化
+      contentHash = createHash('sha256')
+        .update(JSON.stringify(content))
+        .digest('hex');
     }
-    // P1-18：内容 SHA-256 摘要（稳定序列化，防篡改/去重）
-    const canonical = JSON.stringify(content);
-    const contentHash = createHash('sha256').update(canonical).digest('hex');
     // 链式关联：取该任务上一条证据作为 prevEvidenceId
     const prev = await this.prisma.executorEvidence.findFirst({
       where: { taskId },
@@ -92,6 +111,38 @@ export class ExecutorEvidenceService {
       contentHash,
       prevEvidenceId: prev?.id ?? null,
     };
+  }
+
+  /** 截图上传 OSS（P1-19：DB 只存 URL）；OSS 未配置/失败返回 null 走降级 */
+  private async uploadScreenshotToOss(
+    taskId: string,
+    buf: Buffer,
+    stepIndex: number,
+  ): Promise<string | null> {
+    const id = process.env.OSS_ACCESS_KEY_ID;
+    const secret = process.env.OSS_ACCESS_KEY_SECRET;
+    if (!id || !secret) return null;
+    const bucket = process.env.OSS_BUCKET || 'kaypal';
+    const region = process.env.OSS_REGION || 'oss-cn-hangzhou';
+    const ymd = new Date().toISOString().slice(0, 10);
+    const step = stepIndex >= 0 ? stepIndex : 'task';
+    const key = `executor-evidence/${ymd}/${taskId}/${step}-${Date.now()}.jpg`;
+    try {
+      const client = new OSS({
+        accessKeyId: id,
+        accessKeySecret: secret,
+        region,
+        bucket,
+        secure: true,
+      });
+      await client.put(key, buf);
+      return `https://${bucket}.${region}.aliyuncs.com/${key}`;
+    } catch (e) {
+      this.logger.warn(
+        `截图上传 OSS 失败（降级存 DB）：${e instanceof Error ? e.message : String(e)}`,
+      );
+      return null;
+    }
   }
 
   /** 查询任务证据（按时间正序） */
