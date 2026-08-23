@@ -93,19 +93,28 @@ export class MemoryOrchestrator {
     return { memoryEventId, outboxId: outbox.id };
   }
 
+  /** 单条 in-flight 锁：防止远端慢响应时 capture 的即时 flush 与 worker 扫描重复提交同一条 */
+  private inflight = new Set<string>();
+
   private async flushOutbox(memoryEventId: string): Promise<void> {
-    const entry = this.outboxItems.get(memoryEventId);
-    if (!entry || entry.outbox.status === 'done') return;
+    if (this.inflight.has(memoryEventId)) return; // 防重入
+    this.inflight.add(memoryEventId);
     try {
-      await this.remote.add(entry.ns, entry.content, entry.itemId);
-      entry.outbox.status = 'done';
-    } catch {
-      entry.outbox.attempts += 1;
-      if (entry.outbox.attempts >= this.maxAttempts) {
-        entry.outbox.status = 'dead'; // 死信，可人工重放
-      } else {
-        entry.outbox.nextRetryAt = new Date(Date.now() + 2 ** entry.outbox.attempts * 1000).toISOString();
+      const entry = this.outboxItems.get(memoryEventId);
+      if (!entry || entry.outbox.status === 'done') return;
+      try {
+        await this.remote.add(entry.ns, entry.content, entry.itemId);
+        entry.outbox.status = 'done';
+      } catch {
+        entry.outbox.attempts += 1;
+        if (entry.outbox.attempts >= this.maxAttempts) {
+          entry.outbox.status = 'dead'; // 死信，可人工重放
+        } else {
+          entry.outbox.nextRetryAt = new Date(Date.now() + 2 ** entry.outbox.attempts * 1000).toISOString();
+        }
       }
+    } finally {
+      this.inflight.delete(memoryEventId);
     }
   }
 

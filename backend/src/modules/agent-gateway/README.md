@@ -4,7 +4,7 @@
 
 ## 范围（诚实声明）
 - **已迁入**：核心引擎（`core/`）+ mock 适配器（`adapters/`）+ 错误码（`contracts/error-codes.ts`）+ factory。
-- **未接线**：本模块是独立可测的引擎，**未接入真实 3010 业务服务、真实 RPA、真实 Kaypal Memory、真实 Prisma 持久化**（《冻结清单》外部阻塞项）。
+- **商用状态（2026-08-23 复查结论）**：本模块是「**Nest 接线完成的核心引擎**」，**不是完整商用执行链路**——`adapters/` 仍为 Mock（真实 3010 业务 / 真实 RPA / 真实 Kaypal Memory 未接入），引擎会话/任务/事件/产物/证据/outbox 仍内存态（幂等/审批/usage 已可走 `agent_gateway_*` DB 仓储，`AGENT_GATEWAY_PERSISTENCE=prisma` 开关）。真实接入属《冻结清单》外部阻塞项。
 - **未迁入**：原型的 REST/WS 服务层（`server/app.ts`，express+ws）——真实仓库 HTTP 层由 NestJS 控制器承担，属后续接线工作。
 - **契约**：机器可读契约（OpenAPI / JSON Schema / error-codes.yaml / compatibility-matrix）在 `backend/docs/contracts/`，本模块的 `contracts/error-codes.ts` 与 `error-codes.yaml` 同源。
 
