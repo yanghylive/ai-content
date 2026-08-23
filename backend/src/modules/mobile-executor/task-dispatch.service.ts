@@ -188,35 +188,44 @@ export class TaskDispatchService {
 
   /** agent 领取待办任务（原子化 + 事务：任务 claim 与租约建 在同一事务，PRD P1-17） */
   async claimNext(userId: string, deviceId: string): Promise<TaskView | null> {
-    const candidate = await this.prisma.executorTask.findFirst({
+    // 取候选队列（最多 20 个），逐个跳过冻结期账号，避免冻结任务卡死队列头
+    const candidates = await this.prisma.executorTask.findMany({
       where: {
         userId,
         status: 'queued',
         OR: [{ deviceId: null }, { deviceId }],
       },
       orderBy: { createdAt: 'asc' },
+      take: 20,
     });
-    if (!candidate) return null;
-    // P0-1 恢复保护期：候选任务账号处于冻结期（心跳超时）时跳过领取，防重复外发
-    const candAccountId = this.extractAccountId(
-      (candidate.payload as Record<string, unknown>) ?? {},
-      candidate.type,
-    );
-    if (candAccountId) {
-      const frozen = await this.prisma.executorLease.findFirst({
-        where: {
-          userId,
-          accountId: candAccountId,
-          frozenUntil: { gt: new Date() },
-        },
-      });
-      if (frozen) {
-        this.logger.log(
-          `候选任务 ${candidate.id} 账号 ${candAccountId} 处于恢复保护期，跳过领取`,
-        );
-        return null;
+    if (candidates.length === 0) return null;
+    const now = new Date();
+    let candidate: (typeof candidates)[number] | null = null;
+    for (const c of candidates) {
+      // P0-1 恢复保护期：候选任务账号处于冻结期（心跳超时）时跳过，取下一个
+      const candAccountId = this.extractAccountId(
+        (c.payload as Record<string, unknown>) ?? {},
+        c.type,
+      );
+      if (candAccountId) {
+        const frozen = await this.prisma.executorLease.findFirst({
+          where: {
+            userId,
+            accountId: candAccountId,
+            frozenUntil: { gt: now },
+          },
+        });
+        if (frozen) {
+          this.logger.log(
+            `候选任务 ${c.id} 账号 ${candAccountId} 处于恢复保护期，跳过`,
+          );
+          continue;
+        }
       }
+      candidate = c;
+      break;
     }
+    if (!candidate) return null;
     const row = await this.prisma.$transaction(async (tx) => {
       // 原子领取：仅当仍为 queued 时才更新（防止多设备并发重复领取同一任务）
       const claimed = await tx.executorTask.updateMany({
@@ -354,6 +363,11 @@ export class TaskDispatchService {
       where: { id: taskId },
       data: { status: 'cancelled', updatedAt: new Date() },
     });
+    // 修复：leasing 任务在 claim 时已建账号租约，取消必须同步释放，
+    // 否则账号被锁到租约过期（10 分钟），同账号新任务被 400 拦截
+    if (nStatus === 'leasing') {
+      await this.releaseLease(taskId);
+    }
     this.logger.log(`任务已取消：${taskId}`);
     return { ok: true };
   }

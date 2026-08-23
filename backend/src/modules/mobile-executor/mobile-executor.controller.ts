@@ -199,7 +199,7 @@ export class MobileExecutorController {
     if (body?.stepIndex === undefined || !body?.type) {
       throw new BadRequestException('缺少 stepIndex/type');
     }
-    return this.run.stepRun(dev.userId, runId, body);
+    return this.run.stepRun(dev.userId, runId, dev.deviceId, body);
   }
 
   @Post('runs/:id/finish')
@@ -212,7 +212,13 @@ export class MobileExecutorController {
   ) {
     const dev = await this.requireDevice(request);
     if (!body?.status) throw new BadRequestException('缺少 status');
-    return this.run.finishRun(dev.userId, runId, body.status, body.checkpoint);
+    return this.run.finishRun(
+      dev.userId,
+      runId,
+      dev.deviceId,
+      body.status,
+      body.checkpoint,
+    );
   }
 
   @Post('runs/:id/status')
@@ -227,7 +233,7 @@ export class MobileExecutorController {
   ) {
     const dev = await this.requireDevice(request);
     if (!body?.status) throw new BadRequestException('缺少 status');
-    return this.run.setStatus(dev.userId, runId, body.status);
+    return this.run.setStatus(dev.userId, runId, dev.deviceId, body.status);
   }
 
   @Get('tasks/:id/run')

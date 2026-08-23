@@ -59,8 +59,12 @@ export class ExecutorStatusService {
       where: { id: taskId },
       data: data as never,
     });
-    // P1 Lease：终态（completed/failed）释放账号租约；unknown 保留租约待人工确认
-    if (status === 'completed' || status === 'failed') {
+    // P1 Lease：终态（completed/failed/cancelled）释放账号租约；unknown 保留租约待人工确认
+    if (
+      status === 'completed' ||
+      status === 'failed' ||
+      status === 'cancelled'
+    ) {
       await this.prisma.executorLease.updateMany({
         where: { taskId, status: 'active' },
         data: { status: 'released', updatedAt: new Date() },

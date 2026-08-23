@@ -22,6 +22,12 @@ export class ExecutorRunService {
       where: { id: taskId, userId },
     });
     if (!task) throw new BadRequestException('任务不存在');
+    // 归属校验：任务已被其他设备 claim 时，当前设备无权开启 Run（防并发污染）
+    if (task.deviceId && task.deviceId !== deviceId) {
+      throw new BadRequestException(
+        `任务由设备 ${task.deviceId} 执行，当前设备 ${deviceId} 无权开启执行会话`,
+      );
+    }
     const existing = await this.prisma.executorRun.findFirst({
       where: { taskId, status: { in: ['running', 'awaiting_approval'] } },
       orderBy: { createdAt: 'desc' },
@@ -42,6 +48,7 @@ export class ExecutorRunService {
   async stepRun(
     userId: string,
     runId: string,
+    deviceId: string,
     input: {
       stepIndex: number;
       type: string;
@@ -54,6 +61,12 @@ export class ExecutorRunService {
       where: { id: runId, userId },
     });
     if (!run) throw new BadRequestException('执行会话不存在');
+    // 归属校验：仅建立该 Run 的设备可上报 step（防同用户多设备串扰）
+    if (run.deviceId && run.deviceId !== deviceId) {
+      throw new BadRequestException(
+        `执行会话由设备 ${run.deviceId} 执行，当前设备 ${deviceId} 无权上报步骤`,
+      );
+    }
     const status = input.status || 'done';
     const step = await this.prisma.executorStep.create({
       data: {
@@ -79,6 +92,7 @@ export class ExecutorRunService {
   async finishRun(
     userId: string,
     runId: string,
+    deviceId: string,
     status: 'completed' | 'failed' | 'unknown',
     checkpoint?: string,
   ): Promise<{ id: string; status: string }> {
@@ -86,6 +100,12 @@ export class ExecutorRunService {
       where: { id: runId, userId },
     });
     if (!run) throw new BadRequestException('执行会话不存在');
+    // 归属校验：仅建立该 Run 的设备可收尾
+    if (run.deviceId && run.deviceId !== deviceId) {
+      throw new BadRequestException(
+        `执行会话由设备 ${run.deviceId} 执行，当前设备 ${deviceId} 无权收尾`,
+      );
+    }
     const updated = await this.prisma.executorRun.update({
       where: { id: runId },
       data: {
@@ -101,6 +121,7 @@ export class ExecutorRunService {
   async setStatus(
     userId: string,
     runId: string,
+    deviceId: string,
     status: 'running' | 'awaiting_approval',
   ): Promise<{ id: string; status: string }> {
     if (status !== 'running' && status !== 'awaiting_approval') {
@@ -110,6 +131,12 @@ export class ExecutorRunService {
       where: { id: runId, userId },
     });
     if (!run) throw new BadRequestException('执行会话不存在');
+    // 归属校验：仅建立该 Run 的设备可更新状态
+    if (run.deviceId && run.deviceId !== deviceId) {
+      throw new BadRequestException(
+        `执行会话由设备 ${run.deviceId} 执行，当前设备 ${deviceId} 无权更新状态`,
+      );
+    }
     const updated = await this.prisma.executorRun.update({
       where: { id: runId },
       data: { status },
