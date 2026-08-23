@@ -3017,6 +3017,87 @@ export class PrismaService
       `CREATE INDEX IF NOT EXISTS growth_task_drafts_user_id_status_idx ON growth_task_drafts(user_id, status)`,
       `CREATE INDEX IF NOT EXISTS growth_task_drafts_tenant_id_status_idx ON growth_task_drafts(tenant_id, status)`,
       `CREATE INDEX IF NOT EXISTS growth_task_drafts_intent_status_idx ON growth_task_drafts(intent, status)`,
+
+      // ===== 设备代理执行器 5 张表（schema.prisma 155 张对齐，2026-08-23 补齐）=====
+      // 执行租约（心跳续租 + 恢复保护期）
+      `CREATE TABLE IF NOT EXISTS executor_leases (
+        id TEXT PRIMARY KEY NOT NULL,
+        user_id TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        device_id TEXT NOT NULL,
+        task_id TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active',
+        expires_at DATETIME NOT NULL,
+        frozen_until DATETIME,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS executor_leases_user_id_account_id_status_idx ON executor_leases(user_id, account_id, status)`,
+      `CREATE INDEX IF NOT EXISTS executor_leases_task_id_idx ON executor_leases(task_id)`,
+      // 证据链（截图/结构化留证，content_hash 链式防篡改）
+      `CREATE TABLE IF NOT EXISTS executor_evidences (
+        id TEXT PRIMARY KEY NOT NULL,
+        user_id TEXT NOT NULL,
+        task_id TEXT NOT NULL,
+        step_index INTEGER NOT NULL DEFAULT -1,
+        type TEXT NOT NULL DEFAULT 'screenshot',
+        content JSONB NOT NULL DEFAULT '{}',
+        content_hash TEXT,
+        prev_evidence_id TEXT,
+        device_id TEXT,
+        model_version TEXT,
+        policy_version TEXT,
+        approval_id TEXT,
+        collected_at DATETIME,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS executor_evidences_task_id_idx ON executor_evidences(task_id)`,
+      `CREATE INDEX IF NOT EXISTS executor_evidences_user_id_task_id_idx ON executor_evidences(user_id, task_id)`,
+      `CREATE INDEX IF NOT EXISTS executor_evidences_content_hash_idx ON executor_evidences(content_hash)`,
+      // 执行会话（run 级断点恢复）
+      `CREATE TABLE IF NOT EXISTS executor_runs (
+        id TEXT PRIMARY KEY NOT NULL,
+        user_id TEXT NOT NULL,
+        task_id TEXT NOT NULL,
+        device_id TEXT NOT NULL,
+        account_id TEXT,
+        status TEXT NOT NULL DEFAULT 'running',
+        checkpoint TEXT,
+        started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        finished_at DATETIME,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS executor_runs_task_id_idx ON executor_runs(task_id)`,
+      `CREATE INDEX IF NOT EXISTS executor_runs_device_id_status_idx ON executor_runs(device_id, status)`,
+      // 执行步骤记录
+      `CREATE TABLE IF NOT EXISTS executor_steps (
+        id TEXT PRIMARY KEY NOT NULL,
+        run_id TEXT NOT NULL,
+        task_id TEXT NOT NULL,
+        step_index INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'done',
+        detail JSONB,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS executor_steps_run_id_idx ON executor_steps(run_id)`,
+      `CREATE INDEX IF NOT EXISTS executor_steps_task_id_step_index_idx ON executor_steps(task_id, step_index)`,
+      // 平台账号实体（发送前确认登录账号）
+      `CREATE TABLE IF NOT EXISTS platform_accounts (
+        id TEXT PRIMARY KEY NOT NULL,
+        user_id TEXT NOT NULL,
+        platform TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        nickname TEXT,
+        login_status TEXT NOT NULL DEFAULT 'unknown',
+        bound_device_id TEXT,
+        risk_status TEXT NOT NULL DEFAULT 'normal',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, platform, account_id)
+      )`,
+      `CREATE INDEX IF NOT EXISTS platform_accounts_user_id_idx ON platform_accounts(user_id)`,
     ];
 
     for (const statement of statements) {
