@@ -110,12 +110,15 @@ async function probeGatewayBalance(env) {
   if (!res.ok) {
     const code = data?.error?.code || data?.code || res.status;
     const msg = data?.error?.message || data?.message || raw.slice(0, 200);
-    // 402/insufficient balance：网关上游欠费（用户端 AI 全部调不通，业务级告警）
+    // 402/insufficient balance：网关对该计费账号返回欠费。
+    // ⚠️ 2026-08-23 修正：探针账号欠费 ≠ 用户 AI 不可用——真实用户走独立计费路径
+    // （实测用户 AI 对话正常返回真实回复，provider=jiuzhang-ai-content）。
+    // 该 ALERT 语义 = 「探针计费账号余额不足」，需人工确认该账号是否为核心计费账号。
     if (res.status === 402 || /insufficient balance/i.test(msg)) {
       return {
         ok: true,
         gatewayDown: true,
-        error: `网关上游欠费（402 Insufficient Balance）——用户端 AI 调用全部不可用，需处理 kaypal 上游结算/切百炼`,
+        error: `网关对探针计费账号返回 402（Insufficient Balance）——该账号余额不足；注意真实用户计费路径独立，实测用户 AI 对话正常，需人工确认该探针账号是否为核心计费账号`,
       };
     }
     return { ok: false, error: `网关 ${res.status} ${code}: ${msg}` };
