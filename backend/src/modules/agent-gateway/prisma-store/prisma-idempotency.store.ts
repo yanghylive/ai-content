@@ -28,7 +28,7 @@ export class PrismaIdempotencyStore {
     tenantId: string,
     key: string,
     taskId: string,
-    audit?: { userId?: string; toolName?: string; risk?: string; inputHash?: string },
+    audit?: { userId?: string; toolName?: string; risk?: string; inputHash?: string; requestJson?: string },
   ): Promise<ClaimResult> {
     const existing = await this.prisma.agentGatewayToolCall.findUnique({
       where: { tenantId_idempotencyKey: { tenantId, idempotencyKey: key } },
@@ -43,6 +43,7 @@ export class PrismaIdempotencyStore {
             toolName: audit?.toolName ?? '',
             risk: audit?.risk ?? 'low',
             inputHash: audit?.inputHash ?? '',
+            requestJson: audit?.requestJson ?? null,
             status: 'running',
             idempotencyKey: key,
           },

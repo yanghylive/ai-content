@@ -6,6 +6,7 @@ import { PrismaMirror } from './prisma-mirror';
 import { PrismaHydrator } from './prisma-hydrator';
 import { PrismaOutboxStore } from './prisma-outbox.store';
 import { createAgentGateway } from '../core/factory';
+import { hashJson } from '../core/util';
 import { MemoryOrchestrator } from '../core/memory-orchestrator';
 import { MockKaypalMemoryAdapter } from '../adapters/kaypal-memory-mock';
 import { UsageEvent, AgentSession, AgentTask, AgentEvent, Artifact } from '../core/types';
@@ -308,5 +309,50 @@ describe('AgentGateway Prisma 仓储（幂等/审批/usage）', () => {
     expect(row?.status).toBe('done');
     const ns = { tenantId: 't1', userId: 'u1', agentId: 'a1', scope: 'user_preference', source: 'restore', retention: 'long_term' } as const;
     expect((await remote.search(ns, '待同步记忆')).length).toBe(1);
+  });
+
+  test('重启恢复 pending：awaiting 发布任务重启后可继续审批（不再 CHECKPOINT_MISSING）', async () => {
+    const mirror = new PrismaMirror(prisma as never);
+    const session: AgentSession = {
+      id: 'sess_pending_1', tenantId: 't1', userId: 'u1', agentId: 'a1',
+      mode: 'business', status: 'active', lastEventId: '', lastSequence: 0,
+      expiresAt: new Date(Date.now() + 3_600_000).toISOString(), createdAt: new Date().toISOString(),
+    };
+    await mirror.sessionCreated(session);
+    const task: AgentTask = {
+      id: 'task_pending_1', sessionId: session.id, tenantId: 't1', userId: 'u1', agentId: 'a1',
+      type: 'publish', status: 'awaiting_confirmation', planJson: {}, checkpointJson: {},
+      createdAt: new Date().toISOString(),
+    };
+    await mirror.taskCreated(task);
+    // toolCall（requestJson 由 claim 落库，模拟已持久化）
+    const request = {
+      requestId: 'req_pending', tenantId: 't1', userId: 'u1', agentId: 'a1',
+      sessionId: session.id, taskId: task.id, idempotencyKey: 'k_pending',
+      toolName: 'publish_execute', requiresConfirmation: true, payload: { platform: 'douyin' },
+    };
+    await prisma.agentGatewayToolCall.create({
+      data: { id: 'call_pending_1', taskId: task.id, tenantId: 't1', userId: 'u1', toolName: 'publish_execute', risk: 'high', inputHash: 'h', status: 'running', idempotencyKey: 'k_pending', requestJson: JSON.stringify(request) },
+    });
+    const preview = { toolName: 'publish_execute', payload: { platform: 'douyin' } };
+    await prisma.agentGatewayApproval.create({
+      data: { id: 'apr_pending_1', taskId: task.id, toolCallId: 'call_pending_1', tenantId: 't1', previewHash: hashJson(preview), expiresAt: new Date(Date.now() + 60_000), status: 'pending', consumed: false },
+    });
+
+    // 重启：persist 模式 gateway（DB 幂等/审批）+ hydrate 重建 pending
+    const hydrator = new PrismaHydrator(prisma as never);
+    const data = await hydrator.hydrate();
+    const gw = createAgentGateway({
+      startOutboxWorker: false,
+      idempotency: new PrismaIdempotencyStore(prisma as never),
+      approvals: new PrismaApprovalStore(prisma as never),
+    });
+    gw.gateway.hydrate(data);
+    expect(gw.gateway.getTask('task_pending_1')?.status).toBe('awaiting_confirmation');
+
+    // 恢复后审批可直接继续（不再 CHECKPOINT_MISSING）
+    const res = await gw.gateway.approveTask({ tenantId: 't1', userId: 'u1', agentId: 'a1' }, 'task_pending_1', 'apr_pending_1', preview);
+    expect(res.status).toBe('succeeded');
+    expect(gw.gateway.getTask('task_pending_1')?.status).toBe('succeeded');
   });
 });

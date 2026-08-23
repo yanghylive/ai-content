@@ -200,6 +200,7 @@ export class AgentGateway {
         toolName: spec.name,
         risk: spec.risk,
         inputHash: hashJson(request.payload),
+        requestJson: JSON.stringify(request),
       });
     } catch (e) {
       // claim 对 in_progress 抛 IDEMPOTENCY_CONFLICT，转为统一错误结果
@@ -305,11 +306,16 @@ export class AgentGateway {
     tasks?: AgentTask[];
     artifacts?: Artifact[];
     events?: AgentEvent[];
+    pending?: Array<{ taskId: string; request: ToolRequest; toolCallId: string; approvalId?: string }>;
   }): void {
     for (const s of data.sessions ?? []) this.sessions.set(s.id, s);
     for (const t of data.tasks ?? []) this.tasks.set(t.id, t);
     for (const a of data.artifacts ?? []) this.artifacts.set(a.id, a);
     if (data.events?.length) this.deps.bus.hydrateEvents(data.events);
+    // P1-6：重建 awaiting_confirmation 的 pending（审批/恢复不再 CHECKPOINT_MISSING）
+    for (const p of data.pending ?? []) {
+      this.pendingRequests.set(p.taskId, { request: p.request, toolCallId: p.toolCallId, approvalId: p.approvalId });
+    }
   }
 
   // ---------------------------------------------------------------- 能力 / 记忆
