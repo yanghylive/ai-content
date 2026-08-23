@@ -4190,6 +4190,7 @@ model AgentGatewayToolCall {
   inputHash      String   @map("input_hash") // 敏感输入只存确定性 hash
   status         String   @default("running") // scheduled | running | done | failed
   idempotencyKey String   @map("idempotency_key")
+  requestJson    String?  @map("request_json") // 完整 ToolRequest（重启恢复 pending 用）
   usageId        String?  @map("usage_id")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
