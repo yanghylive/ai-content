@@ -1,0 +1,402 @@
+openapi: 3.0.3
+info:
+  title: mobile-executor (JIUZHANG AI 设备代理) RPA 控制面 API
+  version: 0.1.0
+  description: >-
+    Android RPA 执行器（Kotlin AgentService + Accessibility/MediaProjection）的控制面契约。
+    对齐《开发前补充文档包》第七/九/十章，是 3010 Tool Gateway 下发的「可检查点步骤」的目标后端。
+
+    执行链路：
+      Agent 规划 → 3010 Tool Gateway 校验风险/设备租约/幂等
+      → mobile-executor 下发一个可检查点步骤
+      → Android Accessibility/MediaProjection 执行
+      → 上传截图、UI dump、页面指纹、结果
+      → Gateway 更新任务状态并决定下一步
+
+    边界（7.3）：默认用 3010 用户本机 RPA；Octop Remote Phone 仅作可选服务端后端，
+    不承诺 iOS；一次只有一个有效 DeviceLease；APK 不内置 Octop Python/uv/Chromium。
+  x-contract-version: "0.1.0"
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:3012
+    description: mobile-executor（Android RPA 执行器）控制面
+
+security:
+  - deviceAuth: []
+
+tags:
+  - name: lease
+    description: 设备租约（一台设备同时只有一个有效租约）
+  - name: execution
+    description: 步骤执行生命周期与证据上传
+  - name: capability
+    description: 能力探测（包名白名单 / 平台支持）
+
+paths:
+  # -----------------------------------------------------------------------
+  # 设备租约
+  # -----------------------------------------------------------------------
+  /v1/leases:
+    post:
+      tags: [lease]
+      operationId: acquireLease
+      summary: 申请设备租约
+      description: >-
+        同一设备只能有一个有效租约；已有 active 租约时按 owner 策略返回冲突。
+        租约过期自动暂停，不允许并发抢占。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId, owner, taskId, ttlSeconds]
+              properties:
+                deviceId: { type: string }
+                owner: { type: string }
+                taskId: { type: string }
+                tenantId: { type: string }
+                ttlSeconds: { type: integer, minimum: 1, maximum: 86400 }
+      responses:
+        '201':
+          description: 租约已建立
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeviceLease' }
+        '409':
+          description: LEASE_CONFLICT（已被其他 owner 占用）
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+        '404':
+          description: DEVICE_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /v1/leases/{leaseId}:
+    delete:
+      tags: [lease]
+      operationId: releaseLease
+      summary: 释放设备租约
+      parameters:
+        - name: leaseId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: 已释放
+        '404':
+          description: LEASE_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /v1/devices/{deviceId}/heartbeat:
+    post:
+      tags: [lease]
+      operationId: heartbeat
+      summary: 设备心跳续租
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: 心跳已更新
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [heartbeatAt, expiresAt]
+                properties:
+                  heartbeatAt: { type: string, format: date-time }
+                  expiresAt: { type: string, format: date-time }
+        '404':
+          description: DEVICE_OFFLINE / LEASE_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  # -----------------------------------------------------------------------
+  # 步骤执行生命周期
+  # -----------------------------------------------------------------------
+  /v1/executions:
+    post:
+      tags: [execution]
+      operationId: createExecution
+      summary: 下发一个可检查点步骤
+      description: >-
+        3010 Tool Gateway 校验通过后，下发单个移动工具步骤。
+        一个 execution 对应一个 mobile 工具动作，自带 deviceId 与检查点。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MobileStep' }
+      responses:
+        '202':
+          description: 已受理，进入调度
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Execution' }
+        '409':
+          description: LEASE_CONFLICT / CHECKPOINT_MISSING
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /v1/executions/{executionId}:
+    get:
+      tags: [execution]
+      operationId: getExecution
+      summary: 查询步骤执行状态
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: 当前执行状态
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Execution' }
+        '404':
+          description: EXECUTION_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /v1/executions/{executionId}/evidence:
+    post:
+      tags: [execution]
+      operationId: uploadEvidence
+      summary: 上传执行证据（截图 / UI dump / 页面指纹）
+      description: >-
+        执行过程中持续上传：截图、UI dump（脱敏）、页面指纹。
+        所有写动作必须关联 taskId、toolCallId、idempotencyKey 与证据。
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EvidenceUpload' }
+      responses:
+        '202':
+          description: 证据已接收
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [evidenceId]
+                properties:
+                  evidenceId: { type: string }
+        '404':
+          description: EXECUTION_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  /v1/executions/{executionId}/complete:
+    post:
+      tags: [execution]
+      operationId: completeExecution
+      summary: 步骤完成回写结果
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [succeeded, partially_succeeded, failed_retryable, failed_terminal, cancelled]
+                output: { type: object }
+                evidenceIds:
+                  type: array
+                  items: { type: string }
+                nextCheckpoint: { type: object }
+                requiresHandoff:
+                  type: boolean
+                  description: 需要用户接管（验证码/登录/支付/敏感沟通）
+      responses:
+        '200':
+          description: 已回写
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Execution' }
+        '409':
+          description: EXECUTION_NOT_RUNNING
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorBody' }
+
+  # -----------------------------------------------------------------------
+  # 能力探测
+  # -----------------------------------------------------------------------
+  /v1/capabilities:
+    get:
+      tags: [capability]
+      operationId: capabilities
+      summary: 设备能力探测
+      description: >-
+        探测 Android 能力、包名白名单、是否支持 MediaProjection 等。
+        Remote Phone 属于实验能力，必须做能力探测后再下发。
+      responses:
+        '200':
+          description: 能力清单
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MobileCapabilities' }
+
+# ---------------------------------------------------------------------------
+# WebSocket（执行器 → 3010 推送）
+# ---------------------------------------------------------------------------
+x-websocket:
+  path: /v1/devices/{deviceId}/stream
+  description: >-
+    执行器向 3010 实时推送步骤进度、截图指纹、handoff 请求。
+    断线重连带 lastEventId 重放，重复事件按 eventId 去重。
+  messageSchema: './agent-events.schema.json'
+
+components:
+  securitySchemes:
+    deviceAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: token
+      description: 设备/租户授权 token；由 3010 Tool Gateway 下发，禁止伪造。
+
+  schemas:
+    DeviceLease:
+      type: object
+      required: [id, deviceId, taskId, owner, status, heartbeatAt, expiresAt]
+      properties:
+        id: { type: string }
+        deviceId: { type: string }
+        taskId: { type: string }
+        owner: { type: string }
+        tenantId: { type: string }
+        status: { type: string, enum: [active, expired] }
+        heartbeatAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+
+    MobileStep:
+      type: object
+      required: [leaseId, toolName, toolCallId, taskId, idempotencyKey, payload]
+      properties:
+        leaseId: { type: string }
+        toolName:
+          type: string
+          enum:
+            - mobile_screenshot
+            - mobile_tap
+            - mobile_swipe
+            - mobile_launch_app
+            - mobile_ui_dump
+            - mobile_type
+            - mobile_keyevent
+            - mobile_back
+            - mobile_home
+            - mobile_wait
+            - mobile_find_text
+            - mobile_app_list
+            - mobile_handoff_to_user
+        toolCallId: { type: string }
+        taskId: { type: string }
+        idempotencyKey: { type: string }
+        checkpoint:
+          type: object
+          description: 续跑检查点（页面指纹 / 坐标 / 上下文）
+        payload:
+          type: object
+          description: >-
+            各工具入参：deviceId、坐标系、页面前后指纹、包名白名单、
+            文本/资源 ID/坐标候选与置信度、超时与等待条件、敏感字段禁止自动填充。
+
+    Execution:
+      type: object
+      required: [id, leaseId, toolName, status]
+      properties:
+        id: { type: string }
+        leaseId: { type: string }
+        toolName: { type: string }
+        status:
+          type: string
+          enum: [scheduled, running, succeeded, partially_succeeded, failed_retryable, failed_terminal, cancelled]
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: string, format: date-time }
+        output: { type: object }
+        evidenceIds:
+          type: array
+          items: { type: string }
+        requiresHandoff: { type: boolean }
+
+    EvidenceUpload:
+      type: object
+      required: [type, uri]
+      properties:
+        type:
+          type: string
+          enum: [screenshot, ui_dump, page_fingerprint, video]
+        uri: { type: string }
+        checksum: { type: string }
+        redactionVersion: { type: integer, minimum: 1 }
+        meta: { type: object }
+
+    MobileCapabilities:
+      type: object
+      required: [deviceId, android, accessibility, mediaProjection, appWhitelist]
+      properties:
+        deviceId: { type: string }
+        android:
+          type: object
+          properties:
+            version: { type: string }
+            sdk: { type: integer }
+        accessibility: { type: boolean }
+        mediaProjection: { type: boolean }
+        appWhitelist:
+          type: array
+          items: { type: string }
+          description: 允许 launch_app 的包名白名单
+        experimental:
+          type: boolean
+          description: 是否实验能力（如 Octop Remote Phone）
+
+    ErrorBody:
+      type: object
+      required: [code, message, retryable]
+      properties:
+        code:
+          type: string
+          enum:
+            - LEASE_CONFLICT
+            - LEASE_NOT_FOUND
+            - DEVICE_NOT_FOUND
+            - DEVICE_OFFLINE
+            - CHECKPOINT_MISSING
+            - EXECUTION_NOT_FOUND
+            - EXECUTION_NOT_RUNNING
+            - HANDOFF_REQUIRED
+            - PACKAGE_NOT_ALLOWED
+            - LOW_CONFIDENCE
+        message: { type: string }
+        retryable: { type: boolean }
+        details: { type: object }

@@ -1,0 +1,204 @@
+# =============================================================================
+# 3010 × Octop 统一错误码表（P0-2 机器可读协议 · 冻结）
+# 对齐《开发前补充文档包》3.2 / 3.4 与各控制面。
+# 本文件与 src/core/contracts-error-codes.ts (ERROR_SPECS) 同源，字段完全一致。
+# retryable=false 的码绝不自动重试；计费类需人工对账。
+# =============================================================================
+contractVersion: "0.1.0"
+format:
+  code: string            # 错误码，全局唯一，全部大写蛇形
+  message: string         # 人类可读中文说明（对外展示）
+  retryable: boolean      # 客户端是否可安全自动重试
+  httpStatus: integer     # 建议的 HTTP 状态码；降级类错误可能为 200（见 notes）
+  source: string          # 首次出现的契约章节/接口
+  notes: string           # 语义与处理建议
+# =============================================================================
+codes:
+  # ---- 计划 / 任务创建 ----
+  INVALID_PLAN:
+    message: 计划不合法，无法创建任务
+    retryable: false
+    httpStatus: 422
+    source: "补充包 3.2 POST /api/agent/tasks"
+    notes: plan 字段不满足 ToolSpec.inputSchema 或工作流强制步骤。
+  DUPLICATE_REQUEST:
+    message: 重复请求
+    retryable: false
+    httpStatus: 409
+    source: "补充包 3.2 POST /api/agent/tasks"
+    notes: Idempotency-Key 命中既有进行中请求。
+
+  # ---- 审批 ----
+  APPROVAL_EXPIRED:
+    message: 确认已过期，请重新预览
+    retryable: false
+    httpStatus: 410
+    source: "补充包 3.2 POST /tasks/:id/approve"
+    notes: 超过 Approval.expiresAt；需重新生成预览与 approvalId。
+  PREVIEW_CHANGED:
+    message: 待执行内容已被修改，请重新预览
+    retryable: false
+    httpStatus: 409
+    source: "补充包 3.2 POST /tasks/:id/approve"
+    notes: currentPreview 的预览 hash 与 Approval.previewHash 不一致。
+  APPROVAL_MISMATCH:
+    message: 审批与当前任务/请求不匹配或已被消费
+    retryable: false
+    httpStatus: 403
+    source: "补充包 3.2 POST /tasks/:id/approve"
+    notes: approval.taskId 不等于当前任务、toolCallId 不匹配，或审批已被一次性消费；禁止跨任务复用。
+
+  # ---- 任务状态机 ----
+  NOT_PAUSABLE:
+    message: 当前任务状态不可暂停
+    retryable: false
+    httpStatus: 409
+    source: "补充包 3.2 POST /tasks/:id/pause"
+    notes: 仅 running/paused/failed_retryable/partially_succeeded 可暂停。
+  TASK_TERMINAL:
+    message: 任务已进入终态，不可继续执行
+    retryable: false
+    httpStatus: 409
+    source: "补充包 3.2 多接口"
+    notes: succeeded/failed_terminal/cancelled 不可再调写工具；恢复只能从 checkpoint。
+  CHECKPOINT_MISSING:
+    message: 缺少恢复检查点
+    retryable: false
+    httpStatus: 409
+    source: "补充包 3.2 POST /tasks/:id/resume"
+    notes: 任务无 checkpointJson，无法安全续跑。
+  DEVICE_OFFLINE:
+    message: 设备离线，无法恢复
+    retryable: true
+    httpStatus: 409
+    source: "补充包 3.2 POST /tasks/:id/resume"
+    notes: DeviceLease 无效或心跳超时；可重试或重新申请租约。
+  CANCEL_TIMEOUT:
+    message: 取消超时，请检查设备状态
+    retryable: true
+    httpStatus: 504
+    source: "补充包 3.2 POST /tasks/:id/cancel"
+    notes: RPA 未在阈值内停止；触发人工检查。
+
+  # ---- 工具与幂等 ----
+  TOOL_NOT_ALLOWED:
+    message: 该工具不在当前模式白名单内
+    retryable: false
+    httpStatus: 403
+    source: "补充包 3.2 POST /tools/:name"
+    notes: business 模式下禁止 advanced 通用工具。
+  TOOL_EXECUTION_FAILED:
+    message: 工具执行失败
+    retryable: true
+    httpStatus: 500
+    source: "补充包 3.2 POST /tools/:name"
+    notes: 业务执行器抛错；释放幂等锁以便客户端重试，并落入 failed_retryable/terminal + 记录失败 usage。
+  IDEMPOTENCY_CONFLICT:
+    message: 幂等键冲突，已存在进行中的相同请求
+    retryable: false
+    httpStatus: 409
+    source: "补充包 3.2 POST /tools/:name"
+    notes: tenant + idempotencyKey 唯一；命中既有进行中请求。
+  IDEMPOTENCY_KEY_REQUIRED:
+    message: 高风险写请求必须携带 Idempotency-Key
+    retryable: false
+    httpStatus: 400
+    source: "补充包 3.2 POST /tools/:name"
+    notes: 高风险(risk=high 或 requiresConfirmation)写操作缺失 Idempotency-Key 头时拒绝，防止重复发布/扣费。
+
+  # ---- 记忆 ----
+  MEMORY_TIMEOUT:
+    message: 远程记忆超时，已降级为本地结果
+    retryable: true
+    httpStatus: 200
+    source: "补充包 3.2 POST /memory/search / 6.2"
+    notes: 软超时 800ms；返回本地结果并标记 degraded=true。
+  NAMESPACE_INVALID:
+    message: 记忆命名空间非法
+    retryable: false
+    httpStatus: 400
+    source: "补充包 3.2 POST /memory/search / 6.1"
+    notes: 命名空间必须四级隔离 tenant/user/agent/scope，禁止前端自由传入。
+  MEMORY_REJECTED:
+    message: 远程记忆拒绝写入
+    retryable: true
+    httpStatus: 502
+    source: "补充包 3.2 POST /memory/add / 6.2"
+    notes: 进入 MemoryOutbox 指数退避，死信可人工重放。
+  DUPLICATE_EVENT:
+    message: 记忆事件重复，已忽略
+    retryable: false
+    httpStatus: 200
+    source: "补充包 3.2 POST /memory/add / 6.2"
+    notes: memoryEventId 幂等；已存在则静默忽略。
+
+  # ---- Octop / 能力探测 ----
+  OCTOP_DEGRADED:
+    message: Octop 能力降级
+    retryable: true
+    httpStatus: 200
+    source: "补充包 3.2 GET /octop/capabilities"
+    notes: 部分能力不可用；响应带 degraded=true。
+  OCTOP_UNAVAILABLE:
+    message: Octop 不可用，已切换到 3010 原生工具
+    retryable: true
+    httpStatus: 200
+    source: "补充包 3.2 POST /sessions"
+    notes: Octop 不可达；会话降级为 3010 原生工具集。
+  RESUME_WINDOW_EXPIRED:
+    message: 事件重放窗口已过期，请拉取任务快照
+    retryable: false
+    httpStatus: 409
+    source: "补充包 3.3 WebSocket"
+    notes: lastEventId 超出服务端保留窗口；前端改为拉取任务快照。
+
+  # ---- 会话 / 通用 ----
+  SESSION_EXPIRED:
+    message: 会话已过期
+    retryable: false
+    httpStatus: 401
+    source: "补充包 3.2 POST /sessions/:id/resume"
+    notes: AgentSession.expiresAt 过期；需重建会话。
+  UNAUTHORIZED:
+    message: 未授权
+    retryable: false
+    httpStatus: 401
+    source: "补充包 3.1 认证"
+    notes: 缺 token / 签名无效 / audience 不匹配。
+  AUTH_INVALID:
+    message: 身份令牌无效或签名校验失败
+    retryable: false
+    httpStatus: 401
+    source: "补充包 3.1 认证"
+    notes: HMAC 签名校验失败、令牌被篡改或已过期；一律拒绝，绝不回退默认租户。
+  FORBIDDEN:
+    message: 禁止访问
+    retryable: false
+    httpStatus: 403
+    source: "补充包 3.1 认证 / 9.1 跨租户"
+    notes: token 有效但无权访问该租户/资源。
+  RATE_LIMITED:
+    message: 速率受限
+    retryable: true
+    httpStatus: 429
+    source: "补充包 3.1 认证"
+    notes: 限流触发；带 Retry-After 可重试。
+
+# =============================================================================
+# 来源校验：以下错误码在《补充包》3.2 REST 表中被显式引用，必须存在
+# （机器校验见 test/contract-files.test.ts）
+# =============================================================================
+referencedByRestTable:
+  - POST /api/agent/sessions: [401, 403, 429, AUTH_INVALID, OCTOP_UNAVAILABLE]
+  - POST /api/agent/sessions/:id/resume: [401, 404, SESSION_EXPIRED, FORBIDDEN, TASK_TERMINAL]
+  - POST /api/agent/tasks: [401, INVALID_PLAN, DUPLICATE_REQUEST, FORBIDDEN]
+  - POST /api/agent/tasks/:id/approve: [401, FORBIDDEN, APPROVAL_EXPIRED, PREVIEW_CHANGED, APPROVAL_MISMATCH]
+  - POST /api/agent/tasks/:id/pause: [401, FORBIDDEN, NOT_PAUSABLE, TASK_TERMINAL]
+  - POST /api/agent/tasks/:id/resume: [401, FORBIDDEN, CHECKPOINT_MISSING, DEVICE_OFFLINE]
+  - POST /api/agent/tasks/:id/cancel: [401, FORBIDDEN, CANCEL_TIMEOUT, TASK_TERMINAL]
+  - POST /api/agent/tools/:name: [401, FORBIDDEN, TOOL_NOT_ALLOWED, TOOL_EXECUTION_FAILED, IDEMPOTENCY_CONFLICT, IDEMPOTENCY_KEY_REQUIRED]
+  - POST /api/memory/search: [401, FORBIDDEN, MEMORY_TIMEOUT, NAMESPACE_INVALID]
+  - POST /api/memory/add: [401, FORBIDDEN, MEMORY_REJECTED, DUPLICATE_EVENT]
+  - GET /api/agent/octop/capabilities: [OCTOP_DEGRADED]
+  - POST /api/agent/octop/token-exchange: [401, AUTH_INVALID, FORBIDDEN, SESSION_EXPIRED]
+  - POST /api/agent/octop/session: [401, AUTH_INVALID]
