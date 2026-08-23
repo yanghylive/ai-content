@@ -39,6 +39,21 @@ export class MobileExecutorController {
     return request.authUser;
   }
 
+  /** 设备侧接口认证：校验 x-device-token → { userId, deviceId }（P0-4） */
+  private async requireDevice(request: AuthenticatedRequest): Promise<{
+    userId: string;
+    deviceId: string;
+  }> {
+    const token = String(request.headers['x-device-token'] || '');
+    const dev = token ? await this.devices.verifyDeviceToken(token) : null;
+    if (!dev) {
+      throw new UnauthorizedException(
+        '设备认证失败（缺少或无效 device token）',
+      );
+    }
+    return dev;
+  }
+
   // ---------- 设备 ----------
 
   @Post('devices')
@@ -53,13 +68,18 @@ export class MobileExecutorController {
   }
 
   @Post('devices/:id/heartbeat')
-  @ApiOperation({ summary: '设备心跳（agent 周期上报，标记在线）' })
-  heartbeat(
+  @ApiOperation({
+    summary: '设备心跳（agent 周期上报，标记在线；x-device-token 认证）',
+  })
+  async heartbeat(
     @Req() request: AuthenticatedRequest,
     @Param('id') deviceId: string,
   ) {
-    const user = this.requireUser(request);
-    return this.devices.heartbeat(user.id, deviceId);
+    const dev = await this.requireDevice(request);
+    if (dev.deviceId !== deviceId) {
+      throw new UnauthorizedException('token 与设备不匹配');
+    }
+    return this.devices.heartbeat(dev.userId, dev.deviceId);
   }
 
   @Get('devices')
@@ -98,14 +118,13 @@ export class MobileExecutorController {
   }
 
   @Post('tasks/claim')
-  @ApiOperation({ summary: '领取待办任务（agent 调用，指定 deviceId）' })
-  claimTask(
-    @Req() request: AuthenticatedRequest,
-    @Body() input: { deviceId: string },
-  ) {
-    const user = this.requireUser(request);
-    if (!input?.deviceId) throw new BadRequestException('需要 deviceId');
-    return this.dispatch.claimNext(user.id, input.deviceId);
+  @ApiOperation({
+    summary:
+      '领取待办任务（agent 调用；x-device-token 认证，deviceId 从 token 解析）',
+  })
+  async claimTask(@Req() request: AuthenticatedRequest) {
+    const dev = await this.requireDevice(request);
+    return this.dispatch.claimNext(dev.userId, dev.deviceId);
   }
 
   @Get('leases')
@@ -136,8 +155,8 @@ export class MobileExecutorController {
   }
 
   @Post('tasks/:id/evidence')
-  @ApiOperation({ summary: '上传任务执行证据（截图/节点树/结果）' })
-  addEvidence(
+  @ApiOperation({ summary: '上传任务执行证据（x-device-token 认证）' })
+  async addEvidence(
     @Req() request: AuthenticatedRequest,
     @Param('id') taskId: string,
     @Body()
@@ -147,8 +166,8 @@ export class MobileExecutorController {
       content: Record<string, unknown>;
     },
   ) {
-    const user = this.requireUser(request);
-    return this.evidence.addEvidence(user.id, taskId, input);
+    const dev = await this.requireDevice(request);
+    return this.evidence.addEvidence(dev.userId, taskId, input);
   }
 
   @Get('tasks/:id/evidence')
@@ -162,8 +181,10 @@ export class MobileExecutorController {
   }
 
   @Post('tasks/:id/status')
-  @ApiOperation({ summary: '回传执行状态（running/done/failed）' })
-  reportStatus(
+  @ApiOperation({
+    summary: '回传执行状态（x-device-token 认证，deviceId 从 token 解析）',
+  })
+  async reportStatus(
     @Req() request: AuthenticatedRequest,
     @Param('id') taskId: string,
     @Body()
@@ -171,11 +192,13 @@ export class MobileExecutorController {
       status: 'running' | 'done' | 'failed' | 'unknown';
       result?: Record<string, unknown>;
       error?: string;
-      deviceId?: string;
     },
   ) {
-    const user = this.requireUser(request);
+    const dev = await this.requireDevice(request);
     if (!input?.status) throw new BadRequestException('缺少 status');
-    return this.status.report(user.id, taskId, input);
+    return this.status.report(dev.userId, taskId, {
+      ...input,
+      deviceId: dev.deviceId,
+    });
   }
 }

@@ -34,10 +34,17 @@ class AgentService : Service() {
         private const val BASE_URL = "https://aicontent.vip.kaypal.cn"
         private const val HEARTBEAT_INTERVAL_MS = 60_000L
         private const val CLAIM_INTERVAL_MS = 15_000L
+        private const val PREFS = "jz_agent"
+        private const val KEY_DEVICE_ID = "device_id"
+        private const val KEY_DEVICE_TOKEN = "device_token"
+        private const val KEY_DEVICE_UUID = "device_uuid"
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val prefs by lazy { getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
     private var deviceId: String? = null
+    private var deviceToken: String? = null
+    private var deviceUuid: String? = null
     // 生产 API 偶发慢响应：默认 10s 超时会导致心跳/领取频繁 timeout（2026-08-09 实测）
     private val client = OkHttpClient.Builder()
         .connectTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
@@ -52,6 +59,11 @@ class AgentService : Service() {
         } catch (e: Exception) {
             Log.w(TAG, "startForeground failed (通知权限未授予?): ${e.message}")
         }
+        deviceId = prefs.getString(KEY_DEVICE_ID, null)
+        deviceToken = prefs.getString(KEY_DEVICE_TOKEN, null)
+        deviceUuid = prefs.getString(KEY_DEVICE_UUID, null) ?: java.util.UUID.randomUUID().toString().also {
+            prefs.edit().putString(KEY_DEVICE_UUID, it).apply()
+        }
         scope.launch {
             registerAndLoop()
         }
@@ -60,6 +72,9 @@ class AgentService : Service() {
     private fun authHeaders(): String? =
         CookieManager.getInstance().getCookie(BASE_URL)
 
+    /** 设备 token header（P0-4：heartbeat/claim/status 用，不再复用 Cookie 伪造 deviceId） */
+    private fun deviceTokenHeaders(): String? = deviceToken
+
     private fun postJson(url: String, json: String?): okhttp3.Response {
         val rb = Request.Builder().url(url)
         val body = json?.let {
@@ -67,6 +82,7 @@ class AgentService : Service() {
         } ?: RequestBody.create(null, ByteArray(0))
         rb.post(body)
         authHeaders()?.let { rb.header("Cookie", it) }
+        deviceTokenHeaders()?.let { rb.header("x-device-token", it) }
         return client.newCall(rb.build()).execute()
     }
 
@@ -78,18 +94,40 @@ class AgentService : Service() {
 
     private suspend fun registerDevice() {
         val name = android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL
-        val json = """{"deviceName":"$name","platform":"android","agentVersion":"0.2.0"}"""
+        val uuid = deviceUuid ?: ""
+        val json = """{"deviceName":"$name","platform":"android","agentVersion":"0.2.2","deviceUuid":"$uuid"}"""
         try {
             postJson("$BASE_URL/api/mobile-executor/devices", json).use { resp ->
                 if (resp.isSuccessful) {
-                    deviceId = parseDeviceId(resp.body?.string())
-                    Log.i(TAG, "register ok, deviceId=$deviceId")
+                    val body = resp.body?.string()
+                    deviceId = parseDeviceId(body)
+                    val newToken = parseDeviceToken(body)
+                    if (newToken != null) {
+                        deviceToken = newToken
+                        prefs.edit()
+                            .putString(KEY_DEVICE_ID, deviceId)
+                            .putString(KEY_DEVICE_TOKEN, newToken)
+                            .apply()
+                    }
+                    Log.i(TAG, "register ok, deviceId=$deviceId token=${newToken != null}")
                 } else {
                     Log.w(TAG, "register failed: ${resp.code}")
                 }
             }
         } catch (e: Exception) {
             Log.w(TAG, "register error: ${e.message}")
+        }
+    }
+
+    private fun parseDeviceToken(body: String?): String? {
+        if (body.isNullOrBlank()) return null
+        return try {
+            val json = JSONObject(body)
+            val data = json.optJSONObject("data")
+            val token = data?.optString("deviceToken").orEmpty().ifEmpty { json.optString("deviceToken") }
+            token.ifEmpty { null }
+        } catch (e: Exception) {
+            null
         }
     }
 

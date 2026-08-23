@@ -2905,17 +2905,20 @@ model AiUsageQuota {
 
 // 手机执行设备（C 组/P5）：用户手机 agent 注册 + 心跳
 model MobileDevice {
-  id              String    @id @default(cuid())
-  userId          String    @map("user_id")
-  deviceName      String    @map("device_name")
-  platform        String    @default("android") // android | ios
-  status          String    @default("online") // online | offline
-  lastHeartbeatAt DateTime? @map("last_heartbeat_at")
-  agentVersion    String?   @map("agent_version")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  deviceName       String    @map("device_name")
+  platform         String    @default("android") // android | ios
+  status           String    @default("online") // online | offline
+  lastHeartbeatAt  DateTime? @map("last_heartbeat_at")
+  agentVersion     String?   @map("agent_version")
+  deviceUuid       String?   @map("device_uuid") // 稳定设备标识（Keystore 生成）
+  deviceTokenHash  String?   @map("device_token_hash") // 设备认证 token 的 sha256（P0-4）
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   @@index([userId])
+  @@index([deviceTokenHash])
   @@map("mobile_devices")
 }
 
