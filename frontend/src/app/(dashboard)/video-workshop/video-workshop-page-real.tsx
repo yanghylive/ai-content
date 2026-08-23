@@ -196,26 +196,15 @@ export default function VideoWorkshopV2Page() {
       <div className="kx-mobile-ambient" style={{ minHeight: "100dvh", paddingBottom: 90 }}>
       <div className="mx-container" style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 20px 0" }}>
       </div>
-      <header className="mx-header">
-        <div className="mx-header-row">
-          <div>
-            <div className="mx-brand-eyebrow">
-              <BrandLogo />
-              JIUZHANG AI
-            </div>
-            <h1 className="mx-page-title">视频引擎</h1>
-            <p className="mx-page-sub">选流水线 · 写选题 · 自动成片</p>
-          </div>
-          <button
-            type="button"
-            className="mx-btn-gold"
-            style={{ fontSize: 12, padding: "8px 14px" }}
-            onClick={() => void checkEngine()}
-          >
-            刷新状态
-          </button>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">视频引擎</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">选流水线 · 写选题 · 自动成片</p>
         </div>
-      </header>
+        <button type="button" className="kx-btn-primary px-4 py-2 text-[13px]" onClick={() => void checkEngine()}>
+          刷新状态
+        </button>
+      </div>
 
       <section className="mx-px" style={{ marginTop: 14 }}>
         {/* 12 流水线直连入口 */}

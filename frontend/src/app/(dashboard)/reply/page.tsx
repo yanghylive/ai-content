@@ -81,18 +81,12 @@ export default function ReplyV2Page() {
     <div>
       <V2BackButton />
       {/* 页面头 */}
-      <header className="mx-header">
-        <div className="mx-header-row">
-          <div>
-            <div className="mx-brand-eyebrow">
-              <BrandLogo />
-              JIUZHANG AI
-            </div>
-            <h1 className="mx-page-title">AI 回复建议</h1>
-            <p className="mx-page-sub">评论/私信怎么回？AI 给你 3 版</p>
-          </div>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">AI 回复建议</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">评论/私信怎么回？AI 给你 3 版</p>
         </div>
-      </header>
+      </div>
 
       {/* 输入区 */}
       <section className="mx-px" style={{ marginTop: 14 }}>

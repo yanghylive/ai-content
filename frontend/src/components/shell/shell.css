@@ -370,69 +370,52 @@ html[data-theme="dark"] {
 }
 
 /* ============================================================
- * mx-* 桌面等价（≥768px）—— ⚠️ 弃用保留（2026-08-20 起）
- * effects/knowledge/settings/video-studio 已全部亮色化，桌面端已无
- * mx-* 深色使用者。本段仅保留以防移动分支复用 mx-* 时桌面裸奔，
- * 新页面禁止使用 mx-* 深色沉浸类，统一走 kx 亮色体系。
+ * 旧 mx 页头桌面收编（≥768px）——按类型统一到 kx-page-head。
+ * 移动端 mx-header 仍由 mobile.css 保留；桌面不再出现深色卡片页头。
  * ============================================================ */
 @media (min-width: 768px) {
   .mx-header {
-    padding: 22px 34px 16px;
-    background:
-      radial-gradient(circle at 88% -20%, rgba(238, 189, 114, 0.14), transparent 36%),
-      linear-gradient(165deg, rgba(16, 26, 44, 0.97), rgba(12, 21, 38, 0.99));
-    border-bottom: 1px solid rgba(142, 165, 190, 0.16);
+    padding: 6px 0 10px;
+    background: transparent;
+    border: 0;
   }
-  .mx-header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .mx-brand-eyebrow {
+  .mx-header-row {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    color: #f6c478;
-    margin-bottom: 8px;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
   }
-  .mx-brand-eyebrow svg { width: 14px; height: 14px; }
-  .mx-page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; color: #e8f1fc; }
-  .mx-page-sub { margin-top: 4px; font-size: 13px; color: rgba(148, 163, 184, 0.78); }
+  .mx-brand-eyebrow { display: none; }
+  .mx-page-title {
+    font-size: 26px;
+    line-height: 1.25;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: var(--kx-ink);
+  }
+  .mx-page-sub {
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 21px;
+    color: var(--kx-muted);
+  }
   .mx-btn-gold {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    border: none;
-    border-radius: 999px;
-    cursor: pointer;
-    font-family: inherit;
-    font-weight: 700;
     background: linear-gradient(135deg, #d98f2b, #efb45b);
-    color: #173052;
-    text-decoration: none;
+    color: #2e0e66;
     box-shadow: 0 6px 16px rgba(185, 110, 29, 0.22);
-    transition: filter 0.15s ease;
   }
-  .mx-btn-gold:hover { filter: brightness(1.05); }
   .mx-px {
+    width: 100%;
+    max-width: 880px !important;
+    margin: 0 auto;
     padding: 14px var(--page-gutter) 40px;
-    background:
-      radial-gradient(circle at 4% 10%, rgba(51, 97, 153, 0.16), transparent 34%),
-      linear-gradient(180deg, rgba(14, 24, 42, 0.99), rgba(11, 19, 34, 1));
+    background: transparent;
   }
   .mx-card {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    border: 1px solid transparent;
-    border-radius: 20px;
-    background:
-      linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(244, 248, 252, 0.62)) padding-box,
-      linear-gradient(128deg, rgba(255, 255, 255, 0.9) 0%, rgba(183, 201, 221, 0.3) 50%, rgba(120, 148, 179, 0.22) 100%) border-box;
-    box-shadow:
-      0 20px 46px rgba(0, 0, 0, 0.32),
-      0 4px 12px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    border-color: var(--kx-border);
+    background: var(--kx-card);
+    color: var(--kx-ink);
   }
 }
 
