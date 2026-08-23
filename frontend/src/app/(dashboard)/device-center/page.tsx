@@ -172,21 +172,37 @@ export default function DeviceCenterPage() {
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {tasks.map((t) => (
-                <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                  <div>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>
-                      {t.type === "custom" ? "MAI-UI 任务" : "发布任务"} · {t.id.slice(-6)}
+              {tasks.map((t) => {
+                const err = taskError(t);
+                const needsAttention = t.status === "failed" || t.status === "unknown";
+                return (
+                  <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 8, background: needsAttention ? "#fef2f2" : "#f8fafc", border: `1px solid ${needsAttention ? "#fecaca" : "#e2e8f0"}` }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>
+                        {t.type === "custom" ? "MAI-UI 任务" : "发布任务"} · {t.id.slice(-6)}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>
+                        {new Date(t.createdAt).toLocaleString()}
+                      </div>
+                      {needsAttention && err && (
+                        <div style={{ fontSize: 11, color: "#dc2626", marginTop: 2, wordBreak: "break-all" }}>
+                          {t.status === "unknown" ? "⚠️ 结果不确定：" : "失败原因："}{err}
+                        </div>
+                      )}
                     </div>
-                    <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>
-                      {new Date(t.createdAt).toLocaleString()}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: taskStatusColor(t.status), background: taskStatusBg(t.status), padding: "3px 8px", borderRadius: 6 }}>
+                        {t.status}
+                      </span>
+                      {needsAttention && (
+                        <Link href="/mai-ui" style={{ fontSize: 11.5, color: "#2563eb", textDecoration: "none", whiteSpace: "nowrap" }}>
+                          去 MAI-UI 重试 →
+                        </Link>
+                      )}
                     </div>
                   </div>
-                  <span style={{ fontSize: 11.5, fontWeight: 700, color: taskStatusColor(t.status), background: taskStatusBg(t.status), padding: "3px 8px", borderRadius: 6 }}>
-                    {t.status}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -199,6 +215,7 @@ function taskStatusColor(status: string): string {
   switch (status) {
     case "done": return "#059669";
     case "failed": return "#dc2626";
+    case "unknown": return "#d97706";
     case "running": case "claimed": return "#2563eb";
     case "cancelled": return "#64748b";
     default: return "#d97706";
@@ -209,8 +226,16 @@ function taskStatusBg(status: string): string {
   switch (status) {
     case "done": return "#ecfdf5";
     case "failed": return "#fef2f2";
+    case "unknown": return "#fffbeb";
     case "running": case "claimed": return "#eff6ff";
     case "cancelled": return "#f1f5f9";
     default: return "#fffbeb";
   }
+}
+
+/** 从任务 result 提取失败原因 */
+function taskError(t: { result?: unknown }): string {
+  const r = t.result as { error?: string; message?: string } | null | undefined;
+  if (!r) return "";
+  return r.error || r.message || "";
 }

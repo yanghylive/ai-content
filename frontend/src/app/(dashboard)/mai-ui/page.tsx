@@ -16,7 +16,7 @@ export default function MaiUiWorkbenchPage() {
   const [planning, setPlanning] = useState(false);
   const [executing, setExecuting] = useState(false);
   const [actions, setActions] = useState<MaiUiAction[]>([]);
-  const [pendingAsk, setPendingAsk] = useState<string>("");
+  const [pendingAsk, setPendingAsk] = useState<{ question: string; riskLevel: string; summary: string } | null>(null);
   const [selRect, setSelRect] = useState<[number, number, number, number] | null>(null);
   const selRef = useRef<{ startX: number; startY: number; drawing: boolean }>({ startX: 0, startY: 0, drawing: false });
   const [lastTask, setLastTask] = useState<{ id: string; resultMessage: string; actionCount: number } | null>(null);
@@ -140,7 +140,12 @@ export default function MaiUiWorkbenchPage() {
       }
     } else if (result.message.startsWith("ASK_USER:")) {
       const question = result.message.replace(/^ASK_USER:/, "").split("|")[0];
-      setPendingAsk(question);
+      // P2-24 审批卡：动作摘要 + 风险分级（含外发/写内容动作 → high）
+      const summary = actions.map((a) => a.action).join(" → ");
+      const riskLevel = actions.some((a) => a.action === "send_dm" || a.action === "input")
+        ? "high"
+        : "medium";
+      setPendingAsk({ question, riskLevel, summary });
       pushLog(`⏸ 需要人工确认：${question}`);
     } else {
       pushLog(`❌ ${result.message}`);
@@ -150,7 +155,8 @@ export default function MaiUiWorkbenchPage() {
 
   const handleAskAnswer = useCallback(
     async (proceed: boolean) => {
-      setPendingAsk("");
+      const ask = pendingAsk;
+      setPendingAsk(null);
       if (!proceed) {
         resumeAfterAsk(false);
         pushLog("⛔ 已中止动作序列");
@@ -171,7 +177,7 @@ export default function MaiUiWorkbenchPage() {
         const hash = await sha256Hex(contentText);
         const approval = await createApproval({
           actionType: "mai_ui_execute",
-          riskLevel: "medium",
+          riskLevel: ask?.riskLevel ?? "medium",
           inputHash: hash,
           actionId: lastTask.id,
           reason: `MAI-UI 外发确认：${instruction.trim().slice(0, 40)}`,
@@ -184,7 +190,7 @@ export default function MaiUiWorkbenchPage() {
         resumeAfterAsk(false);
       }
     },
-    [lastTask, instruction, actions, pushLog],
+    [lastTask, instruction, actions, pendingAsk, pushLog],
   );
 
   const handleCancel = useCallback(() => {
@@ -521,7 +527,7 @@ export default function MaiUiWorkbenchPage() {
         )}
       </div>
 
-      {/* ask_user 人工确认弹层 */}
+      {/* ask_user 审批卡（P2-24：风险分级 + 动作摘要 + 一次性审批） */}
       {pendingAsk && (
         <div
           style={{
@@ -535,9 +541,38 @@ export default function MaiUiWorkbenchPage() {
             padding: 24,
           }}
         >
-          <div style={{ background: "#fff", borderRadius: 16, padding: 20, width: "100%", maxWidth: 340 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#1e1b4b", marginBottom: 6 }}>需要您确认</div>
-            <div style={{ fontSize: 13.5, color: "#475569", lineHeight: 1.6, marginBottom: 16 }}>{pendingAsk}</div>
+          <div style={{ background: "#fff", borderRadius: 16, padding: 20, width: "100%", maxWidth: 360 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#1e1b4b", marginBottom: 10 }}>需要您确认</div>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  padding: "3px 10px",
+                  borderRadius: 999,
+                  background: pendingAsk.riskLevel === "high" ? "#fef2f2" : "#fffbeb",
+                  color: pendingAsk.riskLevel === "high" ? "#dc2626" : "#b45309",
+                }}
+              >
+                {pendingAsk.riskLevel === "high" ? "⚠️ 高风险（外发/写内容）" : "🟡 中风险"}
+              </span>
+            </div>
+            <div
+              style={{
+                fontSize: 11.5,
+                color: "#64748b",
+                background: "#f8fafc",
+                borderRadius: 8,
+                padding: "8px 10px",
+                marginBottom: 12,
+                wordBreak: "break-all",
+              }}
+            >
+              动作序列：{pendingAsk.summary || "—"}
+            </div>
+            <div style={{ fontSize: 13.5, color: "#475569", lineHeight: 1.6, marginBottom: 16 }}>
+              {pendingAsk.question}
+            </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button
                 onClick={() => handleAskAnswer(false)}
@@ -549,7 +584,7 @@ export default function MaiUiWorkbenchPage() {
                 onClick={() => handleAskAnswer(true)}
                 style={{ flex: 1, ...btnStyle("#059669") }}
               >
-                继续执行
+                批准并执行
               </button>
             </div>
           </div>

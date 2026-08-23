@@ -6,7 +6,7 @@ export interface ExecutorTaskView {
   id: string;
   type: string;
   payload: unknown;
-  status: "queued" | "claimed" | "running" | "done" | "failed" | "cancelled";
+  status: "queued" | "claimed" | "running" | "done" | "failed" | "cancelled" | "unknown";
   result?: unknown;
   createdAt: string;
 }
