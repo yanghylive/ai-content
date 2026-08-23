@@ -8,7 +8,6 @@ import {
   ArrowRight,
   Inbox,
   RefreshCw,
-  TrendingUp,
 } from "lucide-react";
 import { getApiBase } from "@/lib/api/client";
 import {
@@ -217,12 +216,9 @@ function HomeHeader({
   ];
 
   return (
-    <section className="kaypal-v3-panel p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-4">
-          <div className="kaypal-v3-icon-tile h-12 w-12">
-            <TrendingUp className="h-6 w-6" />
-          </div>
+    <div className="kx-page-head">
+      <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+        <div>
           <div>
             <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               今日增长
@@ -289,7 +285,7 @@ function HomeHeader({
           ))}
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }
 
