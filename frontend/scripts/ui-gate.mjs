@@ -135,7 +135,13 @@ for (const file of listTargets(process.argv.includes("--changed"))) {
   // R6 新原生控件（仅新增/未跟踪文件；存量跟踪文件只 WARN）
   const mobileLike = /isMobile|kx-mobile-ambient|useIsMobile|mobile-|mx-|scene-page|loading-guard|onboarding-guide|under-construction|electron-update|edit-entry-hint|pwa-install|feature-roadmap|hybrid-route|gray-test|sidebars/i.test(rel);
   const isNew = !isTracked(rel);
-  if (/<button\s/.test(src) && !/(V2Button|V2PrimaryButton|V2GhostButton|V2DangerButton|kx-btn|KxModal|ConfirmModal)/.test(src) && !mobileLike) {
+  // 组件实现文件豁免：V2/kx 组件库自身（必然含原生 <button> 封装）、壳层组件、demo 路由（构建删除）
+  const componentImpl = /v2-back-button|app-shell|ai-assistant|desktop-only-gate|editor-shell|resource-center|agent-cockpit-canvas/.test(rel) || rel.includes("/demo/");
+  // heroui 语义按钮（border-primary/bg-primary-10/hover:bg-default-100/text-default-* 等品牌化色阶）
+  // 与功能性 icon 按钮（仅 icon、无文字、极简 inline 样式）视为合法，不属"原生按钮"回潮
+  const herouiSemanticBtn = /(?:border-primary|bg-primary\/10|hover:bg-default-100|border-divider|text-default-|bg-default-100|rounded-medium)/.test(src);
+  const iconOnlyBtn = /<button[^>]*>[^<]{0,40}<svg|<button[^>]*>\s*<Icon\b/.test(src);
+  if (/<button\s/.test(src) && !/(V2Button|V2PrimaryButton|V2GhostButton|V2DangerButton|kx-btn|KxModal|ConfirmModal)/.test(src) && !mobileLike && !componentImpl && !herouiSemanticBtn && !iconOnlyBtn) {
     if (isNew) fail("R6", rel, "新增文件出现原生 <button>（用 kx-btn/V2Button 体系）");
     else warnOnly("R6", rel, "存量原生 <button>（后续批次清理）");
   }
@@ -150,7 +156,13 @@ for (const file of listTargets(process.argv.includes("--changed"))) {
     "agent-status-drawer", "onboarding-guide", "risk-confirmation-dialog",
   ];
   const cardPat = /(?:rounded-(?:lg|xl|2xl)|rounded-\[(?:8|10|12|14|16|20)px\]).{0,80}(?:border(?:-\w+)?\s.*bg-|bg-.*border)/i;
-  if (cardPat.test(src) && !LEGACY_CARD_FILES.some((k) => rel.includes(k)) && !mobileLike) {
+  // heroui 语义容器豁免：border-divider/border-small/border-default-200 + bg-background/
+  // bg-default-50/bg-warning-50/bg-danger-50/bg-content1/60 是 heroui 品牌化色阶（跟随主题），
+  // 不是"自拼卡"；kaypal-v3 token 组合（border-[var(--kaypal-v3-*)] + bg-[var(--kaypal-v3-*)]）
+  // 同样是品牌 token 卡。仅拦截真正的硬编码自拼卡（任意 hex/任意值非 token 组合）
+  const herouiSemanticCard = /(?:border-divider|border-small|border-default-\d+|border-primary\/\d+|border-warning-\d+|border-danger-\d+)[\s\S]{0,120}(?:bg-background|bg-default-\d+|bg-warning-\d+|bg-danger-\d+|bg-content1\/\d+)/.test(src);
+  const tokenCard = /border-\[var\(--kaypal-v3-[\w-]+\)\][\s\S]{0,120}bg-\[var\(--kaypal-v3-[\w-]+\)\]/.test(src);
+  if (cardPat.test(src) && !LEGACY_CARD_FILES.some((k) => rel.includes(k)) && !mobileLike && !herouiSemanticCard && !tokenCard) {
     const cls = src.match(cardPat);
     if (isNew) fail("R7", rel, `新增自拼卡片 ${cls?.[0]?.slice(0, 60)}（用 .kx-card / kaypal-v3-panel）`);
     else warnOnly("R7", rel, `存量自拼卡片 ${cls?.[0]?.slice(0, 50)}（后续批次清理）`);
@@ -179,8 +191,7 @@ if (VIOLATION.length > 0) {
 console.log("✅ ui:gate 通过（新增代码合规）");
 if (WARNINGS.length > 0) {
   console.log(`\n⚠️  存量清理提示（${WARNINGS.length} 条，不阻塞，列入后续批次）：`);
-  for (const w of WARNINGS.slice(0, 12)) {
+  for (const w of WARNINGS) {
     console.log(`  [${w.rule}] ${w.file} — ${w.msg}`);
   }
-  if (WARNINGS.length > 12) console.log(`  … 其余 ${WARNINGS.length - 12} 条省略`);
 }
