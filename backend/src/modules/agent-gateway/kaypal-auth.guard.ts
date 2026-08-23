@@ -25,11 +25,11 @@ export function isAppErrorLike(e: unknown): e is AppError {
 export class KaypalAuthGuard implements CanActivate {
   constructor(private readonly auth: AuthService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<Request>();
     const token = req.header('authorization') ?? req.header('x-kaypal-ctx');
     try {
-      const ctx = requireAuth(this.auth, token);
+      const ctx = await requireAuth(this.auth, token);
       (req as { ctx?: import('./core/types').TenantContext }).ctx = ctx;
       return true;
     } catch (e) {

@@ -49,7 +49,15 @@ export function resolveAgentSecret(config: ConfigService): string {
     {
       provide: AuthService,
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => new AuthService(resolveAgentSecret(config)),
+      useFactory: (config: ConfigService) =>
+        new AuthService(resolveAgentSecret(config), {
+          // P0-2：Kaypal 正式 access_token 验证（kaypal.cn /api/auth/me）
+          baseUrl: config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() || 'https://kaypal.cn',
+          apiKey:
+            config.get<string>('KAYPAL_BILLING_API_KEY')?.trim() ||
+            config.get<string>('KAYPAL_API_KEY')?.trim() ||
+            '',
+        }),
     },
   ],
   exports: [AgentGatewayService, AuthService],

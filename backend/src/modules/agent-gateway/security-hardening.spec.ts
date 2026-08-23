@@ -246,13 +246,13 @@ describe('安全加固（P0/P1 复查项）', () => {
     expect((await g.memoryRemote.search(ns, '对话记忆X')).length).toBe(0);
   });
 
-  it('token 缺 exp（签名正确）→ AUTH_INVALID（P1-6）', () => {
+  it('token 缺 exp（签名正确）→ AUTH_INVALID（P1-6）', async () => {
     const auth = new AuthService('secret');
     const body = Buffer.from(JSON.stringify({ tenantId: 't1', userId: 'u1', agentId: 'a1' })).toString('base64url'); // 无 exp
     const sig = crypto.createHmac('sha256', 'secret').update(body).digest('base64url');
     let code = '';
     try {
-      auth.verify(`${body}.${sig}`);
+      await auth.verify(`${body}.${sig}`);
     } catch (e) {
       code = (e as { code: string }).code;
     }
