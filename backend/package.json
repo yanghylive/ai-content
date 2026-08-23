@@ -61,6 +61,8 @@
     "@playwright/mcp": "^0.0.75",
     "@prisma/client": "^6.19.2",
     "@types/cron": "^2.0.1",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "ali-oss": "^6.23.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
