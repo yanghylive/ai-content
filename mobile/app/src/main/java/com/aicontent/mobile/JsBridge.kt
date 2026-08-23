@@ -210,28 +210,42 @@ class JsBridge(private val activity: Activity) {
     fun captureScreen(): String {
         val latch = CountDownLatch(1)
         val holder = arrayOfNulls<String>(1)
-        val done: (com.aicontent.mobile.agent.RpaResult) -> Unit = { result ->
-            holder[0] = if (result.ok) {
+        // 是否已回退过无障碍（MediaProjection 失败后仅回退一次，避免无限重试）
+        var fellBackToAccessibility = false
+        lateinit var done: (com.aicontent.mobile.agent.RpaResult) -> Unit
+        done = fun(result: com.aicontent.mobile.agent.RpaResult) {
+            if (result.ok) {
                 // 消息格式: data:image/jpeg;base64,xxx|w=540&h=1200&sw=1080&sh=2400
                 val meta = Regex("\\|w=(\\d+)&h=(\\d+)&sw=(\\d+)&sh=(\\d+)\$").find(result.message)
                 if (meta != null) {
                     val dataUrl = result.message.substring(0, meta.range.first)
-                    "{\"ok\":true,\"message\":\"${escapeJson(dataUrl)}\"," +
+                    holder[0] = "{\"ok\":true,\"message\":\"${escapeJson(dataUrl)}\"," +
                         "\"width\":${meta.groupValues[1]},\"height\":${meta.groupValues[2]}," +
                         "\"screenWidth\":${meta.groupValues[3]},\"screenHeight\":${meta.groupValues[4]}}"
                 } else {
-                    "{\"ok\":true,\"message\":\"${escapeJson(result.message)}\"}"
+                    holder[0] = "{\"ok\":true,\"message\":\"${escapeJson(result.message)}\"}"
                 }
-            } else {
-                "{\"ok\":false,\"message\":\"${escapeJson(result.message)}\"}"
+                latch.countDown()
+                return
             }
+            if (!fellBackToAccessibility &&
+                android.os.Build.VERSION.SDK_INT >= 30 &&
+                com.aicontent.mobile.agent.MediaProjectionCapture.hasPermission()
+            ) {
+                // MediaProjection 失败 → 回退无障碍 takeScreenshot（Android 11+，仅一次）
+                fellBackToAccessibility = true
+                com.aicontent.mobile.agent.RpaAccessibilityService.captureScreen(done)
+                return
+            }
+            holder[0] = "{\"ok\":false,\"message\":\"${escapeJson(result.message)}\"}"
             latch.countDown()
         }
         // 1) 已授权 MediaProjection → 优先（覆盖 Android 8+）
         if (com.aicontent.mobile.agent.MediaProjectionCapture.hasPermission()) {
             com.aicontent.mobile.agent.MediaProjectionCapture.capture(activity, 540, 1200, done)
         } else {
-            // 2) Android 11+ 无障碍截图
+            // 2) Android 11+ 无障碍截图（置回退标志，避免无障碍失败再回退自己）
+            fellBackToAccessibility = true
             com.aicontent.mobile.agent.RpaAccessibilityService.captureScreen(done)
         }
         try {
