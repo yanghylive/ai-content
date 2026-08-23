@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -18,6 +19,7 @@ import { TaskDispatchService } from './task-dispatch.service';
 import { ExecutorStatusService } from './executor-status.service';
 import { ExecutorEvidenceService } from './executor-evidence.service';
 import { ExecutorRunService } from './executor-run.service';
+import { PlatformAccountService } from './platform-account.service';
 import { ApprovalGateService } from '../workflow/approval-gate.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -36,6 +38,7 @@ export class MobileExecutorController {
     private readonly status: ExecutorStatusService,
     private readonly evidence: ExecutorEvidenceService,
     private readonly run: ExecutorRunService,
+    private readonly platformAccounts: PlatformAccountService,
     private readonly approvalGate: ApprovalGateService,
     private readonly prisma: PrismaService,
   ) {}
@@ -239,6 +242,50 @@ export class MobileExecutorController {
   listLeases(@Req() request: AuthenticatedRequest) {
     const user = this.requireUser(request);
     return this.dispatch.listActiveLeases(user.id);
+  }
+
+  // ---------- 平台账号（P2-27） ----------
+
+  @Post('platform-accounts')
+  @ApiOperation({ summary: '登记/更新平台账号（昵称/登录态/绑定设备/风控）' })
+  upsertAccount(
+    @Req() request: AuthenticatedRequest,
+    @Body()
+    input: {
+      platform: string;
+      accountId: string;
+      nickname?: string;
+      loginStatus?: string;
+      boundDeviceId?: string;
+      riskStatus?: string;
+    },
+  ) {
+    const user = this.requireUser(request);
+    return this.platformAccounts.upsert(user.id, input || {});
+  }
+
+  @Get('platform-accounts')
+  @ApiOperation({ summary: '平台账号列表' })
+  listAccounts(@Req() request: AuthenticatedRequest) {
+    const user = this.requireUser(request);
+    return this.platformAccounts.list(user.id);
+  }
+
+  @Patch('platform-accounts/:accountId')
+  @ApiOperation({ summary: '更新账号状态（登录态/绑定设备/风控）' })
+  updateAccount(
+    @Req() request: AuthenticatedRequest,
+    @Param('accountId') accountId: string,
+    @Body()
+    input: {
+      nickname?: string;
+      loginStatus?: string;
+      boundDeviceId?: string | null;
+      riskStatus?: string;
+    },
+  ) {
+    const user = this.requireUser(request);
+    return this.platformAccounts.update(user.id, accountId, input || {});
   }
 
   @Get('tasks')

@@ -6,6 +6,7 @@ import { TaskDispatchService } from './task-dispatch.service';
 import { ExecutorStatusService } from './executor-status.service';
 import { ExecutorEvidenceService } from './executor-evidence.service';
 import { ExecutorRunService } from './executor-run.service';
+import { PlatformAccountService } from './platform-account.service';
 
 /**
  * 手机执行器服务器侧（C 组/P5，主文档 4.3）
@@ -21,6 +22,7 @@ import { ExecutorRunService } from './executor-run.service';
     ExecutorStatusService,
     ExecutorEvidenceService,
     ExecutorRunService,
+    PlatformAccountService,
   ],
   exports: [TaskDispatchService, DeviceRegistryService],
 })
