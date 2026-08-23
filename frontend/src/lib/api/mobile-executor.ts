@@ -43,11 +43,11 @@ export async function createMaiUiTask(input: {
   return data;
 }
 
-/** 回传任务状态（running 占位 / done / failed） */
+/** 回传任务状态（状态机八态，后端校验；兼容旧 running/done 别名） */
 export async function reportTaskStatus(
   taskId: string,
   input: {
-    status: "running" | "done" | "failed";
+    status: string;
     result?: Record<string, unknown>;
     error?: string;
   },
