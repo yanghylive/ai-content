@@ -221,25 +221,33 @@ class AgentService : Service() {
             }
         }
 
-        // 回传（P0-5 归属校验带 deviceId + P0-7 unknown 三态）
-        try {
-            val msg = result.message.replace("\"", "\\\"")
-            when {
-                result.ok -> postJson(
+        // 回传（P0-5 归属校验带 deviceId + P0-7 unknown 三态；网络抖动重试 3 次，
+        // 否则 report 失败会让任务卡 executing + 账号锁到租约过期）
+        val msg = result.message.replace("\"", "\\\"")
+        val reportBody = when {
+            result.ok -> """{"status":"done","deviceId":"$did","result":{"message":"$msg","platform":"$platform"}}"""
+            result.status == "unknown" -> """{"status":"unknown","deviceId":"$did","error":"$msg"}"""
+            else -> """{"status":"failed","deviceId":"$did","error":"$msg"}"""
+        }
+        var reported = false
+        for (attempt in 1..3) {
+            try {
+                postJson(
                     "$BASE_URL/api/mobile-executor/tasks/$taskId/status",
-                    """{"status":"done","deviceId":"$did","result":{"message":"$msg","platform":"$platform"}}""",
-                ).use { resp -> Log.i(TAG, "report done: ${resp.code}") }
-                result.status == "unknown" -> postJson(
-                    "$BASE_URL/api/mobile-executor/tasks/$taskId/status",
-                    """{"status":"unknown","deviceId":"$did","error":"$msg"}""",
-                ).use { resp -> Log.i(TAG, "report unknown: ${resp.code}") }
-                else -> postJson(
-                    "$BASE_URL/api/mobile-executor/tasks/$taskId/status",
-                    """{"status":"failed","deviceId":"$did","error":"$msg"}""",
-                ).use { resp -> Log.i(TAG, "report failed: ${resp.code}") }
+                    reportBody,
+                ).use { resp ->
+                    if (resp.isSuccessful) {
+                        reported = true
+                        Log.i(TAG, "report ok: ${resp.code}")
+                    } else {
+                        Log.w(TAG, "report non-2xx: ${resp.code}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "report attempt $attempt failed: ${e.message}")
             }
-        } catch (e: Exception) {
-            Log.w(TAG, "report failed: ${e.message}")
+            if (reported) break
+            if (attempt < 3) delay(5_000L)
         }
         delay(5_000L)
     }
