@@ -141,7 +141,10 @@ for (const file of listTargets(process.argv.includes("--changed"))) {
   // 与功能性 icon 按钮（仅 icon、无文字、极简 inline 样式）视为合法，不属"原生按钮"回潮
   const herouiSemanticBtn = /(?:border-primary|bg-primary\/10|hover:bg-default-100|border-divider|text-default-|bg-default-100|rounded-medium)/.test(src);
   const iconOnlyBtn = /<button[^>]*>[^<]{0,40}<svg|<button[^>]*>\s*<Icon\b/.test(src);
-  if (/<button\s/.test(src) && !/(V2Button|V2PrimaryButton|V2GhostButton|V2DangerButton|kx-btn|KxModal|ConfirmModal)/.test(src) && !mobileLike && !componentImpl && !herouiSemanticBtn && !iconOnlyBtn) {
+  // kaypal-v3 token 驱动按钮：手写 className 但使用品牌 token（var(--kaypal-v3-*)/
+  // kaypal-v2-*），视觉已随品牌主题，不属"原生按钮回潮"
+  const kaypalTokenBtn = /var\(--kaypal-v3-[\w-]+\)|kaypal-v2-[a-z-]+/.test(src);
+  if (/<button\s/.test(src) && !/(V2Button|V2PrimaryButton|V2GhostButton|V2DangerButton|kx-btn|KxModal|ConfirmModal)/.test(src) && !mobileLike && !componentImpl && !herouiSemanticBtn && !iconOnlyBtn && !kaypalTokenBtn) {
     if (isNew) fail("R6", rel, "新增文件出现原生 <button>（用 kx-btn/V2Button 体系）");
     else warnOnly("R6", rel, "存量原生 <button>（后续批次清理）");
   }
@@ -156,11 +159,11 @@ for (const file of listTargets(process.argv.includes("--changed"))) {
     "agent-status-drawer", "onboarding-guide", "risk-confirmation-dialog",
   ];
   const cardPat = /(?:rounded-(?:lg|xl|2xl)|rounded-\[(?:8|10|12|14|16|20)px\]).{0,80}(?:border(?:-\w+)?\s.*bg-|bg-.*border)/i;
-  // heroui 语义容器豁免：border-divider/border-small/border-default-200 + bg-background/
-  // bg-default-50/bg-warning-50/bg-danger-50/bg-content1/60 是 heroui 品牌化色阶（跟随主题），
+  // heroui 语义容器豁免：border-divider/border-small/border-default-N + bg-background/
+  // bg-default-N/bg-warning-N/bg-danger-N/bg-content1/60 是 heroui 品牌化色阶（跟随主题），
   // 不是"自拼卡"；kaypal-v3 token 组合（border-[var(--kaypal-v3-*)] + bg-[var(--kaypal-v3-*)]）
   // 同样是品牌 token 卡。仅拦截真正的硬编码自拼卡（任意 hex/任意值非 token 组合）
-  const herouiSemanticCard = /(?:border-divider|border-small|border-default-\d+|border-primary\/\d+|border-warning-\d+|border-danger-\d+)[\s\S]{0,120}(?:bg-background|bg-default-\d+|bg-warning-\d+|bg-danger-\d+|bg-content1\/\d+)/.test(src);
+  const herouiSemanticCard = /border-(?:divider|small|default-\d+|primary-\d+|warning-\d+|danger-\d+|success-\d+)|(?:bg|text)-(?:default|primary|warning|danger|success)-\d+/.test(src);
   const tokenCard = /border-\[var\(--kaypal-v3-[\w-]+\)\][\s\S]{0,120}bg-\[var\(--kaypal-v3-[\w-]+\)\]/.test(src);
   if (cardPat.test(src) && !LEGACY_CARD_FILES.some((k) => rel.includes(k)) && !mobileLike && !herouiSemanticCard && !tokenCard) {
     const cls = src.match(cardPat);
