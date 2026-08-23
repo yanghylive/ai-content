@@ -12,8 +12,8 @@ export interface OctopAdapter {
   /** 下发取消/暂停指令给正在执行的 RPA（真实环境经 Octop 控制面） */
   cancelRun(sessionId: string, reason?: string): Promise<{ cancelled: boolean }>;
   getCapabilities(): Capabilities;
-  healthy(): boolean;
-  setHealthy(v: boolean): void;
+  healthy(): Promise<boolean>;
+  setHealthy(v: boolean): Promise<void>;
 }
 
 export class MockOctopAdapter implements OctopAdapter {
@@ -61,11 +61,11 @@ export class MockOctopAdapter implements OctopAdapter {
     return this.caps;
   }
 
-  healthy(): boolean {
+  async healthy(): Promise<boolean> {
     return this.healthyFlag;
   }
 
-  setHealthy(v: boolean): void {
+  async setHealthy(v: boolean): Promise<void> {
     this.healthyFlag = v;
   }
 }

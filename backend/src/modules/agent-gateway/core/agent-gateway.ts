@@ -24,7 +24,7 @@ import { AgentGatewayMirror } from './mirror';
 import { makeError, AppErrorError } from '../contracts/error-codes';
 import { AppError } from './types';
 import { genId, nowIso, hashJson } from './util';
-import { MockOctopAdapter } from '../adapters/octop-mock';
+import { MockOctopAdapter, OctopAdapter } from '../adapters/octop-mock';
 import {
   BusinessToolRegistry,
   ToolArtifact,
@@ -40,7 +40,7 @@ export interface GatewayDeps {
   idempotency: IdempotencyStore;
   approvals: ApprovalService;
   bus: EventBus;
-  octop: MockOctopAdapter;
+  octop: OctopAdapter;
   memory: MemoryOrchestrator;
   business: BusinessToolRegistry;
   /** 执行前后用 ToolSpec.inputSchema/outputSchema 校验载荷（P2-10） */
