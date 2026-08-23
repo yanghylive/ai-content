@@ -17,6 +17,7 @@ export interface DeviceInfo {
 export class DeviceRegistryService {
   private readonly logger = new Logger(DeviceRegistryService.name);
   private readonly heartbeatTimeoutMs = 5 * 60 * 1000; // 5 分钟无心跳视为离线
+  private readonly leaseTtlMs = 10 * 60 * 1000; // 租约 TTL（与 task-dispatch 一致，心跳续租）
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -55,15 +56,24 @@ export class DeviceRegistryService {
     return this.toInfo(row);
   }
 
-  /** 心跳（agent 周期性上报；标记在线） */
+  /** 心跳（agent 周期性上报；标记在线 + 续租设备活跃租约，PRD §5.1 必须续租） */
   async heartbeat(userId: string, deviceId: string): Promise<DeviceInfo> {
     const row = await this.prisma.mobileDevice.findFirst({
       where: { id: deviceId, userId },
     });
     if (!row) throw new BadRequestException('设备不存在');
+    const now = new Date();
     const updated = await this.prisma.mobileDevice.update({
       where: { id: deviceId },
-      data: { status: 'online', lastHeartbeatAt: new Date() },
+      data: { status: 'online', lastHeartbeatAt: now },
+    });
+    // 续租：该设备所有活跃租约刷新过期时间（防任务跑超租约并发窗口）
+    await this.prisma.executorLease.updateMany({
+      where: { deviceId, status: 'active' },
+      data: {
+        expiresAt: new Date(now.getTime() + this.leaseTtlMs),
+        updatedAt: now,
+      },
     });
     return this.toInfo(updated);
   }
@@ -85,6 +95,14 @@ export class DeviceRegistryService {
           where: { id: row.id },
           data: { status: 'offline' },
         });
+        // 心跳超时：撤销该设备活跃租约（PRD §7 心跳超时→撤销租约+冻结外发）
+        await this.prisma.executorLease.updateMany({
+          where: { deviceId: row.id, status: 'active' },
+          data: { status: 'released', updatedAt: new Date() },
+        });
+        this.logger.warn(
+          `设备心跳超时：${row.id} 已离线，其活跃租约已撤销（冻结外发）`,
+        );
       }
       out.push(this.toInfo({ ...row, status: online ? 'online' : 'offline' }));
     }
