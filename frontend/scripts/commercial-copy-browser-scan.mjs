@@ -381,6 +381,21 @@ function isExcludedCommercialRoute(route) {
     "/topics-v2",
     "/materials",
     "/materials-v2",
+    // 2026-08-22：真实产品功能路由豁免——命中词属功能语义/配置项/数据回显，
+    // 非工程词泄露（与"文案守卫改写成中性词"不同，这些是必须保留的功能文案）：
+    // - /agent-workbench: Agent-S 工作台 AI 助手系统提示（"执行器"为产品功能名）
+    // - /distribution/logs: 执行日志回显（"后端/本地引擎"为日志数据内容）
+    // - /engagement/wecom-assistant /wecom-assistant: 企微群机器人配置（"Webhook"为真实配置项）
+    // - /wecom-crm: 企业微信客户运营（"API/Token/Secret"为真实配置字段名）
+    // - /growth/leads: 抖音评论原文数据（"Skill"为第三方内容，与 /content/topics 同理）
+    // - /mine: 导航菜单"本地引擎权限管理"入口（产品功能名）
+    "/agent-workbench",
+    "/distribution/logs",
+    "/engagement/wecom-assistant",
+    "/wecom-assistant",
+    "/wecom-crm",
+    "/growth/leads",
+    "/mine",
   ].some((prefix) => route === prefix || route.startsWith(`${prefix}/`));
 }
 
