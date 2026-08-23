@@ -893,7 +893,7 @@ class RpaAccessibilityService : AccessibilityService() {
         }
         val result = performOneAction(act)
         when {
-            result.ok && act.action != "done" -> {
+            result.ok && act.action != "done" && act.action != "ask_user" -> {
                 maiRunId?.let { reportStepRemote(it, maiIndex, act.action, "done") }
                 maiIndex++
                 persistCheckpoint(maiTaskId, maiRunId, maiIndex)

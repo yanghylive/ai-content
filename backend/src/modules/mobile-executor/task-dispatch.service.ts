@@ -24,6 +24,14 @@ import { safeText } from '../../common/text.utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 
+/** 账号忙信号（claimNext 事务内发现同账号已有 active 租约 → 回滚跳过该候选） */
+class AccountBusyError extends Error {
+  constructor(readonly accountId: string) {
+    super(`账号 ${accountId} 已有任务执行中`);
+    this.name = 'AccountBusyError';
+  }
+}
+
 export interface TaskView {
   id: string;
   type: string;
@@ -188,7 +196,16 @@ export class TaskDispatchService {
 
   /** agent 领取待办任务（原子化 + 事务：任务 claim 与租约建 在同一事务，PRD P1-17） */
   async claimNext(userId: string, deviceId: string): Promise<TaskView | null> {
-    // 取候选队列（最多 20 个），逐个跳过冻结期账号，避免冻结任务卡死队列头
+    return this.claimNextExcluding(userId, deviceId, []);
+  }
+
+  /** 领取待办（排除已跳过候选，供账号忙/冻结递归） */
+  private async claimNextExcluding(
+    userId: string,
+    deviceId: string,
+    excludeIds: string[],
+  ): Promise<TaskView | null> {
+    // 取候选队列（最多 20 个），逐个跳过冻结期/执行中账号，避免卡死队列头
     const candidates = await this.prisma.executorTask.findMany({
       where: {
         userId,
@@ -196,6 +213,7 @@ export class TaskDispatchService {
         type: { not: 'custom' },
         status: 'queued',
         OR: [{ deviceId: null }, { deviceId }],
+        ...(excludeIds.length ? { NOT: { id: { in: excludeIds } } } : {}),
       },
       orderBy: { createdAt: 'asc' },
       take: 20,
@@ -204,22 +222,27 @@ export class TaskDispatchService {
     const now = new Date();
     let candidate: (typeof candidates)[number] | null = null;
     for (const c of candidates) {
-      // P0-1 恢复保护期：候选任务账号处于冻结期（心跳超时）时跳过，取下一个
       const candAccountId = this.extractAccountId(
         (c.payload as Record<string, unknown>) ?? {},
         c.type,
       );
       if (candAccountId) {
-        const frozen = await this.prisma.executorLease.findFirst({
+        // 粗筛（非原子）：冻结期（心跳超时）或同账号已有 active 租约（执行中）都跳过
+        const blocking = await this.prisma.executorLease.findFirst({
           where: {
             userId,
             accountId: candAccountId,
-            frozenUntil: { gt: now },
+            OR: [
+              { frozenUntil: { gt: now } },
+              { status: 'active', expiresAt: { gt: now } },
+            ],
           },
         });
-        if (frozen) {
+        if (blocking) {
           this.logger.log(
-            `候选任务 ${c.id} 账号 ${candAccountId} 处于恢复保护期，跳过`,
+            `候选任务 ${c.id} 账号 ${candAccountId} 不可领取（${
+              blocking.status === 'active' ? '执行中' : '恢复保护期'
+            }），跳过`,
           );
           continue;
         }
@@ -228,44 +251,70 @@ export class TaskDispatchService {
       break;
     }
     if (!candidate) return null;
-    const row = await this.prisma.$transaction(async (tx) => {
-      // 原子领取：仅当仍为 queued 时才更新（防止多设备并发重复领取同一任务）
-      const claimed = await tx.executorTask.updateMany({
-        where: { id: candidate.id, status: 'queued' },
-        data: {
-          status: 'leasing', // PRD 状态机：queued → leasing（领取租约态）
-          deviceId,
-          attempts: { increment: 1 },
-          updatedAt: new Date(),
-        },
-      });
-      if (claimed.count === 0) return null;
-      const claimedRow = await tx.executorTask.findUnique({
-        where: { id: candidate.id },
-      });
-      if (!claimedRow) return null;
-      // P1 Lease：领取后为账号建租约（默认 10 分钟，agent 心跳续租；终态回传释放）
-      const leaseAccountId = this.extractAccountId(
-        (claimedRow.payload as Record<string, unknown>) ?? {},
-        claimedRow.type,
-      );
-      if (leaseAccountId) {
-        await this.acquireLeaseTx(
-          tx,
-          userId,
-          leaseAccountId,
-          deviceId,
-          claimedRow.id,
+    try {
+      const row = await this.prisma.$transaction(async (tx) => {
+        // 原子领取：仅当仍为 queued 时才更新（防止多设备并发重复领取同一任务）
+        const claimed = await tx.executorTask.updateMany({
+          where: { id: candidate.id, status: 'queued' },
+          data: {
+            status: 'leasing', // PRD 状态机：queued → leasing（领取租约态）
+            deviceId,
+            attempts: { increment: 1 },
+            updatedAt: new Date(),
+          },
+        });
+        if (claimed.count === 0) return null;
+        const claimedRow = await tx.executorTask.findUnique({
+          where: { id: candidate.id },
+        });
+        if (!claimedRow) return null;
+        // P1 Lease：领取后为账号建租约（默认 10 分钟，agent 心跳续租；终态回传释放）
+        const leaseAccountId = this.extractAccountId(
+          (claimedRow.payload as Record<string, unknown>) ?? {},
+          claimedRow.type,
         );
+        if (leaseAccountId) {
+          // 原子检查（防并发）：同账号「其他任务」已有 active 租约 → 回滚跳过。
+          // 此前仅 createTask 在创建时锁账号，两个同账号任务都 queued 后会被
+          // 两设备分别领取 → 同一账号并发外发。
+          const busy = await tx.executorLease.findFirst({
+            where: {
+              userId,
+              accountId: leaseAccountId,
+              status: 'active',
+              expiresAt: { gt: new Date() },
+              NOT: { taskId: claimedRow.id },
+            },
+          });
+          if (busy) throw new AccountBusyError(leaseAccountId);
+          await this.acquireLeaseTx(
+            tx,
+            userId,
+            leaseAccountId,
+            deviceId,
+            claimedRow.id,
+          );
+        }
+        return claimedRow;
+      });
+      if (row) {
+        this.logger.log(`任务被领取：${row.id} ← 设备 ${deviceId}`);
+        return this.toView(row);
       }
-      return claimedRow;
-    });
-    if (!row) {
-      // 已被其他设备抢走，递归取下一个
-      return this.claimNext(userId, deviceId);
+    } catch (e) {
+      if (e instanceof AccountBusyError) {
+        this.logger.log(
+          `候选任务 ${candidate.id} 账号 ${e.accountId} 执行中，跳过取下一个`,
+        );
+        return this.claimNextExcluding(userId, deviceId, [
+          ...excludeIds,
+          candidate.id,
+        ]);
+      }
+      throw e;
     }
-    this.logger.log(`任务被领取：${row.id} ← 设备 ${deviceId}`);
-    return this.toView(row);
+    // 已被其他设备抢走，递归取下一个
+    return this.claimNextExcluding(userId, deviceId, excludeIds);
   }
 
   /** 建/续租约（事务内；同账号同任务幂等） */
