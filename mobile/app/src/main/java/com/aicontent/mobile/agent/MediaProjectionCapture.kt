@@ -118,11 +118,12 @@ object MediaProjectionCapture {
                         val scaled = scaleForShare(bitmap, width, height)
                         val out = ByteArrayOutputStream()
                         scaled.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                        // 先读宽高再回收（recycle 后再读 width/height 会抛 IllegalStateException）
+                        val w = scaled.width
+                        val h = scaled.height
                         if (!scaled.isRecycled && scaled !== bitmap) scaled.recycle()
                         bitmap.recycle()
                         val b64 = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
-                        val w = scaled.width
-                        val h = scaled.height
                         holder[0] =
                             "data:image/jpeg;base64,$b64|w=$w&h=$h&sw=$screenWidth&sh=$screenHeight"
                     }

@@ -461,6 +461,9 @@ class RpaAccessibilityService : AccessibilityService() {
                                 val out = ByteArrayOutputStream()
                                 val scaled = scaleForShare(bmp)
                                 scaled.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                                // 先读宽高再回收（recycle 后再读 width/height 会抛 IllegalStateException）
+                                val sw = scaled.width
+                                val sh = scaled.height
                                 if (!scaled.isRecycled && scaled !== bmp) scaled.recycle()
                                 bmp.recycle()
                                 val b64 = Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
@@ -468,7 +471,7 @@ class RpaAccessibilityService : AccessibilityService() {
                                 callback(
                                     RpaResult.success(
                                         "data:image/jpeg;base64,$b64" +
-                                            "|w=${scaled.width}&h=${scaled.height}" +
+                                            "|w=$sw&h=$sh" +
                                             "&sw=${dm.widthPixels}&sh=${dm.heightPixels}",
                                     ),
                                 )

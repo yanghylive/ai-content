@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { rpaStatus, captureScreen, executeActions, resumeAfterAsk, cancelActions, pauseActions, resumeActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
+import { rpaStatus, captureScreen, requestScreenCapture, executeActions, resumeAfterAsk, cancelActions, pauseActions, resumeActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
 import { planMaiUiActions, sinkMaiUiTaskToCrm, type MaiUiAction } from "@/lib/api/mai-ui";
 import { createMaiUiTask, reportTaskStatus, addTaskEvidence, createApproval, actApproval, sha256Hex } from "@/lib/api/mobile-executor";
 
@@ -43,6 +43,15 @@ export default function MaiUiWorkbenchPage() {
           ? `✅ 截屏成功（${result.width}×${result.height}，屏幕 ${result.screenWidth}×${result.screenHeight}）`
           : "✅ 截屏成功",
       );
+    } else if (
+      result.message.includes("不支持系统截图") ||
+      result.message.includes("未授权") ||
+      result.message.includes("屏幕录制")
+    ) {
+      // Android 8-10 老设备需 MediaProjection 授权，自动发起系统授权弹窗
+      pushLog("⚠️ 需要屏幕录制授权，正在发起系统授权…");
+      const auth = requestScreenCapture();
+      pushLog(auth.ok ? `📲 ${auth.message}（授权后请重新截屏）` : `❌ ${auth.message}`);
     } else {
       pushLog(`❌ ${result.message}`);
     }
