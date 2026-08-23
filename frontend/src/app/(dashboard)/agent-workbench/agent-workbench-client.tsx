@@ -271,7 +271,6 @@ export function AgentConsolePage() {
     <AgentShell
       title="Agent 工作台"
       description="多轮对话、模型协作与本机助手执行"
-      icon="solar:magic-stick-3-linear"
     >
       <AgentConversationWorkbench />
     </AgentShell>
@@ -524,7 +523,6 @@ export function ConfirmationsPage() {
       title="待我确认"
       backHref="/mine"
       description="以下动作需要你确认后才能继续。确认后会自动执行，拒绝则取消。"
-      icon="solar:check-square-linear"
       action={
         <V2GhostButton onClick={refresh}>
           刷新
@@ -1132,7 +1130,6 @@ export function SessionsPage({
       title={meta.title}
       backHref="/mine"
       description={meta.description}
-      icon={meta.icon}
       action={
         <div className="flex flex-wrap gap-2">
           <Link
@@ -1458,7 +1455,6 @@ export function SimpleFeaturePage({
     <AgentShell
       title={title}
       description={description}
-      icon={icon}
       action={
         <div className="flex flex-wrap gap-2">
           <Link
@@ -1913,14 +1909,12 @@ function CapabilityOperationsPanel({
 function AgentShell({
   title,
   description,
-  icon,
   action,
   children,
   backHref,
 }: {
   title: string;
   description: string;
-  icon: string;
   action?: React.ReactNode;
   children: React.ReactNode;
   backHref?: string;
@@ -1928,20 +1922,18 @@ function AgentShell({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
       {backHref ? <V2BackButton to={backHref} /> : null}
-      <header className="flex flex-col gap-4 rounded-[8px] border-small border-divider bg-background p-5 shadow-sm md:flex-row md:items-center md:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 flex-none items-center justify-center rounded-[8px] bg-primary/10 text-primary">
-            <Icon icon={icon} width={26} />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
-              {title}
-            </h2>
-            <p className="mt-1 text-small text-default-500">{description}</p>
-          </div>
+      {/* 统一页头：无卡大字 + 副标题 + 右侧操作（B7 拆卡） */}
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
+            {title}
+          </h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            {description}
+          </p>
         </div>
         {action}
-      </header>
+      </div>
       {children}
     </div>
   );
