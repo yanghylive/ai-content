@@ -58,6 +58,7 @@ import { SolutionsModule } from './modules/solutions/solutions.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { VoiceModule } from './modules/voice/voice.module';
 import { AgentWakerModule } from './modules/agentwaker/agentwaker.module';
+import { AgentGatewayModule } from './modules/agent-gateway/agent-gateway.module';
 import { VideoModule } from './modules/video/video.module';
 import { PoiModule } from './modules/poi/poi.module';
 import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
@@ -130,6 +131,7 @@ import { CaseShowcaseModule } from './modules/case-showcase/case-showcase.module
     SolutionsModule,
     VoiceModule,
     AgentWakerModule,
+    AgentGatewayModule,
     VideoModule,
     PoiModule,
     LocalBridgeModule,

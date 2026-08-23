@@ -10,6 +10,9 @@ import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { AuthRequestContextService } from './common/auth-request-context.service';
+import { AgentGatewayService } from './modules/agent-gateway/agent-gateway.service';
+import { AuthService } from './modules/agent-gateway/core/auth';
+import { attachAgentGatewayWs } from './modules/agent-gateway/attach-agent-ws';
 
 function applyEnvFileIfPresent(filePath: string) {
   if (!existsSync(filePath)) return;
@@ -283,6 +286,10 @@ async function bootstrap() {
     process.env.KAYPAL_BACKEND_HOST?.trim() ||
     process.env.HOST?.trim() ||
     '127.0.0.1';
+  // Agent Gateway 同源 WS 事件流（3010×Octop 核心引擎；Sec-WebSocket-Protocol 鉴权 + lastEventId 重放）
+  const agentGateway = app.get(AgentGatewayService);
+  const agentAuth = app.get(AuthService);
+  attachAgentGatewayWs(app.getHttpServer(), agentGateway, agentAuth);
   await app.listen(port, host);
   console.log(`🚀 应用运行在: http://${host}:${port}`);
   console.log(`📖 API 文档: http://${host}:${port}/api/docs`);
