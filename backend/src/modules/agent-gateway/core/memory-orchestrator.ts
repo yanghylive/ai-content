@@ -14,6 +14,28 @@ interface OutboxEntry {
   itemId: string;
 }
 
+/** outbox 持久化记录（agent_gateway_memory_outbox 行） */
+export interface OutboxRecord {
+  memoryEventId: string;
+  tenantId: string;
+  userId: string;
+  agentId: string;
+  scope: string;
+  namespace: string;
+  content: string;
+  itemId: string;
+  operation: 'add' | 'delete';
+  payloadHash: string;
+  attempts: number;
+  nextRetryAt: string;
+  status: 'pending' | 'dead' | 'done';
+}
+
+/** outbox DB 仓储（可选；不传则内存-only） */
+export interface OutboxDbLike {
+  upsert(record: OutboxRecord): void | Promise<void>;
+}
+
 /**
  * Memory Orchestrator —— 对齐《整合 PRD》10 / 《补充包》6。
  * - 召回：本地短期 + 远程长期并行，去重并按 token 预算截断；远程故障降级为本地。
@@ -29,7 +51,11 @@ export class MemoryOrchestrator {
   private readonly tokenBudget: number;
   private readonly maxAttempts = 5;
 
-  constructor(private remote: KaypalMemoryAdapter, tokenBudget = 2000) {
+  constructor(
+    private remote: KaypalMemoryAdapter,
+    tokenBudget = 2000,
+    private readonly outboxDb?: OutboxDbLike,
+  ) {
     this.tokenBudget = tokenBudget;
   }
 
@@ -88,6 +114,21 @@ export class MemoryOrchestrator {
       status: 'pending',
     };
     this.outboxItems.set(memoryEventId, { outbox, content, ns, itemId: localItem.id });
+    this.fireOutboxDb({
+      memoryEventId,
+      tenantId: ns.tenantId,
+      userId: ns.userId,
+      agentId: ns.agentId,
+      scope: ns.scope,
+      namespace: key,
+      content,
+      itemId: localItem.id,
+      operation: outbox.operation,
+      payloadHash: outbox.payloadHash,
+      attempts: outbox.attempts,
+      nextRetryAt: outbox.nextRetryAt,
+      status: outbox.status,
+    });
     // 主链路不等待；后台补偿
     void this.flushOutbox(memoryEventId).catch(() => undefined);
     return { memoryEventId, outboxId: outbox.id };
@@ -105,6 +146,7 @@ export class MemoryOrchestrator {
       try {
         await this.remote.add(entry.ns, entry.content, entry.itemId);
         entry.outbox.status = 'done';
+        this.fireOutboxDb(this.toRecord(entry));
       } catch {
         entry.outbox.attempts += 1;
         if (entry.outbox.attempts >= this.maxAttempts) {
@@ -112,9 +154,62 @@ export class MemoryOrchestrator {
         } else {
           entry.outbox.nextRetryAt = new Date(Date.now() + 2 ** entry.outbox.attempts * 1000).toISOString();
         }
+        this.fireOutboxDb(this.toRecord(entry));
       }
     } finally {
       this.inflight.delete(memoryEventId);
+    }
+  }
+
+  private toRecord(entry: OutboxEntry): OutboxRecord {
+    return {
+      memoryEventId: entry.outbox.memoryEventId,
+      tenantId: entry.ns.tenantId,
+      userId: entry.ns.userId,
+      agentId: entry.ns.agentId,
+      scope: entry.ns.scope,
+      namespace: entry.outbox.namespace,
+      content: entry.content,
+      itemId: entry.itemId,
+      operation: entry.outbox.operation,
+      payloadHash: entry.outbox.payloadHash,
+      attempts: entry.outbox.attempts,
+      nextRetryAt: entry.outbox.nextRetryAt,
+      status: entry.outbox.status,
+    };
+  }
+
+  /** 可选 outbox DB 镜像（fire-and-forget，失败静默——内存态仍权威） */
+  private fireOutboxDb(record: OutboxRecord): void {
+    if (!this.outboxDb) return;
+    try {
+      void Promise.resolve(this.outboxDb.upsert(record)).catch(() => undefined);
+    } catch {
+      /* 忽略 */
+    }
+  }
+
+  /** 重启恢复：从 DB 反灌 pending/dead outbox（含 content/itemId，worker 可续跑） */
+  hydrateOutbox(records: Array<OutboxRecord & { source?: string }>): void {
+    for (const r of records) {
+      if (r.status === 'done') continue;
+      const ns = parseNsKey(r.namespace);
+      const outbox: MemoryOutbox = {
+        id: genId('ob'),
+        memoryEventId: r.memoryEventId,
+        namespace: r.namespace,
+        operation: r.operation,
+        payloadHash: r.payloadHash,
+        attempts: r.attempts,
+        nextRetryAt: r.nextRetryAt,
+        status: r.status,
+      };
+      this.outboxItems.set(r.memoryEventId, {
+        outbox,
+        content: r.content,
+        ns: { ...ns, source: r.source ?? 'restore', retention: 'long_term' },
+        itemId: r.itemId,
+      });
     }
   }
 
@@ -180,6 +275,7 @@ export class MemoryOrchestrator {
     for (const entry of this.outboxItems.values()) {
       if (entry.itemId === itemId && entry.outbox.status !== 'done') {
         entry.outbox.status = 'done';
+        this.fireOutboxDb(this.toRecord(entry));
       }
     }
   }
