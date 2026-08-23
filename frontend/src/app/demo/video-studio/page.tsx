@@ -31,7 +31,7 @@ interface DemoProject {
 }
 
 const BANNER_STYLE = {
-  background: "#dc2626",
+  background: "var(--kaypal-v3-danger)",
   color: "#fff",
   fontSize: 13,
   fontWeight: 700,
@@ -48,9 +48,9 @@ const STAGE_LABELS: Record<string, string> = {
 };
 
 function stageStatusText(status: string): { text: string; color: string } {
-  if (status === "done") return { text: "✅ 完成", color: "#10b981" };
-  if (status === "running") return { text: "⏳ 进行中", color: "#f59e0b" };
-  return { text: "排队中", color: "#94a3b8" };
+  if (status === "done") return { text: "✅ 完成", color: "var(--kaypal-v3-success)" };
+  if (status === "running") return { text: "⏳ 进行中", color: "var(--kaypal-v3-amber)" };
+  return { text: "排队中", color: "var(--kaypal-v3-muted)" };
 }
 
 /**
@@ -163,7 +163,7 @@ export default function VideoStudioDemoPage() {
 
       <section className="mx-px" style={{ marginTop: 14 }}>
         {status?.notice && (
-          <p style={{ fontSize: 11, color: "#b91c1c", margin: "0 0 12", lineHeight: 1.6 }}>
+          <p style={{ fontSize: 11, color: "var(--kaypal-v3-danger)", margin: "0 0 12", lineHeight: 1.6 }}>
             {status.notice}
           </p>
         )}
@@ -221,7 +221,7 @@ export default function VideoStudioDemoPage() {
               }}
             />
             {error && (
-              <p style={{ fontSize: 12, color: "#dc2626", margin: "0 0 10" }}>{error}</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", margin: "0 0 10" }}>{error}</p>
             )}
             <button
               type="button"
@@ -249,7 +249,7 @@ export default function VideoStudioDemoPage() {
                 {project.title}
               </p>
               {project.video ? (
-                <span style={{ fontSize: 12, color: "#b91c1c" }}>演示完成</span>
+                <span style={{ fontSize: 12, color: "var(--kaypal-v3-danger)" }}>演示完成</span>
               ) : (
                 <button
                   type="button"
@@ -283,7 +283,7 @@ export default function VideoStudioDemoPage() {
                     borderBottom: "1px solid rgba(148,163,184,.12)",
                   }}
                 >
-                  <span style={{ fontSize: 13, color: "#374151" }}>
+                  <span style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)" }}>
                     {STAGE_LABELS[s.name] || s.name}
                   </span>
                   <span style={{ fontSize: 12, color: info.color }}>{info.text}</span>
@@ -300,7 +300,7 @@ export default function VideoStudioDemoPage() {
                   border: "1px solid rgba(220,38,38,.2)",
                 }}
               >
-                <p style={{ fontSize: 12, color: "#b91c1c", margin: 0 }}>
+                <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", margin: 0 }}>
                   🎬 {project.video.message}
                 </p>
               </div>

@@ -286,7 +286,7 @@ export function OnboardingGuide() {
             <div style={{ color: "rgba(215,230,248,.7)", fontSize: 13, marginBottom: 16, lineHeight: 1.8 }}>
               打开右下角金色 🎤 按钮，说一句：
               <br />
-              <b style={{ color: "#f4bb67" }}>「帮我写一条{industry}文案」</b>
+              <b style={{ color: "var(--kaypal-v3-amber)" }}>「帮我写一条{industry}文案」</b>
               <br />
               或直接进入创作工作区，AI 已为你准备好了示例草稿。
             </div>

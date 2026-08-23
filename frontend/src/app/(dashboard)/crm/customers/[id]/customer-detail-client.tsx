@@ -526,7 +526,7 @@ export function CustomerDetailClient({
             {editing ? (
               <button
                 type="button"
-                style={{ flex: 1, fontSize: 12, padding: "10px 8px", borderRadius: 999, background: "#2563eb", color: "#fff", border: "none" }}
+                style={{ flex: 1, fontSize: 12, padding: "10px 8px", borderRadius: 999, background: "var(--kaypal-v3-cobalt)", color: "#fff", border: "none" }}
                 disabled={saving}
                 onClick={() => void saveCustomer()}
               >
@@ -542,7 +542,7 @@ export function CustomerDetailClient({
             </button>
           </div>
           {hasUnsavedChanges ? (
-            <p style={{ marginTop: 8, fontSize: 11.5, color: "#b45309" }}>有改动未保存</p>
+            <p style={{ marginTop: 8, fontSize: 11.5, color: "var(--kaypal-v3-amber)" }}>有改动未保存</p>
           ) : null}
 
           {/* Tab 切换（横滚） */}
@@ -559,7 +559,7 @@ export function CustomerDetailClient({
                   borderRadius: 999,
                   border: selectedTab === key ? "1.5px solid #2563eb" : "1px solid rgba(142,165,190,.3)",
                   background: selectedTab === key ? "rgba(37,99,235,.12)" : "rgba(255,255,255,.06)",
-                  color: selectedTab === key ? "#2563eb" : "var(--mx-ink)",
+                  color: selectedTab === key ? "var(--kaypal-v3-cobalt)" : "var(--mx-ink)",
                   fontWeight: selectedTab === key ? 700 : 400,
                 }}
               >
@@ -617,7 +617,7 @@ export function CustomerDetailClient({
                 <div className="mx-card mx-list-card">
                   {continuity.timeline.slice(0, 12).map((event) => (
                     <div key={event.id} className="mx-row">
-                      <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                      <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)", borderRadius: 999 }}>
                         <Clock3 size={18} strokeWidth={1.8} />
                       </span>
                       <div className="mx-row-main">
@@ -706,7 +706,7 @@ export function CustomerDetailClient({
                           {task.status !== "completed" ? (
                             <button
                               type="button"
-                              style={{ fontSize: 10.5, padding: "5px 9px", borderRadius: 8, background: "rgba(16,185,129,.1)", color: "#047857", border: "none" }}
+                              style={{ fontSize: 10.5, padding: "5px 9px", borderRadius: 8, background: "rgba(16,185,129,.1)", color: "var(--kaypal-v3-success)", border: "none" }}
                               onClick={() => void completeTask(task.id)}
                             >
                               完成
@@ -732,7 +732,7 @@ export function CustomerDetailClient({
                   <div className="mx-card mx-list-card">
                     {continuity.notes.map((note) => (
                       <div key={note.id} className="mx-row">
-                        <span className="mx-row-ic" style={{ background: "rgba(120,148,179,.14)", color: "#64748b", borderRadius: 999 }}>
+                        <span className="mx-row-ic" style={{ background: "rgba(120,148,179,.14)", color: "var(--kaypal-v3-muted)", borderRadius: 999 }}>
                           <FileText size={18} strokeWidth={1.8} />
                         </span>
                         <div className="mx-row-main">

@@ -127,7 +127,7 @@ export default function VideoGenPage() {
       <Button color="primary" isLoading={busy} onPress={handleCreate} style={{ alignSelf: "flex-start" }}>
         生成视频
       </Button>
-      {error ? <p style={{ fontSize: 12.5, color: "#dc2626" }}>⚠️ {error}</p> : null}
+      {error ? <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>⚠️ {error}</p> : null}
     </div>
   );
 
@@ -141,7 +141,7 @@ export default function VideoGenPage() {
       {task.status === "ready" && task.videoUrl ? (
         <video controls src={task.videoUrl} style={{ width: "100%", borderRadius: 12, maxHeight: 420 }} />
       ) : null}
-      {task.status === "failed" ? <div style={{ fontSize: 12.5, color: "#dc2626" }}>{task.error || "生成失败"}</div> : null}
+      {task.status === "failed" ? <div style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{task.error || "生成失败"}</div> : null}
     </div>
   ) : null;
 

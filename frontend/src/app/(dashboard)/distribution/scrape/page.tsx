@@ -117,7 +117,7 @@ export default function ScrapeArticlePage() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 14, padding: 14, border: "1px solid rgba(239,68,68,.3)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -125,7 +125,7 @@ export default function ScrapeArticlePage() {
             <div className="mx-card" style={{ marginTop: 14, padding: 16 }}>
               <div className="mx-row-main">
                 <div className="mx-row-title" style={{ fontSize: 15, fontWeight: 700, whiteSpace: "normal" }}>{article.title}</div>
-                <p style={{ fontSize: 10.5, color: "#8a95a5", marginTop: 5 }}>
+                <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>
                   {article.siteName ? `来源：${article.siteName} · ` : ""}
                   {article.author ? `作者：${article.author} · ` : ""}
                   {article.publishedAt ? `发布：${article.publishedAt}` : ""}
@@ -133,14 +133,14 @@ export default function ScrapeArticlePage() {
               </div>
 
               {article.warning && (
-                <div style={{ marginTop: 10, padding: 10, borderRadius: 10, background: "rgba(245,158,11,.1)", fontSize: 11, color: "#b45309" }}>
+                <div style={{ marginTop: 10, padding: 10, borderRadius: 10, background: "rgba(245,158,11,.1)", fontSize: 11, color: "var(--kaypal-v3-amber)" }}>
                   {article.warning}
                 </div>
               )}
 
               <div
                 className="mx-prose"
-                style={{ marginTop: 10, fontSize: 12.5, lineHeight: 1.7, color: "#475569", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                style={{ marginTop: 10, fontSize: 12.5, lineHeight: 1.7, color: "var(--kaypal-v3-soft-ink)", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}
                 dangerouslySetInnerHTML={{ __html: sanitizeArticleHtml(article.content.slice(0, 500)) + "..." }}
               />
 
@@ -158,7 +158,7 @@ export default function ScrapeArticlePage() {
                     </div>
                   ))}
                   {article.images.length > 8 && (
-                    <span style={{ fontSize: 10, color: "#8a95a5", display: "flex", alignItems: "center" }}>
+                    <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)", display: "flex", alignItems: "center" }}>
                       +{article.images.length - 8} 张
                     </span>
                   )}

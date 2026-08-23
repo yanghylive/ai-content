@@ -93,7 +93,7 @@ function StandardCard({
           <ProvenanceBadge provenanceType={item.provenanceType} size="sm" />
           {item.experienceStatus && (
             <span
-              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold leading-none"
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-11 font-semibold leading-none"
               style={{
                 background: "var(--kaypal-v3-success-soft)",
                 color: "var(--kaypal-v3-success)",
@@ -180,7 +180,7 @@ function FeaturedCard({
           <ProvenanceBadge provenanceType={item.provenanceType} />
           {item.experienceStatus && (
             <span
-              className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold leading-none"
+              className="inline-flex items-center rounded-full px-2 py-0.5 text-11 font-semibold leading-none"
               style={{
                 background: "var(--kaypal-v3-success-soft)",
                 color: "var(--kaypal-v3-success)",

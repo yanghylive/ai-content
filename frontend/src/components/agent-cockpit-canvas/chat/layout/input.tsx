@@ -64,7 +64,7 @@ export function SidebarInput({
             </Button>
           )}
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground text-center">
+        <p className="mt-2 text-11 text-muted-foreground text-center">
           按 Enter 发送，Shift + Enter 换行
         </p>
       </div>

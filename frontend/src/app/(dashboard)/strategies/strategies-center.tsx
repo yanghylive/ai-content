@@ -187,7 +187,7 @@ export function StrategiesCenter() {
                           borderRadius: 999,
                           fontSize: 10,
                           background: "rgba(246,196,120,.12)",
-                          color: "#f4bb67",
+                          color: "var(--kaypal-v3-amber)",
                         }}
                       >
                         {t.hook}

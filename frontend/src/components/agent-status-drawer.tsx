@@ -445,10 +445,10 @@ export function AgentStatusDrawer({
                 {sourceLabel(current.source)}
               </Chip>
             </div>
-            <p className="text-[12px] font-medium text-[#f759ab]">AI 专家</p>
+            <p className="text-12 font-medium text-[#f759ab]">AI 专家</p>
             <h3
               id="agent-status-drawer-title"
-              className="line-clamp-2 text-[16px] font-bold leading-6 text-default-900"
+              className="line-clamp-2 text-base font-bold leading-6 text-default-900"
             >
               {sessionTitle(current)}
             </h3>
@@ -473,7 +473,7 @@ export function AgentStatusDrawer({
           <div className="grid gap-4">
             <section className="dashboard-overlay__section rounded-[8px] border border-divider bg-background p-3">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <h4 className="text-[14px] font-semibold text-foreground">
+                <h4 className="text-14 font-semibold text-foreground">
                   任务状态
                 </h4>
                 <Button
@@ -496,7 +496,7 @@ export function AgentStatusDrawer({
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-semibold text-foreground">
+                      <span className="text-13 font-semibold text-foreground">
                         {item.title}
                       </span>
                       <Chip
@@ -507,7 +507,7 @@ export function AgentStatusDrawer({
                         {item.active ? "当前" : "待定"}
                       </Chip>
                     </div>
-                    <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-default-500">
+                    <p className="mt-2 line-clamp-2 text-12 leading-5 text-default-500">
                       {item.detail}
                     </p>
                   </div>

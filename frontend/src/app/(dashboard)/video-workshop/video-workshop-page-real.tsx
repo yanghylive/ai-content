@@ -51,14 +51,14 @@ const STAGE_LABELS: Record<string, string> = {
 
 function stageStatusText(status?: string): { text: string; color: string } {
   if (status === "done")
-    return { text: "✅ 完成", color: "#10b981" };
+    return { text: "✅ 完成", color: "var(--kaypal-v3-success)" };
   if (status === "running" || status === "pending")
-    return { text: "⏳ 进行中", color: "#f59e0b" };
+    return { text: "⏳ 进行中", color: "var(--kaypal-v3-amber)" };
   if (status === "awaiting_approval")
-    return { text: "⏸ 等你确认", color: "#f4bb67" };
+    return { text: "⏸ 等你确认", color: "var(--kaypal-v3-amber)" };
   if (status === "failed")
-    return { text: "❌ 失败", color: "#ef4444" };
-  return { text: "未开始", color: "#94a3b8" };
+    return { text: "❌ 失败", color: "var(--kaypal-v3-danger)" };
+  return { text: "未开始", color: "var(--kaypal-v3-muted)" };
 }
 
 /**
@@ -261,12 +261,12 @@ export default function VideoWorkshopV2Page() {
               width: 10,
               height: 10,
               borderRadius: "50%",
-              background: status?.online ? "#10b981" : "#ef4444",
+              background: status?.online ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)",
               flexShrink: 0,
             }}
           />
           <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1 }}>
-            <p style={{ fontSize: 12, margin: 0, color: "#374151", fontWeight: 600 }}>
+            <p style={{ fontSize: 12, margin: 0, color: "var(--kaypal-v3-soft-ink)", fontWeight: 600 }}>
               {status?.online ? "视频引擎在线 · 9 条流水线可用" : "视频成片引擎未连接"}
             </p>
             {!status?.online && (
@@ -314,7 +314,7 @@ export default function VideoWorkshopV2Page() {
                 </option>
               ))}
             </select>
-            <p style={{ fontSize: 11, color: "#94a3b8", margin: "-6px 0 12px" }}>
+            <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", margin: "-6px 0 12px" }}>
               企业宣传片为真实渲染（配音+画面+合成），约 10-30 分钟；其余流水线建议使用「视频一键成片」（12 条全真跑）
             </p>
             <label style={{ fontSize: 12, color: "#6b7a93" }}>选题（一句话描述你要讲什么）</label>
@@ -337,7 +337,7 @@ export default function VideoWorkshopV2Page() {
               }}
             />
             {error && (
-              <p style={{ fontSize: 12, color: "#dc2626", margin: "0 0 10" }}>{error}</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", margin: "0 0 10" }}>{error}</p>
             )}
             <button
               type="button"
@@ -380,7 +380,7 @@ export default function VideoWorkshopV2Page() {
                     borderBottom: "1px solid rgba(148,163,184,.12)",
                   }}
                 >
-                  <span style={{ fontSize: 13, color: "#374151" }}>
+                  <span style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)" }}>
                     {STAGE_LABELS[s.name] || s.name}
                   </span>
                   <span style={{ fontSize: 12, color: info.color }}>{info.text}</span>
@@ -399,11 +399,11 @@ export default function VideoWorkshopV2Page() {
             )}
             {deliverables && deliverables.length > 0 && (
               <>
-                <p style={{ fontSize: 12, color: "#047857", margin: "12px 0 0" }}>
+                <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", margin: "12px 0 0" }}>
                   🎬 成片已生成（{deliverables.length} 个文件）
                 </p>
                 {imported ? (
-                  <p style={{ fontSize: 12, color: "#047857", margin: "8px 0 0" }}>
+                  <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", margin: "8px 0 0" }}>
                     ✅ 已加入素材库（{imported}）——去发布流程选素材时直接可用
                   </p>
                 ) : (

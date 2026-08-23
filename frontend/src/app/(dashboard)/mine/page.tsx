@@ -235,12 +235,12 @@ const MOBILE_MINE_MENU: Array<{
   href: string;
   badge?: string;
 }> = [
-  { label: "客户管理", desc: "客户列表与跟进", icon: "users", tint: "#2563eb", href: "/customer" },
-  { label: "多账号矩阵", desc: "各平台账号 · 多选分发", icon: "database", tint: "#059669", href: "/accounts-matrix" },
-  { label: "设置", desc: "AI 服务、存储、通知", icon: "settings", tint: "#64748b", href: "/settings" },
+  { label: "客户管理", desc: "客户列表与跟进", icon: "users", tint: "var(--kaypal-v3-cobalt)", href: "/customer" },
+  { label: "多账号矩阵", desc: "各平台账号 · 多选分发", icon: "database", tint: "var(--kaypal-v3-success)", href: "/accounts-matrix" },
+  { label: "设置", desc: "AI 服务、存储、通知", icon: "settings", tint: "var(--kaypal-v3-muted)", href: "/settings" },
   { label: "用量与费用", desc: "积分用量、费用明细", icon: "chart", tint: "#a9671f", href: "/intelligence/costs" },
-  { label: "账号与团队", desc: "资料、成员、版本", icon: "users", tint: "#7c3aed", href: "/capabilities/account" },
-  { label: "手机端能力", desc: "手机能做什么 · 边界说明", icon: "phone", tint: "#0891b2", href: "/mobile-capabilities" },
+  { label: "账号与团队", desc: "资料、成员、版本", icon: "users", tint: "var(--kaypal-v3-purple)", href: "/capabilities/account" },
+  { label: "手机端能力", desc: "手机能做什么 · 边界说明", icon: "phone", tint: "var(--kaypal-v3-cobalt)", href: "/mobile-capabilities" },
 ];
 
 /** 更多功能（补齐移动端无入口的能力域，2026-08-10） */
@@ -257,31 +257,31 @@ const MOBILE_MORE_MENU: Array<{
   {
     group: "客户与增长",
     items: [
-      { label: "企业微信 CRM", desc: "企微客户与跟进", icon: "briefcase", tint: "#0e8a5f", href: "/wecom-crm" },
-      { label: "BOSS 招聘", desc: "招聘线索与跟进", icon: "target", tint: "#0b72c7", href: "/boss-recruit" },
+      { label: "企业微信 CRM", desc: "企微客户与跟进", icon: "briefcase", tint: "var(--kaypal-v3-success)", href: "/wecom-crm" },
+      { label: "BOSS 招聘", desc: "招聘线索与跟进", icon: "target", tint: "var(--kaypal-v3-cobalt)", href: "/boss-recruit" },
       { label: "增长报告", desc: "获客效果汇总", icon: "chart", tint: "#2e7d32", href: "/growth/reports" },
-      { label: "增长工作流", desc: "自动获客流程编排", icon: "cpu", tint: "#7c3aed", href: "/growth/workflows" },
-      { label: "账号健康", desc: "账号状态与健康度", icon: "bulb", tint: "#d97706", href: "/growth/account-health" },
+      { label: "增长工作流", desc: "自动获客流程编排", icon: "cpu", tint: "var(--kaypal-v3-purple)", href: "/growth/workflows" },
+      { label: "账号健康", desc: "账号状态与健康度", icon: "bulb", tint: "var(--kaypal-v3-amber)", href: "/growth/account-health" },
     ],
   },
   {
     group: "系统与情报",
     items: [
-      { label: "情报监控", desc: "行业情报实时监控", icon: "target", tint: "#7c3aed", href: "/intelligence/monitors" },
+      { label: "情报监控", desc: "行业情报实时监控", icon: "target", tint: "var(--kaypal-v3-purple)", href: "/intelligence/monitors" },
       { label: "商业就绪", desc: "上线能力自检", icon: "rocket", tint: "#c2410c", href: "/commercial-readiness" },
-      { label: "合规检查", desc: "内容合规校验", icon: "checkCircle", tint: "#059669", href: "/compliance-check" },
-      { label: "趋势雷达", desc: "行业趋势实时雷达", icon: "target", tint: "#d97706", href: "/intelligence/trends-radar" },
-      { label: "情报报告", desc: "情报分析与报告", icon: "chart", tint: "#0891b2", href: "/intelligence/report-new" },
+      { label: "合规检查", desc: "内容合规校验", icon: "checkCircle", tint: "var(--kaypal-v3-success)", href: "/compliance-check" },
+      { label: "趋势雷达", desc: "行业趋势实时雷达", icon: "target", tint: "var(--kaypal-v3-amber)", href: "/intelligence/trends-radar" },
+      { label: "情报报告", desc: "情报分析与报告", icon: "chart", tint: "var(--kaypal-v3-cobalt)", href: "/intelligence/report-new" },
     ],
   },
   {
     group: "更多能力",
     items: [
-      { label: "Agent 对话", desc: "Agent 会话工作台", icon: "bot", tint: "#7c3aed", href: "/agent-workbench" },
-      { label: "记忆设置", desc: "长期记忆、画像与偏好", icon: "layers", tint: "#2563eb", href: "/settings/memory" },
-      { label: "任务证据", desc: "执行证据与留痕", icon: "checkCircle", tint: "#059669", href: "/task-evidence" },
-      { label: "引擎权限", desc: "本地引擎权限管理", icon: "clipboard", tint: "#64748b", href: "/local-engine/permissions" },
-      { label: "AI 工件", desc: "AI 生成的工件产物", icon: "archive", tint: "#64748b", href: "/artifacts" },
+      { label: "Agent 对话", desc: "Agent 会话工作台", icon: "bot", tint: "var(--kaypal-v3-purple)", href: "/agent-workbench" },
+      { label: "记忆设置", desc: "长期记忆、画像与偏好", icon: "layers", tint: "var(--kaypal-v3-cobalt)", href: "/settings/memory" },
+      { label: "任务证据", desc: "执行证据与留痕", icon: "checkCircle", tint: "var(--kaypal-v3-success)", href: "/task-evidence" },
+      { label: "引擎权限", desc: "本地引擎权限管理", icon: "clipboard", tint: "var(--kaypal-v3-muted)", href: "/local-engine/permissions" },
+      { label: "AI 工件", desc: "AI 生成的工件产物", icon: "archive", tint: "var(--kaypal-v3-muted)", href: "/artifacts" },
     ],
   },
 ];
@@ -344,7 +344,7 @@ function MobileMineView({
                 label: "数据服务管理",
                 desc: "数据源连接与配额配置",
                 icon: "settings" as const,
-                tint: "#64748b",
+                tint: "var(--kaypal-v3-muted)",
                 href: "/redfox-connection",
               },
             ],
@@ -425,7 +425,7 @@ function MobileMineView({
               <button
                 type="button"
                 className="mx-btn-gold"
-                style={{ fontSize: 11, padding: "7px 12px", background: "rgba(239,68,68,.1)", color: "#dc2626", border: "1px solid rgba(239,68,68,.25)", boxShadow: "none", backgroundImage: "none" }}
+                style={{ fontSize: 11, padding: "7px 12px", background: "rgba(239,68,68,.1)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(239,68,68,.25)", boxShadow: "none", backgroundImage: "none" }}
                 disabled={loggingOut}
                 onClick={onLogout}
               >
@@ -471,7 +471,7 @@ function MobileMineView({
                       fontSize: 10,
                       padding: "1px 7px",
                       borderRadius: 999,
-                      color: blocked ? "#dc2626" : "#059669",
+                      color: blocked ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-success)",
                       background: blocked
                         ? "rgba(239,68,68,.12)"
                         : "rgba(16,185,129,.12)",
@@ -486,17 +486,17 @@ function MobileMineView({
                   ) : null}
                 </div>
                 {blocked ? (
-                  <p style={{ fontSize: 11, color: "#dc2626", margin: "6px 0 0", lineHeight: 1.5 }}>
+                  <p style={{ fontSize: 11, color: "var(--kaypal-v3-danger)", margin: "6px 0 0", lineHeight: 1.5 }}>
                     ⚠️ 额度受限期间，发布与采集可能失败。请尽快解冻：
                     <a
                       href="/settings"
-                      style={{ color: "#dc2626", fontWeight: 700, textDecoration: "underline" }}
+                      style={{ color: "var(--kaypal-v3-danger)", fontWeight: 700, textDecoration: "underline" }}
                     >
                       去查看与续费 →
                     </a>
                   </p>
                 ) : (
-                  <p style={{ fontSize: 11, color: "#059669", margin: "6px 0 0" }}>
+                  <p style={{ fontSize: 11, color: "var(--kaypal-v3-success)", margin: "6px 0 0" }}>
                     {billing.entitlement.plan === "FREE"
                       ? "当前免费方案：发布/采集入口可用（商用执行需升级 Pro）"
                       : "权益正常，可正常发布与采集"}
@@ -543,7 +543,7 @@ function MobileMineView({
             <div className="mx-hero-ring" style={{ width: 90, height: 90, top: -26, right: -18 }} />
             <div style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, borderRadius: 13, flexShrink: 0, background: "rgba(255,255,255,.14)" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="#f4bb67" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="20" height="20"><path d="M12 3v12" /><path d="m8 11 4 4 4-4" /><path d="M8 21h8" /></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--kaypal-v3-amber)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="20" height="20"><path d="M12 3v12" /><path d="m8 11 4 4 4-4" /><path d="M8 21h8" /></svg>
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>安装到桌面</p>

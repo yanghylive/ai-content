@@ -253,8 +253,8 @@ function ConfigPanel() {
                   <div className="mx-row-desc">corpid: {c.corpId}</div>
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
-                  <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "#059669" }} onClick={() => void handleTest(c.id)}>{testingId === c.id ? "测试中…" : "测试"}</button>
-                  <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "#dc2626" }} onClick={() => void handleDelete(c.id)}>删除</button>
+                  <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "var(--kaypal-v3-success)" }} onClick={() => void handleTest(c.id)}>{testingId === c.id ? "测试中…" : "测试"}</button>
+                  <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "var(--kaypal-v3-danger)" }} onClick={() => void handleDelete(c.id)}>删除</button>
                 </div>
               </div>
             ))
@@ -597,7 +597,7 @@ function GroupMsgPanel() {
                     {t.errorMessage ? ` · ${t.errorMessage}` : ""}
                   </div>
                 </div>
-                <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "#059669", flexShrink: 0 }} onClick={() => void handleQuery(t.id)}>
+                <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "var(--kaypal-v3-success)", flexShrink: 0 }} onClick={() => void handleQuery(t.id)}>
                   {queryingId === t.id ? "查询中…" : "查结果"}
                 </button>
               </div>
@@ -908,7 +908,7 @@ function MomentPanel() {
                     {t.errorMessage ? ` · ${t.errorMessage}` : ""}
                   </div>
                 </div>
-                <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "#059669", flexShrink: 0 }} onClick={() => void handleQuery(t.id)}>
+                <button type="button" className="mx-badge" style={{ fontSize: 10, padding: "4px 10px", color: "var(--kaypal-v3-success)", flexShrink: 0 }} onClick={() => void handleQuery(t.id)}>
                   {queryingId === t.id ? "查询中…" : "查结果"}
                 </button>
               </div>

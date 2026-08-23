@@ -457,7 +457,7 @@ export function CaseForm({ caseId, initial }: { caseId?: string; initial?: Admin
       </OpsPanel>
 
       {hints.length > 0 ? (
-        <div className="rounded-lg border border-[var(--kaypal-v3-amber)] bg-warning-50 px-3 py-2 text-[12px] text-default-700">
+        <div className="rounded-lg border border-[var(--kaypal-v3-amber)] bg-warning-50 px-3 py-2 text-12 text-default-700">
           <div className="mb-1 font-semibold">完整性提示：</div>
           <ul className="list-inside list-disc">
             {hints.map((h, i) => (
@@ -480,7 +480,7 @@ export function CaseForm({ caseId, initial }: { caseId?: string; initial?: Admin
           检查完整度
         </Button>
         {complete && hints.length === 0 ? (
-          <span className="text-[12px] text-success">字段已较完整</span>
+          <span className="text-12 text-success">字段已较完整</span>
         ) : null}
       </div>
     </div>

@@ -235,14 +235,14 @@ export function GrowthWorkflowsPage() {
                         <span className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
                           {sc.name}
                         </span>
-                        <span className="shrink-0 rounded bg-[var(--kaypal-v3-accent)]/10 px-2 py-0.5 text-[11px] font-medium text-[var(--kaypal-v3-accent)]">
+                        <span className="shrink-0 rounded bg-[var(--kaypal-v3-accent)]/10 px-2 py-0.5 text-11 font-medium text-[var(--kaypal-v3-accent)]">
                           {sc.stepCount} 步
                         </span>
                       </div>
                       <span className="text-xs leading-5 text-[var(--kaypal-v3-muted)]">
                         {sc.description}
                       </span>
-                      <span className="flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--kaypal-v3-muted)]">
+                      <span className="flex flex-wrap items-center gap-1.5 text-11 text-[var(--kaypal-v3-muted)]">
                         <Smartphone className="h-3 w-3" />
                         {sc.platforms.join(" / ")}
                         {sc.riskNotes.length > 0 && (

@@ -139,7 +139,7 @@ export function StyleForm({
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -158,7 +158,7 @@ export function StyleForm({
                       className="mx-card"
                       style={{ padding: 11, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
                     >
-                      <TypeIcon width={16} height={16} style={{ color: "#d98a2d" }} />
+                      <TypeIcon width={16} height={16} style={{ color: "var(--kaypal-v3-amber)" }} />
                       <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
                       <span style={{ fontSize: 10.5, color: "var(--mx-muted)", lineHeight: 1.4 }}>{desc}</span>
                     </button>
@@ -218,7 +218,7 @@ export function StyleForm({
               <button
                 type="button"
                 onClick={() => void handleDelete()}
-                style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(220,80,80,.12)", color: "#dc2626", border: "1px solid rgba(220,80,80,.35)", fontSize: 12.5, fontWeight: 600 }}
+                style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(220,80,80,.12)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.35)", fontSize: 12.5, fontWeight: 600 }}
               >
                 删除
               </button>

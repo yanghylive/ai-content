@@ -80,9 +80,9 @@ export function ComplianceCheckFlow() {
   /* 移动端原生视图（mx-* 明德 VP 风格）——compliance-check-v2 */
   if (isMobile) {
     const resultColor =
-      riskDisplay?.tone === "success" ? "#059669"
-        : riskDisplay?.tone === "warning" ? "#b45309"
-          : riskDisplay?.tone === "danger" ? "#dc2626"
+      riskDisplay?.tone === "success" ? "var(--kaypal-v3-success)"
+        : riskDisplay?.tone === "warning" ? "var(--kaypal-v3-amber)"
+          : riskDisplay?.tone === "danger" ? "var(--kaypal-v3-danger)"
             : "var(--mx-muted)";
     return (
       <div className="kx-mobile-ambient">
@@ -102,7 +102,7 @@ export function ComplianceCheckFlow() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -166,7 +166,7 @@ export function ComplianceCheckFlow() {
                           「{finding.matchedText}」
                         </p>
                         <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 7, lineHeight: 1.55 }}>{finding.reason}</p>
-                        <p style={{ fontSize: 12, fontWeight: 600, color: "#d98a2d", marginTop: 6, lineHeight: 1.5 }}>建议：{finding.suggestion}</p>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-amber)", marginTop: 6, lineHeight: 1.5 }}>建议：{finding.suggestion}</p>
                         {finding.replacement && (
                           <p style={{ fontSize: 12, color: "var(--mx-ink)", background: "rgba(5,150,105,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 7, lineHeight: 1.5 }}>
                             可改成：「{finding.replacement}」

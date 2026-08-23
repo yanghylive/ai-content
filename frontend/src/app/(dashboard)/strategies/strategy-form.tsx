@@ -238,7 +238,7 @@ export function StrategyForm({
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -253,14 +253,14 @@ export function StrategyForm({
                     key={ind}
                     type="button"
                     onClick={() => applyIndustryPreset(ind)}
-                    style={{ padding: "7px 14px", borderRadius: 9, fontSize: 12.5, fontWeight: 600, background: form.industry === ind ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.industry === ind ? "#d98a2d" : "var(--mx-ink)", border: "1px solid " + (form.industry === ind ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                    style={{ padding: "7px 14px", borderRadius: 9, fontSize: 12.5, fontWeight: 600, background: form.industry === ind ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.industry === ind ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: "1px solid " + (form.industry === ind ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
                   >
                     {ind}
                   </button>
                 ))}
               </div>
               {prefilled && (
-                <p style={{ fontSize: 11.5, color: "#059669", marginTop: 8 }}>✓ 已按「{form.industry}」预填下面的内容，直接改成你的就行</p>
+                <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-success)", marginTop: 8 }}>✓ 已按「{form.industry}」预填下面的内容，直接改成你的就行</p>
               )}
             </>
           )}
@@ -324,7 +324,7 @@ export function StrategyForm({
               <button
                 type="button"
                 onClick={() => void handleDelete()}
-                style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(220,80,80,.12)", color: "#dc2626", border: "1px solid rgba(220,80,80,.35)", fontSize: 12.5, fontWeight: 600 }}
+                style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(220,80,80,.12)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.35)", fontSize: 12.5, fontWeight: 600 }}
               >
                 删除
               </button>

@@ -197,7 +197,7 @@ export default function SeedanceVideoPage() {
                       ? "1px solid rgba(16,185,129,.5)"
                       : "1px solid rgba(148,163,184,.3)",
                   background: ratio === r.value ? "rgba(16,185,129,.08)" : "#fff",
-                  color: ratio === r.value ? "#047857" : "#374151",
+                  color: ratio === r.value ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-soft-ink)",
                   fontSize: 13,
                 }}
               >
@@ -205,11 +205,11 @@ export default function SeedanceVideoPage() {
               </button>
             ))}
           </div>
-          <p style={{ fontSize: 11, color: "#94a3b8", margin: "12px 0 0" }}>
+          <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", margin: "12px 0 0" }}>
             Seedance 2.0 模型 · 单次约 150 积分 · 生成约 1-3 分钟
           </p>
           {error && (
-            <p style={{ fontSize: 12, color: "#dc2626", margin: "10px 0 0" }}>{error}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", margin: "10px 0 0" }}>{error}</p>
           )}
 
           {confirmPrompt === null ? (
@@ -239,7 +239,7 @@ export default function SeedanceVideoPage() {
                 border: "1px solid rgba(16,185,129,.25)",
               }}
             >
-              <p style={{ fontSize: 12, fontWeight: 700, margin: "0 0 8", color: "#047857" }}>
+              <p style={{ fontSize: 12, fontWeight: 700, margin: "0 0 8", color: "var(--kaypal-v3-success)" }}>
                 📝 确认提示词（生成后自动存入素材库）
               </p>
               <p style={{ fontSize: 13, color: "#1f2a44", margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
@@ -291,11 +291,11 @@ export default function SeedanceVideoPage() {
           >
             <p style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#1f2a44" }}>
               生成任务 {task.taskId.slice(-8)}
-              {polling && <span style={{ fontSize: 12, color: "#f59e0b", marginLeft: 8 }}>⏳ 生成中…</span>}
+              {polling && <span style={{ fontSize: 12, color: "var(--kaypal-v3-amber)", marginLeft: 8 }}>⏳ 生成中…</span>}
             </p>
             {task.status === "done" && (
               <>
-                <p style={{ fontSize: 12, color: "#047857", margin: "10px 0 0" }}>
+                <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", margin: "10px 0 0" }}>
                   🎬 成片已生成{task.filename ? `，已加入素材库（${task.filename}${task.sizeBytes ? `，${(task.sizeBytes / 1024 / 1024).toFixed(1)} MB` : ""}）` : ""}
                 </p>
                 {task.videoUrl && (
@@ -310,7 +310,7 @@ export default function SeedanceVideoPage() {
                       padding: "10px",
                       borderRadius: 12,
                       background: "rgba(16,185,129,.1)",
-                      color: "#047857",
+                      color: "var(--kaypal-v3-success)",
                       fontSize: 13,
                       fontWeight: 600,
                       textDecoration: "none",
@@ -323,7 +323,7 @@ export default function SeedanceVideoPage() {
               </>
             )}
             {task.status === "failed" && (
-              <p style={{ fontSize: 12, color: "#dc2626", margin: "10px 0 0" }}>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", margin: "10px 0 0" }}>
                 ❌ {task.error || "生成失败，请重试"}
               </p>
             )}
@@ -376,7 +376,7 @@ export default function SeedanceVideoPage() {
                     border: "1px solid rgba(148,163,184,.25)",
                     background: "#fff",
                     fontSize: 12,
-                    color: "#374151",
+                    color: "var(--kaypal-v3-soft-ink)",
                     cursor: "pointer",
                   }}
                 >
@@ -385,19 +385,19 @@ export default function SeedanceVideoPage() {
                       display: "inline-block",
                       marginRight: 8,
                       fontSize: 11,
-                      color: h.status === "done" ? "#047857" : h.status === "failed" ? "#dc2626" : "#f59e0b",
+                      color: h.status === "done" ? "var(--kaypal-v3-success)" : h.status === "failed" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-amber)",
                     }}
                   >
                     {statusLabel(h.status)}
                   </span>
                   {h.prompt.length > 26 ? `${h.prompt.slice(0, 26)}…` : h.prompt}
-                  <span style={{ float: "right", color: "#94a3b8" }}>
+                  <span style={{ float: "right", color: "var(--kaypal-v3-muted)" }}>
                     {new Date(h.createdAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </button>
               ))}
             </div>
-            <p style={{ fontSize: 11, color: "#94a3b8", margin: "10px 0 0" }}>
+            <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", margin: "10px 0 0" }}>
               点击历史任务可重新查看状态；成片均已自动存入素材库
             </p>
           </div>

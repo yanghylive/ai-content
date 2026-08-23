@@ -146,11 +146,11 @@ export function TaskEvidenceCenter() {
     return "muted" as const;
   };
   const kindColor = (k: EvidenceRow["kind"]) => {
-    if (k === "发布") return { bg: "rgba(37,99,235,.1)", fg: "#2563eb" };
-    if (k === "风险") return { bg: "rgba(220,80,80,.1)", fg: "#dc2626" };
-    if (k === "工作流") return { bg: "rgba(222,150,57,.12)", fg: "#d98a2d" };
-    if (k === "会话") return { bg: "rgba(16,185,129,.12)", fg: "#059669" };
-    return { bg: "rgba(120,148,179,.14)", fg: "#64748b" };
+    if (k === "发布") return { bg: "rgba(37,99,235,.1)", fg: "var(--kaypal-v3-cobalt)" };
+    if (k === "风险") return { bg: "rgba(220,80,80,.1)", fg: "var(--kaypal-v3-danger)" };
+    if (k === "工作流") return { bg: "rgba(222,150,57,.12)", fg: "var(--kaypal-v3-amber)" };
+    if (k === "会话") return { bg: "rgba(16,185,129,.12)", fg: "var(--kaypal-v3-success)" };
+    return { bg: "rgba(120,148,179,.14)", fg: "var(--kaypal-v3-muted)" };
   };
 
   const isMobile = useIsMobile();
@@ -187,7 +187,7 @@ export function TaskEvidenceCenter() {
 
         <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
           {error ? (
-            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginBottom: 10 }}>{error}</p>
           ) : null}
 
           {loading ? (

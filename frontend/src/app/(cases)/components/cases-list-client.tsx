@@ -237,7 +237,7 @@ export function CasesListClient() {
             <SlidersHorizontal className="h-4 w-4" aria-hidden />
             筛选
             {activeCount > 0 && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent)] px-1 text-[10px] font-bold text-white">
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent)] px-1 text-11 font-bold text-white">
                 1
               </span>
             )}

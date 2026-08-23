@@ -268,19 +268,19 @@ function RulePreviewDiff({
           </p>
           <div className="mt-2 grid gap-2 md:grid-cols-2">
             <div className="min-w-0 border-l-2 border-default-300 pl-2">
-              <p className="text-[11px] font-medium text-default-400">当前标题</p>
+              <p className="text-11 font-medium text-default-400">当前标题</p>
               <p className="mt-0.5 line-clamp-2 text-xs text-default-600">
                 {value.title || "未命名内容"}
               </p>
             </div>
             <div className="min-w-0 border-l-2 border-primary pl-2">
-              <p className="text-[11px] font-medium text-primary-600">建议标题</p>
+              <p className="text-11 font-medium text-primary-600">建议标题</p>
               <p className="mt-0.5 line-clamp-2 text-xs font-medium text-foreground">
                 {candidate.title}
               </p>
             </div>
           </div>
-          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-default-500">
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-11 text-default-500">
             {candidate.changes.map((change) => (
               <li key={change} className="flex items-center gap-1">
                 <Check aria-hidden="true" className="h-3 w-3 text-success-600" />
@@ -424,7 +424,7 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
     <FormLayout direction="vertical">
       {!showFields && (
         <div className="rounded-[8px] border border-divider bg-default-50 p-3">
-          <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+          <div className="flex items-center gap-2 text-13 font-semibold text-foreground">
             <ListChecks aria-hidden="true" className="h-4 w-4 text-primary" />
             先选一个业务场景
           </div>
@@ -438,10 +438,10 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
                 onPress={() => applyPreset(preset)}
               >
                 <span className="flex w-full flex-col items-start gap-1">
-                  <span className="text-[13px] font-semibold text-foreground">
+                  <span className="text-13 font-semibold text-foreground">
                     {preset.title}
                   </span>
-                  <span className="text-[11px] leading-5 text-default-500">
+                  <span className="text-11 leading-5 text-default-500">
                     {preset.description}
                   </span>
                 </span>
@@ -776,7 +776,7 @@ function OutlineStep({
       <div className="rounded-[8px] border border-divider bg-default-50 p-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+            <div className="flex items-center gap-2 text-13 font-semibold text-foreground">
               <ListChecks aria-hidden="true" className="h-4 w-4 text-primary" />
               先选一个结构模板
             </div>
@@ -798,10 +798,10 @@ function OutlineStep({
               onPress={() => applyPreset(preset)}
             >
               <span className="flex w-full flex-col items-start gap-1">
-                <span className="text-[13px] font-semibold text-foreground">
+                <span className="text-13 font-semibold text-foreground">
                   {preset.title}
                 </span>
-                <span className="text-[11px] leading-5 text-default-500">
+                <span className="text-11 leading-5 text-default-500">
                   {preset.description}
                 </span>
               </span>
@@ -1067,7 +1067,7 @@ function VersionsStep({
             key={platform.id}
             endContent={
               <Chip
-                className="h-5 px-1 text-[10px]"
+                className="h-5 px-1 text-11"
                 radius="sm"
                 size="sm"
                 variant="flat"
@@ -1146,7 +1146,7 @@ function VersionsStep({
                         {actionLabel}
                       </Button>
                     ) : null}
-                    <span className="text-[11px] leading-5 text-default-400">
+                    <span className="text-11 leading-5 text-default-400">
                       点击卡片可直接切换正式版
                     </span>
                   </div>

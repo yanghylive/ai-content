@@ -139,7 +139,7 @@ export function ResourceCenter({
                   style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
                   onClick={() => onItemClick?.(item)}
                 >
-                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)", borderRadius: 999 }}>
                     <Icon size={18} strokeWidth={1.8} />
                   </span>
                   <div className="mx-row-main">

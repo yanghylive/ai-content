@@ -54,7 +54,7 @@ export function TopicForm() {
   const isMobile = useIsMobile();
   if (isMobile) {
     const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "#203454" };
-    const fieldLabel = { fontSize: 11, fontWeight: 700, color: "#8a95a5", marginBottom: 6 };
+    const fieldLabel = { fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 };
     return (
       <div className="kx-mobile-ambient">
         <header className="mx-header">
@@ -71,7 +71,7 @@ export function TopicForm() {
 
         <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
           {error && (
-            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</div>
           )}
 
           <div className="mx-card" style={{ padding: 16 }}>
@@ -81,21 +81,21 @@ export function TopicForm() {
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <p style={fieldLabel}>选题标题 <span style={{ fontWeight: 400, color: "#dc2626" }}>*</span></p>
+              <p style={fieldLabel}>选题标题 <span style={{ fontWeight: 400, color: "var(--kaypal-v3-danger)" }}>*</span></p>
               <input placeholder="例如：为什么 90% 的人选空气净化器都买错了" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} style={inputStyle} />
-              <p style={{ fontSize: 10.5, color: "#8a95a5", marginTop: 5 }}>一句话说清楚要写什么</p>
+              <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>一句话说清楚要写什么</p>
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <p style={fieldLabel}>补充说明 <span style={{ fontWeight: 400, color: "#8a95a5" }}>（可选）</span></p>
+              <p style={fieldLabel}>补充说明 <span style={{ fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>（可选）</span></p>
               <textarea placeholder="例如：从滤芯成本角度切入，对比 3 款热门机型" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={4} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
-              <p style={{ fontSize: 10.5, color: "#8a95a5", marginTop: 5 }}>可选：这个选题的角度、素材线索</p>
+              <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>可选：这个选题的角度、素材线索</p>
             </div>
 
             <div style={{ marginBottom: 6 }}>
-              <p style={fieldLabel}>关键词 <span style={{ fontWeight: 400, color: "#8a95a5" }}>（可选）</span></p>
+              <p style={fieldLabel}>关键词 <span style={{ fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>（可选）</span></p>
               <input placeholder="例如：空气净化器, 滤芯, 避坑" value={form.keywords} onChange={(e) => setForm((p) => ({ ...p, keywords: e.target.value }))} style={inputStyle} />
-              <p style={{ fontSize: 10.5, color: "#8a95a5", marginTop: 5 }}>逗号分隔，帮助 AI 生成时聚焦</p>
+              <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>逗号分隔，帮助 AI 生成时聚焦</p>
             </div>
           </div>
 

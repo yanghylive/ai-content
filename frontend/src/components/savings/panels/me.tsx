@@ -136,21 +136,21 @@ export function MePanel({ watches }: MePanelProps) {
 
   return (
     <div>
-      <div className="flex items-center gap-1.5 text-[20px] font-extrabold tracking-tight text-foreground">
+      <div className="flex items-center gap-1.5 text-xl font-extrabold tracking-tight text-foreground">
         <User className="h-5 w-5 text-orange-500 dark:text-orange-400" />
         我的
       </div>
-      <div className="mt-0.5 text-[12px] text-default-500">收藏 · 签到 · 门店 · 邀请</div>
+      <div className="mt-0.5 text-12 text-default-500">收藏 · 签到 · 门店 · 邀请</div>
 
       {/* 签到卡 */}
       <div className="mt-4 overflow-hidden rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500 to-amber-500 p-4 text-white shadow-lg shadow-orange-500/10">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[13px] font-bold">每日签到</div>
-            <div className="mt-0.5 text-[11px] text-orange-100">
-              已连续 <b className="text-[15px]">{checkin?.streakDay ?? 0}</b> 天 · 本月 {checkin?.monthDays ?? 0} 次
+            <div className="text-13 font-bold">每日签到</div>
+            <div className="mt-0.5 text-11 text-orange-100">
+              已连续 <b className="text-14">{checkin?.streakDay ?? 0}</b> 天 · 本月 {checkin?.monthDays ?? 0} 次
             </div>
-            <div className="mt-0.5 text-[10px] text-orange-100">连续签到返利递增，今天可得 ¥0.1 起</div>
+            <div className="mt-0.5 text-11 text-orange-100">连续签到返利递增，今天可得 ¥0.1 起</div>
           </div>
           <Button
             onPress={() => void handleCheckin()}
@@ -172,7 +172,7 @@ export function MePanel({ watches }: MePanelProps) {
           className="flex flex-col items-center gap-1 rounded-xl border border-default-200 bg-white py-3 transition-colors hover:border-orange-300 dark:border-default-800 dark:bg-content1"
         >
           <Store className="h-5 w-5 text-orange-500 dark:text-orange-400" strokeWidth={1.8} />
-          <span className="text-[12px] font-medium text-foreground">门店采购</span>
+          <span className="text-12 font-medium text-foreground">门店采购</span>
         </button>
         <button
           type="button"
@@ -183,7 +183,7 @@ export function MePanel({ watches }: MePanelProps) {
           className="flex flex-col items-center gap-1 rounded-xl border border-default-200 bg-white py-3 transition-colors hover:border-orange-300 dark:border-default-800 dark:bg-content1"
         >
           <Share2 className="h-5 w-5 text-orange-500 dark:text-orange-400" strokeWidth={1.8} />
-          <span className="text-[12px] font-medium text-foreground">邀请有礼</span>
+          <span className="text-12 font-medium text-foreground">邀请有礼</span>
         </button>
         <button
           type="button"
@@ -191,7 +191,7 @@ export function MePanel({ watches }: MePanelProps) {
           className="flex flex-col items-center gap-1 rounded-xl border border-default-200 bg-white py-3 transition-colors hover:border-orange-300 dark:border-default-800 dark:bg-content1"
         >
           <Gift className="h-5 w-5 text-orange-500 dark:text-orange-400" strokeWidth={1.8} />
-          <span className="text-[12px] font-medium text-foreground">任务中心</span>
+          <span className="text-12 font-medium text-foreground">任务中心</span>
         </button>
       </div>
 
@@ -199,10 +199,10 @@ export function MePanel({ watches }: MePanelProps) {
       {invite && (
         <div className="mt-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/30 dark:bg-emerald-500/10">
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-              我的邀请码：<b className="font-mono text-[15px]">{invite.inviteCode}</b>
+            <div className="text-11 font-semibold text-emerald-700 dark:text-emerald-300">
+              我的邀请码：<b className="font-mono text-14">{invite.inviteCode}</b>
             </div>
-            <div className="mt-0.5 truncate text-[10px] text-emerald-600/80 dark:text-emerald-400/80">好友下单，你得返利分成</div>
+            <div className="mt-0.5 truncate text-11 text-emerald-600/80 dark:text-emerald-400/80">好友下单，你得返利分成</div>
           </div>
           <Button size="sm" variant="flat" color="success" startContent={<Copy className="h-3.5 w-3.5" />} onPress={() => void copyText(invite.inviteCode, "✅ 邀请码已复制")}>
             复制
@@ -212,15 +212,15 @@ export function MePanel({ watches }: MePanelProps) {
 
       {/* 收藏夹 */}
       <div className="mt-5">
-        <div className="mb-2.5 flex items-center gap-1.5 text-[14px] font-bold text-foreground">
+        <div className="mb-2.5 flex items-center gap-1.5 text-14 font-bold text-foreground">
           <Heart className="h-4 w-4 text-red-500" fill="currentColor" />
           收藏夹
-          <span className="rounded-full bg-default-100 px-1.5 py-px text-[10px] font-semibold text-default-500 dark:bg-default-800">
+          <span className="rounded-full bg-default-100 px-1.5 py-px text-11 font-semibold text-default-500 dark:bg-default-800">
             {favorites.length}
           </span>
         </div>
         {favorites.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-default-300 py-6 text-center text-[11px] text-default-500 dark:border-default-700">
+          <div className="rounded-xl border border-dashed border-default-300 py-6 text-center text-11 text-default-500 dark:border-default-700">
             还没有收藏——搜索商品时点 ♥ 即可收藏，跨平台统一管理
           </div>
         ) : (
@@ -254,23 +254,23 @@ export function MePanel({ watches }: MePanelProps) {
 
       {/* 价格监控 */}
       <div className="mt-5">
-        <div className="mb-2.5 flex items-center gap-1.5 text-[14px] font-bold text-foreground">
+        <div className="mb-2.5 flex items-center gap-1.5 text-14 font-bold text-foreground">
           <BellRing className="h-4 w-4 text-orange-500 dark:text-orange-400" />
           价格监控
-          <span className="rounded-full bg-default-100 px-1.5 py-px text-[10px] font-semibold text-default-500 dark:bg-default-800">
+          <span className="rounded-full bg-default-100 px-1.5 py-px text-11 font-semibold text-default-500 dark:bg-default-800">
             {watches.length}
           </span>
         </div>
         {watches.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-default-300 py-6 text-center text-[11px] text-default-500 dark:border-default-700">
+          <div className="rounded-xl border border-dashed border-default-300 py-6 text-center text-11 text-default-500 dark:border-default-700">
             还没有监控商品——搜索时点击「监控」即可添加
           </div>
         ) : (
           <div className="space-y-1.5">
             {watches.slice(0, 8).map((w) => (
               <div key={w.id} className="flex items-center justify-between gap-2 rounded-xl border border-default-200 bg-white px-3 py-2.5 dark:border-default-800 dark:bg-content1">
-                <span className="min-w-0 truncate text-[12px] text-foreground">{w.title}</span>
-                <span className="shrink-0 text-[11px] text-default-500">
+                <span className="min-w-0 truncate text-12 text-foreground">{w.title}</span>
+                <span className="shrink-0 text-11 text-default-500">
                   {w.targetPayPrice ? `≤¥${w.targetPayPrice}` : ""}
                   {w.minRebate ? ` 返利≥¥${w.minRebate}` : ""}
                 </span>
@@ -290,11 +290,11 @@ export function MePanel({ watches }: MePanelProps) {
             className="max-h-[70vh] w-[320px] overflow-y-auto rounded-2xl border border-default-200 bg-white p-5 shadow-xl dark:border-default-800 dark:bg-content1"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-3 flex items-center gap-1.5 text-[15px] font-bold text-foreground">
+            <div className="mb-3 flex items-center gap-1.5 text-14 font-bold text-foreground">
               <Landmark className="h-4 w-4 text-orange-500 dark:text-orange-400" />
               门店采购（{stores.length}）
             </div>
-            {stores.length === 0 && <div className="mb-2 text-[11px] text-default-500">还没有门店，先创建一个</div>}
+            {stores.length === 0 && <div className="mb-2 text-11 text-default-500">还没有门店，先创建一个</div>}
             <div className="space-y-1.5">
               {stores.map((st) => (
                 <button
@@ -307,8 +307,8 @@ export function MePanel({ watches }: MePanelProps) {
                       : "border-default-200 bg-white dark:border-default-800 dark:bg-content1"
                   }`}
                 >
-                  <div className="text-[13px] font-semibold text-foreground">{st.name}</div>
-                  {st.address ? <div className="text-[10px] text-default-500">{st.address}</div> : null}
+                  <div className="text-13 font-semibold text-foreground">{st.name}</div>
+                  {st.address ? <div className="text-11 text-default-500">{st.address}</div> : null}
                 </button>
               ))}
             </div>

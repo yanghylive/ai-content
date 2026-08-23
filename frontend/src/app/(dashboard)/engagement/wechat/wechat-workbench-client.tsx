@@ -5452,7 +5452,7 @@ export function WechatWorkbenchClient({
         
         <div>
           
-          <h1 className="text-[22px] font-bold leading-[30px]">
+          <h1 className="text-2xl font-bold leading-[30px]">
             微信任务
           </h1><p className="text-sm text-default-500">
             群发、加好友、朋友圈和联系人统一在这里处理。
@@ -7698,7 +7698,7 @@ function ContactSyncDiagnosticsPanel({
                 className="min-w-0 rounded-[8px] border border-default-200 bg-background p-2"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-[11px] font-semibold text-default-700">{
+                  <span className="truncate text-11 font-semibold text-default-700">{
                       signal.label
                     }</span><Chip
                     size="sm"
@@ -7709,14 +7709,14 @@ function ContactSyncDiagnosticsPanel({
                   >{diagnosticStatusLabel(
                       signal.status,
                     )}</Chip>
-                </div><p className="mt-1 truncate text-[11px] text-default-500">{
+                </div><p className="mt-1 truncate text-11 text-default-500">{
                     signal.detail
                   }</p>
               </div>
             ),
           )}</div>
       ) : null}{showFullError ? (
-        <div className="mt-3 max-h-32 overflow-auto rounded-[8px] bg-background p-2 font-mono text-[11px] leading-5 text-default-500">
+        <div className="mt-3 max-h-32 overflow-auto rounded-[8px] bg-background p-2 font-mono text-11 leading-5 text-default-500">
 	          <pre className="whitespace-pre-wrap break-words">{headline}</pre>
         </div>
       ) : null}<div className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-2">{layers.map(
@@ -7760,7 +7760,7 @@ function ContactSyncDiagnosticsPanel({
                   }</p>{layer
                   .evidence
                   .length ? (
-                  <div className="mt-2 grid gap-1 text-[11px] leading-5 text-default-500">{layer.evidence
+                  <div className="mt-2 grid gap-1 text-11 leading-5 text-default-500">{layer.evidence
                       .slice(
                         0,
                         4,
@@ -7779,7 +7779,7 @@ function ContactSyncDiagnosticsPanel({
                             }</p>
                         ),
                       )}</div>
-                ) : null}<p className="mt-2 text-[11px] leading-5 text-default-500">
+                ) : null}<p className="mt-2 text-11 leading-5 text-default-500">
                   下一步：
                   {
                     layer.action
@@ -7790,7 +7790,7 @@ function ContactSyncDiagnosticsPanel({
         )}</div>{diagnostics
         ?.warnings
         ?.length ? (
-        <div className="mt-3 rounded-[8px] bg-background p-2 text-[11px] leading-5 text-default-500">{diagnostics.warnings
+        <div className="mt-3 rounded-[8px] bg-background p-2 text-11 leading-5 text-default-500">{diagnostics.warnings
             .slice(
               0,
               3,
@@ -10116,7 +10116,7 @@ function SyncedContactsTools({
                     className="min-w-0 rounded-[8px] border border-default-200 bg-background px-2 py-1.5"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-[11px] font-medium text-default-600">{
+                      <span className="truncate text-11 font-medium text-default-600">{
                           signal.label
                         }</span><Chip
                         size="sm"
@@ -10127,7 +10127,7 @@ function SyncedContactsTools({
                       >{diagnosticStatusLabel(
                           signal.status,
                         )}</Chip>
-                    </div><p className="mt-1 truncate text-[11px] text-default-400">{
+                    </div><p className="mt-1 truncate text-11 text-default-400">{
                         signal.detail
                       }</p>
                   </div>

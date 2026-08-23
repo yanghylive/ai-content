@@ -3061,7 +3061,7 @@ export function GrowthConsole({ view }: { view: GrowthView }) {
       >
         <header className="flex flex-col gap-3 pb-1 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h1 className="text-[20px] font-bold leading-[28px] text-foreground">
+            <h1 className="text-xl font-bold leading-[28px] text-foreground">
               {meta.title}
             </h1>
             <p className="mt-1 text-sm text-default-500">{meta.desc}</p>
@@ -3091,7 +3091,7 @@ export function GrowthConsole({ view }: { view: GrowthView }) {
     >
       <header className="flex flex-col gap-3 pb-1 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-[20px] font-bold leading-[28px] text-foreground">
+          <h1 className="text-xl font-bold leading-[28px] text-foreground">
             {meta.title}
           </h1>
           <p className="mt-1 text-sm text-default-500">{meta.desc}</p>
@@ -4640,7 +4640,7 @@ function ExposurePreviewPanel({
                   onClick={() => setActiveType(definition.type)}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-semibold text-foreground">
+                    <span className="text-13 font-semibold text-foreground">
                       {definition.title}
                     </span>
                     <OpsStatusPill
@@ -4651,7 +4651,7 @@ function ExposurePreviewPanel({
                       {definition.riskLabel}
                     </OpsStatusPill>
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-default-500">
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-12 text-default-500">
                     <span>配置 {configCount}</span>
                     <span>记录 {runCount}</span>
                     <OpsStatusPill
@@ -4668,42 +4668,42 @@ function ExposurePreviewPanel({
           <div className="grid gap-3">
             <div className="grid gap-3 rounded-[8px] border border-divider bg-default-50 p-3 md:grid-cols-2 xl:grid-cols-4">
               <div>
-                <p className="text-[12px] font-medium text-default-500">
+                <p className="text-12 font-medium text-default-500">
                   曝光类型
                 </p>
-                <p className="mt-1 text-[14px] font-semibold text-foreground">
+                <p className="mt-1 text-14 font-semibold text-foreground">
                   {activeDefinition.title}
                 </p>
               </div>
               <div>
-                <p className="text-[12px] font-medium text-default-500">
+                <p className="text-12 font-medium text-default-500">
                   关键来源
                 </p>
-                <p className="mt-1 text-[14px] font-semibold text-foreground">
+                <p className="mt-1 text-14 font-semibold text-foreground">
                   {activeDefinition.sourceLabel}
                 </p>
               </div>
               <div>
-                <p className="text-[12px] font-medium text-default-500">
+                <p className="text-12 font-medium text-default-500">
                   执行方式
                 </p>
-                <p className="mt-1 text-[14px] font-semibold text-foreground">
+                <p className="mt-1 text-14 font-semibold text-foreground">
                   低频执行，发送前确认
                 </p>
               </div>
               <div>
-                <p className="text-[12px] font-medium text-default-500">
+                <p className="text-12 font-medium text-default-500">
                   停止条件
                 </p>
-                <p className="mt-1 text-[14px] font-semibold text-foreground">
+                <p className="mt-1 text-14 font-semibold text-foreground">
                   达到数量、账号异常或手动停用
                 </p>
               </div>
               <div className="md:col-span-2 xl:col-span-4">
-                <p className="text-[12px] font-medium text-default-500">
+                <p className="text-12 font-medium text-default-500">
                   目标说明
                 </p>
-                <p className="mt-1 text-[13px] leading-5 text-default-700">
+                <p className="mt-1 text-13 leading-5 text-default-700">
                   {activeDefinition.goal}
                 </p>
               </div>
@@ -4713,7 +4713,7 @@ function ExposurePreviewPanel({
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-[12px] font-semibold text-foreground">
+                    <p className="text-12 font-semibold text-foreground">
                       当前运行边界
                     </p>
                     <Chip
@@ -4739,10 +4739,10 @@ function ExposurePreviewPanel({
                       {activeExecutionBoundary.canExecute ? "已放行" : "已阻止"}
                     </Chip>
                   </div>
-                  <p className="mt-1 text-[12px] leading-5 text-default-500">
+                  <p className="mt-1 text-12 leading-5 text-default-500">
                     {activeExecutionBoundary.detail}
                   </p>
-                  <p className="mt-1 text-[12px] leading-5 text-default-500">
+                  <p className="mt-1 text-12 leading-5 text-default-500">
                     预览任务只进入任务状态页；下方曝光记录与触达统计不会把预览结果显示为真实触达。
                   </p>
                 </div>
@@ -4829,7 +4829,7 @@ function ExposurePreviewPanel({
             <div className="grid gap-3 2xl:grid-cols-[minmax(0,1fr)_390px]">
               <div className="grid gap-3">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-[15px] font-semibold text-foreground">
+                  <h3 className="text-14 font-semibold text-foreground">
                     获客任务列表
                   </h3>
                   <OpsStatusPill
@@ -5011,7 +5011,7 @@ function ExposurePreviewPanel({
                 </OpsDenseTable>
 
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-[15px] font-semibold text-foreground">
+                  <h3 className="text-14 font-semibold text-foreground">
                     曝光记录
                   </h3>
                   <OpsStatusPill tone={activeRuns.length ? "brand" : "default"}>
@@ -5057,7 +5057,7 @@ function ExposurePreviewPanel({
                           <td>
                             <p>{runOutcomeDetail(run)}</p>
                             {run.failureReason ? (
-                              <p className="mt-1 text-[11px] text-danger-600">
+                              <p className="mt-1 text-11 text-danger-600">
                                 原因代码：{run.failureReason}
                               </p>
                             ) : null}
@@ -5077,10 +5077,10 @@ function ExposurePreviewPanel({
               <aside className="rounded-[8px] border border-divider bg-background p-3">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <div>
-                    <p className="text-[15px] font-semibold text-foreground">
+                    <p className="text-14 font-semibold text-foreground">
                       {sidePanelTitle}
                     </p>
-                    <p className="mt-1 text-[12px] text-default-500">
+                    <p className="mt-1 text-12 text-default-500">
                       {activeDefinition.title} · {activeDefinition.sourceLabel}
                     </p>
                   </div>
@@ -5225,7 +5225,7 @@ function ExposurePreviewPanel({
                         ))}
                       </Select>
                     </div>
-                    <div className="rounded-[6px] border border-divider bg-default-50 p-3 text-[12px] leading-5 text-default-600">
+                    <div className="rounded-[6px] border border-divider bg-default-50 p-3 text-12 leading-5 text-default-600">
                       当前账号：
                       {selectedAccount
                         ? `${platformLabels[selectedAccount.platform] || selectedAccount.platform} · ${selectedAccount.accountName}`
@@ -5260,7 +5260,7 @@ function ExposurePreviewPanel({
                 ) : null}
                 {sidePanel === "reuse" ? (
                   <div className="grid gap-3">
-                    <p className="text-[12px] leading-5 text-default-500">
+                    <p className="text-12 leading-5 text-default-500">
                       从同类配置中复用来源、账号、话术和数量限制，复用后可继续修改。
                     </p>
                     <OpsDenseTable>
@@ -5308,7 +5308,7 @@ function ExposurePreviewPanel({
                       value={bulkSourceText}
                       onValueChange={setBulkSourceText}
                     />
-                    <div className="rounded-[6px] border border-divider bg-default-50 p-3 text-[12px] leading-5 text-default-600">
+                    <div className="rounded-[6px] border border-divider bg-default-50 p-3 text-12 leading-5 text-default-600">
                       支持一行一个关键词、账号、链接或候选线索；系统会自动拆分并回填到配置表单。
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
@@ -5353,7 +5353,7 @@ function ExposurePreviewPanel({
                         value={activeStats.crm}
                       />
                     </div>
-                    <div className="rounded-[6px] border border-divider bg-default-50 p-3 text-[12px] leading-5 text-default-600">
+                    <div className="rounded-[6px] border border-divider bg-default-50 p-3 text-12 leading-5 text-default-600">
                       成功记录 {activeStats.success} 条，失败或跳过{" "}
                       {activeStats.failed}
                       条。这里不统计“生成预览任务”；先处理失败原因，再扩大执行数量。

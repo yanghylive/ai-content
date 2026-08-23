@@ -463,7 +463,7 @@ export function ConfirmationsPage() {
                   <div className="mx-card mx-list-card">
                     {pendingTasks.map((task) => (
                       <div className="mx-row" key={task.id}>
-                        <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                        <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
                         </span>
                         <div className="mx-row-main">
@@ -493,7 +493,7 @@ export function ConfirmationsPage() {
                   <div className="mx-card mx-list-card">
                     {items.map((item) => (
                       <div className="mx-row" key={item.id}>
-                        <span className="mx-row-ic" style={{ background: "rgba(239,68,68,.09)", color: "#dc2626" }}>
+                        <span className="mx-row-ic" style={{ background: "rgba(239,68,68,.09)", color: "var(--kaypal-v3-danger)" }}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
                         </span>
                         <div className="mx-row-main">
@@ -505,7 +505,7 @@ export function ConfirmationsPage() {
                         </div>
                         <div style={{ display: "flex", gap: 8, marginTop: 12, width: "100%" }}>
                           <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 11, padding: "9px 0" }} disabled={busyId === item.id} onClick={() => void decide(item, true)}>确认</button>
-                          <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 11, padding: "9px 0", background: "rgba(239,68,68,.1)", color: "#dc2626", border: "1px solid rgba(239,68,68,.25)", boxShadow: "none", backgroundImage: "none" }} disabled={busyId === item.id} onClick={() => void decide(item, false)}>拒绝</button>
+                          <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 11, padding: "9px 0", background: "rgba(239,68,68,.1)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(239,68,68,.25)", boxShadow: "none", backgroundImage: "none" }} disabled={busyId === item.id} onClick={() => void decide(item, false)}>拒绝</button>
                         </div>
                       </div>
                     ))}
@@ -980,11 +980,11 @@ export function SessionsPage({
               <div className="mx-stat-label">运行中</div>
             </div>
             <div className="mx-stat-item mx-control">
-              <div className="mx-stat-num" style={{ color: "#b45309" }}>{pendingCount}</div>
+              <div className="mx-stat-num" style={{ color: "var(--kaypal-v3-amber)" }}>{pendingCount}</div>
               <div className="mx-stat-label">待确认</div>
             </div>
             <div className="mx-stat-item mx-control">
-              <div className="mx-stat-num" style={{ color: "#059669" }}>{evidenceCount}</div>
+              <div className="mx-stat-num" style={{ color: "var(--kaypal-v3-success)" }}>{evidenceCount}</div>
               <div className="mx-stat-label">结果留存</div>
             </div>
           </div>
@@ -1062,17 +1062,17 @@ export function SessionsPage({
 
                   {/* 下一步 / 失败原因 */}
                   {session.failureReason ? (
-                    <div style={{ marginTop: 8, fontSize: 11.5, color: "#dc2626", background: "rgba(239,68,68,.07)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
+                    <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--kaypal-v3-danger)", background: "rgba(239,68,68,.07)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
                       失败原因：{commercialAgentText(session.failureReason)}
                     </div>
                   ) : null}
                   {session.nextAction ? (
-                    <div style={{ marginTop: 8, fontSize: 11.5, color: "#b45309", background: "rgba(245,158,11,.09)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
+                    <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--kaypal-v3-amber)", background: "rgba(245,158,11,.09)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
                       下一步：{commercialAgentText(session.nextAction)}
                     </div>
                   ) : null}
                   {session.resumeAction ? (
-                    <div style={{ marginTop: 8, fontSize: 11.5, color: "#b45309", background: "rgba(245,158,11,.09)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
+                    <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--kaypal-v3-amber)", background: "rgba(245,158,11,.09)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
                       确认后继续：{commercialAgentText(session.resumeAction.label)}
                     </div>
                   ) : null}
@@ -1083,7 +1083,7 @@ export function SessionsPage({
                       <>
                         <button
                           type="button"
-                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(37,99,235,.1)", color: "#2563eb", border: "none" }}
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)", border: "none" }}
                           disabled={
                             busyId === session.id ||
                             session.status === "completed" ||
@@ -1096,7 +1096,7 @@ export function SessionsPage({
                         </button>
                         <button
                           type="button"
-                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(239,68,68,.08)", color: "#dc2626", border: "1px solid rgba(239,68,68,.2)" }}
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(239,68,68,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(239,68,68,.2)" }}
                           disabled={session.status === "completed" || session.status === "cancelled"}
                           onClick={() => void stopSession(session)}
                         >
@@ -1934,7 +1934,7 @@ function AgentShell({
             <Icon icon={icon} width={26} />
           </div>
           <div>
-            <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+            <h2 className="text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
               {title}
             </h2>
             <p className="mt-1 text-small text-default-500">{description}</p>

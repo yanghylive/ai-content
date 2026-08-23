@@ -286,7 +286,7 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
   const current = RELEASE_NOTES.find((r) => r.version === `v${version}`) ?? RELEASE_NOTES[0];
   return (
     <footer
-      className="mt-auto flex min-w-0 flex-col gap-3 border-t border-divider px-4 py-6 text-[12px] text-default-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between"
+      className="mt-auto flex min-w-0 flex-col gap-3 border-t border-divider px-4 py-6 text-12 text-default-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between"
       aria-label="系统信息"
     >
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
@@ -1158,7 +1158,7 @@ function DashboardLayoutFallback() {
     <div className="flex min-h-dvh items-center justify-center bg-background">
       <div className="flex items-center gap-3 rounded-[8px] border border-divider bg-content1 px-4 py-3 shadow-sm">
         <Spinner size="sm" />
-        <span className="text-[14px] leading-[22px] text-default-500">
+        <span className="text-14 leading-[22px] text-default-500">
           正在验证登录状态...
         </span>
       </div>

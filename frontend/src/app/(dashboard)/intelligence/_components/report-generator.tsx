@@ -232,7 +232,7 @@ export function ReportGenerator() {
               <div className="mx-page-title">生成报告</div>
             </div>
             <div className="mx-card" style={{ marginTop: 14, padding: 30, textAlign: "center" }}>
-              <FileText width={32} height={32} style={{ color: "#059669", margin: "0 auto" }} />
+              <FileText width={32} height={32} style={{ color: "var(--kaypal-v3-success)", margin: "0 auto" }} />
               <p style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", marginTop: 11 }}>报告已开始生成</p>
               <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.55 }}>AI 正在分析数据写报告，稍等片刻就能在报告列表里看到</p>
               <button type="button" className="mx-btn-gold" style={{ marginTop: 16 }} onClick={() => router.push("/intelligence/reports")}>去看报告</button>
@@ -263,7 +263,7 @@ export function ReportGenerator() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -280,14 +280,14 @@ export function ReportGenerator() {
                   className="mx-card"
                   style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
                 >
-                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                     <KindIcon width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
                     <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
                   </span>
-                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                  {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
               );
             })}
@@ -316,7 +316,7 @@ export function ReportGenerator() {
                     key={opt.value}
                     type="button"
                     onClick={() => setForm((p) => ({ ...p, rangeKey: opt.value }))}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.rangeKey === opt.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.rangeKey === opt.value ? "#d98a2d" : "var(--mx-ink)", border: "1px solid " + (form.rangeKey === opt.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.rangeKey === opt.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.rangeKey === opt.value ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: "1px solid " + (form.rangeKey === opt.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
                   >
                     {opt.label}
                   </button>

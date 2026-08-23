@@ -108,7 +108,7 @@ export function InboxProcessing() {
 
         <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
           {error ? (
-            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginBottom: 10 }}>{error}</p>
           ) : null}
 
           {loading ? (
@@ -167,7 +167,7 @@ export function InboxProcessing() {
 
           {Object.keys(doneMap).length > 0 ? (
             <div className="mx-card" style={{ padding: 12, marginTop: 12 }}>
-              <p style={{ fontSize: 12, color: "#059669" }}>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)" }}>
                 ✓ 本次已处理 {Object.keys(doneMap).length} 条：
                 {Object.values(doneMap).filter((v) => v.includes("素材")).length} 条导入素材，
                 {Object.values(doneMap).filter((v) => v.includes("选题")).length} 条生成选题

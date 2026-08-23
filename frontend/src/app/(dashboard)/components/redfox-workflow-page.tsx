@@ -49,24 +49,24 @@ export function RedfoxWorkflowPage({
           </span>
           <div className="min-w-0">
             <span className="kaypal-v3-label">{eyebrow}</span>
-            <h1 className="mt-1 text-[22px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+            <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
               {title}
             </h1>
-            <p className="mt-1 max-w-3xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+            <p className="mt-1 max-w-3xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
               {description}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 lg:justify-end">
           <Link
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[13px] font-semibold text-white"
+            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-13 font-semibold text-white"
             href={primaryHref}
           >
             {primaryAction}
             <ArrowRight aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
           </Link>
           <Link
-            className="inline-flex h-8 items-center rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)]"
+            className="inline-flex h-8 items-center rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)]"
             href={secondaryHref}
           >
             {secondaryAction}
@@ -78,10 +78,10 @@ export function RedfoxWorkflowPage({
         {metrics.map((metric) => (
           <article className="kaypal-v3-panel p-4" key={metric.label}>
             <p className="kaypal-v3-label">{metric.label}</p>
-            <strong className="mt-2 block text-[24px] leading-8 text-[var(--kaypal-v3-ink)]">
+            <strong className="mt-2 block text-2xl leading-8 text-[var(--kaypal-v3-ink)]">
               {metric.value}
             </strong>
-            <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
               {metric.detail}
             </p>
           </article>
@@ -91,10 +91,10 @@ export function RedfoxWorkflowPage({
       <section className="grid gap-4 xl:grid-cols-3">
         {panels.map((panel) => (
           <article className="kaypal-v3-panel p-4" key={panel.title}>
-            <h2 className="text-[15px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+            <h2 className="text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
               {panel.title}
             </h2>
-            <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
               {panel.description}
             </p>
             <div className="mt-4 flex flex-col gap-3">
@@ -105,7 +105,7 @@ export function RedfoxWorkflowPage({
                     className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-success)]"
                     strokeWidth={1.8}
                   />
-                  <span className="text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                  <span className="text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                     {item}
                   </span>
                 </div>
@@ -117,16 +117,16 @@ export function RedfoxWorkflowPage({
 
       <section className="kaypal-v3-panel overflow-hidden">
         <div className="border-b border-[var(--kaypal-v3-border)] p-4">
-          <h2 className="text-[15px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+          <h2 className="text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
             落地进度
           </h2>
-          <p className="text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+          <p className="text-12 leading-5 text-[var(--kaypal-v3-muted)]">
             当前入口已可使用，后续动作会继续沉淀到任务结果和结果留存。
           </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-[13px]">
-            <thead className="bg-[var(--kaypal-v3-table-head)] text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+          <table className="min-w-full text-left text-13">
+            <thead className="bg-[var(--kaypal-v3-table-head)] text-11 font-bold text-[var(--kaypal-v3-muted)]">
               <tr>
                 <th className="px-4 py-3" scope="col">能力</th>
                 <th className="px-4 py-3" scope="col">业务入口</th>
@@ -139,7 +139,7 @@ export function RedfoxWorkflowPage({
                   <td className="px-4 py-3 font-semibold text-[var(--kaypal-v3-ink)]">
                     {capability}
                   </td>
-                  <td className="px-4 py-3 font-mono text-[12px] text-[var(--kaypal-v3-muted)]">
+                  <td className="px-4 py-3 font-mono text-12 text-[var(--kaypal-v3-muted)]">
                     {endpoint}
                   </td>
                   <td className="px-4 py-3 text-[var(--kaypal-v3-soft-ink)]">

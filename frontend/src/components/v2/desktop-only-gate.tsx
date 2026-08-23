@@ -56,13 +56,13 @@ export function DesktopOnlyGate({
             alignItems: "center",
             justifyContent: "center",
             background: "rgba(37,99,235,.12)",
-            color: "#3b82f6",
+            color: "var(--kaypal-v3-cobalt)",
             marginBottom: 18,
           }}
         >
           <Monitor size={28} />
         </div>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: "#f1f5f9" }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: "var(--kaypal-v3-paper-muted)" }}>
           {title}
         </h1>
         <p
@@ -147,7 +147,7 @@ export function DesktopOnlyGate({
               borderRadius: 12,
               fontSize: 13.5,
               fontWeight: 600,
-              background: "#2563eb",
+              background: "var(--kaypal-v3-cobalt)",
               color: "#fff",
               border: "none",
               cursor: "pointer",

@@ -290,13 +290,13 @@ function LeadDetailClient() {
             {lead.sourceTaskId && (
               <span>
                 来源任务{" "}
-                <code className="font-mono text-[10px]">{lead.sourceTaskId}</code>
+                <code className="font-mono text-11">{lead.sourceTaskId}</code>
               </span>
             )}
             {lead.sourceRunId && (
               <span>
                 来源运行{" "}
-                <code className="font-mono text-[10px]">{lead.sourceRunId}</code>
+                <code className="font-mono text-11">{lead.sourceRunId}</code>
               </span>
             )}
             {lead.sourceType && <span>来源类型 {lead.sourceType}</span>}
@@ -306,7 +306,7 @@ function LeadDetailClient() {
 
       {/* Top Lead 动作（T4.5 + T07 风险分级：低=只读/备注类、中=单条写操作、高=批量/外发强制确认） */}
       <section className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--kaypal-v3-muted)]">
+        <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-11 font-medium text-[var(--kaypal-v3-muted)]">
           低风险动作
         </span>
         <button
@@ -351,7 +351,7 @@ function LeadDetailClient() {
 
       {/* 中风险动作 */}
       <section className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--kaypal-v3-muted)]">
+        <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-11 font-medium text-[var(--kaypal-v3-muted)]">
           中风险动作
         </span>
         <button
@@ -386,7 +386,7 @@ function LeadDetailClient() {
             客户详情（含来源归因）→
           </Link>
         ) : (
-          <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-1 text-[11px] text-[var(--kaypal-v3-muted)]">
+          <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-1 text-11 text-[var(--kaypal-v3-muted)]">
             转 CRM 后可从本页直达客户与商机
           </span>
         )}
@@ -394,7 +394,7 @@ function LeadDetailClient() {
 
       {/* 高风险动作（批量/外发，强制确认） */}
       <section className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--kaypal-v3-muted)]">
+        <span className="rounded bg-[var(--kaypal-v3-surface-2)] px-2 py-0.5 text-11 font-medium text-[var(--kaypal-v3-muted)]">
           高风险动作
         </span>
         <button
@@ -405,7 +405,7 @@ function LeadDetailClient() {
         >
           批量触达（需确认）
         </button>
-        <span className="text-[11px] text-[var(--kaypal-v3-muted)]">
+        <span className="text-11 text-[var(--kaypal-v3-muted)]">
           批量私信/群发属高风险，将弹出风险确认后方可执行
         </span>
       </section>
@@ -484,7 +484,7 @@ function LeadDetailClient() {
             <div className="mb-4 grid grid-cols-1 gap-3 rounded-lg bg-[var(--kaypal-v3-surface-2)] p-4 sm:grid-cols-2">
               <ScoreBar label="意向 Intent" value={latestSnapshot.intentScore} max={35} color="var(--kaypal-v3-accent)" />
               <ScoreBar label="匹配 Fit" value={latestSnapshot.fitScore} max={25} color="#2f9e8f" />
-              <ScoreBar label="身份 Identity" value={latestSnapshot.identityConfidence} max={15} color="#8b5cf6" />
+              <ScoreBar label="身份 Identity" value={latestSnapshot.identityConfidence} max={15} color="var(--kaypal-v3-purple)" />
               <ScoreBar label="风险 Risk（扣分）" value={latestSnapshot.riskScore} max={30} color="#e5484d" />
             </div>
 
@@ -505,7 +505,7 @@ function LeadDetailClient() {
                     ))}
                   </ul>
                   {s.evidenceIds.length > 0 && (
-                    <p className="mt-1.5 text-[10px] text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1.5 text-11 text-[var(--kaypal-v3-muted)]">
                       证据：{s.evidenceIds.join(" / ")} · {s.modelVersion}
                     </p>
                   )}
@@ -575,7 +575,7 @@ function LeadDetailClient() {
           </div>
         )}
         {attribution?.lead?.sourceUrl && (
-          <p className="mt-2 text-[10px] text-[var(--kaypal-v3-muted)]">来源 URL：{attribution.lead.sourceUrl}</p>
+          <p className="mt-2 text-11 text-[var(--kaypal-v3-muted)]">来源 URL：{attribution.lead.sourceUrl}</p>
         )}
       </section>
 

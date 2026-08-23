@@ -348,7 +348,7 @@ function KpiCard({ label, value, delta, positive, caption }: KpiProps) {
             aria-hidden="true"
             className="h-4 w-4"
             strokeWidth={1.8}
-            color={positive ? "#12a06a" : "#d97706"}
+            color={positive ? "#12a06a" : "var(--kaypal-v3-amber)"}
           />
           <Text color="secondary" type="supporting">
             {caption}
@@ -425,13 +425,13 @@ function FocusCard({ item }: FocusProps) {
         </Text>
         <HStack gap={2} wrap="wrap">
           <a
-            className="text-[13px] font-semibold text-[color:var(--astryx-color-text-accent,#1677c2)]"
+            className="text-13 font-semibold text-[color:var(--astryx-color-text-accent,#1677c2)]"
             href={item.actionHref}
           >
             {item.actionLabel} →
           </a>
           <button
-            className="ml-auto rounded-[6px] border border-divider px-2 py-1 text-[12px] font-medium text-default-700 hover:bg-default-100"
+            className="ml-auto rounded-[6px] border border-divider px-2 py-1 text-12 font-medium text-default-700 hover:bg-default-100"
             onClick={() => setOpen((prev) => !prev)}
             type="button"
           >
@@ -639,7 +639,7 @@ export function IntelligenceCommercialShell() {
                 key={role}
                 type="button"
                 onClick={() => setCurrentRole(role)}
-                style={{ flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 600, background: currentRole === role ? "#d98a2d" : "rgba(120,148,179,.12)", color: currentRole === role ? "#fff" : "var(--mx-ink)", border: currentRole === role ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                style={{ flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 600, background: currentRole === role ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: currentRole === role ? "#fff" : "var(--mx-ink)", border: currentRole === role ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
               >
                 {roleMeta[role].label}
               </button>
@@ -653,7 +653,7 @@ export function IntelligenceCommercialShell() {
                 <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>{kpi.label}</div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 4 }}>
                   <span style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{kpi.value}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: kpi.positive ? "#059669" : "#dc2626" }}>{kpi.delta}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: kpi.positive ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)" }}>{kpi.delta}</span>
                 </div>
               </div>
             ))}
@@ -664,7 +664,7 @@ export function IntelligenceCommercialShell() {
                 <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>{kpi.label}</div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 4 }}>
                   <span style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{kpi.value}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: kpi.positive ? "#059669" : "#dc2626" }}>{kpi.delta}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: kpi.positive ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)" }}>{kpi.delta}</span>
                 </div>
               </div>
             ))}

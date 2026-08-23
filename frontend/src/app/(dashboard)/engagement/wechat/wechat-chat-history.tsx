@@ -198,7 +198,7 @@ export function WechatChatHistory() {
                     maxWidth: "78%",
                     borderRadius: 12,
                     padding: "8px 12px",
-                    background: isOutgoing ? "#d98a2d" : "rgba(120,148,179,.12)",
+                    background: isOutgoing ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)",
                     color: isOutgoing ? "#fff" : "var(--mx-ink)",
                   }}
                 >
@@ -266,12 +266,12 @@ export function WechatChatHistory() {
 
           {notice && (
             <div className="mx-card" style={{ marginTop: 10, padding: 10, borderColor: "rgba(5,150,105,.4)" }}>
-              <p style={{ fontSize: 12, color: "#059669" }}>{notice}</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)" }}>{notice}</p>
             </div>
           )}
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 10, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
           {commercialBlocked && (
@@ -310,7 +310,7 @@ export function WechatChatHistory() {
                       name={session.contactName || session.title}
                       size={38}
                       alt={session.contactName || session.title || "会话"}
-                      fallback={<UserRound width={17} height={17} style={{ color: "#d98a2d" }} />}
+                      fallback={<UserRound width={17} height={17} style={{ color: "var(--kaypal-v3-amber)" }} />}
                     />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
@@ -319,7 +319,7 @@ export function WechatChatHistory() {
                         {session.contactName || session.title}
                       </span>
                       {session.unreadCount > 0 && (
-                        <span style={{ flexShrink: 0, minWidth: 18, height: 18, borderRadius: "50%", background: "#dc2626", color: "#fff", fontSize: 10, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
+                        <span style={{ flexShrink: 0, minWidth: 18, height: 18, borderRadius: "50%", background: "var(--kaypal-v3-danger)", color: "#fff", fontSize: 10, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
                           {session.unreadCount}
                         </span>
                       )}
@@ -499,7 +499,7 @@ export function WechatChatHistory() {
                             : message.content}
                       </p>
                       {message.sentAt && (
-                        <p className={`mt-1 text-[10px] ${isOutgoing ? "text-white/60" : "text-[var(--kaypal-v3-muted)]"}`}>
+                        <p className={`mt-1 text-11 ${isOutgoing ? "text-white/60" : "text-[var(--kaypal-v3-muted)]"}`}>
                           {new Date(message.sentAt).toLocaleString("zh-CN", {
                             month: "numeric",
                             day: "numeric",

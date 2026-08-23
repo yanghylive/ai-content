@@ -77,7 +77,7 @@ export function EnginePermissions() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -88,12 +88,12 @@ export function EnginePermissions() {
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {blockers.map((item, i) => (
                   <div key={i} className="mx-card" style={{ padding: 12, display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <XCircle width={16} height={16} style={{ color: "#dc2626", flexShrink: 0, marginTop: 1 }} />
+                    <XCircle width={16} height={16} style={{ color: "var(--kaypal-v3-danger)", flexShrink: 0, marginTop: 1 }} />
                     <span style={{ minWidth: 0 }}>
                       <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>{item.capability}</span>
                       <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>{item.message}</span>
                       {item.nextAction && (
-                        <span style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "#d98a2d", marginTop: 5 }}>怎么办：{item.nextAction}</span>
+                        <span style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-amber)", marginTop: 5 }}>怎么办：{item.nextAction}</span>
                       )}
                     </span>
                   </div>
@@ -111,7 +111,7 @@ export function EnginePermissions() {
                   const w = item as { capability?: string; message?: string };
                   return (
                     <div key={i} className="mx-card" style={{ padding: 12, display: "flex", gap: 10, alignItems: "flex-start" }}>
-                      <ShieldCheck width={16} height={16} style={{ color: "#b45309", flexShrink: 0, marginTop: 1 }} />
+                      <ShieldCheck width={16} height={16} style={{ color: "var(--kaypal-v3-amber)", flexShrink: 0, marginTop: 1 }} />
                       <span style={{ minWidth: 0 }}>
                         <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>{w.capability || `警告 ${i + 1}`}</span>
                         <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>{w.message || String(item)}</span>
@@ -126,8 +126,8 @@ export function EnginePermissions() {
           {/* 全部通过 */}
           {!loading && allClear && (
             <div className="mx-card" style={{ marginTop: 12, padding: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderColor: "rgba(5,150,105,.4)" }}>
-              <CheckCircle2 width={18} height={18} style={{ color: "#059669" }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>安全检查全部通过</span>
+              <CheckCircle2 width={18} height={18} style={{ color: "var(--kaypal-v3-success)" }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-success)" }}>安全检查全部通过</span>
             </div>
           )}
 

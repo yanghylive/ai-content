@@ -33,7 +33,7 @@ interface DemoMessage {
 }
 
 const BANNER_STYLE = {
-  background: "#dc2626",
+  background: "var(--kaypal-v3-danger)",
   color: "#fff",
   fontSize: 13,
   fontWeight: 700,
@@ -143,7 +143,7 @@ export default function WechatPersonalDemoPage() {
               borderRadius: 12,
               background: "rgba(239,68,68,.09)",
               fontSize: 12,
-              color: "#dc2626",
+              color: "var(--kaypal-v3-danger)",
               marginBottom: 12,
             }}
           >
@@ -209,7 +209,7 @@ export default function WechatPersonalDemoPage() {
                       padding: "2px 6px",
                       borderRadius: 8,
                       background: "rgba(244,187,103,.2)",
-                      color: "#b45309",
+                      color: "var(--kaypal-v3-amber)",
                     }}
                   >
                     {c.tag}
@@ -225,7 +225,7 @@ export default function WechatPersonalDemoPage() {
                     minWidth: 18,
                     height: 18,
                     borderRadius: 9,
-                    background: "#dc2626",
+                    background: "var(--kaypal-v3-danger)",
                     color: "#fff",
                     fontSize: 10,
                     display: "flex",
@@ -270,12 +270,12 @@ export default function WechatPersonalDemoPage() {
                     fontSize: 13,
                     lineHeight: 1.5,
                     background:
-                      m.from === "them" ? "#f1f5f9" : "rgba(244,187,103,.25)",
+                      m.from === "them" ? "var(--kaypal-v3-paper-muted)" : "rgba(244,187,103,.25)",
                     color: "#1f2a44",
                   }}
                 >
                   {m.text}
-                  <span style={{ fontSize: 10, color: "#94a3b8", marginLeft: 6 }}>
+                  <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)", marginLeft: 6 }}>
                     {m.time}
                   </span>
                 </div>
@@ -309,9 +309,9 @@ export default function WechatPersonalDemoPage() {
               ))}
             </div>
             {replySent && (
-              <p style={{ fontSize: 12, color: "#047857", margin: "10px 0 0" }}>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", margin: "10px 0 0" }}>
                 {replySent}
-                <span style={{ color: "#b45309" }}>（mock · 未真实发送）</span>
+                <span style={{ color: "var(--kaypal-v3-amber)" }}>（mock · 未真实发送）</span>
               </p>
             )}
           </div>

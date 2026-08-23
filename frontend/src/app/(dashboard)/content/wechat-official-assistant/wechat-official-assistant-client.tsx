@@ -731,11 +731,11 @@ export function WechatOfficialAssistantClient() {
     <div className="space-y-5 pb-8">
       <header className="flex flex-col gap-3 border-b border-divider pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-default-500">
+          <div className="mb-2 flex items-center gap-2 text-12 font-medium text-default-500">
             <Newspaper className="h-4 w-4" />
             AgentWaker / Weaver
           </div>
-          <h1 className="text-[24px] font-semibold">公众号运营助理</h1>
+          <h1 className="text-2xl font-semibold">公众号运营助理</h1>
         </div>
         <div className="flex items-center gap-2">
           <V2StatusChip tone={roleAvailable ? "success" : "danger"}>
@@ -762,7 +762,7 @@ export function WechatOfficialAssistantClient() {
         <section className="h-fit rounded-[8px] border border-divider bg-background p-4">
           <div className="mb-4 flex items-center gap-2">
             <WandSparkles className="h-4 w-4 text-primary" />
-            <h2 className="text-[15px] font-semibold">创建文章流水线</h2>
+            <h2 className="text-14 font-semibold">创建文章流水线</h2>
           </div>
           <div className="space-y-3">
             <div className="flex flex-col gap-1.5">
@@ -902,9 +902,9 @@ export function WechatOfficialAssistantClient() {
         <section className="min-w-0 rounded-[8px] border border-divider bg-background">
           <div className="flex min-h-14 items-center justify-between gap-3 border-b border-divider px-4 py-3">
             <div>
-              <h2 className="text-[15px] font-semibold">文章与移动预览</h2>
+              <h2 className="text-14 font-semibold">文章与移动预览</h2>
               {currentRun ? (
-                <p className="mt-0.5 text-[11px] text-default-400">
+                <p className="mt-0.5 text-11 text-default-400">
                   {formatTime(currentRun.updatedAt)}
                 </p>
               ) : null}
@@ -922,14 +922,14 @@ export function WechatOfficialAssistantClient() {
           {!currentRun ? (
             <div className="flex min-h-[560px] flex-col items-center justify-center px-6 text-center">
               <FileCode2 className="h-9 w-9 text-default-300" />
-              <p className="mt-3 text-[14px] font-medium text-default-600">
+              <p className="mt-3 text-14 font-medium text-default-600">
                 暂无公众号文章产物
               </p>
             </div>
           ) : (
             <div className="space-y-5 p-4">
               <div>
-                <div className="mb-2 flex items-center justify-between text-[11px] text-default-500">
+                <div className="mb-2 flex items-center justify-between text-11 text-default-500">
                   <span>{currentRun.nextAction}</span>
                   <span>{STEP_PROGRESS[currentRun.currentStep]}%</span>
                 </div>
@@ -949,7 +949,7 @@ export function WechatOfficialAssistantClient() {
                 </div>
               </div>
               {isActive(currentRun) ? (
-                <div className="flex min-h-[360px] items-center justify-center gap-3 text-[13px] text-default-500">
+                <div className="flex min-h-[360px] items-center justify-center gap-3 text-13 text-default-500">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
                   <span>任务在后台执行，刷新页面不会丢失进度</span>
                 </div>
@@ -1001,7 +1001,7 @@ export function WechatOfficialAssistantClient() {
                   />
                 </>
               ) : currentRun.failureReason ? (
-                <div className="space-y-3 border-l-2 border-danger bg-danger-50 px-3 py-3 text-[13px] text-danger-700">
+                <div className="space-y-3 border-l-2 border-danger bg-danger-50 px-3 py-3 text-13 text-danger-700">
                   <p>{currentRun.failureReason}</p>
                   <V2DangerButton
                     loading={executingRunId === currentRun.runId}
@@ -1021,9 +1021,9 @@ export function WechatOfficialAssistantClient() {
         <div className="flex items-center justify-between border-b border-divider px-4 py-3">
           <div className="flex items-center gap-2">
             <Clock3 className="h-4 w-4 text-default-500" />
-            <h2 className="text-[15px] font-semibold">最近公众号任务</h2>
+            <h2 className="text-14 font-semibold">最近公众号任务</h2>
           </div>
-          <span className="text-[11px] text-default-400">{runs.length} 条</span>
+          <span className="text-11 text-default-400">{runs.length} 条</span>
         </div>
         <div className="divide-y divide-divider">
           {runs.map((run) => (
@@ -1034,24 +1034,24 @@ export function WechatOfficialAssistantClient() {
               onClick={() => void openRun(run.runId)}
             >
               <span className="min-w-0">
-                <span className="block truncate text-[13px] font-medium">
+                <span className="block truncate text-13 font-medium">
                   {run.goal}
                 </span>
-                <span className="block truncate text-[11px] text-default-400">
+                <span className="block truncate text-11 text-default-400">
                   {run.inputs.product || "未填写主题"}
                 </span>
               </span>
               <V2StatusChip tone={STATUS_COLOR[run.status]}>
                 {run.statusLabel}
               </V2StatusChip>
-              <span className="flex items-center justify-end gap-2 text-[11px] text-default-400">
+              <span className="flex items-center justify-end gap-2 text-11 text-default-400">
                 {historyBusyId === run.runId ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" /> : null}
                 {formatTime(run.updatedAt)}
               </span>
             </button>
           ))}
           {!runs.length ? (
-            <div className="px-4 py-8 text-center text-[13px] text-default-400">
+            <div className="px-4 py-8 text-center text-13 text-default-400">
               暂无任务记录
             </div>
           ) : null}
@@ -1097,7 +1097,7 @@ function JpagePreviewPanel({
   const receipt = preview?.receipt;
   return (
     <div className="mt-5 space-y-3 border-t border-divider pt-5">
-      <div className="flex items-center gap-2 text-[13px] font-medium">
+      <div className="flex items-center gap-2 text-13 font-medium">
         <LockKeyhole className="h-4 w-4 text-default-500" />
         公众号文章私有双文件预览
       </div>
@@ -1126,13 +1126,13 @@ function JpagePreviewPanel({
         </Link>
       )}
       {account && !accountReady ? (
-        <div className="border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700">
+        <div className="border-l-2 border-warning bg-warning-50 px-3 py-2 text-12 text-warning-700">
           该公众号文章授权未就绪，或缺少访问凭证、对外地址。
         </div>
       ) : null}
       {receipt ? (
         <div
-          className={`space-y-2 border-l-2 px-3 py-3 text-[12px] ${preview?.ready ? "border-success bg-success-50 text-success-700" : "border-warning bg-warning-50 text-warning-700"}`}
+          className={`space-y-2 border-l-2 px-3 py-3 text-12 ${preview?.ready ? "border-success bg-success-50 text-success-700" : "border-warning bg-warning-50 text-warning-700"}`}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span>
@@ -1186,7 +1186,7 @@ function JpagePreviewPanel({
         </div>
       ) : run.status === "completed" && accountReady ? (
         uploadConfirmationId ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-warning bg-warning-50 px-3 py-3 text-[12px] text-warning-700">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-warning bg-warning-50 px-3 py-3 text-12 text-warning-700">
             <span>即将上传当前锁定版本的 Markdown 与 HTML，保持私有。</span>
             <V2GhostButton
              
@@ -1268,7 +1268,7 @@ function WechatDeliveryPanel({
   );
   return (
     <div className="mt-5 space-y-3 border-t border-divider pt-5">
-      <div className="flex items-center gap-2 text-[13px] font-medium">
+      <div className="flex items-center gap-2 text-13 font-medium">
         <Newspaper className="h-4 w-4 text-default-500" />
         微信官方草稿与发布
       </div>
@@ -1297,13 +1297,13 @@ function WechatDeliveryPanel({
         </Link>
       )}
       {account && !accountReady ? (
-        <div className="border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700">
+        <div className="border-l-2 border-warning bg-warning-50 px-3 py-2 text-12 text-warning-700">
           该账号未就绪，或缺少访问凭证、默认封面
           media_id，请先到平台授权补齐。
         </div>
       ) : null}
       {run.status !== "completed" ? (
-        <div className="flex items-center justify-between gap-3 border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700">
+        <div className="flex items-center justify-between gap-3 border-l-2 border-warning bg-warning-50 px-3 py-2 text-12 text-warning-700">
           <span>内容审批通过后，才允许写入公众号草稿箱。</span>
           <Link
             href="/tasks/confirmations"
@@ -1314,7 +1314,7 @@ function WechatDeliveryPanel({
         </div>
       ) : null}
       {run.status === "completed" && !jpageReady ? (
-        <div className="border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700">
+        <div className="border-l-2 border-warning bg-warning-50 px-3 py-2 text-12 text-warning-700">
           公众号文章私有双文件预览尚未完成校验与移动端渲染确认，草稿写入已阻止。
         </div>
       ) : null}
@@ -1323,7 +1323,7 @@ function WechatDeliveryPanel({
       jpageReady &&
       !draftResult ? (
         draftConfirmationId ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-warning bg-warning-50 px-3 py-3 text-[12px] text-warning-700">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-warning bg-warning-50 px-3 py-3 text-12 text-warning-700">
             <span>即将把当前锁定版本写入“{account?.name}”草稿箱。</span>
             <V2GhostButton
              
@@ -1346,7 +1346,7 @@ function WechatDeliveryPanel({
         )
       ) : null}
       {draftResult ? (
-        <div className="space-y-2 border-l-2 border-success bg-success-50 px-3 py-3 text-[12px] text-success-700">
+        <div className="space-y-2 border-l-2 border-success bg-success-50 px-3 py-3 text-12 text-success-700">
           <p>
             草稿已保存并校验：{draftResult.mediaId}；标题匹配：
             {draftResult.readback.matched ? "是" : "否"}
@@ -1401,7 +1401,7 @@ function WechatDeliveryPanel({
         </div>
       ) : null}
       {publishResult ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-primary bg-primary-50 px-3 py-3 text-[12px] text-primary-700">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-primary bg-primary-50 px-3 py-3 text-12 text-primary-700">
           <span>
             发布任务：{publishResult.publishId}；状态：{publishResult.status}
           </span>
@@ -1440,11 +1440,11 @@ function WechatRunOutput({ run }: { run: AgentWakerRun }) {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-[20px] font-semibold leading-8">{output.title}</h3>
-        <p className="mt-2 text-[13px] leading-6 text-default-600">
+        <h3 className="text-xl font-semibold leading-8">{output.title}</h3>
+        <p className="mt-2 text-13 leading-6 text-default-600">
           {output.digest}
         </p>
-        <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-default-400">
+        <div className="mt-2 flex flex-wrap gap-2 text-11 text-default-400">
           {output.author ? <span>作者：{output.author}</span> : null}
           <span>{output.wordCount} 字符</span>
           <span>{output.sourceLedger.length} 条来源</span>
@@ -1453,7 +1453,7 @@ function WechatRunOutput({ run }: { run: AgentWakerRun }) {
 
       {output.finalHtml ? (
         <div>
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium">
+          <div className="mb-2 flex items-center gap-2 text-13 font-medium">
             <FileCode2 className="h-4 w-4 text-default-500" />
             微信移动预览
           </div>
@@ -1471,13 +1471,13 @@ function WechatRunOutput({ run }: { run: AgentWakerRun }) {
 
       {output.sourceLedger.length ? (
         <div className="border-t border-divider pt-4">
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium">
+          <div className="mb-2 flex items-center gap-2 text-13 font-medium">
             <BookOpenCheck className="h-4 w-4 text-default-500" />
             来源账本
           </div>
           <div className="space-y-2">
             {output.sourceLedger.map((source, index) => (
-              <div key={`${source.title}-${index}`} className="text-[12px]">
+              <div key={`${source.title}-${index}`} className="text-12">
                 <div className="font-medium text-default-700">
                   {source.title}
                 </div>
@@ -1499,7 +1499,7 @@ function WechatRunOutput({ run }: { run: AgentWakerRun }) {
       ) : null}
 
       <div className="border-t border-divider pt-4">
-        <div className="mb-2 flex items-center gap-2 text-[13px] font-medium">
+        <div className="mb-2 flex items-center gap-2 text-13 font-medium">
           <ShieldCheck className="h-4 w-4 text-default-500" />
           草稿与发布检查
         </div>
@@ -1507,7 +1507,7 @@ function WechatRunOutput({ run }: { run: AgentWakerRun }) {
           {checklistItems.map((item) => (
             <div
               key={item.label}
-              className="flex items-start gap-2 text-[12px]"
+              className="flex items-start gap-2 text-12"
             >
               {item.status === "ready" ? (
                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 text-success" />
@@ -1519,7 +1519,7 @@ function WechatRunOutput({ run }: { run: AgentWakerRun }) {
           ))}
         </div>
         {run.risks.length ? (
-          <div className="mt-3 border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700">
+          <div className="mt-3 border-l-2 border-warning bg-warning-50 px-3 py-2 text-12 text-warning-700">
             {run.risks.join("；")}
           </div>
         ) : null}

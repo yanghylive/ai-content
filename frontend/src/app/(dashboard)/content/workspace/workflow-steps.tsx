@@ -57,10 +57,10 @@ export function WorkflowSteps({
                   )}
                 </span>
                 <span className="min-w-0 max-w-full">
-                  <span className="block whitespace-nowrap text-[11px] font-semibold leading-4">
+                  <span className="block whitespace-nowrap text-11 font-semibold leading-4">
                     {step.label}
                   </span>
-                  <span className="hidden truncate text-[11px] leading-4 text-default-400 2lg:block">
+                  <span className="hidden truncate text-11 leading-4 text-default-400 2lg:block">
                     {step.description}
                   </span>
                 </span>

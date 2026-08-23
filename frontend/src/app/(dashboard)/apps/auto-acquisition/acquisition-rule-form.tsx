@@ -366,13 +366,13 @@ export function AcquisitionRuleForm() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
           {memoryHint && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(246,196,120,.5)", background: "rgba(246,196,120,.08)" }}>
-              <p style={{ fontSize: 12.5, color: "#b45309" }}>🧠 {memoryHint}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-amber)" }}>🧠 {memoryHint}</p>
             </div>
           )}
 
@@ -389,14 +389,14 @@ export function AcquisitionRuleForm() {
                   className="mx-card"
                   style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
                 >
-                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                     <PlatformIcon width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
                     <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
                   </span>
-                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                  {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
               );
             })}
@@ -453,7 +453,7 @@ export function AcquisitionRuleForm() {
                         {!usable ? "（不可用，请先处理账号状态）" : ""}
                       </span>
                     </span>
-                    {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                    {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                   </button>
                 );
               })}
@@ -471,7 +471,7 @@ export function AcquisitionRuleForm() {
           />
           <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5 }}>你的客户会关注的话题词，逗号分隔</p>
           {keywords.length > 0 && (
-            <p style={{ fontSize: 11.5, color: "#059669", marginTop: 4 }}>✓ 将监控 {keywords.length} 个关键词：{keywords.join("、")}</p>
+            <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-success)", marginTop: 4 }}>✓ 将监控 {keywords.length} 个关键词：{keywords.join("、")}</p>
           )}
 
           {/* 第 3 步：话术 */}
@@ -568,14 +568,14 @@ export function AcquisitionRuleForm() {
                 <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>正在预检任务…</p>
               ) : preflight ? (
                 <>
-                  <p style={{ fontSize: 12.5, fontWeight: 700, color: preflight.allowed ? "#059669" : "#dc2626" }}>
+                  <p style={{ fontSize: 12.5, fontWeight: 700, color: preflight.allowed ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)" }}>
                     {preflight.allowed ? "✓ 预检通过" : "✗ 预检未通过"}
                   </p>
                   <p style={{ fontSize: 12, color: "var(--mx-ink)", marginTop: 4, lineHeight: 1.6 }}>{preflight.summary}</p>
                   {preflight.blockers.length > 0 && (
                     <ul style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
                       {preflight.blockers.map((b) => (
-                        <li key={b} style={{ fontSize: 11.5, color: "#dc2626" }}>· {b}</li>
+                        <li key={b} style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger)" }}>· {b}</li>
                       ))}
                     </ul>
                   )}
@@ -991,7 +991,7 @@ export function AcquisitionRuleForm() {
           ].map((step, i) => (
             <li key={step.n} className="flex items-start gap-3">
               <span
-                className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent-soft)] text-[11px] font-bold text-[var(--kaypal-v3-accent-ink)]"
+                className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent-soft)] text-11 font-bold text-[var(--kaypal-v3-accent-ink)]"
               >
                 {i + 1}
               </span>

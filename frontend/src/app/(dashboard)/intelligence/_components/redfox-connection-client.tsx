@@ -481,15 +481,15 @@ export function RedfoxConnectionClient() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">数据源设置</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   这页只管外部数据能不能用
                 </h1>
-                <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   它不是方案页，也不是结果页。要做业务，去方案中心、一键找线索或自动监控；只有管理员需要在这里保存凭证、检查数据源和刷新可用能力。
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Link
-                    className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition hover:-translate-y-0.5"
+                    className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:-translate-y-0.5"
                     href="/solutions"
                   >
                     <ArrowLeft
@@ -500,7 +500,7 @@ export function RedfoxConnectionClient() {
                     回到方案中心
                   </Link>
                   <Link
-                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                     href="/intelligence/search"
                   >
                     <Search
@@ -511,7 +511,7 @@ export function RedfoxConnectionClient() {
                     去一键找线索
                   </Link>
                   <Link
-                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                     href="/intelligence/monitors"
                   >
                     <BellRing
@@ -526,7 +526,7 @@ export function RedfoxConnectionClient() {
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading || Boolean(runningAction)}
                 onClick={() => void load()}
                 type="button"
@@ -541,7 +541,7 @@ export function RedfoxConnectionClient() {
                 刷新状态
               </button>
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading || Boolean(runningAction)}
                 onClick={() => void test()}
                 type="button"
@@ -586,10 +586,10 @@ export function RedfoxConnectionClient() {
                     />
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <span className="block text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {item.title}
                     </span>
-                    <span className="mt-1 block text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <span className="mt-1 block text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       {item.detail}
                     </span>
                   </span>
@@ -618,10 +618,10 @@ export function RedfoxConnectionClient() {
                 strokeWidth={1.8}
               />
             </div>
-            <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+            <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
               {value}
             </p>
-            <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-1 line-clamp-2 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
               {detail}
             </p>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--kaypal-v3-border)]">
@@ -658,13 +658,13 @@ export function RedfoxConnectionClient() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="kaypal-v3-label">数据连接配置</p>
-                <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+                <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                   服务地址、访问凭证和积分扣减
                 </h2>
               </div>
               <span
                 className={[
-                  "rounded-[8px] border px-3 py-1 text-[12px] font-semibold",
+                  "rounded-[8px] border px-3 py-1 text-12 font-semibold",
                   statusTone(connection?.status),
                 ].join(" ")}
               >
@@ -676,21 +676,21 @@ export function RedfoxConnectionClient() {
           <div className="grid gap-4 p-4">
             <div className="grid gap-3 md:grid-cols-2">
               <label className="flex flex-col gap-1">
-                <span className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                <span className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                   服务地址
                 </span>
                 <input
-                  className="h-10 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] text-[var(--kaypal-v3-ink)]"
+                  className="h-10 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 text-[var(--kaypal-v3-ink)]"
                   onChange={(event) => setBaseUrl(event.target.value)}
                   value={baseUrl}
                 />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                <span className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                   访问凭证
                 </span>
                 <input
-                  className="h-10 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] text-[var(--kaypal-v3-ink)]"
+                  className="h-10 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 text-[var(--kaypal-v3-ink)]"
                   onChange={(event) => setApiKey(event.target.value)}
                   placeholder={
                     connection?.configured
@@ -702,11 +702,11 @@ export function RedfoxConnectionClient() {
                 />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                <span className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                   超时毫秒
                 </span>
                 <input
-                  className="h-10 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] text-[var(--kaypal-v3-ink)]"
+                  className="h-10 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 text-[var(--kaypal-v3-ink)]"
                   max={120000}
                   min={1000}
                   onChange={(event) => setTimeoutMs(Number(event.target.value))}
@@ -715,17 +715,17 @@ export function RedfoxConnectionClient() {
                 />
               </label>
               <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 md:col-span-2">
-                <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                   积分扣减
                 </p>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   系统不要求用户预设额度。真实采集成功后按外部数据点数直接扣积分，并保留每次扣减记录。
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
-              <label className="inline-flex items-center gap-2 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+              <label className="inline-flex items-center gap-2 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                 <input
                   checked={enabled}
                   onChange={(event) => setEnabled(event.target.checked)}
@@ -735,7 +735,7 @@ export function RedfoxConnectionClient() {
               </label>
               <div className="flex flex-wrap gap-2">
                 <button
-                  className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={Boolean(runningAction)}
                   onClick={() => void save()}
                   type="button"
@@ -756,7 +756,7 @@ export function RedfoxConnectionClient() {
                   保存配置
                 </button>
                 <button
-                  className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={Boolean(runningAction)}
                   onClick={() => void test()}
                   type="button"
@@ -780,7 +780,7 @@ export function RedfoxConnectionClient() {
             </div>
 
             {message ? (
-              <p className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+              <p className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                 {message}
               </p>
             ) : null}
@@ -790,7 +790,7 @@ export function RedfoxConnectionClient() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">运行检查</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               上线前检查
             </h2>
           </div>
@@ -805,14 +805,14 @@ export function RedfoxConnectionClient() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {item.title}
                     </p>
-                    <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       {item.detail}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                  <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                     {item.action}
                   </span>
                 </div>
@@ -823,7 +823,7 @@ export function RedfoxConnectionClient() {
             <p className="kaypal-v3-label">处置动作</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={Boolean(runningAction)}
                 onClick={() => void syncSkills()}
                 type="button"
@@ -844,7 +844,7 @@ export function RedfoxConnectionClient() {
                 刷新功能模板
               </button>
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={Boolean(runningAction)}
                 onClick={() => void syncInterfaces()}
                 type="button"
@@ -865,7 +865,7 @@ export function RedfoxConnectionClient() {
                 刷新数据范围
               </button>
               <Link
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                 href="/intelligence/costs"
               >
                 查看用量
@@ -876,7 +876,7 @@ export function RedfoxConnectionClient() {
                 />
               </Link>
               <Link
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                 href="/intelligence/skills"
               >
                 功能模板
@@ -897,12 +897,12 @@ export function RedfoxConnectionClient() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="kaypal-v3-label">使用巡检</p>
-                <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+                <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                   最近使用记录
                 </h2>
               </div>
               <Link
-                className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                 href="/intelligence/costs"
               >
                 全部记录
@@ -923,35 +923,35 @@ export function RedfoxConnectionClient() {
                   key={log.id}
                 >
                   <div>
-                    <p className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                    <p className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                       {formatDateTime(log.createdAt)}
                     </p>
-                    <p className="mt-1 text-[11px] text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-11 text-[var(--kaypal-v3-muted)]">
                       耗时 {log.latencyMs}ms
                     </p>
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <p className="truncate text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {operationLabel(log)}
                     </p>
-                    <p className="mt-1 truncate font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 truncate font-mono text-11 text-[var(--kaypal-v3-muted)]">
                       {publicAbilityLabel(log.skillCode)}
                     </p>
                     {log.errorMessage ? (
-                      <p className="mt-1 line-clamp-1 text-[11px] text-[var(--kaypal-v3-danger)]">
+                      <p className="mt-1 line-clamp-1 text-11 text-[var(--kaypal-v3-danger)]">
                         {publicIntelligenceText(log.errorMessage)}
                       </p>
                     ) : null}
                   </div>
                   <span
                     className={[
-                      "w-fit rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-soft-ink)]",
+                      "w-fit rounded-[6px] border px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-soft-ink)]",
                       logTone(log.status),
                     ].join(" ")}
                   >
                     {logStatusLabels[log.status]}
                   </span>
-                  <p className="text-[12px] font-bold text-[var(--kaypal-v3-soft-ink)]">
+                  <p className="text-12 font-bold text-[var(--kaypal-v3-soft-ink)]">
                     {log.costPoints} 点
                   </p>
                 </div>
@@ -964,10 +964,10 @@ export function RedfoxConnectionClient() {
                     className="h-5 w-5 text-[var(--kaypal-v3-muted)]"
                     strokeWidth={1.8}
                   />
-                  <p className="mt-2 text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <p className="mt-2 text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     暂无使用记录
                   </p>
-                  <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     执行连接检查、刷新功能或运行监控后会显示记录。
                   </p>
                 </div>
@@ -979,7 +979,7 @@ export function RedfoxConnectionClient() {
         <aside className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">可查范围</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               数据范围 {data.interfacesTotal}
             </h2>
           </div>
@@ -992,15 +992,15 @@ export function RedfoxConnectionClient() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                      <p className="truncate text-13 font-bold text-[var(--kaypal-v3-ink)]">
                         {item.name}
                       </p>
-                      <p className="mt-1 truncate font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+                      <p className="mt-1 truncate font-mono text-11 text-[var(--kaypal-v3-muted)]">
                         {item.platformName || item.platformCode} ·{" "}
                         {item.scenario || "通用"}
                       </p>
                     </div>
-                    <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                    <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                       {item.scenario || item.platformCode}
                     </span>
                   </div>
@@ -1013,10 +1013,10 @@ export function RedfoxConnectionClient() {
                   className="h-5 w-5 text-[var(--kaypal-v3-muted)]"
                   strokeWidth={1.8}
                 />
-                <p className="mt-2 text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                <p className="mt-2 text-13 font-bold text-[var(--kaypal-v3-ink)]">
                   还没有可查数据范围
                 </p>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   刷新后，自动跟踪会从账号、作品和详情范围里选择。
                 </p>
               </div>
@@ -1024,7 +1024,7 @@ export function RedfoxConnectionClient() {
           </div>
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">可用功能</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               系统功能 {data.skillsTotal}
             </h2>
           </div>
@@ -1038,15 +1038,15 @@ export function RedfoxConnectionClient() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                      <p className="truncate text-13 font-bold text-[var(--kaypal-v3-ink)]">
                         {skill.name}
                       </p>
-                      <p className="mt-1 truncate text-[11px] text-[var(--kaypal-v3-muted)]">
+                      <p className="mt-1 truncate text-11 text-[var(--kaypal-v3-muted)]">
                         {skill.platform || "unknown"} ·{" "}
                         {skill.scenario || "未绑定"}
                       </p>
                     </div>
-                    <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                    <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                       {skill.enabled ? "启用" : "未启用"}
                     </span>
                   </div>
@@ -1059,10 +1059,10 @@ export function RedfoxConnectionClient() {
                   className="h-5 w-5 text-[var(--kaypal-v3-muted)]"
                   strokeWidth={1.8}
                 />
-                <p className="mt-2 text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                <p className="mt-2 text-13 font-bold text-[var(--kaypal-v3-ink)]">
                   还没有可用功能
                 </p>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   连接检查通过后刷新系统功能。
                 </p>
               </div>
@@ -1075,7 +1075,7 @@ export function RedfoxConnectionClient() {
                 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-accent)]"
                 strokeWidth={1.8}
               />
-              <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 访问凭证只由系统保存和使用；积分消耗、失败和需处理项都会进入用量记录。
               </p>
             </div>

@@ -313,7 +313,7 @@ export default function MaiUiWorkbenchPage() {
   return (
     <div
       className="kx-mobile-ambient"
-      style={{ minHeight: "100dvh", paddingBottom: 90, background: isMobile ? undefined : "#f1f5f9" }}
+      style={{ minHeight: "100dvh", paddingBottom: 90, background: isMobile ? undefined : "var(--kaypal-v3-paper-muted)" }}
     >
       <div className="mx-px" style={{ maxWidth: 640, margin: "0 auto", padding: isMobile ? "12px 16px 28px" : "28px 24px" }}>
         {/* 头部 */}
@@ -337,10 +337,10 @@ export default function MaiUiWorkbenchPage() {
               gap: 6,
               fontSize: 12,
               fontWeight: 700,
-              color: rpa.enabled ? "#059669" : rpa.available ? "#d97706" : "#64748b",
+              color: rpa.enabled ? "var(--kaypal-v3-success)" : rpa.available ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-muted)",
             }}
           >
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: rpa.enabled ? "#059669" : rpa.available ? "#d97706" : "#64748b" }} />
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: rpa.enabled ? "var(--kaypal-v3-success)" : rpa.available ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-muted)" }} />
             {rpa.enabled ? "已开启" : rpa.available ? "未开启" : "不在 App 内"}
           </span>
         </div>
@@ -363,21 +363,21 @@ export default function MaiUiWorkbenchPage() {
               fontSize: 13.5,
               fontFamily: "inherit",
               resize: "none",
-              background: "#f8fafc",
+              background: "var(--kaypal-v3-paper-muted)",
               color: "var(--mx-ink)",
             }}
           />
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
             <button
               onClick={handleCapture}
-              style={{ flex: 1, ...btnStyle("#7c3aed") }}
+              style={{ flex: 1, ...btnStyle("var(--kaypal-v3-purple)") }}
             >
               ① 截屏
             </button>
             <button
               onClick={() => void handlePlan()}
               disabled={planning}
-              style={{ flex: 1, ...btnStyle("#2563eb"), opacity: planning ? 0.6 : 1 }}
+              style={{ flex: 1, ...btnStyle("var(--kaypal-v3-cobalt)"), opacity: planning ? 0.6 : 1 }}
             >
               {planning ? "规划中…" : "② 规划动作"}
             </button>
@@ -392,7 +392,7 @@ export default function MaiUiWorkbenchPage() {
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>当前屏幕截图</span>
-              <span style={{ fontSize: 11, color: "#94a3b8" }}>
+              <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>
                 拖拽圈选目标 → 一键点击
               </span>
             </div>
@@ -441,13 +441,13 @@ export default function MaiUiWorkbenchPage() {
             <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
               <button
                 onClick={handleSelectClick}
-                style={{ flex: 1, ...btnStyle("#16a34a") }}
+                style={{ flex: 1, ...btnStyle("var(--kaypal-v3-success)") }}
               >
                 🎯 用圈选区域点击
               </button>
               <button
                 onClick={() => setSelRect(null)}
-                style={{ ...btnStyle("#64748b") }}
+                style={{ ...btnStyle("var(--kaypal-v3-muted)") }}
               >
                 清除选区
               </button>
@@ -462,7 +462,7 @@ export default function MaiUiWorkbenchPage() {
               <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>
                 候选动作（{actions.length} 步）
               </span>
-              {model && <span style={{ fontSize: 11, color: "#94a3b8" }}>{model}</span>}
+              {model && <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{model}</span>}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {actions.map((a, i) => (
@@ -472,7 +472,7 @@ export default function MaiUiWorkbenchPage() {
                     fontSize: 12.5,
                     padding: "8px 10px",
                     borderRadius: 8,
-                    background: a.action === "ask_user" ? "#fffbeb" : a.action === "done" ? "#f0fdf4" : "#f8fafc",
+                    background: a.action === "ask_user" ? "#fffbeb" : a.action === "done" ? "#f0fdf4" : "var(--kaypal-v3-paper-muted)",
                     border: "1px solid #e2e8f0",
                     color: "var(--mx-ink)",
                     fontFamily: "ui-monospace, monospace",
@@ -487,20 +487,20 @@ export default function MaiUiWorkbenchPage() {
               <button
                 onClick={() => void handleExecute()}
                 disabled={executing}
-                style={{ flex: 1, ...btnStyle("#059669"), opacity: executing ? 0.6 : 1 }}
+                style={{ flex: 1, ...btnStyle("var(--kaypal-v3-success)"), opacity: executing ? 0.6 : 1 }}
               >
                 {executing ? "执行中…" : "③ 执行动作"}
               </button>
               {paused ? (
-                <button onClick={handleResume} style={{ ...btnStyle("#2563eb") }}>
+                <button onClick={handleResume} style={{ ...btnStyle("var(--kaypal-v3-cobalt)") }}>
                   ▶ 继续
                 </button>
               ) : (
-                <button onClick={handlePause} style={{ ...btnStyle("#0891b2") }}>
+                <button onClick={handlePause} style={{ ...btnStyle("var(--kaypal-v3-cobalt)") }}>
                   ⏸ 暂停
                 </button>
               )}
-              <button onClick={handleCancel} style={{ ...btnStyle("#64748b") }}>
+              <button onClick={handleCancel} style={{ ...btnStyle("var(--kaypal-v3-muted)") }}>
                 中止
               </button>
             </div>
@@ -508,7 +508,7 @@ export default function MaiUiWorkbenchPage() {
               <button
                 onClick={() => void handleSinkCrm()}
                 disabled={sinking}
-                style={{ marginTop: 10, width: "100%", ...btnStyle("#7c3aed"), opacity: sinking ? 0.6 : 1 }}
+                style={{ marginTop: 10, width: "100%", ...btnStyle("var(--kaypal-v3-purple)"), opacity: sinking ? 0.6 : 1 }}
               >
                 {sinking ? "沉淀中…" : "📥 沉淀到 CRM"}
               </button>
@@ -522,7 +522,7 @@ export default function MaiUiWorkbenchPage() {
             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 8 }}>执行日志</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 200, overflowY: "auto" }}>
               {logs.map((l, i) => (
-                <div key={i} style={{ fontSize: 11.5, color: l.startsWith("❌") ? "#dc2626" : l.startsWith("⏸") ? "#d97706" : "#475569", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}>
+                <div key={i} style={{ fontSize: 11.5, color: l.startsWith("❌") ? "var(--kaypal-v3-danger)" : l.startsWith("⏸") ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-soft-ink)", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}>
                   {l}
                 </div>
               ))}
@@ -555,7 +555,7 @@ export default function MaiUiWorkbenchPage() {
                   padding: "3px 10px",
                   borderRadius: 999,
                   background: pendingAsk.riskLevel === "high" ? "#fef2f2" : "#fffbeb",
-                  color: pendingAsk.riskLevel === "high" ? "#dc2626" : "#b45309",
+                  color: pendingAsk.riskLevel === "high" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-amber)",
                 }}
               >
                 {pendingAsk.riskLevel === "high" ? "⚠️ 高风险（外发/写内容）" : "🟡 中风险"}
@@ -564,8 +564,8 @@ export default function MaiUiWorkbenchPage() {
             <div
               style={{
                 fontSize: 11.5,
-                color: "#64748b",
-                background: "#f8fafc",
+                color: "var(--kaypal-v3-muted)",
+                background: "var(--kaypal-v3-paper-muted)",
                 borderRadius: 8,
                 padding: "8px 10px",
                 marginBottom: 12,
@@ -574,19 +574,19 @@ export default function MaiUiWorkbenchPage() {
             >
               动作序列：{pendingAsk.summary || "—"}
             </div>
-            <div style={{ fontSize: 13.5, color: "#475569", lineHeight: 1.6, marginBottom: 16 }}>
+            <div style={{ fontSize: 13.5, color: "var(--kaypal-v3-soft-ink)", lineHeight: 1.6, marginBottom: 16 }}>
               {pendingAsk.question}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button
                 onClick={() => handleAskAnswer(false)}
-                style={{ flex: 1, ...btnStyle("#64748b") }}
+                style={{ flex: 1, ...btnStyle("var(--kaypal-v3-muted)") }}
               >
                 中止
               </button>
               <button
                 onClick={() => handleAskAnswer(true)}
-                style={{ flex: 1, ...btnStyle("#059669") }}
+                style={{ flex: 1, ...btnStyle("var(--kaypal-v3-success)") }}
               >
                 批准并执行
               </button>
@@ -613,13 +613,13 @@ function btnStyle(bg: string): React.CSSProperties {
 
 function actionColor(action: string): string {
   switch (action) {
-    case "click": return "#7c3aed";
-    case "input": return "#2563eb";
-    case "swipe": return "#0891b2";
-    case "wait": return "#64748b";
-    case "back": case "home": return "#d97706";
-    case "ask_user": return "#d97706";
-    case "done": return "#059669";
-    default: return "#334155";
+    case "click": return "var(--kaypal-v3-purple)";
+    case "input": return "var(--kaypal-v3-cobalt)";
+    case "swipe": return "var(--kaypal-v3-cobalt)";
+    case "wait": return "var(--kaypal-v3-muted)";
+    case "back": case "home": return "var(--kaypal-v3-amber)";
+    case "ask_user": return "var(--kaypal-v3-amber)";
+    case "done": return "var(--kaypal-v3-success)";
+    default: return "var(--kaypal-v3-soft-ink)";
   }
 }

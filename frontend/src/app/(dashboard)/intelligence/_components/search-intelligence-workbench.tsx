@@ -749,10 +749,10 @@ export function SearchIntelligenceWorkbench() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">一键找线索</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   输入一句话，系统自动找内容、账号和评论机会
                 </h1>
-                <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   输入目标后，可查看相关内容、账号、评论和数据来源，并保存后续跟进事项。
                 </p>
               </div>
@@ -760,7 +760,7 @@ export function SearchIntelligenceWorkbench() {
 
             <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
               <label className="block">
-                <span className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                <span className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                   {target === "comment"
                     ? "作品链接或作品 ID"
                     : target === "engagement"
@@ -768,7 +768,7 @@ export function SearchIntelligenceWorkbench() {
                       : "你想找什么"}
                 </span>
                 <input
-                  className="mt-1 h-10 w-full rounded-[8px] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-3 text-[13px] text-[var(--kaypal-v3-ink)] outline-none transition focus:border-[var(--kaypal-v3-accent)] focus:shadow-[var(--kaypal-v3-field-shadow-focus)]"
+                  className="mt-1 h-10 w-full rounded-[8px] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-3 text-13 text-[var(--kaypal-v3-ink)] outline-none transition focus:border-[var(--kaypal-v3-accent)] focus:shadow-[var(--kaypal-v3-field-shadow-focus)]"
                   onChange={(event) => {
                     setQuery(event.target.value);
                     setTaskStage("setup");
@@ -790,7 +790,7 @@ export function SearchIntelligenceWorkbench() {
               </label>
               <div className="flex flex-wrap gap-2 lg:justify-end">
                 <button
-                  className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white disabled:opacity-60"
+                  className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white disabled:opacity-60"
                   disabled={searchRun.loading}
                   onClick={() => void runSearchTask()}
                   type="button"
@@ -804,13 +804,13 @@ export function SearchIntelligenceWorkbench() {
                 </button>
               </div>
             </div>
-            <p className="mt-2 text-[12px] font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
+            <p className="mt-2 text-12 font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
               {costHint}
             </p>
 
             {searchRun.error ? (
               <div
-                className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-3 py-2 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]"
+                className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-3 py-2 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]"
                 role="alert"
               >
                 <p className="font-semibold">{searchRun.error}</p>
@@ -823,7 +823,7 @@ export function SearchIntelligenceWorkbench() {
                         </span>
                         {failure.error}
                         {failure.callLogId ? (
-                          <span className="ml-1 font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+                          <span className="ml-1 font-mono text-11 text-[var(--kaypal-v3-muted)]">
                             调用编号 {failure.callLogId}
                           </span>
                         ) : null}
@@ -832,7 +832,7 @@ export function SearchIntelligenceWorkbench() {
                   </ul>
                 ) : null}
                 {searchRun.requestId ? (
-                  <p className="mt-2 font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-2 font-mono text-11 text-[var(--kaypal-v3-muted)]">
                     请求编号 {searchRun.requestId}
                   </p>
                 ) : null}
@@ -842,7 +842,7 @@ export function SearchIntelligenceWorkbench() {
             {searchRun.summary ? (
               <div
                 className={[
-                  "mt-3 rounded-[8px] border px-3 py-2 text-[12px] font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]",
+                  "mt-3 rounded-[8px] border px-3 py-2 text-12 font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]",
                   hasEmptyResult
                     ? "border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)]"
                     : "border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)]",
@@ -872,7 +872,7 @@ export function SearchIntelligenceWorkbench() {
             ) : null}
 
             {failedEndpoints.length ? (
-              <div className="mt-2 rounded-[8px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] px-3 py-2 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <div className="mt-2 rounded-[8px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] px-3 py-2 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 <p className="font-semibold">
                   部分数据来源未完成，其余结果已正常保留。
                 </p>
@@ -882,7 +882,7 @@ export function SearchIntelligenceWorkbench() {
                       {endpoint.platformLabel}：
                       {endpoint.error || "数据服务请求失败"}
                       {endpoint.callLogId ? (
-                        <span className="ml-1 font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+                        <span className="ml-1 font-mono text-11 text-[var(--kaypal-v3-muted)]">
                           调用编号 {endpoint.callLogId}
                         </span>
                       ) : null}
@@ -897,7 +897,7 @@ export function SearchIntelligenceWorkbench() {
                 <button
                   aria-pressed={target === value}
                   className={[
-                    "inline-flex h-8 items-center gap-1.5 rounded-[8px] border px-3 text-[12px] font-semibold transition",
+                    "inline-flex h-8 items-center gap-1.5 rounded-[8px] border px-3 text-12 font-semibold transition",
                     target === value
                       ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                       : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)] hover:border-[var(--kaypal-v3-border-strong)]",
@@ -954,7 +954,7 @@ export function SearchIntelligenceWorkbench() {
                 <button
                   aria-pressed={platform === item.value}
                   className={[
-                    "h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition",
+                    "h-8 rounded-[8px] border px-3 text-12 font-semibold transition",
                     platform === item.value
                       ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                       : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)] hover:border-[var(--kaypal-v3-border-strong)]",
@@ -982,7 +982,7 @@ export function SearchIntelligenceWorkbench() {
             </div>
 
             {target === "engagement" ? (
-              <p className="mt-2 text-[12px] font-semibold leading-5 text-[var(--kaypal-v3-muted)]">
+              <p className="mt-2 text-12 font-semibold leading-5 text-[var(--kaypal-v3-muted)]">
                 公众号只分析文章互动指标，包括阅读、点赞、评论数、收藏、分享和赞赏。优先分析系统已找到的公众号文章，陌生链接可能没有可用指标。
               </p>
             ) : null}
@@ -991,7 +991,7 @@ export function SearchIntelligenceWorkbench() {
 
           <aside className="p-4">
             <p className="kaypal-v3-label">怎么用</p>
-            <h2 className="mt-1 text-[15px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-14 font-bold text-[var(--kaypal-v3-ink)]">
               用户只需要做三件事
             </h2>
             <div className="mt-4 grid gap-2">
@@ -1013,14 +1013,14 @@ export function SearchIntelligenceWorkbench() {
                     key={step.key}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-11 font-bold text-[var(--kaypal-v3-muted)]">
                         {index + 1}
                       </span>
-                      <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                      <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                         {step.label}
                       </p>
                     </div>
-                    <p className="mt-1 pl-8 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 pl-8 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       {step.detail}
                     </p>
                   </div>
@@ -1037,10 +1037,10 @@ export function SearchIntelligenceWorkbench() {
             {decisionStats.map((item) => (
               <div className="kaypal-v3-panel p-4" key={item.label}>
                 <p className="kaypal-v3-label">{item.label}</p>
-                <p className="mt-1 truncate text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+                <p className="mt-1 truncate text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
                   {item.value}
                 </p>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   {item.detail}
                 </p>
               </div>
@@ -1051,11 +1051,11 @@ export function SearchIntelligenceWorkbench() {
             <div className="flex flex-col gap-3 border-b border-[var(--kaypal-v3-border)] p-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="kaypal-v3-label">搜索结果</p>
-                <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+                <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                   先看有没有用，再选择下一步
                 </h2>
               </div>
-              <span className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-muted)]">
+              <span className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 text-12 font-semibold text-[var(--kaypal-v3-muted)]">
                 <Gauge
                   aria-hidden="true"
                   className="h-4 w-4"
@@ -1082,25 +1082,25 @@ export function SearchIntelligenceWorkbench() {
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-[14px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                      <h3 className="text-14 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                         {candidate.title}
                       </h3>
                       <span
                         className={[
-                          "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                          "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                           riskClass(candidate.risk),
                         ].join(" ")}
                       >
                         {riskLabel(candidate.risk)}
                       </span>
-                      <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                      <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                         {candidate.platform} · {candidate.targetLabel}
                       </span>
                     </div>
-                    <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       {candidate.reason}
                     </p>
-                    <p className="mt-2 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                    <p className="mt-2 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                       {candidate.sourceLabel} · 你要解决：
                       {candidate.queryIntent}
                     </p>
@@ -1115,10 +1115,10 @@ export function SearchIntelligenceWorkbench() {
                         className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-2"
                         key={`${candidate.id}-${label}`}
                       >
-                        <p className="text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                        <p className="text-11 font-bold text-[var(--kaypal-v3-muted)]">
                           {label}
                         </p>
-                        <p className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+                        <p className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                           {value}
                         </p>
                       </div>
@@ -1129,7 +1129,7 @@ export function SearchIntelligenceWorkbench() {
               {!filteredCandidates.length ? (
                 <div className="grid gap-3 p-4">
                   <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4">
-                    <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {searchRun.loading
                         ? "正在读取真实搜索结果"
                         : searchRun.error
@@ -1138,7 +1138,7 @@ export function SearchIntelligenceWorkbench() {
                             ? "本次搜索没有匹配结果"
                             : "尚未运行真实搜索"}
                     </p>
-                    <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       {searchRun.loading
                         ? "结果返回前不会展示示例，也不能创建后续动作。"
                         : "请调整关键词、平台或对象类型后重新运行。只有接口返回的真实结果才能进入下一步。"}
@@ -1146,7 +1146,7 @@ export function SearchIntelligenceWorkbench() {
                   </div>
                   {!searchRun.loading ? (
                     <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
-                      <p className="text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                      <p className="text-11 font-bold text-[var(--kaypal-v3-muted)]">
                         结果结构示例（仅作说明，不是本次搜索结果）
                       </p>
                       <div className="mt-2 grid gap-2">
@@ -1155,10 +1155,10 @@ export function SearchIntelligenceWorkbench() {
                             className="rounded-[6px] bg-[var(--kaypal-v3-paper-soft)] px-3 py-2"
                             key={`example-${candidate.id}`}
                           >
-                            <p className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                            <p className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                               示例：{candidate.title}
                             </p>
-                            <p className="mt-0.5 text-[11px] text-[var(--kaypal-v3-muted)]">
+                            <p className="mt-0.5 text-11 text-[var(--kaypal-v3-muted)]">
                               {candidate.platform} · {candidate.targetLabel} · 不可派发
                             </p>
                           </div>
@@ -1177,7 +1177,7 @@ export function SearchIntelligenceWorkbench() {
             <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">下一步</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 {selected.decision}：{selected.title}
               </h2>
             </div>
@@ -1192,10 +1192,10 @@ export function SearchIntelligenceWorkbench() {
                     className="grid grid-cols-[72px_minmax(0,1fr)] items-center rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3"
                     key={label}
                   >
-                    <p className="text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                    <p className="text-11 font-bold text-[var(--kaypal-v3-muted)]">
                       {label}
                     </p>
-                    <p className="truncate text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <p className="truncate text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {value}
                     </p>
                   </div>
@@ -1203,10 +1203,10 @@ export function SearchIntelligenceWorkbench() {
               </div>
 
               <div className="mt-4 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
-                <p className="text-[12px] font-bold text-[var(--kaypal-v3-muted)]">
+                <p className="text-12 font-bold text-[var(--kaypal-v3-muted)]">
                   为什么值得处理
                 </p>
-                <p className="mt-1 text-[13px] font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 text-13 font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   {selected.reason}
                 </p>
               </div>
@@ -1219,7 +1219,7 @@ export function SearchIntelligenceWorkbench() {
                       className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-success)]"
                       strokeWidth={1.8}
                     />
-                    <span className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                    <span className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                       {item}
                     </span>
                   </div>
@@ -1231,7 +1231,7 @@ export function SearchIntelligenceWorkbench() {
                   const Icon = action.icon;
                   return (
                     <button
-                      className="inline-flex h-9 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                       key={action.label}
                       onClick={() => addToQueue(selected, action)}
                       type="button"
@@ -1252,11 +1252,11 @@ export function SearchIntelligenceWorkbench() {
             <section className="kaypal-v3-panel overflow-hidden">
               <div className="border-b border-[var(--kaypal-v3-border)] p-4">
                 <p className="kaypal-v3-label">下一步</p>
-                <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+                <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                   等待真实搜索结果
                 </h2>
               </div>
-              <div className="p-4 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+              <div className="p-4 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                 示例不会进入待处理队列。运行搜索并选择一条真实结果后，才会显示保存、分析、跟踪或审核动作。
               </div>
             </section>
@@ -1265,7 +1265,7 @@ export function SearchIntelligenceWorkbench() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">待处理</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 你刚刚选择的动作
               </h2>
             </div>
@@ -1275,14 +1275,14 @@ export function SearchIntelligenceWorkbench() {
                   <div className="flex items-center justify-between gap-3">
                     <span
                       className={[
-                        "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                        "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                         riskClass(item.risk),
                       ].join(" ")}
                     >
                       {riskLabel(item.risk)}
                     </span>
                     <Link
-                      className="inline-flex h-7 items-center gap-1.5 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-2.5 text-[11px] font-semibold text-white"
+                      className="inline-flex h-7 items-center gap-1.5 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-2.5 text-11 font-semibold text-white"
                       href={item.href}
                     >
                       打开
@@ -1293,16 +1293,16 @@ export function SearchIntelligenceWorkbench() {
                       />
                     </Link>
                   </div>
-                  <p className="mt-2 text-[13px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                  <p className="mt-2 text-13 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                     {item.label}
                   </p>
-                  <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     {item.candidateTitle}
                   </p>
                 </div>
               ))}
               {!queue.length ? (
-                <p className="p-4 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="p-4 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   选中一个结果，点击右侧下一步，就会放到这里。
                 </p>
               ) : null}
@@ -1315,7 +1315,7 @@ export function SearchIntelligenceWorkbench() {
         <article className="kaypal-v3-panel overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">系统自动处理</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               这些事用户不用配置
             </h2>
           </div>
@@ -1333,10 +1333,10 @@ export function SearchIntelligenceWorkbench() {
                 className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3"
                 key={title}
               >
-                <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                   {title}
                 </p>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   {detail}
                 </p>
               </div>
@@ -1347,13 +1347,13 @@ export function SearchIntelligenceWorkbench() {
         <article className="kaypal-v3-panel overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">分流规则</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               搜索结果只有进入正确去向才有商业价值
             </h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-[13px]">
-              <thead className="bg-[var(--kaypal-v3-table-head)] text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+            <table className="min-w-full text-left text-13">
+              <thead className="bg-[var(--kaypal-v3-table-head)] text-11 font-bold text-[var(--kaypal-v3-muted)]">
                 <tr>
                   <th className="px-4 py-3" scope="col">
                     对象

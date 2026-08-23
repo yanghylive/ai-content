@@ -522,17 +522,17 @@ export function RedfoxSkillsClient() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">功能模板</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   选择系统可以帮你做哪些事
                 </h1>
-                <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   按业务场景开启：找热点、找线索、看账号、做拆解、看风险。普通用户不用理解底层来源。
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading}
                 onClick={() => void load()}
                 type="button"
@@ -547,7 +547,7 @@ export function RedfoxSkillsClient() {
                 刷新
               </button>
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading}
                 onClick={() => void sync()}
                 type="button"
@@ -570,7 +570,7 @@ export function RedfoxSkillsClient() {
                 strokeWidth={1.8}
               />
               <input
-                className="h-10 w-full rounded-[8px] pl-9 pr-3 text-[13px]"
+                className="h-10 w-full rounded-[8px] pl-9 pr-3 text-13"
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") search();
@@ -580,7 +580,7 @@ export function RedfoxSkillsClient() {
               />
             </div>
             <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
               onClick={search}
               type="button"
             >
@@ -607,10 +607,10 @@ export function RedfoxSkillsClient() {
                 strokeWidth={1.8}
               />
             </div>
-            <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+            <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
               {value}
             </p>
-            <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
               {detail}
             </p>
           </div>
@@ -621,7 +621,7 @@ export function RedfoxSkillsClient() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">业务场景</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               功能映射
             </h2>
           </div>
@@ -643,7 +643,7 @@ export function RedfoxSkillsClient() {
                     type="button"
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <span className="flex min-w-0 items-center gap-2 text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                      <span className="flex min-w-0 items-center gap-2 text-13 font-bold text-[var(--kaypal-v3-ink)]">
                         <Icon
                           aria-hidden="true"
                           className="h-3.5 w-3.5 shrink-0 text-[var(--kaypal-v3-muted)]"
@@ -651,11 +651,11 @@ export function RedfoxSkillsClient() {
                         />
                         {label}
                       </span>
-                      <span className="text-[12px] font-bold text-[var(--kaypal-v3-accent-ink)]">
+                      <span className="text-12 font-bold text-[var(--kaypal-v3-accent-ink)]">
                         {count}
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                       {detail} · 启用 {enabled}
                     </p>
                   </button>
@@ -670,14 +670,14 @@ export function RedfoxSkillsClient() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="kaypal-v3-label">功能列表</p>
-                <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+                <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                   可用功能
                 </h2>
               </div>
               <button
                 aria-pressed={enabledOnly}
                 className={[
-                  "inline-flex h-8 items-center gap-2 rounded-[8px] border px-3 text-[12px] font-semibold transition",
+                  "inline-flex h-8 items-center gap-2 rounded-[8px] border px-3 text-12 font-semibold transition",
                   enabledOnly
                     ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                     : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)]",
@@ -700,7 +700,7 @@ export function RedfoxSkillsClient() {
                   <button
                     aria-pressed={active}
                     className={[
-                      "h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition",
+                      "h-8 rounded-[8px] border px-3 text-12 font-semibold transition",
                       active
                         ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                         : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)] hover:border-[var(--kaypal-v3-border-strong)]",
@@ -718,7 +718,7 @@ export function RedfoxSkillsClient() {
 
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
             {loading ? (
-              <div className="flex min-h-[360px] items-center justify-center p-4 text-[13px] font-semibold text-[var(--kaypal-v3-muted)]">
+              <div className="flex min-h-[360px] items-center justify-center p-4 text-13 font-semibold text-[var(--kaypal-v3-muted)]">
                 <Loader2
                   aria-hidden="true"
                   className="mr-2 h-4 w-4 animate-spin"
@@ -762,27 +762,27 @@ export function RedfoxSkillsClient() {
                         <div className="flex flex-wrap items-center gap-2">
                           <span
                             className={[
-                              "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                              "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                               statusTone(skill),
                             ].join(" ")}
                           >
                             {skill.enabled ? "已启用" : "未启用"}
                           </span>
-                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                             {platformLabel(skill.platform)}
                           </span>
-                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                             {option.label}
                           </span>
                         </div>
-                        <h3 className="mt-2 text-[14px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                        <h3 className="mt-2 text-14 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                           {abilityName(skill)}
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-2 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           {abilitySummary(skill)}
                         </p>
                       </div>
-                      <span className="shrink-0 text-[13px] font-bold text-[var(--kaypal-v3-accent-ink)]">
+                      <span className="shrink-0 text-13 font-bold text-[var(--kaypal-v3-accent-ink)]">
                         {skillQuality(skill)}
                       </span>
                     </div>
@@ -796,7 +796,7 @@ export function RedfoxSkillsClient() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">编排详情</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               {selected ? abilityName(selected) : "等待选择功能"}
             </h2>
           </div>
@@ -813,7 +813,7 @@ export function RedfoxSkillsClient() {
                     key={label}
                   >
                     <p className="kaypal-v3-label">{label}</p>
-                    <p className="mt-1 text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <p className="mt-1 text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {value}
                     </p>
                   </div>
@@ -855,11 +855,11 @@ export function RedfoxSkillsClient() {
                               className="h-3.5 w-3.5 text-[var(--kaypal-v3-muted)]"
                               strokeWidth={1.8}
                             />
-                            <span className="text-[12px] font-bold text-[var(--kaypal-v3-ink)]">
+                            <span className="text-12 font-bold text-[var(--kaypal-v3-ink)]">
                               {option.label}
                             </span>
                           </div>
-                          <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                          <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                             {option.detail}
                           </p>
                         </button>
@@ -872,7 +872,7 @@ export function RedfoxSkillsClient() {
                 <p className="kaypal-v3-label">动作</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
-                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={loading}
                     onClick={() =>
                       void updateSkill(selected, { enabled: !selected.enabled })
@@ -887,7 +887,7 @@ export function RedfoxSkillsClient() {
                     {selected.enabled ? "停用" : "启用"}
                   </button>
                   <button
-                    className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={Boolean(runningAction)}
                     onClick={() => void createMonitor(selected)}
                     type="button"
@@ -908,7 +908,7 @@ export function RedfoxSkillsClient() {
                     创建监控
                   </button>
                   <Link
-                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                     href={selectedScenario.href}
                   >
                     打开入口
@@ -930,14 +930,14 @@ export function RedfoxSkillsClient() {
                       : ["只读", "人工确认", selectedScenario.label]
                     ).map((tag) => (
                       <span
-                        className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-1 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]"
+                        className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-1 text-11 font-semibold text-[var(--kaypal-v3-muted)]"
                         key={`${selected.id}-${tag}`}
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <p className="mt-3 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                  <p className="mt-3 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                     {abilitySummary(selected)}
                   </p>
                 </div>
@@ -953,12 +953,12 @@ export function RedfoxSkillsClient() {
                           key={item.id}
                         >
                           <div className="flex items-center justify-between gap-3">
-                            <span className="text-[12px] font-bold text-[var(--kaypal-v3-ink)]">
+                            <span className="text-12 font-bold text-[var(--kaypal-v3-ink)]">
                               {item.label}
                             </span>
                             <span
                               className={[
-                                "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                                "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                                 queueTone(item.state),
                               ].join(" ")}
                             >
@@ -969,7 +969,7 @@ export function RedfoxSkillsClient() {
                                   : "完成"}
                             </span>
                           </div>
-                          <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                          <p className="mt-1 line-clamp-2 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                             {item.skillName} · {item.detail}
                           </p>
                         </Link>
@@ -981,7 +981,7 @@ export function RedfoxSkillsClient() {
                           className="h-5 w-5 text-[var(--kaypal-v3-muted)]"
                           strokeWidth={1.8}
                         />
-                        <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           监控绑定结果会显示在这里。
                         </p>
                       </div>
@@ -991,7 +991,7 @@ export function RedfoxSkillsClient() {
               </div>
 
               {message ? (
-                <p className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   {message}
                 </p>
               ) : null}

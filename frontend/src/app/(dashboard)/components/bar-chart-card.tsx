@@ -52,11 +52,11 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
       >
         <div className="flex flex-col gap-y-4 p-4">
           <dt className="flex items-center justify-between">
-            <h3 className="text-[15px] font-bold leading-[22px] text-default-700">
+            <h3 className="text-14 font-bold leading-[22px] text-default-700">
               {title}
             </h3>
           </dt>
-          <dd className="flex w-full justify-start gap-4 text-[11px] font-semibold leading-4 text-default-500">
+          <dd className="flex w-full justify-start gap-4 text-11 font-semibold leading-4 text-default-500">
             {categories.map((category, index) => (
               <div key={index} className="flex items-center gap-2">
                 <span
@@ -101,7 +101,7 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
                 content={({ label, payload }) => {
                   if (!payload || payload.length === 0) return null;
                   return (
-                    <div className="flex flex-col gap-y-2 rounded-[8px] border border-default-100 bg-background p-3 text-[11px] shadow-small">
+                    <div className="flex flex-col gap-y-2 rounded-[8px] border border-default-100 bg-background p-3 text-11 shadow-small">
                       <span className="font-semibold text-foreground">
                         {label}
                       </span>

@@ -871,7 +871,7 @@ function LoginPageContent() {
                             type="checkbox"
                             checked={rememberAccount}
                             onChange={(e) => setRememberAccount(e.target.checked)}
-                            style={{ width: 16, height: 16, accentColor: "#b45309" }}
+                            style={{ width: 16, height: 16, accentColor: "var(--kaypal-v3-amber)" }}
                           />
                           <span style={{ fontSize: 13, color: "var(--text-secondary, #6b7280)" }}>
                             记住账号和密码（本机加密保存）
@@ -919,7 +919,7 @@ function LoginPageContent() {
                               e.preventDefault();
                               handleKaypalAccount("forgot-password");
                             }}
-                            className="text-[13px] font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                            className="text-13 font-medium text-[var(--accent)] underline-offset-2 hover:underline"
                           >
                             忘记密码？
                           </a>
@@ -936,7 +936,7 @@ function LoginPageContent() {
                               e.preventDefault();
                               handleKaypalAccount("register");
                             }}
-                            className="text-[13px] font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                            className="text-13 font-medium text-[var(--accent)] underline-offset-2 hover:underline"
                           >
                             注册账号
                           </a>

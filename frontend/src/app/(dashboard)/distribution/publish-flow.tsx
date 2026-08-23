@@ -599,7 +599,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                       }`}
                     >
                       <span
-                        className={`flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] ${
+                        className={`flex h-4.5 w-4.5 items-center justify-center rounded-full text-11 ${
                           step >= num
                             ? "bg-[var(--kaypal-v3-accent)] text-white"
                             : "bg-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-muted)]"
@@ -1262,7 +1262,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                   <p className="text-xs font-semibold text-[var(--kaypal-v3-ink)]">
                     分享到社交平台
                   </p>
-                  <p className="mt-0.5 text-[11px] text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-0.5 text-11 text-[var(--kaypal-v3-muted)]">
                     点平台自动复制内容并调起对应 App，到 App 内粘贴即可发布
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">

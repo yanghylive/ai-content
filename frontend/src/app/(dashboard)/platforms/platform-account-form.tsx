@@ -168,7 +168,7 @@ export function PlatformAccountForm() {
         onClick={onToggle}
         style={{
           flexShrink: 0, width: 44, height: 26, borderRadius: 999, padding: 3,
-          background: checked ? "#d98a2d" : "rgba(142,165,190,.4)",
+          background: checked ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.4)",
           display: "flex", alignItems: "center",
           justifyContent: checked ? "flex-end" : "flex-start",
           transition: "all .2s", border: "none",
@@ -195,7 +195,7 @@ export function PlatformAccountForm() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -211,14 +211,14 @@ export function PlatformAccountForm() {
                 className="mx-card"
                 style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", width: "100%", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
               >
-                <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                   <PlatformIcon width={16} height={16} />
                 </span>
                 <span style={{ minWidth: 0, flex: 1 }}>
                   <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
                   <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
                 </span>
-                {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
               </button>
             );
           })}
@@ -278,7 +278,7 @@ export function PlatformAccountForm() {
             {isEdit ? (
               <button
                 type="button"
-                style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 5, padding: "10px 14px", borderRadius: 10, color: "#dc2626", border: "1px solid rgba(220,80,80,.4)", background: "rgba(220,80,80,.08)", fontSize: 12.5, fontWeight: 600 }}
+                style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 5, padding: "10px 14px", borderRadius: 10, color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.4)", background: "rgba(220,80,80,.08)", fontSize: 12.5, fontWeight: 600 }}
                 disabled={deleting}
                 onClick={() => void handleDelete()}
               >

@@ -37,17 +37,17 @@ export function OpsDesktopPage({
         <div className="flex min-h-11 flex-col items-stretch justify-between gap-2 border-b border-divider bg-background px-3 py-2 sm:flex-row sm:items-center sm:px-4">
           <div className="min-w-0 flex-1">
             {eyebrow ? (
-              <div className="mb-0.5 text-[11px] font-medium text-[var(--kaypal-v3-brand)]">
+              <div className="mb-0.5 text-11 font-medium text-[var(--kaypal-v3-brand)]">
                 {commercialPrimaryText(eyebrow)}
               </div>
             ) : null}
             {title ? (
-              <h1 className="truncate text-[17px] font-semibold leading-6 text-foreground">
+              <h1 className="truncate text-lg font-semibold leading-6 text-foreground">
                 {commercialPrimaryText(title)}
               </h1>
             ) : null}
             {description ? (
-              <p className="mt-0.5 max-w-[760px] truncate text-[12px] leading-5 text-default-500" title={commercialPrimaryText(description)}>
+              <p className="mt-0.5 max-w-[760px] truncate text-12 leading-5 text-default-500" title={commercialPrimaryText(description)}>
                 {commercialPrimaryText(description)}
               </p>
             ) : null}
@@ -95,7 +95,7 @@ export function OpsPanel({
       {title || extra ? (
         <div className="flex min-h-10 items-center justify-between gap-2 border-b border-divider px-3 py-1.5">
           {title ? (
-            <h2 className="truncate text-[14px] font-semibold leading-5 text-foreground">
+            <h2 className="truncate text-14 font-semibold leading-5 text-foreground">
               {commercialPrimaryText(title)}
             </h2>
           ) : (
@@ -130,8 +130,8 @@ export function OpsMetric({
             : "text-foreground";
   return (
     <div className="min-w-[104px] border-r border-divider pr-3 last:border-r-0">
-      <div className="text-[12px] text-default-500">{label}</div>
-      <div className={cx("mt-1 text-[18px] font-semibold leading-6", toneClass)}>
+      <div className="text-12 text-default-500">{label}</div>
+      <div className={cx("mt-1 text-lg font-semibold leading-6", toneClass)}>
         {value}
       </div>
     </div>
@@ -195,7 +195,7 @@ export function OpsTabs({
             aria-controls={item.panelId}
             aria-selected={active}
             className={cx(
-              "min-h-10 border-b-2 px-2.5 text-[13px] font-medium transition md:h-8 md:min-h-0",
+              "min-h-10 border-b-2 px-2.5 text-13 font-medium transition md:h-8 md:min-h-0",
               active
                 ? "border-[var(--kaypal-v3-brand)] text-[var(--kaypal-v3-brand)]"
                 : "border-transparent text-default-600 hover:text-foreground",
@@ -208,7 +208,7 @@ export function OpsTabs({
           >
             {item.label}
             {item.count !== undefined ? (
-              <span className="ml-1 rounded-full bg-default-100 px-1.5 py-0.5 text-[11px] text-default-500">
+              <span className="ml-1 rounded-full bg-default-100 px-1.5 py-0.5 text-11 text-default-500">
                 {item.count}
               </span>
             ) : null}
@@ -232,7 +232,7 @@ export function OpsButton({
     <button
       {...props}
       className={cx(
-        "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-[6px] border px-2.5 text-[13px] font-medium transition disabled:cursor-not-allowed disabled:opacity-50 md:h-8 md:min-h-0",
+        "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-[6px] border px-2.5 text-13 font-medium transition disabled:cursor-not-allowed disabled:opacity-50 md:h-8 md:min-h-0",
         tone === "brand"
           ? "border-[var(--kaypal-v3-brand-solid)] bg-[var(--kaypal-v3-brand-solid)] text-white hover:border-[var(--kaypal-v3-brand-hover)] hover:bg-[var(--kaypal-v3-brand-hover)]"
           : tone === "danger"
@@ -268,7 +268,7 @@ export function OpsStatusPill({
   return (
     <span
       className={cx(
-        "inline-flex h-6 items-center rounded-[999px] border px-2 text-[12px] font-medium",
+        "inline-flex h-6 items-center rounded-[999px] border px-2 text-12 font-medium",
         toneClass,
       )}
     >
@@ -284,7 +284,7 @@ export function OpsDenseTable({
   return (
     <div
       className={cx(
-        "min-w-0 max-w-full touch-pan-x overflow-x-auto overscroll-x-contain border border-divider bg-background [-webkit-overflow-scrolling:touch] [&_table]:w-full [&_table]:min-w-[560px] md:[&_table]:min-w-full [&_td]:border-b [&_td]:border-divider [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-[13px] [&_td]:leading-5 [&_td]:text-foreground [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-divider [&_th]:bg-default-50 [&_th]:px-2.5 [&_th]:py-1.5 [&_th]:text-left [&_th]:text-[12px] [&_th]:font-semibold [&_th]:text-default-600",
+        "min-w-0 max-w-full touch-pan-x overflow-x-auto overscroll-x-contain border border-divider bg-background [-webkit-overflow-scrolling:touch] [&_table]:w-full [&_table]:min-w-[560px] md:[&_table]:min-w-full [&_td]:border-b [&_td]:border-divider [&_td]:px-2.5 [&_td]:py-1.5 [&_td]:text-13 [&_td]:leading-5 [&_td]:text-foreground [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-divider [&_th]:bg-default-50 [&_th]:px-2.5 [&_th]:py-1.5 [&_th]:text-left [&_th]:text-12 [&_th]:font-semibold [&_th]:text-default-600",
         className,
       )}
     >
@@ -302,7 +302,7 @@ export function OpsFormRow({
 }) {
   return (
     <label className="grid min-w-0 gap-2 md:grid-cols-[100px_minmax(0,1fr)] md:items-center">
-      <span className="text-[13px] font-medium text-default-600 md:text-right">
+      <span className="text-13 font-medium text-default-600 md:text-right">
         {label}
       </span>
       {children}

@@ -62,20 +62,20 @@ export function OrdersPanel({ onNavigate }: OrdersPanelProps) {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-[20px] font-extrabold tracking-tight text-foreground">
+        <div className="flex items-center gap-1.5 text-xl font-extrabold tracking-tight text-foreground">
           <Package className="h-5 w-5 text-orange-500 dark:text-orange-400" />
           订单
         </div>
         <button
           type="button"
           onClick={() => void load()}
-          className="flex items-center gap-1 rounded-lg border border-default-200 px-2.5 py-1.5 text-[12px] text-default-600 transition-colors hover:border-orange-300 hover:text-orange-500 dark:border-default-800 dark:text-default-400"
+          className="flex items-center gap-1 rounded-lg border border-default-200 px-2.5 py-1.5 text-12 text-default-600 transition-colors hover:border-orange-300 hover:text-orange-500 dark:border-default-800 dark:text-default-400"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           刷新
         </button>
       </div>
-      <div className="mt-0.5 text-[12px] text-default-500">订单状态透明，返利到账有预期</div>
+      <div className="mt-0.5 text-12 text-default-500">订单状态透明，返利到账有预期</div>
 
       {/* 状态筛选 */}
       <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
@@ -111,8 +111,8 @@ export function OrdersPanel({ onNavigate }: OrdersPanelProps) {
       ) : items.length === 0 ? (
         <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-default-300 py-10 text-center dark:border-default-700">
           <Search className="h-8 w-8 text-orange-300 dark:text-orange-500/40" strokeWidth={1.5} />
-          <div className="text-[13px] font-semibold text-foreground">还没有返利订单</div>
-          <div className="max-w-[260px] text-[11px] leading-5 text-default-500">
+          <div className="text-13 font-semibold text-foreground">还没有返利订单</div>
+          <div className="max-w-[260px] text-11 leading-5 text-default-500">
             先去搜索比价，通过推广链接下单后，订单会在这里自动追踪
           </div>
           <button
@@ -125,27 +125,27 @@ export function OrdersPanel({ onNavigate }: OrdersPanelProps) {
         </div>
       ) : (
         <div className="mt-4 space-y-2.5">
-          <div className="text-[11px] text-default-400">共 {total} 笔</div>
+          <div className="text-11 text-default-400">共 {total} 笔</div>
           {items.map((o) => (
             <div key={o.id} className="rounded-xl border border-default-200 bg-white p-3.5 dark:border-default-800 dark:bg-content1">
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-bold text-foreground">
+                <span className="text-13 font-bold text-foreground">
                   {PLATFORM_LABEL[o.platformCode] ?? o.platformCode} · 订单返利
                 </span>
                 <Chip size="sm" color={statusColor(o.status)} variant="flat">
                   {statusLabel(o.status)}
                 </Chip>
               </div>
-              <div className="mt-1.5 font-mono text-[10px] text-default-400">{o.orderNo}</div>
+              <div className="mt-1.5 font-mono text-11 text-default-400">{o.orderNo}</div>
               <div className="mt-2 flex items-baseline justify-between">
-                <span className="text-[12px] text-default-500">
+                <span className="text-12 text-default-500">
                   实付 <b className="text-foreground">¥{o.payAmount}</b>
                 </span>
-                <span className="text-[13px] font-extrabold text-orange-500 dark:text-orange-400">
+                <span className="text-13 font-extrabold text-orange-500 dark:text-orange-400">
                   返 ¥{o.userRebate}
                 </span>
               </div>
-              <div className="mt-1.5 flex items-center justify-between text-[10px] text-default-400">
+              <div className="mt-1.5 flex items-center justify-between text-11 text-default-400">
                 <span>{o.paidAt ? `下单 ${o.paidAt.slice(0, 10)}` : o.createdAt.slice(0, 10)}</span>
                 {o.status === "paid" && <span className="text-emerald-500">预计确认后返利入账</span>}
                 {o.status === "confirmed" && <span className="text-emerald-500">已确认，等待结算</span>}

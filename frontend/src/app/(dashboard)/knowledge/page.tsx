@@ -19,10 +19,10 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 const TYPE_COLOR: Record<string, string> = {
-  brand: "#f4bb67",
-  product: "#6366f1",
-  copy: "#059669",
-  manual: "#94a3b8",
+  brand: "var(--kaypal-v3-amber)",
+  product: "var(--kaypal-v3-purple)",
+  copy: "var(--kaypal-v3-success)",
+  manual: "var(--kaypal-v3-muted)",
 };
 
 const PLACEHOLDER =
@@ -283,7 +283,7 @@ function KnowledgeList() {
             </div>
           ) : (
             filtered.map((item) => {
-              const color = TYPE_COLOR[item.type] ?? "#94a3b8";
+              const color = TYPE_COLOR[item.type] ?? "var(--kaypal-v3-muted)";
               const tags = Array.isArray(item.tags) ? item.tags : [];
               return (
                 <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 4px", borderBottom: "1px solid var(--kaypal-v3-border)" }}>

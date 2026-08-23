@@ -221,14 +221,14 @@ const CONTENT_TOOL_ENTRIES: Array<{
   href: string;
 }> = [
   { label: "小红书笔记", desc: "选题自动生成的笔记草稿", icon: "fileText", tint: "#e9405b", href: "/content/xiaohongshu" },
-  { label: "商品视频", desc: "带货文案 + 一键成片", icon: "video", tint: "#d97706", href: "/video/product-cut" },
-  { label: "图生视频", desc: "图片 + 提示词生成短视频", icon: "sparkles", tint: "#7c3aed", href: "/video-generation" },
-  { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target", tint: "#0e8a5f", href: "/poi" },
+  { label: "商品视频", desc: "带货文案 + 一键成片", icon: "video", tint: "var(--kaypal-v3-amber)", href: "/video/product-cut" },
+  { label: "图生视频", desc: "图片 + 提示词生成短视频", icon: "sparkles", tint: "var(--kaypal-v3-purple)", href: "/video-generation" },
+  { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target", tint: "var(--kaypal-v3-success)", href: "/poi" },
   { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "#76517e", href: "/distribution/publish-article" },
-  { label: "视频发布计划", desc: "查看定时发布的视频任务", icon: "history", tint: "#7c3aed", href: "/video/release-plans" },
-  { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "#a16207", href: "/knowledge-base" },
-  { label: "视频特效", desc: "换脸与模板化视频效果", icon: "video", tint: "#7c3aed", href: "/content/face-swap" },
-  { label: "文案对比", desc: "原文与改写对照", icon: "clipboard", tint: "#64748b", href: "/copy-compare" },
+  { label: "视频发布计划", desc: "查看定时发布的视频任务", icon: "history", tint: "var(--kaypal-v3-purple)", href: "/video/release-plans" },
+  { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "var(--kaypal-v3-amber)", href: "/knowledge-base" },
+  { label: "视频特效", desc: "换脸与模板化视频效果", icon: "video", tint: "var(--kaypal-v3-purple)", href: "/content/face-swap" },
+  { label: "文案对比", desc: "原文与改写对照", icon: "clipboard", tint: "var(--kaypal-v3-muted)", href: "/copy-compare" },
   { label: "产物", desc: "生成结果存档", icon: "archive", tint: "#8d6e63", href: "/tasks/evidence" },
 ];
 
@@ -507,7 +507,7 @@ function MobileContentView({
               >
                 <span
                   className="mx-row-ic"
-                  style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}
+                  style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -616,7 +616,7 @@ function MobileContentView({
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#f4bb67"
+              stroke="var(--kaypal-v3-amber)"
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -649,7 +649,7 @@ function MobileContentView({
           <svg
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#f4bb67"
+            stroke="var(--kaypal-v3-amber)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"

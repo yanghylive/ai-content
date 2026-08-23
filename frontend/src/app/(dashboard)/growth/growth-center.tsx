@@ -38,7 +38,7 @@ const RUN_STATUS_TONE: Record<string, { label: string; className: string }> = {
 function RunStatusBadge({ status }: { status: string }) {
   const tone = RUN_STATUS_TONE[status] ?? { label: status, className: "bg-[var(--kaypal-v3-muted-soft)] text-[var(--kaypal-v3-muted)]" };
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${tone.className}`}>
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-11 font-medium ${tone.className}`}>
       {tone.label}
     </span>
   );
@@ -57,7 +57,7 @@ function BlockersSection({ blockers }: { blockers: GrowthHomeBlocker[] }) {
               <p className="text-sm font-medium text-[var(--kaypal-v3-danger-ink)]">{blocker.title}</p>
               <p className="mt-0.5 truncate text-xs text-[var(--kaypal-v3-danger-ink)] opacity-70">{blocker.action}</p>
             </div>
-            <span className="shrink-0 rounded bg-[var(--kaypal-v3-paper)] px-2 py-0.5 font-mono text-[10px] text-[var(--kaypal-v3-muted)]">{blocker.code}</span>
+            <span className="shrink-0 rounded bg-[var(--kaypal-v3-paper)] px-2 py-0.5 font-mono text-11 text-[var(--kaypal-v3-muted)]">{blocker.code}</span>
           </div>
         ))}
       </div>
@@ -212,7 +212,7 @@ function AiValueBill({ overview }: { overview: GrowthOverview | null }) {
         <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
           AI 价值账单
         </h2>
-        <span className="rounded-full bg-[var(--kaypal-v3-accent-soft)] px-2 py-0.5 text-[10px] font-medium text-[var(--kaypal-v3-accent-ink)]">
+        <span className="rounded-full bg-[var(--kaypal-v3-accent-soft)] px-2 py-0.5 text-11 font-medium text-[var(--kaypal-v3-accent-ink)]">
           估算
         </span>
       </div>
@@ -227,14 +227,14 @@ function AiValueBill({ overview }: { overview: GrowthOverview | null }) {
               {item.value}
             </p>
             {item.hint && (
-              <p className="mt-0.5 text-[10px] text-[var(--kaypal-v3-muted)]">
+              <p className="mt-0.5 text-11 text-[var(--kaypal-v3-muted)]">
                 {item.hint}
               </p>
             )}
           </div>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-[var(--kaypal-v3-muted)]">
+      <p className="mt-2 text-11 text-[var(--kaypal-v3-muted)]">
         * 估算口径：人工浏览 2 分钟/条、线索 ¥50/条、进 CRM ¥200/条，仅供参考，不代表实际成交。
       </p>
     </div>

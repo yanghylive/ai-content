@@ -679,10 +679,10 @@ export function MaterialsCenter() {
 
         <section className="mx-px" style={{ marginTop: 14 }}>
           {notice && (
-            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(16,185,129,.1)", fontSize: 12, color: "#047857" }}>{notice}</div>
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(16,185,129,.1)", fontSize: 12, color: "var(--kaypal-v3-success)" }}>{notice}</div>
           )}
           {error && (
-            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</div>
           )}
 
           {/* 素材统计 hero */}
@@ -735,7 +735,7 @@ export function MaterialsCenter() {
                   style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
                   onClick={() => setViewing(m)}
                 >
-                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
                     <ImageIcon width={18} height={18} aria-hidden="true" />
                   </span>
                   <div className="mx-row-main">
@@ -783,7 +783,7 @@ export function MaterialsCenter() {
                 ) : null}
               </div>
               <div className="flex items-center justify-end gap-3 border-t border-[var(--kaypal-v3-border)] p-4">
-                <button type="button" className="btn btn-sm" style={{ border: "1px solid rgba(239,68,68,.35)", color: "#dc2626", borderRadius: 10, padding: "7px 12px", fontSize: 12, fontWeight: 600 }} onClick={() => { setDeleteTarget(viewing); setViewing(null); }}>
+                <button type="button" className="btn btn-sm" style={{ border: "1px solid rgba(239,68,68,.35)", color: "var(--kaypal-v3-danger)", borderRadius: 10, padding: "7px 12px", fontSize: 12, fontWeight: 600 }} onClick={() => { setDeleteTarget(viewing); setViewing(null); }}>
                   删除
                 </button>
               </div>

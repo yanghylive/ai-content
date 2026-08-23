@@ -31,10 +31,10 @@ export const TrendCard = ({
     <Card className="border border-transparent bg-content1 shadow-sm dark:border-default-100">
       <div className="relative flex min-h-[88px] p-4">
         <div className="flex flex-col gap-y-2">
-          <dt className="text-[11px] font-bold leading-4 text-default-500">
+          <dt className="text-11 font-bold leading-4 text-default-500">
             {title}
           </dt>
-          <dd className="text-[26px] font-bold leading-8 text-default-700">
+          <dd className="text-2xl font-bold leading-8 text-default-700">
             {value}
           </dd>
         </div>
@@ -45,7 +45,7 @@ export const TrendCard = ({
           })}
           classNames={{
             base: "h-6 rounded-[8px]",
-            content: "font-bold text-[11px] leading-4",
+            content: "font-bold text-11 leading-4",
           }}
           color={
             changeType === "positive"

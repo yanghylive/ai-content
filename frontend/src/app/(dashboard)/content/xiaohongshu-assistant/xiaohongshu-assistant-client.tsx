@@ -370,11 +370,11 @@ export function XiaohongshuAssistantClient() {
     <div className="space-y-5 pb-8">
       <header className="flex flex-col gap-3 border-b border-divider pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-default-500">
+          <div className="mb-2 flex items-center gap-2 text-12 font-medium text-default-500">
             <WandSparkles className="h-4 w-4" />
             AgentWaker / Ruby
           </div>
-          <h1 className="text-[24px] font-semibold text-foreground">
+          <h1 className="text-2xl font-semibold text-foreground">
             小红书运营助理
           </h1>
         </div>
@@ -410,14 +410,14 @@ export function XiaohongshuAssistantClient() {
       <section className="rounded-[8px] border border-divider bg-background p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-default-500">
+            <div className="mb-2 flex items-center gap-2 text-12 font-medium text-default-500">
               <Sparkles className="h-4 w-4" />
               快速开始
             </div>
-            <h2 className="text-[15px] font-semibold text-foreground">
+            <h2 className="text-14 font-semibold text-foreground">
               先选场景，再补信息，最后一键生成
             </h2>
-            <p className="mt-1 text-[13px] leading-6 text-default-500">
+            <p className="mt-1 text-13 leading-6 text-default-500">
               最少只要填“运营目标”和“产品/主题”就能开始，其余字段可以后补。
             </p>
           </div>
@@ -440,14 +440,14 @@ export function XiaohongshuAssistantClient() {
             >
               <div className="flex w-full flex-col items-start gap-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[14px] font-semibold text-foreground">
+                  <span className="text-14 font-semibold text-foreground">
                     {preset.title}
                   </span>
                   <Chip size="sm" variant="flat">
                     一键填充
                   </Chip>
                 </div>
-                <span className="text-[12px] leading-5 text-default-500">
+                <span className="text-12 leading-5 text-default-500">
                   {preset.description}
                 </span>
               </div>
@@ -460,7 +460,7 @@ export function XiaohongshuAssistantClient() {
         <section className="h-fit rounded-[8px] border border-divider bg-background p-4">
           <div className="mb-4 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <h2 className="text-[15px] font-semibold">创建笔记包</h2>
+            <h2 className="text-14 font-semibold">创建笔记包</h2>
           </div>
           <div className="space-y-3">
             <Textarea
@@ -485,10 +485,10 @@ export function XiaohongshuAssistantClient() {
               <div className="rounded-[8px] border border-divider bg-default-50 px-3 py-2">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[13px] font-medium text-foreground">
+                    <p className="text-13 font-medium text-foreground">
                       更多信息（可选）
                     </p>
-                    <p className="mt-0.5 text-[12px] leading-5 text-default-500">
+                    <p className="mt-0.5 text-12 leading-5 text-default-500">
                       品牌、目标人群、关键词、参考素材都可以后补。
                     </p>
                   </div>
@@ -507,7 +507,7 @@ export function XiaohongshuAssistantClient() {
                     {advancedOpen ? "收起" : "展开"}
                   </Button>
                 </div>
-                <p className="mt-2 text-[11px] text-default-400">
+                <p className="mt-2 text-11 text-default-400">
                   已补充 {optionalFieldCount} / 4 项可选信息
                 </p>
               </div>
@@ -553,7 +553,7 @@ export function XiaohongshuAssistantClient() {
             <div className="flex items-center justify-between gap-4 border-y border-divider py-3">
               <div className="flex items-center gap-2">
                 <Images className="h-4 w-4 text-default-500" />
-                <span className="text-[13px] font-medium">生成 3:4 卡图</span>
+                <span className="text-13 font-medium">生成 3:4 卡图</span>
               </div>
               <Switch
                 aria-label="生成 3:4 卡图"
@@ -578,7 +578,7 @@ export function XiaohongshuAssistantClient() {
             >
               生成笔记包
             </Button>
-            <p className="text-[12px] leading-5 text-default-400">
+            <p className="text-12 leading-5 text-default-400">
               生成后会自动进入执行进度；你也可以先点上面的场景卡，少填几项再提交。
             </p>
           </div>
@@ -587,9 +587,9 @@ export function XiaohongshuAssistantClient() {
         <section className="min-w-0 rounded-[8px] border border-divider bg-background">
           <div className="flex min-h-14 items-center justify-between gap-3 border-b border-divider px-4 py-3">
             <div>
-              <h2 className="text-[15px] font-semibold">本次产物</h2>
+              <h2 className="text-14 font-semibold">本次产物</h2>
               {currentRun ? (
-                <p className="mt-0.5 text-[11px] text-default-400">
+                <p className="mt-0.5 text-11 text-default-400">
                   {formatTime(currentRun.updatedAt)}
                 </p>
               ) : null}
@@ -608,14 +608,14 @@ export function XiaohongshuAssistantClient() {
           {!currentRun ? (
             <div className="flex min-h-[520px] flex-col items-center justify-center px-6 text-center">
               <FileText className="h-9 w-9 text-default-300" />
-              <p className="mt-3 text-[14px] font-medium text-default-600">
+              <p className="mt-3 text-14 font-medium text-default-600">
                 暂无笔记产物
               </p>
             </div>
           ) : (
             <div className="space-y-5 p-4">
               <div>
-                <div className="mb-2 flex items-center justify-between text-[11px] text-default-500">
+                <div className="mb-2 flex items-center justify-between text-11 text-default-500">
                   <span>{currentRun.nextAction}</span>
                   <span>{STEP_PROGRESS[currentRun.currentStep]}%</span>
                 </div>
@@ -628,14 +628,14 @@ export function XiaohongshuAssistantClient() {
               </div>
 
               {isActive(currentRun) ? (
-                <div className="flex min-h-[360px] items-center justify-center gap-3 text-[13px] text-default-500">
+                <div className="flex min-h-[360px] items-center justify-center gap-3 text-13 text-default-500">
                   <Spinner size="sm" />
                   <span>任务在后台执行，刷新页面不会丢失进度</span>
                 </div>
               ) : currentRun.output ? (
                 <RunOutput run={currentRun} />
               ) : currentRun.failureReason ? (
-                <div className="space-y-3 border-l-2 border-danger bg-danger-50 px-3 py-3 text-[13px] text-danger-700">
+                <div className="space-y-3 border-l-2 border-danger bg-danger-50 px-3 py-3 text-13 text-danger-700">
                   <p>{currentRun.failureReason}</p>
                   <Button
                     color="danger"
@@ -658,9 +658,9 @@ export function XiaohongshuAssistantClient() {
         <div className="flex items-center justify-between border-b border-divider px-4 py-3">
           <div className="flex items-center gap-2">
             <Clock3 className="h-4 w-4 text-default-500" />
-            <h2 className="text-[15px] font-semibold">最近任务</h2>
+            <h2 className="text-14 font-semibold">最近任务</h2>
           </div>
-          <span className="text-[11px] text-default-400">{runs.length} 条</span>
+          <span className="text-11 text-default-400">{runs.length} 条</span>
         </div>
         {runs.length ? (
           <div className="divide-y divide-divider">
@@ -672,17 +672,17 @@ export function XiaohongshuAssistantClient() {
                 onClick={() => void openRun(run.runId)}
               >
                 <span className="min-w-0">
-                  <span className="block truncate text-[13px] font-medium text-default-700">
+                  <span className="block truncate text-13 font-medium text-default-700">
                     {run.goal}
                   </span>
-                  <span className="mt-0.5 block truncate text-[11px] text-default-400">
+                  <span className="mt-0.5 block truncate text-11 text-default-400">
                     {run.inputs?.product || "未填写产品"}
                   </span>
                 </span>
                 <Chip color={STATUS_COLOR[run.status]} size="sm" variant="flat">
                   {run.statusLabel}
                 </Chip>
-                <span className="flex items-center justify-end gap-2 text-[11px] text-default-400">
+                <span className="flex items-center justify-end gap-2 text-11 text-default-400">
                   {historyBusyId === run.runId ? <Spinner size="sm" /> : null}
                   {formatTime(run.updatedAt)}
                 </span>
@@ -690,7 +690,7 @@ export function XiaohongshuAssistantClient() {
             ))}
           </div>
         ) : (
-          <div className="px-4 py-8 text-center text-[13px] text-default-400">
+          <div className="px-4 py-8 text-center text-13 text-default-400">
             暂无任务记录
           </div>
         )}
@@ -707,10 +707,10 @@ function RunOutput({ run }: { run: AgentWakerRun }) {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-[18px] font-semibold leading-7 text-foreground">
+        <h3 className="text-lg font-semibold leading-7 text-foreground">
           {output.title}
         </h3>
-        <p className="mt-2 whitespace-pre-wrap text-[13px] leading-6 text-default-600">
+        <p className="mt-2 whitespace-pre-wrap text-13 leading-6 text-default-600">
           {output.caption}
         </p>
         <div className="mt-3 flex flex-wrap gap-1.5">
@@ -724,7 +724,7 @@ function RunOutput({ run }: { run: AgentWakerRun }) {
 
       {output.slides.length ? (
         <div>
-          <div className="mb-2 flex items-center gap-2 text-[13px] font-medium">
+          <div className="mb-2 flex items-center gap-2 text-13 font-medium">
             <Images className="h-4 w-4 text-default-500" />
             卡图
           </div>
@@ -743,12 +743,12 @@ function RunOutput({ run }: { run: AgentWakerRun }) {
                       src={slide.cardImageUrl}
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center p-3 text-center text-[12px] text-default-500">
+                    <div className="flex h-full items-center justify-center p-3 text-center text-12 text-default-500">
                       {slide.title}
                     </div>
                   )}
                 </div>
-                <div className="truncate px-2 py-1.5 text-[11px] text-default-500">
+                <div className="truncate px-2 py-1.5 text-11 text-default-500">
                   {index + 1}. {slide.title}
                 </div>
               </div>
@@ -758,7 +758,7 @@ function RunOutput({ run }: { run: AgentWakerRun }) {
       ) : null}
 
       <div className="border-t border-divider pt-4">
-        <div className="mb-2 flex items-center gap-2 text-[13px] font-medium">
+        <div className="mb-2 flex items-center gap-2 text-13 font-medium">
           <ShieldCheck className="h-4 w-4 text-default-500" />
           发布前检查
         </div>
@@ -766,7 +766,7 @@ function RunOutput({ run }: { run: AgentWakerRun }) {
           {checklistItems.map((item) => (
             <div
               key={item.label}
-              className="flex items-start gap-2 text-[12px] text-default-600"
+              className="flex items-start gap-2 text-12 text-default-600"
             >
               {item.status === "ready" ? (
                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-none text-success" />
@@ -778,7 +778,7 @@ function RunOutput({ run }: { run: AgentWakerRun }) {
           ))}
         </div>
         {run.risks.length ? (
-          <div className="mt-3 border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700">
+          <div className="mt-3 border-l-2 border-warning bg-warning-50 px-3 py-2 text-12 text-warning-700">
             {run.risks.join("；")}
           </div>
         ) : null}

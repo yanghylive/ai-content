@@ -17,8 +17,8 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 const TYPE_COLOR: Record<string, string> = {
-  persona: "#f4bb67",
-  episodic: "#4ade80",
+  persona: "var(--kaypal-v3-amber)",
+  episodic: "var(--kaypal-v3-success)",
   instruction: "#60a5fa",
 };
 

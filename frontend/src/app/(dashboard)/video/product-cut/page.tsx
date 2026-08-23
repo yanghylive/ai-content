@@ -151,7 +151,7 @@ export default function ProductCutPage() {
           <div className="mx-card" style={{ padding: 16 }}>
             {form}
           </div>
-          {err ? <p style={{ fontSize: 12, color: "#dc2626", marginTop: 12 }}>⚠️ {err}</p> : null}
+          {err ? <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginTop: 12 }}>⚠️ {err}</p> : null}
           {copyView ? <div className="mx-card" style={{ padding: 14, marginTop: 12 }}>{copyView}</div> : null}
           {resultView ? <div className="mx-card" style={{ padding: 14, marginTop: 12 }}>{resultView}</div> : null}
         </div>
@@ -167,7 +167,7 @@ export default function ProductCutPage() {
       </header>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {form}
-        {err ? <p style={{ fontSize: 13, color: "#dc2626" }}>⚠️ {err}</p> : null}
+        {err ? <p style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>⚠️ {err}</p> : null}
         {copyView}
         {resultView}
       </div>

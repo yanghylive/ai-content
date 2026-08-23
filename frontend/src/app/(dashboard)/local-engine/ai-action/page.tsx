@@ -78,7 +78,7 @@ export default function AiActionPage() {
             fontSize: 10.5,
             fontWeight: 700,
             color: "#fff",
-            background: s.ok ? "#059669" : "#dc2626",
+            background: s.ok ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)",
             flexShrink: 0,
           }}
         >
@@ -119,7 +119,7 @@ export default function AiActionPage() {
       <Button color="primary" isLoading={busy} onPress={handleRun} style={{ alignSelf: "flex-start" }}>
         执行操作
       </Button>
-      {err ? <p style={{ fontSize: 12.5, color: "#dc2626" }}>⚠️ {err}</p> : null}
+      {err ? <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>⚠️ {err}</p> : null}
     </div>
   );
 

@@ -1264,7 +1264,7 @@ export function TaskCenterPage() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12, color: "#dc2626", lineHeight: 1.5 }}>任务中心读取失败，可能是本机服务或登录状态暂时不可用。</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", lineHeight: 1.5 }}>任务中心读取失败，可能是本机服务或登录状态暂时不可用。</p>
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 <Link href="/local-engine" style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600, textAlign: "center" }}>设备状态</Link>
                 <button type="button" onClick={() => void refresh()} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>重新读取</button>
@@ -1279,25 +1279,25 @@ export function TaskCenterPage() {
               <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>任务总数</div>
             </div>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
-              <div style={{ fontSize: 19, fontWeight: 800, color: "#2563eb" }}>{runningCount}</div>
+              <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-cobalt)" }}>{runningCount}</div>
               <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>运行中</div>
             </div>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
-              <div style={{ fontSize: 19, fontWeight: 800, color: "#b45309" }}>{confirmations.length}</div>
+              <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-amber)" }}>{confirmations.length}</div>
               <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>待确认</div>
             </div>
           </div>
           <div className="mx-stat-grid" style={{ marginTop: 8 }}>
             <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#dc2626" }}>{failedCount}</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-danger)" }}>{failedCount}</div>
               <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>失败</div>
             </div>
             <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#059669" }}>{publishTasks.length}</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{publishTasks.length}</div>
               <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>发布记录</div>
             </div>
             <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#059669" }}>{evidenceCount + publishRecordEvidenceCount}</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{evidenceCount + publishRecordEvidenceCount}</div>
               <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>证据留存</div>
             </div>
           </div>
@@ -1313,7 +1313,7 @@ export function TaskCenterPage() {
             <Link href="/tasks/evidence" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
               结果留存
             </Link>
-            <Link href="/risk-confirm" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(220,80,80,.08)", color: "#dc2626", border: "1px solid rgba(220,80,80,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+            <Link href="/risk-confirm" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(220,80,80,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
               风险确认
             </Link>
           </div>
@@ -1323,7 +1323,7 @@ export function TaskCenterPage() {
             <>
               <div className="mx-section-head" style={{ marginTop: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span>待确认（{confirmations.length}）</span>
-                <Link href="/tasks/confirmations" style={{ fontSize: 11.5, fontWeight: 600, color: "#d98a2d" }}>全部 ›</Link>
+                <Link href="/tasks/confirmations" style={{ fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-amber)" }}>全部 ›</Link>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {confirmations.slice(0, 3).map((item) => (
@@ -1348,7 +1348,7 @@ export function TaskCenterPage() {
             <>
               <div className="mx-section-head" style={{ marginTop: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span>运行中（{runningSessions.length}）</span>
-                <Link href="/tasks/runs" style={{ fontSize: 11.5, fontWeight: 600, color: "#d98a2d" }}>全部 ›</Link>
+                <Link href="/tasks/runs" style={{ fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-amber)" }}>全部 ›</Link>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {runningSessions.slice(0, 3).map((session) => (
@@ -1620,7 +1620,7 @@ export function TaskCenterPage() {
       >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-[13px] leading-5 text-default-500">
+            <p className="text-13 leading-5 text-default-500">
               保存后启动可执行步骤；未满足条件的步骤单独保留原因，不影响其他步骤运行。
             </p>
           </div>
@@ -1647,7 +1647,7 @@ export function TaskCenterPage() {
               key={item.key}
               className="flex h-[46px] items-center justify-between rounded-[6px] border border-divider bg-default-50 px-3"
             >
-              <span className="text-[13px] font-medium text-default-700">
+              <span className="text-13 font-medium text-default-700">
                 {item.label}
               </span>
               <OpsStatusPill tone={item.selected ? "brand" : "default"}>
@@ -1826,7 +1826,7 @@ export function TaskCenterPage() {
                       ? "部分可启动"
                       : "需要配置"}
                 </OpsStatusPill>
-                <span className="text-[13px] font-medium text-default-700">
+                <span className="text-13 font-medium text-default-700">
                   {workflowPreparation.message}
                 </span>
               </div>
@@ -1850,7 +1850,7 @@ export function TaskCenterPage() {
                 启动可执行步骤
               </Button>
             </div>
-            <p className="mt-2 text-[13px] leading-5 text-default-600">
+            <p className="mt-2 text-13 leading-5 text-default-600">
               {workflowPreparation.nextAction}
             </p>
             <div className="mt-3 grid gap-2 md:grid-cols-3">
@@ -1860,7 +1860,7 @@ export function TaskCenterPage() {
                   className="rounded-[6px] border border-divider bg-background/80 p-2"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-medium text-default-700">
+                    <span className="text-13 font-medium text-default-700">
                       {step.title}
                     </span>
                     <OpsStatusPill
@@ -1888,7 +1888,7 @@ export function TaskCenterPage() {
 
         <div className="mt-4 border-t border-divider pt-3">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-[13px] font-semibold text-default-700">
+            <h3 className="text-13 font-semibold text-default-700">
               已保存工作流
             </h3>
             <span className="text-tiny text-default-400">
@@ -1978,7 +1978,7 @@ export function TaskCenterPage() {
 
         <div className="mt-4 border-t border-divider pt-3">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-[13px] font-semibold text-default-700">
+            <h3 className="text-13 font-semibold text-default-700">
               最近运行
             </h3>
             <span className="text-tiny text-default-400">
@@ -2206,7 +2206,7 @@ export function TaskCenterPage() {
                           <div className="truncate font-semibold">
                             {confirmationSessionTitle(item)}
                           </div>
-                          <div className="mt-1 line-clamp-2 text-[12px] text-default-500">
+                          <div className="mt-1 line-clamp-2 text-12 text-default-500">
                             {commercialDisplayText(
                               item.description || item.actionLabel,
                             )}
@@ -2895,8 +2895,8 @@ function AgentStatusDrawer({
                 {sourceLabel(session.source)}
               </Chip>
             </div>
-            <p className="text-[12px] font-medium text-[#f759ab]">AI专家状态</p>
-            <h3 className="line-clamp-2 text-[16px] font-bold leading-6 text-default-900">
+            <p className="text-12 font-medium text-[#f759ab]">AI专家状态</p>
+            <h3 className="line-clamp-2 text-base font-bold leading-6 text-default-900">
               {sessionDisplayTitle(session)}
             </h3>
             <p className="mt-1 text-tiny text-default-500">
@@ -2913,7 +2913,7 @@ function AgentStatusDrawer({
           <div className="grid gap-4">
             <section className="rounded-[8px] border border-divider bg-background p-3">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <h4 className="text-[14px] font-semibold text-foreground">
+                <h4 className="text-14 font-semibold text-foreground">
                   状态反馈
                 </h4>
                 <Button
@@ -2937,14 +2937,14 @@ function AgentStatusDrawer({
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-semibold text-foreground">
+                      <span className="text-13 font-semibold text-foreground">
                         {item.title}
                       </span>
                       <OpsStatusPill tone={item.active ? "brand" : "default"}>
                         {item.active ? "当前" : "待定"}
                       </OpsStatusPill>
                     </div>
-                    <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-default-500">
+                    <p className="mt-2 line-clamp-2 text-12 leading-5 text-default-500">
                       {item.detail}
                     </p>
                   </div>

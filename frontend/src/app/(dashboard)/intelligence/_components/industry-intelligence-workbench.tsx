@@ -756,17 +756,17 @@ export function IndustryIntelligenceWorkbench() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">行业源</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   行业情报驾驶舱
                 </h1>
-                <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   按行业聚合真实情报对象，判断机会、风险、样本和监控去向。
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                 onClick={reload}
                 type="button"
               >
@@ -780,7 +780,7 @@ export function IndustryIntelligenceWorkbench() {
                 刷新
               </button>
               <Link
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0"
                 href="/intelligence/monitors"
               >
                 创建监控
@@ -801,7 +801,7 @@ export function IndustryIntelligenceWorkbench() {
                 strokeWidth={1.8}
               />
               <input
-                className="h-10 w-full rounded-[8px] pl-9 pr-3 text-[13px]"
+                className="h-10 w-full rounded-[8px] pl-9 pr-3 text-13"
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") runSearch();
@@ -811,7 +811,7 @@ export function IndustryIntelligenceWorkbench() {
               />
             </div>
             <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
               onClick={runSearch}
               type="button"
             >
@@ -840,10 +840,10 @@ export function IndustryIntelligenceWorkbench() {
                 strokeWidth={1.8}
               />
             </div>
-            <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+            <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
               {value}
             </p>
-            <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
               {detail}
             </p>
           </div>
@@ -854,7 +854,7 @@ export function IndustryIntelligenceWorkbench() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">行业分组</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               信号密度
             </h2>
           </div>
@@ -875,18 +875,18 @@ export function IndustryIntelligenceWorkbench() {
                   type="button"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <span className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {row.label}
                     </span>
-                    <span className="text-[12px] font-bold text-[var(--kaypal-v3-accent-ink)]">
+                    <span className="text-12 font-bold text-[var(--kaypal-v3-accent-ink)]">
                       {row.count}
                     </span>
                   </div>
-                  <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                     <span>均分 {row.avgScore || "--"}</span>
                     <span>高风险 {row.highRisk}</span>
                   </div>
-                  <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                     {row.owner}
                   </p>
                 </button>
@@ -898,13 +898,13 @@ export function IndustryIntelligenceWorkbench() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">真实情报</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               行业信号队列
             </h2>
           </div>
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
             {loading ? (
-              <div className="flex min-h-[360px] items-center justify-center p-4 text-[13px] font-semibold text-[var(--kaypal-v3-muted)]">
+              <div className="flex min-h-[360px] items-center justify-center p-4 text-13 font-semibold text-[var(--kaypal-v3-muted)]">
                 <Loader2
                   aria-hidden="true"
                   className="mr-2 h-4 w-4 animate-spin"
@@ -964,25 +964,25 @@ export function IndustryIntelligenceWorkbench() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                             {signal.industry.label}
                           </span>
                           <span
                             className={[
-                              "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                              "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                               riskClass(signal.risk),
                             ].join(" ")}
                           >
                             {riskMeta[signal.risk].label}
                           </span>
-                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                             {signal.score}
                           </span>
                         </div>
-                        <h3 className="mt-2 text-[14px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                        <h3 className="mt-2 text-14 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                           {signal.title}
                         </h3>
-                        <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           {signal.platform} · {signal.typeLabel} ·{" "}
                           {statusLabel(signal.status)} ·{" "}
                           {formatTime(signal.createdAt)}
@@ -1004,7 +1004,7 @@ export function IndustryIntelligenceWorkbench() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">证据和去向</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               {selectedSignal?.title || "等待选择信号"}
             </h2>
           </div>
@@ -1021,7 +1021,7 @@ export function IndustryIntelligenceWorkbench() {
                     key={label}
                   >
                     <p className="kaypal-v3-label">{label}</p>
-                    <p className="mt-1 text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <p className="mt-1 text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {value}
                     </p>
                   </div>
@@ -1030,11 +1030,11 @@ export function IndustryIntelligenceWorkbench() {
 
               <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-4">
                 <p className="kaypal-v3-label">判断结论</p>
-                <p className="mt-2 text-[14px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+                <p className="mt-2 text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                   {selectedSignal.decision}
                 </p>
                 <div className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-3">
-                  <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                  <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                     {selectedSignal.boundary}
                   </p>
                 </div>
@@ -1048,7 +1048,7 @@ export function IndustryIntelligenceWorkbench() {
                       const running = runningAction === action;
                       return (
                         <button
-                          className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                           disabled={Boolean(runningAction)}
                           key={action}
                           onClick={() =>
@@ -1091,17 +1091,17 @@ export function IndustryIntelligenceWorkbench() {
                         .slice(0, 6)
                         .map((item, index) => (
                           <li className="flex gap-3" key={`${item}-${index}`}>
-                            <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-[11px] font-bold text-white">
+                            <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-11 font-bold text-white">
                               {index + 1}
                             </span>
-                            <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                            <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                               {item}
                             </p>
                           </li>
                         ))}
                     </ol>
                   ) : (
-                    <p className="mt-3 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-3 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       暂无证据文本；可回到搜索或监控补充来源。
                     </p>
                   )}
@@ -1118,12 +1118,12 @@ export function IndustryIntelligenceWorkbench() {
                           key={item.id}
                         >
                           <div className="flex items-center justify-between gap-3">
-                            <span className="text-[12px] font-bold text-[var(--kaypal-v3-ink)]">
+                            <span className="text-12 font-bold text-[var(--kaypal-v3-ink)]">
                               {item.label}
                             </span>
                             <span
                               className={[
-                                "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                                "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                                 item.state === "failed"
                                   ? "border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] text-[var(--kaypal-v3-soft-ink)]"
                                   : item.state === "running"
@@ -1138,7 +1138,7 @@ export function IndustryIntelligenceWorkbench() {
                                   : "完成"}
                             </span>
                           </div>
-                          <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                          <p className="mt-1 line-clamp-2 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                             {item.detail}
                           </p>
                         </Link>
@@ -1150,7 +1150,7 @@ export function IndustryIntelligenceWorkbench() {
                           className="h-5 w-5 text-[var(--kaypal-v3-muted)]"
                           strokeWidth={1.8}
                         />
-                        <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           选择动作后会显示写入结果。
                         </p>
                       </div>

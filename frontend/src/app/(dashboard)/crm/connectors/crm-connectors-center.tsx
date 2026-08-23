@@ -157,7 +157,7 @@ export function CrmConnectorsCenter() {
 
         <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
           {error ? (
-            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginBottom: 10 }}>{error}</p>
           ) : null}
 
           {loading ? (
@@ -179,7 +179,7 @@ export function CrmConnectorsCenter() {
               <div className="mx-card mx-list-card">
                 {items.map((item) => (
                   <div key={item.connectorKey} className="mx-row">
-                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)", borderRadius: 999 }}>
                       <Plug size={18} strokeWidth={1.8} />
                     </span>
                     <div className="mx-row-main">
@@ -188,7 +188,7 @@ export function CrmConnectorsCenter() {
                         <div className="mx-row-desc">{sanitizeConnectorText(item.summary)}</div>
                       ) : null}
                       {item.nextActions && item.nextActions.length > 0 ? (
-                        <div className="mx-row-desc" style={{ color: "#2563eb" }}>
+                        <div className="mx-row-desc" style={{ color: "var(--kaypal-v3-cobalt)" }}>
                           下一步:{formatNextAction(item.nextActions[0])}
                         </div>
                       ) : null}

@@ -134,12 +134,12 @@ export function AppDetail({ appKey }: { appKey: string }) {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
           {done && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#059669" }}>{done}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-success)" }}>{done}</p>
             </div>
           )}
 
@@ -152,7 +152,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
             <>
               <div className="mx-section-head" style={{ marginTop: 16 }}>注意事项</div>
               <div className="mx-card" style={{ padding: 13, borderColor: "rgba(222,150,57,.4)" }}>
-                <ul style={{ listStyle: "disc", listStylePosition: "inside", fontSize: 12, color: "#b45309", lineHeight: 1.8 }}>
+                <ul style={{ listStyle: "disc", listStylePosition: "inside", fontSize: 12, color: "var(--kaypal-v3-amber)", lineHeight: 1.8 }}>
                   {app.commercialWarnings.map((w) => (
                     <li key={w}>{w}</li>
                   ))}

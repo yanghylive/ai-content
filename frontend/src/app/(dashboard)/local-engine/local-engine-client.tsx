@@ -784,7 +784,7 @@ function LocalEngineContent() {
             <Icon icon={meta.icon} width={26} />
           </div>
           <div>
-            <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+            <h2 className="text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
               {meta.title}
             </h2>
             <p className="mt-1 text-small text-default-500">
@@ -1146,7 +1146,7 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
   if (route === "moments" || route === "wechat" || route === "groups") {
     return (
       <div className="local-engine-console mx-auto flex w-full max-w-3xl flex-col gap-4 rounded-[8px] border-small border-divider bg-background p-5 shadow-sm">
-        <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+        <h2 className="text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
           客户互动
         </h2>
         <p className="text-small text-default-500">
@@ -1177,7 +1177,7 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
             <Icon icon={meta.icon} width={26} />
           </div>
           <div>
-            <h2 className="text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+            <h2 className="text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
               {meta.title}
             </h2>
             <p className="mt-1 text-small text-default-500">
@@ -3424,7 +3424,7 @@ function RuntimeStatusPanel({
                       </div>
                     ))}
                   </div>
-                  <div className="rounded-[8px] border border-divider bg-[var(--kaypal-v3-paper-muted)] p-3 font-mono text-[11px] leading-5 text-default-700">
+                  <div className="rounded-[8px] border border-divider bg-[var(--kaypal-v3-paper-muted)] p-3 font-mono text-11 leading-5 text-default-700">
                     <p className="mb-2 text-default-500">
                       {runtimeLog
                         ? `${commercialDisplayText(runtimeLog.name)} 最近记录`

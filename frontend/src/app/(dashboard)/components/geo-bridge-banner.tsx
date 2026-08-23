@@ -112,10 +112,10 @@ export function GeoBridgeBanner() {
               </Chip>
             ) : null}
           </div>
-          <div className="truncate text-[14px] font-bold leading-[22px]">
+          <div className="truncate text-14 font-bold leading-[22px]">
             {context.actionTitle}
           </div>
-          <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-success-800/80">
+          <p className="mt-1 line-clamp-2 text-12 leading-5 text-success-800/80">
             {context.brandName ? `${context.brandName} · ` : ""}
             {context.goal || context.reason || "来自 JIUZHANG AI GEO 的执行动作。"}
           </p>

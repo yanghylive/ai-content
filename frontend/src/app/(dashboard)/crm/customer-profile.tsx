@@ -131,7 +131,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
 
         <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
           {error && (
-            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</div>
           )}
 
           {/* 名片 */}
@@ -139,7 +139,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
             <div className="mx-hero-ring" style={{ width: 110, height: 110, top: -30, right: -22 }} />
             <div style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 14 }}>
               <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 56, height: 56, borderRadius: 999, flexShrink: 0, background: "rgba(255,255,255,.14)" }}>
-                <User width={26} height={26} style={{ color: "#f4bb67" }} />
+                <User width={26} height={26} style={{ color: "var(--kaypal-v3-amber)" }} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -160,7 +160,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
           <div className="mx-card mx-list-card" style={{ marginTop: 14 }}>
             {contactRows.map((row) => (
               <div className="mx-row" key={row.label}>
-                <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
                   <Mail width={18} height={18} />
                 </span>
                 <div className="mx-row-main">
@@ -179,10 +179,10 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
                 客户来源
               </div>
               {customer.sourceKeyword ? (
-                <p style={{ fontSize: 12.5, color: "#334155" }}>匹配关键词：{customer.matchedKeyword || customer.sourceKeyword}</p>
+                <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-soft-ink)" }}>匹配关键词：{customer.matchedKeyword || customer.sourceKeyword}</p>
               ) : null}
               {customer.sourceText ? (
-                <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "#475569", marginTop: 8, padding: 10, borderRadius: 10, background: "rgba(148,163,184,.1)" }}>{customer.sourceText}</p>
+                <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "var(--kaypal-v3-soft-ink)", marginTop: 8, padding: 10, borderRadius: 10, background: "rgba(148,163,184,.1)" }}>{customer.sourceText}</p>
               ) : null}
             </div>
           ) : null}
@@ -194,14 +194,14 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
                 <span className="mx-sec-icon"><Send /></span>
                 最新互动
               </div>
-              <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "#475569" }}>{customer.latestReply}</p>
+              <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "var(--kaypal-v3-soft-ink)" }}>{customer.latestReply}</p>
             </div>
           ) : null}
 
           {/* 标签 */}
           {customer.tags && customer.tags.length > 0 ? (
             <div style={{ marginTop: 14 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#8a95a5", marginBottom: 8 }}>标签</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 8 }}>标签</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {customer.tags.map((tag) => <span key={tag} className="mx-badge mx-badge-gold">{tag}</span>)}
               </div>
@@ -213,7 +213,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
             <button type="button" className="mx-btn-gold" style={{ flex: 1.4, fontSize: 12, padding: "11px 0" }} disabled={preparing} onClick={handleTestSend}>
               {preparing ? "正在准备…" : "抖音测试发送"}
             </button>
-            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "#334155", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} onClick={() => router.push("/crm")}>返回列表</button>
+            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} onClick={() => router.push("/crm")}>返回列表</button>
           </div>
         </section>
       </div>

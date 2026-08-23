@@ -407,7 +407,7 @@ export function BossRecruitCenter() {
                 <div key={acc.id} className="mx-card" style={{ padding: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                     <span style={{ fontSize: 13.5, fontWeight: 700 }}>{acc.name}</span>
-                    <span className="mx-badge" style={{ fontSize: 10, padding: "2px 8px", color: acc.loginStatus === "logged_in" ? "#059669" : "#b45309" }}>
+                    <span className="mx-badge" style={{ fontSize: 10, padding: "2px 8px", color: acc.loginStatus === "logged_in" ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-amber)" }}>
                       {acc.loginStatus}
                     </span>
                   </div>
@@ -442,7 +442,7 @@ export function BossRecruitCenter() {
                     <button type="button" style={{ fontSize: 11.5, padding: "7px 12px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }} onClick={() => void handleRefresh(acc.id)}>
                       {busy === `refresh-${acc.id}` ? "刷新中…" : "刷新职位"}
                     </button>
-                    <button type="button" style={{ fontSize: 11.5, padding: "7px 12px", borderRadius: 10, background: "rgba(246,196,120,.12)", color: "#d98a2d", border: "1px solid rgba(222,150,57,.35)" }} onClick={() => void handleHello(acc.id)}>
+                    <button type="button" style={{ fontSize: 11.5, padding: "7px 12px", borderRadius: 10, background: "rgba(246,196,120,.12)", color: "var(--kaypal-v3-amber)", border: "1px solid rgba(222,150,57,.35)" }} onClick={() => void handleHello(acc.id)}>
                       {busy === `hello-${acc.id}` ? "打招呼中…" : "打招呼"}
                     </button>
                   </div>

@@ -183,7 +183,7 @@ export function WechatPlanList() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -194,7 +194,7 @@ export function WechatPlanList() {
                 key={key}
                 type="button"
                 onClick={() => setFilter(key)}
-                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: filter === key ? "#d98a2d" : "rgba(120,148,179,.12)", color: filter === key ? "#fff" : "var(--mx-ink)", border: filter === key ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: filter === key ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: filter === key ? "#fff" : "var(--mx-ink)", border: filter === key ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
               >
                 {label}{counts[key] > 0 ? ` ${counts[key]}` : ""}
               </button>
@@ -260,7 +260,7 @@ export function WechatPlanList() {
                       {status !== "removed" && status !== "sending" && (
                         confirmDeleteId === task.id ? (
                           <>
-                            <button type="button" className="mx-btn-gold" style={{ flex: 1, padding: "7px 0", fontSize: 11.5, background: "#dc2626", borderColor: "#dc2626" }} disabled={acting} onClick={() => void runAction(task, "delete")}>
+                            <button type="button" className="mx-btn-gold" style={{ flex: 1, padding: "7px 0", fontSize: 11.5, background: "var(--kaypal-v3-danger)", borderColor: "var(--kaypal-v3-danger)" }} disabled={acting} onClick={() => void runAction(task, "delete")}>
                               确认删除
                             </button>
                             <button type="button" onClick={() => setConfirmDeleteId(null)} style={{ flex: "0 0 auto", padding: "7px 12px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
@@ -268,7 +268,7 @@ export function WechatPlanList() {
                             </button>
                           </>
                         ) : (
-                          <button type="button" onClick={() => setConfirmDeleteId(task.id)} style={{ flexShrink: 0, padding: "7px 10px", borderRadius: 9, background: "rgba(220,80,80,.08)", color: "#dc2626", border: "1px solid rgba(220,80,80,.3)" }}>
+                          <button type="button" onClick={() => setConfirmDeleteId(task.id)} style={{ flexShrink: 0, padding: "7px 10px", borderRadius: 9, background: "rgba(220,80,80,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.3)" }}>
                             <Trash2 width={13} height={13} />
                           </button>
                         )

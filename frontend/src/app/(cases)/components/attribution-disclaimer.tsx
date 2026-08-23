@@ -31,7 +31,7 @@ function AttributionRow({ item }: { item: PublicAttributionDto }) {
         )}
         {item.licenseName && (
           <span
-            className="rounded-full px-2 py-0.5 text-[11px] font-semibold leading-none"
+            className="rounded-full px-2 py-0.5 text-11 font-semibold leading-none"
             style={{
               background: "var(--kaypal-v3-blue-soft)",
               color: "var(--kaypal-v3-cobalt)",

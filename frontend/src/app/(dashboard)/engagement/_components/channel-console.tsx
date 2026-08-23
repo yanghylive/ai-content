@@ -366,12 +366,12 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
 
           {notice && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#059669" }}>{notice}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-success)" }}>{notice}</p>
             </div>
           )}
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -402,7 +402,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
           <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：连接{config.platformName}后台</div>
           {backendReady ? (
             <div className="mx-card" style={{ padding: 12, borderColor: "rgba(5,150,105,.4)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 600, color: "#059669", minWidth: 0 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-success)", minWidth: 0 }}>
                 <CheckCircle2 width={16} height={16} style={{ flexShrink: 0 }} />
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{backendMessage}</span>
               </span>
@@ -433,7 +433,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
                   (crmPreparation as { content?: string }).content ||
                   "（准备的消息）"}
               </p>
-              <button type="button" onClick={() => router.push(`/crm/customer?id=${crmHandoff?.customerId}`)} style={{ fontSize: 11.5, color: "#d98a2d", fontWeight: 600, marginTop: 7 }}>
+              <button type="button" onClick={() => router.push(`/crm/customer?id=${crmHandoff?.customerId}`)} style={{ fontSize: 11.5, color: "var(--kaypal-v3-amber)", fontWeight: 600, marginTop: 7 }}>
                 返回客户档案 ›
               </button>
             </div>
@@ -477,13 +477,13 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
                     {liveEvents.map((event, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: "var(--mx-ink)", lineHeight: 1.5 }}>
                         {event.level === "success" ? (
-                          <CheckCircle2 width={14} height={14} style={{ color: "#059669", flexShrink: 0, marginTop: 1 }} />
+                          <CheckCircle2 width={14} height={14} style={{ color: "var(--kaypal-v3-success)", flexShrink: 0, marginTop: 1 }} />
                         ) : event.level === "error" ? (
-                          <XCircle width={14} height={14} style={{ color: "#dc2626", flexShrink: 0, marginTop: 1 }} />
+                          <XCircle width={14} height={14} style={{ color: "var(--kaypal-v3-danger)", flexShrink: 0, marginTop: 1 }} />
                         ) : event.level === "warning" ? (
-                          <AlertTriangle width={14} height={14} style={{ color: "#b45309", flexShrink: 0, marginTop: 1 }} />
+                          <AlertTriangle width={14} height={14} style={{ color: "var(--kaypal-v3-amber)", flexShrink: 0, marginTop: 1 }} />
                         ) : (
-                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#d98a2d", flexShrink: 0, marginTop: 4 }} />
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--kaypal-v3-amber)", flexShrink: 0, marginTop: 4 }} />
                         )}
                         <span style={{ minWidth: 0, wordBreak: "break-word" }}>{cleanText(event.message)}</span>
                       </div>

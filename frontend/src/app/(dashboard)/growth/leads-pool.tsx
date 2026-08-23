@@ -449,7 +449,7 @@ export function LeadsPool() {
                         <p className="font-medium text-[var(--kaypal-v3-ink)] hover:text-[var(--kaypal-v3-accent)]">
                           {lead.nickname || "未知用户"}
                         </p>
-                        <span className="text-[10px] text-[var(--kaypal-v3-muted)]">详情 →</span>
+                        <span className="text-11 text-[var(--kaypal-v3-muted)]">详情 →</span>
                       </button>
                       <span className="flex items-center gap-2">
                         <V2StatusChip tone={status.tone}>{status.label}</V2StatusChip>
@@ -472,7 +472,7 @@ export function LeadsPool() {
                             e.stopPropagation();
                             void handleRescore(lead);
                           }}
-                          className="rounded-full border border-[var(--kaypal-v3-border)] px-2 py-0.5 text-[10px] text-[var(--kaypal-v3-muted)] transition hover:border-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-accent)] disabled:opacity-50"
+                          className="rounded-full border border-[var(--kaypal-v3-border)] px-2 py-0.5 text-11 text-[var(--kaypal-v3-muted)] transition hover:border-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-accent)] disabled:opacity-50"
                           title="让 AI 基于最新信号重新评一次分，验证判断是否可靠"
                         >
                           {rescoringId === lead.id ? "重评中…" : "AI 重评"}
