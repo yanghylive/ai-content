@@ -173,9 +173,10 @@ class RpaAccessibilityService : AccessibilityService() {
         }
 
         private fun timeoutIfPending() {
-            val cb = pendingCallback ?: return
-            pendingCallback = null
-            cb(RpaResult.failure("RPA 执行超时（30s）"))
+            // 超时也走 finishWith：清理 pending 状态 + 收尾 Run（此前直接 cb 绕过，
+            // 导致 pendingPlatform/pendingContent 残留 + Run 永不终态泄漏）
+            if (pendingCallback == null) return
+            instance?.finishWith(RpaResult.failure("RPA 执行超时（30s）"))
         }
 
 

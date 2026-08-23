@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import android.webkit.CookieManager
+import com.aicontent.mobile.BuildConfig
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 import kotlinx.coroutines.*
@@ -120,7 +121,7 @@ class AgentService : Service() {
         val name = android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL
         val uuid = deviceUuid ?: ""
         val caps = collectCapabilities().toString()
-        val json = """{"deviceName":"$name","platform":"android","agentVersion":"0.2.6","deviceUuid":"$uuid","capabilities":$caps}"""
+        val json = """{"deviceName":"$name","platform":"android","agentVersion":"${BuildConfig.VERSION_NAME}","deviceUuid":"$uuid","capabilities":$caps}"""
         try {
             postJson("$BASE_URL/api/mobile-executor/devices", json).use { resp ->
                 if (resp.isSuccessful) {
@@ -158,19 +159,24 @@ class AgentService : Service() {
 
     private suspend fun claimAndExecute() {
         val did = deviceId ?: return
-        // 领取任务
+        // 领取任务（失败/无任务统一 delay 退避，避免后端异常时忙轮询打爆接口）
         val task: JSONObject? = try {
-            postJson(
+            val resp = postJson(
                 "$BASE_URL/api/mobile-executor/tasks/claim",
                 """{"deviceId":"$did"}""",
-            ).use { resp ->
+            )
+            try {
                 if (!resp.isSuccessful) {
                     Log.w(TAG, "claim failed: ${resp.code}")
-                    return
+                    null
+                } else {
+                    val body = resp.body?.string()
+                    val data = if (body.isNullOrBlank()) null
+                    else JSONObject(body).optJSONObject("data")
+                    if (data == null || data.isNull("id")) null else data
                 }
-                val body = resp.body?.string() ?: return
-                val data = JSONObject(body).optJSONObject("data")
-                if (data == null || data.isNull("id")) null else data
+            } finally {
+                resp.close()
             }
         } catch (e: Exception) {
             Log.w(TAG, "claim error: ${e.message}")
