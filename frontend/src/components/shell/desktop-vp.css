@@ -284,6 +284,11 @@
   .kx-card,
   .kx-card-lg,
   .kaypal-v3-panel,
+  /* heroui Card（default 变体三件套类 + flat/content 变体）与 astryx Card——
+     B3 玻璃化，覆盖 /tasks /crm/customer /intelligence /engagement 等 heroui/astryx 卡片页 */
+  .bg-default-50.border-small,
+  .bg-content1,
+  .astryx-card,
   .kx-action-card,
   .kx-agg-card,
   .kx-stat-card,
@@ -305,6 +310,9 @@
   html.dark .kx-todo-card,
   html[data-theme="dark"] .kaypal-v3-panel,
   html.dark .kaypal-v3-panel,
+  html.dark .bg-default-50.border-small,
+  html.dark .bg-content1,
+  html.dark .astryx-card,
   html[data-theme="dark"] .kx-card,
   html.dark .kx-card,
   html[data-theme="dark"] .kx-card-lg,
