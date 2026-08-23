@@ -2930,7 +2930,7 @@ model ExecutorTask {
   deviceId   String?   @map("device_id") // agent 领取后绑定
   type       String    @default("publish") // publish | custom
   payload    Json      @map("payload") // 发布内容/平台/账号
-  status     String    @default("queued") // queued | claimed | running | done | failed | cancelled
+  status     String    @default("queued") // PRD 状态机：queued|leasing|preparing|observing|awaiting_approval|executing|verifying|crm_sync|completed|failed|cancelled|unknown
   result     Json? // 执行结果（发布链接/错误）
   attempts   Int       @default(0)
   createdAt  DateTime  @default(now()) @map("created_at")

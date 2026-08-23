@@ -6,7 +6,22 @@ export interface ExecutorTaskView {
   id: string;
   type: string;
   payload: unknown;
-  status: "queued" | "claimed" | "running" | "done" | "failed" | "cancelled" | "unknown";
+  status:
+    | "queued"
+    | "leasing"
+    | "preparing"
+    | "observing"
+    | "awaiting_approval"
+    | "executing"
+    | "verifying"
+    | "crm_sync"
+    | "completed"
+    | "failed"
+    | "cancelled"
+    | "unknown"
+    | "claimed"
+    | "running"
+    | "done";
   result?: unknown;
   createdAt: string;
 }

@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { normalizeStatus } from './executor-state-machine';
 
 /** 获客语义动作（PRD §6.4/P0-1：搜索→读结果→识别→开主页→草稿→私信→存线索） */
 export const ACQUISITION_ACTION_TYPES = [
@@ -195,7 +196,7 @@ export class TaskDispatchService {
       const claimed = await tx.executorTask.updateMany({
         where: { id: candidate.id, status: 'queued' },
         data: {
-          status: 'claimed',
+          status: 'leasing', // PRD 状态机：queued → leasing（领取租约态）
           deviceId,
           attempts: { increment: 1 },
           updatedAt: new Date(),
@@ -318,11 +319,10 @@ export class TaskDispatchService {
       where: { id: taskId, userId },
     });
     if (!row) throw new BadRequestException('任务不存在');
-    if (row.status === 'running') {
-      throw new BadRequestException('任务执行中，无法取消');
-    }
-    if (row.status !== 'queued' && row.status !== 'claimed') {
-      throw new BadRequestException(`任务状态为 ${row.status}，无法取消`);
+    // 只能取消未开始执行的任务（queued/leasing）；执行中/终态不可取消
+    const nStatus = normalizeStatus(row.status);
+    if (nStatus !== 'queued' && nStatus !== 'leasing') {
+      throw new BadRequestException(`任务状态为 ${nStatus}，无法取消`);
     }
     await this.prisma.executorTask.update({
       where: { id: taskId },

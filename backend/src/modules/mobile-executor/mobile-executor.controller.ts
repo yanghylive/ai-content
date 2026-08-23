@@ -350,7 +350,7 @@ export class MobileExecutorController {
     @Param('id') taskId: string,
     @Body()
     input: {
-      status: 'running' | 'done' | 'failed' | 'unknown';
+      status: string;
       result?: Record<string, unknown>;
       error?: string;
     },
