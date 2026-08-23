@@ -263,6 +263,7 @@ export interface Evidence {
 export interface UsageEvent {
   id: string;
   requestId: string;
+  tenantId: string;
   usageId: string;
   model?: string;
   inputTokens: number;

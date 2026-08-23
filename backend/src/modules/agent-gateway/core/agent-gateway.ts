@@ -44,6 +44,8 @@ export interface GatewayDeps {
   business: BusinessToolRegistry;
   /** 执行前后用 ToolSpec.inputSchema/outputSchema 校验载荷（P2-10） */
   validator: PayloadValidator;
+  /** 可选持久化 sink：每次 usage 落库后回调（真实仓库接 agent_gateway_usage_events） */
+  usageSink?: (ev: UsageEvent) => void | Promise<void>;
   sessionTtlMs?: number;
   approvalTtlMs?: number;
 }
@@ -186,7 +188,7 @@ export class AgentGateway {
 
     let claim: ReturnType<IdempotencyStore['claim']>;
     try {
-      claim = this.deps.idempotency.claim(ctx.tenantId, request.idempotencyKey, task.id);
+      claim = await this.deps.idempotency.claim(ctx.tenantId, request.idempotencyKey, task.id);
     } catch (e) {
       // claim 对 in_progress 抛 IDEMPOTENCY_CONFLICT，转为统一错误结果
       if (this.isAppErrorWithCode(e, 'IDEMPOTENCY_CONFLICT')) {
@@ -203,7 +205,7 @@ export class AgentGateway {
 
     if (spec.requiresConfirmation) {
       const preview = { toolName: request.toolName, payload: request.payload };
-      const approval = this.deps.approvals.create(task.id, toolCallId, preview, this.deps.approvalTtlMs ?? 300_000);
+      const approval = await this.deps.approvals.create(task.id, toolCallId, preview, this.deps.approvalTtlMs ?? 300_000);
       this.pendingRequests.set(task.id, { request, toolCallId, approvalId: approval.id });
       this.mutateTask(task, 'request_confirmation');
       this.deps.bus.publish(request.sessionId, 'approval_required', task.id, {
@@ -231,12 +233,12 @@ export class AgentGateway {
     const pending = this.pendingRequests.get(taskId);
 
     // P0-4：先做绑定校验（taskId/toolCallId/预览），跨任务复用直接 APPROVAL_MISMATCH
-    void this.deps.approvals.validate(approvalId, currentPreview, taskId, pending?.toolCallId ?? '');
+    await this.deps.approvals.validate(approvalId, currentPreview, taskId, pending?.toolCallId ?? '');
     if (!pending) throw makeError('CHECKPOINT_MISSING', { details: { taskId } });
 
     // P1-4：先状态迁移（可能因并发取消失败）→ 成功后一次性消费审批，避免审批丢失
     this.mutateTask(task, 'approve');
-    this.deps.approvals.consume(approvalId);
+    await this.deps.approvals.consume(approvalId);
 
     const spec = this.deps.registry.require(pending.request.toolName);
     return this.runTool(ctx, pending.request, task, spec, undefined, pending.toolCallId);
@@ -481,6 +483,7 @@ export class AgentGateway {
     const ev: UsageEvent = {
       id: genId('ue'),
       requestId: request.requestId,
+      tenantId: request.tenantId,
       usageId: u.usageId,
       model: u.model,
       inputTokens: u.inputTokens,
@@ -491,12 +494,14 @@ export class AgentGateway {
       createdAt: nowIso(),
     };
     this.usageEvents.set(ev.id, ev);
+    this.fireUsageSink(ev);
   }
 
   private recordFailureUsage(request: ToolRequest, err: AppError): void {
     const ev: UsageEvent = {
       id: genId('ue'),
       requestId: request.requestId,
+      tenantId: request.tenantId,
       usageId: `fail_${genId('u')}`,
       model: undefined,
       inputTokens: Math.ceil(JSON.stringify(request.payload).length / 4),
@@ -507,7 +512,18 @@ export class AgentGateway {
       createdAt: nowIso(),
     };
     this.usageEvents.set(ev.id, ev);
+    this.fireUsageSink(ev);
     void err;
+  }
+
+  /** 可选持久化 sink（fire-and-forget，失败静默——内存态仍是权威，DB 为对账副本） */
+  private fireUsageSink(ev: UsageEvent): void {
+    if (!this.deps.usageSink) return;
+    try {
+      void Promise.resolve(this.deps.usageSink(ev)).catch(() => undefined);
+    } catch {
+      /* 忽略 */
+    }
   }
 
   private mutateTask(task: AgentTask, action: Parameters<typeof transition>[1]): void {
