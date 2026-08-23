@@ -42,6 +42,8 @@ export async function sinkMaiUiTaskToCrm(input: {
   return api.post<{ id: string; displayName: string }>("/crm/customers", {
     displayName: input.displayName,
     sourcePlatform: "manual",
+    // 幂等键（PRD §6.6）：同一任务重复沉淀 → upsert 更新而非新建
+    dedupeKey: `mai-ui-task:${input.taskId}`,
     notes: `[MAI-UI] 任务 ${input.taskId}
 指令：${input.instruction}
 动作数：${input.actionCount}
