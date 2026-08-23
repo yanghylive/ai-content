@@ -93,6 +93,24 @@ export class EventBus {
   snapshot(sessionId: string): AgentEvent[] {
     return [...(this.sessions.get(sessionId) ?? [])];
   }
+
+  /**
+   * 重启恢复：按 sequence 反灌历史事件到窗口（不触发 listeners/sink，仅恢复内存态）。
+   * 用于持久化模式下从 DB 续播事件流。
+   */
+  hydrateEvents(events: AgentEvent[]): void {
+    const sorted = [...events].sort((a, b) => a.sequence - b.sequence);
+    for (const e of sorted) {
+      const arr = this.sessions.get(e.sessionId) ?? [];
+      arr.push(e);
+      if (arr.length > this.windowSize) {
+        arr.splice(0, arr.length - this.windowSize);
+      }
+      this.sessions.set(e.sessionId, arr);
+      const prev = this.lastSequence.get(e.sessionId) ?? 0;
+      if (e.sequence > prev) this.lastSequence.set(e.sessionId, e.sequence);
+    }
+  }
 }
 
 export { nowIso, genId };

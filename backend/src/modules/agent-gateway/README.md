@@ -26,6 +26,11 @@ npm test                        # 全量（含本模块）
 
 ## 接线指引（后续）
 1. ~~用 Nest `@Module` 包装 `core/factory.ts` 的 `createAgentGateway()` 为 provider~~ ✅ 已落地（`agent-gateway.module.ts` + `/api/agent/*` + `/api/memory/*` + WS）。
-2. **Prisma 持久化（进行中）**：九实体已并入 `prisma/schema.prisma`（`AgentGatewaySession/Task/ToolCall/Approval/Artifact/Evidence/UsageEvent/MemoryOutbox/DeviceLease`，表 `agent_gateway_*`，避开 local-engine `AgentSession/Approval` 命名冲突）；迁移 SQL 已生成 `prisma/migrations/20260823000000_agent_gateway_entities/migration.sql`（pg，9 表 + 索引 + 幂等/usageId 唯一约束 + 7 外键 CASCADE），**生产 deploy 前须评审**。deploy 后把 `AgentGatewayService` 的内存态（IdempotencyStore/ApprovalService/EventBus/MemoryOrchestrator）换成 PrismaService 仓储。
+2. **Prisma 持久化（进行中）**：九实体 + events 表已并入 `prisma/schema.prisma`（`AgentGatewaySession/Task/ToolCall/Approval/Artifact/Evidence/UsageEvent/MemoryOutbox/DeviceLease/Event`，表 `agent_gateway_*`），迁移已 deploy 本地开发库。`AGENT_GATEWAY_PERSISTENCE=prisma` 时：
+   - 幂等/审批走 DB（`agent_gateway_tool_calls` / `agent_gateway_approvals`）
+   - usage 落库（`agent_gateway_usage_events`，计费对账）
+   - 写路径镜像（session/task/event/artifact → `agent_gateway_*`，`PrismaMirror`）
+   - **启动恢复**（`PrismaHydrator` → `gateway.hydrate`：只恢复 active 未过期会话及其任务/事件/产物，事件按 sequence 续播）
+   - 读路径仍内存权威；`awaiting_confirmation` 的 pending 请求不跨重启（恢复后需重新提交）
 3. `adapters/` 三个 Mock 换成真实 Octop / Kaypal Memory / 3010 业务工具实现。
 4. HTTP 层已由 Nest Controller 实现（`docs/contracts/agent.openapi.yaml` 冻结接口；错误格式走全局 AllExceptionsFilter，与既有 819 API 一致）。

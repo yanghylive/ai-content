@@ -9,6 +9,7 @@ import { PrismaIdempotencyStore } from './prisma-store/prisma-idempotency.store'
 import { PrismaApprovalStore } from './prisma-store/prisma-approval.store';
 import { PrismaUsageSink } from './prisma-store/prisma-usage.sink';
 import { PrismaMirror } from './prisma-store/prisma-mirror';
+import { PrismaHydrator } from './prisma-store/prisma-hydrator';
 import { AuthService } from './core/auth';
 
 /**
@@ -42,6 +43,7 @@ export function resolveAgentSecret(config: ConfigService): string {
     PrismaApprovalStore,
     PrismaUsageSink,
     PrismaMirror,
+    PrismaHydrator,
     {
       provide: AuthService,
       inject: [ConfigService],

@@ -3,6 +3,8 @@ import { PrismaIdempotencyStore } from './prisma-idempotency.store';
 import { PrismaApprovalStore } from './prisma-approval.store';
 import { PrismaUsageSink } from './prisma-usage.sink';
 import { PrismaMirror } from './prisma-mirror';
+import { PrismaHydrator } from './prisma-hydrator';
+import { createAgentGateway } from '../core/factory';
 import { UsageEvent, AgentSession, AgentTask, AgentEvent, Artifact } from '../core/types';
 
 /**
@@ -196,5 +198,75 @@ describe('AgentGateway Prisma 仓储（幂等/审批/usage）', () => {
     expect(eRow?.tenantId).toBe('t1'); // 事件按 session 归属反查
     expect(eRow?.type).toBe('thinking');
     expect(aRow?.checksum).toBe('abc');
+  });
+
+  test('重启恢复：mirror 写 → PrismaHydrator 读 → gateway.hydrate 反灌 → 续播可读', async () => {
+    const mirror = new PrismaMirror(prisma as never);
+    const session: AgentSession = {
+      id: 'sess_hyd_1',
+      tenantId: 't1',
+      userId: 'u1',
+      agentId: 'a1',
+      mode: 'business',
+      status: 'active',
+      lastEventId: '',
+      lastSequence: 0,
+      expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    await mirror.sessionCreated(session);
+    const task: AgentTask = {
+      id: 'task_hyd_1',
+      sessionId: session.id,
+      tenantId: 't1',
+      userId: 'u1',
+      agentId: 'a1',
+      type: 'lead',
+      status: 'planned',
+      planJson: {},
+      checkpointJson: {},
+      createdAt: new Date().toISOString(),
+    };
+    await mirror.taskCreated(task);
+    const event: AgentEvent = {
+      eventId: 'evt_hyd_1',
+      sequence: 1,
+      type: 'thinking',
+      taskId: task.id,
+      sessionId: session.id,
+      occurredAt: new Date().toISOString(),
+      payload: { step: 'plan' },
+    };
+    await mirror.eventPublished(event);
+    await mirror.sessionUpdated({ ...session, lastEventId: event.eventId, lastSequence: event.sequence });
+
+    // 模拟重启：新 gateway + PrismaHydrator 反灌
+    const hydrator = new PrismaHydrator(prisma as never);
+    const data = await hydrator.hydrate();
+    const gw = createAgentGateway({ startOutboxWorker: false });
+    gw.gateway.hydrate(data);
+
+    // 恢复读：会话/任务/事件续播
+    const ctx = { tenantId: 't1', userId: 'u1', agentId: 'a1' };
+    const resumed = gw.gateway.resumeSession('sess_hyd_1', ctx);
+    expect(resumed.session.lastEventId).toBe('evt_hyd_1');
+    expect(resumed.events.map((e) => e.type)).toContain('thinking');
+    expect(gw.gateway.getTask('task_hyd_1')?.status).toBe('planned');
+    // 事件流可续播：lastEventId 增量
+    const after = gw.gateway.resumeSession('sess_hyd_1', ctx, 'evt_hyd_1');
+    expect(after.events.length).toBe(0);
+
+    // 过期会话不恢复（status=expired 或 expiresAt 已过）
+    const expired: AgentSession = {
+      ...session,
+      id: 'sess_hyd_expired',
+      status: 'expired',
+      expiresAt: new Date(Date.now() - 1000).toISOString(),
+    };
+    await mirror.sessionCreated(expired);
+    const data2 = await hydrator.hydrate();
+    const gw2 = createAgentGateway({ startOutboxWorker: false });
+    gw2.gateway.hydrate(data2);
+    expect(gw2.gateway.getSession('sess_hyd_expired')).toBeUndefined();
   });
 });
