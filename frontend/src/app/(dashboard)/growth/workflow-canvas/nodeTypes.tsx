@@ -56,13 +56,13 @@ export const NODE_TYPE_META: Record<
   GrowthCanvasNodeType,
   { label: string; icon: ComponentType<{ className?: string }>; accent: string; description: string }
 > = {
-  strategy: { label: "策略", icon: Target, accent: "#6366f1", description: "确认目标、人群、渠道与成功指标" },
-  content: { label: "内容", icon: FileText, accent: "#f59e0b", description: "准备内容素材、话术与落地页" },
-  publish: { label: "发布", icon: Send, accent: "#10b981", description: "发布内容到目标平台" },
+  strategy: { label: "策略", icon: Target, accent: "var(--kaypal-v3-purple)", description: "确认目标、人群、渠道与成功指标" },
+  content: { label: "内容", icon: FileText, accent: "var(--kaypal-v3-amber)", description: "准备内容素材、话术与落地页" },
+  publish: { label: "发布", icon: Send, accent: "var(--kaypal-v3-success)", description: "发布内容到目标平台" },
   acquisition: { label: "获客", icon: Bot, accent: "#ec4899", description: "采集线索、执行触达动作" },
-  "follow-up": { label: "跟进", icon: MessageSquare, accent: "#3b82f6", description: "跟进高意向线索" },
-  crm: { label: "CRM", icon: Users, accent: "#8b5cf6", description: "沉淀线索到 CRM 客户库" },
-  report: { label: "复盘", icon: BarChart3, accent: "#ef4444", description: "汇总数据、复盘效果、调优策略" },
+  "follow-up": { label: "跟进", icon: MessageSquare, accent: "var(--kaypal-v3-cobalt)", description: "跟进高意向线索" },
+  crm: { label: "CRM", icon: Users, accent: "var(--kaypal-v3-purple)", description: "沉淀线索到 CRM 客户库" },
+  report: { label: "复盘", icon: BarChart3, accent: "var(--kaypal-v3-danger)", description: "汇总数据、复盘效果、调优策略" },
 };
 
 /** 通用节点组件：所有业务步骤用同一套壳（图标 + 标签 + 描述 + 状态着色） */
@@ -72,7 +72,7 @@ function GrowthNodeComponent(props: NodeProps) {
   const Icon = meta.icon;
   const status = (data.status as string) || "pending";
   const statusColor =
-    status === "completed" ? "#10b981" : status === "running" ? "#3b82f6" : status === "failed" ? "#ef4444" : undefined;
+    status === "completed" ? "var(--kaypal-v3-success)" : status === "running" ? "var(--kaypal-v3-cobalt)" : status === "failed" ? "var(--kaypal-v3-danger)" : undefined;
   return (
     <BaseNodeWrapper
       label={data.label || meta.label}
@@ -88,7 +88,7 @@ function GrowthNodeComponent(props: NodeProps) {
             : meta.description}
         </p>
         {typeof data.riskMode === "string" && data.riskMode && (
-          <p className="text-[10px] font-medium text-[var(--kaypal-v3-muted)]">
+          <p className="text-11 font-medium text-[var(--kaypal-v3-muted)]">
             风控：{data.riskMode === "auto" ? "自动执行" : data.riskMode === "confirm-first" ? "先确认" : data.riskMode === "draft-only" ? "仅草稿" : data.riskMode}
           </p>
         )}

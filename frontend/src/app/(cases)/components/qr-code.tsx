@@ -158,7 +158,7 @@ export function ShortLinkQrCode({
         </div>
       </div>
 
-      <p className="mt-2.5 flex items-start gap-1.5 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+      <p className="mt-2.5 flex items-start gap-1.5 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
         <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
         点击体验或扫码后将离开九章网站，进入第三方演示环境。
       </p>

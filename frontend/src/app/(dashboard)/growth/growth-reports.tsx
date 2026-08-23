@@ -290,7 +290,7 @@ export function GrowthReportsPage() {
                     className="w-full rounded-t bg-[var(--kaypal-v3-accent)]"
                     style={{ height: `${height}px`, minHeight: "4px" }}
                   />
-                  <span className="text-[10px] text-[var(--kaypal-v3-muted)]">
+                  <span className="text-11 text-[var(--kaypal-v3-muted)]">
                     {item.date ? new Date(item.date).getDate() + "日" : ""}
                   </span>
                 </div>
@@ -486,7 +486,7 @@ function AttributionReportSection({
                   <td className="max-w-[260px] truncate py-2 pr-4 font-medium text-[var(--kaypal-v3-ink)]">
                     {row.text}
                     {row.lowConfidence && (
-                      <span className="ml-2 rounded bg-[var(--kaypal-v3-warning-soft)] px-1.5 py-0.5 text-[10px] text-[var(--kaypal-v3-warning-ink)]">
+                      <span className="ml-2 rounded bg-[var(--kaypal-v3-warning-soft)] px-1.5 py-0.5 text-11 text-[var(--kaypal-v3-warning-ink)]">
                         样本不足
                       </span>
                     )}

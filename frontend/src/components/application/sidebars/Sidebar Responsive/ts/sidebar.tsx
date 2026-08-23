@@ -322,7 +322,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
           aria-current={isSelected ? "page" : undefined}
           className={cn(
             "group flex h-[38px] w-full min-w-0 items-center gap-2 rounded-[6px]",
-            "px-3 text-left text-[14px] font-medium leading-5 text-default-600",
+            "px-3 text-left text-14 font-medium leading-5 text-default-600",
             "transition-colors hover:bg-default-100 hover:text-foreground",
             "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
             {
@@ -362,9 +362,9 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
               "transition-colors hover:bg-default-100 hover:text-foreground",
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
               {
-                "h-9 px-3 text-[12px] font-bold leading-4 text-default-500":
+                "h-9 px-3 text-12 font-bold leading-4 text-default-500":
                   depth === 0,
-                "h-8 px-2 text-[12px] font-semibold leading-4 text-default-500":
+                "h-8 px-2 text-12 font-semibold leading-4 text-default-500":
                   depth > 0,
                 "bg-default-100 text-foreground": isActiveGroup,
               },
@@ -375,7 +375,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
             {renderIcon(item)}
             <span className="min-w-0 flex-1 truncate">{item.title}</span>
             {itemCount > 0 ? (
-              <span className="shrink-0 rounded-[4px] bg-default-100 px-1.5 py-0.5 text-[10px] font-bold leading-3 text-default-500 group-hover:bg-background">
+              <span className="shrink-0 rounded-[4px] bg-default-100 px-1.5 py-0.5 text-11 font-bold leading-3 text-default-500 group-hover:bg-background">
                 {itemCount}
               </span>
             ) : null}

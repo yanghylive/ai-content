@@ -587,16 +587,16 @@ export function IntelligenceMonitorsWorkbench() {
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
             <div className="min-w-0">
               <p className="kaypal-v3-label">自动监控</p>
-              <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+              <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                 情报监控工作台
               </h1>
-              <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 把关键词、账号、行业和平台榜单配置成长期监控；成功采集后直接扣积分，每条监控都有频率、状态和错误记录，异常先停下来处理。
               </p>
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <button
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                 onClick={reloadMonitors}
                 type="button"
               >
@@ -610,7 +610,7 @@ export function IntelligenceMonitorsWorkbench() {
                 刷新
               </button>
               <button
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-accent-ink)] transition-colors hover:border-[var(--kaypal-v3-accent)] hover:bg-[var(--kaypal-v3-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] px-4 text-13 font-semibold text-[var(--kaypal-v3-accent-ink)] transition-colors hover:border-[var(--kaypal-v3-accent)] hover:bg-[var(--kaypal-v3-paper)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                 onClick={runDueMonitors}
                 type="button"
               >
@@ -622,7 +622,7 @@ export function IntelligenceMonitorsWorkbench() {
                 执行到期
               </button>
               <Link
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                 href="/intelligence/search"
               >
                 <Search
@@ -649,10 +649,10 @@ export function IntelligenceMonitorsWorkbench() {
                     strokeWidth={1.8}
                   />
                 </div>
-                <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+                <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
                   {value}
                 </p>
-                <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                   {detail}
                 </p>
               </div>
@@ -672,7 +672,7 @@ export function IntelligenceMonitorsWorkbench() {
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="kaypal-v3-label">配置列表</p>
-                <h2 className="mt-1 text-[16px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+                <h2 className="mt-1 text-base font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                   监控队列
                 </h2>
               </div>
@@ -686,7 +686,7 @@ export function IntelligenceMonitorsWorkbench() {
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <select
                 aria-label="按状态筛选"
-                className="h-9 rounded-[8px] px-3 text-[13px]"
+                className="h-9 rounded-[8px] px-3 text-13"
                 onChange={(event) =>
                   updateFilters({ status: event.target.value })
                 }
@@ -700,7 +700,7 @@ export function IntelligenceMonitorsWorkbench() {
               </select>
               <select
                 aria-label="按类型筛选"
-                className="h-9 rounded-[8px] px-3 text-[13px]"
+                className="h-9 rounded-[8px] px-3 text-13"
                 onChange={(event) =>
                   updateFilters({ type: event.target.value })
                 }
@@ -715,7 +715,7 @@ export function IntelligenceMonitorsWorkbench() {
               </select>
               <select
                 aria-label="按平台筛选"
-                className="h-9 rounded-[8px] px-3 text-[13px]"
+                className="h-9 rounded-[8px] px-3 text-13"
                 onChange={(event) =>
                   updateFilters({ platform: event.target.value })
                 }
@@ -735,7 +735,7 @@ export function IntelligenceMonitorsWorkbench() {
                 />
                 <input
                   aria-label="搜索监控"
-                  className="h-9 w-full rounded-[8px] pl-9 pr-3 text-[13px]"
+                  className="h-9 w-full rounded-[8px] pl-9 pr-3 text-13"
                   onChange={(event) =>
                     updateFilters({ keyword: event.target.value })
                   }
@@ -748,7 +748,7 @@ export function IntelligenceMonitorsWorkbench() {
 
           <div className="max-h-[720px] overflow-y-auto p-3">
             {loading ? (
-              <div className="flex min-h-[220px] items-center justify-center rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] text-[13px] text-[var(--kaypal-v3-muted)]">
+              <div className="flex min-h-[220px] items-center justify-center rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] text-13 text-[var(--kaypal-v3-muted)]">
                 <Loader2
                   aria-hidden="true"
                   className="mr-2 h-4 w-4 animate-spin"
@@ -800,12 +800,12 @@ export function IntelligenceMonitorsWorkbench() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-[13px] font-semibold text-[var(--kaypal-v3-ink)]">
+                            <span className="text-13 font-semibold text-[var(--kaypal-v3-ink)]">
                               {typeLabel(monitor.type)}
                             </span>
                             <span
                               className={[
-                                "inline-flex items-center gap-1 rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                                "inline-flex items-center gap-1 rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                                 meta.className,
                               ].join(" ")}
                             >
@@ -817,7 +817,7 @@ export function IntelligenceMonitorsWorkbench() {
                               {meta.label}
                             </span>
                           </div>
-                          <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                          <p className="mt-2 line-clamp-2 text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                             {targetLabel(monitor)}
                           </p>
                         </div>
@@ -827,7 +827,7 @@ export function IntelligenceMonitorsWorkbench() {
                           strokeWidth={1.8}
                         />
                       </div>
-                      <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-[var(--kaypal-v3-muted)]">
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-11 text-[var(--kaypal-v3-muted)]">
                         <span>频率：{scheduleLabel(monitor.schedule)}</span>
                         <span>下次：{formatTime(monitor.nextRunAt)}</span>
                       </div>
@@ -842,7 +842,7 @@ export function IntelligenceMonitorsWorkbench() {
         <section className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">运行详情</p>
-            <h2 className="mt-1 text-[16px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold leading-6 text-[var(--kaypal-v3-ink)]">
               目标、频率、积分和异常
             </h2>
           </div>
@@ -852,11 +852,11 @@ export function IntelligenceMonitorsWorkbench() {
               <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[12px] font-semibold text-[var(--kaypal-v3-muted)]">
+                    <p className="text-12 font-semibold text-[var(--kaypal-v3-muted)]">
                       {selectedMonitor.platform || "全平台"} /{" "}
                       {typeLabel(selectedMonitor.type)}
                     </p>
-                    <h3 className="mt-2 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+                    <h3 className="mt-2 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
                       {targetLabel(selectedMonitor)}
                     </h3>
                   </div>
@@ -866,7 +866,7 @@ export function IntelligenceMonitorsWorkbench() {
                     return (
                       <span
                         className={[
-                          "inline-flex items-center gap-1 rounded-[6px] border px-2 py-1 text-[12px] font-semibold",
+                          "inline-flex items-center gap-1 rounded-[6px] border px-2 py-1 text-12 font-semibold",
                           meta.className,
                         ].join(" ")}
                       >
@@ -916,7 +916,7 @@ export function IntelligenceMonitorsWorkbench() {
                           strokeWidth={1.8}
                         />
                       </div>
-                      <p className="mt-2 text-[14px] font-semibold leading-5 text-[var(--kaypal-v3-ink)]">
+                      <p className="mt-2 text-14 font-semibold leading-5 text-[var(--kaypal-v3-ink)]">
                         {value}
                       </p>
                     </div>
@@ -932,20 +932,20 @@ export function IntelligenceMonitorsWorkbench() {
                         className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-danger)]"
                         strokeWidth={1.8}
                       />
-                      <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                      <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                         {selectedMonitor.lastError}
                       </p>
                     </div>
                   </div>
                 ) : selectedMonitor.lastError ? (
                   <div className="mt-4 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
-                    <p className="text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       归档前记录：{selectedMonitor.lastError}
                     </p>
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
-                    <p className="text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       当前没有错误记录。调度器运行失败时会写入
                       错误记录，用户侧可直接暂停、调整频率或归档。
                     </p>
@@ -958,7 +958,7 @@ export function IntelligenceMonitorsWorkbench() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {selectedMonitor.status !== "archived" ? (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                      className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                       onClick={() => runMonitorNow(selectedMonitor)}
                       type="button"
                     >
@@ -972,7 +972,7 @@ export function IntelligenceMonitorsWorkbench() {
                   ) : null}
                   {selectedMonitor.status === "active" ? (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-amber)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-amber)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                       onClick={() =>
                         updateMonitorStatus(selectedMonitor, "paused")
                       }
@@ -987,7 +987,7 @@ export function IntelligenceMonitorsWorkbench() {
                     </button>
                   ) : selectedMonitor.status !== "archived" ? (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                       onClick={() =>
                         updateMonitorStatus(selectedMonitor, "active")
                       }
@@ -1003,7 +1003,7 @@ export function IntelligenceMonitorsWorkbench() {
                   ) : null}
                   {selectedMonitor.status !== "archived" ? (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                       onClick={() => archiveMonitor(selectedMonitor)}
                       type="button"
                     >
@@ -1016,7 +1016,7 @@ export function IntelligenceMonitorsWorkbench() {
                     </button>
                   ) : null}
                   <Link
-                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                     href="/intelligence/inbox"
                   >
                     <Database
@@ -1034,7 +1034,7 @@ export function IntelligenceMonitorsWorkbench() {
                     {schedulePresets.map((preset) => (
                       <button
                         className={[
-                          "h-8 rounded-[8px] border px-3 text-[12px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]",
+                          "h-8 rounded-[8px] border px-3 text-12 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]",
                           selectedMonitor.schedule === preset.value
                             ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                             : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)]",
@@ -1074,16 +1074,16 @@ export function IntelligenceMonitorsWorkbench() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">新增监控</p>
-              <h2 className="mt-1 text-[16px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                 创建可执行配置
               </h2>
             </div>
             <form className="space-y-3 p-4" onSubmit={createMonitor}>
               <div className="grid gap-2 sm:grid-cols-2 2xl:grid-cols-1">
-                <label className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                <label className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                   监控类型
                   <select
-                    className="mt-1 h-9 w-full rounded-[8px] px-3 text-[13px]"
+                    className="mt-1 h-9 w-full rounded-[8px] px-3 text-13"
                     onChange={(event) =>
                       setForm((current) => ({
                         ...current,
@@ -1099,10 +1099,10 @@ export function IntelligenceMonitorsWorkbench() {
                     ))}
                   </select>
                 </label>
-                <label className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                <label className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                   平台
                   <select
-                    className="mt-1 h-9 w-full rounded-[8px] px-3 text-[13px]"
+                    className="mt-1 h-9 w-full rounded-[8px] px-3 text-13"
                     onChange={(event) =>
                       setForm((current) => ({
                         ...current,
@@ -1120,10 +1120,10 @@ export function IntelligenceMonitorsWorkbench() {
                 </label>
               </div>
 
-              <label className="block text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+              <label className="block text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                 使用功能
                 <select
-                  className="mt-1 h-9 w-full rounded-[8px] px-3 text-[13px]"
+                  className="mt-1 h-9 w-full rounded-[8px] px-3 text-13"
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
@@ -1145,7 +1145,7 @@ export function IntelligenceMonitorsWorkbench() {
                 </select>
               </label>
               {!skillsLoading && skills.length === 0 ? (
-                <div className="rounded-[8px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-3 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <div className="rounded-[8px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-3 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   还没有启用的功能。可以先保存跟踪目标，但立即执行需要去
                   <Link
                     className="mx-1 font-semibold text-[var(--kaypal-v3-accent-ink)] underline"
@@ -1157,10 +1157,10 @@ export function IntelligenceMonitorsWorkbench() {
                 </div>
               ) : null}
 
-              <label className="block text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+              <label className="block text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                 关键词
                 <input
-                  className="mt-1 h-9 w-full rounded-[8px] px-3 text-[13px]"
+                  className="mt-1 h-9 w-full rounded-[8px] px-3 text-13"
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
@@ -1172,10 +1172,10 @@ export function IntelligenceMonitorsWorkbench() {
                 />
               </label>
 
-              <label className="block text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+              <label className="block text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                 账号 ID / 主页标识
                 <input
-                  className="mt-1 h-9 w-full rounded-[8px] px-3 text-[13px]"
+                  className="mt-1 h-9 w-full rounded-[8px] px-3 text-13"
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
@@ -1187,10 +1187,10 @@ export function IntelligenceMonitorsWorkbench() {
                 />
               </label>
 
-              <label className="block text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+              <label className="block text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                 行业
                 <input
-                  className="mt-1 h-9 w-full rounded-[8px] px-3 text-[13px]"
+                  className="mt-1 h-9 w-full rounded-[8px] px-3 text-13"
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
@@ -1203,10 +1203,10 @@ export function IntelligenceMonitorsWorkbench() {
               </label>
 
               <div className="grid gap-2 sm:grid-cols-2 2xl:grid-cols-1">
-                <label className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                <label className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                   频率
                   <select
-                    className="mt-1 h-9 w-full rounded-[8px] px-3 text-[13px]"
+                    className="mt-1 h-9 w-full rounded-[8px] px-3 text-13"
                     onChange={(event) =>
                       setForm((current) => ({
                         ...current,
@@ -1225,13 +1225,13 @@ export function IntelligenceMonitorsWorkbench() {
               </div>
 
               {formError ? (
-                <div className="rounded-[8px] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-3 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <div className="rounded-[8px] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-3 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   {formError}
                 </div>
               ) : null}
 
               <button
-                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={saving}
                 type="submit"
               >
@@ -1256,13 +1256,13 @@ export function IntelligenceMonitorsWorkbench() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">动作记录</p>
-              <h2 className="mt-1 text-[16px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                 最近操作
               </h2>
             </div>
             <div className="space-y-2 p-4">
               {actions.length === 0 ? (
-                <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   创建、暂停、恢复、调频和归档会记录在这里，方便用户确认刚才做了什么。
                 </div>
               ) : (
@@ -1292,10 +1292,10 @@ export function IntelligenceMonitorsWorkbench() {
                         />
                       )}
                       <div className="min-w-0">
-                        <p className="text-[13px] font-semibold text-[var(--kaypal-v3-ink)]">
+                        <p className="text-13 font-semibold text-[var(--kaypal-v3-ink)]">
                           {action.title}
                         </p>
-                        <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           {action.detail}
                         </p>
                       </div>

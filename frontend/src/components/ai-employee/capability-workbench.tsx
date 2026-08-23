@@ -138,27 +138,27 @@ export function CapabilityWorkbench() {
                   <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>全部能力</div>
                 </div>
                 <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
-                  <div style={{ fontSize: 19, fontWeight: 800, color: "#059669" }}>{snapshot.summary.real}</div>
+                  <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{snapshot.summary.real}</div>
                   <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>可执行</div>
                 </div>
                 <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
-                  <div style={{ fontSize: 19, fontWeight: 800, color: "#b45309" }}>{snapshot.summary.needsConfig}</div>
+                  <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-amber)" }}>{snapshot.summary.needsConfig}</div>
                   <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>待配置</div>
                 </div>
               </div>
               <div className="mx-stat-grid" style={{ marginTop: 8 }}>
                 <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#2563eb" }}>{snapshot.summary.simulated}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-cobalt)" }}>{snapshot.summary.simulated}</div>
                   <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>可预览</div>
                 </div>
                 <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#dc2626" }}>{snapshot.summary.unavailable}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-danger)" }}>{snapshot.summary.unavailable}</div>
                   <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>暂不可用</div>
                 </div>
               </div>
               {snapshot.readiness && !snapshot.readiness.ready ? (
                 <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(222,150,57,.4)" }}>
-                  <p style={{ fontSize: 12, color: "#b45309", lineHeight: 1.5 }}>{snapshot.readiness.nextAction}</p>
+                  <p style={{ fontSize: 12, color: "var(--kaypal-v3-amber)", lineHeight: 1.5 }}>{snapshot.readiness.nextAction}</p>
                 </div>
               ) : null}
             </>
@@ -169,7 +169,7 @@ export function CapabilityWorkbench() {
             <button
               type="button"
               onClick={() => setSelectedDomain("all")}
-              style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === "all" ? "#d98a2d" : "rgba(120,148,179,.12)", color: selectedDomain === "all" ? "#fff" : "var(--mx-ink)", border: selectedDomain === "all" ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+              style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === "all" ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === "all" ? "#fff" : "var(--mx-ink)", border: selectedDomain === "all" ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
             >
               全部
             </button>
@@ -178,7 +178,7 @@ export function CapabilityWorkbench() {
                 key={domain}
                 type="button"
                 onClick={() => setSelectedDomain(domain)}
-                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === domain ? "#d98a2d" : "rgba(120,148,179,.12)", color: selectedDomain === domain ? "#fff" : "var(--mx-ink)", border: selectedDomain === domain ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === domain ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === domain ? "#fff" : "var(--mx-ink)", border: selectedDomain === domain ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
               >
                 {domainLabels[domain] || domain}
               </button>
@@ -211,11 +211,11 @@ export function CapabilityWorkbench() {
                     </span>
                   </div>
                   {capability.nextAction ? (
-                    <p style={{ fontSize: 11.5, color: "#b45309", marginTop: 7 }}>下一步：{capability.nextAction}</p>
+                    <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-amber)", marginTop: 7 }}>下一步：{capability.nextAction}</p>
                   ) : null}
                   <Link
                     href={domainLinks[capability.domain] || "/tasks"}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 9, fontSize: 12, fontWeight: 700, color: "#d98a2d" }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 9, fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-amber)" }}
                   >
                     进入模块 ›
                   </Link>

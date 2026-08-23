@@ -435,7 +435,7 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
             <Controls />
           </ReactFlow>
           {/* 操作提示 */}
-          <div className="pointer-events-none absolute bottom-3 left-3 rounded bg-[var(--kaypal-v3-paper)] px-2 py-1 text-[11px] text-[var(--kaypal-v3-muted)] shadow-sm">
+          <div className="pointer-events-none absolute bottom-3 left-3 rounded bg-[var(--kaypal-v3-paper)] px-2 py-1 text-11 text-[var(--kaypal-v3-muted)] shadow-sm">
             点击节点配置执行动作 · 上下拖动调整顺序 · Delete 删除 · 拖拽连线设置依赖
           </div>
           {nodes.length === 0 && (
@@ -482,7 +482,7 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
                     </option>
                   ))}
                 </select>
-                <p className="mt-2 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-2 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                   选择后运行到此步骤将按对应获客任务处理（需账号已授权）
                 </p>
               </div>

@@ -87,7 +87,7 @@ export function EngineFiles() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -117,7 +117,7 @@ export function EngineFiles() {
                         )}
                         <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</span>
                       </span>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: ok ? "#059669" : "#dc2626", flexShrink: 0 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: ok ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)", flexShrink: 0 }}>
                         {ok ? <CheckCircle2 width={13} height={13} /> : <XCircle width={13} height={13} />}
                         {ok ? "可访问" : !item.exists ? "不存在" : !item.readable ? "不可读" : "异常"}
                       </span>

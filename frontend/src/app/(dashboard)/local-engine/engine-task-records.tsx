@@ -167,7 +167,7 @@ export function EngineTaskRecords() {
 
         <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
           {error ? (
-            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginBottom: 10 }}>{error}</p>
           ) : null}
 
           {/* 状态筛选（横向滚动） */}
@@ -184,7 +184,7 @@ export function EngineTaskRecords() {
                   borderRadius: 999,
                   border: filter === key ? "1.5px solid #2563eb" : "1px solid rgba(142,165,190,.3)",
                   background: filter === key ? "rgba(37,99,235,.12)" : "rgba(255,255,255,.06)",
-                  color: filter === key ? "#2563eb" : "var(--mx-ink)",
+                  color: filter === key ? "var(--kaypal-v3-cobalt)" : "var(--mx-ink)",
                 }}
               >
                 {label}
@@ -222,17 +222,17 @@ export function EngineTaskRecords() {
                     </div>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                       {(task.status === "running" || task.status === "queued") && (
-                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(245,158,11,.1)", color: "#b45309", border: "1px solid rgba(245,158,11,.3)" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "pause")}>
+                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(245,158,11,.1)", color: "var(--kaypal-v3-amber)", border: "1px solid rgba(245,158,11,.3)" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "pause")}>
                           {actingId === task.id ? "处理中…" : "暂停"}
                         </button>
                       )}
                       {task.status === "paused" && (
-                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(37,99,235,.12)", color: "#2563eb", border: "none" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "continue")}>
+                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(37,99,235,.12)", color: "var(--kaypal-v3-cobalt)", border: "none" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "continue")}>
                           {actingId === task.id ? "处理中…" : "继续"}
                         </button>
                       )}
                       {(task.status === "failed" || task.status === "blocked") && (
-                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(37,99,235,.12)", color: "#2563eb", border: "none" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "retry")}>
+                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(37,99,235,.12)", color: "var(--kaypal-v3-cobalt)", border: "none" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "retry")}>
                           {actingId === task.id ? "处理中…" : "重试"}
                         </button>
                       )}

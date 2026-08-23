@@ -100,7 +100,7 @@ export function ContactsPanel({
             <div className="mx-card" style={{ marginTop: 12, padding: "4px 13px" }}>
               {filteredContacts.slice(0, 50).map((contact, i) => (
                 <div key={contact.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 0", borderTop: i > 0 ? "1px solid rgba(142,165,190,.15)" : "none" }}>
-                  <span style={{ width: 34, height: 34, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                     <Users width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
@@ -142,7 +142,7 @@ export function ContactsPanel({
               <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                 <Download width={14} height={14} /> 导出联系人
               </button>
-              <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(220,80,80,.08)", color: "#dc2626", border: "1px solid rgba(220,80,80,.35)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+              <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(220,80,80,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.35)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                 <Trash2 width={14} height={14} /> 清空联系人
               </button>
             </div>

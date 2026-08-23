@@ -127,7 +127,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -144,14 +144,14 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
                   className="mx-card"
                   style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
                 >
-                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                     <CalendarClock width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
                     <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{preset.label}</span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{preset.desc}</span>
                   </span>
-                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                  {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
               );
             })}
@@ -170,7 +170,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
               onClick={() => setForm((p) => ({ ...p, enabled: !p.enabled }))}
               style={{
                 flexShrink: 0, width: 46, height: 27, borderRadius: 999, padding: 3,
-                background: form.enabled ? "#d98a2d" : "rgba(142,165,190,.4)",
+                background: form.enabled ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.4)",
                 display: "flex", alignItems: "center",
                 justifyContent: form.enabled ? "flex-end" : "flex-start",
                 transition: "all .2s", border: "none",
@@ -184,7 +184,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
           <div className="mx-card" style={{ marginTop: 12, padding: 12 }}>
             <p style={{ fontSize: 12, color: "var(--mx-muted)", lineHeight: 1.6 }}>
               当前设置：<b style={{ color: "var(--mx-ink)" }}>{taskInfo.label}</b> 将 <b style={{ color: "var(--mx-ink)" }}>{cronToText(form.cron)}</b> 执行一次，状态为
-              <b style={{ color: form.enabled ? "#059669" : "var(--mx-muted)" }}>{form.enabled ? " 已启用" : " 已停用"}</b>
+              <b style={{ color: form.enabled ? "var(--kaypal-v3-success)" : "var(--mx-muted)" }}>{form.enabled ? " 已启用" : " 已停用"}</b>
             </p>
           </div>
 

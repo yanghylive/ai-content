@@ -130,11 +130,11 @@ export function SolutionsCenter() {
 
           {waitingCount > 0 && (
             <div className="mx-card" style={{ marginTop: 12, padding: 12, borderColor: "rgba(222,150,57,.45)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: "#b45309", fontWeight: 600 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: "var(--kaypal-v3-amber)", fontWeight: 600 }}>
                 <Clock width={15} height={15} />
                 {waitingCount} 个方案内容待你确认
               </span>
-              <Link href="/solutions?filter=waiting" style={{ fontSize: 12, fontWeight: 700, color: "#d98a2d" }}>去确认 ›</Link>
+              <Link href="/solutions?filter=waiting" style={{ fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-amber)" }}>去确认 ›</Link>
             </div>
           )}
 
@@ -146,7 +146,7 @@ export function SolutionsCenter() {
               return (
                 <div key={solution.id} className="mx-card" style={{ padding: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-                    <span style={{ width: 38, height: 38, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.15)", color: "#d98a2d", flexShrink: 0 }}>
+                    <span style={{ width: 38, height: 38, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.15)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                       <Icon width={19} height={19} />
                     </span>
                     <span style={{ minWidth: 0 }}>
@@ -155,7 +155,7 @@ export function SolutionsCenter() {
                     </span>
                   </div>
                   {solution.recommendReason && (
-                    <p style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#d98a2d", marginTop: 8 }}>
+                    <p style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--kaypal-v3-amber)", marginTop: 8 }}>
                       <CheckCircle2 width={12} height={12} />
                       {solution.recommendReason}
                     </p>
@@ -173,7 +173,7 @@ export function SolutionsCenter() {
             <>
               <div className="mx-section-head" style={{ marginTop: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span>进行中的方案</span>
-                <Link href="/solutions?tab=runs" style={{ fontSize: 11.5, fontWeight: 600, color: "#d98a2d" }}>查看全部 ›</Link>
+                <Link href="/solutions?tab=runs" style={{ fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-amber)" }}>查看全部 ›</Link>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
                 {runs.slice(0, 5).map((run) => {
@@ -184,11 +184,11 @@ export function SolutionsCenter() {
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                         <span style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
                           {running ? (
-                            <Loader2 width={16} height={16} className="animate-spin" style={{ color: "#d98a2d", flexShrink: 0 }} />
+                            <Loader2 width={16} height={16} className="animate-spin" style={{ color: "var(--kaypal-v3-amber)", flexShrink: 0 }} />
                           ) : waiting ? (
-                            <Clock width={16} height={16} style={{ color: "#b45309", flexShrink: 0 }} />
+                            <Clock width={16} height={16} style={{ color: "var(--kaypal-v3-amber)", flexShrink: 0 }} />
                           ) : run.status === "completed" || run.status === "done" ? (
-                            <CheckCircle2 width={16} height={16} style={{ color: "#059669", flexShrink: 0 }} />
+                            <CheckCircle2 width={16} height={16} style={{ color: "var(--kaypal-v3-success)", flexShrink: 0 }} />
                           ) : (
                             <Clock width={16} height={16} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
                           )}
@@ -201,7 +201,7 @@ export function SolutionsCenter() {
                         </span>
                         <Link
                           href={`/solutions/run?id=${run.id}`}
-                          style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, fontSize: 11.5, fontWeight: 600, background: waiting ? "#d98a2d" : "rgba(120,148,179,.12)", color: waiting ? "#fff" : "var(--mx-ink)", border: waiting ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                          style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, fontSize: 11.5, fontWeight: 600, background: waiting ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: waiting ? "#fff" : "var(--mx-ink)", border: waiting ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
                         >
                           {waiting ? "去确认" : "查看"}
                         </Link>
@@ -229,7 +229,7 @@ export function SolutionsCenter() {
               const Icon = solution.icon;
               return (
                 <Link key={solution.id} href={solution.href} className="mx-card" style={{ padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
-                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                     <Icon width={17} height={17} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>

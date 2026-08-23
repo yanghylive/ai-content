@@ -593,17 +593,17 @@ function SkillRecommendations({ keyword }: { keyword: string }) {
     <section className="kaypal-v3-panel overflow-hidden">
       <div className="border-b border-[var(--kaypal-v3-border)] p-4">
         <p className="kaypal-v3-label">下一步建议</p>
-        <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+        <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
           系统还能继续做什么
         </h2>
       </div>
       <div className="divide-y divide-[var(--kaypal-v3-border)]">
         {loading ? (
-          <div className="p-4 text-[12px] font-semibold text-[var(--kaypal-v3-muted)]">
+          <div className="p-4 text-12 font-semibold text-[var(--kaypal-v3-muted)]">
             正在读取可用建议
           </div>
         ) : error ? (
-          <div className="p-4 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+          <div className="p-4 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
             {error}
           </div>
         ) : skills.length > 0 ? (
@@ -611,24 +611,24 @@ function SkillRecommendations({ keyword }: { keyword: string }) {
             <div className="p-4" key={skill.id}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="text-[13px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                  <h3 className="text-13 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                     {publicIntelligenceText(skill.name, "系统功能")}
                   </h3>
-                  <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     {publicIntelligenceText(
                       skill.summary,
                       "可继续用于查找、跟踪或拆解。",
                     )}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-1 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-1 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                   {publicIntelligenceText(skill.platform, "平台")}
                 </span>
               </div>
             </div>
           ))
         ) : (
-          <div className="p-4 text-[12px] font-semibold text-[var(--kaypal-v3-muted)]">
+          <div className="p-4 text-12 font-semibold text-[var(--kaypal-v3-muted)]">
             当前关键词没有匹配到可用建议，可以先换个关键词或刷新功能。
           </div>
         )}
@@ -914,16 +914,16 @@ export function IntelligenceCommandCenter() {
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
             <div className="min-w-0">
               <p className="kaypal-v3-label">商业情报</p>
-              <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+              <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                 今日情报工作台
               </h1>
-              <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 用户进来先处理情报对象：看证据、判风险、选去向，再派发到素材、选题、对标、监控、风险复核和报告。
               </p>
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <Link
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                 href="/intelligence/search"
               >
                 <Search
@@ -934,7 +934,7 @@ export function IntelligenceCommandCenter() {
                 跑搜索
               </Link>
               <Link
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                 href="/capabilities/models"
               >
                 <Sparkles
@@ -964,10 +964,10 @@ export function IntelligenceCommandCenter() {
                     strokeWidth={1.8}
                   />
                 </div>
-                <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+                <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
                   {value}
                 </p>
-                <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                   {detail}
                 </p>
               </div>
@@ -982,7 +982,7 @@ export function IntelligenceCommandCenter() {
           <div className="flex items-center justify-between gap-3 border-b border-[var(--kaypal-v3-border)] p-4">
             <div className="min-w-0">
               <p className="kaypal-v3-label">待处理发现</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 今日待处理对象
               </h2>
             </div>
@@ -994,7 +994,7 @@ export function IntelligenceCommandCenter() {
           </div>
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
             {overviewState.loading ? (
-              <div className="flex min-h-[260px] items-center justify-center p-4 text-[13px] font-semibold text-[var(--kaypal-v3-muted)]">
+              <div className="flex min-h-[260px] items-center justify-center p-4 text-13 font-semibold text-[var(--kaypal-v3-muted)]">
                 <Loader2
                   aria-hidden="true"
                   className="mr-2 h-4 w-4 animate-spin"
@@ -1005,14 +1005,14 @@ export function IntelligenceCommandCenter() {
             ) : overviewState.error ? (
               <div className="p-4">
                 <div className="rounded-[8px] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
-                  <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     情报读取失败
                   </p>
-                  <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                  <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                     {overviewState.error}
                   </p>
                   <button
-                    className="mt-3 inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                    className="mt-3 inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                     onClick={retryOverview}
                     type="button"
                   >
@@ -1028,16 +1028,16 @@ export function IntelligenceCommandCenter() {
             ) : activeItems.length === 0 ? (
               <div className="p-4">
                 <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4">
-                  <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     今日还没有入库情报
                   </p>
-                  <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     先跑一次搜索，或执行到期跟踪，把结果写入待处理发现
                     后再判断和派发。
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                      className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                       href="/intelligence/search"
                     >
                       <Search
@@ -1048,7 +1048,7 @@ export function IntelligenceCommandCenter() {
                       跑搜索
                     </Link>
                     <Link
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                       href="/intelligence/monitors"
                     >
                       <BellRing
@@ -1084,7 +1084,7 @@ export function IntelligenceCommandCenter() {
                         <div className="flex flex-wrap items-center gap-2">
                           <span
                             className={[
-                              "inline-flex items-center gap-1 rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                              "inline-flex items-center gap-1 rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                               statusMeta[item.status].className,
                             ].join(" ")}
                           >
@@ -1097,14 +1097,14 @@ export function IntelligenceCommandCenter() {
                           </span>
                           <span
                             className={[
-                              "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                              "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                               riskClass(item.risk),
                             ].join(" ")}
                           >
                             {riskMeta[item.risk].label}
                           </span>
                         </div>
-                        <h3 className="mt-2 text-[14px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                        <h3 className="mt-2 text-14 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                           {item.title}
                         </h3>
                       </div>
@@ -1117,7 +1117,7 @@ export function IntelligenceCommandCenter() {
                         strokeWidth={1.8}
                       />
                     </div>
-                    <div className="mt-3 grid gap-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <div className="mt-3 grid gap-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       <p>
                         平台：
                         <span className="font-semibold">{item.platform}</span>
@@ -1146,17 +1146,17 @@ export function IntelligenceCommandCenter() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="kaypal-v3-label">证据与判断</p>
-                    <h2 className="mt-1 text-[18px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+                    <h2 className="mt-1 text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                       {selectedItem.title}
                     </h2>
-                    <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       {selectedItem.platform} · {selectedItem.sourceSkill} ·{" "}
                       {selectedItem.intent}
                     </p>
                   </div>
                   <span
                     className={[
-                      "inline-flex items-center gap-1 rounded-[6px] border px-2.5 py-1 text-[11px] font-semibold",
+                      "inline-flex items-center gap-1 rounded-[6px] border px-2.5 py-1 text-11 font-semibold",
                       statusMeta[selectedItem.status].className,
                     ].join(" ")}
                   >
@@ -1179,10 +1179,10 @@ export function IntelligenceCommandCenter() {
                         key={row.label}
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <p className="text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                          <p className="text-11 font-bold text-[var(--kaypal-v3-muted)]">
                             {row.label}
                           </p>
-                          <span className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                          <span className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                             {row.value}
                           </span>
                         </div>
@@ -1201,7 +1201,7 @@ export function IntelligenceCommandCenter() {
 
                   <div className="mt-4 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-4">
                     <p className="kaypal-v3-label">推荐决策</p>
-                    <p className="mt-2 text-[14px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+                    <p className="mt-2 text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                       {selectedItem.decision}
                     </p>
                     <div className="mt-3 flex items-start gap-2 rounded-[8px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-3">
@@ -1210,7 +1210,7 @@ export function IntelligenceCommandCenter() {
                         className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-amber)]"
                         strokeWidth={1.8}
                       />
-                      <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                      <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                         {selectedItem.boundary}
                       </p>
                     </div>
@@ -1229,10 +1229,10 @@ export function IntelligenceCommandCenter() {
                   <ol className="mt-3 grid gap-3">
                     {selectedItem.evidence.map((item, index) => (
                       <li className="flex gap-3" key={`${item}-${index}`}>
-                        <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-[11px] font-bold text-white">
+                        <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-11 font-bold text-white">
                           {index + 1}
                         </span>
-                        <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                        <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                           {item}
                         </p>
                       </li>
@@ -1249,10 +1249,10 @@ export function IntelligenceCommandCenter() {
                   className="mx-auto h-8 w-8 text-[var(--kaypal-v3-muted)]"
                   strokeWidth={1.8}
                 />
-                <p className="mt-3 text-[14px] font-bold text-[var(--kaypal-v3-ink)]">
+                <p className="mt-3 text-14 font-bold text-[var(--kaypal-v3-ink)]">
                   等待情报对象进入待处理发现
                 </p>
-                <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   搜索或自动跟踪跑完后，这里会展示证据、评分、风险边界和推荐动作。
                 </p>
               </div>
@@ -1264,7 +1264,7 @@ export function IntelligenceCommandCenter() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">下一步动作</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 派发到业务模块
               </h2>
             </div>
@@ -1307,17 +1307,17 @@ export function IntelligenceCommandCenter() {
                             )}
                           </span>
                           <div className="min-w-0">
-                            <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                            <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                               {actionButtonLabel(action)}
                             </p>
-                            <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                            <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                               {queuedItem?.detail || action.reason}
                             </p>
                           </div>
                         </div>
                         <span
                           className={[
-                            "shrink-0 rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                            "shrink-0 rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                             riskClass(action.risk),
                           ].join(" ")}
                         >
@@ -1328,7 +1328,7 @@ export function IntelligenceCommandCenter() {
                   );
                 })
               ) : (
-                <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   先让情报对象进入
                   待处理发现，再选择生成选题、导入素材、加入监控或进入风险复核处理。
                 </div>
@@ -1339,7 +1339,7 @@ export function IntelligenceCommandCenter() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">分发任务</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 准备执行的动作
               </h2>
             </div>
@@ -1354,12 +1354,12 @@ export function IntelligenceCommandCenter() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                          <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                             {item.label} · {item.target}
                           </p>
                           <span
                             className={[
-                              "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                              "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                               item.state === "failed"
                                 ? "border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] text-[var(--kaypal-v3-soft-ink)]"
                                 : item.state === "done"
@@ -1370,10 +1370,10 @@ export function IntelligenceCommandCenter() {
                             {actionStateLabel(item.state)}
                           </span>
                         </div>
-                        <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           {item.title}
                         </p>
-                        <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                        <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                           {item.detail}
                         </p>
                       </div>
@@ -1394,7 +1394,7 @@ export function IntelligenceCommandCenter() {
                     className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-muted)]"
                     strokeWidth={1.8}
                   />
-                  <p className="text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     先在“下一步动作”里选择去向，系统会把当前情报加入分发任务。
                   </p>
                 </div>
@@ -1408,7 +1408,7 @@ export function IntelligenceCommandCenter() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">监控健康</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               情报源运行状态
             </h2>
           </div>
@@ -1421,23 +1421,23 @@ export function IntelligenceCommandCenter() {
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                      <h3 className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                         {monitor.name}
                       </h3>
                       <span
                         className={[
-                          "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                          "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                           monitorStatusClass(monitor.status),
                         ].join(" ")}
                       >
                         {monitorStatusLabel(monitor.status)}
                       </span>
                     </div>
-                    <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       {monitor.nextStep}
                     </p>
                   </div>
-                  <p className="text-[12px] font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                  <p className="text-12 font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
                     {monitor.owner}
                     <br />
                     <span className="text-[var(--kaypal-v3-muted)]">
@@ -1449,14 +1449,14 @@ export function IntelligenceCommandCenter() {
             ) : (
               <div className="p-4">
                 <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4">
-                  <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     还没有运行中的情报源
                   </p>
-                  <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     去自动跟踪页绑定关键词、账号或行业来源，运行后这里会显示最近运行和异常原因。
                   </p>
                   <Link
-                    className="mt-3 inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                    className="mt-3 inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                     href="/intelligence/monitors"
                   >
                     <BellRing
@@ -1475,7 +1475,7 @@ export function IntelligenceCommandCenter() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">报告中心</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               可交付情报报告
             </h2>
           </div>
@@ -1488,13 +1488,13 @@ export function IntelligenceCommandCenter() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <h3 className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {report.title}
                     </h3>
-                    <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       输入：{report.input}
                     </p>
-                    <p className="mt-1 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                    <p className="mt-1 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                       负责人：{report.owner}
                     </p>
                   </div>
@@ -1512,7 +1512,7 @@ export function IntelligenceCommandCenter() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">治理规则</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               派发边界
             </h2>
           </div>
@@ -1520,17 +1520,17 @@ export function IntelligenceCommandCenter() {
             {routingMatrix.map(([source, rule, target, boundary], index) => (
               <div className="p-4" key={`${source}-${target}-${index}`}>
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <h3 className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     {source}
                   </h3>
-                  <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                  <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                     {target}
                   </span>
                 </div>
-                <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   判断：{rule}
                 </p>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   边界：{boundary}
                 </p>
               </div>
@@ -1546,11 +1546,11 @@ export function IntelligenceCommandCenter() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">下一步建议</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 系统还能继续做什么
               </h2>
             </div>
-            <div className="p-4 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+            <div className="p-4 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
               选中情报对象后，会按关键词和平台推荐可继续执行的动作。
             </div>
           </section>
@@ -1559,7 +1559,7 @@ export function IntelligenceCommandCenter() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">商用流程</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               从信号到交付
             </h2>
           </div>
@@ -1603,10 +1603,10 @@ export function IntelligenceCommandCenter() {
                   />
                 </span>
                 <div>
-                  <h3 className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <h3 className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     {label}
                   </h3>
-                  <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     {detail}
                   </p>
                 </div>

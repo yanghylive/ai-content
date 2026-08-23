@@ -577,16 +577,16 @@ export function IntelligenceInboxWorkbench() {
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
             <div className="min-w-0">
               <p className="kaypal-v3-label">统一收件箱</p>
-              <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+              <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                 待处理发现
               </h1>
-              <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 热点、搜索、账号、评论和行业来源先进入同一个情报库；用户在这里看证据、判风险、再派发到素材、选题、跟踪、线索或风险审核。
               </p>
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <button
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                 onClick={reloadItems}
                 type="button"
               >
@@ -600,7 +600,7 @@ export function IntelligenceInboxWorkbench() {
                 刷新
               </button>
               <Link
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                 href="/intelligence/search"
               >
                 <Search
@@ -627,10 +627,10 @@ export function IntelligenceInboxWorkbench() {
                     strokeWidth={1.8}
                   />
                 </div>
-                <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+                <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
                   {value}
                 </p>
-                <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                   {detail}
                 </p>
               </div>
@@ -661,7 +661,7 @@ export function IntelligenceInboxWorkbench() {
             onChange={(value) => updateFilters({ type: value })}
           />
           <div className="min-w-0">
-            <p className="text-[12px] font-bold text-[var(--kaypal-v3-soft-ink)]">
+            <p className="text-12 font-bold text-[var(--kaypal-v3-soft-ink)]">
               关键词
             </p>
             <div className="mt-2 flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3">
@@ -671,7 +671,7 @@ export function IntelligenceInboxWorkbench() {
                 strokeWidth={1.8}
               />
               <input
-                className="min-w-0 flex-1 bg-transparent text-[13px] font-semibold text-[var(--kaypal-v3-ink)] outline-none placeholder:text-[var(--kaypal-v3-muted)]"
+                className="min-w-0 flex-1 bg-transparent text-13 font-semibold text-[var(--kaypal-v3-ink)] outline-none placeholder:text-[var(--kaypal-v3-muted)]"
                 onChange={(event) =>
                   updateFilters({
                     keyword: event.target.value,
@@ -690,7 +690,7 @@ export function IntelligenceInboxWorkbench() {
           <div className="flex items-center justify-between gap-3 border-b border-[var(--kaypal-v3-border)] p-4">
             <div className="min-w-0">
               <p className="kaypal-v3-label">情报列表</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 待处理对象
               </h2>
             </div>
@@ -748,7 +748,7 @@ export function IntelligenceInboxWorkbench() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={[
-                          "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                          "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                           statusClass(item.status),
                         ].join(" ")}
                       >
@@ -756,20 +756,20 @@ export function IntelligenceInboxWorkbench() {
                       </span>
                       <span
                         className={[
-                          "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                          "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                           riskMeta[item.risk].className,
                         ].join(" ")}
                       >
                         {riskMeta[item.risk].label}
                       </span>
-                      <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                      <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                         {typeLabel(item.type)}
                       </span>
                     </div>
-                    <h3 className="mt-2 text-[14px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                    <h3 className="mt-2 text-14 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                       {item.title}
                     </h3>
-                    <div className="mt-3 grid gap-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <div className="mt-3 grid gap-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       <p>
                         平台：
                         <span className="font-semibold">{item.platform}</span>
@@ -796,17 +796,17 @@ export function IntelligenceInboxWorkbench() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="kaypal-v3-label">证据与判断</p>
-                    <h2 className="mt-1 text-[18px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+                    <h2 className="mt-1 text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                       {selectedItem.title}
                     </h2>
-                    <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       {selectedItem.platform} · {selectedItem.source} ·{" "}
                       {typeLabel(selectedItem.type)}
                     </p>
                   </div>
                   <span
                     className={[
-                      "rounded-[6px] border px-2.5 py-1 text-[11px] font-semibold",
+                      "rounded-[6px] border px-2.5 py-1 text-11 font-semibold",
                       riskMeta[selectedItem.risk].className,
                     ].join(" ")}
                   >
@@ -818,10 +818,10 @@ export function IntelligenceInboxWorkbench() {
                 <div className="min-w-0">
                   <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                      <p className="text-11 font-bold text-[var(--kaypal-v3-muted)]">
                         情报质量
                       </p>
-                      <span className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                      <span className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                         {selectedItem.score}
                       </span>
                     </div>
@@ -837,7 +837,7 @@ export function IntelligenceInboxWorkbench() {
                   </div>
                   <div className="mt-4 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-4">
                     <p className="kaypal-v3-label">推荐判断</p>
-                    <p className="mt-2 text-[14px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+                    <p className="mt-2 text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                       {selectedItem.decision}
                     </p>
                     <div className="mt-3 flex items-start gap-2 rounded-[8px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-3">
@@ -846,7 +846,7 @@ export function IntelligenceInboxWorkbench() {
                         className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-amber)]"
                         strokeWidth={1.8}
                       />
-                      <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                      <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                         {selectedItem.boundary}
                       </p>
                     </div>
@@ -868,10 +868,10 @@ export function IntelligenceInboxWorkbench() {
                         className="flex gap-3"
                         key={`${selectedItem.id}-${item}`}
                       >
-                        <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-[11px] font-bold text-white">
+                        <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-11 font-bold text-white">
                           {index + 1}
                         </span>
-                        <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                        <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                           {item}
                         </p>
                       </li>
@@ -893,7 +893,7 @@ export function IntelligenceInboxWorkbench() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">下一步动作</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 派发到业务模块
               </h2>
             </div>
@@ -926,17 +926,17 @@ export function IntelligenceInboxWorkbench() {
                             />
                           </span>
                           <div className="min-w-0">
-                            <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                            <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                               {queued ? "已加入队列" : action.label}
                             </p>
-                            <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                            <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                               {action.reason}
                             </p>
                           </div>
                         </div>
                         <span
                           className={[
-                            "shrink-0 rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                            "shrink-0 rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                             riskMeta[action.risk].className,
                           ].join(" ")}
                         >
@@ -959,7 +959,7 @@ export function IntelligenceInboxWorkbench() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">分发任务</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 待执行动作
               </h2>
             </div>
@@ -973,13 +973,13 @@ export function IntelligenceInboxWorkbench() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                        <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                           {item.label} · {item.target}
                         </p>
-                        <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           {item.title}
                         </p>
-                        <p className="mt-1 text-[11px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                        <p className="mt-1 text-11 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                           {item.message}
                         </p>
                       </div>
@@ -1002,13 +1002,13 @@ export function IntelligenceInboxWorkbench() {
       <section className="kaypal-v3-panel overflow-hidden">
         <div className="border-b border-[var(--kaypal-v3-border)] p-4">
           <p className="kaypal-v3-label">发现分流规则</p>
-          <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+          <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
             从入库对象到业务资产
           </h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-[13px]">
-            <thead className="bg-[var(--kaypal-v3-table-head)] text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+          <table className="min-w-full text-left text-13">
+            <thead className="bg-[var(--kaypal-v3-table-head)] text-11 font-bold text-[var(--kaypal-v3-muted)]">
               <tr>
                 {["对象", "判断标准", "去向", "边界"].map((column) => (
                   <th className="px-4 py-3" key={column} scope="col">
@@ -1081,7 +1081,7 @@ function FilterGroup({
 }) {
   return (
     <div className="min-w-0">
-      <p className="text-[12px] font-bold text-[var(--kaypal-v3-soft-ink)]">
+      <p className="text-12 font-bold text-[var(--kaypal-v3-soft-ink)]">
         {label}
       </p>
       <div className="mt-2 flex flex-wrap gap-2">
@@ -1089,7 +1089,7 @@ function FilterGroup({
           <button
             aria-pressed={value === item.value}
             className={[
-              "h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]",
+              "h-8 rounded-[8px] border px-3 text-12 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]",
               value === item.value
                 ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                 : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)] hover:text-[var(--kaypal-v3-soft-ink)]",

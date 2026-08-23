@@ -52,7 +52,7 @@ function platformThemeColor(platform?: string | null): string {
     return PLATFORM_THEME_COLORS.shipinhao;
   if (p.includes("bilibili") || p.includes("b站") || p.includes("bili"))
     return PLATFORM_THEME_COLORS.bilibili;
-  return "#64748b";
+  return "var(--kaypal-v3-muted)";
 }
 
 function platformInitial(platform?: string | null): string {
@@ -247,8 +247,8 @@ export function DistributionTasks() {
           <div className="mx-stat-grid">
             <div className="mx-stat-item mx-control"><div className="mx-stat-num">{counts.all}</div><div className="mx-stat-label">全部</div></div>
             <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{counts.pending}</div><div className="mx-stat-label">进行中</div></div>
-            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#059669" }}>{counts.done}</div><div className="mx-stat-label">成功</div></div>
-            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#dc2626" }}>{counts.failed}</div><div className="mx-stat-label">失败</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "var(--kaypal-v3-success)" }}>{counts.done}</div><div className="mx-stat-label">成功</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "var(--kaypal-v3-danger)" }}>{counts.failed}</div><div className="mx-stat-label">失败</div></div>
           </div>
         </section>
 
@@ -266,7 +266,7 @@ export function DistributionTasks() {
         {/* 任务列表 */}
         <section className="mx-px" style={{ paddingBottom: 28 }}>
           {error && (
-            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</div>
           )}
           <div className="mx-card mx-list-card">
             {loading ? (
@@ -343,7 +343,7 @@ export function DistributionTasks() {
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-5">
-                <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "#475569" }}>
+                <p style={{ fontSize: 12.5, lineHeight: 1.7, color: "var(--kaypal-v3-soft-ink)" }}>
                   创建时间：{viewing.created_at ? new Date(viewing.created_at).toLocaleString("zh-CN") : "未知"}
                   {viewing.message ? <><br />信息：{viewing.message}</> : null}
                 </p>
@@ -354,7 +354,7 @@ export function DistributionTasks() {
                     <RefreshCcw size={14} style={{ marginRight: 4 }} /> 重试
                   </button>
                 ) : null}
-                <button type="button" className="btn btn-sm" style={{ border: "1px solid rgba(239,68,68,.35)", color: "#dc2626", borderRadius: 10, padding: "7px 12px", fontSize: 12, fontWeight: 600 }} disabled={deletingId === viewing.id} onClick={() => void handleDelete(viewing)}>
+                <button type="button" className="btn btn-sm" style={{ border: "1px solid rgba(239,68,68,.35)", color: "var(--kaypal-v3-danger)", borderRadius: 10, padding: "7px 12px", fontSize: 12, fontWeight: 600 }} disabled={deletingId === viewing.id} onClick={() => void handleDelete(viewing)}>
                   删除
                 </button>
               </div>

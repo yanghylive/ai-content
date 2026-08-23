@@ -95,7 +95,7 @@ export function RiskConfirmFlow() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -105,7 +105,7 @@ export function RiskConfirmFlow() {
             </div>
           ) : confirmations.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 14, padding: 28, textAlign: "center" }}>
-              <CheckCircle2 width={28} height={28} style={{ color: "#059669", margin: "0 auto" }} />
+              <CheckCircle2 width={28} height={28} style={{ color: "var(--kaypal-v3-success)", margin: "0 auto" }} />
               <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginTop: 10 }}>没有待确认的操作</p>
               <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>有高风险操作需要你确认时，会出现在这里</p>
             </div>
@@ -119,7 +119,7 @@ export function RiskConfirmFlow() {
                         width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                         display: "inline-flex", alignItems: "center", justifyContent: "center",
                         background: item.riskLevel === "high" ? "rgba(220,80,80,.12)" : "rgba(222,150,57,.14)",
-                        color: item.riskLevel === "high" ? "#dc2626" : "#d98a2d",
+                        color: item.riskLevel === "high" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-amber)",
                       }}
                     >
                       {item.riskLevel === "high" ? <ShieldAlert width={18} height={18} /> : <AlertTriangle width={18} height={18} />}
@@ -142,7 +142,7 @@ export function RiskConfirmFlow() {
                       type="button"
                       disabled={actingId === item.id}
                       onClick={() => void handleDecision(item, "reject")}
-                      style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(220,80,80,.08)", color: "#dc2626", border: "1px solid rgba(220,80,80,.35)", fontSize: 12.5, fontWeight: 600 }}
+                      style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(220,80,80,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.35)", fontSize: 12.5, fontWeight: 600 }}
                     >
                       拒绝
                     </button>

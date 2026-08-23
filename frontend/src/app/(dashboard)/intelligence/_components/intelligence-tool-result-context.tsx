@@ -309,10 +309,10 @@ export function IntelligenceToolResultContext({
             </span>
             <div className="min-w-0">
               <p className="kaypal-v3-label">{view.eyebrow}</p>
-              <h2 className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
                 {view.title}
               </h2>
-              <p className="mt-2 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <p className="mt-2 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 {view.summary}
               </p>
             </div>
@@ -320,7 +320,7 @@ export function IntelligenceToolResultContext({
 
           <div className="mt-4 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
             <p className="kaypal-v3-label">{view.inputLabel}</p>
-            <p className="mt-1 text-[13px] font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
+            <p className="mt-1 text-13 font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
               {view.exampleInput}
             </p>
           </div>
@@ -328,7 +328,7 @@ export function IntelligenceToolResultContext({
           <div className="mt-4 flex flex-wrap gap-2">
             {view.nextActions.map(({ label, href, icon: Icon }) => (
               <Link
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                 href={href}
                 key={label}
               >
@@ -356,10 +356,10 @@ export function IntelligenceToolResultContext({
                 className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3"
                 key={output.title}
               >
-                <h3 className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                <h3 className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                   {output.title}
                 </h3>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   {output.detail}
                 </p>
                 <div className="mt-3 grid gap-1.5">
@@ -370,7 +370,7 @@ export function IntelligenceToolResultContext({
                         className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--kaypal-v3-success)]"
                         strokeWidth={1.8}
                       />
-                      <span className="text-[12px] leading-4 text-[var(--kaypal-v3-soft-ink)]">
+                      <span className="text-12 leading-4 text-[var(--kaypal-v3-soft-ink)]">
                         {point}
                       </span>
                     </div>
@@ -385,7 +385,7 @@ export function IntelligenceToolResultContext({
             <div className="mt-2 grid gap-1.5">
               {view.guardrails.map((item) => (
                 <p
-                  className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]"
+                  className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]"
                   key={item}
                 >
                   {item}

@@ -190,8 +190,8 @@ export function MonitorsCenter() {
         </header>
 
         <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
-          {notice ? <p style={{ fontSize: 12, color: "#059669", marginBottom: 10 }}>{notice}</p> : null}
-          {error ? <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p> : null}
+          {notice ? <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", marginBottom: 10 }}>{notice}</p> : null}
+          {error ? <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginBottom: 10 }}>{error}</p> : null}
 
           <div className="mx-stat-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
             <div className="mx-stat-item mx-control">
@@ -247,7 +247,7 @@ export function MonitorsCenter() {
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 2 }}>
                       <button
                         type="button"
-                        style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(37,99,235,.1)", color: "#2563eb", border: "none" }}
+                        style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)", border: "none" }}
                         disabled={runningId === monitor.id}
                         onClick={() => void handleRunNow(monitor)}
                       >
@@ -264,7 +264,7 @@ export function MonitorsCenter() {
                       {rawStatus !== "archived" && (
                         <button
                           type="button"
-                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(239,68,68,.08)", color: "#dc2626", border: "1px solid rgba(239,68,68,.2)" }}
+                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(239,68,68,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(239,68,68,.2)" }}
                           disabled={actingId === monitor.id}
                           onClick={() => void handleArchive(monitor)}
                         >
@@ -278,7 +278,7 @@ export function MonitorsCenter() {
                         <div>积分：{monitor.costLimitPoints ? `上限 ${monitor.costLimitPoints}` : "成功后扣"}</div>
                         <div>上次运行：{monitor.lastRunAt ? new Date(monitor.lastRunAt).toLocaleString("zh-CN") : "还没跑过"}</div>
                         <div>下次运行：{monitor.nextRunAt ? new Date(monitor.nextRunAt).toLocaleString("zh-CN") : "-"}</div>
-                        {monitor.lastError && <div style={{ color: "#dc2626", marginTop: 4 }}>最近错误：{monitor.lastError}</div>}
+                        {monitor.lastError && <div style={{ color: "var(--kaypal-v3-danger)", marginTop: 4 }}>最近错误：{monitor.lastError}</div>}
                       </div>
                     )}
                   </div>

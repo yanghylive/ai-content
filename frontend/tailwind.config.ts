@@ -15,6 +15,14 @@ const config: Config = {
                 sans: ["var(--kaypal-v3-font-nav)"],
                 mono: ["var(--kaypal-v3-font-mono)"],
             },
+            /* 字号 5 档规范（B7 2026-08-23）：text-[Npx] 字面量全站归档到语义档，
+               16px+ 走标准类（base/lg/xl/2xl） */
+            fontSize: {
+                11: ["11px", { lineHeight: "15px" }],
+                12: ["12px", { lineHeight: "18px" }],
+                13: ["13px", { lineHeight: "19px" }],
+                14: ["14px", { lineHeight: "21px" }],
+            },
             colors: {
                 border: "hsl(var(--agent-cockpit-border))",
                 input: "hsl(var(--agent-cockpit-input))",
@@ -60,10 +68,11 @@ const config: Config = {
                             large: "14px",
                         },
                         fontSize: {
-                            tiny: "0.6875rem",
-                            small: "0.8125rem",
-                            medium: "0.9375rem",
-                            large: "1.0625rem",
+                            /* 对齐字号 4 档规范（B7）：11/12/13/14 */
+                            tiny: "11px",
+                            small: "12px",
+                            medium: "13px",
+                            large: "14px",
                         },
                         lineHeight: {
                             tiny: "1rem",
@@ -106,10 +115,11 @@ const config: Config = {
                             large: "14px",
                         },
                         fontSize: {
-                            tiny: "0.6875rem",
-                            small: "0.8125rem",
-                            medium: "0.9375rem",
-                            large: "1.0625rem",
+                            /* 对齐字号 4 档规范（B7）：11/12/13/14 */
+                            tiny: "11px",
+                            small: "12px",
+                            medium: "13px",
+                            large: "14px",
                         },
                         lineHeight: {
                             tiny: "1rem",

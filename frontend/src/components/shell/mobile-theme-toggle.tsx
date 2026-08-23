@@ -42,7 +42,7 @@ export function MobileThemeToggle() {
     >
       <span
         className="mx-row-ic"
-        style={{ background: "rgba(99,102,241,.12)", color: "#6366f1" }}
+        style={{ background: "rgba(99,102,241,.12)", color: "var(--kaypal-v3-purple)" }}
       >
         <ShellIcon name={dark ? "sun" : "moon"} size={18} />
       </span>

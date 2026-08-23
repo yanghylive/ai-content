@@ -455,10 +455,10 @@ export function IntelligenceCollaborationWorkbench() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">团队处理进度</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   团队协作工作台
                 </h1>
-                <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   把报告复核、风险审核、增长交接和情报补证放到一个队列，按负责人和权限推进。
                 </p>
               </div>
@@ -466,7 +466,7 @@ export function IntelligenceCollaborationWorkbench() {
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <span
                 className={[
-                  "inline-flex h-10 items-center gap-2 rounded-[8px] border px-3 text-[12px] font-semibold",
+                  "inline-flex h-10 items-center gap-2 rounded-[8px] border px-3 text-12 font-semibold",
                   userCanManageReports
                     ? toneClass("success")
                     : toneClass("warning"),
@@ -477,7 +477,7 @@ export function IntelligenceCollaborationWorkbench() {
                 {userCanManageReports ? "可交付/归档" : "需上级复核"}
               </span>
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading}
                 onClick={() => void load()}
                 type="button"
@@ -520,10 +520,10 @@ export function IntelligenceCollaborationWorkbench() {
                 strokeWidth={1.8}
               />
             </div>
-            <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+            <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
               {value}
             </p>
-            <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
               {detail}
             </p>
           </article>
@@ -531,7 +531,7 @@ export function IntelligenceCollaborationWorkbench() {
       </section>
 
       {message ? (
-        <p className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+        <p className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
           {message}
         </p>
       ) : null}
@@ -548,10 +548,10 @@ export function IntelligenceCollaborationWorkbench() {
                 key={lane.key}
               >
                 <div className="border-b border-[var(--kaypal-v3-border)] p-3">
-                  <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     {lane.title}
                   </p>
-                  <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                     {lane.detail}
                   </p>
                 </div>
@@ -584,23 +584,23 @@ export function IntelligenceCollaborationWorkbench() {
                           <div className="flex flex-wrap items-center gap-2">
                             <span
                               className={[
-                                "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                                "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                                 toneClass(riskTone(item.risk)),
                               ].join(" ")}
                             >
                               {riskLabel(item.risk)}
                             </span>
-                            <span className="text-[11px] text-[var(--kaypal-v3-muted)]">
+                            <span className="text-11 text-[var(--kaypal-v3-muted)]">
                               {item.owner}
                             </span>
                           </div>
-                          <p className="mt-2 line-clamp-2 text-[13px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                          <p className="mt-2 line-clamp-2 text-13 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                             {item.title}
                           </p>
-                          <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                          <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                             {item.summary}
                           </p>
-                          <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-[var(--kaypal-v3-muted)]">
+                          <div className="mt-2 flex items-center justify-between gap-2 text-11 text-[var(--kaypal-v3-muted)]">
                             <span>{item.platform}</span>
                             <span>{canRun ? "可处理" : "需上级"}</span>
                           </div>
@@ -625,7 +625,7 @@ export function IntelligenceCollaborationWorkbench() {
         <aside className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">处理详情</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               {selected ? selected.title : "等待选择对象"}
             </h2>
           </div>
@@ -643,7 +643,7 @@ export function IntelligenceCollaborationWorkbench() {
                     key={label}
                   >
                     <p className="kaypal-v3-label">{label}</p>
-                    <p className="mt-1 text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <p className="mt-1 text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {value}
                     </p>
                   </div>
@@ -652,7 +652,7 @@ export function IntelligenceCollaborationWorkbench() {
 
               <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
                 <p className="kaypal-v3-label">判断摘要</p>
-                <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   {selected.summary || "暂无摘要，需要人工补齐证据。"}
                 </p>
               </div>
@@ -665,7 +665,7 @@ export function IntelligenceCollaborationWorkbench() {
                       .slice(0, 4)
                       .map((item) => (
                         <p
-                          className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]"
+                          className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]"
                           key={item}
                         >
                           {item}
@@ -678,7 +678,7 @@ export function IntelligenceCollaborationWorkbench() {
               <div className="flex flex-wrap gap-2">
                 {selected.type !== "item" ? (
                   <button
-                    className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={
                       Boolean(actionKey) ||
                       (selected.type === "report" &&
@@ -714,7 +714,7 @@ export function IntelligenceCollaborationWorkbench() {
                   </button>
                 ) : null}
                 <Link
-                  className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]"
+                  className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]"
                   href={selected.href}
                 >
                   打开去向
@@ -728,7 +728,7 @@ export function IntelligenceCollaborationWorkbench() {
 
               <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
                 <p className="kaypal-v3-label">权限边界</p>
-                <div className="mt-2 grid gap-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <div className="mt-2 grid gap-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   <p>operator：保存报告、提交复核、整理证据和去向。</p>
                   <p>经理/管理员：交付报告、归档、重开和处理高风险收口。</p>
                   <p>

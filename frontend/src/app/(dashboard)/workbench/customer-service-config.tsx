@@ -526,7 +526,7 @@ export function CustomerServiceConfig() {
 
           {notice && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#059669" }}>{notice}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-success)" }}>{notice}</p>
             </div>
           )}
           {needAccountLogin && (
@@ -538,7 +538,7 @@ export function CustomerServiceConfig() {
           )}
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -569,7 +569,7 @@ export function CustomerServiceConfig() {
                     role="switch"
                     aria-checked={bot.enabled}
                     onClick={(e) => { e.stopPropagation(); void toggleBot(bot); }}
-                    style={{ flexShrink: 0, width: 42, height: 25, borderRadius: 999, padding: 3, background: bot.enabled ? "#d98a2d" : "rgba(142,165,190,.4)", display: "flex", alignItems: "center", justifyContent: bot.enabled ? "flex-end" : "flex-start", transition: "all .2s" }}
+                    style={{ flexShrink: 0, width: 42, height: 25, borderRadius: 999, padding: 3, background: bot.enabled ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.4)", display: "flex", alignItems: "center", justifyContent: bot.enabled ? "flex-end" : "flex-start", transition: "all .2s" }}
                   >
                     <span style={{ width: 19, height: 19, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
                   </span>
@@ -616,7 +616,7 @@ export function CustomerServiceConfig() {
                     key={t.value}
                     type="button"
                     onClick={() => set("tone", t.value as CustomerServiceForm["tone"])}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.tone === t.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.tone === t.value ? "#d98a2d" : "var(--mx-ink)", border: "1px solid " + (form.tone === t.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.tone === t.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.tone === t.value ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: "1px solid " + (form.tone === t.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
                   >
                     {t.label}
                   </button>
@@ -648,7 +648,7 @@ export function CustomerServiceConfig() {
               role="switch"
               aria-checked={form.askForContact}
               onClick={() => set("askForContact", !form.askForContact)}
-              style={{ flexShrink: 0, width: 44, height: 26, borderRadius: 999, padding: 3, background: form.askForContact ? "#d98a2d" : "rgba(142,165,190,.4)", display: "flex", alignItems: "center", justifyContent: form.askForContact ? "flex-end" : "flex-start", transition: "all .2s", border: "none" }}
+              style={{ flexShrink: 0, width: 44, height: 26, borderRadius: 999, padding: 3, background: form.askForContact ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.4)", display: "flex", alignItems: "center", justifyContent: form.askForContact ? "flex-end" : "flex-start", transition: "all .2s", border: "none" }}
             >
               <span style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
             </button>
@@ -711,8 +711,8 @@ export function CustomerServiceConfig() {
                 )}
                 {taskCreated && (
                   <div style={{ marginTop: 10, padding: 10, borderRadius: 8, background: "rgba(5,150,105,.1)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                    <span style={{ fontSize: 11.5, color: "#059669" }}>✓ 任务已创建，等你在「待我确认」里放行</span>
-                    <button type="button" onClick={() => router.push("/tasks/confirmations")} style={{ fontSize: 11.5, fontWeight: 700, color: "#d98a2d", background: "none", border: "none", flexShrink: 0 }}>
+                    <span style={{ fontSize: 11.5, color: "var(--kaypal-v3-success)" }}>✓ 任务已创建，等你在「待我确认」里放行</span>
+                    <button type="button" onClick={() => router.push("/tasks/confirmations")} style={{ fontSize: 11.5, fontWeight: 700, color: "var(--kaypal-v3-amber)", background: "none", border: "none", flexShrink: 0 }}>
                       去确认 ›
                     </button>
                   </div>

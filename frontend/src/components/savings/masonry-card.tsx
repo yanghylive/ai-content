@@ -61,14 +61,14 @@ export function MasonryCard({
         )}
         {/* 券角标（图左上） */}
         {couponAmount > 0 && (
-          <span className="absolute left-2 top-2 flex items-center gap-0.5 rounded-md bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+          <span className="absolute left-2 top-2 flex items-center gap-0.5 rounded-md bg-red-500 px-1.5 py-0.5 text-11 font-bold text-white shadow-sm">
             <Tag className="h-3 w-3" />
             ¥{couponAmount}券
           </span>
         )}
         {/* 佣金角标（图右上） */}
         {commissionRate > 0 && (
-          <span className="absolute right-2 top-2 rounded-md bg-emerald-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+          <span className="absolute right-2 top-2 rounded-md bg-emerald-500 px-1.5 py-0.5 text-11 font-bold text-white shadow-sm">
             {commissionRate}%
           </span>
         )}
@@ -76,24 +76,24 @@ export function MasonryCard({
 
       {/* 内容区 */}
       <div className="flex flex-1 flex-col p-2.5">
-        <div className="line-clamp-2 min-h-[32px] text-[12px] font-semibold leading-4 text-foreground">{title}</div>
+        <div className="line-clamp-2 min-h-[32px] text-12 font-semibold leading-4 text-foreground">{title}</div>
         <div className="mt-1.5 flex items-center gap-1">
-          <span className={`rounded border px-1 py-px text-[9px] font-semibold ${PLATFORM_CHIP[platformCode] ?? "bg-default-100 text-default-500 border-default-200 dark:bg-default-800 dark:text-default-400 dark:border-default-700"}`}>
+          <span className={`rounded border px-1 py-px text-11 font-semibold ${PLATFORM_CHIP[platformCode] ?? "bg-default-100 text-default-500 border-default-200 dark:bg-default-800 dark:text-default-400 dark:border-default-700"}`}>
             {label}
           </span>
           {offer.shopName && (
-            <span className="truncate text-[9px] text-default-400">{offer.shopName}</span>
+            <span className="truncate text-11 text-default-400">{offer.shopName}</span>
           )}
         </div>
 
         {/* 价格区：到手价大 + 返利橙 */}
         <div className="mt-1.5 flex items-baseline gap-1">
-          <span className="text-[9px] font-semibold text-default-400">到手</span>
-          <span className="text-[16px] font-extrabold leading-none text-foreground">¥{payPrice}</span>
+          <span className="text-11 font-semibold text-default-400">到手</span>
+          <span className="text-base font-extrabold leading-none text-foreground">¥{payPrice}</span>
         </div>
         <div className="mt-0.5 flex items-center gap-1">
-          <span className="text-[12px] font-extrabold text-orange-500 dark:text-orange-400">返 ¥{estRebate}</span>
-          <span className="text-[9px] text-default-400">净 ¥{offer.estNetCost}</span>
+          <span className="text-12 font-extrabold text-orange-500 dark:text-orange-400">返 ¥{estRebate}</span>
+          <span className="text-11 text-default-400">净 ¥{offer.estNetCost}</span>
         </div>
 
         {/* CTA 行 */}
@@ -101,7 +101,7 @@ export function MasonryCard({
           <button
             type="button"
             onClick={() => onBuy(offer)}
-            className="flex h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 text-[12px] font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            className="flex h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 text-12 font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
             <ShoppingBag className="h-3.5 w-3.5" />
             去购买

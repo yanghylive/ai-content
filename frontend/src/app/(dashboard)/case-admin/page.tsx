@@ -303,7 +303,7 @@ function CaseListTable({ cases }: { cases: AdminCase[] }) {
               <tr key={c.id}>
                 <td>
                   <div className="font-medium text-foreground">{c.title}</div>
-                  <div className="text-[12px] text-default-500">/{c.slug}</div>
+                  <div className="text-12 text-default-500">/{c.slug}</div>
                 </td>
                 <td>{PROVENANCE_LABEL[c.provenanceType] ?? c.provenanceType}</td>
                 <td>
@@ -359,10 +359,10 @@ function FeaturedManager({
               <div key={f.caseId} className="flex items-center justify-between gap-2 rounded-lg border border-divider px-3 py-2">
                 <div className="flex min-w-0 items-center gap-2">
                   <Star className="h-4 w-4 shrink-0 text-[var(--kaypal-v3-amber)]" />
-                  <span className="text-[13px] font-medium text-foreground">
+                  <span className="text-13 font-medium text-foreground">
                     {index + 1}. {f.title}
                   </span>
-                  <span className="truncate text-[12px] text-default-500">/{f.slug}</span>
+                  <span className="truncate text-12 text-default-500">/{f.slug}</span>
                 </div>
                 <div className="flex shrink-0 gap-1">
                   <OpsButton tone="ghost" onClick={() => onMove(index, -1)} disabled={index === 0}>
@@ -389,8 +389,8 @@ function FeaturedManager({
             {candidates.map((c) => (
               <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg border border-divider px-3 py-2">
                 <div className="min-w-0">
-                  <div className="truncate text-[13px] font-medium text-foreground">{c.title}</div>
-                  <div className="truncate text-[12px] text-default-500">/{c.slug}</div>
+                  <div className="truncate text-13 font-medium text-foreground">{c.title}</div>
+                  <div className="truncate text-12 text-default-500">/{c.slug}</div>
                 </div>
                 <OpsButton tone="ghost" onClick={() => onAdd(c.id)}>
                   <Heart className="h-3.5 w-3.5" /> 添加精选

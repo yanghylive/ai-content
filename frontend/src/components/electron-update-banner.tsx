@@ -124,15 +124,15 @@ export function ElectronUpdateBanner() {
               <div className="flex items-center gap-2">
                 <Download className="h-5 w-5 text-primary" aria-hidden="true" />
                 <div>
-                  <p className="text-[14px] font-semibold leading-tight">
+                  <p className="text-14 font-semibold leading-tight">
                     正在下载 v{version}
                   </p>
-                  <p className="text-[12px] text-default-500">
+                  <p className="text-12 text-default-500">
                     下载完成后会提示你重启
                   </p>
                 </div>
               </div>
-              <span className="text-[13px] font-semibold tabular-nums text-primary">
+              <span className="text-13 font-semibold tabular-nums text-primary">
                 {state.progress ?? 0}%
               </span>
             </div>
@@ -156,10 +156,10 @@ export function ElectronUpdateBanner() {
             <div className="flex items-start gap-2">
               <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
               <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-semibold leading-tight text-success-700">
+                <p className="text-14 font-semibold leading-tight text-success-700">
                   v{version} 已下载完成
                 </p>
-                <p className="mt-0.5 text-[12px] text-default-600">
+                <p className="mt-0.5 text-12 text-default-600">
                   重启应用即可安装新版本。
                 </p>
               </div>
@@ -204,7 +204,7 @@ export function ElectronUpdateBanner() {
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
-              <p className="text-[14px] font-semibold leading-tight">
+              <p className="text-14 font-semibold leading-tight">
                 发现新版本 v{version}
               </p>
               <Chip size="sm" color="primary" variant="flat">
@@ -220,7 +220,7 @@ export function ElectronUpdateBanner() {
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
-          <p className="text-[12px] leading-5 text-default-600">{note}</p>
+          <p className="text-12 leading-5 text-default-600">{note}</p>
           <div className="flex items-center justify-end gap-2">
             <Button
               size="sm"

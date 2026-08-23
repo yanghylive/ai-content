@@ -114,8 +114,8 @@ export function ContactAddWizard({
 
           {/* 步骤条 */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12 }}>
-            <div style={{ flex: 1, height: 4, borderRadius: 99, background: "#d98a2d" }} />
-            <div style={{ flex: 1, height: 4, borderRadius: 99, background: currentStep === "message" ? "#d98a2d" : "rgba(142,165,190,.3)" }} />
+            <div style={{ flex: 1, height: 4, borderRadius: 99, background: "var(--kaypal-v3-amber)" }} />
+            <div style={{ flex: 1, height: 4, borderRadius: 99, background: currentStep === "message" ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.3)" }} />
           </div>
 
           {currentStep === "targets" && (
@@ -133,7 +133,7 @@ export function ContactAddWizard({
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 7, fontSize: 11.5, color: "var(--mx-muted)" }}>
                   <span>已输入 {numberCount} 个号码</span>
                   {numberCount > 0 && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#059669", fontWeight: 600 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "var(--kaypal-v3-success)", fontWeight: 600 }}>
                       <CheckCircle2 width={13} height={13} /> 可以下一步
                     </span>
                   )}
@@ -156,8 +156,8 @@ export function ContactAddWizard({
                 <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)" }}>设置验证消息</h2>
                 <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>将向 {numberCount} 个号码发送好友申请</p>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 9, padding: 10, borderRadius: 10, background: "rgba(222,150,57,.1)", border: "1px solid rgba(222,150,57,.35)" }}>
-                  <ShieldAlert width={16} height={16} style={{ color: "#b45309", flexShrink: 0, marginTop: 1 }} />
-                  <p style={{ fontSize: 11.5, color: "#b45309", lineHeight: 1.5 }}>加好友是高风险操作，建议 24 小时内不超过 15 人。系统已默认按安全参数执行。</p>
+                  <ShieldAlert width={16} height={16} style={{ color: "var(--kaypal-v3-amber)", flexShrink: 0, marginTop: 1 }} />
+                  <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-amber)", lineHeight: 1.5 }}>加好友是高风险操作，建议 24 小时内不超过 15 人。系统已默认按安全参数执行。</p>
                 </div>
                 <label style={{ display: "block", marginTop: 10 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>验证消息</span>
@@ -176,7 +176,7 @@ export function ContactAddWizard({
                       key={template}
                       type="button"
                       onClick={() => setFormData((prev) => ({ ...prev, verifyMessage: template }))}
-                      style={{ padding: "6px 11px", borderRadius: 9, fontSize: 11.5, fontWeight: 500, background: formData.verifyMessage === template ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: formData.verifyMessage === template ? "#d98a2d" : "var(--mx-ink)", border: "1px solid " + (formData.verifyMessage === template ? "rgba(222,150,57,.45)" : "rgba(142,165,190,.3)") }}
+                      style={{ padding: "6px 11px", borderRadius: 9, fontSize: 11.5, fontWeight: 500, background: formData.verifyMessage === template ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: formData.verifyMessage === template ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: "1px solid " + (formData.verifyMessage === template ? "rgba(222,150,57,.45)" : "rgba(142,165,190,.3)") }}
                     >
                       {template}
                     </button>

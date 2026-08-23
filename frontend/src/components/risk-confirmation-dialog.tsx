@@ -90,7 +90,7 @@ export function RiskConfirmationDialog({
           <>
             <ModalHeader className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[17px] font-bold leading-6">
+                <span className="text-lg font-bold leading-6">
                   {title}
                 </span>
                 <Chip color={meta.color} size="sm" variant="flat">

@@ -119,7 +119,7 @@ export default function ReleasePlansPage() {
         </header>
         <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
           {err ? (
-            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 12 }}>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginBottom: 12 }}>
               ⚠️ {err}
             </p>
           ) : null}
@@ -140,7 +140,7 @@ export default function ReleasePlansPage() {
         </p>
       </header>
       {err ? (
-        <p style={{ fontSize: 13, color: "#dc2626" }}>⚠️ {err}</p>
+        <p style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>⚠️ {err}</p>
       ) : null}
       <div className="kaypal-v3-panel p-6">{listView}</div>
     </div>

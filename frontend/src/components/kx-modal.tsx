@@ -66,7 +66,7 @@ export function KxModal({
     >
       <ModalContent>
         {title ? (
-          <ModalHeader className="text-[16px] font-bold text-[var(--kx-ink)]">{title}</ModalHeader>
+          <ModalHeader className="text-base font-bold text-[var(--kx-ink)]">{title}</ModalHeader>
         ) : null}
         <ModalBody>{children}</ModalBody>
         {footer ? (

@@ -52,7 +52,7 @@ export function FeatureRoadmap({
             alignItems: "center",
             gap: 8,
             marginBottom: 16,
-            color: "#94a3b8",
+            color: "var(--kaypal-v3-muted)",
           }}
         >
           <button
@@ -66,7 +66,7 @@ export function FeatureRoadmap({
               borderRadius: 8,
               background: "none",
               border: "none",
-              color: "#94a3b8",
+              color: "var(--kaypal-v3-muted)",
               fontSize: 13,
               cursor: "pointer",
             }}
@@ -106,14 +106,14 @@ export function FeatureRoadmap({
               能力路线图
             </span>
           </div>
-          <h1 style={{ fontSize: 19, fontWeight: 700, margin: 0, color: "#f1f5f9" }}>
+          <h1 style={{ fontSize: 19, fontWeight: 700, margin: 0, color: "var(--kaypal-v3-paper-muted)" }}>
             {title}
           </h1>
           <p
             style={{
               fontSize: 13,
               margin: "8px 0 0",
-              color: "#94a3b8",
+              color: "var(--kaypal-v3-muted)",
               lineHeight: 1.8,
             }}
           >
@@ -141,11 +141,11 @@ export function FeatureRoadmap({
               >
                 <row.icon
                   size={16}
-                  style={{ color: "#3b82f6", flexShrink: 0, marginTop: 2 }}
+                  style={{ color: "var(--kaypal-v3-cobalt)", flexShrink: 0, marginTop: 2 }}
                 />
                 <div>
                   <div
-                    style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}
+                    style={{ fontSize: 11, fontWeight: 600, color: "var(--kaypal-v3-muted)" }}
                   >
                     {row.label}
                   </div>

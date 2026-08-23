@@ -956,7 +956,7 @@ export function ContentOptimizationWorkbench() {
   const resultActions = (
     <>
       <button
-        className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+        className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
         onClick={() => void saveCurrentVersion()}
         type="button"
       >
@@ -964,7 +964,7 @@ export function ContentOptimizationWorkbench() {
         保存版本
       </button>
       <button
-        className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition hover:opacity-90"
+        className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
         onClick={() => void setCurrentAsOfficial()}
         type="button"
       >
@@ -976,7 +976,7 @@ export function ContentOptimizationWorkbench() {
         设为正式稿
       </button>
       <button
-        className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition hover:opacity-90"
+        className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
         onClick={() => void sendCurrentToCompliance()}
         type="button"
       >
@@ -1004,10 +1004,10 @@ export function ContentOptimizationWorkbench() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">内容生产</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   创作优化
                 </h1>
-                <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   把素材、样本和选题加工成可发布版本，保留原文，输出评分依据、改写版本和发布风险提示。
                 </p>
               </div>
@@ -1024,7 +1024,7 @@ export function ContentOptimizationWorkbench() {
                   key={label}
                 >
                   <p className="kaypal-v3-label">{label}</p>
-                  <p className="mt-1 text-[14px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <p className="mt-1 text-14 font-bold text-[var(--kaypal-v3-ink)]">
                     {value}
                   </p>
                 </div>
@@ -1036,7 +1036,7 @@ export function ContentOptimizationWorkbench() {
             <p className="kaypal-v3-label">下一步</p>
             <div className="mt-3 flex flex-col gap-2">
               <Link
-                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 href="/intelligence/viral"
               >
                 爆款拆解
@@ -1047,7 +1047,7 @@ export function ContentOptimizationWorkbench() {
                 />
               </Link>
               <Link
-                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 href="/compliance"
               >
                 发布前检查
@@ -1058,7 +1058,7 @@ export function ContentOptimizationWorkbench() {
                 />
               </Link>
               <Link
-                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[13px] font-semibold text-white"
+                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-13 font-semibold text-white"
                 href="/strategies"
               >
                 内容策略
@@ -1130,10 +1130,10 @@ export function ContentOptimizationWorkbench() {
                   />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-[14px] font-bold leading-5">
+                  <span className="block text-14 font-bold leading-5">
                     {item.label}
                   </span>
-                  <span className="mt-0.5 block text-[12px] leading-4 text-[var(--kaypal-v3-muted)]">
+                  <span className="mt-0.5 block text-12 leading-4 text-[var(--kaypal-v3-muted)]">
                     {item.caption}
                   </span>
                 </span>
@@ -1147,7 +1147,7 @@ export function ContentOptimizationWorkbench() {
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="目标平台">
                 <select
-                  className="h-9 w-full px-3 text-[13px]"
+                  className="h-9 w-full px-3 text-13"
                   onChange={(event) =>
                     setPlatform(event.target.value as OptimizationPlatform)
                   }
@@ -1164,7 +1164,7 @@ export function ContentOptimizationWorkbench() {
               {mode === "title" ? (
                 <Field label="标题目标">
                   <input
-                    className="h-9 w-full px-3 text-[13px]"
+                    className="h-9 w-full px-3 text-13"
                     onChange={(event) => setTitleGoal(event.target.value)}
                     value={titleGoal}
                   />
@@ -1174,7 +1174,7 @@ export function ContentOptimizationWorkbench() {
               {mode === "rewrite" ? (
                 <Field label="改写语气">
                   <input
-                    className="h-9 w-full px-3 text-[13px]"
+                    className="h-9 w-full px-3 text-13"
                     onChange={(event) => setTone(event.target.value)}
                     value={tone}
                   />
@@ -1184,7 +1184,7 @@ export function ContentOptimizationWorkbench() {
               {mode === "xhs" ? (
                 <Field label="优化目标">
                   <input
-                    className="h-9 w-full px-3 text-[13px]"
+                    className="h-9 w-full px-3 text-13"
                     onChange={(event) => setXhsGoal(event.target.value)}
                     value={xhsGoal}
                   />
@@ -1197,14 +1197,14 @@ export function ContentOptimizationWorkbench() {
                 <>
                   <Field label="待评分标题">
                     <input
-                      className="h-10 w-full px-3 text-[13px]"
+                      className="h-10 w-full px-3 text-13"
                       onChange={(event) => setTitle(event.target.value)}
                       value={title}
                     />
                   </Field>
                   <Field label="目标关键词">
                     <input
-                      className="h-10 w-full px-3 text-[13px]"
+                      className="h-10 w-full px-3 text-13"
                       onChange={(event) => setKeywords(event.target.value)}
                       value={keywords}
                     />
@@ -1216,19 +1216,19 @@ export function ContentOptimizationWorkbench() {
                 <>
                   <Field label="待改写正文">
                     <textarea
-                      className="min-h-[180px] w-full resize-y px-3 py-2 text-[13px] leading-5"
+                      className="min-h-[180px] w-full resize-y px-3 py-2 text-13 leading-5"
                       onChange={(event) => setContent(event.target.value)}
                       value={content}
                     />
                   </Field>
                   <Field label="改写目标">
                     <input
-                      className="h-10 w-full px-3 text-[13px]"
+                      className="h-10 w-full px-3 text-13"
                       onChange={(event) => setGoals(event.target.value)}
                       value={goals}
                     />
                   </Field>
-                  <label className="flex items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 py-2 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                  <label className="flex items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 py-2 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                     <input
                       checked={keepFacts}
                       className="h-4 w-4"
@@ -1244,14 +1244,14 @@ export function ContentOptimizationWorkbench() {
                 <>
                   <Field label="原笔记标题">
                     <input
-                      className="h-10 w-full px-3 text-[13px]"
+                      className="h-10 w-full px-3 text-13"
                       onChange={(event) => setXhsTitle(event.target.value)}
                       value={xhsTitle}
                     />
                   </Field>
                   <Field label="笔记正文">
                     <textarea
-                      className="min-h-[170px] w-full resize-y px-3 py-2 text-[13px] leading-5"
+                      className="min-h-[170px] w-full resize-y px-3 py-2 text-13 leading-5"
                       onChange={(event) => setContent(event.target.value)}
                       value={content}
                     />
@@ -1259,7 +1259,7 @@ export function ContentOptimizationWorkbench() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Field label="目标用户">
                       <input
-                        className="h-10 w-full px-3 text-[13px]"
+                        className="h-10 w-full px-3 text-13"
                         onChange={(event) =>
                           setTargetAudience(event.target.value)
                         }
@@ -1268,7 +1268,7 @@ export function ContentOptimizationWorkbench() {
                     </Field>
                     <Field label="账号定位">
                       <input
-                        className="h-10 w-full px-3 text-[13px]"
+                        className="h-10 w-full px-3 text-13"
                         onChange={(event) =>
                           setAccountPositioning(event.target.value)
                         }
@@ -1278,7 +1278,7 @@ export function ContentOptimizationWorkbench() {
                   </div>
                   <Field label="话题标签">
                     <input
-                      className="h-10 w-full px-3 text-[13px]"
+                      className="h-10 w-full px-3 text-13"
                       onChange={(event) => setHashtags(event.target.value)}
                       value={hashtags}
                     />
@@ -1289,7 +1289,7 @@ export function ContentOptimizationWorkbench() {
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 onClick={() => setAiFillOpen(true)}
                 type="button"
               >
@@ -1301,7 +1301,7 @@ export function ContentOptimizationWorkbench() {
                 AI 候选填写
               </button>
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isLoading}
                 onClick={() => void runOptimization()}
                 type="button"
@@ -1322,7 +1322,7 @@ export function ContentOptimizationWorkbench() {
                 {isLoading ? "处理中" : "开始优化"}
               </button>
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 onClick={resetResult}
                 type="button"
               >
@@ -1443,10 +1443,10 @@ function ContentSourcePanel({
         </span>
         <div className="min-w-0">
           <p className="kaypal-v3-label">内容来源</p>
-          <h2 className="mt-1 text-[15px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+          <h2 className="mt-1 text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
             从真实内容开始
           </h2>
-          <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+          <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
             可从文章库、素材库载入，也可以保持手动输入。
           </p>
         </div>
@@ -1455,7 +1455,7 @@ function ContentSourcePanel({
       <div className="mt-4 grid gap-3 md:grid-cols-[160px_minmax(0,1fr)]">
         <Field label="来源类型">
           <select
-            className="h-9 w-full px-3 text-[13px]"
+            className="h-9 w-full px-3 text-13"
             onChange={(event) => onChangeKind(event.target.value as SourceKind)}
             value={sourceKind}
           >
@@ -1469,7 +1469,7 @@ function ContentSourcePanel({
 
         <Field label="选择内容">
           <select
-            className="h-9 w-full px-3 text-[13px]"
+            className="h-9 w-full px-3 text-13"
             disabled={sourceKind === "manual" || sourceLoading}
             onChange={(event) => onSelectSource(event.target.value)}
             value={selectedSourceId}
@@ -1491,12 +1491,12 @@ function ContentSourcePanel({
       </div>
 
       <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <p className="min-w-0 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+        <p className="min-w-0 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
           当前：{currentSourceSummary}
         </p>
         <div className="flex shrink-0 flex-wrap gap-2">
           <button
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+            className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
             onClick={onRefresh}
             type="button"
           >
@@ -1508,7 +1508,7 @@ function ContentSourcePanel({
             更新列表
           </button>
           <button
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition hover:opacity-90"
+            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
             onClick={onApply}
             type="button"
           >
@@ -1536,10 +1536,10 @@ function ContentSourcePanel({
               onClick={() => onSelectSource(item.id)}
               type="button"
             >
-              <span className="line-clamp-1 text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+              <span className="line-clamp-1 text-13 font-bold text-[var(--kaypal-v3-ink)]">
                 {item.title}
               </span>
-              <span className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+              <span className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                 {item.summary || "暂无摘要"}
               </span>
             </button>
@@ -1569,10 +1569,10 @@ function ContextTemplatePanel({
         </span>
         <div className="min-w-0">
           <p className="kaypal-v3-label">账号语气</p>
-          <h2 className="mt-1 text-[15px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+          <h2 className="mt-1 text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
             复用常用表达
           </h2>
-          <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+          <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
             先选账号语气和平台模板，再进入优化。
           </p>
         </div>
@@ -1581,7 +1581,7 @@ function ContextTemplatePanel({
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <Field label="账号语气">
           <select
-            className="h-9 w-full px-3 text-[13px]"
+            className="h-9 w-full px-3 text-13"
             onChange={(event) =>
               onBrandVoiceChange(event.target.value as BrandVoiceId)
             }
@@ -1597,7 +1597,7 @@ function ContextTemplatePanel({
 
         <Field label="平台模板">
           <select
-            className="h-9 w-full px-3 text-[13px]"
+            className="h-9 w-full px-3 text-13"
             onChange={(event) =>
               onTemplateChange(event.target.value as PlatformTemplateId)
             }
@@ -1613,10 +1613,10 @@ function ContextTemplatePanel({
       </div>
 
       <div className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
-        <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+        <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
           当前建议
         </p>
-        <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+        <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
           {brandVoiceOptions.find((item) => item.id === brandVoice)?.goal}
         </p>
       </div>
@@ -1633,7 +1633,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+      <span className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
         {label}
       </span>
       <span className="mt-1 block">{children}</span>
@@ -1647,10 +1647,10 @@ function EmptyResult({ activeMode }: { activeMode: string }) {
       <span className="kaypal-v3-icon-tile">
         <FilePenLine aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />
       </span>
-      <h2 className="mt-3 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+      <h2 className="mt-3 text-base font-bold text-[var(--kaypal-v3-ink)]">
         等待{activeMode}结果
       </h2>
-      <p className="mt-1 max-w-md text-[13px] leading-5 text-[var(--kaypal-v3-muted)]">
+      <p className="mt-1 max-w-md text-13 leading-5 text-[var(--kaypal-v3-muted)]">
         结果会显示评分、改写版本、命中项和后续建议，原始输入不会被覆盖。
       </p>
     </div>
@@ -1683,11 +1683,11 @@ function VersionVault({
             className="h-4 w-4 text-[var(--kaypal-v3-accent-ink)]"
             strokeWidth={1.8}
           />
-          <h2 className="text-[15px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+          <h2 className="text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
             最近版本
           </h2>
         </div>
-        <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+        <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
           优化结果先保存为独立版本，再进入发布前检查；原始输入不会被覆盖。
         </p>
       </div>
@@ -1706,39 +1706,39 @@ function VersionVault({
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-1 text-[11px] font-bold text-[var(--kaypal-v3-soft-ink)]">
+                    <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-1 text-11 font-bold text-[var(--kaypal-v3-soft-ink)]">
                       {version.modeLabel}
                     </span>
                     {version.isOfficial ? (
-                      <span className="rounded-[8px] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-2 py-1 text-[11px] font-bold text-[var(--kaypal-v3-success)]">
+                      <span className="rounded-[8px] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-2 py-1 text-11 font-bold text-[var(--kaypal-v3-success)]">
                         正式稿
                       </span>
                     ) : null}
-                    <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] px-2 py-1 text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                    <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] px-2 py-1 text-11 font-bold text-[var(--kaypal-v3-muted)]">
                       {platformLabel(version.platform)}
                     </span>
                     <span
-                      className={`rounded-[8px] border px-2 py-1 text-[11px] font-bold ${complianceTone(
+                      className={`rounded-[8px] border px-2 py-1 text-11 font-bold ${complianceTone(
                         version.compliance,
                       )}`}
                     >
                       {complianceText}
                     </span>
                   </div>
-                  <h3 className="mt-2 line-clamp-1 text-[14px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <h3 className="mt-2 line-clamp-1 text-14 font-bold text-[var(--kaypal-v3-ink)]">
                     {version.title}
                   </h3>
-                  <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     {version.sourceSummary || version.content}
                   </p>
-                  <p className="mt-2 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-2 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                     更新于 {formatDateTime(version.updatedAt)}
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                   <button
-                    className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={diffLoadingId === version.id}
                     onClick={() => onCompare(version)}
                     type="button"
@@ -1759,7 +1759,7 @@ function VersionVault({
                     对比
                   </button>
                   <button
-                    className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                    className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                     onClick={() => onRestore(version)}
                     type="button"
                   >
@@ -1772,7 +1772,7 @@ function VersionVault({
                   </button>
                   {!version.isOfficial ? (
                     <button
-                      className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                      className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                       onClick={() => onOfficial(version)}
                       type="button"
                     >
@@ -1785,7 +1785,7 @@ function VersionVault({
                     </button>
                   ) : null}
                   <button
-                    className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition hover:opacity-90"
+                    className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
                     onClick={() => onSend(version)}
                     type="button"
                   >
@@ -1803,7 +1803,7 @@ function VersionVault({
         </div>
       ) : (
         <div className="p-4">
-          <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper-soft)] p-4 text-[13px] leading-5 text-[var(--kaypal-v3-muted)]">
+          <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper-soft)] p-4 text-13 leading-5 text-[var(--kaypal-v3-muted)]">
             暂无保存版本。生成优化结果后，可以在结果区保存版本或送发布前检查。
           </div>
         </div>
@@ -1842,24 +1842,24 @@ function VersionComparePanel({
               className="h-4 w-4 text-[var(--kaypal-v3-accent-ink)]"
               strokeWidth={1.8}
             />
-            <h2 className="text-[15px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+            <h2 className="text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
               版本对比
             </h2>
           </div>
-          <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+          <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
             对照原文和当前版本，确认是否恢复继续编辑。
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+            className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
             onClick={onClose}
             type="button"
           >
             收起
           </button>
           <button
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition hover:opacity-90"
+            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
             onClick={onRestore}
             type="button"
           >
@@ -1882,7 +1882,7 @@ function VersionComparePanel({
                 key={label}
               >
                 <p className="kaypal-v3-label">{label}</p>
-                <p className="mt-1 text-[18px] font-bold text-[var(--kaypal-v3-ink)]">
+                <p className="mt-1 text-lg font-bold text-[var(--kaypal-v3-ink)]">
                   {value}
                 </p>
               </div>
@@ -1926,10 +1926,10 @@ function CompareTextBlock({
   return (
     <div className="min-w-0 border-b border-[var(--kaypal-v3-border)] p-4 md:border-b-0 md:border-r md:last:border-r-0">
       <p className="kaypal-v3-label">{label}</p>
-      <h3 className="mt-1 line-clamp-2 text-[14px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+      <h3 className="mt-1 line-clamp-2 text-14 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
         {title || "无标题"}
       </h3>
-      <pre className="mt-3 max-h-[320px] overflow-auto whitespace-pre-wrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+      <pre className="mt-3 max-h-[320px] overflow-auto whitespace-pre-wrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
         {displayContent || "暂无正文"}
       </pre>
     </div>
@@ -1952,7 +1952,7 @@ function ResultShell({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="kaypal-v3-label">{subtitle}</p>
-          <h2 className="mt-1 text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+          <h2 className="mt-1 text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
             {title}
           </h2>
         </div>
@@ -1975,7 +1975,7 @@ function CopyButton({
 }) {
   return (
     <button
-      className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+      className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
       onClick={onClick}
       type="button"
     >
@@ -2015,15 +2015,15 @@ function TitleResultView({
           <p className="kaypal-v3-label">总分</p>
           <div className="mt-2 flex items-end gap-2">
             <strong
-              className={`text-[42px] leading-none ${scoreTone(result.overallScore)}`}
+              className={`text-4xl leading-none ${scoreTone(result.overallScore)}`}
             >
               {result.overallScore}
             </strong>
-            <span className="pb-1 text-[13px] font-semibold text-[var(--kaypal-v3-muted)]">
+            <span className="pb-1 text-13 font-semibold text-[var(--kaypal-v3-muted)]">
               {qualityLabel[result.qualityLevel]}
             </span>
           </div>
-          <p className="mt-3 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+          <p className="mt-3 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
             {result.originalTitle}
           </p>
         </div>
@@ -2035,11 +2035,11 @@ function TitleResultView({
               key={dimension.key}
             >
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                   {dimension.label}
                 </p>
                 <span
-                  className={`text-[13px] font-bold ${scoreTone(dimension.score)}`}
+                  className={`text-13 font-bold ${scoreTone(dimension.score)}`}
                 >
                   {dimension.score}
                 </span>
@@ -2052,7 +2052,7 @@ function TitleResultView({
                   }}
                 />
               </div>
-              <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+              <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                 {dimension.evidence}
               </p>
             </div>
@@ -2105,10 +2105,10 @@ function RewriteResultView({
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                   {variant.label}
                 </p>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   {variant.title}
                 </p>
               </div>
@@ -2117,7 +2117,7 @@ function RewriteResultView({
                 onClick={() => onCopy(variant.content, variant.label)}
               />
             </div>
-            <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
               {variant.highlight}
             </p>
           </article>
@@ -2180,7 +2180,7 @@ function XhsResultView({
           >
             <p className="kaypal-v3-label">{label}</p>
             <p
-              className={`mt-1 text-[24px] font-bold ${scoreTone(Number(score))}`}
+              className={`mt-1 text-2xl font-bold ${scoreTone(Number(score))}`}
             >
               {score}
             </p>
@@ -2206,11 +2206,11 @@ function OutputBlock({ content, title }: { content: string; title: string }) {
   return (
     <div className="overflow-hidden rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)]">
       <div className="border-b border-[var(--kaypal-v3-border)] px-3 py-2">
-        <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+        <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
           {title}
         </p>
       </div>
-      <pre className="max-h-[340px] overflow-auto whitespace-pre-wrap p-3 text-[13px] leading-6 text-[var(--kaypal-v3-soft-ink)]">
+      <pre className="max-h-[340px] overflow-auto whitespace-pre-wrap p-3 text-13 leading-6 text-[var(--kaypal-v3-soft-ink)]">
         {content}
       </pre>
     </div>
@@ -2239,7 +2239,7 @@ function TwoColumnLists({
 function Checklist({ items, title }: { items: string[]; title: string }) {
   return (
     <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
-      <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+      <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
         {title}
       </p>
       <div className="mt-3 flex flex-col gap-2">
@@ -2250,7 +2250,7 @@ function Checklist({ items, title }: { items: string[]; title: string }) {
               className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-success)]"
               strokeWidth={1.8}
             />
-            <span className="text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+            <span className="text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
               {item}
             </span>
           </div>
@@ -2265,13 +2265,13 @@ function HitItems({ items }: { items: OptimizationHitItem[] }) {
 
   return (
     <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
-      <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+      <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
         命中项
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {items.map((item) => (
           <span
-            className={`inline-flex max-w-full items-center gap-2 rounded-[8px] border px-2.5 py-1 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] ${hitTone(item.type)}`}
+            className={`inline-flex max-w-full items-center gap-2 rounded-[8px] border px-2.5 py-1 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] ${hitTone(item.type)}`}
             key={`${item.type}-${item.text}-${item.reason}`}
             title={item.reason}
           >

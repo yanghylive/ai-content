@@ -73,7 +73,7 @@ function SectionCard({
           <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-default-100 text-default-700">
             {icon}
           </span>
-          <h2 className="text-[16px] font-bold leading-6 text-foreground">
+          <h2 className="text-base font-bold leading-6 text-foreground">
             {title}
           </h2>
         </div>
@@ -89,7 +89,7 @@ function TextList({ items }: { items: string[] }) {
       {items.map((item) => (
         <li
           key={item}
-          className="flex gap-3 text-[14px] leading-6 text-default-700"
+          className="flex gap-3 text-14 leading-6 text-default-700"
         >
           <CheckCircle2
             className="mt-1 h-4 w-4 shrink-0 text-success"
@@ -114,7 +114,7 @@ function MobileTextList({ items }: { items: string[] }) {
           <CheckCircle2
             width={14}
             height={14}
-            style={{ color: "#059669", flexShrink: 0, marginTop: 2 }}
+            style={{ color: "var(--kaypal-v3-success)", flexShrink: 0, marginTop: 2 }}
           />
           <span>{item}</span>
         </li>
@@ -164,7 +164,7 @@ export default function ReleaseNotesPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
             {highlights.map((item) => (
               <div key={item.title} className="mx-card" style={{ padding: 13, display: "flex", gap: 11, alignItems: "flex-start" }}>
-                <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                   {item.icon}
                 </span>
                 <span style={{ minWidth: 0 }}>
@@ -199,18 +199,18 @@ export default function ReleaseNotesPage() {
               </Chip>
               <Chip variant="flat">功能完整保留</Chip>
             </div>
-            <h1 className="text-[26px] font-bold leading-9 text-foreground">
+            <h1 className="text-2xl font-bold leading-9 text-foreground">
               v{currentVersion} 更新说明
             </h1>
-            <p className="mt-2 max-w-3xl text-[14px] leading-6 text-default-600">
+            <p className="mt-2 max-w-3xl text-14 leading-6 text-default-600">
               这次更新重点解决 Windows 安装后本地服务无法启动的问题，并加强账号凭据保护和安装包发布前自测。
             </p>
           </div>
           <div className="rounded-[8px] border border-divider bg-background px-4 py-3 text-right">
-            <div className="text-[11px] font-semibold leading-4 text-default-500">
+            <div className="text-11 font-semibold leading-4 text-default-500">
               版本
             </div>
-            <div className="text-[22px] font-bold leading-8 text-foreground">
+            <div className="text-2xl font-bold leading-8 text-foreground">
               v{currentVersion}
             </div>
           </div>
@@ -226,10 +226,10 @@ export default function ReleaseNotesPage() {
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[8px] bg-primary-50 text-primary">
               {item.icon}
             </div>
-            <h2 className="text-[15px] font-bold leading-6 text-foreground">
+            <h2 className="text-14 font-bold leading-6 text-foreground">
               {item.title}
             </h2>
-            <p className="mt-2 text-[13px] leading-6 text-default-600">
+            <p className="mt-2 text-13 leading-6 text-default-600">
               {item.text}
             </p>
           </div>

@@ -59,23 +59,23 @@ export function BuyModal({ offer, onClose, onCopied }: BuyModalProps) {
             </ModalHeader>
             <ModalBody className="pt-0">
               <div className="rounded-xl border border-default-200 bg-default-50 p-3 dark:border-default-800 dark:bg-default-100/5">
-                <div className="line-clamp-2 text-[13px] font-semibold text-foreground">{offer.title}</div>
+                <div className="line-clamp-2 text-13 font-semibold text-foreground">{offer.title}</div>
                 <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                  <span className="text-[15px] font-extrabold text-foreground">
-                    <span className="text-[11px] font-semibold text-default-500">到手价 ¥</span>
+                  <span className="text-14 font-extrabold text-foreground">
+                    <span className="text-11 font-semibold text-default-500">到手价 ¥</span>
                     {offer.payPrice}
                   </span>
-                  <span className="text-[15px] font-extrabold text-orange-500 dark:text-orange-400">返 ¥{offer.estRebate}</span>
-                  <span className="text-[12px] text-default-500">净成本 ¥{offer.estNetCost}</span>
+                  <span className="text-14 font-extrabold text-orange-500 dark:text-orange-400">返 ¥{offer.estRebate}</span>
+                  <span className="text-12 text-default-500">净成本 ¥{offer.estNetCost}</span>
                 </div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {offer.couponAmount > 0 && (
-                    <span className="rounded bg-red-50 px-1.5 py-px text-[11px] font-bold text-red-600 dark:bg-red-500/10 dark:text-red-300">
+                    <span className="rounded bg-red-50 px-1.5 py-px text-11 font-bold text-red-600 dark:bg-red-500/10 dark:text-red-300">
                       ¥{offer.couponAmount}优惠券
                     </span>
                   )}
                   {offer.commissionRate > 0 && (
-                    <span className="rounded bg-emerald-50 px-1.5 py-px text-[11px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
+                    <span className="rounded bg-emerald-50 px-1.5 py-px text-11 font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
                       佣金 {offer.commissionRate}%
                     </span>
                   )}
@@ -86,21 +86,21 @@ export function BuyModal({ offer, onClose, onCopied }: BuyModalProps) {
                 <div className="mt-1">
                   <div className="flex items-start gap-2 rounded-lg border border-default-200 bg-default-50 p-2.5 dark:border-default-800 dark:bg-default-100/5">
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    <div className="min-w-0 break-all font-mono text-[11px] leading-5 text-default-600 dark:text-default-400">
+                    <div className="min-w-0 break-all font-mono text-11 leading-5 text-default-600 dark:text-default-400">
                       {promoUrl}
                     </div>
                   </div>
-                  <p className="mt-1.5 text-[11px] text-default-500">
+                  <p className="mt-1.5 text-11 text-default-500">
                     复制下方口令/链接，回原平台打开并下单，返利将自动追踪入账
                   </p>
                 </div>
               ) : error ? (
-                <div className="mt-1 rounded-lg bg-red-50 p-2.5 text-[12px] font-medium text-red-600 dark:bg-red-500/10 dark:text-red-300">
+                <div className="mt-1 rounded-lg bg-red-50 p-2.5 text-12 font-medium text-red-600 dark:bg-red-500/10 dark:text-red-300">
                   {error}
                 </div>
               ) : null}
 
-              <div className="mt-1 flex items-center gap-1.5 rounded-lg bg-orange-50 px-2.5 py-2 text-[11px] text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
+              <div className="mt-1 flex items-center gap-1.5 rounded-lg bg-orange-50 px-2.5 py-2 text-11 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
                 <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
                 返利现金 1:1 抵扣生图/生视频费用，本来就要买，顺手省钱
               </div>

@@ -256,8 +256,8 @@ const MOBILE_CHANNELS: Array<{
   { label: "微信", sub: "会话 · 加好友", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },
   { label: "企微助手", sub: "企微智能回复", icon: "messageSq", brand: "#07c160", href: "/wecom-assistant" },
   { label: "互动记录", sub: "所有回复可追溯", icon: "history", brand: "#76517e", href: "/engagement/records" },
-  { label: "群发计划", sub: "群发任务管理", icon: "megaphone", brand: "#d97706", href: "/engagement/wechat/plans" },
-  { label: "执行态势", sub: "跨平台任务态势", icon: "cpu", brand: "#7c3aed", href: "/war-room" },
+  { label: "群发计划", sub: "群发任务管理", icon: "megaphone", brand: "var(--kaypal-v3-amber)", href: "/engagement/wechat/plans" },
+  { label: "执行态势", sub: "跨平台任务态势", icon: "cpu", brand: "var(--kaypal-v3-purple)", href: "/war-room" },
 ];
 
 function riskTint(level: string): string {
@@ -340,12 +340,12 @@ function MobileMessageView({
             ) : pending.length > 0 ? (
               <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
                 {pending.length} 条回复等你确认<br />
-                <span style={{ color: "#f4bb67" }}>AI 已写好草稿，你放行才发出</span>
+                <span style={{ color: "var(--kaypal-v3-amber)" }}>AI 已写好草稿，你放行才发出</span>
               </h2>
             ) : (
               <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
                 没有待确认的消息<br />
-                <span style={{ color: "#f4bb67" }}>{waitingCount > 0 ? `${waitingCount} 条回复建议已就绪` : "全部处理完毕"}</span>
+                <span style={{ color: "var(--kaypal-v3-amber)" }}>{waitingCount > 0 ? `${waitingCount} 条回复建议已就绪` : "全部处理完毕"}</span>
               </h2>
             )}
             <p className="mx-page-sub" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6, color: "rgba(219,234,254,.78)" }}>
@@ -426,7 +426,7 @@ function MobileMessageView({
                         ? "rgba(220,38,38,.1)"
                         : "rgba(37,99,235,.1)",
                     color:
-                      t.handoffState === "needs_human" ? "#dc2626" : "#2563eb",
+                      t.handoffState === "needs_human" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-cobalt)",
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M22 2 11 13" /><path d="M22 2 15 22l-4-9-9-4Z" /></svg>
@@ -479,7 +479,7 @@ function MobileMessageView({
           ) : (
             pending.map((c) => (
               <div className="mx-row" key={c.id}>
-                <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
                 </span>
                 <div className="mx-row-main">

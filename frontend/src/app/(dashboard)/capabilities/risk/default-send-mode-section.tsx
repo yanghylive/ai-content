@@ -95,7 +95,7 @@ export function DefaultSendModeSection() {
           ) : null}
         </div>
         <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 6, lineHeight: 1.5 }}>{description}</p>
-        {error && <p style={{ fontSize: 11.5, color: "#dc2626", marginTop: 6 }}>{error}</p>}
+        {error && <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger)", marginTop: 6 }}>{error}</p>}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
           <span style={{ fontSize: 12, color: isAutoSend ? "var(--mx-muted)" : "var(--mx-ink)", fontWeight: isAutoSend ? 400 : 600 }}>
             确认后执行

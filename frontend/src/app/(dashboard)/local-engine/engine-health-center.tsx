@@ -214,10 +214,10 @@ export function EngineHealthCenter() {
   if (isMobile) {
     const connColor =
       assistantConnected === null
-        ? "#b45309"
+        ? "var(--kaypal-v3-amber)"
         : assistantConnected
-          ? "#059669"
-          : "#dc2626";
+          ? "var(--kaypal-v3-success)"
+          : "var(--kaypal-v3-danger)";
     const connText =
       assistantConnected === null
         ? loading
@@ -246,15 +246,15 @@ export function EngineHealthCenter() {
           {/* 三态统计 */}
           <div className="mx-stat-grid" style={{ marginTop: 10 }}>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#059669" }}>{loading ? "-" : status.healthy}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{loading ? "-" : status.healthy}</div>
               <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>正常</div>
             </div>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#b45309" }}>{loading ? "-" : status.warning}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-amber)" }}>{loading ? "-" : status.warning}</div>
               <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>待处理</div>
             </div>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#dc2626" }}>{loading ? "-" : status.critical}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-danger)" }}>{loading ? "-" : status.critical}</div>
               <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>需处理</div>
             </div>
           </div>
@@ -262,12 +262,12 @@ export function EngineHealthCenter() {
           {/* 主行动 */}
           {checkFailed && !loading ? (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(222,150,57,.4)" }}>
-              <p style={{ fontSize: 12, color: "#b45309", lineHeight: 1.5 }}>部分状态检查超时或失败，当前结果可能不完整，请重新检查。</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-amber)", lineHeight: 1.5 }}>部分状态检查超时或失败，当前结果可能不完整，请重新检查。</p>
             </div>
           ) : null}
           {allHealthy && !loading ? (
             <div className="mx-card" style={{ marginTop: 10, padding: 13, textAlign: "center", borderColor: "rgba(5,150,105,.4)" }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#059669" }}>系统运行正常，无需处理</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-success)" }}>系统运行正常，无需处理</span>
             </div>
           ) : (
             <button
@@ -291,14 +291,14 @@ export function EngineHealthCenter() {
                   return (
                     <Link key={todo.id} href={todo.href} className="mx-card" style={{ padding: 13, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                        <span style={{ width: 32, height: 32, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: todo.severity === "critical" ? "rgba(220,80,80,.12)" : "rgba(222,150,57,.14)", color: todo.severity === "critical" ? "#dc2626" : "#d98a2d", flexShrink: 0 }}>
+                        <span style={{ width: 32, height: 32, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: todo.severity === "critical" ? "rgba(220,80,80,.12)" : "rgba(222,150,57,.14)", color: todo.severity === "critical" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                           <TodoIcon width={16} height={16} />
                         </span>
                         <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>
                           <b>{todo.count}</b> {todo.title}
                         </span>
                       </span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "#d98a2d", flexShrink: 0 }}>去处理 ›</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>去处理 ›</span>
                     </Link>
                   );
                 })}
@@ -313,7 +313,7 @@ export function EngineHealthCenter() {
               const ActionIcon = action.icon;
               return (
                 <Link key={action.key} href={action.href} className="mx-card" style={{ padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
-                  <span style={{ width: 34, height: 34, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                     <ActionIcon width={17} height={17} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>

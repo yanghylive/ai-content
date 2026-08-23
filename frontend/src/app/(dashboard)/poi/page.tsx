@@ -110,7 +110,7 @@ export default function PoiPage() {
               {s.visitCount ? ` · 探访 ${s.visitCount}` : ""}
             </div>
           </div>
-          <button type="button" onClick={() => void handleDelete(s)} style={{ color: "#dc2626", fontSize: 11.5, background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>删除</button>
+          <button type="button" onClick={() => void handleDelete(s)} style={{ color: "var(--kaypal-v3-danger)", fontSize: 11.5, background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>删除</button>
         </div>
       ))}
     </div>
@@ -147,7 +147,7 @@ export default function PoiPage() {
           </div>
         </header>
         <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
-          {error ? <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>⚠️ {error}</p> : null}
+          {error ? <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginBottom: 10 }}>⚠️ {error}</p> : null}
           {showForm ? <div className="mx-card" style={{ padding: 16, marginBottom: 12 }}>{formView}</div> : null}
           {reportView ? <div className="mx-card" style={{ padding: 14, marginBottom: 12 }}>{reportView}</div> : null}
           {loading ? (
@@ -172,7 +172,7 @@ export default function PoiPage() {
         </div>
         <Button color="primary" onPress={() => setShowForm((v) => !v)}>{showForm ? "收起" : "添加门店"}</Button>
       </header>
-      {error ? <p style={{ fontSize: 13, color: "#dc2626" }}>⚠️ {error}</p> : null}
+      {error ? <p style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>⚠️ {error}</p> : null}
       {showForm ? formView : null}
       {reportView}
       {loading ? <p style={{ fontSize: 13, opacity: 0.6 }}>加载中…</p> : listView}

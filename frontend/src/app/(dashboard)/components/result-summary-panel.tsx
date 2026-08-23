@@ -149,7 +149,7 @@ function SummaryNumber({
           : "bg-default-100 text-default-700";
   return (
     <div className={`min-w-[56px] rounded-[6px] px-1.5 py-1 ${toneClass}`}>
-      <p className="flex items-center justify-center gap-1 text-[11px] font-semibold">
+      <p className="flex items-center justify-center gap-1 text-11 font-semibold">
         {icon}
         {label}
       </p>

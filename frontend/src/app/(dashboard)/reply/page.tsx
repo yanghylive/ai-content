@@ -14,9 +14,9 @@ const TONE_LABEL: Record<string, string> = {
 };
 
 const TONE_COLOR: Record<string, string> = {
-  friendly: "#059669",
-  formal: "#6366f1",
-  professional: "#d98a2d",
+  friendly: "var(--kaypal-v3-success)",
+  formal: "var(--kaypal-v3-purple)",
+  professional: "var(--kaypal-v3-amber)",
 };
 
 export default function ReplyV2Page() {
@@ -129,7 +129,7 @@ export default function ReplyV2Page() {
                   fontSize: 12, padding: "6px 12px", borderRadius: 999,
                   background: tone === item.key ? "rgba(244,187,103,.16)" : "transparent",
                   border: tone === item.key ? "1px solid rgba(244,187,103,.6)" : "1px solid rgba(255,255,255,.18)",
-                  color: tone === item.key ? "#f4bb67" : "#dbe7f5",
+                  color: tone === item.key ? "var(--kaypal-v3-amber)" : "#dbe7f5",
                 }}
               >
                 {item.label}
@@ -171,7 +171,7 @@ export default function ReplyV2Page() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {suggestions.map((item, index) => {
-              const color = TONE_COLOR[item.tone] ?? "#94a3b8";
+              const color = TONE_COLOR[item.tone] ?? "var(--kaypal-v3-muted)";
               return (
                 <div key={`${item.tone}-${index}`} className="mx-card" style={{ padding: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
@@ -192,7 +192,7 @@ export default function ReplyV2Page() {
                       type="button"
                       style={{
                         flex: 1, fontSize: 12, padding: "7px 10px", borderRadius: 999,
-                        background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "#f4bb67",
+                        background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "var(--kaypal-v3-amber)",
                       }}
                       onClick={() => forward(item.content)}
                     >

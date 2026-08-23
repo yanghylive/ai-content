@@ -354,19 +354,19 @@ export default function ViralAnalysisV2Page() {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {analysis.titleTrick ? (
                 <div>
-                  <div style={{ fontSize: 11, color: "#f4bb67", fontWeight: 600 }}>标题套路</div>
+                  <div style={{ fontSize: 11, color: "var(--kaypal-v3-amber)", fontWeight: 600 }}>标题套路</div>
                   <div style={{ fontSize: 13, lineHeight: 1.6, marginTop: 3 }}>{analysis.titleTrick}</div>
                 </div>
               ) : null}
               {analysis.coverAdvice ? (
                 <div>
-                  <div style={{ fontSize: 11, color: "#f4bb67", fontWeight: 600 }}>封面建议</div>
+                  <div style={{ fontSize: 11, color: "var(--kaypal-v3-amber)", fontWeight: 600 }}>封面建议</div>
                   <div style={{ fontSize: 13, lineHeight: 1.6, marginTop: 3 }}>{analysis.coverAdvice}</div>
                 </div>
               ) : null}
               {analysis.contentStructure ? (
                 <div>
-                  <div style={{ fontSize: 11, color: "#f4bb67", fontWeight: 600 }}>内容结构</div>
+                  <div style={{ fontSize: 11, color: "var(--kaypal-v3-amber)", fontWeight: 600 }}>内容结构</div>
                   <div style={{ fontSize: 13, lineHeight: 1.6, marginTop: 3 }}>
                     {Array.isArray(analysis.contentStructure)
                       ? analysis.contentStructure.map((item, index) => (
@@ -378,19 +378,19 @@ export default function ViralAnalysisV2Page() {
               ) : null}
               {analysis.hashtagStrategy ? (
                 <div>
-                  <div style={{ fontSize: 11, color: "#f4bb67", fontWeight: 600 }}>话题策略</div>
+                  <div style={{ fontSize: 11, color: "var(--kaypal-v3-amber)", fontWeight: 600 }}>话题策略</div>
                   <div style={{ fontSize: 13, lineHeight: 1.6, marginTop: 3 }}>{analysis.hashtagStrategy}</div>
                 </div>
               ) : null}
               {analysis.interactionHook ? (
                 <div>
-                  <div style={{ fontSize: 11, color: "#f4bb67", fontWeight: 600 }}>互动钩子</div>
+                  <div style={{ fontSize: 11, color: "var(--kaypal-v3-amber)", fontWeight: 600 }}>互动钩子</div>
                   <div style={{ fontSize: 13, lineHeight: 1.6, marginTop: 3 }}>{analysis.interactionHook}</div>
                 </div>
               ) : null}
               {analysis.replicableStrategy ? (
                 <div>
-                  <div style={{ fontSize: 11, color: "#f4bb67", fontWeight: 600 }}>可复制策略</div>
+                  <div style={{ fontSize: 11, color: "var(--kaypal-v3-amber)", fontWeight: 600 }}>可复制策略</div>
                   <div style={{ fontSize: 13, lineHeight: 1.6, marginTop: 3 }}>
                     {Array.isArray(analysis.replicableStrategy)
                       ? analysis.replicableStrategy.map((item, index) => (
@@ -427,7 +427,7 @@ export default function ViralAnalysisV2Page() {
               ) : null}
             </div>
             {shareMsg ? (
-              <div style={{ marginTop: 8, fontSize: 12, color: "#4ade80", textAlign: "center" }}>
+              <div style={{ marginTop: 8, fontSize: 12, color: "var(--kaypal-v3-success)", textAlign: "center" }}>
                 {shareMsg}
               </div>
             ) : null}
@@ -443,7 +443,7 @@ export default function ViralAnalysisV2Page() {
                 border: "1px solid rgba(244,187,103,.35)",
                 background: "rgba(244,187,103,.06)",
                 fontSize: 13,
-                color: "#f4bb67",
+                color: "var(--kaypal-v3-amber)",
                 opacity: saving ? 0.6 : 1,
               }}
             >

@@ -76,17 +76,17 @@ export function ProductCard({
           </div>
         )}
         <div className="p-2">
-          <div className="line-clamp-2 text-[11px] leading-4 text-foreground">{title}</div>
+          <div className="line-clamp-2 text-11 leading-4 text-foreground">{title}</div>
           <div className="mt-1 flex items-baseline gap-1">
             {commissionMode ? (
-              <span className="text-[11px] font-bold text-orange-500 dark:text-orange-400">
+              <span className="text-11 font-bold text-orange-500 dark:text-orange-400">
                 佣金 {commissionRate}%
               </span>
             ) : (
               <>
-                <span className="text-[10px] font-semibold text-default-500">¥</span>
-                <span className="text-[15px] font-extrabold text-foreground">{payPrice}</span>
-                <span className="ml-auto text-[11px] font-bold text-orange-500 dark:text-orange-400">
+                <span className="text-11 font-semibold text-default-500">¥</span>
+                <span className="text-14 font-extrabold text-foreground">{payPrice}</span>
+                <span className="ml-auto text-11 font-bold text-orange-500 dark:text-orange-400">
                   返 ¥{estRebate}
                 </span>
               </>
@@ -96,7 +96,7 @@ export function ProductCard({
             <button
               type="button"
               onClick={() => onBuy(offer)}
-              className="mt-1.5 w-full rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 py-1 text-[11px] font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
+              className="mt-1.5 w-full rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 py-1 text-11 font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {commissionMode ? "领券省钱" : "去购买"}
             </button>
@@ -118,30 +118,30 @@ export function ProductCard({
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <div className="line-clamp-2 text-[13px] font-semibold leading-5 text-foreground">{title}</div>
+          <div className="line-clamp-2 text-13 font-semibold leading-5 text-foreground">{title}</div>
           {cheapestBadge && (
-            <span className="shrink-0 rounded-md bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+            <span className="shrink-0 rounded-md bg-red-500 px-1.5 py-0.5 text-11 font-bold text-white">
               全网最低
             </span>
           )}
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-default-500">
+        <div className="mt-0.5 flex items-center gap-1.5 text-11 text-default-500">
           <span>{offer.shopName || label}</span>
-          <span className={`rounded border px-1 py-px text-[10px] ${platformChip(platformCode)}`}>
+          <span className={`rounded border px-1 py-px text-11 ${platformChip(platformCode)}`}>
             {label}
           </span>
         </div>
         <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-[12px] font-extrabold text-foreground">
-            <span className="text-[10px] font-semibold text-default-500">到手 ¥</span>
+          <span className="text-12 font-extrabold text-foreground">
+            <span className="text-11 font-semibold text-default-500">到手 ¥</span>
             {payPrice}
           </span>
-          <span className="text-[13px] font-extrabold text-orange-500 dark:text-orange-400">返 ¥{estRebate}</span>
-          <span className="text-[11px] text-default-500">
+          <span className="text-13 font-extrabold text-orange-500 dark:text-orange-400">返 ¥{estRebate}</span>
+          <span className="text-11 text-default-500">
             净成本 <b className="text-default-700 dark:text-default-300">¥{offer.estNetCost}</b>
           </span>
           {offer.specQty && offer.unitPrice ? (
-            <span className="text-[11px] text-default-500">
+            <span className="text-11 text-default-500">
               单件 <b className="text-default-700 dark:text-default-300">¥{offer.unitPrice}</b>
               <span className="text-default-400">/{offer.specQty}件装</span>
             </span>
@@ -149,17 +149,17 @@ export function ProductCard({
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {couponAmount > 0 && (
-            <span className="rounded bg-red-50 px-1.5 py-px text-[10px] font-bold text-red-600 dark:bg-red-500/10 dark:text-red-300">
+            <span className="rounded bg-red-50 px-1.5 py-px text-11 font-bold text-red-600 dark:bg-red-500/10 dark:text-red-300">
               ¥{couponAmount}券
             </span>
           )}
           {commissionRate > 0 && (
-            <span className="rounded bg-emerald-50 px-1.5 py-px text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
+            <span className="rounded bg-emerald-50 px-1.5 py-px text-11 font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
               佣金 {commissionRate}%
             </span>
           )}
           {priceGapNote && (
-            <span className="rounded bg-blue-50 px-1.5 py-px text-[10px] font-bold text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">
+            <span className="rounded bg-blue-50 px-1.5 py-px text-11 font-bold text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">
               {priceGapNote}
             </span>
           )}
@@ -169,7 +169,7 @@ export function ProductCard({
                 type="button"
                 onClick={() => onWatch(offer)}
                 aria-label="盯价"
-                className="flex h-8 items-center gap-1 rounded-lg border border-default-200 px-2 text-[11px] font-semibold text-default-500 transition-colors hover:border-orange-300 hover:text-orange-500 dark:border-default-800"
+                className="flex h-8 items-center gap-1 rounded-lg border border-default-200 px-2 text-11 font-semibold text-default-500 transition-colors hover:border-orange-300 hover:text-orange-500 dark:border-default-800"
               >
                 <BellRing className="h-3.5 w-3.5" />
                 盯价

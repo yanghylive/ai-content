@@ -284,10 +284,10 @@ export function TrendsRadarWorkbench() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">趋势发现</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   热点雷达
                 </h1>
-                <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   按热度、业务匹配度和风险筛选热点，并给出内容建议。
                 </p>
               </div>
@@ -295,11 +295,11 @@ export function TrendsRadarWorkbench() {
 
             <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
               <label className="block">
-                <span className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                <span className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                   行业或主题
                 </span>
                 <input
-                  className="mt-1 h-10 w-full rounded-[8px] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-3 text-[13px] text-[var(--kaypal-v3-ink)] outline-none transition focus:border-[var(--kaypal-v3-accent)] focus:shadow-[var(--kaypal-v3-field-shadow-focus)]"
+                  className="mt-1 h-10 w-full rounded-[8px] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-3 text-13 text-[var(--kaypal-v3-ink)] outline-none transition focus:border-[var(--kaypal-v3-accent)] focus:shadow-[var(--kaypal-v3-field-shadow-focus)]"
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="输入行业、主题或业务词，例如：本地生活、AI 工具、老板 IP"
                   value={query}
@@ -307,7 +307,7 @@ export function TrendsRadarWorkbench() {
               </label>
               <div className="flex flex-wrap gap-2 lg:justify-end">
                 <button
-                  className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white disabled:opacity-60"
+                  className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white disabled:opacity-60"
                   disabled={loadingSkills}
                   onClick={() => void loadHotSkills()}
                   type="button"
@@ -323,7 +323,7 @@ export function TrendsRadarWorkbench() {
                   刷新热点能力
                 </button>
                 <Link
-                  className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)]"
+                  className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)]"
                   href="/topics"
                 >
                   打开选题库
@@ -340,7 +340,7 @@ export function TrendsRadarWorkbench() {
               {platformOptions.map((item) => (
                 <button
                   className={[
-                    "h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition",
+                    "h-8 rounded-[8px] border px-3 text-12 font-semibold transition",
                     platform === item.value
                       ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                       : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)] hover:border-[var(--kaypal-v3-border-strong)]",
@@ -358,7 +358,7 @@ export function TrendsRadarWorkbench() {
 
           <aside className="p-4">
             <p className="kaypal-v3-label">本轮决策</p>
-            <h2 className="mt-1 text-[15px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-14 font-bold text-[var(--kaypal-v3-ink)]">
               热点进入生产前必须回答三件事
             </h2>
             <div className="mt-4 grid gap-2">
@@ -368,10 +368,10 @@ export function TrendsRadarWorkbench() {
                   key={item.label}
                 >
                   <p className="kaypal-v3-label">{item.label}</p>
-                  <p className="mt-1 text-[22px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+                  <p className="mt-1 text-2xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
                     {item.value}
                   </p>
-                  <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     {item.detail}
                   </p>
                 </div>
@@ -384,7 +384,7 @@ export function TrendsRadarWorkbench() {
                   className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-amber)]"
                   strokeWidth={1.8}
                 />
-                <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   高风险热点只能进入风险复核和人工确认，不直接推送到创作或发布流程。
                 </p>
               </div>
@@ -400,11 +400,11 @@ export function TrendsRadarWorkbench() {
           <div className="flex flex-col gap-3 border-b border-[var(--kaypal-v3-border)] p-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="kaypal-v3-label">热点池</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 先筛掉不能商用的热闹
               </h2>
             </div>
-            <span className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-muted)]">
+            <span className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 text-12 font-semibold text-[var(--kaypal-v3-muted)]">
               <Gauge aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
               热度 / 匹配 / 风险
             </span>
@@ -424,25 +424,25 @@ export function TrendsRadarWorkbench() {
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-[14px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                    <h3 className="text-14 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                       {candidate.title}
                     </h3>
                     <span
                       className={[
-                        "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                        "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                         riskClass(candidate.risk),
                       ].join(" ")}
                     >
                       {riskLabel(candidate.risk)}
                     </span>
-                    <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                    <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                       {candidate.platform}
                     </span>
                   </div>
-                  <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     {candidate.reason}
                   </p>
-                  <p className="mt-2 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                  <p className="mt-2 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                     系统从{candidate.platform}热点里发现 · {candidate.freshness}
                   </p>
                 </div>
@@ -463,10 +463,10 @@ export function TrendsRadarWorkbench() {
                       className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-2"
                       key={`${candidate.id}-${label}`}
                     >
-                      <p className="text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                      <p className="text-11 font-bold text-[var(--kaypal-v3-muted)]">
                         {label}
                       </p>
-                      <p className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+                      <p className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                         {value}
                       </p>
                     </div>
@@ -480,22 +480,22 @@ export function TrendsRadarWorkbench() {
         <aside className="kaypal-v3-panel overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">决策台</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               {selected.decision}：{selected.title}
             </h2>
           </div>
           <div className="p-4">
-            <p className="text-[12px] font-bold text-[var(--kaypal-v3-muted)]">
+            <p className="text-12 font-bold text-[var(--kaypal-v3-muted)]">
               推荐角度
             </p>
-            <p className="mt-1 text-[14px] font-semibold leading-6 text-[var(--kaypal-v3-ink)]">
+            <p className="mt-1 text-14 font-semibold leading-6 text-[var(--kaypal-v3-ink)]">
               {selected.angle}
             </p>
             <div className="mt-4 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
-              <p className="text-[12px] font-bold text-[var(--kaypal-v3-muted)]">
+              <p className="text-12 font-bold text-[var(--kaypal-v3-muted)]">
                 选题草稿
               </p>
-              <p className="mt-1 text-[13px] font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <p className="mt-1 text-13 font-semibold leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 {selected.titleDraft}
               </p>
             </div>
@@ -507,7 +507,7 @@ export function TrendsRadarWorkbench() {
                     className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-success)]"
                     strokeWidth={1.8}
                   />
-                  <span className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                  <span className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                     {item}
                   </span>
                 </div>
@@ -516,7 +516,7 @@ export function TrendsRadarWorkbench() {
             <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
               {selected.nextActions.map(({ label, href, icon: Icon }) => (
                 <Link
-                  className="inline-flex h-9 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                   href={href}
                   key={label}
                 >
@@ -537,7 +537,7 @@ export function TrendsRadarWorkbench() {
         <article className="kaypal-v3-panel overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">相关能力</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               系统可继续查热点和样本
             </h2>
           </div>
@@ -548,17 +548,17 @@ export function TrendsRadarWorkbench() {
                 key={skill.id}
               >
                 <div className="min-w-0">
-                  <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     {publicIntelligenceText(skill.name, "系统功能")}
                   </p>
-                  <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     {publicIntelligenceText(
                       skill.summary,
                       "可用于继续查找热点、样本和相关账号。",
                     )}
                   </p>
                 </div>
-                <span className="inline-flex h-7 items-center rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                <span className="inline-flex h-7 items-center rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                   {skillPlatformLabel(skill.platform)}
                 </span>
               </div>
@@ -586,13 +586,13 @@ export function TrendsRadarWorkbench() {
         <article className="kaypal-v3-panel overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">落地规则</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               热点不是内容，过筛后才进入生产
             </h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-[13px]">
-              <thead className="bg-[var(--kaypal-v3-table-head)] text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+            <table className="min-w-full text-left text-13">
+              <thead className="bg-[var(--kaypal-v3-table-head)] text-11 font-bold text-[var(--kaypal-v3-muted)]">
                 <tr>
                   <th className="px-4 py-3" scope="col">
                     判断

@@ -20,7 +20,7 @@ export function V2BackButton({
     <button
       type="button"
       onClick={() => (to ? router.push(to) : router.back())}
-      className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--kx-border)] bg-[var(--kx-card)] px-3 py-1.5 text-[13px] font-semibold text-[var(--kx-muted)] transition hover:border-[var(--kx-border-strong)] hover:text-[var(--kx-ink)]"
+      className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--kx-border)] bg-[var(--kx-card)] px-3 py-1.5 text-13 font-semibold text-[var(--kx-muted)] transition hover:border-[var(--kx-border-strong)] hover:text-[var(--kx-ink)]"
       aria-label={label}
     >
       <ArrowLeft size={15} strokeWidth={2.2} />

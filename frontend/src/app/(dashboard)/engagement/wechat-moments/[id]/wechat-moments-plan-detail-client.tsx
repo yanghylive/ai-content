@@ -362,7 +362,7 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
 
             {generatedPreview && (
               <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: "rgba(37,99,235,.08)", border: "1px solid rgba(37,99,235,.25)" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#3b82f6" }}>改写预览</p>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-cobalt)" }}>改写预览</p>
                 <p style={{ marginTop: 7, whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 12.5, lineHeight: 1.6, color: "var(--mx-ink)" }}>
                   {generatedPreview}
                 </p>
@@ -374,7 +374,7 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
                       setGeneratedPreview(null);
                       addToast({ title: "已采用改写文案", color: "success" });
                     }}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, background: "#2563eb", color: "#fff", border: "none", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, background: "var(--kaypal-v3-cobalt)", color: "#fff", border: "none", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}
                   >
                     <Check width={13} height={13} /> 采用新文案
                   </button>
@@ -405,11 +405,11 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
           {/* 修订版已保存提示 */}
           {savedRevision && (
             <div className="mx-card" style={{ marginTop: 12, padding: 14, borderColor: "rgba(5,150,105,.4)" }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>修订版已保存</p>
-              <p style={{ fontSize: 11.5, color: "#059669", marginTop: 4, lineHeight: 1.5 }}>当前没有发布。回到计划列表检查后再启动。</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-success)" }}>修订版已保存</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-success)", marginTop: 4, lineHeight: 1.5 }}>当前没有发布。回到计划列表检查后再启动。</p>
               <Link
                 href={`/local-engine?tab=tasks&taskId=${encodeURIComponent(savedRevision.id)}`}
-                style={{ display: "inline-block", marginTop: 9, padding: "8px 16px", borderRadius: 9, background: "rgba(5,150,105,.12)", color: "#059669", border: "1px solid rgba(5,150,105,.3)", fontSize: 12, fontWeight: 600 }}
+                style={{ display: "inline-block", marginTop: 9, padding: "8px 16px", borderRadius: 9, background: "rgba(5,150,105,.12)", color: "var(--kaypal-v3-success)", border: "1px solid rgba(5,150,105,.3)", fontSize: 12, fontWeight: 600 }}
               >
                 查看修订版
               </Link>

@@ -124,7 +124,7 @@ export function MonitorForm() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -141,14 +141,14 @@ export function MonitorForm() {
                   className="mx-card"
                   style={{ padding: 12, display: "flex", alignItems: "center", gap: 11, textAlign: "left", borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
                 >
-                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "#d98a2d", flexShrink: 0 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                     <TypeIcon width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
                     <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
                   </span>
-                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                  {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
               );
             })}
@@ -184,7 +184,7 @@ export function MonitorForm() {
                 key={preset.value}
                 type="button"
                 onClick={() => setForm((p) => ({ ...p, schedule: preset.value }))}
-                style={{ padding: "7px 12px", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.schedule === preset.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.schedule === preset.value ? "#d98a2d" : "var(--mx-ink)", border: "1px solid " + (form.schedule === preset.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                style={{ padding: "7px 12px", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.schedule === preset.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.schedule === preset.value ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: "1px solid " + (form.schedule === preset.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
               >
                 {preset.label}
               </button>

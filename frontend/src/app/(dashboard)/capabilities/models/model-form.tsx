@@ -162,7 +162,7 @@ export function ModelForm({ modelId }: { modelId?: string }) {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -183,7 +183,7 @@ export function ModelForm({ modelId }: { modelId?: string }) {
                     <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{model.label}</span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>{model.desc}</span>
                   </span>
-                  {selected && <span style={{ color: "#d98a2d", fontSize: 14, flexShrink: 0 }}>✓</span>}
+                  {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
               );
             })}

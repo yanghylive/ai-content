@@ -294,7 +294,7 @@ export function CrmNextActionPanel() {
                 </Chip>
               ) : null}
             </div>
-            <h2 className="mt-2 text-[17px] font-semibold leading-6 text-default-900">
+            <h2 className="mt-2 text-lg font-semibold leading-6 text-default-900">
               下一个要处理的人 / 机会
             </h2>
             <p className="mt-1 text-small leading-6 text-default-500">

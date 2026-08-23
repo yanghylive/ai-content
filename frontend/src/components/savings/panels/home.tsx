@@ -311,19 +311,19 @@ export function HomePanel({
     <div>
       {/* 加载失败横幅（批次 P2：数据加载错误可见反馈） */}
       {loadError && !initialLoading ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", marginBottom: 12, borderRadius: 12, fontSize: 12, color: "#dc2626", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.25)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", marginBottom: 12, borderRadius: 12, fontSize: 12, color: "var(--kaypal-v3-danger)", background: "rgba(239,68,68,.08)", border: "1px solid rgba(239,68,68,.25)" }}>
           <span style={{ flex: 1 }}>⚠️ {loadError}</span>
-          <button type="button" onClick={() => void reload()} style={{ color: "#dc2626", fontWeight: 700, background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>重试</button>
+          <button type="button" onClick={() => void reload()} style={{ color: "var(--kaypal-v3-danger)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>重试</button>
         </div>
       ) : null}
       {/* 页头 */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-1.5 text-[20px] font-extrabold tracking-tight text-foreground">
+          <div className="flex items-center gap-1.5 text-xl font-extrabold tracking-tight text-foreground">
             <Wallet className="h-5 w-5 text-orange-500 dark:text-orange-400" />
             省钱返利
           </div>
-          <div className="mt-0.5 text-[12px] text-default-500">本来就要买，顺手省钱，返利还能抵算力</div>
+          <div className="mt-0.5 text-12 text-default-500">本来就要买，顺手省钱，返利还能抵算力</div>
         </div>
         <Button isIconOnly variant="flat" size="sm" aria-label="刷新" onPress={() => void reload()}>
           <RefreshCw className="h-4 w-4" />
@@ -364,21 +364,21 @@ export function HomePanel({
           className="mt-4 flex w-full items-center justify-between rounded-2xl border border-orange-500/20 bg-gradient-to-r from-orange-500 to-amber-500 p-4 text-left text-white shadow-lg shadow-orange-500/10 transition-transform active:scale-[0.99]"
         >
           <div>
-            <div className="text-[11px] font-medium text-orange-100">可用返利</div>
+            <div className="text-11 font-medium text-orange-100">可用返利</div>
             <div className="mt-0.5 flex items-baseline gap-1">
-              <span className="text-[24px] font-extrabold">¥{balance?.available ?? 0}</span>
-              <span className="text-[11px] text-orange-100">累计 ¥{balance?.totalEarned ?? 0}</span>
+              <span className="text-2xl font-extrabold">¥{balance?.available ?? 0}</span>
+              <span className="text-11 text-orange-100">累计 ¥{balance?.totalEarned ?? 0}</span>
             </div>
-            <div className="mt-0.5 text-[11px] text-orange-100">
+            <div className="mt-0.5 text-11 text-orange-100">
               待结算 ¥{balance?.pending ?? 0} · 预计 ¥{balance?.estimated ?? 0}
             </div>
           </div>
           <div className="flex flex-col items-end gap-1.5">
-            <span className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold">
+            <span className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-11 font-semibold">
               <CreditCard className="h-3 w-3" />
               AI 额度 {credit?.balance ?? 0}
             </span>
-            <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-orange-100">
+            <span className="rounded-full bg-white/15 px-2 py-0.5 text-11 font-semibold text-orange-100">
               查看钱包 →
             </span>
           </div>
@@ -395,7 +395,7 @@ export function HomePanel({
             className="flex flex-col items-center gap-1 rounded-xl border border-default-200 bg-white py-3 transition-colors hover:border-orange-300 hover:bg-orange-50 dark:border-default-800 dark:bg-content1 dark:hover:bg-orange-500/5"
           >
             <q.icon className="h-5 w-5 text-orange-500 dark:text-orange-400" strokeWidth={1.8} />
-            <span className="text-[12px] font-medium text-foreground">{q.label}</span>
+            <span className="text-12 font-medium text-foreground">{q.label}</span>
           </button>
         ))}
       </div>
@@ -408,7 +408,7 @@ export function HomePanel({
               key={c.key}
               type="button"
               onClick={() => void loadCategory(c.key)}
-              className={`shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition-colors ${
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-12 font-semibold transition-colors ${
                 activeCat === c.key
                   ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm"
                   : "border border-default-200 bg-white text-default-600 hover:border-orange-300 hover:text-orange-500 dark:border-default-800 dark:bg-content1 dark:text-default-400"
@@ -421,12 +421,12 @@ export function HomePanel({
 
         {/* 凭证未配置提示 */}
         {catError === "VENDOR_CREDENTIAL_MISSING" && (
-          <div className="mb-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-5 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+          <div className="mb-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-11 leading-5 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
             ⚠️ 商品数据源（好单库）凭证未配置，暂时无法加载商品列表。可在搜索框直接搜商品，或联系管理员配置后刷新。
           </div>
         )}
         {catError === "VENDOR_API_ERROR" && (
-          <div className="mb-2.5 rounded-xl border border-default-200 bg-default-50 px-3 py-2.5 text-[11px] text-default-500 dark:border-default-800 dark:bg-default-100/5">
+          <div className="mb-2.5 rounded-xl border border-default-200 bg-default-50 px-3 py-2.5 text-11 text-default-500 dark:border-default-800 dark:bg-default-100/5">
             商品加载失败（供应商网络波动），下拉刷新重试。
           </div>
         )}
@@ -445,18 +445,18 @@ export function HomePanel({
         ) : activeCat === "life" ? (
           <div>
             {!lifeConfigured && (
-              <div className="mb-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-5 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+              <div className="mb-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-11 leading-5 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
                 ⚠️ 生活服务数据源（聚推客联盟）凭证未配置，场景可浏览但暂无法生成推广链接。如需使用请联系客服开通。
               </div>
             )}
             {lifeScenes.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-default-300 py-8 text-center text-[11px] text-default-500 dark:border-default-700">
+              <div className="rounded-xl border border-dashed border-default-300 py-8 text-center text-11 text-default-500 dark:border-default-700">
                 生活服务暂不可用，请稍后重试
               </div>
             ) : (
               lifeScenes.map((scene) => (
                 <div key={scene.key} className="mb-4 last:mb-0">
-                  <div className="mb-1.5 text-[12px] font-bold text-foreground">{scene.label}</div>
+                  <div className="mb-1.5 text-12 font-bold text-foreground">{scene.label}</div>
                   <div className="grid grid-cols-3 gap-2">
                     {scene.items.map((it) => (
                       <button
@@ -467,7 +467,7 @@ export function HomePanel({
                         className="group relative overflow-hidden rounded-2xl border border-default-200 bg-white p-2.5 text-left transition-colors hover:border-orange-300 hover:bg-orange-50/60 disabled:opacity-60 dark:border-default-800 dark:bg-content1 dark:hover:border-orange-500/40 dark:hover:bg-orange-500/5"
                       >
                         {it.badge && (
-                          <span className="absolute right-1.5 top-1.5 z-10 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-1.5 py-px text-[9px] font-bold text-white">
+                          <span className="absolute right-1.5 top-1.5 z-10 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-1.5 py-px text-11 font-bold text-white">
                             {it.badge}
                           </span>
                         )}
@@ -480,12 +480,12 @@ export function HomePanel({
                             className="h-9 w-9 rounded-xl object-contain"
                           />
                         ) : (
-                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 text-[16px] font-extrabold text-orange-600 dark:from-orange-500/20 dark:to-amber-500/20 dark:text-orange-300">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 text-base font-extrabold text-orange-600 dark:from-orange-500/20 dark:to-amber-500/20 dark:text-orange-300">
                             {it.name.charAt(0)}
                           </div>
                         )}
-                        <div className="mt-1.5 line-clamp-1 text-[11px] font-semibold text-foreground">{it.name}</div>
-                        <div className="mt-0.5 line-clamp-1 text-[9px] text-default-400">{it.desc}</div>
+                        <div className="mt-1.5 line-clamp-1 text-11 font-semibold text-foreground">{it.name}</div>
+                        <div className="mt-0.5 line-clamp-1 text-11 text-default-400">{it.desc}</div>
                       </button>
                     ))}
                   </div>
@@ -518,7 +518,7 @@ export function HomePanel({
           </div>
         ) : (
           !catError && (
-            <div className="rounded-xl border border-dashed border-default-300 py-8 text-center text-[11px] text-default-500 dark:border-default-700">
+            <div className="rounded-xl border border-dashed border-default-300 py-8 text-center text-11 text-default-500 dark:border-default-700">
               该分类暂无商品，换一个分类看看
             </div>
           )
@@ -529,7 +529,7 @@ export function HomePanel({
       {(featured99.length > 0 || featured30.length > 0) && (
         <div className="mt-5">
           <div className="mb-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[14px] font-bold text-foreground">
+            <div className="flex items-center gap-1.5 text-14 font-bold text-foreground">
               <TrendingUp className="h-4 w-4 text-orange-500 dark:text-orange-400" />
               限时特惠
             </div>
@@ -537,7 +537,7 @@ export function HomePanel({
           </div>
           {featured99.length > 0 && (
             <div className="mb-3">
-              <div className="mb-1.5 text-[11px] font-medium text-default-500">🔥 9.9 包邮</div>
+              <div className="mb-1.5 text-11 font-medium text-default-500">🔥 9.9 包邮</div>
               <div className="flex gap-2.5 overflow-x-auto pb-1">
                 {featured99.map((o, i) => (
                   <ProductCard key={`f99-${o.itemId}-${i}`} offer={o} onBuy={setBuyOffer} compact />
@@ -547,7 +547,7 @@ export function HomePanel({
           )}
           {featured30.length > 0 && (
             <div>
-              <div className="mb-1.5 text-[11px] font-medium text-default-500">🛒 30 元封顶</div>
+              <div className="mb-1.5 text-11 font-medium text-default-500">🛒 30 元封顶</div>
               <div className="flex gap-2.5 overflow-x-auto pb-1">
                 {featured30.map((o, i) => (
                   <ProductCard key={`f30-${o.itemId}-${i}`} offer={o} onBuy={setBuyOffer} compact />
@@ -561,14 +561,14 @@ export function HomePanel({
       {/* 美团本地生活 */}
       {meituanActs.length > 0 && (
         <div className="mt-5">
-          <div className="mb-1 flex items-center gap-1.5 text-[14px] font-bold text-foreground">
+          <div className="mb-1 flex items-center gap-1.5 text-14 font-bold text-foreground">
             <Utensils className="h-4 w-4 text-yellow-500" />
             美团本地生活
-            <span className="rounded-full bg-default-100 px-1.5 py-px text-[10px] font-semibold text-default-500 dark:bg-default-800">
+            <span className="rounded-full bg-default-100 px-1.5 py-px text-11 font-semibold text-default-500 dark:bg-default-800">
               {meituanActs.length}
             </span>
           </div>
-          <div className="mb-2 text-[10px] text-default-400">外卖/到店/买菜，点卡片生成推广链接</div>
+          <div className="mb-2 text-11 text-default-400">外卖/到店/买菜，点卡片生成推广链接</div>
           <div className="flex gap-2.5 overflow-x-auto pb-1">
             {meituanActs.map((a, i) => (
               <ProductCard key={`mt-${a.itemId}-${i}`} offer={a} onBuy={handleTranslink} compact commissionMode />
@@ -580,10 +580,10 @@ export function HomePanel({
       {/* 比价结果 */}
       {offers.length > 0 && (
         <div className="mt-5">
-          <div className="mb-2.5 flex items-center gap-1.5 text-[14px] font-bold text-foreground">
+          <div className="mb-2.5 flex items-center gap-1.5 text-14 font-bold text-foreground">
             <ShoppingCart className="h-4 w-4 text-orange-500 dark:text-orange-400" />
             比价结果
-            <span className="rounded-full bg-default-100 px-1.5 py-px text-[10px] font-semibold text-default-500 dark:bg-default-800">
+            <span className="rounded-full bg-default-100 px-1.5 py-px text-11 font-semibold text-default-500 dark:bg-default-800">
               {offers.length}
             </span>
           </div>
@@ -605,8 +605,8 @@ export function HomePanel({
       {!initialLoading && !searched && offers.length === 0 && meituanActs.length === 0 && featured99.length === 0 && (
         <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-default-300 py-10 text-center dark:border-default-700">
           <TrendingUp className="h-8 w-8 text-orange-300 dark:text-orange-500/40" strokeWidth={1.5} />
-          <div className="text-[13px] font-semibold text-foreground">复制链接/口令，先查一单</div>
-          <div className="max-w-[260px] text-[11px] leading-5 text-default-500">
+          <div className="text-13 font-semibold text-foreground">复制链接/口令，先查一单</div>
+          <div className="max-w-[260px] text-11 leading-5 text-default-500">
             在淘宝/京东/拼多多复制商品链接或口令，粘贴到上方搜索框，即可看到返利金额
           </div>
         </div>
@@ -622,12 +622,12 @@ export function HomePanel({
             className="w-[300px] rounded-2xl border border-default-200 bg-white p-5 shadow-xl dark:border-default-800 dark:bg-content1"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-1.5 text-[15px] font-bold text-foreground">
+            <div className="flex items-center gap-1.5 text-14 font-bold text-foreground">
               <BellRing className="h-4 w-4 text-orange-500 dark:text-orange-400" />
               订阅降价提醒
             </div>
-            <div className="mt-1 line-clamp-1 text-[11px] text-default-500">{watchTarget.title}</div>
-            <div className="mt-1 text-[11px] text-default-500">
+            <div className="mt-1 line-clamp-1 text-11 text-default-500">{watchTarget.title}</div>
+            <div className="mt-1 text-11 text-default-500">
               当前到手价 ¥{watchTarget.payPrice} · 返 ¥{watchTarget.estRebate}
             </div>
             <Input
@@ -662,12 +662,12 @@ export function HomePanel({
             className="w-[320px] rounded-2xl border border-default-200 bg-white p-5 shadow-xl dark:border-default-800 dark:bg-content1"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-1.5 text-[15px] font-bold text-emerald-500">
+            <div className="flex items-center gap-1.5 text-14 font-bold text-emerald-500">
               <ShoppingCart className="h-4 w-4" />
               推广链接已生成
             </div>
-            {promoTitle && <div className="mt-0.5 line-clamp-1 text-[11px] text-default-500">{promoTitle}</div>}
-            <div className="mt-3 max-h-[120px] overflow-y-auto break-all rounded-lg bg-default-50 p-3 font-mono text-[11px] leading-5 text-default-600 dark:bg-default-900 dark:text-default-400">
+            {promoTitle && <div className="mt-0.5 line-clamp-1 text-11 text-default-500">{promoTitle}</div>}
+            <div className="mt-3 max-h-[120px] overflow-y-auto break-all rounded-lg bg-default-50 p-3 font-mono text-11 leading-5 text-default-600 dark:bg-default-900 dark:text-default-400">
               {promoLink}
             </div>
             <div className="mt-4 flex gap-2">

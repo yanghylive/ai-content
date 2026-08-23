@@ -173,7 +173,7 @@ export function KnowledgeBaseCenter() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 12, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -207,7 +207,7 @@ export function KnowledgeBaseCenter() {
                     </div>
                     <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.5 }}>{m.snippet}</p>
                     {m.sourceType === "local" ? (
-                      <button type="button" style={{ marginTop: 6, fontSize: 11, fontWeight: 600, color: "#d98a2d", background: "none", border: "none", padding: 0 }} disabled={syncingId === m.assetId} onClick={() => void handleSync(m.assetId)}>
+                      <button type="button" style={{ marginTop: 6, fontSize: 11, fontWeight: 600, color: "var(--kaypal-v3-amber)", background: "none", border: "none", padding: 0 }} disabled={syncingId === m.assetId} onClick={() => void handleSync(m.assetId)}>
                         {syncingId === m.assetId ? "同步中…" : "同步云端"}
                       </button>
                     ) : null}
@@ -234,7 +234,7 @@ export function KnowledgeBaseCenter() {
             <div className="mx-card mx-list-card">
               {items.map((item) => (
                 <div key={item.id} className="mx-row" style={{ alignItems: "flex-start", cursor: "default" }}>
-                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)", borderRadius: 999 }}>
                     <FileText size={18} strokeWidth={1.8} />
                   </span>
                   <div className="mx-row-main">
@@ -249,11 +249,11 @@ export function KnowledgeBaseCenter() {
                     </div>
                     <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
                       {item.syncStatus !== "synced" ? (
-                        <button type="button" style={{ fontSize: 11.5, fontWeight: 600, color: "#2563eb", background: "none", border: "none", padding: 0 }} disabled={syncingId === item.id} onClick={() => void handleSync(item.id)}>
+                        <button type="button" style={{ fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-cobalt)", background: "none", border: "none", padding: 0 }} disabled={syncingId === item.id} onClick={() => void handleSync(item.id)}>
                           {syncingId === item.id ? "同步中…" : "同步云端"}
                         </button>
                       ) : null}
-                      <button type="button" style={{ fontSize: 11.5, fontWeight: 600, color: "#dc2626", background: "none", border: "none", padding: 0 }} disabled={deletingId === item.id} onClick={() => void handleDelete(item.id)}>
+                      <button type="button" style={{ fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-danger)", background: "none", border: "none", padding: 0 }} disabled={deletingId === item.id} onClick={() => void handleDelete(item.id)}>
                         {deletingId === item.id ? "删除中…" : "删除"}
                       </button>
                     </div>

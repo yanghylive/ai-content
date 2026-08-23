@@ -103,7 +103,7 @@ export function CapabilityInfoPage({
                     alignItems: "center",
                     justifyContent: "center",
                     background: "rgba(246,196,120,.14)",
-                    color: "#d98a2d",
+                    color: "var(--kaypal-v3-amber)",
                   }}
                 >
                   <Icon icon={item.icon} width={18} />
@@ -134,7 +134,7 @@ export function CapabilityInfoPage({
           className="h-5 w-auto shrink-0"
           draggable={false}
         />
-        <span className="text-[12px] text-default-500">
+        <span className="text-12 text-default-500">
           {title} · 由 JIUZHANG AI 智能驱动
         </span>
       </div>
@@ -146,10 +146,10 @@ export function CapabilityInfoPage({
                 <Icon icon={icon} width={24} />
               </div>
               <div className="min-w-0 space-y-2">
-                <h1 className="text-[24px] font-semibold leading-8 text-foreground">
+                <h1 className="text-2xl font-semibold leading-8 text-foreground">
                   {title}
                 </h1>
-                <p className="max-w-3xl text-[14px] leading-6 text-default-500">
+                <p className="max-w-3xl text-14 leading-6 text-default-500">
                   {description}
                 </p>
               </div>
@@ -193,10 +193,10 @@ export function CapabilityInfoPage({
                 <Icon icon={item.icon} width={20} />
               </div>
               <div className="space-y-1">
-                <h2 className="text-[15px] font-semibold text-foreground">
+                <h2 className="text-14 font-semibold text-foreground">
                   {item.title}
                 </h2>
-                <p className="text-[13px] leading-5 text-default-500">
+                <p className="text-13 leading-5 text-default-500">
                   {item.description}
                 </p>
               </div>

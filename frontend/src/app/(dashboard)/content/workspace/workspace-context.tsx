@@ -103,7 +103,7 @@ export function WorkspaceContext({
           : blockedCount || checks.length;
     return (
       <Chip
-        className="h-5 px-1 text-[10px]"
+        className="h-5 px-1 text-11"
         color={tabId === "checks" && blockedCount ? "danger" : "default"}
         radius="sm"
         size="sm"
@@ -216,7 +216,7 @@ export function WorkspaceContext({
                         description={material.summary || "暂无摘要"}
                         descriptionLines={2}
                         endContent={
-                          <Chip className="h-5 px-1 text-[10px]" radius="sm" size="sm" variant="flat">
+                          <Chip className="h-5 px-1 text-11" radius="sm" size="sm" variant="flat">
                             {material.platformLabel}
                           </Chip>
                         }
@@ -318,7 +318,7 @@ export function WorkspaceContext({
                         description={item.excerpt}
                         descriptionLines={2}
                         endContent={
-                          <Chip className="h-5 px-1 text-[10px]" radius="sm" size="sm" variant="flat">
+                          <Chip className="h-5 px-1 text-11" radius="sm" size="sm" variant="flat">
                             {item.sourceLabel}
                           </Chip>
                         }

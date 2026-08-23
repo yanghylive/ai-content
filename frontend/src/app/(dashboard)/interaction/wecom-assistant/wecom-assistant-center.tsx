@@ -35,7 +35,7 @@ const STATUS_META: Record<
   { label: string; color: string; bg: string }
 > = {
   not_installed: { label: "未安装", color: "#9fb2c8", bg: "rgba(142,165,190,.14)" },
-  active: { label: "已连接", color: "#4ade80", bg: "rgba(74,222,128,.14)" },
+  active: { label: "已连接", color: "var(--kaypal-v3-success)", bg: "rgba(74,222,128,.14)" },
   disabled: { label: "已停用", color: "#fbbf24", bg: "rgba(251,191,36,.14)" },
   test_failed: { label: "连接异常", color: "#ff8a8a", bg: "rgba(255,138,138,.14)" },
 };
@@ -289,7 +289,7 @@ export function WecomAssistantCenter() {
             title="连接信息"
             icon={
               state.status === "active" ? (
-                <CheckCircle2 size={14} style={{ color: "#4ade80" }} />
+                <CheckCircle2 size={14} style={{ color: "var(--kaypal-v3-success)" }} />
               ) : (
                 <XCircle size={14} style={{ color: "#ff8a8a" }} />
               )
@@ -336,7 +336,7 @@ export function WecomAssistantCenter() {
                   style={{
                     ...smallBtn,
                     background: state.status === "active" ? "rgba(255,138,138,.14)" : "rgba(74,222,128,.16)",
-                    color: state.status === "active" ? "#ff8a8a" : "#4ade80",
+                    color: state.status === "active" ? "#ff8a8a" : "var(--kaypal-v3-success)",
                     opacity: busy ? 0.6 : 1,
                   }}
                 >
@@ -533,7 +533,7 @@ export function WecomAssistantCenter() {
                         fontSize: 11,
                         color:
                           record.status === "sent"
-                            ? "#4ade80"
+                            ? "var(--kaypal-v3-success)"
                             : record.status === "failed"
                               ? "#ff8a8a"
                               : "var(--mx-muted, #9fb2c8)",

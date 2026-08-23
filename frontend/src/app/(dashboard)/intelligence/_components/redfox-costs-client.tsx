@@ -259,17 +259,17 @@ export function RedfoxCostsClient() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">用量记录</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   看今天扣了多少、哪里失败、每次采集是否成功
                 </h1>
-                <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   用户只看用量和结果。系统会把每次查找、失败、需处理项和点数消耗记录下来，方便复盘。
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <Link
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                 href="/intelligence/redfox"
               >
                 <Plug
@@ -280,7 +280,7 @@ export function RedfoxCostsClient() {
                 管理员连接
               </Link>
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading}
                 onClick={() => void load()}
                 type="button"
@@ -323,10 +323,10 @@ export function RedfoxCostsClient() {
                 strokeWidth={1.8}
               />
             </div>
-            <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+            <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
               {value}
             </p>
-            <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
               {detail}
             </p>
           </article>
@@ -337,7 +337,7 @@ export function RedfoxCostsClient() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">积分扣减</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               真实采集直接扣积分
             </h2>
           </div>
@@ -368,14 +368,14 @@ export function RedfoxCostsClient() {
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {item.label}
                     </p>
-                    <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                       {item.detail}
                     </p>
                   </div>
-                  <span className="text-[18px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <span className="text-lg font-bold text-[var(--kaypal-v3-ink)]">
                     {item.value} {item.unit}
                   </span>
                 </div>
@@ -392,11 +392,11 @@ export function RedfoxCostsClient() {
                     className="h-4 w-4 text-[var(--kaypal-v3-muted)]"
                     strokeWidth={1.8}
                   />
-                  <span className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <span className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     发起采集
                   </span>
                 </div>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   查找内容、账号或评论，成功后直接扣积分。
                 </p>
               </Link>
@@ -410,11 +410,11 @@ export function RedfoxCostsClient() {
                     className="h-4 w-4 text-[var(--kaypal-v3-muted)]"
                     strokeWidth={1.8}
                   />
-                  <span className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                  <span className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                     查看功能用量
                   </span>
                 </div>
-                <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   按业务功能查看每次使用和扣减分布。
                 </p>
               </Link>
@@ -427,11 +427,11 @@ export function RedfoxCostsClient() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="kaypal-v3-label">历史失败复盘</p>
-                <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+                <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                   失败与需处理记录
                 </h2>
               </div>
-              <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 py-1 text-[12px] font-semibold text-[var(--kaypal-v3-muted)]">
+              <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-3 py-1 text-12 font-semibold text-[var(--kaypal-v3-muted)]">
                 {riskLogs.length} 条
               </span>
             </div>
@@ -449,23 +449,23 @@ export function RedfoxCostsClient() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                        <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                           {statusLabels[log.status]}
                         </span>
-                        <span className="text-[11px] text-[var(--kaypal-v3-muted)]">
+                        <span className="text-11 text-[var(--kaypal-v3-muted)]">
                           {formatTime(log.createdAt)}
                         </span>
                       </div>
-                      <p className="mt-2 truncate text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                      <p className="mt-2 truncate text-13 font-bold text-[var(--kaypal-v3-ink)]">
                         {operationLabel(log)}
                       </p>
-                      <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                      <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                         {publicIntelligenceText(
                           log.errorMessage || operationLabel(log),
                         )}
                       </p>
                     </div>
-                    <span className="shrink-0 text-[13px] font-bold text-[var(--kaypal-v3-soft-ink)]">
+                    <span className="shrink-0 text-13 font-bold text-[var(--kaypal-v3-soft-ink)]">
                       {log.costPoints} 点
                     </span>
                   </div>
@@ -490,7 +490,7 @@ export function RedfoxCostsClient() {
             <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
               <div>
                 <p className="kaypal-v3-label">使用明细</p>
-                <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+                <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                   每一次查找和跟踪都会记录
                 </h2>
               </div>
@@ -501,7 +501,7 @@ export function RedfoxCostsClient() {
                     <button
                       aria-pressed={active}
                       className={[
-                        "h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition",
+                        "h-8 rounded-[8px] border px-3 text-12 font-semibold transition",
                         active
                           ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                           : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)] hover:border-[var(--kaypal-v3-border-strong)]",
@@ -518,7 +518,7 @@ export function RedfoxCostsClient() {
             </div>
             <div className="mt-3">
               <input
-                className="h-10 w-full rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] text-[var(--kaypal-v3-ink)]"
+                className="h-10 w-full rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 text-[var(--kaypal-v3-ink)]"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="搜索操作、状态或错误信息"
                 value={query}
@@ -534,39 +534,39 @@ export function RedfoxCostsClient() {
                   key={log.id}
                 >
                   <div>
-                    <p className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+                    <p className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
                       {formatTime(log.createdAt)}
                     </p>
-                    <p className="mt-1 flex items-center gap-1 text-[11px] text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 flex items-center gap-1 text-11 text-[var(--kaypal-v3-muted)]">
                       <Clock3 aria-hidden="true" className="h-3 w-3" />
                       {log.latencyMs}ms
                     </p>
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <p className="truncate text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {operationLabel(log)}
                     </p>
-                    <p className="mt-1 truncate font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+                    <p className="mt-1 truncate font-mono text-11 text-[var(--kaypal-v3-muted)]">
                       {publicAbilityLabel(log.skillCode)}
                     </p>
                     {log.errorMessage ? (
-                      <p className="mt-1 line-clamp-1 text-[11px] text-[var(--kaypal-v3-danger)]">
+                      <p className="mt-1 line-clamp-1 text-11 text-[var(--kaypal-v3-danger)]">
                         {publicIntelligenceText(log.errorMessage)}
                       </p>
                     ) : null}
                   </div>
                   <span
                     className={[
-                      "w-fit rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-soft-ink)]",
+                      "w-fit rounded-[6px] border px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-soft-ink)]",
                       statusTone(log.status),
                     ].join(" ")}
                   >
                     {statusLabels[log.status]}
                   </span>
-                  <p className="text-[12px] font-bold text-[var(--kaypal-v3-soft-ink)]">
+                  <p className="text-12 font-bold text-[var(--kaypal-v3-soft-ink)]">
                     {log.costPoints} 点
                   </p>
-                  <p className="font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+                  <p className="font-mono text-11 text-[var(--kaypal-v3-muted)]">
                     {log.responseStatus || "--"}
                   </p>
                 </div>
@@ -602,7 +602,7 @@ export function RedfoxCostsClient() {
         <aside className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">功能用量</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               积分消耗排行
             </h2>
           </div>
@@ -622,14 +622,14 @@ export function RedfoxCostsClient() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate font-mono text-[12px] font-bold text-[var(--kaypal-v3-ink)]">
+                        <p className="truncate font-mono text-12 font-bold text-[var(--kaypal-v3-ink)]">
                           {publicAbilityLabel(skill.skillCode)}
                         </p>
-                        <p className="mt-1 text-[11px] text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-1 text-11 text-[var(--kaypal-v3-muted)]">
                           使用 {skill.calls} 次 · 失败 {skill.failures}
                         </p>
                       </div>
-                      <span className="shrink-0 text-[13px] font-bold text-[var(--kaypal-v3-accent-ink)]">
+                      <span className="shrink-0 text-13 font-bold text-[var(--kaypal-v3-accent-ink)]">
                         {skill.costPoints} 点
                       </span>
                     </div>
@@ -669,12 +669,12 @@ export function RedfoxCostsClient() {
                   className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-accent)]"
                   strokeWidth={1.8}
                 />
-                <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   用量治理不直接删除功能；先按产出效果停用或降频，再观察下一轮积分消耗。
                 </p>
               </div>
               <Link
-                className="mt-3 inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+                className="mt-3 inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
                 href="/intelligence/redfox"
               >
                 打开管理员连接

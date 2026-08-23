@@ -201,11 +201,11 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
   return (
     <div>
       {/* 页头 */}
-      <div className="flex items-center gap-1.5 text-[20px] font-extrabold tracking-tight text-foreground">
+      <div className="flex items-center gap-1.5 text-xl font-extrabold tracking-tight text-foreground">
         <TrendingUp className="h-5 w-5 text-orange-500 dark:text-orange-400" />
         比价
       </div>
-      <div className="mt-0.5 text-[12px] text-default-500">跨平台比价 · 历史曲线 · 盯价监控</div>
+      <div className="mt-0.5 text-12 text-default-500">跨平台比价 · 历史曲线 · 盯价监控</div>
 
       {/* 搜索输入 */}
       <div className="mt-4 flex gap-2">
@@ -253,10 +253,10 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
       {/* 比价结果 */}
       {offers.length > 0 && (
         <div className="mt-4">
-          <div className="mb-2.5 flex items-center gap-1.5 text-[14px] font-bold text-foreground">
+          <div className="mb-2.5 flex items-center gap-1.5 text-14 font-bold text-foreground">
             <ShoppingCart className="h-4 w-4 text-orange-500 dark:text-orange-400" />
             比价结果
-            <span className="rounded-full bg-default-100 px-1.5 py-px text-[10px] font-semibold text-default-500 dark:bg-default-800">
+            <span className="rounded-full bg-default-100 px-1.5 py-px text-11 font-semibold text-default-500 dark:bg-default-800">
               {offers.length}
             </span>
           </div>
@@ -281,8 +281,8 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
       {offers.length === 0 && history.length === 0 && (
         <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-default-300 py-10 text-center dark:border-default-700">
           <Search className="h-8 w-8 text-orange-300 dark:text-orange-500/40" strokeWidth={1.5} />
-          <div className="text-[13px] font-semibold text-foreground">搜一搜，比一比</div>
-          <div className="max-w-[260px] text-[11px] leading-5 text-default-500">
+          <div className="text-13 font-semibold text-foreground">搜一搜，比一比</div>
+          <div className="max-w-[260px] text-11 leading-5 text-default-500">
             输入商品关键词或粘贴链接/口令，查看全网最优价格与返利
           </div>
         </div>
@@ -291,10 +291,10 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
       {/* 价格监控 */}
       {watches.length > 0 && (
         <div className="mt-5">
-          <div className="mb-2.5 flex items-center gap-1.5 text-[14px] font-bold text-foreground">
+          <div className="mb-2.5 flex items-center gap-1.5 text-14 font-bold text-foreground">
             <BellRing className="h-4 w-4 text-orange-500 dark:text-orange-400" />
             价格监控
-            <span className="rounded-full bg-default-100 px-1.5 py-px text-[10px] font-semibold text-default-500 dark:bg-default-800">
+            <span className="rounded-full bg-default-100 px-1.5 py-px text-11 font-semibold text-default-500 dark:bg-default-800">
               {watches.length}
             </span>
           </div>
@@ -306,8 +306,8 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
                 onClick={() => void openChart(w)}
                 className="flex w-full items-center justify-between gap-2 rounded-xl border border-default-200 bg-white px-3 py-2.5 text-left transition-colors hover:border-orange-300 dark:border-default-800 dark:bg-content1 dark:hover:border-orange-500/40"
               >
-                <span className="min-w-0 truncate text-[12px] text-foreground">{w.title}</span>
-                <span className="flex shrink-0 items-center gap-2 text-[11px] text-default-500">
+                <span className="min-w-0 truncate text-12 text-foreground">{w.title}</span>
+                <span className="flex shrink-0 items-center gap-2 text-11 text-default-500">
                   {w.targetPayPrice ? `≤¥${w.targetPayPrice}` : ""}
                   {w.minRebate ? ` 返利≥¥${w.minRebate}` : ""}
                   <TrendingUp className="h-3.5 w-3.5 text-orange-500 dark:text-orange-400" />
@@ -332,14 +332,14 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[14px] font-bold text-foreground">📈 {chart.title.slice(0, 18)}</div>
+              <div className="text-14 font-bold text-foreground">📈 {chart.title.slice(0, 18)}</div>
               <div className="flex shrink-0 gap-1">
                 {[30, 90].map((d) => (
                   <button
                     key={d}
                     type="button"
                     onClick={() => void switchDays(d)}
-                    className={`rounded-md px-2 py-0.5 text-[10px] font-bold transition-colors ${
+                    className={`rounded-md px-2 py-0.5 text-11 font-bold transition-colors ${
                       chart.days === d
                         ? "bg-orange-500 text-white"
                         : "bg-default-100 text-default-500 hover:bg-orange-100 hover:text-orange-600 dark:bg-default-800 dark:hover:bg-orange-500/20"
@@ -350,7 +350,7 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
                 ))}
               </div>
             </div>
-            <div className="mt-0.5 text-[11px] text-default-500">
+            <div className="mt-0.5 text-11 text-default-500">
               {chart.days} 天价格轨迹（{chart.points.length} 个价格点）
             </div>
             {chartData.length >= 2 ? (
@@ -387,11 +387,11 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="py-6 text-center text-[12px] text-default-500">
+              <div className="py-6 text-center text-12 text-default-500">
                 数据积累中（监控扫描后每天记录一个价格点）
               </div>
             )}
-            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-default-500">
+            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-11 text-default-500">
               <span>当前 ¥{chart.current ?? "-"}</span>
               <span>30 日均价 ¥{chart.avg30 ?? "-"}</span>
               <span>最低 ¥{chart.min30 ?? "-"}</span>
@@ -426,12 +426,12 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
             className="w-[300px] rounded-2xl border border-default-200 bg-white p-5 shadow-xl dark:border-default-800 dark:bg-content1"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-1.5 text-[15px] font-bold text-foreground">
+            <div className="flex items-center gap-1.5 text-14 font-bold text-foreground">
               <BellRing className="h-4 w-4 text-orange-500 dark:text-orange-400" />
               订阅降价提醒
             </div>
-            <div className="mt-1 line-clamp-1 text-[11px] text-default-500">{watchTarget.title}</div>
-            <div className="mt-1 text-[11px] text-default-500">
+            <div className="mt-1 line-clamp-1 text-11 text-default-500">{watchTarget.title}</div>
+            <div className="mt-1 text-11 text-default-500">
               当前到手价 ¥{watchTarget.payPrice} · 返 ¥{watchTarget.estRebate}
             </div>
             <Input

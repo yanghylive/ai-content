@@ -546,7 +546,7 @@ export function OpsWorkbenchView() {
         <CardBody>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-[17px] font-semibold leading-6">客户互动</h2>
+              <h2 className="text-lg font-semibold leading-6">客户互动</h2>
               <p className="text-sm text-default-500">
                 集中处理抖音、视频号和微信客户消息。
               </p>

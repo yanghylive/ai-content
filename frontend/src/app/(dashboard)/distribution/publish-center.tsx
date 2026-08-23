@@ -943,12 +943,12 @@ const CALENDAR_STATUS_LABEL: Record<string, string> = {
 };
 
 const CALENDAR_STATUS_COLOR: Record<string, string> = {
-  waiting: "#d98a2d",
-  claimed: "#2563eb",
-  queued: "#2563eb",
-  completed: "#059669",
-  failed: "#dc2626",
-  cancelled: "#94a3b8",
+  waiting: "var(--kaypal-v3-amber)",
+  claimed: "var(--kaypal-v3-cobalt)",
+  queued: "var(--kaypal-v3-cobalt)",
+  completed: "var(--kaypal-v3-success)",
+  failed: "var(--kaypal-v3-danger)",
+  cancelled: "var(--kaypal-v3-muted)",
 };
 
 /** 发布日历：近 7 天任务分组 + 取消/改期 */
@@ -1109,8 +1109,8 @@ function PublishCalendarView() {
                       <span
                         className="mx-row-ic"
                         style={{
-                          background: `${CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8"}1f`,
-                          color: CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8",
+                          background: `${CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)"}1f`,
+                          color: CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)",
                         }}
                       >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17">
@@ -1121,7 +1121,7 @@ function PublishCalendarView() {
                       <div className="mx-row-main">
                         <div className="mx-row-title" style={{ fontSize: 13.5 }}>{item.title}</div>
                         <div className="mx-row-desc" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                          <span className="platform-dot" style={{ background: CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8", width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
+                          <span className="platform-dot" style={{ background: CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)", width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
                           <span>{mobilePlatformName(item.platform)}</span>
                           <span style={{ color: "rgba(219,234,254,.6)" }}>
                             {fmtTime(item.time)}
@@ -1146,7 +1146,7 @@ function PublishCalendarView() {
                         ) : null}
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                        <span className="mx-badge" style={{ background: `${CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8"}22`, color: CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8", border: `1px solid ${CALENDAR_STATUS_COLOR[item.status] ?? "#94a3b8"}55` }}>
+                        <span className="mx-badge" style={{ background: `${CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)"}22`, color: CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)", border: `1px solid ${CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)"}55` }}>
                           {CALENDAR_STATUS_LABEL[item.status] ?? item.status}
                         </span>
                         {canOperate ? (
@@ -1276,14 +1276,14 @@ function MobilePublishView({
               <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
                 {stats.pending > 0 ? `${stats.pending} 个结果等你确认` : `${stats.queued} 个任务排队中`}
                 <br />
-                <span style={{ color: "#f4bb67" }}>
+                <span style={{ color: "var(--kaypal-v3-amber)" }}>
                   {stats.failed > 0 ? `${stats.failed} 个失败待重试` : "一切正常"}
                 </span>
               </h2>
             ) : (
               <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
                 暂无待办发布<br />
-                <span style={{ color: "#f4bb67" }}>今日已发布 {stats.doneToday} 条</span>
+                <span style={{ color: "var(--kaypal-v3-amber)" }}>今日已发布 {stats.doneToday} 条</span>
               </h2>
             )}
             <p className="mx-page-sub" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6, color: "rgba(219,234,254,.78)" }}>
@@ -1324,7 +1324,7 @@ function MobilePublishView({
           <div className="mx-stat-item mx-control"><div className="mx-stat-num">{stats.pending}</div><div className="mx-stat-label">待确认</div></div>
           <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{stats.queued}</div><div className="mx-stat-label">排队中</div></div>
           <div className="mx-stat-item mx-control"><div className="mx-stat-num">{stats.doneToday}</div><div className="mx-stat-label">今日已发</div></div>
-          <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#dc2626" }}>{stats.failed}</div><div className="mx-stat-label">失败</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "var(--kaypal-v3-danger)" }}>{stats.failed}</div><div className="mx-stat-label">失败</div></div>
         </div>
       </section>
 

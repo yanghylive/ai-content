@@ -428,13 +428,13 @@ export function IntelligenceDispatchRecordsPage({
 
         <div className="mx-px" style={{ paddingTop: 14, paddingBottom: 28 }}>
           {error ? (
-            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{error}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginBottom: 10 }}>{error}</p>
           ) : null}
           {actionMessage ? (
-            <p style={{ fontSize: 12, color: "#059669", marginBottom: 10 }}>{actionMessage}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", marginBottom: 10 }}>{actionMessage}</p>
           ) : null}
           {actionError ? (
-            <p style={{ fontSize: 12, color: "#dc2626", marginBottom: 10 }}>{actionError}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginBottom: 10 }}>{actionError}</p>
           ) : null}
 
           {loading ? (
@@ -495,7 +495,7 @@ export function IntelligenceDispatchRecordsPage({
                                 borderRadius: 10,
                                 border: tone === "danger" ? "1px solid rgba(239,68,68,.25)" : "1px solid rgba(142,165,190,.3)",
                                 background: tone === "primary" ? "rgba(37,99,235,.12)" : tone === "danger" ? "rgba(239,68,68,.08)" : "rgba(120,148,179,.12)",
-                                color: tone === "primary" ? "#2563eb" : tone === "danger" ? "#dc2626" : "var(--mx-ink)",
+                                color: tone === "primary" ? "var(--kaypal-v3-cobalt)" : tone === "danger" ? "var(--kaypal-v3-danger)" : "var(--mx-ink)",
                                 opacity: disabled || processingAction === action ? 0.5 : 1,
                               }}
                             >
@@ -530,17 +530,17 @@ export function IntelligenceDispatchRecordsPage({
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">{config.eyebrow}</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   {config.title}
                 </h1>
-                <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   {config.description}
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                 onClick={reload}
                 type="button"
               >
@@ -554,7 +554,7 @@ export function IntelligenceDispatchRecordsPage({
                 刷新
               </button>
               <Link
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                 href={config.primaryHref}
               >
                 {config.primaryLabel}
@@ -581,10 +581,10 @@ export function IntelligenceDispatchRecordsPage({
                     strokeWidth={1.8}
                   />
                 </div>
-                <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+                <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
                   {value}
                 </p>
-                <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                   {detail}
                 </p>
               </div>
@@ -599,7 +599,7 @@ export function IntelligenceDispatchRecordsPage({
                 strokeWidth={1.8}
               />
               <input
-                className="h-10 w-full rounded-[8px] pl-9 pr-3 text-[13px]"
+                className="h-10 w-full rounded-[8px] pl-9 pr-3 text-13"
                 onChange={(event) => setKeyword(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") search();
@@ -609,7 +609,7 @@ export function IntelligenceDispatchRecordsPage({
               />
             </div>
             <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
               onClick={search}
               type="button"
             >
@@ -633,13 +633,13 @@ export function IntelligenceDispatchRecordsPage({
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">真实记录</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               处理队列
             </h2>
           </div>
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
             {loading ? (
-              <div className="flex min-h-[260px] items-center justify-center p-4 text-[13px] font-semibold text-[var(--kaypal-v3-muted)]">
+              <div className="flex min-h-[260px] items-center justify-center p-4 text-13 font-semibold text-[var(--kaypal-v3-muted)]">
                 <Loader2
                   aria-hidden="true"
                   className="mr-2 h-4 w-4 animate-spin"
@@ -698,20 +698,20 @@ export function IntelligenceDispatchRecordsPage({
                         <div className="flex flex-wrap items-center gap-2">
                           <span
                             className={[
-                              "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                              "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                               riskClass(record.risk),
                             ].join(" ")}
                           >
                             {riskMeta[record.risk].label}
                           </span>
-                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                          <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                             {statusLabel(record.status)}
                           </span>
                         </div>
-                        <h3 className="mt-2 text-[14px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                        <h3 className="mt-2 text-14 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                           {record.title}
                         </h3>
-                        <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           {record.platform} · {record.source} ·{" "}
                           {formatTime(record.createdAt)}
                         </p>
@@ -732,7 +732,7 @@ export function IntelligenceDispatchRecordsPage({
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">证据和处理边界</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               {selectedRecord?.title || "等待选择记录"}
             </h2>
           </div>
@@ -750,7 +750,7 @@ export function IntelligenceDispatchRecordsPage({
                       key={label}
                     >
                       <p className="kaypal-v3-label">{label}</p>
-                      <p className="mt-1 text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                      <p className="mt-1 text-13 font-bold text-[var(--kaypal-v3-ink)]">
                         {value}
                       </p>
                     </div>
@@ -759,11 +759,11 @@ export function IntelligenceDispatchRecordsPage({
 
                 <div className="mt-4 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-4">
                   <p className="kaypal-v3-label">处理摘要</p>
-                  <p className="mt-2 text-[14px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+                  <p className="mt-2 text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                     {selectedRecord.summary || "已进入目标处理台。"}
                   </p>
                   <div className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-3">
-                    <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                    <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                       {selectedRecord.boundary ||
                         "保留来源和证据，不自动触达，不直接复用第三方原文素材。"}
                     </p>
@@ -779,7 +779,7 @@ export function IntelligenceDispatchRecordsPage({
                         return (
                           <button
                             className={[
-                              "inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-[12px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
+                              "inline-flex h-9 items-center gap-2 rounded-[8px] border px-3 text-12 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
                               actionClass(tone),
                             ].join(" ")}
                             disabled={disabled || Boolean(processingAction)}
@@ -807,12 +807,12 @@ export function IntelligenceDispatchRecordsPage({
                     )}
                   </div>
                   {actionMessage ? (
-                    <p className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-3 py-2 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                    <p className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-3 py-2 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                       {actionMessage}
                     </p>
                   ) : null}
                   {actionError ? (
-                    <p className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-3 py-2 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                    <p className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-3 py-2 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                       {actionError}
                     </p>
                   ) : null}
@@ -825,22 +825,22 @@ export function IntelligenceDispatchRecordsPage({
                   <ol className="mt-3 grid gap-3">
                     {selectedRecord.evidence.slice(0, 6).map((item, index) => (
                       <li className="flex gap-3" key={`${item}-${index}`}>
-                        <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-[11px] font-bold text-white">
+                        <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-11 font-bold text-white">
                           {index + 1}
                         </span>
-                        <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                        <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                           {item}
                         </p>
                       </li>
                     ))}
                   </ol>
                 ) : (
-                  <p className="mt-3 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-3 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     暂无来源记录；可回到情报对象补充来源、摘要和边界。
                   </p>
                 )}
                 <Link
-                  className="mt-4 inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                  className="mt-4 inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                   href={selectedRecord.href}
                 >
                   打开目标模块
@@ -860,10 +860,10 @@ export function IntelligenceDispatchRecordsPage({
                   className="mx-auto h-8 w-8 text-[var(--kaypal-v3-muted)]"
                   strokeWidth={1.8}
                 />
-                <p className="mt-3 text-[14px] font-bold text-[var(--kaypal-v3-ink)]">
+                <p className="mt-3 text-14 font-bold text-[var(--kaypal-v3-ink)]">
                   选择左侧记录查看来源
                 </p>
-                <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   处理记录会展示来源、风险、记录链、边界和下一步模块。
                 </p>
               </div>

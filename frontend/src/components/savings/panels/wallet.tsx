@@ -66,30 +66,30 @@ export function WalletPanel({ balance, credit, reload }: WalletPanelProps) {
 
   return (
     <div>
-      <div className="flex items-center gap-1.5 text-[20px] font-extrabold tracking-tight text-foreground">
+      <div className="flex items-center gap-1.5 text-xl font-extrabold tracking-tight text-foreground">
         <Wallet className="h-5 w-5 text-orange-500 dark:text-orange-400" />
         钱包
       </div>
-      <div className="mt-0.5 text-[12px] text-default-500">返利去哪了，一目了然</div>
+      <div className="mt-0.5 text-12 text-default-500">返利去哪了，一目了然</div>
 
       {/* 大字余额主视觉 */}
       <div className="mt-4 overflow-hidden rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500 via-orange-500 to-amber-500 p-5 text-white shadow-lg shadow-orange-500/10">
-        <div className="text-[12px] font-medium text-orange-100">可用返利（可提现 · 可抵算力）</div>
+        <div className="text-12 font-medium text-orange-100">可用返利（可提现 · 可抵算力）</div>
         <div className="mt-1 flex items-baseline gap-1">
-          <span className="text-[40px] font-extrabold leading-none tracking-tight">¥{balance?.available ?? 0}</span>
+          <span className="text-4xl font-extrabold leading-none tracking-tight">¥{balance?.available ?? 0}</span>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2 border-t border-white/15 pt-3 text-center">
           <div>
-            <div className="text-[18px] font-bold">¥{balance?.pending ?? 0}</div>
-            <div className="text-[10px] text-orange-100">待结算</div>
+            <div className="text-lg font-bold">¥{balance?.pending ?? 0}</div>
+            <div className="text-11 text-orange-100">待结算</div>
           </div>
           <div>
-            <div className="text-[18px] font-bold">¥{balance?.estimated ?? 0}</div>
-            <div className="text-[10px] text-orange-100">预计</div>
+            <div className="text-lg font-bold">¥{balance?.estimated ?? 0}</div>
+            <div className="text-11 text-orange-100">预计</div>
           </div>
           <div>
-            <div className="text-[18px] font-bold">¥{balance?.totalEarned ?? 0}</div>
-            <div className="text-[10px] text-orange-100">累计获得</div>
+            <div className="text-lg font-bold">¥{balance?.totalEarned ?? 0}</div>
+            <div className="text-11 text-orange-100">累计获得</div>
           </div>
         </div>
         <div className="mt-3 flex gap-2">
@@ -115,11 +115,11 @@ export function WalletPanel({ balance, credit, reload }: WalletPanelProps) {
 
       {/* 资产明细 */}
       <div className="mt-4 rounded-2xl border border-default-200 bg-white p-4 dark:border-default-800 dark:bg-content1">
-        <div className="flex items-center gap-1.5 text-[13px] font-bold text-foreground">
+        <div className="flex items-center gap-1.5 text-13 font-bold text-foreground">
           <ShieldCheck className="h-4 w-4 text-emerald-500" />
           资金明细
         </div>
-        <div className="mt-3 space-y-2.5 text-[12px]">
+        <div className="mt-3 space-y-2.5 text-12">
           <div className="flex items-center justify-between">
             <span className="text-default-500">可用返利（现金）</span>
             <b className="text-foreground">¥{balance?.available ?? 0}</b>
@@ -145,11 +145,11 @@ export function WalletPanel({ balance, credit, reload }: WalletPanelProps) {
 
       {/* 收支流水 */}
       <div className="mt-4 rounded-2xl border border-default-200 bg-white p-4 dark:border-default-800 dark:bg-content1">
-        <div className="flex items-center gap-1.5 text-[13px] font-bold text-foreground">
+        <div className="flex items-center gap-1.5 text-13 font-bold text-foreground">
           <ReceiptText className="h-4 w-4 text-orange-500 dark:text-orange-400" />
           收支流水
         </div>
-        <div className="mt-3 space-y-2.5 text-[12px]">
+        <div className="mt-3 space-y-2.5 text-12">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <History className="h-3.5 w-3.5 text-default-400" />
@@ -162,9 +162,9 @@ export function WalletPanel({ balance, credit, reload }: WalletPanelProps) {
               <CreditCard className="h-3.5 w-3.5 text-default-400" />
               <span className="text-default-500">兑换/提现明细</span>
             </div>
-            <span className="text-[11px] text-default-400">见「我的」页记录</span>
+            <span className="text-11 text-default-400">见「我的」页记录</span>
           </div>
-          <div className="mt-1 rounded-lg bg-orange-50 px-3 py-2.5 text-[11px] leading-5 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
+          <div className="mt-1 rounded-lg bg-orange-50 px-3 py-2.5 text-11 leading-5 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
             💡 返利现金可 1:1 抵扣生图/生视频费用（积分优先，不足扣返利），与兑换额度并存——在素材中心支付时选择「返利支付」即可。
           </div>
         </div>
@@ -177,11 +177,11 @@ export function WalletPanel({ balance, credit, reload }: WalletPanelProps) {
             className="w-[300px] rounded-2xl border border-default-200 bg-white p-5 shadow-xl dark:border-default-800 dark:bg-content1"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-1.5 text-[15px] font-bold text-foreground">
+            <div className="flex items-center gap-1.5 text-14 font-bold text-foreground">
               <CreditCard className="h-4 w-4 text-orange-500 dark:text-orange-400" />
               返利兑换 AI 额度
             </div>
-            <div className="mt-1 text-[11px] text-default-500">可用返利 ¥{balance?.available ?? 0}，比例 1:0.8</div>
+            <div className="mt-1 text-11 text-default-500">可用返利 ¥{balance?.available ?? 0}，比例 1:0.8</div>
             <Input
               type="number"
               value={exchangeAmount}
@@ -214,11 +214,11 @@ export function WalletPanel({ balance, credit, reload }: WalletPanelProps) {
             className="w-[300px] rounded-2xl border border-default-200 bg-white p-5 shadow-xl dark:border-default-800 dark:bg-content1"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-1.5 text-[15px] font-bold text-foreground">
+            <div className="flex items-center gap-1.5 text-14 font-bold text-foreground">
               <Wallet className="h-4 w-4 text-orange-500 dark:text-orange-400" />
               返利提现
             </div>
-            <div className="mt-1 text-[11px] text-default-500">可用返利 ¥{balance?.available ?? 0}，小额自动放行，大额人工审核</div>
+            <div className="mt-1 text-11 text-default-500">可用返利 ¥{balance?.available ?? 0}，小额自动放行，大额人工审核</div>
             <Input
               type="number"
               value={withdrawAmount}

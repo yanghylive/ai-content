@@ -46,10 +46,10 @@ async function jfetch<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 const STATUS_TONE: Record<SessionStatus, string> = {
-  created: "#94a3b8",
+  created: "var(--kaypal-v3-muted)",
   running: "#34d399",
   paused: "#fbbf24",
-  stopped: "#64748b",
+  stopped: "var(--kaypal-v3-muted)",
   error: "#f87171",
 };
 
@@ -197,7 +197,7 @@ export default function AgentBrowserPage() {
     <div style={{ padding: "18px 24px", maxWidth: 1080 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
         <span style={{ fontSize: 18, fontWeight: 800 }}>🤖 Agent Browser</span>
-        <span style={{ fontSize: 12, color: "#94a3b8" }}>
+        <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
           通用网页自动化 · Observe-Act-Verify（灰度）
         </span>
         <button
@@ -244,7 +244,7 @@ export default function AgentBrowserPage() {
               {p.url ? ` @ ${p.url}` : ""}
             </div>
           ))}
-          <div style={{ fontSize: 12, color: "#94a3b8", margin: "8px 0" }}>
+          <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", margin: "8px 0" }}>
             批准后仅放行以上精确动作（绑定 selector/URL），不会放行整类操作。
           </div>
           <div style={{ display: "flex", gap: 10 }}>
@@ -296,7 +296,7 @@ export default function AgentBrowserPage() {
           flexWrap: "wrap",
         }}
       >
-        <label style={{ fontSize: 12.5, color: "#94a3b8" }}>起始网址</label>
+        <label style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)" }}>起始网址</label>
         <input
           value={startUrl}
           onChange={(e) => setStartUrl(e.target.value)}
@@ -343,7 +343,7 @@ export default function AgentBrowserPage() {
           </div>
           <div style={{ maxHeight: 480, overflowY: "auto" }}>
             {sessions.length === 0 && (
-              <div style={{ padding: 20, fontSize: 12.5, color: "#94a3b8", textAlign: "center" }}>
+              <div style={{ padding: 20, fontSize: 12.5, color: "var(--kaypal-v3-muted)", textAlign: "center" }}>
                 还没有会话，先创建
               </div>
             )}
@@ -369,12 +369,12 @@ export default function AgentBrowserPage() {
                     }}
                   />
                   <span style={{ fontSize: 12.5, fontWeight: 600 }}>{s.id.slice(0, 8)}</span>
-                  <span style={{ fontSize: 11, color: "#94a3b8" }}>{s.accountId}</span>
+                  <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{s.accountId}</span>
                   <span style={{ marginLeft: "auto", fontSize: 11.5, color: STATUS_TONE[s.status] }}>
                     {s.status} · {s.stepCount} 步
                   </span>
                 </div>
-                <div style={{ fontSize: 11, color: "#64748b", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {s.url || "未导航"}
                 </div>
                 <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
@@ -417,7 +417,7 @@ export default function AgentBrowserPage() {
                 boxSizing: "border-box",
               }}
             />
-            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 6 }}>
+            <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 6 }}>
               选中会话后点「运行」执行一轮 Observe-Act-Verify；指令通过 AI 解析为浏览器动作（navigate/click/fill）。
             </div>
           </div>
@@ -426,20 +426,20 @@ export default function AgentBrowserPage() {
           </div>
           <div ref={eventsRef} style={{ maxHeight: 320, overflowY: "auto", padding: "4px 12px 12px" }}>
             {events.length === 0 && (
-              <div style={{ padding: 14, fontSize: 12, color: "#94a3b8", textAlign: "center" }}>
+              <div style={{ padding: 14, fontSize: 12, color: "var(--kaypal-v3-muted)", textAlign: "center" }}>
                 运行会话后展示 Observe-Act-Verify 步骤
               </div>
             )}
             {events.map((ev, i) => (
               <div key={i} style={{ display: "flex", gap: 8, padding: "6px 0", fontSize: 12, borderBottom: "1px solid rgba(148,163,184,.08)" }}>
-                <span style={{ color: "#64748b", flexShrink: 0, width: 16 }}>{i + 1}</span>
-                <span style={{ color: ev.type === "step" ? "#8b5cf6" : ev.type === "done" ? "#34d399" : ev.type === "error" ? "#f87171" : "#94a3b8", flexShrink: 0 }}>
+                <span style={{ color: "var(--kaypal-v3-muted)", flexShrink: 0, width: 16 }}>{i + 1}</span>
+                <span style={{ color: ev.type === "step" ? "var(--kaypal-v3-purple)" : ev.type === "done" ? "#34d399" : ev.type === "error" ? "#f87171" : "var(--kaypal-v3-muted)", flexShrink: 0 }}>
                   {ev.type === "snapshot" ? "👁" : ev.type === "step" ? "⚡" : ev.type === "done" ? "✅" : "❌"}
                 </span>
                 <div style={{ color: "inherit", flex: 1, wordBreak: "break-word" }}>
                   {ev.action ? `[${ev.action}] ${ev.message || "ok"}` : ev.message || ev.error || ev.type}
-                  {ev.extractText && <span style={{ color: "#64748b" }}> · {ev.extractText.slice(0, 80)}</span>}
-                  <span style={{ color: "#64748b", fontSize: 10.5, marginLeft: 6 }}>{new Date(ev.at).toLocaleTimeString()}</span>
+                  {ev.extractText && <span style={{ color: "var(--kaypal-v3-muted)" }}> · {ev.extractText.slice(0, 80)}</span>}
+                  <span style={{ color: "var(--kaypal-v3-muted)", fontSize: 10.5, marginLeft: 6 }}>{new Date(ev.at).toLocaleTimeString()}</span>
                 </div>
               </div>
             ))}

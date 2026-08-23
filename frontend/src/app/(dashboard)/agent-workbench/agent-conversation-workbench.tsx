@@ -458,14 +458,14 @@ export function AgentConversationWorkbench() {
 
             {/* 助手状态行 */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 7, fontSize: 11, color: "var(--mx-muted)" }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: runtimeReady ? "#059669" : "#b45309", flexShrink: 0 }} />
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: runtimeReady ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-amber)", flexShrink: 0 }} />
               {runtimeReady ? "本机助手可用" : "本机助手未连接"}
               {agentSConversationBusy ? " · 处理中…" : ""}
             </div>
 
             {agentSError && (
               <div className="mx-card" style={{ marginTop: 9, padding: 10, borderColor: "rgba(220,80,80,.4)" }}>
-                <p style={{ fontSize: 12, color: "#dc2626", lineHeight: 1.5 }}>{agentSError}</p>
+                <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", lineHeight: 1.5 }}>{agentSError}</p>
               </div>
             )}
 
@@ -507,8 +507,8 @@ export function AgentConversationWorkbench() {
             <div className="mx-card" style={{ padding: 11, flexShrink: 0 }}>
               {!selectedModel && (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, padding: "8px 10px", borderRadius: 8, background: "rgba(222,150,57,.1)", border: "1px solid rgba(222,150,57,.35)" }}>
-                  <span style={{ fontSize: 11, color: "#b45309" }}>尚无可用文本模型，发送已暂停。</span>
-                  <Link href="/capabilities/models" style={{ fontSize: 11, fontWeight: 700, color: "#d98a2d", flexShrink: 0 }}>配置模型 ›</Link>
+                  <span style={{ fontSize: 11, color: "var(--kaypal-v3-amber)" }}>尚无可用文本模型，发送已暂停。</span>
+                  <Link href="/capabilities/models" style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-amber)", flexShrink: 0 }}>配置模型 ›</Link>
                 </div>
               )}
               {attachments.length > 0 && (
@@ -591,7 +591,7 @@ export function AgentConversationWorkbench() {
           {/* 状态条 + 新建 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--mx-muted)" }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: runtimeReady ? "#059669" : "#b45309", flexShrink: 0 }} />
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: runtimeReady ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-amber)", flexShrink: 0 }} />
               {runtimeReady ? "本机助手可用" : "本机助手未连接"}
             </span>
             <button
@@ -607,9 +607,9 @@ export function AgentConversationWorkbench() {
 
           {!selectedModel && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(222,150,57,.4)" }}>
-              <p style={{ fontSize: 12, color: "#b45309", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-amber)", lineHeight: 1.5 }}>
                 尚无可用文本模型，无法新建对话。
-                <Link href="/capabilities/models" style={{ fontWeight: 700, color: "#d98a2d" }}> 去配置模型 ›</Link>
+                <Link href="/capabilities/models" style={{ fontWeight: 700, color: "var(--kaypal-v3-amber)" }}> 去配置模型 ›</Link>
               </p>
             </div>
           )}
@@ -664,7 +664,7 @@ export function AgentConversationWorkbench() {
         <div className="flex h-14 flex-none items-center justify-between border-b border-divider px-3">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-default-500" />
-            <span className="text-[14px] font-semibold">对话</span>
+            <span className="text-14 font-semibold">对话</span>
             <Chip size="sm" variant="flat">
               {agentSConversations.length}
             </Chip>
@@ -700,7 +700,7 @@ export function AgentConversationWorkbench() {
                   onClick={() => void selectConversation(conversation)}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="line-clamp-2 text-[13px] font-medium leading-5 text-default-800">
+                    <span className="line-clamp-2 text-13 font-medium leading-5 text-default-800">
                       {conversation.session.session_name || "新对话"}
                     </span>
                     <span
@@ -718,7 +718,7 @@ export function AgentConversationWorkbench() {
                       }`}
                     />
                   </div>
-                  <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-default-500">
+                  <div className="mt-2 flex items-center justify-between gap-2 text-11 text-default-500">
                     <span>{STATUS_LABEL[conversation.session.status]}</span>
                     <span>{formatTime(conversation.session.updated_at)}</span>
                   </div>
@@ -726,7 +726,7 @@ export function AgentConversationWorkbench() {
               );
             })
           ) : (
-            <div className="px-3 py-8 text-center text-[13px] text-default-400">
+            <div className="px-3 py-8 text-center text-13 text-default-400">
               暂无对话
             </div>
           )}
@@ -737,7 +737,7 @@ export function AgentConversationWorkbench() {
         <div className="flex min-h-14 flex-none flex-wrap items-center justify-between gap-2 border-b border-divider px-4 py-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="max-w-[320px] truncate text-[14px] font-semibold text-default-900">
+              <h3 className="max-w-[320px] truncate text-14 font-semibold text-default-900">
                 {agentSConversation?.session.session_name || "新对话"}
               </h3>
               <Chip
@@ -748,7 +748,7 @@ export function AgentConversationWorkbench() {
                 {STATUS_LABEL[currentStatus]}
               </Chip>
             </div>
-            <div className="mt-1 flex items-center gap-2 text-[11px] text-default-500">
+            <div className="mt-1 flex items-center gap-2 text-11 text-default-500">
               <span
                 className={`h-2 w-2 rounded-full ${runtimeReady ? "bg-success" : "bg-warning"}`}
               />
@@ -801,7 +801,7 @@ export function AgentConversationWorkbench() {
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
           {agentSError ? (
-            <div className="mb-4 border-l-2 border-danger bg-danger-50 px-3 py-2 text-[13px] text-danger-700">
+            <div className="mb-4 border-l-2 border-danger bg-danger-50 px-3 py-2 text-13 text-danger-700">
               {agentSError}
             </div>
           ) : null}
@@ -820,7 +820,7 @@ export function AgentConversationWorkbench() {
               <div className="flex h-12 w-12 items-center justify-center rounded-[8px] border border-divider bg-default-50">
                 <Bot className="h-6 w-6 text-default-500" />
               </div>
-              <p className="mt-3 text-[14px] font-medium text-default-700">
+              <p className="mt-3 text-14 font-medium text-default-700">
                 开始一段 Agent 对话
               </p>
             </div>
@@ -838,7 +838,7 @@ export function AgentConversationWorkbench() {
           ) : null}
 
           {currentStatus === "running" ? (
-            <div className="mt-4 flex items-center gap-2 text-[12px] text-default-500">
+            <div className="mt-4 flex items-center gap-2 text-12 text-default-500">
               <Spinner size="sm" />
               <span>本机助手正在处理</span>
             </div>
@@ -883,7 +883,7 @@ export function AgentConversationWorkbench() {
 
           {!selectedModel ? (
             <div
-              className="mb-2 flex flex-wrap items-center justify-between gap-2 border-l-2 border-warning bg-warning-50 px-3 py-2 text-[12px] text-warning-700"
+              className="mb-2 flex flex-wrap items-center justify-between gap-2 border-l-2 border-warning bg-warning-50 px-3 py-2 text-12 text-warning-700"
               role="status"
             >
               <span>尚无可用文本模型，发送和重试已暂停。</span>
@@ -904,7 +904,7 @@ export function AgentConversationWorkbench() {
               {attachments.map((attachment) => (
                 <div
                   key={`${attachment.filepath}:${attachment.uploadedAt}`}
-                  className="flex max-w-full items-center gap-2 rounded-[6px] border border-divider bg-default-50 px-2 py-1 text-[12px]"
+                  className="flex max-w-full items-center gap-2 rounded-[6px] border border-divider bg-default-50 px-2 py-1 text-12"
                 >
                   <ImageIcon className="h-3.5 w-3.5 flex-none text-default-500" />
                   <span className="max-w-44 truncate">{attachment.filename}</span>
@@ -990,7 +990,7 @@ export function AgentConversationWorkbench() {
               </Button>
             </Tooltip>
           </div>
-          <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-default-400">
+          <div className="mt-2 flex items-center justify-between gap-3 text-11 text-default-400">
             <span className="truncate">
               {selectedModel
                 ? `${selectedModel.name} / ${selectedModel.modelId}`
@@ -1061,7 +1061,7 @@ function ConversationMessage({
   if (message.kind === "status") {
     return (
       <div className="flex justify-center">
-        <span className="rounded-[6px] bg-default-100 px-2 py-1 text-[11px] text-default-500">
+        <span className="rounded-[6px] bg-default-100 px-2 py-1 text-11 text-default-500">
           {message.content}
         </span>
       </div>
@@ -1078,7 +1078,7 @@ function ConversationMessage({
       ) : null}
       <div className={`max-w-[84%] ${isUser ? "items-end" : "items-start"}`}>
         <div
-          className={`whitespace-pre-wrap break-words rounded-[8px] px-3 py-2 text-[13px] leading-6 ${
+          className={`whitespace-pre-wrap break-words rounded-[8px] px-3 py-2 text-13 leading-6 ${
             isUser
               ? "bg-primary text-primary-foreground"
               : message.kind === "confirmation"
@@ -1092,7 +1092,7 @@ function ConversationMessage({
               {message.attachments.map((attachment) => (
                 <div
                   key={`${message.message_id}:${attachment.filepath}`}
-                  className="flex items-center gap-2 text-[11px] opacity-80"
+                  className="flex items-center gap-2 text-11 opacity-80"
                 >
                   <ImageIcon className="h-3.5 w-3.5" />
                   <span className="truncate">{attachment.filename}</span>
@@ -1102,7 +1102,7 @@ function ConversationMessage({
           ) : null}
         </div>
         <div
-          className={`mt-1 flex items-center gap-2 text-[10px] text-default-400 ${
+          className={`mt-1 flex items-center gap-2 text-11 text-default-400 ${
             isUser ? "justify-end" : "justify-start"
           }`}
         >
@@ -1150,10 +1150,10 @@ function ConfirmationCard({
               <Ban className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-default-900">
+              <p className="text-13 font-semibold text-default-900">
                 等待执行确认
               </p>
-              <p className="mt-1 whitespace-pre-wrap text-[12px] leading-5 text-default-700">
+              <p className="mt-1 whitespace-pre-wrap text-12 leading-5 text-default-700">
                 {prompt}
               </p>
             </div>
@@ -1162,7 +1162,7 @@ function ConfirmationCard({
             高风险
           </Chip>
         </div>
-        {hint ? <p className="text-[11px] text-default-500">{hint}</p> : null}
+        {hint ? <p className="text-11 text-default-500">{hint}</p> : null}
         <Textarea
           aria-label="确认备注"
           isDisabled={busy}
@@ -1274,17 +1274,17 @@ function ResultsPanel({
     <div className="max-h-[calc(100vh-250px)] overflow-y-auto p-3">
       {latestResult ? (
         <div className="border-l-2 border-success px-3 py-2">
-          <p className="text-[11px] font-medium text-default-500">最新结果</p>
-          <p className="mt-2 whitespace-pre-wrap break-words text-[12px] leading-5 text-default-700">
+          <p className="text-11 font-medium text-default-500">最新结果</p>
+          <p className="mt-2 whitespace-pre-wrap break-words text-12 leading-5 text-default-700">
             {latestResult.content}
           </p>
         </div>
       ) : (
-        <p className="py-8 text-center text-[12px] text-default-400">暂无结果</p>
+        <p className="py-8 text-center text-12 text-default-400">暂无结果</p>
       )}
       {artifacts.length ? (
         <div className="mt-4 border-t border-divider pt-3">
-          <p className="mb-2 text-[11px] font-medium text-default-500">产物</p>
+          <p className="mb-2 text-11 font-medium text-default-500">产物</p>
           <div className="space-y-2">
             {artifacts.map((artifact) => (
               <div
@@ -1293,10 +1293,10 @@ function ResultsPanel({
               >
                 <FileText className="mt-0.5 h-4 w-4 flex-none text-default-400" />
                 <div className="min-w-0">
-                  <p className="truncate text-[12px] text-default-700">
+                  <p className="truncate text-12 text-default-700">
                     {artifact.filename}
                   </p>
-                  <p className="text-[10px] text-default-400">
+                  <p className="text-11 text-default-400">
                     {artifact.kind} · {formatBytes(artifact.size_bytes)}
                   </p>
                 </div>
@@ -1311,7 +1311,7 @@ function ResultsPanel({
 
 function EventsPanel({ events }: { events: AgentSConversationEvent[] }) {
   if (!events.length) {
-    return <p className="p-8 text-center text-[12px] text-default-400">暂无事件</p>;
+    return <p className="p-8 text-center text-12 text-default-400">暂无事件</p>;
   }
   return (
     <div className="max-h-[calc(100vh-250px)] overflow-y-auto p-3">
@@ -1333,15 +1333,15 @@ function EventsPanel({ events }: { events: AgentSConversationEvent[] }) {
               <span className="mt-1 h-full w-px bg-divider" />
             </div>
             <div className="min-w-0 pb-2">
-              <p className="break-words text-[11px] font-medium text-default-700">
+              <p className="break-words text-11 font-medium text-default-700">
                 {event.event_type}
               </p>
               {event.message ? (
-                <p className="mt-1 break-words text-[11px] leading-4 text-default-500">
+                <p className="mt-1 break-words text-11 leading-4 text-default-500">
                   {event.message}
                 </p>
               ) : null}
-              <p className="mt-1 text-[10px] text-default-400">
+              <p className="mt-1 text-11 text-default-400">
                 #{event.seq} · {formatTime(event.created_at)}
               </p>
             </div>
@@ -1365,7 +1365,7 @@ function DetailList({
   empty: string;
 }) {
   if (!items.length) {
-    return <p className="p-8 text-center text-[12px] text-default-400">{empty}</p>;
+    return <p className="p-8 text-center text-12 text-default-400">{empty}</p>;
   }
   return (
     <div className="max-h-[calc(100vh-250px)] space-y-1 overflow-y-auto p-3">
@@ -1376,10 +1376,10 @@ function DetailList({
         >
           <span className="mt-0.5 text-default-400">{item.icon}</span>
           <div className="min-w-0">
-            <p className="truncate text-[12px] font-medium text-default-700">
+            <p className="truncate text-12 font-medium text-default-700">
               {item.title}
             </p>
-            <p className="mt-0.5 truncate text-[10px] text-default-400">
+            <p className="mt-0.5 truncate text-11 text-default-400">
               {item.detail}
             </p>
           </div>

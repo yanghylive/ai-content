@@ -219,15 +219,15 @@ export function TopicsCenter() {
 
         <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
           {notice ? (
-            <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(16,185,129,.1)", fontSize: 12, color: "#047857" }}>{notice}</div>
+            <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(16,185,129,.1)", fontSize: 12, color: "var(--kaypal-v3-success)" }}>{notice}</div>
           ) : null}
           {actionError ? (
-            <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{actionError}</div>
+            <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{actionError}</div>
           ) : null}
 
           {/* 挖掘工具栏 */}
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "10px 0", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(255,255,255,.55)", color: "#334155", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} disabled={mining} onClick={() => void handleMine()}>
+            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "10px 0", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} disabled={mining} onClick={() => void handleMine()}>
               <Wand2 size={14} /> {mining ? "挖掘中…" : "一键挖掘"}
             </button>
             <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "10px 0", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }} onClick={() => setShowDiscover((v) => !v)}>
@@ -339,19 +339,19 @@ export function TopicsCenter() {
               </div>
 
               {actionError && (
-                <p style={{ marginTop: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12.5, color: "#dc2626" }}>{actionError}</p>
+                <p style={{ marginTop: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{actionError}</p>
               )}
 
               {viewing.summary || viewing.description ? (
                 <div className="mx-card" style={{ marginTop: 14, padding: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#8a95a5", marginBottom: 5 }}>摘要</p>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: "#334155" }}>{viewing.summary || viewing.description}</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 5 }}>摘要</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: "var(--kaypal-v3-soft-ink)" }}>{viewing.summary || viewing.description}</p>
                 </div>
               ) : null}
 
               {viewing.keywords?.length ? (
                 <div style={{ marginTop: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#8a95a5", marginBottom: 8 }}>关键词</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 8 }}>关键词</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {viewing.keywords.map((kw) => (
                       <span key={kw} className="mx-badge mx-badge-gold">{kw}</span>
@@ -362,14 +362,14 @@ export function TopicsCenter() {
 
               {viewing.scoreDetails ? (
                 <div className="mx-card" style={{ marginTop: 14, padding: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#8a95a5", marginBottom: 10 }}>五维评分</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 10 }}>五维评分</p>
                   {SCORE_LABELS.map(({ key, label }) => {
                     const value = viewing.scoreDetails?.[key] ?? 0;
                     return (
                       <div key={key} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                        <span style={{ width: 56, fontSize: 11, color: "#8a95a5" }}>{label}</span>
+                        <span style={{ width: 56, fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{label}</span>
                         <div className="mx-progress" style={{ flex: 1 }}><i style={{ width: `${Math.min(100, (value / 20) * 100)}%` }} /></div>
-                        <span style={{ width: 40, textAlign: "right", fontSize: 11, fontWeight: 700, color: "#334155" }}>{Math.round(value)}<span style={{ fontWeight: 400, color: "#8a95a5" }}>/20</span></span>
+                        <span style={{ width: 40, textAlign: "right", fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-soft-ink)" }}>{Math.round(value)}<span style={{ fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>/20</span></span>
                       </div>
                     );
                   })}
@@ -378,32 +378,32 @@ export function TopicsCenter() {
 
               {viewing.scoreReason ? (
                 <div className="mx-card" style={{ marginTop: 14, padding: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#8a95a5", marginBottom: 5 }}>评分理由</p>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: "#334155" }}>{viewing.scoreReason}</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 5 }}>评分理由</p>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: "var(--kaypal-v3-soft-ink)" }}>{viewing.scoreReason}</p>
                 </div>
               ) : null}
 
               {viewing.materials?.length ? (
                 <div className="mx-card" style={{ marginTop: 14, padding: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#8a95a5", marginBottom: 5 }}>关联素材（{viewing.materials.length}）</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 5 }}>关联素材（{viewing.materials.length}）</p>
                   {viewing.materials.slice(0, 5).map((m) => (
-                    <p key={m.id} style={{ fontSize: 13, color: "#334155", marginTop: 4 }}>· {m.title} <span style={{ fontSize: 11, color: "#8a95a5" }}>（{m.platform}）</span></p>
+                    <p key={m.id} style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)", marginTop: 4 }}>· {m.title} <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>（{m.platform}）</span></p>
                   ))}
                 </div>
               ) : null}
             </div>
 
             <div style={{ display: "flex", gap: 10, padding: "0 16px", flexWrap: "wrap" }}>
-              <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "#334155", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} disabled={acting} onClick={handleRescore}>
+              <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} disabled={acting} onClick={handleRescore}>
                 <RefreshCcw size={14} style={{ marginRight: 4 }} /> 重新评分
               </button>
               <button type="button" className="mx-btn-gold" style={{ flex: 1.4, fontSize: 12, padding: "11px 0" }} disabled={acting} onClick={handlePublishToggle}>
                 <Send size={14} style={{ marginRight: 4 }} /> {viewing.isPublished ? "取消发布" : "发布这个选题"}
               </button>
-              <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "#334155", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4 }} disabled={acting} onClick={() => void handleCreateContent(viewing.id, "article")}>
+              <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4 }} disabled={acting} onClick={() => void handleCreateContent(viewing.id, "article")}>
                 <FileText size={14} /> 创作文章
               </button>
-              <button type="button" style={{ flex: "0 0 auto", fontSize: 12, padding: "11px 14px", color: "#dc2626", background: "none", border: "none" }} disabled={acting} onClick={() => void handleDelete(viewing.id)}>
+              <button type="button" style={{ flex: "0 0 auto", fontSize: 12, padding: "11px 14px", color: "var(--kaypal-v3-danger)", background: "none", border: "none" }} disabled={acting} onClick={() => void handleDelete(viewing.id)}>
                 <Trash2 size={14} style={{ marginRight: 4 }} /> 删除
               </button>
             </div>

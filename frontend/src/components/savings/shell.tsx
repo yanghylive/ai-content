@@ -93,7 +93,7 @@ export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
                 aria-label={t.label}
                 aria-current={isActive ? "page" : undefined}
                 onClick={() => setTab(t.key)}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-semibold transition-colors ${
+                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-13 font-semibold transition-colors ${
                   isActive
                     ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/20"
                     : "text-default-600 hover:bg-default-100 hover:text-default-900 dark:text-default-400 dark:hover:bg-default-800"

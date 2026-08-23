@@ -49,23 +49,23 @@ const PLATFORM_NAMES: Record<string, string> = {
 };
 
 const PLATFORM_COLORS: Record<string, string> = {
-  douyin: "#111827",
-  xiaohongshu: "#ef4444",
-  "wechat-channel": "#059669",
-  wechat: "#059669",
-  kuaishou: "#d97706",
-  bilibili: "#3b82f6",
-  weibo: "#dc2626",
-  zhihu: "#2563eb",
-  toutiao: "#1d4ed8",
-  "wechat-official": "#059669",
+  douyin: "var(--kaypal-v3-ink)",
+  xiaohongshu: "var(--kaypal-v3-danger)",
+  "wechat-channel": "var(--kaypal-v3-success)",
+  wechat: "var(--kaypal-v3-success)",
+  kuaishou: "var(--kaypal-v3-amber)",
+  bilibili: "var(--kaypal-v3-cobalt)",
+  weibo: "var(--kaypal-v3-danger)",
+  zhihu: "var(--kaypal-v3-cobalt)",
+  toutiao: "var(--kaypal-v3-cobalt)",
+  "wechat-official": "var(--kaypal-v3-success)",
 };
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  logged_in: { label: "已登录", color: "#059669" },
-  needs_login: { label: "需登录", color: "#d98a2d" },
-  error: { label: "需处理", color: "#dc2626" },
-  unknown: { label: "未知", color: "#94a3b8" },
+  logged_in: { label: "已登录", color: "var(--kaypal-v3-success)" },
+  needs_login: { label: "需登录", color: "var(--kaypal-v3-amber)" },
+  error: { label: "需处理", color: "var(--kaypal-v3-danger)" },
+  unknown: { label: "未知", color: "var(--kaypal-v3-muted)" },
 };
 
 /**
@@ -220,7 +220,7 @@ export default function AccountsMatrixV2Page() {
         <div className="mx-stat-grid" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
           <div className="mx-stat-item mx-control"><div className="mx-stat-num">{stats.total}</div><div className="mx-stat-label">账号总数</div></div>
           <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{stats.loggedIn}</div><div className="mx-stat-label">已登录</div></div>
-          <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: stats.needsLogin > 0 ? "#dc2626" : "#059669" }}>{stats.needsLogin}</div><div className="mx-stat-label">需处理</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: stats.needsLogin > 0 ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-success)" }}>{stats.needsLogin}</div><div className="mx-stat-label">需处理</div></div>
         </div>
       </section>
 
@@ -257,7 +257,7 @@ export default function AccountsMatrixV2Page() {
           </div>
         ) : (
           grouped.map(([platform, items]) => {
-            const color = PLATFORM_COLORS[platform] ?? "#64748b";
+            const color = PLATFORM_COLORS[platform] ?? "var(--kaypal-v3-muted)";
             return (
               <div key={platform} className="mx-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
@@ -309,7 +309,7 @@ export default function AccountsMatrixV2Page() {
                                 <button
                                   type="button"
                                   onClick={() => launchAppForAccount(account.platformKey ?? account.platform)}
-                                  style={{ marginLeft: 6, fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "#f4bb67" }}
+                                  style={{ marginLeft: 6, fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "var(--kaypal-v3-amber)" }}
                                 >
                                   去登录
                                 </button>
@@ -323,7 +323,7 @@ export default function AccountsMatrixV2Page() {
                                 <button
                                   type="button"
                                   onClick={() => launchAppForAccount(account.platformKey ?? account.platform)}
-                                  style={{ marginLeft: 6, fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "#f4bb67" }}
+                                  style={{ marginLeft: 6, fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "var(--kaypal-v3-amber)" }}
                                 >
                                   去处理
                                 </button>
@@ -357,7 +357,7 @@ export default function AccountsMatrixV2Page() {
               <button
                 type="button"
                 onClick={() => launchAppForAccount("douyin")}
-                style={{ display: "block", marginTop: 8, fontSize: 12, padding: "7px 14px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "#f4bb67" }}
+                style={{ display: "block", marginTop: 8, fontSize: 12, padding: "7px 14px", borderRadius: 999, background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "var(--kaypal-v3-amber)" }}
               >
                 调起平台 App 登录
               </button>

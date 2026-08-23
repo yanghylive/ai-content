@@ -223,7 +223,7 @@ export function OpsWorkbenchDouyinCard({
                 {presentation.badge}
               </Chip>
             </div>
-            <h2 className="mt-2 text-[17px] font-semibold leading-6 tracking-tight text-foreground">
+            <h2 className="mt-2 text-lg font-semibold leading-6 tracking-tight text-foreground">
               {title}
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-default-600">

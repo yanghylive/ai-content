@@ -510,7 +510,7 @@ export function SearchIntelligenceWorkbench() {
           {!hasSearched && recommendedSearches.length > 0 && (
             <div className="mx-card" style={{ marginTop: 12, padding: 13 }}>
               <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)", display: "flex", alignItems: "center", gap: 6 }}>
-                <TrendingUp width={14} height={14} style={{ color: "#d98a2d" }} /> 继续上次的工作
+                <TrendingUp width={14} height={14} style={{ color: "var(--kaypal-v3-amber)" }} /> 继续上次的工作
               </p>
               <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>
                 你最近搜索了「{recommendedSearches[0].query}」，找到了 {recommendedSearches[0].resultsCount} 个结果
@@ -526,7 +526,7 @@ export function SearchIntelligenceWorkbench() {
                       setTarget(search.target);
                       void runSearchTask();
                     }}
-                    style={{ padding: "6px 11px", borderRadius: 999, background: "rgba(246,196,120,.14)", color: "#d98a2d", border: "1px solid rgba(222,150,57,.4)", fontSize: 11.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}
+                    style={{ padding: "6px 11px", borderRadius: 999, background: "rgba(246,196,120,.14)", color: "var(--kaypal-v3-amber)", border: "1px solid rgba(222,150,57,.4)", fontSize: 11.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}
                   >
                     <Search width={12} height={12} /> {search.query}
                   </button>
@@ -577,7 +577,7 @@ export function SearchIntelligenceWorkbench() {
                     if (value === "comment" && !commentPlatformValues.has(platform)) setPlatform("douyin");
                     if (value === "engagement") setPlatform("wechat");
                   }}
-                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: target === value ? "#d98a2d" : "rgba(120,148,179,.12)", color: target === value ? "#fff" : "var(--mx-ink)", border: target === value ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: target === value ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: target === value ? "#fff" : "var(--mx-ink)", border: target === value ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
                 >
                   {label}
                 </button>
@@ -590,7 +590,7 @@ export function SearchIntelligenceWorkbench() {
                   key={item.value}
                   type="button"
                   onClick={() => setPlatform(item.value)}
-                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: platform === item.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: platform === item.value ? "#d98a2d" : "var(--mx-ink)", border: platform === item.value ? "1px solid rgba(222,150,57,.5)" : "1px solid rgba(142,165,190,.3)" }}
+                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: platform === item.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: platform === item.value ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: platform === item.value ? "1px solid rgba(222,150,57,.5)" : "1px solid rgba(142,165,190,.3)" }}
                 >
                   {item.label}
                 </button>
@@ -601,9 +601,9 @@ export function SearchIntelligenceWorkbench() {
           {/* 错误 */}
           {searchRun.error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626", lineHeight: 1.5 }}>{searchRun.error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)", lineHeight: 1.5 }}>{searchRun.error}</p>
               {searchRun.failures.length > 0 && (
-                <ul style={{ marginTop: 7, paddingTop: 7, borderTop: "1px solid rgba(220,80,80,.25)", fontSize: 11.5, color: "#dc2626", lineHeight: 1.6 }}>
+                <ul style={{ marginTop: 7, paddingTop: 7, borderTop: "1px solid rgba(220,80,80,.25)", fontSize: 11.5, color: "var(--kaypal-v3-danger)", lineHeight: 1.6 }}>
                   {searchRun.failures.map((failure) => (
                     <li key={`${failure.platform}-${failure.callLogId || failure.errorCode || failure.error}`}>
                       <b>{failure.platformLabel}：</b>{failure.error}
@@ -617,7 +617,7 @@ export function SearchIntelligenceWorkbench() {
           {/* 成功 */}
           {searchRun.summary && !searchRun.error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#059669" }}>已完成搜索，找到 {filteredCandidates.length} 个结果</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-success)" }}>已完成搜索，找到 {filteredCandidates.length} 个结果</p>
             </div>
           )}
 
@@ -682,7 +682,7 @@ export function SearchIntelligenceWorkbench() {
                                   <a
                                     key={action.label}
                                     href={action.href}
-                                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", borderRadius: 10, background: "rgba(246,196,120,.1)", border: "1px solid rgba(222,150,57,.35)", fontSize: 12, fontWeight: 600, color: "#d98a2d" }}
+                                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", borderRadius: 10, background: "rgba(246,196,120,.1)", border: "1px solid rgba(222,150,57,.35)", fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-amber)" }}
                                   >
                                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                                       <ActionIcon width={14} height={14} /> {action.label}

@@ -170,7 +170,7 @@ export function AstryxDashboardShell({
       }
     >
       <div className="dashboard-shell__viewport h-full min-h-0 w-full min-w-0 overflow-x-hidden overflow-y-auto p-5 max-sm:p-3">
-        <div className="mx-auto min-h-full w-full min-w-0 max-w-[1680px] text-[14px] leading-[22px] text-foreground">
+        <div className="mx-auto min-h-full w-full min-w-0 max-w-[1680px] text-14 leading-[22px] text-foreground">
           {children}
         </div>
       </div>

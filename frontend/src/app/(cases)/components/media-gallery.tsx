@@ -192,7 +192,7 @@ export function MediaGallery({
             />
             {item.mediaType === "video" && (
               <span
-                className="absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-semibold leading-none"
+                className="absolute left-2 top-2 rounded-full px-2 py-0.5 text-11 font-semibold leading-none"
                 style={{
                   background: "rgba(15, 23, 42, 0.65)",
                   color: "#fff",
@@ -202,7 +202,7 @@ export function MediaGallery({
               </span>
             )}
             {item.deviceFrame && DEVICE_LABELS[item.deviceFrame] && (
-              <span className="absolute bottom-2 right-2 rounded-full px-2 py-0.5 text-[11px] font-semibold leading-none bg-white/85 text-[var(--kaypal-v3-ink)]">
+              <span className="absolute bottom-2 right-2 rounded-full px-2 py-0.5 text-11 font-semibold leading-none bg-white/85 text-[var(--kaypal-v3-ink)]">
                 {DEVICE_LABELS[item.deviceFrame]}
               </span>
             )}

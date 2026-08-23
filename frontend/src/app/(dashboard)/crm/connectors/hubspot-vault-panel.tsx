@@ -170,7 +170,7 @@ export function HubSpotVaultPanel() {
           授权信息只进入安全保护区，页面不回显原文。只读检查只拉取脱敏样本，不写入客户管理系统。
         </p>
 
-        {error && <p style={{ fontSize: 11.5, color: "#dc2626", marginTop: 8 }}>{error}</p>}
+        {error && <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger)", marginTop: 8 }}>{error}</p>}
 
         <label style={{ display: "block", marginTop: 10 }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>授权信息（保存后不回显）</span>
@@ -224,7 +224,7 @@ export function HubSpotVaultPanel() {
                 padding: "6px 10px",
                 border: "1px solid rgba(142,165,190,.3)",
                 background: objects.includes(obj.key) ? "rgba(222,150,57,.12)" : "transparent",
-                color: objects.includes(obj.key) ? "#d98a2d" : "var(--mx-muted)",
+                color: objects.includes(obj.key) ? "var(--kaypal-v3-amber)" : "var(--mx-muted)",
                 borderRadius: 999,
                 cursor: "pointer",
               }}

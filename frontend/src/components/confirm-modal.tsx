@@ -72,7 +72,7 @@ export function ConfirmModal({
         {() => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <span id={titleId} className="text-[16px] font-bold leading-6">
+              <span id={titleId} className="text-base font-bold leading-6">
                 {title}
               </span>
             </ModalHeader>

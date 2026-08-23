@@ -64,7 +64,7 @@ export function DashboardPageHeader({
           </span>
         ) : null}
         <div className="min-w-0">
-          <h1 className="text-[20px] font-bold leading-[28px] text-foreground">
+          <h1 className="text-xl font-bold leading-[28px] text-foreground">
             {title}
           </h1>
           {description ? (

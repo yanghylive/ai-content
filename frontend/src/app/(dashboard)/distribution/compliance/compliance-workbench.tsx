@@ -539,10 +539,10 @@ export function ComplianceWorkbench() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">内容上线前</p>
-                <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                   发布前检查
                 </h1>
-                <p className="mt-1 max-w-3xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                <p className="mt-1 max-w-3xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                   对标题、正文和脚本进行发布风险检查，给出命中项、改写建议和下一步处理方式。
                 </p>
               </div>
@@ -553,7 +553,7 @@ export function ComplianceWorkbench() {
             <p className="kaypal-v3-label">相关页面</p>
             <div className="mt-3 flex flex-col gap-2">
               <Link
-                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 href="/content/optimization"
               >
                 返回创作优化
@@ -564,7 +564,7 @@ export function ComplianceWorkbench() {
                 />
               </Link>
               <Link
-                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 href="/strategies"
               >
                 内容规则
@@ -585,7 +585,7 @@ export function ComplianceWorkbench() {
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="检查平台">
                 <select
-                  className="h-9 w-full px-3 text-[13px]"
+                  className="h-9 w-full px-3 text-13"
                   onChange={(event) =>
                     setPlatform(event.target.value as ContentWorkflowPlatform)
                   }
@@ -601,7 +601,7 @@ export function ComplianceWorkbench() {
 
               <Field label="内容类型">
                 <select
-                  className="h-9 w-full px-3 text-[13px]"
+                  className="h-9 w-full px-3 text-13"
                   onChange={(event) =>
                     setTargetType(
                       event.target.value as ContentWorkflowTargetType,
@@ -621,14 +621,14 @@ export function ComplianceWorkbench() {
             <div className="mt-3 flex flex-col gap-3">
               <Field label="标题 / 封面文案">
                 <input
-                  className="h-10 w-full px-3 text-[13px]"
+                  className="h-10 w-full px-3 text-13"
                   onChange={(event) => setTitle(event.target.value)}
                   value={title}
                 />
               </Field>
               <Field label="待检查正文">
                 <textarea
-                  className="min-h-[300px] w-full resize-y px-3 py-2 text-[13px] leading-5"
+                  className="min-h-[300px] w-full resize-y px-3 py-2 text-13 leading-5"
                   onChange={(event) => setContent(event.target.value)}
                   value={content}
                 />
@@ -637,7 +637,7 @@ export function ComplianceWorkbench() {
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading}
                 onClick={() => void runCompliance()}
                 type="button"
@@ -658,7 +658,7 @@ export function ComplianceWorkbench() {
                 {loading ? "检查中" : "开始检查"}
               </button>
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 onClick={() => {
                   setResult(null);
                   setError("");
@@ -675,7 +675,7 @@ export function ComplianceWorkbench() {
             </div>
 
             {error ? (
-              <div className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-3 py-2 text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <div className="mt-3 rounded-[8px] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-3 py-2 text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 {error}
               </div>
             ) : null}
@@ -734,7 +734,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+      <span className="text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
         {label}
       </span>
       <span className="mt-1 block">{children}</span>
@@ -748,10 +748,10 @@ function EmptyComplianceResult() {
       <span className="kaypal-v3-icon-tile">
         <ShieldCheck aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />
       </span>
-      <h2 className="mt-3 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+      <h2 className="mt-3 text-base font-bold text-[var(--kaypal-v3-ink)]">
         等待检查结果
       </h2>
-      <p className="mt-1 max-w-md text-[13px] leading-5 text-[var(--kaypal-v3-muted)]">
+      <p className="mt-1 max-w-md text-13 leading-5 text-[var(--kaypal-v3-muted)]">
         从创作优化送来的版本会自动检查，也可以在左侧直接粘贴内容复查。
       </p>
     </div>
@@ -798,12 +798,12 @@ function ComplianceResult({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="kaypal-v3-label">检查结果</p>
-          <h2 className="mt-1 text-[17px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+          <h2 className="mt-1 text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
             {riskLabel[result.riskLevel]} · 风险分 {result.riskScore}
           </h2>
         </div>
         <span
-          className={`inline-flex h-8 shrink-0 items-center rounded-[8px] border px-3 text-[12px] font-bold ${riskTone(
+          className={`inline-flex h-8 shrink-0 items-center rounded-[8px] border px-3 text-12 font-bold ${riskTone(
             result.riskLevel,
           )}`}
         >
@@ -822,7 +822,7 @@ function ComplianceResult({
             key={label}
           >
             <p className="kaypal-v3-label">{label}</p>
-            <p className="mt-1 text-[14px] font-bold text-[var(--kaypal-v3-ink)]">
+            <p className="mt-1 text-14 font-bold text-[var(--kaypal-v3-ink)]">
               {value}
             </p>
           </div>
@@ -830,13 +830,13 @@ function ComplianceResult({
       </div>
 
       <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
-        <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+        <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
           检查摘要
         </p>
-        <p className="mt-2 text-[13px] leading-6 text-[var(--kaypal-v3-soft-ink)]">
+        <p className="mt-2 text-13 leading-6 text-[var(--kaypal-v3-soft-ink)]">
           {result.summary}
         </p>
-        <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+        <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
           {result.gate.reason}
         </p>
       </div>
@@ -849,17 +849,17 @@ function ComplianceResult({
         <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+              <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                 正式稿确认
               </p>
-              <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+              <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                 {selectedVersion?.isOfficial
                   ? "当前版本已作为发布内容。"
                   : "进入发布准备前，需要先确认这一版为发布内容。"}
               </p>
             </div>
             <button
-              className="inline-flex h-8 shrink-0 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-8 shrink-0 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={Boolean(selectedVersion?.isOfficial) || officialing}
               onClick={onConfirmOfficial}
               type="button"
@@ -892,14 +892,14 @@ function ComplianceResult({
               strokeWidth={1.8}
             />
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+              <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                 负责人复核
               </p>
-              <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+              <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                 中高风险内容需要负责人确认处理方式后，才能进入发布准备。
               </p>
               <textarea
-                className="mt-3 min-h-[72px] w-full resize-y px-3 py-2 text-[13px] leading-5"
+                className="mt-3 min-h-[72px] w-full resize-y px-3 py-2 text-13 leading-5"
                 disabled={reviewDone}
                 onChange={(event) => onReviewNoteChange(event.target.value)}
                 placeholder="记录处理说明，例如已删除夸大承诺、保留事实来源、负责人已确认。"
@@ -907,7 +907,7 @@ function ComplianceResult({
               />
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <button
-                  className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={reviewDone || reviewing || !versionId}
                   onClick={onManualReview}
                   type="button"
@@ -928,7 +928,7 @@ function ComplianceResult({
                   {reviewDone ? "复核已记录" : "确认已复核"}
                 </button>
                 {reviewDone ? (
-                  <span className="text-[12px] font-semibold text-[var(--kaypal-v3-success)]">
+                  <span className="text-12 font-semibold text-[var(--kaypal-v3-success)]">
                     已满足进入发布准备的复核要求
                   </span>
                 ) : null}
@@ -940,10 +940,10 @@ function ComplianceResult({
 
       <div className="flex flex-col gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+          <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
             发布准备
           </p>
-          <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+          <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
             {canPreparePublish
               ? "检查通过后可以创建发布准备。"
               : reviewRequired
@@ -953,13 +953,13 @@ function ComplianceResult({
                   : "请先确认正式稿。"}
           </p>
           {publishStatus ? (
-            <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+            <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
               {publishStatus}
             </p>
           ) : null}
           {publishStatus ? (
             <Link
-              className="mt-2 inline-flex items-center gap-1 text-[12px] font-bold text-[var(--kaypal-v3-accent-ink)]"
+              className="mt-2 inline-flex items-center gap-1 text-12 font-bold text-[var(--kaypal-v3-accent-ink)]"
               href="/distribution"
             >
               去发布中心
@@ -972,7 +972,7 @@ function ComplianceResult({
           ) : null}
         </div>
         <button
-          className="inline-flex h-8 shrink-0 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-8 shrink-0 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!canPreparePublish || publishing}
           onClick={onCreatePublishReady}
           type="button"
@@ -1007,7 +1007,7 @@ function FindingsList({ findings }: { findings: ComplianceFinding[] }) {
             className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-success)]"
             strokeWidth={1.8}
           />
-          <p className="text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+          <p className="text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
             未命中当前基础规则。
           </p>
         </div>
@@ -1017,7 +1017,7 @@ function FindingsList({ findings }: { findings: ComplianceFinding[] }) {
 
   return (
     <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
-      <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+      <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
         命中项
       </p>
       <div className="mt-3 flex flex-col gap-2">
@@ -1028,23 +1028,23 @@ function FindingsList({ findings }: { findings: ComplianceFinding[] }) {
           >
             <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`rounded-[8px] border px-2 py-1 text-[11px] font-bold ${riskTone(
+                className={`rounded-[8px] border px-2 py-1 text-11 font-bold ${riskTone(
                   finding.riskLevel,
                 )}`}
               >
                 {riskLabel[finding.riskLevel]}
               </span>
-              <strong className="text-[13px] text-[var(--kaypal-v3-ink)]">
+              <strong className="text-13 text-[var(--kaypal-v3-ink)]">
                 {finding.matchedText}
               </strong>
-              <span className="text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+              <span className="text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                 {findingCategoryLabel[finding.category]}
               </span>
             </div>
-            <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
               {finding.reason}
             </p>
-            <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+            <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
               {finding.replacement
                 ? `建议改为「${finding.replacement}」；${finding.suggestion}`
                 : finding.suggestion}
@@ -1059,7 +1059,7 @@ function FindingsList({ findings }: { findings: ComplianceFinding[] }) {
 function Checklist({ items, title }: { items: string[]; title: string }) {
   return (
     <div className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
-      <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+      <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
         {title}
       </p>
       <div className="mt-3 flex flex-col gap-2">
@@ -1070,7 +1070,7 @@ function Checklist({ items, title }: { items: string[]; title: string }) {
               className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-success)]"
               strokeWidth={1.8}
             />
-            <span className="text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+            <span className="text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
               {item}
             </span>
           </div>
@@ -1126,11 +1126,11 @@ function VersionFollowUpPanel({
             className="h-4 w-4 text-[var(--kaypal-v3-accent-ink)]"
             strokeWidth={1.8}
           />
-          <h2 className="text-[15px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+          <h2 className="text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
             复盘与备注
           </h2>
         </div>
-        <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+        <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
           记录发布表现和团队处理意见，方便下次创作继续参考。
         </p>
       </div>
@@ -1141,7 +1141,7 @@ function VersionFollowUpPanel({
             {metricFields.map((field) => (
               <Field label={field.label} key={field.key}>
                 <input
-                  className="h-9 w-full px-3 text-[13px]"
+                  className="h-9 w-full px-3 text-13"
                   min={0}
                   onChange={(event) =>
                     onFeedbackFormChange({
@@ -1158,7 +1158,7 @@ function VersionFollowUpPanel({
           <div className="mt-3">
             <Field label="复盘备注">
               <textarea
-                className="min-h-[92px] w-full resize-y px-3 py-2 text-[13px] leading-5"
+                className="min-h-[92px] w-full resize-y px-3 py-2 text-13 leading-5"
                 onChange={(event) =>
                   onFeedbackFormChange({
                     ...feedbackForm,
@@ -1172,7 +1172,7 @@ function VersionFollowUpPanel({
           </div>
           <div className="mt-3 flex justify-end">
             <button
-              className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-[12px] font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
               disabled={savingFeedback}
               onClick={onSaveFeedback}
               type="button"
@@ -1201,7 +1201,7 @@ function VersionFollowUpPanel({
                   className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3"
                   key={item.id}
                 >
-                  <div className="flex flex-wrap gap-2 text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                  <div className="flex flex-wrap gap-2 text-11 font-bold text-[var(--kaypal-v3-muted)]">
                     <span>阅读 {item.views}</span>
                     <span>点赞 {item.likes}</span>
                     <span>评论 {item.comments}</span>
@@ -1209,17 +1209,17 @@ function VersionFollowUpPanel({
                     <span>线索 {item.leads}</span>
                   </div>
                   {item.note ? (
-                    <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                    <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                       {item.note}
                     </p>
                   ) : null}
-                  <p className="mt-2 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-2 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                     {formatDateTime(item.createdAt)}
                   </p>
                 </div>
               ))
             ) : (
-              <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+              <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                 暂无复盘记录。
               </div>
             )}
@@ -1229,7 +1229,7 @@ function VersionFollowUpPanel({
         <div className="p-4">
           <Field label="协作备注">
             <textarea
-              className="min-h-[116px] w-full resize-y px-3 py-2 text-[13px] leading-5"
+              className="min-h-[116px] w-full resize-y px-3 py-2 text-13 leading-5"
               onChange={(event) => onCommentTextChange(event.target.value)}
               placeholder="记录负责人意见、改写原因或发布注意事项。"
               value={commentText}
@@ -1237,7 +1237,7 @@ function VersionFollowUpPanel({
           </Field>
           <div className="mt-3 flex justify-end">
             <button
-              className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={savingComment}
               onClick={onSaveComment}
               type="button"
@@ -1266,16 +1266,16 @@ function VersionFollowUpPanel({
                   className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-3"
                   key={item.id}
                 >
-                  <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                  <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                     {item.body}
                   </p>
-                  <p className="mt-2 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-2 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                     {item.authorName} · {formatDateTime(item.createdAt)}
                   </p>
                 </div>
               ))
             ) : (
-              <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+              <div className="rounded-[8px] border border-dashed border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper-soft)] p-3 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                 暂无协作备注。
               </div>
             )}
@@ -1304,7 +1304,7 @@ function RecentVersions({
             className="h-4 w-4 text-[var(--kaypal-v3-accent-ink)]"
             strokeWidth={1.8}
           />
-          <h2 className="text-[15px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+          <h2 className="text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
             可检查版本
           </h2>
         </div>
@@ -1319,15 +1319,15 @@ function RecentVersions({
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-1 text-[11px] font-bold text-[var(--kaypal-v3-soft-ink)]">
+                  <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-1 text-11 font-bold text-[var(--kaypal-v3-soft-ink)]">
                     {version.modeLabel}
                   </span>
-                  <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] px-2 py-1 text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                  <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] px-2 py-1 text-11 font-bold text-[var(--kaypal-v3-muted)]">
                     {platformLabel(version.platform)}
                   </span>
                   {version.compliance ? (
                     <span
-                      className={`rounded-[8px] border px-2 py-1 text-[11px] font-bold ${riskTone(
+                      className={`rounded-[8px] border px-2 py-1 text-11 font-bold ${riskTone(
                         version.compliance.riskLevel,
                       )}`}
                     >
@@ -1336,20 +1336,20 @@ function RecentVersions({
                     </span>
                   ) : null}
                 </div>
-                <h3 className="mt-2 line-clamp-1 text-[14px] font-bold text-[var(--kaypal-v3-ink)]">
+                <h3 className="mt-2 line-clamp-1 text-14 font-bold text-[var(--kaypal-v3-ink)]">
                   {version.title}
                 </h3>
-                <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                   {version.sourceSummary || version.content}
                 </p>
-                <p className="mt-2 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                <p className="mt-2 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                   更新于 {formatDateTime(version.updatedAt)}
                 </p>
               </div>
 
               <div className="flex items-center lg:justify-end">
                 <button
-                  className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                  className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                   onClick={() => onLoad(version)}
                   type="button"
                 >
@@ -1372,7 +1372,7 @@ function RecentVersions({
               className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-amber)]"
               strokeWidth={1.8}
             />
-            <p className="text-[13px] leading-5 text-[var(--kaypal-v3-muted)]">
+            <p className="text-13 leading-5 text-[var(--kaypal-v3-muted)]">
               还没有从创作优化保存过版本。
             </p>
           </div>

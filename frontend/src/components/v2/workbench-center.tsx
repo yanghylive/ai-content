@@ -159,8 +159,8 @@ export function WorkbenchCenter({
           {statsNote ? (
             <p style={{ marginTop: 6, fontSize: 10.5, color: "var(--mx-muted)", textAlign: "right" }}>{statsNote}</p>
           ) : null}
-          {error ? <p style={{ marginTop: 10, fontSize: 12, color: "#dc2626" }}>{error}</p> : null}
-          {notice ? <p style={{ marginTop: 10, fontSize: 12, color: "#059669" }}>{notice}</p> : null}
+          {error ? <p style={{ marginTop: 10, fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</p> : null}
+          {notice ? <p style={{ marginTop: 10, fontSize: 12, color: "var(--kaypal-v3-success)" }}>{notice}</p> : null}
 
           {/* 快捷操作 */}
           {quickActions.length > 0 && (
@@ -227,7 +227,7 @@ export function WorkbenchCenter({
                     className="mx-row"
                     style={{ textDecoration: "none" }}
                   >
-                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
                       <link.icon size={18} strokeWidth={1.8} />
                     </span>
                     <div className="mx-row-main">

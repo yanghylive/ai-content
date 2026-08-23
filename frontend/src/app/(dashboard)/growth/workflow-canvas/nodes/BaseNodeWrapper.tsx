@@ -14,7 +14,7 @@ interface BaseNodeWrapperProps {
 function BaseNodeWrapper({
   label,
   icon,
-  accentColor = "#6366f1",
+  accentColor = "var(--kaypal-v3-purple)",
   statusColor,
   stepIndex,
   children,
@@ -32,7 +32,7 @@ function BaseNodeWrapper({
       />
       {typeof stepIndex === "number" && (
         <span
-          className="absolute -left-3 -top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[11px] font-bold text-white shadow-sm"
+          className="absolute -left-3 -top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-11 font-bold text-white shadow-sm"
           style={{ backgroundColor: accentColor }}
           title={`第 ${stepIndex} 步`}
         >
@@ -48,8 +48,8 @@ function BaseNodeWrapper({
         {statusColor && (
           <span
             className="ml-auto h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: statusColor === "#10b981" ? "#d1fae5" : "#fff" }}
-            title={statusColor === "#10b981" ? "已完成" : statusColor === "#3b82f6" ? "执行中" : "失败"}
+            style={{ backgroundColor: statusColor === "var(--kaypal-v3-success)" ? "#d1fae5" : "#fff" }}
+            title={statusColor === "var(--kaypal-v3-success)" ? "已完成" : statusColor === "var(--kaypal-v3-cobalt)" ? "执行中" : "失败"}
           />
         )}
       </div>

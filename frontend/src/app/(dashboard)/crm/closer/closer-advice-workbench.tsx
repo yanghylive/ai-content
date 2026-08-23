@@ -508,7 +508,7 @@ export function CloserAdviceWorkbench() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[1460px] flex-col gap-3 pb-8 text-[13px]">
+    <div className="mx-auto flex w-full max-w-[1460px] flex-col gap-3 pb-8 text-13">
       <header className="kaypal-v3-page-header flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -736,7 +736,7 @@ function FollowUpTable({
 }) {
   return (
     <table className="w-full min-w-[980px] border-collapse text-left">
-      <thead className="bg-default-50 text-[12px] font-semibold text-default-500">
+      <thead className="bg-default-50 text-12 font-semibold text-default-500">
         <tr>
           <th className="px-3 py-2">优先级</th>
           <th className="px-3 py-2">客户</th>
@@ -767,7 +767,7 @@ function FollowUpTable({
                     {labelPriority(item.priority || item.urgency)}
                   </V2StatusChip>
                   {item.confidence !== undefined ? (
-                    <div className="mt-1 text-[11px] text-default-400">
+                    <div className="mt-1 text-11 text-default-400">
                       置信 {formatPercent(item.confidence)}
                     </div>
                   ) : null}
@@ -973,7 +973,7 @@ function OpportunityMoveTable({ moves }: { moves: CloserOpportunityMove[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[820px] border-collapse text-left">
-        <thead className="bg-default-50 text-[12px] font-semibold text-default-500">
+        <thead className="bg-default-50 text-12 font-semibold text-default-500">
           <tr>
             <th className="px-3 py-2">商机</th>
             <th className="px-3 py-2">阶段/金额</th>
@@ -1206,7 +1206,7 @@ function Metric({
   return (
     <div className="rounded-[8px] border border-default-200 bg-content1 p-3 shadow-sm">
       <div className="flex items-center justify-between gap-2">
-        <div className="text-[11px] font-semibold text-default-500">
+        <div className="text-11 font-semibold text-default-500">
           {label}
         </div>
         <V2StatusChip

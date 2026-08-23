@@ -140,8 +140,8 @@ export function CrmCenter() {
           <div className="mx-stat-grid">
             <div className="mx-stat-item mx-control"><div className="mx-stat-num">{loading ? "-" : stats.total}</div><div className="mx-stat-label">客户总数</div></div>
             <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{loading ? "-" : stats.newThisWeek}</div><div className="mx-stat-label">本周新增</div></div>
-            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#b45309" }}>{loading ? "-" : stats.followUp}</div><div className="mx-stat-label">待跟进</div></div>
-            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "#dc2626" }}>{loading ? "-" : stats.overdue}</div><div className="mx-stat-label">逾期任务</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "var(--kaypal-v3-amber)" }}>{loading ? "-" : stats.followUp}</div><div className="mx-stat-label">待跟进</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "var(--kaypal-v3-danger)" }}>{loading ? "-" : stats.overdue}</div><div className="mx-stat-label">逾期任务</div></div>
           </div>
         </section>
 
@@ -149,13 +149,13 @@ export function CrmCenter() {
         <section className="mx-px mx-mt-lg">
           <div className="mx-svc-grid">
             <button type="button" className="mx-svc-item mx-control" onClick={() => setShowCreateModal(true)}>
-              <span className="mx-svc-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+              <span className="mx-svc-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
                 <UserPlus width={19} height={19} />
               </span>
               <span className="mx-svc-name">新增客户</span><span className="mx-svc-sub">手动添加</span>
             </button>
             <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm-import")}>
-              <span className="mx-svc-ic" style={{ background: "rgba(16,185,129,.1)", color: "#059669" }}>
+              <span className="mx-svc-ic" style={{ background: "rgba(16,185,129,.1)", color: "var(--kaypal-v3-success)" }}>
                 <Upload width={19} height={19} />
               </span>
               <span className="mx-svc-name">批量导入</span><span className="mx-svc-sub">Excel 导入</span>
@@ -167,7 +167,7 @@ export function CrmCenter() {
               <span className="mx-svc-name">待跟进</span><span className="mx-svc-sub">{stats.followUp} 位客户</span>
             </button>
             <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm/connectors")}>
-              <span className="mx-svc-ic" style={{ background: "rgba(139,92,246,.1)", color: "#7c3aed" }}>
+              <span className="mx-svc-ic" style={{ background: "rgba(139,92,246,.1)", color: "var(--kaypal-v3-purple)" }}>
                 <Link width={19} height={19} />
               </span>
               <span className="mx-svc-name">数据连接</span><span className="mx-svc-sub">渠道接入</span>
@@ -206,7 +206,7 @@ export function CrmCenter() {
                   style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
                   onClick={() => router.push(`/crm/customer?id=${customer.id}`)}
                 >
-                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb", borderRadius: 999 }}>
+                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)", borderRadius: 999 }}>
                     <User width={18} height={18} />
                   </span>
                   <div className="mx-row-main">

@@ -305,7 +305,7 @@ export function ContentQueue({
                 key={option.value}
                 endContent={
                   <Chip
-                    className="h-5 shrink-0 px-1 text-[10px]"
+                    className="h-5 shrink-0 px-1 text-11"
                     radius="sm"
                     size="sm"
                     variant="flat"
@@ -355,12 +355,12 @@ export function ContentQueue({
 
       <div className="border-b border-divider p-3">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <p className="text-[12px] font-medium text-default-600">
+          <p className="text-12 font-medium text-default-600">
             筛选与搜索
           </p>
           {keyword ? (
             <button
-              className="text-[11px] text-primary hover:text-primary-600"
+              className="text-11 text-primary hover:text-primary-600"
               type="button"
               onClick={() => onKeywordChange("")}
             >
@@ -403,8 +403,8 @@ export function ContentQueue({
             hasDividers
             header={
               <div className="border-b border-divider px-3 py-2">
-                <p className="text-[12px] font-medium text-default-600">最近更新</p>
-                <p className="mt-0.5 text-[11px] text-default-400">
+                <p className="text-12 font-medium text-default-600">最近更新</p>
+                <p className="mt-0.5 text-11 text-default-400">
                   点选内容后会自动恢复上次步骤
                 </p>
               </div>
@@ -420,9 +420,9 @@ export function ContentQueue({
                   description={item.excerpt || "还没有正文内容"}
                   descriptionLines={2}
                   endContent={
-                    <div className="flex min-w-0 flex-col items-end gap-1 text-[11px] text-default-400">
+                    <div className="flex min-w-0 flex-col items-end gap-1 text-11 text-default-400">
                       <Chip
-                        className="h-5 shrink-0 px-1 text-[10px]"
+                        className="h-5 shrink-0 px-1 text-11"
                         color={STATUS_COLOR[item.status] || "default"}
                         radius="sm"
                         size="sm"

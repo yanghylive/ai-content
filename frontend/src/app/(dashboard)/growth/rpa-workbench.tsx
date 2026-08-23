@@ -622,7 +622,7 @@ function DetailModal({
                         </p>
                       )}
                       {step.resultHash && (
-                        <p className="mt-0.5 break-all font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-0.5 break-all font-mono text-11 text-[var(--kaypal-v3-muted)]">
                           结果 hash {step.resultHash.slice(0, 24)}…
                         </p>
                       )}
@@ -637,7 +637,7 @@ function DetailModal({
                         </a>
                       )}
                       {step.pageFingerprint && (
-                        <p className="mt-0.5 break-all font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-0.5 break-all font-mono text-11 text-[var(--kaypal-v3-muted)]">
                           指纹 {step.pageFingerprint.slice(0, 32)}…
                         </p>
                       )}
@@ -649,7 +649,7 @@ function DetailModal({
           </div>
 
           {detail.pageFingerprint && (
-            <div className="break-all rounded-lg border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-surface)] px-3 py-2 font-mono text-[11px] text-[var(--kaypal-v3-muted)]">
+            <div className="break-all rounded-lg border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-surface)] px-3 py-2 font-mono text-11 text-[var(--kaypal-v3-muted)]">
               页面指纹 {detail.pageFingerprint.slice(0, 48)}…
             </div>
           )}

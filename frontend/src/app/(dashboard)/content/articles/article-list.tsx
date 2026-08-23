@@ -163,7 +163,7 @@ export function ArticleList({
 
         <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
           {error && (
-            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "#dc2626" }}>{error}</div>
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</div>
           )}
           <div className="mx-card mx-list-card">
             {loading ? (
@@ -199,7 +199,7 @@ export function ArticleList({
                       onClick={() => openArticle(article)}
                       style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", padding: 0 }}
                     >
-                      <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "#2563eb" }}>
+                      <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
                         {isXhs ? <MessageCircle size={18} /> : <PenLine size={18} />}
                       </span>
                       <div className="mx-row-main" style={{ flex: 1, minWidth: 0 }}>
@@ -215,7 +215,7 @@ export function ArticleList({
                         type="button"
                         aria-label={`删除${displayTitle}`}
                         onClick={() => handleDelete(article)}
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 8, background: "none", border: "none", color: "#dc2626", cursor: "pointer", flexShrink: 0 }}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 8, background: "none", border: "none", color: "var(--kaypal-v3-danger)", cursor: "pointer", flexShrink: 0 }}
                       >
                         <Trash2 size={16} />
                       </button>

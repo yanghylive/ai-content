@@ -36,13 +36,13 @@ export const MOBILE_STATUS_BADGE: Record<PublishStatus, string> = {
 };
 
 export const MOBILE_STATUS_DOT: Record<PublishStatus, string> = {
-  draft: "#94a3b8",
-  pending: "#d98a2d",
-  queued: "#2563eb",
-  running: "#2563eb",
-  cancelled: "#94a3b8",
-  done: "#059669",
-  failed: "#dc2626",
+  draft: "var(--kaypal-v3-muted)",
+  pending: "var(--kaypal-v3-amber)",
+  queued: "var(--kaypal-v3-cobalt)",
+  running: "var(--kaypal-v3-cobalt)",
+  cancelled: "var(--kaypal-v3-muted)",
+  done: "var(--kaypal-v3-success)",
+  failed: "var(--kaypal-v3-danger)",
 };
 
 /**

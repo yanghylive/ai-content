@@ -154,7 +154,7 @@ export default function CopyComparePage() {
                   borderRadius: 999,
                   border: platform === p.value ? "1px solid rgba(16,185,129,.5)" : "1px solid rgba(148,163,184,.3)",
                   background: platform === p.value ? "rgba(16,185,129,.08)" : "#fff",
-                  color: platform === p.value ? "#047857" : "#374151",
+                  color: platform === p.value ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-soft-ink)",
                   fontSize: 13,
                 }}
               >
@@ -162,7 +162,7 @@ export default function CopyComparePage() {
               </button>
             ))}
           </div>
-          {error && <p style={{ fontSize: 12, color: "#dc2626", margin: "10px 0 0" }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", margin: "10px 0 0" }}>{error}</p>}
           <button
             type="button"
             className="mx-btn-gold"
@@ -183,7 +183,7 @@ export default function CopyComparePage() {
               <div key={ri} style={{ marginBottom: 16, padding: 12, borderRadius: 14, border: "1px solid rgba(148,163,184,.18)", background: "#fff" }}>
                 <p style={{ fontSize: 12, fontWeight: 600, color: "#6b7a93", margin: "0 0 8" }}>
                   原文 #{ri + 1}
-                  {row.error && <span style={{ color: "#dc2626", marginLeft: 8 }}>❌ {row.error}</span>}
+                  {row.error && <span style={{ color: "var(--kaypal-v3-danger)", marginLeft: 8 }}>❌ {row.error}</span>}
                 </p>
                 <p style={{ fontSize: 13, color: "#1f2a44", margin: "0 0 10", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
                   {row.original}
@@ -191,19 +191,19 @@ export default function CopyComparePage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {row.variants.map((v, vi) => (
                     <div key={vi} style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(241,245,249,.7)" }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: "#047857", margin: "0 0 4" }}>
-                        {v.label} <span style={{ fontWeight: 400, color: "#94a3b8" }}>· {v.title}</span>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-success)", margin: "0 0 4" }}>
+                        {v.label} <span style={{ fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>· {v.title}</span>
                       </p>
-                      <p style={{ fontSize: 13, color: "#334155", margin: 0, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                      <p style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)", margin: 0, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
                         {v.content}
                       </p>
-                      <p style={{ fontSize: 11, color: "#94a3b8", margin: "6px 0 0" }}>{v.highlight}</p>
+                      <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", margin: "6px 0 0" }}>{v.highlight}</p>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
-            <p style={{ fontSize: 11, color: "#94a3b8", margin: "8px 0 0" }}>
+            <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", margin: "8px 0 0" }}>
               对比结果用于发布前检查：各平台语气/结构差异一目了然，改完可直接复制到对应平台
             </p>
           </div>

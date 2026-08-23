@@ -365,7 +365,7 @@ export function CrmImportFlow() {
               const num = (index + 1) as Step;
               return (
                 <div key={title} style={{ flex: 1, display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, background: step >= num ? "#d98a2d" : "rgba(142,165,190,.3)", color: step >= num ? "#fff" : "var(--mx-muted)" }}>
+                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, background: step >= num ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.3)", color: step >= num ? "#fff" : "var(--mx-muted)" }}>
                     {step > num ? "✓" : num}
                   </span>
                   <span style={{ fontSize: 11.5, fontWeight: 600, color: step >= num ? "var(--mx-ink)" : "var(--mx-muted)" }}>{title}</span>
@@ -377,7 +377,7 @@ export function CrmImportFlow() {
           {crmNotInstalled && (
             <div className="mx-card" style={{ marginTop: 12, padding: 13, borderColor: "rgba(222,150,57,.4)" }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", display: "flex", alignItems: "center", gap: 7 }}>
-                <FileSpreadsheet width={16} height={16} style={{ color: "#d98a2d" }} /> 需要先安装 CRM 客户管理应用
+                <FileSpreadsheet width={16} height={16} style={{ color: "var(--kaypal-v3-amber)" }} /> 需要先安装 CRM 客户管理应用
               </p>
               <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>导入客户是 CRM 应用的功能，安装后就能用了</p>
               <button type="button" className="mx-btn-gold" style={{ marginTop: 9 }} onClick={() => router.push("/apps/detail?key=crm")}>去安装 CRM 应用</button>
@@ -386,7 +386,7 @@ export function CrmImportFlow() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "#dc2626" }}>{error}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -396,9 +396,9 @@ export function CrmImportFlow() {
               <div className="mx-section-head" style={{ marginTop: 14 }}>上传 Excel / CSV 文件</div>
               <label className="mx-card" style={{ padding: 22, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center", borderStyle: "dashed", borderColor: "rgba(222,150,57,.4)", cursor: "pointer" }}>
                 {readingFile ? (
-                  <Loader2 width={26} height={26} style={{ color: "#d98a2d" }} className="animate-spin" />
+                  <Loader2 width={26} height={26} style={{ color: "var(--kaypal-v3-amber)" }} className="animate-spin" />
                 ) : (
-                  <FileSpreadsheet width={26} height={26} style={{ color: "#d98a2d" }} />
+                  <FileSpreadsheet width={26} height={26} style={{ color: "var(--kaypal-v3-amber)" }} />
                 )}
                 <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>
                   {readingFile ? "正在读取…" : "点击选择 .xlsx / .csv 文件"}
@@ -432,7 +432,7 @@ export function CrmImportFlow() {
                   第一行是列名，下面每行一个客户，列之间用 Tab 或逗号分隔
                 </p>
                 {rawText.trim() && (
-                  <p style={{ fontSize: 11.5, color: "#059669", marginTop: 6 }}>✓ 识别到 {parseRows(rawText).length - 1} 行数据</p>
+                  <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-success)", marginTop: 6 }}>✓ 识别到 {parseRows(rawText).length - 1} 行数据</p>
                 )}
                 <button
                   type="button"
@@ -470,7 +470,7 @@ export function CrmImportFlow() {
                       ))}
                     </select>
                     {mapping[col] ? (
-                      <CheckCircle2 width={15} height={15} style={{ color: "#059669", flexShrink: 0 }} />
+                      <CheckCircle2 width={15} height={15} style={{ color: "var(--kaypal-v3-success)", flexShrink: 0 }} />
                     ) : (
                       <span style={{ width: 15, flexShrink: 0 }} />
                     )}
@@ -520,17 +520,17 @@ export function CrmImportFlow() {
           {step === 3 && importResult && (
             <div className="mx-card" style={{ marginTop: 14, padding: 28, textAlign: "center" }}>
               <span style={{ width: 54, height: 54, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(5,150,105,.12)" }}>
-                <FileSpreadsheet width={26} height={26} style={{ color: "#059669" }} />
+                <FileSpreadsheet width={26} height={26} style={{ color: "var(--kaypal-v3-success)" }} />
               </span>
               <p style={{ fontSize: 15, fontWeight: 700, color: "var(--mx-ink)", marginTop: 12 }}>导入完成</p>
               <div style={{ display: "flex", justifyContent: "center", gap: 26, marginTop: 14 }}>
                 <span>
-                  <span style={{ display: "block", fontSize: 26, fontWeight: 800, color: "#059669" }}>{importResult.imported}</span>
+                  <span style={{ display: "block", fontSize: 26, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{importResult.imported}</span>
                   <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>成功导入</span>
                 </span>
                 {importResult.skipped > 0 && (
                   <span>
-                    <span style={{ display: "block", fontSize: 26, fontWeight: 800, color: "#b45309" }}>{importResult.skipped}</span>
+                    <span style={{ display: "block", fontSize: 26, fontWeight: 800, color: "var(--kaypal-v3-amber)" }}>{importResult.skipped}</span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>跳过</span>
                   </span>
                 )}
@@ -539,7 +539,7 @@ export function CrmImportFlow() {
               {rollbackPlan ? (
                 <button
                   type="button"
-                  style={{ marginTop: 9, width: "100%", padding: "10px 0", borderRadius: 10, color: "#dc2626", border: "1px solid rgba(220,80,80,.4)", background: "rgba(220,80,80,.08)", fontSize: 12.5, fontWeight: 600 }}
+                  style={{ marginTop: 9, width: "100%", padding: "10px 0", borderRadius: 10, color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.4)", background: "rgba(220,80,80,.08)", fontSize: 12.5, fontWeight: 600 }}
                   disabled={rollingBack}
                   onClick={() => void handleRollback()}
                 >
@@ -547,7 +547,7 @@ export function CrmImportFlow() {
                 </button>
               ) : null}
               {rollbackMsg ? (
-                <p style={{ marginTop: 8, fontSize: 11.5, color: rollbackMsg.startsWith("已回滚") ? "#059669" : "#dc2626" }}>{rollbackMsg}</p>
+                <p style={{ marginTop: 8, fontSize: 11.5, color: rollbackMsg.startsWith("已回滚") ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)" }}>{rollbackMsg}</p>
               ) : null}
               <button
                 type="button"

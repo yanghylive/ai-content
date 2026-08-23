@@ -342,17 +342,17 @@ function SkillStrip() {
     <section className="kaypal-v3-panel overflow-hidden">
       <div className="border-b border-[var(--kaypal-v3-border)] p-4">
         <p className="kaypal-v3-label">相关能力</p>
-        <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+        <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
           系统可继续找爆款样本
         </h2>
       </div>
       {!skillState.loaded ? (
-        <div className="flex items-center gap-2 p-4 text-[12px] font-semibold text-[var(--kaypal-v3-muted)]">
+        <div className="flex items-center gap-2 p-4 text-12 font-semibold text-[var(--kaypal-v3-muted)]">
           <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
           正在读取功能目录
         </div>
       ) : skillState.error ? (
-        <div className="p-4 text-[12px] font-semibold text-[var(--kaypal-v3-soft-ink)]">
+        <div className="p-4 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">
           {skillState.error}
         </div>
       ) : skillState.items.length > 0 ? (
@@ -361,17 +361,17 @@ function SkillStrip() {
             <div className="p-4" key={skill.id}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="text-[13px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                  <h3 className="text-13 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                     {publicIntelligenceText(skill.name, "系统功能")}
                   </h3>
-                  <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     {publicIntelligenceText(
                       skill.summary,
                       "可用于继续查找爆款样本和结构参考。",
                     )}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-1 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                <span className="shrink-0 rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-1 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                   {publicIntelligenceText(skill.platform, "平台")}
                 </span>
               </div>
@@ -458,16 +458,16 @@ export function ViralAnalysisWorkbench() {
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
             <div className="min-w-0">
               <p className="kaypal-v3-label">爆款拆解</p>
-              <h1 className="mt-1 text-[24px] font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+              <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
                 爆款样本工作台
               </h1>
-              <p className="mt-1 max-w-4xl text-[13px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 只拆可复用结构、用户问题和内容节奏；不复制原文、封面、画面、评论原句，也不让高风险样本进入业务流程。
               </p>
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <Link
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-[13px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                 href="/intelligence/search"
               >
                 <Search
@@ -478,7 +478,7 @@ export function ViralAnalysisWorkbench() {
                 找样本
               </Link>
               <Link
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-[13px] font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                 href="/intelligence/risks"
               >
                 风险审核
@@ -532,10 +532,10 @@ export function ViralAnalysisWorkbench() {
                       strokeWidth={1.8}
                     />
                   </div>
-                  <p className="mt-1 text-[20px] font-bold leading-7 text-[var(--kaypal-v3-ink)]">
+                  <p className="mt-1 text-xl font-bold leading-7 text-[var(--kaypal-v3-ink)]">
                     {value}
                   </p>
-                  <p className="mt-1 text-[11px] leading-4 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-1 text-11 leading-4 text-[var(--kaypal-v3-muted)]">
                     {detail}
                   </p>
                 </div>
@@ -551,14 +551,14 @@ export function ViralAnalysisWorkbench() {
       <section className="kaypal-v3-panel p-3">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
-            <p className="text-[12px] font-bold text-[var(--kaypal-v3-soft-ink)]">
+            <p className="text-12 font-bold text-[var(--kaypal-v3-soft-ink)]">
               平台
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {platformFilters.map((item) => (
                 <button
                   className={[
-                    "h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]",
+                    "h-8 rounded-[8px] border px-3 text-12 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]",
                     platform === item.value
                       ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                       : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)] hover:text-[var(--kaypal-v3-soft-ink)]",
@@ -574,14 +574,14 @@ export function ViralAnalysisWorkbench() {
             </div>
           </div>
           <div>
-            <p className="text-[12px] font-bold text-[var(--kaypal-v3-soft-ink)]">
+            <p className="text-12 font-bold text-[var(--kaypal-v3-soft-ink)]">
               拆解角度
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {angleFilters.map((item) => (
                 <button
                   className={[
-                    "h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]",
+                    "h-8 rounded-[8px] border px-3 text-12 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]",
                     angle === item.value
                       ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
                       : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)] hover:text-[var(--kaypal-v3-soft-ink)]",
@@ -603,7 +603,7 @@ export function ViralAnalysisWorkbench() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">样本池</p>
-            <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
               可拆解对象
             </h2>
           </div>
@@ -626,25 +626,25 @@ export function ViralAnalysisWorkbench() {
                   type="button"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                    <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                       {sample.platform}
                     </span>
-                    <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kaypal-v3-muted)]">
+                    <span className="rounded-[6px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-2 py-0.5 text-11 font-semibold text-[var(--kaypal-v3-muted)]">
                       {sample.angleLabel}
                     </span>
                     <span
                       className={[
-                        "rounded-[6px] border px-2 py-0.5 text-[11px] font-semibold",
+                        "rounded-[6px] border px-2 py-0.5 text-11 font-semibold",
                         riskClass(sample.risk),
                       ].join(" ")}
                     >
                       {riskMeta[sample.risk].label}
                     </span>
                   </div>
-                  <h3 className="mt-2 text-[14px] font-bold leading-5 text-[var(--kaypal-v3-ink)]">
+                  <h3 className="mt-2 text-14 font-bold leading-5 text-[var(--kaypal-v3-ink)]">
                     {sample.title}
                   </h3>
-                  <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                  <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                     系统从{sample.platform}样本里发现
                   </p>
                 </button>
@@ -656,10 +656,10 @@ export function ViralAnalysisWorkbench() {
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">拆解台</p>
-            <h2 className="mt-1 text-[18px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+            <h2 className="mt-1 text-lg font-bold leading-6 text-[var(--kaypal-v3-ink)]">
               {selectedSample.title}
             </h2>
-            <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+            <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
               {selectedSample.platform} · 爆款样本
             </p>
           </div>
@@ -674,10 +674,10 @@ export function ViralAnalysisWorkbench() {
                   key={String(label)}
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+                    <p className="text-11 font-bold text-[var(--kaypal-v3-muted)]">
                       {label}
                     </p>
-                    <span className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                    <span className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                       {value}
                     </span>
                   </div>
@@ -706,7 +706,7 @@ export function ViralAnalysisWorkbench() {
                   key={label}
                 >
                   <p className="kaypal-v3-label">{label}</p>
-                  <p className="mt-2 text-[13px] font-semibold leading-6 text-[var(--kaypal-v3-soft-ink)]">
+                  <p className="mt-2 text-13 font-semibold leading-6 text-[var(--kaypal-v3-soft-ink)]">
                     {value}
                   </p>
                 </div>
@@ -715,10 +715,10 @@ export function ViralAnalysisWorkbench() {
 
             <div className="mt-4 rounded-[8px] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-4">
               <p className="kaypal-v3-label">推荐判断</p>
-              <p className="mt-2 text-[14px] font-bold leading-6 text-[var(--kaypal-v3-ink)]">
+              <p className="mt-2 text-14 font-bold leading-6 text-[var(--kaypal-v3-ink)]">
                 {selectedSample.decision}
               </p>
-              <p className="mt-2 text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+              <p className="mt-2 text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                 {selectedSample.boundary}
               </p>
             </div>
@@ -728,10 +728,10 @@ export function ViralAnalysisWorkbench() {
               <ol className="mt-3 grid gap-3">
                 {selectedSample.evidence.map((item, index) => (
                   <li className="flex gap-3" key={item}>
-                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-[11px] font-bold text-white">
+                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] bg-[var(--kaypal-v3-accent)] text-11 font-bold text-white">
                       {index + 1}
                     </span>
-                    <p className="text-[12px] leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                    <p className="text-12 leading-5 text-[var(--kaypal-v3-soft-ink)]">
                       {item}
                     </p>
                   </li>
@@ -745,7 +745,7 @@ export function ViralAnalysisWorkbench() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">下一步动作</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 派发规则
               </h2>
             </div>
@@ -777,10 +777,10 @@ export function ViralAnalysisWorkbench() {
                         />
                       </span>
                       <div className="min-w-0">
-                        <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                        <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                           {queued ? "已加入队列" : action.label}
                         </p>
-                        <p className="mt-1 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-1 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           {action.target} · {riskMeta[action.risk].label}
                         </p>
                       </div>
@@ -794,7 +794,7 @@ export function ViralAnalysisWorkbench() {
           <section className="kaypal-v3-panel overflow-hidden">
             <div className="border-b border-[var(--kaypal-v3-border)] p-4">
               <p className="kaypal-v3-label">分发任务</p>
-              <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+              <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
                 待执行拆解动作
               </h2>
             </div>
@@ -808,10 +808,10 @@ export function ViralAnalysisWorkbench() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-[13px] font-bold text-[var(--kaypal-v3-ink)]">
+                        <p className="text-13 font-bold text-[var(--kaypal-v3-ink)]">
                           {item.label} · {item.target}
                         </p>
-                        <p className="mt-1 line-clamp-2 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+                        <p className="mt-1 line-clamp-2 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                           {item.title}
                         </p>
                       </div>
@@ -825,7 +825,7 @@ export function ViralAnalysisWorkbench() {
                 ))}
               </div>
             ) : (
-              <div className="p-4 text-[12px] leading-5 text-[var(--kaypal-v3-muted)]">
+              <div className="p-4 text-12 leading-5 text-[var(--kaypal-v3-muted)]">
                 选择拆解动作后，会在这里形成可追踪队列。
               </div>
             )}
@@ -837,13 +837,13 @@ export function ViralAnalysisWorkbench() {
       <section className="kaypal-v3-panel overflow-hidden">
         <div className="border-b border-[var(--kaypal-v3-border)] p-4">
           <p className="kaypal-v3-label">治理边界</p>
-          <h2 className="mt-1 text-[16px] font-bold text-[var(--kaypal-v3-ink)]">
+          <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
             拆解能做什么，不能做什么
           </h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-[13px]">
-            <thead className="bg-[var(--kaypal-v3-table-head)] text-[11px] font-bold text-[var(--kaypal-v3-muted)]">
+          <table className="min-w-full text-left text-13">
+            <thead className="bg-[var(--kaypal-v3-table-head)] text-11 font-bold text-[var(--kaypal-v3-muted)]">
               <tr>
                 {["对象", "可做", "禁止", "去向"].map((column) => (
                   <th className="px-4 py-3" key={column} scope="col">

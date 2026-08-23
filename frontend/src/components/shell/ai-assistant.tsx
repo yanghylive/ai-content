@@ -494,7 +494,7 @@ export function AiAssistant({
                 <div style={{ color: "rgba(215,230,248,.7)", fontSize: 13, lineHeight: 1.7 }}>
                   可以直接问我热点选题、检查违禁词，或告诉我你想写什么。
                   <br />
-                  试试按住 🎤 说一句：<b style={{ color: "#f4bb67" }}>「帮我写一条行业文案」</b>。
+                  试试按住 🎤 说一句：<b style={{ color: "var(--kaypal-v3-amber)" }}>「帮我写一条行业文案」</b>。
                 </div>
                 <div
                   style={{
