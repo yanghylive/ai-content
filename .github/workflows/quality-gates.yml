@@ -341,3 +341,25 @@ jobs:
         run: >-
           npm run test -- --silent --runInBand
           --testPathIgnorePatterns="src/modules/auto-upload/auto-upload.client.spec.ts"
+
+  ui-gate:
+    name: ⑰ 前端 UI 规范门禁（唯一磨砂紫金主题 · 全站统一 · 防回潮）
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装依赖
+        working-directory: frontend
+        run: npm ci
+      - name: 跑 ui:gate（UI_GATE_STRICT=1 全量硬门禁：新增/存量违规均阻断）
+        working-directory: frontend
+        env:
+          NODE_OPTIONS: ''
+          UI_GATE_STRICT: '1'
+        run: npm run ui:gate
+
