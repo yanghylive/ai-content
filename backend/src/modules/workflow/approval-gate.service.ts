@@ -201,10 +201,14 @@ export class ApprovalGateService {
       throw new BadRequestException('审批已过期，请重新审批');
     }
     const now = new Date();
-    await this.prisma.approval.update({
-      where: { id: approvalId },
+    // 原子消费：where 带 status='approved'，并发下仅一个执行器能消费成功（防重复外发）
+    const applied = await this.prisma.approval.updateMany({
+      where: { id: approvalId, status: 'approved' },
       data: { status: 'applied', appliedAt: now },
     });
+    if (applied.count === 0) {
+      throw new BadRequestException('审批已被消费或状态已变化，请勿重复执行');
+    }
     return { status: 'applied', appliedAt: now };
   }
 
