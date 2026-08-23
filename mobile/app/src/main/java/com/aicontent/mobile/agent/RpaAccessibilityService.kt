@@ -217,6 +217,13 @@ class RpaAccessibilityService : AccessibilityService() {
             acqActions = actions
             acqIndex = 0
             handler.post { svc.launchAppForAcquisition(pkg) }
+            // 超时兜底：launchApp 后若目标窗口迟迟未就绪，防获客执行永久挂起
+            handler.postDelayed({ timeoutAcquisition() }, ACQ_TIMEOUT_MS)
+        }
+
+        private fun timeoutAcquisition() {
+            if (acqCallback == null) return
+            finishAcquisition(RpaResult.failure("获客执行超时（${ACQ_TIMEOUT_MS / 1000}s）"))
         }
 
         private fun parseAcquisitionActions(json: String): List<AcqAction> {
@@ -243,6 +250,7 @@ class RpaAccessibilityService : AccessibilityService() {
         }
 
         private const val MAI_UI_TIMEOUT_MS = 90_000L
+        private const val ACQ_TIMEOUT_MS = 30_000L
 
         @Volatile
         private var maiActions: List<MaiUiAction>? = null

@@ -108,13 +108,10 @@ export class ApprovalGateService {
     }
 
     if (input.action === 'expire') {
-      await this.prisma.approval.update({
-        where: { id: input.approvalId },
-        data: {
-          status: 'expired',
-          approverId: input.approverId,
-          reason: input.reason,
-        },
+      await this.applyPendingAction(input.approvalId, {
+        status: 'expired',
+        approverId: input.approverId,
+        reason: input.reason,
       });
       return { status: 'expired' };
     }
@@ -123,14 +120,11 @@ export class ApprovalGateService {
       if (!input.currentInput)
         throw new BadRequestException('resubmit 需要新的动作输入');
       const hash = computeInputHash(input.currentInput);
-      await this.prisma.approval.update({
-        where: { id: input.approvalId },
-        data: {
-          status: 'resubmitted',
-          inputHash: hash,
-          reason: input.reason ?? '内容已更新，重新提交审批',
-          approverId: input.approverId,
-        },
+      await this.applyPendingAction(input.approvalId, {
+        status: 'resubmitted',
+        inputHash: hash,
+        reason: input.reason ?? '内容已更新，重新提交审批',
+        approverId: input.approverId,
       });
       return { status: 'resubmitted' };
     }
@@ -146,30 +140,38 @@ export class ApprovalGateService {
         }
       }
       const now = new Date();
-      await this.prisma.approval.update({
-        where: { id: input.approvalId },
-        data: {
-          status: 'approved',
-          approverId: input.approverId,
-          reason: input.reason,
-          appliedAt: now,
-        },
+      await this.applyPendingAction(input.approvalId, {
+        status: 'approved',
+        approverId: input.approverId,
+        reason: input.reason,
+        appliedAt: now,
       });
       return { status: 'approved', appliedAt: now };
     }
 
     // reject / request_changes
-    await this.prisma.approval.update({
-      where: { id: input.approvalId },
-      data: {
-        status: input.action === 'reject' ? 'rejected' : 'requested_changes',
-        approverId: input.approverId,
-        reason: input.reason,
-      },
+    await this.applyPendingAction(input.approvalId, {
+      status: input.action === 'reject' ? 'rejected' : 'requested_changes',
+      approverId: input.approverId,
+      reason: input.reason,
     });
     return {
       status: input.action === 'reject' ? 'rejected' : 'requested_changes',
     };
+  }
+
+  /** 原子更新审批状态：where 带 status='pending'，并发下仅一个审批人操作成功（防覆盖） */
+  private async applyPendingAction(
+    approvalId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> {
+    const updated = await this.prisma.approval.updateMany({
+      where: { id: approvalId, status: 'pending' },
+      data: data as never,
+    });
+    if (updated.count === 0) {
+      throw new BadRequestException('审批已被处理，不能重复操作');
+    }
   }
 
   /**
