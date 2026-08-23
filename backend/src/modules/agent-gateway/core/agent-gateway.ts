@@ -292,6 +292,20 @@ export class AgentGateway {
     return task;
   }
 
+  // ---------------------------------------------------------------- 重启恢复（持久化模式）
+  /** 从 DB 反灌内存（写路径镜像的读侧；只恢复仍活跃的会话及其资源） */
+  hydrate(data: {
+    sessions?: AgentSession[];
+    tasks?: AgentTask[];
+    artifacts?: Artifact[];
+    events?: AgentEvent[];
+  }): void {
+    for (const s of data.sessions ?? []) this.sessions.set(s.id, s);
+    for (const t of data.tasks ?? []) this.tasks.set(t.id, t);
+    for (const a of data.artifacts ?? []) this.artifacts.set(a.id, a);
+    if (data.events?.length) this.deps.bus.hydrateEvents(data.events);
+  }
+
   // ---------------------------------------------------------------- 能力 / 记忆
   getCapabilities(): Capabilities {
     const caps = this.deps.octop.getCapabilities();
