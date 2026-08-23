@@ -130,6 +130,7 @@ class RpaAccessibilityService : AccessibilityService() {
         fun execute(
             platform: String,
             content: String,
+            taskId: String,
             callback: (RpaResult) -> Unit,
         ) {
             val svc = instance
@@ -150,6 +151,12 @@ class RpaAccessibilityService : AccessibilityService() {
             pendingPackage = pkg
             pendingContent = content
             pendingCallback = callback
+            // P1-12：publish 路径也建 Run（发布任务可追溯 + 断点）
+            pubTaskId = taskId.ifBlank { null }
+            pubRunId = null
+            if (pubTaskId != null) {
+                startRunRemote(pubTaskId!!) { pubRunId = it }
+            }
             handler.post { svc.launchApp(pkg) }
             handler.postDelayed({ timeoutIfPending() }, EXEC_TIMEOUT_MS)
         }
@@ -237,6 +244,10 @@ class RpaAccessibilityService : AccessibilityService() {
         private var maiTaskId: String? = null
         @Volatile
         private var maiRunId: String? = null
+        @Volatile
+        private var pubTaskId: String? = null
+        @Volatile
+        private var pubRunId: String? = null
 
         /**
          * 执行 MAI-UI 规划的结构化动作序列（H5 调 window.JiuZhang.executeActions）。
@@ -272,7 +283,7 @@ class RpaAccessibilityService : AccessibilityService() {
             maiTaskId = taskId.ifBlank { null }
             maiRunId = null
             if (maiTaskId != null) {
-                startRunRemote(maiTaskId!!)
+                startRunRemote(maiTaskId!!) { maiRunId = it }
             }
             handler.post { svc.stepMaiActions() }
             handler.postDelayed({ timeoutMaiIfPending() }, MAI_UI_TIMEOUT_MS)
@@ -330,7 +341,7 @@ class RpaAccessibilityService : AccessibilityService() {
                     val ok = consumeApproval(approvalId)
                     if (ok) {
                         // P1-11：审批通过 → Run 恢复 running
-                        setRunStatusRemote("running")
+                        maiRunId?.let { setRunStatusRemote(it, "running") }
                         handler.post { svc.stepMaiActions() }
                         callback(RpaResult.success("审批校验通过，已继续执行"))
                     } else {
@@ -341,7 +352,7 @@ class RpaAccessibilityService : AccessibilityService() {
                 return
             }
             // P1-11：无审批直接继续 → Run 恢复 running
-            setRunStatusRemote("running")
+            maiRunId?.let { setRunStatusRemote(it, "running") }
             handler.post { svc.stepMaiActions() }
             callback(RpaResult.success("已继续执行"))
         }
@@ -451,10 +462,13 @@ class RpaAccessibilityService : AccessibilityService() {
 
         private fun finishMai(cb: (RpaResult) -> Unit, result: RpaResult) {
             // P1-12：收尾 Run（completed/failed/unknown）
-            finishRunRemote(
-                if (result.ok) "completed"
-                else if (result.status == "unknown") "unknown" else "failed",
-            )
+            maiRunId?.let {
+                finishRunRemote(
+                    it,
+                    if (result.ok) "completed"
+                    else if (result.status == "unknown") "unknown" else "failed",
+                )
+            }
             clearCheckpoint()
             maiCallback = null
             maiActions = null
@@ -467,8 +481,8 @@ class RpaAccessibilityService : AccessibilityService() {
 
         // ===== P1-12 Run/Step 持久化（后端上报 + 本地 checkpoint） =====
 
-        /** 异步创建 Run（领取执行会话） */
-        private fun startRunRemote(taskId: String) {
+        /** 异步创建 Run（领取执行会话），runId 经 assign 回调回填 */
+        private fun startRunRemote(taskId: String, assign: (String?) -> Unit) {
             val token = deviceToken() ?: return
             Thread {
                 try {
@@ -482,8 +496,9 @@ class RpaAccessibilityService : AccessibilityService() {
                         if (resp.isSuccessful) {
                             val json = JSONObject(resp.body?.string() ?: "{}")
                             val data = json.optJSONObject("data") ?: json
-                            maiRunId = data.optString("id").ifBlank { null }
-                            persistCheckpoint(taskId, maiRunId, 0)
+                            val rid = data.optString("id").ifBlank { null }
+                            assign(rid)
+                            persistCheckpoint(taskId, rid, 0)
                         }
                     }
                 } catch (e: Exception) {
@@ -493,8 +508,7 @@ class RpaAccessibilityService : AccessibilityService() {
         }
 
         /** 异步上报单步进度（fire-and-forget，不阻塞执行） */
-        private fun reportStepRemote(stepIndex: Int, type: String, status: String) {
-            val runId = maiRunId ?: return
+        private fun reportStepRemote(runId: String, stepIndex: Int, type: String, status: String) {
             val token = deviceToken() ?: return
             Thread {
                 try {
@@ -518,8 +532,7 @@ class RpaAccessibilityService : AccessibilityService() {
         }
 
         /** 异步收尾 Run */
-        private fun finishRunRemote(status: String) {
-            val runId = maiRunId ?: return
+        private fun finishRunRemote(runId: String, status: String) {
             val token = deviceToken() ?: return
             Thread {
                 try {
@@ -538,8 +551,7 @@ class RpaAccessibilityService : AccessibilityService() {
         }
 
         /** 异步更新 Run 状态（P1-11：ask_user→awaiting_approval，恢复→running） */
-        private fun setRunStatusRemote(status: String) {
-            val runId = maiRunId ?: return
+        private fun setRunStatusRemote(runId: String, status: String) {
             val token = deviceToken() ?: return
             Thread {
                 try {
@@ -678,6 +690,7 @@ class RpaAccessibilityService : AccessibilityService() {
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
+            pubRunId?.let { reportStepRemote(it, 0, "launch", "done") }
             // 窗口就绪由 onAccessibilityEvent 驱动；加轮询兜底（事件可能没触发）
             handler.postDelayed({ pollIfPending() }, 1500L)
         } catch (e: Exception) {
@@ -711,6 +724,7 @@ class RpaAccessibilityService : AccessibilityService() {
                 } else {
                     RpaResult.unknown("已点击发送，但无法确认是否成功（请人工核对，避免重复发送）")
                 }
+                pubRunId?.let { reportStepRemote(it, 3, "verify", result.status) }
                 finishWith(result)
             }, 1500L)
         }
@@ -740,6 +754,7 @@ class RpaAccessibilityService : AccessibilityService() {
             finishWith(RpaResult.failure("输入回复内容失败"))
             return false
         }
+        pubRunId?.let { reportStepRemote(it, 1, "input", "done") }
         // 找发送按钮（中文优先，英文兜底）
         val send = findButton(root, "发送") ?: findButton(root, "Send")
         if (send == null) {
@@ -753,6 +768,7 @@ class RpaAccessibilityService : AccessibilityService() {
             finishWith(RpaResult.failure("已输入回复内容，但发送按钮点击失败，未发送"))
             return false
         }
+        pubRunId?.let { reportStepRemote(it, 2, "send", "done") }
         return true
     }
 
@@ -806,6 +822,16 @@ class RpaAccessibilityService : AccessibilityService() {
         pendingPackage = null
         pendingContent = null
         pendingPlatform = null
+        // P1-12：publish 收尾 Run（completed/failed/unknown）
+        pubRunId?.let {
+            finishRunRemote(
+                it,
+                if (result.ok) "completed"
+                else if (result.status == "unknown") "unknown" else "failed",
+            )
+        }
+        pubTaskId = null
+        pubRunId = null
         cb(result)
     }
 
@@ -827,7 +853,7 @@ class RpaAccessibilityService : AccessibilityService() {
         // 异步延时后继续下一步，期间主线程仍可响应暂停/超时/新无障碍事件。
         if (act.action == "wait") {
             val ms = (act.ms?.toLong() ?: 1000L).coerceIn(0L, 10000L)
-            reportStepRemote(maiIndex, "wait", "done")
+            maiRunId?.let { reportStepRemote(it, maiIndex, "wait", "done") }
             maiIndex++
             persistCheckpoint(maiTaskId, maiRunId, maiIndex)
             handler.postDelayed({ stepMaiActions() }, ms)
@@ -836,16 +862,16 @@ class RpaAccessibilityService : AccessibilityService() {
         val result = performOneAction(act)
         when {
             result.ok && act.action != "done" -> {
-                reportStepRemote(maiIndex, act.action, "done")
+                maiRunId?.let { reportStepRemote(it, maiIndex, act.action, "done") }
                 maiIndex++
                 persistCheckpoint(maiTaskId, maiRunId, maiIndex)
                 handler.postDelayed({ stepMaiActions() }, 250L)
             }
             act.action == "ask_user" -> {
-                reportStepRemote(maiIndex, "ask_user", "pending")
+                maiRunId?.let { reportStepRemote(it, maiIndex, "ask_user", "pending") }
                 persistCheckpoint(maiTaskId, maiRunId, maiIndex)
                 // P1-11：服务端标记 Run 为 awaiting_approval（审批状态持久化）
-                setRunStatusRemote("awaiting_approval")
+                maiRunId?.let { setRunStatusRemote(it, "awaiting_approval") }
                 maiPausedForAsk = true
                 // 暂停，等 H5 resumeAfterAsk
                 cb(
@@ -855,12 +881,12 @@ class RpaAccessibilityService : AccessibilityService() {
                 )
             }
             act.action == "done" -> {
-                reportStepRemote(maiIndex, "done", "done")
+                maiRunId?.let { reportStepRemote(it, maiIndex, "done", "done") }
                 finishMai(cb, RpaResult.success("任务完成：${act.summary ?: "done"}"))
             }
             else -> {
                 // 失败但非 done/ask_user：带步号返回错误
-                reportStepRemote(maiIndex, act.action, "failed")
+                maiRunId?.let { reportStepRemote(it, maiIndex, act.action, "failed") }
                 finishMai(cb, RpaResult.failure("第 ${maiIndex + 1} 步（${act.action}）执行失败：${result.message}"))
             }
         }

@@ -208,7 +208,7 @@ class AgentService : Service() {
                         cont.resume(r)
                     }
                 } else {
-                    RpaAccessibilityService.execute(platform, content) { r ->
+                    RpaAccessibilityService.execute(platform, content, taskId) { r ->
                         cont.resume(r)
                     }
                 }
