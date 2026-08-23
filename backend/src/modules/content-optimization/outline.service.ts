@@ -12,6 +12,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AiClientService } from '../ai-models/ai-client.service';
+import { pickDefaultModel } from '../ai-models/model-capability.util';
 import { MultimodalService } from '../multimodal/multimodal.service';
 import { DeFlavorService } from '../ai-flavor/de-flavor.service';
 import { ContentReviewService } from '../content-review/content-review.service';
@@ -738,11 +739,7 @@ export class OutlineService {
   }
 
   private async resolveDefaultModelId(): Promise<string> {
-    const model = await this.prisma.aIModel.findFirst({
-      where: { enabled: true },
-      orderBy: { updatedAt: 'desc' },
-      select: { id: true },
-    });
+    const model = await pickDefaultModel(this.prisma, 'text');
     if (model?.id) return model.id;
     throw new Error('未配置可用的 AI 模型，请在「AI 模型设置」中同步');
   }

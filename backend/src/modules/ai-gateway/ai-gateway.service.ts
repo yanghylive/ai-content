@@ -17,6 +17,7 @@ import { SavingsWithdrawalService } from '../savings/savings-withdrawal.service'
 import { GrowthService } from '../growth/growth.service';
 import { AiAssistantNestService } from '../ai-assistant/ai-assistant.service';
 import { KaypalProviderResolver } from '../ai-models/kaypal-provider.resolver';
+import { pickDefaultModel } from '../ai-models/model-capability.util';
 import { randomUUID } from 'node:crypto';
 
 /** AI 助手系统提示词（工具使用指南，function calling 触发） */
@@ -505,25 +506,11 @@ export class AiGatewayService {
   // 作为普通对话模型——历史 bug：视觉模型当文本模型用空回率高（"今天做什么"等普通
   // 问题实测空 content），导致用户看到"不回复"。禁止用 createdAt/updatedAt desc 作为
   // 业务默认（计划二.B.7）。
-  private static readonly CHAT_MODEL_PRIORITY = [
-    'deepseek-v4-flash',
-    'deepseek-v4-pro',
-  ];
-
-  /** 挑选文本对话模型：优先固定文本模型，其次任意 enabled 文本模型（按 modelId 稳定排序） */
+  /** 挑选文本对话模型：确定性按能力（text）选默认模型，禁止视觉模型兜底、禁止 createdAt/updatedAt desc */
   private async pickChatModel(platformId?: string) {
-    const base = { platformId: platformId ?? '', enabled: true };
-    for (const modelId of AiGatewayService.CHAT_MODEL_PRIORITY) {
-      const found = await this.prisma.aIModel.findFirst({
-        where: { ...base, modelId },
-      });
-      if (found) return found;
-    }
-    const textModels = (
-      await this.prisma.aIModel.findMany({ where: base })
-    ).filter((m) => !KaypalProviderResolver.isVisionModel(m));
-    textModels.sort((a, b) => a.modelId.localeCompare(b.modelId));
-    return textModels[0] ?? null;
+    return pickDefaultModel(this.prisma, 'text', {
+      platformId: platformId || undefined,
+    });
   }
 
   constructor(
@@ -1828,13 +1815,9 @@ export class AiGatewayService {
     return null;
   }
 
-  /** 解析默认对话模型 ID（工具 content_generate 用） */
+  /** 解析默认对话模型 ID（工具 content_generate 用）：按能力 text 确定性选择 */
   private async resolveDefaultChatModelId(): Promise<string> {
-    const fallback = await this.prisma.aIModel.findFirst({
-      where: { enabled: true },
-      orderBy: { updatedAt: 'desc' },
-      select: { id: true },
-    });
+    const fallback = await pickDefaultModel(this.prisma, 'text');
     if (fallback?.id) return fallback.id;
     throw new Error('未配置可用的 AI 模型');
   }

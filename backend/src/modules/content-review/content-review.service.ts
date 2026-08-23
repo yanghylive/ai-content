@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiClientService } from '../ai-models/ai-client.service';
+import { pickDefaultModel } from '../ai-models/model-capability.util';
 import {
   reviewContent,
   issuesToPrompt,
@@ -135,11 +136,7 @@ export class ContentReviewService {
       .replaceAll('{{PAGES}}', pagesBlock)
       .replaceAll('{{ISSUES}}', issuesText);
 
-    const model = await this.prisma.aIModel.findFirst({
-      where: { enabled: true },
-      orderBy: { updatedAt: 'desc' },
-      select: { id: true },
-    });
+    const model = await pickDefaultModel(this.prisma, 'text');
     if (!model) throw new Error('未配置可用的 AI 模型');
 
     const raw = await this.aiClient.generate(

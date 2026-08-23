@@ -20,6 +20,15 @@ describe('ReplyEngineService', () => {
   const prismaMock = {
     aIModel: {
       findFirst: jest.fn().mockResolvedValue({ id: 'model-1' }),
+      // 2026-08-23 Stage 1B：默认模型改为按能力确定性选取（pickDefaultModel 用 findMany）
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'model-1',
+          modelId: 'deepseek-v4-flash',
+          name: 'DeepSeek Flash',
+          platformId: 'p1',
+        },
+      ]),
     },
   };
 

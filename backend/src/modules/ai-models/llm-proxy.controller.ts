@@ -10,6 +10,7 @@ import {
 import type { Request } from 'express';
 import { Public } from '../auth/auth.decorator';
 import { AiClientService } from './ai-client.service';
+import { pickDefaultModel } from './model-capability.util';
 import { PrismaService } from '../../prisma/prisma.service';
 
 /**
@@ -68,12 +69,8 @@ export class LlmProxyController {
     const model = modelName
       ? await this.prisma.aIModel.findFirst({
           where: { modelId: modelName, enabled: true },
-          orderBy: { updatedAt: 'desc' },
         })
-      : await this.prisma.aIModel.findFirst({
-          where: { enabled: true },
-          orderBy: { updatedAt: 'desc' },
-        });
+      : await pickDefaultModel(this.prisma, 'text');
     if (!model) throw new BadRequestException('模型不可用');
 
     const text = await this.aiClient.generate(model.id, messages, {
