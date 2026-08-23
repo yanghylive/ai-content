@@ -187,6 +187,20 @@ class JsBridge(private val activity: Activity) {
         return "{\"ok\":true,\"message\":\"已取消\"}"
     }
 
+    /** 暂停执行（M2） */
+    @JavascriptInterface
+    fun pauseActions(): String {
+        val r = com.aicontent.mobile.agent.RpaAccessibilityService.pauseActions()
+        return "{\"ok\":${r.ok},\"message\":\"${escapeJson(r.message)}\"}"
+    }
+
+    /** 继续执行（M2） */
+    @JavascriptInterface
+    fun resumeActions(): String {
+        val r = com.aicontent.mobile.agent.RpaAccessibilityService.resumeActions()
+        return "{\"ok\":${r.ok},\"message\":\"${escapeJson(r.message)}\"}"
+    }
+
     /**
      * 截取当前屏幕。
      * 优先级：MediaProjection（兼容 Android 8+，需授权）→ 无障碍 takeScreenshot（Android 11+）。

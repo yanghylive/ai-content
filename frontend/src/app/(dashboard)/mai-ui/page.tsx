@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { rpaStatus, captureScreen, executeActions, resumeAfterAsk, cancelActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
+import { rpaStatus, captureScreen, executeActions, resumeAfterAsk, cancelActions, pauseActions, resumeActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
 import { planMaiUiActions, sinkMaiUiTaskToCrm, type MaiUiAction } from "@/lib/api/mai-ui";
 import { createMaiUiTask, reportTaskStatus, addTaskEvidence, createApproval, actApproval, sha256Hex } from "@/lib/api/mobile-executor";
 
@@ -191,6 +191,28 @@ export default function MaiUiWorkbenchPage() {
     cancelActions();
     setExecuting(false);
     pushLog("⛔ 已请求中止");
+  }, [pushLog]);
+
+  const [paused, setPaused] = useState(false);
+
+  const handlePause = useCallback(() => {
+    const r = pauseActions();
+    if (r.ok) {
+      setPaused(true);
+      pushLog(`⏸ ${r.message}`);
+    } else {
+      pushLog(`❌ ${r.message}`);
+    }
+  }, [pushLog]);
+
+  const handleResume = useCallback(() => {
+    const r = resumeActions();
+    if (r.ok) {
+      setPaused(false);
+      pushLog(`▶ ${r.message}`);
+    } else {
+      pushLog(`❌ ${r.message}`);
+    }
   }, [pushLog]);
 
   /** 沉淀本次执行到 CRM（来源=MAI-UI 设备执行） */
@@ -459,6 +481,15 @@ export default function MaiUiWorkbenchPage() {
               >
                 {executing ? "执行中…" : "③ 执行动作"}
               </button>
+              {paused ? (
+                <button onClick={handleResume} style={{ ...btnStyle("#2563eb") }}>
+                  ▶ 继续
+                </button>
+              ) : (
+                <button onClick={handlePause} style={{ ...btnStyle("#0891b2") }}>
+                  ⏸ 暂停
+                </button>
+              )}
               <button onClick={handleCancel} style={{ ...btnStyle("#64748b") }}>
                 中止
               </button>
