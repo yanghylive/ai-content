@@ -67,6 +67,8 @@ describe('VoiceService', () => {
     const prisma = {
       aIModel: {
         findFirst: jest.fn(),
+        // 2026-08-23 Stage 1B：默认模型按能力确定性选取（pickDefaultModel 用 findMany）
+        findMany: jest.fn().mockResolvedValue([]),
       },
     };
     const defaultModels = {
@@ -124,6 +126,8 @@ describe('VoiceService', () => {
     const prisma = {
       aIModel: {
         findFirst: jest.fn().mockResolvedValue(null),
+        // 2026-08-23 Stage 1B：本地无可用模型 → 走 KAYPAL 模型同步（pickDefaultModel 返回 null）
+        findMany: jest.fn().mockResolvedValue([]),
       },
     };
     const defaultModels = {
@@ -170,6 +174,8 @@ describe('VoiceService', () => {
     const prisma = {
       aIModel: {
         findFirst: jest.fn(),
+        // 2026-08-23 Stage 1B：默认模型按能力确定性选取（pickDefaultModel 用 findMany）
+        findMany: jest.fn().mockResolvedValue([]),
       },
     };
     const defaultModels = {

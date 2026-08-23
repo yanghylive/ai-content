@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiClientService } from '../ai-models/ai-client.service';
+import { pickDefaultModel } from '../ai-models/model-capability.util';
 import {
   AI_FLAVOR_PASS_THRESHOLD,
   detectAIFlavor,
@@ -116,11 +117,7 @@ export class DeFlavorService {
           : '（无明显信号，凭经验消除通用 AI 味）',
       );
 
-    const model = await this.prisma.aIModel.findFirst({
-      where: { enabled: true },
-      orderBy: { updatedAt: 'desc' },
-      select: { id: true },
-    });
+    const model = await pickDefaultModel(this.prisma, 'text');
     if (!model)
       throw new Error('未配置可用的 AI 模型，请在「AI 模型设置」中同步');
 

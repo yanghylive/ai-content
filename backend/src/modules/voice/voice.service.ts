@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { DefaultModelsService } from '../ai-models/default-models.service';
+import { pickDefaultModel } from '../ai-models/model-capability.util';
 import { KaypalModelSyncService } from '../ai-models/kaypal-model-sync.service';
 import { createSessionToken, hashSessionToken } from '../auth/auth.utils';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -1026,11 +1027,7 @@ export class VoiceService {
       '';
     if (modelId) return modelId;
 
-    const fallbackModel = await this.prisma.aIModel.findFirst({
-      where: { enabled: true },
-      orderBy: { updatedAt: 'desc' },
-      select: { id: true },
-    });
+    const fallbackModel = await pickDefaultModel(this.prisma, 'text');
     if (fallbackModel?.id) return fallbackModel.id;
 
     return '';
@@ -1064,11 +1061,7 @@ export class VoiceService {
     const defaults = await this.defaultModels?.getDefaults();
     if (defaults?.imageCreation) return defaults.imageCreation;
 
-    const fallbackModel = await this.prisma.aIModel.findFirst({
-      where: { enabled: true },
-      orderBy: { updatedAt: 'desc' },
-      select: { id: true },
-    });
+    const fallbackModel = await pickDefaultModel(this.prisma, 'image');
     if (fallbackModel?.id) return fallbackModel.id;
 
     return '';
