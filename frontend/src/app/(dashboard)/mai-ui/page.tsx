@@ -178,7 +178,7 @@ export default function MaiUiWorkbenchPage() {
         });
         await actApproval(approval.id, "approve");
         pushLog(`✅ 审批通过（${approval.id.slice(-6)}），继续执行`);
-        resumeAfterAsk(true);
+        resumeAfterAsk(true, approval.id);
       } catch (e) {
         pushLog(`⛔ 审批未通过：${e instanceof Error ? e.message : String(e)}（已中止）`);
         resumeAfterAsk(false);

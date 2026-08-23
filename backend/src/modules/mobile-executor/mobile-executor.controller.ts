@@ -17,6 +17,8 @@ import { DeviceRegistryService } from './device-registry.service';
 import { TaskDispatchService } from './task-dispatch.service';
 import { ExecutorStatusService } from './executor-status.service';
 import { ExecutorEvidenceService } from './executor-evidence.service';
+import { ApprovalGateService } from '../workflow/approval-gate.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 type AuthenticatedRequest = Request & { authUser?: AuthenticatedUser };
 
@@ -32,6 +34,8 @@ export class MobileExecutorController {
     private readonly dispatch: TaskDispatchService,
     private readonly status: ExecutorStatusService,
     private readonly evidence: ExecutorEvidenceService,
+    private readonly approvalGate: ApprovalGateService,
+    private readonly prisma: PrismaService,
   ) {}
 
   private requireUser(request: AuthenticatedRequest): AuthenticatedUser {
@@ -125,6 +129,29 @@ export class MobileExecutorController {
   async claimTask(@Req() request: AuthenticatedRequest) {
     const dev = await this.requireDevice(request);
     return this.dispatch.claimNext(dev.userId, dev.deviceId);
+  }
+
+  @Post('approvals/:id/consume')
+  @ApiOperation({
+    summary: '执行器消费审批（x-device-token 认证，执行外发前校验一次性）',
+  })
+  async consumeApproval(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') approvalId: string,
+    @Body() body: { currentHash?: string },
+  ) {
+    const dev = await this.requireDevice(request);
+    // 设备 token → userId → 默认租户（设备侧无 session context，从 tenant_members 取）
+    const member = await this.prisma.tenantMember.findFirst({
+      where: { userId: dev.userId },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (!member) throw new BadRequestException('设备所属用户无租户');
+    return this.approvalGate.consume(
+      member.tenantId,
+      approvalId,
+      body?.currentHash,
+    );
   }
 
   @Get('leases')

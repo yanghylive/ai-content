@@ -16,6 +16,10 @@ import android.view.accessibility.AccessibilityNodeInfo
 import java.io.ByteArrayOutputStream
 import org.json.JSONArray
 import org.json.JSONObject
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 
 /** RPA 执行结果 */
 data class RpaResult(
@@ -74,6 +78,36 @@ class RpaAccessibilityService : AccessibilityService() {
         private var pendingPlatform: String? = null
 
         private val handler = Handler(Looper.getMainLooper())
+
+        private const val EXEC_BASE_URL = "https://aicontent.vip.kaypal.cn"
+        private val httpClient = OkHttpClient.Builder()
+            .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+
+        /** 读取持久化的设备 token（P0-4，与 AgentService 同 prefs） */
+        private fun deviceToken(): String? {
+            val svc = instance ?: return null
+            val prefs = svc.getSharedPreferences("jz_agent", android.content.Context.MODE_PRIVATE)
+            return prefs.getString("device_token", null)
+        }
+
+        /** 执行前消费审批（P0-3）：设备 token 认证调 consume，校验审批一次性 */
+        private fun consumeApproval(approvalId: String): Boolean {
+            val token = deviceToken() ?: return false
+            return try {
+                val body = "{\"currentHash\":null}".toRequestBody("application/json; charset=utf-8".toMediaType())
+                val req = Request.Builder()
+                    .url("$EXEC_BASE_URL/api/mobile-executor/approvals/$approvalId/consume")
+                    .header("x-device-token", token)
+                    .post(body)
+                    .build()
+                httpClient.newCall(req).execute().use { it.isSuccessful }
+            } catch (e: Exception) {
+                Log.w(TAG, "consumeApproval failed: ${e.message}")
+                false
+            }
+        }
 
         fun isEnabled(): Boolean = instance != null
 
@@ -190,8 +224,8 @@ class RpaAccessibilityService : AccessibilityService() {
             return RpaResult.success("已继续执行")
         }
 
-        /** H5 对 ask_user 的答复：true=继续，false=中止 */
-        fun resumeAfterAsk(proceed: Boolean, callback: (RpaResult) -> Unit) {
+        /** H5 对 ask_user 的答复：true=继续，false=中止；approvalId 非空时执行器校验审批（P0-3） */
+        fun resumeAfterAsk(proceed: Boolean, approvalId: String, callback: (RpaResult) -> Unit) {
             val svc = instance ?: run {
                 callback(RpaResult.failure("无障碍服务未开启"))
                 return
@@ -207,6 +241,20 @@ class RpaAccessibilityService : AccessibilityService() {
             maiPausedForAsk = false
             if (!proceed) {
                 finishMai(cb, RpaResult.failure("用户中止了动作序列"))
+                return
+            }
+            // P0-3：审批通过后，执行器校验审批已消费（设备 token 调 consume），防绕过前端审批
+            if (approvalId.isNotEmpty()) {
+                Thread {
+                    val ok = consumeApproval(approvalId)
+                    if (ok) {
+                        handler.post { svc.stepMaiActions() }
+                        callback(RpaResult.success("审批校验通过，已继续执行"))
+                    } else {
+                        handler.post { finishMai(cb, RpaResult.failure("审批校验失败：审批无效或已消费，已中止")) }
+                        callback(RpaResult.failure("审批校验失败：审批无效或已消费"))
+                    }
+                }.start()
                 return
             }
             handler.post { svc.stepMaiActions() }
