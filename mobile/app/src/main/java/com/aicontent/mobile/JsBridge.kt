@@ -166,10 +166,10 @@ class JsBridge(private val activity: Activity) {
 
     /** ask_user 暂停后：H5 答复继续（true）或中止（false）。 */
     @JavascriptInterface
-    fun resumeAfterAsk(proceed: Boolean): String {
+    fun resumeAfterAsk(proceed: Boolean, approvalId: String): String {
         val latch = CountDownLatch(1)
         val holder = arrayOfNulls<String>(1)
-        com.aicontent.mobile.agent.RpaAccessibilityService.resumeAfterAsk(proceed) { result ->
+        com.aicontent.mobile.agent.RpaAccessibilityService.resumeAfterAsk(proceed, approvalId) { result ->
             holder[0] = "{\"ok\":${result.ok},\"message\":\"${escapeJson(result.message)}\"}"
             latch.countDown()
         }

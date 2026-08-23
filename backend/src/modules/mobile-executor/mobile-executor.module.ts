@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { WorkflowModule } from '../workflow/workflow.module';
 import { MobileExecutorController } from './mobile-executor.controller';
 import { DeviceRegistryService } from './device-registry.service';
 import { TaskDispatchService } from './task-dispatch.service';
@@ -11,6 +12,7 @@ import { ExecutorEvidenceService } from './executor-evidence.service';
  * App 化后 mobile-agent 通过本模块 API 对接。
  */
 @Module({
+  imports: [WorkflowModule],
   controllers: [MobileExecutorController],
   providers: [
     DeviceRegistryService,

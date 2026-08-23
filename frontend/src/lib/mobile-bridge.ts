@@ -30,7 +30,7 @@ interface JiuZhangBridge {
   /** MAI-UI 动作执行（PRD M2/M3）：同步执行结构化动作序列，返回 { ok, message } */
   executeActions?(actionsJson: string): string;
   /** ask_user 暂停后继续（true）/ 中止（false） */
-  resumeAfterAsk?(proceed: boolean): string;
+  resumeAfterAsk?(proceed: boolean, approvalId?: string): string;
   /** 中止正在执行的动作序列 */
   cancelActions?(): string;
   /** 暂停/继续执行（M2） */
@@ -383,11 +383,11 @@ export function executeActions(actions: MaiUiAction[]): MaiUiExecResult {
 }
 
 /** ask_user 暂停后继续执行 */
-export function resumeAfterAsk(proceed: boolean): MaiUiExecResult {
+export function resumeAfterAsk(proceed: boolean, approvalId?: string): MaiUiExecResult {
   const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
   if (!bridge?.resumeAfterAsk) return { ok: false, message: "桥方法不可用" };
   try {
-    const raw = bridge.resumeAfterAsk(proceed);
+    const raw = bridge.resumeAfterAsk(proceed, approvalId ?? "");
     const parsed = typeof raw === "string" && raw.trim().startsWith("{")
       ? (JSON.parse(raw) as MaiUiExecResult)
       : null;
