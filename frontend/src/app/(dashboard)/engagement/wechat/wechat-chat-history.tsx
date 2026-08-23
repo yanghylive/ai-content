@@ -354,7 +354,7 @@ export function WechatChatHistory() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">会话历史</h1>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">会话历史</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               微信聊天记录，随时回看
             </p>

@@ -59,7 +59,7 @@ export default function MassSendPage() {
     return (
       <div className="kaypal-v2-wechat flex flex-col items-center gap-4 py-16">
         <CheckCircle2 className="h-12 w-12 text-[var(--kaypal-v3-success)]" />
-        <h1 className="text-xl font-bold">群发计划已创建</h1>
+        <h1 className="kx-greet">群发计划已创建</h1>
         <p className="text-sm text-[var(--kaypal-v3-muted)]">系统会在本机微信按计划执行发送，可到任务中心查看进度。</p>
         <div className="flex gap-3">
           <V2PrimaryButton onClick={() => router.push("/engagement/wechat")}>去微信任务中心</V2PrimaryButton>
@@ -80,7 +80,7 @@ export default function MassSendPage() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-xl font-bold text-[var(--kaypal-v3-ink)]">微信群发</h1>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">微信群发</h1>
           <p className="text-sm text-[var(--kaypal-v3-muted)]">选择联系人、写好消息、设定节奏，本机微信按计划发送</p>
         </div>
       </div>

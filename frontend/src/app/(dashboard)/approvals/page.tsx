@@ -88,7 +88,7 @@ export default function ApprovalCenterPage() {
       <section className="kaypal-v3-panel mb-4 p-5">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-[var(--kaypal-v3-accent)]" />
-          <h1 className="text-xl font-bold text-[var(--kaypal-v3-ink)]">审批中心</h1>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">审批中心</h1>
         </div>
         <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
           高风险动作（首次私信/批量触达/批量评论/商机阶段变化）需人工审批后才能执行

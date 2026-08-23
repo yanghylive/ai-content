@@ -273,7 +273,7 @@ export default function ImageGenPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--kaypal-v3-ink)]">
+        <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
           一句话生成图文
         </h1>
         <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">

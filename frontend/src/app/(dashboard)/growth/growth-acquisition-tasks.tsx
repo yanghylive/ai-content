@@ -289,7 +289,7 @@ export function GrowthAcquisitionTasks() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">获客任务</h1>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">获客任务</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               自动帮你找客户的任务，随时启停和编辑
             </p>

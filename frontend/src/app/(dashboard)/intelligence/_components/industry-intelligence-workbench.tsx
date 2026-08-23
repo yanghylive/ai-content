@@ -756,7 +756,7 @@ export function IndustryIntelligenceWorkbench() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">行业源</p>
-                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 kx-greet text-[var(--kaypal-v3-ink)]">
                   行业情报驾驶舱
                 </h1>
                 <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">

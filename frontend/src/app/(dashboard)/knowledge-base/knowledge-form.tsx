@@ -211,7 +211,7 @@ export function KnowledgeForm() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               新增知识
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">

@@ -237,7 +237,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+              <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
                 {customer.displayName}
               </h1>
               <V2StatusChip tone={status.tone}>{status.label}</V2StatusChip>

@@ -171,7 +171,7 @@ export function GrowthWorkflowsPage() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">增长工作流 · 行业方案库</h1>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">增长工作流 · 行业方案库</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               按行业选场景，一键创建带行业话术、平台组合与合规风控的获客流水线
             </p>

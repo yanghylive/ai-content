@@ -146,7 +146,7 @@ export function CapabilityInfoPage({
                 <Icon icon={icon} width={24} />
               </div>
               <div className="min-w-0 space-y-2">
-                <h1 className="text-2xl font-semibold leading-8 text-foreground">
+                <h1 className="kx-greet leading-8 text-foreground">
                   {title}
                 </h1>
                 <p className="max-w-3xl text-14 leading-6 text-default-500">

@@ -181,7 +181,7 @@ export default function CommentAcquisitionPage() {
       {modal}
       <V2BackButton />
       <div>
-        <h1 className="text-xl font-semibold text-[var(--kaypal-v3-ink)]">
+        <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
           评论获客
         </h1>
         <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">

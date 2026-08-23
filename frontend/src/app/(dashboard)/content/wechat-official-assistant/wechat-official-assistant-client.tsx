@@ -735,7 +735,7 @@ export function WechatOfficialAssistantClient() {
             <Newspaper className="h-4 w-4" />
             AgentWaker / Weaver
           </div>
-          <h1 className="text-2xl font-semibold">公众号运营助理</h1>
+          <h1 className="kx-greet">公众号运营助理</h1>
         </div>
         <div className="flex items-center gap-2">
           <V2StatusChip tone={roleAvailable ? "success" : "danger"}>

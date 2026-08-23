@@ -257,7 +257,7 @@ export function SolutionsCenter() {
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               解决方案
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">

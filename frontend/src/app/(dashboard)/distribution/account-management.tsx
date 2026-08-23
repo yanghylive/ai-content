@@ -127,9 +127,17 @@ export function AccountManagement() {
   };
 
   return (
-    <V2Section
-      title="平台账号"
-      description="账号、登录状态和平台后台统一在这里管理"
+    <div className="flex flex-col gap-[var(--space-section)]">
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">平台账号</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            账号、登录状态和平台后台统一在这里管理
+          </p>
+        </div>
+      </div>
+      <V2Section
+        title="账号列表"
       action={
         <div className="flex items-center gap-2">
           <V2GhostButton
@@ -397,5 +405,6 @@ export function AccountManagement() {
         onConfirm={ops.handleDeleteAccount}
       />
     </V2Section>
+    </div>
   );
 }

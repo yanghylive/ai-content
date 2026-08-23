@@ -43,5 +43,17 @@ export default function CrmCustomerDetailPage() {
     );
   }
 
-  return <CustomerDetailClient customerId={customerId} />;
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">客户详情</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            查看和管理单个客户的完整档案
+          </p>
+        </div>
+      </div>
+      <CustomerDetailClient customerId={customerId} />
+    </div>
+  );
 }

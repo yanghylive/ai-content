@@ -70,7 +70,7 @@ export function FaceSwapWorks() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">我的作品</h1>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">我的作品</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               你生成的换脸作品，可以下载或预览
             </p>

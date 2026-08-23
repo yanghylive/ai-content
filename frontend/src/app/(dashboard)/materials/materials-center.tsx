@@ -1125,7 +1125,7 @@ export function MaterialsCenter() {
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">素材库</h1>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">素材库</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               系统自动采集的内容素材，可直接用于创作
             </p>

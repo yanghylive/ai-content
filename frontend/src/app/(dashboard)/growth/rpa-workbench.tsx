@@ -172,7 +172,7 @@ export function RpaWorkbenchPage() {
       {/* 顶部工具条 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
             统一 RPA 工作台
           </h1>
           <p className="mt-0.5 text-sm text-[var(--kaypal-v3-muted)]">

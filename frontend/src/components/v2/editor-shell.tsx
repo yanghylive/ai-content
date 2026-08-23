@@ -63,7 +63,7 @@ export function V2EditorShell({
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               {title}
             </h1>
             {subtitle && (

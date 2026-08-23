@@ -34,7 +34,7 @@ export function CaseHero({
           <ProvenanceBadge provenanceType={detail.provenanceType} />
         </div>
 
-        <h1 className="mt-4 text-2xl font-bold leading-tight text-[var(--kaypal-v3-ink)] sm:text-3xl">
+        <h1 className="mt-4 kx-greet leading-tight text-[var(--kaypal-v3-ink)] sm:text-3xl">
           {detail.title}
         </h1>
         {detail.subtitle && (

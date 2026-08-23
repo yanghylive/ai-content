@@ -749,7 +749,7 @@ export function SearchIntelligenceWorkbench() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">一键找线索</p>
-                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 kx-greet text-[var(--kaypal-v3-ink)]">
                   输入一句话，系统自动找内容、账号和评论机会
                 </h1>
                 <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">

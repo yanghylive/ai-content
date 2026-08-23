@@ -28,7 +28,7 @@ export default function RootError({
         <TriangleAlert aria-hidden="true" size={24} />
       </span>
       <div>
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="kx-greet text-foreground">
           页面暂时无法打开
         </h1>
         <p className="mt-2 text-sm leading-6 text-default-500">

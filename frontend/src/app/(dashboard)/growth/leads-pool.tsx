@@ -308,7 +308,7 @@ export function LeadsPool() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               线索池
             </h1>
             <div className="mt-3">

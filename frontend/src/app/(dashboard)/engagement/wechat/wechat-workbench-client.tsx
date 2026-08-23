@@ -5452,7 +5452,7 @@ export function WechatWorkbenchClient({
         
         <div>
           
-          <h1 className="text-2xl font-bold leading-[30px]">
+          <h1 className="kx-greet">
             微信任务
           </h1><p className="text-sm text-default-500">
             群发、加好友、朋友圈和联系人统一在这里处理。

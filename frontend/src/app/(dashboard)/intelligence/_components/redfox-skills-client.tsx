@@ -522,7 +522,7 @@ export function RedfoxSkillsClient() {
               </span>
               <div className="min-w-0">
                 <p className="kaypal-v3-label">功能模板</p>
-                <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+                <h1 className="mt-1 kx-greet text-[var(--kaypal-v3-ink)]">
                   选择系统可以帮你做哪些事
                 </h1>
                 <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">

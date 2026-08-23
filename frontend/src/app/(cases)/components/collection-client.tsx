@@ -112,7 +112,7 @@ export function CollectionClient({ slug }: { slug: string }) {
           <Layers className="h-3.5 w-3.5" aria-hidden />
           案例合集
         </span>
-        <h1 className="mt-3 text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+        <h1 className="mt-3 kx-greet text-[var(--kaypal-v3-ink)]">
           {collection.title}
         </h1>
         {collection.description && (

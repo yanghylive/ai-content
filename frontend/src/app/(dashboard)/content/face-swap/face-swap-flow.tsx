@@ -116,7 +116,7 @@ export function FaceSwapFlow() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               换脸创作
             </h1>
             <div className="mt-3 flex items-center gap-2">
