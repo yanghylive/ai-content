@@ -76,16 +76,19 @@ export class KaypalOctopBridge {
     };
   }
 
-  /** 2) 桥持 Octop 管理凭据换 Octop access token */
+  /** 2) 桥持 Octop 凭据换 Octop access token（用户凭据或 access token 直用） */
   async loginOctop(): Promise<{ token: string; expiresAt: string }> {
-    const pwd = process.env.OCTOP_SETUP_PASSWORD?.trim();
     const direct = process.env.OCTOP_ACCESS_TOKEN?.trim();
     if (direct) return { token: direct, expiresAt: new Date(Date.now() + 86_400_000).toISOString() };
-    if (!pwd) throw new Error('OCTOP_SETUP_PASSWORD 未配置（octop init 设定的密码）');
+    const username = process.env.OCTOP_USERNAME?.trim();
+    const password = process.env.OCTOP_PASSWORD?.trim() ?? process.env.OCTOP_SETUP_PASSWORD?.trim();
+    if (!username || !password) {
+      throw new Error('OCTOP_USERNAME/OCTOP_PASSWORD（或 OCTOP_ACCESS_TOKEN）未配置');
+    }
     const res = await fetch(`${this.octopBase()}/api/auth/login`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ password: pwd }),
+      body: JSON.stringify({ username, password }),
       signal: AbortSignal.timeout(5_000),
     });
     if (!res.ok) throw new Error(`Octop 登录失败 HTTP ${res.status}`);
