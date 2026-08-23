@@ -8,6 +8,7 @@ import { AgentGatewayExceptionFilter } from './agent-gateway.filter';
 import { PrismaIdempotencyStore } from './prisma-store/prisma-idempotency.store';
 import { PrismaApprovalStore } from './prisma-store/prisma-approval.store';
 import { PrismaUsageSink } from './prisma-store/prisma-usage.sink';
+import { PrismaMirror } from './prisma-store/prisma-mirror';
 import { AuthService } from './core/auth';
 
 /**
@@ -40,6 +41,7 @@ export function resolveAgentSecret(config: ConfigService): string {
     PrismaIdempotencyStore,
     PrismaApprovalStore,
     PrismaUsageSink,
+    PrismaMirror,
     {
       provide: AuthService,
       inject: [ConfigService],

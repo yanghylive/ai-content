@@ -243,6 +243,7 @@ export interface Approval {
 export interface Artifact {
   id: string;
   taskId: string;
+  tenantId: string;
   type: string;
   uri: string;
   checksum: string;
