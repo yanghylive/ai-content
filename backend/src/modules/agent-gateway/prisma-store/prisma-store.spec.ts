@@ -4,7 +4,10 @@ import { PrismaApprovalStore } from './prisma-approval.store';
 import { PrismaUsageSink } from './prisma-usage.sink';
 import { PrismaMirror } from './prisma-mirror';
 import { PrismaHydrator } from './prisma-hydrator';
+import { PrismaOutboxStore } from './prisma-outbox.store';
 import { createAgentGateway } from '../core/factory';
+import { MemoryOrchestrator } from '../core/memory-orchestrator';
+import { MockKaypalMemoryAdapter } from '../adapters/kaypal-memory-mock';
 import { UsageEvent, AgentSession, AgentTask, AgentEvent, Artifact } from '../core/types';
 
 /**
@@ -268,5 +271,42 @@ describe('AgentGateway Prisma 仓储（幂等/审批/usage）', () => {
     const gw2 = createAgentGateway({ startOutboxWorker: false });
     gw2.gateway.hydrate(data2);
     expect(gw2.gateway.getSession('sess_hyd_expired')).toBeUndefined();
+  });
+
+  test('outbox 落库 + 重启续跑：pending 恢复后 worker 自动重试到 done', async () => {
+    const store = new PrismaOutboxStore(prisma as never);
+    // 1) 模拟上一进程 capture 时落库的 pending 记录（含 content/itemId）
+    await store.upsert({
+      memoryEventId: 'ob_hyd_1',
+      tenantId: 't1',
+      userId: 'u1',
+      agentId: 'a1',
+      scope: 'user_preference',
+      namespace: 't1/u1/a1/user_preference',
+      content: '待同步记忆',
+      itemId: 'item_hyd_1',
+      operation: 'add',
+      payloadHash: 'h1',
+      attempts: 1,
+      nextRetryAt: new Date(Date.now() - 1000).toISOString(), // 已到重试时间
+      status: 'pending',
+    });
+
+    // 2) 重启：新 orchestrator + hydrateOutbox（content/itemId 可重放）
+    const remote = new MockKaypalMemoryAdapter();
+    const mem = new MemoryOrchestrator(remote, 2000, store);
+    const pending = await store.loadPending();
+    mem.hydrateOutbox(pending);
+    expect(mem.pendingOutbox().length).toBe(1);
+
+    // 3) worker 续跑 → 远程 add 成功 → 内存 + DB 都 done
+    const stop = mem.startOutboxWorker(50);
+    await new Promise((r) => setTimeout(r, 200));
+    stop();
+    const row = await prisma.agentGatewayMemoryOutbox.findUnique({ where: { memoryEventId: 'ob_hyd_1' } });
+    expect(mem.pendingOutbox()[0].outbox.status).toBe('done');
+    expect(row?.status).toBe('done');
+    const ns = { tenantId: 't1', userId: 'u1', agentId: 'a1', scope: 'user_preference', source: 'restore', retention: 'long_term' } as const;
+    expect((await remote.search(ns, '待同步记忆')).length).toBe(1);
   });
 });

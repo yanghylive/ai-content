@@ -4291,6 +4291,8 @@ model AgentGatewayMemoryOutbox {
   agentId       String   @map("agent_id")
   scope         String
   namespace     String
+  content       String?  // 记忆正文（重启恢复重放必需）
+  itemId        String?  @map("item_id") // 本地记忆 item id（删除作废对账）
   operation     String   @default("add") // add | delete
   payloadHash   String   @map("payload_hash")
   attempts      Int      @default(0)

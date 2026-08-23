@@ -6,6 +6,7 @@ import { PrismaApprovalStore } from './prisma-store/prisma-approval.store';
 import { PrismaUsageSink } from './prisma-store/prisma-usage.sink';
 import { PrismaMirror } from './prisma-store/prisma-mirror';
 import { PrismaHydrator } from './prisma-store/prisma-hydrator';
+import { PrismaOutboxStore } from './prisma-store/prisma-outbox.store';
 
 /**
  * Agent Gateway 服务：单例持有核心引擎实例。
@@ -23,18 +24,21 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
   private readonly usageSink: PrismaUsageSink;
   private readonly mirror: PrismaMirror;
   private readonly hydrator: PrismaHydrator;
+  private readonly outboxStore: PrismaOutboxStore;
 
   constructor(private readonly prisma: PrismaService) {
     this.persist = process.env.AGENT_GATEWAY_PERSISTENCE === 'prisma';
     this.usageSink = new PrismaUsageSink(this.prisma);
     this.mirror = new PrismaMirror(this.prisma);
     this.hydrator = new PrismaHydrator(this.prisma);
+    this.outboxStore = new PrismaOutboxStore(this.prisma);
     this.engine = createAgentGateway({
       ...(this.persist
         ? { idempotency: new PrismaIdempotencyStore(this.prisma), approvals: new PrismaApprovalStore(this.prisma) }
         : {}),
       usageSink: this.persist ? (ev) => this.usageSink.record(ev) : undefined,
       mirror: this.persist ? this.mirror : undefined,
+      outboxDb: this.persist ? this.outboxStore : undefined,
     });
   }
 
@@ -43,9 +47,14 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
     // 重启恢复：写路径镜像的读侧（DB → 内存）
     const data = await this.hydrator.hydrate();
     this.engine.gateway.hydrate(data);
-    if (data.sessions.length > 0) {
+    // outbox 续跑：恢复 pending/dead 记录，worker 自动重试
+    const pending = await this.outboxStore.loadPending();
+    this.engine.memory.hydrateOutbox(pending);
+    if (data.sessions.length > 0 || pending.length > 0) {
       // eslint-disable-next-line no-console
-      console.log(`[agent-gateway] 恢复 ${data.sessions.length} 会话 / ${data.tasks.length} 任务 / ${data.events.length} 事件`);
+      console.log(
+        `[agent-gateway] 恢复 ${data.sessions.length} 会话 / ${data.tasks.length} 任务 / ${data.events.length} 事件 / ${pending.length} outbox`,
+      );
     }
   }
 

@@ -10,6 +10,7 @@ import { PrismaApprovalStore } from './prisma-store/prisma-approval.store';
 import { PrismaUsageSink } from './prisma-store/prisma-usage.sink';
 import { PrismaMirror } from './prisma-store/prisma-mirror';
 import { PrismaHydrator } from './prisma-store/prisma-hydrator';
+import { PrismaOutboxStore } from './prisma-store/prisma-outbox.store';
 import { AuthService } from './core/auth';
 
 /**
@@ -44,6 +45,7 @@ export function resolveAgentSecret(config: ConfigService): string {
     PrismaUsageSink,
     PrismaMirror,
     PrismaHydrator,
+    PrismaOutboxStore,
     {
       provide: AuthService,
       inject: [ConfigService],
