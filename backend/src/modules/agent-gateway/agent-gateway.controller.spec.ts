@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AgentGatewayModule } from './agent-gateway.module';
 import { PrismaModule } from '../../prisma/prisma.module';
@@ -20,6 +20,7 @@ describe('AgentGatewayController（Nest 接线，首批冻结接口）', () => {
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api'); // 与 main.ts 一致 → /api/agent/*
     app.useGlobalFilters(new AllExceptionsFilter());
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, transformOptions: { enableImplicitConversion: true } }));
     await app.init();
     auth = moduleRef.get(AuthService);
   });
@@ -89,6 +90,15 @@ describe('AgentGatewayController（Nest 接线，首批冻结接口）', () => {
     const ok = await request(app.getHttpServer()).get('/api/agent/octop/capabilities').set(authA());
     expect(ok.status).toBe(200);
     expect(ok.body.capabilities.browser.available).toBe(true);
+  });
+
+  it('DTO 运行时校验：createTask 缺 sessionId → 400（P1-7）', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/api/agent/tasks')
+      .set(authA())
+      .send({ type: 'lead' }); // 缺 sessionId
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBeDefined();
   });
 
   it('记忆 add/search 闭环', async () => {

@@ -14,8 +14,8 @@ export class PrismaUsageSink {
     const data = {
       requestId: ev.requestId,
       tenantId: ev.tenantId,
-      taskId: null,
-      toolCallId: null,
+      taskId: ev.taskId ?? null,
+      toolCallId: ev.toolCallId ?? null,
       model: ev.model ?? null,
       inputTokens: ev.inputTokens,
       outputTokens: ev.outputTokens,

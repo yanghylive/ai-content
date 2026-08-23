@@ -40,8 +40,8 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
       usageSink: this.persist ? (ev) => this.usageSink.record(ev) : undefined,
       mirror: this.persist ? this.mirror : undefined,
       outboxDb: this.persist ? this.outboxStore : undefined,
-      // 真实 Octop 适配器：OCTOP_BASE_URL 配置后启用（凭据 OCTOP_API_PASSWORD / OCTOP_ACCESS_TOKEN）
-      octop: process.env.OCTOP_BASE_URL ? new RealOctopAdapter() : undefined,
+      // 真实 Octop 适配器：显式 OCTOP_ENABLED=true 启用（凭据 OCTOP_USERNAME/OCTOP_PASSWORD，避免测试环境误启）
+      octop: process.env.OCTOP_ENABLED === 'true' ? new RealOctopAdapter() : undefined,
     });
   }
 

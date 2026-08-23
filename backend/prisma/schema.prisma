@@ -4324,7 +4324,7 @@ model AgentGatewayDeviceLease {
 
 model AgentGatewayEvent {
   id         String   @id @default(cuid())
-  eventId    String   @unique @map("event_id")
+  eventId    String   @map("event_id") // 每 session 内唯一（复合唯一见下方）
   sessionId  String   @map("session_id")
   tenantId   String   @map("tenant_id")
   sequence   Int
@@ -4334,6 +4334,7 @@ model AgentGatewayEvent {
   occurredAt DateTime @map("occurred_at")
   createdAt  DateTime @default(now()) @map("created_at")
 
+  @@unique([sessionId, eventId]) // eventId 按 session 作用域唯一（不同 session 可同 eventId）
   @@index([sessionId, sequence])
   @@index([tenantId, occurredAt])
   @@map("agent_gateway_events")

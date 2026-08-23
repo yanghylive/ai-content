@@ -15,6 +15,7 @@ import { AgentGatewayService } from './agent-gateway.service';
 import { KaypalAuthGuard } from './kaypal-auth.guard';
 import { AgentGatewayExceptionFilter } from './agent-gateway.filter';
 import { TenantContext } from './core/types';
+import { MemorySearchDto, MemoryAddDto } from './agent-gateway.dto';
 
 type CtxRequest = Request & { ctx?: TenantContext };
 
@@ -34,14 +35,14 @@ export class AgentMemoryController {
 
   @Post('search')
   @HttpCode(200)
-  async search(@Req() req: CtxRequest, @Body() body: { scope?: string; query?: string }) {
+  async search(@Req() req: CtxRequest, @Body() body: MemorySearchDto) {
     const { items, degraded } = await this.agent.gateway.memorySearch(this.ctx(req), body?.scope ?? 'user_preference', body?.query ?? '');
     return { items, degraded };
   }
 
   @Post('add')
   @HttpCode(202)
-  async add(@Req() req: CtxRequest, @Body() body: { scope?: string; content: string; source?: string }) {
+  async add(@Req() req: CtxRequest, @Body() body: MemoryAddDto) {
     const { memoryEventId, outboxId } = await this.agent.gateway.memoryAdd(this.ctx(req), body?.scope ?? 'user_preference', body.content, body?.source);
     return { memoryEventId, outboxId };
   }

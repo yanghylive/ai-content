@@ -74,7 +74,7 @@ export class PrismaMirror implements AgentGatewayMirror {
     // 事件不含租户上下文，按 session 归属反查（不变量：事件必须有 tenantId）
     const session = await this.prisma.agentGatewaySession.findUnique({ where: { id: e.sessionId } });
     await this.prisma.agentGatewayEvent.upsert({
-      where: { eventId: e.eventId },
+      where: { sessionId_eventId: { sessionId: e.sessionId, eventId: e.eventId } },
       create: {
         eventId: e.eventId,
         sessionId: e.sessionId,

@@ -265,6 +265,8 @@ export interface UsageEvent {
   id: string;
   requestId: string;
   tenantId: string;
+  taskId?: string;
+  toolCallId?: string | null;
   usageId: string;
   model?: string;
   inputTokens: number;
