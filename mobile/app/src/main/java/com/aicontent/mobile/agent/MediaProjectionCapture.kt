@@ -210,11 +210,12 @@ object MediaProjectionCapture {
         }
     }
 
-    /** 等比缩到目标宽（对应 H5 规划坐标系） */
+    /** 等比缩到目标框内（对应 H5 规划坐标系，宽高均不超出，控体积） */
     private fun scaleForShare(bmp: Bitmap, maxW: Int, maxH: Int): Bitmap {
         val w = bmp.width
         val h = bmp.height
-        val scale = maxOf(maxW.toDouble() / w, maxH.toDouble() / h).let { if (it >= 1.0) 1.0 else it }
+        // minOf：保证宽高都缩到目标框内；maxOf 会在横屏/非标准比例时取到大比例导致不缩放或超宽
+        val scale = minOf(maxW.toDouble() / w, maxH.toDouble() / h).let { if (it >= 1.0) 1.0 else it }
         val nw = (w * scale).toInt()
         val nh = (h * scale).toInt()
         if (nw >= w) return bmp
