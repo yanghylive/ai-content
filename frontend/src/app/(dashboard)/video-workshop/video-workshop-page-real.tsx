@@ -199,7 +199,7 @@ export default function VideoWorkshopV2Page() {
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">视频引擎</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">选流水线 · 写选题 · 自动成片</p>
         </div>
-        <button type="button" className="kx-btn-primary px-4 py-2 text-[13px]" onClick={() => void checkEngine()}>
+        <button type="button" className="kx-btn-primary px-4 py-2 text-13" onClick={() => void checkEngine()}>
           刷新状态
         </button>
       </div>

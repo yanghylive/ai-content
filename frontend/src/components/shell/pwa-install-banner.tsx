@@ -128,7 +128,7 @@ export function PwaInstallBanner() {
         onClick={() => void install()}
         style={{
           background: "var(--kaypal-v3-amber)",
-          color: "#17325b",
+          color: "var(--kaypal-v3-accent)",
           border: "none",
           borderRadius: 10,
           padding: "8px 12px",

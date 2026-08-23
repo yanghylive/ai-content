@@ -260,7 +260,7 @@ export function OnboardingGuide() {
                 border: "1px solid rgba(142,165,190,.2)",
                 fontSize: 14,
                 fontWeight: 600,
-                color: "#e8f1fc",
+                color: "var(--kaypal-v3-paper)",
                 lineHeight: 1.6,
                 marginBottom: 18,
               }}

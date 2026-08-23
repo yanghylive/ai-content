@@ -261,7 +261,7 @@ export function CommentInsightsContent() {
                 borderRadius: 10,
                 border: "none",
                 background: "linear-gradient(135deg,#e39a3e,#f6c478)",
-                color: "#173052",
+                color: "var(--kaypal-v3-accent-ink)",
                 fontWeight: 700,
                 fontSize: 13,
                 cursor: loading ? "not-allowed" : "pointer",

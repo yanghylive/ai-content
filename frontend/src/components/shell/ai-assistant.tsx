@@ -362,7 +362,7 @@ export function AiAssistant({
             height: 44,
             borderRadius: 22,
             background: "linear-gradient(135deg,#e39a3e,#f6c478)",
-            color: "#173052",
+            color: "var(--kaypal-v3-accent-ink)",
             fontSize: 18,
             border: "1px solid rgba(230,168,84,.55)",
             boxShadow: "0 6px 18px rgba(227,154,62,.35)",
@@ -380,7 +380,7 @@ export function AiAssistant({
                 height: 16,
                 borderRadius: 8,
                 border: "2px solid rgba(23,48,82,.3)",
-                borderTopColor: "#173052",
+                borderTopColor: "var(--kaypal-v3-accent-ink)",
                 animation: "kx-spin .8s linear infinite",
               }}
             />
@@ -553,7 +553,7 @@ export function AiAssistant({
                     alignSelf: "flex-end",
                     maxWidth: "82%",
                     background: "linear-gradient(135deg,#e39a3e,#f6c478)",
-                    color: "#173052",
+                    color: "var(--kaypal-v3-accent-ink)",
                     borderRadius: "16px 16px 4px 16px",
                     padding: "10px 14px",
                     fontSize: 14,
@@ -773,7 +773,7 @@ export function AiAssistant({
                     background: listening
                       ? "linear-gradient(135deg,#d9534f,#e98a8a)"
                       : "linear-gradient(135deg,#e39a3e,#f6c478)",
-                    color: listening ? "#fff" : "#173052",
+                    color: listening ? "#fff" : "var(--kaypal-v3-accent-ink)",
                     fontSize: 14,
                     fontWeight: 700,
                     cursor: "pointer",
@@ -836,7 +836,7 @@ export function AiAssistant({
                     borderRadius: 22,
                     border: "none",
                     background: "linear-gradient(135deg,#e39a3e,#f6c478)",
-                    color: "#173052",
+                    color: "var(--kaypal-v3-accent-ink)",
                     fontSize: 16,
                     cursor: "pointer",
                     opacity: !textInput.trim() || busy ? 0.5 : 1,

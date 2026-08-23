@@ -1,5 +1,6 @@
 "use client";
 
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -744,29 +745,21 @@ export function CustomerServiceConfig() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* 顶部 */}
-      <section className="kaypal-v3-panel p-6">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={goBack}
-            >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
-              AI 客服
-            </h1>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              教 AI 怎么帮你回复客户：定风格 → 定规则 → 试一试
-            </p>
-          </div>
-          <V2StatusChip tone={selectedBot?.enabled || creatingBot ? "success" : "muted"}>
-            {creatingBot ? "新建中" : selectedBot?.enabled ? "运行中" : "未启用"}
-          </V2StatusChip>
+      {/* 顶部：统一页头 */}
+      <div className="kx-page-head">
+        <div>
+          <V2BackButton onClick={goBack} label="返回" />
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
+            AI 客服
+          </h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            教 AI 怎么帮你回复客户：定风格 → 定规则 → 试一试
+          </p>
         </div>
-      </section>
+        <V2StatusChip tone={selectedBot?.enabled || creatingBot ? "success" : "muted"}>
+          {creatingBot ? "新建中" : selectedBot?.enabled ? "运行中" : "未启用"}
+        </V2StatusChip>
+      </div>
 
       {notice && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4">
