@@ -8,6 +8,8 @@ import { PrismaMirror } from './prisma-store/prisma-mirror';
 import { PrismaHydrator } from './prisma-store/prisma-hydrator';
 import { PrismaOutboxStore } from './prisma-store/prisma-outbox.store';
 import { RealOctopAdapter } from './adapters/real-octop-adapter';
+import { RealBusinessTools } from './adapters/real-business-tools';
+import { Optional } from '@nestjs/common';
 
 /**
  * Agent Gateway 服务：单例持有核心引擎实例。
@@ -27,7 +29,10 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
   private readonly hydrator: PrismaHydrator;
   private readonly outboxStore: PrismaOutboxStore;
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly realBusiness?: RealBusinessTools,
+  ) {
     this.persist = process.env.AGENT_GATEWAY_PERSISTENCE === 'prisma';
     this.usageSink = new PrismaUsageSink(this.prisma);
     this.mirror = new PrismaMirror(this.prisma);
@@ -42,6 +47,11 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
       outboxDb: this.persist ? this.outboxStore : undefined,
       // 真实 Octop 适配器：显式 OCTOP_ENABLED=true 启用（凭据 OCTOP_USERNAME/OCTOP_PASSWORD，避免测试环境误启）
       octop: process.env.OCTOP_ENABLED === 'true' ? new RealOctopAdapter() : undefined,
+      // 真实 3010 业务工具：显式 AGENT_GATEWAY_REAL_BUSINESS=true 启用（crm_create 走 CrmService）
+      business:
+        process.env.AGENT_GATEWAY_REAL_BUSINESS === 'true' && this.realBusiness
+          ? this.realBusiness.build()
+          : undefined,
     });
   }
 

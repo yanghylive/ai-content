@@ -9,7 +9,7 @@ import { AgentGatewayMirror } from './mirror';
 import { UsageEvent } from './types';
 import { MockOctopAdapter, OctopAdapter } from '../adapters/octop-mock';
 import { MockKaypalMemoryAdapter } from '../adapters/kaypal-memory-mock';
-import { buildBusinessTools } from '../adapters/business-tools';
+import { BusinessToolRegistry, buildBusinessTools } from '../adapters/business-tools';
 import { STANDARD_TOOL_SPECS } from './tool-specs';
 
 /**
@@ -34,6 +34,8 @@ export function createAgentGateway(opts: {
   outboxDb?: OutboxDbLike;
   /** Octop 适配器（可选；真实仓库传 RealOctopAdapter，默认 Mock） */
   octop?: OctopAdapter;
+  /** 业务工具注册表（可选；真实仓库传 RealBusinessTools，默认 Mock） */
+  business?: BusinessToolRegistry;
 } = {}) {
   const registry = new ToolRegistry();
   registry.registerMany(STANDARD_TOOL_SPECS);
@@ -47,7 +49,7 @@ export function createAgentGateway(opts: {
   const octop = opts.octop ?? new MockOctopAdapter(registry.list().map((s) => s.name));
   const memoryRemote = new MockKaypalMemoryAdapter();
   const memory = new MemoryOrchestrator(memoryRemote, 2000, opts.outboxDb);
-  const business = buildBusinessTools();
+  const business = opts.business ?? buildBusinessTools();
 
   // P1-3：远程记忆失败后自动重试（不依赖人工重放）
   let stopOutboxWorker: (() => void) | undefined;
