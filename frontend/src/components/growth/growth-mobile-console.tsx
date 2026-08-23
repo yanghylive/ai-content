@@ -29,14 +29,14 @@ import {
 import { toPublicError } from "@/lib/public-error";
 
 /**
- * 增长工作台 · 移动只读版（P0-4 + G2 扩展）
+ * 增长工作台 · 移动端（P0-4 + G2 扩展）
  *
  * 桌面端 GrowthConsole（9446 行单体）与 growth-v2 6 子页（独立组件）在安卓上不可用
- * 或操作别扭（宽表格/批量多选/复杂表单）。本组件是移动端只读降级：
+ * 或操作别扭（宽表格/批量多选/复杂表单）。本组件是移动端降级：
  *   - overview：总览卡 + 转化漏斗 + 视图入口
- *   - acquisition / strategies / leads / account-health / reports / workflows：
- *     各自加载数据渲染简化卡片流（只读，无批量操作/无编辑入口）
- * 桌面端保持完整能力不变。
+ *   - acquisition：可创建/启停获客任务；strategies：可 AI 生成策略
+ *   - leads / account-health / reports / workflows：简化卡片流（只读）
+ * 批量管理/复杂编辑保留在桌面端。
  */
 
 const VIEW_LINKS = [
@@ -148,11 +148,11 @@ function LoadingBox() {
   );
 }
 
-/** 只读横幅：说明手机端只读，批量/编辑请用电脑端 */
+/** 只读横幅：本视图在手机端只读，批量/复杂编辑请用电脑端 */
 function ReadOnlyBanner() {
   return (
     <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[11px] text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
-      手机端为只读视图 · 创建 / 编辑 / 批量操作请用电脑端完成
+      本视图只读 · 批量操作与复杂编辑请用电脑端完成
     </div>
   );
 }
