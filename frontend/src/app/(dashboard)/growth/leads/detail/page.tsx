@@ -229,27 +229,25 @@ function LeadDetailClient() {
   const latestSnapshot = scoreHistory?.snapshots?.[0] ?? null;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6">
-      <div className="mb-4 flex items-center justify-between">
-        <V2BackButton to="/growth/leads" label="返回线索" />
-        <Link
-          href="/growth/leads"
-          className="text-xs text-[var(--kaypal-v3-accent)] hover:underline"
-        >
-          线索列表
-        </Link>
+    <div className="kx-view flex flex-col gap-4">
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">{lead.nickname || "未知线索"}</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            {PLATFORM_LABEL[lead.platform] ?? lead.platform} · {lead.sourceType}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <V2BackButton to="/growth/leads" label="返回线索" />
+          <Link href="/growth/leads" className="text-[12px] text-[var(--kaypal-v3-accent)] hover:underline">
+            线索列表
+          </Link>
+        </div>
       </div>
 
-      {/* 头部：名称 + 平台 + 状态 + 总分 */}
+      {/* 详情内容卡（评分/来源；页头不再嵌在卡片中） */}
       <section className="kaypal-v3-panel mb-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">{lead.nickname || "未知线索"}</h1>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              {PLATFORM_LABEL[lead.platform] ?? lead.platform} · {lead.sourceType}
-              
-            </p>
-          </div>
           <div className="text-right">
             <div className="text-3xl font-black text-[var(--kaypal-v3-accent)]">
               {scoreHistory?.available && scoreHistory.totalScore != null

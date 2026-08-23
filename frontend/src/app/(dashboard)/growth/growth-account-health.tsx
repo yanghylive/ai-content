@@ -73,32 +73,21 @@ export function GrowthAccountHealthPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="kaypal-v3-panel p-6">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/growth")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">账号健康</h1>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              获客用的各平台账号状态
-            </p>
-          </div>
-          <V2StatusChip tone={abnormalCount > 0 || cooldownCount > 0 ? "warning" : "success"}>
-            {loading
-              ? "检查中"
-              : abnormalCount > 0
-                ? `${abnormalCount} 个需处理`
-                : cooldownCount > 0
-                  ? `${cooldownCount} 个冷却中`
-                  : "全部正常"}
-          </V2StatusChip>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">账号健康</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">获客用的各平台账号状态</p>
         </div>
-      </section>
+        <V2StatusChip tone={abnormalCount > 0 || cooldownCount > 0 ? "warning" : "success"}>
+          {loading
+            ? "检查中"
+            : abnormalCount > 0
+              ? `${abnormalCount} 个需处理`
+              : cooldownCount > 0
+                ? `${cooldownCount} 个冷却中`
+                : "全部正常"}
+        </V2StatusChip>
+      </div>
 
       {error && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">

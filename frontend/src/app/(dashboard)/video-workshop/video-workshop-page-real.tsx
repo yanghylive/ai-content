@@ -1,7 +1,5 @@
 "use client";
 
-import { BrandLogo } from "@/components/brand-logo";
-
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
 import { DesktopOnlyGate } from "@/components/v2/desktop-only-gate";

@@ -298,36 +298,17 @@ export function LeadsPool() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="kaypal-v3-panel p-6">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/growth")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
-              线索池
-            </h1>
-            <div className="mt-3">
-              <V2PrimaryButton onClick={() => setAddOpen(true)}>
-                手动补充线索
-              </V2PrimaryButton>
-            </div>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              系统抓到的潜在客户，高意向的转成 CRM 客户重点跟进
-            </p>
-            <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
-              评分在抓取时由 AI 自动给出（依据命中关键词与留言内容，悬停分数可见）；你可以通过「转为客户 / 忽略」人工复核评分是否准确
-            </p>
-          </div>
-          <V2StatusChip tone="accent">
-            {loading ? "加载中" : `共 ${leads.length} 条`}
-          </V2StatusChip>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">线索池</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">系统抓到的潜在客户，高意向的转成 CRM 客户重点跟进</p>
+          <p className="mt-1 text-[12px] text-[var(--kaypal-v3-muted)]">评分在抓取时由 AI 自动给出；你可以通过「转为客户 / 忽略」人工复核评分</p>
         </div>
-      </section>
+        <div className="flex items-center gap-3">
+          <V2PrimaryButton onClick={() => setAddOpen(true)}>手动补充线索</V2PrimaryButton>
+          <V2StatusChip tone="accent">{loading ? "加载中" : `共 ${leads.length} 条`}</V2StatusChip>
+        </div>
+      </div>
 
       {error && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">

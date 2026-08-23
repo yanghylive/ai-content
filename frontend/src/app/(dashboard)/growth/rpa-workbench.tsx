@@ -168,14 +168,12 @@ export function RpaWorkbenchPage() {
   }, [executions]);
 
   return (
-    <div className="flex min-w-0 max-w-full flex-col gap-4 p-4">
-      {/* 顶部工具条 */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="kx-view flex min-w-0 flex-col gap-4">
+      {/* 统一页头 */}
+      <div className="kx-page-head">
         <div>
-          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
-            统一 RPA 工作台
-          </h1>
-          <p className="mt-0.5 text-sm text-[var(--kaypal-v3-muted)]">
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">统一 RPA 工作台</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
             六平台浏览器自动化执行记录与人工接管（状态机逐步留痕）
           </p>
         </div>
