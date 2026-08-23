@@ -1,34 +1,39 @@
 /* ============================================================
- * 桌面端 VP 主题层（Mingde VP：深蓝 #17325b × 金色玻璃拟态）
- * 与移动端 mobile.css 同源视觉语言，桌面专属密度适配。
- * 只在 ≥768px 且 html[data-vp="on"] 时生效 —— 移动端零影响，
- * 原文件零改动，关闭 data-vp 即可完整回退到紫色系。
+ * 桌面品牌主题层（2026-08-23 定稿：唯一主题「磨砂紫金」）
+ * 品牌紫 #722ed1 × 金 #e39a3e × 玻璃拟态（磨砂）。
+ * 主题收敛：本层不再是 data-vp="on" 补丁，而是默认样式 ——
+ * 深蓝明德配色已全量替换为品牌紫金；无切换、无回退。
+ * 只在 ≥768px 生效（移动端走 mobile.css，零影响）。
  * ============================================================ */
 
 @media (min-width: 768px) {
-  /* ---------- 1. 变量覆盖：新壳 kx-*（亮色 VP） ---------- */
-  html[data-vp="on"] {
-    --kx-paper: #f4f8fc;
-    --kx-paper-soft: #eaf0f8;
+  /* ---------- 1. 变量覆盖：新壳 kx-*（亮色 · 磨砂紫金） ---------- */
+  :root {
+    --kx-paper: #f8f6fc;
+    --kx-paper-soft: #f0ecf8;
     --kx-card: #ffffff;
-    --kx-ink: #1d2b45;
-    --kx-ink-soft: #3d4f6e;
-    --kx-muted: #7f8b9c;
-    --kx-accent: #e39a3e;
-    --kx-accent-ink: #8f5a19;
-    --kx-accent-soft: #fdf1e0;
-    --kx-border: #dfe7f0;
-    --kx-border-strong: #c3d0e0;
+    --kx-ink: #241b38;
+    --kx-ink-soft: #4d4266;
+    --kx-muted: #8a82a0;
+    --kx-accent: #722ed1;
+    --kx-accent-ink: #531dab;
+    --kx-accent-soft: #f9f0ff;
+    /* 品牌金（点缀色：主按钮渐变 / rail 激活 / 徽标） */
+    --kx-gold: #e39a3e;
+    --kx-gold-ink: #8f5a19;
+    --kx-gold-grad: linear-gradient(135deg, #d98f2b, #efb45b);
+    --kx-border: #e7e2f0;
+    --kx-border-strong: #cec5e0;
     --kx-success: #16a34a;
     --kx-amber: #d97706;
     --kx-danger: #dc2626;
-    --kx-shadow-card: 0 4px 14px rgba(16, 43, 80, 0.08);
-    --kx-shadow-hover: 0 8px 22px rgba(227, 154, 62, 0.16);
-    --kx-overlay: rgba(8, 20, 40, 0.45);
+    --kx-shadow-card: 0 4px 14px rgba(60, 30, 100, 0.08);
+    --kx-shadow-hover: 0 8px 22px rgba(114, 46, 209, 0.16);
+    --kx-overlay: rgba(25, 15, 45, 0.45);
     --kx-radius: 20px;
     --kx-radius-sm: 14px;
-    /* 图标 chip 七色：原紫色档改为深蓝靛，其余保留低饱和描边 */
-    --kx-cv-bg: #eef2fb; --kx-cv-fg: #1e3a5f; --kx-cv-bd: #c8d6ea;
+    /* 图标 chip 七色：第一色回归品牌紫，其余保留低饱和描边 */
+    --kx-cv-bg: #f9f0ff; --kx-cv-fg: #722ed1; --kx-cv-bd: #e2d5f5;
     --kx-cb-bg: #eff6ff; --kx-cb-fg: #1d4ed8; --kx-cb-bd: #bfdbfe;
     --kx-cg-bg: #ecfdf5; --kx-cg-fg: #047857; --kx-cg-bd: #d1fae5;
     --kx-ca-bg: #fff8eb; --kx-ca-fg: #b45309; --kx-ca-bd: #fde8c4;
@@ -37,31 +42,31 @@
     --kx-cs-bg: #f8fafc; --kx-cs-fg: #475569; --kx-cs-bd: #e2e8f0;
   }
 
-  /* ---------- 2. 变量覆盖：旧页面 kaypal-v3-*（亮色 VP） ---------- */
-  html[data-vp="on"] {
-    --kaypal-v3-canvas: #f4f8fc;
+  /* ---------- 2. 变量覆盖：旧页面 kaypal-v3-*（亮色 · 磨砂紫金） ---------- */
+  :root {
+    --kaypal-v3-canvas: #f8f6fc;
     --kaypal-v3-paper: #ffffff;
-    --kaypal-v3-paper-soft: #eef3fa;
-    --kaypal-v3-paper-muted: #e6eef7;
-    --kaypal-v3-table-head: #eef3fa;
-    --kaypal-v3-ink: #1d2b45;
-    --kaypal-v3-soft-ink: #3d4f6e;
-    --kaypal-v3-muted: #7f8b9c;
-    --kaypal-v3-border: #dfe7f0;
-    --kaypal-v3-border-strong: #c3d0e0;
+    --kaypal-v3-paper-soft: #f0ecf8;
+    --kaypal-v3-paper-muted: #e9e4f4;
+    --kaypal-v3-table-head: #f0ecf8;
+    --kaypal-v3-ink: #241b38;
+    --kaypal-v3-soft-ink: #4d4266;
+    --kaypal-v3-muted: #8a82a0;
+    --kaypal-v3-border: #e7e2f0;
+    --kaypal-v3-border-strong: #cec5e0;
     --kaypal-v3-field-bg: #ffffff;
-    --kaypal-v3-field-border: #dfe7f0;
-    --kaypal-v3-field-border-hover: #9fb4cc;
-    --kaypal-v3-field-focus-ring: rgba(227, 154, 62, 0.16);
-    --kaypal-v3-field-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.03);
-    --kaypal-v3-field-shadow-focus: 0 0 0 4px var(--kaypal-v3-field-focus-ring), inset 0 1px 0 rgba(15, 23, 42, 0.03);
-    --kaypal-v3-accent: #e39a3e;
-    --kaypal-v3-accent-soft: #fdf1e0;
-    --kaypal-v3-accent-border: #ecc88f;
-    --kaypal-v3-accent-tint: #fae3bd;
-    --kaypal-v3-accent-ink: #8f5a19;
-    --kaypal-v3-purple: #e39a3e;
-    --kaypal-v3-purple-soft: #fdf1e0;
+    --kaypal-v3-field-border: #e7e2f0;
+    --kaypal-v3-field-border-hover: #b0a5cc;
+    --kaypal-v3-field-focus-ring: rgba(114, 46, 209, 0.16);
+    --kaypal-v3-field-shadow: inset 0 1px 0 rgba(30, 20, 50, 0.03), 0 1px 2px rgba(30, 20, 50, 0.03);
+    --kaypal-v3-field-shadow-focus: 0 0 0 4px var(--kaypal-v3-field-focus-ring), inset 0 1px 0 rgba(30, 20, 50, 0.03);
+    --kaypal-v3-accent: #722ed1;
+    --kaypal-v3-accent-soft: #f9f0ff;
+    --kaypal-v3-accent-border: #c9b2ef;
+    --kaypal-v3-accent-tint: #ddc6f5;
+    --kaypal-v3-accent-ink: #531dab;
+    --kaypal-v3-purple: #722ed1;
+    --kaypal-v3-purple-soft: #f9f0ff;
     --kaypal-v3-cobalt: #2f6bd8;
     --kaypal-v3-blue-soft: #e4eefe;
     --kaypal-v3-amber: #c26a06;
@@ -72,75 +77,79 @@
     --kaypal-v3-danger-soft: #fdeaea;
     --kaypal-v3-success: #16a34a;
     --kaypal-v3-success-soft: #e8f7ee;
-    --kaypal-v3-brand: #17325b;
-    --kaypal-v3-brand-solid: #17325b;
-    --kaypal-v3-brand-hover: #0f2440;
-    --kaypal-v3-brand-border: #9fb6d0;
-    --kaypal-v3-brand-soft: #e8eff8;
+    --kaypal-v3-brand: #531dab;
+    --kaypal-v3-brand-solid: #531dab;
+    --kaypal-v3-brand-hover: #41168a;
+    --kaypal-v3-brand-border: #b3a3d6;
+    --kaypal-v3-brand-soft: #efeaf8;
     --kaypal-v3-nav-bg: #ffffff;
-    --kaypal-v3-nav-surface: #eef3fa;
-    --kaypal-v3-nav-surface-hover: #e4ecf6;
-    --kaypal-v3-nav-border: #dfe7f0;
-    --kaypal-v3-nav-ink: #1d2b45;
-    --kaypal-v3-nav-muted: #3d4f6e;
-    --kaypal-v3-nav-shadow: 2px 0 12px rgba(16, 43, 80, 0.06);
-    --kaypal-v3-card-shadow: 0 4px 14px rgba(16, 43, 80, 0.08);
-    --kaypal-v3-elevated-shadow: 0 10px 30px rgba(16, 43, 80, 0.1);
+    --kaypal-v3-nav-surface: #f0ecf8;
+    --kaypal-v3-nav-surface-hover: #e9e4f4;
+    --kaypal-v3-nav-border: #e7e2f0;
+    --kaypal-v3-nav-ink: #241b38;
+    --kaypal-v3-nav-muted: #4d4266;
+    --kaypal-v3-nav-shadow: 2px 0 12px rgba(60, 30, 100, 0.06);
+    --kaypal-v3-card-shadow: 0 4px 14px rgba(60, 30, 100, 0.08);
+    --kaypal-v3-elevated-shadow: 0 10px 30px rgba(60, 30, 100, 0.1);
     --kaypal-v3-radius: 16px;
     --kaypal-v3-radius-sm: 12px;
   }
 
-  /* ---------- 3. 变量覆盖：暗色 VP（新壳 + 旧页面，同值域） ---------- */
-  html[data-vp="on"][data-theme="dark"],
-  html[data-vp="on"] .dark {
-    --kx-paper: #10141f;
-    --kx-paper-soft: #171c2a;
-    --kx-card: #1a2130;
+  /* ---------- 3. 变量覆盖：暗色（新壳 + 旧页面，紫黑同源） ---------- */
+  html[data-theme="dark"],
+  html.dark,
+  .dark {
+    --kx-paper: #131019;
+    --kx-paper-soft: #181322;
+    --kx-card: #1c1726;
     --kx-ink: #ece9f4;
     --kx-ink-soft: #c9c3d9;
     --kx-muted: #847d99;
-    --kx-accent: #eebd72;
-    --kx-accent-ink: #f0cd8f;
-    --kx-accent-soft: rgba(238, 189, 114, 0.14);
-    --kx-border: #232b3d;
-    --kx-border-strong: #3a4660;
+    --kx-accent: #b885f7;
+    --kx-accent-ink: #d3adf7;
+    --kx-accent-soft: rgba(146, 84, 222, 0.16);
+    --kx-gold: #eebd72;
+    --kx-gold-ink: #f0cd8f;
+    --kx-gold-grad: linear-gradient(135deg, #c8862d, #e9b45f);
+    --kx-border: #2a2338;
+    --kx-border-strong: #453a5c;
     --kx-success: #4ade80;
     --kx-amber: #eebd72;
     --kx-danger: #f87171;
     --kx-shadow-card: 0 3px 14px rgba(0, 0, 0, 0.35);
-    --kx-shadow-hover: 0 6px 22px rgba(238, 189, 114, 0.18);
+    --kx-shadow-hover: 0 6px 22px rgba(146, 84, 222, 0.22);
     --kx-overlay: rgba(0, 0, 0, 0.55);
-    --kx-cv-bg: rgba(100, 130, 180, 0.14); --kx-cv-fg: #b9c8e4; --kx-cv-bd: rgba(100, 130, 180, 0.26);
-    --kx-cb-bg: rgba(90, 140, 240, 0.1);  --kx-cb-fg: #93b8f5; --kx-cb-bd: rgba(90, 140, 240, 0.2);
-    --kx-cg-bg: rgba(48, 190, 130, 0.09); --kx-cg-fg: #6fd9a8; --kx-cg-bd: rgba(48, 190, 130, 0.18);
-    --kx-ca-bg: rgba(230, 160, 60, 0.09); --kx-ca-fg: #eebd72; --kx-ca-bd: rgba(230, 160, 60, 0.18);
-    --kx-cr-bg: rgba(235, 90, 115, 0.09); --kx-cr-fg: #f59aab; --kx-cr-bd: rgba(235, 90, 115, 0.18);
-    --kx-cc-bg: rgba(60, 180, 210, 0.09); --kx-cc-fg: #7fd4e8; --kx-cc-bd: rgba(60, 180, 210, 0.18);
-    --kx-cs-bg: rgba(150, 145, 170, 0.1); --kx-cs-fg: #a9a3bd; --kx-cs-bd: rgba(150, 145, 170, 0.18);
+    --kx-cv-bg: rgba(146, 84, 222, 0.12); --kx-cv-fg: #d3adf7; --kx-cv-bd: rgba(146, 84, 222, 0.24);
+    --kx-cb-bg: rgba(90, 140, 240, 0.1);  --kx-cb-fg: #93b8f5;  --kx-cb-bd: rgba(90, 140, 240, 0.2);
+    --kx-cg-bg: rgba(48, 190, 130, 0.09); --kx-cg-fg: #6fd9a8;  --kx-cg-bd: rgba(48, 190, 130, 0.18);
+    --kx-ca-bg: rgba(230, 160, 60, 0.09); --kx-ca-fg: #eebd72;  --kx-ca-bd: rgba(230, 160, 60, 0.18);
+    --kx-cr-bg: rgba(235, 90, 115, 0.09); --kx-cr-fg: #f59aab;  --kx-cr-bd: rgba(235, 90, 115, 0.18);
+    --kx-cc-bg: rgba(60, 180, 210, 0.09); --kx-cc-fg: #7fd4e8;  --kx-cc-bd: rgba(60, 180, 210, 0.18);
+    --kx-cs-bg: rgba(150, 145, 170, 0.1); --kx-cs-fg: #a9a3bd;  --kx-cs-bd: rgba(150, 145, 170, 0.18);
 
-    --kaypal-v3-canvas: #10141f;
-    --kaypal-v3-paper: #1a2130;
-    --kaypal-v3-paper-soft: #171c2a;
-    --kaypal-v3-paper-muted: #232b3d;
-    --kaypal-v3-table-head: #171c2a;
+    --kaypal-v3-canvas: #131019;
+    --kaypal-v3-paper: #1c1726;
+    --kaypal-v3-paper-soft: #181322;
+    --kaypal-v3-paper-muted: #2a2338;
+    --kaypal-v3-table-head: #181322;
     --kaypal-v3-ink: #ece9f4;
     --kaypal-v3-soft-ink: #c9c3d9;
     --kaypal-v3-muted: #847d99;
-    --kaypal-v3-border: #232b3d;
-    --kaypal-v3-border-strong: #3a4660;
-    --kaypal-v3-field-bg: #1a2130;
-    --kaypal-v3-field-border: #3a4660;
-    --kaypal-v3-field-border-hover: #4d5c7c;
-    --kaypal-v3-field-focus-ring: rgba(238, 189, 114, 0.26);
+    --kaypal-v3-border: #2a2338;
+    --kaypal-v3-border-strong: #453a5c;
+    --kaypal-v3-field-bg: #1c1726;
+    --kaypal-v3-field-border: #453a5c;
+    --kaypal-v3-field-border-hover: #5a4d78;
+    --kaypal-v3-field-focus-ring: rgba(184, 133, 247, 0.26);
     --kaypal-v3-field-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 8px rgba(0, 0, 0, 0.18);
     --kaypal-v3-field-shadow-focus: 0 0 0 4px var(--kaypal-v3-field-focus-ring), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    --kaypal-v3-accent: #eebd72;
-    --kaypal-v3-accent-soft: rgba(238, 189, 114, 0.14);
-    --kaypal-v3-accent-border: #5a4a2e;
-    --kaypal-v3-accent-tint: rgba(238, 189, 114, 0.24);
-    --kaypal-v3-accent-ink: #f0cd8f;
-    --kaypal-v3-purple: #eebd72;
-    --kaypal-v3-purple-soft: rgba(238, 189, 114, 0.14);
+    --kaypal-v3-accent: #b885f7;
+    --kaypal-v3-accent-soft: rgba(146, 84, 222, 0.16);
+    --kaypal-v3-accent-border: #5a4478;
+    --kaypal-v3-accent-tint: rgba(184, 133, 247, 0.24);
+    --kaypal-v3-accent-ink: #d3adf7;
+    --kaypal-v3-purple: #b885f7;
+    --kaypal-v3-purple-soft: rgba(146, 84, 222, 0.16);
     --kaypal-v3-cobalt: #93b8f5;
     --kaypal-v3-blue-soft: rgba(90, 140, 240, 0.16);
     --kaypal-v3-amber: #eebd72;
@@ -151,15 +160,15 @@
     --kaypal-v3-danger-soft: rgba(248, 113, 113, 0.12);
     --kaypal-v3-success: #4ade80;
     --kaypal-v3-success-soft: rgba(74, 222, 128, 0.12);
-    --kaypal-v3-brand: #eebd72;
-    --kaypal-v3-brand-solid: #d98a2d;
-    --kaypal-v3-brand-hover: #c87922;
-    --kaypal-v3-brand-border: #7a5a24;
-    --kaypal-v3-brand-soft: rgba(238, 189, 114, 0.12);
-    --kaypal-v3-nav-bg: #141821;
-    --kaypal-v3-nav-surface: #1a2130;
-    --kaypal-v3-nav-surface-hover: #232b3d;
-    --kaypal-v3-nav-border: #232b3d;
+    --kaypal-v3-brand: #b885f7;
+    --kaypal-v3-brand-solid: #9254de;
+    --kaypal-v3-brand-hover: #7d46c9;
+    --kaypal-v3-brand-border: #6a4f94;
+    --kaypal-v3-brand-soft: rgba(184, 133, 247, 0.12);
+    --kaypal-v3-nav-bg: #15111e;
+    --kaypal-v3-nav-surface: #1c1726;
+    --kaypal-v3-nav-surface-hover: #2a2338;
+    --kaypal-v3-nav-border: #2a2338;
     --kaypal-v3-nav-ink: #ece9f4;
     --kaypal-v3-nav-muted: #a9a3bd;
     --kaypal-v3-nav-shadow: 2px 0 12px rgba(0, 0, 0, 0.25);
@@ -167,192 +176,206 @@
     --kaypal-v3-elevated-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   }
 
-  /* ---------- 4. 环境光背景（桌面版收敛光晕，不干扰阅读） ---------- */
-  html[data-vp="on"] body,
-  html[data-vp="on"] .kx-app {
+  /* ---------- 4. 环境光背景（金光晕 + 品牌紫光晕，收敛不扰读） ---------- */
+  body,
+  .kx-app {
     background:
-      radial-gradient(circle at 88% -4%, rgba(246, 185, 94, 0.16), transparent 32%),
-      radial-gradient(circle at 4% 18%, rgba(51, 97, 153, 0.12), transparent 36%),
-      linear-gradient(165deg, #f6f9fd, #eef3fa 55%, #e8eef7);
+      radial-gradient(circle at 88% -4%, rgba(246, 185, 94, 0.15), transparent 32%),
+      radial-gradient(circle at 4% 18%, rgba(114, 46, 209, 0.1), transparent 36%),
+      linear-gradient(165deg, #faf8fd, #f4f0fa 55%, #efebf7);
     background-attachment: fixed;
   }
-  html[data-vp="on"][data-theme="dark"] body,
-  html[data-vp="on"][data-theme="dark"] .kx-app {
+  html[data-theme="dark"] body,
+  html.dark body,
+  html[data-theme="dark"] .kx-app,
+  html.dark .kx-app {
     background:
-      radial-gradient(circle at 88% -4%, rgba(238, 189, 114, 0.07), transparent 32%),
-      radial-gradient(circle at 4% 18%, rgba(60, 110, 170, 0.1), transparent 36%),
-      linear-gradient(165deg, #10141f, #131926 55%, #0f1420);
+      radial-gradient(circle at 88% -4%, rgba(238, 189, 114, 0.06), transparent 32%),
+      radial-gradient(circle at 4% 18%, rgba(146, 84, 222, 0.1), transparent 36%),
+      linear-gradient(165deg, #131019, #171223 55%, #100d17);
     background-attachment: fixed;
   }
 
-  /* ---------- 5. 壳层：左侧 rail 深蓝玻璃 ---------- */
-  html[data-vp="on"] .kx-rail {
-    background: linear-gradient(180deg, rgba(23, 50, 91, 0.94), rgba(15, 36, 68, 0.97));
-    border-right: 1px solid rgba(160, 190, 225, 0.16);
-    box-shadow: 2px 0 18px rgba(8, 29, 60, 0.16);
+  /* ---------- 5. 壳层：左侧 rail 品牌紫玻璃 ---------- */
+  .kx-rail {
+    background: linear-gradient(180deg, rgba(114, 46, 209, 0.94), rgba(83, 29, 171, 0.97));
+    border-right: 1px solid rgba(190, 160, 235, 0.18);
+    box-shadow: 2px 0 18px rgba(50, 20, 90, 0.2);
   }
-  html[data-vp="on"] .kx-rail-logo {
-    background: linear-gradient(135deg, #17325b, #0f2440);
+  .kx-rail-logo {
+    background: linear-gradient(135deg, #722ed1, #531dab);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   }
-  html[data-vp="on"] .kx-rail-item { color: rgba(238, 243, 250, 0.72); }
-  html[data-vp="on"] .kx-rail-item:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
-  html[data-vp="on"] .kx-rail-item.kx-active {
-    background: linear-gradient(135deg, rgba(227, 154, 62, 0.24), rgba(227, 154, 62, 0.08));
+  .kx-rail-item { color: rgba(240, 235, 250, 0.72); }
+  .kx-rail-item:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+  .kx-rail-item.kx-active {
+    background: linear-gradient(135deg, rgba(227, 154, 62, 0.26), rgba(227, 154, 62, 0.08));
     color: #f6c478;
   }
-  html[data-vp="on"] .kx-rail-item.kx-active::before {
+  .kx-rail-item.kx-active::before {
     background: linear-gradient(180deg, #f6c478, #e39a3e);
   }
-  html[data-vp="on"] .kx-rail-badge {
+  .kx-rail-badge {
     background: linear-gradient(135deg, #e39a3e, #f6c478);
-    color: #173052;
-    border-color: rgba(23, 48, 82, 0.45);
+    color: #2e0e66;
+    border-color: rgba(60, 30, 100, 0.45);
   }
-  html[data-vp="on"] .kx-rail-tool { color: rgba(238, 243, 250, 0.72); }
-  html[data-vp="on"] .kx-rail-tool:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
-  html[data-vp="on"] .kx-rail-tool.kx-vp-on {
-    color: #f6c478;
-    background: rgba(227, 154, 62, 0.18);
-    box-shadow: inset 0 1px 0 rgba(255, 245, 221, 0.2);
-  }
-  html[data-vp="on"] .kx-rail-avatar { background: rgba(255, 255, 255, 0.1); color: #f6c478; }
+  .kx-rail-tool { color: rgba(240, 235, 250, 0.72); }
+  .kx-rail-tool:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
+  .kx-rail-avatar { background: rgba(255, 255, 255, 0.1); color: #f6c478; }
 
   /* ---------- 6. 壳层：topbar / 搜索 / 通知条 玻璃 ---------- */
-  html[data-vp="on"] .kx-topbar {
+  .kx-topbar {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.48));
-    border-bottom: 1px solid rgba(180, 200, 222, 0.4);
+    border-bottom: 1px solid rgba(205, 195, 228, 0.4);
     backdrop-filter: blur(20px) saturate(150%);
     -webkit-backdrop-filter: blur(20px) saturate(150%);
   }
-  html[data-vp="on"][data-theme="dark"] .kx-topbar {
-    background: linear-gradient(180deg, rgba(16, 20, 31, 0.72), rgba(16, 20, 31, 0.5));
-    border-bottom: 1px solid rgba(80, 100, 130, 0.25);
+  html[data-theme="dark"] .kx-topbar,
+  html.dark .kx-topbar {
+    background: linear-gradient(180deg, rgba(19, 16, 25, 0.72), rgba(19, 16, 25, 0.5));
+    border-bottom: 1px solid rgba(110, 95, 150, 0.25);
   }
-  html[data-vp="on"] .kx-search-pill {
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(246, 250, 253, 0.72));
-    border-color: rgba(190, 208, 228, 0.65);
-    box-shadow: 0 6px 18px rgba(16, 43, 80, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  .kx-search-pill {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(250, 248, 253, 0.72));
+    border-color: rgba(210, 198, 235, 0.65);
+    box-shadow: 0 6px 18px rgba(60, 30, 100, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(16px) saturate(140%);
     -webkit-backdrop-filter: blur(16px) saturate(140%);
   }
-  html[data-vp="on"][data-theme="dark"] .kx-search-pill {
-    background: linear-gradient(145deg, rgba(26, 33, 48, 0.88), rgba(22, 28, 42, 0.75));
-    border-color: rgba(80, 100, 130, 0.4);
+  html[data-theme="dark"] .kx-search-pill,
+  html.dark .kx-search-pill {
+    background: linear-gradient(145deg, rgba(28, 23, 38, 0.88), rgba(24, 19, 34, 0.75));
+    border-color: rgba(110, 95, 150, 0.4);
   }
-  html[data-vp="on"] .kx-topbar-select {
+  .kx-topbar-select {
     background: rgba(255, 255, 255, 0.78);
-    border-color: rgba(190, 208, 228, 0.65);
+    border-color: rgba(210, 198, 235, 0.65);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
-  html[data-vp="on"][data-theme="dark"] .kx-topbar-select {
-    background: rgba(26, 33, 48, 0.8);
-    border-color: rgba(80, 100, 130, 0.4);
+  html[data-theme="dark"] .kx-topbar-select,
+  html.dark .kx-topbar-select {
+    background: rgba(28, 23, 38, 0.8);
+    border-color: rgba(110, 95, 150, 0.4);
   }
-  html[data-vp="on"] .kx-kbd {
-    background: rgba(230, 238, 248, 0.9);
-    color: #5a6b80;
-    border-color: rgba(180, 200, 222, 0.55);
+  .kx-kbd {
+    background: rgba(240, 236, 248, 0.9);
+    color: #5d5273;
+    border-color: rgba(205, 195, 228, 0.55);
   }
-  html[data-vp="on"] .kx-ticker {
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(246, 250, 253, 0.62));
-    border-color: rgba(190, 208, 228, 0.55);
-    box-shadow: 0 8px 22px rgba(16, 43, 80, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  .kx-ticker {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(250, 248, 253, 0.62));
+    border-color: rgba(210, 198, 235, 0.55);
+    box-shadow: 0 8px 22px rgba(60, 30, 100, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(18px) saturate(145%);
     -webkit-backdrop-filter: blur(18px) saturate(145%);
   }
-  html[data-vp="on"][data-theme="dark"] .kx-ticker {
-    background: linear-gradient(145deg, rgba(26, 33, 48, 0.85), rgba(21, 27, 40, 0.72));
-    border-color: rgba(80, 100, 130, 0.35);
+  html[data-theme="dark"] .kx-ticker,
+  html.dark .kx-ticker {
+    background: linear-gradient(145deg, rgba(28, 23, 38, 0.85), rgba(24, 19, 34, 0.72));
+    border-color: rgba(110, 95, 150, 0.35);
   }
 
-  /* ---------- 7. 高频组件：卡片玻璃化（Glass 档） ---------- */
-  html[data-vp="on"] .kx-todo-card,
-  html[data-vp="on"] .kx-action-card,
-  html[data-vp="on"] .kx-agg-card,
-  html[data-vp="on"] .kx-stat-card,
-  html[data-vp="on"] .kx-chat-main,
-  html[data-vp="on"] .kx-palette,
-  html[data-vp="on"] .kx-msg-card,
-  html[data-vp="on"] .kx-legacy-switch-bar {
+  /* ---------- 7. 高频组件：卡片玻璃化（磨砂） ---------- */
+  .kx-todo-card,
+  .kx-card,
+  .kx-card-lg,
+  .kx-action-card,
+  .kx-agg-card,
+  .kx-stat-card,
+  .kx-chat-main,
+  .kx-palette,
+  .kx-msg-card,
+  .kx-legacy-switch-bar {
     border: 1px solid transparent;
     background:
-      linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(244, 248, 252, 0.64)) padding-box,
-      linear-gradient(128deg, rgba(255, 255, 255, 0.9) 0%, rgba(183, 201, 221, 0.3) 50%, rgba(120, 148, 179, 0.22) 100%) border-box;
+      linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(248, 246, 253, 0.64)) padding-box,
+      linear-gradient(128deg, rgba(255, 255, 255, 0.9) 0%, rgba(215, 205, 238, 0.3) 50%, rgba(160, 130, 200, 0.22) 100%) border-box;
     box-shadow:
-      0 20px 46px rgba(16, 43, 80, 0.09),
-      0 4px 12px rgba(16, 43, 80, 0.04),
+      0 20px 46px rgba(60, 30, 100, 0.09),
+      0 4px 12px rgba(60, 30, 100, 0.04),
       inset 0 1px 0 rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(22px) saturate(145%);
     -webkit-backdrop-filter: blur(22px) saturate(145%);
   }
-  html[data-vp="on"][data-theme="dark"] .kx-todo-card,
-  html[data-vp="on"][data-theme="dark"] .kx-action-card,
-  html[data-vp="on"][data-theme="dark"] .kx-agg-card,
-  html[data-vp="on"][data-theme="dark"] .kx-stat-card,
-  html[data-vp="on"][data-theme="dark"] .kx-chat-main,
-  html[data-vp="on"][data-theme="dark"] .kx-palette,
-  html[data-vp="on"][data-theme="dark"] .kx-msg-card,
-  html[data-vp="on"][data-theme="dark"] .kx-legacy-switch-bar {
+  html[data-theme="dark"] .kx-todo-card,
+  html.dark .kx-todo-card,
+  html[data-theme="dark"] .kx-card,
+  html.dark .kx-card,
+  html[data-theme="dark"] .kx-card-lg,
+  html.dark .kx-card-lg,
+  html[data-theme="dark"] .kx-action-card,
+  html.dark .kx-action-card,
+  html[data-theme="dark"] .kx-agg-card,
+  html.dark .kx-agg-card,
+  html[data-theme="dark"] .kx-stat-card,
+  html.dark .kx-stat-card,
+  html[data-theme="dark"] .kx-chat-main,
+  html.dark .kx-chat-main,
+  html[data-theme="dark"] .kx-palette,
+  html.dark .kx-palette,
+  html[data-theme="dark"] .kx-msg-card,
+  html.dark .kx-msg-card,
+  html[data-theme="dark"] .kx-legacy-switch-bar,
+  html.dark .kx-legacy-switch-bar {
     background:
-      linear-gradient(145deg, rgba(26, 33, 48, 0.9), rgba(20, 26, 40, 0.82)) padding-box,
-      linear-gradient(128deg, rgba(60, 80, 110, 0.4) 0%, rgba(40, 55, 80, 0.25) 50%, rgba(238, 189, 114, 0.16) 100%) border-box;
+      linear-gradient(145deg, rgba(28, 23, 38, 0.9), rgba(22, 18, 32, 0.82)) padding-box,
+      linear-gradient(128deg, rgba(110, 90, 150, 0.4) 0%, rgba(80, 65, 115, 0.25) 50%, rgba(227, 154, 62, 0.16) 100%) border-box;
     box-shadow:
       0 20px 46px rgba(0, 0, 0, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
-  html[data-vp="on"] .kx-action-card:hover,
-  html[data-vp="on"] .kx-agg-card:hover {
+  .kx-action-card:hover,
+  .kx-agg-card:hover {
     border-color: rgba(227, 154, 62, 0.4);
     box-shadow: 0 10px 28px rgba(185, 110, 29, 0.16);
   }
-  html[data-vp="on"] .kx-action-ico::after,
-  html[data-vp="on"] .kx-agg-ico::after {
+  .kx-action-ico::after,
+  .kx-agg-ico::after {
     background: #e39a3e;
   }
 
-  /* ---------- 8. 高频组件：金色主按钮 ---------- */
-  html[data-vp="on"] .kx-btn-primary,
-  html[data-vp="on"] .kx-chat-send,
-  html[data-vp="on"] .kx-btn-sm-primary {
+  /* ---------- 8. 高频组件：金色主按钮（品牌金渐变 + 深紫字） ---------- */
+  .kx-btn-primary,
+  .kx-chat-send,
+  .kx-btn-sm-primary {
     background: linear-gradient(135deg, #d98f2b, #efb45b);
-    color: #173052;
+    color: #2e0e66;
     box-shadow: 0 8px 20px rgba(185, 110, 29, 0.22), inset 0 1px 0 rgba(255, 245, 221, 0.45);
   }
-  html[data-vp="on"] .kx-btn-primary:hover,
-  html[data-vp="on"] .kx-chat-send:hover,
-  html[data-vp="on"] .kx-btn-sm-primary:hover {
+  .kx-btn-primary:hover,
+  .kx-chat-send:hover,
+  .kx-btn-sm-primary:hover {
     filter: brightness(1.05);
-    color: #173052;
+    color: #2e0e66;
   }
-  html[data-vp="on"] .kx-btn-primary:active,
-  html[data-vp="on"] .kx-chat-send:active,
-  html[data-vp="on"] .kx-btn-sm-primary:active {
+  .kx-btn-primary:active,
+  .kx-chat-send:active,
+  .kx-btn-sm-primary:active {
     filter: brightness(0.97);
   }
-  html[data-vp="on"] .kx-chat-input:focus { border-color: #e39a3e; }
-  html[data-vp="on"] .kx-sug-chip:hover { border-color: #e39a3e; color: #8f5a19; }
-  html[data-vp="on"] .kx-agent-item.kx-active { border-color: #e39a3e; box-shadow: var(--kx-shadow-card); }
-  html[data-vp="on"] .kx-palette-item.kx-sel { background: var(--kx-accent-soft); }
-  html[data-vp="on"] .kx-hint-bar { background: #fdf1e0; color: #8f5a19; }
-  html[data-vp="on"] .kx-section-more { color: #8f5a19; }
+  .kx-chat-input:focus { border-color: #722ed1; }
+  .kx-sug-chip:hover { border-color: #722ed1; color: #531dab; }
+  .kx-agent-item.kx-active { border-color: #722ed1; box-shadow: var(--kx-shadow-card); }
+  .kx-palette-item.kx-sel { background: var(--kx-accent-soft); }
+  .kx-hint-bar { background: #f9f0ff; color: #531dab; }
+  .kx-section-more { color: #531dab; }
 
   /* ---------- 9. 消息气泡（用户侧金色渐变） ---------- */
-  html[data-vp="on"] .kx-msg-user .kx-msg-body {
+  .kx-msg-user .kx-msg-body {
     background: linear-gradient(135deg, #d98f2b, #efb45b);
-    color: #173052;
+    color: #2e0e66;
   }
 
-  /* ---------- 10. 焦点环 / 遮罩 / 空态 ---------- */
-  html[data-vp="on"] .kx-app :focus-visible { outline-color: #e39a3e; }
-  html[data-vp="on"] .kx-palette-overlay {
-    background: rgba(8, 20, 40, 0.45);
+  /* ---------- 10. 焦点环（品牌紫）/ 遮罩 / 空态 ---------- */
+  .kx-app :focus-visible { outline-color: #722ed1; }
+  .kx-palette-overlay {
+    background: rgba(25, 15, 45, 0.45);
   }
-  html[data-vp="on"][data-theme="dark"] .kx-palette-overlay {
+  html[data-theme="dark"] .kx-palette-overlay,
+  html.dark .kx-palette-overlay {
     background: rgba(0, 0, 0, 0.6);
   }
-  html[data-vp="on"] .kx-stat-accent { color: #8f5a19; }
-
-  /* ---------- 11. 移动端变量同源同步（桌面壳下 MobileShell 已隐藏，仅保证一致性） ---------- */
+  .kx-stat-accent { color: #531dab; }
 }

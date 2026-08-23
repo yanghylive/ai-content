@@ -34,6 +34,11 @@
   --kx-cs-bg: #f8fafc; --kx-cs-fg: #475569; --kx-cs-bd: #e2e8f0;
   --kx-radius: 14px;
   --kx-radius-sm: 10px;
+  /* 间距 token（B2 2026-08-23）：全站唯五档，页面/卡片/区块间距单点可调 */
+  --space-card: 14px;      /* 卡片 ↔ 卡片 */
+  --space-section: 24px;   /* 区块 ↔ 区块 */
+  --space-inset: 16px;     /* 卡片内边距（纵） */
+  --space-inset-x: 20px;   /* 卡片内边距（横） */
 }
 
 html[data-theme="dark"] {
@@ -275,6 +280,26 @@ html[data-theme="dark"] {
 /* ---------- 统一页框（所有功能页与场景页同一套规格） ---------- */
 /* 标准档：与 .kx-view 完全一致 */
 .kx-legacy-wrap { padding: 14px var(--page-gutter) 40px; max-width: 880px; margin: 0 auto; }
+
+/* ---------- 统一卡片（B2 2026-08-23）：全站唯一标准卡规格 ----------
+   新页面一律用 .kx-card / .kx-card-lg，禁止自拼 rounded-*+border+bg 卡片；
+   VP 磨砂层自动接管玻璃质感（desktop-vp.css 第 7 段追加）。 */
+.kx-card {
+  background: var(--kx-card);
+  border: 1px solid var(--kx-border);
+  border-radius: var(--kx-radius);
+  padding: var(--space-inset) var(--space-inset-x);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.kx-card:hover { border-color: var(--kx-border-strong); box-shadow: var(--kx-shadow-card); }
+.kx-card-lg {
+  background: var(--kx-card);
+  border: 1px solid var(--kx-border);
+  border-radius: var(--kx-radius);
+  padding: 20px 24px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.kx-card-lg:hover { border-color: var(--kx-border-strong); box-shadow: var(--kx-shadow-card); }
 /* 宽档：多窗格工作台（渠道控制台/设备台），与对话页同宽 */
 .kx-legacy-wrap.kx-wide { max-width: 1080px; }
 /* 抹掉页面自带的宽度/外边距/水平内边距，服从统一页框 */
@@ -290,6 +315,9 @@ html[data-theme="dark"] {
 .kx-legacy-switch-note { font-size: 12px; color: var(--kx-muted); }
 /* 页面主标题统一为场景页规格（26/800/-0.3px） */
 .kx-legacy-wrap h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; }
+/* 页面主标题统一为场景页规格（26/800/-0.3px）——含 astryx Heading 等
+   非 kx-greet 类的 h1（B0 2026-08-23，与下方 wrap 版 h1 规则同源） */
+.kx-view h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; }
 /* 图标描边统一 1.8（Lucide 用 stroke 属性，可被 CSS 覆盖） */
 .kx-legacy-wrap svg[stroke] { stroke-width: 1.8; }
 
@@ -401,5 +429,10 @@ html[data-theme="dark"] {
    但 distribution/crm 等场景路由把 WorkbenchCenter 直接挂 .kx-main（无 wrap），
    页面根 kx-view 的 padding 必须保留 —— 故选择器限定 .kx-legacy-wrap 直接子级。 */
 .kx-legacy-wrap .kx-view.kaypal-v2-engine {
+  padding: 0;
+}
+/* 场景路由页根 kx-view 内嵌 WorkbenchCenter（自带 kx-view）时同样归零内层，
+   避免双层 34px（如 /growth 页根 + WorkbenchCenter）。B0 2026-08-23。 */
+.kx-view .kx-view.kaypal-v2-engine {
   padding: 0;
 }

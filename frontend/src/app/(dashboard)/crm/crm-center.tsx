@@ -236,7 +236,7 @@ export function CrmCenter() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="kx-view flex flex-col gap-6">
       <WorkbenchCenter
         title="客户管理"
         backHref="/customer"
