@@ -16,6 +16,8 @@ import { SavingsExchangeService } from '../savings/savings-exchange.service';
 import { SavingsWithdrawalService } from '../savings/savings-withdrawal.service';
 import { GrowthService } from '../growth/growth.service';
 import { AiAssistantNestService } from '../ai-assistant/ai-assistant.service';
+import { KaypalProviderResolver } from '../ai-models/kaypal-provider.resolver';
+import { randomUUID } from 'node:crypto';
 
 /** AI 助手系统提示词（工具使用指南，function calling 触发） */
 const SYSTEM_PROMPT = `你是 JIUZHANG AI 的内容运营助手，帮助用户完成内容创作与运营工作。
@@ -499,6 +501,31 @@ export function detectPromptInjection(text: string): boolean {
 export class AiGatewayService {
   private readonly logger = new Logger(AiGatewayService.name);
 
+  // 对话默认模型：仅选「文本能力」模型，永远排除视觉模型（kaypal-vision/qwen-vl 等）
+  // 作为普通对话模型——历史 bug：视觉模型当文本模型用空回率高（"今天做什么"等普通
+  // 问题实测空 content），导致用户看到"不回复"。禁止用 createdAt/updatedAt desc 作为
+  // 业务默认（计划二.B.7）。
+  private static readonly CHAT_MODEL_PRIORITY = [
+    'deepseek-v4-flash',
+    'deepseek-v4-pro',
+  ];
+
+  /** 挑选文本对话模型：优先固定文本模型，其次任意 enabled 文本模型（按 modelId 稳定排序） */
+  private async pickChatModel(platformId?: string) {
+    const base = { platformId: platformId ?? '', enabled: true };
+    for (const modelId of AiGatewayService.CHAT_MODEL_PRIORITY) {
+      const found = await this.prisma.aIModel.findFirst({
+        where: { ...base, modelId },
+      });
+      if (found) return found;
+    }
+    const textModels = (
+      await this.prisma.aIModel.findMany({ where: base })
+    ).filter((m) => !KaypalProviderResolver.isVisionModel(m));
+    textModels.sort((a, b) => a.modelId.localeCompare(b.modelId));
+    return textModels[0] ?? null;
+  }
+
   constructor(
     private readonly aiClient: AiClientService,
     private readonly prisma: PrismaService,
@@ -550,6 +577,11 @@ export class AiGatewayService {
     };
 
     const chatStart = Date.now();
+    // 稳定幂等键组成要素：请求级 requestId 整次请求只生成一次（不每次随机），
+    // 再拼用户/模型/业务动作，避免重试时随机键触发上游 BILLING_IDEMPOTENCY_REPLAY（计划二.C.6）
+    const requestId = randomUUID();
+    let billingIdempotencyKey = '';
+    let selectedModelId: string | null = null;
     try {
       // B6 配额检查：对话超限直接拒绝（不扣减）
       if (authUser?.id) {
@@ -570,10 +602,9 @@ export class AiGatewayService {
       });
       // 2026-08-20 修复：模型选择必须过滤 enabled——管理界面禁用的模型
       // （如网关已不支持的 kimi-k2）不应被 chat 选中，否则 400 报错
-      let model = await this.prisma.aIModel.findFirst({
-        where: { platformId: platform?.id ?? '', enabled: true },
-        orderBy: { createdAt: 'desc' },
-      });
+      // 2026-08-23 修复：仅选文本能力模型（deepseek-v4-flash/pro 优先），
+      // 排除视觉模型 kaypal-vision（当对话模型用空回率高，导致"不回复"）
+      let model = await this.pickChatModel(platform?.id);
       // 模型未配置 → 自动同步一次 Kaypal 默认模型（api-key / 登录态），
       // 避免真机全新安装后 AI 助手因模型表为空而不可用
       if (!platform || !model) {
@@ -583,13 +614,10 @@ export class AiGatewayService {
             where: { enabled: true },
             orderBy: { createdAt: 'desc' },
           });
-          model = await this.prisma.aIModel.findFirst({
-            where: { platformId: platform?.id ?? '', enabled: true },
-            orderBy: { createdAt: 'desc' },
-          });
         } catch {
           // 同步失败（无授权/无 API Key）→ 走下方原报错
         }
+        model = await this.pickChatModel(platform?.id);
       }
       if (!platform || !model) {
         send({
@@ -600,6 +628,12 @@ export class AiGatewayService {
         response.end();
         return;
       }
+
+      // 模型已通过守卫确保非空；后续统一用 selectedModel，杜绝 model?. 的 TS18047 隐患
+      // （fallback 时会重新指向成功候选，故用 let）
+      let selectedModel = model;
+      selectedModelId = selectedModel.modelId;
+      billingIdempotencyKey = `aic-chat:${authUser?.id ?? 'anon'}:${selectedModel.modelId}:${requestId}`;
 
       const client = await this.aiClient.getClient(platform.id);
 
@@ -677,15 +711,79 @@ export class AiGatewayService {
       }
 
       let toolRounds = 0;
-      for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-        const stream = await client.chat.completions.create({
-          model: model.modelId,
-          messages: history,
-          tools: TOOLS,
-          tool_choice: 'auto' as const,
-          stream: true,
-        });
+      // 2026-08-23（计划二.C）：文本对话 402 余额 fallback——仅在同一能力组内
+      // （文本模型）切换，禁止把视觉模型 kaypal-vision 当作文本 fallback（空回率高）。
+      // 幂等键整次请求稳定，不每次随机生成（避免上游 BILLING_IDEMPOTENCY_REPLAY）。
+      const textFallbackCandidates = (
+        await this.prisma.aIModel.findMany({
+          where: { platformId: platform?.id ?? '', enabled: true },
+        })
+      )
+        .filter((m) => !KaypalProviderResolver.isVisionModel(m))
+        .filter((m) => m.modelId !== selectedModel.modelId)
+        .sort((a, b) => a.modelId.localeCompare(b.modelId));
 
+      for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+        let stream: Awaited<ReturnType<typeof client.chat.completions.create>>;
+        try {
+          stream = await client.chat.completions.create(
+            {
+              model: selectedModel.modelId,
+              messages: history,
+              tools: TOOLS,
+              tool_choice: 'auto' as const,
+              stream: true,
+            },
+            { headers: { 'X-Idempotency-Key': billingIdempotencyKey } },
+          );
+        } catch (createError) {
+          const errInfo = KaypalProviderResolver.classifyError(createError);
+          if (errInfo.kind === 'balance') {
+            // 402 余额不足：仅在文本能力组内逐个候选重试；全部失败则上抛明确余额错误
+            let fallbackStream: Awaited<
+              ReturnType<typeof client.chat.completions.create>
+            > | null = null;
+            let fallbackModel: (typeof textFallbackCandidates)[number] | null =
+              null;
+            for (const cand of textFallbackCandidates) {
+              try {
+                fallbackStream = await client.chat.completions.create(
+                  {
+                    model: cand.modelId,
+                    messages: history,
+                    tools: TOOLS,
+                    tool_choice: 'auto' as const,
+                    stream: true,
+                  },
+                  { headers: { 'X-Idempotency-Key': billingIdempotencyKey } },
+                );
+                fallbackModel = cand;
+                break;
+              } catch (candError) {
+                if (
+                  KaypalProviderResolver.classifyError(candError).kind ===
+                  'balance'
+                ) {
+                  continue;
+                }
+                throw candError;
+              }
+            }
+            if (!fallbackStream || !fallbackModel) {
+              this.logger.error(
+                `AI 对话全部文本模型 402 余额不足 userId=${authUser?.id} model=${selectedModel.modelId} key=${billingIdempotencyKey}`,
+              );
+              throw createError;
+            }
+            this.logger.warn(
+              `模型 ${selectedModel.modelId} 网关 402，fallback 到 ${fallbackModel.modelId}`,
+            );
+            selectedModel = fallbackModel;
+            stream = fallbackStream;
+          } else {
+            throw createError;
+          }
+        }
         const toolCalls: Array<{
           id: string;
           name: string;
@@ -818,7 +916,7 @@ export class AiGatewayService {
       if (authUser?.id) {
         void this.audit.recordChat({
           userId: authUser.id,
-          model: model?.modelId ?? undefined,
+          model: selectedModel.modelId,
           platform: platform?.name ?? undefined,
           messages: messages.length,
           toolCalls: toolRounds,
@@ -835,12 +933,15 @@ export class AiGatewayService {
         // 隐式标识（《人工智能生成合成内容标识办法》）：生成合成内容属性 + 服务提供者编码
         aiGenerated: true,
         provider: 'jiuzhang-ai-content',
-        model: model?.modelId ?? undefined,
+        model: selectedModel.modelId,
       });
       response.end();
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`AI 对话失败: ${message}`);
+      const message = KaypalProviderResolver.getErrorMessage(error);
+      const info = KaypalProviderResolver.classifyError(error);
+      this.logger.error(
+        `AI 对话失败 userId=${authUser?.id} kind=${info.kind} status=${info.status ?? '-'} model=${selectedModelId ?? '-'} key=${billingIdempotencyKey}: ${message}`,
+      );
       if (authUser?.id) {
         void this.audit.recordChat({
           userId: authUser.id,
@@ -851,16 +952,14 @@ export class AiGatewayService {
           durationMs: Date.now() - chatStart,
         });
       }
-      // 授权过期/需重登类错误：ai-client 文案已是用户视角引导，直接透出，不再加「对话失败」前缀
-      const isAuthGuidance =
-        /重新登录|重新授权|授权已失效|需要当前登录用户授权|账号与设备/i.test(
-          message,
-        );
+      // 已知网关错误（401/402/409/429/5xx）映射为可操作提示；其余未知错误保留「对话失败」前缀
+      const userMessage =
+        info.kind === 'unknown'
+          ? `对话失败：${message.slice(0, 120)}`
+          : info.message;
       send({
         type: 'error',
-        message: isAuthGuidance
-          ? message.slice(0, 200)
-          : `对话失败：${message.slice(0, 120)}`,
+        message: userMessage.slice(0, 200),
       });
       response.end();
     }
@@ -1685,6 +1784,46 @@ export class AiGatewayService {
         name: 'compliance_check',
         args: { text: text || u.slice(0, 200) },
       };
+    }
+    // ===== 返利/省钱工具意图（2026-08-23：模型对资金类输入空回，改为稳定意图路由直答）=====
+    // 提现：我要提现 X 块 / 把钱取出来（需金额+收款账户，缺参数走确认卡流程）
+    const withdrawMatch = u.match(
+      /提现|取出来|取钱|提钱|把钱拿出来|把返利.*(取|提)/,
+    );
+    if (withdrawMatch) {
+      const amount = parseFloat(u.replace(/[^\d.]/g, '') || '0');
+      return {
+        name: 'withdraw_rebate',
+        args: {
+          amount: amount > 0 ? amount : undefined,
+          channel: 'mock',
+          accountMask: '尾号****',
+        },
+      };
+    }
+    // 兑换：返利换 AI 额度
+    if (/兑换|换成.*(额度|积分|AI)|返利.*(换|转)/.test(u)) {
+      const amount = parseFloat(u.replace(/[^\d.]/g, '') || '0');
+      return {
+        name: 'convert_rebate_to_credit',
+        args: { amount: amount > 0 ? amount : undefined },
+      };
+    }
+    // 余额/额度：我的返利余额 / 有多少钱 / 能提多少 / 额度多少
+    if (
+      /返利.*(余额|剩|多少|查)|余额|能提|提现多少|还有.*钱|额度.*多少|AI 额度|ai额度/.test(
+        u,
+      )
+    ) {
+      return { name: 'get_rebate_balance', args: {} };
+    }
+    // 订单/到账：我的订单 / 返利到账了没 / 结算
+    if (/订单|到账|结算|返利.*(到|状态|查)|买的东西|下单/.test(u)) {
+      return { name: 'query_cps_orders', args: {} };
+    }
+    // 省钱解析：链接能省钱吗 / 多少钱 / 优惠券（parse_product 在 executeTool 已实现）
+    if (/省钱|能省|优惠券|划算|多少钱|价格|链接.*(看看|查|分析)/.test(u)) {
+      return { name: 'parse_product', args: {} };
     }
     return null;
   }

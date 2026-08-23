@@ -8,6 +8,7 @@ import { AiModelsService } from './ai-models.service';
 import { DefaultModelsController } from './default-models.controller';
 import { DefaultModelsService } from './default-models.service';
 import { AiClientService } from './ai-client.service';
+import { KaypalProviderResolver } from './kaypal-provider.resolver';
 import { StorageModule } from '../storage/storage.module';
 import { KaypalModelSyncController } from './kaypal-model-sync.controller';
 import { KaypalModelSyncService } from './kaypal-model-sync.service';
@@ -28,6 +29,7 @@ import { LlmProxyController } from './llm-proxy.controller';
     DefaultModelsService,
     AiClientService,
     KaypalModelSyncService,
+    KaypalProviderResolver,
   ],
   exports: [
     AiClientService,
@@ -35,6 +37,7 @@ import { LlmProxyController } from './llm-proxy.controller';
     AiPlatformsService,
     DefaultModelsService,
     KaypalModelSyncService,
+    KaypalProviderResolver,
   ],
 })
 export class AiModelsModule {}
