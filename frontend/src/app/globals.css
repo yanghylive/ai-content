@@ -2368,3 +2368,32 @@ input[type="radio"] {
   height: 16px;
   cursor: pointer;
 }
+
+/* ============================================================
+ * 原生表格品牌化（B6 · 2026-08-23）
+ * 15 个原生 table 文件的表头（此前 ≥9 种写法）一步归一：
+ * 表头 12/600/muted + table-head 底；单元格 13px + 底部细分割线；
+ * 行 hover 浅紫底。元素选择器兜底，有类单元格自动优先。
+ * ============================================================ */
+table { border-collapse: collapse; }
+
+table thead th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--kaypal-v3-muted);
+  background: var(--kaypal-v3-table-head);
+  text-align: left;
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+
+table tbody td {
+  font-size: 13px;
+  color: var(--kaypal-v3-ink);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--kaypal-v3-border);
+  vertical-align: middle;
+}
+
+table tbody tr:last-child td { border-bottom: none; }
+table tbody tr:hover td { background: var(--kaypal-v3-paper-soft); }
