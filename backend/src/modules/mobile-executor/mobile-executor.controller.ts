@@ -17,6 +17,7 @@ import { DeviceRegistryService } from './device-registry.service';
 import { TaskDispatchService } from './task-dispatch.service';
 import { ExecutorStatusService } from './executor-status.service';
 import { ExecutorEvidenceService } from './executor-evidence.service';
+import { ExecutorRunService } from './executor-run.service';
 import { ApprovalGateService } from '../workflow/approval-gate.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -34,6 +35,7 @@ export class MobileExecutorController {
     private readonly dispatch: TaskDispatchService,
     private readonly status: ExecutorStatusService,
     private readonly evidence: ExecutorEvidenceService,
+    private readonly run: ExecutorRunService,
     private readonly approvalGate: ApprovalGateService,
     private readonly prisma: PrismaService,
   ) {}
@@ -158,6 +160,63 @@ export class MobileExecutorController {
       approvalId,
       body?.currentHash,
     );
+  }
+
+  @Post('tasks/:id/run')
+  @ApiOperation({
+    summary:
+      '开始一次执行会话（P1-12；x-device-token 认证，deviceId 从 token）',
+  })
+  async startRun(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') taskId: string,
+    @Body() body: { accountId?: string },
+  ) {
+    const dev = await this.requireDevice(request);
+    return this.run.startRun(dev.userId, taskId, dev.deviceId, body?.accountId);
+  }
+
+  @Post('runs/:id/step')
+  @ApiOperation({
+    summary: '上报单步进度 + 断点（P1-12；x-device-token 认证）',
+  })
+  async stepRun(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') runId: string,
+    @Body()
+    body: {
+      stepIndex: number;
+      type: string;
+      status?: string;
+      detail?: Record<string, unknown>;
+      checkpoint?: string;
+    },
+  ) {
+    const dev = await this.requireDevice(request);
+    if (body?.stepIndex === undefined || !body?.type) {
+      throw new BadRequestException('缺少 stepIndex/type');
+    }
+    return this.run.stepRun(dev.userId, runId, body);
+  }
+
+  @Post('runs/:id/finish')
+  @ApiOperation({ summary: '执行会话终态收尾（P1-12；x-device-token 认证）' })
+  async finishRun(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') runId: string,
+    @Body()
+    body: { status: 'completed' | 'failed' | 'unknown'; checkpoint?: string },
+  ) {
+    const dev = await this.requireDevice(request);
+    if (!body?.status) throw new BadRequestException('缺少 status');
+    return this.run.finishRun(dev.userId, runId, body.status, body.checkpoint);
+  }
+
+  @Get('tasks/:id/run')
+  @ApiOperation({ summary: '查询执行会话断点（P1-12 断点恢复）' })
+  getRun(@Req() request: AuthenticatedRequest, @Param('id') taskId: string) {
+    const user = this.requireUser(request);
+    return this.run.getRun(user.id, taskId);
   }
 
   @Get('leases')

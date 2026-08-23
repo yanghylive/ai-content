@@ -28,7 +28,7 @@ interface JiuZhangBridge {
   /** App 内微信一键登录：拉起微信 SDK 授权，返回 { ok, code?, message }（需企业资质 AppID） */
   wechatLogin?(): string;
   /** MAI-UI 动作执行（PRD M2/M3）：同步执行结构化动作序列，返回 { ok, message } */
-  executeActions?(actionsJson: string): string;
+  executeActions?(actionsJson: string, taskId?: string): string;
   /** ask_user 暂停后继续（true）/ 中止（false） */
   resumeAfterAsk?(proceed: boolean, approvalId?: string): string;
   /** 中止正在执行的动作序列 */
@@ -364,14 +364,15 @@ export interface MaiUiExecResult {
 /**
  * 在手机壳执行 MAI-UI 动作序列（需无障碍权限已开启）。
  * 同步等待结果；ask_user 时返回 message 以 "ASK_USER:" 开头，需调 resumeAfterAsk 继续。
+ * taskId 非空时执行器会创建 Run 并逐步上报（P1-12 断点恢复）。
  */
-export function executeActions(actions: MaiUiAction[]): MaiUiExecResult {
+export function executeActions(actions: MaiUiAction[], taskId?: string): MaiUiExecResult {
   const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
   if (!bridge?.executeActions) {
     return { ok: false, message: "当前不在 JIUZHANG AI App 内，无法执行设备操作" };
   }
   try {
-    const raw = bridge.executeActions(JSON.stringify(actions));
+    const raw = bridge.executeActions(JSON.stringify(actions), taskId ?? "");
     const parsed =
       typeof raw === "string" && raw.trim().startsWith("{")
         ? (JSON.parse(raw) as MaiUiExecResult)
