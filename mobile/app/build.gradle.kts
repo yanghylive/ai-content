@@ -11,8 +11,8 @@ android {
         applicationId = "com.aicontent.desktop.mobile" // 与桌面端同产品线（appId 标识）
         minSdk = 26 // Android 8.0+（前台服务/无障碍）
         targetSdk = 35
-        versionCode = 23
-        versionName = "0.3.2"
+        versionCode = 24
+        versionName = "0.3.3"
     }
 
     buildFeatures {

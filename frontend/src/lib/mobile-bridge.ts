@@ -29,8 +29,8 @@ interface JiuZhangBridge {
   wechatLogin?(): string;
   /** MAI-UI 动作执行（PRD M2/M3）：同步执行结构化动作序列，返回 { ok, message } */
   executeActions?(actionsJson: string, taskId?: string): string;
-  /** ask_user 暂停后继续（true）/ 中止（false） */
-  resumeAfterAsk?(proceed: boolean, approvalId?: string): string;
+  /** ask_user 暂停后继续（true）/ 中止（false）；currentHash 为审批动作 hash，壳代码 consume 校验防篡改 */
+  resumeAfterAsk?(proceed: boolean, approvalId?: string, currentHash?: string): string;
   /** 中止正在执行的动作序列 */
   cancelActions?(): string;
   /** 暂停/继续执行（M2） */
@@ -383,12 +383,12 @@ export function executeActions(actions: MaiUiAction[], taskId?: string): MaiUiEx
   }
 }
 
-/** ask_user 暂停后继续执行 */
-export function resumeAfterAsk(proceed: boolean, approvalId?: string): MaiUiExecResult {
+/** ask_user 暂停后继续执行（currentHash 为审批动作 hash，供壳代码 consume 校验防篡改） */
+export function resumeAfterAsk(proceed: boolean, approvalId?: string, currentHash?: string): MaiUiExecResult {
   const bridge = typeof window !== "undefined" ? window.JiuZhang : undefined;
   if (!bridge?.resumeAfterAsk) return { ok: false, message: "桥方法不可用" };
   try {
-    const raw = bridge.resumeAfterAsk(proceed, approvalId ?? "");
+    const raw = bridge.resumeAfterAsk(proceed, approvalId ?? "", currentHash ?? "");
     const parsed = typeof raw === "string" && raw.trim().startsWith("{")
       ? (JSON.parse(raw) as MaiUiExecResult)
       : null;
