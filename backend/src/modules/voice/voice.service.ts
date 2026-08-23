@@ -44,6 +44,7 @@ import type {
   VoiceToolDescriptor,
   VoiceToolRisk,
 } from './voice.types';
+import { KaypalProviderResolver } from '../ai-models/kaypal-provider.resolver';
 
 type Settled<T> = { value: T | null; error?: string };
 type VoiceChatMessage = {
@@ -822,9 +823,10 @@ export class VoiceService {
   }
 
   private getKaypalCloudBaseUrl() {
-    return (
-      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn'
-    ).replace(/\/+$/, '');
+    // Stage 1A：host 统一经 KaypalProviderResolver 校验（fail-closed）
+    return KaypalProviderResolver.resolveBaseUrlFrom([
+      this.readConfig('KAYPAL_AUTH_BASE_URL'),
+    ]);
   }
 
   private isVoiceAsrBillingEnabled() {

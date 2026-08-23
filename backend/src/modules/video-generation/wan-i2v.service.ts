@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
+import { KaypalProviderResolver } from '../ai-models/kaypal-provider.resolver';
 
 /**
  * 万相 Wan i2v 视频生成（数字人 talking-head 底座）
@@ -47,11 +48,15 @@ export class WanI2vService {
 
   /** kaypal 云端网关地址（与 voice/ai-client 同源） */
   private getGatewayBaseUrl(): string {
-    const authBase =
-      this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn';
-    return (
-      this.readConfig('KAYPAL_AI_PROXY_BASE_URL') || `${authBase}/api/ai`
-    ).replace(/\/+$/, '');
+    // Stage 1A：base url 统一经 KaypalProviderResolver 校验 host（fail-closed），
+    // 避免 env 被改成第三方/恶意域名后请求带着凭据直接打过去。
+    const authBase = KaypalProviderResolver.resolveBaseUrlFrom([
+      this.readConfig('KAYPAL_AUTH_BASE_URL'),
+    ]);
+    return KaypalProviderResolver.resolveBaseUrlFrom([
+      this.readConfig('KAYPAL_AI_PROXY_BASE_URL'),
+      `${authBase}/api/ai`,
+    ]);
   }
 
   /** 服务商 Key（x-kaypal-api-key），本地不持有云厂商 Key */

@@ -13,7 +13,16 @@
  *   1) 我方代码/配置/OpenAPI 示例中出现厂商直连域名        → FAIL
  *   2) 我方代码真实读取厂商直连 Key 环境变量               → FAIL
  *      （即 process.env.XXX / readEnv('XXX') 形式的取值）
- *   3) 打包进来的第三方 SDK（openai npm 包）自身的内置默认值 → PASS（白名单）
+ *   3) 安全测试里的「反例样本」→ PASS（需显式标记，见下）
+ *      理由：要证明厂商域名会被拒绝，测试里必须写得出这些域名，否则
+ *      「拒绝直连」这条规则永远无法被测试覆盖。
+ *      放行条件（三个同时满足，缺一不可）：
+ *        a) 文件是 backend/src 下的 *.spec.ts
+ *        b) 文件头显式声明标记 @allow-direct-provider-fixtures
+ *        c) 该行没有真的把域名接成客户端 —— 出现 new OpenAI( / baseURL: /
+ *           axios.create( / fetch(' 等实接形态一律仍判违规
+ *      这样测试只能把厂商域名当"待拒绝的输入"，不能借测试文件偷偷接直连。
+ *   4) 打包进来的第三方 SDK（openai npm 包）自身的内置默认值 → PASS（白名单）
  *      理由：我们始终显式传入 apiKey + baseURL（见 ai-client.service.ts
  *      new OpenAI({ apiKey: platform.apiKey, baseURL: safeBaseUrl })），
  *      显式参数优先于 SDK 的 env 回退，故 SDK 内置默认值不构成直连风险。
@@ -85,6 +94,30 @@ function isVendoredSdkLine(line) {
   return SDK_ALLOW_MARKERS.some((m) => line.includes(m));
 }
 
+/**
+ * 安全测试反例样本的放行标记。必须写在 *.spec.ts 文件里。
+ * 故意要求显式标记而不是「spec 文件一律豁免」：豁免整类文件等于留了个
+ * 后门——任何人都能把真实直连配置塞进 *.spec.ts 绕过门禁。
+ */
+const SPEC_FIXTURE_MARKER = '@allow-direct-provider-fixtures';
+
+/** 即便文件已标记，这些「真的接上去」的形态仍然违规 */
+const SPEC_HARD_FORBIDDEN_PATTERNS = [
+  /new\s+OpenAI\s*\(/,
+  /baseURL\s*:/,
+  /baseUrl\s*:/,
+  /axios\.create\s*\(/,
+  /fetch\s*\(\s*['"`]https?:\/\//,
+];
+
+function isMarkedSpecFixtureFile(file, text) {
+  return /\.spec\.ts$/.test(file) && text.includes(SPEC_FIXTURE_MARKER);
+}
+
+function isRealWiringLine(line) {
+  return SPEC_HARD_FORBIDDEN_PATTERNS.some((p) => p.test(line));
+}
+
 const SCAN_TARGETS = [
   { path: join(backendRoot, 'src'), kind: 'source' },
   { path: join(backendRoot, 'dist-bundle-sqlite'), kind: 'bundle' },
@@ -122,6 +155,7 @@ function collectFiles(root) {
 
 const violations = [];
 let allowedSdkLines = 0;
+let allowedSpecFixtureLines = 0;
 let scannedFiles = 0;
 
 for (const target of SCAN_TARGETS) {
@@ -139,6 +173,8 @@ for (const target of SCAN_TARGETS) {
       continue;
     }
     scannedFiles += 1;
+    const specFixtureFile =
+      target.kind === 'source' && isMarkedSpecFixtureFile(file, text);
     const lines = text.split('\n');
     for (let i = 0; i < lines.length; i += 1) {
       const line = lines[i];
@@ -147,6 +183,10 @@ for (const target of SCAN_TARGETS) {
         if (!line.includes(host)) continue;
         if (target.kind === 'bundle' && isVendoredSdkLine(line)) {
           allowedSdkLines += 1;
+          continue;
+        }
+        if (specFixtureFile && !isRealWiringLine(line)) {
+          allowedSpecFixtureLines += 1;
           continue;
         }
         violations.push({
@@ -164,6 +204,7 @@ for (const target of SCAN_TARGETS) {
           allowedSdkLines += 1;
           continue;
         }
+        // 注意：Key 读取不给 spec 放行。测试没有任何理由真去读厂商 Key。
         violations.push({
           file: relative(repoRoot, file),
           line: i + 1,
@@ -176,7 +217,9 @@ for (const target of SCAN_TARGETS) {
 }
 
 console.log(
-  `[check-no-direct-provider] 扫描文件 ${scannedFiles} 个；放行第三方 SDK 内置默认值 ${allowedSdkLines} 处`,
+  `[check-no-direct-provider] 扫描文件 ${scannedFiles} 个；` +
+    `放行第三方 SDK 内置默认值 ${allowedSdkLines} 处；` +
+    `放行已标记的安全测试反例 ${allowedSpecFixtureLines} 处`,
 );
 
 if (violations.length > 0) {

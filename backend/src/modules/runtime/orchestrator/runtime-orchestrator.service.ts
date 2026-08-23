@@ -25,6 +25,7 @@ import {
   type RuntimeExecutionResult,
   rejectResult,
 } from '../executor.interface';
+import { KaypalProviderResolver } from '../../ai-models/kaypal-provider.resolver';
 
 const DEFAULT_KAYPAL_AUTH_BASE_URL = 'https://kaypal.cn';
 
@@ -707,11 +708,16 @@ export class RuntimeOrchestrator {
   }
 
   private getKaypalCloudBaseUrl() {
-    return (
-      this.config?.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
-      process.env.KAYPAL_AUTH_BASE_URL ||
-      DEFAULT_KAYPAL_AUTH_BASE_URL
-    ).replace(/\/+$/, '');
+    // Stage 1A：host 统一经 KaypalProviderResolver 校验（fail-closed）。
+    // 该地址用于云端积分冻结/结算，env 被篡改会把用户 token 打到第三方。
+    return KaypalProviderResolver.resolveBaseUrlFrom(
+      [
+        this.config?.get<string>('KAYPAL_AUTH_BASE_URL'),
+        process.env.KAYPAL_AUTH_BASE_URL,
+      ],
+      DEFAULT_KAYPAL_AUTH_BASE_URL,
+      this.config?.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
+    );
   }
 
   private readPositiveNumberConfig(key: string, fallback: number) {

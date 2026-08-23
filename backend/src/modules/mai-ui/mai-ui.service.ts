@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { AiClientService } from '../ai-models/ai-client.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MAI_UI_SYSTEM_PROMPT } from './mai-ui.prompt';
+import { KaypalProviderResolver } from '../ai-models/kaypal-provider.resolver';
 
 /** kaypal 平台固定名（与 kaypal-model-sync.service 一致） */
 const KAYPAL_PLATFORM_NAME = 'Kaypal 模型台';
@@ -215,11 +216,27 @@ export class MaiUiService {
    * 避免"代码兼容了别名但库里没有模型 → 首用即 404"的断链。
    */
   private async ensureVisionModel(): Promise<void> {
-    const baseUrl = this.config.get<string>('KAYPAL_AI_PROXY_BASE_URL')?.trim();
+    const rawBaseUrl = this.config
+      .get<string>('KAYPAL_AI_PROXY_BASE_URL')
+      ?.trim();
     const apiKey = this.config.get<string>('KAYPAL_AI_PROXY_API_KEY')?.trim();
-    if (!baseUrl || !apiKey) {
+    if (!rawBaseUrl || !apiKey) {
       this.logger.warn(
         'MAI-UI 视觉模型缺失且缺少 KAYPAL_AI_PROXY_BASE_URL/API_KEY（无法懒创建，保持 404）',
+      );
+      return;
+    }
+    // Stage 1A：懒创建的平台记录也必须指向 kaypal 网关，非法 host 不落库。
+    // 这里降级为 warn + return（与上面缺配置同样保持 404），不抛断请求。
+    let baseUrl: string;
+    try {
+      baseUrl = KaypalProviderResolver.assertAllowedUrl(
+        rawBaseUrl,
+        this.config.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
+      );
+    } catch (error) {
+      this.logger.warn(
+        `MAI-UI 视觉模型懒创建被拒：${KaypalProviderResolver.getErrorMessage(error)}`,
       );
       return;
     }

@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { KaypalProviderResolver } from '../ai-models/kaypal-provider.resolver';
+
+const DEFAULT_CLOUD_API_ENDPOINT = 'https://kaypal.cn/cloud-api';
 
 export interface GenerateReplyInput {
   platform: string;
@@ -50,14 +53,32 @@ export interface MarkSentOutput {
 @Injectable()
 export class CloudApiService {
   private readonly logger = new Logger(CloudApiService.name);
-  private readonly endpoint: string;
+  private readonly rawEndpoint: string;
   private readonly timeout: number;
   private readonly maxRetries: number;
 
+  /**
+   * Stage 1A：cloud-api 也是 kaypal 侧服务，endpoint 统一经
+   * KaypalProviderResolver 校验（fail-closed）。这条链路外发客户消息/回复正文，
+   * env 被改成第三方域名等于业务数据外泄。
+   *
+   * 故意做成惰性 getter 而非构造函数里校验：构造函数抛错会让整个 Nest 模块
+   * 装配失败、后端起不来（一个 env 拼错就全站宕），把爆炸半径限制在
+   * cloud-api 自己的请求上更合理。私有化部署放行别的 host 用
+   * KAYPAL_EXTRA_ALLOWED_HOSTS。
+   */
+  private get endpoint(): string {
+    return KaypalProviderResolver.resolveBaseUrlFrom(
+      [this.rawEndpoint],
+      DEFAULT_CLOUD_API_ENDPOINT,
+      this.configService.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
+    );
+  }
+
   constructor(private readonly configService: ConfigService) {
-    this.endpoint =
+    this.rawEndpoint =
       this.configService.get<string>('CLOUD_API_ENDPOINT') ||
-      'https://kaypal.cn/cloud-api';
+      DEFAULT_CLOUD_API_ENDPOINT;
     this.timeout = this.configService.get<number>('CLOUD_API_TIMEOUT') || 30000;
     this.maxRetries =
       this.configService.get<number>('CLOUD_API_MAX_RETRIES') || 3;

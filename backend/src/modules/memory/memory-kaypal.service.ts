@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { KaypalProviderResolver } from '../ai-models/kaypal-provider.resolver';
 
 /**
  * Kaypal 统一记忆系统客户端（T3-1，2026-08-20）
@@ -38,10 +39,10 @@ export class KaypalMemoryService {
   }
 
   private get baseUrl(): string {
-    return (process.env.KAYPAL_MEMORY_BASE_URL || 'https://kaypal.cn').replace(
-      /\/$/,
-      '',
-    );
+    // Stage 1A：host 统一经 KaypalProviderResolver 校验（fail-closed）
+    return KaypalProviderResolver.resolveBaseUrlFrom([
+      process.env.KAYPAL_MEMORY_BASE_URL,
+    ]);
   }
 
   private get phone(): string {

@@ -500,14 +500,18 @@ describe('AgentSExecutorAdapter', () => {
         ],
       });
       const adapter = new AgentSExecutorAdapter(mock);
-      adapter.pollTimeoutMs = 30;
+      // 2026-08-23 去 flaky：原来是 30ms/5ms（只有 6 轮预算）。jest 并发跑 40+
+      // 套件时单个事件循环 tick 就可能吃掉 30ms，导致只轮询 1 次、`>=2` 假红
+      // （实测并发下失败、单跑 3/3 通过）。放宽到 300ms/5ms（约 60 轮预算），
+      // 语义不变但对负载抖动免疫。
+      adapter.pollTimeoutMs = 300;
       adapter.pollIntervalMs = 5;
       const result = await adapter.execute(makeTask('wechat-desktop'), baseCtx);
 
       expect(result.ok).toBe(false);
       expect(result.status).toBe('failed');
       expect(result.reasonCode).toBe('send_failed');
-      expect(result.technicalMessage).toContain('30ms');
+      expect(result.technicalMessage).toContain('300ms');
       // 至少轮询 2 次
       expect(mock.getEvents.mock.calls.length).toBeGreaterThanOrEqual(2);
     });

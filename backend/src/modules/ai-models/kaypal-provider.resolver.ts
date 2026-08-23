@@ -7,17 +7,25 @@ import { APIError } from 'openai';
  *
  * 职责（计划一.1 / 二.A）：
  * - 解析 KAYPAL_AUTH_BASE_URL / KAYPAL_AI_PROXY_BASE_URL / KAYPAL_AI_PROXY_API_KEY
- * - 校验 URL host，只允许 kaypal.cn / test.kaypal.cn
+ * - 校验 URL host，只允许 kaypal.cn 根域及其子域（见 KAYPAL_ROOT_DOMAIN）
  * - 统一生成 x-kaypal-api-key / x-kaypal-user-id / Authorization 等请求头
  * - 统一错误分类（401/402/409/429/5xx）与 unknown 类型安全读取
  *
  * 业务模块禁止自行拼接第三方 URL 或读取第三方 Key（DASHSCOPE/OPENAI/DEEPSEEK）。
  */
-export const ALLOWED_KAYPAL_HOSTS = ['kaypal.cn', 'test.kaypal.cn'] as const;
+/**
+ * 网关根域。生产在用的子域不止 test：enterprise.kaypal.cn、cases.kaypal.cn、
+ * aicontent.vip.kaypal.cn 等，因此按「根域 + 子域后缀」判定，而不是维护枚举。
+ * 关键是必须解析出 URL.host 再比对——用 baseUrl.includes('kaypal.cn') 做子串匹配
+ * 会被 https://kaypal.cn.evil.com 和 https://evil.com/?x=kaypal.cn 绕过。
+ */
+const KAYPAL_ROOT_DOMAIN = 'kaypal.cn';
 
 export class KaypalHostNotAllowedError extends Error {
   constructor(public readonly host: string) {
-    super(`Kaypal 地址非法，仅允许 kaypal.cn / test.kaypal.cn，实际: ${host}`);
+    super(
+      `Kaypal 地址非法，仅允许 ${KAYPAL_ROOT_DOMAIN} 及其子域，实际: ${host}`,
+    );
     this.name = 'KaypalHostNotAllowedError';
   }
 }
@@ -41,24 +49,78 @@ export class KaypalProviderResolver {
 
   constructor(private readonly config: ConfigService) {}
 
-  /** 解析并校验 Kaypal 基础地址，host 必须命中白名单 */
-  resolveBaseUrl(
-    envKey: 'KAYPAL_AUTH_BASE_URL' | 'KAYPAL_AI_PROXY_BASE_URL',
-    fallback: string,
-  ): string {
-    const raw = (this.config.get<string>(envKey) || fallback)
-      .trim()
-      .replace(/\/+$/, '');
+  /**
+   * host 是否属于 kaypal 网关（根域或其子域）。
+   * 只接受精确的 host（已去端口），不做任何子串匹配。
+   * 逃生阀：KAYPAL_EXTRA_ALLOWED_HOSTS（逗号分隔）用于私有化部署/本地代理，默认空。
+   */
+  static isAllowedHost(rawHost: string, extraHosts?: string): boolean {
+    const host = rawHost.trim().toLowerCase().split(':')[0];
+    if (!host) return false;
+    if (host === KAYPAL_ROOT_DOMAIN) return true;
+    if (host.endsWith(`.${KAYPAL_ROOT_DOMAIN}`)) return true;
+    const extra = (extraHosts ?? process.env.KAYPAL_EXTRA_ALLOWED_HOSTS ?? '')
+      .split(',')
+      .map((h) => h.trim().toLowerCase().split(':')[0])
+      .filter(Boolean);
+    return extra.includes(host);
+  }
+
+  /**
+   * 校验任意 Kaypal 地址（含数据库里的 platform.baseUrl），返回去尾斜杠的规范值。
+   * 非法则抛 KaypalHostNotAllowedError —— 调用方不得用子串匹配自行判定。
+   */
+  static assertAllowedUrl(rawUrl: string, extraHosts?: string): string {
+    const raw = `${rawUrl ?? ''}`.trim().replace(/\/+$/, '');
     let host: string;
     try {
       host = new URL(raw).host;
     } catch {
-      throw new KaypalHostNotAllowedError(raw);
+      throw new KaypalHostNotAllowedError(raw || '(空地址)');
     }
-    if (!(ALLOWED_KAYPAL_HOSTS as readonly string[]).includes(host)) {
+    if (!KaypalProviderResolver.isAllowedHost(host, extraHosts)) {
       throw new KaypalHostNotAllowedError(host);
     }
     return raw;
+  }
+
+  /** 网关默认地址，供各业务服务统一引用，避免各自硬编码字面量 */
+  static readonly DEFAULT_BASE_URL = `https://${KAYPAL_ROOT_DOMAIN}`;
+
+  /**
+   * 按优先级取第一个非空候选值作为 base url，并强制 host 校验。
+   *
+   * 用于原地替换各业务服务里的无校验拼接：
+   *   const base = this.readConfig('KAYPAL_AUTH_BASE_URL') || 'https://kaypal.cn';
+   * 这种写法一旦 env 被改成第三方/恶意域名，请求会带着凭据直接打过去。
+   * 改为本方法后，任何非 kaypal.cn 根域的配置都会在读取时立刻抛错（fail-closed）。
+   *
+   * 采用静态方法而非注入实例：这些服务分散在 10 个模块，注入 resolver 需要改动
+   * 各自的 module imports（大范围 DI 变更风险高）。静态校验同样达成单点化目标。
+   */
+  static resolveBaseUrlFrom(
+    candidates: Array<string | null | undefined>,
+    fallback: string = KaypalProviderResolver.DEFAULT_BASE_URL,
+    extraHosts?: string,
+  ): string {
+    for (const candidate of candidates) {
+      const value = `${candidate ?? ''}`.trim();
+      if (value) {
+        return KaypalProviderResolver.assertAllowedUrl(value, extraHosts);
+      }
+    }
+    return KaypalProviderResolver.assertAllowedUrl(fallback, extraHosts);
+  }
+
+  /** 解析并校验 Kaypal 基础地址，host 必须属于网关根域或其子域 */
+  resolveBaseUrl(
+    envKey: 'KAYPAL_AUTH_BASE_URL' | 'KAYPAL_AI_PROXY_BASE_URL',
+    fallback: string,
+  ): string {
+    return KaypalProviderResolver.assertAllowedUrl(
+      this.config.get<string>(envKey) || fallback,
+      this.config.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
+    );
   }
 
   get authBaseUrl(): string {
