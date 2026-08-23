@@ -349,7 +349,8 @@ export class MobileExecutorController {
 
   @Post('tasks/:id/status')
   @ApiOperation({
-    summary: '回传执行状态（x-device-token 认证，deviceId 从 token 解析）',
+    summary:
+      '回传执行状态（优先 x-device-token 设备认证；无 token 回落到 session 用户认证，供前端 MAI-UI 留痕）',
   })
   async reportStatus(
     @Req() request: AuthenticatedRequest,
@@ -361,11 +362,23 @@ export class MobileExecutorController {
       error?: string;
     },
   ) {
-    const dev = await this.requireDevice(request);
     if (!input?.status) throw new BadRequestException('缺少 status');
-    return this.status.report(dev.userId, taskId, {
+    // 认证：优先设备 token（壳代码 AgentService），无 token 回落 session（前端 MAI-UI）。
+    // 此前仅 requireDevice，前端浏览器无 x-device-token → 401，MAI-UI 任务状态留痕失效。
+    const token = String(request.headers['x-device-token'] || '');
+    const dev = token ? await this.devices.verifyDeviceToken(token) : null;
+    let userId: string;
+    let deviceId: string | undefined;
+    if (dev) {
+      userId = dev.userId;
+      deviceId = dev.deviceId;
+    } else {
+      const user = this.requireUser(request);
+      userId = user.id;
+    }
+    return this.status.report(userId, taskId, {
       ...input,
-      deviceId: dev.deviceId,
+      deviceId,
     });
   }
 }
