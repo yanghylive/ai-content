@@ -108,6 +108,11 @@ export class AgentGateway {
       throw makeError('SESSION_EXPIRED', { details: { sessionId } });
     }
     const events = this.deps.bus.getEventsSince(sessionId, lastEventId);
+    // P2-8：实时更新会话消费进度（契约字段语义：lastEventId/lastSequence 表示已消费到哪）
+    if (events.length > 0) {
+      session.lastEventId = events[events.length - 1].eventId;
+      session.lastSequence = events[events.length - 1].sequence;
+    }
     return { session, events };
   }
 
@@ -222,6 +227,7 @@ export class AgentGateway {
   ): Promise<ToolResult> {
     const task = this.requireTask(taskId);
     this.assertOwnership(task, ctx);
+    this.assertTaskSessionAlive(task); // P1-1：过期会话不可审批/控制任务
     const pending = this.pendingRequests.get(taskId);
 
     // P0-4：先做绑定校验（taskId/toolCallId/预览），跨任务复用直接 APPROVAL_MISMATCH
@@ -240,6 +246,7 @@ export class AgentGateway {
   pauseTask(ctx: TenantContext, taskId: string): AgentTask {
     const task = this.requireTask(taskId);
     this.assertOwnership(task, ctx);
+    this.assertTaskSessionAlive(task); // P1-1
     this.abortTask(taskId); // 真正中止该任务的在途执行（不影响同会话其他任务）
     void this.deps.octop.cancelRun(task.sessionId, 'user_pause').catch(() => undefined);
     this.mutateTask(task, 'pause');
@@ -254,6 +261,7 @@ export class AgentGateway {
   async resumeTask(ctx: TenantContext, taskId: string): Promise<ToolResult> {
     const task = this.requireTask(taskId);
     this.assertOwnership(task, ctx);
+    this.assertTaskSessionAlive(task); // P1-1
     this.mutateTask(task, 'resume');
     const pending = this.pendingRequests.get(taskId);
     if (!pending) throw makeError('CHECKPOINT_MISSING', { details: { taskId } });
@@ -264,6 +272,7 @@ export class AgentGateway {
   cancelTask(ctx: TenantContext, taskId: string): AgentTask {
     const task = this.requireTask(taskId);
     this.assertOwnership(task, ctx);
+    this.assertTaskSessionAlive(task); // P1-1
     this.abortTask(taskId); // 真正中止该任务的在途执行（不影响同会话其他任务）
     void this.deps.octop.cancelRun(task.sessionId, 'user_cancel').catch(() => undefined);
     this.mutateTask(task, 'cancel');
@@ -290,8 +299,8 @@ export class AgentGateway {
     return this.deps.memory.capture(ctx, scope, content, source);
   }
 
-  async memoryDelete(ctx: TenantContext, id: string): Promise<{ deleted: boolean }> {
-    return this.deps.memory.delete(ctx, id);
+  async memoryDelete(ctx: TenantContext, id: string, scope?: string): Promise<{ deleted: boolean }> {
+    return this.deps.memory.delete(ctx, id, scope);
   }
 
   /** Octop 高级模式：创建原生 octop 会话 */
@@ -551,6 +560,11 @@ export class AgentGateway {
     const t = this.tasks.get(id);
     if (!t) throw makeError('CHECKPOINT_MISSING', { details: { taskId: id } });
     return t;
+  }
+
+  /** P1-1：任务所属会话必须存在且未过期（审批/暂停/恢复/取消统一走此） */
+  private assertTaskSessionAlive(task: AgentTask): void {
+    this.requireSession(task.sessionId);
   }
 
   private isTerminal(status: string): boolean {
