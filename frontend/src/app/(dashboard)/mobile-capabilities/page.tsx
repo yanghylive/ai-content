@@ -18,15 +18,12 @@ export default function MobileCapabilitiesPage() {
   const config = useClientConfig();
   return (
     <div>
-      <header className="mx-header">
-        <div className="mx-header-row">
-          <div>
-            <div className="mx-brand-eyebrow">JIUZHANG AI</div>
-            <h1 className="mx-page-title">手机端能做什么</h1>
-            <p className="mx-page-sub">移动端能力边界说明</p>
-          </div>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">手机端能做什么</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">移动端能力边界说明</p>
         </div>
-      </header>
+      </div>
 
       {/* 手机上可直接完成 */}
       <section className="mx-px" style={{ marginTop: 14 }}>

@@ -325,11 +325,13 @@ export default function MaiUiWorkbenchPage() {
       style={{ minHeight: "100dvh", paddingBottom: 90, background: isMobile ? undefined : "var(--kaypal-v3-paper-muted)" }}
     >
       <div className="mx-px" style={{ maxWidth: 640, margin: "0 auto", padding: isMobile ? "12px 16px 28px" : "28px 24px" }}>
-        {/* 头部 */}
-        <div className="mx-header">
-          <div className="mx-page-title">MAI-UI 工作台</div>
-          <div className="mx-page-sub">
-            截屏 → 指令 → 规划动作 → 手机自动执行（截图由 qwen-vl-max 理解）
+        {/* 统一页头（桌面/移动同一品牌结构） */}
+        <div className="kx-page-head">
+          <div>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">MAI-UI 工作台</h1>
+            <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+              截屏 → 指令 → 规划动作 → 手机自动执行（截图由 qwen-vl-max 理解）
+            </p>
           </div>
         </div>
 

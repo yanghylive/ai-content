@@ -105,18 +105,12 @@ export default function CopyComparePage() {
   return (
     <div className="kx-mobile-ambient" style={{ minHeight: "100dvh", paddingBottom: 90 }}>
       <V2BackButton />
-      <header className="mx-header">
-        <div className="mx-header-row">
-          <div>
-            <div className="mx-brand-eyebrow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>
-              JIUZHANG AI
-            </div>
-            <h1 className="mx-page-title">多平台文案批量对比</h1>
-            <p className="mx-page-sub">同一条内容，各平台适配版本并排看（发布前检查）</p>
-          </div>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">多平台文案批量对比</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">同一条内容，各平台适配版本并排看（发布前检查）</p>
         </div>
-      </header>
+      </div>
 
       <section className="mx-px" style={{ marginTop: 14 }}>
         <div style={{ borderRadius: 20, padding: 16, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>

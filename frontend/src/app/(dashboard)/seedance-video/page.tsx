@@ -138,18 +138,12 @@ export default function SeedanceVideoPage() {
 
   return (
     <div className="kx-mobile-ambient" style={{ minHeight: "100dvh", paddingBottom: 90 }}>
-      <header className="mx-header">
-        <div className="mx-header-row">
-          <div>
-            <div className="mx-brand-eyebrow">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="3" /><path d="M10 9l5 3-5 3V9z" /></svg>
-              JIUZHANG AI
-            </div>
-            <h1 className="mx-page-title">Seedance 快速生成</h1>
-            <p className="mx-page-sub">文字/图片 → AI 视频（约 1-3 分钟）</p>
-          </div>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">Seedance 快速生成</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">文字/图片 → AI 视频（约 1-3 分钟）</p>
         </div>
-      </header>
+      </div>
 
       <section className="mx-px" style={{ marginTop: 14 }}>
         <div

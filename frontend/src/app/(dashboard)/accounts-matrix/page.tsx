@@ -193,27 +193,20 @@ export default function AccountsMatrixV2Page() {
     <div className={styles.page}>
       <V2BackButton />
       {/* 页面头 */}
-      <header className="mx-header">
-        <div className="mx-header-row">
-          <div>
-            <div className="mx-brand-eyebrow">
-              <BrandLogo />
-              JIUZHANG AI
-            </div>
-            <h1 className="mx-page-title">多账号矩阵</h1>
-            <p className="mx-page-sub">各平台账号 · 发布时多选即可矩阵分发</p>
-          </div>
-          <button
-            type="button"
-            className="mx-btn-gold"
-            style={{ fontSize: 12, padding: "8px 14px", textDecoration: "none" }}
-            disabled={validating}
-            onClick={() => void revalidate()}
-          >
-            {validating ? "校验中…" : "重新校验"}
-          </button>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">多账号矩阵</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">各平台账号 · 发布时多选即可矩阵分发</p>
         </div>
-      </header>
+        <button
+          type="button"
+          className="kx-btn-primary px-4 py-2 text-[13px]"
+          disabled={validating}
+          onClick={() => void revalidate()}
+        >
+          {validating ? "校验中…" : "重新校验"}
+        </button>
+      </div>
 
       {/* 统计 */}
       <section className="mx-px mx-mt-lg">

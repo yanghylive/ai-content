@@ -84,25 +84,12 @@ export default function VideoDownloadPage() {
       <V2BackButton />
 
       {/* 桌面端顶部栏：返回 + 标题 */}
-      <header className="mx-header">
-        <div className="mx-header-row">
-          <div>
-            <div className="mx-brand-eyebrow">
-              <Sparkles
-                width={14}
-                height={14}
-                style={{ display: "inline", verticalAlign: "-2px", marginRight: 4 }}
-                aria-hidden="true"
-              />
-              JIUZHANG AI
-            </div>
-            <h1 className="mx-page-title">视频去水印</h1>
-            <p className="mx-page-sub">
-              粘贴分享链接，自动去水印保存到素材库
-            </p>
-          </div>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">视频去水印</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">粘贴分享链接，自动去水印保存到素材库</p>
         </div>
-      </header>
+      </div>
 
       <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
         <div
