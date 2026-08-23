@@ -192,6 +192,8 @@ export class TaskDispatchService {
     const candidates = await this.prisma.executorTask.findMany({
       where: {
         userId,
+        // custom=MAI-UI 任务由前端手动执行（不走 agent claim 轮询），排除防误领
+        type: { not: 'custom' },
         status: 'queued',
         OR: [{ deviceId: null }, { deviceId }],
       },

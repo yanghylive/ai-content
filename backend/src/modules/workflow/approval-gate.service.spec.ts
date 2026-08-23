@@ -22,6 +22,15 @@ function makePrisma(overrides: Record<string, unknown> = {}) {
         Object.assign(row, data);
         return row;
       }),
+      updateMany: jest.fn().mockImplementation(async ({ where, data }) => {
+        // 模拟原子消费：where 带 status 条件，状态不匹配则影响 0 行（并发防重）
+        const row = approvals.find(
+          (a) => a.id === where.id && a.status === where.status,
+        );
+        if (!row) return { count: 0 };
+        Object.assign(row, data);
+        return { count: 1 };
+      }),
       findMany: jest.fn().mockResolvedValue([]),
     },
     ...overrides,
@@ -153,5 +162,36 @@ describe('ApprovalGateService', () => {
     await expect(
       svc.act({ tenantId: 'other-tenant', approvalId: r.approvalId!, action: 'approve', approverId: 'a1' }),
     ).rejects.toThrow('不在当前租户');
+  });
+
+  it('consume：approved 审批可消费一次（原子防重）', async () => {
+    const prisma = makePrisma();
+    const svc = new ApprovalGateService(prisma);
+    const r = await svc.check(input({ action: 'send_reply' }));
+    await svc.act({ tenantId: 't1', approvalId: r.approvalId!, action: 'approve', approverId: 'a1', currentInput: input({ action: 'send_reply' }) });
+    const hash = computeInputHash(input({ action: 'send_reply' }));
+    const out = await svc.consume('t1', r.approvalId!, hash);
+    expect(out.status).toBe('applied');
+  });
+
+  it('consume：重复消费（并发）第二次抛错，防重复外发', async () => {
+    const prisma = makePrisma();
+    const svc = new ApprovalGateService(prisma);
+    const r = await svc.check(input({ action: 'send_reply' }));
+    await svc.act({ tenantId: 't1', approvalId: r.approvalId!, action: 'approve', approverId: 'a1', currentInput: input({ action: 'send_reply' }) });
+    const hash = computeInputHash(input({ action: 'send_reply' }));
+    await svc.consume('t1', r.approvalId!, hash);
+    // 第二次消费：串行下 findUnique 已见 applied → 走状态校验抛「不可执行」；
+    // 真并发下 updateMany(where status='approved') count=0 → 抛「已被消费」（原子防重）
+    await expect(svc.consume('t1', r.approvalId!, hash)).rejects.toThrow('不可执行');
+  });
+
+  it('consume：内容已变（hash 不匹配）→ 抛错', async () => {
+    const prisma = makePrisma();
+    const svc = new ApprovalGateService(prisma);
+    const r = await svc.check(input({ action: 'send_reply' }));
+    await svc.act({ tenantId: 't1', approvalId: r.approvalId!, action: 'approve', approverId: 'a1', currentInput: input({ action: 'send_reply' }) });
+    const wrongHash = computeInputHash(input({ action: 'send_reply', payload: { text: '变了' } }));
+    await expect(svc.consume('t1', r.approvalId!, wrongHash)).rejects.toThrow('inputHash');
   });
 });
