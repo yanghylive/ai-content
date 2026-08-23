@@ -99,11 +99,13 @@ class RpaAccessibilityService : AccessibilityService() {
             return prefs.getString("device_token", null)
         }
 
-        /** 执行前消费审批（P0-3）：设备 token 认证调 consume，校验审批一次性 */
-        private fun consumeApproval(approvalId: String): Boolean {
+        /** 执行前消费审批（P0-3）：设备 token 认证调 consume，带 currentHash 校验防篡改 */
+        private fun consumeApproval(approvalId: String, currentHash: String): Boolean {
             val token = deviceToken() ?: return false
             return try {
-                val body = "{\"currentHash\":null}".toRequestBody("application/json; charset=utf-8".toMediaType())
+                // currentHash 为 sha256 hex（仅 [0-9a-f]），安全拼 JSON；空则传 null 保持旧行为
+                val hashJson = if (currentHash.isBlank()) "null" else "\"$currentHash\""
+                val body = "{\"currentHash\":$hashJson}".toRequestBody("application/json; charset=utf-8".toMediaType())
                 val req = Request.Builder()
                     .url("$EXEC_BASE_URL/api/mobile-executor/approvals/$approvalId/consume")
                     .header("x-device-token", token)
@@ -344,7 +346,7 @@ class RpaAccessibilityService : AccessibilityService() {
         }
 
         /** H5 对 ask_user 的答复：true=继续，false=中止；approvalId 非空时执行器校验审批（P0-3） */
-        fun resumeAfterAsk(proceed: Boolean, approvalId: String, callback: (RpaResult) -> Unit) {
+        fun resumeAfterAsk(proceed: Boolean, approvalId: String, currentHash: String, callback: (RpaResult) -> Unit) {
             val svc = instance ?: run {
                 callback(RpaResult.failure("无障碍服务未开启"))
                 return
@@ -362,10 +364,10 @@ class RpaAccessibilityService : AccessibilityService() {
                 finishMai(cb, RpaResult.failure("用户中止了动作序列"))
                 return
             }
-            // P0-3：审批通过后，执行器校验审批已消费（设备 token 调 consume），防绕过前端审批
+            // P0-3：审批通过后，执行器校验审批已消费（设备 token 调 consume，带 currentHash 防篡改）
             if (approvalId.isNotEmpty()) {
                 Thread {
-                    val ok = consumeApproval(approvalId)
+                    val ok = consumeApproval(approvalId, currentHash)
                     if (ok) {
                         // P1-11：审批通过 → Run 恢复 running
                         maiRunId?.let { setRunStatusRemote(it, "running") }

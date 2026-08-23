@@ -164,12 +164,12 @@ class JsBridge(private val activity: Activity) {
         return holder[0] ?: "{\"ok\":false,\"message\":\"执行结果丢失\"}"
     }
 
-    /** ask_user 暂停后：H5 答复继续（true）或中止（false）。 */
+    /** ask_user 暂停后：H5 答复继续（true）或中止（false）；currentHash 审批动作 hash（防篡改） */
     @JavascriptInterface
-    fun resumeAfterAsk(proceed: Boolean, approvalId: String): String {
+    fun resumeAfterAsk(proceed: Boolean, approvalId: String, currentHash: String): String {
         val latch = CountDownLatch(1)
         val holder = arrayOfNulls<String>(1)
-        com.aicontent.mobile.agent.RpaAccessibilityService.resumeAfterAsk(proceed, approvalId) { result ->
+        com.aicontent.mobile.agent.RpaAccessibilityService.resumeAfterAsk(proceed, approvalId, currentHash) { result ->
             holder[0] = "{\"ok\":${result.ok},\"message\":\"${escapeJson(result.message)}\"}"
             latch.countDown()
         }
