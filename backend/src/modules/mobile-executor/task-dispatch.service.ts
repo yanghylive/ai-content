@@ -75,17 +75,23 @@ export class TaskDispatchService {
       input.type || 'publish',
     );
     if (leaseAccountId) {
-      const active = await this.prisma.executorLease.findFirst({
+      const now = new Date();
+      // P0-1 恢复保护期：active 租约或冻结期内（心跳超时）都阻塞，防重复外发
+      const blocking = await this.prisma.executorLease.findFirst({
         where: {
           userId,
           accountId: leaseAccountId,
-          status: 'active',
-          expiresAt: { gt: new Date() },
+          OR: [
+            { status: 'active', expiresAt: { gt: now } },
+            { frozenUntil: { gt: now } },
+          ],
         },
       });
-      if (active) {
+      if (blocking) {
         throw new BadRequestException(
-          `账号 ${leaseAccountId} 已有任务执行中（租约 ${active.taskId}，设备 ${active.deviceId}），请等待完成或释放后重试`,
+          blocking.status === 'active'
+            ? `账号 ${leaseAccountId} 已有任务执行中（租约 ${blocking.taskId}，设备 ${blocking.deviceId}），请等待完成或释放后重试`
+            : `账号 ${leaseAccountId} 处于恢复保护期（设备 ${blocking.deviceId} 心跳超时），请稍后重试或人工确认`,
         );
       }
     }
@@ -191,6 +197,26 @@ export class TaskDispatchService {
       orderBy: { createdAt: 'asc' },
     });
     if (!candidate) return null;
+    // P0-1 恢复保护期：候选任务账号处于冻结期（心跳超时）时跳过领取，防重复外发
+    const candAccountId = this.extractAccountId(
+      (candidate.payload as Record<string, unknown>) ?? {},
+      candidate.type,
+    );
+    if (candAccountId) {
+      const frozen = await this.prisma.executorLease.findFirst({
+        where: {
+          userId,
+          accountId: candAccountId,
+          frozenUntil: { gt: new Date() },
+        },
+      });
+      if (frozen) {
+        this.logger.log(
+          `候选任务 ${candidate.id} 账号 ${candAccountId} 处于恢复保护期，跳过领取`,
+        );
+        return null;
+      }
+    }
     const row = await this.prisma.$transaction(async (tx) => {
       // 原子领取：仅当仍为 queued 时才更新（防止多设备并发重复领取同一任务）
       const claimed = await tx.executorTask.updateMany({

@@ -25,6 +25,7 @@ export class DeviceRegistryService {
   private readonly logger = new Logger(DeviceRegistryService.name);
   private readonly heartbeatTimeoutMs = 5 * 60 * 1000; // 5 分钟无心跳视为离线
   private readonly leaseTtlMs = 10 * 60 * 1000; // 租约 TTL（与 task-dispatch 一致，心跳续租）
+  private readonly recoveryProtectionMs = 5 * 60 * 1000; // 恢复保护期（心跳超时后冻结外发 5 分钟，防重复外发）
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -137,13 +138,17 @@ export class DeviceRegistryService {
           where: { id: row.id },
           data: { status: 'offline' },
         });
-        // 心跳超时：撤销该设备活跃租约（PRD §7 心跳超时→撤销租约+冻结外发）
+        // 心跳超时：撤销该设备活跃租约 + 冻结外发保护期（PRD §7：防旧设备网络恢复后重复外发）
         await this.prisma.executorLease.updateMany({
           where: { deviceId: row.id, status: 'active' },
-          data: { status: 'released', updatedAt: new Date() },
+          data: {
+            status: 'released',
+            frozenUntil: new Date(now + this.recoveryProtectionMs),
+            updatedAt: new Date(),
+          },
         });
         this.logger.warn(
-          `设备心跳超时：${row.id} 已离线，其活跃租约已撤销（冻结外发）`,
+          `设备心跳超时：${row.id} 已离线，其活跃租约已撤销（冻结外发 ${this.recoveryProtectionMs / 60000} 分钟）`,
         );
       }
       out.push(this.toInfo({ ...row, status: online ? 'online' : 'offline' }));

@@ -4039,6 +4039,7 @@ model ExecutorLease {
   taskId    String   @map("task_id") // 关联任务
   status    String   @default("active") // active | released
   expiresAt DateTime @map("expires_at") // 租约过期时间（心跳续租）
+  frozenUntil DateTime? @map("frozen_until") // 恢复保护期截止（心跳超时后冻结外发，防重复外发）
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
