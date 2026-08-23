@@ -66,6 +66,13 @@ export async function listExecutorTasks(limit = 10): Promise<ExecutorTaskView[]>
   return data;
 }
 
+/** 取消任务（queued/leasing/unknown 可取消，unknown 为心跳超时待人工处理） */
+export async function cancelTask(
+  taskId: string,
+): Promise<{ ok: boolean }> {
+  return api.post<{ ok: boolean }>(`/mobile-executor/tasks/${taskId}/cancel`, {});
+}
+
 /** 设备信息（mobile-executor DeviceInfo） */
 export interface MobileDeviceInfo {
   id: string;

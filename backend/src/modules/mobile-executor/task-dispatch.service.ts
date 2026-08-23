@@ -354,18 +354,23 @@ export class TaskDispatchService {
       where: { id: taskId, userId },
     });
     if (!row) throw new BadRequestException('任务不存在');
-    // 只能取消未开始执行的任务（queued/leasing）；执行中/终态不可取消
+    // 只能取消未开始执行的任务（queued/leasing）或结果不确定待人工处理的任务（unknown）；
+    // 执行中/终态不可取消
     const nStatus = normalizeStatus(row.status);
-    if (nStatus !== 'queued' && nStatus !== 'leasing') {
+    if (
+      nStatus !== 'queued' &&
+      nStatus !== 'leasing' &&
+      nStatus !== 'unknown'
+    ) {
       throw new BadRequestException(`任务状态为 ${nStatus}，无法取消`);
     }
     await this.prisma.executorTask.update({
       where: { id: taskId },
       data: { status: 'cancelled', updatedAt: new Date() },
     });
-    // 修复：leasing 任务在 claim 时已建账号租约，取消必须同步释放，
+    // 修复：leasing/unknown 任务已建账号租约，取消必须同步释放，
     // 否则账号被锁到租约过期（10 分钟），同账号新任务被 400 拦截
-    if (nStatus === 'leasing') {
+    if (nStatus === 'leasing' || nStatus === 'unknown') {
       await this.releaseLease(taskId);
     }
     this.logger.log(`任务已取消：${taskId}`);

@@ -8,6 +8,7 @@ import {
   listActiveLeases,
   listExecutorTasks,
   getTaskRun,
+  cancelTask,
   type MobileDeviceInfo,
   type ExecutorLeaseView,
   type ExecutorTaskView,
@@ -24,6 +25,7 @@ export default function DeviceCenterPage() {
   const [now, setNow] = useState(() => Date.now());
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [taskRun, setTaskRun] = useState<ExecutorRunView | null>(null);
+  const [cancelingTaskId, setCancelingTaskId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError("");
@@ -76,6 +78,19 @@ export default function DeviceCenterPage() {
       setTaskRun(null);
     }
   }, [expandedTaskId]);
+
+  /** 取消任务（unknown 心跳超时待人工处理 / queued / leasing） */
+  const handleCancelTask = useCallback(async (taskId: string) => {
+    setCancelingTaskId(taskId);
+    try {
+      await cancelTask(taskId);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setCancelingTaskId(null);
+    }
+  }, [load]);
 
   return (
     <div style={{ minHeight: "100dvh", paddingBottom: 90, background: isMobile ? undefined : "#f1f5f9" }}>
@@ -224,6 +239,15 @@ export default function DeviceCenterPage() {
                           >
                             {expanded ? "收起进度" : "执行进度"}
                           </button>
+                          {(t.status === "unknown" || t.status === "awaiting_approval") && (
+                            <button
+                              onClick={() => void handleCancelTask(t.id)}
+                              disabled={cancelingTaskId === t.id}
+                              style={{ fontSize: 11.5, color: "#dc2626", background: "none", border: "none", cursor: cancelingTaskId === t.id ? "default" : "pointer", padding: 0, opacity: cancelingTaskId === t.id ? 0.5 : 1 }}
+                            >
+                              {cancelingTaskId === t.id ? "取消中…" : "取消"}
+                            </button>
+                          )}
                           {needsAttention && (
                             <Link href="/mai-ui" style={{ fontSize: 11.5, color: "#2563eb", textDecoration: "none", whiteSpace: "nowrap" }}>
                               去 MAI-UI 重试 →
