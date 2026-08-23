@@ -92,10 +92,35 @@ class AgentService : Service() {
         return client.newCall(rb.build()).execute()
     }
 
+    /** 采集设备能力（P1-14：model/系统版本/屏幕/无障碍/截图权限/电量/前台App） */
+    private fun collectCapabilities(): JSONObject {
+        val cap = JSONObject()
+        cap.put("model", android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL)
+        cap.put("androidVersion", android.os.Build.VERSION.RELEASE)
+        cap.put("apiLevel", android.os.Build.VERSION.SDK_INT)
+        val dm = resources.displayMetrics
+        cap.put(
+            "screen",
+            JSONObject().put("width", dm.widthPixels).put("height", dm.heightPixels),
+        )
+        cap.put("accessibilityEnabled", RpaAccessibilityService.isEnabled())
+        // 截图权限：Android 11+ 无障碍 takeScreenshot；老设备需 MediaProjection 授权
+        cap.put("screenshotPermission", android.os.Build.VERSION.SDK_INT >= 30)
+        try {
+            val bm = getSystemService(Context.BATTERY_SERVICE) as android.os.BatteryManager
+            cap.put("battery", bm.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY))
+        } catch (e: Exception) {
+            cap.put("battery", -1)
+        }
+        RpaAccessibilityService.foregroundPackage()?.let { cap.put("foregroundApp", it) }
+        return cap
+    }
+
     private suspend fun registerDevice() {
         val name = android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL
         val uuid = deviceUuid ?: ""
-        val json = """{"deviceName":"$name","platform":"android","agentVersion":"0.2.2","deviceUuid":"$uuid"}"""
+        val caps = collectCapabilities().toString()
+        val json = """{"deviceName":"$name","platform":"android","agentVersion":"0.2.6","deviceUuid":"$uuid","capabilities":$caps}"""
         try {
             postJson("$BASE_URL/api/mobile-executor/devices", json).use { resp ->
                 if (resp.isSuccessful) {
@@ -227,20 +252,39 @@ class AgentService : Service() {
     }
 
     private suspend fun registerAndLoop() {
+        // P1-13：注册成功后，心跳与任务领取拆成两个独立协程，互不阻塞
+        while (deviceId == null && coroutineContext.isActive) {
+            registerDevice()
+            if (deviceId == null) delay(10_000L)
+        }
+        if (deviceId == null) return
+        coroutineScope {
+            launch { heartbeatLoop() }
+            launch { claimLoop() }
+        }
+    }
+
+    /** 心跳独立循环：固定 60s 一次，不受任务执行时长影响（P1-13） */
+    private suspend fun heartbeatLoop() {
         while (coroutineContext.isActive) {
             try {
-                if (deviceId == null) {
-                    registerDevice()
-                } else {
-                    heartbeat()
-                    claimAndExecute()
-                }
+                heartbeat()
             } catch (e: Exception) {
-                Log.w(TAG, "loop error: ${e.message}")
-                delay(5_000L)
+                Log.w(TAG, "heartbeat error: ${e.message}")
             }
             delay(HEARTBEAT_INTERVAL_MS)
-            Log.i(TAG, "heartbeat tick (deviceId=$deviceId)")
+        }
+    }
+
+    /** 任务领取独立循环：15s 轮询；执行任务时阻塞本循环但不影响心跳（P1-13） */
+    private suspend fun claimLoop() {
+        while (coroutineContext.isActive) {
+            try {
+                claimAndExecute()
+            } catch (e: Exception) {
+                Log.w(TAG, "claim loop error: ${e.message}")
+                delay(5_000L)
+            }
         }
     }
 

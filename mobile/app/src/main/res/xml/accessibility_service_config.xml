@@ -6,4 +6,5 @@
     android:notificationTimeout="100"
     android:canRetrieveWindowContent="true"
     android:canPerformGestures="true"
-    android:canTakeScreenshot="true" />
+    android:canTakeScreenshot="true"
+    android:packageNames="com.xingin.xhs,com.ss.android.ugc.aweme,com.smile.gifmaker,com.tencent.mm,tv.danmaku.bili,com.sina.weibo,com.zhihu.android,com.ss.android.article.news" />
