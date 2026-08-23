@@ -106,6 +106,12 @@ export class ExecutorRunService {
         `执行会话由设备 ${run.deviceId} 执行，当前设备 ${deviceId} 无权收尾`,
       );
     }
+    // 状态机：终态不可覆盖（防网络重试把 completed 覆盖成 failed，污染追溯）
+    if (['completed', 'failed', 'unknown'].includes(run.status)) {
+      throw new BadRequestException(
+        `执行会话已处于终态 ${run.status}，不可重复收尾`,
+      );
+    }
     const updated = await this.prisma.executorRun.update({
       where: { id: runId },
       data: {
@@ -135,6 +141,12 @@ export class ExecutorRunService {
     if (run.deviceId && run.deviceId !== deviceId) {
       throw new BadRequestException(
         `执行会话由设备 ${run.deviceId} 执行，当前设备 ${deviceId} 无权更新状态`,
+      );
+    }
+    // 状态机：终态不可恢复为 running/awaiting_approval
+    if (['completed', 'failed', 'unknown'].includes(run.status)) {
+      throw new BadRequestException(
+        `执行会话已处于终态 ${run.status}，不可更新为 ${status}`,
       );
     }
     const updated = await this.prisma.executorRun.update({

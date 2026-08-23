@@ -55,10 +55,14 @@ export class ExecutorStatusService {
         unknown: status === 'unknown',
       };
     }
-    const updated = await this.prisma.executorTask.update({
-      where: { id: taskId },
+    // 原子更新：where 带当前状态，并发下仅一个请求成功（防状态倒退/覆盖，与 consume 原子化一致）
+    const updated = await this.prisma.executorTask.updateMany({
+      where: { id: taskId, status: row.status },
       data: data as never,
     });
+    if (updated.count === 0) {
+      throw new BadRequestException('任务状态已变化，请重试');
+    }
     // P1 Lease：终态（completed/failed/cancelled）释放账号租约；unknown 保留租约待人工确认
     if (
       status === 'completed' ||
@@ -73,6 +77,6 @@ export class ExecutorStatusService {
     this.logger.log(
       `任务状态回传：${taskId} → ${status}${input.error ? `（${input.error.slice(0, 80)}）` : ''}`,
     );
-    return { id: updated.id, status: updated.status };
+    return { id: taskId, status };
   }
 }
