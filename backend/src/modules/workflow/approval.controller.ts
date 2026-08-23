@@ -66,6 +66,10 @@ export class ApprovalController {
       throw new BadRequestException('缺少 actionType/inputHash/actionId');
     }
     const riskLevel = body.riskLevel || 'medium';
+    // 白名单校验：防前端传任意值污染风险分级（low/medium/high）
+    if (!['low', 'medium', 'high'].includes(riskLevel)) {
+      throw new BadRequestException(`非法风险等级：${riskLevel}`);
+    }
     const created = await this.prisma.approval.create({
       data: {
         tenantId,
