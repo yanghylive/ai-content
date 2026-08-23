@@ -8,6 +8,7 @@ export interface DeviceInfo {
   platform: string;
   status: string;
   lastHeartbeatAt: Date | null;
+  capabilities: Record<string, unknown> | null;
 }
 
 /** 注册响应（含明文设备 token，仅注册时返回一次，P0-4） */
@@ -35,6 +36,7 @@ export class DeviceRegistryService {
       platform?: string;
       agentVersion?: string;
       deviceUuid?: string;
+      capabilities?: Record<string, unknown>;
     },
   ): Promise<DeviceRegistration> {
     const deviceName = (input.deviceName || '').trim();
@@ -59,6 +61,9 @@ export class DeviceRegistryService {
             agentVersion: input.agentVersion ?? null,
             deviceUuid: input.deviceUuid ?? existing.deviceUuid,
             deviceTokenHash: tokenHash,
+            capabilities: (input.capabilities ??
+              existing.capabilities ??
+              null) as never,
             status: 'online',
             lastHeartbeatAt: now,
           },
@@ -71,6 +76,7 @@ export class DeviceRegistryService {
             agentVersion: input.agentVersion ?? null,
             deviceUuid: input.deviceUuid ?? null,
             deviceTokenHash: tokenHash,
+            capabilities: (input.capabilities ?? null) as never,
             status: 'online',
             lastHeartbeatAt: now,
           },
@@ -162,6 +168,7 @@ export class DeviceRegistryService {
     platform: string;
     status: string;
     lastHeartbeatAt: Date | null;
+    capabilities?: unknown;
   }): DeviceInfo {
     return {
       id: row.id,
@@ -169,6 +176,8 @@ export class DeviceRegistryService {
       platform: row.platform,
       status: row.status,
       lastHeartbeatAt: row.lastHeartbeatAt,
+      capabilities:
+        (row.capabilities as Record<string, unknown> | null) ?? null,
     };
   }
 }

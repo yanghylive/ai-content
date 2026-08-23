@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 
 /**
@@ -11,7 +12,7 @@ export class ExecutorEvidenceService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /** 上传执行证据 */
+  /** 上传执行证据（P1-18 审计链：SHA-256 摘要 + 前后关联 + 元数据） */
   async addEvidence(
     userId: string,
     taskId: string,
@@ -19,8 +20,19 @@ export class ExecutorEvidenceService {
       type: string;
       stepIndex?: number;
       content: Record<string, unknown>;
+      deviceId?: string;
+      modelVersion?: string;
+      policyVersion?: string;
+      approvalId?: string;
+      collectedAt?: string;
     },
-  ): Promise<{ id: string; taskId: string; type: string }> {
+  ): Promise<{
+    id: string;
+    taskId: string;
+    type: string;
+    contentHash: string;
+    prevEvidenceId: string | null;
+  }> {
     const task = await this.prisma.executorTask.findFirst({
       where: { id: taskId, userId },
     });
@@ -30,7 +42,7 @@ export class ExecutorEvidenceService {
     if (!content || typeof content !== 'object' || Array.isArray(content)) {
       throw new BadRequestException('证据内容不能为空');
     }
-    // 截图证据：校验 dataURL 格式（可选，避免脏数据）
+    // 截图证据：校验 dataURL 格式（避免脏数据）
     if (type === 'screenshot') {
       const raw = content.dataUrl;
       const dataUrl = typeof raw === 'string' ? raw : '';
@@ -43,6 +55,17 @@ export class ExecutorEvidenceService {
         throw new BadRequestException('截图证据过大（>2MB）');
       }
     }
+    // P1-18：内容 SHA-256 摘要（稳定序列化，防篡改/去重）
+    const canonical = JSON.stringify(content);
+    const contentHash = createHash('sha256').update(canonical).digest('hex');
+    // 链式关联：取该任务上一条证据作为 prevEvidenceId
+    const prev = await this.prisma.executorEvidence.findFirst({
+      where: { taskId },
+      orderBy: { createdAt: 'desc' },
+    });
+    const collectedAt = input.collectedAt
+      ? new Date(input.collectedAt)
+      : new Date();
     const row = await this.prisma.executorEvidence.create({
       data: {
         userId,
@@ -50,12 +73,25 @@ export class ExecutorEvidenceService {
         stepIndex: input.stepIndex ?? -1,
         type,
         content: content as never,
+        contentHash,
+        prevEvidenceId: prev?.id ?? null,
+        deviceId: input.deviceId ?? null,
+        modelVersion: input.modelVersion ?? null,
+        policyVersion: input.policyVersion ?? null,
+        approvalId: input.approvalId ?? null,
+        collectedAt,
       },
     });
     this.logger.log(
-      `任务证据已保存：${row.id}（${type}，任务 ${taskId.slice(-6)}）`,
+      `任务证据已保存：${row.id}（${type}，hash ${contentHash.slice(0, 8)}，prev ${prev?.id?.slice(-6) ?? '-'}）`,
     );
-    return { id: row.id, taskId, type };
+    return {
+      id: row.id,
+      taskId,
+      type,
+      contentHash,
+      prevEvidenceId: prev?.id ?? null,
+    };
   }
 
   /** 查询任务证据（按时间正序） */
@@ -84,6 +120,13 @@ export class ExecutorEvidenceService {
       stepIndex: r.stepIndex,
       type: r.type,
       content: r.content,
+      contentHash: r.contentHash,
+      prevEvidenceId: r.prevEvidenceId,
+      deviceId: r.deviceId,
+      modelVersion: r.modelVersion,
+      policyVersion: r.policyVersion,
+      approvalId: r.approvalId,
+      collectedAt: r.collectedAt,
       createdAt: r.createdAt,
     }));
   }
