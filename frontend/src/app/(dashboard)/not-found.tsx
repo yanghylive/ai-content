@@ -11,7 +11,7 @@ export default function DashboardNotFound() {
         <SearchX aria-hidden="true" size={24} />
       </span>
       <div>
-        <h1 className="text-xl font-semibold text-foreground">没有找到这个页面</h1>
+        <h1 className="kx-greet text-foreground">没有找到这个页面</h1>
         <p className="mt-2 text-sm leading-6 text-default-500">
           链接可能已失效，或对应记录已经删除、归档。请返回工作台重新查找。
         </p>

@@ -446,7 +446,7 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
               {currentExecutionMode.label}
             </Chip>
           </div>
-          <h1 className="mt-2 truncate text-xl font-semibold text-default-900">
+          <h1 className="mt-2 truncate kx-greet text-default-900">
             {task.planName || "朋友圈计划详情"}
           </h1>
         </div>
@@ -658,7 +658,7 @@ function WechatMomentsPlanDetailIssue({
       aria-live="polite"
     >
       <Icon size={32} className="text-default-500" aria-hidden="true" />
-      <h1 className="mt-4 text-xl font-semibold text-default-900">
+      <h1 className="mt-4 kx-greet text-default-900">
         {issue.title}
       </h1>
       <p className="mt-2 max-w-[580px] text-sm leading-6 text-default-600">

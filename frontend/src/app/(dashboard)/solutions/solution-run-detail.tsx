@@ -133,7 +133,7 @@ export function SolutionRunDetail({ runId }: { runId: string }) {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               {run.packageName}
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">

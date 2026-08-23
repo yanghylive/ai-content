@@ -242,7 +242,7 @@ export function TaskEvidenceCenter() {
             <FileSearch className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">任务证据</h1>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">任务证据</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               每次执行都留痕，出问题能回溯 · 最近 {rows.length} 条
             </p>

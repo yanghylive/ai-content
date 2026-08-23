@@ -244,7 +244,7 @@ function LeadDetailClient() {
       <section className="kaypal-v3-panel mb-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-xl font-bold text-[var(--kaypal-v3-ink)]">{lead.nickname || "未知线索"}</h1>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">{lead.nickname || "未知线索"}</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               {PLATFORM_LABEL[lead.platform] ?? lead.platform} · {lead.sourceType}
               

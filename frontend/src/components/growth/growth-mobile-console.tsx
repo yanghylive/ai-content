@@ -252,7 +252,7 @@ export function GrowthMobileConsole({ view }: { view: string }) {
         <div className="text-11 font-semibold uppercase tracking-wide text-orange-500">
           增长获客
         </div>
-        <h1 className="mt-0.5 text-xl font-bold text-slate-900 dark:text-slate-100">
+        <h1 className="mt-0.5 kx-greet text-slate-900 dark:text-slate-100">
           {current?.label ?? "增长总览"}
         </h1>
         <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">

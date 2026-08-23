@@ -49,7 +49,7 @@ export function RedfoxWorkflowPage({
           </span>
           <div className="min-w-0">
             <span className="kaypal-v3-label">{eyebrow}</span>
-            <h1 className="mt-1 text-2xl font-bold leading-8 text-[var(--kaypal-v3-ink)]">
+            <h1 className="mt-1 kx-greet text-[var(--kaypal-v3-ink)]">
               {title}
             </h1>
             <p className="mt-1 max-w-3xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">

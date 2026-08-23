@@ -277,7 +277,7 @@ export function KnowledgeBaseCenter() {
             <BookOpen className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">知识库</h1>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">知识库</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               把资料喂给 AI，生成的内容更懂你的业务
             </p>

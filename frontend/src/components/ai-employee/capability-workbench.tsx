@@ -237,7 +237,7 @@ export function CapabilityWorkbench() {
               <span className="flex h-11 w-11 items-center justify-center rounded-[8px] bg-primary/10 text-primary"><ShieldCheck size={22} /></span>
               <div>
                 <p className="text-sm font-semibold text-primary">智能员工</p>
-                <h1 className="mt-1 text-2xl font-bold text-default-900">能力与任务入口</h1>
+                <h1 className="mt-1 kx-greet text-default-900">能力与任务入口</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-default-500">这里显示当前账号、本机服务和平台任务真正能做什么。进入具体模块后，系统会继续检查登录、风险和素材状态。</p>
               </div>
             </div>

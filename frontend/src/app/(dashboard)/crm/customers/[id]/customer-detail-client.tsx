@@ -455,7 +455,7 @@ export function CustomerDetailClient({
       <div className="mx-auto flex min-h-[55vh] max-w-2xl flex-col items-center justify-center gap-4 border border-dashed border-danger-200 px-6 text-center">
         <UserRound size={28} className="text-danger" />
         <div>
-          <h1 className="text-lg font-semibold">{issue.title}</h1>
+          <h1 className="kx-greet">{issue.title}</h1>
           <p className="mt-2 text-sm text-default-500">
             {issue.description}
           </p>
@@ -805,7 +805,7 @@ export function CustomerDetailClient({
         <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="break-words text-2xl font-bold text-foreground">
+              <h1 className="break-words kx-greet text-foreground">
                 {customer.displayName}
               </h1>
               <Chip

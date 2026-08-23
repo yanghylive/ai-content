@@ -183,7 +183,7 @@ export default function ScrapeArticlePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">文章反抓</h1>
+        <h1 className="kx-greet">文章反抓</h1>
         <p className="text-sm text-muted-foreground mt-1">
           输入文章链接，自动提取标题、正文和图片，可直接用作发布素材
         </p>

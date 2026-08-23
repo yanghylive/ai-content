@@ -374,7 +374,7 @@ export function XiaohongshuAssistantClient() {
             <WandSparkles className="h-4 w-4" />
             AgentWaker / Ruby
           </div>
-          <h1 className="text-2xl font-semibold text-foreground">
+          <h1 className="kx-greet text-foreground">
             小红书运营助理
           </h1>
         </div>

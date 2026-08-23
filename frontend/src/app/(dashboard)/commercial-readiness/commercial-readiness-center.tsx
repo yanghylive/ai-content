@@ -244,7 +244,7 @@ export function CommercialReadinessCenter() {
             <CloudCog size={22} />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-default-900">商业化就绪</h1>
+            <h1 className="kx-greet text-default-900">商业化就绪</h1>
             <p className="mt-0.5 text-sm text-default-500">
               上线前的商用能力自检清单
             </p>

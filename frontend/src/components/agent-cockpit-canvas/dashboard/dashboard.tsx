@@ -24,7 +24,7 @@ export function MainLayout({ className }: { className?: string }) {
           <p className="text-xs font-medium uppercase tracking-[0.12em] text-primary">
             持续工作区
           </p>
-          <h1 className="mt-1 text-2xl font-semibold text-foreground">
+          <h1 className="mt-1 kx-greet text-foreground">
             当前任务工作区
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">

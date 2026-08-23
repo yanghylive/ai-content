@@ -220,7 +220,7 @@ export function CrmConnectorsCenter() {
             <Plug className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">数据连接</h1>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">数据连接</h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               {sanitizeConnectorText(summary) || "把你的客户数据源接到系统里，自动同步"}
             </p>

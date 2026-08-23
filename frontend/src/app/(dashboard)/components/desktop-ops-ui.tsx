@@ -42,7 +42,7 @@ export function OpsDesktopPage({
               </div>
             ) : null}
             {title ? (
-              <h1 className="truncate text-lg font-semibold leading-6 text-foreground">
+              <h1 className="truncate kx-greet leading-6 text-foreground">
                 {commercialPrimaryText(title)}
               </h1>
             ) : null}

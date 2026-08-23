@@ -147,7 +147,7 @@ export function WorkbenchPageShell({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-bold">{pageTitle}</h1>
+        <h1 className="kx-greet">{pageTitle}</h1>
         <p className="text-sm text-default-500">{pageDescription}</p>
       </div>
       <Card>

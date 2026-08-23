@@ -3061,7 +3061,7 @@ export function GrowthConsole({ view }: { view: GrowthView }) {
       >
         <header className="flex flex-col gap-3 pb-1 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h1 className="text-xl font-bold leading-[28px] text-foreground">
+            <h1 className="kx-greet text-foreground">
               {meta.title}
             </h1>
             <p className="mt-1 text-sm text-default-500">{meta.desc}</p>
@@ -3091,7 +3091,7 @@ export function GrowthConsole({ view }: { view: GrowthView }) {
     >
       <header className="flex flex-col gap-3 pb-1 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-xl font-bold leading-[28px] text-foreground">
+          <h1 className="kx-greet text-foreground">
             {meta.title}
           </h1>
           <p className="mt-1 text-sm text-default-500">{meta.desc}</p>

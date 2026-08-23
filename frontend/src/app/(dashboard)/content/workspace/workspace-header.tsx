@@ -76,7 +76,7 @@ export function WorkspaceHeader({
       <V2BackButton label="返回" />
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-semibold text-[var(--kaypal-v3-ink)]">
+          <h1 className="truncate kx-greet text-[var(--kaypal-v3-ink)]">
             {title || "新建内容"}
           </h1>
           <div className="mt-0.5">

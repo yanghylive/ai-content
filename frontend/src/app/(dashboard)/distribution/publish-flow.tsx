@@ -560,7 +560,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-[var(--kaypal-v3-ink)] sm:text-2xl">
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)] sm:text-2xl">
               {isVideo ? "发布视频" : "发布图文"}
             </h1>
             {/* 移动端：紧凑步骤条（第 N 步 / 共 5 步） */}

@@ -14,6 +14,15 @@ export default function EngagementPage() {
 
   return (
     <div className="kx-view flex flex-col gap-4">
+      {/* 统一页头 */}
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">互动</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            统一收件箱与客服机器人，集中处理私信和评论
+          </p>
+        </div>
+      </div>
       {/* Tab 切换 */}
       <div className="flex items-center gap-1 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-1">
         <button

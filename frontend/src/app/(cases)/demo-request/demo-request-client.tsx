@@ -35,7 +35,7 @@ export function DemoRequestClient() {
         >
           <CalendarDays className="h-6 w-6" aria-hidden />
         </span>
-        <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+        <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
           预约演示
         </h1>
         <p className="mt-2 text-sm leading-6 text-[var(--kaypal-v3-muted)]">

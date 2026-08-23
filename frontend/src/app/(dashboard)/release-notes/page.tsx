@@ -199,7 +199,7 @@ export default function ReleaseNotesPage() {
               </Chip>
               <Chip variant="flat">功能完整保留</Chip>
             </div>
-            <h1 className="text-2xl font-bold leading-9 text-foreground">
+            <h1 className="kx-greet leading-9 text-foreground">
               v{currentVersion} 更新说明
             </h1>
             <p className="mt-2 max-w-3xl text-14 leading-6 text-default-600">

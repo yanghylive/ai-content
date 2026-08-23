@@ -196,7 +196,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
           </button>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+              <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
                 {app.name}
               </h1>
               {app.installed && (
