@@ -197,4 +197,9 @@ if (WARNINGS.length > 0) {
   for (const w of WARNINGS) {
     console.log(`  [${w.rule}] ${w.file} — ${w.msg}`);
   }
+  // CI 全量硬门禁：UI_GATE_STRICT=1 时存量违规同样阻断（存量已清零，任何违规都该拦）
+  if (process.env.UI_GATE_STRICT === "1") {
+    console.error(`\n❌ UI_GATE_STRICT=1：存量违规 ${WARNINGS.length} 条同样阻断（CI 全量硬门禁）`);
+    process.exit(1);
+  }
 }
