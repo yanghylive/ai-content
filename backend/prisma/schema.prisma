@@ -2914,6 +2914,7 @@ model MobileDevice {
   agentVersion     String?   @map("agent_version")
   deviceUuid       String?   @map("device_uuid") // 稳定设备标识（Keystore 生成）
   deviceTokenHash  String?   @map("device_token_hash") // 设备认证 token 的 sha256（P0-4）
+  capabilities     Json?     @map("capabilities") // 设备能力（P1-14：model/androidVersion/屏幕/无障碍/截图权限/电量/前台app/当前run）
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
@@ -4048,15 +4049,23 @@ model ExecutorLease {
 
 // ============ P1 证据链：每次执行留证（PRD §6.6，审计要求） ============
 model ExecutorEvidence {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  taskId    String   @map("task_id")
-  stepIndex Int      @default(-1) @map("step_index") // -1=任务级，0+ 为步骤级
-  type      String   @default("screenshot") // screenshot | nodeTree | result | note
-  content   Json     @map("content") // 截图 dataURL / 结构化 JSON
-  createdAt DateTime @default(now()) @map("created_at")
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  taskId         String    @map("task_id")
+  stepIndex      Int       @default(-1) @map("step_index") // -1=任务级，0+ 为步骤级
+  type           String    @default("screenshot") // screenshot | nodeTree | result | note
+  content        Json      @map("content") // 截图 dataURL / 结构化 JSON
+  contentHash    String?   @map("content_hash") // SHA-256 内容摘要（P1-18 审计链）
+  prevEvidenceId String?   @map("prev_evidence_id") // 前一条证据（链式关联，防篡改）
+  deviceId       String?   @map("device_id")
+  modelVersion   String?   @map("model_version")
+  policyVersion  String?   @map("policy_version")
+  approvalId     String?   @map("approval_id")
+  collectedAt    DateTime? @map("collected_at") // 采集时间（设备时钟）
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   @@index([taskId])
   @@index([userId, taskId])
+  @@index([contentHash])
   @@map("executor_evidences")
 }

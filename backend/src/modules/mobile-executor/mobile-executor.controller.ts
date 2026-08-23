@@ -65,7 +65,13 @@ export class MobileExecutorController {
   registerDevice(
     @Req() request: AuthenticatedRequest,
     @Body()
-    input: { deviceName: string; platform?: string; agentVersion?: string },
+    input: {
+      deviceName: string;
+      platform?: string;
+      agentVersion?: string;
+      deviceUuid?: string;
+      capabilities?: Record<string, unknown>;
+    },
   ) {
     const user = this.requireUser(request);
     return this.devices.register(user.id, input || {});
@@ -191,10 +197,17 @@ export class MobileExecutorController {
       type: string;
       stepIndex?: number;
       content: Record<string, unknown>;
+      modelVersion?: string;
+      policyVersion?: string;
+      approvalId?: string;
+      collectedAt?: string;
     },
   ) {
     const dev = await this.requireDevice(request);
-    return this.evidence.addEvidence(dev.userId, taskId, input);
+    return this.evidence.addEvidence(dev.userId, taskId, {
+      ...input,
+      deviceId: dev.deviceId,
+    });
   }
 
   @Get('tasks/:id/evidence')
