@@ -201,15 +201,16 @@
     background-attachment: fixed;
   }
 
-  /* ---------- 5. 壳层：左侧 rail 品牌紫玻璃 ---------- */
+  /* ---------- 5. 壳层：左侧 rail 深紫黑（大王拍板 2026-08-23：不用紫底，
+     与 logo 紫渐变拉开层次；深紫黑与品牌同族，金色激活态更醒目） ---------- */
   .kx-rail {
-    background: linear-gradient(180deg, rgba(114, 46, 209, 0.94), rgba(83, 29, 171, 0.97));
-    border-right: 1px solid rgba(190, 160, 235, 0.18);
-    box-shadow: 2px 0 18px rgba(50, 20, 90, 0.2);
+    background: linear-gradient(180deg, #1c1431, #110c1e 88%);
+    border-right: 1px solid rgba(146, 84, 222, 0.22);
+    box-shadow: 2px 0 18px rgba(8, 4, 16, 0.4);
   }
   .kx-rail-logo {
     background: linear-gradient(135deg, #722ed1, #531dab);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 16px rgba(114, 46, 209, 0.45);
   }
   .kx-rail-item { color: rgba(240, 235, 250, 0.72); }
   .kx-rail-item:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
