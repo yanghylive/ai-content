@@ -105,8 +105,12 @@ class AgentService : Service() {
             JSONObject().put("width", dm.widthPixels).put("height", dm.heightPixels),
         )
         cap.put("accessibilityEnabled", RpaAccessibilityService.isEnabled())
-        // 截图权限：Android 11+ 无障碍 takeScreenshot；老设备需 MediaProjection 授权
-        cap.put("screenshotPermission", android.os.Build.VERSION.SDK_INT >= 30)
+        // 截图权限：Android 11+ 且无障碍已开启可 takeScreenshot；或 MediaProjection 已授权可抓帧
+        // （此前只看 SDK_INT>=30，未检查无障碍是否真正开启，P3 数据准确性）
+        val canScreenshot =
+            (android.os.Build.VERSION.SDK_INT >= 30 && RpaAccessibilityService.isEnabled()) ||
+                MediaProjectionCapture.hasPermission()
+        cap.put("screenshotPermission", canScreenshot)
         try {
             val bm = getSystemService(Context.BATTERY_SERVICE) as android.os.BatteryManager
             cap.put("battery", bm.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY))
