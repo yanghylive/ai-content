@@ -642,7 +642,12 @@ function normalizeLogMessage(value) {
 function isIgnorableConsoleEntry(entry) {
   return /Download the React DevTools|HMR|Fast Refresh|ResizeObserver loop|favicon\.ico|Allow attribute will take precedence over 'allowfullscreen'|AudioContext was not allowed to start|was preloaded using link preload but not used within a few seconds|Minified React error #418/i.test(
     entry.message || "",
-  );
+  ) ||
+    // 2026-08-22：纯资源 404（本地验收环境无账号头像数据 /api/auto-upload/avatars/*）
+    // 属数据缺失非 UI 缺陷；页面功能性失败由 blankPage/文案判定把关
+    /Failed to load resource: the server responded with a status of 404/i.test(
+      entry.message || "",
+    );
 }
 
 function isExcludedCommercialRoute(route) {
