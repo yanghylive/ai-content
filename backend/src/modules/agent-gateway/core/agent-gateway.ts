@@ -99,10 +99,11 @@ export class AgentGateway {
       createdAt: nowIso(),
     };
     this.sessions.set(session.id, session);
+    // 先镜像 session 落库，再发布事件——事件落库时按 session 反查租户不为空（P1-5）
+    this.fireMirror((m) => m.sessionCreated?.(session));
     this.deps.bus.publish(session.id, 'message', session.id, {
       content: `已创建${mode === 'advanced' ? '高级' : '业务'}会话`,
     });
-    this.fireMirror((m) => m.sessionCreated?.(session));
     return session;
   }
 
@@ -194,7 +195,12 @@ export class AgentGateway {
 
     let claim: ReturnType<IdempotencyStore['claim']>;
     try {
-      claim = await this.deps.idempotency.claim(ctx.tenantId, request.idempotencyKey, task.id);
+      claim = await this.deps.idempotency.claim(ctx.tenantId, request.idempotencyKey, task.id, {
+        userId: request.userId,
+        toolName: spec.name,
+        risk: spec.risk,
+        inputHash: hashJson(request.payload),
+      });
     } catch (e) {
       // claim 对 in_progress 抛 IDEMPOTENCY_CONFLICT，转为统一错误结果
       if (this.isAppErrorWithCode(e, 'IDEMPOTENCY_CONFLICT')) {
@@ -391,7 +397,7 @@ export class AgentGateway {
       });
     }
 
-    this.recordUsage(request, exec);
+    this.recordUsage(request, exec, callId);
     this.deps.idempotency.markDone(ctx.tenantId, request.idempotencyKey, exec.usage.usageId);
 
     const action: Parameters<typeof transition>[1] =
@@ -500,12 +506,14 @@ export class AgentGateway {
     return artifact;
   }
 
-  private recordUsage(request: ToolRequest, exec: ToolExecution): void {
+  private recordUsage(request: ToolRequest, exec: ToolExecution, toolCallId?: string): void {
     const u = exec.usage;
     const ev: UsageEvent = {
       id: genId('ue'),
       requestId: request.requestId,
       tenantId: request.tenantId,
+      taskId: request.taskId,
+      toolCallId: toolCallId ?? null,
       usageId: u.usageId,
       model: u.model,
       inputTokens: u.inputTokens,

@@ -192,7 +192,7 @@ describe('AgentGateway Prisma 仓储（幂等/审批/usage）', () => {
     const [sRow, tRow, eRow, aRow] = await Promise.all([
       prisma.agentGatewaySession.findUnique({ where: { id: session.id } }),
       prisma.agentGatewayTask.findUnique({ where: { id: task.id } }),
-      prisma.agentGatewayEvent.findUnique({ where: { eventId: event.eventId } }),
+      prisma.agentGatewayEvent.findUnique({ where: { sessionId_eventId: { sessionId: event.sessionId, eventId: event.eventId } } }),
       prisma.agentGatewayArtifact.findUnique({ where: { id: artifact.id } }),
     ]);
     expect(sRow?.tenantId).toBe('t1');

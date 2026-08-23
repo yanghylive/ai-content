@@ -17,6 +17,14 @@ src/modules/agent-gateway/
 └── *.spec.ts    # jest 测试（6 套件 / 49 用例）
 ```
 
+## 构建前置（P2-8）
+```bash
+cd backend
+npx prisma generate   # 必须先执行：agent_gateway_* 模型的 Prisma Client 由此生成，缺失会导致全量测试启动失败
+npx jest agent-gateway
+npm run build
+```
+
 ## 运行测试
 ```bash
 cd backend

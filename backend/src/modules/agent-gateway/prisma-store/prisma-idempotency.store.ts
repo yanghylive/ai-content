@@ -24,7 +24,12 @@ export type ClaimResult =
 export class PrismaIdempotencyStore {
   constructor(private readonly prisma: PrismaService) {}
 
-  async claim(tenantId: string, key: string, taskId: string): Promise<ClaimResult> {
+  async claim(
+    tenantId: string,
+    key: string,
+    taskId: string,
+    audit?: { userId?: string; toolName?: string; risk?: string; inputHash?: string },
+  ): Promise<ClaimResult> {
     const existing = await this.prisma.agentGatewayToolCall.findUnique({
       where: { tenantId_idempotencyKey: { tenantId, idempotencyKey: key } },
     });
@@ -34,10 +39,10 @@ export class PrismaIdempotencyStore {
           data: {
             taskId,
             tenantId,
-            userId: '',
-            toolName: '',
-            risk: 'low',
-            inputHash: '',
+            userId: audit?.userId ?? '',
+            toolName: audit?.toolName ?? '',
+            risk: audit?.risk ?? 'low',
+            inputHash: audit?.inputHash ?? '',
             status: 'running',
             idempotencyKey: key,
           },

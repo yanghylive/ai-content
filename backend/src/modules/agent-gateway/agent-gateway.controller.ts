@@ -16,6 +16,14 @@ import { AgentGatewayService } from './agent-gateway.service';
 import { KaypalAuthGuard } from './kaypal-auth.guard';
 import { AgentGatewayExceptionFilter } from './agent-gateway.filter';
 import { TenantContext, ToolRequest } from './core/types';
+import {
+  CreateSessionDto,
+  ResumeSessionDto,
+  CreateTaskDto,
+  ApproveTaskDto,
+  ExecuteToolDto,
+  TokenExchangeDto,
+} from './agent-gateway.dto';
 import { makeError } from './contracts/error-codes';
 import { genId } from './core/util';
 
@@ -38,14 +46,14 @@ export class AgentGatewayController {
 
   // ---------------------------------------------------------------- 会话
   @Post('sessions')
-  async createSession(@Req() req: CtxRequest, @Body() body: { mode?: 'business' | 'advanced' }) {
+  async createSession(@Req() req: CtxRequest, @Body() body: CreateSessionDto) {
     const session = await this.agent.gateway.createSession(this.ctx(req), body?.mode ?? 'business');
     return { session };
   }
 
   @Post('sessions/:id/resume')
   @HttpCode(200)
-  async resumeSession(@Req() req: CtxRequest, @Param('id') id: string, @Body() body: { lastEventId?: string }) {
+  async resumeSession(@Req() req: CtxRequest, @Param('id') id: string, @Body() body: ResumeSessionDto) {
     const { session, events } = this.agent.gateway.resumeSession(id, this.ctx(req), body?.lastEventId);
     return { session, lastEventId: events[events.length - 1]?.eventId ?? session.lastEventId, events };
   }
@@ -53,14 +61,14 @@ export class AgentGatewayController {
   // ---------------------------------------------------------------- 任务
   @Post('tasks')
   @HttpCode(202)
-  async createTask(@Req() req: CtxRequest, @Body() body: { sessionId: string; type: string; plan?: Record<string, unknown> }) {
+  async createTask(@Req() req: CtxRequest, @Body() body: CreateTaskDto) {
     const task = this.agent.gateway.createTask(this.ctx(req), body.sessionId, body.type, body.plan ?? {});
     return { taskId: task.id, task };
   }
 
   @Post('tasks/:id/approve')
   @HttpCode(202)
-  async approveTask(@Req() req: CtxRequest, @Param('id') id: string, @Body() body: { approvalId: string; currentPreview: unknown }) {
+  async approveTask(@Req() req: CtxRequest, @Param('id') id: string, @Body() body: ApproveTaskDto) {
     const result = await this.agent.gateway.approveTask(this.ctx(req), id, body.approvalId, body.currentPreview);
     return { result };
   }
@@ -93,7 +101,7 @@ export class AgentGatewayController {
     @Res({ passthrough: true }) res: Response,
     @Param('name') name: string,
     @Headers('Idempotency-Key') idemHeader: string | undefined,
-    @Body() body: { sessionId: string; taskId: string; idempotencyKey?: string; payload?: Record<string, unknown>; requestId?: string },
+    @Body() body: ExecuteToolDto,
   ) {
     const ctx = this.ctx(req);
     const spec = this.agent.registry.get(name);
@@ -134,7 +142,7 @@ export class AgentGatewayController {
 
   @Post('octop/token-exchange')
   @HttpCode(200)
-  async octopTokenExchange(@Req() req: CtxRequest, @Body() body: { sessionId: string }) {
+  async octopTokenExchange(@Req() req: CtxRequest, @Body() body: TokenExchangeDto) {
     return this.agent.gateway.tokenExchange(this.ctx(req), body.sessionId);
   }
 
