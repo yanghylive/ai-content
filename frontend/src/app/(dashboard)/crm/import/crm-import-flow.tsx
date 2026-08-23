@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -47,6 +48,7 @@ function guessField(columnName: string): string {
 }
 
 export function CrmImportFlow() {
+  const { confirm, modal } = useConfirm();
   const router = useRouter();
   const isMobile = useIsMobile();
   const [step, setStep] = useState<Step>(1);
@@ -314,7 +316,8 @@ export function CrmImportFlow() {
   const handleRollback = async () => {
     if (!rollbackPlan) return;
     const customerIds = rollbackPlan.customerIds || [];
-    if (!window.confirm(`确定回滚本次导入的 ${customerIds.length || "已导入"} 条客户吗？回滚后需要重新导入。`)) return;
+    const ok = await confirm({ kind: "danger", title: "回滚导入", description: `确定回滚本次导入的 ${customerIds.length || "已导入"} 条客户吗？回滚后需要重新导入。` });
+    if (!ok) return;
     setRollingBack(true);
     setRollbackMsg(null);
     try {
@@ -569,6 +572,7 @@ export function CrmImportFlow() {
 
   return (
     <div className="flex flex-col gap-6">
+      {modal}
       {/* 顶部 */}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">

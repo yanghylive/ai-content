@@ -1,5 +1,6 @@
 "use client";
 
+import toastLib from "@/lib/toast";
 import {} from "@/components/brand-logo";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -84,11 +85,11 @@ function KnowledgeList() {
 
   const submit = useCallback(async () => {
     if (!title.trim()) {
-      window.alert("请填写知识条目标题");
+      toastLib.error("请填写知识条目标题");
       return;
     }
     if (!content.trim()) {
-      window.alert("请填写知识内容");
+      toastLib.error("请填写知识内容");
       return;
     }
     setSaving(true);
@@ -106,7 +107,7 @@ function KnowledgeList() {
       await load();
       showToast("已保存到品牌知识库");
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : "保存失败");
+      toastLib.error(e instanceof Error ? e.message : "保存失败");
     } finally {
       setSaving(false);
     }
@@ -129,7 +130,7 @@ function KnowledgeList() {
         await load();
         showToast("已删除");
       } catch (e) {
-        window.alert(e instanceof Error ? e.message : "删除失败");
+        toastLib.error(e instanceof Error ? e.message : "删除失败");
       } finally {
         setRemovingId(null);
       }

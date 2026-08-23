@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
@@ -90,6 +91,7 @@ export function StrategyForm({
   strategyId?: string;
   initialValues?: Partial<ContentStrategyPayload>;
 }) {
+  const { confirm, modal } = useConfirm();
   const router = useRouter();
   const isMobile = useIsMobile();
   const [saving, setSaving] = useState(false);
@@ -184,7 +186,8 @@ export function StrategyForm({
 
   const handleDelete = async () => {
     if (!strategyId) return;
-    if (!window.confirm("确定删除这个内容策略吗？删除后无法恢复。")) return;
+    const ok = await confirm({ kind: "danger", title: "删除内容策略", description: "确定删除这个内容策略吗？删除后无法恢复。" });
+    if (!ok) return;
     setSaving(true);
     setError(null);
     try {
@@ -344,6 +347,7 @@ export function StrategyForm({
 
   return (
     <div className="flex flex-col gap-6">
+      {modal}
       {/* 顶部 */}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">

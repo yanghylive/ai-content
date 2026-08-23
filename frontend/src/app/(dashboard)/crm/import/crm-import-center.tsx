@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { useCallback, useEffect, useState } from "react";
 import {
   Download,
@@ -25,6 +26,7 @@ function batchStatusLabel(status: string) {
 }
 
 export function CrmImportCenter() {
+  const { confirm, modal } = useConfirm();
   const [batches, setBatches] = useState<CrmImportBatch[]>([]);
   const [loadingBatches, setLoadingBatches] = useState(false);
   const [batchesError, setBatchesError] = useState<string | null>(null);
@@ -55,7 +57,8 @@ export function CrmImportCenter() {
     const customerIds = Array.isArray(batch.customerIds)
       ? (batch.customerIds as string[])
       : [];
-    if (!window.confirm(`确定回滚这批导入的 ${batch.committedCount || customerIds.length || "?"} 条客户吗？回滚后需要重新导入。`)) return;
+    const ok = await confirm({ kind: "danger", title: "回滚导入", description: `确定回滚这批导入的 ${batch.committedCount || customerIds.length || "?"} 条客户吗？回滚后需要重新导入。` });
+    if (!ok) return;
     setRollingBackId(batch.id);
     setRollbackMsg(null);
     try {
@@ -76,6 +79,7 @@ export function CrmImportCenter() {
 
   return (
     <div className="flex flex-col gap-6">
+      {modal}
       <WorkbenchCenter
         title="导入客户"
         backHref="/crm"

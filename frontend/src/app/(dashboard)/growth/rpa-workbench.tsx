@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
@@ -1048,6 +1049,7 @@ function ReplyModal({
   onClose: () => void;
   onFlash: (message: string) => void;
 }) {
+  const { confirm, modal } = useConfirm();
   // 初始平台取第一个就绪平台：下拉只渲染 runtimeReady 项，
   // 若取 capabilities[0]（可能未就绪）会导致显示与实际不一致，
   // 用户可能对未就绪/错误平台真实发送回复；全部未就绪时保持原行为
@@ -1113,7 +1115,8 @@ function ReplyModal({
   const confirmSend = async () => {
     if (!validate()) return;
     // 二次确认：真实发送到平台
-    if (!window.confirm("确认后将在该平台真实发送此条回复（不可撤回），是否继续？")) {
+    const ok = await confirm({ kind: "warning", title: "确认真实发送", description: "确认后将在该平台真实发送此条回复（不可撤回），是否继续？" });
+    if (!ok) {
       return;
     }
     setBusy(true);
@@ -1131,6 +1134,7 @@ function ReplyModal({
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/40 p-4">
+      {modal}
       <div className="w-full max-w-lg rounded-xl border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-panel-bg)] shadow-xl">
         <div className="border-b border-[var(--kaypal-v3-border)] px-5 py-4">
           <h3 className="font-semibold text-[var(--kaypal-v3-ink)]">
