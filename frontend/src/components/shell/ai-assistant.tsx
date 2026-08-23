@@ -282,7 +282,16 @@ export function AiAssistant({
         setItems((prev) =>
           prev.map((item) =>
             item.id === assistantId
-              ? { ...item, streaming: false }
+              ? {
+                  ...item,
+                  streaming: false,
+                  // 空回复兜底：模型未产出任何文本（如对资金类敏感输入的网关空回）
+                  // 时给用户可见反馈，避免「发了消息却无任何回复」的静默失联
+                  text:
+                    item.text.trim() === ""
+                      ? "（本次未收到有效回复，请换个说法再试）"
+                      : item.text,
+                }
               : item,
           ),
         );

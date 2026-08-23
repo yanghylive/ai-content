@@ -539,6 +539,15 @@ export class AiGatewayService {
         /* client 已断开 */
       }
     };
+    // 空回复兜底：跟踪是否发出过有效文本，done 前若全为空（模型对部分输入
+    // 如资金类敏感词返回空 content），补一条可见反馈，避免前端静默无回复
+    let textEmitted = false;
+    const sendText = (content: string) => {
+      const trimmed = (content || '').trim();
+      if (!trimmed) return;
+      textEmitted = true;
+      send({ type: 'text', content });
+    };
 
     const chatStart = Date.now();
     try {
@@ -712,10 +721,7 @@ export class AiGatewayService {
                   // 协议闭合标签：吞掉，不发给用户
                   tagProbe = '';
                 } else {
-                  send({
-                    type: 'text',
-                    content: this.sanitizeTextPiece(tagProbe),
-                  });
+                  sendText(this.sanitizeTextPiece(tagProbe));
                 }
                 tagProbe = '';
               }
@@ -743,7 +749,7 @@ export class AiGatewayService {
               }
               continue;
             }
-            send({ type: 'text', content: this.sanitizeTextPiece(piece) });
+            sendText(this.sanitizeTextPiece(piece));
           }
           for (const tc of delta?.tool_calls ?? []) {
             const index = tc.index ?? 0;
@@ -758,7 +764,7 @@ export class AiGatewayService {
 
         // 流结束：补发探测缓冲中残留的普通文本
         if (tagProbe) {
-          send({ type: 'text', content: this.sanitizeTextPiece(tagProbe) });
+          sendText(this.sanitizeTextPiece(tagProbe));
         }
 
         const calls = toolCalls.filter((t) => t.id && t.name);
@@ -819,6 +825,10 @@ export class AiGatewayService {
           status: 'ok',
           durationMs: Date.now() - chatStart,
         });
+      }
+      // 空回复兜底：整轮未产出任何有效文本时补可见反馈
+      if (!textEmitted) {
+        sendText('（本次未收到有效回复，请换个说法再试）');
       }
       send({
         type: 'done',
