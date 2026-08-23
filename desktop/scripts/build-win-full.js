@@ -75,6 +75,7 @@ function main() {
 
   run('Check commercial assets', 'node', ['scripts/check-commercial-assets.js'], {
     cwd: desktopRoot,
+    env: { BUILD_PLATFORM: 'win-x64' },
   });
 
   // Windows 安全凭据存储 smoke：仅在 Windows 真机构建时执行（macOS 交叉构建跳过，凭据存储需 Windows DPAPI）
