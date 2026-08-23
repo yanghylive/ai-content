@@ -113,7 +113,7 @@ export default function CopyComparePage() {
       </div>
 
       <section className="mx-px" style={{ marginTop: 14 }}>
-        <div style={{ borderRadius: 20, padding: 16, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
+        <div className="kx-card" style={{ borderRadius: 20, padding: 16, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
           <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "#1f2a44" }}>
             输入文案（每行一条，最多 10 条）
           </p>
@@ -169,7 +169,7 @@ export default function CopyComparePage() {
         </div>
 
         {rows.length > 0 && (
-          <div style={{ borderRadius: 20, padding: 16, marginTop: 12, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
+          <div className="kx-card" style={{ borderRadius: 20, padding: 16, marginTop: 12, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
             <p style={{ fontSize: 13, fontWeight: 700, margin: "0 0 12", color: "#1f2a44" }}>
               对比结果（{rows.length} 条 × {variantLabels.length + 1} 版本）
             </p>

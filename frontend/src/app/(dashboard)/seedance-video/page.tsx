@@ -147,6 +147,7 @@ export default function SeedanceVideoPage() {
 
       <section className="mx-px" style={{ marginTop: 14 }}>
         <div
+          className="kx-card"
           style={{
             borderRadius: 20,
             padding: 16,
@@ -275,6 +276,7 @@ export default function SeedanceVideoPage() {
 
         {task && (
           <div
+            className="kx-card"
             style={{
               borderRadius: 20,
               padding: 16,
@@ -346,6 +348,7 @@ export default function SeedanceVideoPage() {
         )}
         {history.length > 0 && (
           <div
+            className="kx-card"
             style={{
               borderRadius: 20,
               padding: 16,
