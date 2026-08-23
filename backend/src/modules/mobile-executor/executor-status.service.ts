@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { canTransition, normalizeStatus } from './executor-state-machine';
 
 /**
  * 执行状态回传（C 组/P5，主文档 4.3 C3 executor-status）
- * agent 执行任务后回传结果（发布链接/失败原因），更新任务状态机。
+ * agent 执行任务后回传结果（发布链接/失败原因），更新任务状态机（PRD §7 八态）。
  */
 @Injectable()
 export class ExecutorStatusService {
@@ -11,12 +12,12 @@ export class ExecutorStatusService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /** 回传任务状态（running/done/failed/unknown） */
+  /** 回传任务状态（PRD 八态 + 异常态；兼容 running/done 别名） */
   async report(
     userId: string,
     taskId: string,
     input: {
-      status: 'running' | 'done' | 'failed' | 'unknown';
+      status: string;
       result?: Record<string, unknown>;
       error?: string;
       deviceId?: string;
@@ -32,35 +33,41 @@ export class ExecutorStatusService {
         `任务由设备 ${row.deviceId} 执行，当前设备 ${input.deviceId} 无权回传状态`,
       );
     }
+    // P0-2 状态机校验：终态不可转出、禁止倒退（兼容旧别名）
+    const check = canTransition(row.status, input.status);
+    if (!check.ok) {
+      throw new BadRequestException(check.reason);
+    }
+    const status = normalizeStatus(input.status);
 
     const data: Record<string, unknown> = {
-      status: input.status,
+      status,
       updatedAt: new Date(),
     };
-    if (input.status === 'done') {
+    if (status === 'completed') {
       data.executedAt = new Date();
       data.result = input.result ?? {};
     }
-    if (input.status === 'failed' || input.status === 'unknown') {
+    if (status === 'failed' || status === 'unknown') {
       // P0-7：unknown 表达「发送结果不确定」，禁止自动重试，不释放租约（人工回读后定论）
       data.result = {
         error: input.error ?? '执行失败',
-        unknown: input.status === 'unknown',
+        unknown: status === 'unknown',
       };
     }
     const updated = await this.prisma.executorTask.update({
       where: { id: taskId },
       data: data as never,
     });
-    // P1 Lease：终态（done/failed）释放账号租约；unknown 保留租约待人工确认
-    if (input.status === 'done' || input.status === 'failed') {
+    // P1 Lease：终态（completed/failed）释放账号租约；unknown 保留租约待人工确认
+    if (status === 'completed' || status === 'failed') {
       await this.prisma.executorLease.updateMany({
         where: { taskId, status: 'active' },
         data: { status: 'released', updatedAt: new Date() },
       });
     }
     this.logger.log(
-      `任务状态回传：${taskId} → ${input.status}${input.error ? `（${input.error.slice(0, 80)}）` : ''}`,
+      `任务状态回传：${taskId} → ${status}${input.error ? `（${input.error.slice(0, 80)}）` : ''}`,
     );
     return { id: updated.id, status: updated.status };
   }

@@ -258,23 +258,27 @@ export default function DeviceCenterPage() {
 
 function taskStatusColor(status: string): string {
   switch (status) {
-    case "done": return "#059669";
+    case "done": case "completed": return "#059669";
     case "failed": return "#dc2626";
-    case "unknown": return "#d97706";
-    case "running": case "claimed": return "#2563eb";
+    case "unknown": case "awaiting_approval": case "observing": return "#d97706";
+    case "running": case "executing": case "verifying": return "#2563eb";
+    case "claimed": case "leasing": case "preparing": return "#0891b2";
+    case "crm_sync": return "#7c3aed";
     case "cancelled": return "#64748b";
-    default: return "#d97706";
+    default: return "#334155";
   }
 }
 
 function taskStatusBg(status: string): string {
   switch (status) {
-    case "done": return "#ecfdf5";
+    case "done": case "completed": return "#ecfdf5";
     case "failed": return "#fef2f2";
-    case "unknown": return "#fffbeb";
-    case "running": case "claimed": return "#eff6ff";
+    case "unknown": case "awaiting_approval": case "observing": return "#fffbeb";
+    case "running": case "executing": case "verifying": return "#eff6ff";
+    case "claimed": case "leasing": case "preparing": return "#ecfeff";
+    case "crm_sync": return "#f5f3ff";
     case "cancelled": return "#f1f5f9";
-    default: return "#fffbeb";
+    default: return "#f8fafc";
   }
 }
 
