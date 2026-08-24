@@ -23,7 +23,8 @@
 #       无法脚本化，须在桌面端人工点验；本脚本只做 HTTP/打包层可脚本化验证。
 # ============================================================================
 
-set -u
+# 注：刻意不用 `set -u`。macOS 自带 /bin/bash 3.2 在「命令替换赋值 + elif 分支内把该变量以双引号参数传入函数」组合下，
+# 会误报 "unbound variable"（已知老 bash bug）。该脚本为开发冒烟工具，去掉 -u 比踩坑更稳妥。
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DESK="$ROOT/desktop"
 BACK="$ROOT/backend"
@@ -37,24 +38,23 @@ DO_BUILD=0; DO_START=0
 for a in "$@"; do case "$a" in --build) DO_BUILD=1;; --start) DO_START=1;; esac; done
 
 PASS=(); FAIL=()
-report(){ if [ "$2" = "ok" ]; then PASS+=("$1"); echo "  ✅ $1"; else FAIL+=("$1"); echo "  ❌ $1"; fi; }
-health(){ # $1 url, $2 label
+report(){ if [ "$2" = "ok" ]; then PASS+=("$1"); echo "  [OK] $1"; else FAIL+=("$1"); echo "  [FAIL] $1"; fi; }
+health(){ # $1 url
   code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 4 "$1" 2>/dev/null || echo "000")
-  [ "$code" != "000" ] && [ "$code" != "404" ] && [ "$code" != "401" ] && [ "$code" != "403" ]
-  # 端口可达即算活（401/403 说明服务在跑只是需鉴权）
+  # 端口可达即算活（401/403 说明服务在跑只是需鉴权）；只有 000 才算不可达
   if [ "$code" = "000" ]; then return 1; else return 0; fi
 }
 
-echo "══════════════════════════════════════════════════════════════"
+echo "================================================================"
 echo " 双工作区三端冒烟  ·  $(date '+%F %T')"
 echo " 前端 ${FRONTEND_PORT} · 后端 ${BACKEND_PORT} · Octop ${OCTOP_BASE}"
-echo "══════════════════════════════════════════════════════════════"
+echo "================================================================"
 
 # ---------------------------------------------------------------------------
 # 阶段 1：#1 静态校验 —— main.js 的 require 均被 package.json build.files 收录
 # （无需打包装即可发现漏收文件导致的启动崩溃，是 check:package-contents 的轻量等价版）
 # ---------------------------------------------------------------------------
-echo; echo "【阶段1】#1 打包完整性静态校验（main.js require ↔ package.json files）"
+echo; echo "【阶段1】#1 打包完整性静态校验（main.js require <-> package.json files）"
 if [ -f "$DESK/main.js" ] && [ -f "$DESK/package.json" ]; then
   reqs=$(grep -oE "require\(['\"]\.[^'\"]+['\"]\)" "$DESK/main.js" | sed -E "s/require\(['\"]//; s/['\"]\)//; s/\.js$//; s|^\./||" | sort -u)
   files=$(node -e "const f=require('$DESK/package.json').build.files; console.log(Array.isArray(f)?f.join('\n'):'')")
@@ -121,13 +121,13 @@ if health "http://127.0.0.1:$FRONTEND_PORT/"; then report "前端 $FRONTEND_PORT
 # 阶段 5：/api/octop/launch 路由校验（无 cookie 也应 401=已注册受护，而非 404=陈旧编译产物）
 # ---------------------------------------------------------------------------
 echo; echo "【阶段5】GET /api/octop/launch 路由校验"
-unauth_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 "http://127.0.0.1:$BACKEND_PORT/api/octop/launch")
-if [ "$unauth_code" = "404" ]; then
-  report "/api/octop/launch 返回 404 → 路由未注册（后端是陈旧编译产物，需重载 3011 加载 0f8c85fd）" fail
-elif [ "$unauth_code" = "401" ] || [ "$unauth_code" = "403" ]; then
-  report "/api/octop/launch 已注册且受保护（无 cookie 返 $unauth_code）" ok
+UC=$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 "http://127.0.0.1:$BACKEND_PORT/api/octop/launch")
+if [ "$UC" = "404" ]; then
+  report "/api/octop/launch 返回 404 -> 路由未注册（后端是陈旧编译产物，需重载 3011 加载 0f8c85fd）" fail
+elif [ "$UC" = "401" ] || [ "$UC" = "403" ]; then
+  report "/api/octop/launch 已注册且受保护（无 cookie 返 $UC）" ok
 else
-  report "/api/octop/launch 无 cookie 返 $unauth_code（非预期状态码）" fail
+  report "/api/octop/launch 无 cookie 返 $UC（非预期状态码）" fail
 fi
 
 # 若提供已登录 session cookie，进一步校验返回形态 {octopBaseUrl, healthy, token}
@@ -136,12 +136,12 @@ if [ -n "${SESSION_COOKIE:-}" ]; then
   if echo "$resp" | grep -qE "octopBaseUrl" && echo "$resp" | grep -qE "healthy" && echo "$resp" | grep -qE "token"; then
     healthy=$(echo "$resp" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).healthy)}catch(e){console.log('parse-error')}})")
     report "后端返回 {octopBaseUrl, healthy, token}（healthy=$healthy）" ok
-    [ "$healthy" = "true" ] && report "Octop 探活成功（后端能联通 8088）" ok || report "Octop 探活失败（healthy=false，检查 8088 是否真的在跑）" fail
+    if [ "$healthy" = "true" ]; then report "Octop 探活成功（后端能联通 8088）" ok; else report "Octop 探活失败（healthy=false，检查 8088 是否真的在跑）" fail; fi
   else
     report "/api/octop/launch 返回形态异常：$resp" fail
   fi
 else
-  echo "  ⚠️  未提供 SESSION_COOKIE，跳过 /api/octop/launch 鉴权形态检查（人工验收时在桌面点「＋ Octop 高级模式」验证）"
+  echo "  [SKIP] 未提供 SESSION_COOKIE，跳过 /api/octop/launch 鉴权形态检查（人工验收时在桌面点「＋ Octop 高级模式」验证）"
 fi
 
 # ---------------------------------------------------------------------------
@@ -149,12 +149,12 @@ fi
 # ---------------------------------------------------------------------------
 echo; echo "【阶段6】需人工在 Electron 桌面端点验（无法脚本化）"
 echo "  [ ] 启动后固定「业务工作区」标签加载 3010 且不可关闭（#5）"
-echo "  [ ] 顶部「＋ Octop 高级模式」点击 → 开 octop 标签加载 8088 且免登录（#2/#3 SSO）"
+echo "  [ ] 顶部「＋ Octop 高级模式」点击 -> 开 octop 标签加载 8088 且免登录（#2/#3 SSO）"
 echo "  [ ] DevTools Network 看 Octop 请求带 Authorization: Bearer <kda_ token>（#3 免登录注入）"
 echo "  [ ] 尝试关闭业务标签被拒 / 关最后自动重建（#5/#6）"
 
 # ---------------------------------------------------------------------------
-echo; echo "══════════════════════════════════════════════════════════════"
+echo; echo "================================================================"
 if [ ${#FAIL[@]} -eq 0 ]; then echo " 冒烟结论：无失败项（脚本可验部分全过；GUI 项见阶段6人工验收）"; else echo " 冒烟结论：${#FAIL[@]} 项失败："; printf '   - %s\n' "${FAIL[@]}"; fi
-echo "════════════════════════════════════════════════════════════════════"
+echo "================================================================"
 exit ${#FAIL[@]}
