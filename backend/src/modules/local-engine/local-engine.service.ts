@@ -34,6 +34,8 @@ import {
 } from '../auth/risk-control';
 import { McpRuntimeService } from './mcp-runtime.service';
 import { AgentSidecarService } from './agent-sidecar.service';
+import { SavingsExchangeService } from '../savings/savings-exchange.service';
+import { SavingsWithdrawalService } from '../savings/savings-withdrawal.service';
 import { AgentSService } from '../agent-s/agent-s.service';
 import { SandboxRuntimeService } from './sandbox-runtime.service';
 import { PluginRuntimeService } from './plugin-runtime.service';
@@ -1824,6 +1826,8 @@ export class LocalEngineService {
     private readonly sandboxRuntime: SandboxRuntimeService,
     private readonly pluginRuntime: PluginRuntimeService,
     private readonly memoryRuntime: MemoryRuntimeService,
+    private readonly savingsExchange: SavingsExchangeService,
+    private readonly savingsWithdrawal: SavingsWithdrawalService,
     @Optional()
     @Inject(forwardRef(() => PlaywrightMcpService))
     private readonly playwrightMcp?: PlaywrightMcpService,

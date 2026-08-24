@@ -31,6 +31,7 @@ import { WechatPlanSchedulerService } from './wechat-plan-scheduler.service';
 import { WechatPlanEditorController } from './wechat-plan-editor.controller';
 import { WechatPlanEditorService } from './wechat-plan-editor.service';
 import { EntitlementsModule } from '../entitlements/entitlements.module';
+import { SavingsModule } from '../savings/savings.module';
 
 // AutoUploadModule 与 RuntimeModule 均为 @Global：其 exports 全局可见，
 // 本模块的 provider 仍可注入 AutoUploadService / runtime 各服务，
@@ -42,6 +43,7 @@ import { EntitlementsModule } from '../entitlements/entitlements.module';
     AuthModule,
     AgentSModule,
     EntitlementsModule,
+    SavingsModule,
   ],
   controllers: [
     LocalEngineController,
