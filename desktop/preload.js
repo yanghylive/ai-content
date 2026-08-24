@@ -104,7 +104,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 多工作区标签壳（方案 A）：供前端 workspace 切换器开/关/切标签并绑定 workspaceId
   workspaceTabs: {
     open: (workspaceId, title) => ipcRenderer.invoke('workspace-tabs:open', workspaceId, title),
+    openOctop: (url, token) => ipcRenderer.invoke('workspace-tabs:openOctop', url, token),
     switchTo: (tabId) => ipcRenderer.invoke('workspace-tabs:switch', tabId),
+    switchBusiness: () => ipcRenderer.invoke('workspace-tabs:switchBusiness'),
     close: (tabId) => ipcRenderer.invoke('workspace-tabs:close', tabId),
     setWorkspaceId: (tabId, wsId) => ipcRenderer.invoke('workspace-tabs:setWorkspaceId', tabId, wsId),
     list: () => ipcRenderer.invoke('workspace-tabs:list'),
@@ -142,6 +144,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   onServiceStatus: (callback) => {
     return addManagedListener('service-status', callback);
+  },
+
+  // 通用事件订阅（供桌面端向 3010 前端转发指令，如 octop:request-launch）
+  on: (channel, callback) => {
+    return addManagedListener(channel, callback);
   },
 
   // 移除指定监听器

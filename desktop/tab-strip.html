@@ -99,11 +99,28 @@
     padding: 4px 8px; cursor: pointer; font-size: 12px;
   }
   .wsbox button:hover { background: var(--purple-soft); }
+  .pill {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    background: var(--tab-bg);
+    border: 1px solid rgba(114,46,209,0.5);
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  .pill:hover { background: var(--tab-active); }
+  .pill.octop { border-color: rgba(227,154,62,0.6); color: var(--gold); }
+  .pill.octop:hover { background: rgba(227,154,62,0.12); }
+  .tab.octop { border-color: rgba(227,154,62,0.4); }
+  .tab.octop.active { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(227,154,62,0.5) inset; }
 </style>
 </head>
 <body>
   <div id="strip">
     <span class="brand">JIUZHANG</span>
+    <div class="pill" id="businessPill" title="切换到业务工作区">业务工作区</div>
+    <div class="pill octop" id="octopPill" title="打开 Octop 高级模式">＋ Octop 高级模式</div>
     <div class="tabs" id="tabs"></div>
     <div class="add" id="add" title="新建标签">+</div>
     <div class="wsbox">
@@ -121,7 +138,7 @@
     tabsEl.innerHTML = '';
     for (const t of state.tabs) {
       const el = document.createElement('div');
-      el.className = 'tab' + (t.id === state.activeId ? ' active' : '');
+      el.className = 'tab' + (t.id === state.activeId ? ' active' : '') + (t.kind === 'octop' ? ' octop' : '');
       const title = document.createElement('span');
       title.className = 'title';
       title.textContent = t.title || '工作台';
@@ -133,11 +150,14 @@
         ws.title = t.workspaceId;
         el.appendChild(ws);
       }
-      const close = document.createElement('span');
-      close.className = 'close';
-      close.textContent = '×';
-      close.onclick = (e) => { e.stopPropagation(); window.tabStrip.send('tab-strip:close', t.id); };
-      el.appendChild(close);
+      // 固定标签（业务工作区）不可关闭，不渲染关闭按钮
+      if (!t.pinned) {
+        const close = document.createElement('span');
+        close.className = 'close';
+        close.textContent = '×';
+        close.onclick = (e) => { e.stopPropagation(); window.tabStrip.send('tab-strip:close', t.id); };
+        el.appendChild(close);
+      }
       el.onclick = () => window.tabStrip.send('tab-strip:switch', t.id);
       el.ondblclick = () => {
         const name = prompt('标签名称', t.title || '工作台');
@@ -156,6 +176,8 @@
   });
 
   document.getElementById('add').onclick = () => window.tabStrip.send('tab-strip:new');
+  document.getElementById('businessPill').onclick = () => window.tabStrip.send('tab-strip:switch-business');
+  document.getElementById('octopPill').onclick = () => window.tabStrip.send('tab-strip:request-octop');
   document.getElementById('wsBind').onclick = () => {
     const v = wsInput.value.trim();
     if (state.activeId) window.tabStrip.send('tab-strip:set-workspace', state.activeId, v || null);

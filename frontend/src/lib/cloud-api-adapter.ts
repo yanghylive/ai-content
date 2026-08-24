@@ -129,11 +129,13 @@ export interface UpdateEventCallbacks {
 
 interface ElectronWorkspaceTabsAPI {
   open(workspaceId?: string | null, title?: string): Promise<unknown>;
+  openOctop(url?: string | null, token?: string | null): Promise<unknown>;
   switchTo(tabId: string): Promise<unknown>;
+  switchBusiness(): Promise<unknown>;
   close(tabId: string): Promise<unknown>;
   setWorkspaceId(tabId: string, wsId: string | null): Promise<unknown>;
-  list(): Promise<Array<{ id: string; title: string; workspaceId?: string | null }>>;
-  getActive(): Promise<{ id: string; title: string; workspaceId?: string | null } | null>;
+  list(): Promise<Array<{ id: string; title: string; workspaceId?: string | null; kind?: string; pinned?: boolean }>>;
+  getActive(): Promise<{ id: string; title: string; workspaceId?: string | null; kind?: string; pinned?: boolean } | null>;
 }
 
 interface ElectronAPI {
@@ -151,6 +153,7 @@ interface ElectronAPI {
   onUpdateError(cb: (err: { message: string }) => void): string;
   onUpdateChecking(cb: () => void): string;
   onServiceStatus(cb: (status: { python: { running: boolean }; backend: { running: boolean } }) => void): string;
+  on(channel: string, cb: (...args: unknown[]) => void): string;
   removeListener(key: string): void;
   removeAllListeners(): void;
 }

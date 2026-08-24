@@ -12,6 +12,9 @@ import { KaypalAuthClient } from './kaypal-auth.client';
 import { AuthService as AgentGatewayAuthService } from '../agent-gateway/core/auth';
 import { resolveAgentSecret } from '../agent-gateway/agent-gateway.module';
 import { WorkspaceTokenController } from './workspace-token.controller';
+// 双工作区方案：桌面端连接本机 Octop 的拉起端点，复用 KaypalOctopBridge 取 Octop 服务令牌
+import { KaypalOctopBridge } from '../agent-gateway/kaypal-octop-bridge';
+import { OctopLaunchController } from './octop-launch.controller';
 import { KaypalDesktopAuthController } from './kaypal-desktop-auth.controller';
 import { KaypalProfileController } from './kaypal-profile.controller';
 import { KaypalPermissionGuard } from './permission.guard';
@@ -27,12 +30,15 @@ import { RiskPolicyService } from './risk-policy.service';
     KaypalProfileController,
     RiskPolicyController,
     WorkspaceTokenController,
+    OctopLaunchController,
   ],
   providers: [
     AuthService,
     KaypalAuthClient,
     RiskPolicyService,
     CredentialEnvelopeService,
+    // 双工作区方案：为 OctopLaunchController 提供 KaypalOctopBridge（取 Octop 服务令牌）
+    KaypalOctopBridge,
     // 4.4 多工作区标签壳：与 agent-gateway 同密钥的 HMAC AuthService，仅用于为前端签发 kaypal 令牌
     {
       provide: 'AGENT_GATEWAY_AUTH_SERVICE',
