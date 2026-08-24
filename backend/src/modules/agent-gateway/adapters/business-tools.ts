@@ -62,6 +62,11 @@ export class BusinessToolRegistry {
   has(name: string): boolean {
     return this.execs.has(name);
   }
+
+  /** 已注册工具名列表（合并多个真实工具集时用） */
+  list(): string[] {
+    return [...this.execs.keys()];
+  }
 }
 
 // ---------------------------------------------------------------------------

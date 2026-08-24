@@ -93,6 +93,12 @@ codes:
     httpStatus: 500
     source: "补充包 3.2 POST /tools/:name"
     notes: 业务执行器抛错；释放幂等锁以便客户端重试，并落入 failed_retryable/terminal + 记录失败 usage。
+  CONTENT_REVIEW_FAILED:
+    message: 内容审核未通过
+    retryable: true
+    httpStatus: 422
+    source: "3010-Agent-Gateway商用缺口修复方案 2.2 content_review"
+    notes: 敏感词/结构/配图/AI 味检查未达标（阈值 70）；修订后仍不达标返回，可重试。
   IDEMPOTENCY_CONFLICT:
     message: 幂等键冲突，已存在进行中的相同请求
     retryable: false

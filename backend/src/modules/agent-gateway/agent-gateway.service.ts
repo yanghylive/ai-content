@@ -9,6 +9,7 @@ import { PrismaHydrator } from './prisma-store/prisma-hydrator';
 import { PrismaOutboxStore } from './prisma-store/prisma-outbox.store';
 import { RealOctopAdapter } from './adapters/real-octop-adapter';
 import { RealBusinessTools } from './adapters/real-business-tools';
+import { RealContentTools } from './adapters/real-content-tools';
 import { RealKaypalMemoryAdapter } from './adapters/real-kaypal-memory';
 import { Optional } from '@nestjs/common';
 
@@ -33,6 +34,7 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly prisma: PrismaService,
     @Optional() private readonly realBusiness?: RealBusinessTools,
+    @Optional() private readonly realContent?: RealContentTools,
   ) {
     this.persist = process.env.AGENT_GATEWAY_PERSISTENCE === 'prisma';
     this.usageSink = new PrismaUsageSink(this.prisma);
@@ -48,10 +50,19 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
       outboxDb: this.persist ? this.outboxStore : undefined,
       // 真实 Octop 适配器：显式 OCTOP_ENABLED=true 启用（凭据 OCTOP_USERNAME/OCTOP_PASSWORD，避免测试环境误启）
       octop: process.env.OCTOP_ENABLED === 'true' ? new RealOctopAdapter() : undefined,
-      // 真实 3010 业务工具：显式 AGENT_GATEWAY_REAL_BUSINESS=true 启用（crm_create 走 CrmService）
+      // 真实 3010 业务工具：显式 AGENT_GATEWAY_REAL_BUSINESS=true 启用。
+      // RealBusinessTools（crm/lead/report 真实）+ RealContentTools（content_generate/review/
+      // lead_normalize 真实；publish/interaction 明确失败禁止假成功）合并注册。
       business:
-        process.env.AGENT_GATEWAY_REAL_BUSINESS === 'true' && this.realBusiness
-          ? this.realBusiness.build()
+        process.env.AGENT_GATEWAY_REAL_BUSINESS === 'true'
+          ? (() => {
+              const merged = new (require('./adapters/business-tools').BusinessToolRegistry)();
+              const biz = this.realBusiness?.build();
+              if (biz) for (const n of biz.list()) merged.register(n, biz.get(n)!);
+              const content = this.realContent?.build();
+              if (content) for (const n of content.list()) merged.register(n, content.get(n)!);
+              return merged;
+            })()
           : undefined,
       // 真实 Kaypal 远程长期记忆：显式 AGENT_GATEWAY_REAL_MEMORY=true 启用
       // （凭据 KAYPAL_AUTH_BASE_URL/KAYPAL_API_KEY + KAYPAL_TEST_PHONE/PASSWORD 换 Bearer token；
