@@ -4124,6 +4124,30 @@ model PlatformAccount {
 }
 
 // =============================================================================
+// Workspace（4.4 多工作区标签壳 · step1-1）
+// 一个 user 可在同一 tenant 下拥有多个 workspace（=一个 Electron 标签页）；
+// 每个 workspace 独立绑 agent + settings，agent-gateway 以 workspaceId 作为
+// 记忆/任务/事件 的第四维度隔离（与 tenant/user/agent 正交）。
+// 默认 workspace = 'default'，现有 1.1.96 用户数据保持 workspaceId=NULL 不破坏。
+// =============================================================================
+model Workspace {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  userId    String   @map("user_id")
+  name      String
+  agentId   String   @default("agent_default") @map("agent_id")
+  settings  Json     @default("{}")
+  status    String   @default("active") // active | archived
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, userId, name])
+  @@index([tenantId, userId])
+  @@index([status])
+  @@map("workspaces")
+}
+
+// =============================================================================
 // Agent Gateway 九实体（3010×Octop 核心引擎持久化 · P0-4 落地）
 // 对齐 docs/contracts/prisma/migration-plan.md；命名避开既有 local-engine
 // AgentSession/Approval 冲突，统一 AgentGateway* 前缀 + agent_gateway_* 表名。
@@ -4137,6 +4161,7 @@ model AgentGatewaySession {
   tenantId       String    @map("tenant_id")
   userId         String    @map("user_id")
   agentId        String    @map("agent_id")
+  workspaceId    String?   @map("workspace_id") // 4.4 多工作区标签壳；可空=兼容旧数据
   octopSessionId String?   @map("octop_session_id") // 仅关联，不作业务主键
   mode           String    @default("business") // business | advanced
   status         String    @default("active") // active | expired
@@ -4159,6 +4184,7 @@ model AgentGatewayTask {
   tenantId       String   @map("tenant_id")
   userId         String   @map("user_id")
   agentId        String   @map("agent_id")
+  workspaceId    String?  @map("workspace_id") // 4.4 多工作区标签壳；可空=兼容旧数据
   type           String
   status         String   @default("draft") // 状态机：draft/planned/awaiting_confirmation/running/...
   planJson       Json     @default("{}") @map("plan_json")
@@ -4177,6 +4203,7 @@ model AgentGatewayTask {
   @@index([sessionId])
   @@index([tenantId, userId])
   @@index([status])
+  @@index([workspaceId])
   @@map("agent_gateway_tasks")
 }
 
@@ -4185,6 +4212,7 @@ model AgentGatewayToolCall {
   taskId         String   @map("task_id")
   tenantId       String   @map("tenant_id")
   userId         String   @map("user_id")
+  workspaceId    String?  @map("workspace_id") // 4.4 多工作区标签壳；可空=兼容旧数据
   toolName       String   @map("tool_name")
   risk           String   @default("low") // low | medium | high
   inputHash      String   @map("input_hash") // 敏感输入只存确定性 hash
@@ -4269,6 +4297,8 @@ model AgentGatewayUsageEvent {
   requestId    String   @map("request_id")
   usageId      String   @unique @map("usage_id") // 与 Kaypal 回执对账锚点
   tenantId     String   @map("tenant_id")
+  userId       String   @map("user_id")
+  workspaceId  String?  @map("workspace_id") // 4.4 多工作区标签壳；可空=兼容旧数据
   taskId       String?  @map("task_id")
   toolCallId   String?  @map("tool_call_id")
   model        String?
@@ -4290,6 +4320,7 @@ model AgentGatewayMemoryOutbox {
   tenantId      String   @map("tenant_id")
   userId        String   @map("user_id")
   agentId       String   @map("agent_id")
+  workspaceId   String?  @map("workspace_id") // 4.4 多工作区标签壳；可空=兼容旧数据
   scope         String
   namespace     String
   content       String?  // 记忆正文（重启恢复重放必需）
@@ -4328,6 +4359,8 @@ model AgentGatewayEvent {
   eventId    String   @map("event_id") // 每 session 内唯一（复合唯一见下方）
   sessionId  String   @map("session_id")
   tenantId   String   @map("tenant_id")
+  userId     String   @map("user_id")
+  workspaceId String? @map("workspace_id") // 4.4 多工作区标签壳；可空=兼容旧数据
   sequence   Int
   type       String
   taskId     String   @map("task_id")

@@ -31,6 +31,7 @@ export class PrismaMirror implements AgentGatewayMirror {
           tenantId: s.tenantId,
           userId: s.userId,
           agentId: s.agentId,
+          workspaceId: s.workspaceId ?? null,
           octopSessionId: s.octopSessionId ?? null,
           mode: s.mode,
           status: s.status,
@@ -60,6 +61,7 @@ export class PrismaMirror implements AgentGatewayMirror {
           tenantId: t.tenantId,
           userId: t.userId,
           agentId: t.agentId,
+          workspaceId: t.workspaceId ?? null,
           type: t.type,
           status: t.status,
           planJson: t.planJson as object,
@@ -85,7 +87,7 @@ export class PrismaMirror implements AgentGatewayMirror {
   }
 
   async eventPublished(e: AgentEvent): Promise<void> {
-    // 事件不含租户上下文，按 session 归属反查（不变量：事件必须有 tenantId）
+    // 事件不含租户上下文，按 session 归属反查（不变量：事件必须有 tenantId + userId）
     const session = await this.prisma.agentGatewaySession.findUnique({ where: { id: e.sessionId } });
     await this.upsertSafe(() =>
       this.prisma.agentGatewayEvent.upsert({
@@ -94,6 +96,8 @@ export class PrismaMirror implements AgentGatewayMirror {
           eventId: e.eventId,
           sessionId: e.sessionId,
           tenantId: session?.tenantId ?? '',
+          userId: session?.userId ?? '',
+          workspaceId: session?.workspaceId ?? null,
           sequence: e.sequence,
           type: e.type,
           taskId: e.taskId,

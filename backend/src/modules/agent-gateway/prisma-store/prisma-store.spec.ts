@@ -118,6 +118,7 @@ describe('AgentGateway Prisma 仓储（幂等/审批/usage）', () => {
       id: 'ue1',
       requestId: 'req1',
       tenantId: 't1',
+      userId: 'u1',
       usageId: 'usage_sink_1',
       model: 'kaypal-writer',
       inputTokens: 120,
