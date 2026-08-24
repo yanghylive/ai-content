@@ -54,7 +54,8 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
           ? this.realBusiness.build()
           : undefined,
       // 真实 Kaypal 远程长期记忆：显式 AGENT_GATEWAY_REAL_MEMORY=true 启用
-      // （凭据 KAYPAL_AUTH_BASE_URL/KAYPAL_API_KEY；Edge 网关已放行 /api/memory*，鉴权走 Bearer/api-key）
+      // （凭据 KAYPAL_AUTH_BASE_URL/KAYPAL_API_KEY + KAYPAL_TEST_PHONE/PASSWORD 换 Bearer token；
+      //   生产实测：Bearer desktop token 200，api-key 需 kaypal-ai KAYPAL_API_KEYS 未配置 → 401 → 走 tokenProvider）
       memoryRemote:
         process.env.AGENT_GATEWAY_REAL_MEMORY === 'true' &&
         process.env.KAYPAL_API_KEY &&
@@ -62,6 +63,23 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
           ? new RealKaypalMemoryAdapter({
               baseUrl: process.env.KAYPAL_AUTH_BASE_URL || process.env.KAYPAL_BASE_URL!,
               apiKey: process.env.KAYPAL_API_KEY,
+              tokenProvider: async () => {
+                const phone = process.env.KAYPAL_TEST_PHONE;
+                const password = process.env.KAYPAL_TEST_PASSWORD;
+                if (!phone || !password) return undefined;
+                const res = await fetch(
+                  `${process.env.KAYPAL_AUTH_BASE_URL || process.env.KAYPAL_BASE_URL}/api/desktop-auth/password`,
+                  {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json', 'x-kaypal-api-key': process.env.KAYPAL_API_KEY!, accept: 'application/json' },
+                    body: JSON.stringify({ phone, password, device_id: '3010-memory', device_name: '3010-memory', platform: 'desktop' }),
+                    signal: AbortSignal.timeout(10_000),
+                  },
+                );
+                if (!res.ok) return undefined;
+                const d = (await res.json()) as Record<string, unknown>;
+                return String(d.access_token ?? d.accessToken ?? '') || undefined;
+              },
             })
           : undefined,
       // P1-3 余额/资格门禁：trial 模式（无商用执行权）下高风险写工具 → paused_insufficient_balance。
