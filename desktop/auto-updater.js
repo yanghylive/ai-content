@@ -20,11 +20,15 @@ let isManualCheck = false;
 let updateDownloaded = false;
 let updatesConfigured = false;
 let onStateChange = null;
+let broadcastToRenderer = null;
 const store = new Store();
 
 function setupAutoUpdater(win, hooks = {}) {
   mainWindow = win;
   onStateChange = typeof hooks.onStateChange === 'function' ? hooks.onStateChange : null;
+  // 多标签壳：更新进度/状态需广播到各标签内容视图（mainWindow.webContents 已不再承载前端）。
+  broadcastToRenderer =
+    typeof hooks.broadcastToRenderer === 'function' ? hooks.broadcastToRenderer : null;
   updatesConfigured = configureUpdateFeed();
 
   if (!updatesConfigured) {
@@ -229,6 +233,14 @@ function quitAndInstall() {
 }
 
 function sendToRenderer(channel, data) {
+  if (typeof broadcastToRenderer === 'function') {
+    try {
+      broadcastToRenderer(channel, data);
+      return;
+    } catch {
+      /* fall through to legacy path */
+    }
+  }
   if (mainWindow && mainWindow.webContents && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(channel, data);
   }

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'" />
+<title>workspace tabs</title>
+<style>
+  :root {
+    --purple: #722ed1;
+    --purple-soft: #8b5cf6;
+    --gold: #e39a3e;
+    --bg: #1a1422;
+    --bg-soft: #241a30;
+    --tab-bg: #2a2036;
+    --tab-active: #3a2b4d;
+    --text: #e8e2f0;
+    --text-dim: #9a8fb0;
+    --danger: #e5484d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 13px/1 -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #strip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    height: 38px;
+    padding: 0 8px;
+    background: linear-gradient(90deg, var(--bg) 0%, var(--bg-soft) 100%);
+    border-bottom: 1px solid rgba(114,46,209,0.4);
+  }
+  .brand {
+    color: var(--gold);
+    font-weight: 700;
+    letter-spacing: .5px;
+    padding-right: 8px;
+    border-right: 1px solid rgba(227,154,62,0.25);
+    margin-right: 4px;
+    white-space: nowrap;
+  }
+  .tabs { display: flex; align-items: center; gap: 6px; flex: 1; overflow-x: auto; scrollbar-width: thin; }
+  .tabs::-webkit-scrollbar { height: 4px; }
+  .tabs::-webkit-scrollbar-thumb { background: var(--purple-soft); border-radius: 2px; }
+  .tab {
+    display: flex; align-items: center; gap: 6px;
+    max-width: 220px;
+    padding: 5px 8px 5px 10px;
+    background: var(--tab-bg);
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .12s, border-color .12s;
+  }
+  .tab:hover { background: var(--tab-active); }
+  .tab.active { background: var(--tab-active); border-color: var(--purple); box-shadow: 0 0 0 1px rgba(114,46,209,0.5) inset; }
+  .tab .title { overflow: hidden; text-overflow: ellipsis; }
+  .tab .ws {
+    font-size: 10px; color: var(--gold);
+    background: rgba(227,154,62,0.12);
+    padding: 1px 5px; border-radius: 4px;
+    border: 1px solid rgba(227,154,62,0.3);
+  }
+  .tab .close {
+    width: 16px; height: 16px; line-height: 14px; text-align: center;
+    border-radius: 4px; color: var(--text-dim); font-size: 13px;
+  }
+  .tab .close:hover { background: var(--danger); color: #fff; }
+  .add {
+    flex: 0 0 auto;
+    width: 26px; height: 26px; line-height: 24px; text-align: center;
+    background: var(--tab-bg); color: var(--gold);
+    border: 1px dashed rgba(227,154,62,0.5); border-radius: 7px;
+    cursor: pointer; font-size: 16px; font-weight: 700;
+  }
+  .add:hover { background: var(--tab-active); }
+  .wsbox {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 4px;
+    padding-left: 8px; border-left: 1px solid rgba(114,46,209,0.3);
+  }
+  .wsbox input {
+    width: 150px; background: var(--bg-soft); color: var(--text);
+    border: 1px solid rgba(114,46,209,0.4); border-radius: 6px;
+    padding: 4px 8px; font-size: 12px; outline: none;
+  }
+  .wsbox input:focus { border-color: var(--purple); }
+  .wsbox button {
+    background: var(--purple); color: #fff; border: none; border-radius: 6px;
+    padding: 4px 8px; cursor: pointer; font-size: 12px;
+  }
+  .wsbox button:hover { background: var(--purple-soft); }
+</style>
+</head>
+<body>
+  <div id="strip">
+    <span class="brand">JIUZHANG</span>
+    <div class="tabs" id="tabs"></div>
+    <div class="add" id="add" title="新建标签">+</div>
+    <div class="wsbox">
+      <input id="wsInput" type="text" placeholder="绑定工作区 ID（激活标签）" />
+      <button id="wsBind">绑定</button>
+    </div>
+  </div>
+
+<script>
+  const tabsEl = document.getElementById('tabs');
+  const wsInput = document.getElementById('wsInput');
+  const state = { activeId: null, tabs: [] };
+
+  function render() {
+    tabsEl.innerHTML = '';
+    for (const t of state.tabs) {
+      const el = document.createElement('div');
+      el.className = 'tab' + (t.id === state.activeId ? ' active' : '');
+      const title = document.createElement('span');
+      title.className = 'title';
+      title.textContent = t.title || '工作台';
+      el.appendChild(title);
+      if (t.workspaceId) {
+        const ws = document.createElement('span');
+        ws.className = 'ws';
+        ws.textContent = 'WS:' + t.workspaceId.slice(0, 6);
+        ws.title = t.workspaceId;
+        el.appendChild(ws);
+      }
+      const close = document.createElement('span');
+      close.className = 'close';
+      close.textContent = '×';
+      close.onclick = (e) => { e.stopPropagation(); window.tabStrip.send('tab-strip:close', t.id); };
+      el.appendChild(close);
+      el.onclick = () => window.tabStrip.send('tab-strip:switch', t.id);
+      el.ondblclick = () => {
+        const name = prompt('标签名称', t.title || '工作台');
+        if (name !== null) window.tabStrip.send('tab-strip:rename', t.id, name);
+      };
+      tabsEl.appendChild(el);
+    }
+  }
+
+  window.tabStrip.on('tab-strip:state', (s) => {
+    state.activeId = s.activeId;
+    state.tabs = s.tabs || [];
+    render();
+    const active = state.tabs.find((t) => t.id === state.activeId);
+    wsInput.value = active && active.workspaceId ? active.workspaceId : '';
+  });
+
+  document.getElementById('add').onclick = () => window.tabStrip.send('tab-strip:new');
+  document.getElementById('wsBind').onclick = () => {
+    const v = wsInput.value.trim();
+    if (state.activeId) window.tabStrip.send('tab-strip:set-workspace', state.activeId, v || null);
+  };
+  wsInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('wsBind').click();
+  });
+
+  // 初始拉取一次状态
+  window.tabStrip.invoke('workspace-tabs:list').then((list) => {
+    if (Array.isArray(list)) {
+      state.tabs = list;
+      state.activeId = (list.find((t) => t.active) || list[0] || {}).id || null;
+      render();
+    }
+  }).catch(() => {});
+</script>
+</body>
+</html>
