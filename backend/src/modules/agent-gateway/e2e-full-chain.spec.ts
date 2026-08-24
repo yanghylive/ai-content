@@ -33,10 +33,14 @@ describe('全开关端到端（persist + real business + octop + kaypal auth）'
     process.env.AGENT_GATEWAY_PERSISTENCE = 'prisma';
     process.env.AGENT_GATEWAY_REAL_BUSINESS = 'true';
     process.env.OCTOP_ENABLED = 'true';
+    process.env.AGENT_GATEWAY_REAL_MEMORY = 'true'; // 真实 Kaypal Memory（Bearer token）
+    process.env.AGENT_GATEWAY_BALANCE_GATE = 'true'; // 余额门禁（trial 高风险写拦截）
     const envTxt = readFileSync(join(process.cwd(), '.env'), 'utf8');
     const get = (k: string): string | undefined =>
       envTxt.split('\n').find((l) => l.startsWith(`${k}=`))?.split('=').slice(1).join('=').trim();
     const apiKey = get('KAYPAL_API_KEY') || process.env.KAYPAL_API_KEY || '';
+    process.env.KAYPAL_AUTH_BASE_URL = get('KAYPAL_AUTH_BASE_URL') || process.env.KAYPAL_AUTH_BASE_URL || 'https://kaypal.cn';
+    process.env.KAYPAL_API_KEY = apiKey;
     const moduleRef = await Test.createTestingModule({
       imports: [AgentGatewayModule, PrismaModule],
     })
@@ -55,6 +59,8 @@ describe('全开关端到端（persist + real business + octop + kaypal auth）'
     delete process.env.AGENT_GATEWAY_PERSISTENCE;
     delete process.env.AGENT_GATEWAY_REAL_BUSINESS;
     delete process.env.OCTOP_ENABLED;
+    delete process.env.AGENT_GATEWAY_REAL_MEMORY;
+    delete process.env.AGENT_GATEWAY_BALANCE_GATE;
     await app?.close();
     await prisma?.$disconnect();
   });
@@ -145,5 +151,48 @@ describe('全开关端到端（persist + real business + octop + kaypal auth）'
     expect(eventRows.length).toBeGreaterThanOrEqual(1); // 事件落 DB
     expect(toolRows.length).toBe(1); // tool_call 落 DB（crm_create）
     expect(toolRows[0].requestJson).toBeTruthy(); // pending 恢复所需 requestJson
+  });
+
+  test('真实 Kaypal Memory 链路（写入→召回，不降级）', async () => {
+    if (!phone || !pwd) return;
+    const svc = app.get(AgentGatewayService);
+    const kctx = { tenantId: `mem_e2e_${Date.now().toString(36)}`, userId: 'u_mem_e2e', agentId: 'agent_default' };
+    const content = `六步闭环 e2e 记忆 ${Date.now().toString(36)}：用户偏好简约克制的设计风格`;
+    const { memoryEventId } = await svc.memory.capture(kctx, 'user_preference', content);
+    expect(memoryEventId).toBeTruthy();
+    await new Promise((r) => setTimeout(r, 1500)); // 等 outbox 异步写远程
+    const { items, degraded } = await svc.memory.recall(kctx, 'user_preference', '简约');
+    console.log('memory e2e recall:', { count: items.length, degraded, first: items[0]?.content });
+    expect(degraded).toBe(false); // 真实链路不降级
+    expect(items.length).toBeGreaterThan(0); // 召回真实记忆
+  }, 20000);
+
+  test('余额门禁：trial 用户高风险写工具 → paused_insufficient_balance', async () => {
+    const svc = app.get(AgentGatewayService);
+    // 构造 trial 用户（无商用执行权）——真实 DB 用户
+    const suffix = Date.now().toString(36);
+    const user = await prisma.user.create({
+      data: { username: `trial_${suffix}`, email: `trial_${suffix}@test.local`, passwordHash: 'x', name: 'trial', status: 'active', role: 'operator', commercialExecutionAllowed: false, planMode: 'trial', createdAt: new Date(), updatedAt: new Date() },
+    });
+    const tenant = await prisma.tenant.create({
+      data: { name: `trial-t${suffix}`, slug: `trial-t${suffix}`, status: 'active', ownerUserId: user.id },
+    });
+    const kctx = { tenantId: tenant.id, userId: user.id, agentId: 'agent_default' };
+    const session = await svc.gateway.createSession(kctx);
+    const task = svc.gateway.createTask(kctx, session.id, 'publish', {});
+    const out = await svc.gateway.executeTool(kctx, {
+      requestId: `req_bal_${suffix}`, tenantId: tenant.id, userId: user.id, agentId: 'agent_default',
+      sessionId: session.id, taskId: task.id, idempotencyKey: `bal_${suffix}`,
+      toolName: 'publish_execute', requiresConfirmation: false, payload: { platform: 'douyin' },
+    });
+    expect(out.kind).toBe('result');
+    if (out.kind === 'result') {
+      expect(out.result.error?.code).toBe('INSUFFICIENT_BALANCE');
+      expect(out.result.error?.message).toContain('余额不足');
+    }
+    expect(svc.gateway.getTask(task.id)?.status).toBe('paused'); // 不丢上下文，可恢复
+    // 清理
+    await prisma.tenant.delete({ where: { id: tenant.id } });
+    await prisma.user.delete({ where: { id: user.id } });
   });
 });

@@ -104,8 +104,14 @@ export class AgentGateway {
       createdAt: nowIso(),
     };
     this.sessions.set(session.id, session);
-    // 先镜像 session 落库，再发布事件——事件落库时按 session 反查租户不为空（P1-5）
-    this.fireMirror((m) => m.sessionCreated?.(session));
+    // 先镜像 session 落库，再发布事件——事件落库时按 session 反查租户不为空（P1-5）。
+    // 用 await 版镜像：persist 模式下 session 必须先落库才返回，否则后续 task/event
+    // 镜像会撞 agent_gateway_tasks.session_id 外键（fire-and-forget 有竞态）。
+    if (this.deps.mirror) {
+      await Promise.resolve(this.deps.mirror.sessionCreated?.(session)).catch(() => undefined);
+    } else {
+      this.fireMirror((m) => m.sessionCreated?.(session));
+    }
     this.deps.bus.publish(session.id, 'message', session.id, {
       content: `已创建${mode === 'advanced' ? '高级' : '业务'}会话`,
     });
@@ -190,18 +196,10 @@ export class AgentGateway {
     if (!spec) {
       return { kind: 'result', result: this.errorResult(request, makeError('TOOL_NOT_ALLOWED')) };
     }
-    const caps = this.getCapabilities();
-    if (!this.deps.registry.capabilitiesSatisfied(spec, caps)) {
-      return { kind: 'result', result: this.errorResult(request, makeError('OCTOP_DEGRADED')) };
-    }
 
-    // P2-10：执行前用 inputSchema 校验载荷，避免无效请求进幂等/执行
-    const inOk = this.deps.validator.validateInput(request.payload, spec.inputSchema);
-    if (!inOk.ok) {
-      return { kind: 'result', result: this.errorResult(request, makeError('INVALID_PLAN', { details: { toolName: spec.name, reason: inOk.errors } })) };
-    }
-
-    // P1-3：余额/资格门禁——不足时任务落 paused（可恢复），不消耗幂等、不发起执行
+    // P1-3：余额/资格门禁——不足时任务落 paused（可恢复），不消耗幂等、不发起执行。
+    // 放在 capability 检查之前：余额不足是最根本门槛，优先暴露 INSUFFICIENT_BALANCE
+    // 而非 OCTOP_DEGRADED（避免误导用户先排查能力）。
     if (this.deps.balanceGate) {
       const gate = await this.deps.balanceGate(ctx, spec);
       if (!gate.ok) {
@@ -219,6 +217,17 @@ export class AgentGateway {
           ),
         };
       }
+    }
+
+    const caps = this.getCapabilities();
+    if (!this.deps.registry.capabilitiesSatisfied(spec, caps)) {
+      return { kind: 'result', result: this.errorResult(request, makeError('OCTOP_DEGRADED')) };
+    }
+
+    // P2-10：执行前用 inputSchema 校验载荷，避免无效请求进幂等/执行
+    const inOk = this.deps.validator.validateInput(request.payload, spec.inputSchema);
+    if (!inOk.ok) {
+      return { kind: 'result', result: this.errorResult(request, makeError('INVALID_PLAN', { details: { toolName: spec.name, reason: inOk.errors } })) };
     }
 
     // 先建内存 ToolCall（id 同时用于 DB 幂等行与审批 FK——persist 模式一致性）

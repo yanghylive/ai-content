@@ -90,7 +90,10 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
           ? async (ctx, spec) => {
               try {
                 const u = await this.prisma.user.findUnique({ where: { id: ctx.userId } });
-                const trial = !u?.commercialExecutionAllowed && (u?.planMode ?? 'trial') === 'trial';
+                // 本地查不到用户（如 kaypal 正式账号未同步本地 users）→ fail-open 放行，
+                // 避免误拦有商用权限的外部账号；只有明确 trial 且无商用执行权才拦截
+                if (!u) return { ok: true };
+                const trial = !u.commercialExecutionAllowed && u.planMode === 'trial';
                 if (trial && spec.risk === 'high') {
                   return { ok: false, reason: 'trial 模式不开放高风险写工具，请升级商用套餐或充值' };
                 }
