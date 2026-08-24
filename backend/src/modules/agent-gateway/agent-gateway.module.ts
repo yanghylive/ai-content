@@ -13,6 +13,8 @@ import { PrismaHydrator } from './prisma-store/prisma-hydrator';
 import { PrismaOutboxStore } from './prisma-store/prisma-outbox.store';
 import { RealBusinessTools } from './adapters/real-business-tools';
 import { CrmModule } from '../crm/crm.module';
+import { LeadRepository } from '../leads/lead.repository';
+import { ReportingService } from '../reporting/reporting.service';
 import { AuthService } from './core/auth';
 
 /**
@@ -50,6 +52,11 @@ export function resolveAgentSecret(config: ConfigService): string {
     PrismaHydrator,
     PrismaOutboxStore,
     RealBusinessTools,
+    // 真实业务工具直供（不 import 业务模块，避免 controller 重复挂载）：
+    // lead_discover → LeadRepository（仅依赖 PrismaService + 可选 LeadScoreService）
+    // report_generate → ReportingService（仅依赖 PrismaService）
+    LeadRepository,
+    ReportingService,
     {
       provide: AuthService,
       inject: [ConfigService],
