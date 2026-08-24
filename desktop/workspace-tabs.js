@@ -309,6 +309,8 @@ class TabManager {
     if (kind === 'octop') {
       installOctopAuthInjection(view.webContents.session, () => tab.octopToken, () => originOf(tab.loadUrl));
       if (octopToken) setOctopCookie(view.webContents.session, tab.loadUrl, octopToken);
+      // 首次加载完成后播种 localStorage.auth_token 并重载（见 _bootstrapOctopAuth 注释）
+      if (octopToken) view.webContents.once('did-finish-load', () => this._bootstrapOctopAuth(tab));
     } else {
       installWorkspaceHeaderInjection(view.webContents.session, () => tab.workspaceId);
     }
@@ -455,6 +457,28 @@ class TabManager {
   }
 
   /**
+   * Octop SPA 会话自举（真机验证结论，2026-08-24）：
+   * Octop 前端把会话 token 存 localStorage.auth_token，启动时纯靠它判定登录态
+   * （不读 cookie、不依赖注入的 Authorization 头做初始路由判定）。
+   * 故首次加载完成后写入 token 并重载一次，SPA 即视为已登录（免登录）。
+   * 失败（如页面还没就绪）时复位标志，等待下次加载重试。
+   */
+  _bootstrapOctopAuth(tab) {
+    if (!tab || tab.kind !== 'octop' || !tab.octopToken || tab.authSeeded) return;
+    tab.authSeeded = true;
+    const view = tab.view;
+    const script = `try{localStorage.setItem('auth_token', ${JSON.stringify(tab.octopToken)})}catch(e){}`;
+    view.webContents
+      .executeJavaScript(script)
+      .then(() => {
+        if (!view.webContents.isDestroyed()) view.webContents.loadURL(tab.loadUrl);
+      })
+      .catch(() => {
+        tab.authSeeded = false; // 页面未就绪等失败 → 允许下次 did-finish-load 重试
+      });
+  }
+
+  /**
    * 拉起 / 切换 Octop 高级模式标签。
    * 安全：url 仅允许 loopback http(s)（防任意站点加载 + Bearer 令牌外泄）；
    * token 仅在拿到新值时覆盖（launch 失败 token=null 不清掉已开的合法会话）。
@@ -478,6 +502,11 @@ class TabManager {
           t.view.webContents.loadURL(target);
         } catch {
           /* ignore */
+        }
+        // 新 token → 加载完成后重新自举 localStorage 会话（SPA 换令牌后需重写）
+        if (token) {
+          t.authSeeded = false;
+          t.view.webContents.once('did-finish-load', () => this._bootstrapOctopAuth(t));
         }
         this.switchTo(t.id);
         this.persist();
