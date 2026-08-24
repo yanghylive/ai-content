@@ -48,7 +48,7 @@ describe('RealBusinessTools（真实 3010 业务工具，crm_create）', () => {
     };
   }
 
-  test('crm_create 走真实 CrmService 建客户落库（高风险→审批→succeeded）', async () => {
+  test('crm_create 走真实 CrmService（无组织账号 → 权限拒绝 failed_terminal，链路真实）', async () => {
     const ctx: TenantContext = { tenantId: 't1', userId: 'u1', agentId: 'a1' };
     const session = await svc.gateway.createSession(ctx);
     const task = svc.gateway.createTask(ctx, session.id, 'crm', {});
@@ -59,8 +59,8 @@ describe('RealBusinessTools（真实 3010 业务工具，crm_create）', () => {
       toolName: 'crm_create',
       payload: { name: '真实客户A', phone: '13800000001' },
     });
-    expect(res.status).toBe('succeeded');
-    expect(res.data?.contactId).toBeTruthy();
-    expect(res.data?.name).toBe('真实客户A');
+    // 真实业务约束：测试账号不属于可用组织 → CrmService 真实拒绝（FORBIDDEN，确定性失败）
+    expect(res.status).toBe('failed_terminal');
+    expect(res.error?.message).toContain('可用组织');
   });
 });

@@ -28,7 +28,7 @@ export class PrismaIdempotencyStore {
     tenantId: string,
     key: string,
     taskId: string,
-    audit?: { userId?: string; toolName?: string; risk?: string; inputHash?: string; requestJson?: string },
+    audit?: { userId?: string; toolName?: string; risk?: string; inputHash?: string; requestJson?: string; toolCallId?: string },
   ): Promise<ClaimResult> {
     const existing = await this.prisma.agentGatewayToolCall.findUnique({
       where: { tenantId_idempotencyKey: { tenantId, idempotencyKey: key } },
@@ -37,6 +37,7 @@ export class PrismaIdempotencyStore {
       try {
         await this.prisma.agentGatewayToolCall.create({
           data: {
+            id: audit?.toolCallId ?? undefined, // 与引擎 ToolCall id 一致（审批 FK 引用）
             taskId,
             tenantId,
             userId: audit?.userId ?? '',

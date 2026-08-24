@@ -159,6 +159,8 @@ export class AgentGateway {
     this.assertOwnership(session, ctx);
     const task = this.requireTask(request.taskId);
     this.assertOwnership(task, ctx);
+    // persist 保障：DB 仓储（幂等/审批）引用 task 前同步落库（fire-and-forget 镜像可能未完成）
+    if (this.deps.mirror) await this.deps.mirror.taskCreated?.(task);
 
     // P0-5：终态任务禁止再执行写工具
     if (this.isTerminal(task.status)) {
@@ -193,6 +195,9 @@ export class AgentGateway {
       return { kind: 'result', result: this.errorResult(request, makeError('INVALID_PLAN', { details: { toolName: spec.name, reason: inOk.errors } })) };
     }
 
+    // 先建内存 ToolCall（id 同时用于 DB 幂等行与审批 FK——persist 模式一致性）
+    const toolCallId = this.createToolCall(task, spec, request);
+
     let claim: ReturnType<IdempotencyStore['claim']>;
     try {
       claim = await this.deps.idempotency.claim(ctx.tenantId, request.idempotencyKey, task.id, {
@@ -201,6 +206,7 @@ export class AgentGateway {
         risk: spec.risk,
         inputHash: hashJson(request.payload),
         requestJson: JSON.stringify(request),
+        toolCallId,
       });
     } catch (e) {
       // claim 对 in_progress 抛 IDEMPOTENCY_CONFLICT，转为统一错误结果
@@ -213,8 +219,6 @@ export class AgentGateway {
       return { kind: 'result', result: this.errorResult(request, makeError('DUPLICATE_REQUEST')) };
     }
 
-    // 所有执行路径统一登记 ToolCall + pending（确认与非确认都要，供审批绑定/失败恢复用）
-    const toolCallId = this.createToolCall(task, spec, request);
 
     if (spec.requiresConfirmation) {
       const preview = { toolName: request.toolName, payload: request.payload };
@@ -243,6 +247,7 @@ export class AgentGateway {
     const task = this.requireTask(taskId);
     this.assertOwnership(task, ctx);
     this.assertTaskSessionAlive(task); // P1-1：过期会话不可审批/控制任务
+    if (this.deps.mirror) await this.deps.mirror.taskCreated?.(task); // persist 保障：审批引 task 前先落库
     const pending = this.pendingRequests.get(taskId);
 
     // P0-4：先做绑定校验（taskId/toolCallId/预览），跨任务复用直接 APPROVAL_MISMATCH
