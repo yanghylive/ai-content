@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { CredentialEnvelopeService } from '../../common/credential-envelope.service';
 import { EntitlementsModule } from '../entitlements/entitlements.module';
@@ -7,6 +8,10 @@ import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { KaypalAuthClient } from './kaypal-auth.client';
+// 4.4 多工作区标签壳：前端会话 → kaypal 令牌桥接，复用 agent-gateway 的 HMAC AuthService（同密钥）
+import { AuthService as AgentGatewayAuthService } from '../agent-gateway/core/auth';
+import { resolveAgentSecret } from '../agent-gateway/agent-gateway.module';
+import { WorkspaceTokenController } from './workspace-token.controller';
 import { KaypalDesktopAuthController } from './kaypal-desktop-auth.controller';
 import { KaypalProfileController } from './kaypal-profile.controller';
 import { KaypalPermissionGuard } from './permission.guard';
@@ -21,12 +26,28 @@ import { RiskPolicyService } from './risk-policy.service';
     KaypalDesktopAuthController,
     KaypalProfileController,
     RiskPolicyController,
+    WorkspaceTokenController,
   ],
   providers: [
     AuthService,
     KaypalAuthClient,
     RiskPolicyService,
     CredentialEnvelopeService,
+    // 4.4 多工作区标签壳：与 agent-gateway 同密钥的 HMAC AuthService，仅用于为前端签发 kaypal 令牌
+    {
+      provide: 'AGENT_GATEWAY_AUTH_SERVICE',
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) =>
+        new AgentGatewayAuthService(resolveAgentSecret(config), {
+          baseUrl:
+            config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
+            'https://kaypal.cn',
+          apiKey:
+            config.get<string>('KAYPAL_BILLING_API_KEY')?.trim() ||
+            config.get<string>('KAYPAL_API_KEY')?.trim() ||
+            '',
+        }),
+    },
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
