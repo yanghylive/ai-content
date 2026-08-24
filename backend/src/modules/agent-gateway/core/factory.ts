@@ -43,7 +43,9 @@ export function createAgentGateway(opts: {
   const idempotency = (opts.idempotency ?? new IdempotencyStore()) as IdempotencyStore;
   const approvals = (opts.approvals ?? new ApprovalService()) as ApprovalService;
   const bus = new EventBus(1000, (e) => {
-    opts.mirror?.eventPublished?.(e);
+    // 必须 return：mirror.eventPublished 是 async，丢弃返回的 promise 会导致
+    // reject 时变成 unhandled rejection 崩进程（fireMirror 同理）
+    return opts.mirror?.eventPublished?.(e);
   });
   const validator = new PayloadValidator();
   const octop = opts.octop ?? new MockOctopAdapter(registry.list().map((s) => s.name));

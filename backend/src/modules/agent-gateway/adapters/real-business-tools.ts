@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { CrmService } from '../../crm/crm.service';
 import { BusinessToolRegistry, ToolExecution } from './business-tools';
 import { contentGenerate, publishExecute, reportGenerate, interactionReplyExecute, leadDiscover } from './business-tools';
+import { AppErrorError } from '../contracts/error-codes';
+import { ErrorCode } from '../core/types';
 
 /**
  * 真实 3010 业务工具（部分接入）——替换 mock 执行器。
@@ -30,7 +32,19 @@ export class RealBusinessTools {
         sourceUrl: p.sourceUrl ? String(p.sourceUrl) : undefined,
         metadata: p.metadata ?? undefined,
       };
-      const customer = await this.crm.createCustomer(ctx.userId, input);
+      let customer: unknown;
+      try {
+        customer = await this.crm.createCustomer(ctx.userId, input);
+      } catch (err) {
+        // Nest ForbiddenException（组织权限拒绝）是确定性失败：重试也不会成功，
+        // 归 FORBIDDEN（retryable=false → failed_terminal），避免误标为可重试
+        if (err instanceof ForbiddenException) {
+          throw new AppErrorError('FORBIDDEN' as ErrorCode, err.message, false, {
+            details: { reason: err.message, cause: 'crm_create' },
+          });
+        }
+        throw err;
+      }
       const row = customer as { id?: string; displayName?: string | null };
       const exec: ToolExecution = {
         data: { contactId: row.id, name: row.displayName ?? p.name ?? '未知', tenantId: ctx.tenantId },

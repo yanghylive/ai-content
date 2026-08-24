@@ -49,6 +49,7 @@ export function resolveAgentSecret(config: ConfigService): string {
     PrismaMirror,
     PrismaHydrator,
     PrismaOutboxStore,
+    RealBusinessTools,
     {
       provide: AuthService,
       inject: [ConfigService],
