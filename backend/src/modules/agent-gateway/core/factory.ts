@@ -1,4 +1,4 @@
-import { AgentGateway } from './agent-gateway';
+import { AgentGateway, GatewayDeps } from './agent-gateway';
 import { ToolRegistry } from './tool-registry';
 import { IdempotencyStore } from './idempotency';
 import { ApprovalService } from './approval';
@@ -38,6 +38,8 @@ export function createAgentGateway(opts: {
   business?: BusinessToolRegistry;
   /** Kaypal 远程长期记忆适配器（可选；真实仓库传 RealKaypalMemoryAdapter，默认 Mock） */
   memoryRemote?: KaypalMemoryAdapter;
+  /** P1-3 余额/资格门禁（可选；真实仓库用 BillingService 实现） */
+  balanceGate?: GatewayDeps['balanceGate'];
 } = {}) {
   const registry = new ToolRegistry();
   registry.registerMany(STANDARD_TOOL_SPECS);
@@ -61,7 +63,7 @@ export function createAgentGateway(opts: {
     stopOutboxWorker = memory.startOutboxWorker(2000);
   }
 
-  const gateway = new AgentGateway({ registry, idempotency, approvals, bus, octop, memory, business, validator, usageSink: opts.usageSink, mirror: opts.mirror });
+  const gateway = new AgentGateway({ registry, idempotency, approvals, bus, octop, memory, business, validator, usageSink: opts.usageSink, mirror: opts.mirror, balanceGate: opts.balanceGate });
   for (const spec of STANDARD_TOOL_SPECS) gateway.registerToolSpec(spec);
 
   return { gateway, registry, idempotency, approvals, bus, octop, memory, memoryRemote, business, validator, stopOutboxWorker };

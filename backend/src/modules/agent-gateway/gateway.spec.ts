@@ -70,6 +70,41 @@ describe('AgentGateway 六步闭环', () => {
     ).rejects.toMatchObject({ code: 'FORBIDDEN' });
   });
 
+  it('余额门禁：trial 高风险写工具 → INSUFFICIENT_BALANCE + 任务 paused（可恢复）', async () => {
+    let gateOk = false;
+    const gate = createAgentGateway({
+      balanceGate: async () => (gateOk ? { ok: true } : { ok: false, reason: 'trial 模式不开放高风险写工具，请升级商用套餐或充值' }),
+    });
+    const session = await gate.gateway.createSession(ctx);
+    const task = gate.gateway.createTask(ctx, session.id, 'publish', {});
+    const outcome = await gate.gateway.executeTool(ctx, req(gate, session.id, task.id, 'publish_execute', 'idem_bal_1', { platform: 'douyin' }));
+    expect(outcome.kind).toBe('result');
+    if (outcome.kind === 'result') {
+      expect(outcome.result.error?.code).toBe('INSUFFICIENT_BALANCE');
+      expect(outcome.result.status).toBe('failed_terminal'); // retryable=false（需人工充值后恢复，不自动重试）
+    }
+    // 任务落 paused 而非 failed（语义：不丢上下文，可恢复）
+    expect(gate.gateway.getTask(task.id)?.status).toBe('paused');
+    // 事件含 task_paused + paused_insufficient_balance
+    const events = gate.gateway.snapshotEvents(session.id);
+    const pausedEvt = events.find((e) => e.type === 'task_paused');
+    expect(pausedEvt).toBeTruthy();
+    expect(pausedEvt?.payload.reason).toBe('paused_insufficient_balance');
+    // 未消耗幂等/未建 pending：充值后重新 executeTool（balanceGate 放行）即可继续，且幂等键可复用
+    gateOk = true;
+    const retry = await gate.gateway.executeTool(ctx, req(gate, session.id, task.id, 'publish_execute', 'idem_bal_1', { platform: 'douyin' }));
+    expect(retry.kind).toBe('awaiting_approval'); // 高风险 → 审批流，正常继续
+  });
+
+  it('余额门禁放行：gate ok → 正常执行', async () => {
+    const gate = createAgentGateway({ balanceGate: async () => ({ ok: true }) });
+    const session = await gate.gateway.createSession(ctx);
+    const task = gate.gateway.createTask(ctx, session.id, 'lead', {});
+    const outcome = await gate.gateway.executeTool(ctx, req(gate, session.id, task.id, 'lead_discover', 'idem_bal_2', { limit: 3 }));
+    expect(outcome.kind).toBe('result');
+    if (outcome.kind === 'result') expect(outcome.result.status).toBe('succeeded');
+  });
+
   it('重复幂等键（跨任务去重，首个已完成）→ DUPLICATE_REQUEST', async () => {
     const session = await g.gateway.createSession(ctx);
     const task1 = g.gateway.createTask(ctx, session.id, 'lead', {});

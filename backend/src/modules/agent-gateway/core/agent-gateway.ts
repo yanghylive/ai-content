@@ -49,6 +49,11 @@ export interface GatewayDeps {
   usageSink?: (ev: UsageEvent) => void | Promise<void>;
   /** 写路径持久化镜像（session/task/event/artifact；内存态仍权威） */
   mirror?: AgentGatewayMirror;
+  /**
+   * P1-3 余额/资格门禁（可选）：工具执行前调用；返回 ok=false 时任务落 paused
+   * （paused_insufficient_balance 语义），不扣幂等、不发起执行。真实仓库用 BillingService。
+   */
+  balanceGate?: (ctx: TenantContext, spec: ToolSpec) => Promise<{ ok: boolean; reason?: string }>;
   sessionTtlMs?: number;
   approvalTtlMs?: number;
 }
@@ -175,8 +180,9 @@ export class AgentGateway {
       }
       return { kind: 'result', result: this.errorResult(request, makeError('CHECKPOINT_MISSING', { details: { taskId: task.id, reason: '任务等待确认但缺少审批记录' } })) };
     }
-    // 其他非 planned 状态不允许提交新工具调用（恢复请走 resumeTask / 控制面）
-    if (task.status !== 'planned') {
+    // 其他非 planned/paused 状态不允许提交新工具调用（paused 允许重新提交 = 余额不足/人工暂停后的恢复路径；
+    // 完整恢复请走 resumeTask / 控制面）
+    if (task.status !== 'planned' && task.status !== 'paused') {
       return { kind: 'result', result: this.errorResult(request, makeError('INVALID_PLAN', { details: { taskId: task.id, status: task.status, reason: '任务不在可执行状态，请走恢复/控制面' } })) };
     }
 
@@ -193,6 +199,26 @@ export class AgentGateway {
     const inOk = this.deps.validator.validateInput(request.payload, spec.inputSchema);
     if (!inOk.ok) {
       return { kind: 'result', result: this.errorResult(request, makeError('INVALID_PLAN', { details: { toolName: spec.name, reason: inOk.errors } })) };
+    }
+
+    // P1-3：余额/资格门禁——不足时任务落 paused（可恢复），不消耗幂等、不发起执行
+    if (this.deps.balanceGate) {
+      const gate = await this.deps.balanceGate(ctx, spec);
+      if (!gate.ok) {
+        this.safeMutate(task, 'pause');
+        this.deps.bus.publish(task.sessionId, 'task_paused', task.id, {
+          reason: 'paused_insufficient_balance',
+          resumable: true,
+          summary: gate.reason ?? '余额不足，任务已暂停',
+        });
+        return {
+          kind: 'result',
+          result: this.errorResult(
+            request,
+            makeError('INSUFFICIENT_BALANCE', { details: { reason: gate.reason ?? 'paused_insufficient_balance' } }),
+          ),
+        };
+      }
     }
 
     // 先建内存 ToolCall（id 同时用于 DB 幂等行与审批 FK——persist 模式一致性）

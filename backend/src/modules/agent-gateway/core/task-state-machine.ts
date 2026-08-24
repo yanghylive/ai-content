@@ -23,7 +23,7 @@ export type TaskAction =
  */
 const TRANSITIONS: Record<TaskStatus, Partial<Record<TaskAction, TaskStatus>>> = {
   draft: { plan: 'planned', cancel: 'cancelled' },
-  planned: { request_confirmation: 'awaiting_confirmation', run: 'running', cancel: 'cancelled' },
+  planned: { request_confirmation: 'awaiting_confirmation', run: 'running', pause: 'paused', cancel: 'cancelled' },
   awaiting_confirmation: { approve: 'running', cancel: 'cancelled' },
   running: {
     request_confirmation: 'awaiting_confirmation',
@@ -35,7 +35,8 @@ const TRANSITIONS: Record<TaskStatus, Partial<Record<TaskAction, TaskStatus>>> =
     cancel: 'cancelled',
   },
   partially_succeeded: { resume: 'running', cancel: 'cancelled' },
-  paused: { resume: 'running', cancel: 'cancelled' },
+  // paused 允许 request_confirmation（余额不足/人工暂停后重新提交高风险工具 = 恢复路径）
+  paused: { resume: 'running', request_confirmation: 'awaiting_confirmation', cancel: 'cancelled' },
   failed_retryable: { resume: 'running', cancel: 'cancelled' },
   succeeded: {},
   failed_terminal: {},

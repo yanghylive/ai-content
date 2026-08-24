@@ -177,6 +177,12 @@ codes:
     httpStatus: 403
     source: "补充包 3.1 认证 / 9.1 跨租户"
     notes: token 有效但无权访问该租户/资源。
+  INSUFFICIENT_BALANCE:
+    message: 余额不足，任务已暂停（充值后可恢复）
+    retryable: false
+    httpStatus: 402
+    source: "PRD §9 账号、模型、积分与算力"
+    notes: 余额不足进入 paused_insufficient_balance，不丢上下文；充值后重新提交恢复。
   RATE_LIMITED:
     message: 速率受限
     retryable: true
