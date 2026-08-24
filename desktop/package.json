@@ -67,6 +67,9 @@
       "credential-key-store.js",
       "cloud-api.js",
       "auto-updater.js",
+      "workspace-tabs.js",
+      "tab-strip.html",
+      "tab-strip-preload.js",
       "hover-ball.html",
       "assets/**/*"
     ],
