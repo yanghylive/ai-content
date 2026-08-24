@@ -127,8 +127,18 @@ export interface UpdateEventCallbacks {
   removeAllListeners?: () => void;
 }
 
+interface ElectronWorkspaceTabsAPI {
+  open(workspaceId?: string | null, title?: string): Promise<unknown>;
+  switchTo(tabId: string): Promise<unknown>;
+  close(tabId: string): Promise<unknown>;
+  setWorkspaceId(tabId: string, wsId: string | null): Promise<unknown>;
+  list(): Promise<Array<{ id: string; title: string; workspaceId?: string | null }>>;
+  getActive(): Promise<{ id: string; title: string; workspaceId?: string | null } | null>;
+}
+
 interface ElectronAPI {
   cloudAPI: ElectronCloudAPI;
+  workspaceTabs: ElectronWorkspaceTabsAPI;
   config: ElectronConfigAPI;
   service: ElectronServiceAPI;
   app: ElectronAppAPI;

@@ -19,6 +19,7 @@ import {
   type KaypalSubscription,
 } from "@/lib/api/auth";
 import { ElectronUpdateBanner } from "@/components/electron-update-banner";
+import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { SolutionRunContextBanner } from "./components/solution-run-context-banner";
 import {
   approveSolutionManualTask,
@@ -1475,6 +1476,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           toolCode={activeToolCode}
         />
       ) : null}
+      <WorkspaceSwitcher />
       {children}
     </AppShell>
   );
