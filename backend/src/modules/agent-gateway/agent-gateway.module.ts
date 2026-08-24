@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AgentGatewayController } from './agent-gateway.controller';
 import { AgentMemoryController } from './agent-memory.controller';
+import { WorkspacesController } from './workspaces.controller';
+import { WorkspacesService } from './workspaces.service';
 import { AgentGatewayService } from './agent-gateway.service';
 import { KaypalAuthGuard } from './kaypal-auth.guard';
 import { AgentGatewayExceptionFilter } from './agent-gateway.filter';
@@ -42,9 +44,10 @@ export function resolveAgentSecret(config: ConfigService): string {
 
 @Module({
   imports: [CrmModule], // 真实业务工具（crm_create → CrmService）
-  controllers: [AgentGatewayController, AgentMemoryController],
+  controllers: [AgentGatewayController, AgentMemoryController, WorkspacesController],
   providers: [
     AgentGatewayService,
+    WorkspacesService,
     KaypalAuthGuard,
     AgentGatewayExceptionFilter,
     PrismaIdempotencyStore,
