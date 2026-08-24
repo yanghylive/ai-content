@@ -159,9 +159,38 @@
         el.appendChild(close);
       }
       el.onclick = () => window.tabStrip.send('tab-strip:switch', t.id);
-      el.ondblclick = () => {
-        const name = prompt('标签名称', t.title || '工作台');
-        if (name !== null) window.tabStrip.send('tab-strip:rename', t.id, name);
+      // 双击进入内联改名（Electron 不支持 window.prompt，改用输入框；Enter 提交 / Esc 取消 / 失焦提交）
+      el.ondblclick = (e) => {
+        if (el.querySelector('input.rename')) return;
+        e.stopPropagation();
+        const prev = t.title || '工作台';
+        title.style.display = 'none';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'rename';
+        input.value = prev;
+        input.style.cssText = 'width:110px;background:var(--bg-soft);color:var(--text);border:1px solid var(--purple);border-radius:4px;padding:1px 4px;font-size:12px;outline:none;';
+        el.insertBefore(input, title);
+        input.focus();
+        input.select();
+        let done = false;
+        const commit = (save) => {
+          if (done) return;
+          done = true;
+          const name = input.value.trim();
+          input.remove();
+          title.style.display = '';
+          if (save && name && name !== prev) {
+            window.tabStrip.send('tab-strip:rename', t.id, name);
+          }
+        };
+        input.addEventListener('keydown', (ev) => {
+          ev.stopPropagation();
+          if (ev.key === 'Enter') commit(true);
+          else if (ev.key === 'Escape') commit(false);
+        });
+        input.addEventListener('blur', () => commit(true));
+        input.addEventListener('click', (ev) => ev.stopPropagation());
       };
       tabsEl.appendChild(el);
     }
