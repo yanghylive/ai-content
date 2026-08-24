@@ -154,6 +154,7 @@ export type ErrorCode =
   | 'FORBIDDEN'
   | 'APPROVAL_MISMATCH'
   | 'IDEMPOTENCY_KEY_REQUIRED'
+  | 'INSUFFICIENT_BALANCE'
   | 'RATE_LIMITED';
 
 export interface AppError {

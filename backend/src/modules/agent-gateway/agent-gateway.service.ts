@@ -64,6 +64,25 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
               apiKey: process.env.KAYPAL_API_KEY,
             })
           : undefined,
+      // P1-3 余额/资格门禁：trial 模式（无商用执行权）下高风险写工具 → paused_insufficient_balance。
+      // 语义对齐 PRD §9「余额不足进入 paused_insufficient_balance，不丢上下文」——
+      // 用本地 planMode 作代理判定（trial=有阻断；commercial/授权=放行）。
+      balanceGate:
+        process.env.AGENT_GATEWAY_BALANCE_GATE === 'true'
+          ? async (ctx, spec) => {
+              try {
+                const u = await this.prisma.user.findUnique({ where: { id: ctx.userId } });
+                const trial = !u?.commercialExecutionAllowed && (u?.planMode ?? 'trial') === 'trial';
+                if (trial && spec.risk === 'high') {
+                  return { ok: false, reason: 'trial 模式不开放高风险写工具，请升级商用套餐或充值' };
+                }
+                return { ok: true };
+              } catch {
+                // 用户查询失败：fail-open 放行（避免误伤；余额语义由 Kaypal 账务兜底）
+                return { ok: true };
+              }
+            }
+          : undefined,
     });
   }
 
