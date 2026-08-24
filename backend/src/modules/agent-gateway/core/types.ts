@@ -114,7 +114,8 @@ export type ToolResultStatus =
   | 'succeeded'
   | 'partially_succeeded'
   | 'failed_retryable'
-  | 'failed_terminal';
+  | 'failed_terminal'
+  | 'unknown'; // 外部提交后无法读回（方案 2.1：禁止盲目标记成功）
 
 export interface ToolResult {
   requestId: string;

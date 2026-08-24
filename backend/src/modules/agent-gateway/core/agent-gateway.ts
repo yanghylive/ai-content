@@ -451,8 +451,8 @@ export class AgentGateway {
         ? 'succeed'
         : exec.status === 'partially_succeeded'
           ? 'partial_success'
-          : exec.status === 'failed_retryable'
-            ? 'fail_retryable'
+          : exec.status === 'failed_retryable' || exec.status === 'unknown'
+            ? 'fail_retryable' // unknown：外部已提交但无法读回，不宣称成功；落可重试态供人工核查
             : 'fail_terminal';
     // P1-9：执行成功后若并发取消已先置终态，迁移会抛——外部已成功，接口不得报错，
     // 事件照发（任务状态以状态机为准，结果以本次执行为准）
