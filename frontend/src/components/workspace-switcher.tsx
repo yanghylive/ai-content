@@ -5,6 +5,7 @@ import { Button, Chip, Input } from "@heroui/react";
 import { Layers, Plus, ExternalLink } from "lucide-react";
 import toast from "@/lib/toast";
 import { workspaceApi, type Workspace } from "@/lib/api/workspace";
+import { api } from "@/lib/api/client";
 
 type TabInfo = {
   id: string;
@@ -143,6 +144,45 @@ export function WorkspaceSwitcher() {
     }
   };
 
+  const launchOctop = React.useCallback(async () => {
+    if (!tabs) {
+      toast.error("仅桌面端支持 Octop 高级模式");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = (await api.get("/octop/launch")) as {
+        octopBaseUrl: string;
+        healthy: boolean;
+        token: string | null;
+      };
+      if (!res.healthy) {
+        toast.error("本机 Octop 未运行（127.0.0.1:8088 健康检查失败），请先启动 Octop");
+        return;
+      }
+      if (!res.token) {
+        toast.error("Octop 凭据未配置（后端需 OCTOP_USERNAME/PASSWORD 或 OCTOP_ACCESS_TOKEN）");
+        return;
+      }
+      await tabs.openOctop(res.octopBaseUrl, res.token);
+      toast.success("已打开 Octop 高级模式");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "打开 Octop 失败");
+    } finally {
+      setBusy(false);
+    }
+  }, [tabs]);
+
+  // 监听桌面 tab 条「Octop 高级模式」按钮转发的拉起请求
+  React.useEffect(() => {
+    const key = window.electronAPI?.on?.("octop:request-launch", () => {
+      void launchOctop();
+    });
+    return () => {
+      if (key) window.electronAPI?.removeListener?.(key);
+    };
+  }, [launchOctop]);
+
   if (loading) return null;
 
   return (
@@ -195,6 +235,24 @@ export function WorkspaceSwitcher() {
         startContent={!busy ? <ExternalLink size={14} /> : null}
       >
         新标签
+      </Button>
+      <Button
+        size="sm"
+        variant="flat"
+        isDisabled={busy || !tabs}
+        onPress={() => tabs?.switchBusiness()}
+        startContent={!busy ? <Layers size={14} /> : null}
+      >
+        业务工作区
+      </Button>
+      <Button
+        size="sm"
+        color="warning"
+        isDisabled={busy || !tabs}
+        onPress={() => void launchOctop()}
+        startContent={!busy ? <ExternalLink size={14} /> : null}
+      >
+        Octop 高级模式
       </Button>
       {!tabs ? (
         <span className="text-12 text-default-400">
