@@ -101,6 +101,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     showItemInFolder: (fullPath) => ipcRenderer.invoke('shell:show-item-in-folder', fullPath)
   },
 
+  // 多工作区标签壳（方案 A）：供前端 workspace 切换器开/关/切标签并绑定 workspaceId
+  workspaceTabs: {
+    open: (workspaceId, title) => ipcRenderer.invoke('workspace-tabs:open', workspaceId, title),
+    switchTo: (tabId) => ipcRenderer.invoke('workspace-tabs:switch', tabId),
+    close: (tabId) => ipcRenderer.invoke('workspace-tabs:close', tabId),
+    setWorkspaceId: (tabId, wsId) => ipcRenderer.invoke('workspace-tabs:setWorkspaceId', tabId, wsId),
+    list: () => ipcRenderer.invoke('workspace-tabs:list'),
+    getActive: () => ipcRenderer.invoke('workspace-tabs:getActive')
+  },
+
   // 事件监听（带清理机制）
   onUpdateChecking: (callback) => {
     return addManagedListener('update-checking', callback);

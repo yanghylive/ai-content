@@ -69,6 +69,13 @@ const store = new Store({
   }
 });
 
+// 多工作区标签壳（方案 A：WebContentsView per tab）
+const { TabManager } = require('./workspace-tabs');
+const tabManager = new TabManager(store);
+function getTabManager() {
+  return tabManager;
+}
+
 let mainWindow = null;
 let tray = null;
 let agentSService = null;
@@ -684,59 +691,18 @@ function createWindow() {
   mainWindow = new BrowserWindow(windowOptions);
   mainWindow.setMenuBarVisibility(false);
 
-  // 加载前端
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:3010');
-    mainWindow.webContents.openDevTools();
-  } else {
-    if (!frontendServerUrl) {
-      throw new Error('前端本地服务未启动');
-    }
-    mainWindow.loadURL(frontendServerUrl);
+  // 多工作区标签壳（方案 A）：前端加载进各标签 WebContentsView，窗口自身
+  // webContents 保持空白；TabManager 在 contentView 下挂 tab 条 + 内容视图，
+  // 并把原窗口级「崩溃自愈 / 外链 / 更新广播」handler 下沉到各标签视图。
+  if (!frontendServerUrl && process.env.NODE_ENV !== 'development') {
+    throw new Error('前端本地服务未启动');
   }
-
-  // 渲染进程崩溃 / 加载失败自愈：避免窗口白屏后「点 Dock/托盘无效」的观感，
-  // 自动 reload 或重新加载前端。
-  mainWindow.webContents.on('render-process-gone', (_event, details) => {
-    if (details.reason === 'clean-exit') return;
-    console.warn('[Window] 渲染进程退出，自动恢复:', details.reason);
-    setTimeout(() => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.reload();
-      }
-    }, 500);
-  });
-  mainWindow.webContents.on('did-fail-load', (_event, code, desc, _url, isMainFrame) => {
-    if (!isMainFrame || code === -3) return;
-    console.warn(`[Window] 前端加载失败(${code}): ${desc}，自动重试`);
-    setTimeout(() => {
-      if (mainWindow && !mainWindow.isDestroyed() && frontendServerUrl) {
-        mainWindow.loadURL(frontendServerUrl);
-      }
-    }, 1000);
-  });
-  mainWindow.on('unresponsive', () => {
-    console.warn('[Window] 窗口无响应，尝试恢复渲染进程');
-    setTimeout(() => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.reload();
-      }
-    }, 500);
-  });
+  getTabManager().attach(mainWindow);
 
   // 保存窗口大小
   mainWindow.on('resize', () => {
     const bounds = mainWindow.getBounds();
     store.set('windowBounds', { width: bounds.width, height: bounds.height });
-  });
-
-  // 外部链接在浏览器中打开
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('http')) {
-      shell.openExternal(url);
-      return { action: 'deny' };
-    }
-    return { action: 'allow' };
   });
 
   mainWindow.on('close', (event) => {
@@ -1773,9 +1739,8 @@ function refreshTray() {
 function setPendingUpdate(partial) {
   pendingUpdate = { ...pendingUpdate, ...partial };
   refreshTray();
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('update-state', pendingUpdate);
-  }
+  // 多标签壳：更新状态广播到各标签内容视图（mainWindow.webContents 已不承载前端）
+  getTabManager().broadcast('update-state', pendingUpdate);
 }
 
 // 设置 IPC 通信
@@ -1831,7 +1796,7 @@ function setupIPC() {
     if (!validateLocalBridgeRequest(request)) {
       return buildLocalBridgeError(request, 'INVALID_REQUEST', '请求无效', 400);
     }
-    if (!mainWindow || mainWindow.isDestroyed() || event.sender !== mainWindow.webContents) {
+    if (!mainWindow || mainWindow.isDestroyed() || !getTabManager().isOwnedWebContents(event.sender)) {
       return buildLocalBridgeError(request, 'PERMISSION_DENIED', '请求来源无权访问', 403);
     }
 
@@ -1998,6 +1963,9 @@ function setupIPC() {
   ipcMain.handle('shell:show-item-in-folder', (event, fullPath) => {
     shell.showItemInFolder(fullPath);
   });
+
+  // 多工作区标签壳 IPC（tab 条 + 前端 workspace 切换器调用）
+  getTabManager().registerIpc(ipcMain);
 }
 
 // 单实例锁：Windows/macOS 下用户再次点击任务栏/Dock 图标时，系统会启动
@@ -2046,6 +2014,9 @@ app.whenReady().then(async () => {
 
   await startFrontendServer();
 
+  // 把前端地址交给标签壳，供各标签视图加载
+  getTabManager().setFrontendUrl(frontendServerUrl);
+
   // 在窗口加载页面前完成 IPC 注册，避免 preload 抢跑。
   setupIPC();
 
@@ -2062,7 +2033,10 @@ app.whenReady().then(async () => {
 
   // 设置自动更新
   pendingUpdate.envUrl = process.env.AI_CONTENT_UPDATE_URL || null;
-  setupAutoUpdater(mainWindow, { onStateChange: setPendingUpdate });
+  setupAutoUpdater(mainWindow, {
+    onStateChange: setPendingUpdate,
+    broadcastToRenderer: (channel, data) => getTabManager().broadcast(channel, data)
+  });
 
   // macOS: 点击 dock 图标时显示窗口
   app.on('activate', () => {
@@ -2076,6 +2050,7 @@ app.whenReady().then(async () => {
 // 应用退出
 app.on('before-quit', () => {
   isQuitting = true;
+  getTabManager().persist();
   stopFrontendServer();
   stopAgentSService();
   stopBackendService();
