@@ -12,6 +12,8 @@ interface OutboxEntry {
   ns: MemoryNamespace;
   /** 本地记忆 item id，远程写入复用同一 id 保证删除对账 */
   itemId: string;
+  /** capture 时的请求级 token（outbox flush 时透传，避免后台用共享凭据代发） */
+  accessToken?: string;
 }
 
 /** outbox 持久化记录（agent_gateway_memory_outbox 行） */
@@ -73,7 +75,7 @@ export class MemoryOrchestrator {
     let remoteItems: MemoryItem[] = [];
     let degraded = false;
     try {
-      remoteItems = await this.remote.search(ns, query);
+      remoteItems = await this.remote.search(ns, query, ctx.kaypalAccessToken);
     } catch {
       degraded = true; // 软降级：返回本地结果，不阻塞主任务
     }
@@ -113,7 +115,7 @@ export class MemoryOrchestrator {
       nextRetryAt: nowIso(),
       status: 'pending',
     };
-    this.outboxItems.set(memoryEventId, { outbox, content, ns, itemId: localItem.id });
+    this.outboxItems.set(memoryEventId, { outbox, content, ns, itemId: localItem.id, accessToken: ctx.kaypalAccessToken });
     this.fireOutboxDb({
       memoryEventId,
       tenantId: ns.tenantId,
@@ -144,7 +146,8 @@ export class MemoryOrchestrator {
       const entry = this.outboxItems.get(memoryEventId);
       if (!entry || entry.outbox.status === 'done') return;
       try {
-        await this.remote.add(entry.ns, entry.content, entry.itemId);
+        // flushOutbox 无 ctx，token 必须从调用点捕获并随 entry 暂存；无 token 时回退默认 provider
+        await this.remote.add(entry.ns, entry.content, entry.itemId, entry.accessToken);
         entry.outbox.status = 'done';
         this.fireOutboxDb(this.toRecord(entry));
       } catch {
@@ -254,7 +257,7 @@ export class MemoryOrchestrator {
 
     let remoteRemoved = false;
     try {
-      remoteRemoved = await this.remote.delete(itemNs, id);
+      remoteRemoved = await this.remote.delete(itemNs, id, ctx.kaypalAccessToken);
     } catch {
       // 远程故障：绝不宣称删除成功
       return { deleted: false };
@@ -320,7 +323,7 @@ export class MemoryOrchestrator {
     const local = this.local.get(this.nsKey(ns)) ?? [];
     let remote: MemoryItem[] = [];
     try {
-      remote = await this.remote.export(ns);
+      remote = await this.remote.export(ns, ctx.kaypalAccessToken);
     } catch {
       remote = [];
     }

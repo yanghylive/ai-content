@@ -101,12 +101,16 @@ export class AuthService {
   }
 }
 
-/** 从 Authorization: Bearer <token> 或裸 x-kaypal-ctx 抽取令牌并校验；缺失/非法一律拒绝 */
+/** 从 Authorization: Bearer <token> 或裸 x-kaypal-ctx 抽取令牌并校验；缺失/非法一律拒绝。
+ *  返回的 ctx.kaypalAccessToken 是原始 token（Bearer 去除前缀后的纯字符串）——上游用其透传到依赖，
+ *  避免服务再用共享凭据代发请求（P3-1：请求级 token 透传）。 */
 export async function requireAuth(auth: AuthService, headerValue: string | undefined): Promise<TenantContext> {
   if (!headerValue) throw makeError('UNAUTHORIZED', { details: { reason: '缺少身份令牌' } });
   let token = headerValue;
   if (headerValue.toLowerCase().startsWith('bearer ')) {
     token = headerValue.slice(7).trim();
   }
-  return auth.verify(token);
+  const ctx = await auth.verify(token);
+  // 透传原始 token 给依赖（注意：ctx 是引用，下游写入字段会影响 caller；为安全起见新建对象）
+  return { ...ctx, kaypalAccessToken: token };
 }

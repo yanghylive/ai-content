@@ -9,6 +9,12 @@ export interface TenantContext {
   tenantId: string;
   userId: string;
   agentId: string;
+  /**
+   * 当前请求的 Kaypal 访问令牌（HMAC 验签后的原始 token；非持久化字段）。
+   * 用途：把请求级身份透传到外部依赖（如远程 Memory），避免服务再用共享凭据代发请求。
+   * 缺失 = 本地/系统调用或上游鉴权未注入 token——业务层应明确处理而非隐式回退到共享账号。
+   */
+  kaypalAccessToken?: string;
 }
 
 // ---------------------------------------------------------------------------

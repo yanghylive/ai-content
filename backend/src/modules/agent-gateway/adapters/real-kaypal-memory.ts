@@ -27,8 +27,14 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
     },
   ) {}
 
-  private async authHeaders(): Promise<Record<string, string>> {
-    // tokenProvider 优先（生产 desktop token 已验证 200）；无则回退 api-key
+  private async authHeaders(accessToken?: string): Promise<Record<string, string>> {
+    // P3-1：请求级 token（per-call，KaypalAuthGuard 已验签）优先——避免服务再用共享凭据代发请求。
+    // 兼容性：内部 HMAC 测试 token（点号分隔、单点）不属于 Kaypal desktop token，kaypal.cn 不认；
+    // 见到 HMAC 形态直接回退 tokenProvider / api-key，避免误把测试 token 发到生产。
+    if (accessToken && !this.looksLikeHmacToken(accessToken)) {
+      return { authorization: `Bearer ${accessToken}` };
+    }
+    // 回退 tokenProvider（生产 desktop token 已验证 200）；再回退 api-key
     if (this.opts.tokenProvider) {
       try {
         const token = await this.opts.tokenProvider();
@@ -40,12 +46,17 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
     return { 'x-kaypal-api-key': this.opts.apiKey };
   }
 
-  private async request(path: string, init?: RequestInit): Promise<Response> {
+  /** 内部 HMAC 测试 token = base64url body + '.' + base64url sig；仅单点；kaypal.cn 不认 */
+  private looksLikeHmacToken(token: string): boolean {
+    return token.includes('.') && token.split('.').length === 2 && !token.startsWith('kda_');
+  }
+
+  private async request(path: string, init?: RequestInit, accessToken?: string): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.opts.timeoutMs ?? 8000);
     try {
       try {
-        const auth = await this.authHeaders();
+        const auth = await this.authHeaders(accessToken);
         return await fetch(`${this.opts.baseUrl}${path}`, {
           ...init,
           headers: {
@@ -77,11 +88,11 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
     });
   }
 
-  async search(ns: MemoryNamespace, query: string): Promise<MemoryItem[]> {
+  async search(ns: MemoryNamespace, query: string, accessToken?: string): Promise<MemoryItem[]> {
     const p = new URLSearchParams({ tier: 'long' });
     if (query) p.set('query', query);
     p.set('nResults', '10');
-    const res = await this.request(`/api/memory?${p.toString()}`);
+    const res = await this.request(`/api/memory?${p.toString()}`, undefined, accessToken);
     const body = (await this.ensureOk(res, 'search')) as { items?: Array<Record<string, unknown>> };
     const items = ((body.items ?? []) as Array<Record<string, unknown>>).map((i) => ({
       id: String(i.id),
@@ -101,7 +112,7 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
     });
   }
 
-  async add(ns: MemoryNamespace, content: string, id?: string): Promise<{ id: string }> {
+  async add(ns: MemoryNamespace, content: string, id?: string, accessToken?: string): Promise<{ id: string }> {
     const res = await this.request('/api/memory', {
       method: 'POST',
       body: JSON.stringify({
@@ -113,22 +124,22 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
         },
         ...(id ? { memoryId: id } : {}), // 幂等：本地/远程共用同一 id
       }),
-    });
+    }, accessToken);
     const body = (await this.ensureOk(res, 'add')) as { id?: string };
     if (!body.id) throw makeError('MEMORY_REJECTED', { details: { context: 'add', reason: '响应缺少 id' } });
     return { id: String(body.id) };
   }
 
-  async delete(ns: MemoryNamespace, id: string): Promise<boolean> {
+  async delete(ns: MemoryNamespace, id: string, accessToken?: string): Promise<boolean> {
     // 限定 long tier 删除；id 必须匹配本租户前缀（应用层校验）
     if (!id) return false;
-    const res = await this.request(`/api/memory/long?ids=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    const res = await this.request(`/api/memory/long?ids=${encodeURIComponent(id)}`, { method: 'DELETE' }, accessToken);
     const body = (await this.ensureOk(res, 'delete')) as { ok?: boolean };
     return body.ok !== false;
   }
 
-  async export(ns: MemoryNamespace): Promise<MemoryItem[]> {
-    const res = await this.request('/api/memory/list?tier=long&limit=100');
+  async export(ns: MemoryNamespace, accessToken?: string): Promise<MemoryItem[]> {
+    const res = await this.request('/api/memory/list?tier=long&limit=100', undefined, accessToken);
     const body = (await this.ensureOk(res, 'export')) as { items?: Array<Record<string, unknown>> };
     const prefix = `${ns.tenantId}/${ns.agentId}/`;
     return ((body.items ?? []) as Array<Record<string, unknown>>)
