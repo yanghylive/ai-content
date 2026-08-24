@@ -25,6 +25,8 @@ describe('LocalEngineService browser account status', () => {
       {} as any,
       {} as any,
       {} as any,
+      {} as any,
+      {} as any,
     );
   }
 
@@ -157,6 +159,8 @@ describe('LocalEngineService browser account status', () => {
           ),
         getCdpSessions: jest.fn(),
       } as any,
+      {} as any,
+      {} as any,
       {} as any,
       {} as any,
       {} as any,

@@ -5,12 +5,15 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { existsSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { extname, join, resolve } from 'node:path';
 import {
   assertBackendRiskGate,
   type BackendRiskContext,
 } from '../auth/risk-control';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SavingsExchangeService } from '../savings/savings-exchange.service';
+import { SavingsWithdrawalService } from '../savings/savings-withdrawal.service';
 
 import {
   agentSessionNeedsBrowserEvidence,
@@ -56,6 +59,9 @@ import type {
 
 export interface AgentHost {
   prisma: PrismaService;
+  /** Stage 2：返利/提现确认闭环——审批后真实调用 Savings 服务 */
+  savingsExchange: SavingsExchangeService;
+  savingsWithdrawal: SavingsWithdrawalService;
   listAgentSessions(
     limit?: unknown,
     filter?: AgentSessionListFilter,
@@ -189,6 +195,10 @@ export interface AgentHost {
     id: string,
     input?: AgentConfirmationDecisionInput,
     riskContext?: BackendRiskContext,
+  ): Promise<AgentSession>;
+  executeSavingsConfirmation(
+    confirmation: AgentConfirmation,
+    input?: AgentConfirmationDecisionInput,
   ): Promise<AgentSession>;
   approveInteractionTaskConfirmation(
     confirmation: AgentConfirmation,
@@ -1518,6 +1528,15 @@ export async function approveAgentConfirmation(
     );
   }
 
+  // Stage 2：返利/提现确认闭环——风控 + 必填项校验通过后，
+  // 直接真实调用 Savings 服务（兑换/提现），不走本机会话续跑。
+  if (
+    confirmation.savings?.tool === 'savings.exchange' ||
+    confirmation.savings?.tool === 'savings.withdraw'
+  ) {
+    return this.executeSavingsConfirmation(confirmation, input);
+  }
+
   confirmation.status = 'approved';
   confirmation.operator = input.operator?.trim() || '用户';
   confirmation.note = input.note?.trim();
@@ -1658,6 +1677,101 @@ export function createSyntheticSessionForConfirmation(
     confirmations: [confirmation],
     events: [],
   };
+}
+
+/**
+ * Stage 2：返利/提现确认闭环执行。
+ * 审批通过（风控 + 必填项已校验）后由 approveAgentConfirmation 路由到此，
+ * 直接真实调用 SavingsExchangeService.exchange / SavingsWithdrawalService.withdraw，
+ * 不再走本机会话续跑。成功/失败都回写确认单状态并构造合成会话供前端展示。
+ */
+export async function executeSavingsConfirmation(
+  this: AgentHost,
+  confirmation: AgentConfirmation,
+  input: AgentConfirmationDecisionInput = {},
+): Promise<AgentSession> {
+  const savings = confirmation.savings ?? {};
+  const tool = savings.tool;
+  const amount = Number(savings.amount || 0);
+  const idempotencyKey =
+    typeof savings.idempotencyKey === 'string' && savings.idempotencyKey.trim()
+      ? savings.idempotencyKey
+      : randomUUID();
+  const operator = input.operator?.trim() || '用户';
+
+  confirmation.status = 'approved';
+  confirmation.operator = operator;
+  confirmation.note = input.note?.trim();
+  confirmation.decidedAt = new Date().toISOString();
+  await this.persistAgentConfirmation(confirmation);
+
+  const session = this.createSyntheticSessionForConfirmation(confirmation);
+
+  try {
+    if (tool === 'savings.exchange') {
+      const res = await this.savingsExchange.exchange({
+        amount,
+        idempotencyKey,
+      });
+      session.status = 'completed';
+      session.statusLabel = '兑换成功';
+      session.nextAction = `兑换成功：返利 ¥${amount} → AI 额度 ¥${Number(
+        res.creditAmount,
+      ).toFixed(2)}（流水 ${res.exchangeId}）`;
+      this.pushAgentEvent(session, 'success', '兑换成功', session.nextAction, {
+        type: 'diagnostic_bundle',
+        label: '储蓄操作',
+        value: session.nextAction,
+        stageKey: 'savings',
+      });
+    } else if (tool === 'savings.withdraw') {
+      const channel = String(savings.channel || '');
+      const accountMask = String(savings.accountMask || '');
+      const res = await this.savingsWithdrawal.withdraw({
+        amount,
+        channel,
+        accountMask,
+        idempotencyKey,
+      });
+      session.status = 'completed';
+      session.statusLabel = '提现申请成功';
+      session.nextAction = `提现申请成功：¥${amount} → ${accountMask}（渠道 ${channel}，流水 ${res.withdrawalId}）`;
+      this.pushAgentEvent(
+        session,
+        'success',
+        '提现申请成功',
+        session.nextAction,
+        {
+          type: 'diagnostic_bundle',
+          label: '储蓄操作',
+          value: session.nextAction,
+          stageKey: 'savings',
+        },
+      );
+    } else {
+      throw new BadRequestException(`未知储蓄确认类型：${tool}`);
+    }
+  } catch (err) {
+    // 真实服务执行失败（余额不足/实名缺失/渠道未开通/网络异常等）：
+    // 回写确认单为 rejected，合成会话标记失败并附错误事件，绝不伪造成功。
+    const message = err instanceof Error ? err.message : String(err);
+    confirmation.status = 'rejected';
+    confirmation.note =
+      `${confirmation.note || ''} 执行失败：${message}`.trim();
+    confirmation.decidedAt = new Date().toISOString();
+    await this.persistAgentConfirmation(confirmation);
+    session.status = 'failed';
+    session.statusLabel = '执行失败';
+    session.nextAction = `确认通过但储蓄操作失败：${message}`;
+    this.pushAgentEvent(session, 'error', '储蓄操作失败', message, {
+      type: 'diagnostic_bundle',
+      label: '储蓄操作',
+      value: message,
+      stageKey: 'savings',
+    });
+  }
+
+  return session;
 }
 
 export async function rejectAgentConfirmation(
@@ -1840,6 +1954,7 @@ export const agentMethods = {
   approveAgentConfirmation,
   approveInteractionTaskConfirmation,
   createSyntheticSessionForConfirmation,
+  executeSavingsConfirmation,
   rejectAgentConfirmation,
   rejectInteractionTaskConfirmation,
   clearPendingConfirmations,

@@ -11,6 +11,8 @@ describe('LocalEngineService runtime status', () => {
       {} as any,
       {} as any,
       {} as any,
+      {} as any,
+      {} as any,
     );
   }
 

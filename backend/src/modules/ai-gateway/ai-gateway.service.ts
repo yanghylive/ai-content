@@ -321,7 +321,8 @@ const TOOLS = [
           amount: { type: 'number', description: '提现金额' },
           channel: {
             type: 'string',
-            description: '渠道（mock/alipay/wechat）',
+            description:
+              '渠道（alipay/wechat；模拟渠道仅开发开关 SAVINGS_ALLOW_MOCK=1 启用，生产禁用）',
           },
           accountMask: {
             type: 'string',
@@ -1304,23 +1305,44 @@ export class AiGatewayService {
             error: `可用返利不足：当前 ${balance.available}，需 ${amount}`,
           };
         }
-        // 高风险写操作：创建确认卡，用户确认后才真正兑换
+        // 高风险写操作：创建确认卡，用户确认后才真正兑换（Stage 2：明确业务类型 + 幂等键）
+        const idempotencyKey = randomUUID();
+        const confirmationId = randomUUID();
+        const sessionId = `ai-assistant-${Date.now()}`;
+        const now = new Date().toISOString();
         const confirmation = await this.prisma.agentConfirmation.create({
           data: {
+            id: confirmationId,
             userId: authUser?.id || 'legacy-local-user',
             tenantId: 'legacy-local-desktop',
-            sessionId: `ai-assistant-${Date.now()}`,
-            action: 'convert_rebate_to_credit',
-            status: 'waiting_for_confirmation',
+            sessionId,
+            action: 'savings.exchange',
+            status: 'pending',
             riskLevel: 'high',
             target: 'AI 额度兑换',
             targetLabel: `返利 ¥${amount} → AI 额度`,
-            content: `兑换 ${amount} 元返利为 AI 额度（比例 1:0.8）`,
+            content: `兑换 ${amount} 元返利为 AI 额度`,
             replyText: `兑换后 AI 额度增加 ¥${(amount * 0.8).toFixed(2)}`,
+            // Stage 2：confirmationJson 必须是完整 AgentConfirmation 领域对象
+            // （local-engine 直接把它当领域对象读取并路由），储蓄参数挂在 savings 上。
             confirmationJson: {
-              tool: 'convert_rebate_to_credit',
-              amount,
-              source: 'ai-assistant',
+              id: confirmationId,
+              sessionId,
+              tenantId: 'legacy-local-desktop',
+              userId: authUser?.id || 'legacy-local-user',
+              title: 'AI 额度兑换',
+              description: `兑换 ${amount} 元返利为 AI 额度（比例 1:0.8）`,
+              actionLabel: `兑换 ¥${amount} → AI 额度`,
+              riskLevel: 'high',
+              status: 'pending',
+              requiredChecks: [],
+              createdAt: now,
+              savings: {
+                tool: 'savings.exchange',
+                amount,
+                idempotencyKey,
+                source: 'ai-assistant',
+              },
             } as never,
           } as never,
         });
@@ -1333,10 +1355,30 @@ export class AiGatewayService {
       }
       case 'withdraw_rebate': {
         const amount = Number(args.amount || 0);
-        const channel = safeText(args.channel ?? '').trim() || 'mock';
+        // Stage 2：不再默认 mock 渠道；渠道必须是用户真实提供的（alipay/wechat）
+        const channel = safeText(args.channel ?? '').trim();
         const accountMask = safeText(args.accountMask ?? '').trim();
-        if (amount <= 0 || !accountMask) {
-          return { error: '缺少提现金额（amount）或收款账户（accountMask）' };
+        const idempotencyKey = randomUUID();
+        // 生产环境禁止默认 mock 渠道；模拟渠道只能由显式开发开关启用
+        const mockAllowed = process.env.SAVINGS_ALLOW_MOCK === '1';
+        if (amount <= 0) {
+          return { error: '缺少有效提现金额（amount），请告诉我提现多少。' };
+        }
+        if (!channel) {
+          return {
+            error: '缺少提现渠道（channel），请选择 alipay 或 wechat。',
+          };
+        }
+        if (channel === 'mock' && !mockAllowed) {
+          return {
+            error:
+              '生产环境已禁用模拟提现渠道，请使用真实渠道（alipay/wechat）。',
+          };
+        }
+        if (!accountMask) {
+          return {
+            error: '缺少收款账户（accountMask，如 尾号8868），请补充后重试。',
+          };
         }
         const balance = await this.savings.rebateBalance();
         if (Number(balance.available) < amount) {
@@ -1344,25 +1386,44 @@ export class AiGatewayService {
             error: `可用返利不足：当前 ${balance.available}，需 ${amount}`,
           };
         }
-        // 高风险写操作：创建确认卡
+        // 高风险写操作：创建确认卡（Stage 2：明确业务类型 savings.withdraw + 幂等键）
+        const confirmationId = randomUUID();
+        const sessionId = `ai-assistant-${Date.now()}`;
+        const now = new Date().toISOString();
         const confirmation = await this.prisma.agentConfirmation.create({
           data: {
+            id: confirmationId,
             userId: authUser?.id || 'legacy-local-user',
             tenantId: 'legacy-local-desktop',
-            sessionId: `ai-assistant-${Date.now()}`,
-            action: 'withdraw_rebate',
-            status: 'waiting_for_confirmation',
+            sessionId,
+            action: 'savings.withdraw',
+            status: 'pending',
             riskLevel: 'high',
             target: channel,
             targetLabel: `提现 ¥${amount}（${accountMask}）`,
             content: `提现 ${amount} 元返利到 ${accountMask}（渠道 ${channel}）`,
             replyText: `预计到账 ¥${amount}`,
+            // Stage 2：confirmationJson 必须是完整 AgentConfirmation 领域对象
             confirmationJson: {
-              tool: 'withdraw_rebate',
-              amount,
-              channel,
-              accountMask,
-              source: 'ai-assistant',
+              id: confirmationId,
+              sessionId,
+              tenantId: 'legacy-local-desktop',
+              userId: authUser?.id || 'legacy-local-user',
+              title: '返利提现',
+              description: `提现 ${amount} 元返利到 ${accountMask}（渠道 ${channel}）`,
+              actionLabel: `提现 ¥${amount}（${accountMask}）`,
+              riskLevel: 'high',
+              status: 'pending',
+              requiredChecks: [],
+              createdAt: now,
+              savings: {
+                tool: 'savings.withdraw',
+                amount,
+                channel,
+                accountMask,
+                idempotencyKey,
+                source: 'ai-assistant',
+              },
             } as never,
           } as never,
         });
@@ -1778,13 +1839,28 @@ export class AiGatewayService {
       /提现|取出来|取钱|提钱|把钱拿出来|把返利.*(取|提)/,
     );
     if (withdrawMatch) {
-      const amount = parseFloat(u.replace(/[^\d.]/g, '') || '0');
+      // §三.6 金额解析：先剔除收款账户数字（尾号/卡号/账号），避免把账户数字拼进金额
+      const withoutAccount = u
+        .replace(/尾号\s*\d+/g, '')
+        .replace(/卡号\s*\d+/g, '')
+        .replace(/账号\s*\d+/g, '');
+      const amountMatch = withoutAccount.match(
+        /(\d+(?:\.\d+)?)\s*(?:元|块|￥|rmb)?/i,
+      );
+      const amount = amountMatch ? Number(amountMatch[1]) : 0;
+      // 渠道识别（真实渠道；不再默认 mock）
+      let channel: string | undefined;
+      if (/支付宝|alipay|zfb/i.test(u)) channel = 'alipay';
+      else if (/微信|wechat|wx/i.test(u)) channel = 'wechat';
+      // 脱敏收款账户识别（尾号XXXX）
+      const accMatch = u.match(/尾号\s*(\d+)/);
+      const accountMask = accMatch ? `尾号${accMatch[1]}` : undefined;
       return {
         name: 'withdraw_rebate',
         args: {
           amount: amount > 0 ? amount : undefined,
-          channel: 'mock',
-          accountMask: '尾号****',
+          channel,
+          accountMask,
         },
       };
     }

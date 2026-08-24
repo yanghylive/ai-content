@@ -1518,6 +1518,15 @@ export type AgentSessionEvent = {
   evidence?: AgentEvidence;
 };
 
+export type AgentSavingsConfirmationParams = {
+  tool?: 'savings.exchange' | 'savings.withdraw';
+  amount?: number;
+  channel?: string;
+  accountMask?: string;
+  idempotencyKey?: string;
+  source?: string;
+};
+
 export type AgentConfirmation = {
   id: string;
   tenantId?: string;
@@ -1541,6 +1550,8 @@ export type AgentConfirmation = {
   operator?: string;
   note?: string;
   confirmedChecks?: Record<string, boolean>;
+  /** Stage 2：储蓄类确认（兑换/提现）业务动作与参数，挂领域对象上供审批路由 */
+  savings?: AgentSavingsConfirmationParams;
 };
 
 export type AgentConfirmationListItem = AgentConfirmation & {
