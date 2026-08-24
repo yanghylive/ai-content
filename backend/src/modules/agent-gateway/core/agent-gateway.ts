@@ -239,6 +239,7 @@ export class AgentGateway {
     try {
       claim = await this.deps.idempotency.claim(ctx.tenantId, request.idempotencyKey, task.id, {
         userId: request.userId,
+        workspaceId: request.workspaceId,
         toolName: spec.name,
         risk: spec.risk,
         inputHash: hashJson(request.payload),

@@ -8,6 +8,7 @@ export interface IdempotencyRecordLike {
   taskId: string;
   status: 'in_progress' | 'done';
   usageId?: string;
+  workspaceId?: string;
 }
 
 export type ClaimResult =
@@ -28,7 +29,7 @@ export class PrismaIdempotencyStore {
     tenantId: string,
     key: string,
     taskId: string,
-    audit?: { userId?: string; toolName?: string; risk?: string; inputHash?: string; requestJson?: string; toolCallId?: string },
+    audit?: { userId?: string; workspaceId?: string; toolName?: string; risk?: string; inputHash?: string; requestJson?: string; toolCallId?: string },
   ): Promise<ClaimResult> {
     const existing = await this.prisma.agentGatewayToolCall.findUnique({
       where: { tenantId_idempotencyKey: { tenantId, idempotencyKey: key } },
@@ -41,6 +42,7 @@ export class PrismaIdempotencyStore {
             taskId,
             tenantId,
             userId: audit?.userId ?? '',
+            workspaceId: audit?.workspaceId ?? null,
             toolName: audit?.toolName ?? '',
             risk: audit?.risk ?? 'low',
             inputHash: audit?.inputHash ?? '',
