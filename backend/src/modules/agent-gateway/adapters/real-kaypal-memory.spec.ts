@@ -93,4 +93,34 @@ describe('RealKaypalMemoryAdapter (P3-1 请求级 token 透传)', () => {
       delete (global as { fetch?: typeof fetch }).fetch;
     }
   });
+
+  test('export：跨租户/跨 Agent 的 agentNs 必须被过滤掉（P3-2 namespace 严格匹配）', async () => {
+    const fetchSpy = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () =>
+        JSON.stringify({
+          items: [
+            { id: 'mem-1', content: 'A 的偏好', metadata: { agentNs: 't1/a1/user_preference' } }, // ns.tenantId=t1, ns.agentId=a1, ns.scope=user_preference → 严格匹配
+            { id: 'mem-2', content: 'B 租户的偏好', metadata: { agentNs: 'tenant-B/a1/user_preference' } }, // 跨租户
+            { id: 'mem-3', content: 'agent-2 的偏好', metadata: { agentNs: 't1/agent-2/user_preference' } }, // 跨 agent
+            { id: 'mem-4', content: 'A 的另一个 scope', metadata: { agentNs: 't1/a1/crm_lead' } }, // 跨 scope
+            { id: 'mem-5', content: '无 metadata', metadata: {} }, // 无 agentNs → 应当被过滤
+          ],
+        }),
+    });
+    // @ts-expect-error 全局 fetch mock
+    global.fetch = fetchSpy as unknown as typeof fetch;
+    try {
+      const adapter = new RealKaypalMemoryAdapter({
+        baseUrl: 'https://kaypal.cn',
+        apiKey: 'static',
+      });
+      const items = await adapter.export(ns, 'kda_user_token');
+      expect(items.map((i) => i.id)).toEqual(['mem-1']); // 只剩 agentNs 前缀完全匹配 tenant-A/agent-1/ 的
+    } finally {
+      // @ts-expect-error 测试完恢复
+      delete (global as { fetch?: typeof fetch }).fetch;
+    }
+  });
 });

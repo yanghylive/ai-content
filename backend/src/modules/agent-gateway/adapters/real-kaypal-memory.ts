@@ -141,7 +141,8 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
   async export(ns: MemoryNamespace, accessToken?: string): Promise<MemoryItem[]> {
     const res = await this.request('/api/memory/list?tier=long&limit=100', undefined, accessToken);
     const body = (await this.ensureOk(res, 'export')) as { items?: Array<Record<string, unknown>> };
-    const prefix = `${ns.tenantId}/${ns.agentId}/`;
+    // P3-2：按 ctx 完整 namespace（tenant/agent/scope 三段）严格匹配；userId 由 Chroma 服务端隔离
+    const prefix = `${ns.tenantId}/${ns.agentId}/${ns.scope}`;
     return ((body.items ?? []) as Array<Record<string, unknown>>)
       .map((i) => ({
         id: String(i.id),
@@ -150,8 +151,12 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
         scope: ns.scope,
         source: String((i.metadata as Record<string, unknown> | undefined)?.source ?? 'remote'),
         createdAt: String(i.createdAt ?? ''),
+        metadata: (i.metadata as Record<string, unknown> | undefined) ?? undefined,
       }))
-      .filter((i) => i.id.length > 0);
+      .filter((i) => {
+        const agentNs = String((i as { metadata?: Record<string, unknown> }).metadata?.agentNs ?? '');
+        return agentNs === prefix; // 全字段匹配（含 scope），杜绝跨 scope 串扰
+      });
   }
 }
 
