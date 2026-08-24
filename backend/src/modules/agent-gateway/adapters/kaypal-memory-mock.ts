@@ -27,7 +27,8 @@ export interface KaypalMemoryAdapter {
 }
 
 function nsKey(ns: MemoryNamespace): string {
-  return `${ns.tenantId}/${ns.userId}/${ns.agentId}/${ns.scope}`;
+  const ws = ns.workspaceId ? `/_ws_${ns.workspaceId}` : '';
+  return `${ns.tenantId}/${ns.userId}/${ns.agentId}/${ns.scope}${ws}`;
 }
 
 export class MockKaypalMemoryAdapter implements KaypalMemoryAdapter {
@@ -86,5 +87,6 @@ export function deriveNamespace(ctx: TenantContext, scope: string, source: strin
     scope,
     source,
     retention: 'long_term',
+    workspaceId: ctx.workspaceId,
   };
 }
