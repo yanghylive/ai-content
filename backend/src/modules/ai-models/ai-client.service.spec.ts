@@ -255,6 +255,46 @@ describe('AiClientService knowledge context', () => {
     ).rejects.toBe(abortError);
     expect(create).toHaveBeenCalledTimes(1);
   });
+
+  it('builds a deterministic kaypal idempotency key (409 BILLING_IDEMPOTENCY_REPLAY fix)', () => {
+    const { service } = createService([]);
+    const messages = [{ role: 'user', content: '帮我写个文案' }];
+
+    const k1 = (service as any).buildKaypalIdempotencyKey(
+      'text',
+      'cloud-user-1',
+      'qwen3.6-plus',
+      messages,
+    );
+    const k2 = (service as any).buildKaypalIdempotencyKey(
+      'text',
+      'cloud-user-1',
+      'qwen3.6-plus',
+      messages,
+    );
+    const k3 = (service as any).buildKaypalIdempotencyKey(
+      'text',
+      'cloud-user-2',
+      'qwen3.6-plus',
+      messages,
+    );
+    const k4 = (service as any).buildKaypalIdempotencyKey(
+      'text',
+      'cloud-user-1',
+      'qwen3.6-plus',
+      [{ role: 'user', content: '另一条消息' }],
+    );
+
+    // 同内容重试 → 同 key（网关识别为幂等重试，而非计费重放 409）
+    expect(k1).toBe(k2);
+    // 不同用户 / 不同内容 → 不同 key
+    expect(k1).not.toBe(k3);
+    expect(k1).not.toBe(k4);
+    // key 为确定性哈希，不含原始内容明文
+    expect(k1).toContain('ai-content:text:cloud-user-1:qwen3.6-plus:');
+    expect(k1).not.toContain('帮我写个文案');
+    expect(k1.length).toBeLessThan(80);
+  });
 });
 
 describe('AiClientService token usage auto-report (P0)', () => {

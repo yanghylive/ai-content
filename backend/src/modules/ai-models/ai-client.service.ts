@@ -16,7 +16,7 @@ import type {
   ChatCompletionCreateParamsStreaming,
   ChatCompletionChunk,
 } from 'openai/resources/chat/completions';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { StorageService } from '../storage/storage.service';
 import {
   KaypalHostNotAllowedError,
@@ -1237,6 +1237,26 @@ export class AiClientService {
     return '未知错误';
   }
 
+  /** 生成稳定的 kaypal 计费幂等键。
+   * 2026-08-24 修复（error-reports 连续 409 BILLING_IDEMPOTENCY_REPLAY）：
+   * 原实现每次调用 randomUUID() 生成新键，同内容重试（客户端超时重发 /
+   * 失败重试）因幂等键不同被网关判定为「计费重放」→ 409。改为
+   * 「场景 + 用户 + 模型 + 实际发送内容哈希」的确定性键：同内容重试命中
+   * 网关幂等重试语义（复用首次结果、不重复计费），与 ai-gateway
+   * 计划二.C.6「整次请求稳定幂等键」策略一致。 */
+  private buildKaypalIdempotencyKey(
+    scene: 'text' | 'vision_text' | 'stream_text',
+    kaypalUserId: string,
+    modelId: string,
+    content: unknown,
+  ): string {
+    const digest = createHash('sha256')
+      .update(JSON.stringify(content ?? ''))
+      .digest('hex')
+      .slice(0, 32);
+    return `ai-content:${scene}:${kaypalUserId}:${modelId}:${digest}`;
+  }
+
   private toUserFacingAiError(
     error: unknown,
     platform?: { baseUrl?: string | null; config?: unknown },
@@ -1292,14 +1312,20 @@ export class AiClientService {
 
     const client = await this.getClient(model.platformId, options?.signal);
     const kaypalUserId = await this.resolveKaypalProxyUserId(model.platform);
-    const kaypalIdempotencyKey = kaypalUserId
-      ? `ai-content:text:${randomUUID()}`
-      : '';
     const contextualMessages = await this.withKaypalKnowledgeContext(messages, {
       mode: options?.knowledgeMode,
       query: options?.knowledgeQuery,
       signal: options?.signal,
     });
+    // 稳定幂等键（基于实际发送内容哈希）：同内容重试不触发网关 409 计费重放
+    const kaypalIdempotencyKey = kaypalUserId
+      ? this.buildKaypalIdempotencyKey(
+          'text',
+          kaypalUserId,
+          model.modelId,
+          contextualMessages,
+        )
+      : '';
 
     await this.chargeCloudAiCredits(
       'text_generation',
@@ -1416,9 +1442,6 @@ export class AiClientService {
 
     const client = await this.getClient(model.platformId, options?.signal);
     const kaypalUserId = await this.resolveKaypalProxyUserId(model.platform);
-    const kaypalIdempotencyKey = kaypalUserId
-      ? `ai-content:vision_text:${randomUUID()}`
-      : '';
     const mimeType = options?.mimeType || 'image/png';
     const messages = [
       input.system
@@ -1441,6 +1464,15 @@ export class AiClientService {
         ],
       },
     ].filter(Boolean);
+    // 稳定幂等键（基于实际发送内容哈希）：同内容重试不触发网关 409 计费重放
+    const kaypalIdempotencyKey = kaypalUserId
+      ? this.buildKaypalIdempotencyKey(
+          'vision_text',
+          kaypalUserId,
+          model.modelId,
+          messages,
+        )
+      : '';
 
     await this.chargeCloudAiCredits(
       'image_generation',
@@ -1551,14 +1583,20 @@ export class AiClientService {
 
     const client = await this.getClient(model.platformId, options?.signal);
     const kaypalUserId = await this.resolveKaypalProxyUserId(model.platform);
-    const kaypalIdempotencyKey = kaypalUserId
-      ? `ai-content:stream_text:${randomUUID()}`
-      : '';
     const contextualMessages = await this.withKaypalKnowledgeContext(messages, {
       mode: options?.knowledgeMode,
       query: options?.knowledgeQuery,
       signal: options?.signal,
     });
+    // 稳定幂等键（基于实际发送内容哈希）：同内容重试不触发网关 409 计费重放
+    const kaypalIdempotencyKey = kaypalUserId
+      ? this.buildKaypalIdempotencyKey(
+          'stream_text',
+          kaypalUserId,
+          model.modelId,
+          contextualMessages,
+        )
+      : '';
 
     await this.chargeCloudAiCredits(
       'text_generation',
