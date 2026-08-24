@@ -11,24 +11,47 @@ import { KaypalMemoryAdapter, MemoryItem } from './kaypal-memory-mock';
  * - DELETE /api/memory/long?ids=id1,id2 → {ok}
  * - 鉴权：Authorization Bearer <desktop access_token（kda_）> 或 x-kaypal-api-key；
  *   Edge 网关已改 auth:'optional'，鉴权由 route handler getCurrentUser(request) 完成。
+ *   api-key 需要 kaypal-ai 的 KAYPAL_API_KEYS 配置；生产未配置时回退 tokenProvider（推荐）。
  * - namespace：服务端由 userId 派生（Chroma where userId）；3010 的 tenant/agent 经
  *   metadata.agentNs 传递，检索后应用层过滤（防跨租户召回）。
  * - 故障降级：网络/401/5xx → 抛 MEMORY_TIMEOUT / MEMORY_REJECTED，由 Orchestrator 软降级。
  */
 export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
-  constructor(private readonly opts: { baseUrl: string; apiKey: string; timeoutMs?: number }) {}
+  constructor(
+    private readonly opts: {
+      baseUrl: string;
+      apiKey: string;
+      timeoutMs?: number;
+      /** 可选 Bearer token 提供器（每次请求前调用换短时 token，优先于 api-key） */
+      tokenProvider?: () => Promise<string | undefined>;
+    },
+  ) {}
+
+  private async authHeaders(): Promise<Record<string, string>> {
+    // tokenProvider 优先（生产 desktop token 已验证 200）；无则回退 api-key
+    if (this.opts.tokenProvider) {
+      try {
+        const token = await this.opts.tokenProvider();
+        if (token) return { authorization: `Bearer ${token}` };
+      } catch {
+        /* token 获取失败 → 回退 api-key */
+      }
+    }
+    return { 'x-kaypal-api-key': this.opts.apiKey };
+  }
 
   private async request(path: string, init?: RequestInit): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.opts.timeoutMs ?? 8000);
     try {
       try {
+        const auth = await this.authHeaders();
         return await fetch(`${this.opts.baseUrl}${path}`, {
           ...init,
           headers: {
             'content-type': 'application/json',
             accept: 'application/json',
-            'x-kaypal-api-key': this.opts.apiKey,
+            ...auth,
             ...(init?.headers ?? {}),
           },
           signal: controller.signal,
