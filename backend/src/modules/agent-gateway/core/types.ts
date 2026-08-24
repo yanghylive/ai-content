@@ -10,6 +10,12 @@ export interface TenantContext {
   userId: string;
   agentId: string;
   /**
+   * 4.4 多工作区标签壳：当前请求的工作区 ID（每个 Electron 标签一个 workspace）。
+   * 派生：KaypalAuthGuard 从 x-workspace-id header 读，必须属于 ctx.userId 才注入。
+   * 可空：未传=走默认 workspace（或无 workspace 模式，旧调用兼容）。
+   */
+  workspaceId?: string;
+  /**
    * 当前请求的 Kaypal 访问令牌（HMAC 验签后的原始 token；非持久化字段）。
    * 用途：把请求级身份透传到外部依赖（如远程 Memory），避免服务再用共享凭据代发请求。
    * 缺失 = 本地/系统调用或上游鉴权未注入 token——业务层应明确处理而非隐式回退到共享账号。
@@ -199,6 +205,7 @@ export interface AgentSession {
   tenantId: string;
   userId: string;
   agentId: string;
+  workspaceId?: string;
   octopSessionId?: string;
   mode: 'business' | 'advanced';
   status: 'active' | 'expired';
@@ -214,6 +221,7 @@ export interface AgentTask {
   tenantId: string;
   userId: string;
   agentId: string;
+  workspaceId?: string;
   type: string;
   status: TaskStatus;
   planJson: Record<string, unknown>;
@@ -274,6 +282,8 @@ export interface UsageEvent {
   id: string;
   requestId: string;
   tenantId: string;
+  userId: string;
+  workspaceId?: string;
   taskId?: string;
   toolCallId?: string | null;
   usageId: string;
@@ -316,6 +326,7 @@ export interface ToolRequest {
   tenantId: string;
   userId: string;
   agentId: string;
+  workspaceId?: string;
   sessionId: string;
   taskId: string;
   idempotencyKey: string;

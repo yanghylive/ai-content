@@ -118,6 +118,7 @@ export class AgentGatewayController {
       tenantId: ctx.tenantId,
       userId: ctx.userId,
       agentId: ctx.agentId,
+      workspaceId: ctx.workspaceId,
       sessionId: body.sessionId,
       taskId: body.taskId,
       idempotencyKey: idemKey,
