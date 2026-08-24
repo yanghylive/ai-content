@@ -20,6 +20,7 @@ import { ConfigService } from '@nestjs/config';
  * 无 DB / Kaypal 凭据环境自动跳过。
  */
 const hasDb = !!process.env.DATABASE_URL;
+// 商用验收门禁（方案 7.1）：缺凭据 → 显式失败，禁止「return 即通过 / passed 但 0 断言」
 const test = hasDb ? it : it.skip;
 
 describe('全开关端到端（persist + real business + octop + kaypal auth）', () => {
@@ -30,6 +31,10 @@ describe('全开关端到端（persist + real business + octop + kaypal auth）'
 
   beforeAll(async () => {
     if (!hasDb) return;
+    // 商用验收门禁（方案 7.1）：连 DB 但缺 Kaypal 凭据 → 显式失败，禁止 passed+0 断言
+    if (!process.env.KAYPAL_TEST_PHONE || !process.env.KAYPAL_TEST_PASSWORD) {
+      throw new Error('商用验收需要 KAYPAL_TEST_PHONE / KAYPAL_TEST_PASSWORD（缺失时禁止静默通过）');
+    }
     process.env.AGENT_GATEWAY_PERSISTENCE = 'prisma';
     process.env.AGENT_GATEWAY_REAL_BUSINESS = 'true';
     process.env.OCTOP_ENABLED = 'true';
@@ -66,7 +71,6 @@ describe('全开关端到端（persist + real business + octop + kaypal auth）'
   });
 
   test('六步闭环全真实链路（Kaypal 鉴权 + DB 持久化 + 真实 CRM 落库）', async () => {
-    if (!phone || !pwd) return;
     const bridge = new KaypalOctopBridge(new ConfigService({ KAYPAL_API_KEY: 'x', KAYPAL_AUTH_BASE_URL: 'https://kaypal.cn' }));
     const login = await bridge.loginKaypal(phone, pwd); // Kaypal 正式鉴权
     const accessToken = login.accessToken;
@@ -154,7 +158,6 @@ describe('全开关端到端（persist + real business + octop + kaypal auth）'
   });
 
   test('真实 Kaypal Memory 链路（写入→召回，不降级）', async () => {
-    if (!phone || !pwd) return;
     const svc = app.get(AgentGatewayService);
     const kctx = { tenantId: `mem_e2e_${Date.now().toString(36)}`, userId: 'u_mem_e2e', agentId: 'agent_default' };
     const content = `六步闭环 e2e 记忆 ${Date.now().toString(36)}：用户偏好简约克制的设计风格`;
