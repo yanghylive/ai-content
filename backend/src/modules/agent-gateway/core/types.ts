@@ -342,4 +342,9 @@ export interface MemoryNamespace {
   scope: string;
   source: string;
   retention: 'session' | 'long_term';
+  /**
+   * 4.4 多工作区标签壳：第 4 隔离维度（与 tenant/user/agent 正交）。
+   * 每个 Electron 标签一个 workspace；缺省=无 workspace（向后兼容旧调用）。
+   */
+  workspaceId?: string;
 }

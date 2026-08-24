@@ -103,12 +103,12 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
       createdAt: String(i.createdAt ?? ''),
       metadata: (i.metadata as Record<string, unknown> | undefined) ?? undefined,
     }));
-    // 应用层租户隔离：Chroma 仅按 userId 过滤，3010 的 tenant/agent 由 metadata.agentNs 区分；
-    // 只召回 agentNs 前缀匹配的条目，杜绝跨租户/跨 Agent 记忆串扰
-    const prefix = `${ns.tenantId}/${ns.agentId}/`;
+    // 应用层租户隔离：Chroma 仅按 userId 过滤，3010 的 tenant/agent/scope 经 metadata.agentNs 区分；
+    // 含 workspace 段（4.4）后严格精确匹配，杜绝跨租户/跨 Agent/跨 scope/跨 workspace 串扰
+    const prefix = agentNsKey(ns);
     return items.filter((i) => {
       const agentNs = String((i as { metadata?: Record<string, unknown> }).metadata?.agentNs ?? '');
-      return agentNs.startsWith(prefix);
+      return agentNs === prefix;
     });
   }
 
@@ -119,7 +119,7 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
         tier: 'long',
         content,
         metadata: {
-          agentNs: `${ns.tenantId}/${ns.agentId}/${ns.scope}`,
+          agentNs: agentNsKey(ns),
           source: ns.source,
         },
         ...(id ? { memoryId: id } : {}), // 幂等：本地/远程共用同一 id
@@ -141,8 +141,8 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
   async export(ns: MemoryNamespace, accessToken?: string): Promise<MemoryItem[]> {
     const res = await this.request('/api/memory/list?tier=long&limit=100', undefined, accessToken);
     const body = (await this.ensureOk(res, 'export')) as { items?: Array<Record<string, unknown>> };
-    // P3-2：按 ctx 完整 namespace（tenant/agent/scope 三段）严格匹配；userId 由 Chroma 服务端隔离
-    const prefix = `${ns.tenantId}/${ns.agentId}/${ns.scope}`;
+    // P3-2：按 ctx 完整 namespace（tenant/agent/scope[/_ws_<id>]）严格匹配；userId 由 Chroma 服务端隔离
+    const prefix = agentNsKey(ns);
     return ((body.items ?? []) as Array<Record<string, unknown>>)
       .map((i) => ({
         id: String(i.id),
@@ -155,11 +155,19 @@ export class RealKaypalMemoryAdapter implements KaypalMemoryAdapter {
       }))
       .filter((i) => {
         const agentNs = String((i as { metadata?: Record<string, unknown> }).metadata?.agentNs ?? '');
-        return agentNs === prefix; // 全字段匹配（含 scope），杜绝跨 scope 串扰
+        return agentNs === prefix; // 全字段匹配（含 scope 与 workspace），杜绝跨 scope/workspace 串扰
       });
   }
 }
 
+/** 本地隔离键（local map / Chroma namespace 字段） */
 function nsKey(ns: MemoryNamespace): string {
-  return `${ns.tenantId}/${ns.userId}/${ns.agentId}/${ns.scope}`;
+  const ws = ns.workspaceId ? `/_ws_${ns.workspaceId}` : '';
+  return `${ns.tenantId}/${ns.userId}/${ns.agentId}/${ns.scope}${ws}`;
+}
+
+/** 应用层隔离键（metadata.agentNs）：tenant/agent/scope[/_ws_<id>]，远程检索后严格匹配 */
+function agentNsKey(ns: MemoryNamespace): string {
+  const ws = ns.workspaceId ? `/_ws_${ns.workspaceId}` : '';
+  return `${ns.tenantId}/${ns.agentId}/${ns.scope}${ws}`;
 }

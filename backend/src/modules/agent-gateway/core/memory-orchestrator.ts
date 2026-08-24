@@ -62,7 +62,8 @@ export class MemoryOrchestrator {
   }
 
   private nsKey(ns: MemoryNamespace): string {
-    return `${ns.tenantId}/${ns.userId}/${ns.agentId}/${ns.scope}`;
+    const ws = ns.workspaceId ? `/_ws_${ns.workspaceId}` : '';
+    return `${ns.tenantId}/${ns.userId}/${ns.agentId}/${ns.scope}${ws}`;
   }
 
   async recall(
@@ -349,10 +350,22 @@ function dedupe(items: MemoryItem[]): MemoryItem[] {
   return out;
 }
 
-/** 把 nsKey（tenant/user/agent/scope）解析回 MemoryNamespace 对象 */
+/** 把 nsKey（tenant/user/agent/scope[/_ws_<id>]）解析回 MemoryNamespace 对象 */
 function parseNsKey(key: string): MemoryNamespace {
-  const [tenantId, userId, agentId, scope] = key.split('/');
-  return { tenantId, userId, agentId, scope, source: 'delete', retention: 'long_term' };
+  const parts = key.split('/');
+  const tenantId = parts[0];
+  const userId = parts[1];
+  const agentId = parts[2];
+  const rest = parts[3] ?? '';
+  // rest = `${scope}` 或 `${scope}/_ws_<id>`（/_ws_ 段可空=无 workspace）
+  let scope = rest;
+  let workspaceId: string | undefined;
+  const wsIdx = rest.indexOf('/_ws_');
+  if (wsIdx >= 0) {
+    scope = rest.slice(0, wsIdx);
+    workspaceId = rest.slice(wsIdx + '/_ws_'.length);
+  }
+  return { tenantId, userId, agentId, scope, workspaceId, source: 'delete', retention: 'long_term' };
 }
 
 function truncate(items: MemoryItem[], tokenBudget: number): MemoryItem[] {
