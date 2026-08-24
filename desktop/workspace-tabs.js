@@ -70,17 +70,34 @@ function installWorkspaceHeaderInjection(tabSession, getWorkspaceId) {
 
 /**
  * Octop 高级模式：向本机 Octop（origin 匹配）注入 Bearer 令牌，实现免登录。
- * 闭包读取 tab.octopToken 的当前值（拉起后可刷新）。
+ * origin 用 getter 动态读取（拉起换 URL 后注入 origin 立即跟随）。
  */
-function installOctopAuthInjection(tabSession, getToken, origin) {
+function installOctopAuthInjection(tabSession, getToken, getOrigin) {
   if (!tabSession || !tabSession.webRequest) return;
   tabSession.webRequest.onBeforeSendHeaders((details, callback) => {
     const token = getToken();
-    if (token && details.url.startsWith(origin)) {
+    const origin = getOrigin();
+    if (token && origin && details.url.startsWith(origin)) {
       details.requestHeaders['Authorization'] = `Bearer ${token}`;
     }
     callback({ requestHeaders: details.requestHeaders });
   });
+}
+
+/** Octop 标签仅允许加载 loopback（127.0.0.1/localhost/::1）http(s) 地址，防任意站点加载 + 令牌外泄。 */
+function isLoopbackHttpUrl(url) {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+    return (
+      u.hostname === 'localhost' ||
+      u.hostname === '127.0.0.1' ||
+      u.hostname === '[::1]' ||
+      u.hostname === '::1'
+    );
+  } catch {
+    return false;
+  }
 }
 
 /** 兜底：把 Octop 令牌写入会话 cookie（Octop 前端若从 cookie 读 token 时生效）。 */
@@ -152,7 +169,19 @@ class TabManager {
 
   attach(window) {
     this.window = window;
-    // 若窗口被重建（mac 极少，但防御性），先清空旧引用再重建。
+    // 若窗口被重建（mac 极少，但防御性）：先销毁旧视图防泄漏，再清空引用重建。
+    if (this.tabStrip) {
+      try {
+        if (!this.tabStrip.webContents.isDestroyed()) this.tabStrip.webContents.destroy();
+      } catch { /* ignore */ }
+      this.tabStrip = null;
+    }
+    for (const tab of this.tabs.values()) {
+      this._removeViewFromWindow(tab.view);
+      try {
+        if (!tab.view.webContents.isDestroyed()) tab.view.webContents.destroy();
+      } catch { /* ignore */ }
+    }
     this.tabs.clear();
     this.knownWebContents.clear();
     this.activeId = null;
@@ -243,13 +272,17 @@ class TabManager {
   ) {
     const id = forcedId || genId();
     const view = new WebContentsView({
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: false,
-        partition: kind === 'octop' ? `persist:octop-tab-${id}` : `persist:ws-tab-${id}`
-      }
+      webPreferences:
+        kind === 'octop'
+          ? // Octop 标签：不挂业务 preload（第三方 web 内容不给任何特权 IPC 面），sandbox 加固
+            { contextIsolation: true, nodeIntegration: false, sandbox: true, partition: `persist:octop-tab-${id}` }
+          : {
+              preload: path.join(__dirname, 'preload.js'),
+              contextIsolation: true,
+              nodeIntegration: false,
+              sandbox: false,
+              partition: `persist:ws-tab-${id}`
+            }
     });
 
     const tab = {
@@ -262,7 +295,8 @@ class TabManager {
       ready: false,
       octopUrl: octopUrl || null,
       octopToken: octopToken || null,
-      loadUrl: null
+      loadUrl: null,
+      failRetry: 0 // 连续加载失败计数（指数退避 + 上限）
     };
     tab.loadUrl =
       kind === 'octop'
@@ -273,8 +307,7 @@ class TabManager {
     this.knownWebContents.add(view.webContents);
 
     if (kind === 'octop') {
-      const origin = originOf(tab.loadUrl);
-      installOctopAuthInjection(view.webContents.session, () => tab.octopToken, origin);
+      installOctopAuthInjection(view.webContents.session, () => tab.octopToken, () => originOf(tab.loadUrl));
       if (octopToken) setOctopCookie(view.webContents.session, tab.loadUrl, octopToken);
     } else {
       installWorkspaceHeaderInjection(view.webContents.session, () => tab.workspaceId);
@@ -288,12 +321,21 @@ class TabManager {
         if (tab.view && !tab.view.webContents.isDestroyed()) tab.view.webContents.reload();
       }, 500);
     });
+    view.webContents.on('did-finish-load', () => {
+      tab.failRetry = 0; // 成功加载即重置退避计数
+    });
     view.webContents.on('did-fail-load', (_event, code, desc, _url, isMainFrame) => {
       if (!isMainFrame || code === -3) return;
-      console.warn(`[Tab ${id}] 前端加载失败(${code}): ${desc}，自动重试`);
+      if (tab.failRetry >= 10) {
+        console.warn(`[Tab ${id}] 前端加载失败(${code}): ${desc}，连续 ${tab.failRetry} 次，停止自动重试`);
+        return;
+      }
+      const delay = Math.min(1000 * Math.pow(2, tab.failRetry), 10000); // 1s→2s→…→10s 封顶
+      tab.failRetry += 1;
+      console.warn(`[Tab ${id}] 前端加载失败(${code}): ${desc}，${delay}ms 后第 ${tab.failRetry} 次重试`);
       setTimeout(() => {
         if (tab.view && !tab.view.webContents.isDestroyed()) tab.view.webContents.loadURL(tab.loadUrl);
-      }, 1000);
+      }, delay);
     });
     view.webContents.on('unresponsive', () => {
       console.warn(`[Tab ${id}] 视图无响应，尝试恢复`);
@@ -302,13 +344,12 @@ class TabManager {
       }, 500);
     });
 
-    // 外链在系统浏览器打开
+    // 外链一律在系统浏览器打开；本壳内不开新 webContents（file:// 等协议同样拒绝）
     view.webContents.setWindowOpenHandler(({ url }) => {
       if (url.startsWith('http')) {
         shell.openExternal(url);
-        return { action: 'deny' };
       }
-      return { action: 'allow' };
+      return { action: 'deny' };
     });
 
     if (isDev()) view.webContents.openDevTools({ mode: 'detach' });
@@ -415,15 +456,21 @@ class TabManager {
 
   /**
    * 拉起 / 切换 Octop 高级模式标签。
+   * 安全：url 仅允许 loopback http(s)（防任意站点加载 + Bearer 令牌外泄）；
+   * token 仅在拿到新值时覆盖（launch 失败 token=null 不清掉已开的合法会话）。
    * @param {string} url  Octop base URL（默认 http://127.0.0.1:8088）
    * @param {string} token Octop Bearer 令牌（来自后端 /api/octop/launch）
    */
   openOctop(url, token) {
     const target = url || 'http://127.0.0.1:8088';
+    if (!isLoopbackHttpUrl(target)) {
+      console.warn(`[TabManager] 拒绝加载非 loopback 的 Octop 地址: ${target}`);
+      return null;
+    }
     for (const t of this.tabs.values()) {
       if (t.kind === 'octop') {
         t.octopUrl = target;
-        t.octopToken = token || null;
+        if (token) t.octopToken = token;
         t.loadUrl = target;
         t.title = 'Octop 高级模式';
         if (token) setOctopCookie(t.view.webContents.session, target, token);
@@ -514,45 +561,101 @@ class TabManager {
     });
   }
 
+  // —— IPC 来源校验（P0-1 修复）：tab 条 / 业务标签各只信自己的通道 ——
+  _isTabStripSender(contents) {
+    return (
+      !!this.tabStrip && !this.tabStrip.webContents.isDestroyed() && contents === this.tabStrip.webContents
+    );
+  }
+
+  _businessOrigins() {
+    const origins = new Set(['http://localhost:3010', 'http://127.0.0.1:3010']);
+    if (this.frontendServerUrl) {
+      try {
+        origins.add(new URL(this.frontendServerUrl).origin);
+      } catch { /* ignore */ }
+    }
+    return origins;
+  }
+
+  _isBusinessSender(event) {
+    try {
+      if (!this.isOwnedWebContents(event.sender)) return false;
+      const url = (event.senderFrame && event.senderFrame.url) || event.sender.getURL();
+      if (!url) return false;
+      return this._businessOrigins().has(new URL(url).origin);
+    } catch {
+      return false;
+    }
+  }
+
   // —— IPC 注册：由 main.js 的 setupIPC() 调用 ——
   registerIpc(ipcMain) {
-    ipcMain.on('tab-strip:new', () => {
+    // tab-strip:* 只信 tab 条视图自身
+    ipcMain.on('tab-strip:new', (e) => {
+      if (!this._isTabStripSender(e.sender)) return;
       this.createTab({ workspaceId: null, title: '新标签' });
     });
-    ipcMain.on('tab-strip:switch', (_e, id) => {
+    ipcMain.on('tab-strip:switch', (e, id) => {
+      if (!this._isTabStripSender(e.sender)) return;
       this.switchTo(id);
     });
-    ipcMain.on('tab-strip:close', (_e, id) => {
+    ipcMain.on('tab-strip:close', (e, id) => {
+      if (!this._isTabStripSender(e.sender)) return;
       this.closeTab(id);
     });
-    ipcMain.on('tab-strip:rename', (_e, id, title) => {
+    ipcMain.on('tab-strip:rename', (e, id, title) => {
+      if (!this._isTabStripSender(e.sender)) return;
       this.renameTab(id, title);
     });
-    ipcMain.on('tab-strip:set-workspace', (_e, id, workspaceId) => {
+    ipcMain.on('tab-strip:set-workspace', (e, id, workspaceId) => {
+      if (!this._isTabStripSender(e.sender)) return;
       this.setWorkspaceId(id, workspaceId);
     });
     // 顶部「业务工作区」固定入口
-    ipcMain.on('tab-strip:switch-business', () => {
+    ipcMain.on('tab-strip:switch-business', (e) => {
+      if (!this._isTabStripSender(e.sender)) return;
       this.switchToBusiness();
     });
     // 顶部「Octop 高级模式」入口：转交给已登录的 3010 前端去拉起（需会话凭据）
-    ipcMain.on('tab-strip:request-octop', () => {
+    ipcMain.on('tab-strip:request-octop', (e) => {
+      if (!this._isTabStripSender(e.sender)) return;
       this.sendToBusiness('octop:request-launch');
     });
 
-    // 供前端 workspace 切换器调用的高级接口
-    ipcMain.handle('workspace-tabs:open', (_e, workspaceId, title) => {
+    // workspace-tabs:* 只信业务前端来源（octop 标签无 preload 调不到；tab 条仅放行只读 list）
+    ipcMain.handle('workspace-tabs:open', (e, workspaceId, title) => {
+      if (!this._isBusinessSender(e)) return null;
       return this.createTab({ workspaceId: workspaceId || null, title: title || '工作台' });
     });
-    ipcMain.handle('workspace-tabs:openOctop', (_e, url, token) => this.openOctop(url, token));
-    ipcMain.handle('workspace-tabs:switch', (_e, id) => this.switchTo(id));
-    ipcMain.handle('workspace-tabs:switchBusiness', () => this.switchToBusiness());
-    ipcMain.handle('workspace-tabs:close', (_e, id) => this.closeTab(id));
-    ipcMain.handle('workspace-tabs:setWorkspaceId', (_e, id, wsId) =>
-      this.setWorkspaceId(id, wsId)
-    );
-    ipcMain.handle('workspace-tabs:list', () => this.list());
-    ipcMain.handle('workspace-tabs:getActive', () => this.getActive());
+    ipcMain.handle('workspace-tabs:openOctop', (e, url, token) => {
+      if (!this._isBusinessSender(e)) return null;
+      return this.openOctop(url, token);
+    });
+    ipcMain.handle('workspace-tabs:switch', (e, id) => {
+      if (!this._isBusinessSender(e)) return false;
+      return this.switchTo(id);
+    });
+    ipcMain.handle('workspace-tabs:switchBusiness', (e) => {
+      if (!this._isBusinessSender(e)) return false;
+      return this.switchToBusiness();
+    });
+    ipcMain.handle('workspace-tabs:close', (e, id) => {
+      if (!this._isBusinessSender(e)) return false;
+      return this.closeTab(id);
+    });
+    ipcMain.handle('workspace-tabs:setWorkspaceId', (e, id, wsId) => {
+      if (!this._isBusinessSender(e)) return false;
+      return this.setWorkspaceId(id, wsId);
+    });
+    ipcMain.handle('workspace-tabs:list', (e) => {
+      if (!this._isBusinessSender(e) && !this._isTabStripSender(e.sender)) return [];
+      return this.list();
+    });
+    ipcMain.handle('workspace-tabs:getActive', (e) => {
+      if (!this._isBusinessSender(e)) return null;
+      return this.getActive();
+    });
   }
 }
 
