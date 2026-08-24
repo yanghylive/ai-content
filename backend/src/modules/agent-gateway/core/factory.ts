@@ -8,7 +8,7 @@ import { PayloadValidator } from './payload-validator';
 import { AgentGatewayMirror } from './mirror';
 import { UsageEvent } from './types';
 import { MockOctopAdapter, OctopAdapter } from '../adapters/octop-mock';
-import { MockKaypalMemoryAdapter } from '../adapters/kaypal-memory-mock';
+import { KaypalMemoryAdapter, MockKaypalMemoryAdapter } from '../adapters/kaypal-memory-mock';
 import { BusinessToolRegistry, buildBusinessTools } from '../adapters/business-tools';
 import { STANDARD_TOOL_SPECS } from './tool-specs';
 
@@ -36,6 +36,8 @@ export function createAgentGateway(opts: {
   octop?: OctopAdapter;
   /** 业务工具注册表（可选；真实仓库传 RealBusinessTools，默认 Mock） */
   business?: BusinessToolRegistry;
+  /** Kaypal 远程长期记忆适配器（可选；真实仓库传 RealKaypalMemoryAdapter，默认 Mock） */
+  memoryRemote?: KaypalMemoryAdapter;
 } = {}) {
   const registry = new ToolRegistry();
   registry.registerMany(STANDARD_TOOL_SPECS);
@@ -49,7 +51,7 @@ export function createAgentGateway(opts: {
   });
   const validator = new PayloadValidator();
   const octop = opts.octop ?? new MockOctopAdapter(registry.list().map((s) => s.name));
-  const memoryRemote = new MockKaypalMemoryAdapter();
+  const memoryRemote = opts.memoryRemote ?? new MockKaypalMemoryAdapter();
   const memory = new MemoryOrchestrator(memoryRemote, 2000, opts.outboxDb);
   const business = opts.business ?? buildBusinessTools();
 

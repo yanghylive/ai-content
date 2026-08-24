@@ -9,6 +9,7 @@ import { PrismaHydrator } from './prisma-store/prisma-hydrator';
 import { PrismaOutboxStore } from './prisma-store/prisma-outbox.store';
 import { RealOctopAdapter } from './adapters/real-octop-adapter';
 import { RealBusinessTools } from './adapters/real-business-tools';
+import { RealKaypalMemoryAdapter } from './adapters/real-kaypal-memory';
 import { Optional } from '@nestjs/common';
 
 /**
@@ -51,6 +52,17 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
       business:
         process.env.AGENT_GATEWAY_REAL_BUSINESS === 'true' && this.realBusiness
           ? this.realBusiness.build()
+          : undefined,
+      // 真实 Kaypal 远程长期记忆：显式 AGENT_GATEWAY_REAL_MEMORY=true 启用
+      // （凭据 KAYPAL_AUTH_BASE_URL/KAYPAL_API_KEY；Edge 网关已放行 /api/memory*，鉴权走 Bearer/api-key）
+      memoryRemote:
+        process.env.AGENT_GATEWAY_REAL_MEMORY === 'true' &&
+        process.env.KAYPAL_API_KEY &&
+        (process.env.KAYPAL_AUTH_BASE_URL || process.env.KAYPAL_BASE_URL)
+          ? new RealKaypalMemoryAdapter({
+              baseUrl: process.env.KAYPAL_AUTH_BASE_URL || process.env.KAYPAL_BASE_URL!,
+              apiKey: process.env.KAYPAL_API_KEY,
+            })
           : undefined,
     });
   }
