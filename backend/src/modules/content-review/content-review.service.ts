@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -36,8 +36,8 @@ export class ContentReviewService {
   private readonly promptsDir = join(__dirname, 'prompts');
 
   constructor(
-    private readonly aiClient?: AiClientService,
-    private readonly prisma?: PrismaService,
+    @Optional() private readonly aiClient?: AiClientService,
+    @Optional() private readonly prisma?: PrismaService,
   ) {}
 
   /**

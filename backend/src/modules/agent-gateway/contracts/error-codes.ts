@@ -22,6 +22,7 @@ export const ERROR_SPECS: Record<ErrorCode, ErrorSpec> = {
   CANCEL_TIMEOUT: { message: '取消超时，请检查设备状态', retryable: true, httpStatus: 504 },
   TOOL_NOT_ALLOWED: { message: '该工具不在当前模式白名单内', retryable: false, httpStatus: 403 },
   TOOL_EXECUTION_FAILED: { message: '工具执行失败', retryable: true, httpStatus: 500 },
+  CONTENT_REVIEW_FAILED: { message: '内容审核未通过', retryable: true, httpStatus: 422 },
   IDEMPOTENCY_CONFLICT: { message: '幂等键冲突，已存在进行中的相同请求', retryable: false, httpStatus: 409 },
   MEMORY_TIMEOUT: { message: '远程记忆超时，已降级为本地结果', retryable: true, httpStatus: 200 },
   NAMESPACE_INVALID: { message: '记忆命名空间非法', retryable: false, httpStatus: 400 },
