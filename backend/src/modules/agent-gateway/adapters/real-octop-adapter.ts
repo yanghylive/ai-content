@@ -20,7 +20,11 @@ export class RealOctopAdapter implements OctopAdapter {
   private healthyFlag = true;
 
   constructor(opts?: { baseUrl?: string; accessToken?: string }) {
-    this.baseUrl = (opts?.baseUrl ?? process.env.OCTOP_BASE_URL ?? 'http://127.0.0.1:8088').replace(/\/+$/, '');
+    this.baseUrl = (
+      opts?.baseUrl ??
+      process.env.OCTOP_BASE_URL ??
+      'http://127.0.0.1:8088'
+    ).replace(/\/+$/, '');
     this.token = opts?.accessToken ?? process.env.OCTOP_ACCESS_TOKEN?.trim();
   }
 
@@ -55,20 +59,30 @@ export class RealOctopAdapter implements OctopAdapter {
     return undefined;
   }
 
-  async createSession(_ctx: TenantContext): Promise<{ octopSessionId: string }> {
+  async createSession(
+    _ctx: TenantContext,
+  ): Promise<{ octopSessionId: string }> {
     if (!(await this.auth())) throw new Error('OCTOP_UNAVAILABLE');
     // Octop 会话由 ACP 通道管理（HTTP 路由未公开，enable_api_docs=false）；
     // REST 层以 token 交换为界，会话 ID 由引擎侧持有
     return { octopSessionId: genId('octop') };
   }
 
-  async tokenExchange(_octopSessionId: string): Promise<{ token: string; expiresAt: string }> {
+  async tokenExchange(
+    _octopSessionId: string,
+  ): Promise<{ token: string; expiresAt: string }> {
     const token = await this.auth(); // 真实 /api/auth/login（octop-bridge 凭据）
     if (!token) throw new Error('OCTOP_UNAVAILABLE');
-    return { token, expiresAt: new Date(Date.now() + 86_400_000).toISOString() };
+    return {
+      token,
+      expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+    };
   }
 
-  async cancelRun(sessionId: string, _reason?: string): Promise<{ cancelled: boolean }> {
+  async cancelRun(
+    sessionId: string,
+    _reason?: string,
+  ): Promise<{ cancelled: boolean }> {
     if (!(await this.auth())) return { cancelled: false };
     try {
       const r = await fetch(`${this.baseUrl}/api/runs/${sessionId}/cancel`, {
@@ -106,20 +120,45 @@ export class RealOctopAdapter implements OctopAdapter {
       };
     }
     if (!this.token && !this.credentials().username) {
-      return this.degraded(base, '未配置 Octop 凭据（OCTOP_USERNAME/OCTOP_PASSWORD / OCTOP_ACCESS_TOKEN）');
+      return this.degraded(
+        base,
+        '未配置 Octop 凭据（OCTOP_USERNAME/OCTOP_PASSWORD / OCTOP_ACCESS_TOKEN）',
+      );
     }
-    return { ...base, browser: { available: true }, mobile: { available: true } };
+    return {
+      ...base,
+      browser: { available: true },
+      mobile: { available: true },
+    };
   }
 
-  private readOctopProbedCapabilities(): { browser: boolean; computer: boolean; mobile: boolean; file: boolean } | undefined {
+  private readOctopProbedCapabilities():
+    | { browser: boolean; computer: boolean; mobile: boolean; file: boolean }
+    | undefined {
     try {
-      const cfg = JSON.parse(readFileSync(join(homedir(), '.octop', 'config.json'), 'utf8'));
-      const caps = cfg?.capabilities ?? {};
-      if (!caps || typeof caps !== 'object') return undefined;
+      type OctopCaps = {
+        enabled?: boolean;
+        available?: boolean;
+      };
+      type OctopCfg = {
+        capabilities?: {
+          browser?: OctopCaps;
+          computer?: OctopCaps;
+          mobile?: OctopCaps;
+          file?: OctopCaps;
+        };
+      };
+      const cfg = JSON.parse(
+        readFileSync(join(homedir(), '.octop', 'config.json'), 'utf8'),
+      ) as OctopCfg;
+      const caps = cfg.capabilities ?? {};
       return {
-        browser: caps.browser?.enabled === true || caps.browser?.available === true,
-        computer: caps.computer?.enabled === true || caps.computer?.available === true,
-        mobile: caps.mobile?.enabled === true || caps.mobile?.available === true,
+        browser:
+          caps.browser?.enabled === true || caps.browser?.available === true,
+        computer:
+          caps.computer?.enabled === true || caps.computer?.available === true,
+        mobile:
+          caps.mobile?.enabled === true || caps.mobile?.available === true,
         file: caps.file?.enabled === true || caps.file?.available === true,
       };
     } catch {
@@ -139,7 +178,9 @@ export class RealOctopAdapter implements OctopAdapter {
 
   async healthy(): Promise<boolean> {
     try {
-      const r = await fetch(`${this.baseUrl}/api/health`, { signal: AbortSignal.timeout(1500) });
+      const r = await fetch(`${this.baseUrl}/api/health`, {
+        signal: AbortSignal.timeout(1500),
+      });
       this.healthyFlag = r.ok;
       return r.ok;
     } catch {
@@ -148,7 +189,8 @@ export class RealOctopAdapter implements OctopAdapter {
     }
   }
 
-  async setHealthy(v: boolean): Promise<void> {
+  setHealthy(v: boolean): Promise<void> {
     this.healthyFlag = v;
+    return Promise.resolve();
   }
 }

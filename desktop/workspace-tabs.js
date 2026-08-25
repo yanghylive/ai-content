@@ -77,7 +77,16 @@ function installOctopAuthInjection(tabSession, getToken, getOrigin) {
   tabSession.webRequest.onBeforeSendHeaders((details, callback) => {
     const token = getToken();
     const origin = getOrigin();
-    if (token && origin && details.url.startsWith(origin)) {
+    // 严格 origin 等值比较（非前缀匹配）：防 "http://127.0.0.1:8088.evil.com" 类伪同前缀域名携带 Bearer 外泄
+    let sameOrigin = false;
+    if (token && origin) {
+      try {
+        sameOrigin = new URL(details.url).origin === origin;
+      } catch {
+        sameOrigin = false;
+      }
+    }
+    if (sameOrigin) {
       details.requestHeaders['Authorization'] = `Bearer ${token}`;
     }
     callback({ requestHeaders: details.requestHeaders });

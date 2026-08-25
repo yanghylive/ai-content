@@ -5,7 +5,7 @@ import { Button, Chip, Input } from "@heroui/react";
 import { Layers, Plus, ExternalLink } from "lucide-react";
 import toast from "@/lib/toast";
 import { workspaceApi, type Workspace } from "@/lib/api/workspace";
-import { api } from "@/lib/api/client";
+import { useOctopLaunch } from "@/hooks/use-octop-launch";
 
 type TabInfo = {
   id: string;
@@ -34,9 +34,11 @@ function useElectronWorkspaceTabs(): WorkspaceTabsApi | null {
  * - 支持新建工作区（创建后自动绑定到当前标签）。
  * - 支持「新标签」打开（桌面端多标签）。
  * - 非 Electron 环境（web）优雅降级：工作区列表/新建仍可用，绑定/多标签提示仅桌面端支持。
+ * - Octop 拉起：与全局 OctopLaunchBridge 共用 useOctopLaunch（事件监听在根 layout，本组件只留按钮）。
  */
 export function WorkspaceSwitcher() {
   const tabs = useElectronWorkspaceTabs();
+  const { launchOctop } = useOctopLaunch();
   const [workspaces, setWorkspaces] = React.useState<Workspace[]>([]);
   const [active, setActive] = React.useState<TabInfo>(null);
   const [loading, setLoading] = React.useState(true);
@@ -144,44 +146,8 @@ export function WorkspaceSwitcher() {
     }
   };
 
-  const launchOctop = React.useCallback(async () => {
-    if (!tabs) {
-      toast.error("仅桌面端支持 Octop 高级模式");
-      return;
-    }
-    setBusy(true);
-    try {
-      const res = (await api.get("/octop/launch")) as {
-        octopBaseUrl: string;
-        healthy: boolean;
-        token: string | null;
-      };
-      if (!res.healthy) {
-        toast.error("本机 Octop 未运行（127.0.0.1:8088 健康检查失败），请先启动 Octop");
-        return;
-      }
-      if (!res.token) {
-        toast.error("Octop 凭据未配置（后端需 OCTOP_USERNAME/PASSWORD 或 OCTOP_ACCESS_TOKEN）");
-        return;
-      }
-      await tabs.openOctop(res.octopBaseUrl, res.token);
-      toast.success("已打开 Octop 高级模式");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "打开 Octop 失败");
-    } finally {
-      setBusy(false);
-    }
-  }, [tabs]);
-
-  // 监听桌面 tab 条「Octop 高级模式」按钮转发的拉起请求
-  React.useEffect(() => {
-    const key = window.electronAPI?.on?.("octop:request-launch", () => {
-      void launchOctop();
-    });
-    return () => {
-      if (key) window.electronAPI?.removeListener?.(key);
-    };
-  }, [launchOctop]);
+  // launchOctop 来自共享 useOctopLaunch；octop:request-launch 事件监听已全局化到根 layout 的 OctopLaunchBridge
+  //（之前只在 Dashboard 注册——登录页/非 Dashboard 页点顶部按钮无前端处理者，2026-08-24 审计 #6）
 
   if (loading) return null;
 

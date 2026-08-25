@@ -1,6 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+/** 取第一个非空字符串；对 unknown 做 typeof 守卫避免 no-base-to-string */
+function firstNonEmptyString(...vals: unknown[]): string | undefined {
+  for (const v of vals) {
+    if (typeof v === 'string' && v.length > 0) return v;
+  }
+  return undefined;
+}
+
 export interface KaypalLoginResult {
   kaypalUserId?: string;
   phone?: string;
@@ -26,7 +34,10 @@ export class KaypalOctopBridge {
   constructor(private readonly config: ConfigService) {}
 
   private kaypalBase(): string {
-    return this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() || 'https://kaypal.cn';
+    return (
+      this.config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
+      'https://kaypal.cn'
+    );
   }
 
   private kaypalApiKey(): string {
@@ -43,12 +54,19 @@ export class KaypalOctopBridge {
   }
 
   /** 1) Kaypal.cn 用户登录（实测端点：POST /api/desktop-auth/password） */
-  async loginKaypal(phone: string, password: string): Promise<KaypalLoginResult> {
+  async loginKaypal(
+    phone: string,
+    password: string,
+  ): Promise<KaypalLoginResult> {
     const apiKey = this.kaypalApiKey();
     if (!apiKey) throw new Error('KAYPAL_API_KEY 未配置');
     const res = await fetch(`${this.kaypalBase()}/api/desktop-auth/password`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-kaypal-api-key': apiKey, accept: 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'x-kaypal-api-key': apiKey,
+        accept: 'application/json',
+      },
       body: JSON.stringify({
         phone,
         password,
@@ -62,7 +80,7 @@ export class KaypalOctopBridge {
       throw new Error(`Kaypal 登录失败 HTTP ${res.status}`);
     }
     const d = (await res.json()) as Record<string, unknown>;
-    const accessToken = String(d.access_token ?? d.accessToken ?? '');
+    const accessToken = firstNonEmptyString(d.access_token, d.accessToken);
     if (!accessToken) throw new Error('Kaypal 登录失败：未返回 access_token');
     return {
       kaypalUserId: (d.user as Record<string, unknown> | undefined)?.id
@@ -79,11 +97,19 @@ export class KaypalOctopBridge {
   /** 2) 桥持 Octop 凭据换 Octop access token（用户凭据或 access token 直用） */
   async loginOctop(): Promise<{ token: string; expiresAt: string }> {
     const direct = process.env.OCTOP_ACCESS_TOKEN?.trim();
-    if (direct) return { token: direct, expiresAt: new Date(Date.now() + 86_400_000).toISOString() };
+    if (direct)
+      return {
+        token: direct,
+        expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+      };
     const username = process.env.OCTOP_USERNAME?.trim();
-    const password = process.env.OCTOP_PASSWORD?.trim() ?? process.env.OCTOP_SETUP_PASSWORD?.trim();
+    const password =
+      process.env.OCTOP_PASSWORD?.trim() ??
+      process.env.OCTOP_SETUP_PASSWORD?.trim();
     if (!username || !password) {
-      throw new Error('OCTOP_USERNAME/OCTOP_PASSWORD（或 OCTOP_ACCESS_TOKEN）未配置');
+      throw new Error(
+        'OCTOP_USERNAME/OCTOP_PASSWORD（或 OCTOP_ACCESS_TOKEN）未配置',
+      );
     }
     const res = await fetch(`${this.octopBase()}/api/auth/login`, {
       method: 'POST',
@@ -93,13 +119,23 @@ export class KaypalOctopBridge {
     });
     if (!res.ok) throw new Error(`Octop 登录失败 HTTP ${res.status}`);
     const d = (await res.json()) as Record<string, unknown>;
-    const token = String(d.access_token ?? d.accessToken ?? d.token ?? '');
+    const token =
+      firstNonEmptyString(d.access_token, d.accessToken, d.token) ?? '';
     if (!token) throw new Error('Octop 登录失败：未返回 token');
-    return { token, expiresAt: new Date(Date.now() + 86_400_000).toISOString() };
+    return {
+      token,
+      expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+    };
   }
 
   /** 端到端：Kaypal 用户登录通过 → 返回可代理 Octop 的 token */
-  async authenticate(phone: string, password: string): Promise<{ kaypal: KaypalLoginResult; octop: { token: string; expiresAt: string } }> {
+  async authenticate(
+    phone: string,
+    password: string,
+  ): Promise<{
+    kaypal: KaypalLoginResult;
+    octop: { token: string; expiresAt: string };
+  }> {
     const kaypal = await this.loginKaypal(phone, password);
     const octop = await this.loginOctop();
     return { kaypal, octop };
