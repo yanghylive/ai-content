@@ -8,9 +8,18 @@ import { genId } from '../core/util';
  */
 export interface OctopAdapter {
   createSession(ctx: TenantContext): Promise<{ octopSessionId: string }>;
-  tokenExchange(octopSessionId: string): Promise<{ token: string; expiresAt: string }>;
-  /** 下发取消/暂停指令给正在执行的 RPA（真实环境经 Octop 控制面） */
-  cancelRun(sessionId: string, reason?: string): Promise<{ cancelled: boolean }>;
+  tokenExchange(
+    octopSessionId: string,
+  ): Promise<{ token: string; expiresAt: string }>;
+  /**
+   * 下发取消/暂停指令给正在执行的 RPA（真实环境经 Octop 控制面）。
+   * 入参是 **Octop 侧会话 id**（createSession 的返回值），不是网关自己的 sessionId；
+   * 真实实现据此 `DELETE /api/browser/sessions/{id}` 关掉该用户的浏览器会话。
+   */
+  cancelRun(
+    octopSessionId: string,
+    reason?: string,
+  ): Promise<{ cancelled: boolean }>;
   getCapabilities(): Capabilities;
   healthy(): Promise<boolean>;
   setHealthy(v: boolean): Promise<void>;
@@ -30,12 +39,16 @@ export class MockOctopAdapter implements OctopAdapter {
     };
   }
 
-  async createSession(_ctx: TenantContext): Promise<{ octopSessionId: string }> {
+  async createSession(
+    _ctx: TenantContext,
+  ): Promise<{ octopSessionId: string }> {
     if (!this.healthyFlag) throw new Error('OCTOP_UNAVAILABLE');
     return { octopSessionId: genId('octop') };
   }
 
-  async tokenExchange(octopSessionId: string): Promise<{ token: string; expiresAt: string }> {
+  async tokenExchange(
+    octopSessionId: string,
+  ): Promise<{ token: string; expiresAt: string }> {
     if (!this.healthyFlag) throw new Error('OCTOP_UNAVAILABLE');
     return {
       token: `tok_${octopSessionId}`,
@@ -43,7 +56,10 @@ export class MockOctopAdapter implements OctopAdapter {
     };
   }
 
-  async cancelRun(_sessionId: string, _reason?: string): Promise<{ cancelled: boolean }> {
+  async cancelRun(
+    _sessionId: string,
+    _reason?: string,
+  ): Promise<{ cancelled: boolean }> {
     if (!this.healthyFlag) throw new Error('OCTOP_UNAVAILABLE');
     return { cancelled: true };
   }
@@ -51,7 +67,11 @@ export class MockOctopAdapter implements OctopAdapter {
   getCapabilities(): Capabilities {
     if (!this.healthyFlag) {
       return {
-        browser: { available: false, degraded: true, reason: 'Octop 不可用，已降级为 3010 原生工具' },
+        browser: {
+          available: false,
+          degraded: true,
+          reason: 'Octop 不可用，已降级为 3010 原生工具',
+        },
         computer: { available: false, degraded: true, reason: 'Octop 不可用' },
         mobile: { available: false, degraded: true, reason: 'Octop 不可用' },
         file: { available: false, degraded: true, reason: 'Octop 不可用' },

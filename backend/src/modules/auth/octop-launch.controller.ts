@@ -43,14 +43,21 @@ export class OctopLaunchController {
       return { octopBaseUrl: octopBase, healthy: false, token: null };
     }
 
+    // 用户级 SSO（审计 #2）：由**后端**从已登录 Kaypal 用户确定性派生 Octop 身份，
+    // per-user 模式首次访问自动开号 → 每用户独立 Octop 浏览器会话/cookie。
+    // 刻意不接受前端传 Octop 用户名/密码：凭据进 URL 会落到访问日志与浏览器历史。
     let token: string | null = null;
+    let isolated = false;
     try {
-      const r = await this.bridge.loginOctop();
+      const r = await this.bridge.loginOctop({ kaypalUserId: user.id });
       token = r.token;
+      isolated = r.isolated === true;
     } catch {
       token = null;
     }
 
-    return { octopBaseUrl: octopBase, healthy, token };
+    // isolated=false 表示回退到共享 Octop 账号（单机单用户场景可接受；
+    // 多用户部署下代表会话/cookie 会跨用户共享，前端据此提示运维配置）。
+    return { octopBaseUrl: octopBase, healthy, token, isolated };
   }
 }

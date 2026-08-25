@@ -301,12 +301,24 @@ export class AgentGateway {
   }
 
   // ---------------------------------------------------------------- 控制面
+  /**
+   * 网关 sessionId → Octop 真实会话 id（审计 #3）。
+   * 取消/暂停必须把 **Octop 侧的会话 id** 下发给适配器：
+   * 之前直接传网关 sessionId，Octop 永远查不到该会话，取消指令等于空转。
+   * 会话不存在/未建 Octop 会话时退回原值（适配器自会判定为不可取消）。
+   */
+  private octopSidOf(sessionId: string): string {
+    return this.sessions.get(sessionId)?.octopSessionId ?? sessionId;
+  }
+
   pauseTask(ctx: TenantContext, taskId: string): AgentTask {
     const task = this.requireTask(taskId);
     this.assertOwnership(task, ctx);
     this.assertTaskSessionAlive(task); // P1-1
     this.abortTask(taskId); // 真正中止该任务的在途执行（不影响同会话其他任务）
-    void this.deps.octop.cancelRun(task.sessionId, 'user_pause').catch(() => undefined);
+    void this.deps.octop
+      .cancelRun(this.octopSidOf(task.sessionId), 'user_pause')
+      .catch(() => undefined);
     this.mutateTask(task, 'pause');
     this.deps.bus.publish(task.sessionId, 'task_paused', task.id, {
       reason: 'user_pause',
@@ -332,7 +344,9 @@ export class AgentGateway {
     this.assertOwnership(task, ctx);
     this.assertTaskSessionAlive(task); // P1-1
     this.abortTask(taskId); // 真正中止该任务的在途执行（不影响同会话其他任务）
-    void this.deps.octop.cancelRun(task.sessionId, 'user_cancel').catch(() => undefined);
+    void this.deps.octop
+      .cancelRun(this.octopSidOf(task.sessionId), 'user_cancel')
+      .catch(() => undefined);
     this.mutateTask(task, 'cancel');
     this.deps.bus.publish(task.sessionId, 'task_done', task.id, {
       reason: 'cancelled',
