@@ -415,4 +415,20 @@
     background: rgba(0, 0, 0, 0.6);
   }
   .kx-stat-accent { color: #531dab; }
+
+  /* ---------- 11. 深色模式 heroui Switch 滑块收敛（2026-08-24 P1） ----------
+     tasks/settings 页 heroui Switch thumb 是硬编码 .bg-white，深色下纯白刺眼
+     （实测 lightBgLeak: tasks=3 / settings=15）。DOM 结构：
+     label[Switch] > span(wrapper) > span.z-10.bg-white(滑块)。
+     深色下压成紫黑纸色 + 淡紫描边；浅色保持原样。 */
+  html[data-theme="dark"] main label span.z-10.bg-white,
+  html.dark main label span.z-10.bg-white,
+  html[data-theme="dark"] main [class*="inline-flex"] span.bg-white.rounded-full,
+  html.dark main [class*="inline-flex"] span.bg-white.rounded-full,
+  html[data-theme="dark"] main button.rounded-full > .bg-white.rounded-full,
+  html.dark main button.rounded-full > .bg-white.rounded-full {
+    background-color: var(--kaypal-v3-paper);
+    box-shadow: inset 0 0 0 1px var(--kaypal-v3-border-strong),
+      var(--kaypal-v3-field-shadow);
+  }
 }
