@@ -163,7 +163,8 @@ export type ErrorCode =
   | 'FORBIDDEN'
   | 'APPROVAL_MISMATCH'
   | 'IDEMPOTENCY_KEY_REQUIRED'
-  | 'RATE_LIMITED';
+  | 'RATE_LIMITED'
+  | 'INTERNAL';
 
 export interface AppError {
   code: ErrorCode;

@@ -72,7 +72,10 @@ while ((m = modelRe.exec(schema)) !== null) {
 
 // —— 2. 解析 prisma.service.ts ——
 const createTables = new Map();
-const createRe = /CREATE TABLE IF NOT EXISTS\s+(\w+)\s*\(([\s\S]*?)\)/g;
+// 2026-08-24 修复：旧正则 ([\s\S]*?)\) 在列定义含 REFERENCES t("id") 等内联括号时
+// 提前截断，导致 rpa_evidence / mobile_devices 等 DDL 列解析不全（误报缺列）。
+// 改为匹配到语句收尾的 `)\`,` 或 `);`（模板字符串里 DDL 的真实结尾）。
+const createRe = /CREATE TABLE IF NOT EXISTS\s+(\w+)\s*\(([\s\S]*?)\)\s*[`,;]/g;
 while ((m = createRe.exec(service)) !== null) {
   const tableName = m[1];
   const body = m[2];
@@ -107,6 +110,27 @@ while ((m = idxRe.exec(service)) !== null) {
   const target = isUnique ? serviceUniques : serviceIndexes;
   if (!target.has(tableName)) target.set(tableName, []);
   target.get(tableName).push(cols);
+}
+
+// 表内联 UNIQUE(col, ...) 约束（2026-08-24 补：CREATE TABLE 里的列级唯一
+// 在 SQLite 同样生效，此前只认 CREATE UNIQUE INDEX 导致误报「缺失」）
+const inlineUniqRe = /UNIQUE\s*\(([^)]+)\)/g;
+{
+  // 限定在 CREATE TABLE IF NOT EXISTS <table> ( ... ) 的表体里找
+  const tableRe = /CREATE TABLE IF NOT EXISTS\s+(\w+)\s*\(([\s\S]*?)\n\s{6}\)/g;
+  let tm;
+  while ((tm = tableRe.exec(service)) !== null) {
+    const tName = tm[1];
+    let um;
+    while ((um = inlineUniqRe.exec(tm[2])) !== null) {
+      const cols = um[1]
+        .split(',')
+        .map((s) => s.trim().replace(/^"|"$/g, ''))
+        .filter(Boolean);
+      if (!serviceUniques.has(tName)) serviceUniques.set(tName, []);
+      serviceUniques.get(tName).push(cols);
+    }
+  }
 }
 
 // —— 3. 对比 ——
