@@ -12,6 +12,7 @@ import { useSyncExternalStore } from "react";
 import { GlobalErrorBoundary } from "@/components/global-error-boundary";
 import { ClientConfigProvider } from "@/lib/hooks/use-client-config";
 import { ErrorReportBridge } from "@/lib/error-report-bridge";
+import { MotionProvider } from "@/components/providers/motion-provider";
 
 const neutralThemeWithPrebuiltCss = {
   ...neutralTheme,
@@ -48,10 +49,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <NextThemesProvider attribute="class" defaultTheme="light">
         <ClientConfigProvider>
           <AstryxThemeBridge>
-            <ToastProvider placement="top-right" />
-            <GlobalErrorBoundary />
-            <ErrorReportBridge />
-            {children}
+            <MotionProvider>
+              <ToastProvider placement="top-right" />
+              <GlobalErrorBoundary />
+              <ErrorReportBridge />
+              {children}
+            </MotionProvider>
           </AstryxThemeBridge>
         </ClientConfigProvider>
       </NextThemesProvider>
