@@ -37,7 +37,6 @@ export const ERROR_SPECS: Record<ErrorCode, ErrorSpec> = {
   FORBIDDEN: { message: '禁止访问', retryable: false, httpStatus: 403 },
   APPROVAL_MISMATCH: { message: '审批与当前任务/请求不匹配或已被消费', retryable: false, httpStatus: 403 },
   IDEMPOTENCY_KEY_REQUIRED: { message: '高风险写请求必须携带 Idempotency-Key', retryable: false, httpStatus: 400 },
-  INSUFFICIENT_BALANCE: { message: '余额不足，任务已暂停（充值后可恢复）', retryable: false, httpStatus: 402 },
   RATE_LIMITED: { message: '速率受限', retryable: true, httpStatus: 429 },
 };
 

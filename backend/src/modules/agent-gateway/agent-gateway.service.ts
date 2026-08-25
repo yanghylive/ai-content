@@ -101,34 +101,6 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
               },
             })
           : undefined,
-      // P1-3 余额/资格门禁：trial 模式（无商用执行权）下高风险写工具 → paused_insufficient_balance。
-      // 语义对齐 PRD §9「余额不足进入 paused_insufficient_balance，不丢上下文」——
-      // 用本地 planMode 作代理判定（trial=有阻断；commercial/授权=放行）。
-      // 商用默认 fail-closed：无法确权（查不到用户 / 查询异常）一律拒绝高风险写，杜绝静默放行；
-      // 仅 AGENT_GATEWAY_BALANCE_GATE_FAILOPEN=true（开发/无本地 users 表环境）回退 fail-open。
-      balanceGate:
-        process.env.AGENT_GATEWAY_BALANCE_GATE === 'true'
-          ? async (ctx, spec) => {
-              const failOpen = process.env.AGENT_GATEWAY_BALANCE_GATE_FAILOPEN === 'true';
-              try {
-                const u = await this.prisma.user.findUnique({ where: { id: ctx.userId } });
-                // 本地查不到用户（如 kaypal 正式账号未同步本地 users）：商用环境视为无资格，安全拒绝
-                if (!u) {
-                  if (failOpen) return { ok: true };
-                  return { ok: false, reason: '无法确认用户商用资格（本地无记录），拒绝高风险写操作（fail-closed）' };
-                }
-                const trial = !u.commercialExecutionAllowed && u.planMode === 'trial';
-                if (trial && spec.risk === 'high') {
-                  return { ok: false, reason: 'trial 模式不开放高风险写工具，请升级商用套餐或充值' };
-                }
-                return { ok: true };
-              } catch {
-                // 鉴权查询异常：商用环境安全拒绝，避免误放
-                if (failOpen) return { ok: true };
-                return { ok: false, reason: '余额/资格校验异常，安全拒绝高风险写操作（fail-closed）' };
-              }
-            }
-          : undefined,
     });
   }
 

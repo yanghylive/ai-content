@@ -49,11 +49,6 @@ export interface GatewayDeps {
   usageSink?: (ev: UsageEvent) => void | Promise<void>;
   /** 写路径持久化镜像（session/task/event/artifact；内存态仍权威） */
   mirror?: AgentGatewayMirror;
-  /**
-   * P1-3 余额/资格门禁（可选）：工具执行前调用；返回 ok=false 时任务落 paused
-   * （paused_insufficient_balance 语义），不扣幂等、不发起执行。真实仓库用 BillingService。
-   */
-  balanceGate?: (ctx: TenantContext, spec: ToolSpec) => Promise<{ ok: boolean; reason?: string }>;
   sessionTtlMs?: number;
   approvalTtlMs?: number;
 }
@@ -204,27 +199,8 @@ export class AgentGateway {
       return { kind: 'result', result: this.errorResult(request, makeError('TOOL_NOT_ALLOWED')) };
     }
 
-    // P1-3：余额/资格门禁——不足时任务落 paused（可恢复），不消耗幂等、不发起执行。
-    // 放在 capability 检查之前：余额不足是最根本门槛，优先暴露 INSUFFICIENT_BALANCE
-    // 而非 OCTOP_DEGRADED（避免误导用户先排查能力）。
-    if (this.deps.balanceGate) {
-      const gate = await this.deps.balanceGate(ctx, spec);
-      if (!gate.ok) {
-        this.safeMutate(task, 'pause');
-        this.deps.bus.publish(task.sessionId, 'task_paused', task.id, {
-          reason: 'paused_insufficient_balance',
-          resumable: true,
-          summary: gate.reason ?? '余额不足，任务已暂停',
-        });
-        return {
-          kind: 'result',
-          result: this.errorResult(
-            request,
-            makeError('INSUFFICIENT_BALANCE', { details: { reason: gate.reason ?? 'paused_insufficient_balance' } }),
-          ),
-        };
-      }
-    }
+    // 审计 #5：无资格门禁——大王拍板「不按订阅/角色限制，纯靠计费」。
+    // 高风险写工具不再按 trial/commercial 资格拦截，全放行，用量经 usageSink 走计费链路结算。
 
     const caps = this.getCapabilities();
     if (!this.deps.registry.capabilitiesSatisfied(spec, caps)) {
