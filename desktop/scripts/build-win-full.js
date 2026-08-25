@@ -112,6 +112,13 @@ function main() {
     env: { BUILD_PLATFORM: 'win-x64' },
   });
 
+  // 安装包内容完整性门禁：app.asar 依赖对照 + backend 原生依赖 + chromium + prisma 引擎 + Octop sidecar
+  // （win 优先检查 win-unpacked，不依赖 7z，Windows 原生构建可跑）
+  run('Check package contents', 'node', ['scripts/check-package-contents.js'], {
+    cwd: desktopRoot,
+    env: { BUILD_PLATFORM: 'win-x64' },
+  });
+
   // 打包后端启动 smoke：仅 Windows 真机构建时执行（macOS 交叉构建跳过，需 Windows 启动包内后端）
   if (process.platform === 'win32') {
     run('Smoke packaged backend startup', 'node', ['scripts/smoke-packaged-backend.js'], {

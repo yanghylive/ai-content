@@ -15,6 +15,7 @@
  */
 const { execSync, spawnSync } = require("node:child_process");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 
 const desk = path.resolve(__dirname, "..");
@@ -44,7 +45,7 @@ function check(ok, label, detail = "") {
 }
 
 function extractMacApp(zipPath) {
-  const tmp = fs.mkdtempSync(path.join("/tmp", "prl-mac-"));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "prl-mac-"));
   run(`unzip -q -o "${zipPath}" -d "${tmp}"`);
   const appDir = fs.readdirSync(tmp).find((f) => f.endsWith(".app"));
   return {
@@ -56,7 +57,7 @@ function extractMacApp(zipPath) {
 }
 
 function extractWinExe(exePath) {
-  const tmp = fs.mkdtempSync(path.join("/tmp", "prl-win-"));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "prl-win-"));
   run(`7z x -y -o"${tmp}" "${exePath}" >/dev/null 2>&1`);
   const plugin = path.join(tmp, "$PLUGINSDIR", "app-64.7z");
   if (!fs.existsSync(plugin)) return { tmp, resources: null, cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }) };
@@ -179,8 +180,12 @@ if (macZips.length === 0) {
   mac.cleanup();
 }
 
-// Win
-if (winExes.length === 0) {
+// Win：优先检查 win-unpacked 目录（Windows 原生构建无 7z，electron-builder 的
+// win-unpacked 已含解包后的 resources）；缺失才 fallback 7z 解压 NSIS exe。
+const winUnpacked = path.join(targetDir, "win-unpacked");
+if (fs.existsSync(path.join(winUnpacked, "resources"))) {
+  checkExtracted("Win(win-unpacked)", path.join(winUnpacked, "resources"), SHARP_REQUIRED_ALL);
+} else if (winExes.length === 0) {
   check(false, "Win exe 未找到", targetDir);
 } else {
   const win = extractWinExe(path.join(targetDir, winExes[winExes.length - 1]));
