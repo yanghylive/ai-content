@@ -381,6 +381,7 @@ export class PrismaService
       `CREATE INDEX IF NOT EXISTS ai_call_traces_user_id_created_at_idx ON ai_call_traces(user_id, created_at)`,
       `CREATE INDEX IF NOT EXISTS ai_call_traces_scene_created_at_idx ON ai_call_traces(scene, created_at)`,
       `CREATE INDEX IF NOT EXISTS mobile_devices_user_id_idx ON mobile_devices(user_id)`,
+      `CREATE INDEX IF NOT EXISTS mobile_devices_device_token_hash_idx ON mobile_devices(device_token_hash)`,
       `CREATE INDEX IF NOT EXISTS executor_tasks_user_id_status_idx ON executor_tasks(user_id, status)`,
       `CREATE INDEX IF NOT EXISTS executor_tasks_device_id_idx ON executor_tasks(device_id)`,
       `CREATE INDEX IF NOT EXISTS offer_snapshots_vendor_code_platform_code_item_id_idx ON offer_snapshots(vendor_code, platform_code, item_id)`,
@@ -2268,6 +2269,9 @@ export class PrismaService
         "status" TEXT DEFAULT 'online',
         "last_heartbeat_at" DATETIME,
         "agent_version" TEXT,
+        "device_uuid" TEXT,
+        "device_token_hash" TEXT,
+        "capabilities" JSONB,
         "created_at" DATETIME,
         "updated_at" DATETIME
       )`,
@@ -3098,6 +3102,205 @@ export class PrismaService
         UNIQUE(user_id, platform, account_id)
       )`,
       `CREATE INDEX IF NOT EXISTS platform_accounts_user_id_idx ON platform_accounts(user_id)`,
+      // ===== 4.4 多工作区标签壳 + Agent Gateway 九实体（2026-08-24 P0 补齐：
+      //  此前仅存在于 prisma/migrations，未进运行时 DDL → 已装用户库缺表，
+      //  GET /api/workspaces 500「内部错误」。DDL 与 prisma/migrations/
+      //  20260823*_agent_gateway_* / 20260824000000_workspaces 对齐。=====）
+      // workspaces 表
+      `CREATE TABLE IF NOT EXISTS workspaces (
+        id TEXT PRIMARY KEY NOT NULL,
+        tenant_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        agent_id TEXT NOT NULL DEFAULT 'agent_default',
+        settings JSONB NOT NULL DEFAULT '{}',
+        status TEXT NOT NULL DEFAULT 'active',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS workspaces_tenant_id_user_id_idx ON workspaces(tenant_id, user_id)`,
+      `CREATE INDEX IF NOT EXISTS workspaces_status_idx ON workspaces(status)`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS workspaces_tenant_id_user_id_name_key ON workspaces(tenant_id, user_id, name)`,
+      // agent-gateway 会话
+      `CREATE TABLE IF NOT EXISTS agent_gateway_sessions (
+        id TEXT PRIMARY KEY NOT NULL,
+        tenant_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        agent_id TEXT NOT NULL,
+        workspace_id TEXT,
+        octop_session_id TEXT,
+        mode TEXT NOT NULL DEFAULT 'business',
+        status TEXT NOT NULL DEFAULT 'active',
+        last_event_id TEXT NOT NULL DEFAULT '',
+        last_sequence INTEGER NOT NULL DEFAULT 0,
+        expires_at DATETIME NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_sessions_tenant_id_user_id_idx ON agent_gateway_sessions(tenant_id, user_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_sessions_expires_at_idx ON agent_gateway_sessions(expires_at)`,
+      // agent-gateway 任务
+      `CREATE TABLE IF NOT EXISTS agent_gateway_tasks (
+        id TEXT PRIMARY KEY NOT NULL,
+        session_id TEXT NOT NULL,
+        tenant_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        agent_id TEXT NOT NULL,
+        workspace_id TEXT,
+        type TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'draft',
+        plan_json JSONB NOT NULL DEFAULT '{}',
+        checkpoint_json JSONB NOT NULL DEFAULT '{}',
+        started_at DATETIME,
+        finished_at DATETIME,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_tasks_session_id_idx ON agent_gateway_tasks(session_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_tasks_tenant_id_user_id_idx ON agent_gateway_tasks(tenant_id, user_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_tasks_status_idx ON agent_gateway_tasks(status)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_tasks_workspace_id_idx ON agent_gateway_tasks(workspace_id)`,
+      // agent-gateway 工具调用（幂等键防重复）
+      `CREATE TABLE IF NOT EXISTS agent_gateway_tool_calls (
+        id TEXT PRIMARY KEY NOT NULL,
+        task_id TEXT NOT NULL,
+        tenant_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        workspace_id TEXT,
+        tool_name TEXT NOT NULL,
+        risk TEXT NOT NULL DEFAULT 'low',
+        input_hash TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'running',
+        idempotency_key TEXT NOT NULL,
+        request_json TEXT,
+        usage_id TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(tenant_id, idempotency_key)
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_tool_calls_task_id_idx ON agent_gateway_tool_calls(task_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_tool_calls_usage_id_idx ON agent_gateway_tool_calls(usage_id)`,
+      // agent-gateway 审批
+      `CREATE TABLE IF NOT EXISTS agent_gateway_approvals (
+        id TEXT PRIMARY KEY NOT NULL,
+        task_id TEXT NOT NULL,
+        tool_call_id TEXT NOT NULL,
+        tenant_id TEXT NOT NULL,
+        preview_hash TEXT NOT NULL,
+        approved_by TEXT,
+        consumed BOOLEAN NOT NULL DEFAULT 0,
+        expires_at DATETIME NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_approvals_task_id_idx ON agent_gateway_approvals(task_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_approvals_tool_call_id_idx ON agent_gateway_approvals(tool_call_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_approvals_status_expires_at_idx ON agent_gateway_approvals(status, expires_at)`,
+      // agent-gateway 产物
+      `CREATE TABLE IF NOT EXISTS agent_gateway_artifacts (
+        id TEXT PRIMARY KEY NOT NULL,
+        task_id TEXT NOT NULL,
+        tenant_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        uri TEXT NOT NULL,
+        checksum TEXT NOT NULL,
+        version INTEGER NOT NULL DEFAULT 1,
+        metadata_json JSONB NOT NULL DEFAULT '{}',
+        expires_at DATETIME,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_artifacts_task_id_idx ON agent_gateway_artifacts(task_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_artifacts_tenant_id_idx ON agent_gateway_artifacts(tenant_id)`,
+      // agent-gateway 证据
+      `CREATE TABLE IF NOT EXISTS agent_gateway_evidence (
+        id TEXT PRIMARY KEY NOT NULL,
+        tool_call_id TEXT NOT NULL,
+        task_id TEXT NOT NULL,
+        tenant_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        uri TEXT NOT NULL,
+        captured_at DATETIME NOT NULL,
+        redaction_version INTEGER NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_evidence_tool_call_id_idx ON agent_gateway_evidence(tool_call_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_evidence_tenant_id_captured_at_idx ON agent_gateway_evidence(tenant_id, captured_at)`,
+      // agent-gateway 用量事件（与 Kaypal 回执对账锚点 usage_id 唯一）
+      `CREATE TABLE IF NOT EXISTS agent_gateway_usage_events (
+        id TEXT PRIMARY KEY NOT NULL,
+        request_id TEXT NOT NULL,
+        usage_id TEXT NOT NULL UNIQUE,
+        tenant_id TEXT NOT NULL,
+        user_id TEXT NOT NULL DEFAULT '',
+        workspace_id TEXT,
+        task_id TEXT,
+        tool_call_id TEXT,
+        model TEXT,
+        input_tokens INTEGER NOT NULL DEFAULT 0,
+        output_tokens INTEGER NOT NULL DEFAULT 0,
+        compute_units INTEGER NOT NULL DEFAULT 0,
+        cost NUMERIC,
+        status TEXT NOT NULL DEFAULT 'ok',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_usage_events_request_id_idx ON agent_gateway_usage_events(request_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_usage_events_tenant_id_created_at_idx ON agent_gateway_usage_events(tenant_id, created_at)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_usage_events_user_id_idx ON agent_gateway_usage_events(user_id)`,
+      // agent-gateway 记忆 outbox
+      `CREATE TABLE IF NOT EXISTS agent_gateway_memory_outbox (
+        id TEXT PRIMARY KEY NOT NULL,
+        memory_event_id TEXT NOT NULL UNIQUE,
+        tenant_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        agent_id TEXT NOT NULL,
+        workspace_id TEXT,
+        scope TEXT NOT NULL,
+        namespace TEXT NOT NULL,
+        content TEXT,
+        item_id TEXT,
+        operation TEXT NOT NULL DEFAULT 'add',
+        payload_hash TEXT NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        next_retry_at DATETIME NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_memory_outbox_status_next_retry_at_idx ON agent_gateway_memory_outbox(status, next_retry_at)`,
+      // agent-gateway 设备租约
+      `CREATE TABLE IF NOT EXISTS agent_gateway_device_leases (
+        id TEXT PRIMARY KEY NOT NULL,
+        device_id TEXT NOT NULL,
+        task_id TEXT NOT NULL,
+        owner TEXT NOT NULL,
+        tenant_id TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active',
+        heartbeat_at DATETIME NOT NULL,
+        expires_at DATETIME NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_device_leases_device_id_idx ON agent_gateway_device_leases(device_id)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_device_leases_tenant_id_idx ON agent_gateway_device_leases(tenant_id)`,
+      // agent-gateway 事件流（eventId 按 session 作用域唯一）
+      `CREATE TABLE IF NOT EXISTS agent_gateway_events (
+        id TEXT PRIMARY KEY NOT NULL,
+        event_id TEXT NOT NULL,
+        session_id TEXT NOT NULL,
+        tenant_id TEXT NOT NULL,
+        user_id TEXT NOT NULL DEFAULT '',
+        workspace_id TEXT,
+        sequence INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        task_id TEXT NOT NULL,
+        payload JSONB NOT NULL,
+        occurred_at DATETIME NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(session_id, event_id)
+      )`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_events_session_id_sequence_idx ON agent_gateway_events(session_id, sequence)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_events_tenant_id_occurred_at_idx ON agent_gateway_events(tenant_id, occurred_at)`,
+      `CREATE INDEX IF NOT EXISTS agent_gateway_events_user_id_idx ON agent_gateway_events(user_id)`,
     ];
 
     for (const statement of statements) {
@@ -3136,6 +3339,12 @@ export class PrismaService
       ['crm_customers', 'email', 'TEXT'],
       ['crm_customers', 'phone', 'TEXT'],
       ['crm_customers', 'wechat', 'TEXT'],
+      // CrmCustomer P2 归因主键链（2026-08-20 新增；drift 口径对齐）
+      ['crm_customers', 'source_article_id', 'TEXT'],
+      ['crm_customers', 'source_publish_record_id', 'TEXT'],
+      ['crm_customers', 'source_interaction_event_id', 'TEXT'],
+      ['crm_customers', 'source_task_id', 'TEXT'],
+      ['crm_customers', 'source_run_id', 'TEXT'],
       ['crm_opportunities', 'tenant_id', 'TEXT'],
       // 赢单/输单原因（报告 16.3 第 19 项）
       ['crm_opportunities', 'win_reason', 'TEXT'],

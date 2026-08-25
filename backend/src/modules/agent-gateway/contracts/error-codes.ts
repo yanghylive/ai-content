@@ -126,6 +126,11 @@ export const ERROR_SPECS: Record<ErrorCode, ErrorSpec> = {
     httpStatus: 400,
   },
   RATE_LIMITED: { message: '速率受限', retryable: true, httpStatus: 429 },
+  INTERNAL: {
+    message: '内部错误',
+    retryable: false,
+    httpStatus: 500,
+  },
 };
 
 export function errorSpec(code: string): ErrorSpec {
