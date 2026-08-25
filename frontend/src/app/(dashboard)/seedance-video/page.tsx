@@ -155,7 +155,7 @@ export default function SeedanceVideoPage() {
             border: "1px solid rgba(148,163,184,.18)",
           }}
         >
-          <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "#1f2a44" }}>
+          <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "var(--kaypal-v3-ink)" }}>
             描述你的视频画面
           </p>
           <textarea
@@ -170,7 +170,7 @@ export default function SeedanceVideoPage() {
               border: "1px solid rgba(148,163,184,.35)",
               background: "#fff",
               fontSize: 14,
-              color: "#1f2a44",
+              color: "var(--kaypal-v3-ink)",
               resize: "none",
               outline: "none",
               boxSizing: "border-box",
@@ -237,7 +237,7 @@ export default function SeedanceVideoPage() {
               <p style={{ fontSize: 12, fontWeight: 700, margin: "0 0 8", color: "var(--kaypal-v3-success)" }}>
                 📝 确认提示词（生成后自动存入素材库）
               </p>
-              <p style={{ fontSize: 13, color: "#1f2a44", margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13, color: "var(--kaypal-v3-ink)", margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
                 {confirmPrompt}
               </p>
               <p style={{ fontSize: 12, color: "#6b7a93", margin: "10px 0 0" }}>
@@ -285,7 +285,7 @@ export default function SeedanceVideoPage() {
               border: "1px solid rgba(148,163,184,.18)",
             }}
           >
-            <p style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "#1f2a44" }}>
+            <p style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "var(--kaypal-v3-ink)" }}>
               生成任务 {task.taskId.slice(-8)}
               {polling && <span style={{ fontSize: 12, color: "var(--kaypal-v3-amber)", marginLeft: 8 }}>⏳ 生成中…</span>}
             </p>
@@ -357,7 +357,7 @@ export default function SeedanceVideoPage() {
               border: "1px solid rgba(148,163,184,.18)",
             }}
           >
-            <p style={{ fontSize: 13, fontWeight: 700, margin: "0 0 10", color: "#1f2a44" }}>
+            <p style={{ fontSize: 13, fontWeight: 700, margin: "0 0 10", color: "var(--kaypal-v3-ink)" }}>
               历史任务（{history.length}）
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

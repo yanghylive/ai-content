@@ -708,7 +708,7 @@ export function MaterialsCenter() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="搜索标题、作者、摘要"
-              style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#203454" }}
+              style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "var(--kaypal-v3-ink)" }}
             />
           </div>
         </section>

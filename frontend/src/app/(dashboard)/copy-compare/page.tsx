@@ -114,7 +114,7 @@ export default function CopyComparePage() {
 
       <section className="mx-px" style={{ marginTop: 14 }}>
         <div className="kx-card" style={{ borderRadius: 20, padding: 16, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
-          <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "#1f2a44" }}>
+          <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "var(--kaypal-v3-ink)" }}>
             输入文案（每行一条，最多 10 条）
           </p>
           <textarea
@@ -129,7 +129,7 @@ export default function CopyComparePage() {
               border: "1px solid rgba(148,163,184,.35)",
               background: "#fff",
               fontSize: 14,
-              color: "#1f2a44",
+              color: "var(--kaypal-v3-ink)",
               resize: "vertical",
               outline: "none",
               boxSizing: "border-box",
@@ -170,7 +170,7 @@ export default function CopyComparePage() {
 
         {rows.length > 0 && (
           <div className="kx-card" style={{ borderRadius: 20, padding: 16, marginTop: 12, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
-            <p style={{ fontSize: 13, fontWeight: 700, margin: "0 0 12", color: "#1f2a44" }}>
+            <p style={{ fontSize: 13, fontWeight: 700, margin: "0 0 12", color: "var(--kaypal-v3-ink)" }}>
               对比结果（{rows.length} 条 × {variantLabels.length + 1} 版本）
             </p>
             {rows.map((row, ri) => (
@@ -179,7 +179,7 @@ export default function CopyComparePage() {
                   原文 #{ri + 1}
                   {row.error && <span style={{ color: "var(--kaypal-v3-danger)", marginLeft: 8 }}>❌ {row.error}</span>}
                 </p>
-                <p style={{ fontSize: 13, color: "#1f2a44", margin: "0 0 10", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                <p style={{ fontSize: 13, color: "var(--kaypal-v3-ink)", margin: "0 0 10", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
                   {row.original}
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

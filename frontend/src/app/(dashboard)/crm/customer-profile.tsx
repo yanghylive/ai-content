@@ -119,7 +119,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
       <div className="kx-mobile-ambient">
         <header className="mx-header">
           <div className="mx-header-row">
-            <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => router.push("/crm")}>
+            <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--kaypal-v3-ink)", flexShrink: 0 }} onClick={() => router.push("/crm")}>
               <ArrowLeft width={18} height={18} />
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>

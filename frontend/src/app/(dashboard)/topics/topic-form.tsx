@@ -53,13 +53,13 @@ export function TopicForm() {
   /* 移动端（<768px）：明德 VP 风格，复用同一批 state/handlers */
   const isMobile = useIsMobile();
   if (isMobile) {
-    const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "#203454" };
+    const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" };
     const fieldLabel = { fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 };
     return (
       <div className="kx-mobile-ambient">
         <header className="mx-header">
           <div className="mx-header-row">
-            <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => router.push("/topics")}>
+            <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--kaypal-v3-ink)", flexShrink: 0 }} onClick={() => router.push("/topics")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>

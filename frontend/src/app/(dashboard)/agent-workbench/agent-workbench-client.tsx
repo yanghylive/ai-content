@@ -430,7 +430,7 @@ export function ConfirmationsPage() {
               <h1 className="mx-page-title">待我确认</h1>
               <p className="mx-page-sub">以下动作需要你确认后才能继续</p>
             </div>
-            <button type="button" className="mx-control" aria-label="刷新" style={{ width: 40, height: 40, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => void refresh()}>
+            <button type="button" className="mx-control" aria-label="刷新" style={{ width: 40, height: 40, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--kaypal-v3-ink)", flexShrink: 0 }} onClick={() => void refresh()}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
             </button>
           </div>

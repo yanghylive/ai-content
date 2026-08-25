@@ -85,7 +85,7 @@ function walk(dir, out = []) {
   return out;
 }
 
-const DARK_OLD_HEX = /#17325b|#0f2440|#173052|#10141f|#1a2130|#131926|#0f1420|#141821|#1d2b45|#e8f1fc/i;
+const DARK_OLD_HEX = /#17325b|#0f2440|#173052|#10141f|#1a2130|#131926|#0f1420|#141821|#1d2b45|#e8f1fc|#20497f|#1f2a44|#16335d|#203454/i;
 const DARK_OLD_RGBA = /rgba\(\s*(16|23|15|13|12|14|10), ?\s*(26|50|43|36|21|19|24|20), ?\s*(44|91|68|80|30|38|33|40|21)/i;
 const ALLOWED_PURPLE = /#722ed1|#531dab|#9254de|#41168a|#2e0e66|#f9f0ff|#e39a3e|#d98f2b|#efb45b|#8f5a19|#f6c478|#b885f7|#eebd72/i;
 
