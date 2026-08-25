@@ -37,6 +37,8 @@ npm('clean:mac-package-output');
 npm('prepare:node-runtime');
 npm('prepare:media-tools');
 npm('prepare:playwright-browsers');
+// 审计 #3：Octop sidecar 直接打包（venv 精简 + headless_shell chromium + entry.sh）
+run(process.execPath, [path.join('scripts', 'prepare-octop-sidecar.js')]);
 // sharp 0.35 的 Win 原生包 npm install 时被 os:["win32"] 过滤跳过，
 // 但 Mac 安装包也需带同一份后端 bundle，check-package-contents 要求 4 个 sharp 变体齐
 // Windows 真机构建时该目录已就位，本步等价 no-op

@@ -67,6 +67,12 @@ function main() {
     cwd: desktopRoot,
   });
 
+  // 审计 #3：Octop sidecar 直接打包（Windows 真机构建，venv 用 win-x64 Python + win chromium）
+  run('Prepare Octop sidecar', 'node', ['scripts/prepare-octop-sidecar.js'], {
+    cwd: desktopRoot,
+    env: { BUILD_PLATFORM: 'win-x64' },
+  });
+
   // macOS 交叉构建路径下需要补齐 sharp Win 原生包；Windows 真机构建时已天然就位，脚本 no-op
   run('Ensure sharp Win32 native package present', 'node', ['scripts/prepare-sharp-win32.js'], {
     cwd: desktopRoot,

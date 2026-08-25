@@ -80,6 +80,7 @@ let mainWindow = null;
 let tray = null;
 let agentSService = null;
 let backendService = null;
+let octopService = null;
 let cloudAPI = null;
 let isQuitting = false;
 let agentSRestartCount = 0;
@@ -90,6 +91,7 @@ const MAX_RESTARTS = 3;
 const FRONTEND_PORT = 3010;
 const BACKEND_PORT = 3011;
 const AGENT_S_PORT = 17777;
+const OCTOP_PORT = 8088;
 const BACKEND_READY_TIMEOUT_MS = 60_000;
 const BACKEND_READY_INTERVAL_MS = 500;
 
@@ -1518,6 +1520,101 @@ function stopBackendService() {
   }
 }
 
+// ============ Octop sidecar（审计 #3：Octop 直接打包，不外部依赖） ============
+// 打包进 runtime/octop（venv 精简 + headless_shell chromium + entry.sh），
+// 由 main.js 自动启动 8088，首次启动 entry.sh 内 octop init 预置 admin（免 wizard）。
+
+function getOctopSidecarEntry() {
+  const sidecarRoot = getResourcePath('octop');
+  return process.platform === 'win32'
+    ? path.join(sidecarRoot, 'entry.bat')
+    : path.join(sidecarRoot, 'entry.sh');
+}
+
+function getOctopAdminCredentials() {
+  // 与 backend 的 OCTOP_USERNAME/OCTOP_PASSWORD 保持一致，backend 才能登录本 sidecar。
+  // 读取 backend/.env 里的 OCTOP_*（若有），否则用默认占位（首启 octop init 会用它建 admin）。
+  const envFile = path.join(getResourcePath('backend'), '.env');
+  const env = { ...process.env };
+  if (fs.existsSync(envFile)) {
+    for (const line of fs.readFileSync(envFile, 'utf-8').split('\n')) {
+      const t = line.trim();
+      if (!t || t.startsWith('#')) continue;
+      const i = t.indexOf('=');
+      if (i > 0) env[t.slice(0, i).trim()] = t.slice(i + 1).trim();
+    }
+  }
+  return {
+    username: env.OCTOP_ADMIN_USERNAME || env.OCTOP_USERNAME || 'octop-bridge',
+    password: env.OCTOP_ADMIN_PASSWORD || env.OCTOP_PASSWORD || 'Octop1234',
+  };
+}
+
+async function startOctopSidecar() {
+  const entryPath = getOctopSidecarEntry();
+  if (!fs.existsSync(entryPath)) {
+    console.log('[Octop] sidecar 未打包（runtime/octop 缺失），跳过自动启动');
+    return;
+  }
+
+  const portInUse = await isPortInUse(OCTOP_PORT);
+  if (portInUse) {
+    try {
+      await requestLocalJson('/api/health', OCTOP_PORT);
+      console.log(`[Octop] Port ${OCTOP_PORT} 已有可用 Octop，跳过启动`);
+      return;
+    } catch {
+      console.warn(`[Octop] Port ${OCTOP_PORT} 被占用但不是可用 Octop，跳过`);
+      return;
+    }
+  }
+
+  const sidecarRoot = getResourcePath('octop');
+  const creds = getOctopAdminCredentials();
+  const childEnv = {
+    ...process.env,
+    OCTOP_PORT: String(OCTOP_PORT),
+    OCTOP_HOME: path.join(app.getPath('userData'), 'octop'),
+    OCTOP_ADMIN_USERNAME: creds.username,
+    OCTOP_ADMIN_PASSWORD: creds.password,
+  };
+
+  console.log('[Octop] Starting sidecar from:', sidecarRoot);
+  if (process.platform === 'win32') {
+    octopService = spawn(entryPath, [], { cwd: sidecarRoot, env: childEnv, stdio: ['ignore', 'pipe', 'pipe'], shell: true });
+  } else {
+    octopService = spawn(entryPath, [], { cwd: sidecarRoot, env: childEnv, stdio: ['ignore', 'pipe', 'pipe'] });
+  }
+
+  // 冷启动含 octop init（DB 迁移 + admin 创建）+ uvicorn，超时放宽到 150s
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < 150_000) {
+    if (octopService && octopService.exitCode !== null) break; // 进程已退出
+    try {
+      await requestLocalJson('/api/health', OCTOP_PORT);
+      console.log(`[Octop] Ready after ${Date.now() - startedAt}ms`);
+      return;
+    } catch {
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
+  console.warn('[Octop] 启动超时或进程退出，高级模式将降级（3010 原生工具）');
+}
+
+function stopOctopService() {
+  if (octopService) {
+    console.log('[Octop] Stopping sidecar...');
+    const target = octopService;
+    if (target.__killTimer) clearTimeout(target.__killTimer);
+    target.kill('SIGTERM');
+    target.__killTimer = setTimeout(() => {
+      if (octopService === target && target.exitCode === null && !target.killed) {
+        target.kill('SIGKILL');
+      }
+    }, 5000);
+  }
+}
+
 // 创建系统托盘
 
 // ============ 悬浮球（hoverBall，二期：AI 网页代操作快捷入口） ============
@@ -2014,6 +2111,9 @@ app.whenReady().then(async () => {
 
   await startFrontendServer();
 
+  // Octop 高级模式 sidecar：异步后台启动，不阻塞前端/基础功能（失败降级为 3010 原生工具）
+  void startOctopSidecar();
+
   // 把前端地址交给标签壳，供各标签视图加载
   getTabManager().setFrontendUrl(frontendServerUrl);
 
@@ -2054,6 +2154,7 @@ app.on('before-quit', () => {
   stopFrontendServer();
   stopAgentSService();
   stopBackendService();
+  stopOctopService();
   destroyUpdater();
 });
 

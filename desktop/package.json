@@ -212,6 +212,13 @@
         ]
       },
       {
+        "from": "runtime/octop",
+        "to": "octop",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
         "from": "runtime/node",
         "to": "runtime/node",
         "filter": [
