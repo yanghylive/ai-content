@@ -59,12 +59,14 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
         process.env.OCTOP_ENABLED === 'false'
           ? undefined
           : new RealOctopAdapter(),
-      // 真实 3010 业务工具：显式 AGENT_GATEWAY_REAL_BUSINESS=true 启用。
+      // 真实 3010 业务工具：默认启用（审计 #3 大王令「真实业务工具默认打开」）。
       // RealBusinessTools（crm/lead/report 真实）+ RealContentTools（content_generate/review/
       // lead_normalize 真实；publish/interaction 明确失败禁止假成功）合并注册。
+      // 仅显式 AGENT_GATEWAY_REAL_BUSINESS=false 才退回 mock（测试环境用）。
       business:
-        process.env.AGENT_GATEWAY_REAL_BUSINESS === 'true'
-          ? (() => {
+        process.env.AGENT_GATEWAY_REAL_BUSINESS === 'false'
+          ? undefined
+          : (() => {
               const merged = new BusinessToolRegistry();
               const biz = this.realBusiness?.build();
               if (biz)
@@ -74,16 +76,16 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
                 for (const n of content.list())
                   merged.register(n, content.get(n)!);
               return merged;
-            })()
-          : undefined,
-      // 真实 Kaypal 远程长期记忆：显式 AGENT_GATEWAY_REAL_MEMORY=true 启用
+            })(),
+      // 真实 Kaypal 远程长期记忆：默认启用（审计 #3 大王令「真实 Memory 默认打开」），
+      // 但仍需 KAYPAL_API_KEY + 鉴权端点才实例化（缺则优雅降级为本地 Mock）。
       // 鉴权优先级（与 RealKaypalMemoryAdapter.authHeaders 一致）：
       //   1) 每请求级用户 token（ctx.kaypalAccessToken，KaypalAuthGuard 已验签）→ 最佳，按用户隔离；
       //   2) 直配服务 token KAYPAL_MEMORY_TOKEN（kda_ 形态，优先于账号登录交换）；
       //   3) 账号密码交换 KAYPAL_MEMORY_PHONE/PASSWORD → 服务账号换 kda_ token（兜底）。
       // 注意：不再使用 KAYPAL_TEST_* 测试凭据，避免生产记忆路径混入测试语义。
       memoryRemote:
-        process.env.AGENT_GATEWAY_REAL_MEMORY === 'true' &&
+        process.env.AGENT_GATEWAY_REAL_MEMORY !== 'false' &&
         process.env.KAYPAL_API_KEY &&
         (process.env.KAYPAL_AUTH_BASE_URL || process.env.KAYPAL_BASE_URL)
           ? new RealKaypalMemoryAdapter({

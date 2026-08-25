@@ -505,7 +505,7 @@ class TabManager {
     }
     let token = null;
     try {
-      token = await this._exchangeOctopToken();
+      token = await this._exchangeOctopTokenWithRetry();
     } catch (e) {
       console.warn('[Octop] 主进程换 token 失败，将以未认证态打开:', e && e.message);
     }
@@ -562,6 +562,25 @@ class TabManager {
     if (!res.ok) return null;
     const d = await res.json();
     return d && d.healthy && d.token ? d.token : null;
+  }
+
+  /**
+   * 带就绪重试的 token 交换（审计 P2：sidecar 冷启动期间用户可能提前点击）。
+   * Octop sidecar 冷启动含 octop init + uvicorn（通常 20-30s），换不到 token 时
+   * 每 2s 重试，最多等 90s；仍失败才降级为未认证态打开。
+   */
+  async _exchangeOctopTokenWithRetry() {
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < 90_000) {
+      try {
+        const token = await this._exchangeOctopToken();
+        if (token) return token;
+      } catch {
+        /* sidecar 未就绪，继续重试 */
+      }
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+    return null;
   }
 
   getActive() {
