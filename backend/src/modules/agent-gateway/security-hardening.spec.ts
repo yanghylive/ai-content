@@ -349,7 +349,9 @@ describe('安全加固（P0/P1 复查项）', () => {
   it('Octop 高级模式：createOctopSession + tokenExchange', async () => {
     const octop = await g.gateway.createOctopSession(ctxA);
     expect(octop.octopSessionId).toBeTruthy();
-    const session = await g.gateway.createSession(ctxA);
+    // 审计 #9：只有 advanced 模式建会话才创建 Octop 浏览器会话；
+    // 测试原用默认 business 模式（靠旧 bug 侥幸通过），现显式 advanced。
+    const session = await g.gateway.createSession(ctxA, 'advanced');
     const tok = await g.gateway.tokenExchange(ctxA, session.id);
     expect(tok.token).toContain('tok_');
     expect(Date.parse(tok.expiresAt)).toBeGreaterThan(Date.now());

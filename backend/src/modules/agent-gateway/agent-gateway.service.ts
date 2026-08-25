@@ -48,8 +48,10 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
       usageSink: this.persist ? (ev) => this.usageSink.record(ev) : undefined,
       mirror: this.persist ? this.mirror : undefined,
       outboxDb: this.persist ? this.outboxStore : undefined,
-      // 真实 Octop 适配器：显式 OCTOP_ENABLED=true 启用（凭据 OCTOP_USERNAME/OCTOP_PASSWORD，避免测试环境误启）
-      octop: process.env.OCTOP_ENABLED === 'true' ? new RealOctopAdapter() : undefined,
+      // 真实 Octop 适配器：默认启用（内部自带降级——healthy 探活 / 503 降级 token-only / 无凭据回退能力探测）。
+      // 仅显式 OCTOP_ENABLED=false 才禁用（退回 Mock）。审计 #2：不能再靠 OCTOP_ENABLED=true 才启用，
+      // 否则打包环境默认走 Mock/降级适配器，深度 Agent Gateway 控制形同虚设。
+      octop: process.env.OCTOP_ENABLED === 'false' ? undefined : new RealOctopAdapter(),
       // 真实 3010 业务工具：显式 AGENT_GATEWAY_REAL_BUSINESS=true 启用。
       // RealBusinessTools（crm/lead/report 真实）+ RealContentTools（content_generate/review/
       // lead_normalize 真实；publish/interaction 明确失败禁止假成功）合并注册。

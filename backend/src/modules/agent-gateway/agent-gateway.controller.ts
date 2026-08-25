@@ -148,8 +148,9 @@ export class AgentGatewayController {
   }
 
   @Get('octop/capabilities')
-  capabilities() {
-    return { capabilities: this.agent.gateway.getCapabilities() };
+  async capabilities() {
+    // 审计 #10：改为先 await 真实适配器 healthy() 探活，再返回，避免过期缓存
+    return { capabilities: await this.agent.gateway.refreshCapabilities() };
   }
 }
 

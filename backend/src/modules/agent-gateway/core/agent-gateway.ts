@@ -84,11 +84,16 @@ export class AgentGateway {
   // ---------------------------------------------------------------- 会话
   async createSession(ctx: TenantContext, mode: 'business' | 'advanced' = 'business'): Promise<AgentSession> {
     let octopSessionId: string | undefined;
-    try {
-      const s = await this.deps.octop.createSession(ctx);
-      octopSessionId = s.octopSessionId;
-    } catch {
-      // Octop 挂掉不影响业务模式
+    // 审计 #9：只有高级模式才创建 Octop 浏览器会话。
+    // 之前 business/advanced 都无条件调 octop.createSession，真实模式下业务会话
+    // 也会无意义地拉起 Chromium、增加延迟与资源消耗。
+    if (mode === 'advanced') {
+      try {
+        const s = await this.deps.octop.createSession(ctx);
+        octopSessionId = s.octopSessionId;
+      } catch {
+        // Octop 挂掉不阻断高级模式建会话（会话仍可建，仅无 Octop 浏览器会话）
+      }
     }
     const session: AgentSession = {
       id: genId('sess'),
@@ -317,7 +322,7 @@ export class AgentGateway {
     this.assertTaskSessionAlive(task); // P1-1
     this.abortTask(taskId); // 真正中止该任务的在途执行（不影响同会话其他任务）
     void this.deps.octop
-      .cancelRun(this.octopSidOf(task.sessionId), 'user_pause')
+      .cancelRun(this.octopSidOf(task.sessionId), 'user_pause', task.userId)
       .catch(() => undefined);
     this.mutateTask(task, 'pause');
     this.deps.bus.publish(task.sessionId, 'task_paused', task.id, {
@@ -345,7 +350,7 @@ export class AgentGateway {
     this.assertTaskSessionAlive(task); // P1-1
     this.abortTask(taskId); // 真正中止该任务的在途执行（不影响同会话其他任务）
     void this.deps.octop
-      .cancelRun(this.octopSidOf(task.sessionId), 'user_cancel')
+      .cancelRun(this.octopSidOf(task.sessionId), 'user_cancel', task.userId)
       .catch(() => undefined);
     this.mutateTask(task, 'cancel');
     this.deps.bus.publish(task.sessionId, 'task_done', task.id, {
@@ -382,6 +387,20 @@ export class AgentGateway {
     return caps;
   }
 
+  /**
+   * 刷新后取能力（审计 #10）：先 await 真实适配器的异步 healthy() 探活，
+   * 再返回 getCapabilities()，避免 Octop 已下线时前端仍读到过期缓存。
+   * Mock 适配器的 healthy() 是同步返回内存 flag，代价为零。
+   */
+  async refreshCapabilities(): Promise<Capabilities> {
+    try {
+      await this.deps.octop.healthy();
+    } catch {
+      /* 探活失败 → 交给 getCapabilities() 自身降级 */
+    }
+    return this.getCapabilities();
+  }
+
   async memorySearch(ctx: TenantContext, scope: string, query: string) {
     return this.deps.memory.recall(ctx, scope, query);
   }
@@ -404,7 +423,8 @@ export class AgentGateway {
     const session = this.requireSession(sessionId);
     this.assertOwnership(session, ctx);
     if (!session.octopSessionId) throw makeError('SESSION_EXPIRED', { details: { sessionId } });
-    return this.deps.octop.tokenExchange(session.octopSessionId);
+    // 传入 userId：属主来自持久化的 session 记录，后端重启后 adapter 内存 map 清空也不丢（审计 #8）
+    return this.deps.octop.tokenExchange(session.octopSessionId, session.userId);
   }
 
   // ---------------------------------------------------------------- 内部执行

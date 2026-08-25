@@ -152,8 +152,11 @@ export class RealOctopAdapter implements OctopAdapter {
 
   async tokenExchange(
     octopSessionId: string,
+    kaypalUserId?: string,
   ): Promise<{ token: string; expiresAt: string }> {
-    const owner = this.sessionOwners.get(octopSessionId);
+    // 属主优先用调用方（网关）从持久化 session 记录传入的 userId——
+    // 后端重启后 adapter 内存 sessionOwners 为空，靠它兜底才正确（审计 #8）。
+    const owner = kaypalUserId ?? this.sessionOwners.get(octopSessionId);
     const token = await this.auth(owner);
     if (!token) throw new Error('OCTOP_UNAVAILABLE');
     return {
@@ -169,10 +172,11 @@ export class RealOctopAdapter implements OctopAdapter {
   async cancelRun(
     octopSessionId: string,
     _reason?: string,
+    kaypalUserId?: string,
   ): Promise<{ cancelled: boolean }> {
     if (octopSessionId.startsWith(TOKEN_ONLY_PREFIX))
       return { cancelled: false };
-    const owner = this.sessionOwners.get(octopSessionId);
+    const owner = kaypalUserId ?? this.sessionOwners.get(octopSessionId);
     const token = await this.auth(owner);
     if (!token) return { cancelled: false };
     try {

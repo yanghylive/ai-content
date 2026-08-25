@@ -15,6 +15,9 @@
     "entry": "../backend/dist-bundle-sqlite/index.js"
   },
   "sidecars": [],
+  "externalDependencies": [
+    "octop"
+  ],
   "build": {
     "commands": [
       "npm run check:commercial-assets"
