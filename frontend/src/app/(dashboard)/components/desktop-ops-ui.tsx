@@ -71,7 +71,7 @@ export function OpsToolbar({
   return (
     <div
       className={cx(
-        "flex min-w-0 flex-wrap items-center gap-1.5 border border-divider bg-background px-3 py-2",
+        "flex min-w-0 flex-wrap items-center gap-1.5 rounded-[12px] border border-divider bg-background/80 px-3 py-2 backdrop-blur-[22px]",
         className,
       )}
     >

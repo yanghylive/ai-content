@@ -159,6 +159,14 @@ export default function MineScene() {
           group: "账号与设置",
         },
         {
+          icon: "checkCircle",
+          tint: "kx-t-violet",
+          title: "发布前检查",
+          desc: "内容合规校验",
+          href: "/compliance",
+          group: "系统与情报",
+        },
+        {
           icon: "cpu",
           tint: "kx-t-amber",
           title: "设备状态",

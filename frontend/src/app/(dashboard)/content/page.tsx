@@ -86,7 +86,7 @@ export default function ContentScene() {
       cards={[
         {
           icon: "clipboard",
-          tint: "kx-t-slate",
+          tint: "kx-t-violet",
           title: "选题",
           desc: "AI 推荐选题，也可自己定",
           href: "/topics",

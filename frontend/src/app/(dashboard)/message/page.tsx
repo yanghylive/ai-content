@@ -102,7 +102,7 @@ export default function MessageScene() {
         cards={[
         {
           icon: "messageSq",
-          tint: "kx-t-slate",
+          tint: "kx-t-violet",
           title: "AI 客服",
           desc: "配置机器人风格与规则，草稿确认后发出",
           href: "/engagement",

@@ -36,7 +36,7 @@
     "/today",
     "/agent",
     "/growth",
-    "/growth/acquisition",
+    "/auto-acquisition/create",
     "/growth/leads",
     "/growth/acquisition",
     "/growth/strategies",
