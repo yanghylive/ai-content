@@ -72,6 +72,17 @@ function chromiumDir() {
   return h ? { revision: h.revision } : null;
 }
 
+/** Playwright 浏览器缓存目录（跨平台：macOS ~/Library/Caches，Windows %LOCALAPPDATA%） */
+function playwrightCacheDir() {
+  if (process.platform === 'win32') {
+    return path.join(
+      process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'),
+      'ms-playwright',
+    );
+  }
+  return path.join(os.homedir(), 'Library', 'Caches', 'ms-playwright');
+}
+
 function copyWithSkip(src, dst, skipDirs, skipSuffix) {
   // 复制 site-packages，跳过 skipDirs 目录 + 所有 __pycache__/*.pyc
   fs.mkdirSync(dst, { recursive: true });
@@ -133,9 +144,9 @@ function main() {
     console.log(`[dry-run] 复制 site-packages（跳过 ${[...CONNECTOR_DIRS, ...CACHE_DIRS].join(',')} + __pycache__/*.pyc）`);
   }
 
-  // 3. 复制 headless_shell chromium 到 sidecar
+  // 3. 复制 headless_shell chromium 到 sidecar（跨平台缓存路径）
   if (chrom) {
-    const srcBrowsers = path.join(os.homedir(), 'Library', 'Caches', 'ms-playwright', `chromium_headless_shell-${chrom.revision}`);
+    const srcBrowsers = path.join(playwrightCacheDir(), `chromium_headless_shell-${chrom.revision}`);
     const dstBrowsers = path.join(runtimeOctop, 'browsers', `chromium_headless_shell-${chrom.revision}`);
     if (fs.existsSync(srcBrowsers)) {
       if (!dryRun) fs.mkdirSync(path.dirname(dstBrowsers), { recursive: true });
@@ -170,6 +181,30 @@ function main() {
     console.log(`\n✓ entry.sh 已生成`);
   } else {
     console.log('[dry-run] 生成 entry.sh');
+  }
+
+  // 4b. 生成 entry.bat（Windows 版：venv 用 Scripts\python.exe，环境变量用 set 语法）
+  const entryBat = path.join(runtimeOctop, 'entry.bat');
+  const entryBatContent = '@echo off\r\n' +
+    'setlocal\r\n' +
+    'set "DIR=%~dp0"\r\n' +
+    'set "PLAYWRIGHT_BROWSERS_PATH=%DIR%browsers"\r\n' +
+    'if "%OCTOP_HOME%"=="" set "OCTOP_HOME=%DIR%octop-home"\r\n' +
+    'if not exist "%OCTOP_HOME%" mkdir "%OCTOP_HOME%"\r\n' +
+    'if not exist "%OCTOP_HOME%\\.octop-initialized" (\r\n' +
+    '  echo [octop-sidecar] 首次启动，初始化 admin 账号...\r\n' +
+    '  if "%OCTOP_ADMIN_USERNAME%"=="" set "OCTOP_ADMIN_USERNAME=octop-bridge"\r\n' +
+    '  if "%OCTOP_ADMIN_PASSWORD%"=="" set "OCTOP_ADMIN_PASSWORD=Octop1234"\r\n' +
+    '  "%DIR%venv\\Scripts\\python.exe" -m octop.cli.main init --admin-username "%OCTOP_ADMIN_USERNAME%" --admin-password "%OCTOP_ADMIN_PASSWORD%" --yes\r\n' +
+    '  type nul > "%OCTOP_HOME%\\.octop-initialized"\r\n' +
+    ')\r\n' +
+    'if "%OCTOP_PORT%"=="" set "OCTOP_PORT=8088"\r\n' +
+    '"%DIR%venv\\Scripts\\python.exe" -m octop.cli.main run --host 127.0.0.1 --port "%OCTOP_PORT%" %*\r\n';
+  if (!dryRun) {
+    fs.writeFileSync(entryBat, entryBatContent);
+    console.log('✓ entry.bat 已生成');
+  } else {
+    console.log('[dry-run] 生成 entry.bat');
   }
 
   // 5. 报告大小

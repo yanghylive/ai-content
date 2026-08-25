@@ -11,6 +11,9 @@ describe('AgentGatewayController（Nest 接线，首批冻结接口）', () => {
   let auth: AuthService;
 
   beforeAll(async () => {
+    // 本测试断言 mock 工具语义（lead_discover 返回 3 条），显式关真实业务工具（审计 #3 默认已开）
+    process.env.AGENT_GATEWAY_REAL_BUSINESS = 'false';
+    process.env.AGENT_GATEWAY_REAL_MEMORY = 'false';
     const moduleRef = await Test.createTestingModule({
       imports: [AgentGatewayModule, PrismaModule],
     })
@@ -26,6 +29,8 @@ describe('AgentGatewayController（Nest 接线，首批冻结接口）', () => {
   });
 
   afterAll(async () => {
+    delete process.env.AGENT_GATEWAY_REAL_BUSINESS;
+    delete process.env.AGENT_GATEWAY_REAL_MEMORY;
     await app.close();
   });
 
