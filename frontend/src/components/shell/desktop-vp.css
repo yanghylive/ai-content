@@ -293,6 +293,10 @@
   .bg-default-50.border-default-200,
   .bg-default-50.border-small,
   .bg-background.border-default-200,
+  /* Ops 桌面工作台件（OpsToolbar/OpsPanel/OpsTabs/OpsDenseTable，tasks/growth-console 在用）
+     —— 2026-08-24 P2：border-divider 系平面卡并入磨砂玻璃（U-1/U-2 收口） */
+  .bg-background.border.divider,
+  .border.border-divider.bg-background,
   .bg-content1,
   .astryx-card,
   /* heroui Card（default 变体三件套类 + flat/content 变体）与 astryx Card——
@@ -334,6 +338,10 @@
   html.dark .bg-default-50.border-default-200,
   html[data-theme="dark"] .bg-background.border-default-200,
   html.dark .bg-background.border-default-200,
+  html[data-theme="dark"] .bg-background.border.divider,
+  html.dark .bg-background.border.divider,
+  html[data-theme="dark"] .border.border-divider.bg-background,
+  html.dark .border.border-divider.bg-background,
   html.dark .bg-default-50.border-small,
   html.dark .bg-default-100,
   html.dark .bg-content1,
@@ -362,6 +370,16 @@
     box-shadow:
       0 20px 46px rgba(0, 0, 0, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  /* Ops 平面卡并入玻璃化后统一圆角档（U-3：radius 谱系收敛到 token） */
+  .border.border-divider.bg-background,
+  .bg-background.border.divider {
+    border-radius: var(--kaypal-v3-radius-sm);
+  }
+  /* 工作区切换条等 rounded-[8px] + bg-content1 卡（U-2）：radius 收敛到 token 档 */
+  [class*="rounded-[8px]"].bg-content1,
+  [class*="rounded-[8px]"].border[class*="bg-content1"] {
+    border-radius: var(--kaypal-v3-radius-sm);
   }
   .kx-action-card:hover,
   .kx-agg-card:hover {

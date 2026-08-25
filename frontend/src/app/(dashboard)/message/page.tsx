@@ -250,7 +250,7 @@ const MOBILE_CHANNELS: Array<{
   brand: string;
   href: string;
 }> = [
-  { label: "AI 客服", sub: "配置风格规则", icon: "messageSq", brand: "#20497f", href: "/engagement" },
+  { label: "AI 客服", sub: "配置风格规则", icon: "messageSq", brand: "#722ed1", href: "/engagement" },
   { label: "抖音私信", sub: "读取真实回复", icon: "music", brand: "#fe2c55", href: "/engagement/douyin-messages" },
   { label: "视频号私信", sub: "私信和评论", icon: "play", brand: "#007fff", href: "/engagement/channel-messages" },
   { label: "微信", sub: "会话 · 加好友", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },

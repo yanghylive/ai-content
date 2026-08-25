@@ -131,7 +131,7 @@ export function MobileShell({
           background: "rgba(255,255,255,.72)",
           backdropFilter: "blur(8px)",
           cursor: "pointer",
-          color: "#16335d",
+          color: "var(--kaypal-v3-ink)",
         }}
       >
         <ShellIcon name="user" size={19} strokeWidth={1.8} />

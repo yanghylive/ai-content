@@ -318,14 +318,14 @@ export function TopicsCenter() {
           <div className="fixed inset-0 z-50 flex flex-col bg-[var(--kaypal-v3-paper)]" style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom))" }}>
             <header className="mx-header">
               <div className="mx-header-row">
-                <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => setViewing(null)}>
+                <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--kaypal-v3-ink)", flexShrink: 0 }} onClick={() => setViewing(null)}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
                 </button>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="mx-page-sub" style={{ marginTop: 0, fontSize: 11, color: "#a9671f", fontWeight: 700, letterSpacing: ".12em" }}>选题详情</div>
                   <h1 className="mx-page-title" style={{ fontSize: 19 }}>{viewing.title}</h1>
                 </div>
-                <button type="button" className="mx-control" aria-label="关闭" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => setViewing(null)}>
+                <button type="button" className="mx-control" aria-label="关闭" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--kaypal-v3-ink)", flexShrink: 0 }} onClick={() => setViewing(null)}>
                   <XCircle size={18} />
                 </button>
               </div>

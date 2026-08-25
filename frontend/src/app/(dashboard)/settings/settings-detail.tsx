@@ -93,7 +93,7 @@ export function SettingsDetail() {
       <div className="kx-mobile-ambient">
         <header className="mx-header">
           <div className="mx-header-row">
-            <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#16335d", flexShrink: 0 }} onClick={() => router.push("/")}>
+            <button type="button" className="mx-control" aria-label="返回" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--kaypal-v3-ink)", flexShrink: 0 }} onClick={() => router.push("/")}>
               <ArrowLeft width={18} height={18} />
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -119,11 +119,11 @@ export function SettingsDetail() {
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>昵称</p>
-              <input value={profile.name} onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))} placeholder="你的名字" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "#203454" }} />
+              <input value={profile.name} onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))} placeholder="你的名字" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>登录邮箱</p>
-              <input type="email" value={profile.email} onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} placeholder="you@example.com" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "#203454" }} />
+              <input type="email" value={profile.email} onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} placeholder="you@example.com" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <button type="button" className="mx-btn-gold" style={{ width: "100%", fontSize: 12, padding: "10px 0" }} onClick={handleSaveProfile}>保存</button>
           </div>
@@ -136,15 +136,15 @@ export function SettingsDetail() {
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>当前密码</p>
-              <input type="password" value={passwords.current} onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "#203454" }} />
+              <input type="password" value={passwords.current} onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>新密码 <span style={{ fontWeight: 400 }}>（至少 8 位）</span></p>
-              <input type="password" value={passwords.next} onChange={(e) => setPasswords((p) => ({ ...p, next: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "#203454" }} />
+              <input type="password" value={passwords.next} onChange={(e) => setPasswords((p) => ({ ...p, next: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>再输一遍新密码</p>
-              <input type="password" value={passwords.confirm} onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "#203454" }} />
+              <input type="password" value={passwords.confirm} onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <button type="button" className="mx-btn-gold" style={{ width: "100%", fontSize: 12, padding: "10px 0" }} onClick={handleChangePassword}>修改密码</button>
           </div>
@@ -239,7 +239,7 @@ export function SettingsDetail() {
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#203454" }}>导出全部数据</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>导出全部数据</p>
                 <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>客户、内容、任务记录打包下载</p>
               </div>
               <button type="button" className="mx-btn-gold" style={{ fontSize: 11, padding: "8px 12px", background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} onClick={() => flash(NOT_READY)}>导出</button>

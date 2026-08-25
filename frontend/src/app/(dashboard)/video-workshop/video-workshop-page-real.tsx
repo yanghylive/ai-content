@@ -220,10 +220,10 @@ export default function VideoWorkshopV2Page() {
             textDecoration: "none",
           }}
         >
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#20497f" }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-soft-ink)" }}>
             ✨ 12 条流水线全真跑（动画/访谈/带货/新闻…）→ 视频一键成片
           </span>
-          <span style={{ fontSize: 14, color: "#20497f" }}>›</span>
+          <span style={{ fontSize: 14, color: "var(--kaypal-v3-soft-ink)" }}>›</span>
         </a>
         {/* 引擎状态 */}
         <div
@@ -277,7 +277,7 @@ export default function VideoWorkshopV2Page() {
               border: "1px solid rgba(148,163,184,.18)",
             }}
           >
-            <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "#1f2a44" }}>
+            <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "var(--kaypal-v3-ink)" }}>
               生成一条成片
             </p>
             <label style={{ fontSize: 12, color: "#6b7a93" }}>选择流水线</label>
@@ -292,7 +292,7 @@ export default function VideoWorkshopV2Page() {
                 border: "1px solid rgba(148,163,184,.35)",
                 background: "#fff",
                 fontSize: 14,
-                color: "#1f2a44",
+                color: "var(--kaypal-v3-ink)",
               }}
             >
               {PIPELINES.map((p) => (
@@ -318,7 +318,7 @@ export default function VideoWorkshopV2Page() {
                 border: "1px solid rgba(148,163,184,.35)",
                 background: "#fff",
                 fontSize: 14,
-                color: "#1f2a44",
+                color: "var(--kaypal-v3-ink)",
                 resize: "none",
                 outline: "none",
               }}
@@ -348,7 +348,7 @@ export default function VideoWorkshopV2Page() {
               border: "1px solid rgba(148,163,184,.18)",
             }}
           >
-            <p style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "#1f2a44" }}>
+            <p style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "var(--kaypal-v3-ink)" }}>
               {project.title}
             </p>
             <p style={{ fontSize: 12, color: "#6b7a93", margin: "4px 0 12" }}>

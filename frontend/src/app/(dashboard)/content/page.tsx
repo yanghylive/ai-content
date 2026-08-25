@@ -250,7 +250,7 @@ function MobileContentView({
       label: "选题",
       sub: "AI 推荐",
       icon: "bulb",
-      tint: "#20497f",
+      tint: "#722ed1",
       href: "/topics",
     },
     {
