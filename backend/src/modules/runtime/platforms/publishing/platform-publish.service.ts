@@ -283,7 +283,6 @@ export class PlatformPublishService implements TaskExecutor {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- 实现 TaskExecutor 接口要求 async 签名
   async isHealthy() {
     return {
       ok: true,

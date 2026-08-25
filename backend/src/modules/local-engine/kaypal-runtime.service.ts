@@ -29,7 +29,6 @@ export class KaypalRuntimeService implements OnModuleInit {
       );
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- 方法体当前同步，保留 async 签名以兼容调用方/生命周期/路由契约
   async onModuleInit() {
     if (process.env.AUTO_START_KAYPAL_RUNTIME !== 'false') {
       this.ensureRuntimeRunning();

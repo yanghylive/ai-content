@@ -289,7 +289,11 @@ async function bootstrap() {
   // Agent Gateway 同源 WS 事件流（3010×Octop 核心引擎；Sec-WebSocket-Protocol 鉴权 + lastEventId 重放）
   const agentGateway = app.get(AgentGatewayService);
   const agentAuth = app.get(AuthService);
-  attachAgentGatewayWs(app.getHttpServer(), agentGateway, agentAuth);
+  attachAgentGatewayWs(
+    app.getHttpServer() as import('http').Server,
+    agentGateway,
+    agentAuth,
+  );
   await app.listen(port, host);
   console.log(`🚀 应用运行在: http://${host}:${port}`);
   console.log(`📖 API 文档: http://${host}:${port}/api/docs`);

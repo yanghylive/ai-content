@@ -67,7 +67,7 @@ export class LocalInteractionEngineClient {
   /**
    * 引擎健康检查（替代 5409 /health）。
    */
-  // eslint-disable-next-line @typescript-eslint/require-await -- 方法体当前同步，保留 async 签名以兼容调用方/生命周期/路由契约
+
   async getHealth(): Promise<LocalRuntimeEngineHealth> {
     const status = this.browser.getStatus();
     return {

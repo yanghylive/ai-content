@@ -351,12 +351,10 @@ export class GrowthService implements OnModuleInit {
   ): Promise<GrowthHomeStats> {
     const overviewSafe = overview ?? ({} as GrowthOverview);
     const newLeads = await this.safeNumber(
-      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overviewSafe.todayLeadCount,
       null,
     );
     const highIntentLeads = await this.safeNumber(
-      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overviewSafe.highIntentLeadCount,
       null,
     );
@@ -366,7 +364,6 @@ export class GrowthService implements OnModuleInit {
     // 注释说明口径；详见汇报。
     const pendingContact = await this.countPendingContactLeads(userId);
     const crmCaptured = await this.safeNumber(
-      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overviewSafe.todayCrmCapturedCount,
       null,
     );
@@ -387,17 +384,14 @@ export class GrowthService implements OnModuleInit {
     userId: string,
   ): Promise<GrowthHomeResponse['funnel']> {
     const candidates = await this.safeNumber(
-      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overview?.funnel?.candidates ?? null,
       null,
     );
     const selected = await this.safeNumber(
-      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overview?.funnel?.selected ?? null,
       null,
     );
     const contacted = await this.safeNumber(
-      // eslint-disable-next-line @typescript-eslint/require-await
       async () => overview?.funnel?.contacted ?? null,
       null,
     );
