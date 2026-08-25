@@ -50,14 +50,17 @@ function fail(msg) {
 }
 
 function sitePackagesOf(venv) {
+  // Windows venv 结构：venv\Lib\site-packages（无 python3.12 子目录）
+  const winSp = path.join(venv, 'Lib', 'site-packages');
+  if (fs.existsSync(winSp)) return winSp;
+  // macOS/Linux venv 结构：venv/lib/python3.12/site-packages
   const sp = path.join(venv, 'lib', 'python3.12', 'site-packages');
-  if (!fs.existsSync(sp)) {
-    // 回退探测其他 python 版本
-    const lib = path.join(venv, 'lib');
-    if (fs.existsSync(lib)) {
-      const py = fs.readdirSync(lib).find((d) => d.startsWith('python'));
-      if (py) return path.join(lib, py, 'site-packages');
-    }
+  if (fs.existsSync(sp)) return sp;
+  // 回退探测其他 python 版本
+  const lib = path.join(venv, 'lib');
+  if (fs.existsSync(lib)) {
+    const py = fs.readdirSync(lib).find((d) => d.startsWith('python'));
+    if (py) return path.join(lib, py, 'site-packages');
   }
   return sp;
 }
@@ -134,7 +137,12 @@ function main() {
   }
 
   // 1. 用 uv 建干净 venv（处理 shebang/symlink/pyvenv.cfg 路径问题）
-  run('uv venv', 'uv', ['venv', dstVenv, '--python', '3.12']);
+  // Windows：embeddable Python 不在注册表，--python 3.12 找不到，需明确路径；
+  // 用 OCTOP_PYTHON 环境变量注入（缺省 win32 用 C:\Python312\python.exe，其余用 3.12）
+  const uvPython =
+    process.env.OCTOP_PYTHON ||
+    (process.platform === 'win32' ? 'C:\\Python312\\python.exe' : '3.12');
+  run('uv venv', 'uv', ['venv', dstVenv, '--python', uvPython]);
 
   // 2. 复制 site-packages（精简）
   if (!dryRun) {
@@ -149,8 +157,12 @@ function main() {
     const srcBrowsers = path.join(playwrightCacheDir(), `chromium_headless_shell-${chrom.revision}`);
     const dstBrowsers = path.join(runtimeOctop, 'browsers', `chromium_headless_shell-${chrom.revision}`);
     if (fs.existsSync(srcBrowsers)) {
-      if (!dryRun) fs.mkdirSync(path.dirname(dstBrowsers), { recursive: true });
-      run(`复制 headless_shell chromium ${chrom.revision}`, 'cp', ['-R', srcBrowsers, dstBrowsers]);
+      if (!dryRun) {
+        fs.mkdirSync(path.dirname(dstBrowsers), { recursive: true });
+        // 跨平台复制（Windows 无 cp -R；fs.cpSync 递归复制，跨平台一致）
+        fs.cpSync(srcBrowsers, dstBrowsers, { recursive: true });
+      }
+      console.log(`✓ 复制 headless_shell chromium ${chrom.revision}`);
     } else {
       console.warn(`⚠ 未找到 ${srcBrowsers}，请先 playwright install chromium（headless shell）`);
     }
@@ -207,11 +219,19 @@ function main() {
     console.log('[dry-run] 生成 entry.bat');
   }
 
-  // 5. 报告大小
+  // 5. 报告大小（跨平台：Windows 无 du -sh，用 Node fs 递归统计）
   if (!dryRun && fs.existsSync(runtimeOctop)) {
-    const { execSync } = require('node:child_process');
-    const size = execSync(`du -sh "${runtimeOctop}"`, { encoding: 'utf8' }).trim();
-    console.log(`\n✓ Octop sidecar 生成完成: ${runtimeOctop} (${size.split('\t')[0]})`);
+    const dirSize = (dir) => {
+      let total = 0;
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const p = path.join(dir, entry.name);
+        if (entry.isDirectory()) total += dirSize(p);
+        else total += fs.statSync(p).size;
+      }
+      return total;
+    };
+    const mb = (dirSize(runtimeOctop) / 1024 / 1024).toFixed(0);
+    console.log(`\n✓ Octop sidecar 生成完成: ${runtimeOctop} (${mb} MB)`);
   }
 }
 

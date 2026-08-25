@@ -69,6 +69,8 @@ run(builder, [
 
 run(process.execPath, [path.join('scripts', 'check-full-installer-assets.js'), '--phase=post']);
 run(process.execPath, [path.join('scripts', 'mac-commercial-release-gate.js'), '--phase=post']);
+// 安装包内容完整性门禁：app.asar 依赖对照 + backend 原生依赖 + chromium + prisma 引擎 + Octop sidecar
+run(process.execPath, [path.join('scripts', 'check-package-contents.js')]);
 run(process.execPath, [path.join('scripts', 'check-release-size.js')]);
 run(process.execPath, [path.join('scripts', 'verify-mac-release.js')]);
 
