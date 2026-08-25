@@ -86,6 +86,39 @@ function playwrightCacheDir() {
   return path.join(os.homedir(), 'Library', 'Caches', 'ms-playwright');
 }
 
+// 把目录内所有 symlink 替换成真实文件（dereference）。
+// 用途：uv venv 的 bin/python 是绝对路径 symlink 指向 uv 管理的 python，
+// 打进 mac app bundle 后 codesign --verify 拒绝（symlink 指向 bundle 外）。
+function dereferenceSymlinks(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const name of fs.readdirSync(dir)) {
+    const p = path.join(dir, name);
+    let st;
+    try {
+      st = fs.lstatSync(p);
+    } catch {
+      continue;
+    }
+    if (!st.isSymbolicLink()) continue;
+    let real;
+    try {
+      real = fs.realpathSync(p);
+    } catch {
+      continue;
+    }
+    try {
+      const rst = fs.statSync(real);
+      if (rst.isFile()) {
+        fs.unlinkSync(p);
+        fs.copyFileSync(real, p);
+        fs.chmodSync(p, rst.mode & 0o777);
+      }
+    } catch {
+      // 目标不存在/不可读：保留原 symlink，避免破坏 venv
+    }
+  }
+}
+
 function copyWithSkip(src, dst, skipDirs, skipSuffix) {
   // 复制 site-packages，跳过 skipDirs 目录 + 所有 __pycache__/*.pyc
   fs.mkdirSync(dst, { recursive: true });
@@ -142,7 +175,14 @@ function main() {
   const uvPython =
     process.env.OCTOP_PYTHON ||
     (process.platform === 'win32' ? 'C:\\Python312\\python.exe' : '3.12');
-  run('uv venv', 'uv', ['venv', dstVenv, '--python', uvPython]);
+  // --relocatable：让 pyvenv.cfg 可重定位；但 bin/python 仍是绝对路径 symlink
+  // （→ ~/.local/share/uv/python/...），打进 mac app bundle 后 codesign --verify
+  // 报「invalid destination for symbolic link」。--relocatable 不改变 symlink 行为，
+  // 故下面额外 dereference bin/ 里的 symlink（复制真实文件替换）。
+  run('uv venv', 'uv', ['venv', dstVenv, '--python', uvPython, '--relocatable']);
+  if (!dryRun) {
+    dereferenceSymlinks(path.join(dstVenv, 'bin'));
+  }
 
   // 2. 复制 site-packages（精简）
   if (!dryRun) {
