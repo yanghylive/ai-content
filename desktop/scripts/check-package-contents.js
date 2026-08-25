@@ -182,6 +182,11 @@ if (macZips.length === 0) {
 
 // Win：优先检查 win-unpacked 目录（Windows 原生构建无 7z，electron-builder 的
 // win-unpacked 已含解包后的 resources）；缺失才 fallback 7z 解压 NSIS exe。
+// --mac-only：只检查 Mac 包（Mac 测试包构建时本机 dist 无新 Win 包，跳过 Win 检查）
+const macOnly = process.argv.includes('--mac-only');
+if (macOnly) {
+  console.log('（--mac-only：跳过 Win 包检查）');
+} else {
 const winUnpacked = path.join(targetDir, "win-unpacked");
 if (fs.existsSync(path.join(winUnpacked, "resources"))) {
   checkExtracted("Win(win-unpacked)", path.join(winUnpacked, "resources"), SHARP_REQUIRED_ALL);
@@ -199,6 +204,7 @@ if (fs.existsSync(path.join(winUnpacked, "resources"))) {
     check(false, "Win exe 解包失败（app-64.7z 未找到）", winExes[winExes.length - 1]);
   }
   win.cleanup();
+}
 }
 
 console.log(fails.length ? `\n❌ ${fails.length} 项失败：\n  ${fails.join("\n  ")}` : "\n✅ 安装包内容完整性全部通过");
