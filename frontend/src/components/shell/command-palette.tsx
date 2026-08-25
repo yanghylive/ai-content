@@ -17,7 +17,7 @@ const COMMANDS: PaletteCommand[] = [
   { cat: "今日增长", name: "今日增长 · 首页", icon: "home", tint: "kx-t-violet", href: "/today", kw: "today home 首页 待办 增长 增长首页" },
   { cat: "今日增长", name: "AI 助手 · 对话", icon: "messageSq", tint: "kx-t-slate", href: "/agent", kw: "agent ai 助手 对话 聊天" },
   { cat: "获客中心", name: "获客中心", icon: "target", tint: "kx-t-violet", href: "/growth", kw: "growth 获客 中心 增长总览 工作台" },
-  { cat: "获客中心", name: "找客户（新建获客）", icon: "briefcase", tint: "kx-t-slate", href: "/growth/acquisition", kw: "leads 获客 找客户 自动获客" },
+  { cat: "获客中心", name: "找客户（新建获客）", icon: "briefcase", tint: "kx-t-slate", href: "/auto-acquisition/create", kw: "leads 获客 找客户 自动获客 新建" },
   { cat: "获客中心", name: "线索池", icon: "users", tint: "kx-t-slate", href: "/growth/leads", kw: "线索 意向 待处理" },
   { cat: "获客中心", name: "获客任务", icon: "cpu", tint: "kx-t-slate", href: "/growth/acquisition", kw: "自动获客 任务 执行" },
   { cat: "获客中心", name: "获客策略", icon: "trending", tint: "kx-t-amber", href: "/growth/strategies", kw: "策略 打法 模板" },

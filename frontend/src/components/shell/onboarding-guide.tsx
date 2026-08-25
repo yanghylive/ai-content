@@ -138,7 +138,7 @@ export function OnboardingGuide() {
     {
       label: "导入品牌知识",
       desc: "上传品牌资料，AI 写得更像你",
-      href: "/knowledge",
+      href: "/knowledge-base",
     },
     {
       label: "发布第一条内容",
