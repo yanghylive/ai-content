@@ -14,9 +14,16 @@ export class PrismaApprovalStore {
   constructor(private readonly prisma: PrismaService) {}
 
   private toDomain(r: {
-    id: string; taskId: string; toolCallId: string; tenantId: string;
-    previewHash: string; approvedBy: string | null; consumed: boolean;
-    expiresAt: Date; status: string; createdAt: Date;
+    id: string;
+    taskId: string;
+    toolCallId: string;
+    tenantId: string;
+    previewHash: string;
+    approvedBy: string | null;
+    consumed: boolean;
+    expiresAt: Date;
+    status: string;
+    createdAt: Date;
   }): Approval {
     return {
       id: r.id,
@@ -31,9 +38,17 @@ export class PrismaApprovalStore {
     };
   }
 
-  async create(taskId: string, toolCallId: string, preview: unknown, ttlMs: number, nowMs = Date.now()): Promise<Approval> {
+  async create(
+    taskId: string,
+    toolCallId: string,
+    preview: unknown,
+    ttlMs: number,
+    nowMs = Date.now(),
+  ): Promise<Approval> {
     // tenantId 从 task 回查（表 NOT NULL；审批必须归属租户）
-    const task = await this.prisma.agentGatewayTask.findUnique({ where: { id: taskId } });
+    const task = await this.prisma.agentGatewayTask.findUnique({
+      where: { id: taskId },
+    });
     const row = await this.prisma.agentGatewayApproval.create({
       data: {
         taskId,
@@ -49,7 +64,9 @@ export class PrismaApprovalStore {
   }
 
   async get(id: string): Promise<Approval | undefined> {
-    const row = await this.prisma.agentGatewayApproval.findUnique({ where: { id } });
+    const row = await this.prisma.agentGatewayApproval.findUnique({
+      where: { id },
+    });
     return row ? this.toDomain(row) : undefined;
   }
 
@@ -60,24 +77,54 @@ export class PrismaApprovalStore {
     currentToolCallId: string,
     nowMs = Date.now(),
   ): Promise<Approval> {
-    const row = await this.prisma.agentGatewayApproval.findUnique({ where: { id: approvalId } });
-    if (!row) throw makeError('APPROVAL_MISMATCH', { details: { approvalId, reason: '未知审批' } });
-    if (row.status === 'rejected') throw makeError('PREVIEW_CHANGED', { details: { approvalId, reason: '审批已被拒绝' } });
-    if (row.consumed) throw makeError('APPROVAL_MISMATCH', { details: { approvalId, reason: '审批已被一次性消费' } });
+    const row = await this.prisma.agentGatewayApproval.findUnique({
+      where: { id: approvalId },
+    });
+    if (!row)
+      throw makeError('APPROVAL_MISMATCH', {
+        details: { approvalId, reason: '未知审批' },
+      });
+    if (row.status === 'rejected')
+      throw makeError('PREVIEW_CHANGED', {
+        details: { approvalId, reason: '审批已被拒绝' },
+      });
+    if (row.consumed)
+      throw makeError('APPROVAL_MISMATCH', {
+        details: { approvalId, reason: '审批已被一次性消费' },
+      });
     if (row.taskId !== currentTaskId) {
-      throw makeError('APPROVAL_MISMATCH', { details: { approvalId, expectedTaskId: row.taskId, gotTaskId: currentTaskId } });
+      throw makeError('APPROVAL_MISMATCH', {
+        details: {
+          approvalId,
+          expectedTaskId: row.taskId,
+          gotTaskId: currentTaskId,
+        },
+      });
     }
     if (row.toolCallId !== currentToolCallId) {
-      throw makeError('APPROVAL_MISMATCH', { details: { approvalId, expectedToolCall: row.toolCallId, gotToolCall: currentToolCallId } });
+      throw makeError('APPROVAL_MISMATCH', {
+        details: {
+          approvalId,
+          expectedToolCall: row.toolCallId,
+          gotToolCall: currentToolCallId,
+        },
+      });
     }
     if (row.expiresAt.getTime() <= nowMs) {
-      await this.prisma.agentGatewayApproval.update({ where: { id: approvalId }, data: { status: 'expired' } });
+      await this.prisma.agentGatewayApproval.update({
+        where: { id: approvalId },
+        data: { status: 'expired' },
+      });
       throw makeError('APPROVAL_EXPIRED', { details: { approvalId } });
     }
     const currentHash = hashJson(currentPreview);
     if (currentHash !== row.previewHash) {
       throw makeError('PREVIEW_CHANGED', {
-        details: { approvalId, approvedPreviewHash: row.previewHash, currentPreviewHash: currentHash },
+        details: {
+          approvalId,
+          approvedPreviewHash: row.previewHash,
+          currentPreviewHash: currentHash,
+        },
       });
     }
     const updated = await this.prisma.agentGatewayApproval.update({
@@ -88,13 +135,24 @@ export class PrismaApprovalStore {
   }
 
   async consume(approvalId: string): Promise<void> {
-    await this.prisma.agentGatewayApproval.update({ where: { id: approvalId }, data: { consumed: true } });
+    await this.prisma.agentGatewayApproval.update({
+      where: { id: approvalId },
+      data: { consumed: true },
+    });
   }
 
   async reject(approvalId: string): Promise<Approval> {
-    const row = await this.prisma.agentGatewayApproval.findUnique({ where: { id: approvalId } });
-    if (!row) throw makeError('APPROVAL_MISMATCH', { details: { approvalId, reason: '未知审批' } });
-    const updated = await this.prisma.agentGatewayApproval.update({ where: { id: approvalId }, data: { status: 'rejected' } });
+    const row = await this.prisma.agentGatewayApproval.findUnique({
+      where: { id: approvalId },
+    });
+    if (!row)
+      throw makeError('APPROVAL_MISMATCH', {
+        details: { approvalId, reason: '未知审批' },
+      });
+    const updated = await this.prisma.agentGatewayApproval.update({
+      where: { id: approvalId },
+      data: { status: 'rejected' },
+    });
     return this.toDomain(updated);
   }
 }

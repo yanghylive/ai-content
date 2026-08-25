@@ -4,9 +4,12 @@ import { LeadRepository } from '../../leads/lead.repository';
 import { ReportingService } from '../../reporting/reporting.service';
 import { AuthenticatedUser } from '../../auth/auth.types';
 import { BusinessToolRegistry, ToolExecution } from './business-tools';
-import { contentGenerate, publishExecute, interactionReplyExecute } from './business-tools';
+import {
+  contentGenerate,
+  publishExecute,
+  interactionReplyExecute,
+} from './business-tools';
 import { AppErrorError } from '../contracts/error-codes';
-import { ErrorCode } from '../core/types';
 
 /**
  * 真实 3010 业务工具（部分接入）——替换 mock 执行器。
@@ -34,11 +37,15 @@ export class RealBusinessTools {
     r.register('crm_create', async (ctx, req) => {
       const p = req.payload ?? {};
       const input = {
-        displayName: p.name ? String(p.name) : undefined,
-        phone: p.phone ? String(p.phone) : undefined,
-        sourcePlatform: p.sourcePlatform ? String(p.sourcePlatform) : undefined,
-        sourceKeyword: p.sourceKeyword ? String(p.sourceKeyword) : undefined,
-        sourceUrl: p.sourceUrl ? String(p.sourceUrl) : undefined,
+        displayName: (p.name as string) ? String(p.name) : undefined,
+        phone: (p.phone as string) ? String(p.phone) : undefined,
+        sourcePlatform: (p.sourcePlatform as string)
+          ? String(p.sourcePlatform)
+          : undefined,
+        sourceKeyword: (p.sourceKeyword as string)
+          ? String(p.sourceKeyword)
+          : undefined,
+        sourceUrl: (p.sourceUrl as string) ? String(p.sourceUrl) : undefined,
         metadata: p.metadata ?? undefined,
       };
       let customer: unknown;
@@ -48,7 +55,7 @@ export class RealBusinessTools {
         // Nest ForbiddenException（组织权限拒绝）是确定性失败：重试也不会成功，
         // 归 FORBIDDEN（retryable=false → failed_terminal），避免误标为可重试
         if (err instanceof ForbiddenException) {
-          throw new AppErrorError('FORBIDDEN' as ErrorCode, err.message, false, {
+          throw new AppErrorError('FORBIDDEN', err.message, false, {
             details: { reason: err.message, cause: 'crm_create' },
           });
         }
@@ -56,9 +63,18 @@ export class RealBusinessTools {
       }
       const row = customer as { id?: string; displayName?: string | null };
       const exec: ToolExecution = {
-        data: { contactId: row.id, name: row.displayName ?? p.name ?? '未知', tenantId: ctx.tenantId },
+        data: {
+          contactId: row.id,
+          name: row.displayName ?? p.name ?? '未知',
+          tenantId: ctx.tenantId,
+        },
         evidence: [],
-        usage: { inputTokens: 60, modelTokens: 120, computeUnits: 1, usageId: `crm_${Date.now().toString(36)}` },
+        usage: {
+          inputTokens: 60,
+          modelTokens: 120,
+          computeUnits: 1,
+          usageId: `crm_${Date.now().toString(36)}`,
+        },
         status: 'succeeded',
       };
       return exec;
@@ -68,14 +84,25 @@ export class RealBusinessTools {
     // 发现动作本身仍需平台 RPA（外部资源），本执行器负责将已知发现结果真实持久化
     r.register('lead_discover', async (ctx, req) => {
       const p = req.payload ?? {};
-      const platform = String(p.platform ?? 'xiaohongshu');
+      const platform = String((p.platform as string) ?? 'xiaohongshu');
       const limit = Math.min(Number(p.limit ?? 18) || 18, 50);
       const leads = (Array.isArray(p.leads) ? p.leads : []).slice(0, limit);
-      const created: Array<{ leadId: string | null; nickname: string | null | undefined; created: boolean; error?: string }> = [];
+      const created: Array<{
+        leadId: string | null;
+        nickname: string | null | undefined;
+        created: boolean;
+        error?: string;
+      }> = [];
       for (const item of leads as Array<Record<string, unknown>>) {
-        const nickname = item.nickname ? String(item.nickname) : undefined;
-        const sourceUrl = item.sourceUrl ? String(item.sourceUrl) : undefined;
-        const externalUserId = item.externalUserId ? String(item.externalUserId) : undefined;
+        const nickname = (item.nickname as string)
+          ? String(item.nickname)
+          : undefined;
+        const sourceUrl = (item.sourceUrl as string)
+          ? String(item.sourceUrl)
+          : undefined;
+        const externalUserId = (item.externalUserId as string)
+          ? String(item.externalUserId)
+          : undefined;
         try {
           const { lead, created: isNew } = await this.leads.upsert({
             userId: ctx.userId,
@@ -85,21 +112,47 @@ export class RealBusinessTools {
             sourceUrl: sourceUrl ?? null,
             externalUserId: externalUserId ?? null,
             nickname: nickname ?? null,
-            profileUrl: item.profileUrl ? String(item.profileUrl) : null,
-            avatarUrl: item.avatarUrl ? String(item.avatarUrl) : null,
+            profileUrl: (item.profileUrl as string)
+              ? String(item.profileUrl)
+              : null,
+            avatarUrl: (item.avatarUrl as string)
+              ? String(item.avatarUrl)
+              : null,
             score: item.score != null ? Number(item.score) : undefined,
-            matchedKeywords: item.matchedKeywords ? (item.matchedKeywords as never) : undefined,
+            matchedKeywords: item.matchedKeywords
+              ? item.matchedKeywords
+              : undefined,
           });
-          created.push({ leadId: lead.id, nickname: lead.nickname, created: isNew });
+          created.push({
+            leadId: lead.id,
+            nickname: lead.nickname,
+            created: isNew,
+          });
         } catch (err) {
           // 单条失败不阻断整批（真实约束：lead 表约束/去重异常）
-          created.push({ leadId: null, nickname, created: false, error: err instanceof Error ? err.message.slice(0, 120) : String(err) });
+          created.push({
+            leadId: null,
+            nickname,
+            created: false,
+            error:
+              err instanceof Error ? err.message.slice(0, 120) : String(err),
+          });
         }
       }
       const exec: ToolExecution = {
-        data: { count: created.length, leadIds: created.filter((c) => c.leadId).map((c) => c.leadId), platform, tenantId: ctx.tenantId },
+        data: {
+          count: created.length,
+          leadIds: created.filter((c) => c.leadId).map((c) => c.leadId),
+          platform,
+          tenantId: ctx.tenantId,
+        },
         evidence: [],
-        usage: { inputTokens: 400, modelTokens: 800, computeUnits: 2, usageId: `lead_${Date.now().toString(36)}` },
+        usage: {
+          inputTokens: 400,
+          modelTokens: 800,
+          computeUnits: 2,
+          usageId: `lead_${Date.now().toString(36)}`,
+        },
         status: 'succeeded',
       };
       return exec;
@@ -125,7 +178,12 @@ export class RealBusinessTools {
       const exec: ToolExecution = {
         data: { range, reportId: `report_${Date.now().toString(36)}`, effect },
         evidence: [],
-        usage: { inputTokens: 500, modelTokens: 900, computeUnits: 3, usageId: `report_${Date.now().toString(36)}` },
+        usage: {
+          inputTokens: 500,
+          modelTokens: 900,
+          computeUnits: 3,
+          usageId: `report_${Date.now().toString(36)}`,
+        },
         status: 'succeeded',
       };
       return exec;

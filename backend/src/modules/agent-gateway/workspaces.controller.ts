@@ -52,7 +52,11 @@ export class WorkspacesController {
   }
 
   @Patch(':id')
-  async update(@Req() req: CtxRequest, @Param('id') id: string, @Body() body: UpdateWorkspaceDto) {
+  async update(
+    @Req() req: CtxRequest,
+    @Param('id') id: string,
+    @Body() body: UpdateWorkspaceDto,
+  ) {
     return { workspace: await this.workspaces.update(this.ctx(req), id, body) };
   }
 

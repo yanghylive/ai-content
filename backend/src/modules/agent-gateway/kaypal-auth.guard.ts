@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable, HttpException, Optional } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  HttpException,
+  Optional,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthService, requireAuth } from './core/auth';
 import { AppError } from './core/types';
@@ -44,7 +50,11 @@ export class KaypalAuthGuard implements CanActivate {
         if (!verified.ok) {
           throw toHttpException(
             makeError('FORBIDDEN', {
-              details: { workspaceId, reason: verified.reason, message: 'workspace 不属于当前用户' },
+              details: {
+                workspaceId,
+                reason: verified.reason,
+                message: 'workspace 不属于当前用户',
+              },
             }),
           );
         }
@@ -64,7 +74,8 @@ export class KaypalAuthGuard implements CanActivate {
     userId: string,
     workspaceId: string,
   ): Promise<{ ok: boolean; workspaceId?: string; reason?: string }> {
-    if (!this.prisma) return { ok: true, workspaceId, reason: 'no-prisma-skip-verify' };
+    if (!this.prisma)
+      return { ok: true, workspaceId, reason: 'no-prisma-skip-verify' };
     try {
       const ws = await this.prisma.workspace.findFirst({
         where: { id: workspaceId, userId, status: 'active' },

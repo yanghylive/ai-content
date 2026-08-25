@@ -11,6 +11,7 @@ import { RealOctopAdapter } from './adapters/real-octop-adapter';
 import { RealBusinessTools } from './adapters/real-business-tools';
 import { RealContentTools } from './adapters/real-content-tools';
 import { RealKaypalMemoryAdapter } from './adapters/real-kaypal-memory';
+import { BusinessToolRegistry } from './adapters/business-tools';
 import { Optional } from '@nestjs/common';
 
 /**
@@ -43,7 +44,10 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
     this.outboxStore = new PrismaOutboxStore(this.prisma);
     this.engine = createAgentGateway({
       ...(this.persist
-        ? { idempotency: new PrismaIdempotencyStore(this.prisma), approvals: new PrismaApprovalStore(this.prisma) }
+        ? {
+            idempotency: new PrismaIdempotencyStore(this.prisma),
+            approvals: new PrismaApprovalStore(this.prisma),
+          }
         : {}),
       usageSink: this.persist ? (ev) => this.usageSink.record(ev) : undefined,
       mirror: this.persist ? this.mirror : undefined,
@@ -51,18 +55,24 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
       // 真实 Octop 适配器：默认启用（内部自带降级——healthy 探活 / 503 降级 token-only / 无凭据回退能力探测）。
       // 仅显式 OCTOP_ENABLED=false 才禁用（退回 Mock）。审计 #2：不能再靠 OCTOP_ENABLED=true 才启用，
       // 否则打包环境默认走 Mock/降级适配器，深度 Agent Gateway 控制形同虚设。
-      octop: process.env.OCTOP_ENABLED === 'false' ? undefined : new RealOctopAdapter(),
+      octop:
+        process.env.OCTOP_ENABLED === 'false'
+          ? undefined
+          : new RealOctopAdapter(),
       // 真实 3010 业务工具：显式 AGENT_GATEWAY_REAL_BUSINESS=true 启用。
       // RealBusinessTools（crm/lead/report 真实）+ RealContentTools（content_generate/review/
       // lead_normalize 真实；publish/interaction 明确失败禁止假成功）合并注册。
       business:
         process.env.AGENT_GATEWAY_REAL_BUSINESS === 'true'
           ? (() => {
-              const merged = new (require('./adapters/business-tools').BusinessToolRegistry)();
+              const merged = new BusinessToolRegistry();
               const biz = this.realBusiness?.build();
-              if (biz) for (const n of biz.list()) merged.register(n, biz.get(n)!);
+              if (biz)
+                for (const n of biz.list()) merged.register(n, biz.get(n)!);
               const content = this.realContent?.build();
-              if (content) for (const n of content.list()) merged.register(n, content.get(n)!);
+              if (content)
+                for (const n of content.list())
+                  merged.register(n, content.get(n)!);
               return merged;
             })()
           : undefined,
@@ -77,7 +87,9 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
         process.env.KAYPAL_API_KEY &&
         (process.env.KAYPAL_AUTH_BASE_URL || process.env.KAYPAL_BASE_URL)
           ? new RealKaypalMemoryAdapter({
-              baseUrl: process.env.KAYPAL_AUTH_BASE_URL || process.env.KAYPAL_BASE_URL!,
+              baseUrl:
+                process.env.KAYPAL_AUTH_BASE_URL ||
+                process.env.KAYPAL_BASE_URL!,
               apiKey: process.env.KAYPAL_API_KEY,
               tokenProvider: async () => {
                 // 优先直配服务 token（kda_），避免账号密码交换
@@ -90,14 +102,30 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
                   `${process.env.KAYPAL_AUTH_BASE_URL || process.env.KAYPAL_BASE_URL}/api/desktop-auth/password`,
                   {
                     method: 'POST',
-                    headers: { 'content-type': 'application/json', 'x-kaypal-api-key': process.env.KAYPAL_API_KEY!, accept: 'application/json' },
-                    body: JSON.stringify({ phone, password, device_id: '3010-memory', device_name: '3010-memory', platform: 'desktop' }),
+                    headers: {
+                      'content-type': 'application/json',
+                      'x-kaypal-api-key': process.env.KAYPAL_API_KEY!,
+                      accept: 'application/json',
+                    },
+                    body: JSON.stringify({
+                      phone,
+                      password,
+                      device_id: '3010-memory',
+                      device_name: '3010-memory',
+                      platform: 'desktop',
+                    }),
                     signal: AbortSignal.timeout(10_000),
                   },
                 );
                 if (!res.ok) return undefined;
                 const d = (await res.json()) as Record<string, unknown>;
-                return String(d.access_token ?? d.accessToken ?? '') || undefined;
+                return (
+                  String(
+                    (d.access_token as string) ??
+                      (d.accessToken as string) ??
+                      '',
+                  ) || undefined
+                );
               },
             })
           : undefined,
@@ -113,7 +141,6 @@ export class AgentGatewayService implements OnModuleInit, OnModuleDestroy {
     const pending = await this.outboxStore.loadPending();
     this.engine.memory.hydrateOutbox(pending);
     if (data.sessions.length > 0 || pending.length > 0) {
-      // eslint-disable-next-line no-console
       console.log(
         `[agent-gateway] 恢复 ${data.sessions.length} 会话 / ${data.tasks.length} 任务 / ${data.events.length} 事件 / ${pending.length} outbox`,
       );

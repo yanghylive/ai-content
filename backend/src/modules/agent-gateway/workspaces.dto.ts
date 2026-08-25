@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsObject, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 /**
  * 4.4 多工作区标签壳 · Workspace CRUD DTO（class-validator，全局 ValidationPipe 校验）。

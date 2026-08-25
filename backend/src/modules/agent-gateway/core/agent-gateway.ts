@@ -2,7 +2,6 @@ import {
   AgentSession,
   AgentEvent,
   AgentTask,
-  Approval,
   Artifact,
   Capabilities,
   Evidence,
@@ -24,7 +23,7 @@ import { AgentGatewayMirror } from './mirror';
 import { makeError, AppErrorError } from '../contracts/error-codes';
 import { AppError } from './types';
 import { genId, nowIso, hashJson } from './util';
-import { MockOctopAdapter, OctopAdapter } from '../adapters/octop-mock';
+import { OctopAdapter } from '../adapters/octop-mock';
 import {
   BusinessToolRegistry,
   ToolArtifact,
@@ -66,7 +65,10 @@ export class AgentGateway {
   private artifacts = new Map<string, Artifact>();
   private evidence = new Map<string, Evidence>();
   private usageEvents = new Map<string, UsageEvent>();
-  private pendingRequests = new Map<string, { request: ToolRequest; toolCallId: string; approvalId?: string }>();
+  private pendingRequests = new Map<
+    string,
+    { request: ToolRequest; toolCallId: string; approvalId?: string }
+  >();
   /** 每个任务一个 AbortController：取消任务 A 不得影响同会话任务 B（P1-3） */
   private controllers = new Map<string, AbortController>();
 
@@ -77,7 +79,10 @@ export class AgentGateway {
   }
 
   // ---------------------------------------------------------------- 会话
-  async createSession(ctx: TenantContext, mode: 'business' | 'advanced' = 'business'): Promise<AgentSession> {
+  async createSession(
+    ctx: TenantContext,
+    mode: 'business' | 'advanced' = 'business',
+  ): Promise<AgentSession> {
     let octopSessionId: string | undefined;
     // 审计 #9：只有高级模式才创建 Octop 浏览器会话。
     // 之前 business/advanced 都无条件调 octop.createSession，真实模式下业务会话
@@ -101,7 +106,9 @@ export class AgentGateway {
       status: 'active',
       lastEventId: '',
       lastSequence: 0,
-      expiresAt: new Date(Date.now() + (this.deps.sessionTtlMs ?? 3_600_000)).toISOString(),
+      expiresAt: new Date(
+        Date.now() + (this.deps.sessionTtlMs ?? 3_600_000),
+      ).toISOString(),
       createdAt: nowIso(),
     };
     this.sessions.set(session.id, session);
@@ -109,7 +116,9 @@ export class AgentGateway {
     // 用 await 版镜像：persist 模式下 session 必须先落库才返回，否则后续 task/event
     // 镜像会撞 agent_gateway_tasks.session_id 外键（fire-and-forget 有竞态）。
     if (this.deps.mirror) {
-      await Promise.resolve(this.deps.mirror.sessionCreated?.(session)).catch(() => undefined);
+      await Promise.resolve(this.deps.mirror.sessionCreated?.(session)).catch(
+        () => undefined,
+      );
     } else {
       this.fireMirror((m) => m.sessionCreated?.(session));
     }
@@ -120,10 +129,17 @@ export class AgentGateway {
   }
 
   /** 恢复会话：必须校验会话所有权（防跨租户越权恢复） */
-  resumeSession(sessionId: string, ctx: TenantContext, lastEventId?: string): { session: AgentSession; events: ReturnType<EventBus['snapshot']> } {
+  resumeSession(
+    sessionId: string,
+    ctx: TenantContext,
+    lastEventId?: string,
+  ): { session: AgentSession; events: ReturnType<EventBus['snapshot']> } {
     const session = this.requireSession(sessionId);
     this.assertOwnership(session, ctx);
-    if (session.status === 'expired' || Date.parse(session.expiresAt) <= Date.now()) {
+    if (
+      session.status === 'expired' ||
+      Date.parse(session.expiresAt) <= Date.now()
+    ) {
       throw makeError('SESSION_EXPIRED', { details: { sessionId } });
     }
     const events = this.deps.bus.getEventsSince(sessionId, lastEventId);
@@ -137,7 +153,12 @@ export class AgentGateway {
   }
 
   // ---------------------------------------------------------------- 任务
-  createTask(ctx: TenantContext, sessionId: string, type: string, plan: Record<string, unknown>): AgentTask {
+  createTask(
+    ctx: TenantContext,
+    sessionId: string,
+    type: string,
+    plan: Record<string, unknown>,
+  ): AgentTask {
     const session = this.requireSession(sessionId);
     this.assertOwnership(session, ctx);
     const task: AgentTask = {
@@ -162,12 +183,20 @@ export class AgentGateway {
     return task;
   }
 
-  createTaskFromPlan(ctx: TenantContext, sessionId: string, type: string, plan: Record<string, unknown>): AgentTask {
+  createTaskFromPlan(
+    ctx: TenantContext,
+    sessionId: string,
+    type: string,
+    plan: Record<string, unknown>,
+  ): AgentTask {
     return this.createTask(ctx, sessionId, type, plan);
   }
 
   // ---------------------------------------------------------------- 工具执行
-  async executeTool(ctx: TenantContext, request: ToolRequest): Promise<ExecuteOutcome> {
+  async executeTool(
+    ctx: TenantContext,
+    request: ToolRequest,
+  ): Promise<ExecuteOutcome> {
     const session = this.requireSession(request.sessionId);
     this.assertOwnership(session, ctx);
     const task = this.requireTask(request.taskId);
@@ -177,26 +206,61 @@ export class AgentGateway {
 
     // P0-5：终态任务禁止再执行写工具
     if (this.isTerminal(task.status)) {
-      return { kind: 'result', result: this.errorResult(request, makeError('TASK_TERMINAL', { details: { taskId: task.id, status: task.status } })) };
+      return {
+        kind: 'result',
+        result: this.errorResult(
+          request,
+          makeError('TASK_TERMINAL', {
+            details: { taskId: task.id, status: task.status },
+          }),
+        ),
+      };
     }
 
     // P1-5：awaiting_confirmation 重复提交 → 幂等返回现有审批，不新建幂等/pending/审批
     if (task.status === 'awaiting_confirmation') {
       const existing = this.pendingRequests.get(task.id);
       if (existing?.approvalId) {
-        return { kind: 'awaiting_approval', approvalId: existing.approvalId, taskId: task.id };
+        return {
+          kind: 'awaiting_approval',
+          approvalId: existing.approvalId,
+          taskId: task.id,
+        };
       }
-      return { kind: 'result', result: this.errorResult(request, makeError('CHECKPOINT_MISSING', { details: { taskId: task.id, reason: '任务等待确认但缺少审批记录' } })) };
+      return {
+        kind: 'result',
+        result: this.errorResult(
+          request,
+          makeError('CHECKPOINT_MISSING', {
+            details: { taskId: task.id, reason: '任务等待确认但缺少审批记录' },
+          }),
+        ),
+      };
     }
     // 其他非 planned/paused 状态不允许提交新工具调用（paused 允许重新提交 = 余额不足/人工暂停后的恢复路径；
     // 完整恢复请走 resumeTask / 控制面）
     if (task.status !== 'planned' && task.status !== 'paused') {
-      return { kind: 'result', result: this.errorResult(request, makeError('INVALID_PLAN', { details: { taskId: task.id, status: task.status, reason: '任务不在可执行状态，请走恢复/控制面' } })) };
+      return {
+        kind: 'result',
+        result: this.errorResult(
+          request,
+          makeError('INVALID_PLAN', {
+            details: {
+              taskId: task.id,
+              status: task.status,
+              reason: '任务不在可执行状态，请走恢复/控制面',
+            },
+          }),
+        ),
+      };
     }
 
     const spec = this.deps.registry.get(request.toolName);
     if (!spec) {
-      return { kind: 'result', result: this.errorResult(request, makeError('TOOL_NOT_ALLOWED')) };
+      return {
+        kind: 'result',
+        result: this.errorResult(request, makeError('TOOL_NOT_ALLOWED')),
+      };
     }
 
     // 审计 #5：无资格门禁——大王拍板「不按订阅/角色限制，纯靠计费」。
@@ -204,13 +268,27 @@ export class AgentGateway {
 
     const caps = this.getCapabilities();
     if (!this.deps.registry.capabilitiesSatisfied(spec, caps)) {
-      return { kind: 'result', result: this.errorResult(request, makeError('OCTOP_DEGRADED')) };
+      return {
+        kind: 'result',
+        result: this.errorResult(request, makeError('OCTOP_DEGRADED')),
+      };
     }
 
     // P2-10：执行前用 inputSchema 校验载荷，避免无效请求进幂等/执行
-    const inOk = this.deps.validator.validateInput(request.payload, spec.inputSchema);
+    const inOk = this.deps.validator.validateInput(
+      request.payload,
+      spec.inputSchema,
+    );
     if (!inOk.ok) {
-      return { kind: 'result', result: this.errorResult(request, makeError('INVALID_PLAN', { details: { toolName: spec.name, reason: inOk.errors } })) };
+      return {
+        kind: 'result',
+        result: this.errorResult(
+          request,
+          makeError('INVALID_PLAN', {
+            details: { toolName: spec.name, reason: inOk.errors },
+          }),
+        ),
+      };
     }
 
     // 先建内存 ToolCall（id 同时用于 DB 幂等行与审批 FK——persist 模式一致性）
@@ -218,31 +296,50 @@ export class AgentGateway {
 
     let claim: ReturnType<IdempotencyStore['claim']>;
     try {
-      claim = await this.deps.idempotency.claim(ctx.tenantId, request.idempotencyKey, task.id, {
-        userId: request.userId,
-        workspaceId: request.workspaceId,
-        toolName: spec.name,
-        risk: spec.risk,
-        inputHash: hashJson(request.payload),
-        requestJson: JSON.stringify(request),
-        toolCallId,
-      });
+      claim = await this.deps.idempotency.claim(
+        ctx.tenantId,
+        request.idempotencyKey,
+        task.id,
+        {
+          userId: request.userId,
+          workspaceId: request.workspaceId,
+          toolName: spec.name,
+          risk: spec.risk,
+          inputHash: hashJson(request.payload),
+          requestJson: JSON.stringify(request),
+          toolCallId,
+        },
+      );
     } catch (e) {
       // claim 对 in_progress 抛 IDEMPOTENCY_CONFLICT，转为统一错误结果
       if (this.isAppErrorWithCode(e, 'IDEMPOTENCY_CONFLICT')) {
-        return { kind: 'result', result: this.errorResult(request, e as AppError) };
+        return {
+          kind: 'result',
+          result: this.errorResult(request, e as AppError),
+        };
       }
       throw e;
     }
     if (claim.status === 'done') {
-      return { kind: 'result', result: this.errorResult(request, makeError('DUPLICATE_REQUEST')) };
+      return {
+        kind: 'result',
+        result: this.errorResult(request, makeError('DUPLICATE_REQUEST')),
+      };
     }
-
 
     if (spec.requiresConfirmation) {
       const preview = { toolName: request.toolName, payload: request.payload };
-      const approval = await this.deps.approvals.create(task.id, toolCallId, preview, this.deps.approvalTtlMs ?? 300_000);
-      this.pendingRequests.set(task.id, { request, toolCallId, approvalId: approval.id });
+      const approval = await this.deps.approvals.create(
+        task.id,
+        toolCallId,
+        preview,
+        this.deps.approvalTtlMs ?? 300_000,
+      );
+      this.pendingRequests.set(task.id, {
+        request,
+        toolCallId,
+        approvalId: approval.id,
+      });
       this.mutateTask(task, 'request_confirmation');
       this.deps.bus.publish(request.sessionId, 'approval_required', task.id, {
         approvalId: approval.id,
@@ -250,11 +347,25 @@ export class AgentGateway {
         preview,
         expiresAt: approval.expiresAt,
       });
-      return { kind: 'awaiting_approval', approvalId: approval.id, taskId: task.id };
+      return {
+        kind: 'awaiting_approval',
+        approvalId: approval.id,
+        taskId: task.id,
+      };
     }
 
     this.pendingRequests.set(task.id, { request, toolCallId });
-    return { kind: 'result', result: await this.runTool(ctx, request, task, spec, undefined, toolCallId) };
+    return {
+      kind: 'result',
+      result: await this.runTool(
+        ctx,
+        request,
+        task,
+        spec,
+        undefined,
+        toolCallId,
+      ),
+    };
   }
 
   async approveTask(
@@ -270,15 +381,28 @@ export class AgentGateway {
     const pending = this.pendingRequests.get(taskId);
 
     // P0-4：先做绑定校验（taskId/toolCallId/预览），跨任务复用直接 APPROVAL_MISMATCH
-    await this.deps.approvals.validate(approvalId, currentPreview, taskId, pending?.toolCallId ?? '');
-    if (!pending) throw makeError('CHECKPOINT_MISSING', { details: { taskId } });
+    await this.deps.approvals.validate(
+      approvalId,
+      currentPreview,
+      taskId,
+      pending?.toolCallId ?? '',
+    );
+    if (!pending)
+      throw makeError('CHECKPOINT_MISSING', { details: { taskId } });
 
     // P1-4：先状态迁移（可能因并发取消失败）→ 成功后一次性消费审批，避免审批丢失
     this.mutateTask(task, 'approve');
     await this.deps.approvals.consume(approvalId);
 
     const spec = this.deps.registry.require(pending.request.toolName);
-    return this.runTool(ctx, pending.request, task, spec, undefined, pending.toolCallId);
+    return this.runTool(
+      ctx,
+      pending.request,
+      task,
+      spec,
+      undefined,
+      pending.toolCallId,
+    );
   }
 
   // ---------------------------------------------------------------- 控制面
@@ -315,9 +439,17 @@ export class AgentGateway {
     this.assertTaskSessionAlive(task); // P1-1
     this.mutateTask(task, 'resume');
     const pending = this.pendingRequests.get(taskId);
-    if (!pending) throw makeError('CHECKPOINT_MISSING', { details: { taskId } });
+    if (!pending)
+      throw makeError('CHECKPOINT_MISSING', { details: { taskId } });
     const spec = this.deps.registry.require(pending.request.toolName);
-    return this.runTool(ctx, pending.request, task, spec, task.checkpointJson, pending.toolCallId);
+    return this.runTool(
+      ctx,
+      pending.request,
+      task,
+      spec,
+      task.checkpointJson,
+      pending.toolCallId,
+    );
   }
 
   cancelTask(ctx: TenantContext, taskId: string): AgentTask {
@@ -344,7 +476,12 @@ export class AgentGateway {
     tasks?: AgentTask[];
     artifacts?: Artifact[];
     events?: AgentEvent[];
-    pending?: Array<{ taskId: string; request: ToolRequest; toolCallId: string; approvalId?: string }>;
+    pending?: Array<{
+      taskId: string;
+      request: ToolRequest;
+      toolCallId: string;
+      approvalId?: string;
+    }>;
   }): void {
     for (const s of data.sessions ?? []) this.sessions.set(s.id, s);
     for (const t of data.tasks ?? []) this.tasks.set(t.id, t);
@@ -352,7 +489,11 @@ export class AgentGateway {
     if (data.events?.length) this.deps.bus.hydrateEvents(data.events);
     // P1-6：重建 awaiting_confirmation 的 pending（审批/恢复不再 CHECKPOINT_MISSING）
     for (const p of data.pending ?? []) {
-      this.pendingRequests.set(p.taskId, { request: p.request, toolCallId: p.toolCallId, approvalId: p.approvalId });
+      this.pendingRequests.set(p.taskId, {
+        request: p.request,
+        toolCallId: p.toolCallId,
+        approvalId: p.approvalId,
+      });
     }
   }
 
@@ -381,26 +522,44 @@ export class AgentGateway {
     return this.deps.memory.recall(ctx, scope, query);
   }
 
-  async memoryAdd(ctx: TenantContext, scope: string, content: string, source = 'confirmed_user_statement') {
+  async memoryAdd(
+    ctx: TenantContext,
+    scope: string,
+    content: string,
+    source = 'confirmed_user_statement',
+  ) {
     return this.deps.memory.capture(ctx, scope, content, source);
   }
 
-  async memoryDelete(ctx: TenantContext, id: string, scope?: string): Promise<{ deleted: boolean }> {
+  async memoryDelete(
+    ctx: TenantContext,
+    id: string,
+    scope?: string,
+  ): Promise<{ deleted: boolean }> {
     return this.deps.memory.delete(ctx, id, scope);
   }
 
   /** Octop 高级模式：创建原生 octop 会话 */
-  async createOctopSession(ctx: TenantContext): Promise<{ octopSessionId: string }> {
+  async createOctopSession(
+    ctx: TenantContext,
+  ): Promise<{ octopSessionId: string }> {
     return this.deps.octop.createSession(ctx);
   }
 
   /** Octop 高级模式：token 交换 */
-  async tokenExchange(ctx: TenantContext, sessionId: string): Promise<{ token: string; expiresAt: string }> {
+  async tokenExchange(
+    ctx: TenantContext,
+    sessionId: string,
+  ): Promise<{ token: string; expiresAt: string }> {
     const session = this.requireSession(sessionId);
     this.assertOwnership(session, ctx);
-    if (!session.octopSessionId) throw makeError('SESSION_EXPIRED', { details: { sessionId } });
+    if (!session.octopSessionId)
+      throw makeError('SESSION_EXPIRED', { details: { sessionId } });
     // 传入 userId：属主来自持久化的 session 记录，后端重启后 adapter 内存 map 清空也不丢（审计 #8）
-    return this.deps.octop.tokenExchange(session.octopSessionId, session.userId);
+    return this.deps.octop.tokenExchange(
+      session.octopSessionId,
+      session.userId,
+    );
   }
 
   // ---------------------------------------------------------------- 内部执行
@@ -420,18 +579,29 @@ export class AgentGateway {
     const callId = toolCallId ?? this.createToolCall(task, spec, request);
     // 无确认工具从 planned 进入 running；审批/恢复后已是 running，跳过
     if (task.status === 'planned') this.mutateTask(task, 'run');
-    this.deps.bus.publish(request.sessionId, 'tool_started', task.id, { toolCallId: callId, toolName: spec.name });
+    this.deps.bus.publish(request.sessionId, 'tool_started', task.id, {
+      toolCallId: callId,
+      toolName: spec.name,
+    });
     if (checkpoint) task.checkpointJson = checkpoint;
 
     let exec: ToolExecution;
     try {
       const executor = this.deps.business.get(spec.name);
-      if (!executor) throw makeError('TOOL_EXECUTION_FAILED', { details: { reason: `未实现业务工具: ${spec.name}` } });
+      if (!executor)
+        throw makeError('TOOL_EXECUTION_FAILED', {
+          details: { reason: `未实现业务工具: ${spec.name}` },
+        });
       exec = await executor(ctx, request, checkpoint, signal);
       // P2-10：执行后用 outputSchema 校验结果，不合规视为执行失败
-      const outOk = this.deps.validator.validateOutput(exec.data ?? {}, spec.outputSchema);
+      const outOk = this.deps.validator.validateOutput(
+        exec.data ?? {},
+        spec.outputSchema,
+      );
       if (!outOk.ok) {
-        throw makeError('TOOL_EXECUTION_FAILED', { details: { reason: 'outputSchema 校验失败', errors: outOk.errors } });
+        throw makeError('TOOL_EXECUTION_FAILED', {
+          details: { reason: 'outputSchema 校验失败', errors: outOk.errors },
+        });
       }
     } catch (e) {
       return this.handleExecutionError(task, callId, request, spec, signal, e);
@@ -457,7 +627,11 @@ export class AgentGateway {
     }
 
     this.recordUsage(request, exec, callId);
-    this.deps.idempotency.markDone(ctx.tenantId, request.idempotencyKey, exec.usage.usageId);
+    this.deps.idempotency.markDone(
+      ctx.tenantId,
+      request.idempotencyKey,
+      exec.usage.usageId,
+    );
 
     const action: Parameters<typeof transition>[1] =
       exec.status === 'succeeded'
@@ -475,11 +649,16 @@ export class AgentGateway {
       /* 并发控制面已置终态，忽略（外部动作已成功） */
     }
 
-    this.deps.bus.publish(request.sessionId, exec.status === 'succeeded' ? 'task_done' : 'task_failed', task.id, {
-      reason: exec.status,
-      resumable: exec.status !== 'failed_terminal',
-      evidence: exec.evidence.map((e) => ({ type: e.type, uri: e.uri })),
-    });
+    this.deps.bus.publish(
+      request.sessionId,
+      exec.status === 'succeeded' ? 'task_done' : 'task_failed',
+      task.id,
+      {
+        reason: exec.status,
+        resumable: exec.status !== 'failed_terminal',
+        evidence: exec.evidence.map((e) => ({ type: e.type, uri: e.uri })),
+      },
+    );
 
     return {
       requestId: request.requestId,
@@ -505,24 +684,40 @@ export class AgentGateway {
     if (signal.aborted) {
       this.deps.idempotency.release(request.tenantId, request.idempotencyKey);
       if (task.status === 'running') this.safeMutate(task, 'fail_retryable');
-      return this.errorResult(request, makeError('CANCEL_TIMEOUT', { details: { reason: '执行已被用户中止' } }));
+      return this.errorResult(
+        request,
+        makeError('CANCEL_TIMEOUT', {
+          details: { reason: '执行已被用户中止' },
+        }),
+      );
     }
 
     // 真实异常：释放幂等锁以便重试，任务落失败态，记录失败 usage
     this.deps.idempotency.release(request.tenantId, request.idempotencyKey);
     const appErr = this.toAppError(e);
-    const next: Parameters<typeof transition>[1] = appErr.retryable ? 'fail_retryable' : 'fail_terminal';
+    const next: Parameters<typeof transition>[1] = appErr.retryable
+      ? 'fail_retryable'
+      : 'fail_terminal';
     this.safeMutate(task, next);
-    this.deps.bus.publish(request.sessionId ?? task.sessionId, 'task_failed', task.id, {
-      reason: appErr.code,
-      resumable: appErr.retryable,
-      evidence: [],
-    });
+    this.deps.bus.publish(
+      request.sessionId ?? task.sessionId,
+      'task_failed',
+      task.id,
+      {
+        reason: appErr.code,
+        resumable: appErr.retryable,
+        evidence: [],
+      },
+    );
     this.recordFailureUsage(request, appErr);
     return this.errorResult(request, appErr);
   }
 
-  private createToolCall(task: AgentTask, spec: ToolSpec, request: ToolRequest): string {
+  private createToolCall(
+    task: AgentTask,
+    spec: ToolSpec,
+    request: ToolRequest,
+  ): string {
     const id = genId('call');
     const tc: ToolCall = {
       id,
@@ -539,7 +734,11 @@ export class AgentGateway {
     return id;
   }
 
-  private setToolCallStatus(id: string, status: ToolCall['status'], usageId?: string): void {
+  private setToolCallStatus(
+    id: string,
+    status: ToolCall['status'],
+    usageId?: string,
+  ): void {
     const tc = this.toolCalls.get(id);
     if (tc) {
       tc.status = status;
@@ -565,7 +764,11 @@ export class AgentGateway {
     return artifact;
   }
 
-  private recordUsage(request: ToolRequest, exec: ToolExecution, toolCallId?: string): void {
+  private recordUsage(
+    request: ToolRequest,
+    exec: ToolExecution,
+    toolCallId?: string,
+  ): void {
     const u = exec.usage;
     const ev: UsageEvent = {
       id: genId('ue'),
@@ -620,29 +823,41 @@ export class AgentGateway {
   }
 
   /** 写路径镜像（fire-and-forget，失败静默——内存态仍是权威，DB 为持久化副本） */
-  private fireMirror(fn: (m: AgentGatewayMirror) => void | Promise<void>): void {
+  private fireMirror(
+    fn: (m: AgentGatewayMirror) => void | Promise<void>,
+  ): void {
     if (!this.deps.mirror) return;
     try {
       const r = fn(this.deps.mirror);
-      if (r && typeof (r as Promise<void>).then === 'function') {
-        void (r as Promise<void>).catch(() => undefined);
+      if (r && typeof r.then === 'function') {
+        void r.catch(() => undefined);
       }
     } catch {
       /* 镜像失败不阻断主链路 */
     }
   }
 
-  private mutateTask(task: AgentTask, action: Parameters<typeof transition>[1]): void {
+  private mutateTask(
+    task: AgentTask,
+    action: Parameters<typeof transition>[1],
+  ): void {
     const next = transition(task.status, action);
     task.status = next;
     if (next === 'running') task.startedAt = nowIso();
-    if (['succeeded', 'failed_terminal', 'cancelled'].includes(next)) task.finishedAt = nowIso();
-    this.deps.bus.publish(task.sessionId, 'thinking', task.id, { step: next, summary: `任务状态 → ${next}` });
+    if (['succeeded', 'failed_terminal', 'cancelled'].includes(next))
+      task.finishedAt = nowIso();
+    this.deps.bus.publish(task.sessionId, 'thinking', task.id, {
+      step: next,
+      summary: `任务状态 → ${next}`,
+    });
     this.fireMirror((m) => m.taskUpdated?.(task));
   }
 
   /** 安全迁移：并发控制面已改状态时，忽略非法迁移异常，绝不静默吞掉原始错误 */
-  private safeMutate(task: AgentTask, action: Parameters<typeof transition>[1]): void {
+  private safeMutate(
+    task: AgentTask,
+    action: Parameters<typeof transition>[1],
+  ): void {
     try {
       this.mutateTask(task, action);
     } catch {
@@ -661,12 +876,22 @@ export class AgentGateway {
   private toAppError(e: unknown): AppError {
     if (e instanceof AppErrorError) return e;
     if (e && typeof e === 'object' && 'code' in e) return e as AppError;
-    if (e instanceof Error) return makeError('TOOL_EXECUTION_FAILED', { details: { reason: e.message } });
-    return makeError('TOOL_EXECUTION_FAILED', { details: { reason: String(e) } });
+    if (e instanceof Error)
+      return makeError('TOOL_EXECUTION_FAILED', {
+        details: { reason: e.message },
+      });
+    return makeError('TOOL_EXECUTION_FAILED', {
+      details: { reason: String(e) },
+    });
   }
 
   private isAppErrorWithCode(e: unknown, code: string): boolean {
-    return !!e && typeof e === 'object' && 'code' in e && (e as { code: string }).code === code;
+    return (
+      !!e &&
+      typeof e === 'object' &&
+      'code' in e &&
+      (e as { code: string }).code === code
+    );
   }
 
   private requireSession(id: string): AgentSession {
@@ -674,7 +899,9 @@ export class AgentGateway {
     if (!s) throw makeError('SESSION_EXPIRED', { details: { sessionId: id } });
     // P1-2：统一过期校验（createTask/executeTool/approveTask/tokenExchange 等全部经此）
     if (s.status === 'expired' || Date.parse(s.expiresAt) <= Date.now()) {
-      throw makeError('SESSION_EXPIRED', { details: { sessionId: id, reason: '会话已过期' } });
+      throw makeError('SESSION_EXPIRED', {
+        details: { sessionId: id, reason: '会话已过期' },
+      });
     }
     return s;
   }
@@ -691,18 +918,36 @@ export class AgentGateway {
   }
 
   private isTerminal(status: string): boolean {
-    return status === 'succeeded' || status === 'failed_terminal' || status === 'cancelled';
+    return (
+      status === 'succeeded' ||
+      status === 'failed_terminal' ||
+      status === 'cancelled'
+    );
   }
 
   /** 所有权校验：tenant + user + agent 三项必须一致，杜绝同租户跨用户越权 */
-  private assertOwnership(entity: { tenantId: string; userId: string; agentId: string }, ctx: TenantContext): void {
+  private assertOwnership(
+    entity: { tenantId: string; userId: string; agentId: string },
+    ctx: TenantContext,
+  ): void {
     if (
       entity.tenantId !== ctx.tenantId ||
       entity.userId !== ctx.userId ||
       entity.agentId !== ctx.agentId
     ) {
       throw makeError('FORBIDDEN', {
-        details: { expected: { tenantId: entity.tenantId, userId: entity.userId, agentId: entity.agentId }, got: { tenantId: ctx.tenantId, userId: ctx.userId, agentId: ctx.agentId } },
+        details: {
+          expected: {
+            tenantId: entity.tenantId,
+            userId: entity.userId,
+            agentId: entity.agentId,
+          },
+          got: {
+            tenantId: ctx.tenantId,
+            userId: ctx.userId,
+            agentId: ctx.agentId,
+          },
+        },
       });
     }
   }

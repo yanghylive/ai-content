@@ -20,7 +20,7 @@ export function attachAgentGatewayWs(
     server: httpServer,
     path: '/api/agent/octop/ws',
     handleProtocols: (protocols) => {
-      const match = [...(protocols as Set<string>)].find((p) => p.startsWith('kaypal-auth.'));
+      const match = [...protocols].find((p) => p.startsWith('kaypal-auth.'));
       return match ?? false;
     },
   });
@@ -34,7 +34,11 @@ export function attachAgentGatewayWs(
       .map((s) => s.trim())
       .find((p) => p.startsWith('kaypal-auth.'))
       ?.slice('kaypal-auth.'.length);
-    const token = protoToken ?? req.headers['authorization']?.toString() ?? url.searchParams.get('token') ?? undefined;
+    const token =
+      protoToken ??
+      req.headers['authorization']?.toString() ??
+      url.searchParams.get('token') ??
+      undefined;
 
     void (async () => {
       // 身份：HMAC 签名令牌或 Kaypal 正式 access_token（P0-2）
@@ -48,7 +52,12 @@ export function attachAgentGatewayWs(
       }
 
       const session = agent.gateway.getSession(sessionId);
-      if (!session || session.tenantId !== ctx.tenantId || session.userId !== ctx.userId || session.agentId !== ctx.agentId) {
+      if (
+        !session ||
+        session.tenantId !== ctx.tenantId ||
+        session.userId !== ctx.userId ||
+        session.agentId !== ctx.agentId
+      ) {
         ws.send(JSON.stringify({ error: 'FORBIDDEN' }));
         ws.close();
         return;

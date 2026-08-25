@@ -26,7 +26,10 @@ export class AuthService {
   issue(ctx: TenantContext, ttlMs = 3_600_000): string {
     const payload = { ...ctx, exp: Date.now() + ttlMs };
     const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    const sig = crypto.createHmac('sha256', this.secret).update(body).digest('base64url');
+    const sig = crypto
+      .createHmac('sha256', this.secret)
+      .update(body)
+      .digest('base64url');
     return `${body}.${sig}`;
   }
 
@@ -43,7 +46,10 @@ export class AuthService {
     }
     const body = token.slice(0, dot);
     const sig = token.slice(dot + 1);
-    const expected = crypto.createHmac('sha256', this.secret).update(body).digest('base64url');
+    const expected = crypto
+      .createHmac('sha256', this.secret)
+      .update(body)
+      .digest('base64url');
     // 定长时间比较，避免时序侧信道
     const a = Buffer.from(sig);
     const b = Buffer.from(expected);
@@ -55,30 +61,38 @@ export class AuthService {
     }
     let payload: Record<string, unknown>;
     try {
-      payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+      payload = JSON.parse(
+        Buffer.from(body, 'base64url').toString('utf8'),
+      ) as Record<string, unknown>;
     } catch {
       throw makeError('AUTH_INVALID', { details: { reason: '载荷解析失败' } });
     }
     // P1-6：exp 必须存在且未过期——签名正确但无过期时间的令牌一律拒绝
     if (typeof payload.exp !== 'number') {
-      throw makeError('AUTH_INVALID', { details: { reason: '令牌缺少过期时间(exp)' } });
+      throw makeError('AUTH_INVALID', {
+        details: { reason: '令牌缺少过期时间(exp)' },
+      });
     }
     if (payload.exp <= Date.now()) {
       throw makeError('SESSION_EXPIRED', { details: { reason: '令牌已过期' } });
     }
     const ctx: TenantContext = {
-      tenantId: String(payload.tenantId ?? ''),
-      userId: String(payload.userId ?? ''),
-      agentId: String(payload.agentId ?? ''),
+      tenantId: String((payload.tenantId as string) ?? ''),
+      userId: String((payload.userId as string) ?? ''),
+      agentId: String((payload.agentId as string) ?? ''),
     };
     if (!ctx.tenantId || !ctx.userId || !ctx.agentId) {
-      throw makeError('AUTH_INVALID', { details: { reason: '载荷缺少租户字段' } });
+      throw makeError('AUTH_INVALID', {
+        details: { reason: '载荷缺少租户字段' },
+      });
     }
     return ctx;
   }
 
   /** Kaypal 正式 access_token 验证（kaypal.cn /api/auth/me）——P0-2 */
-  private async kaypalVerify(token: string): Promise<TenantContext | undefined> {
+  private async kaypalVerify(
+    token: string,
+  ): Promise<TenantContext | undefined> {
     if (!this.kaypal) return undefined;
     try {
       const res = await fetch(`${this.kaypal.baseUrl}/api/auth/me`, {
@@ -90,9 +104,11 @@ export class AuthService {
         signal: AbortSignal.timeout(5000),
       });
       if (!res.ok) return undefined;
-      const d = (await res.json()) as { user?: Record<string, unknown> } | Record<string, unknown>;
-      const user = (d as { user?: Record<string, unknown> }).user ?? (d as Record<string, unknown>);
-      const id = String((user as Record<string, unknown>).id ?? '');
+      const d = (await res.json()) as
+        { user?: Record<string, unknown> } | Record<string, unknown>;
+      const user = (d as { user?: Record<string, unknown> }).user ?? d;
+      const rawId = (user as Record<string, unknown>).id;
+      const id = typeof rawId === 'string' ? rawId : '';
       if (!id) return undefined;
       return { tenantId: id, userId: id, agentId: 'agent_default' };
     } catch {
@@ -104,8 +120,12 @@ export class AuthService {
 /** 从 Authorization: Bearer <token> 或裸 x-kaypal-ctx 抽取令牌并校验；缺失/非法一律拒绝。
  *  返回的 ctx.kaypalAccessToken 是原始 token（Bearer 去除前缀后的纯字符串）——上游用其透传到依赖，
  *  避免服务再用共享凭据代发请求（P3-1：请求级 token 透传）。 */
-export async function requireAuth(auth: AuthService, headerValue: string | undefined): Promise<TenantContext> {
-  if (!headerValue) throw makeError('UNAUTHORIZED', { details: { reason: '缺少身份令牌' } });
+export async function requireAuth(
+  auth: AuthService,
+  headerValue: string | undefined,
+): Promise<TenantContext> {
+  if (!headerValue)
+    throw makeError('UNAUTHORIZED', { details: { reason: '缺少身份令牌' } });
   let token = headerValue;
   if (headerValue.toLowerCase().startsWith('bearer ')) {
     token = headerValue.slice(7).trim();

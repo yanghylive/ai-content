@@ -37,11 +37,21 @@ function usage(
   computeUnits: number,
   inputTokens: number = Math.ceil(modelTokens * 0.5),
 ): UsageInfo {
-  return { model, inputTokens, modelTokens, computeUnits, usageId: genId('usage') };
+  return {
+    model,
+    inputTokens,
+    modelTokens,
+    computeUnits,
+    usageId: genId('usage'),
+  };
 }
 
 function screenshot(taskId: string): EvidenceRef {
-  return { type: 'screenshot', uri: `/evidence/${taskId}/shot_${genId('s')}.png`, checksum: hashJson(genId('c')) };
+  return {
+    type: 'screenshot',
+    uri: `/evidence/${taskId}/shot_${genId('s')}.png`,
+    checksum: hashJson(genId('c')),
+  };
 }
 
 /**
@@ -74,19 +84,22 @@ export class BusinessToolRegistry {
 // ---------------------------------------------------------------------------
 
 export const leadDiscover: ToolExecutor = async (ctx, req) => {
-  const platform = String(req.payload.platform ?? 'xiaohongshu');
+  const platform = String((req.payload.platform as string) ?? 'xiaohongshu');
   const count = Number(req.payload.limit ?? 18);
   const leadIds = Array.from({ length: count }, () => genId('lead'));
   return {
     data: { count, leadIds, platform, tenantId: ctx.tenantId },
-    evidence: [screenshot(req.taskId), { type: 'platform_url', uri: `https://${platform}.com/search` }],
+    evidence: [
+      screenshot(req.taskId),
+      { type: 'platform_url', uri: `https://${platform}.com/search` },
+    ],
     usage: usage('kaypal-crawler', 1200, 3),
     status: 'succeeded',
   };
 };
 
 export const contentGenerate: ToolExecutor = async (_ctx, req) => {
-  const title = String(req.payload.title ?? '未命名草稿');
+  const title = String((req.payload.title as string) ?? '未命名草稿');
   const contentId = genId('content');
   return {
     data: { contentId, title, body: `（由模型生成的示例文案）${title}` },
@@ -106,10 +119,17 @@ export const contentGenerate: ToolExecutor = async (_ctx, req) => {
 };
 
 export const publishExecute: ToolExecutor = async (_ctx, req) => {
-  const platform = String(req.payload.platform ?? 'douyin');
+  const platform = String((req.payload.platform as string) ?? 'douyin');
   return {
-    data: { platform, url: `https://${platform}.com/post/${genId('p')}`, status: 'published' },
-    evidence: [screenshot(req.taskId), { type: 'platform_url', uri: `https://${platform}.com/post` }],
+    data: {
+      platform,
+      url: `https://${platform}.com/post/${genId('p')}`,
+      status: 'published',
+    },
+    evidence: [
+      screenshot(req.taskId),
+      { type: 'platform_url', uri: `https://${platform}.com/post` },
+    ],
     usage: usage('kaypal-publisher', 800, 2),
     status: 'succeeded',
   };
@@ -118,7 +138,11 @@ export const publishExecute: ToolExecutor = async (_ctx, req) => {
 export const crmCreate: ToolExecutor = async (ctx, req) => {
   const contactId = genId('contact');
   return {
-    data: { contactId, name: req.payload.name ?? '未知', tenantId: ctx.tenantId },
+    data: {
+      contactId,
+      name: req.payload.name ?? '未知',
+      tenantId: ctx.tenantId,
+    },
     evidence: [screenshot(req.taskId)],
     usage: usage('kaypal-crm', 400, 1),
     status: 'succeeded',
@@ -137,7 +161,12 @@ export const reportGenerate: ToolExecutor = async (_ctx, req) => {
     usage: usage('kaypal-analyst', 1600, 4),
     status: 'succeeded',
     artifacts: [
-      { type: 'report', uri: `/artifacts/${reportId}.json`, checksum: hashJson(reportId), version: 1 },
+      {
+        type: 'report',
+        uri: `/artifacts/${reportId}.json`,
+        checksum: hashJson(reportId),
+        version: 1,
+      },
     ],
   };
 };

@@ -14,7 +14,13 @@ export class ApprovalService {
     return hashJson(preview);
   }
 
-  create(taskId: string, toolCallId: string, preview: unknown, ttlMs: number, nowMs = Date.now()): Approval {
+  create(
+    taskId: string,
+    toolCallId: string,
+    preview: unknown,
+    ttlMs: number,
+    nowMs = Date.now(),
+  ): Approval {
     const approval: Approval = {
       id: genId('apr'),
       taskId,
@@ -45,19 +51,38 @@ export class ApprovalService {
     nowMs = Date.now(),
   ): Approval {
     const apr = this.store.get(approvalId);
-    if (!apr) throw makeError('APPROVAL_MISMATCH', { details: { approvalId, reason: '未知审批' } });
+    if (!apr)
+      throw makeError('APPROVAL_MISMATCH', {
+        details: { approvalId, reason: '未知审批' },
+      });
     if (apr.status === 'rejected') {
-      throw makeError('PREVIEW_CHANGED', { details: { approvalId, reason: '审批已被拒绝' } });
+      throw makeError('PREVIEW_CHANGED', {
+        details: { approvalId, reason: '审批已被拒绝' },
+      });
     }
     if (apr.consumed) {
-      throw makeError('APPROVAL_MISMATCH', { details: { approvalId, reason: '审批已被一次性消费' } });
+      throw makeError('APPROVAL_MISMATCH', {
+        details: { approvalId, reason: '审批已被一次性消费' },
+      });
     }
     // 绑定校验：阻止跨任务 / 跨请求复用审批
     if (apr.taskId !== currentTaskId) {
-      throw makeError('APPROVAL_MISMATCH', { details: { approvalId, expectedTaskId: apr.taskId, gotTaskId: currentTaskId } });
+      throw makeError('APPROVAL_MISMATCH', {
+        details: {
+          approvalId,
+          expectedTaskId: apr.taskId,
+          gotTaskId: currentTaskId,
+        },
+      });
     }
     if (apr.toolCallId !== currentToolCallId) {
-      throw makeError('APPROVAL_MISMATCH', { details: { approvalId, expectedToolCall: apr.toolCallId, gotToolCall: currentToolCallId } });
+      throw makeError('APPROVAL_MISMATCH', {
+        details: {
+          approvalId,
+          expectedToolCall: apr.toolCallId,
+          gotToolCall: currentToolCallId,
+        },
+      });
     }
     if (Date.parse(apr.expiresAt) <= nowMs) {
       apr.status = 'expired';
@@ -66,7 +91,11 @@ export class ApprovalService {
     const currentHash = ApprovalService.previewHashOf(currentPreview);
     if (currentHash !== apr.previewHash) {
       throw makeError('PREVIEW_CHANGED', {
-        details: { approvalId, approvedPreviewHash: apr.previewHash, currentPreviewHash: currentHash },
+        details: {
+          approvalId,
+          approvedPreviewHash: apr.previewHash,
+          currentPreviewHash: currentHash,
+        },
       });
     }
     apr.status = 'approved';
@@ -82,7 +111,10 @@ export class ApprovalService {
 
   reject(approvalId: string): Approval {
     const apr = this.store.get(approvalId);
-    if (!apr) throw makeError('APPROVAL_MISMATCH', { details: { approvalId, reason: '未知审批' } });
+    if (!apr)
+      throw makeError('APPROVAL_MISMATCH', {
+        details: { approvalId, reason: '未知审批' },
+      });
     apr.status = 'rejected';
     return apr;
   }

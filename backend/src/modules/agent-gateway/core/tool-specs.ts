@@ -16,7 +16,10 @@ export const STANDARD_TOOL_SPECS: ToolSpec[] = [
     supportsResume: true,
     requiredCapabilities: [],
     inputSchema: { type: 'object', properties: { title: { type: 'string' } } },
-    outputSchema: { type: 'object', properties: { contentId: { type: 'string' } } },
+    outputSchema: {
+      type: 'object',
+      properties: { contentId: { type: 'string' } },
+    },
     idempotencyScope: 'tenant+content+brief',
     evidenceTypes: ['screenshot'],
     compensation: 'discard_draft',

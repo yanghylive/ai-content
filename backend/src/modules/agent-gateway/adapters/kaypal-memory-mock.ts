@@ -18,11 +18,24 @@ export interface MemoryItem {
  */
 export interface KaypalMemoryAdapter {
   /** @param accessToken 可选请求级 Bearer（per-call 注入，真实适配器用其代发，mock 忽略） */
-  search(ns: MemoryNamespace, query: string, accessToken?: string): Promise<MemoryItem[]>;
+  search(
+    ns: MemoryNamespace,
+    query: string,
+    accessToken?: string,
+  ): Promise<MemoryItem[]>;
   /** 本地/远程共用同一 item id，保证删除对账一致 */
-  add(ns: MemoryNamespace, content: string, id?: string, accessToken?: string): Promise<{ id: string }>;
+  add(
+    ns: MemoryNamespace,
+    content: string,
+    id?: string,
+    accessToken?: string,
+  ): Promise<{ id: string }>;
   /** 删除必须限定在派生 namespace 内，禁止跨租户/跨用户删除 */
-  delete(ns: MemoryNamespace, id: string, accessToken?: string): Promise<boolean>;
+  delete(
+    ns: MemoryNamespace,
+    id: string,
+    accessToken?: string,
+  ): Promise<boolean>;
   export(ns: MemoryNamespace, accessToken?: string): Promise<MemoryItem[]>;
 }
 
@@ -40,14 +53,20 @@ export class MockKaypalMemoryAdapter implements KaypalMemoryAdapter {
   }
 
   async search(ns: MemoryNamespace, query: string): Promise<MemoryItem[]> {
-    if (this.degraded) throw makeError('MEMORY_TIMEOUT', { details: { namespace: nsKey(ns) } });
+    if (this.degraded)
+      throw makeError('MEMORY_TIMEOUT', { details: { namespace: nsKey(ns) } });
     const items = this.store.get(nsKey(ns)) ?? [];
     const q = query.toLowerCase();
     return items.filter((i) => i.content.toLowerCase().includes(q));
   }
 
-  async add(ns: MemoryNamespace, content: string, id?: string): Promise<{ id: string }> {
-    if (this.degraded) throw makeError('MEMORY_REJECTED', { details: { namespace: nsKey(ns) } });
+  async add(
+    ns: MemoryNamespace,
+    content: string,
+    id?: string,
+  ): Promise<{ id: string }> {
+    if (this.degraded)
+      throw makeError('MEMORY_REJECTED', { details: { namespace: nsKey(ns) } });
     const item: MemoryItem = {
       id: id ?? genId('x'),
       namespace: nsKey(ns),
@@ -79,7 +98,11 @@ export class MockKaypalMemoryAdapter implements KaypalMemoryAdapter {
 }
 
 /** 服务端从登录态派生 namespace，忽略前端传入值（对齐《补充包》6.2） */
-export function deriveNamespace(ctx: TenantContext, scope: string, source: string): MemoryNamespace {
+export function deriveNamespace(
+  ctx: TenantContext,
+  scope: string,
+  source: string,
+): MemoryNamespace {
   return {
     tenantId: ctx.tenantId,
     userId: ctx.userId,

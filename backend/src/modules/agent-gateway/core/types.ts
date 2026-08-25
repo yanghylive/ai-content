@@ -51,12 +51,7 @@ export const TERMINAL_STATUSES: ReadonlySet<TaskStatus> = new Set<TaskStatus>([
 export type ToolRisk = 'low' | 'medium' | 'high';
 
 export type ToolDomain =
-  | 'content'
-  | 'publish'
-  | 'interaction'
-  | 'lead'
-  | 'crm'
-  | 'review';
+  'content' | 'publish' | 'interaction' | 'lead' | 'crm' | 'review';
 
 export interface ToolSpec {
   name: string;

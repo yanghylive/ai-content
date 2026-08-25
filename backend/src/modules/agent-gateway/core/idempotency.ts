@@ -1,4 +1,3 @@
-import { AppError } from './types';
 import { makeError } from '../contracts/error-codes';
 
 export interface IdempotencyRecord {
@@ -33,7 +32,20 @@ export class IdempotencyStore {
    * - 已 in_progress → IDEMPOTENCY_CONFLICT
    * - 已 done → DUPLICATE_REQUEST（附带原 usageId 供对账）
    */
-  claim(tenantId: string, key: string, taskId: string, audit?: { userId?: string; workspaceId?: string; toolName?: string; risk?: string; inputHash?: string; requestJson?: string; toolCallId?: string }):
+  claim(
+    tenantId: string,
+    key: string,
+    taskId: string,
+    audit?: {
+      userId?: string;
+      workspaceId?: string;
+      toolName?: string;
+      risk?: string;
+      inputHash?: string;
+      requestJson?: string;
+      toolCallId?: string;
+    },
+  ):
     | { status: 'new'; record: IdempotencyRecord }
     | { status: 'in_progress'; record: IdempotencyRecord }
     | { status: 'done'; record: IdempotencyRecord } {

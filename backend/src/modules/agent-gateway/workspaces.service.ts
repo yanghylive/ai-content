@@ -23,7 +23,9 @@ export class WorkspacesService {
   async create(ctx: TenantContext, dto: CreateWorkspaceDto) {
     const name = dto.name.trim();
     if (!name) {
-      throw makeError('NAMESPACE_INVALID', { details: { field: 'name', message: 'workspace 名称不能为空' } });
+      throw makeError('NAMESPACE_INVALID', {
+        details: { field: 'name', message: 'workspace 名称不能为空' },
+      });
     }
     try {
       return await this.prisma.workspace.create({
@@ -36,8 +38,13 @@ export class WorkspacesService {
         },
       });
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-        throw makeError('DUPLICATE_REQUEST', { details: { name, message: '同名 workspace 已存在' } });
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        throw makeError('DUPLICATE_REQUEST', {
+          details: { name, message: '同名 workspace 已存在' },
+        });
       }
       throw e;
     }
@@ -56,7 +63,12 @@ export class WorkspacesService {
       where: { id, ...this.scope(ctx), status: 'active' },
     });
     if (!ws) {
-      throw makeError('FORBIDDEN', { details: { workspaceId: id, message: 'workspace 不存在或不属于当前用户' } });
+      throw makeError('FORBIDDEN', {
+        details: {
+          workspaceId: id,
+          message: 'workspace 不存在或不属于当前用户',
+        },
+      });
     }
     return ws;
   }
@@ -67,18 +79,24 @@ export class WorkspacesService {
     if (dto.name !== undefined) {
       const name = dto.name.trim();
       if (!name) {
-        throw makeError('NAMESPACE_INVALID', { details: { field: 'name', message: 'workspace 名称不能为空' } });
+        throw makeError('NAMESPACE_INVALID', {
+          details: { field: 'name', message: 'workspace 名称不能为空' },
+        });
       }
       data.name = name;
     }
     if (dto.agentId !== undefined) data.agentId = dto.agentId;
-    if (dto.settings !== undefined) data.settings = dto.settings as Prisma.InputJsonValue;
+    if (dto.settings !== undefined)
+      data.settings = dto.settings as Prisma.InputJsonValue;
     return this.prisma.workspace.update({ where: { id }, data });
   }
 
   /** 软删除（status='archived'），保留数据用于审计/恢复 */
   async remove(ctx: TenantContext, id: string) {
     await this.get(ctx, id); // 归属校验
-    return this.prisma.workspace.update({ where: { id }, data: { status: 'archived' } });
+    return this.prisma.workspace.update({
+      where: { id },
+      data: { status: 'archived' },
+    });
   }
 }

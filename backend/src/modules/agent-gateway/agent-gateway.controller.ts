@@ -47,29 +47,58 @@ export class AgentGatewayController {
   // ---------------------------------------------------------------- 会话
   @Post('sessions')
   async createSession(@Req() req: CtxRequest, @Body() body: CreateSessionDto) {
-    const session = await this.agent.gateway.createSession(this.ctx(req), body?.mode ?? 'business');
+    const session = await this.agent.gateway.createSession(
+      this.ctx(req),
+      body?.mode ?? 'business',
+    );
     return { session };
   }
 
   @Post('sessions/:id/resume')
   @HttpCode(200)
-  async resumeSession(@Req() req: CtxRequest, @Param('id') id: string, @Body() body: ResumeSessionDto) {
-    const { session, events } = this.agent.gateway.resumeSession(id, this.ctx(req), body?.lastEventId);
-    return { session, lastEventId: events[events.length - 1]?.eventId ?? session.lastEventId, events };
+  async resumeSession(
+    @Req() req: CtxRequest,
+    @Param('id') id: string,
+    @Body() body: ResumeSessionDto,
+  ) {
+    const { session, events } = this.agent.gateway.resumeSession(
+      id,
+      this.ctx(req),
+      body?.lastEventId,
+    );
+    return {
+      session,
+      lastEventId: events[events.length - 1]?.eventId ?? session.lastEventId,
+      events,
+    };
   }
 
   // ---------------------------------------------------------------- 任务
   @Post('tasks')
   @HttpCode(202)
   async createTask(@Req() req: CtxRequest, @Body() body: CreateTaskDto) {
-    const task = this.agent.gateway.createTask(this.ctx(req), body.sessionId, body.type, body.plan ?? {});
+    const task = this.agent.gateway.createTask(
+      this.ctx(req),
+      body.sessionId,
+      body.type,
+      body.plan ?? {},
+    );
     return { taskId: task.id, task };
   }
 
   @Post('tasks/:id/approve')
   @HttpCode(202)
-  async approveTask(@Req() req: CtxRequest, @Param('id') id: string, @Body() body: ApproveTaskDto) {
-    const result = await this.agent.gateway.approveTask(this.ctx(req), id, body.approvalId, body.currentPreview);
+  async approveTask(
+    @Req() req: CtxRequest,
+    @Param('id') id: string,
+    @Body() body: ApproveTaskDto,
+  ) {
+    const result = await this.agent.gateway.approveTask(
+      this.ctx(req),
+      id,
+      body.approvalId,
+      body.currentPreview,
+    );
     return { result };
   }
 
@@ -106,10 +135,14 @@ export class AgentGatewayController {
     const ctx = this.ctx(req);
     const spec = this.agent.registry.get(name);
     // P0-14：高风险写请求强制 Idempotency-Key
-    const highRisk = spec ? spec.risk === 'high' || spec.requiresConfirmation : false;
+    const highRisk = spec
+      ? spec.risk === 'high' || spec.requiresConfirmation
+      : false;
     let idemKey = idemHeader ?? body?.idempotencyKey;
     if (highRisk && !idemKey) {
-      throw makeError('IDEMPOTENCY_KEY_REQUIRED', { details: { toolName: name } });
+      throw makeError('IDEMPOTENCY_KEY_REQUIRED', {
+        details: { toolName: name },
+      });
     }
     if (!idemKey) idemKey = `auto:${name}:${genId('k')}`;
 
@@ -129,7 +162,11 @@ export class AgentGatewayController {
     const outcome = await this.agent.gateway.executeTool(ctx, request);
     if (outcome.kind === 'awaiting_approval') {
       res.status(202);
-      return { status: 'awaiting_confirmation', approvalId: outcome.approvalId, taskId: outcome.taskId };
+      return {
+        status: 'awaiting_confirmation',
+        approvalId: outcome.approvalId,
+        taskId: outcome.taskId,
+      };
     }
     res.status(200);
     return { result: outcome.result };
@@ -143,7 +180,10 @@ export class AgentGatewayController {
 
   @Post('octop/token-exchange')
   @HttpCode(200)
-  async octopTokenExchange(@Req() req: CtxRequest, @Body() body: TokenExchangeDto) {
+  async octopTokenExchange(
+    @Req() req: CtxRequest,
+    @Body() body: TokenExchangeDto,
+  ) {
     return this.agent.gateway.tokenExchange(this.ctx(req), body.sessionId);
   }
 
@@ -153,4 +193,3 @@ export class AgentGatewayController {
     return { capabilities: await this.agent.gateway.refreshCapabilities() };
   }
 }
-

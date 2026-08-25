@@ -51,6 +51,11 @@ export default tseslint.config(
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      // sync/async 双兼容设计（内存 store 同步 + Prisma store 异步，接口用同步声明）：
+      // gateway 有意 `await` 同步值以兼容 async 实现；mock 方法 async 无 await 是接口约束的合理模式。
+      // 这两个是设计误报，非 bug，显式关闭（保留真实 await 语义的其它规则不受影响）。
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/await-thenable': 'off',
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },
