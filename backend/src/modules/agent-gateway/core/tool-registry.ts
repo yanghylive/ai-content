@@ -45,10 +45,20 @@ export class ToolRegistry {
 
   private assertStructure(spec: ToolSpec): void {
     const required: (keyof ToolSpec)[] = [
-      'name', 'version', 'domain', 'readOnly', 'risk',
-      'requiresConfirmation', 'supportsPause', 'supportsResume',
-      'requiredCapabilities', 'inputSchema', 'outputSchema',
-      'idempotencyScope', 'evidenceTypes', 'compensation',
+      'name',
+      'version',
+      'domain',
+      'readOnly',
+      'risk',
+      'requiresConfirmation',
+      'supportsPause',
+      'supportsResume',
+      'requiredCapabilities',
+      'inputSchema',
+      'outputSchema',
+      'idempotencyScope',
+      'evidenceTypes',
+      'compensation',
     ];
     for (const k of required) {
       if ((spec as unknown as Record<string, unknown>)[k] === undefined) {

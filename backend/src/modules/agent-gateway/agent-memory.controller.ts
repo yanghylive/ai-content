@@ -36,19 +36,32 @@ export class AgentMemoryController {
   @Post('search')
   @HttpCode(200)
   async search(@Req() req: CtxRequest, @Body() body: MemorySearchDto) {
-    const { items, degraded } = await this.agent.gateway.memorySearch(this.ctx(req), body?.scope ?? 'user_preference', body?.query ?? '');
+    const { items, degraded } = await this.agent.gateway.memorySearch(
+      this.ctx(req),
+      body?.scope ?? 'user_preference',
+      body?.query ?? '',
+    );
     return { items, degraded };
   }
 
   @Post('add')
   @HttpCode(202)
   async add(@Req() req: CtxRequest, @Body() body: MemoryAddDto) {
-    const { memoryEventId, outboxId } = await this.agent.gateway.memoryAdd(this.ctx(req), body?.scope ?? 'user_preference', body.content, body?.source);
+    const { memoryEventId, outboxId } = await this.agent.gateway.memoryAdd(
+      this.ctx(req),
+      body?.scope ?? 'user_preference',
+      body.content,
+      body?.source,
+    );
     return { memoryEventId, outboxId };
   }
 
   @Delete(':id')
-  async remove(@Req() req: CtxRequest, @Param('id') id: string, @Query('scope') scope?: string) {
+  async remove(
+    @Req() req: CtxRequest,
+    @Param('id') id: string,
+    @Query('scope') scope?: string,
+  ) {
     return this.agent.gateway.memoryDelete(this.ctx(req), id, scope);
   }
 }

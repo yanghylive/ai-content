@@ -17,7 +17,10 @@ export class EventBus {
   /** 重放窗口（事件保留上限），超出之后 lastEventId 视为过期 */
   private windowSize: number;
 
-  constructor(windowSize = 1000, private readonly publishSink?: (event: AgentEvent) => void | Promise<void>) {
+  constructor(
+    windowSize = 1000,
+    private readonly publishSink?: (event: AgentEvent) => void | Promise<void>,
+  ) {
     this.windowSize = windowSize;
   }
 
@@ -27,7 +30,12 @@ export class EventBus {
     return seq;
   }
 
-  publish(sessionId: string, type: AgentEventType, taskId: string, payload: Record<string, unknown>): AgentEvent {
+  publish(
+    sessionId: string,
+    type: AgentEventType,
+    taskId: string,
+    payload: Record<string, unknown>,
+  ): AgentEvent {
     const seq = this.nextSequence(sessionId);
     const event: AgentEvent = {
       eventId: `evt_${seq.toString().padStart(6, '0')}`,
@@ -83,7 +91,9 @@ export class EventBus {
       // 可能太旧被窗口淘汰，或根本不存在
       const oldest = arr[0];
       if (oldest && lastEventId < oldest.eventId) {
-        throw makeError('RESUME_WINDOW_EXPIRED', { details: { lastEventId, oldestEventId: oldest.eventId } });
+        throw makeError('RESUME_WINDOW_EXPIRED', {
+          details: { lastEventId, oldestEventId: oldest.eventId },
+        });
       }
       throw makeError('RESUME_WINDOW_EXPIRED', { details: { lastEventId } });
     }

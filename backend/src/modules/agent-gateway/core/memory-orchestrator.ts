@@ -116,7 +116,13 @@ export class MemoryOrchestrator {
       nextRetryAt: nowIso(),
       status: 'pending',
     };
-    this.outboxItems.set(memoryEventId, { outbox, content, ns, itemId: localItem.id, accessToken: ctx.kaypalAccessToken });
+    this.outboxItems.set(memoryEventId, {
+      outbox,
+      content,
+      ns,
+      itemId: localItem.id,
+      accessToken: ctx.kaypalAccessToken,
+    });
     this.fireOutboxDb({
       memoryEventId,
       tenantId: ns.tenantId,
@@ -148,7 +154,12 @@ export class MemoryOrchestrator {
       if (!entry || entry.outbox.status === 'done') return;
       try {
         // flushOutbox 无 ctx，token 必须从调用点捕获并随 entry 暂存；无 token 时回退默认 provider
-        await this.remote.add(entry.ns, entry.content, entry.itemId, entry.accessToken);
+        await this.remote.add(
+          entry.ns,
+          entry.content,
+          entry.itemId,
+          entry.accessToken,
+        );
         entry.outbox.status = 'done';
         this.fireOutboxDb(this.toRecord(entry));
       } catch {
@@ -156,7 +167,9 @@ export class MemoryOrchestrator {
         if (entry.outbox.attempts >= this.maxAttempts) {
           entry.outbox.status = 'dead'; // 死信，可人工重放
         } else {
-          entry.outbox.nextRetryAt = new Date(Date.now() + 2 ** entry.outbox.attempts * 1000).toISOString();
+          entry.outbox.nextRetryAt = new Date(
+            Date.now() + 2 ** entry.outbox.attempts * 1000,
+          ).toISOString();
         }
         this.fireOutboxDb(this.toRecord(entry));
       }
@@ -231,7 +244,11 @@ export class MemoryOrchestrator {
     return n;
   }
 
-  async delete(ctx: TenantContext, id: string, scope?: string): Promise<{ deleted: boolean }> {
+  async delete(
+    ctx: TenantContext,
+    id: string,
+    scope?: string,
+  ): Promise<{ deleted: boolean }> {
     // 只在本租户/用户命名空间前缀下查找，杜绝跨租户删除
     const prefix = `${ctx.tenantId}/${ctx.userId}/${ctx.agentId}/`;
     let localRemoved = false;
@@ -251,14 +268,27 @@ export class MemoryOrchestrator {
 
     // P1-5：精确 namespace 优先（本地命中 → 索引（必须租户归属匹配）→ 显式 scope → 兜底）
     const idxNs = this.itemIndex.get(id);
-    if (idxNs && idxNs.tenantId === ctx.tenantId && idxNs.userId === ctx.userId && idxNs.agentId === ctx.agentId) {
+    if (
+      idxNs &&
+      idxNs.tenantId === ctx.tenantId &&
+      idxNs.userId === ctx.userId &&
+      idxNs.agentId === ctx.agentId
+    ) {
       itemNs = idxNs;
     }
-    itemNs = itemNs ?? (scope ? deriveNamespace(ctx, scope, 'delete') : deriveNamespace(ctx, 'user_preference', 'delete'));
+    itemNs =
+      itemNs ??
+      (scope
+        ? deriveNamespace(ctx, scope, 'delete')
+        : deriveNamespace(ctx, 'user_preference', 'delete'));
 
     let remoteRemoved = false;
     try {
-      remoteRemoved = await this.remote.delete(itemNs, id, ctx.kaypalAccessToken);
+      remoteRemoved = await this.remote.delete(
+        itemNs,
+        id,
+        ctx.kaypalAccessToken,
+      );
     } catch {
       // 远程故障：绝不宣称删除成功
       return { deleted: false };
@@ -313,7 +343,10 @@ export class MemoryOrchestrator {
   private async scanOutbox(): Promise<void> {
     const now = Date.now();
     for (const [id, entry] of this.outboxItems) {
-      if (entry.outbox.status === 'pending' && Date.parse(entry.outbox.nextRetryAt) <= now) {
+      if (
+        entry.outbox.status === 'pending' &&
+        Date.parse(entry.outbox.nextRetryAt) <= now
+      ) {
         await this.flushOutbox(id);
       }
     }
@@ -365,7 +398,15 @@ function parseNsKey(key: string): MemoryNamespace {
     scope = rest.slice(0, wsIdx);
     workspaceId = rest.slice(wsIdx + '/_ws_'.length);
   }
-  return { tenantId, userId, agentId, scope, workspaceId, source: 'delete', retention: 'long_term' };
+  return {
+    tenantId,
+    userId,
+    agentId,
+    scope,
+    workspaceId,
+    source: 'delete',
+    retention: 'long_term',
+  };
 }
 
 function truncate(items: MemoryItem[], tokenBudget: number): MemoryItem[] {

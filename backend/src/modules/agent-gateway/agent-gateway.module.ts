@@ -44,7 +44,11 @@ export function resolveAgentSecret(config: ConfigService): string {
 
 @Module({
   imports: [CrmModule], // 真实业务工具（crm_create → CrmService）
-  controllers: [AgentGatewayController, AgentMemoryController, WorkspacesController],
+  controllers: [
+    AgentGatewayController,
+    AgentMemoryController,
+    WorkspacesController,
+  ],
   providers: [
     AgentGatewayService,
     WorkspacesService,
@@ -71,7 +75,9 @@ export function resolveAgentSecret(config: ConfigService): string {
       useFactory: (config: ConfigService) =>
         new AuthService(resolveAgentSecret(config), {
           // P0-2：Kaypal 正式 access_token 验证（kaypal.cn /api/auth/me）
-          baseUrl: config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() || 'https://kaypal.cn',
+          baseUrl:
+            config.get<string>('KAYPAL_AUTH_BASE_URL')?.trim() ||
+            'https://kaypal.cn',
           apiKey:
             config.get<string>('KAYPAL_BILLING_API_KEY')?.trim() ||
             config.get<string>('KAYPAL_API_KEY')?.trim() ||

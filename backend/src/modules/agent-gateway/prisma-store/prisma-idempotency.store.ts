@@ -29,7 +29,15 @@ export class PrismaIdempotencyStore {
     tenantId: string,
     key: string,
     taskId: string,
-    audit?: { userId?: string; workspaceId?: string; toolName?: string; risk?: string; inputHash?: string; requestJson?: string; toolCallId?: string },
+    audit?: {
+      userId?: string;
+      workspaceId?: string;
+      toolName?: string;
+      risk?: string;
+      inputHash?: string;
+      requestJson?: string;
+      toolCallId?: string;
+    },
   ): Promise<ClaimResult> {
     const existing = await this.prisma.agentGatewayToolCall.findUnique({
       where: { tenantId_idempotencyKey: { tenantId, idempotencyKey: key } },
@@ -54,22 +62,44 @@ export class PrismaIdempotencyStore {
       } catch (e: unknown) {
         // 并发下唯一约束冲突 → 按进行中处理
         if ((e as { code?: string })?.code === 'P2002') {
-          throw makeError('IDEMPOTENCY_CONFLICT', { details: { idempotencyKey: key, existingTaskId: taskId } });
+          throw makeError('IDEMPOTENCY_CONFLICT', {
+            details: { idempotencyKey: key, existingTaskId: taskId },
+          });
         }
         throw e;
       }
-      return { status: 'new', record: { tenantId, idempotencyKey: key, taskId, status: 'in_progress' } };
+      return {
+        status: 'new',
+        record: {
+          tenantId,
+          idempotencyKey: key,
+          taskId,
+          status: 'in_progress',
+        },
+      };
     }
     if (existing.status === 'running' || existing.status === 'scheduled') {
-      throw makeError('IDEMPOTENCY_CONFLICT', { details: { idempotencyKey: key, existingTaskId: existing.taskId } });
+      throw makeError('IDEMPOTENCY_CONFLICT', {
+        details: { idempotencyKey: key, existingTaskId: existing.taskId },
+      });
     }
     return {
       status: 'done',
-      record: { tenantId, idempotencyKey: key, taskId: existing.taskId, status: 'done', usageId: existing.usageId ?? undefined },
+      record: {
+        tenantId,
+        idempotencyKey: key,
+        taskId: existing.taskId,
+        status: 'done',
+        usageId: existing.usageId ?? undefined,
+      },
     };
   }
 
-  async markDone(tenantId: string, key: string, usageId: string): Promise<void> {
+  async markDone(
+    tenantId: string,
+    key: string,
+    usageId: string,
+  ): Promise<void> {
     await this.prisma.agentGatewayToolCall.updateMany({
       where: { tenantId, idempotencyKey: key },
       data: { status: 'done', usageId },
@@ -82,7 +112,10 @@ export class PrismaIdempotencyStore {
     });
   }
 
-  async get(tenantId: string, key: string): Promise<IdempotencyRecordLike | undefined> {
+  async get(
+    tenantId: string,
+    key: string,
+  ): Promise<IdempotencyRecordLike | undefined> {
     const r = await this.prisma.agentGatewayToolCall.findUnique({
       where: { tenantId_idempotencyKey: { tenantId, idempotencyKey: key } },
     });

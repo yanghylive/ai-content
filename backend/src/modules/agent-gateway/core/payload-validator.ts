@@ -17,11 +17,18 @@ export class PayloadValidator {
   private ajv: Ajv;
 
   constructor() {
-    this.ajv = new Ajv({ allErrors: true, strict: false, validateFormats: true });
+    this.ajv = new Ajv({
+      allErrors: true,
+      strict: false,
+      validateFormats: true,
+    });
     addFormats(this.ajv);
   }
 
-  private check(data: unknown, schema: Record<string, unknown>): ValidationResult {
+  private check(
+    data: unknown,
+    schema: Record<string, unknown>,
+  ): ValidationResult {
     if (!schema || Object.keys(schema).length === 0) return { ok: true };
     try {
       const ok = this.ajv.validate(schema, data);
@@ -33,11 +40,17 @@ export class PayloadValidator {
     }
   }
 
-  validateInput(payload: Record<string, unknown>, schema: Record<string, unknown>): ValidationResult {
+  validateInput(
+    payload: Record<string, unknown>,
+    schema: Record<string, unknown>,
+  ): ValidationResult {
     return this.check(payload, schema);
   }
 
-  validateOutput(data: Record<string, unknown>, schema: Record<string, unknown>): ValidationResult {
+  validateOutput(
+    data: Record<string, unknown>,
+    schema: Record<string, unknown>,
+  ): ValidationResult {
     return this.check(data, schema);
   }
 }

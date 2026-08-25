@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AgentGatewayMirror } from '../core/mirror';
 import { AgentSession, AgentTask, AgentEvent, Artifact } from '../core/types';
@@ -47,7 +48,11 @@ export class PrismaMirror implements AgentGatewayMirror {
   async sessionUpdated(s: AgentSession): Promise<void> {
     await this.prisma.agentGatewaySession.updateMany({
       where: { id: s.id },
-      data: { lastEventId: s.lastEventId, lastSequence: s.lastSequence, status: s.status },
+      data: {
+        lastEventId: s.lastEventId,
+        lastSequence: s.lastSequence,
+        status: s.status,
+      },
     });
   }
 
@@ -64,8 +69,8 @@ export class PrismaMirror implements AgentGatewayMirror {
           workspaceId: t.workspaceId ?? null,
           type: t.type,
           status: t.status,
-          planJson: t.planJson as object,
-          checkpointJson: t.checkpointJson as object,
+          planJson: t.planJson as Prisma.InputJsonValue,
+          checkpointJson: t.checkpointJson as Prisma.InputJsonValue,
           startedAt: t.startedAt ? new Date(t.startedAt) : null,
           finishedAt: t.finishedAt ? new Date(t.finishedAt) : null,
         },
@@ -79,7 +84,7 @@ export class PrismaMirror implements AgentGatewayMirror {
       where: { id: t.id },
       data: {
         status: t.status,
-        checkpointJson: t.checkpointJson as object,
+        checkpointJson: t.checkpointJson as Prisma.InputJsonValue,
         startedAt: t.startedAt ? new Date(t.startedAt) : null,
         finishedAt: t.finishedAt ? new Date(t.finishedAt) : null,
       },
@@ -88,10 +93,14 @@ export class PrismaMirror implements AgentGatewayMirror {
 
   async eventPublished(e: AgentEvent): Promise<void> {
     // 事件不含租户上下文，按 session 归属反查（不变量：事件必须有 tenantId + userId）
-    const session = await this.prisma.agentGatewaySession.findUnique({ where: { id: e.sessionId } });
+    const session = await this.prisma.agentGatewaySession.findUnique({
+      where: { id: e.sessionId },
+    });
     await this.upsertSafe(() =>
       this.prisma.agentGatewayEvent.upsert({
-        where: { sessionId_eventId: { sessionId: e.sessionId, eventId: e.eventId } },
+        where: {
+          sessionId_eventId: { sessionId: e.sessionId, eventId: e.eventId },
+        },
         create: {
           eventId: e.eventId,
           sessionId: e.sessionId,
@@ -101,7 +110,7 @@ export class PrismaMirror implements AgentGatewayMirror {
           sequence: e.sequence,
           type: e.type,
           taskId: e.taskId,
-          payload: e.payload as object,
+          payload: e.payload as Prisma.InputJsonValue,
           occurredAt: new Date(e.occurredAt),
         },
         update: {},
@@ -121,7 +130,7 @@ export class PrismaMirror implements AgentGatewayMirror {
           uri: a.uri,
           checksum: a.checksum,
           version: a.version,
-          metadataJson: a.metadataJson as object,
+          metadataJson: a.metadataJson as Prisma.InputJsonValue,
           expiresAt: null,
         },
         update: {},
