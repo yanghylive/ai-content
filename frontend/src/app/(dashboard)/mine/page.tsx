@@ -269,7 +269,7 @@ const MOBILE_MORE_MENU: Array<{
     items: [
       { label: "情报监控", desc: "行业情报实时监控", icon: "target", tint: "var(--kaypal-v3-purple)", href: "/intelligence/monitors" },
       { label: "商业就绪", desc: "上线能力自检", icon: "rocket", tint: "#c2410c", href: "/commercial-readiness" },
-      { label: "合规检查", desc: "内容合规校验", icon: "checkCircle", tint: "var(--kaypal-v3-success)", href: "/compliance-check" },
+      { label: "发布前检查", desc: "内容合规校验", icon: "checkCircle", tint: "var(--kaypal-v3-success)", href: "/compliance" },
       { label: "趋势雷达", desc: "行业趋势实时雷达", icon: "target", tint: "var(--kaypal-v3-amber)", href: "/intelligence/trends-radar" },
       { label: "情报报告", desc: "情报分析与报告", icon: "chart", tint: "var(--kaypal-v3-cobalt)", href: "/intelligence/report-new" },
     ],
