@@ -1,23 +1,53 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { Capabilities, TenantContext } from '../core/types';
-import { genId } from '../core/util';
+import { getOctopIdentity } from '../octop-identity';
 import { OctopAdapter } from './octop-mock';
+
+/** 浏览器环境探测缓存有效期（Octop 侧探测含文件系统扫描，不宜每次请求都打） */
+const ENV_PROBE_TTL_MS = 30_000;
+
+/**
+ * 「仅令牌」会话句柄前缀：Octop 浏览器环境未就绪（未装 playwright/Chrome）时，
+ * 高级模式仍可用（桌面端注入令牌打开 Octop 原生 UI），但**没有**后端浏览器会话。
+ * 用该前缀显式标记，避免把「无浏览器会话」伪装成「有会话」。
+ */
+const TOKEN_ONLY_PREFIX = 'octop_tok_';
+
+type OctopSessionResponse = { id?: string; url?: string; tabs?: unknown[] };
+type OctopEnvStatus = {
+  playwright?: boolean;
+  browsers_ok?: boolean;
+  harness_browser?: boolean;
+  chrome_path?: string | null;
+  error?: string | null;
+};
 
 /**
  * 真实 Octop 适配器（v0.9.26，本机 127.0.0.1:8088）。
- * - 健康检查：GET /api/health（免鉴权）
- * - 真实登录：POST /api/auth/login {username,password}（env OCTOP_USERNAME/OCTOP_PASSWORD，
- *   或 OCTOP_ACCESS_TOKEN 直用）——tokenExchange 即真实凭据交换
- * - 能力探测：读 Octop 服务端真实探测缓存（~/.octop/config.json capabilities.*）+ 健康检查
- * - 会话创建：Octop 会话由 ACP 通道管理（HTTP 路由未公开），REST 层以 token 交换为界
- * - 未配置凭据/不可达 → 优雅降级（OCTOP_DEGRADED，引擎走 3010 原生工具）
+ *
+ * 审计 #3「Agent Gateway 真控 Octop」落地——不再返回 `genId()` 假会话 id：
+ *   - 健康检查：`GET /api/health`（免鉴权）
+ *   - 身份/令牌：`OctopIdentity`（审计 #2）→ 每 Kaypal 用户独立 Octop 账号令牌
+ *   - **真实建会话**：`POST /api/browser/sessions` → 返回 Octop 真实 session id
+ *   - **真实取消**：`DELETE /api/browser/sessions/{id}`（关掉该用户的浏览器会话）
+ *   - **真实能力**：`GET /api/browser/env-status`（playwright + Chrome 实测），
+ *     不可得时回退读 `~/.octop/config.json` 探测缓存
+ *
+ * 降级策略（不可达/无凭据/浏览器环境未就绪）→ 能力标 degraded，引擎走 3010 原生工具；
+ * 浏览器环境未就绪时会话降级为「仅令牌句柄」（前缀 `octop_tok_`），语义显式不作假。
  */
 export class RealOctopAdapter implements OctopAdapter {
   private baseUrl: string;
-  private token?: string;
+  /** 构造入参显式令牌（测试/特殊部署用；优先级最高） */
+  private explicitToken?: string;
   private healthyFlag = true;
+  private identity = getOctopIdentity();
+  /** octopSessionId → kaypalUserId：令牌交换/取消时定位会话属主，保证 per-user 令牌 */
+  private sessionOwners = new Map<string, string>();
+  private envCache?: { at: number; env: OctopEnvStatus };
 
   constructor(opts?: { baseUrl?: string; accessToken?: string }) {
     this.baseUrl = (
@@ -25,53 +55,106 @@ export class RealOctopAdapter implements OctopAdapter {
       process.env.OCTOP_BASE_URL ??
       'http://127.0.0.1:8088'
     ).replace(/\/+$/, '');
-    this.token = opts?.accessToken ?? process.env.OCTOP_ACCESS_TOKEN?.trim();
+    this.explicitToken =
+      opts?.accessToken ?? process.env.OCTOP_ACCESS_TOKEN?.trim();
   }
 
   private credentials(): { username?: string; password?: string } {
     return {
-      username: process.env.OCTOP_USERNAME?.trim(),
-      password: process.env.OCTOP_PASSWORD?.trim(),
+      username:
+        process.env.OCTOP_ADMIN_USERNAME?.trim() ||
+        process.env.OCTOP_USERNAME?.trim(),
+      password:
+        process.env.OCTOP_ADMIN_PASSWORD?.trim() ||
+        process.env.OCTOP_PASSWORD?.trim(),
     };
   }
 
-  /** 真实凭据交换：OCTOP_ACCESS_TOKEN 直用，或 /api/auth/login 换 token */
-  private async auth(): Promise<string | undefined> {
-    if (this.token) return this.token;
-    const { username, password } = this.credentials();
-    if (username && password) {
-      try {
-        const r = await fetch(`${this.baseUrl}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ username, password }),
-          signal: AbortSignal.timeout(5000),
-        });
-        if (r.ok) {
-          const d = (await r.json()) as { access_token?: string };
-          this.token = d.access_token;
-          return this.token;
-        }
-      } catch {
-        /* 降级 */
-      }
+  /**
+   * 真实凭据交换：显式令牌直用，否则经 OctopIdentity 解析
+   * （per-user 模式 → 该用户专属 Octop 账号；shared 模式 → 共享凭据）。
+   */
+  private async auth(kaypalUserId?: string): Promise<string | undefined> {
+    if (this.explicitToken) return this.explicitToken;
+    try {
+      const r = await this.identity.resolve(kaypalUserId);
+      return r.token;
+    } catch {
+      return undefined; // 降级
     }
-    return undefined;
   }
 
-  async createSession(
-    _ctx: TenantContext,
-  ): Promise<{ octopSessionId: string }> {
-    if (!(await this.auth())) throw new Error('OCTOP_UNAVAILABLE');
-    // Octop 会话由 ACP 通道管理（HTTP 路由未公开，enable_api_docs=false）；
-    // REST 层以 token 交换为界，会话 ID 由引擎侧持有
-    return { octopSessionId: genId('octop') };
+  /** 「仅令牌」句柄：确定性绑定到用户，避免随机假 id */
+  private tokenOnlyHandle(kaypalUserId?: string): string {
+    const h = createHash('sha256')
+      .update(`octop-token-only:${kaypalUserId ?? 'shared'}`)
+      .digest('hex')
+      .slice(0, 12);
+    return `${TOKEN_ONLY_PREFIX}${h}`;
+  }
+
+  /**
+   * 真实创建 Octop 浏览器会话。
+   * 注意：Octop 侧会话与浏览器 profile 按 **Octop 用户 id** 隔离，
+   * 所以这里必须用「该 Kaypal 用户对应的 Octop 令牌」，否则所有租户会共用一个会话。
+   */
+  async createSession(ctx: TenantContext): Promise<{ octopSessionId: string }> {
+    const userId = ctx.userId;
+    let token = await this.auth(userId);
+    if (!token) throw new Error('OCTOP_UNAVAILABLE');
+
+    const post = (t: string): Promise<Response> =>
+      fetch(`${this.baseUrl}/api/browser/sessions`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${t}`,
+        },
+        body: JSON.stringify({}),
+        signal: AbortSignal.timeout(30_000), // 冷启动要拉起 Chromium
+      });
+
+    let res: Response;
+    try {
+      res = await post(token);
+      if (res.status === 401) {
+        // 令牌过期：失效缓存后重试一次
+        this.identity.invalidate(userId);
+        const fresh = await this.auth(userId);
+        if (!fresh) throw new Error('OCTOP_UNAVAILABLE');
+        token = fresh;
+        res = await post(fresh);
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message === 'OCTOP_UNAVAILABLE') throw e;
+      throw new Error('OCTOP_UNAVAILABLE');
+    }
+
+    if (res.ok) {
+      const d = (await res.json()) as OctopSessionResponse;
+      const id = typeof d.id === 'string' && d.id ? d.id : undefined;
+      if (id) {
+        this.sessionOwners.set(id, userId);
+        return { octopSessionId: id };
+      }
+    }
+
+    // 503 = Octop 浏览器环境未就绪（未装 playwright / 找不到 Chrome）。
+    // 高级模式仍应可用（桌面端注入令牌打开 Octop 原生 UI），故降级为「仅令牌句柄」。
+    if (res.status === 503) {
+      const handle = this.tokenOnlyHandle(userId);
+      this.sessionOwners.set(handle, userId);
+      return { octopSessionId: handle };
+    }
+
+    throw new Error('OCTOP_UNAVAILABLE');
   }
 
   async tokenExchange(
-    _octopSessionId: string,
+    octopSessionId: string,
   ): Promise<{ token: string; expiresAt: string }> {
-    const token = await this.auth(); // 真实 /api/auth/login（octop-bridge 凭据）
+    const owner = this.sessionOwners.get(octopSessionId);
+    const token = await this.auth(owner);
     if (!token) throw new Error('OCTOP_UNAVAILABLE');
     return {
       token,
@@ -79,18 +162,33 @@ export class RealOctopAdapter implements OctopAdapter {
     };
   }
 
+  /**
+   * 真实取消：关闭该用户在 Octop 侧的浏览器会话（`DELETE /api/browser/sessions/{id}` → 204）。
+   * 传入的应是 Octop 真实会话 id；「仅令牌句柄」没有后端会话可关，返回 cancelled=false（不作假）。
+   */
   async cancelRun(
-    sessionId: string,
+    octopSessionId: string,
     _reason?: string,
   ): Promise<{ cancelled: boolean }> {
-    if (!(await this.auth())) return { cancelled: false };
+    if (octopSessionId.startsWith(TOKEN_ONLY_PREFIX))
+      return { cancelled: false };
+    const owner = this.sessionOwners.get(octopSessionId);
+    const token = await this.auth(owner);
+    if (!token) return { cancelled: false };
     try {
-      const r = await fetch(`${this.baseUrl}/api/runs/${sessionId}/cancel`, {
-        method: 'POST',
-        headers: { authorization: `Bearer ${this.token}` },
-        signal: AbortSignal.timeout(3000),
-      });
-      return { cancelled: r.ok };
+      const r = await fetch(
+        `${this.baseUrl}/api/browser/sessions/${encodeURIComponent(octopSessionId)}`,
+        {
+          method: 'DELETE',
+          headers: { authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(5_000),
+        },
+      );
+      if (r.status === 204 || r.ok) {
+        this.sessionOwners.delete(octopSessionId);
+        return { cancelled: true };
+      }
+      return { cancelled: false };
     } catch {
       return { cancelled: false };
     }
@@ -105,21 +203,37 @@ export class RealOctopAdapter implements OctopAdapter {
       businessTools: [],
     };
     if (!this.healthyFlag) {
-      const reason = 'Octop 不可达，已降级为 3010 原生工具';
-      return this.degraded(base, reason);
+      return this.degraded(base, 'Octop 不可达，已降级为 3010 原生工具');
     }
-    // 真实能力：读 Octop 服务端探测缓存（config.json capabilities.*，Octop 启动时实测）
+
+    // 真实浏览器环境（/api/browser/env-status 实测 playwright + Chrome），由 healthy() 刷新
+    const env = this.envCache?.env;
+    const browserReady =
+      env !== undefined
+        ? env.playwright === true && env.browsers_ok === true
+        : undefined;
+
     const probed = this.readOctopProbedCapabilities();
     if (probed) {
       return {
-        browser: { available: probed.browser },
+        browser: {
+          available: browserReady ?? probed.browser,
+          ...(browserReady === false
+            ? {
+                degraded: true,
+                reason:
+                  env?.error ??
+                  'Octop 浏览器环境未就绪（缺 playwright / Chrome）',
+              }
+            : {}),
+        },
         computer: { available: probed.computer },
         mobile: { available: probed.mobile },
         file: { available: probed.file },
         businessTools: [],
       };
     }
-    if (!this.token && !this.credentials().username) {
+    if (!this.explicitToken && !this.credentials().username) {
       return this.degraded(
         base,
         '未配置 Octop 凭据（OCTOP_USERNAME/OCTOP_PASSWORD / OCTOP_ACCESS_TOKEN）',
@@ -127,7 +241,7 @@ export class RealOctopAdapter implements OctopAdapter {
     }
     return {
       ...base,
-      browser: { available: true },
+      browser: { available: browserReady ?? true },
       mobile: { available: true },
     };
   }
@@ -176,12 +290,32 @@ export class RealOctopAdapter implements OctopAdapter {
     };
   }
 
+  /** 刷新真实浏览器环境探测（需鉴权；失败不影响健康判定） */
+  private async refreshBrowserEnv(): Promise<void> {
+    if (this.envCache && Date.now() - this.envCache.at < ENV_PROBE_TTL_MS)
+      return;
+    const token = await this.auth();
+    if (!token) return;
+    try {
+      const r = await fetch(`${this.baseUrl}/api/browser/env-status`, {
+        headers: { authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(3_000),
+      });
+      if (!r.ok) return;
+      const env = (await r.json()) as OctopEnvStatus;
+      this.envCache = { at: Date.now(), env };
+    } catch {
+      /* 探测失败 → 保留旧缓存/回退 config.json */
+    }
+  }
+
   async healthy(): Promise<boolean> {
     try {
       const r = await fetch(`${this.baseUrl}/api/health`, {
         signal: AbortSignal.timeout(1500),
       });
       this.healthyFlag = r.ok;
+      if (r.ok) await this.refreshBrowserEnv();
       return r.ok;
     } catch {
       this.healthyFlag = false;

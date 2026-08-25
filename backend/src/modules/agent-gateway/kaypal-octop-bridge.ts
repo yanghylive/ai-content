@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { getOctopIdentity } from './octop-identity';
 
 /** 取第一个非空字符串；对 unknown 做 typeof 守卫避免 no-base-to-string */
 function firstNonEmptyString(...vals: unknown[]): string | undefined {
@@ -49,10 +50,6 @@ export class KaypalOctopBridge {
     );
   }
 
-  private octopBase(): string {
-    return process.env.OCTOP_BASE_URL?.trim() || 'http://127.0.0.1:8088';
-  }
-
   /** 1) Kaypal.cn 用户登录（实测端点：POST /api/desktop-auth/password） */
   async loginKaypal(
     phone: string,
@@ -94,37 +91,35 @@ export class KaypalOctopBridge {
     };
   }
 
-  /** 2) 桥持 Octop 凭据换 Octop access token（用户凭据或 access token 直用） */
-  async loginOctop(): Promise<{ token: string; expiresAt: string }> {
-    const direct = process.env.OCTOP_ACCESS_TOKEN?.trim();
-    if (direct)
-      return {
-        token: direct,
-        expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
-      };
-    const username = process.env.OCTOP_USERNAME?.trim();
-    const password =
-      process.env.OCTOP_PASSWORD?.trim() ??
-      process.env.OCTOP_SETUP_PASSWORD?.trim();
-    if (!username || !password) {
-      throw new Error(
-        'OCTOP_USERNAME/OCTOP_PASSWORD（或 OCTOP_ACCESS_TOKEN）未配置',
-      );
+  /**
+   * 2) 换 Octop access token —— 统一委托 `OctopIdentity`（审计 #2 用户级 SSO）。
+   *
+   * - 传 `kaypalUserId`：解析「该用户专属 Octop 账号」的令牌（per-user 模式下首次自动开号），
+   *   Octop 侧浏览器会话与 cookie 因此按用户隔离；shared 模式回退共享凭据。
+   * - 传显式 `username/password/accessToken`：按给定凭据登录（特殊部署/自带账号）。
+   * - 都不传：共享凭据（单用户桌面场景）。
+   *
+   * 登录实现只保留在 OctopIdentity 一处，避免 bridge / adapter / controller 三处重复。
+   */
+  async loginOctop(opts?: {
+    kaypalUserId?: string;
+    username?: string;
+    password?: string;
+    accessToken?: string;
+  }): Promise<{ token: string; expiresAt: string; isolated?: boolean }> {
+    const identity = getOctopIdentity();
+    if (opts?.accessToken?.trim() || opts?.username?.trim()) {
+      return identity.loginWith({
+        username: opts.username,
+        password: opts.password,
+        accessToken: opts.accessToken,
+      });
     }
-    const res = await fetch(`${this.octopBase()}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-      signal: AbortSignal.timeout(5_000),
-    });
-    if (!res.ok) throw new Error(`Octop 登录失败 HTTP ${res.status}`);
-    const d = (await res.json()) as Record<string, unknown>;
-    const token =
-      firstNonEmptyString(d.access_token, d.accessToken, d.token) ?? '';
-    if (!token) throw new Error('Octop 登录失败：未返回 token');
+    const r = await identity.resolve(opts?.kaypalUserId);
     return {
-      token,
+      token: r.token,
       expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+      isolated: r.isolated,
     };
   }
 

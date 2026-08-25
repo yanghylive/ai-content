@@ -67,6 +67,11 @@ function main() {
     cwd: desktopRoot,
   });
 
+  // macOS 交叉构建路径下需要补齐 sharp Win 原生包；Windows 真机构建时已天然就位，脚本 no-op
+  run('Ensure sharp Win32 native package present', 'node', ['scripts/prepare-sharp-win32.js'], {
+    cwd: desktopRoot,
+  });
+
   // 准备 win-x64 ffmpeg/ffprobe（视频发布硬依赖；此前 win 包从未带 media-tools，视频处理断链）
   run('Prepare bundled media tools (ffmpeg/ffprobe)', 'node', ['scripts/prepare-media-tools.js'], {
     cwd: desktopRoot,

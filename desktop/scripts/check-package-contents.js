@@ -73,7 +73,7 @@ function extractWinExe(exePath) {
   };
 }
 
-function checkExtracted(label, resources) {
+function checkExtracted(label, resources, requiredImgVariants) {
   if (!resources || !fs.existsSync(resources)) {
     check(false, `${label}: resources 目录不存在`);
     return;
@@ -101,7 +101,16 @@ function checkExtracted(label, resources) {
       `${label} backend 内置 ${pkg}`,
     );
   }
-  for (const img of ["sharp-darwin-arm64", "sharp-libvips-darwin-arm64", "sharp-win32-x64", "sharp-libvips-win32-x64"]) {
+  // 4 个 sharp 原生变体全检（Mac/Win 装包共用同一份 backend bundle，跨平台抽取须齐；
+  // 之前 Mac 装包不带 win32-x64 是 #8 审计抓到的真实缺口，由
+  // desktop/scripts/prepare-sharp-win32.js 在打包前补齐）。
+  const imgList = requiredImgVariants || [
+    "sharp-darwin-arm64",
+    "sharp-libvips-darwin-arm64",
+    "sharp-win32-x64",
+    "sharp-libvips-win32-x64",
+  ];
+  for (const img of imgList) {
     check(
       fs.existsSync(path.join(backendNodeModules, "@img", img, "package.json")),
       `${label} backend 内置 @img/${img}`,
@@ -138,12 +147,27 @@ console.log(`═══ 安装包内容完整性检查（${targetDir}）═══
 const macZips = fs.readdirSync(targetDir).filter((f) => /arm64-mac\.zip$/.test(f) && !f.includes("1.1.85"));
 const winExes = fs.readdirSync(targetDir).filter((f) => /Setup.*\.exe$/.test(f) && !f.includes("1.1.85"));
 
+// Mac / Win 装包都共用同一份 backend bundle（含 4 个 sharp 原生变体）——
+// 跨平台安装包抽取同一份 backend 时，4 个变体必须齐。
+// 之前 Mac 装包不带 win32-x64 是 #8 审计抓到的真实缺口，
+// 由 desktop/scripts/prepare-sharp-win32.js 在打包前补齐（macOS 交叉构建路径必须）。
+const SHARP_REQUIRED_ALL = [
+  "sharp-darwin-arm64",
+  "sharp-libvips-darwin-arm64",
+  "sharp-win32-x64",
+  "sharp-libvips-win32-x64",
+];
+
 // Mac
 if (macZips.length === 0) {
   check(false, "Mac zip 未找到", targetDir);
 } else {
   const mac = extractMacApp(path.join(targetDir, macZips[macZips.length - 1]));
-  checkExtracted(`Mac(${macZips[macZips.length - 1]})`, mac.resources);
+  checkExtracted(
+    `Mac(${macZips[macZips.length - 1]})`,
+    mac.resources,
+    SHARP_REQUIRED_ALL,
+  );
   mac.cleanup();
 }
 
@@ -153,7 +177,11 @@ if (winExes.length === 0) {
 } else {
   const win = extractWinExe(path.join(targetDir, winExes[winExes.length - 1]));
   if (win.resources) {
-    checkExtracted(`Win(${winExes[winExes.length - 1]})`, win.resources);
+    checkExtracted(
+      `Win(${winExes[winExes.length - 1]})`,
+      win.resources,
+      SHARP_REQUIRED_ALL,
+    );
   } else {
     check(false, "Win exe 解包失败（app-64.7z 未找到）", winExes[winExes.length - 1]);
   }
