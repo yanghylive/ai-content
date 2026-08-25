@@ -19,20 +19,41 @@ import { ConfigService } from '@nestjs/config';
  * 六步闭环：会话 → 内容 → 获客 → 发布(审批) → CRM(审批，真实落库) → 复盘。
  * 无 DB / Kaypal 凭据环境自动跳过。
  */
-const hasDb = !!process.env.DATABASE_URL;
+// 模块顶层：从 backend/.env 文件回退读（jest 不自动加载 .env，且须在模块加载期取值）
+let envCache: Record<string, string> | null = null;
+function envOf(key: string): string | undefined {
+  if (process.env[key]) return process.env[key];
+  if (envCache === null) {
+    envCache = {};
+    try {
+      const txt = readFileSync(join(process.cwd(), '.env'), 'utf8');
+      for (const line of txt.split('\n')) {
+        const t = line.trim();
+        if (!t || t.startsWith('#')) continue;
+        const i = t.indexOf('=');
+        if (i > 0) envCache[t.slice(0, i).trim()] = t.slice(i + 1).trim();
+      }
+    } catch {
+      /* .env 不存在则回退空 */
+    }
+  }
+  return envCache[key];
+}
+
+const hasDb = !!envOf('DATABASE_URL');
 // 商用验收门禁（方案 7.1）：缺凭据 → 显式失败，禁止「return 即通过 / passed 但 0 断言」
 const test = hasDb ? it : it.skip;
 
 describe('全开关端到端（persist + real business + octop + kaypal auth）', () => {
   let app: INestApplication;
   let prisma: PrismaClient;
-  const phone = process.env.KAYPAL_TEST_PHONE;
-  const pwd = process.env.KAYPAL_TEST_PASSWORD;
+  const phone = envOf('KAYPAL_TEST_PHONE');
+  const pwd = envOf('KAYPAL_TEST_PASSWORD');
 
   beforeAll(async () => {
     if (!hasDb) return;
     // 商用验收门禁（方案 7.1）：连 DB 但缺 Kaypal 凭据 → 显式失败，禁止 passed+0 断言
-    if (!process.env.KAYPAL_TEST_PHONE || !process.env.KAYPAL_TEST_PASSWORD) {
+    if (!envOf('KAYPAL_TEST_PHONE') || !envOf('KAYPAL_TEST_PASSWORD')) {
       throw new Error('商用验收需要 KAYPAL_TEST_PHONE / KAYPAL_TEST_PASSWORD（缺失时禁止静默通过）');
     }
     process.env.AGENT_GATEWAY_PERSISTENCE = 'prisma';

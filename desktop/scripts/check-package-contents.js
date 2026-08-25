@@ -137,6 +137,14 @@ function checkExtracted(label, resources, requiredImgVariants) {
   check(fs.existsSync(path.join(resources, "playwright-browsers", "chromium")), `${label} 内置 playwright chromium`);
   const engines = fs.readdirSync(path.join(resources, "backend")).filter((f) => f.includes("query_engine") || f.includes("libquery_engine"));
   check(engines.length > 0, `${label} Prisma 引擎`, engines.join(", "));
+
+  // 5. Octop sidecar（审计 #3：Octop 直接打包，不外部依赖。P1 #4 补漏检）
+  const octopRoot = path.join(resources, "octop");
+  check(fs.existsSync(octopRoot), `${label} 内置 Octop sidecar 目录`);
+  check(fs.existsSync(path.join(octopRoot, "entry.sh")), `${label} Octop entry.sh`);
+  check(fs.existsSync(path.join(octopRoot, "entry.bat")), `${label} Octop entry.bat`);
+  check(fs.existsSync(path.join(octopRoot, "venv", "bin", "python")) || fs.existsSync(path.join(octopRoot, "venv", "Scripts", "python.exe")), `${label} Octop venv python`);
+  check(fs.existsSync(path.join(octopRoot, "browsers")), `${label} Octop playwright browsers`);
 }
 
 const argDir = process.argv.find((a) => a.startsWith("--dir"))?.split("=")[1] || "dist";
