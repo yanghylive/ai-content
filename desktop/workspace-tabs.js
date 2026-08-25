@@ -491,14 +491,23 @@ class TabManager {
    * 拉起 / 切换 Octop 高级模式标签。
    * 安全：url 仅允许 loopback http(s)（防任意站点加载 + Bearer 令牌外泄）；
    * token 仅在拿到新值时覆盖（launch 失败 token=null 不清掉已开的合法会话）。
+   *
+   * 审计 #7：token 主进程侧交换——token 不再从 3010 渲染进程传入，
+   * 而是主进程从 business 标签读登录 session cookie → 直接向后端 /api/octop/launch 换 token。
+   * 3010 渲染进程只发「打开」信号（url），不接触 Octop Bearer 令牌。
    * @param {string} url  Octop base URL（默认 http://127.0.0.1:8088）
-   * @param {string} token Octop Bearer 令牌（来自后端 /api/octop/launch）
    */
-  openOctop(url, token) {
+  async openOctop(url) {
     const target = url || 'http://127.0.0.1:8088';
     if (!isLoopbackHttpUrl(target)) {
       console.warn(`[TabManager] 拒绝加载非 loopback 的 Octop 地址: ${target}`);
       return null;
+    }
+    let token = null;
+    try {
+      token = await this._exchangeOctopToken();
+    } catch (e) {
+      console.warn('[Octop] 主进程换 token 失败，将以未认证态打开:', e && e.message);
     }
     for (const t of this.tabs.values()) {
       if (t.kind === 'octop') {
@@ -533,6 +542,26 @@ class TabManager {
     this.persist();
     this.switchTo(tab.id);
     return tab.id;
+  }
+
+  /**
+   * 主进程侧 token 交换（审计 #7）：从 business 标签读登录 session cookie，
+   * 带 Cookie 头调后端 /api/octop/launch 换 Octop Bearer 令牌。
+   * 不经过 3010 渲染进程；失败返回 null（Octop 以未认证态打开，由后端降级提示）。
+   */
+  async _exchangeOctopToken() {
+    const business = [...this.tabs.values()].find((t) => t.kind === 'business');
+    if (!business || !business.view || business.view.webContents.isDestroyed()) return null;
+    const cookies = await business.view.webContents.session.cookies.get({ name: 'ai_content_session' });
+    const sessionToken = cookies && cookies[0] && cookies[0].value;
+    if (!sessionToken) return null;
+    const res = await fetch('http://127.0.0.1:3011/api/octop/launch', {
+      headers: { cookie: `ai_content_session=${sessionToken}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    return d && d.healthy && d.token ? d.token : null;
   }
 
   getActive() {
@@ -666,9 +695,10 @@ class TabManager {
       if (!this._isBusinessSender(e)) return null;
       return this.createTab({ workspaceId: workspaceId || null, title: title || '工作台' });
     });
-    ipcMain.handle('workspace-tabs:openOctop', (e, url, token) => {
+    ipcMain.handle('workspace-tabs:openOctop', (e, url) => {
       if (!this._isBusinessSender(e)) return null;
-      return this.openOctop(url, token);
+      // 审计 #7：token 主进程侧交换，IPC 只传 url（不传 token）
+      return this.openOctop(url);
     });
     ipcMain.handle('workspace-tabs:switch', (e, id) => {
       if (!this._isBusinessSender(e)) return false;

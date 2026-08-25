@@ -129,7 +129,7 @@ export interface UpdateEventCallbacks {
 
 interface ElectronWorkspaceTabsAPI {
   open(workspaceId?: string | null, title?: string): Promise<unknown>;
-  openOctop(url?: string | null, token?: string | null): Promise<unknown>;
+  openOctop(url?: string | null): Promise<unknown>;
   switchTo(tabId: string): Promise<unknown>;
   switchBusiness(): Promise<unknown>;
   close(tabId: string): Promise<unknown>;

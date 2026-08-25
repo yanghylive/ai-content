@@ -104,7 +104,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 多工作区标签壳（方案 A）：供前端 workspace 切换器开/关/切标签并绑定 workspaceId
   workspaceTabs: {
     open: (workspaceId, title) => ipcRenderer.invoke('workspace-tabs:open', workspaceId, title),
-    openOctop: (url, token) => ipcRenderer.invoke('workspace-tabs:openOctop', url, token),
+    openOctop: (url) => ipcRenderer.invoke('workspace-tabs:openOctop', url),
     switchTo: (tabId) => ipcRenderer.invoke('workspace-tabs:switch', tabId),
     switchBusiness: () => ipcRenderer.invoke('workspace-tabs:switchBusiness'),
     close: (tabId) => ipcRenderer.invoke('workspace-tabs:close', tabId),

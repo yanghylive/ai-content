@@ -2,7 +2,6 @@
 
 import React from "react";
 import toast from "@/lib/toast";
-import { api } from "@/lib/api/client";
 
 type WorkspaceTabsApi = NonNullable<Window["electronAPI"]>["workspaceTabs"];
 
@@ -18,10 +17,15 @@ function useElectronWorkspaceTabs(): WorkspaceTabsApi | null {
   return tabs;
 }
 
+/** Octop 本机默认 base URL（与后端 OCTOP_BASE_URL 默认值一致，loopback 固定 8088） */
+const OCTOP_BASE_URL = "http://127.0.0.1:8088";
+
 /**
  * Octop 高级模式拉起逻辑（全局可用，登录页/任意页面均生效）。
- * 链路：GET /api/octop/launch（会话鉴权）→ {octopBaseUrl, healthy, token}
- * → electronAPI.workspaceTabs.openOctop（桌面壳建标签 + localStorage 自举免登录）。
+ *
+ * 审计 #7：token 主进程侧交换——前端只发「打开」信号（url），**不再接触 Octop Bearer 令牌**。
+ * 主进程（workspace-tabs.js）从 business 标签读登录 session cookie → 直接向后端换 token 注入。
+ * 健康检查 / 免登录自举 / isolated 告警等全部收敛到主进程 + 后端，前端不持有任何 Octop 凭证。
  */
 export function useOctopLaunch() {
   const tabs = useElectronWorkspaceTabs();
@@ -35,29 +39,9 @@ export function useOctopLaunch() {
     if (busyRef.current) return; // 防按钮+事件并发双触发
     busyRef.current = true;
     try {
-      const res = (await api.get("/octop/launch")) as {
-        octopBaseUrl: string;
-        healthy: boolean;
-        token: string | null;
-        isolated?: boolean;
-      };
-      if (!res.healthy) {
-        toast.error("本机 Octop 未运行（127.0.0.1:8088 健康检查失败），请先启动 Octop");
-        return;
-      }
-      if (!res.token) {
-        toast.error("Octop 凭据未配置（后端需 OCTOP_USERNAME/PASSWORD 或 OCTOP_ACCESS_TOKEN）");
-        return;
-      }
-      // 审计 #6：isolated=false 说明后端回退到共享 Octop 账号，
-      // 多用户部署下浏览器会话/cookie 会跨用户共享（跨租户越权风险），前端需显式提示。
-      if (res.isolated === false) {
-        toast.error(
-          "当前 Octop 使用共享账号（未启用每用户隔离）。多用户部署下浏览器会话将跨用户共享，请为每位用户配置独立 Octop 账号。",
-        );
-      }
-      await tabs.openOctop(res.octopBaseUrl, res.token);
-      toast.success("已打开 Octop 高级模式");
+      const opened = await tabs.openOctop(OCTOP_BASE_URL);
+      if (opened) toast.success("已打开 Octop 高级模式");
+      else toast.error("打开 Octop 失败");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "打开 Octop 失败");
     } finally {
