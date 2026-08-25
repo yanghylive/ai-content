@@ -10,15 +10,19 @@ export interface OctopAdapter {
   createSession(ctx: TenantContext): Promise<{ octopSessionId: string }>;
   tokenExchange(
     octopSessionId: string,
+    kaypalUserId?: string,
   ): Promise<{ token: string; expiresAt: string }>;
   /**
    * 下发取消/暂停指令给正在执行的 RPA（真实环境经 Octop 控制面）。
    * 入参是 **Octop 侧会话 id**（createSession 的返回值），不是网关自己的 sessionId；
    * 真实实现据此 `DELETE /api/browser/sessions/{id}` 关掉该用户的浏览器会话。
+   * kaypalUserId 由网关从持久化的 session 记录传入，保证后端重启后仍能定位会话属主
+   * （审计 #8：属主信息不得只活在适配器内存 map 里）。
    */
   cancelRun(
     octopSessionId: string,
     reason?: string,
+    kaypalUserId?: string,
   ): Promise<{ cancelled: boolean }>;
   getCapabilities(): Capabilities;
   healthy(): Promise<boolean>;
@@ -48,6 +52,7 @@ export class MockOctopAdapter implements OctopAdapter {
 
   async tokenExchange(
     octopSessionId: string,
+    _kaypalUserId?: string,
   ): Promise<{ token: string; expiresAt: string }> {
     if (!this.healthyFlag) throw new Error('OCTOP_UNAVAILABLE');
     return {
@@ -59,6 +64,7 @@ export class MockOctopAdapter implements OctopAdapter {
   async cancelRun(
     _sessionId: string,
     _reason?: string,
+    _kaypalUserId?: string,
   ): Promise<{ cancelled: boolean }> {
     if (!this.healthyFlag) throw new Error('OCTOP_UNAVAILABLE');
     return { cancelled: true };
