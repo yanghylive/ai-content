@@ -46,7 +46,6 @@ export class ErrorReportController {
   @Post('client')
   @HttpCode(204)
   @Public()
-  // eslint-disable-next-line @typescript-eslint/require-await
   async clientError(
     @Req() request: Request,
     @Body()

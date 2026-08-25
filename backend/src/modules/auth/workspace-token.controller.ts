@@ -4,11 +4,11 @@ import {
   Req,
   HttpCode,
   UnauthorizedException,
-} from "@nestjs/common";
-import type { Request } from "express";
-import { Inject } from "@nestjs/common";
-import { AuthService } from "../agent-gateway/core/auth";
-import type { AuthenticatedUser } from "./auth.types";
+} from '@nestjs/common';
+import type { Request } from 'express';
+import { Inject } from '@nestjs/common';
+import { AuthService } from '../agent-gateway/core/auth';
+import type { AuthenticatedUser } from './auth.types';
 
 /**
  * 4.4 多工作区标签壳 · 会话 → kaypal 令牌桥接。
@@ -29,27 +29,26 @@ const WORKSPACE_TOKEN_TTL_MS = 3_600_000;
 
 type WorkspaceTokenRequest = Request & { authUser?: AuthenticatedUser };
 
-@Controller("auth")
+@Controller('auth')
 export class WorkspaceTokenController {
   constructor(
-    @Inject("AGENT_GATEWAY_AUTH_SERVICE")
+    @Inject('AGENT_GATEWAY_AUTH_SERVICE')
     private readonly agentAuth: AuthService,
   ) {}
 
-  @Post("workspace-token")
+  @Post('workspace-token')
   @HttpCode(200)
   issueWorkspaceToken(@Req() req: WorkspaceTokenRequest) {
     const user = req.authUser;
     if (!user) {
-      throw new UnauthorizedException("请先登录");
+      throw new UnauthorizedException('请先登录');
     }
-    const identity =
-      (user.kaypalUserId && user.kaypalUserId.trim()) || user.id;
+    const identity = (user.kaypalUserId && user.kaypalUserId.trim()) || user.id;
     if (!identity) {
-      throw new UnauthorizedException("无法签发工作区令牌：用户身份缺失");
+      throw new UnauthorizedException('无法签发工作区令牌：用户身份缺失');
     }
     const token = this.agentAuth.issue(
-      { tenantId: identity, userId: identity, agentId: "desktop-shell" },
+      { tenantId: identity, userId: identity, agentId: 'desktop-shell' },
       WORKSPACE_TOKEN_TTL_MS,
     );
     return { token };

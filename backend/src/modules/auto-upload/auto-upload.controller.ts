@@ -486,7 +486,6 @@ export class AutoUploadController {
   }
 
   @Get('materials/preview')
-  // eslint-disable-next-line @typescript-eslint/require-await -- 方法体当前同步，保留 async 签名以兼容调用方/生命周期/路由契约
   async previewMaterial(
     @Query('filename') filename: string | undefined,
     @Res() response: Response,
