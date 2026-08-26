@@ -1415,7 +1415,10 @@ async function startBackendService() {
             path.join(backendPath, 'client', 'libquery_engine-debian-openssl-3.0.x.so.node')
           ];
   const prismaEnginePath = prismaEngineCandidates.find((candidate) => fs.existsSync(candidate));
-  if (prismaEnginePath) {
+  // 2026-08-27 真机 P0：Windows native 引擎(query_engine-windows.dll.node)交叉构建产物损坏，
+  // 连全新空库都报 "database disk image is malformed"；而 Prisma 默认 WASM 引擎(query_engine_bg.wasm)
+  // 可正常打开 seed。Windows 强制走 WASM 引擎（不设 PRISMA_QUERY_ENGINE_LIBRARY），macOS/linux 保留 native。
+  if (prismaEnginePath && process.platform !== 'win32') {
     envVars.PRISMA_CLIENT_ENGINE_TYPE = envVars.PRISMA_CLIENT_ENGINE_TYPE || 'library';
     envVars.PRISMA_QUERY_ENGINE_LIBRARY = prismaEnginePath;
   }
