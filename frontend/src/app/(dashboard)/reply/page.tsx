@@ -95,14 +95,14 @@ export default function ReplyV2Page() {
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             rows={3}
-            style={{ width: "100%", background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5", padding: "10px 12px", fontSize: 13, boxSizing: "border-box", resize: "vertical", lineHeight: 1.6 }}
+            style={{ width: "100%", background: "var(--kaypal-v3-field-bg)", border: "1px solid var(--kaypal-v3-border)", borderRadius: 10, color: "var(--kaypal-v3-soft-ink)", padding: "10px 12px", fontSize: 13, boxSizing: "border-box", resize: "vertical", lineHeight: 1.6 }}
           />
           <input
             type="text"
             placeholder="你的产品/服务名（可选），如：JIUZHANG AI"
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
-            style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, color: "#dbe7f5", padding: "10px 12px", fontSize: 13, boxSizing: "border-box" }}
+            style={{ width: "100%", marginTop: 10, background: "var(--kaypal-v3-field-bg)", border: "1px solid var(--kaypal-v3-border)", borderRadius: 10, color: "var(--kaypal-v3-soft-ink)", padding: "10px 12px", fontSize: 13, boxSizing: "border-box" }}
           />
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
             {(
@@ -119,9 +119,9 @@ export default function ReplyV2Page() {
                 onClick={() => setTone(item.key)}
                 style={{
                   fontSize: 12, padding: "6px 12px", borderRadius: 999,
-                  background: tone === item.key ? "rgba(244,187,103,.16)" : "transparent",
-                  border: tone === item.key ? "1px solid rgba(244,187,103,.6)" : "1px solid rgba(255,255,255,.18)",
-                  color: tone === item.key ? "var(--kaypal-v3-amber)" : "#dbe7f5",
+                  background: tone === item.key ? "var(--kaypal-v3-accent-soft)" : "transparent",
+                  border: tone === item.key ? "1px solid var(--kaypal-v3-accent)" : "1px solid var(--kaypal-v3-border)",
+                  color: tone === item.key ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-soft-ink)",
                 }}
               >
                 {item.label}
@@ -138,7 +138,7 @@ export default function ReplyV2Page() {
             {loading ? "AI 生成中…" : "生成回复建议"}
           </button>
           {error ? (
-            <div style={{ marginTop: 10, fontSize: 12, color: error.startsWith("请先") ? "#dbe7f5" : "#fbbf24", lineHeight: 1.6 }}>
+            <div style={{ marginTop: 10, fontSize: 12, color: error.startsWith("请先") ? "var(--kaypal-v3-soft-ink)" : "var(--kaypal-v3-amber)", lineHeight: 1.6 }}>
               {error}
             </div>
           ) : null}
@@ -158,7 +158,7 @@ export default function ReplyV2Page() {
               )}
             </div>
             {shareMsg && (
-              <span style={{ fontSize: 11, color: "#34d399" }}>{shareMsg}</span>
+              <span style={{ fontSize: 11, color: "var(--kaypal-v3-success)" }}>{shareMsg}</span>
             )}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -170,7 +170,7 @@ export default function ReplyV2Page() {
                     <span className="platform-dot" style={{ background: color, width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
                     <span style={{ fontSize: 12, color, fontWeight: 600 }}>{TONE_LABEL[item.tone] ?? item.tone}</span>
                   </div>
-                  <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "#e2edf9" }}>{item.content}</div>
+                  <div style={{ fontSize: 13, lineHeight: 1.7, color: "var(--kaypal-v3-soft-ink)" }}>{item.content}</div>
                   <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                     <button
                       type="button"
@@ -184,7 +184,7 @@ export default function ReplyV2Page() {
                       type="button"
                       style={{
                         flex: 1, fontSize: 12, padding: "7px 10px", borderRadius: 999,
-                        background: "rgba(244,187,103,.15)", border: "1px solid rgba(244,187,103,.5)", color: "var(--kaypal-v3-amber)",
+                        background: "var(--kaypal-v3-accent-soft)", border: "1px solid var(--kaypal-v3-accent)", color: "var(--kaypal-v3-amber)",
                       }}
                       onClick={() => forward(item.content)}
                     >

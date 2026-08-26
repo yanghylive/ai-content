@@ -265,7 +265,7 @@ export function MomentsMarketingWizard({
                       : "justify-start bg-[var(--kaypal-v3-border-strong)]"
                   }`}
                 >
-                  <div className="h-5 w-5 rounded-full bg-white shadow" />
+                  <div className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
                 </div>
               </div>
             </button>
@@ -304,7 +304,7 @@ export function MomentsMarketingWizard({
                       : "justify-start bg-[var(--kaypal-v3-border-strong)]"
                   }`}
                 >
-                  <div className="h-5 w-5 rounded-full bg-white shadow" />
+                  <div className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
                 </div>
               </div>
             </button>

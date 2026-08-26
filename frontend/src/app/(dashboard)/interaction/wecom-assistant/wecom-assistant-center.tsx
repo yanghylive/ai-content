@@ -34,10 +34,10 @@ const STATUS_META: Record<
   string,
   { label: string; color: string; bg: string }
 > = {
-  not_installed: { label: "未安装", color: "#9fb2c8", bg: "rgba(142,165,190,.14)" },
+  not_installed: { label: "未安装", color: "var(--kaypal-v3-muted)", bg: "var(--kaypal-v3-accent-soft)" },
   active: { label: "已连接", color: "var(--kaypal-v3-success)", bg: "rgba(74,222,128,.14)" },
-  disabled: { label: "已停用", color: "#fbbf24", bg: "rgba(251,191,36,.14)" },
-  test_failed: { label: "连接异常", color: "#ff8a8a", bg: "rgba(255,138,138,.14)" },
+  disabled: { label: "已停用", color: "var(--kaypal-v3-amber)", bg: "var(--kaypal-v3-accent-soft)" },
+  test_failed: { label: "连接异常", color: "var(--kaypal-v3-danger)", bg: "rgba(255,138,138,.14)" },
 };
 
 function SectionCard({
@@ -52,8 +52,8 @@ function SectionCard({
   return (
     <div
       style={{
-        background: "rgba(255,255,255,.04)",
-        border: "1px solid rgba(142,165,190,.18)",
+        background: "var(--kaypal-v3-field-bg)",
+        border: "1px solid var(--kaypal-v3-border)",
         borderRadius: 14,
         padding: "14px 16px",
       }}
@@ -65,7 +65,7 @@ function SectionCard({
           gap: 8,
           fontSize: 14,
           fontWeight: 700,
-          color: "var(--mx-ink, #e8eef7)",
+          color: "var(--kaypal-v3-soft-ink)",
           marginBottom: 10,
         }}
       >
@@ -79,10 +79,10 @@ function SectionCard({
 
 const fieldStyle: React.CSSProperties = {
   width: "100%",
-  background: "rgba(255,255,255,.05)",
-  border: "1px solid rgba(142,165,190,.25)",
+  background: "var(--kaypal-v3-field-bg)",
+  border: "1px solid var(--kaypal-v3-border)",
   borderRadius: 8,
-  color: "var(--mx-ink, #e8eef7)",
+  color: "var(--kaypal-v3-soft-ink)",
   padding: "8px 10px",
   fontSize: 13,
   marginBottom: 8,
@@ -197,7 +197,7 @@ export function WecomAssistantCenter() {
           gap: 10,
           fontSize: 16,
           fontWeight: 700,
-          color: "var(--mx-ink, #e8eef7)",
+          color: "var(--kaypal-v3-soft-ink)",
         }}
       >
         <Bot size={18} style={{ color: "var(--mx-accent, #e39a3e)" }} />
@@ -214,7 +214,7 @@ export function WecomAssistantCenter() {
         >
           {meta.label}
         </span>
-        <span style={{ fontSize: 12, fontWeight: 400, color: "var(--mx-muted, #9fb2c8)" }}>
+        <span style={{ fontSize: 12, fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>
           企业微信 AI 智能客服：自动回复 + 转人工 + 消息记录
         </span>
       </div>
@@ -225,7 +225,7 @@ export function WecomAssistantCenter() {
             display: "flex",
             alignItems: "center",
             gap: 8,
-            color: "var(--mx-muted, #9fb2c8)",
+            color: "var(--kaypal-v3-muted)",
             fontSize: 13,
             padding: 24,
           }}
@@ -235,7 +235,7 @@ export function WecomAssistantCenter() {
       ) : state.status === "not_installed" ? (
         /* ---------- 未安装：安装表单 ---------- */
         <SectionCard title="连接企业微信群机器人" icon={<PlugZap size={14} />}>
-          <div style={{ fontSize: 12.5, color: "var(--mx-muted, #9fb2c8)", marginBottom: 10, lineHeight: 1.6 }}>
+          <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginBottom: 10, lineHeight: 1.6 }}>
             在企业微信群里添加「群机器人」，复制 Webhook 地址粘贴到下面。
             连接成功后，客户消息会由 AI 自动回复，命中转人工关键词时提醒人工介入。
           </div>
@@ -258,8 +258,8 @@ export function WecomAssistantCenter() {
               disabled={busy}
               style={{
                 ...smallBtn,
-                background: "rgba(142,165,190,.14)",
-                color: "var(--mx-ink, #e8eef7)",
+                background: "var(--kaypal-v3-accent-soft)",
+                color: "var(--kaypal-v3-soft-ink)",
                 opacity: busy ? 0.6 : 1,
               }}
             >
@@ -291,25 +291,25 @@ export function WecomAssistantCenter() {
               state.status === "active" ? (
                 <CheckCircle2 size={14} style={{ color: "var(--kaypal-v3-success)" }} />
               ) : (
-                <XCircle size={14} style={{ color: "#ff8a8a" }} />
+                <XCircle size={14} style={{ color: "var(--kaypal-v3-danger)" }} />
               )
             }
           >
             <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
               <div>
-                <span style={{ color: "var(--mx-muted, #9fb2c8)" }}>名称：</span>
-                <span style={{ color: "var(--mx-ink, #e8eef7)" }}>{state.integration?.name ?? "-"}</span>
+                <span style={{ color: "var(--kaypal-v3-muted)" }}>名称：</span>
+                <span style={{ color: "var(--kaypal-v3-soft-ink)" }}>{state.integration?.name ?? "-"}</span>
               </div>
               <div>
-                <span style={{ color: "var(--mx-muted, #9fb2c8)" }}>Webhook：</span>
-                <span style={{ color: "var(--mx-ink, #e8eef7)" }}>
+                <span style={{ color: "var(--kaypal-v3-muted)" }}>Webhook：</span>
+                <span style={{ color: "var(--kaypal-v3-soft-ink)" }}>
                   {state.integration?.maskedWebhookUrl ?? "-"}
                 </span>
               </div>
               {state.integration?.lastTestedAt ? (
                 <div>
-                  <span style={{ color: "var(--mx-muted, #9fb2c8)" }}>最近测试：</span>
-                  <span style={{ color: "var(--mx-ink, #e8eef7)" }}>
+                  <span style={{ color: "var(--kaypal-v3-muted)" }}>最近测试：</span>
+                  <span style={{ color: "var(--kaypal-v3-soft-ink)" }}>
                     {new Date(state.integration.lastTestedAt).toLocaleString()}
                   </span>
                 </div>
@@ -321,8 +321,8 @@ export function WecomAssistantCenter() {
                   disabled={busy}
                   style={{
                     ...smallBtn,
-                    background: "rgba(142,165,190,.14)",
-                    color: "var(--mx-ink, #e8eef7)",
+                    background: "var(--kaypal-v3-accent-soft)",
+                    color: "var(--kaypal-v3-soft-ink)",
                     opacity: busy ? 0.6 : 1,
                   }}
                 >
@@ -336,7 +336,7 @@ export function WecomAssistantCenter() {
                   style={{
                     ...smallBtn,
                     background: state.status === "active" ? "rgba(255,138,138,.14)" : "rgba(74,222,128,.16)",
-                    color: state.status === "active" ? "#ff8a8a" : "var(--kaypal-v3-success)",
+                    color: state.status === "active" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-success)",
                     opacity: busy ? 0.6 : 1,
                   }}
                 >
@@ -358,8 +358,8 @@ export function WecomAssistantCenter() {
                   style={{
                     ...smallBtn,
                     background: "transparent",
-                    border: "1px solid rgba(255,138,138,.35)",
-                    color: "#ff8a8a",
+                    border: "1px solid var(--kaypal-v3-danger)",
+                    color: "var(--kaypal-v3-danger)",
                     opacity: busy ? 0.6 : 1,
                   }}
                 >
@@ -374,7 +374,7 @@ export function WecomAssistantCenter() {
           <SectionCard title="AI 客服设置" icon={<Settings2 size={14} />}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 10 }}>
               <div>
-                <div style={{ fontSize: 12, color: "var(--mx-muted, #9fb2c8)", marginBottom: 4 }}>品牌名称</div>
+                <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginBottom: 4 }}>品牌名称</div>
                 <input
                   value={settings.brandName ?? ""}
                   onChange={(e) => setSettings({ ...settings, brandName: e.target.value })}
@@ -382,7 +382,7 @@ export function WecomAssistantCenter() {
                 />
               </div>
               <div>
-                <div style={{ fontSize: 12, color: "var(--mx-muted, #9fb2c8)", marginBottom: 4 }}>门店名称</div>
+                <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginBottom: 4 }}>门店名称</div>
                 <input
                   value={settings.storeName ?? ""}
                   onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
@@ -390,7 +390,7 @@ export function WecomAssistantCenter() {
                 />
               </div>
               <div>
-                <div style={{ fontSize: 12, color: "var(--mx-muted, #9fb2c8)", marginBottom: 4 }}>回复风格</div>
+                <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginBottom: 4 }}>回复风格</div>
                 <input
                   value={settings.replyStyle ?? ""}
                   onChange={(e) => setSettings({ ...settings, replyStyle: e.target.value })}
@@ -399,7 +399,7 @@ export function WecomAssistantCenter() {
                 />
               </div>
               <div>
-                <div style={{ fontSize: 12, color: "var(--mx-muted, #9fb2c8)", marginBottom: 4 }}>
+                <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginBottom: 4 }}>
                   转人工关键词（逗号分隔）
                 </div>
                 <input
@@ -411,7 +411,7 @@ export function WecomAssistantCenter() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 20, marginBottom: 10, fontSize: 13 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--mx-ink, #e8eef7)", cursor: "pointer" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--kaypal-v3-soft-ink)", cursor: "pointer" }}>
                 <input
                   type="checkbox"
                   checked={!!settings.sendToWecom}
@@ -419,7 +419,7 @@ export function WecomAssistantCenter() {
                 />
                 建议发送到企微群
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--mx-ink, #e8eef7)", cursor: "pointer" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--kaypal-v3-soft-ink)", cursor: "pointer" }}>
                 <input
                   type="checkbox"
                   checked={!!settings.autoSendToCustomer}
@@ -471,8 +471,8 @@ export function WecomAssistantCenter() {
               disabled={busy || !suggestInput.trim()}
               style={{
                 ...smallBtn,
-                background: "rgba(142,165,190,.14)",
-                color: "var(--mx-ink, #e8eef7)",
+                background: "var(--kaypal-v3-accent-soft)",
+                color: "var(--kaypal-v3-soft-ink)",
                 opacity: busy ? 0.6 : 1,
               }}
             >
@@ -485,10 +485,10 @@ export function WecomAssistantCenter() {
                   marginTop: 10,
                   padding: "10px 12px",
                   borderRadius: 10,
-                  background: "rgba(255,255,255,.05)",
+                  background: "var(--kaypal-v3-field-bg)",
                   fontSize: 13,
                   lineHeight: 1.6,
-                  color: "var(--mx-ink, #e8eef7)",
+                  color: "var(--kaypal-v3-soft-ink)",
                 }}
               >
                 {suggestResult}
@@ -510,7 +510,7 @@ export function WecomAssistantCenter() {
                       fontSize: 13,
                       padding: "8px 10px",
                       borderRadius: 8,
-                      background: "rgba(255,255,255,.03)",
+                      background: "var(--kaypal-v3-field-bg)",
                     }}
                   >
                     <span
@@ -518,14 +518,14 @@ export function WecomAssistantCenter() {
                         padding: "2px 8px",
                         borderRadius: 999,
                         fontSize: 11,
-                        background: "rgba(142,165,190,.14)",
-                        color: "var(--mx-muted, #9fb2c8)",
+                        background: "var(--kaypal-v3-accent-soft)",
+                        color: "var(--kaypal-v3-muted)",
                         whiteSpace: "nowrap",
                       }}
                     >
                       {record.type}
                     </span>
-                    <span style={{ color: "var(--mx-ink, #e8eef7)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ color: "var(--kaypal-v3-soft-ink)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {record.content || record.title}
                     </span>
                     <span
@@ -535,14 +535,14 @@ export function WecomAssistantCenter() {
                           record.status === "sent"
                             ? "var(--kaypal-v3-success)"
                             : record.status === "failed"
-                              ? "#ff8a8a"
-                              : "var(--mx-muted, #9fb2c8)",
+                              ? "var(--kaypal-v3-danger)"
+                              : "var(--kaypal-v3-muted)",
                         whiteSpace: "nowrap",
                       }}
                     >
                       {record.status}
                     </span>
-                    <span style={{ fontSize: 11, color: "var(--mx-muted, #9fb2c8)", whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", whiteSpace: "nowrap" }}>
                       {new Date(record.createdAt).toLocaleString()}
                     </span>
                   </div>
@@ -557,7 +557,7 @@ export function WecomAssistantCenter() {
         <div
           style={{
             fontSize: 13,
-            color: "#ff8a8a",
+            color: "var(--kaypal-v3-danger)",
             padding: "8px 12px",
             borderRadius: 8,
             background: "rgba(255,138,138,.1)",

@@ -86,7 +86,7 @@ export default function ScrapeArticlePage() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
                 从链接提取
               </span>
-              <p style={{ fontSize: 12, lineHeight: 1.6, color: "rgba(219,234,254,.78)", marginBottom: 12 }}>
+              <p style={{ fontSize: 12, lineHeight: 1.6, color: "var(--kaypal-v3-soft-ink)", marginBottom: 12 }}>
                 支持公众号文章、新闻页等，提取标题、正文和图片，可直接用作发布素材
               </p>
               <div style={{ display: "flex", gap: 8 }}>
@@ -98,7 +98,7 @@ export default function ScrapeArticlePage() {
                   onKeyDown={(e) => e.key === "Enter" && handleScrape()}
                   style={{
                     flex: 1, minWidth: 0, padding: "11px 14px", borderRadius: 12, fontSize: 13,
-                    border: "1px solid rgba(230,168,84,.45)", background: "rgba(255,255,255,.14)",
+                    border: "1px solid var(--kaypal-v3-accent)", background: "var(--kaypal-v3-field-bg)",
                     color: "#fff", outline: "none",
                   }}
                 />
@@ -116,7 +116,7 @@ export default function ScrapeArticlePage() {
           </div>
 
           {error && (
-            <div className="mx-card" style={{ marginTop: 14, padding: 14, border: "1px solid rgba(239,68,68,.3)" }}>
+            <div className="mx-card" style={{ marginTop: 14, padding: 14, border: "1px solid var(--kaypal-v3-danger)" }}>
               <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
@@ -152,7 +152,7 @@ export default function ScrapeArticlePage() {
                       <img
                         src={img.src}
                         alt={img.alt}
-                        style={{ width: 72, height: 56, objectFit: "cover", borderRadius: 10, border: "1px solid rgba(148,163,184,.3)" }}
+                        style={{ width: 72, height: 56, objectFit: "cover", borderRadius: 10, border: "1px solid var(--kaypal-v3-border)" }}
                         onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                       />
                     </div>
@@ -169,7 +169,7 @@ export default function ScrapeArticlePage() {
                 <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "9px 14px", flex: 1 }} onClick={handleUseForPublish}>
                   用作发布素材
                 </button>
-                <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "9px 14px", background: "rgba(255,255,255,.08)", color: "#dbe7f5", border: "1px solid rgba(255,255,255,.2)", boxShadow: "none", backgroundImage: "none", flex: 1 }} onClick={handleCopyContent}>
+                <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "9px 14px", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid var(--kaypal-v3-border)", boxShadow: "none", backgroundImage: "none", flex: 1 }} onClick={handleCopyContent}>
                   复制正文
                 </button>
               </div>

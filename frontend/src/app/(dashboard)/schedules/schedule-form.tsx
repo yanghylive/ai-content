@@ -176,7 +176,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
                 transition: "all .2s", border: "none",
               }}
             >
-              <span style={{ width: 21, height: 21, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
+              <span style={{ width: 21, height: 21, borderRadius: "50%", background: "var(--kaypal-v3-paper)", boxShadow: "var(--kaypal-v3-card-shadow)" }} />
             </button>
           </div>
 
@@ -276,7 +276,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
             }`}
             onClick={() => setForm((p) => ({ ...p, enabled: !p.enabled }))}
           >
-            <div className="h-6 w-6 rounded-full bg-white shadow" />
+            <div className="h-6 w-6 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
           </button>
         </label>
       </V2Section>

@@ -1051,14 +1051,14 @@ function PublishCalendarView() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 600 }}>发布日历</div>
-            <div style={{ fontSize: 12, color: "rgba(219,234,254,.7)", marginTop: 3 }}>
+            <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 3 }}>
               近 7 天发布任务 · 可取消或改期
             </div>
           </div>
           <button
             type="button"
             className="mx-btn-gold"
-            style={{ fontSize: 12, padding: "7px 12px", backgroundImage: "none", background: "rgba(255,255,255,.08)", color: "#dbe7f5", border: "1px solid rgba(255,255,255,.2)", boxShadow: "none" }}
+            style={{ fontSize: 12, padding: "7px 12px", backgroundImage: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid var(--kaypal-v3-border)", boxShadow: "none" }}
             onClick={() => void load()}
           >
             刷新
@@ -1089,17 +1089,17 @@ function PublishCalendarView() {
         ) : (
           days.map((day) => (
             <div key={day.date} className="mx-card" style={{ padding: 0, overflow: "hidden" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: "1px solid var(--kaypal-v3-border)" }}>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>{fmtDate(day.date)}</span>
                 {day.date === todayKey ? (
                   <span className="mx-badge mx-badge-gold" style={{ fontSize: 10, padding: "2px 8px" }}>今天</span>
                 ) : null}
-                <span style={{ fontSize: 11, color: "rgba(219,234,254,.55)", marginLeft: "auto" }}>
+                <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginLeft: "auto" }}>
                   {day.items.length} 个任务
                 </span>
               </div>
               {day.items.length === 0 ? (
-                <div style={{ padding: "14px 16px", fontSize: 12, color: "rgba(219,234,254,.45)" }}>无任务</div>
+                <div style={{ padding: "14px 16px", fontSize: 12, color: "var(--kaypal-v3-muted)" }}>无任务</div>
               ) : (
                 day.items.map((item) => {
                   const canOperate = item.status === "waiting";
@@ -1122,7 +1122,7 @@ function PublishCalendarView() {
                         <div className="mx-row-desc" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                           <span className="platform-dot" style={{ background: CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)", width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
                           <span>{mobilePlatformName(item.platform)}</span>
-                          <span style={{ color: "rgba(219,234,254,.6)" }}>
+                          <span style={{ color: "var(--kaypal-v3-soft-ink)" }}>
                             {fmtTime(item.time)}
                             {item.isRescheduled ? " · 已改期" : ""}
                           </span>
@@ -1133,12 +1133,12 @@ function PublishCalendarView() {
                               type="datetime-local"
                               value={rescheduleAt}
                               onChange={(e) => setRescheduleAt(e.target.value)}
-                              style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 8, color: "#dbe7f5", padding: "7px 10px", fontSize: 12, flex: 1, minWidth: 160 }}
+                              style={{ background: "var(--kaypal-v3-field-bg)", border: "1px solid var(--kaypal-v3-border)", borderRadius: 8, color: "var(--kaypal-v3-soft-ink)", padding: "7px 10px", fontSize: 12, flex: 1, minWidth: 160 }}
                             />
                             <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "7px 12px" }} disabled={actingId === item.id} onClick={() => void submitReschedule()}>
                               确认改期
                             </button>
-                            <button type="button" style={{ fontSize: 12, padding: "7px 12px", background: "transparent", border: "1px solid rgba(255,255,255,.15)", borderRadius: 8, color: "#dbe7f5" }} onClick={() => setRescheduleId(null)}>
+                            <button type="button" style={{ fontSize: 12, padding: "7px 12px", background: "transparent", border: "1px solid var(--kaypal-v3-border)", borderRadius: 8, color: "var(--kaypal-v3-soft-ink)" }} onClick={() => setRescheduleId(null)}>
                               取消
                             </button>
                           </div>
@@ -1152,7 +1152,7 @@ function PublishCalendarView() {
                           <div style={{ display: "flex", gap: 6 }}>
                             <button
                               type="button"
-                              style={{ fontSize: 11, padding: "4px 9px", background: "transparent", border: "1px solid rgba(234,161,75,.45)", borderRadius: 7, color: "#e8a64e" }}
+                              style={{ fontSize: 11, padding: "4px 9px", background: "transparent", border: "1px solid var(--kaypal-v3-accent)", borderRadius: 7, color: "var(--kaypal-v3-amber)" }}
                               disabled={actingId === item.id}
                               onClick={() => openReschedule(item.id)}
                             >
@@ -1160,7 +1160,7 @@ function PublishCalendarView() {
                             </button>
                             <button
                               type="button"
-                              style={{ fontSize: 11, padding: "4px 9px", background: "transparent", border: "1px solid rgba(220,38,38,.45)", borderRadius: 7, color: "#f87171" }}
+                              style={{ fontSize: 11, padding: "4px 9px", background: "transparent", border: "1px solid var(--kaypal-v3-danger)", borderRadius: 7, color: "var(--kaypal-v3-danger)" }}
                               disabled={actingId === item.id}
                               onClick={() => void doCancel(item.id)}
                             >
@@ -1245,7 +1245,7 @@ function MobilePublishView({
                 padding: "9px 0",
                 fontSize: 13,
                 ...(activeTab === tab.key
-                  ? { background: "linear-gradient(135deg,#f4bb67,#d98a2d)", color: "#1b1e2b", borderColor: "transparent", fontWeight: 600 }
+                  ? { background: "linear-gradient(135deg,#f4bb67,#d98a2d)", color: "var(--kaypal-v3-ink)", borderColor: "transparent", fontWeight: 600 }
                   : {}),
               }}
             >
@@ -1263,7 +1263,7 @@ function MobilePublishView({
       <section className="mx-px" style={{ marginTop: 14 }}>
         <div className="mx-hero" style={{ padding: 20 }}>
           <div className="mx-hero-ring" style={{ width: 130, height: 130, top: -34, right: -26 }} />
-          <div className="mx-hero-ring" style={{ width: 82, height: 82, top: 14, right: 22, borderColor: "rgba(240,179,90,.15)" }} />
+          <div className="mx-hero-ring" style={{ width: 82, height: 82, top: 14, right: 22, borderColor: "var(--kaypal-v3-border)" }} />
           <div style={{ position: "relative", zIndex: 2 }}>
             <span className="mx-badge mx-badge-white" style={{ marginBottom: 10 }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
@@ -1285,7 +1285,7 @@ function MobilePublishView({
                 <span style={{ color: "var(--kaypal-v3-amber)" }}>今日已发布 {stats.doneToday} 条</span>
               </h2>
             )}
-            <p className="mx-page-sub" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6, color: "rgba(219,234,254,.78)" }}>
+            <p className="mx-page-sub" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.6, color: "var(--kaypal-v3-soft-ink)" }}>
               发布包准备好后，请到目标平台 App 完成发布 · 手机端不自动发布
             </p>
             {!loading && (stats.pending > 0 || stats.failed > 0) ? (
@@ -1305,7 +1305,7 @@ function MobilePublishView({
                   <button
                     type="button"
                     className="mx-btn-gold"
-                    style={{ background: "rgba(255,255,255,.08)", color: "#dbe7f5", border: "1px solid rgba(255,255,255,.2)", boxShadow: "none", backgroundImage: "none" }}
+                    style={{ background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid var(--kaypal-v3-border)", boxShadow: "none", backgroundImage: "none" }}
                     onClick={() => setFilter("failed")}
                   >
                     查看失败
@@ -1362,7 +1362,7 @@ function MobilePublishView({
           ) : (
             visible.map((item) => (
               <div className="mx-row" key={item.id}>
-                <span className="mx-row-ic" style={{ background: "rgba(234,161,75,.12)", color: "#c87922" }}>
+                <span className="mx-row-ic" style={{ background: "var(--kaypal-v3-accent-soft)", color: "#c87922" }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
                     <path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0Z" />
                   </svg>
