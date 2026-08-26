@@ -156,13 +156,6 @@
         ]
       },
       {
-        "from": "runtime/wechat-ocr",
-        "to": "wechat-ocr",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
         "from": "runtime/remote-assets",
         "to": "remote-assets",
         "filter": [
@@ -240,6 +233,10 @@
       },
       {
         "from": "backend.env.example",
+        "to": "backend/.env"
+      },
+      {
+        "from": "backend.env",
         "to": "backend/.env"
       },
       {
@@ -321,6 +318,13 @@
     },
     "win": {
       "extraResources": [
+        {
+          "from": "runtime/wechat-ocr",
+          "to": "wechat-ocr",
+          "filter": [
+            "**/*"
+          ]
+        },
         {
           "from": "../backend/node_modules/@img/sharp-win32-x64",
           "to": "backend/node_modules/@img/sharp-win32-x64",
