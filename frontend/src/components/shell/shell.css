@@ -469,3 +469,53 @@ html[data-theme="dark"] {
 .kx-view .kx-view.kaypal-v2-engine {
   padding: 0;
 }
+
+/* 静态通知角标：替代 marquee */
+.kx-ticker-static { position: relative; }
+.kx-ticker-btn {
+  display: flex; align-items: center; gap: 6px;
+  border: none; background: transparent; cursor: pointer;
+  padding: 4px 8px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; color: var(--kx-muted, #847d99);
+  transition: background-color 150ms ease-out;
+}
+.kx-ticker-btn:hover { background-color: var(--kaypal-v3-hover, rgba(114,46,209,0.06)); }
+.kx-ticker-label-text { white-space: nowrap; }
+.kx-ticker-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; font-size: 11px; font-weight: 600;
+  background: var(--kaypal-v3-accent, #722ed1); color: #fff;
+  line-height: 1;
+}
+.kx-ticker-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0;
+  min-width: 320px; max-width: 400px; max-height: 320px; overflow-y: auto;
+  background: var(--kaypal-v3-paper, #fff);
+  border: 1px solid var(--kaypal-v3-border, #e6e2ef);
+  border-radius: 12px; padding: 8px 0;
+  box-shadow: 0 8px 24px rgba(42,36,56,0.12);
+  z-index: 50;
+}
+.kx-ticker-dropdown .kx-nt-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; font-size: 13px; color: var(--kaypal-v3-ink, #2a2438);
+  transition: background-color 120ms ease-out;
+}
+.kx-ticker-dropdown .kx-nt-item:hover { background-color: var(--kaypal-v3-hover, rgba(114,46,209,0.04)); }
+
+/* 全局 spinner 降级：Lucide Loader2 的 animate-spin 在数据区改为 shimmer */
+.kx-skeleton-line {
+  background: linear-gradient(
+    90deg,
+    var(--kaypal-v3-surface, #ece9f0) 0%,
+    var(--kaypal-v3-surface-hover, #f3f0f7) 50%,
+    var(--kaypal-v3-surface, #ece9f0) 100%
+  );
+  background-size: 200% 100%;
+  animation: kx-skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+  display: inline-block;
+  min-width: 1em;
+  height: 1em;
+}

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { getApiBase } from "@/lib/api/client";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
+import { useCountUp } from "@/lib/hooks/use-count-up";
 import {
   growthApi,
   type GrowthAcquisitionRun,
@@ -162,6 +163,15 @@ function formatGeneratedAt(iso: string): string {
     minute: "2-digit",
     second: "2-digit",
   });
+}
+
+
+/** 统计数字 count-up 包装 */
+function CountUpStat({ value, isEmpty }: { value: string; isEmpty: boolean }) {
+  const num = isEmpty ? 0 : (parseInt(value, 10) || 0);
+  const animated = useCountUp(num, { duration: 600, startDelay: 100 });
+  if (isEmpty) return <>{value}</>;
+  return <>{animated}</>;
 }
 
 /** 运行错误文案人性化：清洗 Playwright/技术栈原始错误，保留语义 */
@@ -364,7 +374,7 @@ function HomeHeader({
                         style={{ fontVariantNumeric: "tabular-nums" }}
                         title={stat.value}
                       >
-                        {stat.value}
+                        <CountUpStat value={stat.value} isEmpty={isEmpty} />
                       </p>
                       {/* sparkline：仅今日新线索卡显示（有 trend 数据时） */}
                       {index === 0 && trend && trend.length >= 2 ? (
