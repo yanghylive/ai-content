@@ -116,7 +116,11 @@ function LeadDetailClient() {
     setActing(true);
     try {
       const res = await growthApi.syncLeadToCrm(lead.id);
-      setMsg(res.customerId ? "已转 CRM 客户" : res.message || "已完成");
+      if (!res.ok || !res.enabled) {
+        setMsg(toActionableError(res.message, "CRM 未启用，无法转客户"));
+        return;
+      }
+      setMsg("已转 CRM 客户");
       await load();
     } catch {
       setMsg("转 CRM 失败，请稍后重试");
