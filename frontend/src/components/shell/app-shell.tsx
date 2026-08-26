@@ -307,10 +307,12 @@ export function AppShell({
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   const dark = mounted && theme === "dark";
+  // 清除旧的 data-theme 属性（此前由 JS 手动设置，和 next-themes class 竞态）
+  // 暗色规则现在统一用 html.dark 选择器，不再需要 data-theme
   React.useEffect(() => {
     if (!mounted) return;
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "");
-  }, [dark, mounted]);
+    document.documentElement.removeAttribute("data-theme");
+  }, [mounted, dark]);
   const toggleTheme = () => setTheme(dark ? "light" : "dark");
 
   /* 唯一品牌主题（2026-08-23 定稿）：磨砂紫金，无切换无回退；深浅双档走 next-themes。 */
