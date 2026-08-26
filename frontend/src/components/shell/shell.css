@@ -332,6 +332,42 @@ html[data-theme="dark"] {
 /* 页面主标题统一为场景页规格（26/800/-0.3px）——含 astryx Heading 等
    非 kx-greet 类的 h1（B0 2026-08-23，与下方 wrap 版 h1 规则同源） */
 .kx-view h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.3px; }
+
+/* H2 统一规格：15px/600，覆盖组件层 Tailwind（特异性 0,1,1 > 0,1,0） */
+.kx-view h2, .kx-legacy-wrap h2 {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+/* H3 统一规格 */
+.kx-view h3, .kx-legacy-wrap h3 {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+/* 行 hover 微交互：列表行悬停时浅背景 */
+.kx-run-list > li {
+  transition: background-color 150ms ease-out;
+  border-radius: 6px;
+}
+.kx-run-list > li:hover {
+  background-color: var(--kaypal-v3-hover, rgba(114, 46, 209, 0.04));
+}
+
+/* 卡片 hover：边框过渡 */
+.kaypal-v3-panel {
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+/* 键盘焦点环：可见且统一 */
+*:focus-visible {
+  outline: 2px solid var(--kaypal-v3-accent, #722ed1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* 图标描边统一 1.8（Lucide 用 stroke 属性，可被 CSS 覆盖） */
 .kx-legacy-wrap svg[stroke] { stroke-width: 1.8; }
 

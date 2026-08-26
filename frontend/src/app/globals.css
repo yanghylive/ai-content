@@ -2411,3 +2411,25 @@ table tbody td {
 
 table tbody tr:last-child td { border-bottom: none; }
 table tbody tr:hover td { background: var(--kaypal-v3-paper-soft); }
+
+/* 骨架屏：统一 loading 占位 */
+.kx-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--kaypal-v3-surface, #ece9f0) 0%,
+    var(--kaypal-v3-surface-hover, #f3f0f7) 50%,
+    var(--kaypal-v3-surface, #ece9f0) 100%
+  );
+  background-size: 200% 100%;
+  animation: kx-skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+@keyframes kx-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kx-skeleton { animation: none; opacity: 0.6; }
+}
