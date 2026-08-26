@@ -49,7 +49,10 @@ function verifyWechatResourceContract() {
   // 3. wechat-native-runners（命令 runner）
   assertResource('wechat-native-runners', '微信命令 runner');
   // 4. 其余 wechat 资源（与 Windows 共用）
-  for (const to of ['wechat-db-helper', 'wechat-engine', 'wechat-native-runtime', 'wechat-ocr']) {
+  // wechat-ocr（RapidOcrOnnx.exe Windows PE）已迁至 build.win.extraResources：
+  // Mac 走 wechat-macos/bin 原生 OCR 链路，Windows-only 引擎不再打进 Mac 包。
+  // wechat-db-helper 按 OSS 按需下发设计不打包（对齐 verify-oss-release.js 断言）。
+  for (const to of ['wechat-engine', 'wechat-native-runtime']) {
     assertResource(to, `微信资源 ${to}`);
   }
   // 5. media-tools（ffmpeg/ffprobe 视频处理硬依赖，mac/win 都需打包）
