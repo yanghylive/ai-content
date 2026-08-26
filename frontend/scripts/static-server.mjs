@@ -23,6 +23,25 @@ const PORT = Number(parseArg("--port", "3421"));
 const ROOT = path.join(FRONTEND_ROOT, parseArg("--root", "out"));
 const API_BASE = process.env.API_BASE || "http://127.0.0.1:3011";
 
+// P0-1: 认证 cookie 名（与后端 auth.constants.ts 保持一致）
+const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || "ai_content_session";
+
+// P0-1: 不需要鉴权的路径前缀（静态资源、PWA、API 等）
+const PUBLIC_PATH_PREFIXES = [
+  "/_next/",
+  "/brand/",
+  "/manifest.json",
+  "/sw.js",
+  "/sw.js.map",
+  "/favicon.ico",
+  "/robots.txt",
+  "/icon-",
+  "/apple-icon",
+];
+
+// P0-1: 不需要鉴权的页面（登录页本身）
+const PUBLIC_PAGES = ["/login", "/login.html"];
+
 if (!fs.existsSync(ROOT)) {
   console.error(`❌ root 不存在: ${ROOT}`);
   process.exit(1);
@@ -42,6 +61,38 @@ const MIME = {
   ".woff2": "font/woff2",
   ".webp": "image/webp",
 };
+
+/**
+ * P0-1: 从 Cookie header 解析指定 cookie 值
+ */
+function getCookie(cookieHeader, name) {
+  if (!cookieHeader) return null;
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return match ? match[1] : null;
+}
+
+/**
+ * P0-1: 判断路径是否为公开路径（不需要鉴权）
+ */
+function isPublicPath(urlPath) {
+  // 公开页面
+  const normalizedPath = urlPath.replace(/\.html$/, "");
+  if (PUBLIC_PAGES.includes(normalizedPath) || PUBLIC_PAGES.includes(urlPath)) {
+    return true;
+  }
+  // 公开静态资源前缀
+  return PUBLIC_PATH_PREFIXES.some((prefix) => urlPath.startsWith(prefix));
+}
+
+/**
+ * P0-1: 检查请求是否已认证（仅检查 cookie 存在性，不验证 session 有效性）
+ * session 有效性由后端 /api/auth/me 验证；此处只做快速拦截，避免未登录用户
+ * 下载 JS 后才发现需要跳转登录页。
+ */
+function isAuthenticated(req) {
+  const cookie = getCookie(req.headers.cookie, AUTH_COOKIE_NAME);
+  return Boolean(cookie);
+}
 
 http.createServer((req, res) => {
   const urlPath = (req.url || "/").split("?")[0];
@@ -108,6 +159,17 @@ http.createServer((req, res) => {
       res.writeHead(404);
       res.end("not found");
     }
+    return;
+  }
+
+  /* P0-1: HTML 层鉴权 —— 未登录用户直接 302 到登录页，不返回 HTML/JS */
+  if (!isPublicPath(urlPath) && !isAuthenticated(req)) {
+    const redirectUrl = `/login?next=${encodeURIComponent(urlPath)}`;
+    res.writeHead(302, {
+      "Location": redirectUrl,
+      "Cache-Control": "no-store",
+    });
+    res.end();
     return;
   }
 
