@@ -27,11 +27,11 @@
     --kx-success: #16a34a;
     --kx-amber: #d97706;
     --kx-danger: #dc2626;
-    --kx-shadow-card: 0 4px 14px rgba(60, 30, 100, 0.08);
-    --kx-shadow-hover: 0 8px 22px rgba(114, 46, 209, 0.16);
+    --kx-shadow-card: var(--kaypal-v3-card-shadow);
+    --kx-shadow-hover: 0 2px 8px rgba(114, 46, 209, 0.10);
     --kx-overlay: rgba(25, 15, 45, 0.45);
-    --kx-radius: 20px;
-    --kx-radius-sm: 14px;
+    --kx-radius: var(--kaypal-v3-radius);
+    --kx-radius-sm: var(--kaypal-v3-radius-sm);
     /* 磨砂 blur 走 CSS 变量：lightningcss 构建会删裸 backdrop-filter 标准属性
        只留 -webkit- 前缀（Chrome 不认 → blur 失效），var() 引用可绕过 */
     --kx-blur-glass: blur(22px) saturate(145%);
@@ -210,7 +210,7 @@
   }
   .kx-rail-logo {
     background: linear-gradient(135deg, #722ed1, #531dab);
-    box-shadow: 0 4px 16px rgba(114, 46, 209, 0.45);
+    box-shadow: 0 1px 4px rgba(114, 46, 209, 0.20);
   }
   .kx-rail-item { color: rgba(240, 235, 250, 0.72); }
   .kx-rail-item:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
@@ -223,7 +223,7 @@
   }
   .kx-rail-badge {
     background: linear-gradient(135deg, #e39a3e, #f6c478);
-    color: #2e0e66;
+    color: #fff;
     border-color: rgba(60, 30, 100, 0.45);
   }
   .kx-rail-tool { color: rgba(240, 235, 250, 0.72); }
@@ -394,20 +394,20 @@
   .kx-btn-primary,
   .kx-chat-send,
   .kx-btn-sm-primary {
-    background: linear-gradient(135deg, #d98f2b, #efb45b);
-    color: #2e0e66;
-    box-shadow: 0 8px 20px rgba(185, 110, 29, 0.22), inset 0 1px 0 rgba(255, 245, 221, 0.45);
+    background: var(--kx-accent);
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(114, 46, 209, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
   .kx-btn-primary:hover,
   .kx-chat-send:hover,
   .kx-btn-sm-primary:hover {
     filter: brightness(1.05);
-    color: #2e0e66;
+    color: #fff;
   }
   .kx-btn-primary:active,
   .kx-chat-send:active,
   .kx-btn-sm-primary:active {
-    filter: brightness(0.97);
+    filter: brightness(0.95);
   }
   .kx-chat-input:focus { border-color: #722ed1; }
   .kx-sug-chip:hover { border-color: #722ed1; color: #531dab; }
@@ -418,8 +418,8 @@
 
   /* ---------- 9. 消息气泡（用户侧金色渐变） ---------- */
   .kx-msg-user .kx-msg-body {
-    background: linear-gradient(135deg, #d98f2b, #efb45b);
-    color: #2e0e66;
+    background: var(--kx-accent);
+    color: #fff;
   }
 
   /* ---------- 10. 焦点环（品牌紫）/ 遮罩 / 空态 ---------- */

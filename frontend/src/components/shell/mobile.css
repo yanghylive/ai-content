@@ -6,9 +6,9 @@
 @media (max-width: 767px) {
   /* ---------- 移动端语义色变量（页面内联 style 引用，暗色自动切换） ---------- */
   :root {
-    --mx-ink: #1d2b45;       /* 正文/图标主色 */
-    --mx-muted: #7f8b9c;     /* 次要文字 */
-    --mx-ic-tint: #16335d;   /* 亮色控制钮图标色 */
+    --mx-ink: var(--kaypal-v3-ink);       /* 正文/图标主色 */
+    --mx-muted: var(--kaypal-v3-muted);     /* 次要文字 */
+    --mx-ic-tint: var(--kaypal-v3-accent);   /* 亮色控制钮图标色 */
   }
   html.dark {
     --mx-ink: #ece9f4;
@@ -125,10 +125,10 @@
     min-height: 44px; /* 触控目标规范（批次 C #15） */
     font-size: 13px;
     font-weight: 600;
-    color: #173052;
-    border: 1px solid rgba(230, 168, 84, 0.55);
-    background: linear-gradient(90deg, #e39a3e, #f6c478);
-    box-shadow: 0 1px 2px rgba(185, 110, 29, 0.12), inset 0 1px 0 rgba(255, 245, 221, 0.3);
+    color: #fff;
+    border: 1px solid var(--kaypal-v3-accent-border);
+    background: var(--kaypal-v3-accent);
+    box-shadow: var(--kaypal-v3-card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transition: transform 0.15s ease, filter 0.2s ease;
   }
   .mx-btn-gold:active { transform: scale(0.97); }
@@ -263,7 +263,7 @@
   .mx-tab.active .mx-dot { opacity: 1; }
   .mx-tab .mx-mini-badge {
     position: absolute; top: 0; right: 2px; min-width: 15px; height: 15px; padding: 0 3px;
-    border-radius: 999px; background: linear-gradient(135deg, #e39a3e, #f6c478); color: #173052;
+    border-radius: 999px; background: linear-gradient(135deg, #e39a3e, #f6c478); color: #fff;
     font-size: 8.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;
   }
 

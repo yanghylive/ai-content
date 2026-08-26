@@ -47,11 +47,11 @@
     --kaypal-v3-danger-soft: #fdeaea;
     --kaypal-v3-success: #16a34a;
     --kaypal-v3-success-soft: #e8f7ee;
-    --kaypal-v3-brand: #b4236c;
-    --kaypal-v3-brand-solid: #b4236c;
-    --kaypal-v3-brand-hover: #8f1d57;
-    --kaypal-v3-brand-border: #e9a5c5;
-    --kaypal-v3-brand-soft: #fff0f6;
+    --kaypal-v3-brand: #722ed1;
+    --kaypal-v3-brand-solid: #722ed1;
+    --kaypal-v3-brand-hover: #531dab;
+    --kaypal-v3-brand-border: #d3adf7;
+    --kaypal-v3-brand-soft: #f9f0ff;
     --kaypal-v3-nav-bg: #ffffff;
     --kaypal-v3-nav-surface: #efecf4;
     --kaypal-v3-nav-surface-hover: #e6e2ef;
@@ -140,11 +140,11 @@
     --kaypal-v3-danger-soft: rgba(235, 90, 115, 0.14);
     --kaypal-v3-success: #4ade80;
     --kaypal-v3-success-soft: rgba(48, 190, 130, 0.14);
-    --kaypal-v3-brand: #ff9aca;
-    --kaypal-v3-brand-solid: #b4236c;
-    --kaypal-v3-brand-hover: #8f1d57;
-    --kaypal-v3-brand-border: #71314d;
-    --kaypal-v3-brand-soft: #3b1026;
+    --kaypal-v3-brand: #b885f7;
+    --kaypal-v3-brand-solid: #722ed1;
+    --kaypal-v3-brand-hover: #531dab;
+    --kaypal-v3-brand-border: #5a4478;
+    --kaypal-v3-brand-soft: rgba(146,84,222,0.16);
     --kaypal-v3-nav-bg: #1c1923;
     --kaypal-v3-nav-surface: #1d1a24;
     --kaypal-v3-nav-surface-hover: #2b2735;
@@ -153,7 +153,7 @@
     --kaypal-v3-nav-muted: #847d99;
     --kaypal-v3-nav-shadow: 2px 0 12px rgba(0, 0, 0, 0.22);
     --kaypal-v3-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
-    --kaypal-v3-elevated-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+    --kaypal-v3-elevated-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     /* dark：品牌紫阶（亮紫 #b885f7 = hsl(263 88% 75%)） */
     --agent-cockpit-background: 255 20% 7%;
     --agent-cockpit-foreground: 255 20% 96%;
@@ -1273,7 +1273,7 @@
     color: var(--kaypal-v3-accent);
   }
 
-  .ai-content-sla-shell {
+  .kx-main {
     background: var(--kaypal-v3-canvas);
     color: var(--kaypal-v3-ink);
     font-family: var(--kaypal-v3-font-nav);
@@ -1349,7 +1349,7 @@
       box-shadow: var(--kaypal-v3-elevated-shadow) !important;
     }
 
-    .ai-content-sla-shell
+    .kx-main
       :is(
         button,
         a[role="button"],
@@ -1363,31 +1363,31 @@
     }
   }
 
-  .ai-content-sla-shell [aria-label="主导航"] [data-slot="list"] {
+  .kx-main [aria-label="主导航"] [data-slot="list"] {
     gap: 2px !important;
   }
 
-  .ai-content-sla-shell [aria-label="主导航"] [role="group"] {
+  .kx-main [aria-label="主导航"] [role="group"] {
     gap: 2px !important;
   }
 
-  .ai-content-sla-shell [aria-label="主导航"] [role="option"] {
+  .kx-main [aria-label="主导航"] [role="option"] {
     margin-block: 1px !important;
     border-radius: var(--kaypal-v3-radius-sm) !important;
     color: var(--kaypal-v3-soft-ink) !important;
   }
 
-  .ai-content-sla-shell [aria-label="主导航"] [role="option"][data-hover="true"],
-  .ai-content-sla-shell [aria-label="主导航"] [role="option"]:hover {
+  .kx-main [aria-label="主导航"] [role="option"][data-hover="true"],
+  .kx-main [aria-label="主导航"] [role="option"]:hover {
     background: var(--kaypal-v3-paper-soft) !important;
   }
 
-  .ai-content-sla-shell [aria-label="主导航"] [role="option"][data-selected="true"] {
+  .kx-main [aria-label="主导航"] [role="option"][data-selected="true"] {
     background: var(--kaypal-v3-accent-soft) !important;
     color: var(--kaypal-v3-accent-ink) !important;
   }
 
-  .ai-content-sla-shell [aria-label="主导航"] [role="option"][data-selected="true"] svg {
+  .kx-main [aria-label="主导航"] [role="option"][data-selected="true"] svg {
     color: var(--kaypal-v3-accent-ink) !important;
   }
 
@@ -1447,113 +1447,113 @@
     color: var(--kaypal-v3-nav-ink) !important;
   }
 
-  .ai-content-sla-shell * {
+  .kx-main * {
     letter-spacing: 0;
   }
 
-  .ai-content-sla-shell main > div[class*="max-w-"] {
+  .kx-main main > div[class*="max-w-"] {
     max-width: 1680px !important;
     gap: 16px !important;
     padding-bottom: 32px !important;
   }
 
-  .ai-content-sla-shell [class*="backdrop-blur"] {
+  .kx-main [class*="backdrop-blur"] {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
 
-  .ai-content-sla-shell [class*="border-white/"],
-  .ai-content-sla-shell [class*="border-divider"],
-  .ai-content-sla-shell [class*="border-default-100"],
-  .ai-content-sla-shell [class*="border-default-200"],
-  .ai-content-sla-shell [class*="border-small"] {
+  .kx-main [class*="border-white/"],
+  .kx-main [class*="border-divider"],
+  .kx-main [class*="border-default-100"],
+  .kx-main [class*="border-default-200"],
+  .kx-main [class*="border-small"] {
     border-color: var(--kaypal-v3-border) !important;
   }
 
-  .ai-content-sla-shell [class*="bg-background/"],
-  .ai-content-sla-shell [class*="bg-content1/"],
-  .ai-content-sla-shell [class*="bg-content2"],
-  .ai-content-sla-shell [class*="bg-white/"] {
+  .kx-main [class*="bg-background/"],
+  .kx-main [class*="bg-content1/"],
+  .kx-main [class*="bg-content2"],
+  .kx-main [class*="bg-white/"] {
     background: var(--kaypal-v3-paper) !important;
   }
 
-  .ai-content-sla-shell [class*="bg-default-50"]:not(th):not(td),
-  .ai-content-sla-shell [class*="bg-default-100"]:not(th):not(td),
-  .ai-content-sla-shell [class*="bg-default-400/20"],
-  .ai-content-sla-shell [class*="bg-default-500/20"],
-  .ai-content-sla-shell [class*="bg-[var(--kaypal-v3-paper-muted)]"] {
+  .kx-main [class*="bg-default-50"]:not(th):not(td),
+  .kx-main [class*="bg-default-100"]:not(th):not(td),
+  .kx-main [class*="bg-default-400/20"],
+  .kx-main [class*="bg-default-500/20"],
+  .kx-main [class*="bg-[var(--kaypal-v3-paper-muted)]"] {
     background: var(--kaypal-v3-paper-soft) !important;
   }
 
-  .ai-content-sla-shell [class*="bg-primary-50"],
-  .ai-content-sla-shell [class*="bg-primary/5"],
-  .ai-content-sla-shell [class*="bg-primary/10"] {
+  .kx-main [class*="bg-primary-50"],
+  .kx-main [class*="bg-primary/5"],
+  .kx-main [class*="bg-primary/10"] {
     border-color: #91caff !important;
     background: var(--kaypal-v3-accent-soft) !important;
     color: var(--kaypal-v3-accent-ink) !important;
   }
 
-  .ai-content-sla-shell [class*="bg-success-50"],
-  .ai-content-sla-shell [class*="bg-success/10"] {
+  .kx-main [class*="bg-success-50"],
+  .kx-main [class*="bg-success/10"] {
     border-color: #b7eb8f !important;
     background: var(--kaypal-v3-success-soft) !important;
     color: var(--kaypal-v3-success) !important;
   }
 
-  .ai-content-sla-shell [class*="bg-warning-50"],
-  .ai-content-sla-shell [class*="bg-warning/10"] {
+  .kx-main [class*="bg-warning-50"],
+  .kx-main [class*="bg-warning/10"] {
     border-color: #ffe58f !important;
     background: var(--kaypal-v3-amber-soft) !important;
     color: var(--kaypal-v3-amber) !important;
   }
 
-  .ai-content-sla-shell [class*="bg-danger-50"],
-  .ai-content-sla-shell [class*="bg-danger/10"] {
+  .kx-main [class*="bg-danger-50"],
+  .kx-main [class*="bg-danger/10"] {
     border-color: #ffa39e !important;
     background: var(--kaypal-v3-danger-soft) !important;
     color: var(--kaypal-v3-danger) !important;
   }
 
-  .ai-content-sla-shell :is(.shadow-medium, .shadow-large, .shadow-lg, .shadow-xl, .shadow-2xl) {
+  .kx-main :is(.shadow-medium, .shadow-large, .shadow-lg, .shadow-xl, .shadow-2xl) {
     box-shadow: var(--kaypal-v3-card-shadow) !important;
   }
 
-  .ai-content-sla-shell :is(.rounded-large, .rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-\[12px\], .rounded-\[14px\], .rounded-\[16px\], .rounded-\[18px\], .rounded-\[20px\], .rounded-\[24px\], .rounded-\[28px\]) {
+  .kx-main :is(.rounded-large, .rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-\[12px\], .rounded-\[14px\], .rounded-\[16px\], .rounded-\[18px\], .rounded-\[20px\], .rounded-\[24px\], .rounded-\[28px\]) {
     border-radius: var(--kaypal-v3-radius) !important;
   }
 
-  .ai-content-sla-shell .rounded-t-large {
+  .kx-main .rounded-t-large {
     border-top-left-radius: var(--kaypal-v3-radius) !important;
     border-top-right-radius: var(--kaypal-v3-radius) !important;
     border-bottom-right-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
   }
 
-  .ai-content-sla-shell :is(.rounded-lg, .rounded-\[10px\]) {
+  .kx-main :is(.rounded-lg, .rounded-\[10px\]) {
     border-radius: var(--kaypal-v3-radius) !important;
   }
 
-  .ai-content-sla-shell .inline-flex.whitespace-nowrap.rounded-full {
+  .kx-main .inline-flex.whitespace-nowrap.rounded-full {
     border-radius: var(--kaypal-v3-radius-xs) !important;
   }
 
-  .ai-content-sla-shell main :is(header, section, article, aside, [data-slot="base"], [data-slot="wrapper"])[class*="rounded"],
-  .ai-content-sla-shell main :is(header, section, article, aside, [data-slot="base"], [data-slot="wrapper"])[class*="border"] {
+  .kx-main main :is(header, section, article, aside, [data-slot="base"], [data-slot="wrapper"])[class*="rounded"],
+  .kx-main main :is(header, section, article, aside, [data-slot="base"], [data-slot="wrapper"])[class*="border"] {
     border-radius: var(--kaypal-v3-radius) !important;
   }
 
-  .ai-content-sla-shell > div:first-child {
+  .kx-main > div:first-child {
     box-shadow: var(--kaypal-v3-card-shadow) !important;
   }
 
-  .ai-content-sla-shell > div:last-child > header {
+  .kx-main > div:last-child > header {
     min-height: 56px !important;
     height: 56px !important;
     border-radius: 0 !important;
     box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05) !important;
   }
 
-  .ai-content-sla-shell main :is(header, section, article, aside)[class*="border"] {
+  .kx-main main :is(header, section, article, aside)[class*="border"] {
     border-width: 1px !important;
     border-color: var(--kaypal-v3-border) !important;
     border-radius: var(--kaypal-v3-radius) !important;
@@ -1561,15 +1561,15 @@
     box-shadow: var(--kaypal-v3-card-shadow) !important;
   }
 
-  .ai-content-sla-shell main > div > :is(header, section:first-child)[class*="border"] {
+  .kx-main main > div > :is(header, section:first-child)[class*="border"] {
     padding: 20px !important;
   }
 
-  .ai-content-sla-shell main .kaypal-v3-page-header {
+  .kx-main main .kaypal-v3-page-header {
     padding: 20px !important;
   }
 
-  .ai-content-sla-shell main .kaypal-v3-page-header {
+  .kx-main main .kaypal-v3-page-header {
     border: 0 !important;
     border-radius: 0 !important;
     background: transparent !important;
@@ -1577,10 +1577,10 @@
     padding: 0 0 4px !important;
   }
 
-  .ai-content-sla-shell [data-slot="base"]:has(> [data-slot="body"]),
-  .ai-content-sla-shell [data-slot="base"]:has(> [data-slot="header"]),
-  .ai-content-sla-shell [data-slot="base"]:has(table),
-  .ai-content-sla-shell [data-slot="wrapper"]:has(table) {
+  .kx-main [data-slot="base"]:has(> [data-slot="body"]),
+  .kx-main [data-slot="base"]:has(> [data-slot="header"]),
+  .kx-main [data-slot="base"]:has(table),
+  .kx-main [data-slot="wrapper"]:has(table) {
     border: 1px solid var(--kaypal-v3-border) !important;
     border-radius: var(--kaypal-v3-radius) !important;
     background: var(--kaypal-v3-paper) !important;
@@ -1588,46 +1588,46 @@
     overflow: hidden;
   }
 
-  .ai-content-sla-shell [data-slot="body"] {
+  .kx-main [data-slot="body"] {
     color: var(--kaypal-v3-soft-ink);
   }
 
-  .ai-content-sla-shell [data-slot="header"] {
+  .kx-main [data-slot="header"] {
     min-height: 48px;
     border-bottom: 1px solid var(--kaypal-v3-border) !important;
     padding: 14px 16px !important;
   }
 
-  .ai-content-sla-shell [data-slot="tabList"] {
+  .kx-main [data-slot="tabList"] {
     border-radius: var(--kaypal-v3-radius) !important;
   }
 
-  .ai-content-sla-shell [data-slot="tab"] {
+  .kx-main [data-slot="tab"] {
     border-radius: var(--kaypal-v3-radius-sm) !important;
   }
 
-  .ai-content-sla-shell [data-slot="input-wrapper"],
-  .ai-content-sla-shell [data-slot="trigger"] {
+  .kx-main [data-slot="input-wrapper"],
+  .kx-main [data-slot="trigger"] {
     border-radius: var(--kaypal-v3-radius-sm) !important;
   }
 
-  .ai-content-sla-shell main [data-slot="input-wrapper"]:not(:has(textarea)),
-  .ai-content-sla-shell main [data-slot="trigger"] {
+  .kx-main main [data-slot="input-wrapper"]:not(:has(textarea)),
+  .kx-main main [data-slot="trigger"] {
     min-height: 32px !important;
     height: 32px !important;
   }
 
-  .ai-content-sla-shell [aria-label="主导航"] [role="option"] {
+  .kx-main [aria-label="主导航"] [role="option"] {
     font-size: 14px !important;
   }
 
-  .ai-content-sla-shell main table {
+  .kx-main main table {
     border-collapse: collapse !important;
   }
 
-  .ai-content-sla-shell main thead th,
-  .ai-content-sla-shell main table thead th[class*="bg-default-100"],
-  .ai-content-sla-shell main [data-slot="thead"] th[class*="bg-default-100"] {
+  .kx-main main thead th,
+  .kx-main main table thead th[class*="bg-default-100"],
+  .kx-main main [data-slot="thead"] th[class*="bg-default-100"] {
     border-radius: 0 !important;
     background: var(--kaypal-v3-table-head) !important;
     color: var(--kaypal-v3-muted) !important;
@@ -1635,44 +1635,44 @@
     padding: 10px 12px !important;
   }
 
-  .ai-content-sla-shell main tbody td,
-  .ai-content-sla-shell main tbody td[class*="bg-default-50"],
-  .ai-content-sla-shell main tbody td[class*="bg-default-100"] {
+  .kx-main main tbody td,
+  .kx-main main tbody td[class*="bg-default-50"],
+  .kx-main main tbody td[class*="bg-default-100"] {
     background: var(--kaypal-v3-paper) !important;
     padding: 10px 12px !important;
   }
 
-  .ai-content-sla-shell main :is(button, a[role="button"], a.inline-flex) {
+  .kx-main main :is(button, a[role="button"], a.inline-flex) {
     font-size: 13px !important;
     font-weight: 500 !important;
     border-radius: var(--kaypal-v3-radius-sm) !important;
   }
 
-  .ai-content-sla-shell main a[role="button"].inline-flex,
-  .ai-content-sla-shell main a[role="button"][data-react-aria-pressable="true"] {
+  .kx-main main a[role="button"].inline-flex,
+  .kx-main main a[role="button"][data-react-aria-pressable="true"] {
     border-radius: var(--kaypal-v3-radius-sm) !important;
   }
 
-  .ai-content-sla-shell :is(button, a[role="button"], a.inline-flex, [role="button"]) {
+  .kx-main :is(button, a[role="button"], a.inline-flex, [role="button"]) {
     border-radius: var(--kaypal-v3-radius-sm) !important;
   }
 
-  .ai-content-sla-shell :is(h1, h2, h3) {
+  .kx-main :is(h1, h2, h3) {
     color: var(--kaypal-v3-ink);
     font-family: var(--kaypal-v3-font-nav);
   }
 
-  .ai-content-sla-shell h1 {
+  .kx-main h1 {
     font-size: 20px;
     line-height: 30px;
   }
 
-  .ai-content-sla-shell h2 {
+  .kx-main h2 {
     font-size: 16px;
     line-height: 24px;
   }
 
-  .ai-content-sla-shell h3 {
+  .kx-main h3 {
     font-size: 15px;
     line-height: 22px;
   }
