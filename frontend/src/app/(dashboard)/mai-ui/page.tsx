@@ -556,8 +556,8 @@ export default function MaiUiWorkbenchPage() {
             padding: 24,
           }}
         >
-          <div style={{ background: "#fff", borderRadius: 16, padding: 20, width: "100%", maxWidth: 360 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#1e1b4b", marginBottom: 10 }}>需要您确认</div>
+          <div style={{ background: "var(--kaypal-v3-paper)", borderRadius: 16, padding: 20, width: "100%", maxWidth: 360 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "var(--kaypal-v3-ink)", marginBottom: 10 }}>需要您确认</div>
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
               <span
                 style={{

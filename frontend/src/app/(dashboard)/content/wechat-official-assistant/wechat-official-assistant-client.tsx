@@ -1457,9 +1457,9 @@ function WechatRunOutput({ run }: { run: AgentWakerRun }) {
             <FileCode2 className="h-4 w-4 text-default-500" />
             微信移动预览
           </div>
-          <div className="mx-auto w-full max-w-[390px] overflow-hidden rounded-[8px] border border-divider bg-white">
+          <div className="mx-auto w-full max-w-[390px] overflow-hidden rounded-[8px] border border-divider bg-[var(--kaypal-v3-paper)]">
             <iframe
-              className="h-[640px] w-full bg-white"
+              className="h-[640px] w-full bg-[var(--kaypal-v3-paper)]"
               referrerPolicy="no-referrer"
               sandbox=""
               srcDoc={output.finalHtml}

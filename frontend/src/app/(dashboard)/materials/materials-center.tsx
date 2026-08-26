@@ -536,10 +536,10 @@ export function MaterialsCenter() {
               padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
             }}
           >
-            <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
               🔗 粘贴链接去水印
             </div>
-            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+            <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12, marginBottom: 12 }}>
               粘贴作品分享链接，自动去水印保存到素材库（支持抖音/快手/小红书/视频号/B站/TikTok/YouTube/X/Instagram）
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
@@ -550,9 +550,9 @@ export function MaterialsCenter() {
                   padding: "6px 10px",
                   borderRadius: 999,
                   fontSize: 11,
-                  border: linkPlatform === "auto" ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
-                  background: linkPlatform === "auto" ? "rgba(246,196,120,.12)" : "transparent",
-                  color: linkPlatform === "auto" ? "#f6c478" : "rgba(215,230,248,.7)",
+                  border: linkPlatform === "auto" ? "1px solid var(--kaypal-v3-accent)" : "1px solid var(--kaypal-v3-border)",
+                  background: linkPlatform === "auto" ? "var(--kaypal-v3-accent-soft)" : "transparent",
+                  color: linkPlatform === "auto" ? "var(--kaypal-v3-accent)" : "var(--kaypal-v3-soft-ink)",
                   cursor: "pointer",
                 }}
               >
@@ -567,9 +567,9 @@ export function MaterialsCenter() {
                     padding: "6px 10px",
                     borderRadius: 999,
                     fontSize: 11,
-                    border: linkPlatform === p.key ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
-                    background: linkPlatform === p.key ? "rgba(246,196,120,.12)" : "transparent",
-                    color: linkPlatform === p.key ? "#f6c478" : "rgba(215,230,248,.7)",
+                    border: linkPlatform === p.key ? "1px solid var(--kaypal-v3-accent)" : "1px solid var(--kaypal-v3-border)",
+                    background: linkPlatform === p.key ? "var(--kaypal-v3-accent-soft)" : "transparent",
+                    color: linkPlatform === p.key ? "var(--kaypal-v3-accent)" : "var(--kaypal-v3-soft-ink)",
                     cursor: "pointer",
                   }}
                 >
@@ -586,8 +586,8 @@ export function MaterialsCenter() {
                 boxSizing: "border-box",
                 padding: "12px 14px",
                 borderRadius: 12,
-                border: "1px solid rgba(142,165,190,.3)",
-                background: "rgba(255,255,255,.08)",
+                border: "1px solid var(--kaypal-v3-border)",
+                background: "var(--kaypal-v3-field-bg)",
                 color: "var(--kaypal-v3-paper)",
                 fontSize: 14,
                 outline: "none",
@@ -634,34 +634,34 @@ export function MaterialsCenter() {
               type="button"
               onClick={() => uploadInputRef.current?.click()}
               disabled={uploading}
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(96,165,250,.12)", color: "#93c5fd", border: "1px solid rgba(96,165,250,.4)", cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-cobalt)", border: "1px solid var(--kaypal-v3-cobalt)", cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
             >
               📤 上传
             </button>
             <Link
               href="/video-download"
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-accent-soft)", border: "1px solid var(--kaypal-v3-border)", cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none" }}
             >
               🔗 去水印
             </Link>
             <button
               type="button"
               onClick={() => setGenSheetOpen(true)}
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(246,196,120,.12)", color: "#f6c478", border: "1px solid rgba(246,196,120,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               ✨ AI 生图
             </button>
             <button
               type="button"
               onClick={() => setVideoSheetOpen(true)}
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(167,139,250,.12)", color: "#a78bfa", border: "1px solid rgba(167,139,250,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               🎬 AI 生视频
             </button>
             <button
               type="button"
               onClick={() => setTtsSheetOpen(true)}
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(96,165,250,.12)", color: "#60a5fa", border: "1px solid rgba(96,165,250,.4)", cursor: "pointer", whiteSpace: "nowrap" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-cobalt)", border: "1px solid var(--kaypal-v3-cobalt)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               🎙 AI 配音
             </button>
@@ -690,9 +690,9 @@ export function MaterialsCenter() {
             <div className="mx-hero-ring" style={{ width: 110, height: 110, top: -30, right: -22 }} />
             <div style={{ position: "relative", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
-                <div style={{ fontSize: 12, color: "rgba(219,234,254,.72)" }}>云端素材</div>
+                <div style={{ fontSize: 12, color: "var(--kaypal-v3-soft-ink)" }}>云端素材</div>
                 <div className="mx-gold-text" style={{ fontSize: 24, fontWeight: 800, marginTop: 2 }}>{materials.length}</div>
-                <div style={{ fontSize: 10, color: "rgba(219,234,254,.6)" }}>条已入库</div>
+                <div style={{ fontSize: 10, color: "var(--kaypal-v3-soft-ink)" }}>条已入库</div>
               </div>
               <span className="mx-badge mx-badge-white">
                 <ImageIcon width={12} height={12} aria-hidden="true" />
@@ -735,7 +735,7 @@ export function MaterialsCenter() {
                   style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
                   onClick={() => setViewing(m)}
                 >
-                  <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
+                  <span className="mx-row-ic" style={{ background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-cobalt)" }}>
                     <ImageIcon width={18} height={18} aria-hidden="true" />
                   </span>
                   <div className="mx-row-main">
@@ -748,7 +748,7 @@ export function MaterialsCenter() {
                   </div>
                   <div className="mx-row-right">
                     {m.status === "unmined" ? <span className="mx-badge mx-badge-gold">新</span> : null}
-                    <ChevronRight width={15} height={15} style={{ color: "#b9c5d4" }} />
+                    <ChevronRight width={15} height={15} style={{ color: "var(--kaypal-v3-muted)" }} />
                   </div>
                 </button>
               ))
@@ -783,7 +783,7 @@ export function MaterialsCenter() {
                 ) : null}
               </div>
               <div className="flex items-center justify-end gap-3 border-t border-[var(--kaypal-v3-border)] p-4">
-                <button type="button" className="btn btn-sm" style={{ border: "1px solid rgba(239,68,68,.35)", color: "var(--kaypal-v3-danger)", borderRadius: 10, padding: "7px 12px", fontSize: 12, fontWeight: 600 }} onClick={() => { setDeleteTarget(viewing); setViewing(null); }}>
+                <button type="button" className="btn btn-sm" style={{ border: "1px solid var(--kaypal-v3-danger)", color: "var(--kaypal-v3-danger)", borderRadius: 10, padding: "7px 12px", fontSize: 12, fontWeight: 600 }} onClick={() => { setDeleteTarget(viewing); setViewing(null); }}>
                   删除
                 </button>
               </div>
@@ -804,18 +804,18 @@ export function MaterialsCenter() {
             onClick={(e) => e.stopPropagation()}
             style={{ width: "100%", background: "#0d1b2f", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: "18px 18px calc(20px + env(safe-area-inset-bottom))" }}
           >
-            <div style={{ color: "#a78bfa", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🎬 AI 生视频</div>
-            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🎬 AI 生视频</div>
+            <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12, marginBottom: 12 }}>
               描述画面生成短视频（happyhorse-1.1），生成后自动存入素材库
             </div>
             <input
               value={videoPrompt}
               onChange={(e) => setVideoPrompt(e.target.value)}
               placeholder="描述你要的视频画面，如：产品特写，暖光，缓慢推镜头…"
-              style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.08)", color: "var(--kaypal-v3-paper)", fontSize: 14, outline: "none", marginBottom: 12 }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: 12, border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-paper)", fontSize: 14, outline: "none", marginBottom: 12 }}
             />
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              <span style={{ fontSize: 12, color: "rgba(215,230,248,.55)", lineHeight: "28px" }}>时长</span>
+              <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", lineHeight: "28px" }}>时长</span>
               {[3, 5, 10, 15].map((d) => (
                 <button
                   key={d}
@@ -825,9 +825,9 @@ export function MaterialsCenter() {
                     padding: "6px 12px",
                     borderRadius: 999,
                     fontSize: 12,
-                    border: videoDuration === d ? "1px solid #a78bfa" : "1px solid rgba(142,165,190,.3)",
-                    background: videoDuration === d ? "rgba(167,139,250,.15)" : "transparent",
-                    color: videoDuration === d ? "#a78bfa" : "rgba(215,230,248,.7)",
+                    border: videoDuration === d ? "1px solid var(--kaypal-v3-accent)" : "1px solid var(--kaypal-v3-border)",
+                    background: videoDuration === d ? "var(--kaypal-v3-accent-soft)" : "transparent",
+                    color: videoDuration === d ? "var(--kaypal-v3-accent)" : "var(--kaypal-v3-soft-ink)",
                     cursor: "pointer",
                   }}
                 >
@@ -851,12 +851,12 @@ export function MaterialsCenter() {
                   return next;
                 });
               }}
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", marginBottom: 10, borderRadius: 10, border: videoPayByRebate ? "1px solid rgba(126,226,168,.6)" : "1px solid rgba(142,165,190,.3)", background: videoPayByRebate ? "rgba(126,226,168,.12)" : "rgba(255,255,255,.05)", cursor: "pointer" }}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", marginBottom: 10, borderRadius: 10, border: videoPayByRebate ? "1px solid var(--kaypal-v3-success)" : "1px solid var(--kaypal-v3-border)", background: videoPayByRebate ? "rgba(126,226,168,.12)" : "var(--kaypal-v3-field-bg)", cursor: "pointer" }}
             >
               <span style={{ fontSize: 12, color: "var(--kaypal-v3-paper)", fontWeight: 600 }}>
                 {videoPayByRebate ? "✅ 用返利支付 ¥5/次" : "💰 用返利支付（返利抵现金）"}
               </span>
-              <span style={{ fontSize: 11, color: videoPayInfo?.canCover ? "#7ee2a8" : "rgba(215,230,248,.55)" }}>
+              <span style={{ fontSize: 11, color: videoPayInfo?.canCover ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-muted)" }}>
                 {videoPayInfo ? `返利余额 ¥${videoPayInfo.rebateBalance.toFixed(2)}` : "点击查看余额"}
               </span>
             </button>
@@ -870,7 +870,7 @@ export function MaterialsCenter() {
               {videoBusy ? "提交中…" : videoPayByRebate ? "用返利 ¥5 生成" : "开始生成"}
             </button>
             {videoStatus && (
-              <div style={{ color: "rgba(215,230,248,.7)", fontSize: 12, marginTop: 10, textAlign: "center" }}>{videoStatus}</div>
+              <div style={{ color: "var(--kaypal-v3-soft-ink)", fontSize: 12, marginTop: 10, textAlign: "center" }}>{videoStatus}</div>
             )}
           </div>
         </div>
@@ -899,10 +899,10 @@ export function MaterialsCenter() {
               padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
             }}
           >
-            <div style={{ color: "#f6c478", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
               ✨ AI 生图
             </div>
-            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+            <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12, marginBottom: 12 }}>
               一句话生成配图（qwen-image-3.0-pro），生成后自动存入素材库
             </div>
             <input
@@ -914,8 +914,8 @@ export function MaterialsCenter() {
                 boxSizing: "border-box",
                 padding: "12px 14px",
                 borderRadius: 12,
-                border: "1px solid rgba(142,165,190,.3)",
-                background: "rgba(255,255,255,.08)",
+                border: "1px solid var(--kaypal-v3-border)",
+                background: "var(--kaypal-v3-field-bg)",
                 color: "var(--kaypal-v3-paper)",
                 fontSize: 14,
                 outline: "none",
@@ -923,7 +923,7 @@ export function MaterialsCenter() {
               }}
             />
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              <span style={{ fontSize: 12, color: "rgba(215,230,248,.55)", lineHeight: "28px" }}>尺寸</span>
+              <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", lineHeight: "28px" }}>尺寸</span>
               {[
                 { v: "1024*1024", label: "方图 1:1" },
                 { v: "768*1024", label: "竖图 3:4" },
@@ -937,9 +937,9 @@ export function MaterialsCenter() {
                     padding: "6px 12px",
                     borderRadius: 999,
                     fontSize: 12,
-                    border: genSize === s.v ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
-                    background: genSize === s.v ? "rgba(246,196,120,.15)" : "transparent",
-                    color: genSize === s.v ? "#f6c478" : "rgba(215,230,248,.7)",
+                    border: genSize === s.v ? "1px solid var(--kaypal-v3-accent)" : "1px solid var(--kaypal-v3-border)",
+                    background: genSize === s.v ? "var(--kaypal-v3-accent-soft)" : "transparent",
+                    color: genSize === s.v ? "var(--kaypal-v3-accent)" : "var(--kaypal-v3-soft-ink)",
                     cursor: "pointer",
                   }}
                 >
@@ -971,15 +971,15 @@ export function MaterialsCenter() {
                 padding: "10px 14px",
                 marginBottom: 10,
                 borderRadius: 10,
-                border: genPayByRebate ? "1px solid rgba(126,226,168,.6)" : "1px solid rgba(142,165,190,.3)",
-                background: genPayByRebate ? "rgba(126,226,168,.12)" : "rgba(255,255,255,.05)",
+                border: genPayByRebate ? "1px solid var(--kaypal-v3-success)" : "1px solid var(--kaypal-v3-border)",
+                background: genPayByRebate ? "rgba(126,226,168,.12)" : "var(--kaypal-v3-field-bg)",
                 cursor: "pointer",
               }}
             >
               <span style={{ fontSize: 12, color: "var(--kaypal-v3-paper)", fontWeight: 600 }}>
                 {genPayByRebate ? "✅ 用返利支付 ¥1/次" : "💰 用返利支付（返利抵现金）"}
               </span>
-              <span style={{ fontSize: 11, color: genPayInfo?.canCover ? "#7ee2a8" : "rgba(215,230,248,.55)" }}>
+              <span style={{ fontSize: 11, color: genPayInfo?.canCover ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-muted)" }}>
                 {genPayInfo ? `返利余额 ¥${genPayInfo.rebateBalance.toFixed(2)}` : "点击查看余额"}
               </span>
             </button>
@@ -1028,10 +1028,10 @@ export function MaterialsCenter() {
               padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
             }}
           >
-            <div style={{ color: "#60a5fa", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+            <div style={{ color: "var(--kaypal-v3-cobalt)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
               🎙 AI 配音
             </div>
-            <div style={{ color: "rgba(215,230,248,.55)", fontSize: 12, marginBottom: 12 }}>
+            <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12, marginBottom: 12 }}>
               文案一键转语音（qwen3-tts，最多 600 字），生成后复制音频链接用于视频合成
             </div>
             <textarea
@@ -1044,9 +1044,9 @@ export function MaterialsCenter() {
                 boxSizing: "border-box",
                 padding: "10px 12px",
                 borderRadius: 12,
-                border: "1px solid rgba(148,163,184,.35)",
-                background: "rgba(255,255,255,.06)",
-                color: "#eaf1fb",
+                border: "1px solid var(--kaypal-v3-border)",
+                background: "var(--kaypal-v3-field-bg)",
+                color: "var(--kaypal-v3-soft-ink)",
                 fontSize: 14,
                 resize: "none",
                 outline: "none",
@@ -1071,7 +1071,7 @@ export function MaterialsCenter() {
                 padding: "12px",
                 borderRadius: 12,
                 border: "none",
-                background: !ttsText.trim() || ttsBusy ? "rgba(96,165,250,.3)" : "#60a5fa",
+                background: !ttsText.trim() || ttsBusy ? "var(--kaypal-v3-cobalt)" : "var(--kaypal-v3-cobalt)",
                 color: "#fff",
                 fontSize: 14,
                 fontWeight: 600,
@@ -1081,12 +1081,12 @@ export function MaterialsCenter() {
               {ttsBusy ? "生成中…" : "生成配音"}
             </button>
             {ttsResult && (
-              <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "rgba(96,165,250,.1)", border: "1px solid rgba(96,165,250,.25)" }}>
-                <div style={{ color: "#93c5fd", fontSize: 12, marginBottom: 6 }}>
+              <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "var(--kaypal-v3-accent-soft)", border: "1px solid var(--kaypal-v3-cobalt)" }}>
+                <div style={{ color: "var(--kaypal-v3-cobalt)", fontSize: 12, marginBottom: 6 }}>
                   ✅ 配音完成：{ttsResult.filename}
                 </div>
                 <audio controls src={ttsResult.audioUrl} style={{ width: "100%", height: 36 }} />
-                <div style={{ marginTop: 6, fontSize: 11, color: "rgba(215,230,248,.5)" }}>
+                <div style={{ marginTop: 6, fontSize: 11, color: "var(--kaypal-v3-muted)" }}>
                   音频链接（约 7 天有效）：<span style={{ wordBreak: "break-all" }}>{ttsResult.audioUrl}</span>
                 </div>
               </div>
@@ -1134,13 +1134,13 @@ export function MaterialsCenter() {
             type="button"
             onClick={() => uploadInputRef.current?.click()}
             disabled={uploading}
-            style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(96,165,250,.12)", color: "#93c5fd", border: "1px solid rgba(96,165,250,.4)", cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
+            style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-cobalt)", border: "1px solid var(--kaypal-v3-cobalt)", cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
           >
             {uploading ? "上传中…" : "📤 本地上传"}
           </button>
           <Link
             href="/video-download"
-            style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,.1)", color: "#d7e6f8", border: "1px solid rgba(142,165,190,.3)", cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none" }}
+            style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-accent-soft)", border: "1px solid var(--kaypal-v3-border)", cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none" }}
           >
             🔗 去水印
           </Link>

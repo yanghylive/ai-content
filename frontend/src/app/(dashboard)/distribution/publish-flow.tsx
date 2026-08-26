@@ -1180,7 +1180,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
 
               {/* 多账号摘要：告诉用户这份发布包要逐个发到哪些账号 */}
               {selectedAccountKeys.length > 0 && (
-                <div className="mb-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-white p-3 text-xs text-[var(--kaypal-v3-muted)]">
+                <div className="mb-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3 text-xs text-[var(--kaypal-v3-muted)]">
                   <p className="font-semibold text-[var(--kaypal-v3-ink)]">
                     将发布到 {selectedAccountKeys.length} 个账号，逐个复制发布：
                   </p>
@@ -1203,7 +1203,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
 
               <V2Field label="标题" hint="一键复制，到 App 粘贴">
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 truncate rounded border border-[var(--kaypal-v3-border)] bg-white px-3 py-2 text-sm text-[var(--kaypal-v3-ink)]">
+                  <div className="flex-1 truncate rounded border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-2 text-sm text-[var(--kaypal-v3-ink)]">
                     {buildPayloads()[0]?.title || "（无标题）"}
                   </div>
                   <V2GhostButton
@@ -1218,7 +1218,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
               </V2Field>
 
               <V2Field label="正文" hint="复制后在 App 里粘贴正文">
-                <div className="max-h-40 overflow-y-auto rounded border border-[var(--kaypal-v3-border)] bg-white px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap text-[var(--kaypal-v3-ink)]">
+                <div className="max-h-40 overflow-y-auto rounded border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap text-[var(--kaypal-v3-ink)]">
                   {buildPayloads()[0]?.body || "（无正文）"}
                 </div>
                 <V2GhostButton
@@ -1258,7 +1258,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
                 </V2PrimaryButton>
 
                 {/* 分享到社交平台：点平台 → 复制内容 + 调起对应 App（2026-08-11 真机需求） */}
-                <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-white p-3">
+                <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
                   <p className="text-xs font-semibold text-[var(--kaypal-v3-ink)]">
                     分享到社交平台
                   </p>

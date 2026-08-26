@@ -174,7 +174,7 @@ export function PlatformAccountForm() {
           transition: "all .2s", border: "none",
         }}
       >
-        <span style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
+        <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--kaypal-v3-paper)", boxShadow: "var(--kaypal-v3-card-shadow)" }} />
       </button>
     );
     return (
@@ -428,7 +428,7 @@ export function PlatformAccountForm() {
                   }`}
                   onClick={() => setConfig("openComment", form.config.openComment === 1 ? 0 : 1)}
                 >
-                  <span className="h-5 w-5 rounded-full bg-white shadow" />
+                  <span className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
                 </button>
               </label>
               <label className="flex items-center justify-between">
@@ -446,7 +446,7 @@ export function PlatformAccountForm() {
                     setConfig("onlyFansCanComment", form.config.onlyFansCanComment === 1 ? 0 : 1)
                   }
                 >
-                  <span className="h-5 w-5 rounded-full bg-white shadow" />
+                  <span className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
                 </button>
               </label>
             </div>

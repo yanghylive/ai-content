@@ -415,7 +415,7 @@ function SourcesSettings({ onFlash, onError }: { onFlash: (t: string) => void; o
                   }`}
                   onClick={() => void handleToggle(source)}
                 >
-                  <span className="h-5 w-5 rounded-full bg-white shadow" />
+                  <span className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
                 </button>
                 <div>
                   <p className="font-medium text-[var(--kaypal-v3-ink)]">{source.name}</p>

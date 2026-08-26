@@ -572,7 +572,7 @@ export function CustomerServiceConfig() {
                     onClick={(e) => { e.stopPropagation(); void toggleBot(bot); }}
                     style={{ flexShrink: 0, width: 42, height: 25, borderRadius: 999, padding: 3, background: bot.enabled ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.4)", display: "flex", alignItems: "center", justifyContent: bot.enabled ? "flex-end" : "flex-start", transition: "all .2s" }}
                   >
-                    <span style={{ width: 19, height: 19, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
+                    <span style={{ width: 19, height: 19, borderRadius: "50%", background: "var(--kaypal-v3-paper)", boxShadow: "var(--kaypal-v3-card-shadow)" }} />
                   </span>
                 </button>
               ))}
@@ -651,7 +651,7 @@ export function CustomerServiceConfig() {
               onClick={() => set("askForContact", !form.askForContact)}
               style={{ flexShrink: 0, width: 44, height: 26, borderRadius: 999, padding: 3, background: form.askForContact ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.4)", display: "flex", alignItems: "center", justifyContent: form.askForContact ? "flex-end" : "flex-start", transition: "all .2s", border: "none" }}
             >
-              <span style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,.25)" }} />
+              <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--kaypal-v3-paper)", boxShadow: "var(--kaypal-v3-card-shadow)" }} />
             </button>
           </div>
 
@@ -848,7 +848,7 @@ export function CustomerServiceConfig() {
                     void toggleBot(bot);
                   }}
                 >
-                  <span className="h-4 w-4 rounded-full bg-white shadow" />
+                  <span className="h-4 w-4 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
                 </span>
               </div>
               <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
@@ -947,7 +947,7 @@ export function CustomerServiceConfig() {
                 }`}
                 onClick={() => set("askForContact", !form.askForContact)}
               >
-                <span className="h-5 w-5 rounded-full bg-white shadow" />
+                <span className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
               </button>
             </label>
           </V2Section>
