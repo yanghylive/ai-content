@@ -1,4 +1,5 @@
 "use client";
+import dynamic from "next/dynamic";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -22,7 +23,14 @@ import {
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthWorkflow } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
-import FlowCanvas from "./workflow-canvas/FlowCanvas";
+const FlowCanvas = dynamic(() => import("./workflow-canvas/FlowCanvas"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-[400px] items-center justify-center text-default-400">
+      <span className="text-sm">正在加载工作流画布...</span>
+    </div>
+  ),
+});
 
 const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning" | "muted" }> = {
   active: { label: "运行中", tone: "success" },
