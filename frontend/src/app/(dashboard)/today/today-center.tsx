@@ -292,6 +292,20 @@ function HomeHeader({
 /** 风险阻断卡（blockers 为空不渲染） */
 function BlockerCards({ blockers }: { blockers: GrowthHomeBlocker[] }) {
   if (blockers.length === 0) return null;
+  const blockerLinks: Record<string, { href: string; label: string }> = {
+    "no-ready-auto-task": {
+      href: "/apps/auto-acquisition",
+      label: "查看获客任务",
+    },
+    "no-online-normal-account": {
+      href: "/growth/account-health",
+      label: "检查账号健康",
+    },
+    "scheduler-daemon-not-armed": {
+      href: "/schedules",
+      label: "查看后台调度",
+    },
+  };
   return (
     <section
       className="rounded-[var(--kaypal-v3-radius)] p-4"
@@ -314,14 +328,25 @@ function BlockerCards({ blockers }: { blockers: GrowthHomeBlocker[] }) {
               <p className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
                 {blocker.title}
               </p>
-              <code className="shrink-0 rounded bg-[var(--kaypal-v3-danger-soft)] px-1.5 py-0.5 text-11 text-[var(--kaypal-v3-danger)]">
-                {blocker.code}
-              </code>
             </div>
+            {blocker.detail ? (
+              <p className="mt-1 text-xs leading-5 text-[var(--kaypal-v3-soft-ink)]">
+                {blocker.detail}
+              </p>
+            ) : null}
             {blocker.action ? (
               <p className="mt-1 text-xs leading-5 text-[var(--kaypal-v3-muted)]">
                 {blocker.action}
               </p>
+            ) : null}
+            {blockerLinks[blocker.code] ? (
+              <Link
+                href={blockerLinks[blocker.code].href}
+                className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[var(--kaypal-v3-accent-ink)] hover:underline"
+              >
+                {blockerLinks[blocker.code].label}
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
             ) : null}
           </div>
         ))}

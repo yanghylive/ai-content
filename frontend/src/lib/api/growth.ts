@@ -363,6 +363,8 @@ export interface GrowthHomeFunnel {
 export interface GrowthHomeBlocker {
     code: string;
     title: string;
+    /** 具体任务、账号或运行时阻断原因；旧后端缺失时允许为空。 */
+    detail?: string;
     action: string;
 }
 
