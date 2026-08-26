@@ -45,7 +45,7 @@ export default function ReplyV2Page() {
         productName: productName.trim() || undefined,
       });
       if (result.message && result.suggestions.length === 0) {
-        setError(result.message);
+        setError(toActionableError(result.message, "AI 回复建议生成失败"));
         return;
       }
       setSuggestions(result.suggestions ?? []);

@@ -183,7 +183,7 @@ export function LeadsPool() {
     try {
       const res = await growthApi.syncLeadToCrm(lead.id);
       if (!res.ok || !res.enabled) {
-        setError(res.message || "CRM 未启用，无法转客户");
+        setError(toActionableError(res.message, "CRM 未启用，无法转客户"));
         return;
       }
       await fetchLeads();
