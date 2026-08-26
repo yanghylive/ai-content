@@ -41,11 +41,19 @@ describe("ApiClient 超时与中止（P1-2 Local Engine 健康检查依赖的底
     });
   });
 
-  it("未传 timeoutMs 时不挂 AbortSignal（正常请求不受超时影响）", async () => {
+  it("未传 timeoutMs 时挂默认 30s 超时（P1-9：接口挂起不再无限转圈），正常响应不受影响", async () => {
     fetchMock.mockResolvedValue(
       new Response(JSON.stringify({ success: true, data: { ok: 1 }, message: "" }), { status: 200 }),
     );
     await expect(api.get("/some-path")).resolves.toEqual({ ok: 1 });
+    expect(fetchMock.mock.calls[0]![1].signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("timeoutMs: 0 显式禁用超时不挂 AbortSignal（长轮询等场景）", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ success: true, data: { ok: 2 }, message: "" }), { status: 200 }),
+    );
+    await expect(api.get("/some-path", { timeoutMs: 0 })).resolves.toEqual({ ok: 2 });
     expect(fetchMock.mock.calls[0]![1].signal).toBeUndefined();
   });
 

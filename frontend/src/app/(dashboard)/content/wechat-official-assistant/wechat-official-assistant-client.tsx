@@ -1119,7 +1119,7 @@ function JpagePreviewPanel({
         </div>
       ) : (
         <Link
-          href="/platforms"
+          href="/distribution/accounts"
           className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
         >
           配置公众号文章授权
@@ -1290,7 +1290,7 @@ function WechatDeliveryPanel({
         </div>
       ) : (
         <Link
-          href="/platforms"
+          href="/distribution/accounts"
           className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
         >
           配置公众号账号

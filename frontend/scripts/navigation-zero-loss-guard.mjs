@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
@@ -8,9 +8,9 @@ import ts from "typescript";
  *
  * 旧版深度绑定 sidebar-items.tsx（baseSectionItems/crmSection/createSectionItems）
  * 的 AST 结构，该文件已随重构删除。新导航结构：
- *   - app-shell.tsx    SCENES（8 个顶层场景）+ sceneOfPath（路径→场景映射）
+ *   - app-shell.tsx    SCENES（顶层场景）+ sceneOfPath（路径→场景映射）
  *   - command-palette.tsx COMMANDS（子路由命令入口）
- *   - layout.tsx       routeAliases（旧路径归一）
+ *   - route-config.ts  routeAliases（旧路径归一；2026-08-26 起真实源码位置）
  *
  * 校验：
  *   1. SCENES：必备场景 key 齐全、href 以 / 开头且唯一
@@ -30,9 +30,9 @@ const commandPalettePath = resolveInputPath(
   process.env.NAV_ZERO_LOSS_COMMAND_PATH,
   path.join(frontendRoot, "src/components/shell/command-palette.tsx"),
 );
-const layoutPath = resolveInputPath(
-  process.env.NAV_ZERO_LOSS_LAYOUT_PATH,
-  path.join(frontendRoot, "src/app/(dashboard)/layout.tsx"),
+const routeConfigPath = resolveInputPath(
+  process.env.NAV_ZERO_LOSS_ROUTE_CONFIG_PATH,
+  path.join(frontendRoot, "src/lib/route-config.ts"),
 );
 const snapshotPath = resolveInputPath(
   process.env.NAV_ZERO_LOSS_SNAPSHOT_PATH,
@@ -49,6 +49,7 @@ const contract = Object.freeze({
     "content",
     "interaction",
     "execution",
+    "device",
   ],
   // Q2：review 移出一级导航但保留为 hidden deeplink key（命令面板可搜 /effects、/growth/reports）。
   // 这些 key 不进 SCENES 数组，但必须在 app-shell 源码中存在对应可达性（sceneOfPath 分支或 rail 项）。
@@ -58,6 +59,7 @@ const contract = Object.freeze({
   // sceneOfPath 必须覆盖的关键路径前缀（抽查源码字面量）
   criticalScenePrefixes: [
     "/today",
+    "/device-center",
     "/growth",
     "/intelligence",
     "/crm",
@@ -96,10 +98,10 @@ const contract = Object.freeze({
     "/intelligence",
     "/intelligence/reports",
     "/approvals",
-    "/task-evidence",
+    "/tasks/evidence",
     "/agent-workbench",
     "/settings",
-    "/platforms",
+    "/distribution/accounts",
     "/local-engine",
   ],
 });
@@ -115,7 +117,7 @@ try {
 function main() {
   const shellSource = parseSourceFile(appShellPath);
   const commandSource = parseSourceFile(commandPalettePath);
-  const layoutSource = parseSourceFile(layoutPath);
+  const routeConfigSource = parseSourceFile(routeConfigPath);
 
   const scenes = parseNavigationArray(
     getVariableInitializer(shellSource, "SCENES"),
@@ -131,8 +133,8 @@ function main() {
     .map((entry) => entry.href)
     .filter(Boolean);
   const routeAliases = parseStringMap(
-    getVariableInitializer(layoutSource, "routeAliases"),
-    layoutSource,
+    getVariableInitializer(routeConfigSource, "routeAliases"),
+    routeConfigSource,
     "routeAliases",
   );
   const shellText = readFileSync(appShellPath, "utf8");
@@ -162,6 +164,7 @@ function main() {
   validateCommandEntries(commandEntries, commandHrefs, addFailure);
   validateRequiredCommandHrefs(commandHrefs, addFailure);
   validateAliases(routeAliases, snapshot, addFailure);
+  validateRouteLinks([...scenes.map((s) => s.href), ...commandHrefs], routeAliases, addFailure);
   compareProtectedSequence(
     "SCENES_SNAPSHOT",
     "scene snapshot",
@@ -228,6 +231,13 @@ function validateScenes(scenes, shellText, addFailure) {
   if (!shellText.includes("/mine")) {
     addFailure("SCENE_MISSING", `"mine" scene entry (/mine) is missing from app-shell`);
   }
+  // 快捷键上限：桌面 rail 数字快捷键为 1-7，SCENES 超出将出现无快捷键的项
+  if (scenes.length > 7) {
+    addFailure(
+      "SCENE_COUNT_SHORTCUTS",
+      `rail scenes (${scenes.length}) exceed keyboard shortcut range 1-7`,
+    );
+  }
   const hrefs = new Map();
   for (const scene of scenes) {
     if (typeof scene.href !== "string" || !scene.href.startsWith("/")) {
@@ -288,6 +298,49 @@ function validateRequiredCommandHrefs(hrefs, addFailure) {
       addFailure(`critical command entry is missing: ${href}`);
     }
   }
+}
+
+/**
+ * 死链检测（2026-08-26 新增）：SCENES/COMMANDS 的每个 href 必须能落到
+ * src/app/(dashboard) 下真实存在的 page 文件；旧路径先经 routeAliases 归一
+ * （单跳）。支持 [dynamic] 段。
+ */
+function validateRouteLinks(hrefs, aliases, addFailure) {
+  const aliasMap = new Map(aliases.map(({ from, to }) => [from, to]));
+  for (const href of new Set(hrefs)) {
+    let target = href.split(/[?#]/)[0] || "/";
+    if (aliasMap.has(target)) target = aliasMap.get(target);
+    if (!routePageExists(target)) {
+      addFailure(
+        "ROUTE_DEAD_LINK",
+        `${href} does not resolve to an existing page under src/app/(dashboard) (resolved: ${target})`,
+      );
+    }
+  }
+}
+
+function routePageExists(routePath) {
+  const appRoot = path.join(frontendRoot, "src/app/(dashboard)");
+  const segments = routePath.split("/").filter(Boolean);
+  let dir = appRoot;
+  for (const segment of segments) {
+    const exact = path.join(dir, segment);
+    if (existsSync(exact) && statSync(exact).isDirectory()) {
+      dir = exact;
+      continue;
+    }
+    let dynamicChild = null;
+    try {
+      dynamicChild = readdirSync(dir).find((name) => /^\[[^/]+\]$/.test(name));
+    } catch {
+      return false;
+    }
+    if (!dynamicChild) return false;
+    dir = path.join(dir, dynamicChild);
+  }
+  return ["page.tsx", "page.ts", "page.jsx", "page.js"].some((file) =>
+    existsSync(path.join(dir, file)),
+  );
 }
 
 // ─── 以下为 AST 工具（沿用旧版） ───────────────────────────────

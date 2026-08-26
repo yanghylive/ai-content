@@ -30,6 +30,11 @@
       "key": "execution",
       "href": "/tasks",
       "label": "执行中心"
+    },
+    {
+      "key": "device",
+      "href": "/device-center",
+      "label": "移动设备"
     }
   ],
   "commandHrefs": [
@@ -70,9 +75,9 @@
     "/tasks/runs",
     "/tasks",
     "/approvals",
-    "/task-evidence",
+    "/tasks/evidence",
     "/agent-workbench",
-    "/platforms",
+    "/distribution/accounts",
     "/accounts-matrix",
     "/local-engine",
     "/commercial-readiness",

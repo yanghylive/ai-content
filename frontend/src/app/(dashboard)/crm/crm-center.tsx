@@ -239,7 +239,7 @@ export function CrmCenter() {
     <div className="kx-view flex flex-col gap-6">
       <WorkbenchCenter
         title="客户管理"
-        backHref="/customer"
+        backHref="/crm"
         subtitle="管理你的客户档案，跟进每一个商机"
         icon={Users}
         stats={[

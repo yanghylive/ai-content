@@ -115,9 +115,9 @@ export function CustomerDetailCenter() {
 
   const stats: WorkbenchStat[] = customer
     ? [
-        { label: "互动记录", value: loading ? "-" : (interactionCount === null ? "加载失败" : `${interactionCount} 条`), tone: loading || interactionCount === null ? "muted" : "accent" },
-        { label: "待跟进事项", value: loading ? "-" : (taskCount === null ? "加载失败" : String(taskCount)), tone: loading || taskCount === null || taskCount === 0 ? "muted" : "warning" },
-        { label: "备注", value: loading ? "-" : (noteCount === null ? "加载失败" : `${noteCount} 条`), tone: loading || noteCount === null ? "muted" : "default" },
+        { label: "互动记录", value: loading ? "-" : (interactionCount === null ? "加载失败" : `${interactionCount} 条`), tone: loading || interactionCount === null ? "default" : "accent" },
+        { label: "待跟进事项", value: loading ? "-" : (taskCount === null ? "加载失败" : String(taskCount)), tone: loading || taskCount === null || taskCount === 0 ? "default" : "warning" },
+        { label: "备注", value: loading ? "-" : (noteCount === null ? "加载失败" : `${noteCount} 条`), tone: loading || noteCount === null ? "default" : "default" },
       ]
     : [{ label: "客户", value: "暂无", tone: "default" }];
 

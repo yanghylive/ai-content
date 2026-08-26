@@ -6,6 +6,7 @@ import { BrandLogo } from "@/components/brand-logo";
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { INTERACTION_CHANNELS } from "@/lib/nav-registry";
 import { ScenePage } from "@/components/shell/scene-page";
 import { ShellIcon } from "@/components/shell/icons";
 import { localEngineApi, type AgentConfirmation, type InteractionTask } from "@/lib/api/local-engine";
@@ -99,65 +100,17 @@ export default function MessageScene() {
               }
             : undefined
         }
-        cards={[
-        {
-          icon: "messageSq",
-          tint: "kx-t-violet",
-          title: "AI 客服",
-          desc: "配置机器人风格与规则，草稿确认后发出",
-          href: "/engagement",
-          badge: waitingCount > 0 ? `${waitingCount} 待确认` : undefined,
-        },
-        {
-          icon: "messageSq",
-          tint: "kx-t-green",
-          title: "企微助手",
-          desc: "企业微信客户智能回复助手",
-          href: "/wecom-assistant",
-        },
-        {
-          icon: "music",
-          tint: "kx-t-slate",
-          title: "抖音私信",
-          desc: "私信和评论，读取真实的回复给你确认",
-          href: "/engagement/douyin-messages",
-        },
-        {
-          icon: "play",
-          tint: "kx-t-cyan",
-          title: "视频号私信",
-          desc: "私信和评论",
-          href: "/engagement/channel-messages",
-        },
-        {
-          icon: "messageSq",
-          tint: "kx-t-green",
-          title: "微信",
-          desc: "会话、加好友",
-          href: "/engagement/wechat",
-        },
-        {
-          icon: "history",
-          tint: "kx-t-slate",
-          title: "互动记录",
-          desc: "所有发出过的回复，可追溯",
-          href: "/engagement/records",
-        },
-        {
-          icon: "megaphone",
-          tint: "kx-t-amber",
-          title: "群发计划",
-          desc: "群发任务管理：暂停、继续、重试",
-          href: "/engagement/wechat/plans",
-        },
-        {
-          icon: "cpu",
-          tint: "kx-t-violet",
-          title: "执行态势",
-          desc: "跨平台执行任务态势总览",
-          href: "/war-room",
-        },
-      ]}
+        cards={INTERACTION_CHANNELS.map((ch) => ({
+          icon: ch.icon,
+          tint: ch.tint,
+          title: ch.title,
+          desc: ch.desc,
+          href: ch.href,
+          badge:
+            ch.key === "ai-service" && waitingCount > 0
+              ? `${waitingCount} 待确认`
+              : undefined,
+        }))}
       />
     </div>
   );
@@ -243,22 +196,14 @@ function InboxSection({
 
 /* ================= 移动端视图（<768px，明德 VP 风格） ================= */
 
-const MOBILE_CHANNELS: Array<{
-  label: string;
-  sub: string;
-  icon: React.ComponentProps<typeof ShellIcon>["name"];
-  brand: string;
-  href: string;
-}> = [
-  { label: "AI 客服", sub: "配置风格规则", icon: "messageSq", brand: "#722ed1", href: "/engagement" },
-  { label: "抖音私信", sub: "读取真实回复", icon: "music", brand: "#fe2c55", href: "/engagement/douyin-messages" },
-  { label: "视频号私信", sub: "私信和评论", icon: "play", brand: "#007fff", href: "/engagement/channel-messages" },
-  { label: "微信", sub: "会话 · 加好友", icon: "messageSq", brand: "#07c160", href: "/engagement/wechat" },
-  { label: "企微助手", sub: "企微智能回复", icon: "messageSq", brand: "#07c160", href: "/wecom-assistant" },
-  { label: "互动记录", sub: "所有回复可追溯", icon: "history", brand: "#76517e", href: "/engagement/records" },
-  { label: "群发计划", sub: "群发任务管理", icon: "megaphone", brand: "var(--kaypal-v3-amber)", href: "/engagement/wechat/plans" },
-  { label: "执行态势", sub: "跨平台任务态势", icon: "cpu", brand: "var(--kaypal-v3-purple)", href: "/war-room" },
-];
+/** 移动端渠道：由 INTERACTION_CHANNELS 派生（与桌面 cards 同源，防止双份漂移） */
+const MOBILE_CHANNELS = INTERACTION_CHANNELS.map((ch) => ({
+  label: ch.title,
+  sub: ch.sub,
+  icon: ch.icon,
+  brand: ch.brand,
+  href: ch.href,
+}));
 
 function riskTint(level: string): string {
   if (level === "critical" || level === "high") return "mx-badge mx-badge-red";

@@ -534,7 +534,7 @@ export function CustomerServiceConfig() {
             <div className="mx-card" style={{ marginTop: 10, padding: 12, borderColor: "rgba(222,150,57,.45)" }}>
               <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>先登录平台账号</p>
               <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.5 }}>抖音私信回复需要一个已登录的抖音账号，登录后回来就能创建任务了</p>
-              <button type="button" className="mx-btn-gold" style={{ marginTop: 9 }} onClick={() => router.push("/platforms")}>去平台账号登录</button>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 9 }} onClick={() => router.push("/distribution/accounts")}>去平台账号登录</button>
             </div>
           )}
           {error && (
@@ -779,7 +779,7 @@ export function CustomerServiceConfig() {
               </p>
               <div className="mt-3">
                 <V2PrimaryButton
-                  onClick={() => router.push("/platforms")}
+                  onClick={() => router.push("/distribution/accounts")}
                 >
                   去平台账号登录
                 </V2PrimaryButton>

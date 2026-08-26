@@ -294,7 +294,7 @@ function BlockerCards({ blockers }: { blockers: GrowthHomeBlocker[] }) {
   if (blockers.length === 0) return null;
   const blockerLinks: Record<string, { href: string; label: string }> = {
     "no-ready-auto-task": {
-      href: "/apps/auto-acquisition",
+      href: "/growth/acquisition",
       label: "查看获客任务",
     },
     "no-online-normal-account": {

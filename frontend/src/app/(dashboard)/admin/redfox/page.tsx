@@ -1,6 +1,13 @@
-import { redirect } from "next/navigation";
+import { redirectPreservingQuery, type ServerSearchParams } from "@/lib/redirect-with-query";
 
-/** RedFox 连接配置 · 运维隐藏入口(/admin 体系,用户端无入口) */
-export default function Page() {
-  redirect("/redfox-connection");
+/**
+ * RedFox 数据来源管理（原指向已删除的 /redfox-connection 死链，2026-08-26 修复）。
+ * 兼容跳转：保留查询参数，不丢上下文。
+ */
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<ServerSearchParams>;
+}) {
+  redirectPreservingQuery("/intelligence/redfox", await searchParams);
 }
