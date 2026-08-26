@@ -94,10 +94,10 @@
     --kaypal-v3-nav-ink: #241b38;
     --kaypal-v3-nav-muted: #4d4266;
     --kaypal-v3-nav-shadow: 2px 0 12px rgba(60, 30, 100, 0.06);
-    --kaypal-v3-card-shadow: 0 4px 14px rgba(60, 30, 100, 0.08);
-    --kaypal-v3-elevated-shadow: 0 10px 30px rgba(60, 30, 100, 0.1);
-    --kaypal-v3-radius: 16px;
-    --kaypal-v3-radius-sm: 12px;
+    --kaypal-v3-card-shadow: 0 1px 2px rgba(42, 36, 56, 0.05), 0 1px 3px rgba(90, 70, 160, 0.04);
+    --kaypal-v3-elevated-shadow: 0 2px 8px rgba(42, 36, 56, 0.08);
+    --kaypal-v3-radius: 12px;
+    --kaypal-v3-radius-sm: 10px;
   }
 
   /* ---------- 3. 变量覆盖：暗色（新壳 + 旧页面，紫黑同源） ---------- */
@@ -177,7 +177,7 @@
     --kaypal-v3-nav-ink: #ece9f4;
     --kaypal-v3-nav-muted: #a9a3bd;
     --kaypal-v3-nav-shadow: 2px 0 12px rgba(0, 0, 0, 0.25);
-    --kaypal-v3-card-shadow: 0 3px 14px rgba(0, 0, 0, 0.3);
+    --kaypal-v3-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
     --kaypal-v3-elevated-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   }
 
@@ -319,8 +319,7 @@
       linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(248, 246, 253, 0.64)) padding-box,
       linear-gradient(128deg, rgba(255, 255, 255, 0.9) 0%, rgba(215, 205, 238, 0.3) 50%, rgba(160, 130, 200, 0.22) 100%) border-box;
     box-shadow:
-      0 20px 46px rgba(60, 30, 100, 0.09),
-      0 4px 12px rgba(60, 30, 100, 0.04),
+      0 1px 2px rgba(42, 36, 56, 0.04),
       inset 0 1px 0 rgba(255, 255, 255, 0.72);
     backdrop-filter: var(--kx-blur-glass);
     }
@@ -368,7 +367,7 @@
       linear-gradient(145deg, rgba(28, 23, 38, 0.9), rgba(22, 18, 32, 0.82)) padding-box,
       linear-gradient(128deg, rgba(110, 90, 150, 0.4) 0%, rgba(80, 65, 115, 0.25) 50%, rgba(227, 154, 62, 0.16) 100%) border-box;
     box-shadow:
-      0 20px 46px rgba(0, 0, 0, 0.4),
+      0 1px 2px rgba(0, 0, 0, 0.20),
       inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
   /* Ops 平面卡并入玻璃化后统一圆角档（U-3：radius 谱系收敛到 token） */

@@ -62,8 +62,8 @@
     --kaypal-v3-purple: #722ed1;
     --kaypal-v3-purple-soft: #f9f0ff;
     --kaypal-v3-card-shadow:
-      0 1px 2px rgba(42, 36, 56, 0.05), 0 3px 14px rgba(90, 70, 160, 0.08);
-    --kaypal-v3-elevated-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
+      0 1px 2px rgba(42, 36, 56, 0.04);
+    --kaypal-v3-elevated-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
     --kaypal-v3-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --kaypal-v3-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
     --kaypal-v3-dur-micro: 120ms;
@@ -2294,7 +2294,7 @@
   background: var(--kaypal-v3-success-soft);
   border: 1px solid var(--kaypal-v3-success);
   color: var(--kaypal-v3-success);
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.6;
 }
 .v3-status-err {
@@ -2303,7 +2303,7 @@
   background: var(--kaypal-v3-danger-soft);
   border: 1px solid var(--kaypal-v3-danger);
   color: var(--kaypal-v3-danger);
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -2315,7 +2315,7 @@
   background: var(--kaypal-v3-paper);
   border: 1px dashed var(--kaypal-v3-border-strong);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--kaypal-v3-soft-ink);
   word-break: break-all;
   white-space: normal;
