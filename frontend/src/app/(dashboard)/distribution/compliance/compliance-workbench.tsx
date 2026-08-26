@@ -16,7 +16,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
-import { Banner } from "@astryxdesign/core/Banner";
 import {
   clearComplianceHandoff,
   loadComplianceHandoff,
@@ -521,11 +520,10 @@ export function ComplianceWorkbench() {
 
   return (
     <div className="flex flex-col gap-4 pb-8">
-      <Banner
-        status="info"
-        title="发布前内容合规检查"
-        description="所有结果由规则引擎自动生成，最终发布决策由您确认。"
-      />
+      <div className="flex flex-col gap-1 rounded-lg border border-primary-200 bg-primary-50 p-4">
+        <p className="font-semibold text-primary-700">发布前内容合规检查</p>
+        <p className="text-sm text-primary-600">所有结果由规则引擎自动生成，最终发布决策由您确认。</p>
+      </div>
       <section className="kaypal-v3-panel overflow-hidden">
         <div className="grid xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
           <header className="border-b border-[var(--kaypal-v3-border)] p-4 xl:border-b-0 xl:border-r">

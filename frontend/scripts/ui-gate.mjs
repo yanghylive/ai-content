@@ -31,8 +31,6 @@ const ALLOWED_TOKEN_FILES = [
   "src/components/shell/desktop-vp.css",
   "src/components/shell/mobile.css",
   "tailwind.config.ts",
-  "src/app/astryx-brand-overrides.css",
-  "src/app/astryx-layers.css",
 ];
 
 const VIOLATION = [];

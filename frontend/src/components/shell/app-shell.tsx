@@ -372,7 +372,7 @@ export function AppShell({
         {/* 左侧图标栏 */}
         <nav className="kx-rail" aria-label="主导航">
           <img
-            src="/brand/jiuzhang-ai-icon.png"
+            src="/brand/jiuzhang-ai-icon.webp"
             alt="JIUZHANG AI"
             className="kx-rail-logo"
             draggable={false}

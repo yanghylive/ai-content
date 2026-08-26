@@ -44,7 +44,7 @@ export function CapabilityInfoPage({
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <img
-              src="/brand/jiuzhang-ai-logo.png"
+              src="/brand/jiuzhang-ai-logo.webp"
               alt="JIUZHANG AI"
               style={{ height: 16, width: "auto" }}
               draggable={false}
@@ -129,7 +129,7 @@ export function CapabilityInfoPage({
       {/* 品牌信息条：让功能页统一露出 JIUZHANG AI 品牌 */}
       <div className="flex items-center justify-between gap-3 rounded-[10px] border border-divider bg-content1/60 px-4 py-2">
         <img
-          src="/brand/jiuzhang-ai-logo.png"
+          src="/brand/jiuzhang-ai-logo.webp"
           alt="JIUZHANG AI"
           className="h-5 w-auto shrink-0"
           draggable={false}

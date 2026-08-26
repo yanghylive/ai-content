@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import bundleAnalyzer from "@next/bundle-analyzer";
 
 /**
  * 演示舱编译期剔除（合规边界确认书 v2 第五节第 2 条）
@@ -15,7 +16,9 @@ import type { NextConfig } from "next";
  */
 const isDemoBuild = process.env.NEXT_PUBLIC_ENABLE_DEMO === "true";
 
-const nextConfig: NextConfig = {
+const nextConfig: NextConfig = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+})({
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   reactCompiler: true,
@@ -33,6 +36,16 @@ const nextConfig: NextConfig = {
   // 显式声明空 turbopack 配置，告知 Next.js 我们选择 webpack 路径，
   // 避免 dev 启动时 Turbopack 警告阻断编译。
   turbopack: {},
+  // P1-4 优化：按需导入大型图标/组件库，减少 bundle 体积
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "@heroui/react",
+      "recharts",
+      "reactflow",
+      "framer-motion",
+    ],
+  },
   webpack(config, { webpack }) {
     if (!isDemoBuild) {
       config.plugins.push(
@@ -45,6 +58,6 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-};
+});
 
 export default nextConfig;

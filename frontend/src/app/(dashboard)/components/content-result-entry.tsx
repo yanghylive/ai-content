@@ -1,10 +1,5 @@
 "use client";
 
-import { Heading } from "@astryxdesign/core/Heading";
-import { List, ListItem } from "@astryxdesign/core/List";
-import { Section } from "@astryxdesign/core/Section";
-import { VStack } from "@astryxdesign/core/Stack";
-import { Text } from "@astryxdesign/core/Text";
 import {
   ArrowRight,
   FileCheck2,
@@ -43,38 +38,40 @@ export function ContentResultEntry() {
   if (rollout.status !== "enabled") return null;
 
   return (
-    <Section padding={4} variant="muted">
-      <VStack gap={3}>
-        <VStack gap={0.5}>
-          <Heading level={2}>直接开始内容工作</Heading>
-          <Text as="p" color="secondary" type="supporting">
+    <section className="p-4 bg-default-100">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="text-xl font-bold">直接开始内容工作</h2>
+          <p className="text-sm text-default-500">
             选择想要的结果，确认目标和平台后即可进入可编辑简报。
-          </Text>
-        </VStack>
-        <List
-          density="balanced"
-          hasDividers
-          header={
-            <Text as="span" type="label" weight="semibold">
-              选择结果
-            </Text>
-          }
-        >
+          </p>
+        </div>
+        <ul className="flex flex-col divide-y divide-default-200">
+          <li className="flex flex-col py-2">
+            <span className="font-semibold">选择结果</span>
+          </li>
           {WORKSPACE_INTENTS.map((intent) => {
             const Icon = intentIcons[intent.id];
             return (
-              <ListItem
-                key={intent.id}
-                description={intent.description}
-                endContent={<ArrowRight aria-hidden="true" size={16} />}
-                href={buildWorkspaceIntentHref(intent.id)}
-                label={intent.label}
-                startContent={<Icon aria-hidden="true" size={18} />}
-              />
+              <li key={intent.id} className="flex flex-col">
+                <a
+                  href={buildWorkspaceIntentHref(intent.id)}
+                  className="flex flex-row items-center gap-3 py-3"
+                >
+                  <Icon aria-hidden="true" size={18} />
+                  <span className="flex flex-col">
+                    <span>{intent.label}</span>
+                    <span className="text-sm text-default-500">
+                      {intent.description}
+                    </span>
+                  </span>
+                  <ArrowRight aria-hidden="true" size={16} className="ml-auto" />
+                </a>
+              </li>
             );
           })}
-        </List>
-      </VStack>
-    </Section>
+        </ul>
+      </div>
+    </section>
   );
 }

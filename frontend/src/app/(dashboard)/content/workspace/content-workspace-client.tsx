@@ -1,7 +1,6 @@
 "use client";
 
 import { addToast } from "@heroui/react";
-import { EmptyState } from "@astryxdesign/core/EmptyState";
 import {
   ClipboardList,
   FilePlus2,
@@ -1090,22 +1089,20 @@ export function ContentWorkspaceClient() {
                   aria-label="内容编辑工作区"
                   className="order-1 flex min-h-[560px] items-center justify-center rounded-[6px] border border-divider bg-content1 px-6 text-center lg:order-2"
                 >
-                  <EmptyState
-                    actions={
-                      <V2PrimaryButton
-                        icon={FilePlus2}
-                        loading={creating}
-                        onClick={createDraft}
-                      >
-                        新建内容草稿
-                      </V2PrimaryButton>
-                    }
-                    description="不需要先理解全部功能。先新建草稿或从左侧队列选择内容，再按“简报 → 大纲 → 正文 → 多平台 → 审核”推进。"
-                    headingLevel={2}
-                    icon={<ClipboardList className="h-6 w-6" />}
-                    isCompact={false}
-                    title="从一个明确任务开始"
-                  />
+                  <div className="flex flex-col items-center gap-4 py-8">
+                    <ClipboardList className="h-6 w-6 text-default-400" />
+                    <h2 className="text-lg font-semibold text-foreground">从一个明确任务开始</h2>
+                    <p className="max-w-md text-sm leading-6 text-default-500">
+                      不需要先理解全部功能。先新建草稿或从左侧队列选择内容，再按{"u201c简报 → 大纲 → 正文 → 多平台 → 审核u201d"}推进。
+                    </p>
+                    <V2PrimaryButton
+                      icon={FilePlus2}
+                      loading={creating}
+                      onClick={createDraft}
+                    >
+                      新建内容草稿
+                    </V2PrimaryButton>
+                  </div>
                 </section>
               )}
             </>

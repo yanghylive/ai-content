@@ -1,18 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { AppShell } from "@astryxdesign/core/AppShell";
-import { Banner } from "@astryxdesign/core/Banner";
-import { Button } from "@astryxdesign/core/Button";
-import { Card } from "@astryxdesign/core/Card";
-import { Center } from "@astryxdesign/core/Center";
-import { Field } from "@astryxdesign/core/Field";
-import { Grid } from "@astryxdesign/core/Grid";
-import { Heading } from "@astryxdesign/core/Heading";
-import { Spinner } from "@astryxdesign/core/Spinner";
-import { Stack } from "@astryxdesign/core/Stack";
-import { Text } from "@astryxdesign/core/Text";
-import { TextInput } from "@astryxdesign/core/TextInput";
+import { Button, Card, CardBody, Input, Spinner, cn } from "@heroui/react";
 import {
   ExternalLink,
   KeyRound,
@@ -199,13 +188,18 @@ function isRetryablePollError(error: unknown) {
 
 function LoginPageFallback() {
   return (
-    <AppShell contentPadding={0} height="auto" variant="wash">
-      <Center minHeight="100dvh" width="100%">
-        <Card padding={4}>
-          <Spinner label="正在检查登录状态..." size="sm" />
+    <div className="min-h-screen w-full bg-default-50 p-0">
+      <div className="flex min-h-[100dvh] w-full items-center justify-center">
+        <Card className="p-4">
+          <CardBody className="flex items-center gap-2 p-0">
+            <Spinner size="sm" />
+            <span className="text-small text-default-500">
+              正在检查登录状态...
+            </span>
+          </CardBody>
         </Card>
-      </Center>
-    </AppShell>
+      </div>
+    </div>
   );
 }
 
@@ -645,110 +639,80 @@ function LoginPageContent() {
   }
 
   return (
-    <AppShell className="login-preview" contentPadding={0} height="auto" variant="wash">
-      <Center className="login-preview-center" axis="horizontal" width="100%">
-        <Stack
-          className="login-preview-stack"
-          gap={6}
-          maxWidth={1184}
-          minHeight="100dvh"
-          paddingBlock={4}
-          paddingInline={6}
-          width="100%"
-        >
-          <Stack
-            as="header"
-            className="login-preview-header"
-            direction="horizontal"
-            hAlign="between"
-            vAlign="center"
-          >
-            <Stack className="preview-brand" direction="horizontal" gap={3} vAlign="center">
+    <div className="login-preview min-h-screen w-full p-0">
+      <div className="login-preview-center flex w-full items-center justify-center">
+        <div className="login-preview-stack flex flex-col gap-6 max-w-[1184px] min-h-[100dvh] py-4 px-6 w-full">
+          <header className="login-preview-header flex flex-row justify-between items-center">
+            <div className="preview-brand flex flex-row items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element -- Static export cannot use next/image optimization. */}
-              <img
+              <img fetchPriority="high"
                 alt="JIUZHANG AI"
                 className="h-7 w-auto shrink-0"
-                src="/brand/jiuzhang-ai-icon.png"
+                src="/brand/jiuzhang-ai-icon.webp"
               />
-              <Stack gap={0}>
-                <Text className="preview-wordmark" type="label" weight="bold">JIUZHANG <span>AI</span></Text>
-                <Text className="preview-brand-sub" type="supporting">智能内容增长与客户运营系统</Text>
-              </Stack>
-            </Stack>
-            <Stack
-              className="hidden sm:flex"
-              direction="horizontal"
-              gap={2}
-              vAlign="center"
-            >
+              <div className="flex flex-col gap-0">
+                <span className="preview-wordmark text-sm font-bold">JIUZHANG <span>AI</span></span>
+                <span className="preview-brand-sub text-small text-default-500">智能内容增长与客户运营系统</span>
+              </div>
+            </div>
+            <div className="hidden sm:flex flex-row items-center gap-2">
               <ShieldCheck
                 aria-hidden="true"
                 className="h-4 w-4"
                 strokeWidth={1.75}
               />
-              <Text color="accent" type="supporting" weight="semibold">企业级安全登录</Text>
-            </Stack>
-          </Stack>
+              <span className="text-primary text-small font-semibold">企业级安全登录</span>
+            </div>
+          </header>
 
-          <Grid
-            className="login-preview-grid flex-1"
-            align="center"
-            columns={{ minWidth: 320, max: 2, repeat: "fit" }}
-            gap={10}
-            width="100%"
+          <div
+            className="login-preview-grid flex-1 grid items-center gap-10 w-full"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}
           >
             {/* P2-18：hero 营销区紧凑化——缩小间距/字号/图标，首屏占用从约 1/3 降下来 */}
-            <Stack
-              as="section"
-              className="login-preview-hero order-last md:order-first"
-              gap={3}
-              maxWidth={640}
-            >
-              <Stack className="login-preview-hero-copy" gap={2}>
-                <Text className="preview-kicker" type="supporting" weight="bold">INTELLIGENT GROWTH SYSTEM</Text>
-                <Heading level={1} textWrap="balance" type="display-3">让内容成为<br /><em>持续增长的系统。</em></Heading>
-                <Text as="p" color="secondary" textWrap="pretty" type="large">从发现市场机会，到内容生产、触达用户与沉淀客户，九章智能把每一步连接为可执行、可追踪、可复用的完整流程。</Text>
-              </Stack>
+            <section className="login-preview-hero order-last md:order-first flex flex-col gap-3 max-w-[640px]">
+              <div className="login-preview-hero-copy flex flex-col gap-2">
+                <span className="preview-kicker text-small font-bold text-default-500">INTELLIGENT GROWTH SYSTEM</span>
+                <h1 className="text-3xl font-bold text-balance">让内容成为<br /><em>持续增长的系统。</em></h1>
+                <p className="text-lg text-default-500 text-pretty">从发现市场机会，到内容生产、触达用户与沉淀客户，九章智能把每一步连接为可执行、可追踪、可复用的完整流程。</p>
+              </div>
 
-              <Grid className="login-preview-features" columns={{ minWidth: 148, max: 3, repeat: "fit" }} gap={3}>
+              <div
+                className="login-preview-features grid gap-3"
+                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(148px, 1fr))" }}
+              >
                 {[
                   { label: "发现机会", value: "情报 · 趋势 · 选题", icon: LayoutDashboard },
                   { label: "智能创作", value: "文字 · 图片 · 视频", icon: KeyRound },
                   { label: "沉淀客户", value: "线索 · 微信 · CRM", icon: MapPinned },
                 ].map((item) => (
-                  <Stack
+                  <div
                     key={item.label}
-                    direction="horizontal"
-                    gap={2}
-                    vAlign="center"
+                    className="flex flex-row items-center gap-2"
                   >
-                    <Center height={24} width={24}>
+                    <div className="flex h-6 w-6 items-center justify-center">
                       <item.icon
                         aria-hidden="true"
                         className="h-4 w-4"
                         strokeWidth={1.75}
                       />
-                    </Center>
-                    <Stack gap={0}>
-                      <Text
-                        color="secondary"
-                        type="supporting"
-                        weight="semibold"
-                      >
+                    </div>
+                    <div className="flex flex-col gap-0">
+                      <span className="text-default-500 text-small font-semibold">
                         {item.label}
-                      </Text>
-                      <Text type="label" weight="bold">
+                      </span>
+                      <span className="text-sm font-bold">
                         {item.value}
-                      </Text>
-                    </Stack>
-                  </Stack>
+                      </span>
+                    </div>
+                  </div>
                 ))}
-              </Grid>
+              </div>
               <div className="preview-system-visual" aria-label="九章智能工作流预览">
                 <span className="preview-glow" /><span className="preview-ring preview-ring-one" /><span className="preview-ring preview-ring-two" /><span className="preview-ring preview-ring-three" /><span className="preview-ring preview-ring-four" /><span className="preview-pulse-ring" />
                 <span className="preview-core">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img alt="" src="/brand/jiuzhang-ai-icon.png" width={512} height={512} />
+                    <img alt="" src="/brand/jiuzhang-ai-icon.webp" width={512} height={512} />
                   </span>
                 {[
                   ["01", "发现机会", "情报 · 趋势 · 选题", "preview-node-one"],
@@ -758,390 +722,385 @@ function LoginPageContent() {
                 ].map(([number, title, detail, className]) => <span className={`preview-node ${className}`} key={number}><i>{number}</i><b>{title}</b><small>{detail}</small></span>)}
                 <span className="preview-connector preview-connector-one" /><span className="preview-connector preview-connector-two" /><span className="preview-connector preview-connector-three" /><span className="preview-connector preview-connector-four" />
               </div>
-              <Stack className="preview-stage-footer" direction="horizontal" gap={4}>
-                <Text type="supporting"><i />中国主流内容平台</Text><Text type="supporting"><i />智能建议与实际操作结合</Text><Text type="supporting"><i />关键任务全程留痕</Text>
-              </Stack>
-            </Stack>
+              <div className="preview-stage-footer flex flex-row gap-4">
+                <span className="text-small text-default-500"><i />中国主流内容平台</span><span className="text-small text-default-500"><i />智能建议与实际操作结合</span><span className="text-small text-default-500"><i />关键任务全程留痕</span>
+              </div>
+            </section>
 
-            <Card
-              className="login-preview-card order-first md:order-last"
-              maxWidth={440}
-              padding={6}
-              width="100%"
-            >
-              <Stack className="login-preview-card-inner" gap={5}>
-                <Stack className="login-preview-card-head" gap={3}>
-                  <Center height={40} width={40}>
-                    <KeyRound
-                      aria-hidden="true"
-                      className="h-5 w-5"
-                      strokeWidth={1.75}
-                    />
-                  </Center>
-                  <Stack gap={1}>
-                    <Text className="preview-login-kicker" type="supporting">WELCOME TO JIUZHANG AI</Text>
-                    <Heading level={2}>{phase === "waiting" ? "请在 JIUZHANG AI 页面确认" : forceReauth ? "重新授权账号" : "进入九章智能"}</Heading>
-                    <Text as="p" color="secondary" type="supporting">
-                      {phase === "waiting"
-                        ? "确认后会自动进入当前工作台。"
-                        : forceReauth
-                          ? "完成确认后会更新当前账号授权。"
-                          : "选择一种方式登录你的智能运营工作台。"}
-                    </Text>
-                  </Stack>
-                </Stack>
+            <Card className="login-preview-card order-first md:order-last max-w-[440px] w-full p-6">
+              <CardBody className="p-0">
+                <div className="login-preview-card-inner flex flex-col gap-5">
+                  <div className="login-preview-card-head flex flex-col gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center">
+                      <KeyRound
+                        aria-hidden="true"
+                        className="h-5 w-5"
+                        strokeWidth={1.75}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="preview-login-kicker text-small text-default-500">WELCOME TO JIUZHANG AI</span>
+                      <h2 className="text-xl font-semibold">{phase === "waiting" ? "请在 JIUZHANG AI 页面确认" : forceReauth ? "重新授权账号" : "进入九章智能"}</h2>
+                      <p className="text-small text-default-500">
+                        {phase === "waiting"
+                          ? "确认后会自动进入当前工作台。"
+                          : forceReauth
+                            ? "完成确认后会更新当前账号授权。"
+                            : "选择一种方式登录你的智能运营工作台。"}
+                      </p>
+                    </div>
+                  </div>
 
-                {phase === "idle" ||
-                phase === "starting" ||
-                phase === "error" ? (
-                  <Stack className="login-preview-form" gap={4}>
-                    <Stack className="preview-tabs" direction="horizontal" gap={2}>
-                      {(
-                        [
-                          { key: "sso", label: "九章账号" },
-                          { key: "password", label: "账号密码" },
-                          { key: "wechat", label: "微信登录" },
-                        ] as const
-                      )
-                        .map((tab) => (
-                        <button
-                          key={tab.key}
-                          type="button"
-                          onClick={() => setLoginTab(tab.key)}
-                          className={`preview-tab ${loginTab === tab.key ? "active" : ""}`}
-                          style={{
-                            border: "1px solid transparent",
-                            cursor: "pointer",
-                          }}
-                        >
-                          {tab.label}
-                        </button>
-                      ))}
-                    </Stack>
+                  {phase === "idle" ||
+                  phase === "starting" ||
+                  phase === "error" ? (
+                    <div className="login-preview-form flex flex-col gap-4">
+                      <div className="preview-tabs flex flex-row gap-2">
+                        {(
+                          [
+                            { key: "sso", label: "九章账号" },
+                            { key: "password", label: "账号密码" },
+                            { key: "wechat", label: "微信登录" },
+                          ] as const
+                        )
+                          .map((tab) => (
+                          <button
+                            key={tab.key}
+                            type="button"
+                            onClick={() => setLoginTab(tab.key)}
+                            className={cn("preview-tab", loginTab === tab.key && "active")}
+                            style={{
+                              border: "1px solid transparent",
+                              cursor: "pointer",
+                            }}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
+                      </div>
 
-                    {loginTab === "sso" ? (
-                      <Stack className="sso-pane" gap={3}>
-                        <Stack className="sso-hero" gap={3}>
-                          <Stack className="sso-head" direction="horizontal" gap={3} vAlign="center">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img alt="" src="/brand/jiuzhang-ai-icon.png" width={512} height={512} />
-                            <Stack gap={0}><Text type="label" weight="bold">使用 JIUZHANG AI 账号</Text><Text type="supporting">统一身份授权 · 无需再次输入密码</Text></Stack>
-                          </Stack>
-                          <Text as="p">像 Codex 使用 ChatGPT 账号一样，通过你的九章统一账号完成授权，并安全连接当前浏览器或桌面设备。</Text>
-                          <Grid className="sso-points" columns={{ minWidth: 140, max: 2, repeat: "fit" }} gap={2}>
-                            {["自动识别当前账号", "设备授权随时撤销", "工作区权限自动同步", "任务与证据安全回传"].map((point) => <Text key={point} type="supporting"><b>✓</b>{point}</Text>)}
-                          </Grid>
-                          <Button className="preview-main-button" icon={<LogIn aria-hidden="true" className="h-4 w-4" />} isLoading={phase === "starting"} label={phase === "starting" ? "正在准备 JIUZHANG AI 登录..." : "使用 JIUZHANG AI 账号继续"} onClick={() => void startDeviceAuth()} variant="primary" width="100%" />
-                        </Stack>
-                        <Text className="sso-note" type="supporting">授权过程由九章统一账号中心完成，本页面不会读取你的密码</Text>
-                      </Stack>
-                    ) : loginTab === "password" ? (
-                      <Stack gap={3}>
-                        <Field label="手机号 / 邮箱" width="100%" inputID="login-username">
-                          <TextInput
+                      {loginTab === "sso" ? (
+                        <div className="sso-pane flex flex-col gap-3">
+                          <div className="sso-hero flex flex-col gap-3">
+                            <div className="sso-head flex flex-row items-center gap-3">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img alt="" src="/brand/jiuzhang-ai-icon.webp" width={512} height={512} />
+                              <div className="flex flex-col gap-0"><span className="text-sm font-bold">使用 JIUZHANG AI 账号</span><span className="text-small text-default-500">统一身份授权 · 无需再次输入密码</span></div>
+                            </div>
+                            <p className="text-sm">像 Codex 使用 ChatGPT 账号一样，通过你的九章统一账号完成授权，并安全连接当前浏览器或桌面设备。</p>
+                            <div
+                              className="sso-points grid gap-2"
+                              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}
+                            >
+                              {["自动识别当前账号", "设备授权随时撤销", "工作区权限自动同步", "任务与证据安全回传"].map((point) => <span key={point} className="text-small text-default-500"><b>✓</b>{point}</span>)}
+                            </div>
+                            <Button className="preview-main-button w-full" color="primary" isLoading={phase === "starting"} startContent={<LogIn aria-hidden="true" className="h-4 w-4" />} onPress={() => void startDeviceAuth()}>
+                              {phase === "starting" ? "正在准备 JIUZHANG AI 登录..." : "使用 JIUZHANG AI 账号继续"}
+                            </Button>
+                          </div>
+                          <span className="sso-note text-small text-default-500">授权过程由九章统一账号中心完成，本页面不会读取你的密码</span>
+                        </div>
+                      ) : loginTab === "password" ? (
+                        <div className="flex flex-col gap-3">
+                          <Input
+                            id="login-username"
                             label="手机号 / 邮箱"
-                            isLabelHidden
+                            labelPlacement="outside"
                             placeholder="手机号或邮箱"
                             value={username}
-                            onChange={(value) => setUsername(value)}
+                            onValueChange={(value) => setUsername(value)}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") void handlePasswordLogin();
                             }}
+                            className="w-full"
                           />
-                        </Field>
-                        <Field label="密码" width="100%" inputID="login-password">
-                          <TextInput
+                          <Input
+                            id="login-password"
                             label="密码"
-                            isLabelHidden
+                            labelPlacement="outside"
                             type="password"
                             placeholder="输入密码"
                             value={password}
-                            onChange={(value) => setPassword(value)}
+                            onValueChange={(value) => setPassword(value)}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") void handlePasswordLogin();
                             }}
+                            className="w-full"
                           />
-                        </Field>
-                        <label
-                          htmlFor="login-remember"
-                          style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
-                        >
-                          <input
-                            id="login-remember"
-                            type="checkbox"
-                            checked={rememberAccount}
-                            onChange={(e) => setRememberAccount(e.target.checked)}
-                            style={{ width: 16, height: 16, accentColor: "var(--kaypal-v3-amber)" }}
-                          />
-                          <span style={{ fontSize: 13, color: "var(--text-secondary, #6b7280)" }}>
-                            记住账号和密码（本机加密保存）
+                          <label
+                            htmlFor="login-remember"
+                            style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
+                          >
+                            <input
+                              id="login-remember"
+                              type="checkbox"
+                              checked={rememberAccount}
+                              onChange={(e) => setRememberAccount(e.target.checked)}
+                              style={{ width: 16, height: 16, accentColor: "var(--kaypal-v3-amber)" }}
+                            />
+                            <span style={{ fontSize: 13, color: "var(--text-secondary, #6b7280)" }}>
+                              记住账号和密码（本机加密保存）
+                            </span>
+                          </label>
+                          <Button
+                            className="w-full"
+                            color="primary"
+                            isDisabled={
+                              passwordSubmitting || !username.trim() || !password
+                            }
+                            startContent={
+                              passwordSubmitting ? (
+                                <Spinner aria-label="登录中" size="sm" />
+                              ) : (
+                                <LogIn
+                                  aria-hidden="true"
+                                  className="h-4 w-4"
+                                  strokeWidth={1.75}
+                                />
+                              )
+                            }
+                            onPress={() => void handlePasswordLogin()}
+                          >
+                            {passwordSubmitting ? "正在登录..." : "登录"}
+                          </Button>
+                          {passwordError ? (
+                            <div className="flex flex-col gap-1 rounded-lg border border-danger-200 bg-danger-50 p-4">
+                              <p className="font-semibold text-danger">登录失败</p>
+                              <p className="text-sm text-danger-600">{passwordError}</p>
+                            </div>
+                          ) : null}
+                          {/* 忘记密码 / 注册：共用 kaypal.cn 账号自助服务，跳转后完成回跳本地登录页 */}
+                          <div className="flex flex-row gap-4 justify-center items-center">
+                            <a
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleKaypalAccount("forgot-password");
+                              }}
+                              className="text-13 font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                            >
+                              忘记密码？
+                            </a>
+                            <span
+                              style={{
+                                width: 1,
+                                height: 12,
+                                background: "var(--border)",
+                              }}
+                            />
+                            <a
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleKaypalAccount("register");
+                              }}
+                              className="text-13 font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                            >
+                              注册账号
+                            </a>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="qr-pane flex flex-col gap-3">
+                          <div className="flex flex-col gap-1">
+                            <h3 className="text-lg font-semibold">微信扫码登录</h3>
+                            <span className="text-small text-default-500">点击下方按钮，跳转到微信完成扫码授权，登录后自动回到本页。</span>
+                          </div>
+                          {!isMobileShell() && (
+                            <Button className="qr-login-button w-full" color="primary" onPress={handleWechatLogin}>
+                              使用微信登录
+                            </Button>
+                          )}
+                          {/* 统一账号收编（2026-08-19）：App 内登录并入九章统一账号
+                              （设备授权调起 kaypal 网页登录，手机号/微信/密码在统一账号中心完成），
+                              不再走微信开放平台 openid 独立建号。 */}
+                          {isMobileShell() && (
+                            <Button
+                              className="qr-login-button w-full"
+                              variant="flat"
+                              startContent={<LogIn aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />}
+                              onPress={() => void startDeviceAuth()}
+                            >
+                              微信一键登录（九章账号）
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                      <span className="preview-signup text-small text-default-500">还没有九章账号？<a href="#" onClick={(event) => { event.preventDefault(); handleKaypalAccount("register"); }}>申请体验</a></span>
+                    </div>
+                  ) : null}
+
+                  {phase === "waiting" && userCode && verificationUrl ? (
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-4 p-4">
+                        <div className="flex flex-col gap-2">
+                          <span className="text-default-500 text-small font-bold">
+                            1. 打开 JIUZHANG AI 登录页
                           </span>
-                        </label>
-                        <Button
-                          icon={
-                            passwordSubmitting ? (
-                              <Spinner aria-label="登录中" size="sm" />
-                            ) : (
-                              <LogIn
+                          <Button
+                            className="w-full"
+                            color="primary"
+                            startContent={
+                              <ExternalLink
                                 aria-hidden="true"
                                 className="h-4 w-4"
                                 strokeWidth={1.75}
                               />
-                            )
-                          }
-                          isDisabled={
-                            passwordSubmitting || !username.trim() || !password
-                          }
-                          label={
-                            passwordSubmitting ? "正在登录..." : "登录"
-                          }
-                          onClick={() => void handlePasswordLogin()}
-                          variant="primary"
-                          width="100%"
-                        />
-                        {passwordError ? (
-                          <Banner
-                            description={passwordError}
-                            status="error"
-                            title="登录失败"
-                          />
-                        ) : null}
-                        {/* 忘记密码 / 注册：共用 kaypal.cn 账号自助服务，跳转后完成回跳本地登录页 */}
-                        <Stack
-                          direction="horizontal"
-                          gap={4}
-                          hAlign="center"
-                          vAlign="center"
-                        >
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleKaypalAccount("forgot-password");
+                            }
+                            onPress={() => {
+                              // 桌面 Electron：走系统浏览器打开确认页（避免当前窗口被导航走）；
+                              // 浏览器：新标签页打开确认页，当前登录页保持轮询等待授权结果。
+                              // （2026-08-19 修复：原 window.location.href 同页跳转，
+                              //   授权后当前页已被导航走，轮询/会话恢复逻辑丢失。）
+                              if (typeof window === "undefined" || !verificationUrl) {
+                                return;
+                              }
+                              const desktopBridge =
+                                (window as unknown as { electronAPI?: { system?: { openExternal?: (url: string) => Promise<unknown> } } })
+                                  .electronAPI?.system;
+                              if (desktopBridge?.openExternal) {
+                                void desktopBridge.openExternal(verificationUrl);
+                                return;
+                              }
+                              const popup = window.open(
+                                verificationUrl,
+                                "_blank",
+                                "noopener",
+                              );
+                              if (!popup) {
+                                toast.error(
+                                  "浏览器拦截了弹窗，请允许本站点弹出窗口后重试",
+                                );
+                              }
                             }}
-                            className="text-13 font-medium text-[var(--accent)] underline-offset-2 hover:underline"
                           >
-                            忘记密码？
-                          </a>
-                          <span
-                            style={{
-                              width: 1,
-                              height: 12,
-                              background: "var(--border)",
-                            }}
-                          />
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleKaypalAccount("register");
-                            }}
-                            className="text-13 font-medium text-[var(--accent)] underline-offset-2 hover:underline"
-                          >
-                            注册账号
-                          </a>
-                        </Stack>
-                      </Stack>
-                    ) : (
-                      <Stack className="qr-pane" gap={3}>
-                        <Stack gap={1}>
-                          <Heading level={3}>微信扫码登录</Heading>
-                          <Text type="supporting">点击下方按钮，跳转到微信完成扫码授权，登录后自动回到本页。</Text>
-                        </Stack>
-                        {!isMobileShell() && (
-                          <Button className="qr-login-button" label="使用微信登录" onClick={handleWechatLogin} variant="primary" width="100%" />
-                        )}
-                        {/* 统一账号收编（2026-08-19）：App 内登录并入九章统一账号
-                            （设备授权调起 kaypal 网页登录，手机号/微信/密码在统一账号中心完成），
-                            不再走微信开放平台 openid 独立建号。 */}
-                        {isMobileShell() && (
+                            打开 JIUZHANG AI 确认页
+                          </Button>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <span className="text-default-500 text-small font-bold">
+                            2. 确认授权码
+                          </span>
                           <Button
-                            className="qr-login-button"
-                            icon={<LogIn aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />}
-                            label="微信一键登录（九章账号）"
-                            onClick={() => void startDeviceAuth()}
-                            variant="secondary"
-                            width="100%"
-                          />
-                        )}
-                      </Stack>
-                    )}
-                    <Text className="preview-signup" type="supporting">还没有九章账号？<a href="#" onClick={(event) => { event.preventDefault(); handleKaypalAccount("register"); }}>申请体验</a></Text>
-                  </Stack>
-                ) : null}
-
-                {phase === "waiting" && userCode && verificationUrl ? (
-                  <Stack gap={4}>
-                    <Stack gap={4} padding={4}>
-                      <Stack gap={2}>
-                        <Text color="secondary" type="supporting" weight="bold">
-                          1. 打开 JIUZHANG AI 登录页
-                        </Text>
-                        <Button
-                          icon={
-                            <ExternalLink
-                              aria-hidden="true"
-                              className="h-4 w-4"
-                              strokeWidth={1.75}
-                            />
-                          }
-                          label="打开 JIUZHANG AI 确认页"
-                          onClick={() => {
-                            // 桌面 Electron：走系统浏览器打开确认页（避免当前窗口被导航走）；
-                            // 浏览器：新标签页打开确认页，当前登录页保持轮询等待授权结果。
-                            // （2026-08-19 修复：原 window.location.href 同页跳转，
-                            //   授权后当前页已被导航走，轮询/会话恢复逻辑丢失。）
-                            if (typeof window === "undefined" || !verificationUrl) {
-                              return;
-                            }
-                            const desktopBridge =
-                              (window as unknown as { electronAPI?: { system?: { openExternal?: (url: string) => Promise<unknown> } } })
-                                .electronAPI?.system;
-                            if (desktopBridge?.openExternal) {
-                              void desktopBridge.openExternal(verificationUrl);
-                              return;
-                            }
-                            const popup = window.open(
-                              verificationUrl,
-                              "_blank",
-                              "noopener",
-                            );
-                            if (!popup) {
-                              toast.error(
-                                "浏览器拦截了弹窗，请允许本站点弹出窗口后重试",
-                              );
-                            }
-                          }}
-                          variant="primary"
-                          width="100%"
-                        />
-                      </Stack>
-                      <Stack gap={2}>
-                        <Text color="secondary" type="supporting" weight="bold">
-                          2. 确认授权码
-                        </Text>
-                        <Button
-                          label={`复制授权码 ${userCode}`}
-                          onClick={() => {
-                            // 桌面 Electron：走主进程原生剪贴板（renderer 的 navigator.clipboard 可能被权限拒绝）
-                            const desktopBridge =
-                              (window as unknown as { electronAPI?: { system?: { writeClipboard?: (text: string) => Promise<unknown> } } })
-                                .electronAPI?.system;
-                            if (desktopBridge?.writeClipboard) {
-                              void desktopBridge
-                                .writeClipboard(userCode)
-                                .then((ok) => {
-                                  if (ok) toast.success("授权码已复制");
-                                  else toast.error("复制失败");
-                                })
-                                .catch(() => toast.error("复制失败"));
-                              return;
-                            }
-                            if (
-                              typeof navigator !== "undefined" &&
-                              navigator.clipboard
-                            ) {
-                              navigator.clipboard.writeText(userCode).then(
-                                () => toast.success("授权码已复制"),
-                                () => toast.error("复制失败"),
-                              );
-                            }
-                          }}
-                          variant="secondary"
-                          width="100%"
-                        >
-                          <Stack
-                            direction="horizontal"
-                            hAlign="between"
-                            vAlign="center"
-                            width="100%"
+                            className="w-full"
+                            variant="flat"
+                            aria-label={`复制授权码 ${userCode}`}
+                            onPress={() => {
+                              // 桌面 Electron：走主进程原生剪贴板（renderer 的 navigator.clipboard 可能被权限拒绝）
+                              const desktopBridge =
+                                (window as unknown as { electronAPI?: { system?: { writeClipboard?: (text: string) => Promise<unknown> } } })
+                                  .electronAPI?.system;
+                              if (desktopBridge?.writeClipboard) {
+                                void desktopBridge
+                                  .writeClipboard(userCode)
+                                  .then((ok) => {
+                                    if (ok) toast.success("授权码已复制");
+                                    else toast.error("复制失败");
+                                  })
+                                  .catch(() => toast.error("复制失败"));
+                                return;
+                              }
+                              if (
+                                typeof navigator !== "undefined" &&
+                                navigator.clipboard
+                              ) {
+                                navigator.clipboard.writeText(userCode).then(
+                                  () => toast.success("授权码已复制"),
+                                  () => toast.error("复制失败"),
+                                );
+                              }
+                            }}
                           >
-                            <Text hasTabularNumbers type="code" weight="bold">
-                              {userCode}
-                            </Text>
-                            <Text color="secondary" type="supporting">
-                              复制授权码
-                            </Text>
-                          </Stack>
-                        </Button>
-                      </Stack>
-                      <Text as="p" color="secondary" type="supporting">
-                        3. 在 JIUZHANG AI 页面确认授权，确认后会自动回到工作台。
-                      </Text>
-                      {errorMessage ? (
-                        <Banner
-                          description={errorMessage}
-                          status="warning"
-                          title="连接恢复中"
-                        />
-                      ) : null}
-                      {expiresIn ? (
-                        <Text color="secondary" type="supporting">
-                          授权码 {Math.round(expiresIn / 60)} 分钟内有效
-                        </Text>
-                      ) : null}
-                    </Stack>
-                    <Spinner
-                      label={
-                        errorMessage
-                          ? "连接恢复中，正在自动重试..."
-                          : "正在等待授权确认..."
-                      }
-                      size="sm"
-                    />
-                    <Button
-                      label="取消，重新发起"
-                      onClick={resetDeviceAuth}
-                      variant="ghost"
-                      width="100%"
-                    />
-                  </Stack>
-                ) : null}
+                            <div className="flex flex-row justify-between items-center w-full">
+                              <span className="font-mono text-sm font-bold tabular-nums">
+                                {userCode}
+                              </span>
+                              <span className="text-small text-default-500">
+                                复制授权码
+                              </span>
+                            </div>
+                          </Button>
+                        </div>
+                        <p className="text-small text-default-500">
+                          3. 在 JIUZHANG AI 页面确认授权，确认后会自动回到工作台。
+                        </p>
+                        {errorMessage ? (
+                          <div className="flex flex-col gap-1 rounded-lg border border-warning-200 bg-warning-50 p-4">
+                            <p className="font-semibold text-warning">连接恢复中</p>
+                            <p className="text-sm text-warning-600">{errorMessage}</p>
+                          </div>
+                        ) : null}
+                        {expiresIn ? (
+                          <span className="text-small text-default-500">
+                            授权码 {Math.round(expiresIn / 60)} 分钟内有效
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Spinner size="sm" />
+                        <span className="text-small text-default-500">
+                          {errorMessage
+                            ? "连接恢复中，正在自动重试..."
+                            : "正在等待授权确认..."}
+                        </span>
+                      </div>
+                      <Button
+                        className="w-full"
+                        variant="light"
+                        onPress={resetDeviceAuth}
+                      >
+                        取消，重新发起
+                      </Button>
+                    </div>
+                  ) : null}
 
-                {phase === "expired" ? (
-                  <Stack gap={3}>
-                    <Banner
-                      description={
-                        errorMessage ||
-                        "本次授权码已过期，请获取新的授权码后继续。"
-                      }
-                      status="warning"
-                      title="授权码已过期"
-                    />
-                    <Button
-                      label="获取新授权码"
-                      onClick={() => void startDeviceAuth()}
-                      variant="primary"
-                      width="100%"
-                    />
-                  </Stack>
-                ) : null}
+                  {phase === "expired" ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-1 rounded-lg border border-warning-200 bg-warning-50 p-4">
+                        <p className="font-semibold text-warning">授权码已过期</p>
+                        <p className="text-sm text-warning-600">
+                          {errorMessage ||
+                            "本次授权码已过期，请获取新的授权码后继续。"}
+                        </p>
+                      </div>
+                      <Button
+                        className="w-full"
+                        color="primary"
+                        onPress={() => void startDeviceAuth()}
+                      >
+                        获取新授权码
+                      </Button>
+                    </div>
+                  ) : null}
 
-                {phase === "denied" ? (
-                  <Stack gap={3}>
-                    <Banner
-                      description={errorMessage || "JIUZHANG AI 拒绝了授权"}
-                      status="warning"
-                      title="授权未通过"
-                    />
-                    <Button
-                      label="重新发起授权"
-                      onClick={() => void startDeviceAuth()}
-                      variant="primary"
-                      width="100%"
-                    />
-                  </Stack>
-                ) : null}
-              </Stack>
+                  {phase === "denied" ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-1 rounded-lg border border-warning-200 bg-warning-50 p-4">
+                        <p className="font-semibold text-warning">授权未通过</p>
+                        <p className="text-sm text-warning-600">
+                          {errorMessage || "JIUZHANG AI 拒绝了授权"}
+                        </p>
+                      </div>
+                      <Button
+                        className="w-full"
+                        color="primary"
+                        onPress={() => void startDeviceAuth()}
+                      >
+                        重新发起授权
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              </CardBody>
             </Card>
-          </Grid>
+          </div>
 
-          <Stack className="login-preview-footer" as="footer" gap={2}>
-            <Text type="supporting">数据自有部署　·　关键操作可审计　·　本地执行可控</Text>
-          </Stack>
-        </Stack>
-      </Center>
-    </AppShell>
+          <footer className="login-preview-footer flex flex-col gap-2">
+            <span className="text-small text-default-500">数据自有部署　·　关键操作可审计　·　本地执行可控</span>
+          </footer>
+        </div>
+      </div>
+    </div>
   );
 }
 

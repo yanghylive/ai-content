@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowDownRight,
@@ -13,17 +13,7 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react";
-import { Card } from "@astryxdesign/core/Card";
-import { CommandPalette } from "@astryxdesign/core/CommandPalette";
-import { Grid } from "@astryxdesign/core/Grid";
-import { HStack, VStack } from "@astryxdesign/core/Stack";
-import { Layout, LayoutContent } from "@astryxdesign/core/Layout";
-import { Heading, Text } from "@astryxdesign/core/Text";
-import { Badge } from "@astryxdesign/core/Badge";
-import { ProgressBar } from "@astryxdesign/core/ProgressBar";
-import { SegmentedControl, SegmentedControlItem } from "@astryxdesign/core/SegmentedControl";
-import { useHotkeys } from "@astryxdesign/core/hooks";
-import type { SearchSource } from "@astryxdesign/core/Typeahead";
+import { Chip, Modal, ModalBody, ModalContent } from "@heroui/react";
 import { intelligencePages, intelligenceNavItems } from "../data";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -334,69 +324,76 @@ type KpiProps = KpiEntry;
 function KpiCard({ label, value, delta, positive, caption }: KpiProps) {
   const Icon = positive ? ArrowUpRight : ArrowDownRight;
   return (
-    <Card>
-      <VStack gap={2}>
-        <HStack gap={2} hAlign="between" vAlign="center">
-          <Text color="secondary" type="supporting">
+    <div className="rounded-lg border border-divider bg-content1 p-4">
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-row items-center gap-2 justify-between">
+          <span className="text-sm text-default-500">
             {label}
-          </Text>
-          <Badge label={delta} variant={positive ? "success" : "warning"} />
-        </HStack>
-        <Heading level={2}>{value}</Heading>
-        <HStack gap={2} vAlign="center">
+          </span>
+          <Chip variant="flat" size="sm" radius="sm" color={positive ? "success" : "warning"}>
+            {delta}
+          </Chip>
+        </div>
+        <h2 className="text-xl font-bold">{value}</h2>
+        <div className="flex flex-row items-center gap-2">
           <Icon
             aria-hidden="true"
             className="h-4 w-4"
             strokeWidth={1.8}
             color={positive ? "#12a06a" : "var(--kaypal-v3-amber)"}
           />
-          <Text color="secondary" type="supporting">
+          <span className="text-sm text-default-500">
             {caption}
-          </Text>
-        </HStack>
-      </VStack>
-    </Card>
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function EvidencePanel({ evidence }: { evidence: FocusEvidence }) {
   return (
-    <VStack gap={1}>
-      <Text color="secondary" type="supporting">
+    <div className="flex flex-col gap-1">
+      <span className="text-sm text-default-500">
         AI 依据
-      </Text>
-      <HStack gap={2} wrap="wrap">
-        <Badge label={`置信度 ${evidence.confidence}%`} variant="info" />
-        <Badge
-          label={`${evidence.ruleHits.length} 条规则命中`}
-          variant="neutral"
-        />
-        <Badge label={evidence.generatedAt} variant="neutral" />
-      </HStack>
-      <VStack gap={1}>
-        <Text color="secondary" type="supporting">
+      </span>
+      <div className="flex flex-row items-center gap-2 flex-wrap">
+        <Chip variant="flat" size="sm" radius="sm" color="primary">
+          {`置信度 ${evidence.confidence}%`}
+        </Chip>
+        <Chip variant="flat" size="sm" radius="sm">
+          {`${evidence.ruleHits.length} 条规则命中`}
+        </Chip>
+        <Chip variant="flat" size="sm" radius="sm">
+          {evidence.generatedAt}
+        </Chip>
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="text-sm text-default-500">
           来源
-        </Text>
-        <HStack gap={1} wrap="wrap">
+        </span>
+        <div className="flex flex-row items-center gap-1 flex-wrap">
           {evidence.sources.map((source) => (
-            <Badge key={source} label={source} variant="neutral" />
+            <Chip key={source} variant="flat" size="sm" radius="sm">
+              {source}
+            </Chip>
           ))}
-        </HStack>
-      </VStack>
-      <VStack gap={1}>
-        <Text color="secondary" type="supporting">
+        </div>
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="text-sm text-default-500">
           规则命中
-        </Text>
-        <VStack gap={1}>
+        </span>
+        <div className="flex flex-col gap-1">
           {evidence.ruleHits.map((rule) => (
-            <HStack gap={1} key={rule} vAlign="center">
+            <div className="flex flex-row items-center gap-1" key={rule}>
               <Eye aria-hidden="true" className="h-3 w-3" strokeWidth={1.8} />
-              <Text type="label">{rule}</Text>
-            </HStack>
+              <span className="text-sm font-medium">{rule}</span>
+            </div>
           ))}
-        </VStack>
-      </VStack>
-    </VStack>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -410,20 +407,28 @@ function FocusCard({ item }: FocusProps) {
     warning: "待分配",
     info: "可交付",
   };
+  const badgeColor: Record<FocusEntry["tone"], "success" | "danger" | "warning" | "primary"> = {
+    success: "success",
+    error: "danger",
+    warning: "warning",
+    info: "primary",
+  };
   return (
-    <Card padding={4}>
-      <VStack gap={2}>
-        <HStack gap={2} hAlign="between" vAlign="center">
-          <Text color="secondary" type="supporting">
+    <div className="rounded-lg border border-divider bg-content1 p-4">
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-row items-center gap-2 justify-between">
+          <span className="text-sm text-default-500">
             {item.eyebrow}
-          </Text>
-          <Badge label={badgeLabel[item.tone]} variant={item.tone} />
-        </HStack>
-        <Heading level={3}>{item.title}</Heading>
-        <Text color="secondary" type="supporting">
+          </span>
+          <Chip variant="flat" size="sm" radius="sm" color={badgeColor[item.tone]}>
+            {badgeLabel[item.tone]}
+          </Chip>
+        </div>
+        <h3 className="text-lg font-bold">{item.title}</h3>
+        <span className="text-sm text-default-500">
           {item.summary}
-        </Text>
-        <HStack gap={2} wrap="wrap">
+        </span>
+        <div className="flex flex-row items-center gap-2 flex-wrap">
           <a
             className="text-13 font-semibold text-[color:var(--astryx-color-text-accent,#1677c2)]"
             href={item.actionHref}
@@ -437,97 +442,105 @@ function FocusCard({ item }: FocusProps) {
           >
             {open ? "收起 AI 依据" : "展开 AI 依据"}
           </button>
-        </HStack>
+        </div>
         {open ? <EvidencePanel evidence={item.evidence} /> : null}
-      </VStack>
-    </Card>
+      </div>
+    </div>
   );
 }
 
 function WorkflowRail() {
   return (
-    <Card padding={4}>
-      <VStack gap={3}>
-        <HStack gap={2} vAlign="center">
+    <div className="rounded-lg border border-divider bg-content1 p-4">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-row items-center gap-2">
           <TrendingUp aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-          <Heading level={3}>增长工作流</Heading>
-        </HStack>
-        <HStack gap={2} wrap="wrap">
+          <h3 className="text-lg font-bold">增长工作流</h3>
+        </div>
+        <div className="flex flex-row items-center gap-2 flex-wrap">
           {workflowSteps.map((step) => (
-            <Card key={step.step} padding={3}>
-              <VStack gap={1}>
-                <Text type="label">{step.step}</Text>
-                <Text color="secondary" type="supporting">
+            <div key={step.step} className="rounded-lg border border-divider bg-content1 p-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium">{step.step}</span>
+                <span className="text-sm text-default-500">
                   {step.detail}
-                </Text>
-              </VStack>
-            </Card>
+                </span>
+              </div>
+            </div>
           ))}
-        </HStack>
-      </VStack>
-    </Card>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function RoiLedgerCard() {
   return (
-    <Card padding={4}>
-      <VStack gap={3}>
-        <HStack gap={2} hAlign="between" vAlign="center">
-          <HStack gap={2} vAlign="center">
+    <div className="rounded-lg border border-divider bg-content1 p-4">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-row items-center gap-2 justify-between">
+          <div className="flex flex-row items-center gap-2">
             <CircleDollarSign aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-            <Heading level={3}>本月效能账单</Heading>
-          </HStack>
-          <Badge label="管理者可读" variant="success" />
-        </HStack>
-        <VStack gap={3}>
+            <h3 className="text-lg font-bold">本月效能账单</h3>
+          </div>
+          <Chip variant="flat" size="sm" radius="sm" color="success">
+            管理者可读
+          </Chip>
+        </div>
+        <div className="flex flex-col gap-3">
           {roiLedger.map((row) => (
-            <VStack key={row.label} gap={1}>
-              <HStack gap={2} hAlign="between" vAlign="center">
-                <Text type="label">{row.label}</Text>
-                <Text type="label">
+            <div key={row.label} className="flex flex-col gap-1">
+              <div className="flex flex-row items-center gap-2 justify-between">
+                <span className="text-sm font-medium">{row.label}</span>
+                <span className="text-sm font-medium">
                   {row.spent}
                   {row.unit}
-                </Text>
-              </HStack>
-              <ProgressBar
+                </span>
+              </div>
+              <div
+                className="h-1.5 w-full rounded-full bg-default-200"
+                role="progressbar"
                 aria-label={row.label}
-                isLabelHidden
-                label={row.label}
-                max={100}
-                value={row.percent}
-              />
-              <Text color="secondary" type="supporting">
+                aria-valuenow={row.percent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${(row.percent / 100) * 100}%` }}
+                />
+              </div>
+              <span className="text-sm text-default-500">
                 {row.caption}
-              </Text>
-            </VStack>
+              </span>
+            </div>
           ))}
-        </VStack>
-      </VStack>
-    </Card>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function PromisesCard() {
   return (
-    <Card padding={4}>
-      <VStack gap={3}>
-        <HStack gap={2} vAlign="center">
+    <div className="rounded-lg border border-divider bg-content1 p-4">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-row items-center gap-2">
           <Sparkles aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-          <Heading level={3}>我们承诺</Heading>
-        </HStack>
-        <VStack gap={2}>
+          <h3 className="text-lg font-bold">我们承诺</h3>
+        </div>
+        <div className="flex flex-col gap-2">
           {promises.map((promise) => (
-            <VStack key={promise.title} gap={1}>
-              <Text type="label">{promise.title}</Text>
-              <Text color="secondary" type="supporting">
+            <div key={promise.title} className="flex flex-col gap-1">
+              <span className="text-sm font-medium">{promise.title}</span>
+              <span className="text-sm text-default-500">
                 {promise.detail}
-              </Text>
-            </VStack>
+              </span>
+            </div>
           ))}
-        </VStack>
-      </VStack>
-    </Card>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -539,23 +552,31 @@ function RoleSwitcher({
   onChange: (next: Role) => void;
 }) {
   return (
-    <SegmentedControl
-      label="按角色切换首页视图"
-      onChange={(next) => {
-        if (roleOrder.includes(next as Role)) {
-          onChange(next as Role);
-        }
-      }}
-      value={value}
+    <div
+      role="radiogroup"
+      aria-label="按角色切换首页视图"
+      className="inline-flex rounded-lg border border-divider p-0.5 bg-default-100"
     >
       {roleOrder.map((role) => (
-        <SegmentedControlItem
+        <button
           key={role}
-          label={roleMeta[role].label}
-          value={role}
-        />
+          role="radio"
+          aria-checked={value === role}
+          onClick={() => {
+            if (roleOrder.includes(role)) {
+              onChange(role);
+            }
+          }}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+            value === role
+              ? "bg-content1 text-primary shadow-sm"
+              : "text-default-500 hover:text-foreground"
+          }`}
+        >
+          {roleMeta[role].label}
+        </button>
       ))}
-    </SegmentedControl>
+    </div>
   );
 }
 
@@ -563,6 +584,7 @@ export function IntelligenceCommercialShell() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [paletteQuery, setPaletteQuery] = useState("");
   const [currentRole, setCurrentRole] = useState<Role>("owner");
 
   const commandItems = useMemo(() => {
@@ -579,17 +601,11 @@ export function IntelligenceCommercialShell() {
     return items;
   }, []);
 
-  const searchSource = useMemo<SearchSource>(
-    () => ({
-      bootstrap: () => commandItems,
-      search: (query) => {
-        const q = query.trim().toLowerCase();
-        if (!q) return commandItems;
-        return commandItems.filter((item) => item.label.toLowerCase().includes(q));
-      },
-    }),
-    [commandItems],
-  );
+  const filteredItems = useMemo(() => {
+    const q = paletteQuery.trim().toLowerCase();
+    if (!q) return commandItems;
+    return commandItems.filter((item) => item.label.toLowerCase().includes(q));
+  }, [commandItems, paletteQuery]);
 
   const handleSelect = useCallback(
     (item: { id: string }) => {
@@ -599,21 +615,28 @@ export function IntelligenceCommercialShell() {
     [router],
   );
 
-  useHotkeys([
-    {
-      keys: "mod+k",
-      onPress: () => setPaletteOpen((prev) => !prev),
-      allowInInputs: true,
-    },
-    {
-      keys: "slash",
-      onPress: () => setPaletteOpen((prev) => !prev),
-    },
-  ]);
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      }
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
+        const target = e.target as HTMLElement;
+        if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          setPaletteOpen((prev) => !prev);
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const kpis = kpisByRole[currentRole];
   const focusItems = focusByRole[currentRole];
   const meta = roleMeta[currentRole];
+  const Icon = meta.icon;
 
   /* 移动端原生视图（mx-* 明德 VP 风格）——情报总控台移动紧凑版 */
   if (isMobile) {
@@ -715,74 +738,100 @@ export function IntelligenceCommercialShell() {
   }
 
   return (
-    <Layout
-      height="fill"
-    >
-      <LayoutContent padding={6}>
-        <VStack gap={6}>
-          <CommandPalette
-              isOpen={paletteOpen}
-              label="跳转到 intelligence 功能"
-              onOpenChange={setPaletteOpen}
-              searchSource={searchSource}
-              onValueChange={(item) => {
-                if (item) handleSelect(item as unknown as { id: string });
-              }}
-            />
-            <VStack gap={3}>
-              <HStack gap={2} vAlign="center">
-                <Target aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                <Text color="secondary" type="supporting">
-                  AI 运营增长 · 商业价值总控台
-                </Text>
-              </HStack>
-              <Heading level={1}>把今天的增长结果摆在最前面</Heading>
-              <Text color="secondary">
-                首屏不讲有多少功能，先讲今天 AI 帮你赚了什么、挡了什么、下一步该做什么。所有功能保留入口，按洞察 / 执行 / 管控 / 资产重组。
-              </Text>
-              <HStack
-                gap={3}
-                hAlign="between"
-                vAlign="center"
-                wrap="wrap"
-              >
-                <HStack gap={2} vAlign="center">
-                  <meta.icon
-                    aria-hidden="true"
-                    className="h-4 w-4"
-                    strokeWidth={1.8}
-                    color="#1677c2"
-                  />
-                  <Text type="label">{meta.description}</Text>
-                </HStack>
-                <RoleSwitcher onChange={setCurrentRole} value={currentRole} />
-              </HStack>
-              <Text color="secondary" type="supporting">
-                {meta.helper}
-              </Text>
-            </VStack>
+    <div className="min-h-full">
+      <div className="p-6">
+        <div className="flex flex-col gap-6">
+          <Modal isOpen={paletteOpen} onOpenChange={setPaletteOpen} size="lg" placement="top">
+            <ModalContent>
+              {(onClose) => (
+                <>
+                  <div className="border-b border-divider p-4">
+                    <input
+                      type="text"
+                      placeholder="搜索功能..."
+                      value={paletteQuery}
+                      onChange={(e) => setPaletteQuery(e.target.value)}
+                      className="w-full rounded-lg border border-divider px-3 py-2 text-sm outline-none focus:border-primary"
+                      autoFocus
+                    />
+                  </div>
+                  <ModalBody className="max-h-[400px] overflow-y-auto">
+                    {filteredItems.map((item) => (
+                      <button
+                        key={item.id}
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-default-100"
+                        onClick={() => {
+                          handleSelect(item);
+                          onClose();
+                        }}
+                      >
+                        <span>{item.label}</span>
+                        <span className="text-xs text-default-400">{item.auxiliaryData?.group}</span>
+                      </button>
+                    ))}
+                  </ModalBody>
+                </>
+              )}
+            </ModalContent>
+          </Modal>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-row items-center gap-2">
+              <Target aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+              <span className="text-sm text-default-500">
+                AI 运营增长 · 商业价值总控台
+              </span>
+            </div>
+            <h1 className="text-2xl font-bold">把今天的增长结果摆在最前面</h1>
+            <span className="text-default-500">
+              首屏不讲有多少功能，先讲今天 AI 帮你赚了什么、挡了什么、下一步该做什么。所有功能保留入口，按洞察 / 执行 / 管控 / 资产重组。
+            </span>
+            <div className="flex flex-row items-center gap-3 justify-between flex-wrap">
+              <div className="flex flex-row items-center gap-2">
+                <Icon
+                  aria-hidden="true"
+                  className="h-4 w-4"
+                  strokeWidth={1.8}
+                  color="#1677c2"
+                />
+                <span className="text-sm font-medium">{meta.description}</span>
+              </div>
+              <RoleSwitcher onChange={setCurrentRole} value={currentRole} />
+            </div>
+            <span className="text-sm text-default-500">
+              {meta.helper}
+            </span>
+          </div>
 
-            <Grid columns={{ minWidth: 260, repeat: "fit" }} gap={4}>
-              {kpis.map((kpi) => (
-                <KpiCard key={kpi.label} {...kpi} />
-              ))}
-            </Grid>
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}
+          >
+            {kpis.map((kpi) => (
+              <KpiCard key={kpi.label} {...kpi} />
+            ))}
+          </div>
 
-            <Grid columns={{ minWidth: 320, repeat: "fit" }} gap={4}>
-              {focusItems.map((item) => (
-                <FocusCard item={item} key={item.id} />
-              ))}
-            </Grid>
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}
+          >
+            {focusItems.map((item) => (
+              <FocusCard item={item} key={item.id} />
+            ))}
+          </div>
 
-            <WorkflowRail />
+          <WorkflowRail />
 
-            <Grid columns={{ minWidth: 320, repeat: "fit" }} gap={4}>
-              <RoiLedgerCard />
-              <PromisesCard />
-            </Grid>
-          </VStack>
-        </LayoutContent>
-    </Layout>
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}
+          >
+            <RoiLedgerCard />
+            <PromisesCard />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

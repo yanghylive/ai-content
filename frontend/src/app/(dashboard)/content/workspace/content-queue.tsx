@@ -1,15 +1,6 @@
 "use client";
 
-import { Button, Chip, Input, ScrollShadow, Spinner } from "@heroui/react";
-import { Card } from "@astryxdesign/core/Card";
-import {
-  MetadataList,
-  MetadataListItem,
-} from "@astryxdesign/core/MetadataList";
-import { Tab, TabList } from "@astryxdesign/core/TabList";
-import { Item } from "@astryxdesign/core/Item";
-import { EmptyState } from "@astryxdesign/core/EmptyState";
-import { List } from "@astryxdesign/core/List";
+import { Button, Chip, Input, ScrollShadow, Spinner, Tab, Tabs } from "@heroui/react";
 import { useMemo } from "react";
 import { FilePlus2, Search, X } from "lucide-react";
 import {
@@ -291,38 +282,38 @@ export function ContentQueue({
         </Button>
 
         <div className="mt-3">
-          <TabList
-            hasDivider
-            layout="hug"
+          <Tabs
             size="sm"
-            value={statusFilter}
-            onChange={(value) =>
-              onStatusFilterChange(value as ContentQueueStatusFilter)
+            variant="underlined"
+            selectedKey={statusFilter}
+            onSelectionChange={(key) =>
+              onStatusFilterChange(key as ContentQueueStatusFilter)
             }
           >
             {statusOptions.map((option) => (
               <Tab
                 key={option.value}
-                endContent={
-                  <Chip
-                    className="h-5 shrink-0 px-1 text-11"
-                    radius="sm"
-                    size="sm"
-                    variant="flat"
-                  >
-                    {option.count}
-                  </Chip>
+                title={
+                  <div className="flex items-center gap-1.5">
+                    <span>{option.label}</span>
+                    <Chip
+                      className="h-5 shrink-0 px-1 text-11"
+                      radius="sm"
+                      size="sm"
+                      variant="flat"
+                    >
+                      {option.count}
+                    </Chip>
+                  </div>
                 }
-                label={option.label}
-                value={option.value}
               />
             ))}
-          </TabList>
+          </Tabs>
         </div>
       </div>
 
       <div className="border-b border-divider px-3 py-3">
-        <Card padding={4} variant="muted">
+        <div className="rounded-lg border border-divider bg-content1 bg-default-100 p-4">
           <div className="space-y-3">
             <div>
               <h3 className="text-sm font-semibold text-foreground">当前处理</h3>
@@ -330,27 +321,42 @@ export function ContentQueue({
                 先看选中内容的状态，再决定继续编辑、进入审核还是直接收口。
               </p>
             </div>
-              <MetadataList columns="single" label={{ position: "start", width: 88 }}>
-                <MetadataListItem label="当前状态">
+            <dl className="flex flex-col gap-1.5">
+              <div className="flex gap-2">
+                <dt className="w-[88px] shrink-0 text-xs text-default-500">
+                  当前状态
+                </dt>
+                <dd className="text-xs text-foreground">
                   {selectedItem
                     ? currentSummary.currentStatus
                     : hasStatusFilter
                       ? `当前筛选：${activeFilterLabel}`
                       : "先点选一篇内容"}
-                </MetadataListItem>
-                <MetadataListItem label="下一步">
+                </dd>
+              </div>
+              <div className="flex gap-2">
+                <dt className="w-[88px] shrink-0 text-xs text-default-500">
+                  下一步
+                </dt>
+                <dd className="text-xs text-foreground">
                   {selectedItem
                     ? currentSummary.nextAction
                     : "新建草稿后进入简报"}
-                </MetadataListItem>
-                <MetadataListItem label="交接结果">
+                </dd>
+              </div>
+              <div className="flex gap-2">
+                <dt className="w-[88px] shrink-0 text-xs text-default-500">
+                  交接结果
+                </dt>
+                <dd className="text-xs text-foreground">
                   {selectedItem
                     ? currentSummary.handoff
                     : "从队列进入下一步工作台"}
-                </MetadataListItem>
-              </MetadataList>
+                </dd>
+              </div>
+            </dl>
           </div>
-        </Card>
+        </div>
       </div>
 
       <div className="border-b border-divider p-3">
@@ -398,48 +404,27 @@ export function ContentQueue({
             <Spinner label="加载内容队列" size="sm" />
           </div>
         ) : visibleItems.length ? (
-          <List
-            density="compact"
-            hasDividers
-            header={
-              <div className="border-b border-divider px-3 py-2">
-                <p className="text-12 font-medium text-default-600">最近更新</p>
-                <p className="mt-0.5 text-11 text-default-400">
-                  点选内容后会自动恢复上次步骤
-                </p>
-              </div>
-            }
-          >
-            {visibleItems.map((item) => {
-              const selected = item.id === selectedId;
-              return (
-                <Item
-                  key={item.id}
-                  as="li"
-                  density="compact"
-                  description={item.excerpt || "还没有正文内容"}
-                  descriptionLines={2}
-                  endContent={
-                    <div className="flex min-w-0 flex-col items-end gap-1 text-11 text-default-400">
-                      <Chip
-                        className="h-5 shrink-0 px-1 text-11"
-                        color={STATUS_COLOR[item.status] || "default"}
-                        radius="sm"
-                        size="sm"
-                        variant="flat"
-                      >
-                        {item.statusLabel}
-                      </Chip>
-                      <time>{item.updatedAt}</time>
-                    </div>
-                  }
-                  isSelected={selected}
-                  label={item.title || "未命名内容"}
-                  labelLines={2}
-                  startContent={
+          <>
+            <div className="border-b border-divider px-3 py-2">
+              <p className="text-12 font-medium text-default-600">最近更新</p>
+              <p className="mt-0.5 text-11 text-default-400">
+                点选内容后会自动恢复上次步骤
+              </p>
+            </div>
+            <ul className="divide-y divide-divider">
+              {visibleItems.map((item) => {
+                const selected = item.id === selectedId;
+                return (
+                  <li
+                    key={item.id}
+                    className={`flex cursor-pointer items-start gap-2 px-3 py-2 hover:bg-default-50 ${
+                      selected ? "bg-primary-50" : ""
+                    }`}
+                    onClick={() => onSelect(item)}
+                  >
                     <span
                       aria-hidden="true"
-                      className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
+                      className={`mr-2 mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
                         item.status === "review"
                           ? "bg-warning"
                           : item.status === "published"
@@ -451,22 +436,41 @@ export function ContentQueue({
                                 : "bg-default-300"
                       }`}
                     />
-                  }
-                  onClick={() => onSelect(item)}
-                />
+                    <div className="min-w-0 flex-1">
+                      <span className="line-clamp-2 text-sm font-medium text-foreground">
+                        {item.title || "未命名内容"}
+                      </span>
+                      <span className="line-clamp-2 text-xs leading-5 text-default-500">
+                        {item.excerpt || "还没有正文内容"}
+                      </span>
+                    </div>
+                    <div className="ml-auto flex min-w-0 flex-col items-end gap-1 text-11 text-default-400">
+                      <Chip
+                        className="h-5 shrink-0 px-1 text-11"
+                        color={STATUS_COLOR[item.status] || "default"}
+                        radius="sm"
+                        size="sm"
+                        variant="flat"
+                      >
+                        {item.statusLabel}
+                      </Chip>
+                      <time>{item.updatedAt}</time>
+                    </div>
+                  </li>
                 );
-            })}
-          </List>
+              })}
+            </ul>
+          </>
         ) : (
           <div className="flex min-h-56 items-center justify-center px-6 py-8 text-center">
-            <EmptyState
-              actions={emptyActions}
-              description={emptyDescription}
-              headingLevel={3}
-              icon={emptyIcon}
-              isCompact
-              title={emptyTitle}
-            />
+            <div className="flex flex-col items-center gap-3 py-4">
+              <span className="text-default-400">{emptyIcon}</span>
+              <h3 className="text-sm font-semibold text-foreground">
+                {emptyTitle}
+              </h3>
+              <p className="text-xs text-default-500">{emptyDescription}</p>
+              {emptyActions}
+            </div>
           </div>
         )}
       </ScrollShadow>

@@ -121,15 +121,13 @@ test("S2 wiring keeps the result entry behind a flag and records the frozen even
   );
 });
 
-test("new S1 UI surfaces stay inside the Astryx component boundary", () => {
+test("new S1 UI surfaces do not use Astryx components", () => {
   for (const relativePath of [
     "src/app/(dashboard)/components/content-result-entry.tsx",
     "src/app/(dashboard)/content/workspace/content-workspace-intent-entry.tsx",
   ]) {
     const source = read(relativePath);
-    assert.match(source, /from\s+["']@astryxdesign\/core\//);
-    assert.doesNotMatch(source, /from\s+["']@heroui\/react["']/);
-    assert.doesNotMatch(source, /<(?:div|span)(?:\s|>)/);
+    assert.doesNotMatch(source, /from\s+["']@astryxdesign/);
   }
 });
 

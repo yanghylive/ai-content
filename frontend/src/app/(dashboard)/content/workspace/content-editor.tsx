@@ -4,26 +4,13 @@ import Link from "next/link";
 import {
   Button,
   Chip,
+  Input,
+  Spinner,
+  Tab,
+  Tabs,
+  Textarea,
+  Tooltip,
 } from "@heroui/react";
-import { Card } from "@astryxdesign/core/Card";
-import {
-  CheckboxList,
-  CheckboxListItem,
-} from "@astryxdesign/core/CheckboxList";
-import { DateInput } from "@astryxdesign/core/DateInput";
-import { EmptyState } from "@astryxdesign/core/EmptyState";
-import { FormLayout } from "@astryxdesign/core/FormLayout";
-import { Item } from "@astryxdesign/core/Item";
-import {
-  MetadataList,
-  MetadataListItem,
-} from "@astryxdesign/core/MetadataList";
-import { SelectableCard } from "@astryxdesign/core/SelectableCard";
-import { Spinner } from "@astryxdesign/core/Spinner";
-import { Tab, TabList } from "@astryxdesign/core/TabList";
-import { TextArea } from "@astryxdesign/core/TextArea";
-import { TextInput } from "@astryxdesign/core/TextInput";
-import { Tooltip } from "@astryxdesign/core/Tooltip";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useOfflineDraft } from "@/lib/hooks/use-offline-draft";
 import {
@@ -223,19 +210,34 @@ function StepGuidanceBanner({
         </div>
       </div>
       {showDetails && (
-        <Card padding={4} variant="muted" className="mt-2">
-          <MetadataList columns="single" label={{ position: "start", width: 88 }}>
-            <MetadataListItem label="完成标准">
-              {guidance.completionLabel}
-            </MetadataListItem>
-            <MetadataListItem label="下一步">
-              {guidance.nextActionLabel}
-            </MetadataListItem>
-            <MetadataListItem label="交接结果">
-              {guidance.handoffLabel}
-            </MetadataListItem>
-          </MetadataList>
-        </Card>
+        <div className="mt-2 rounded-lg border border-divider bg-default-100 p-4">
+          <dl className="flex flex-col gap-1.5">
+            <div className="flex gap-2">
+              <dt className="w-[88px] shrink-0 text-xs text-default-500">
+                完成标准
+              </dt>
+              <dd className="text-xs text-foreground">
+                {guidance.completionLabel}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="w-[88px] shrink-0 text-xs text-default-500">
+                下一步
+              </dt>
+              <dd className="text-xs text-foreground">
+                {guidance.nextActionLabel}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="w-[88px] shrink-0 text-xs text-default-500">
+                交接结果
+              </dt>
+              <dd className="text-xs text-foreground">
+                {guidance.handoffLabel}
+              </dd>
+            </div>
+          </dl>
+        </div>
       )}
     </section>
   );
@@ -421,7 +423,7 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
   };
 
   return (
-    <FormLayout direction="vertical">
+    <div className="flex flex-col gap-4">
       {!showFields && (
         <div className="rounded-[8px] border border-divider bg-default-50 p-3">
           <div className="flex items-center gap-2 text-13 font-semibold text-foreground">
@@ -471,21 +473,21 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
       )}
       {showFields && (
         <>
-      <TextInput
+      <Input
         isRequired
         label="选题标题"
         placeholder="用一句话说明要解决的问题"
         value={value.title}
-        onChange={(title) => onChange({ ...value, title })}
+        onValueChange={(title) => onChange({ ...value, title })}
       />
       <div className="grid gap-4 md:grid-cols-2">
-        <TextArea
+        <Textarea
           description={briefFieldDescription(value.brief, "goal")}
           label="内容目标"
           rows={3}
           placeholder="这篇内容需要解决什么业务问题？"
           value={value.brief.goal}
-          onChange={(goal) =>
+          onValueChange={(goal) =>
             onChange({
               ...value,
               brief: {
@@ -496,13 +498,13 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
             })
           }
         />
-        <TextArea
+        <Textarea
           description={briefFieldDescription(value.brief, "audience")}
           label="目标受众"
           rows={3}
           placeholder="谁会阅读，以及他们当前最关心什么？"
           value={value.brief.audience}
-          onChange={(audience) =>
+          onValueChange={(audience) =>
             onChange({
               ...value,
               brief: {
@@ -513,50 +515,73 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
             })
           }
         />
-        <CheckboxList
-          description={briefFieldDescription(value.brief, "platforms")}
-          label="目标平台"
-          value={value.brief.platforms}
-          onChange={(platforms) =>
-            onChange({
-              ...value,
-              brief: {
-                ...value.brief,
-                platforms,
-                fieldSources: briefFieldSourcesAfterEdit(value.brief, "platforms"),
-              },
-            })
-          }
-        >
-          {PLATFORM_OPTIONS.map((platform) => (
-            <CheckboxListItem
-              key={platform.id}
-              label={platform.label}
-              value={platform.id}
-            />
-          ))}
-        </CheckboxList>
-        <DateInput
-          description={briefFieldDescription(value.brief, "deadline")}
+        <fieldset className="flex flex-col gap-2">
+          <legend className="text-sm font-medium text-foreground">
+            目标平台
+          </legend>
+          <p className="text-xs text-default-500">
+            {briefFieldDescription(value.brief, "platforms")}
+          </p>
+          <div className="flex flex-col gap-1">
+            {PLATFORM_OPTIONS.map((platform) => {
+              const checked = value.brief.platforms.includes(platform.id);
+              return (
+                <label
+                  key={platform.id}
+                  className="flex items-center gap-2 text-sm text-foreground"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => {
+                      const platforms = e.target.checked
+                        ? [...value.brief.platforms, platform.id]
+                        : value.brief.platforms.filter(
+                            (v) => v !== platform.id,
+                          );
+                      onChange({
+                        ...value,
+                        brief: {
+                          ...value.brief,
+                          platforms,
+                          fieldSources: briefFieldSourcesAfterEdit(
+                            value.brief,
+                            "platforms",
+                          ),
+                        },
+                      });
+                    }}
+                  />
+                  {platform.label}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+        <Input
+          type="date"
           label="截止日期"
-          value={(value.brief.deadline ?? undefined) as never}
-          onChange={(deadline) =>
+          description={briefFieldDescription(value.brief, "deadline")}
+          value={value.brief.deadline || ""}
+          onValueChange={(val) => {
+            const deadline = val || null;
             onChange({
               ...value,
               brief: {
                 ...value.brief,
-                deadline: deadline || null,
+                deadline,
                 fieldSources: briefFieldSourcesAfterEdit(value.brief, "deadline"),
               },
-            })
-          }
+            });
+          }}
+          variant="bordered"
         />
-        <TextInput
+        <Input
           description={briefFieldDescription(value.brief, "action")}
           label="期望行动"
           placeholder="读者看完后应采取什么行动？"
           value={value.brief.action}
-          onChange={(action) =>
+          onValueChange={(action) =>
             onChange({
               ...value,
               brief: {
@@ -567,19 +592,22 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
             })
           }
         />
-        <TextArea
+        <Textarea
           description={briefFieldDescription(value.brief, "constraints")}
           label="表达约束"
           rows={3}
           placeholder="必须包含或避免的表达、事实与承诺"
           value={value.brief.constraints}
-          onChange={(constraints) =>
+          onValueChange={(constraints) =>
             onChange({
               ...value,
               brief: {
                 ...value.brief,
                 constraints,
-                fieldSources: briefFieldSourcesAfterEdit(value.brief, "constraints"),
+                fieldSources: briefFieldSourcesAfterEdit(
+                  value.brief,
+                  "constraints",
+                ),
               },
             })
           }
@@ -587,7 +615,7 @@ function BriefStep({ value, onChange }: Pick<ContentEditorProps, "value" | "onCh
       </div>
         </>
       )}
-    </FormLayout>
+    </div>
   );
 }
 
@@ -867,13 +895,13 @@ function OutlineStep({
                 </div>
               </div>
               <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-                <TextInput
+                <Input
                   aria-label={`第 ${index + 1} 节标题`}
                   isDisabled={confirmingOutline}
                   label="节点标题"
                   placeholder="例如：先给出结论"
                   value={item.title}
-                  onChange={(title) =>
+                  onValueChange={(title) =>
                     updateItems(
                       value.outline.items.map((outlineItem) =>
                         outlineItem.id === item.id
@@ -883,14 +911,14 @@ function OutlineStep({
                     )
                   }
                 />
-                <TextArea
+                <Textarea
                   aria-label={`第 ${index + 1} 节要点`}
                   isDisabled={confirmingOutline}
                   label="核心要点"
                   rows={2}
                   placeholder="这一节需要讲清的事实、案例或行动"
                   value={item.summary}
-                  onChange={(summary) =>
+                  onValueChange={(summary) =>
                     updateItems(
                       value.outline.items.map((outlineItem) =>
                         outlineItem.id === item.id
@@ -951,19 +979,19 @@ function DraftStep({
           </Button>
         </Tooltip>
       </div>
-      <TextInput
+      <Input
         isRequired
         label="标题"
         placeholder="输入内容标题"
         value={value.title}
-        onChange={(title) => onChange({ ...value, title })}
+        onValueChange={(title) => onChange({ ...value, title })}
       />
-      <TextArea
+      <Textarea
         label="正文"
         rows={17}
         placeholder="从结论或读者问题开始写作。"
         value={value.content}
-        onChange={(content) => onChange({ ...value, content })}
+        onValueChange={(content) => onChange({ ...value, content })}
       />
       <div className="flex items-center justify-between text-xs text-default-400">
         <span>支持纯文本与 Markdown 结构</span>
@@ -1023,7 +1051,7 @@ function VersionsStep({
 
   return (
     <div className="space-y-4">
-      <Card padding={5}>
+      <div className="rounded-lg border border-divider bg-content1 p-5">
         <div className="space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -1039,47 +1067,64 @@ function VersionsStep({
               {selectedOption.label}
             </Chip>
           </div>
-          <MetadataList columns="single" label={{ position: "start", width: 96 }}>
-            <MetadataListItem label="当前平台">
-              {selectedOption.label}
-            </MetadataListItem>
-            <MetadataListItem label="可见版本">
-              {versionCountLabel}
-            </MetadataListItem>
-            <MetadataListItem label="正式版">
-              {visibleOfficialVersion?.title || officialVersion?.title || "暂无正式版"}
-            </MetadataListItem>
-            <MetadataListItem label="下一步">{nextStepLabel}</MetadataListItem>
-          </MetadataList>
+          <dl className="flex flex-col gap-1.5">
+            <div className="flex gap-2">
+              <dt className="w-[96px] shrink-0 text-xs text-default-500">
+                当前平台
+              </dt>
+              <dd className="text-xs text-foreground">{selectedOption.label}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="w-[96px] shrink-0 text-xs text-default-500">
+                可见版本
+              </dt>
+              <dd className="text-xs text-foreground">{versionCountLabel}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="w-[96px] shrink-0 text-xs text-default-500">
+                正式版
+              </dt>
+              <dd className="text-xs text-foreground">
+                {visibleOfficialVersion?.title || officialVersion?.title || "暂无正式版"}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="w-[96px] shrink-0 text-xs text-default-500">
+                下一步
+              </dt>
+              <dd className="text-xs text-foreground">{nextStepLabel}</dd>
+            </div>
+          </dl>
         </div>
-      </Card>
-      <TabList
-        hasDivider
-        layout="fill"
+      </div>
+      <Tabs
         size="sm"
-        value={selectedPlatform}
-        onChange={(value) =>
-          setSelectedPlatform(value as Exclude<WorkspaceCandidatePlatform, "all">)
+        variant="solid"
+        classNames={{ tabList: "w-full" }}
+        selectedKey={selectedPlatform}
+        onSelectionChange={(key) =>
+          setSelectedPlatform(key as Exclude<WorkspaceCandidatePlatform, "all">)
         }
       >
         {PLATFORM_OPTIONS.map((platform) => (
           <Tab
             key={platform.id}
-            endContent={
-              <Chip
-                className="h-5 px-1 text-11"
-                radius="sm"
-                size="sm"
-                variant="flat"
-              >
-                {platformCounts[platform.id]}
-              </Chip>
+            title={
+              <div className="flex items-center gap-1">
+                {platform.label}
+                <Chip
+                  className="h-5 px-1 text-11"
+                  radius="sm"
+                  size="sm"
+                  variant="flat"
+                >
+                  {platformCounts[platform.id]}
+                </Chip>
+              </div>
             }
-            label={platform.label}
-            value={platform.id}
           />
         ))}
-      </TabList>
+      </Tabs>
       {visibleVersions.length ? (
         <div className="space-y-3">
           {visibleVersions.map((version) => {
@@ -1093,19 +1138,21 @@ function VersionsStep({
                 ? "采用正式版"
                 : "采用并设为正式版";
             const settingOfficial = officialLoadingVersionId === version.id;
+            const disabled = Boolean(officialLoadingVersionId);
             return (
-              <SelectableCard
+              <div
                 key={version.id}
+                role="radio"
+                aria-checked={version.isOfficial}
+                aria-label={`版本卡：${version.title}`}
                 aria-busy={settingOfficial}
-                label={`版本卡：${version.title}`}
-                isDisabled={Boolean(officialLoadingVersionId)}
-                isSelected={version.isOfficial}
-                padding={4}
-                onChange={(isSelected) => {
-                  if (isSelected && !version.isOfficial) {
+                aria-disabled={disabled}
+                onClick={() => {
+                  if (!version.isOfficial) {
                     onSetOfficialVersion(version.id);
                   }
                 }}
+                className={`cursor-pointer rounded-lg border p-4 ${version.isOfficial ? "border-primary ring-2 ring-primary/30 bg-primary-50" : "border-divider hover:border-default-300"} ${disabled ? "pointer-events-none opacity-60" : ""}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
@@ -1136,7 +1183,7 @@ function VersionsStep({
                       <Button
                         aria-label={`${actionLabel}：${version.title}`}
                         color={rowActionAppearance.color}
-                        isDisabled={Boolean(officialLoadingVersionId)}
+                        isDisabled={disabled}
                         isLoading={settingOfficial}
                         radius="sm"
                         size="sm"
@@ -1151,32 +1198,34 @@ function VersionsStep({
                     </span>
                   </div>
                 </div>
-              </SelectableCard>
+              </div>
             );
           })}
         </div>
       ) : (
-        <Card padding={5}>
-          <EmptyState
-            actions={
-              <Button
-                as={Link}
-                color="primary"
-                href="/content/optimization"
-                radius="sm"
-                size="sm"
-                variant="flat"
-              >
-                打开内容优化
-              </Button>
-            }
-            description={`${selectedOption.label}还没有已保存版本。主稿当前为 ${value.content.length} 字，可前往内容优化创建真实版本。`}
-            headingLevel={3}
-            icon={<GitCompareArrows aria-hidden="true" className="h-6 w-6" />}
-            isCompact
-            title="这个平台还没有已保存版本"
-          />
-        </Card>
+        <div className="rounded-lg border border-divider bg-content1 p-5">
+          <div className="flex flex-col items-center gap-3 py-4">
+            <span className="text-default-400">
+              <GitCompareArrows aria-hidden="true" className="h-6 w-6" />
+            </span>
+            <h3 className="text-sm font-semibold text-foreground">
+              这个平台还没有已保存版本
+            </h3>
+            <p className="text-xs text-default-500">
+              {`${selectedOption.label}还没有已保存版本。主稿当前为 ${value.content.length} 字，可前往内容优化创建真实版本。`}
+            </p>
+            <Button
+              as={Link}
+              color="primary"
+              href="/content/optimization"
+              radius="sm"
+              size="sm"
+              variant="flat"
+            >
+              打开内容优化
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -1199,7 +1248,7 @@ function ReviewStep({ value }: Pick<ContentEditorProps, "value">) {
           工作室只创建发布准备记录，真正发布仍在发布中心确认和执行。
         </p>
       </div>
-      <Card padding={5}>
+      <div className="rounded-lg border border-divider bg-content1 p-5">
         <div className="space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -1223,28 +1272,53 @@ function ReviewStep({ value }: Pick<ContentEditorProps, "value">) {
               {summaryLabel}
             </Chip>
           </div>
-          <MetadataList columns="single" label={{ position: "start", width: 96 }}>
-            <MetadataListItem label="内容标题">
-              {value.title || "未命名内容"}
-            </MetadataListItem>
-            <MetadataListItem label="当前状态">
-              {blockingCount ? `${blockingCount} 个阻塞项` : "可进入发布准备"}
-            </MetadataListItem>
-            <MetadataListItem label="通过项">
-              {passCount} / {checks.length}
-            </MetadataListItem>
-            <MetadataListItem label="正文长度">
-              {value.content.trim().length} 字
-            </MetadataListItem>
-            <MetadataListItem label="下一步">
-              {blockingCount
-                ? "先修复阻塞项，再进入发布准备"
-                : "可以继续进入发布中心"}
-            </MetadataListItem>
-          </MetadataList>
+          <dl className="flex flex-col gap-1.5">
+            <div className="flex gap-2">
+              <dt className="w-[96px] shrink-0 text-xs text-default-500">
+                内容标题
+              </dt>
+              <dd className="text-xs text-foreground">
+                {value.title || "未命名内容"}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="w-[96px] shrink-0 text-xs text-default-500">
+                当前状态
+              </dt>
+              <dd className="text-xs text-foreground">
+                {blockingCount ? `${blockingCount} 个阻塞项` : "可进入发布准备"}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="w-[96px] shrink-0 text-xs text-default-500">
+                通过项
+              </dt>
+              <dd className="text-xs text-foreground">
+                {passCount} / {checks.length}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="w-[96px] shrink-0 text-xs text-default-500">
+                正文长度
+              </dt>
+              <dd className="text-xs text-foreground">
+                {value.content.trim().length} 字
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="w-[96px] shrink-0 text-xs text-default-500">
+                下一步
+              </dt>
+              <dd className="text-xs text-foreground">
+                {blockingCount
+                  ? "先修复阻塞项，再进入发布准备"
+                  : "可以继续进入发布中心"}
+              </dd>
+            </div>
+          </dl>
         </div>
-      </Card>
-      <Card padding={5}>
+      </div>
+      <div className="rounded-lg border border-divider bg-content1 p-5">
         <div className="space-y-3">
           <div>
             <p className="text-sm font-semibold text-foreground">检查清单</p>
@@ -1254,13 +1328,26 @@ function ReviewStep({ value }: Pick<ContentEditorProps, "value">) {
           </div>
           <div className="divide-y divide-divider">
             {checks.map((check) => (
-              <Item
-                key={check.id}
-                align="start"
-                density="compact"
-                description={check.detail}
-                descriptionLines={2}
-                endContent={
+              <div key={check.id} className="flex items-start gap-2 py-2">
+                <span
+                  aria-hidden="true"
+                  className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
+                    check.status === "pass"
+                      ? "bg-success"
+                      : check.status === "blocked"
+                        ? "bg-danger"
+                        : "bg-warning"
+                  }`}
+                />
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="text-sm font-medium text-foreground">
+                    {check.label}
+                  </span>
+                  <span className="line-clamp-2 text-xs leading-5 text-default-500">
+                    {check.detail}
+                  </span>
+                </div>
+                <div className="ml-auto">
                   <Chip
                     color={
                       check.status === "pass"
@@ -1279,25 +1366,12 @@ function ReviewStep({ value }: Pick<ContentEditorProps, "value">) {
                         ? "阻塞"
                         : "提醒"}
                   </Chip>
-                }
-                label={check.label}
-                startContent={
-                  <span
-                    aria-hidden="true"
-                    className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
-                      check.status === "pass"
-                        ? "bg-success"
-                        : check.status === "blocked"
-                          ? "bg-danger"
-                          : "bg-warning"
-                    }`}
-                  />
-                }
-              />
+                </div>
+              </div>
             ))}
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
@@ -1426,7 +1500,10 @@ export function ContentEditor({
       ) : null}
       {loading ? (
         <div className="flex min-h-[520px] items-center justify-center">
-          <Spinner label="加载内容" size="sm" />
+          <div className="flex items-center gap-2">
+            <Spinner size="sm" />
+            <span className="text-sm text-default-500">加载内容</span>
+          </div>
         </div>
       ) : (
         <div className="p-4 pb-24 sm:p-5 sm:pb-24 lg:pb-5">
@@ -1514,10 +1591,10 @@ export function ContentEditor({
           ) : (
             <Tooltip content={prepareHint}>
               <span className="inline-flex">
-                    <Button
-                      color="primary"
-                      data-workspace-primary-action="prepare"
-                      isDisabled={!canPrepare}
+                <Button
+                  color="primary"
+                  data-workspace-primary-action="prepare"
+                  isDisabled={!canPrepare}
                   isLoading={preparing}
                   radius="sm"
                   size="sm"
