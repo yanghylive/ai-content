@@ -58,6 +58,7 @@ import {
   type PlatformKey,
 } from "@/lib/mobile-bridge";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -473,7 +474,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
       }
       setSubmitted(true);
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setError(
         rawMessage
           ? `发布失败：${rawMessage}`

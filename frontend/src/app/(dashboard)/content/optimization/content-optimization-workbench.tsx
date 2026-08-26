@@ -41,6 +41,7 @@ import {
 } from "@/lib/api/content-optimization";
 import { materialsApi, type Material } from "@/lib/api/materials";
 import { saveComplianceHandoff } from "@/lib/content-workflow-storage";
+import { toActionableError } from "@/lib/public-error";
 
 type OptimizationPlatform = ContentWorkflowPlatform;
 
@@ -510,7 +511,7 @@ export function ContentOptimizationWorkbench() {
       setArticles(articleResult.items);
       setMaterials(materialResult.items);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "内容来源加载失败";
+      const message = toActionableError(err, "内容来源加载失败");
       toast.error(message);
     } finally {
       setSourceLoading(false);
@@ -682,7 +683,7 @@ export function ContentOptimizationWorkbench() {
       setXhsResult(result);
       toast.success("小红书优化已完成");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "优化失败";
+      const message = toActionableError(err, "优化失败");
       setError(message);
       toast.error(message);
     } finally {
@@ -711,7 +712,7 @@ export function ContentOptimizationWorkbench() {
       const result = await listContentOptimizationVersions();
       setVersions(result.items);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "版本加载失败";
+      const message = toActionableError(err, "版本加载失败");
       toast.error(message);
     }
   }
@@ -788,7 +789,7 @@ export function ContentOptimizationWorkbench() {
       if (!silent) toast.success("版本已保存");
       return saved;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "版本保存失败";
+      const message = toActionableError(err, "版本保存失败");
       toast.error(message);
       return null;
     }
@@ -824,7 +825,7 @@ export function ContentOptimizationWorkbench() {
       await refreshVersions();
       toast.success("已设为正式稿");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "正式稿确认失败";
+      const message = toActionableError(err, "正式稿确认失败");
       toast.error(message);
     }
   }
@@ -835,7 +836,7 @@ export function ContentOptimizationWorkbench() {
       await refreshVersions();
       toast.success("已设为正式稿");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "正式稿确认失败";
+      const message = toActionableError(err, "正式稿确认失败");
       toast.error(message);
     }
   }
@@ -847,7 +848,7 @@ export function ContentOptimizationWorkbench() {
       setSelectedDiff(diff);
       toast.success("版本对比已打开");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "版本对比加载失败";
+      const message = toActionableError(err, "版本对比加载失败");
       toast.error(message);
     } finally {
       setDiffLoadingId("");

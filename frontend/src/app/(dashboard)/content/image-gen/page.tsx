@@ -29,6 +29,7 @@ import {
   V2Section,
   V2Textarea,
 } from "@/components/v2/ui-kit";
+import { toActionableError } from "@/lib/public-error";
 
 const PAGE_TYPE_LABEL: Record<OutlinePageType, string> = {
   cover: "封面",
@@ -94,7 +95,7 @@ export default function ImageGenPage() {
       setOutline(res.pages);
       setStage("outline");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "大纲生成失败";
+      const message = toActionableError(err, "大纲生成失败");
       setError(message);
       toast.error(message);
     } finally {
@@ -246,7 +247,7 @@ export default function ImageGenPage() {
       if (err instanceof DOMException && err.name === "AbortError") {
         return;
       }
-      const message = err instanceof Error ? err.message : "生成失败";
+      const message = toActionableError(err, "生成失败");
       setError(message);
       setStage("outline");
       toast.error(message);

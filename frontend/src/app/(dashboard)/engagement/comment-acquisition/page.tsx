@@ -32,6 +32,7 @@ import {
   V2Select,
 } from "@/components/v2/ui-kit";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { toActionableError } from "@/lib/public-error";
 
 const STATUS_LABEL: Record<LeadStatus, string> = {
   pending: "待处理",
@@ -92,7 +93,7 @@ export default function CommentAcquisitionPage() {
       setLeadsError(null);
     } catch (err) {
       // 报告 5.4 P1：请求失败不得显示空潜客列表（会误导成「无潜客」）
-      setLeadsError(err instanceof Error ? err.message : "潜客列表加载失败");
+      setLeadsError(toActionableError(err, "潜客列表加载失败"));
     }
   }, [platform, statusFilter]);
 
@@ -136,7 +137,7 @@ export default function CommentAcquisitionPage() {
       );
       refreshLeads();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "扫描失败");
+      toast.error(toActionableError(err, "扫描失败"));
     } finally {
       setScanning(false);
     }
@@ -170,7 +171,7 @@ export default function CommentAcquisitionPage() {
       }
       refreshLeads();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "发送失败");
+      toast.error(toActionableError(err, "发送失败"));
     } finally {
       setReplying(null);
     }

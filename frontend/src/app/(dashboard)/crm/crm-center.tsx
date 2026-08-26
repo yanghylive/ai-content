@@ -1,6 +1,7 @@
 "use client";
 
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
+import { CountUpNumber } from "@/components/count-up-number";
 
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -138,10 +139,10 @@ export function CrmCenter() {
         {/* 统计 */}
         <section className="mx-px" style={{ marginTop: 14 }}>
           <div className="mx-stat-grid">
-            <div className="mx-stat-item mx-control"><div className="mx-stat-num">{loading ? "-" : stats.total}</div><div className="mx-stat-label">客户总数</div></div>
-            <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{loading ? "-" : stats.newThisWeek}</div><div className="mx-stat-label">本周新增</div></div>
-            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "var(--kaypal-v3-amber)" }}>{loading ? "-" : stats.followUp}</div><div className="mx-stat-label">待跟进</div></div>
-            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "var(--kaypal-v3-danger)" }}>{loading ? "-" : stats.overdue}</div><div className="mx-stat-label">逾期任务</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num"><CountUpNumber value={stats.total} loading={loading} /></div><div className="mx-stat-label">客户总数</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text"><CountUpNumber value={stats.newThisWeek} loading={loading} /></div><div className="mx-stat-label">本周新增</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "var(--kaypal-v3-amber)" }}><CountUpNumber value={stats.followUp} loading={loading} /></div><div className="mx-stat-label">待跟进</div></div>
+            <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: "var(--kaypal-v3-danger)" }}><CountUpNumber value={stats.overdue} loading={loading} /></div><div className="mx-stat-label">逾期任务</div></div>
           </div>
         </section>
 

@@ -34,6 +34,7 @@ import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { publicIntelligenceText } from "./display-text";
 import { IntelligenceToolResultContext } from "./intelligence-tool-result-context";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 type FilterState = {
   status: string;
@@ -84,7 +85,7 @@ const platformOptions = [
 ];
 
 function traceableMonitorError(reason: unknown) {
-  const message = reason instanceof Error ? reason.message : "监控配置读取失败";
+  const message = toActionableError(reason, "监控配置读取失败");
   return reason instanceof ApiError && reason.requestId
     ? `${message}（请求编号：${reason.requestId}）`
     : message;
@@ -417,7 +418,7 @@ export function IntelligenceMonitorsWorkbench() {
       setSelectedId(monitor.id);
       reloadMonitors();
     } catch (reason) {
-      const message = reason instanceof Error ? reason.message : "创建监控失败";
+      const message = toActionableError(reason, "创建监控失败");
       setFormError(message);
       pushAction({
         id: `${actionId}:failed`,
@@ -458,7 +459,7 @@ export function IntelligenceMonitorsWorkbench() {
       pushAction({
         id: `${actionId}:failed`,
         title: "状态更新失败",
-        detail: reason instanceof Error ? reason.message : "监控状态更新失败",
+        detail: toActionableError(reason, "监控状态更新失败"),
         state: "failed",
       });
     }
@@ -489,7 +490,7 @@ export function IntelligenceMonitorsWorkbench() {
       pushAction({
         id: `${actionId}:failed`,
         title: "频率更新失败",
-        detail: reason instanceof Error ? reason.message : "监控频率更新失败",
+        detail: toActionableError(reason, "监控频率更新失败"),
         state: "failed",
       });
     }
@@ -517,7 +518,7 @@ export function IntelligenceMonitorsWorkbench() {
       pushAction({
         id: `${actionId}:failed`,
         title: "归档失败",
-        detail: reason instanceof Error ? reason.message : "监控归档失败",
+        detail: toActionableError(reason, "监控归档失败"),
         state: "failed",
       });
     }
@@ -545,7 +546,7 @@ export function IntelligenceMonitorsWorkbench() {
       pushAction({
         id: `${actionId}:failed`,
         title: "执行失败",
-        detail: reason instanceof Error ? reason.message : "监控执行失败",
+        detail: toActionableError(reason, "监控执行失败"),
         state: "failed",
       });
       reloadMonitors();
@@ -574,7 +575,7 @@ export function IntelligenceMonitorsWorkbench() {
       pushAction({
         id: `${actionId}:failed`,
         title: "批量执行失败",
-        detail: reason instanceof Error ? reason.message : "到期监控执行失败",
+        detail: toActionableError(reason, "到期监控执行失败"),
         state: "failed",
       });
       reloadMonitors();

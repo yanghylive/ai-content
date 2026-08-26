@@ -42,6 +42,7 @@ import { savingsApi } from "@/lib/api/savings";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useBodyLock } from "@/lib/hooks/use-body-lock";
+import { toActionableError } from "@/lib/public-error";
 
 const STATUS_LABELS: Record<Material["status"], { label: string; tone: "success" | "warning" | "danger" }> = {
   unmined: { label: "待挖掘", tone: "warning" },
@@ -288,7 +289,7 @@ export function MaterialsCenter() {
       setLinkInput("");
       await refreshMaterials();
     } catch (e) {
-      console.error(e instanceof Error ? e.message : "采集失败");
+      console.error(toActionableError(e, "采集失败"));
       setCollectMsg("采集失败，请稍后重试");
     } finally {
       setLinkBusy(false);
@@ -330,7 +331,7 @@ export function MaterialsCenter() {
       setGenPrompt("");
       await refreshMaterials();
     } catch (e) {
-      console.error(e instanceof Error ? e.message : "生图失败");
+      console.error(toActionableError(e, "生图失败"));
       setCollectMsg("生图失败，请稍后重试");
     } finally {
       setGenBusy(false);
@@ -377,7 +378,7 @@ export function MaterialsCenter() {
       await refreshMaterials();
     } catch (e) {
       setVideoStatus("");
-      console.error(e instanceof Error ? e.message : "生视频失败");
+      console.error(toActionableError(e, "生视频失败"));
       setCollectMsg("生视频失败，请稍后重试");
     } finally {
       setVideoBusy(false);
@@ -399,7 +400,7 @@ export function MaterialsCenter() {
       flash(`采集任务已创建（${result.jobCount} 个来源），正在自动采集`);
       await fetchCollectStatus();
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setError(
         rawMessage
           ? `启动采集失败：${rawMessage}`
@@ -469,7 +470,7 @@ export function MaterialsCenter() {
       await fetchMaterials();
       flash(`已删除 ${selectedIds.size} 条素材`);
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setError(rawMessage || toPublicError(err, "批量删除失败"));
     } finally {
       setBatchDeleting(false);
@@ -1065,7 +1066,7 @@ export function MaterialsCenter() {
                 dashGenerateSpeech({ text })
                   .then((r) => setTtsResult({ audioUrl: r.audioUrl, filename: r.filename }))
                   .catch((e) => {
-                    console.error(e instanceof Error ? e.message : "配音失败");
+                    console.error(toActionableError(e, "配音失败"));
                     setCollectMsg("配音失败，请稍后重试");
                   })
                   .finally(() => setTtsBusy(false));

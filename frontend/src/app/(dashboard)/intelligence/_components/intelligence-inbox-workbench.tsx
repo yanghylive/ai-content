@@ -29,6 +29,7 @@ import {
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { publicIntelligenceList, publicIntelligenceText } from "./display-text";
 import { publicSourceLabelForItem } from "./redfox-public-labels";
+import { toActionableError } from "@/lib/public-error";
 
 type RiskLevel = "low" | "medium" | "high";
 type ActionKind = "import_material" | "generate_topic" | "link";
@@ -441,7 +442,7 @@ export function IntelligenceInboxWorkbench() {
         if (!active) return;
         setItems([]);
         setTotal(0);
-        setError(reason instanceof Error ? reason.message : "情报库读取失败");
+        setError(toActionableError(reason, "情报库读取失败"));
       })
       .finally(() => {
         if (!active) return;
@@ -564,7 +565,7 @@ export function IntelligenceInboxWorkbench() {
         ...baseEntry,
         state: "failed",
         message: publicIntelligenceText(
-          reason instanceof Error ? reason.message : "处理动作失败",
+          toActionableError(reason, "处理动作失败"),
         ),
       });
     }

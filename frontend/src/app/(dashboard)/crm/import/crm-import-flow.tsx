@@ -24,6 +24,7 @@ import { commitCrmImport, dryRunCrmImport, rollbackCrmImport, type CrmImportPrev
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 type Step = 1 | 2 | 3;
 
@@ -296,7 +297,7 @@ export function CrmImportFlow() {
       }
       setStep(3);
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       // 未安装 CRM 应用 → 给引导而不是报错
       if (rawMessage.includes("先购买 CRM") || rawMessage.includes("CRM 客户管理应用")) {
         setCrmNotInstalled(true);

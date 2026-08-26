@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/knowledge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { useConfirm } from "@/hooks/use-confirm";
+import { toActionableError } from "@/lib/public-error";
 
 const TYPE_LABEL: Record<string, string> = {
   brand: "品牌",
@@ -60,7 +61,7 @@ function KnowledgeList() {
       setItems(Array.isArray(result) ? result : []);
       setError("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "知识库加载失败");
+      setError(toActionableError(e, "知识库加载失败"));
     } finally {
       setLoading(false);
     }
@@ -107,7 +108,7 @@ function KnowledgeList() {
       await load();
       showToast("已保存到品牌知识库");
     } catch (e) {
-      toastLib.error(e instanceof Error ? e.message : "保存失败");
+      toastLib.error(toActionableError(e, "保存失败"));
     } finally {
       setSaving(false);
     }
@@ -130,7 +131,7 @@ function KnowledgeList() {
         await load();
         showToast("已删除");
       } catch (e) {
-        toastLib.error(e instanceof Error ? e.message : "删除失败");
+        toastLib.error(toActionableError(e, "删除失败"));
       } finally {
         setRemovingId(null);
       }

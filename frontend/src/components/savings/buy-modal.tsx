@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
 import { Copy, ExternalLink, Loader2, ShieldCheck, ShoppingBag } from "lucide-react";
 import { savingsApi, type OfferView } from "@/lib/api/savings";
+import { toActionableError } from "@/lib/public-error";
 
 interface BuyModalProps {
   offer: OfferView;
@@ -32,7 +33,7 @@ export function BuyModal({ offer, onClose, onCopied }: BuyModalProps) {
       });
       setPromoUrl(result.promoUrl);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "推广链接生成失败");
+      setError(toActionableError(e, "推广链接生成失败"));
     } finally {
       setGenerating(false);
     }

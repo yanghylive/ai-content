@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import { isDemoModeEnabled } from "@/lib/demo/isDemoModeEnabled";
+import { toActionableError } from "@/lib/public-error";
 
 interface DemoStatus {
   enabled: boolean;
@@ -115,7 +116,7 @@ export default function VideoStudioDemoPage() {
       );
       setProject(detail);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "创建演示项目失败");
+      setError(toActionableError(e, "创建演示项目失败"));
     } finally {
       setCreating(false);
     }

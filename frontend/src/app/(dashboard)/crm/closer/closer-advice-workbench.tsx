@@ -29,6 +29,7 @@ import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { getCrmAppState } from "@/lib/api/app-market";
 import { api } from "@/lib/api/client";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 type ChipColor = "accent" | "success" | "warning" | "danger" | "muted";
 
@@ -390,7 +391,7 @@ export function CloserAdviceWorkbench() {
       setAdvice(nextAdvice);
     } catch (nextError) {
       const message =
-        nextError instanceof Error ? nextError.message : "加载成交建议失败";
+        toActionableError(nextError, "加载成交建议失败");
       setError(message);
       toast.error(message);
     } finally {

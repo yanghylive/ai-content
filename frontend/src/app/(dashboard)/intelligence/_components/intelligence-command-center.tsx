@@ -39,6 +39,7 @@ import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { publicIntelligenceList, publicIntelligenceText } from "./display-text";
 import { publicSourceLabelForItem } from "./redfox-public-labels";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 type RiskLevel = "low" | "medium" | "high";
 type IntelligenceStatus =
@@ -576,7 +577,7 @@ function SkillRecommendations({ keyword }: { keyword: string }) {
           keyword,
           items: [],
           error: publicIntelligenceText(
-            reason instanceof Error ? reason.message : "能力建议读取失败",
+            toActionableError(reason, "能力建议读取失败"),
           ),
         });
       });
@@ -675,7 +676,7 @@ export function IntelligenceCommandCenter() {
           monitors: [],
           loading: false,
           error: publicIntelligenceText(
-            reason instanceof Error ? reason.message : "情报总控台读取失败",
+            toActionableError(reason, "情报总控台读取失败"),
           ),
         });
       });
@@ -884,7 +885,7 @@ export function IntelligenceCommandCenter() {
       updateQueueItem(id, {
         state: "failed",
         detail: publicIntelligenceText(
-          reason instanceof Error ? reason.message : "派发失败",
+          toActionableError(reason, "派发失败"),
         ),
       });
     }

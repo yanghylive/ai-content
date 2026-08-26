@@ -21,6 +21,7 @@ import { MasonryCard } from "../masonry-card";
 import { BuyModal } from "../buy-modal";
 import { WalletSkeleton } from "../skeletons";
 import type { TabKey } from "../shell";
+import { toActionableError } from "@/lib/public-error";
 
 interface FavoriteRow {
   itemId: string;
@@ -154,7 +155,7 @@ export function HomePanel({
         toast("❤️ 已收藏，随时回来比价");
       }
     } catch (e) {
-      toast(e instanceof Error ? e.message : "收藏操作失败", "danger");
+      toast(toActionableError(e, "收藏操作失败"), "danger");
     }
   };
 
@@ -176,7 +177,7 @@ export function HomePanel({
       setWatchTarget(null);
       setTargetPrice("");
     } catch (e) {
-      toast(e instanceof Error ? e.message : "订阅失败", "danger");
+      toast(toActionableError(e, "订阅失败"), "danger");
     } finally {
       setWatching(false);
     }
@@ -261,7 +262,7 @@ export function HomePanel({
       setSearched(true);
       toast(`✅ 找到 ${list.length} 个结果`);
     } catch (e) {
-      toast(e instanceof Error ? e.message : "查询失败（好单库凭证配置后可查询）", "danger");
+      toast(toActionableError(e, "查询失败（好单库凭证配置后可查询）"), "danger");
     } finally {
       setBusy(false);
     }
@@ -279,7 +280,7 @@ export function HomePanel({
       setPromoLink(result.promoUrl);
       setShowPromo(true);
     } catch (e) {
-      toast(e instanceof Error ? e.message : "生成推广链接失败", "danger");
+      toast(toActionableError(e, "生成推广链接失败"), "danger");
     } finally {
       setBusy(false);
     }

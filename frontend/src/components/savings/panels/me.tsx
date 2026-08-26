@@ -6,6 +6,7 @@ import { BellRing, Copy, Gift, Heart, Landmark, Share2, Store, User } from "luci
 import { savingsApi, type OfferView, type PriceWatch } from "@/lib/api/savings";
 import { ProductCard } from "../product-card";
 import { BuyModal } from "../buy-modal";
+import { toActionableError } from "@/lib/public-error";
 
 interface MePanelProps {
   watches: PriceWatch[];
@@ -102,7 +103,7 @@ export function MePanel({ watches }: MePanelProps) {
         await loadGrowth();
       }
     } catch (e) {
-      toast(e instanceof Error ? e.message : "收藏操作失败", "danger");
+      toast(toActionableError(e, "收藏操作失败"), "danger");
     }
   };
 
@@ -119,7 +120,7 @@ export function MePanel({ watches }: MePanelProps) {
       );
       toast(`✅ 签到成功，返利 +¥${res.rewardAmount}，连续 ${res.streakDay} 天`);
     } catch (e) {
-      toast(e instanceof Error ? e.message : "签到失败", "danger");
+      toast(toActionableError(e, "签到失败"), "danger");
     } finally {
       setChecking(false);
     }

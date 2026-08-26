@@ -3,6 +3,7 @@
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
 
 import { BrandLogo } from "@/components/brand-logo";
+import { CountUpNumber } from "@/components/count-up-number";
 
 import React from "react";
 import Link from "next/link";
@@ -970,19 +971,19 @@ export function SessionsPage({
           {/* 统计 */}
           <div className="mx-stat-grid">
             <div className="mx-stat-item mx-control">
-              <div className="mx-stat-num">{items.length}</div>
+              <div className="mx-stat-num"><CountUpNumber value={items.length} /></div>
               <div className="mx-stat-label">任务</div>
             </div>
             <div className="mx-stat-item mx-control">
-              <div className="mx-stat-num mx-gold-text">{runningCount}</div>
+              <div className="mx-stat-num mx-gold-text"><CountUpNumber value={runningCount} /></div>
               <div className="mx-stat-label">运行中</div>
             </div>
             <div className="mx-stat-item mx-control">
-              <div className="mx-stat-num" style={{ color: "var(--kaypal-v3-amber)" }}>{pendingCount}</div>
+              <div className="mx-stat-num" style={{ color: "var(--kaypal-v3-amber)" }}><CountUpNumber value={pendingCount} /></div>
               <div className="mx-stat-label">待确认</div>
             </div>
             <div className="mx-stat-item mx-control">
-              <div className="mx-stat-num" style={{ color: "var(--kaypal-v3-success)" }}>{evidenceCount}</div>
+              <div className="mx-stat-num" style={{ color: "var(--kaypal-v3-success)" }}><CountUpNumber value={evidenceCount} /></div>
               <div className="mx-stat-label">结果留存</div>
             </div>
           </div>

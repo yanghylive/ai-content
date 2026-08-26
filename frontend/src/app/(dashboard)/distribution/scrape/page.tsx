@@ -8,6 +8,7 @@ import { api } from "@/lib/api/client";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { sanitizeArticleHtml } from "@/lib/sanitize-article-html";
+import { toActionableError } from "@/lib/public-error";
 
 type ScrapedArticle = {
   url: string;
@@ -39,7 +40,7 @@ export default function ScrapeArticlePage() {
       const result = await api.post<ScrapedArticle>("/auto-upload/scrape-article", { url: url.trim() });
       setArticle(result);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "提取失败，请检查链接是否有效");
+      setError(toActionableError(err, "提取失败，请检查链接是否有效"));
     } finally {
       setLoading(false);
     }

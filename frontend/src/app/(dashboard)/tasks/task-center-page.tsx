@@ -67,6 +67,7 @@ import {
   resolvePublishRecordStatus,
 } from "@/lib/publish-record-view";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 function normalizeSessions(value: AgentSession[]) {
   return value.map((session) => ({
@@ -697,7 +698,7 @@ export function TaskCenterPage() {
       setWorkflowRuns(workflowResult.runs || []);
     } catch (caught: unknown) {
       const message =
-        caught instanceof Error ? caught.message : "任务中心读取失败";
+        toActionableError(caught, "任务中心读取失败");
       setError(message);
       addToast({
         title: "任务中心读取失败",
@@ -732,7 +733,7 @@ export function TaskCenterPage() {
         await refresh();
       } catch (caught: unknown) {
         const message =
-          caught instanceof Error ? caught.message : "预览任务创建失败";
+          toActionableError(caught, "预览任务创建失败");
         addToast({
           title: "预览任务创建失败",
           description: message,
@@ -814,7 +815,7 @@ export function TaskCenterPage() {
       await refresh();
     } catch (caught: unknown) {
       const message =
-        caught instanceof Error ? caught.message : "工作流创建失败";
+        toActionableError(caught, "工作流创建失败");
       addToast({
         title: "工作流创建失败",
         description: message,
@@ -884,7 +885,7 @@ export function TaskCenterPage() {
       addToast({
         title: request.kind === "start" ? "工作流启动失败" : "工作流重试失败",
         description:
-          caught instanceof Error ? caught.message : "请核对执行条件后重试",
+          toActionableError(caught, "请核对执行条件后重试"),
         color: "danger",
       });
     } finally {
@@ -912,7 +913,7 @@ export function TaskCenterPage() {
       } catch (caught: unknown) {
         addToast({
           title: "取消失败",
-          description: caught instanceof Error ? caught.message : "请稍后重试",
+          description: toActionableError(caught, "请稍后重试"),
           color: "danger",
         });
       } finally {
@@ -991,7 +992,7 @@ export function TaskCenterPage() {
     } catch (caught: unknown) {
       addToast({
         title: "继续失败",
-        description: caught instanceof Error ? caught.message : "请稍后重试",
+        description: toActionableError(caught, "请稍后重试"),
         color: "danger",
       });
     } finally {
@@ -1018,7 +1019,7 @@ export function TaskCenterPage() {
     } catch (caught: unknown) {
       addToast({
         title: "移除记录失败",
-        description: caught instanceof Error ? caught.message : "请稍后重试",
+        description: toActionableError(caught, "请稍后重试"),
         color: "danger",
       });
     } finally {
@@ -1045,7 +1046,7 @@ export function TaskCenterPage() {
     } catch (caught: unknown) {
       addToast({
         title: "停止失败",
-        description: caught instanceof Error ? caught.message : "请稍后重试",
+        description: toActionableError(caught, "请稍后重试"),
         color: "danger",
       });
     } finally {
@@ -1077,7 +1078,7 @@ export function TaskCenterPage() {
     } catch (caught: unknown) {
       addToast({
         title: "导出失败",
-        description: caught instanceof Error ? caught.message : "请稍后重试",
+        description: toActionableError(caught, "请稍后重试"),
         color: "danger",
       });
     } finally {

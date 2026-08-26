@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import { isDemoModeEnabled } from "@/lib/demo/isDemoModeEnabled";
+import { toActionableError } from "@/lib/public-error";
 
 interface DemoStatus {
   enabled: boolean;
@@ -64,7 +65,7 @@ export default function WechatPersonalDemoPage() {
       );
       setContacts(cs.contacts);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : "演示舱不可用");
+      setLoadError(toActionableError(e, "演示舱不可用"));
     }
   };
 
@@ -105,7 +106,7 @@ export default function WechatPersonalDemoPage() {
       );
       setReplySent(data.replyText);
     } catch (e) {
-      setReplySent(`发送失败：${e instanceof Error ? e.message : "未知错误"}`);
+      setReplySent(`发送失败：${toActionableError(e, "未知错误")}`);
     }
   };
 

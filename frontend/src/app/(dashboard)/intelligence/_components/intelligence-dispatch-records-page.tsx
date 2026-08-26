@@ -34,6 +34,7 @@ import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { type IntelligencePageKey } from "../data";
 import { IntelligenceToolResultContext } from "./intelligence-tool-result-context";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { toActionableError } from "@/lib/public-error";
 
 type RiskLevel = IntelligenceDispatchRecord["risk"];
 
@@ -306,7 +307,7 @@ export function IntelligenceDispatchRecordsPage({
         if (!active) return;
         setRecords([]);
         setTotal(0);
-        setError(reason instanceof Error ? reason.message : "处理记录读取失败");
+        setError(toActionableError(reason, "处理记录读取失败"));
       })
       .finally(() => {
         if (!active) return;
@@ -391,7 +392,7 @@ export function IntelligenceDispatchRecordsPage({
       setActionMessage(result.message);
     } catch (reason) {
       setActionError(
-        reason instanceof Error ? reason.message : "处理动作执行失败",
+        toActionableError(reason, "处理动作执行失败"),
       );
     } finally {
       setProcessingAction(null);

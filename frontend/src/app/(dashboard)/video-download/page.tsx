@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link2, Loader2 } from "lucide-react";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { redfoxApi } from "@/lib/api/redfox";
+import { toActionableError } from "@/lib/public-error";
 
 type PlatformOption = { key: string; label: string };
 
@@ -72,7 +73,7 @@ export default function VideoDownloadPage() {
     } catch (e) {
       setMsg({
         kind: "err",
-        text: `❌ ${e instanceof Error ? e.message : "采集失败"}`,
+        text: `❌ ${toActionableError(e, "采集失败")}`,
       });
     } finally {
       setBusy(false);

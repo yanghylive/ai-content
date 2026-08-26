@@ -26,6 +26,7 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { growthApi, type GrowthLead, type GrowthLeadStatus } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 const STATUS_LABELS: Record<GrowthLeadStatus, { label: string; tone: "success" | "warning" | "accent" | "muted" | "danger" }> = {
   new: { label: "新线索", tone: "accent" },
@@ -212,7 +213,7 @@ export function LeadsPool() {
       setNewLead({ nickname: "", platform: "douyin", sourceText: "" });
       await fetchLeads();
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setError(rawMessage || toPublicError(err, "添加失败"));
     } finally {
       setAdding(false);

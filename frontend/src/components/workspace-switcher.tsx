@@ -6,6 +6,7 @@ import { Layers, Plus, ExternalLink } from "lucide-react";
 import toast from "@/lib/toast";
 import { workspaceApi, type Workspace } from "@/lib/api/workspace";
 import { useOctopLaunch } from "@/hooks/use-octop-launch";
+import { toActionableError } from "@/lib/public-error";
 
 type TabInfo = {
   id: string;
@@ -50,7 +51,7 @@ export function WorkspaceSwitcher() {
       const list = await workspaceApi.list();
       setWorkspaces(list);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "加载工作区失败");
+      toast.error(toActionableError(err, "加载工作区失败"));
     }
   }, []);
 
@@ -101,7 +102,7 @@ export function WorkspaceSwitcher() {
       setActive((prev) => (prev ? { ...prev, workspaceId: wsId || null } : prev));
       toast.success(wsId ? "已绑定工作区到当前标签" : "已解绑当前标签工作区");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "绑定失败");
+      toast.error(toActionableError(err, "绑定失败"));
     } finally {
       setBusy(false);
     }
@@ -124,7 +125,7 @@ export function WorkspaceSwitcher() {
         setActive((prev) => (prev ? { ...prev, workspaceId: ws.id } : prev));
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "创建失败");
+      toast.error(toActionableError(err, "创建失败"));
     } finally {
       setBusy(false);
     }
@@ -140,7 +141,7 @@ export function WorkspaceSwitcher() {
       await tabs.open(boundId || null, boundId ? "工作区标签" : "新工作区");
       toast.success("已打开新标签");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "打开失败");
+      toast.error(toActionableError(err, "打开失败"));
     } finally {
       setBusy(false);
     }

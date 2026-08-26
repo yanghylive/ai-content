@@ -5,6 +5,7 @@ import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { rpaStatus, captureScreen, requestScreenCapture, executeActions, resumeAfterAsk, cancelActions, pauseActions, resumeActions, mapBoundsToScreen, type CaptureScreenResult } from "@/lib/mobile-bridge";
 import { planMaiUiActions, sinkMaiUiTaskToCrm, type MaiUiAction } from "@/lib/api/mai-ui";
 import { createMaiUiTask, reportTaskStatus, addTaskEvidence, createApproval, actApproval, sha256Hex } from "@/lib/api/mobile-executor";
+import { toActionableError } from "@/lib/public-error";
 
 /** MAI-UI 手机端工作台：截屏 → 指令 → 规划动作 → 无障碍执行 → 人工确认 */
 export default function MaiUiWorkbenchPage() {
@@ -85,7 +86,7 @@ export default function MaiUiWorkbenchPage() {
         pushLog(`❌ 规划失败：${result.parseError || "无动作"}`);
       }
     } catch (e) {
-      pushLog(`❌ 规划调用失败：${e instanceof Error ? e.message : String(e)}`);
+      pushLog(`❌ 规划调用失败：${toActionableError(e, "未知错误")}`);
     } finally {
       setPlanning(false);
     }
@@ -115,7 +116,7 @@ export default function MaiUiWorkbenchPage() {
       await reportTaskStatus(taskId, { status: "running" });
       pushLog(`📋 任务 ${taskId.slice(-6)} 已创建`);
     } catch (e) {
-      pushLog(`⚠️ 任务创建失败（继续直接执行）：${e instanceof Error ? e.message : String(e)}`);
+      pushLog(`⚠️ 任务创建失败（继续直接执行）：${toActionableError(e, "未知错误")}`);
     }
     const result = executeActions(mapped as MaiUiAction[], taskId);
     // P1 证据链：执行完成后截屏存证（审计留痕，2026-08-22）
@@ -199,7 +200,7 @@ export default function MaiUiWorkbenchPage() {
         // P1 防篡改：把审批动作 hash 传给壳代码，consume 时校验「执行动作 == 审批动作」
         resumeAfterAsk(true, approval.id, hash);
       } catch (e) {
-        pushLog(`⛔ 审批未通过：${e instanceof Error ? e.message : String(e)}（已中止）`);
+        pushLog(`⛔ 审批未通过：${toActionableError(e, "未知错误")}（已中止）`);
         resumeAfterAsk(false);
       }
     },
@@ -250,7 +251,7 @@ export default function MaiUiWorkbenchPage() {
       pushLog(`✅ 已沉淀到 CRM：${customer.displayName}`);
       setLastTask(null);
     } catch (e) {
-      pushLog(`❌ 沉淀失败：${e instanceof Error ? e.message : String(e)}`);
+      pushLog(`❌ 沉淀失败：${toActionableError(e, "未知错误")}`);
     } finally {
       setSinking(false);
     }

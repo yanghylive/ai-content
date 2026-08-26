@@ -15,6 +15,7 @@ import {
 import { savingsApi, type OfferView, type PriceWatch } from "@/lib/api/savings";
 import { ProductCard } from "../product-card";
 import { BuyModal } from "../buy-modal";
+import { toActionableError } from "@/lib/public-error";
 
 interface ComparePanelProps {
   watches: PriceWatch[];
@@ -97,7 +98,7 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
         toast("❤️ 已收藏，随时回来比价");
       }
     } catch (e) {
-      toast(e instanceof Error ? e.message : "收藏操作失败", "danger");
+      toast(toActionableError(e, "收藏操作失败"), "danger");
     }
   };
 
@@ -124,7 +125,7 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
         setHistory(next);
         toast(`✅ 找到 ${list.length} 个结果`);
       } catch (e) {
-        toast(e instanceof Error ? e.message : "查询失败（好单库凭证配置后可查询）", "danger");
+        toast(toActionableError(e, "查询失败（好单库凭证配置后可查询）"), "danger");
       } finally {
         setBusy(false);
       }
@@ -174,7 +175,7 @@ export function ComparePanel({ watches, onWatchCreated }: ComparePanelProps) {
       setTargetPrice("");
       await onWatchCreated?.();
     } catch (e) {
-      toast(e instanceof Error ? e.message : "订阅失败", "danger");
+      toast(toActionableError(e, "订阅失败"), "danger");
     } finally {
       setWatching(false);
     }

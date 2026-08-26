@@ -2489,3 +2489,130 @@ table tbody tr:hover td { background: var(--kaypal-v3-paper-soft); }
   gap: 12px;
   padding: 12px 0;
 }
+
+/* ============================================================
+ * Phase 6 · 全站微交互系统化（CSS 层）
+ *
+ * 设计原则：
+ * 1. transition 统一 150ms ease（按钮/卡片/行），180ms（输入框已有）
+ * 2. hover = 边框加深 + 背景微移，不用大阴影/大位移
+ * 3. focus-visible = 品牌紫 3px 半透明环（键盘导航可见）
+ * 4. active = translateY(1px) 微沉（仅按钮/可点击卡）
+ * 5. 所有动画遵守 prefers-reduced-motion
+ * ============================================================ */
+
+/* -- 交互时长 token（可在组件中复用） -- */
+:root {
+  --kx-transition-fast: 150ms ease;
+  --kx-transition-normal: 180ms ease;
+  --kx-transition-slow: 250ms ease;
+  --kx-hover-shadow: 0 1px 3px rgba(42, 36, 56, 0.06);
+  --kx-focus-ring: 0 0 0 3px var(--kaypal-v3-accent-soft, rgba(114, 46, 209, 0.16));
+}
+
+/* -- 通用可交互卡片/面板：加 .kx-interactive 即获得标准 hover + focus-visible -- */
+.kx-interactive {
+  transition:
+    border-color var(--kx-transition-fast),
+    background var(--kx-transition-fast),
+    box-shadow var(--kx-transition-fast),
+    transform var(--kx-transition-fast);
+}
+
+.kx-interactive:hover {
+  border-color: var(--kaypal-v3-border-strong, #cfc8e0);
+  box-shadow: var(--kx-hover-shadow);
+}
+
+.kx-interactive:active {
+  transform: translateY(1px);
+}
+
+.kx-interactive:focus-visible {
+  outline: none;
+  border-color: var(--kaypal-v3-accent, #722ed1);
+  box-shadow: var(--kx-focus-ring);
+}
+
+/* -- 列表行 hover：用于非 table 的列表/卡片行 -- */
+.kx-list-row {
+  transition:
+    background var(--kx-transition-fast),
+    border-color var(--kx-transition-fast);
+}
+
+.kx-list-row:hover {
+  background: var(--kaypal-v3-paper-soft, #efecf4);
+}
+
+.kx-list-row:focus-visible {
+  outline: none;
+  background: var(--kaypal-v3-accent-soft, #f9f0ff);
+  box-shadow: var(--kx-focus-ring);
+}
+
+/* -- 通用 ghost/次级按钮 hover（不依赖 shell.css 的 kx-btn-ghost） -- */
+.kx-btn-ghost-2 {
+  transition:
+    border-color var(--kx-transition-fast),
+    color var(--kx-transition-fast),
+    background var(--kx-transition-fast);
+}
+
+.kx-btn-ghost-2:hover {
+  border-color: var(--kaypal-v3-border-strong, #cfc8e0);
+  color: var(--kaypal-v3-ink, #2a2438);
+  background: var(--kaypal-v3-paper-soft, #efecf4);
+}
+
+.kx-btn-ghost-2:active {
+  transform: scale(0.97);
+}
+
+.kx-btn-ghost-2:focus-visible {
+  outline: none;
+  box-shadow: var(--kx-focus-ring);
+}
+
+/* -- 全局 focus-visible 兜底：任何未被上面规则覆盖的可聚焦元素 -- */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--kx-focus-ring);
+  border-radius: inherit;
+}
+
+/* -- 链接 hover 微移（非按钮类 <a>） -- */
+a:not([class*="btn"]):not([class*="button"]):hover {
+  color: var(--kaypal-v3-accent, #722ed1);
+}
+
+/* -- 可点击卡片统一 active 微沉（与 kx-action-card:active 对齐） -- */
+.kaypal-v3-panel[role="button"]:active,
+.kaypal-v3-panel[data-clickable="true"]:active,
+[data-clickable="true"]:active {
+  transform: translateY(1px) scale(0.998);
+}
+
+/* -- reduced-motion：禁用所有位移/缩放动画，保留颜色过渡 -- */
+@media (prefers-reduced-motion: reduce) {
+  .kx-interactive,
+  .kx-list-row,
+  .kx-btn-ghost-2,
+  .kaypal-v3-panel[role="button"],
+  [data-clickable="true"] {
+    transition: border-color var(--kx-transition-fast), background var(--kx-transition-fast) !important;
+  }
+
+  .kx-interactive:active,
+  .kaypal-v3-panel[role="button"]:active,
+  [data-clickable="true"]:active {
+    transform: none !important;
+  }
+
+  .kx-btn-ghost-2:active {
+    transform: none !important;
+  }
+}

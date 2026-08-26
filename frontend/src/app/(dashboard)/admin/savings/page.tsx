@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { savingsApi } from "@/lib/api/savings";
+import { toActionableError } from "@/lib/public-error";
 
 /**
  * 省钱返利管理后台（M5）：
@@ -70,7 +71,7 @@ export default function SavingsAdminPage() {
       setMsg(`✅ 已${action === "approve" ? "通过" : "驳回"}（渠道打款处理中）`);
       await load();
     } catch (e) {
-      setMsg(`❌ ${e instanceof Error ? e.message : "操作失败"}`);
+      setMsg(`❌ ${toActionableError(e, "操作失败")}`);
     } finally {
       setBusy(false);
     }

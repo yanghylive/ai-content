@@ -41,6 +41,7 @@ import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { useCdpSessionStatus } from "../../workbench/use-cdp-session-status";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 /* ============ 频道配置（4 个页面共用此组件） ============ */
 
@@ -322,7 +323,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
           });
           crmLinked = true;
         } catch (err) {
-          crmError = err instanceof Error ? err.message : String(err);
+          crmError = toActionableError(err, "CRM 同步失败");
         }
         if (crmLinked) {
           flash("测试发送任务已创建，并记录到客户档案");

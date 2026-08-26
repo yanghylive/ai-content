@@ -37,6 +37,7 @@ import type {
   InteractionTask,
 } from "@/lib/api/local-engine";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 /* ============ 类型（与旧版一致） ============ */
 
@@ -404,7 +405,7 @@ export function CustomerServiceConfig() {
       setReply(generated);
     } catch (err: unknown) {
       // 排障期：透出后端真实错误
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setError(
         rawMessage
           ? `生成失败：${rawMessage}`
@@ -451,7 +452,7 @@ export function CustomerServiceConfig() {
       flash("发送任务已创建，去「待我确认」里查看");
     } catch (err: unknown) {
       // 排障期：透出后端真实错误
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       // 账号未登录 → 给可点击的引导，不只是文字
       if (rawMessage.includes("已登录的本地账号") || rawMessage.includes("平台账号完成登录")) {
         setError(null);
