@@ -159,7 +159,7 @@ function KnowledgeList() {
 
       {/* toast */}
       {toast ? (
-        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", zIndex: 100, background: "var(--kaypal-v3-success)", color: "#fff", padding: "9px 18px", borderRadius: 999, fontSize: 13, boxShadow: "0 8px 24px rgba(0,0,0,.2)" }}>
+        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", zIndex: 100, background: "var(--kaypal-v3-success)", color: "#fff", padding: "9px 18px", borderRadius: 999, fontSize: 13, boxShadow: "0 2px 8px rgba(0,0,0,.12)" }}>
           {toast}
         </div>
       ) : null}
