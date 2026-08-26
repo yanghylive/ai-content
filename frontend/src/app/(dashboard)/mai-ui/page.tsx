@@ -368,10 +368,10 @@ export default function MaiUiWorkbenchPage() {
             rows={2}
             style={{
               width: "100%",
-              border: "1px solid #e2e8f0",
-              borderRadius: 10,
+              border: "1px solid var(--kaypal-v3-border)",
+              borderRadius: "var(--kaypal-v3-radius-sm)",
               padding: "10px 12px",
-              fontSize: 13.5,
+              fontSize: 14,
               fontFamily: "inherit",
               resize: "none",
               background: "var(--kaypal-v3-paper-muted)",
@@ -403,7 +403,7 @@ export default function MaiUiWorkbenchPage() {
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>当前屏幕截图</span>
-              <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>
+              <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
                 拖拽圈选目标 → 一键点击
               </span>
             </div>
@@ -419,12 +419,12 @@ export default function MaiUiWorkbenchPage() {
                   ? `${shotMeta.width} / ${shotMeta.height}`
                   : "9 / 20",
                 maxHeight: 460,
-                borderRadius: 10,
+                borderRadius: "var(--kaypal-v3-radius-sm)",
                 overflow: "hidden",
-                border: "1px solid #e2e8f0",
+                border: "1px solid var(--kaypal-v3-border)",
                 touchAction: "none",
                 cursor: "crosshair",
-                background: "#0f172a",
+                background: "var(--kaypal-v3-ink)",
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- dataURL 截图不适合 next/image 优化 */}
@@ -442,8 +442,8 @@ export default function MaiUiWorkbenchPage() {
                     top: `${(selRect[1] / (shotMeta.height || 1)) * 100}%`,
                     width: `${((selRect[2] - selRect[0]) / (shotMeta.width || 1)) * 100}%`,
                     height: `${((selRect[3] - selRect[1]) / (shotMeta.height || 1)) * 100}%`,
-                    border: "2px solid #22c55e",
-                    background: "rgba(34,197,94,0.18)",
+                    border: "2px solid var(--kaypal-v3-success)",
+                    background: "var(--kaypal-v3-success-soft)",
                     pointerEvents: "none",
                   }}
                 />
@@ -473,18 +473,18 @@ export default function MaiUiWorkbenchPage() {
               <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>
                 候选动作（{actions.length} 步）
               </span>
-              {model && <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{model}</span>}
+              {model && <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>{model}</span>}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {actions.map((a, i) => (
                 <div
                   key={i}
                   style={{
-                    fontSize: 12.5,
+                    fontSize: 13,
                     padding: "8px 10px",
-                    borderRadius: 8,
-                    background: a.action === "ask_user" ? "#fffbeb" : a.action === "done" ? "#f0fdf4" : "var(--kaypal-v3-paper-muted)",
-                    border: "1px solid #e2e8f0",
+                    borderRadius: "var(--kaypal-v3-radius-xs)",
+                    background: a.action === "ask_user" ? "var(--kaypal-v3-amber-soft)" : a.action === "done" ? "var(--kaypal-v3-success-soft)" : "var(--kaypal-v3-paper-muted)",
+                    border: "1px solid var(--kaypal-v3-border)",
                     color: "var(--mx-ink)",
                     fontFamily: "ui-monospace, monospace",
                     wordBreak: "break-all",
@@ -533,7 +533,7 @@ export default function MaiUiWorkbenchPage() {
             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 8 }}>执行日志</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 200, overflowY: "auto" }}>
               {logs.map((l, i) => (
-                <div key={i} style={{ fontSize: 11.5, color: l.startsWith("❌") ? "var(--kaypal-v3-danger)" : l.startsWith("⏸") ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-soft-ink)", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}>
+                <div key={i} style={{ fontSize: 12, color: l.startsWith("❌") ? "var(--kaypal-v3-danger)" : l.startsWith("⏸") ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-soft-ink)", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}>
                   {l}
                 </div>
               ))}
@@ -556,8 +556,8 @@ export default function MaiUiWorkbenchPage() {
             padding: 24,
           }}
         >
-          <div style={{ background: "var(--kaypal-v3-paper)", borderRadius: 16, padding: 20, width: "100%", maxWidth: 360 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "var(--kaypal-v3-ink)", marginBottom: 10 }}>需要您确认</div>
+          <div style={{ background: "var(--kaypal-v3-paper)", borderRadius: "var(--kaypal-v3-radius)", padding: 20, width: "100%", maxWidth: 360 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-ink)", marginBottom: 10 }}>需要您确认</div>
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
               <span
                 style={{
@@ -565,7 +565,7 @@ export default function MaiUiWorkbenchPage() {
                   fontWeight: 700,
                   padding: "3px 10px",
                   borderRadius: 999,
-                  background: pendingAsk.riskLevel === "high" ? "#fef2f2" : "#fffbeb",
+                  background: pendingAsk.riskLevel === "high" ? "var(--kaypal-v3-danger-soft)" : "var(--kaypal-v3-amber-soft)",
                   color: pendingAsk.riskLevel === "high" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-amber)",
                 }}
               >
@@ -574,10 +574,10 @@ export default function MaiUiWorkbenchPage() {
             </div>
             <div
               style={{
-                fontSize: 11.5,
+                fontSize: 12,
                 color: "var(--kaypal-v3-muted)",
                 background: "var(--kaypal-v3-paper-muted)",
-                borderRadius: 8,
+                borderRadius: "var(--kaypal-v3-radius-xs)",
                 padding: "8px 10px",
                 marginBottom: 12,
                 wordBreak: "break-all",
@@ -585,7 +585,7 @@ export default function MaiUiWorkbenchPage() {
             >
               动作序列：{pendingAsk.summary || "—"}
             </div>
-            <div style={{ fontSize: 13.5, color: "var(--kaypal-v3-soft-ink)", lineHeight: 1.6, marginBottom: 16 }}>
+            <div style={{ fontSize: 14, color: "var(--kaypal-v3-soft-ink)", lineHeight: 1.6, marginBottom: 16 }}>
               {pendingAsk.question}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
@@ -612,11 +612,11 @@ export default function MaiUiWorkbenchPage() {
 function btnStyle(bg: string): React.CSSProperties {
   return {
     background: bg,
-    color: "#fff",
+    color: "var(--kaypal-v3-paper)",
     border: "none",
-    borderRadius: 10,
+    borderRadius: "var(--kaypal-v3-radius-sm)",
     padding: "11px 0",
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: 700,
     cursor: "pointer",
   };

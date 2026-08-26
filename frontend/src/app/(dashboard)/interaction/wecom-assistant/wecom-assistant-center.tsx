@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Bot,
   CheckCircle2,
-  Loader2,
   MessageSquareText,
   PlugZap,
   RefreshCw,
@@ -13,6 +12,7 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
+import { Spinner } from "@heroui/react";
 import {
   getWecomAssistantState,
   installWecomAssistant,
@@ -36,9 +36,9 @@ const STATUS_META: Record<
   { label: string; color: string; bg: string }
 > = {
   not_installed: { label: "未安装", color: "var(--kaypal-v3-muted)", bg: "var(--kaypal-v3-accent-soft)" },
-  active: { label: "已连接", color: "var(--kaypal-v3-success)", bg: "rgba(74,222,128,.14)" },
+  active: { label: "已连接", color: "var(--kaypal-v3-success)", bg: "var(--kaypal-v3-success-soft)" },
   disabled: { label: "已停用", color: "var(--kaypal-v3-amber)", bg: "var(--kaypal-v3-accent-soft)" },
-  test_failed: { label: "连接异常", color: "var(--kaypal-v3-danger)", bg: "rgba(255,138,138,.14)" },
+  test_failed: { label: "连接异常", color: "var(--kaypal-v3-danger)", bg: "var(--kaypal-v3-danger-soft)" },
 };
 
 function SectionCard({
@@ -201,7 +201,7 @@ export function WecomAssistantCenter() {
           color: "var(--kaypal-v3-soft-ink)",
         }}
       >
-        <Bot size={18} style={{ color: "var(--mx-accent, #e39a3e)" }} />
+        <Bot size={18} style={{ color: "var(--kaypal-v3-amber)" }} />
         企微助手
         <span
           style={{
@@ -264,7 +264,7 @@ export function WecomAssistantCenter() {
                 opacity: busy ? 0.6 : 1,
               }}
             >
-              {busy ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+              {busy ? <Spinner size="sm" /> : <Send size={14} />}
               测试连接
             </button>
             <button
@@ -273,12 +273,12 @@ export function WecomAssistantCenter() {
               disabled={busy}
               style={{
                 ...smallBtn,
-                background: "linear-gradient(135deg,#e39a3e,#f6c478)",
+                background: "var(--kaypal-v3-accent)",
                 color: "var(--kaypal-v3-accent-ink)",
                 opacity: busy ? 0.6 : 1,
               }}
             >
-              {busy ? <Loader2 size={14} className="animate-spin" /> : <PlugZap size={14} />}
+              {busy ? <Spinner size="sm" /> : <PlugZap size={14} />}
               安装连接
             </button>
           </div>
@@ -327,7 +327,7 @@ export function WecomAssistantCenter() {
                     opacity: busy ? 0.6 : 1,
                   }}
                 >
-                  {busy ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                  {busy ? <Spinner size="sm" /> : <RefreshCw size={14} />}
                   重测连接
                 </button>
                 <button
@@ -336,7 +336,7 @@ export function WecomAssistantCenter() {
                   disabled={busy}
                   style={{
                     ...smallBtn,
-                    background: state.status === "active" ? "rgba(255,138,138,.14)" : "rgba(74,222,128,.16)",
+                    background: state.status === "active" ? "var(--kaypal-v3-danger-soft)" : "var(--kaypal-v3-success-soft)",
                     color: state.status === "active" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-success)",
                     opacity: busy ? 0.6 : 1,
                   }}
@@ -435,12 +435,12 @@ export function WecomAssistantCenter() {
               disabled={busy}
               style={{
                 ...smallBtn,
-                background: "linear-gradient(135deg,#e39a3e,#f6c478)",
+                background: "var(--kaypal-v3-accent)",
                 color: "var(--kaypal-v3-accent-ink)",
                 opacity: busy ? 0.6 : 1,
               }}
             >
-              {busy ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+              {busy ? <Spinner size="sm" /> : <CheckCircle2 size={14} />}
               保存设置
             </button>
           </SectionCard>
@@ -477,7 +477,7 @@ export function WecomAssistantCenter() {
                 opacity: busy ? 0.6 : 1,
               }}
             >
-              {busy ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+              {busy ? <Spinner size="sm" /> : <Send size={14} />}
               生成回复建议
             </button>
             {suggestResult ? (
@@ -561,7 +561,7 @@ export function WecomAssistantCenter() {
             color: "var(--kaypal-v3-danger)",
             padding: "8px 12px",
             borderRadius: 8,
-            background: "rgba(255,138,138,.1)",
+            background: "var(--kaypal-v3-danger-soft)",
           }}
         >
           {error}

@@ -287,7 +287,7 @@ export default function ViralAnalysisV2Page() {
                 borderRadius: 10,
                 background: "rgba(255,255,255,.05)",
                 border: "1px solid rgba(148,163,184,.25)",
-                fontSize: 12.5,
+                fontSize: 13,
                 lineHeight: 1.7,
                 color: "#dbe7f5",
                 maxHeight: 200,
@@ -299,7 +299,7 @@ export default function ViralAnalysisV2Page() {
             </div>
           ) : null}
           {error ? (
-            <div style={{ marginTop: 10, fontSize: 12, color: "#fbbf24", lineHeight: 1.6 }}>{error}</div>
+            <div style={{ marginTop: 10, fontSize: 12, color: "var(--kaypal-v3-amber)", lineHeight: 1.6 }}>{error}</div>
           ) : null}
           <div style={{ marginTop: 10, fontSize: 11, lineHeight: 1.6, color: "rgba(219,234,254,.55)" }}>
             支持抖音 / 小红书等平台作品链接，AI 解析作品数据 + 拆解标题套路与可复制策略
@@ -327,10 +327,10 @@ export default function ViralAnalysisV2Page() {
               </div>
             ) : null}
             <div className="mx-stat-grid" style={{ gridTemplateColumns: "repeat(4,1fr)", marginTop: 12 }}>
-              <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 15 }}>{formatNumber(work.likes)}</div><div className="mx-stat-label">点赞</div></div>
-              <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 15 }}>{formatNumber(work.comments)}</div><div className="mx-stat-label">评论</div></div>
-              <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 15 }}>{formatNumber(work.collects)}</div><div className="mx-stat-label">收藏</div></div>
-              <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 15 }}>{formatNumber(work.plays)}</div><div className="mx-stat-label">播放</div></div>
+              <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 16 }}>{formatNumber(work.likes)}</div><div className="mx-stat-label">点赞</div></div>
+              <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 16 }}>{formatNumber(work.comments)}</div><div className="mx-stat-label">评论</div></div>
+              <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 16 }}>{formatNumber(work.collects)}</div><div className="mx-stat-label">收藏</div></div>
+              <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ fontSize: 16 }}>{formatNumber(work.plays)}</div><div className="mx-stat-label">播放</div></div>
             </div>
           </div>
         </section>

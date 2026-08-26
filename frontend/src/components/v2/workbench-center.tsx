@@ -150,7 +150,7 @@ export function WorkbenchCenter({
             >
               {stats.slice(0, 4).map((stat) => (
                 <div key={stat.label} className="mx-stat-item mx-control">
-                  <div className="mx-stat-num" style={{ fontSize: stats.length > 2 ? 19 : 22 }}>
+                  <div className="mx-stat-num" style={{ fontSize: 20 }}>
                     {stat.value}
                   </div>
                   <div className="mx-stat-label">{stat.label}</div>
@@ -159,7 +159,7 @@ export function WorkbenchCenter({
             </div>
           )}
           {statsNote ? (
-            <p style={{ marginTop: 6, fontSize: 10.5, color: "var(--mx-muted)", textAlign: "right" }}>{statsNote}</p>
+            <p style={{ marginTop: 6, fontSize: 10, color: "var(--mx-muted)", textAlign: "right" }}>{statsNote}</p>
           ) : null}
           {error ? <p style={{ marginTop: 10, fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</p> : null}
           {notice ? <p style={{ marginTop: 10, fontSize: 12, color: "var(--kaypal-v3-success)" }}>{notice}</p> : null}
@@ -229,13 +229,13 @@ export function WorkbenchCenter({
                     className="mx-row"
                     style={{ textDecoration: "none" }}
                   >
-                    <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
+                    <span className="mx-row-ic" style={{ background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)" }}>
                       <link.icon size={18} strokeWidth={1.8} />
                     </span>
                     <div className="mx-row-main">
                       <div className="mx-row-title">{link.title}</div>
                     </div>
-                    <ArrowRight size={15} style={{ color: "#b9c5d4" }} />
+                    <ArrowRight size={15} style={{ color: "var(--kaypal-v3-muted)" }} />
                   </Link>
                 ))}
               </div>
@@ -336,7 +336,7 @@ export function WorkbenchCenter({
       {quickActions.length > 0 && (
         <section>
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
+            <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
               ⚡ 快捷操作
             </h2>
           </div>
@@ -404,7 +404,7 @@ export function WorkbenchCenter({
       {advancedLinks.length > 0 && (
         <section>
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
+            <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
               ⚙️ 全部功能
             </h2>
           </div>

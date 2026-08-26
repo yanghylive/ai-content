@@ -462,7 +462,7 @@ export function ConfirmationsPage() {
                   <div className="mx-card mx-list-card">
                     {pendingTasks.map((task) => (
                       <div className="mx-row" key={task.id}>
-                        <span className="mx-row-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
+                        <span className="mx-row-ic" style={{ background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-cobalt)" }}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
                         </span>
                         <div className="mx-row-main">
@@ -470,7 +470,7 @@ export function ConfirmationsPage() {
                           <div className="mx-row-desc">{task.typeLabel || "客户回复"}{task.sourceText ? ` · ${task.sourceText.slice(0, 24)}` : ""}</div>
                         </div>
                         <div className="mx-row-right">
-                          <button type="button" className="mx-btn-gold" style={{ fontSize: 11, padding: "7px 12px" }} disabled={busyId === task.id} onClick={() => void approveTask(task)}>确认发送</button>
+                          <button type="button" className="mx-btn-gold" style={{ fontSize: 12, padding: "7px 12px" }} disabled={busyId === task.id} onClick={() => void approveTask(task)}>确认发送</button>
                         </div>
                       </div>
                     ))}
@@ -492,7 +492,7 @@ export function ConfirmationsPage() {
                   <div className="mx-card mx-list-card">
                     {items.map((item) => (
                       <div className="mx-row" key={item.id}>
-                        <span className="mx-row-ic" style={{ background: "rgba(239,68,68,.09)", color: "var(--kaypal-v3-danger)" }}>
+                        <span className="mx-row-ic" style={{ background: "var(--kaypal-v3-danger-soft)", color: "var(--kaypal-v3-danger)" }}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
                         </span>
                         <div className="mx-row-main">
@@ -503,8 +503,8 @@ export function ConfirmationsPage() {
                           <span className={riskBadge(item.riskLevel || "medium")}>{riskText(item.riskLevel || "medium")}</span>
                         </div>
                         <div style={{ display: "flex", gap: 8, marginTop: 12, width: "100%" }}>
-                          <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 11, padding: "9px 0" }} disabled={busyId === item.id} onClick={() => void decide(item, true)}>确认</button>
-                          <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 11, padding: "9px 0", background: "rgba(239,68,68,.1)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(239,68,68,.25)", boxShadow: "none", backgroundImage: "none" }} disabled={busyId === item.id} onClick={() => void decide(item, false)}>拒绝</button>
+                          <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "9px 0" }} disabled={busyId === item.id} onClick={() => void decide(item, true)}>确认</button>
+                          <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "9px 0", color: "var(--kaypal-v3-danger)", border: "1px solid var(--kaypal-v3-danger)" }} disabled={busyId === item.id} onClick={() => void decide(item, false)}>拒绝</button>
                         </div>
                       </div>
                     ))}
@@ -992,7 +992,7 @@ export function SessionsPage({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-              style={{ flex: 1, padding: "9px 10px", borderRadius: 11, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+              style={{ flex: 1, padding: "9px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--mx-ink)", fontSize: 13 }}
             >
               {agentStatusFilterOptions.map((option) => (
                 <option key={option.key} value={option.key}>{option.label}</option>
@@ -1001,7 +1001,7 @@ export function SessionsPage({
             <select
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value as typeof sourceFilter)}
-              style={{ flex: 1, padding: "9px 10px", borderRadius: 11, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+              style={{ flex: 1, padding: "9px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--mx-ink)", fontSize: 13 }}
             >
               {agentSourceFilterOptions.map((option) => (
                 <option key={option.key} value={option.key}>{option.label}</option>
@@ -1010,7 +1010,7 @@ export function SessionsPage({
             <button
               type="button"
               className="mx-btn-gold"
-              style={{ fontSize: 11.5, padding: "7px 12px" }}
+              style={{ fontSize: 12, padding: "7px 12px" }}
               disabled={loading}
               onClick={() => void refresh()}
             >
@@ -1021,7 +1021,7 @@ export function SessionsPage({
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="按指令、标题或目标应用搜索"
-            style={{ width: "100%", marginTop: 8, padding: "10px 12px", borderRadius: 11, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", marginTop: 8, padding: "10px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box" }}
           />
 
           {/* 任务列表 */}
@@ -1042,35 +1042,35 @@ export function SessionsPage({
                   className="mx-card"
                   style={{
                     padding: 14,
-                    border: session.id === highlightedSessionId ? "1.5px solid #2563eb" : undefined,
+                    border: session.id === highlightedSessionId ? "1.5px solid var(--kaypal-v3-accent)" : undefined,
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span className="mx-row-title" style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>
+                    <span className="mx-row-title" style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>
                       {commercialAgentText(session.title)}
                     </span>
                     <span className={statusBadgeClass(session.status)}>
                       {commercialAgentText(session.statusLabel)}
                     </span>
                   </div>
-                  <div style={{ marginTop: 6, fontSize: 11, color: "var(--mx-muted)" }}>
+                  <div style={{ marginTop: 6, fontSize: 12, color: "var(--mx-muted)" }}>
                     {confirmationSourceLabel[session.source] || session.source} · {formatAgentDateTime(session.createdAt)}
                     {session.targetApp ? ` · ${session.targetApp}` : ""}
                   </div>
 
                   {/* 下一步 / 失败原因 */}
                   {session.failureReason ? (
-                    <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--kaypal-v3-danger)", background: "rgba(239,68,68,.07)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
+                    <div style={{ marginTop: 8, fontSize: 12, color: "var(--kaypal-v3-danger)", background: "var(--kaypal-v3-danger-soft)", borderRadius: "var(--kaypal-v3-radius-sm)", padding: "8px 10px", lineHeight: 1.6 }}>
                       失败原因：{commercialAgentText(session.failureReason)}
                     </div>
                   ) : null}
                   {session.nextAction ? (
-                    <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--kaypal-v3-amber)", background: "rgba(245,158,11,.09)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
+                    <div style={{ marginTop: 8, fontSize: 12, color: "var(--kaypal-v3-amber)", background: "var(--kaypal-v3-amber-soft)", borderRadius: "var(--kaypal-v3-radius-sm)", padding: "8px 10px", lineHeight: 1.6 }}>
                       下一步：{commercialAgentText(session.nextAction)}
                     </div>
                   ) : null}
                   {session.resumeAction ? (
-                    <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--kaypal-v3-amber)", background: "rgba(245,158,11,.09)", borderRadius: 10, padding: "8px 10px", lineHeight: 1.6 }}>
+                    <div style={{ marginTop: 8, fontSize: 12, color: "var(--kaypal-v3-amber)", background: "var(--kaypal-v3-amber-soft)", borderRadius: "var(--kaypal-v3-radius-sm)", padding: "8px 10px", lineHeight: 1.6 }}>
                       确认后继续：{commercialAgentText(session.resumeAction.label)}
                     </div>
                   ) : null}
@@ -1081,7 +1081,7 @@ export function SessionsPage({
                       <>
                         <button
                           type="button"
-                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)", border: "none" }}
+                          style={{ fontSize: 12, padding: "6px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-cobalt)", border: "none" }}
                           disabled={
                             busyId === session.id ||
                             session.status === "completed" ||
@@ -1094,7 +1094,7 @@ export function SessionsPage({
                         </button>
                         <button
                           type="button"
-                          style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(239,68,68,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(239,68,68,.2)" }}
+                          style={{ fontSize: 12, padding: "6px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-danger-soft)", color: "var(--kaypal-v3-danger)", border: "1px solid var(--kaypal-v3-danger)" }}
                           disabled={session.status === "completed" || session.status === "cancelled"}
                           onClick={() => void stopSession(session)}
                         >
@@ -1104,7 +1104,7 @@ export function SessionsPage({
                     ) : null}
                     <button
                       type="button"
-                      style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }}
+                      style={{ fontSize: 12, padding: "6px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-paper-muted)", color: "var(--mx-ink)", border: "1px solid var(--kaypal-v3-border)" }}
                       disabled={exportingId === session.id}
                       onClick={() => void exportEvidence(session)}
                     >
@@ -1112,7 +1112,7 @@ export function SessionsPage({
                     </button>
                     <Link
                       href={confirmationSourceHref[session.source]}
-                      style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", textDecoration: "none" }}
+                      style={{ fontSize: 12, padding: "6px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-paper-muted)", color: "var(--mx-ink)", border: "1px solid var(--kaypal-v3-border)", textDecoration: "none" }}
                     >
                       回来源
                     </Link>

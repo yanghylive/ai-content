@@ -242,7 +242,7 @@ export function SettingsDetail() {
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>导出全部数据</p>
                 <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>客户、内容、任务记录打包下载</p>
               </div>
-              <button type="button" className="mx-btn-gold" style={{ fontSize: 11, padding: "8px 12px", background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} onClick={() => flash(NOT_READY)}>导出</button>
+              <button type="button" className="mx-btn-gold" onClick={() => flash(NOT_READY)}>导出</button>
             </div>
           </div>
 
