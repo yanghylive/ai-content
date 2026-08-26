@@ -1,6 +1,6 @@
 "use client";
 
-import { SkeletonRow } from "@/components/skeleton";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
 
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -350,7 +350,7 @@ export function CrmCenter() {
 
         {loading ? (
           <div className="p-12 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : customers.length === 0 ? (
           <div className="p-12 text-center">

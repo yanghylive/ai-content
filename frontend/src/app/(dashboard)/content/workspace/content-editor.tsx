@@ -45,6 +45,7 @@ import {
   type WorkspaceStepId,
   type WorkspaceVersionView,
 } from "./workspace-types";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type ContentEditorProps = {
   activeStep: WorkspaceStepId;
@@ -1501,7 +1502,7 @@ export function ContentEditor({
       {loading ? (
         <div className="flex min-h-[520px] items-center justify-center">
           <div className="flex items-center gap-2">
-            <Spinner size="sm" />
+            <SkeletonList rows={5} />
             <span className="text-sm text-default-500">加载内容</span>
           </div>
         </div>

@@ -31,6 +31,7 @@ import {
   type BossTask,
 } from "@/lib/api/boss-recruit";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "default"> = {
   logged_in: "success",
@@ -187,7 +188,7 @@ export function BossRecruitCenter() {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <Spinner label="加载中" />
+        <SkeletonList rows={5} />
       </div>
     );
   }

@@ -39,6 +39,7 @@ import {
   type JpagePreviewReceipt,
   type PublishAccount,
 } from "@/lib/api/publishing";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const STATUS_COLOR: Record<
   AgentWakerRunStatus,
@@ -719,7 +720,7 @@ export function WechatOfficialAssistantClient() {
   if (loading) {
     return (
       <div className="flex min-h-[480px] items-center justify-center gap-3">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
         <span className="text-sm text-[var(--kaypal-v3-muted)]">
           正在加载公众号运营助理
         </span>

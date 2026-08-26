@@ -48,6 +48,7 @@ import { settingsApi, type AIModel } from "@/lib/api/settings";
 import { useAgentSState } from "@/lib/ops-workbench/hooks/use-agent-s-state";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const PURPOSES: Array<{
   key: AgentSConversationPurpose;
@@ -419,7 +420,7 @@ export function AgentConversationWorkbench() {
   if (loading) {
     return (
       <div className="flex min-h-[560px] items-center justify-center rounded-[8px] border border-divider bg-background">
-        <Spinner label="正在加载 Agent 对话" />
+        <SkeletonList rows={5} />
       </div>
     );
   }

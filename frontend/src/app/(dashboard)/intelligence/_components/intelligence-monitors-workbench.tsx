@@ -33,6 +33,7 @@ import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { publicIntelligenceText } from "./display-text";
 import { IntelligenceToolResultContext } from "./intelligence-tool-result-context";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type FilterState = {
   status: string;
@@ -749,12 +750,7 @@ export function IntelligenceMonitorsWorkbench() {
           <div className="max-h-[720px] overflow-y-auto p-3">
             {loading ? (
               <div className="flex min-h-[220px] items-center justify-center rounded-[8px] border border-dashed border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] text-13 text-[var(--kaypal-v3-muted)]">
-                <Loader2
-                  aria-hidden="true"
-                  className="mr-2 h-4 w-4 animate-spin"
-                  strokeWidth={1.8}
-                />
-                正在读取监控配置
+                <SkeletonList rows={3} />
               </div>
             ) : error ? (
               <FailureActionPanel

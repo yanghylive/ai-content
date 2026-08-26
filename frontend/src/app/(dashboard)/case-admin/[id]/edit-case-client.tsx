@@ -7,6 +7,7 @@ import { caseAdminApi, type AdminCase } from "@/lib/api/case-admin";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { OpsDesktopPage, OpsPanel, OpsStatusPill } from "../../components/desktop-ops-ui";
 import { CaseForm } from "../case-form";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const STATUS_META: Record<string, { label: string; tone: "default" | "success" | "warning" | "danger" | "brand" }> = {
   draft: { label: "草稿", tone: "default" },
@@ -62,7 +63,7 @@ export function EditCaseClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-16 text-center">
-        <Loader2 className="mx-auto h-7 w-7 animate-spin text-[var(--kaypal-v3-accent)]" />
+        <SkeletonList rows={5} />
       </div>
     );
   }

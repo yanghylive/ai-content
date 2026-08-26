@@ -23,6 +23,7 @@ import {
 import { commitCrmImport, dryRunCrmImport, rollbackCrmImport, type CrmImportPreviewRow } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type Step = 1 | 2 | 3;
 
@@ -660,7 +661,7 @@ export function CrmImportFlow() {
             <div className="flex flex-col gap-4">
               <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--kaypal-v3-radius)] border-2 border-dashed border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper-soft)] p-8 transition hover:border-[var(--kaypal-v3-accent)] hover:bg-[var(--kaypal-v3-accent-soft)]">
                 {readingFile ? (
-                  <Loader2 className="h-8 w-8 animate-spin text-[var(--kaypal-v3-accent)]" />
+                  <SkeletonList rows={5} />
                 ) : (
                   <FileSpreadsheet className="h-8 w-8 text-[var(--kaypal-v3-accent)]" />
                 )}

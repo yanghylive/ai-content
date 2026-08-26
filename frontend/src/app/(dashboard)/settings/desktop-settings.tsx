@@ -9,6 +9,7 @@ import {
   RefreshCw,
   UploadCloud,
 } from "lucide-react";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type DesktopConfigBridge = {
   get: (key: string) => Promise<unknown>;
@@ -182,7 +183,7 @@ export function DesktopSettings() {
           </p>
         </div>
         {loading ? (
-          <Spinner size="sm" />
+          <SkeletonList rows={3} />
         ) : loadFailed && bridge ? (
           <Button
             size="sm"

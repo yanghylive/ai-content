@@ -34,6 +34,7 @@ import {
   type AgentWakerRunStatus,
 } from "@/lib/api/agentwaker";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const STATUS_COLOR: Record<
   AgentWakerRunStatus,
@@ -361,7 +362,7 @@ export function XiaohongshuAssistantClient() {
   if (loading) {
     return (
       <div className="flex min-h-[480px] items-center justify-center">
-        <Spinner label="正在加载运营助理" />
+        <SkeletonList rows={5} />
       </div>
     );
   }

@@ -31,6 +31,7 @@ import { FailureActionPanel } from "../../components/failure-action-panel";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { publicIntelligenceList, publicIntelligenceText } from "./display-text";
 import { IntelligenceToolResultContext } from "./intelligence-tool-result-context";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type RiskLevel = "low" | "medium" | "high";
 type IndustryKey =
@@ -905,12 +906,7 @@ export function IndustryIntelligenceWorkbench() {
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
             {loading ? (
               <div className="flex min-h-[360px] items-center justify-center p-4 text-13 font-semibold text-[var(--kaypal-v3-muted)]">
-                <Loader2
-                  aria-hidden="true"
-                  className="mr-2 h-4 w-4 animate-spin"
-                  strokeWidth={1.8}
-                />
-                正在读取行业情报
+                <SkeletonList rows={3} />
               </div>
             ) : error ? (
               <div className="p-4">

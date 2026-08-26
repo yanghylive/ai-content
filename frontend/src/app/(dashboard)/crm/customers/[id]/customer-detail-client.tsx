@@ -51,6 +51,7 @@ import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
 import { useConfirm } from "@/hooks/use-confirm";
 import { CustomerAttributionPanel } from "./customer-attribution-panel";
 import { WelcomeMessagePanel } from "./welcome-message-panel";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const statusLabels: Record<string, string> = {
   new: "新线索",
@@ -440,7 +441,7 @@ export function CustomerDetailClient({
     return (
       <div className="flex min-h-[55vh] items-center justify-center">
         <div className="flex items-center gap-3 border border-divider bg-content1 px-4 py-3">
-          <Spinner size="sm" />
+          <SkeletonList rows={5} />
           <span className="text-sm text-default-500">正在加载客户档案...</span>
         </div>
       </div>

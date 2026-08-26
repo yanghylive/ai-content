@@ -36,6 +36,7 @@ import type {
   InteractionReplyRuleConfig,
   InteractionTask,
 } from "@/lib/api/local-engine";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 /* ============ 类型（与旧版一致） ============ */
 
@@ -480,7 +481,7 @@ export function CustomerServiceConfig() {
   if (loading) {
     return (
       <div className="kaypal-v3-panel p-12 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载客服配置...</p>
       </div>
     );

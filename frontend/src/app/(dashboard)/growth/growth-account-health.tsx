@@ -18,6 +18,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthAccountHealth } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const PLATFORM_LABELS: Record<string, string> = {
   douyin: "抖音",
@@ -97,7 +98,7 @@ export function GrowthAccountHealthPage() {
 
       {loading ? (
         <div className="kaypal-v3-panel p-12 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       ) : accounts.length === 0 ? (
         <V2Section>

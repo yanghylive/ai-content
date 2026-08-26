@@ -25,6 +25,7 @@ import {
 import { ApiError } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type PlatformFilter = "all" | "douyin" | "xiaohongshu" | "bilibili" | "wechat";
 type TargetFilter = "all" | "post" | "account" | "comment" | "engagement";
@@ -1061,9 +1062,7 @@ export function SearchIntelligenceWorkbench() {
       {/* 加载状态 */}
       {searchRun.loading && (
         <section className="kaypal-v3-panel p-12 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent-soft)]">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
-          </div>
+          <SkeletonList rows={5} />
           <h3 className="mt-4 text-lg font-semibold text-[var(--kaypal-v3-ink)]">
             正在搜索...
           </h3>

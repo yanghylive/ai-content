@@ -1,6 +1,6 @@
 "use client";
 
-import { SkeletonRow } from "@/components/skeleton";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -163,7 +163,7 @@ export function DistributionArticles() {
       <V2Section padding={false}>
         {loading ? (
           <div className="p-12 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : articles.length === 0 ? (
           <V2EmptyState

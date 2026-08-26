@@ -19,6 +19,7 @@ import {
   type DefaultModels,
   type KaypalModelSyncStatus,
 } from "@/lib/api/settings";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const emptyDefaults: DefaultModels = {
   articleCreation: "",
@@ -237,7 +238,7 @@ export function AiServiceSettings({
   if (loading) {
     return (
       <div className="flex items-center justify-center gap-2 py-12">
-        <Spinner size="sm" />
+        <SkeletonList rows={3} />
         <span className="text-small text-default-500">正在读取 AI 服务...</span>
       </div>
     );

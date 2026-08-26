@@ -22,6 +22,7 @@ import {
   type VideoFaceSwapJobSummary,
 } from "@/lib/api/video-face-swap";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const MODE_LABELS: Record<string, string> = {
   face_swap: "换脸",
@@ -89,7 +90,7 @@ export function FaceSwapWorks() {
 
       {loading ? (
         <div className="kaypal-v3-panel p-12 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       ) : jobs.length === 0 ? (
         <V2Section>

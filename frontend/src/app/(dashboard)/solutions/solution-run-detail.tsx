@@ -24,6 +24,7 @@ import {
   type SolutionRunTaskRecord,
 } from "@/lib/api/solutions";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const TASK_STATUS: Record<
   string,
@@ -84,7 +85,7 @@ export function SolutionRunDetail({ runId }: { runId: string }) {
   if (loading) {
     return (
       <div className="kaypal-v3-panel p-12 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
       </div>
     );

@@ -51,6 +51,7 @@ import { commercialDisplayText, commercialPrimaryText } from "@/lib/commercial-d
 import { toPublicError } from "@/lib/public-error";
 import { FailureActionPanel } from "../components/failure-action-panel";
 import { FunctionalEmptyState } from "../components/functional-empty-state";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type LocalEngineTabKey =
   | "engine"
@@ -433,7 +434,7 @@ export default function LocalEnginePage() {
     <React.Suspense
       fallback={
         <div className="flex min-h-[360px] items-center justify-center">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       }
     >
@@ -450,7 +451,7 @@ export function InteractionRoutePage({
     <React.Suspense
       fallback={
         <div className="flex min-h-[360px] items-center justify-center">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       }
     >
@@ -1331,7 +1332,7 @@ function EngineOverview({
   agentSLoading: boolean;
 }) {
   if (loading && !health) {
-    return <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />;
+    return <SkeletonList rows={5} />;
   }
   if (!health) {
     return (
@@ -3185,7 +3186,7 @@ function WechatSessionPanel() {
           </div>
         ) : (
           <div className="flex justify-center py-5">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         )}
       </div>
@@ -3319,7 +3320,7 @@ function RuntimeStatusPanel({
         </div>
         {loading && !status ? (
           <div className="flex justify-center py-8">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : null}
         {status ? (
@@ -3850,7 +3851,7 @@ function EvidenceReplayPanel({
             ))}
             {selectedTaskLoading ? (
               <div className="flex justify-center py-5">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+                <SkeletonList rows={5} />
               </div>
             ) : null}
             {!tasksLoading && !selectedTaskLoading && !evidenceTasks.length ? (
@@ -4249,7 +4250,7 @@ function BrowserControlPanel({
           ) : null}
           {loading ? (
             <div className="flex justify-center py-8">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+              <SkeletonList rows={5} />
             </div>
           ) : null}
         </div>
@@ -4329,7 +4330,7 @@ function ExecutorStatusPanel({
       ) : null}
       {loading && !status ? (
         <div className="flex justify-center py-5">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       ) : null}
       <div className="mt-4 grid gap-3">
@@ -5022,7 +5023,7 @@ function FileAccessPanel({
         ) : null}
         {loading && !status ? (
           <div className="flex justify-center py-8">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : null}
         <div className="grid gap-4">
@@ -5198,7 +5199,7 @@ function PermissionCheckPanel({
         ) : null}
         {loading && !readiness ? (
           <div className="flex justify-center py-8">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : null}
         {readiness ? (
@@ -5848,7 +5849,7 @@ function TasksPanel({
             ) : null}
             {loading ? (
               <div className="flex justify-center py-8">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+                <SkeletonList rows={5} />
               </div>
             ) : null}
           </div>
@@ -7434,7 +7435,7 @@ function RulesPanel({
     return (
       <section className="kaypal-v3-panel overflow-hidden">
         <div>
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       </section>
     );

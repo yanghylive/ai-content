@@ -18,6 +18,7 @@ import { stylesApi, type Style } from "@/lib/api/styles";
 import { toPublicError } from "@/lib/public-error";
 import { FileText, Image as ImageIcon, LayoutTemplate, BookOpen } from "lucide-react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const TYPE_OPTIONS = [
   { value: "article", label: "文章", desc: "图文内容", icon: FileText },
@@ -113,7 +114,7 @@ export function StyleForm({
   if (loading) {
     return (
       <div className="kaypal-v3-panel p-12 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
       </div>
     );

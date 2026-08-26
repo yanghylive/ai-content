@@ -7,6 +7,7 @@ import {
   getCrmCustomerAttribution,
   type CrmCustomerAttribution,
 } from "@/lib/api/crm";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const HOP_LABEL: Record<string, string> = {
   content: "内容",
@@ -48,7 +49,7 @@ export function CustomerAttributionPanel({ customerId }: { customerId: string })
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-sm text-default-400">
-        <Spinner size="sm" /> 正在解析来源归因…
+        <SkeletonCircle size={16} /> 正在解析来源归因…
       </div>
     );
   }

@@ -62,6 +62,7 @@ import {
   type WorkspaceStepId,
   type WorkspaceVersionView,
 } from "./workspace-types";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 function contentFingerprint(value: Pick<EditorValue, "title" | "content">) {
   return JSON.stringify([value.title, value.content]);
@@ -1080,7 +1081,7 @@ export function ContentWorkspaceClient() {
                   className="order-1 flex min-h-[560px] items-center justify-center rounded-[6px] border border-divider bg-content1 px-6 text-center lg:order-2"
                 >
                   <div className="flex flex-col items-center gap-2 text-sm text-[var(--kaypal-v3-muted)]">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+                    <SkeletonList rows={5} />
                     正在加载内容
                   </div>
                 </section>

@@ -23,6 +23,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthWorkflow } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 const FlowCanvas = dynamic(() => import("./workflow-canvas/FlowCanvas"), {
   ssr: false,
   loading: () => (
@@ -269,7 +270,7 @@ export function GrowthWorkflowsPage() {
         </div>
         {loading ? (
           <div className="p-12 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : workflows.length === 0 ? (
           <div className="p-5 pt-2">

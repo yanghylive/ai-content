@@ -21,6 +21,7 @@ import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { publicIntelligenceText } from "./display-text";
 import { IntelligenceToolResultContext } from "./intelligence-tool-result-context";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type RiskLevel = "low" | "medium" | "high";
 type PlatformFilter = "all" | "douyin" | "xiaohongshu" | "bilibili";
@@ -348,8 +349,7 @@ function SkillStrip() {
       </div>
       {!skillState.loaded ? (
         <div className="flex items-center gap-2 p-4 text-12 font-semibold text-[var(--kaypal-v3-muted)]">
-          <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
-          正在读取功能目录
+          <SkeletonList rows={3} />
         </div>
       ) : skillState.error ? (
         <div className="p-4 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)]">

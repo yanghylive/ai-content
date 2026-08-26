@@ -31,6 +31,7 @@ import {
 } from "@/lib/api/settings";
 import { materialsApi } from "@/lib/api/materials";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 /* ============ AI 服务（4 个默认模型槽位） ============ */
 
@@ -133,7 +134,7 @@ function AiServiceSettings({ onFlash, onError }: { onFlash: (t: string) => void;
   if (loading) {
     return (
       <div className="py-6 text-center">
-        <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
       </div>
     );
   }
@@ -391,7 +392,7 @@ function SourcesSettings({ onFlash, onError }: { onFlash: (t: string) => void; o
 
       {loading ? (
         <div className="py-6 text-center">
-          <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       ) : sources.length === 0 ? (
         <V2EmptyState
@@ -537,7 +538,7 @@ function StorageSettings({ onFlash, onError }: { onFlash: (t: string) => void; o
   if (loading) {
     return (
       <div className="py-6 text-center">
-        <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
       </div>
     );
   }

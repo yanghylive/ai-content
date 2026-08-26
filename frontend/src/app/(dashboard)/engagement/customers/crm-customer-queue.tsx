@@ -6,6 +6,7 @@ import { Button, Chip, Spinner } from "@heroui/react";
 import { ArrowRight, RefreshCw, UsersRound } from "lucide-react";
 import { listCrmCustomers, type CrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const statusLabels: Record<string, string> = {
   new: "新线索",
@@ -65,7 +66,7 @@ export function CrmCustomerQueue() {
 
       {loading ? (
         <div className="flex min-h-28 items-center justify-center">
-          <Spinner size="sm" />
+          <SkeletonList rows={3} />
         </div>
       ) : error ? (
         <div className="mt-4 flex min-h-28 flex-col items-center justify-center gap-3 border border-dashed border-danger-200 px-4 text-center">

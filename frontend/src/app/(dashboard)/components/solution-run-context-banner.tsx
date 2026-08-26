@@ -9,6 +9,7 @@ import {
   type SolutionRunRecord,
 } from "@/lib/api/solutions";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 function statusMeta(status: string) {
   if (["succeeded", "completed"].includes(status)) {
@@ -86,7 +87,7 @@ export function SolutionRunContextBanner({ runId }: { runId: string }) {
         aria-live="polite"
         className="mb-4 flex min-h-14 items-center gap-3 rounded-[8px] border border-divider bg-content1 px-4 py-3"
       >
-        <Spinner size="sm" />
+        <SkeletonCircle size={16} />
         <span className="text-sm text-default-500">正在定位本次运行...</span>
       </section>
     );

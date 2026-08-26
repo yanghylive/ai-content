@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/auth";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 function formatCredits(value?: number | null) {
   if (value == null) return "同步中";
@@ -215,7 +216,7 @@ export function KaypalAccountSections() {
   if (loading) {
     return (
       <div className="flex items-center gap-2 py-5 justify-center">
-        <Spinner size="sm" />
+        <SkeletonList rows={3} />
         <span className="text-small text-default-500">加载 Kaypal 信息...</span>
       </div>
     );

@@ -8,6 +8,7 @@ import { growthApi, type GrowthLead, type LeadScoreHistoryDto, type LeadAttribut
 import { api } from "@/lib/api/client";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { V2StatusChip } from "@/components/v2/ui-kit";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const PLATFORM_LABEL: Record<string, string> = {
   douyin: "抖音",
@@ -209,7 +210,7 @@ function LeadDetailClient() {
       <div className="mx-auto max-w-3xl px-4 py-6">
         <V2BackButton to="/growth/leads" label="返回线索" />
         <div className="py-16 text-center">
-          <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       </div>
     );

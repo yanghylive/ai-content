@@ -38,6 +38,7 @@ import {
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const PLATFORM_LABELS: Record<string, string> = {
   douyin: "抖音",
@@ -306,7 +307,7 @@ export function GrowthAcquisitionTasks() {
       <V2Section padding={false}>
         {loading ? (
           <div className="p-12 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : configs.length === 0 ? (
           <V2EmptyState
@@ -395,7 +396,7 @@ export function GrowthAcquisitionTasks() {
                     <div className="border-t border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-5 py-4">
                       {runsLoading ? (
                         <div className="py-4 text-center">
-                          <Loader2 className="mx-auto h-5 w-5 animate-spin text-[var(--kaypal-v3-accent)]" />
+                          <SkeletonList rows={5} />
                         </div>
                       ) : runs.length === 0 ? (
                         <p className="py-2 text-sm text-[var(--kaypal-v3-muted)]">

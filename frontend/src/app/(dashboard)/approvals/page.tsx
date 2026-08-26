@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { ShieldCheck, Loader2, Check, X, AlertTriangle } from "lucide-react";
 import { approvalApi, type ApprovalRecord } from "@/lib/api/approval";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const RISK_LABEL: Record<string, { label: string; cls: string }> = {
   high: { label: "高风险", cls: "bg-red-50 text-red-600" },
@@ -103,7 +104,7 @@ export default function ApprovalCenterPage() {
 
       {loading ? (
         <div className="py-16 text-center">
-          <Loader2 className="mx-auto h-7 w-7 animate-spin text-[var(--kaypal-v3-accent)]" />
+          <SkeletonList rows={5} />
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[var(--kaypal-v3-border)] p-10 text-center text-sm text-[var(--kaypal-v3-muted)]">

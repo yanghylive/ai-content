@@ -32,6 +32,7 @@ import { toPublicError } from "@/lib/public-error";
 import { RELEASE_NOTES, DESKTOP_APP_VERSION } from "@/lib/release-notes";
 import { routeAliases } from "@/lib/route-config";
 import { formatPlanLabel, formatCredits, getBillingPlan, hasUsableLocalSession } from "@/lib/dashboard-helpers";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
@@ -727,7 +728,7 @@ function DashboardLayoutFallback() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background">
       <div className="flex items-center gap-3 rounded-[8px] border border-divider bg-content1 px-4 py-3 shadow-sm">
-        <Spinner size="sm" />
+        <SkeletonCircle size={16} />
         <span className="text-14 leading-[22px] text-default-500">
           正在验证登录状态...
         </span>

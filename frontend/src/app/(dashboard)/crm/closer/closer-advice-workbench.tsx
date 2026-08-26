@@ -28,6 +28,7 @@ import { FailureActionPanel } from "../../components/failure-action-panel";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { getCrmAppState } from "@/lib/api/app-market";
 import { api } from "@/lib/api/client";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type ChipColor = "accent" | "success" | "warning" | "danger" | "muted";
 
@@ -474,7 +475,7 @@ export function CloserAdviceWorkbench() {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="flex items-center gap-3 rounded-[8px] border border-default-200 bg-content1 px-4 py-3 shadow-sm">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
           <span className="text-sm text-default-500">
             成交助手正在读取 CRM 数据...
           </span>

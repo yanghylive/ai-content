@@ -1,6 +1,6 @@
 "use client";
 
-import { SkeletonRow } from "@/components/skeleton";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
 
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -2340,7 +2340,7 @@ function EmptyBlock({
 function LoadingBlock() {
   return (
     <div className="flex justify-center py-16">
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+      <SkeletonList rows={5} />
     </div>
   );
 }

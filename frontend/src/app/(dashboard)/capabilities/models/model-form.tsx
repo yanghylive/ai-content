@@ -15,6 +15,7 @@ import {
 import { settingsApi, type AIPlatform } from "@/lib/api/settings";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const POPULAR_MODELS = [
   { id: "kimi-k2", label: "Kimi K2", desc: "综合能力强，推荐" },
@@ -136,7 +137,7 @@ export function ModelForm({ modelId }: { modelId?: string }) {
   if (loading) {
     return (
       <div className="kaypal-v3-panel p-12 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
       </div>
     );

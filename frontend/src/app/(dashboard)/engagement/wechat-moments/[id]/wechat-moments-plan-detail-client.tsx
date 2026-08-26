@@ -33,6 +33,7 @@ import {
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type PlanForm = {
   planName: string;
@@ -632,7 +633,7 @@ export function WechatMomentsPlanDetailLoading() {
       aria-live="polite"
       aria-busy="true"
     >
-      <Spinner label="正在读取朋友圈计划" />
+      <SkeletonList rows={3} />
     </div>
   );
 }

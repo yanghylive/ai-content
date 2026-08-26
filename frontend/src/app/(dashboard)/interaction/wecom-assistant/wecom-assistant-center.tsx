@@ -29,6 +29,7 @@ import {
 import { toPublicError } from "@/lib/public-error";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { useConfirm } from "@/hooks/use-confirm";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const STATUS_META: Record<
   string,
@@ -230,7 +231,7 @@ export function WecomAssistantCenter() {
             padding: 24,
           }}
         >
-          <Loader2 size={16} className="animate-spin" /> 加载中…
+          <SkeletonList rows={3} />
         </div>
       ) : state.status === "not_installed" ? (
         /* ---------- 未安装：安装表单 ---------- */

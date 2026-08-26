@@ -66,6 +66,7 @@ import {
   getPublishRecordStatusColor,
   resolvePublishRecordStatus,
 } from "@/lib/publish-record-view";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 function normalizeSessions(value: AgentSession[]) {
   return value.map((session) => ({
@@ -2111,7 +2112,7 @@ export function TaskCenterPage() {
 
       <div className="grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
         <OpsPanel title="审批后执行流程">
-          {loading ? <Spinner label="读取执行流程..." size="sm" /> : null}
+          {loading ? <SkeletonList rows={3} /> : null}
           <OpsDenseTable className="mt-3">
             <table>
               <thead>
@@ -2181,7 +2182,7 @@ export function TaskCenterPage() {
         </OpsPanel>
 
         <OpsPanel title="待处理确认">
-          {loading ? <Spinner label="读取待我确认..." size="sm" /> : null}
+          {loading ? <SkeletonList rows={3} /> : null}
           <OpsDenseTable className="mt-3">
             <table>
               <thead>
@@ -2401,7 +2402,7 @@ export function TaskCenterPage() {
       </OpsPanel>
 
       <OpsPanel title="最近运行">
-        {loading ? <Spinner label="读取任务历史..." size="sm" /> : null}
+        {loading ? <SkeletonList rows={3} /> : null}
         <OpsDenseTable className="mt-3">
           <table>
             <thead>
@@ -2471,7 +2472,7 @@ export function TaskCenterPage() {
       </OpsPanel>
 
       <OpsPanel title="全部任务记录">
-        {loading ? <Spinner label="读取全部任务记录..." size="sm" /> : null}
+        {loading ? <SkeletonList rows={3} /> : null}
         <OpsDenseTable className="mt-3">
           <table>
             <thead>
@@ -2905,7 +2906,7 @@ function AgentStatusDrawer({
         </div>
 
         <div className="flex-1 overflow-auto p-4">
-          {loading ? <Spinner label="读取状态..." size="sm" /> : null}
+          {loading ? <SkeletonList rows={3} /> : null}
           <div className="grid gap-4">
             <section className="rounded-[8px] border border-divider bg-background p-3">
               <div className="mb-3 flex items-center justify-between gap-3">
