@@ -1,13 +1,9 @@
-import { redirectPreservingQuery, type ServerSearchParams } from "@/lib/redirect-with-query";
+import { QueryPreservingRedirect } from "@/lib/redirect-with-query";
 
 /**
  * RedFox 数据来源管理（原指向已删除的 /redfox-connection 死链，2026-08-26 修复）。
- * 兼容跳转：保留查询参数，不丢上下文。
+ * 兼容跳转：客户端保留查询参数，不丢上下文（静态导出安全）。
  */
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: Promise<ServerSearchParams>;
-}) {
-  redirectPreservingQuery("/intelligence/redfox", await searchParams);
+export default function Page() {
+  return <QueryPreservingRedirect target="/intelligence/redfox" />;
 }

@@ -1399,7 +1399,7 @@ export function SessionsPage({
 export function SimpleFeaturePage({
   title,
   description,
-  icon,
+  // icon 参数保留在类型中（调用方仍传），但组件未使用，不再解构以过 --max-warnings=0
   items,
   capabilityKey,
   localEngineTab = "engine",
