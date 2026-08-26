@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
 import { DesktopOnlyGate } from "@/components/v2/desktop-only-gate";
 import { GrayTestOverlay } from "@/components/v2/gray-test-overlay";
+import { toActionableError } from "@/lib/public-error";
 
 interface EngineStatus {
   online: boolean;
@@ -147,7 +148,7 @@ export default function VideoWorkshopV2Page() {
       setProject(detail);
       startPolling(data.projectId);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "创建视频任务失败");
+      setError(toActionableError(e, "创建视频任务失败"));
     } finally {
       setCreating(false);
     }
@@ -165,7 +166,7 @@ export default function VideoWorkshopV2Page() {
       setImported(data.filename);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '导入素材失败');
+      setError(toActionableError(e, "导入素材失败"));
     } finally {
       setImporting(false);
     }
@@ -180,7 +181,7 @@ export default function VideoWorkshopV2Page() {
       const data = await api.get<ProjectStatus>(`/video-workshop/jobs/${projectId}`);
       setProject(data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "确认失败");
+      setError(toActionableError(e, "确认失败"));
     }
   };
 

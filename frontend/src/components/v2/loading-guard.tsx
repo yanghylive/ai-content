@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toActionableError } from "@/lib/public-error";
 
 /**
  * 加载守卫（2026-08-20）：
@@ -54,7 +55,7 @@ export function useLoadingGuard(task: () => Promise<void>): LoadingState {
     try {
       await taskRef.current();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败，请重试");
+      setError(toActionableError(e, "加载失败，请重试"));
     } finally {
       clearTimer();
       setLoading(false);

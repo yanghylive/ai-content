@@ -39,6 +39,7 @@ import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useConfirm } from "@/hooks/use-confirm";
 import { LocalBridgeStatus } from "./local-bridge-status";
+import { toActionableError } from "@/lib/public-error";
 
 type PublishItem = {
   id: string;
@@ -97,7 +98,7 @@ export function PublishCenter() {
       flash("重试已开始，结果稍后查看");
       await fetchTasks();
     } catch (err: unknown) {
-      const raw = err instanceof Error ? err.message : "";
+      const raw = toActionableError(err, "");
       setError(raw || toPublicError(err, "重试失败，请稍后重试"));
     } finally {
       setActingId(null);
@@ -127,7 +128,7 @@ export function PublishCenter() {
     } catch (err: unknown) {
       // 报告 4.1 确定性 bug：请求失败不得清空旧列表（网络故障被误报为「无任务」）
       setError(
-        (err instanceof Error ? err.message : "") ||
+        (toActionableError(err, "")) ||
           toPublicError(err, "发布任务加载失败，请检查网络后重试"),
       );
     } finally {
@@ -651,7 +652,7 @@ function AccountHealthTab() {
       setStats(snap);
       setHealth(result);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "账号健康检查失败");
+      setError(toActionableError(e, "账号健康检查失败"));
     } finally {
       setLoading(false);
     }
@@ -800,7 +801,7 @@ function PublishCalendarTab() {
       const result = await autoUploadApi.calendar(7);
       setDays(Array.isArray(result) ? result : []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "日历加载失败");
+      setError(toActionableError(e, "日历加载失败"));
     } finally {
       setLoading(false);
     }
@@ -967,7 +968,7 @@ function PublishCalendarView() {
       setDays(Array.isArray(result) ? result : []);
       setError("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "日历加载失败");
+      setError(toActionableError(e, "日历加载失败"));
     } finally {
       setLoading(false);
     }
@@ -993,7 +994,7 @@ function PublishCalendarView() {
         await autoUploadApi.cancelTask(id);
         await load();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "取消失败");
+        toast.error(toActionableError(e, "取消失败"));
       } finally {
         setActingId(null);
       }
@@ -1018,7 +1019,7 @@ function PublishCalendarView() {
       setRescheduleId(null);
       await load();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "改期失败");
+      toast.error(toActionableError(e, "改期失败"));
     } finally {
       setActingId(null);
     }

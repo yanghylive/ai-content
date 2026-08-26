@@ -13,8 +13,10 @@ import {
   type PlatformKey,
 } from "@/lib/mobile-bridge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { CountUpNumber } from "@/components/count-up-number";
 import { Avatar } from "@/components/avatar";
 import styles from "./accounts-matrix.module.css";
+import { toActionableError } from "@/lib/public-error";
 
 /** 账号平台 key（douyin/wechat-channel 等）→ mobile-bridge 平台 key */
 const toBridgeKey = (platform: string): PlatformKey => {
@@ -141,7 +143,7 @@ export default function AccountsMatrixV2Page() {
       }
       setError("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "账号加载失败");
+      setError(toActionableError(e, "账号加载失败"));
     } finally {
       setLoading(false);
     }
@@ -209,9 +211,9 @@ export default function AccountsMatrixV2Page() {
       {/* 统计 */}
       <section className="mx-px mx-mt-lg">
         <div className="mx-stat-grid" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
-          <div className="mx-stat-item mx-control"><div className="mx-stat-num">{stats.total}</div><div className="mx-stat-label">账号总数</div></div>
-          <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text">{stats.loggedIn}</div><div className="mx-stat-label">已登录</div></div>
-          <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: stats.needsLogin > 0 ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-success)" }}>{stats.needsLogin}</div><div className="mx-stat-label">需处理</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num"><CountUpNumber value={stats.total} /></div><div className="mx-stat-label">账号总数</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num mx-gold-text"><CountUpNumber value={stats.loggedIn} /></div><div className="mx-stat-label">已登录</div></div>
+          <div className="mx-stat-item mx-control"><div className="mx-stat-num" style={{ color: stats.needsLogin > 0 ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-success)" }}><CountUpNumber value={stats.needsLogin} /></div><div className="mx-stat-label">需处理</div></div>
         </div>
       </section>
 

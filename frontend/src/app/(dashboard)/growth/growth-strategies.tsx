@@ -28,6 +28,7 @@ import {
 } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 const PLATFORM_OPTIONS = [
   { value: "douyin", label: "抖音" },
@@ -92,7 +93,7 @@ export function GrowthStrategies() {
       setGenScenario("");
       await fetchStrategies();
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setGenError(rawMessage || toPublicError(err, "生成失败，请稍后重试"));
     } finally {
       setGenerating(false);
@@ -138,7 +139,7 @@ export function GrowthStrategies() {
       // 成功后显示创建的任务信息
       console.log("策略已应用，任务：", result);
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setApplyError(
         rawMessage || toPublicError(err, "应用失败，请稍后重试"),
       );

@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { toActionableError } from "@/lib/public-error";
 
 type RewriteVariant = {
   label: string;
@@ -87,7 +88,7 @@ export default function CopyComparePage() {
               source,
               original: source,
               variants: [] as RewriteVariant[],
-              error: e instanceof Error ? e.message : "改写失败",
+              error: toActionableError(e, "改写失败"),
             };
           }
         }),

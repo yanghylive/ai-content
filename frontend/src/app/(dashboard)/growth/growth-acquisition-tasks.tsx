@@ -39,6 +39,7 @@ import { buildRiskConfirmation } from "@/lib/api/auto-upload";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 const PLATFORM_LABELS: Record<string, string> = {
   douyin: "抖音",
@@ -183,7 +184,7 @@ export function GrowthAcquisitionTasks() {
       flash("已保存修改");
       await fetchConfigs();
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setError(rawMessage || toPublicError(err, "保存失败，请稍后重试"));
     } finally {
       setSavingEdit(false);
@@ -252,7 +253,7 @@ export function GrowthAcquisitionTasks() {
       setExecuteTarget(null);
       flash("执行已开始，结果稍后在线索池和执行记录里看");
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setError(rawMessage || toPublicError(err, "执行失败，请稍后重试"));
     } finally {
       setExecuting(false);

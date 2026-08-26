@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/crm";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { localEngineApi } from "@/lib/api/local-engine";
+import { toActionableError } from "@/lib/public-error";
 
 function formatDateTime(value?: string | null) {
   if (!value) return "未设置";
@@ -173,7 +174,7 @@ export function CrmNextActionPanel() {
       setCloserSummary(closer.summary);
       setAdvice(closer.advice || []);
     } catch (caught: unknown) {
-      setError(caught instanceof Error ? caught.message : "客户队列读取失败");
+      setError(toActionableError(caught, "客户队列读取失败"));
       setSummary(null);
       setCloserSummary(null);
       setAdvice([]);
@@ -265,7 +266,7 @@ export function CrmNextActionPanel() {
         color: "danger",
         title: "加入任务中心失败",
         description:
-          caught instanceof Error ? caught.message : "本机服务暂不可用",
+          toActionableError(caught, "本机服务暂不可用"),
       });
     } finally {
       setCreatingSession(false);

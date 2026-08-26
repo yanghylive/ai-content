@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
+import { toActionableError } from "@/lib/public-error";
 
 type Job = {
   id: string;
@@ -51,7 +52,7 @@ export default function BroadcastPage() {
       setJobs(nextJobs);
       setHealth(nextHealth);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "直播服务不可用");
+      setError(toActionableError(cause, "直播服务不可用"));
     }
   };
 

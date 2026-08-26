@@ -9,6 +9,7 @@
  */
 import React from "react";
 import toast from "@/lib/toast";
+import { toActionableError } from "@/lib/public-error";
 
 const SEEN = new Set<string>();
 
@@ -23,11 +24,12 @@ function notify(message: string) {
 export function GlobalErrorBoundary() {
   React.useEffect(() => {
     const onRejection = (e: PromiseRejectionEvent) => {
-      const msg = e.reason instanceof Error ? e.reason.message : String(e.reason ?? "未知错误");
+      const msg = toActionableError(e.reason, "操作遇到未知问题，请刷新后重试。");
       notify(msg);
     };
     const onError = (e: ErrorEvent) => {
-      if (e.message) notify(e.message);
+      const msg = toActionableError(e.error ?? e.message, "页面遇到未知问题，请刷新后重试。");
+      if (e.message || e.error) notify(msg);
     };
     window.addEventListener("unhandledrejection", onRejection);
     window.addEventListener("error", onError);

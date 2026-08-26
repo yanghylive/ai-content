@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
+import { toActionableError } from "@/lib/public-error";
 
 interface VideoGenTask {
   taskId: string;
@@ -97,7 +98,7 @@ export default function SeedanceVideoPage() {
       setPolling(true);
       void poll(data.taskId);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "任务提交失败");
+      setError(toActionableError(e, "任务提交失败"));
     } finally {
       setSubmitting(false);
     }

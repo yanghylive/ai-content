@@ -9,6 +9,7 @@ import {
 } from "@/lib/api/ai-gateway";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { useConfirm } from "@/hooks/use-confirm";
+import { toActionableError } from "@/lib/public-error";
 
 const TYPE_LABEL: Record<string, string> = {
   persona: "画像偏好",
@@ -35,7 +36,7 @@ export default function MemorySettingsPage() {
       const result = await listMemories();
       setItems(result.items);
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : "加载失败");
+      setMsg(toActionableError(e, "加载失败"));
     } finally {
       setLoading(false);
     }
@@ -53,7 +54,7 @@ export default function MemorySettingsPage() {
         setMsg("已删除该条记忆");
         await refresh();
       } catch (e) {
-        setMsg(e instanceof Error ? e.message : "删除失败");
+        setMsg(toActionableError(e, "删除失败"));
       } finally {
         setBusy(false);
         window.setTimeout(() => setMsg(""), 2500);
@@ -76,7 +77,7 @@ export default function MemorySettingsPage() {
       setMsg(`已清除 ${count} 条记忆`);
       setItems([]);
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : "清除失败");
+      setMsg(toActionableError(e, "清除失败"));
     } finally {
       setBusy(false);
       window.setTimeout(() => setMsg(""), 2500);

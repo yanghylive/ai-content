@@ -4,6 +4,7 @@ import React, { useCallback, useState } from "react";
 import { replyApi, type ReplySuggestionItem } from "@/lib/api/reply";
 import { shareText } from "@/lib/mobile-bridge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { toActionableError } from "@/lib/public-error";
 
 const TONE_LABEL: Record<string, string> = {
   friendly: "亲切",
@@ -55,7 +56,7 @@ export default function ReplyV2Page() {
         );
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "生成失败，请稍后重试");
+      setError(toActionableError(e, "生成失败，请稍后重试"));
     } finally {
       setLoading(false);
     }

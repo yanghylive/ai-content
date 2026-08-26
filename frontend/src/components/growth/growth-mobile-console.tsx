@@ -27,6 +27,7 @@ import {
   type GrowthWorkflow,
 } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+import { toActionableError } from "@/lib/public-error";
 
 /**
  * 增长工作台 · 移动端（P0-4 + G2 扩展）
@@ -189,7 +190,7 @@ export function GrowthMobileConsole({ view }: { view: string }) {
       const list = await growthApi.listStrategies().catch(() => []);
       setStrategies(Array.isArray(list) ? list : []);
     } catch (err) {
-      const raw = err instanceof Error ? err.message : "";
+      const raw = toActionableError(err, "");
       setGenError(raw || toPublicError(err, "生成失败，请稍后重试"));
     } finally {
       setGenerating(false);

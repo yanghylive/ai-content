@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Button, Input, addToast } from "@heroui/react";
 import { CreditCard, History, ReceiptText, ShieldCheck, Wallet } from "lucide-react";
 import { savingsApi, type CreditBalance, type RebateBalance } from "@/lib/api/savings";
+import { toActionableError } from "@/lib/public-error";
 
 interface WalletPanelProps {
   balance: RebateBalance | null;
@@ -34,7 +35,7 @@ export function WalletPanel({ balance, credit, reload }: WalletPanelProps) {
       setShowExchange(false);
       await reload();
     } catch (e) {
-      toast(e instanceof Error ? e.message : "兑换失败", "danger");
+      toast(toActionableError(e, "兑换失败"), "danger");
     } finally {
       setBusy(false);
     }
@@ -58,7 +59,7 @@ export function WalletPanel({ balance, credit, reload }: WalletPanelProps) {
       setShowWithdraw(false);
       await reload();
     } catch (e) {
-      toast(e instanceof Error ? e.message : "提现失败", "danger");
+      toast(toActionableError(e, "提现失败"), "danger");
     } finally {
       setBusy(false);
     }

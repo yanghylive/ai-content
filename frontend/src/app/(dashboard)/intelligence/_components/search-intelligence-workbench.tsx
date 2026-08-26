@@ -23,6 +23,7 @@ import {
 } from "@/lib/api/intelligence";
 import { ApiError } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
+import { toActionableError } from "@/lib/public-error";
 
 type PlatformFilter = "all" | "douyin" | "xiaohongshu" | "bilibili" | "wechat";
 type TargetFilter = "all" | "post" | "account" | "comment" | "engagement";
@@ -91,7 +92,7 @@ const commentPlatformValues = new Set<PlatformFilter>([
 const engagementPlatformValues = new Set<PlatformFilter>(["wechat"]);
 
 function publicSearchErrorMessage(error: unknown) {
-  const message = error instanceof Error ? error.message : "";
+  const message = toActionableError(error, "");
   if (
     (error instanceof ApiError && error.errorCode === "INSUFFICIENT_CREDITS") ||
     /INSUFFICIENT_CREDITS|积分余额不足|积分不足|余额不足/i.test(message)

@@ -4,6 +4,7 @@ import React from "react";
 import { Button, Card, CardBody, Progress, Chip } from "@heroui/react";
 import { CheckCircle2, Download, Sparkles, X } from "lucide-react";
 import toast from "@/lib/toast";
+import { toActionableError } from "@/lib/public-error";
 
 type UpdateState = {
   configured?: boolean;
@@ -105,7 +106,7 @@ export function ElectronUpdateBanner() {
       setDismissedVersion(state.version || null);
       toast.success("已跳过此版本");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "操作失败");
+      toast.error(toActionableError(err, "操作失败"));
     } finally {
       setBusy(null);
     }

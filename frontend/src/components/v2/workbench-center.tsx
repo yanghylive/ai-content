@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { CountUpNumber } from "@/components/count-up-number";
 
 export type WorkbenchStat = {
   label: string;
@@ -151,7 +152,7 @@ export function WorkbenchCenter({
               {stats.slice(0, 4).map((stat) => (
                 <div key={stat.label} className="mx-stat-item mx-control">
                   <div className="mx-stat-num" style={{ fontSize: 20 }}>
-                    {stat.value}
+                    <CountUpNumber value={stat.value} />
                   </div>
                   <div className="mx-stat-label">{stat.label}</div>
                 </div>

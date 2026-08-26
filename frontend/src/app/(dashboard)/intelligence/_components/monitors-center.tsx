@@ -1,6 +1,7 @@
 "use client";
 
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
+import { CountUpNumber } from "@/components/count-up-number";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -195,7 +196,7 @@ export function MonitorsCenter() {
 
           <div className="mx-stat-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
             <div className="mx-stat-item mx-control">
-              <div className="mx-stat-num mx-gold-text">{loading ? "-" : activeCount}</div>
+              <div className="mx-stat-num mx-gold-text"><CountUpNumber value={activeCount} loading={loading} /></div>
               <div className="mx-stat-label">监控中</div>
             </div>
             <button

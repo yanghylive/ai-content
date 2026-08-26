@@ -9,6 +9,7 @@ import {
 import { intelligenceApi } from "@/lib/api/intelligence";
 import { shareText, copyText } from "@/lib/mobile-bridge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { toActionableError } from "@/lib/public-error";
 
 function detectPlatform(url: string): "douyin" | "xhs" | "youtube" | "auto" {
   if (/youtube\.com|youtu\.be/i.test(url)) return "youtube";
@@ -97,7 +98,7 @@ export default function ViralAnalysisV2Page() {
         setTranscript("提取任务已提交，请稍后重试");
       }
     } catch (e) {
-      setShareMsg(e instanceof Error ? e.message : "文案提取失败");
+      setShareMsg(toActionableError(e, "文案提取失败"));
       window.setTimeout(() => setShareMsg(""), 3200);
     } finally {
       setTranscriptBusy(false);
@@ -125,7 +126,7 @@ export default function ViralAnalysisV2Page() {
       const data = await redfoxApi.viralAnalyze({ url: targetUrl });
       setResult(data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "拆解失败，请检查链接是否有效");
+      setError(toActionableError(e, "拆解失败，请检查链接是否有效"));
     } finally {
       setLoading(false);
     }
@@ -181,7 +182,7 @@ export default function ViralAnalysisV2Page() {
       });
       setSaved(report?.id ?? "ok");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "保存报告失败，请稍后重试");
+      setError(toActionableError(e, "保存报告失败，请稍后重试"));
     } finally {
       setSaving(false);
     }

@@ -22,6 +22,7 @@ import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { publicIntelligenceText } from "./display-text";
 import { IntelligenceToolResultContext } from "./intelligence-tool-result-context";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 type RiskLevel = "low" | "medium" | "high";
 type PlatformFilter = "all" | "douyin" | "xiaohongshu" | "bilibili";
@@ -328,7 +329,7 @@ function SkillStrip() {
         setSkillState({
           items: [],
           error: publicIntelligenceText(
-            reason instanceof Error ? reason.message : "功能读取失败",
+            toActionableError(reason, "功能读取失败"),
           ),
           loaded: true,
         });

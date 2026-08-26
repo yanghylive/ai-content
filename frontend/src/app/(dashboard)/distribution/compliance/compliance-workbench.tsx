@@ -37,6 +37,7 @@ import {
   type ContentWorkflowPlatform,
   type ContentWorkflowTargetType,
 } from "@/lib/api/content-optimization";
+import { toActionableError } from "@/lib/public-error";
 
 type ComplianceRiskLevel = "pass" | "low" | "medium" | "high";
 
@@ -265,7 +266,7 @@ export function ComplianceWorkbench() {
       const result = await listContentOptimizationVersions();
       setVersions(result.items);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "版本加载失败";
+      const message = toActionableError(err, "版本加载失败");
       toast.error(message);
     }
   }
@@ -349,7 +350,7 @@ export function ComplianceWorkbench() {
       await refreshVersions();
       toast.success("发布前检查已完成");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "发布前检查失败";
+      const message = toActionableError(err, "发布前检查失败");
       setError(message);
       toast.error(message);
     } finally {
@@ -375,7 +376,7 @@ export function ComplianceWorkbench() {
         });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "版本加载失败";
+      const message = toActionableError(err, "版本加载失败");
       setError(message);
       toast.error(message);
     }
@@ -409,7 +410,7 @@ export function ComplianceWorkbench() {
       toast.success("发布准备已创建");
       await refreshVersions();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "发布准备创建失败";
+      const message = toActionableError(err, "发布准备创建失败");
       setPublishStatus(message);
       toast.error(message);
     } finally {
@@ -430,7 +431,7 @@ export function ComplianceWorkbench() {
       await refreshVersions();
       toast.success("已确认正式稿");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "正式稿确认失败";
+      const message = toActionableError(err, "正式稿确认失败");
       toast.error(message);
     } finally {
       setOfficialing(false);
@@ -451,7 +452,7 @@ export function ComplianceWorkbench() {
       await refreshVersions();
       toast.success("负责人复核已记录");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "负责人复核失败";
+      const message = toActionableError(err, "负责人复核失败");
       toast.error(message);
     } finally {
       setReviewing(false);
@@ -486,7 +487,7 @@ export function ComplianceWorkbench() {
       await refreshVersionRecords(versionId);
       toast.success("复盘已记录");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "复盘保存失败";
+      const message = toActionableError(err, "复盘保存失败");
       toast.error(message);
     } finally {
       setSavingFeedback(false);
@@ -511,7 +512,7 @@ export function ComplianceWorkbench() {
       await refreshVersionRecords(versionId);
       toast.success("备注已保存");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "备注保存失败";
+      const message = toActionableError(err, "备注保存失败");
       toast.error(message);
     } finally {
       setSavingComment(false);

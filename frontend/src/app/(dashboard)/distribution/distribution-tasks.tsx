@@ -22,6 +22,7 @@ import {
 } from "@/lib/api/auto-upload";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { toActionableError } from "@/lib/public-error";
 
 type FilterKey = "all" | "pending" | "done" | "failed";
 
@@ -113,7 +114,7 @@ export function DistributionTasks() {
       flash("重试已开始，结果稍后看");
       await fetchTasks();
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setError(rawMessage || toPublicError(err, "重试失败，请稍后重试"));
     } finally {
       setRetryingId(null);
@@ -133,7 +134,7 @@ export function DistributionTasks() {
       setViewing(null);
       await fetchTasks();
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : "";
+      const rawMessage = toActionableError(err, "");
       setError(rawMessage || toPublicError(err, "删除失败，请稍后重试"));
     } finally {
       setDeletingId(null);

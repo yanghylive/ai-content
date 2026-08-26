@@ -13,6 +13,7 @@ import {
 import { voiceApi } from "@/lib/api/voice";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { toActionableError } from "@/lib/public-error";
 
 interface ChatItem {
   id: string;
@@ -263,10 +264,10 @@ export function AiAssistant({
         );
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
-        const raw = e instanceof Error ? e.message : String(e);
+        const raw = toActionableError(e, "AI 助手暂时无法响应，请稍后重试。");
         // 网络层原生错误（Android WebView fetch 失败消息）转友好中文，2026-08-11 真机测试
         const msg = /Connection error|Failed to fetch|NetworkError|Network request failed|network error/i.test(
-          raw,
+          toActionableError(e, ""),
         )
           ? "网络连接失败，请检查网络后重试。"
           : raw;
@@ -315,7 +316,7 @@ export function AiAssistant({
         pcm = await recorder.stop();
       } catch (err) {
         setError(
-          `录音停止失败：${err instanceof Error ? err.message : String(err)}`,
+          `录音停止失败：${toActionableError(err, "未知原因")}`,
         );
         return;
       }
@@ -332,7 +333,7 @@ export function AiAssistant({
         void send(result.text);
       } catch (err) {
         setError(
-          `语音识别失败：${err instanceof Error ? err.message : String(err)}`,
+          `语音识别失败：${toActionableError(err, "未知原因")}`,
         );
       }
       return;
@@ -713,7 +714,7 @@ export function AiAssistant({
                       }
                     })
                     .catch((e) =>
-                      setError(e instanceof Error ? e.message : "返利支付失败"),
+                      setError(toActionableError(e, "返利支付失败")),
                     )
                     .finally(() => setBusy(false));
                 }}

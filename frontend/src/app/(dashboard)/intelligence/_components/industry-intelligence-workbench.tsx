@@ -32,6 +32,7 @@ import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { publicIntelligenceList, publicIntelligenceText } from "./display-text";
 import { IntelligenceToolResultContext } from "./intelligence-tool-result-context";
 import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 type RiskLevel = "low" | "medium" | "high";
 type IndustryKey =
@@ -528,7 +529,7 @@ export function IndustryIntelligenceWorkbench() {
       .catch((reason: unknown) => {
         if (!active) return;
         setItems([]);
-        setError(reason instanceof Error ? reason.message : "行业情报读取失败");
+        setError(toActionableError(reason, "行业情报读取失败"));
       })
       .finally(() => {
         if (!active) return;
@@ -735,7 +736,7 @@ export function IndustryIntelligenceWorkbench() {
     } catch (reason) {
       updateQueue(queueId, {
         state: "failed",
-        detail: reason instanceof Error ? reason.message : "动作执行失败",
+        detail: toActionableError(reason, "动作执行失败"),
       });
     } finally {
       setRunningAction(null);
