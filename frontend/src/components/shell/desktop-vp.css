@@ -39,7 +39,7 @@
     --kx-blur-soft: blur(16px) saturate(140%);
     /* 图标 chip 七色：第一色回归品牌紫，其余保留低饱和描边 */
     --kx-cv-bg: #f9f0ff; --kx-cv-fg: #722ed1; --kx-cv-bd: #e2d5f5;
-    --kx-cb-bg: #eff6ff; --kx-cb-fg: #1d4ed8; --kx-cb-bd: #bfdbfe;
+    --kx-cb-bg: #eff6ff; --kx-cb-fg: var(--kaypal-v3-accent); --kx-cb-bd: #bfdbfe;
     --kx-cg-bg: #ecfdf5; --kx-cg-fg: #047857; --kx-cg-bd: #d1fae5;
     --kx-ca-bg: #fff8eb; --kx-ca-fg: #b45309; --kx-ca-bd: #fde8c4;
     --kx-cr-bg: #fff1f2; --kx-cr-fg: #be123c; --kx-cr-bd: #ffe4e6;
@@ -216,19 +216,19 @@
   .kx-rail-item:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
   .kx-rail-item.kx-active {
     background: linear-gradient(135deg, rgba(227, 154, 62, 0.26), rgba(227, 154, 62, 0.08));
-    color: #f6c478;
+    color: var(--kaypal-v3-accent);
   }
   .kx-rail-item.kx-active::before {
-    background: linear-gradient(180deg, #f6c478, #e39a3e);
+    background: var(--kaypal-v3-accent);
   }
   .kx-rail-badge {
-    background: linear-gradient(135deg, #e39a3e, #f6c478);
+    background: var(--kaypal-v3-accent);
     color: #fff;
     border-color: rgba(60, 30, 100, 0.45);
   }
   .kx-rail-tool { color: rgba(240, 235, 250, 0.72); }
   .kx-rail-tool:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
-  .kx-rail-avatar { background: rgba(255, 255, 255, 0.1); color: #f6c478; }
+  .kx-rail-avatar { background: rgba(255, 255, 255, 0.1); color: var(--kaypal-v3-accent); }
 
   /* ---------- 6. 壳层：topbar / 搜索 / 通知条 玻璃 ---------- */
   .kx-topbar {
@@ -387,7 +387,7 @@
   }
   .kx-action-ico::after,
   .kx-agg-ico::after {
-    background: #e39a3e;
+    background: var(--kaypal-v3-accent);
   }
 
   /* ---------- 8. 高频组件：金色主按钮（品牌金渐变 + 深紫字） ---------- */

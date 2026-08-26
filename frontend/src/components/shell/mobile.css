@@ -146,7 +146,7 @@
     background: rgba(255, 255, 255, 0.5);
   }
   .mx-badge-gold { background: rgba(234, 161, 75, 0.16); color: #a9671f; border-color: rgba(222, 150, 57, 0.28); }
-  .mx-badge-blue { background: rgba(37, 99, 235, 0.1); color: #1d4ed8; border-color: rgba(37, 99, 235, 0.22); }
+  .mx-badge-blue { background: var(--kaypal-v3-accent-soft); color: var(--kaypal-v3-accent); border-color: var(--kaypal-v3-accent-border); }
   .mx-badge-green { background: rgba(16, 185, 129, 0.1); color: #047857; border-color: rgba(16, 185, 129, 0.24); }
   .mx-badge-red { background: rgba(239, 68, 68, 0.09); color: #dc2626; border-color: rgba(239, 68, 68, 0.22); }
   .mx-badge-white { background: rgba(255, 255, 255, 0.12); color: #f6c77e; border-color: rgba(255, 255, 255, 0.18); }
@@ -257,13 +257,13 @@
   }
   .mx-tab .mx-dot {
     position: absolute; bottom: 2px; width: 4px; height: 4px; border-radius: 999px;
-    background: #d98a2d; box-shadow: 0 0 6px rgba(217, 138, 45, 0.48);
+    background: var(--kaypal-v3-accent); box-shadow: 0 0 6px rgba(114, 46, 209, 0.3);
     opacity: 0; transition: opacity 0.2s ease;
   }
   .mx-tab.active .mx-dot { opacity: 1; }
   .mx-tab .mx-mini-badge {
     position: absolute; top: 0; right: 2px; min-width: 15px; height: 15px; padding: 0 3px;
-    border-radius: 999px; background: linear-gradient(135deg, #e39a3e, #f6c478); color: #fff;
+    border-radius: 999px; background: var(--kaypal-v3-accent); color: #fff;
     font-size: 8.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;
   }
 
@@ -291,11 +291,11 @@
   .mx-mt { margin-top: 16px; }
   .mx-mt-lg { margin-top: 24px; }
   .mx-progress { height: 6px; border-radius: 999px; background: rgba(120, 148, 179, 0.16); overflow: hidden; }
-  .mx-progress > i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #d98a2d, #f4bb67); }
+  .mx-progress > i { display: block; height: 100%; border-radius: 999px; background: var(--kaypal-v3-accent); }
 
   /* 空状态 */
   .mx-empty { text-align: center; padding: 30px 20px; }
-  .mx-empty p { font-size: 13px; color: #7f8b9c; }
+  .mx-empty p { font-size: 13px; color: var(--kaypal-v3-muted); }
 
   /* 骨架屏（首次加载占位，PRD MOB-SHELL-002） */
   .mx-skeleton {

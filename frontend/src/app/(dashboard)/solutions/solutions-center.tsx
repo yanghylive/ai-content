@@ -201,7 +201,7 @@ export function SolutionsCenter() {
                         </span>
                         <Link
                           href={`/solutions/run?id=${run.id}`}
-                          style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, fontSize: 11.5, fontWeight: 600, background: waiting ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: waiting ? "#fff" : "var(--mx-ink)", border: waiting ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                          style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, fontSize: 11.5, fontWeight: 600, background: waiting ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: waiting ? "#fff" : "var(--mx-ink)", border: waiting ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
                         >
                           {waiting ? "去确认" : "查看"}
                         </Link>

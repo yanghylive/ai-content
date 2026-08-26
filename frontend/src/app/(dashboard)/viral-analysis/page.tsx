@@ -289,7 +289,7 @@ export default function ViralAnalysisV2Page() {
                 border: "1px solid rgba(148,163,184,.25)",
                 fontSize: 13,
                 lineHeight: 1.7,
-                color: "#dbe7f5",
+                color: "var(--kaypal-v3-soft-ink)",
                 maxHeight: 200,
                 overflowY: "auto",
                 whiteSpace: "pre-wrap",

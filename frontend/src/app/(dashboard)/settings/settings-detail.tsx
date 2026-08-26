@@ -215,7 +215,7 @@ export function SettingsDetail() {
                   if (webPush.enabled) void webPush.disable();
                   else void webPush.enable();
                 }}
-                style={{ display: "flex", width: 44, height: 24, borderRadius: 999, padding: 2, alignItems: "center", justifyContent: webPush.enabled ? "flex-end" : "flex-start", background: webPush.enabled ? "linear-gradient(90deg,#e39a3e,#f6c478)" : "rgba(148,163,184,.35)", transition: "all .2s", border: "none", cursor: webPush.busy ? "wait" : "pointer", flexShrink: 0, opacity: webPush.busy ? 0.6 : 1 }}
+                style={{ display: "flex", width: 44, height: 24, borderRadius: 999, padding: 2, alignItems: "center", justifyContent: webPush.enabled ? "flex-end" : "flex-start", background: webPush.enabled ? "linear-gradient(90deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))" : "rgba(148,163,184,.35)", transition: "all .2s", border: "none", cursor: webPush.busy ? "wait" : "pointer", flexShrink: 0, opacity: webPush.busy ? 0.6 : 1 }}
               >
                 <span style={{ width: 20, height: 20, borderRadius: 999, background: "var(--kaypal-v3-paper)", boxShadow: "var(--kaypal-v3-card-shadow)" }} />
               </button>
@@ -223,7 +223,7 @@ export function SettingsDetail() {
             {notifItems.map((item) => (
               <button key={item.key} type="button" role="switch" aria-checked={notifications[item.key]} onClick={() => setNotifications((p) => ({ ...p, [item.key]: !p[item.key] }))} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid rgba(142,165,190,.14)" }}>
                 <span style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)" }}>{item.label}</span>
-                <span style={{ display: "flex", width: 44, height: 24, borderRadius: 999, padding: 2, alignItems: "center", justifyContent: notifications[item.key] ? "flex-end" : "flex-start", background: notifications[item.key] ? "linear-gradient(90deg,#e39a3e,#f6c478)" : "rgba(148,163,184,.35)", transition: "all .2s" }}>
+                <span style={{ display: "flex", width: 44, height: 24, borderRadius: 999, padding: 2, alignItems: "center", justifyContent: notifications[item.key] ? "flex-end" : "flex-start", background: notifications[item.key] ? "linear-gradient(90deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))" : "rgba(148,163,184,.35)", transition: "all .2s" }}>
                   <span style={{ width: 20, height: 20, borderRadius: 999, background: "var(--kaypal-v3-paper)", boxShadow: "var(--kaypal-v3-card-shadow)" }} />
                 </span>
               </button>

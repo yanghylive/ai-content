@@ -456,7 +456,7 @@ export function IntelligenceDispatchRecordsPage({
                 const isOpen = selectedId === record.id;
                 const actions = actionsForRecord(kind, record);
                 return (
-                  <div key={record.id} className="mx-card" style={{ padding: 14, border: isOpen ? "1.5px solid #2563eb" : undefined }}>
+                  <div key={record.id} className="mx-card" style={{ padding: 14, border: isOpen ? "1.5px solid var(--kaypal-v3-accent)" : undefined }}>
                     <button
                       type="button"
                       style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}

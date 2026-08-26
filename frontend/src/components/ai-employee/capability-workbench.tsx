@@ -169,7 +169,7 @@ export function CapabilityWorkbench() {
             <button
               type="button"
               onClick={() => setSelectedDomain("all")}
-              style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === "all" ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === "all" ? "#fff" : "var(--mx-ink)", border: selectedDomain === "all" ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+              style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === "all" ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === "all" ? "#fff" : "var(--mx-ink)", border: selectedDomain === "all" ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
             >
               全部
             </button>
@@ -178,7 +178,7 @@ export function CapabilityWorkbench() {
                 key={domain}
                 type="button"
                 onClick={() => setSelectedDomain(domain)}
-                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === domain ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === domain ? "#fff" : "var(--mx-ink)", border: selectedDomain === domain ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === domain ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === domain ? "#fff" : "var(--mx-ink)", border: selectedDomain === domain ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
               >
                 {domainLabels[domain] || domain}
               </button>

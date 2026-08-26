@@ -558,7 +558,7 @@ export function CustomerDetailClient({
                   fontSize: 12.5,
                   padding: "8px 16px",
                   borderRadius: 999,
-                  border: selectedTab === key ? "1.5px solid #2563eb" : "1px solid rgba(142,165,190,.3)",
+                  border: selectedTab === key ? "1.5px solid var(--kaypal-v3-accent)" : "1px solid var(--kaypal-v3-border)",
                   background: selectedTab === key ? "rgba(37,99,235,.12)" : "rgba(255,255,255,.06)",
                   color: selectedTab === key ? "var(--kaypal-v3-cobalt)" : "var(--mx-ink)",
                   fontWeight: selectedTab === key ? 700 : 400,

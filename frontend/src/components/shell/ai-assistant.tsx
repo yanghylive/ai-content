@@ -370,7 +370,7 @@ export function AiAssistant({
             width: 44,
             height: 44,
             borderRadius: 22,
-            background: "linear-gradient(135deg,#e39a3e,#f6c478)",
+            background: "linear-gradient(135deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))",
             color: "var(--kaypal-v3-accent-ink)",
             fontSize: 18,
             border: "1px solid rgba(230,168,84,.55)",
@@ -427,7 +427,7 @@ export function AiAssistant({
             }}
           >
             <div>
-              <div style={{ color: "#f6c478", fontSize: 15, fontWeight: 700 }}>
+              <div style={{ color: "var(--kaypal-v3-amber)", fontSize: 15, fontWeight: 700 }}>
                 AI 助手
               </div>
               <div style={{ color: "rgba(230,240,255,.85)", fontSize: 11 }}>
@@ -492,7 +492,7 @@ export function AiAssistant({
               <div style={{ marginTop: 18 }}>
                 <div
                   style={{
-                    color: "#f6c478",
+                    color: "var(--kaypal-v3-amber)",
                     fontSize: 16,
                     fontWeight: 700,
                     marginBottom: 6,
@@ -521,7 +521,7 @@ export function AiAssistant({
                       style={{
                         background: "rgba(246,196,120,.12)",
                         border: "1px solid rgba(246,196,120,.35)",
-                        color: "#f6c478",
+                        color: "var(--kaypal-v3-amber)",
                         borderRadius: 14,
                         padding: "7px 12px",
                         fontSize: 12,
@@ -561,7 +561,7 @@ export function AiAssistant({
                   style={{
                     alignSelf: "flex-end",
                     maxWidth: "82%",
-                    background: "linear-gradient(135deg,#e39a3e,#f6c478)",
+                    background: "linear-gradient(135deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))",
                     color: "var(--kaypal-v3-accent-ink)",
                     borderRadius: "16px 16px 4px 16px",
                     padding: "10px 14px",
@@ -658,7 +658,7 @@ export function AiAssistant({
                     width: 6,
                     height: 6,
                     borderRadius: 3,
-                    background: "#f6c478",
+                    background: "var(--kaypal-v3-amber)",
                     marginRight: 6,
                     animation: "kx-blink 1s ease infinite",
                   }}
@@ -781,7 +781,7 @@ export function AiAssistant({
                     border: "1px solid rgba(230,168,84,.55)",
                     background: listening
                       ? "linear-gradient(135deg,#d9534f,#e98a8a)"
-                      : "linear-gradient(135deg,#e39a3e,#f6c478)",
+                      : "linear-gradient(135deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))",
                     color: listening ? "#fff" : "var(--kaypal-v3-accent-ink)",
                     fontSize: 14,
                     fontWeight: 700,
@@ -844,7 +844,7 @@ export function AiAssistant({
                     height: 44,
                     borderRadius: 22,
                     border: "none",
-                    background: "linear-gradient(135deg,#e39a3e,#f6c478)",
+                    background: "linear-gradient(135deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))",
                     color: "var(--kaypal-v3-accent-ink)",
                     fontSize: 16,
                     cursor: "pointer",

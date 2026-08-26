@@ -195,7 +195,7 @@ export function WechatPlanList() {
                 key={key}
                 type="button"
                 onClick={() => setFilter(key)}
-                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: filter === key ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: filter === key ? "#fff" : "var(--mx-ink)", border: filter === key ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: filter === key ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: filter === key ? "#fff" : "var(--mx-ink)", border: filter === key ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
               >
                 {label}{counts[key] > 0 ? ` ${counts[key]}` : ""}
               </button>

@@ -1244,7 +1244,7 @@ function MobilePublishView({
                 padding: "9px 0",
                 fontSize: 13,
                 ...(activeTab === tab.key
-                  ? { background: "linear-gradient(135deg,#f4bb67,#d98a2d)", color: "var(--kaypal-v3-ink)", borderColor: "transparent", fontWeight: 600 }
+                  ? { background: "linear-gradient(135deg, var(--kaypal-v3-amber), var(--kaypal-v3-accent))", color: "var(--kaypal-v3-ink)", borderColor: "transparent", fontWeight: 600 }
                   : {}),
               }}
             >
