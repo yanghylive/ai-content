@@ -281,14 +281,14 @@ function MobileMessageView({
               消息待办
             </span>
             {confirmationsLoading ? (
-              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>正在汇总消息…</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.3 }}>正在汇总消息…</h2>
             ) : pending.length > 0 ? (
-              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.3 }}>
                 {pending.length} 条回复等你确认<br />
                 <span style={{ color: "var(--kaypal-v3-amber)" }}>AI 已写好草稿，你放行才发出</span>
               </h2>
             ) : (
-              <h2 style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.3 }}>
                 没有待确认的消息<br />
                 <span style={{ color: "var(--kaypal-v3-amber)" }}>{waitingCount > 0 ? `${waitingCount} 条回复建议已就绪` : "全部处理完毕"}</span>
               </h2>

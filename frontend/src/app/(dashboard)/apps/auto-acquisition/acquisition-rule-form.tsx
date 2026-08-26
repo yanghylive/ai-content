@@ -357,7 +357,7 @@ export function AcquisitionRuleForm() {
                 <ArrowLeft width={14} height={14} /> 返回获客任务
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
-                <div className="mx-page-title" style={{ fontSize: 18 }}>新建获客任务</div>
+                <div className="mx-page-title" style={{ fontSize: 16 }}>新建获客任务</div>
                 <div className="mx-page-sub" style={{ marginTop: 1 }}>告诉系统你的客户在哪，它自动帮你去找</div>
               </div>
               <span style={{ flexShrink: 0, width: 44 }} />
@@ -366,13 +366,13 @@ export function AcquisitionRuleForm() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
+              <p style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
           {memoryHint && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(246,196,120,.5)", background: "rgba(246,196,120,.08)" }}>
-              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-amber)" }}>🧠 {memoryHint}</p>
+              <p style={{ fontSize: 13, color: "var(--kaypal-v3-amber)" }}>{memoryHint}</p>
             </div>
           )}
 
@@ -407,7 +407,7 @@ export function AcquisitionRuleForm() {
           {accountsLoading ? (
             <p style={{ fontSize: 12, color: "var(--mx-muted)" }}>正在加载账号…</p>
           ) : visibleAccounts.length === 0 ? (
-            <p style={{ fontSize: 12, color: "#e05c5c" }}>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)" }}>
               当前平台暂无可用执行账号：请先到「平台账号」页完成账号授权登录，或切换平台
             </p>
           ) : (
@@ -471,7 +471,7 @@ export function AcquisitionRuleForm() {
           />
           <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5 }}>你的客户会关注的话题词，逗号分隔</p>
           {keywords.length > 0 && (
-            <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-success)", marginTop: 4 }}>✓ 将监控 {keywords.length} 个关键词：{keywords.join("、")}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", marginTop: 4 }}>✓ 将监控 {keywords.length} 个关键词：{keywords.join("、")}</p>
           )}
 
           {/* 第 3 步：话术 */}
@@ -503,7 +503,7 @@ export function AcquisitionRuleForm() {
             <label style={{ display: "block" }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>每天最多触达</span>
               <input type="number" min={1} max={100} value={form.dailyLimit} onChange={(e) => setForm((p) => ({ ...p, dailyLimit: Number(e.target.value) }))} style={{ ...fieldStyle, marginTop: 6 }} />
-              <span style={{ fontSize: 10.5, color: "var(--mx-muted)" }}>建议 10-30，太多容易被平台限制</span>
+              <span style={{ fontSize: 10, color: "var(--mx-muted)" }}>建议 10-30，太多容易被平台限制</span>
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>排除关键词</span>
@@ -537,7 +537,7 @@ export function AcquisitionRuleForm() {
                 ].map((opt) => (
                   <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                     <input type="radio" name="riskMode" checked={form.riskMode === opt.value} onChange={() => setForm((p) => ({ ...p, riskMode: opt.value }))} style={{ width: 15, height: 15 }} />
-                    <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>{opt.label}</span>
+                    <span style={{ fontSize: 13, color: "var(--mx-ink)" }}>{opt.label}</span>
                   </label>
                 ))}
               </div>
@@ -546,7 +546,7 @@ export function AcquisitionRuleForm() {
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/growth/acquisition")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/growth/acquisition")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
               返回
             </button>
             <button
@@ -565,17 +565,17 @@ export function AcquisitionRuleForm() {
           {createdConfigId && (
             <div className="mx-card" style={{ marginTop: 12, padding: 12 }}>
               {preflightLoading ? (
-                <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>正在预检任务…</p>
+                <p style={{ fontSize: 13, color: "var(--mx-muted)" }}>正在预检任务…</p>
               ) : preflight ? (
                 <>
-                  <p style={{ fontSize: 12.5, fontWeight: 700, color: preflight.allowed ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)" }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: preflight.allowed ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)" }}>
                     {preflight.allowed ? "✓ 预检通过" : "✗ 预检未通过"}
                   </p>
                   <p style={{ fontSize: 12, color: "var(--mx-ink)", marginTop: 4, lineHeight: 1.6 }}>{preflight.summary}</p>
                   {preflight.blockers.length > 0 && (
                     <ul style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
                       {preflight.blockers.map((b) => (
-                        <li key={b} style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger)" }}>· {b}</li>
+                        <li key={b} style={{ fontSize: 12, color: "var(--kaypal-v3-danger)" }}>· {b}</li>
                       ))}
                     </ul>
                   )}
@@ -631,7 +631,7 @@ export function AcquisitionRuleForm() {
       {memoryHint && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-warning)] bg-[var(--kaypal-v3-warning-soft)] p-4">
           <p className="text-sm font-medium text-[var(--kaypal-v3-warning)]">
-            🧠 {memoryHint}
+            {memoryHint}
           </p>
         </div>
       )}

@@ -123,7 +123,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
                 <ArrowLeft width={14} height={14} /> 返回应用市场
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
-                <div className="mx-page-title" style={{ fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <div className="mx-page-title" style={{ fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                   {app.name}
                   {app.installed && <span className="mx-badge mx-badge-green" style={{ fontSize: 10 }}>已安装</span>}
                 </div>
@@ -135,18 +135,18 @@ export function AppDetail({ appKey }: { appKey: string }) {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
+              <p style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
           {done && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(5,150,105,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-success)" }}>{done}</p>
+              <p style={{ fontSize: 13, color: "var(--kaypal-v3-success)" }}>{done}</p>
             </div>
           )}
 
           <div className="mx-section-head" style={{ marginTop: 14 }}>应用介绍</div>
           <div className="mx-card" style={{ padding: 13 }}>
-            <p style={{ fontSize: 12.5, color: "var(--mx-ink)", lineHeight: 1.65 }}>{app.description}</p>
+            <p style={{ fontSize: 13, color: "var(--mx-ink)", lineHeight: 1.65 }}>{app.description}</p>
           </div>
 
           {app.commercialWarnings.length > 0 && (
@@ -163,7 +163,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
           )}
 
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/apps")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/apps")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
               返回市场
             </button>
             {primaryAction !== "none" && primaryAction !== "contact_sales" && (

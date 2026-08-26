@@ -1538,7 +1538,7 @@ export function ContentEditor({
       )}
       {!loading ? (
         <footer
-          className={`${mobilePanelOpen ? "hidden lg:flex" : "flex"} fixed inset-x-0 bottom-0 z-20 min-h-16 items-center justify-between gap-2 border-t border-divider bg-content1 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_14px_rgba(0,0,0,0.08)] max-sm:pl-14 md:left-[var(--workspace-footer-left)] md:right-auto md:w-[var(--workspace-footer-width)] md:min-h-0 md:px-4 md:py-3 lg:static lg:left-auto lg:w-auto lg:shadow-none`}
+          className={`${mobilePanelOpen ? "hidden lg:flex" : "flex"} fixed inset-x-0 bottom-0 z-20 min-h-16 items-center justify-between gap-2 border-t border-divider bg-content1 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[var(--kaypal-v3-card-shadow)] max-sm:pl-14 md:left-[var(--workspace-footer-left)] md:right-auto md:w-[var(--workspace-footer-width)] md:min-h-0 md:px-4 md:py-3 lg:static lg:left-auto lg:w-auto lg:shadow-none`}
         >
           <Button
             className="hidden lg:inline-flex"

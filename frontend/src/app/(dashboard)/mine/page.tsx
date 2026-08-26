@@ -284,7 +284,6 @@ function MobileMineView({
               <button
                 type="button"
                 className="mx-btn-gold"
-                style={{ fontSize: 11, padding: "7px 12px", background: "rgba(239,68,68,.1)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(239,68,68,.25)", boxShadow: "none", backgroundImage: "none" }}
                 disabled={loggingOut}
                 onClick={onLogout}
               >
@@ -405,7 +404,7 @@ function MobileMineView({
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--kaypal-v3-amber)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="20" height="20"><path d="M12 3v12" /><path d="m8 11 4 4 4-4" /><path d="M8 21h8" /></svg>
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>安装到桌面</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "var(--kaypal-v3-paper)" }}>安装到桌面</p>
                 <p style={{ fontSize: 11, color: "rgba(219,234,254,.72)", marginTop: 2 }}>像 App 一样使用 JIUZHANG AI</p>
               </div>
               <button

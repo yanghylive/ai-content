@@ -377,8 +377,8 @@ export function BossRecruitCenter() {
           {/* 上传登录态 */}
           <div className="mx-card" style={{ padding: 14 }}>
             <div className="mx-row-title" style={{ marginBottom: 8, fontSize: 13.5, fontWeight: 700 }}>绑定 Boss 直聘账号</div>
-            <details className="mx-guide-details" style={{ marginBottom: 10, fontSize: 12, color: "var(--mx-muted, #8ea5be)", lineHeight: 1.7 }}>
-              <summary style={{ cursor: "pointer", fontWeight: 600, color: "#c87922" }}>如何导出登录态？点开看 5 步</summary>
+            <details className="mx-guide-details" style={{ marginBottom: 10, fontSize: 12, color: "var(--kaypal-v3-muted)", lineHeight: 1.7 }}>
+              <summary style={{ cursor: "pointer", fontWeight: 600, color: "var(--kaypal-v3-amber)" }}>如何导出登录态？点开看 5 步</summary>
               <ol style={{ paddingLeft: 18, marginTop: 6 }}>
                 {STORAGE_GUIDE_STEPS.map((step, i) => (
                   <li key={i}>{step}</li>

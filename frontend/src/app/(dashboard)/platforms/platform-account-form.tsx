@@ -158,7 +158,7 @@ export function PlatformAccountForm() {
       border: "1px solid rgba(142,165,190,.3)",
       background: "rgba(255,255,255,.06)",
       color: "var(--mx-ink)",
-      fontSize: 12.5,
+      fontSize: 13,
     };
     const switchBtn = (checked: boolean, onToggle: () => void) => (
       <button
@@ -186,7 +186,7 @@ export function PlatformAccountForm() {
                 <ArrowLeft width={14} height={14} /> 返回平台列表
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
-                <div className="mx-page-title" style={{ fontSize: 18 }}>{isEdit ? "编辑发布配置" : "添加发布配置"}</div>
+                <div className="mx-page-title" style={{ fontSize: 16 }}>{isEdit ? "编辑发布配置" : "添加发布配置"}</div>
                 <div className="mx-page-sub" style={{ marginTop: 1 }}>{isEdit ? "修改授权信息、发文参数和安全凭证" : "两步搞定：选平台 → 填账号名"}</div>
               </div>
               <span style={{ flexShrink: 0, width: 44 }} />
@@ -195,7 +195,7 @@ export function PlatformAccountForm() {
 
           {error && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
+              <p style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
 
@@ -247,7 +247,7 @@ export function PlatformAccountForm() {
           {/* 第 3 步：发布细节（可选） */}
           <div className="mx-section-head" style={{ marginTop: 16 }}>第 3 步：发布细节（可选）</div>
           <div className="mx-card" style={{ padding: 13 }}>
-            <p style={{ fontSize: 10.5, color: "var(--mx-muted)", marginBottom: 9 }}>已按推荐预填，一般不用改</p>
+            <p style={{ fontSize: 10, color: "var(--mx-muted)", marginBottom: 9 }}>已按推荐预填，一般不用改</p>
             <label style={{ display: "block" }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>默认封面 media_id</span>
               <input placeholder="可选" value={form.config.defaultThumbMediaId} onChange={(e) => setConfig("defaultThumbMediaId", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
@@ -261,24 +261,24 @@ export function PlatformAccountForm() {
               <input placeholder="https://jpage.cn" value={form.config.baseUrl} onChange={(e) => setConfig("baseUrl", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
-              <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>开启留言</span>
+              <span style={{ fontSize: 13, color: "var(--mx-ink)" }}>开启留言</span>
               {switchBtn(form.config.openComment === 1, () => setConfig("openComment", form.config.openComment === 1 ? 0 : 1))}
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
-              <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>仅限粉丝留言</span>
+              <span style={{ fontSize: 13, color: "var(--mx-ink)" }}>仅限粉丝留言</span>
               {switchBtn(form.config.onlyFansCanComment === 1, () => setConfig("onlyFansCanComment", form.config.onlyFansCanComment === 1 ? 0 : 1))}
             </div>
           </div>
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/distribution/accounts")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/distribution/accounts")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
               返回
             </button>
             {isEdit ? (
               <button
                 type="button"
-                style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 5, padding: "10px 14px", borderRadius: 10, color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.4)", background: "rgba(220,80,80,.08)", fontSize: 12.5, fontWeight: 600 }}
+                style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 5, padding: "10px 14px", borderRadius: 10, color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.4)", background: "rgba(220,80,80,.08)", fontSize: 13, fontWeight: 600 }}
                 disabled={deleting}
                 onClick={() => void handleDelete()}
               >

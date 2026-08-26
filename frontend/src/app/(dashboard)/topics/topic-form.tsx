@@ -53,8 +53,8 @@ export function TopicForm() {
   /* 移动端（<768px）：明德 VP 风格，复用同一批 state/handlers */
   const isMobile = useIsMobile();
   if (isMobile) {
-    const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" };
-    const fieldLabel = { fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 };
+    const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-border)", outline: "none", background: "var(--kaypal-v3-paper)", color: "var(--kaypal-v3-ink)" };
+    const fieldLabel = { fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 };
     return (
       <div className="kx-mobile-ambient">
         <header className="mx-header">
@@ -63,7 +63,7 @@ export function TopicForm() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h1 className="mx-page-title" style={{ fontSize: 22 }}>新增选题</h1>
+              <h1 className="mx-page-title" style={{ fontSize: 20 }}>新增选题</h1>
               <p className="mx-page-sub">想到一个好选题？一句话记下来就行</p>
             </div>
           </div>
@@ -71,7 +71,7 @@ export function TopicForm() {
 
         <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
           {error && (
-            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</div>
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-danger-soft)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</div>
           )}
 
           <div className="mx-card" style={{ padding: 16 }}>
@@ -83,19 +83,19 @@ export function TopicForm() {
             <div style={{ marginBottom: 14 }}>
               <p style={fieldLabel}>选题标题 <span style={{ fontWeight: 400, color: "var(--kaypal-v3-danger)" }}>*</span></p>
               <input placeholder="例如：为什么 90% 的人选空气净化器都买错了" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} style={inputStyle} />
-              <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>一句话说清楚要写什么</p>
+              <p style={{ fontSize: 10, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>一句话说清楚要写什么</p>
             </div>
 
             <div style={{ marginBottom: 14 }}>
               <p style={fieldLabel}>补充说明 <span style={{ fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>（可选）</span></p>
               <textarea placeholder="例如：从滤芯成本角度切入，对比 3 款热门机型" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={4} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
-              <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>可选：这个选题的角度、素材线索</p>
+              <p style={{ fontSize: 10, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>可选：这个选题的角度、素材线索</p>
             </div>
 
             <div style={{ marginBottom: 6 }}>
               <p style={fieldLabel}>关键词 <span style={{ fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>（可选）</span></p>
               <input placeholder="例如：空气净化器, 滤芯, 避坑" value={form.keywords} onChange={(e) => setForm((p) => ({ ...p, keywords: e.target.value }))} style={inputStyle} />
-              <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>逗号分隔，帮助 AI 生成时聚焦</p>
+              <p style={{ fontSize: 10, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>逗号分隔，帮助 AI 生成时聚焦</p>
             </div>
           </div>
 

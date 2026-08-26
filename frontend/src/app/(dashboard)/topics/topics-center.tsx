@@ -219,15 +219,15 @@ export function TopicsCenter() {
 
         <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
           {notice ? (
-            <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(16,185,129,.1)", fontSize: 12, color: "var(--kaypal-v3-success)" }}>{notice}</div>
+            <div style={{ marginBottom: 10, padding: 10, borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-success-soft)", fontSize: 12, color: "var(--kaypal-v3-success)" }}>{notice}</div>
           ) : null}
           {actionError ? (
-            <div style={{ marginBottom: 10, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{actionError}</div>
+            <div style={{ marginBottom: 10, padding: 10, borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-danger-soft)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{actionError}</div>
           ) : null}
 
           {/* 挖掘工具栏 */}
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "10px 0", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} disabled={mining} onClick={() => void handleMine()}>
+            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "10px 0", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }} disabled={mining} onClick={() => void handleMine()}>
               <Wand2 size={14} /> {mining ? "挖掘中…" : "一键挖掘"}
             </button>
             <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "10px 0", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }} onClick={() => setShowDiscover((v) => !v)}>
@@ -243,7 +243,7 @@ export function TopicsCenter() {
                   value={seedInput}
                   onChange={(e) => setSeedInput(e.target.value)}
                   placeholder="输入关键词、事件或一段描述"
-                  style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+                  style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--mx-ink)", fontSize: 13 }}
                 />
                 <button type="button" className="mx-btn-gold" style={{ flexShrink: 0, padding: "0 14px", display: "inline-flex", alignItems: "center", gap: 5 }} disabled={discovering} onClick={() => void handleDiscover()}>
                   {discovering ? "发现中…" : "开始"}
@@ -254,10 +254,10 @@ export function TopicsCenter() {
                   <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>
                     归一主题：{discovery.analysis.normalizedSeed}
                   </p>
-                  <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>
+                  <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 3 }}>
                     目标读者：{discovery.analysis.audience} · {discovery.analysis.intent}
                   </p>
-                  <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>
+                  <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 3 }}>
                     扫描 {discovery.retrieval.scannedSources} 渠道，抓取 {discovery.retrieval.fetchedCount} 条，命中 {discovery.retrieval.matchedCount} 条，新增入库 {discovery.retrieval.savedCount} 条。
                   </p>
                 </div>
@@ -286,7 +286,7 @@ export function TopicsCenter() {
                   style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
                   onClick={() => void openDetail(t.id)}
                 >
-                  <span className="mx-row-ic" style={{ background: "rgba(234,161,75,.12)", color: "#c87922" }}>
+                  <span className="mx-row-ic" style={{ background: "var(--kaypal-v3-amber-soft)", color: "var(--kaypal-v3-amber)" }}>
                     <Lightbulb size={18} />
                   </span>
                   <div className="mx-row-main">
@@ -322,8 +322,8 @@ export function TopicsCenter() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
                 </button>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="mx-page-sub" style={{ marginTop: 0, fontSize: 11, color: "#a9671f", fontWeight: 700, letterSpacing: ".12em" }}>选题详情</div>
-                  <h1 className="mx-page-title" style={{ fontSize: 19 }}>{viewing.title}</h1>
+                  <div className="mx-page-sub" style={{ marginTop: 0, fontSize: 12, color: "var(--kaypal-v3-amber)", fontWeight: 700, letterSpacing: ".12em" }}>选题详情</div>
+                  <h1 className="mx-page-title" style={{ fontSize: 20 }}>{viewing.title}</h1>
                 </div>
                 <button type="button" className="mx-control" aria-label="关闭" style={{ width: 38, height: 38, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--kaypal-v3-ink)", flexShrink: 0 }} onClick={() => setViewing(null)}>
                   <XCircle size={18} />
@@ -339,19 +339,19 @@ export function TopicsCenter() {
               </div>
 
               {actionError && (
-                <p style={{ marginTop: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{actionError}</p>
+                <p style={{ marginTop: 12, padding: 10, borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-danger-soft)", fontSize: 13, color: "var(--kaypal-v3-danger)" }}>{actionError}</p>
               )}
 
               {viewing.summary || viewing.description ? (
                 <div className="mx-card" style={{ marginTop: 14, padding: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 5 }}>摘要</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 5 }}>摘要</p>
                   <p style={{ fontSize: 13, lineHeight: 1.7, color: "var(--kaypal-v3-soft-ink)" }}>{viewing.summary || viewing.description}</p>
                 </div>
               ) : null}
 
               {viewing.keywords?.length ? (
                 <div style={{ marginTop: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 8 }}>关键词</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 8 }}>关键词</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {viewing.keywords.map((kw) => (
                       <span key={kw} className="mx-badge mx-badge-gold">{kw}</span>
@@ -362,14 +362,14 @@ export function TopicsCenter() {
 
               {viewing.scoreDetails ? (
                 <div className="mx-card" style={{ marginTop: 14, padding: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 10 }}>五维评分</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 10 }}>五维评分</p>
                   {SCORE_LABELS.map(({ key, label }) => {
                     const value = viewing.scoreDetails?.[key] ?? 0;
                     return (
                       <div key={key} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                        <span style={{ width: 56, fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{label}</span>
+                        <span style={{ width: 56, fontSize: 12, color: "var(--kaypal-v3-muted)" }}>{label}</span>
                         <div className="mx-progress" style={{ flex: 1 }}><i style={{ width: `${Math.min(100, (value / 20) * 100)}%` }} /></div>
-                        <span style={{ width: 40, textAlign: "right", fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-soft-ink)" }}>{Math.round(value)}<span style={{ fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>/20</span></span>
+                        <span style={{ width: 40, textAlign: "right", fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-soft-ink)" }}>{Math.round(value)}<span style={{ fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>/20</span></span>
                       </div>
                     );
                   })}
@@ -378,29 +378,29 @@ export function TopicsCenter() {
 
               {viewing.scoreReason ? (
                 <div className="mx-card" style={{ marginTop: 14, padding: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 5 }}>评分理由</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 5 }}>评分理由</p>
                   <p style={{ fontSize: 13, lineHeight: 1.7, color: "var(--kaypal-v3-soft-ink)" }}>{viewing.scoreReason}</p>
                 </div>
               ) : null}
 
               {viewing.materials?.length ? (
                 <div className="mx-card" style={{ marginTop: 14, padding: 14 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 5 }}>关联素材（{viewing.materials.length}）</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 5 }}>关联素材（{viewing.materials.length}）</p>
                   {viewing.materials.slice(0, 5).map((m) => (
-                    <p key={m.id} style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)", marginTop: 4 }}>· {m.title} <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>（{m.platform}）</span></p>
+                    <p key={m.id} style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)", marginTop: 4 }}>· {m.title} <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>（{m.platform}）</span></p>
                   ))}
                 </div>
               ) : null}
             </div>
 
             <div style={{ display: "flex", gap: 10, padding: "0 16px", flexWrap: "wrap" }}>
-              <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} disabled={acting} onClick={handleRescore}>
+              <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0" }} disabled={acting} onClick={handleRescore}>
                 <RefreshCcw size={14} style={{ marginRight: 4 }} /> 重新评分
               </button>
               <button type="button" className="mx-btn-gold" style={{ flex: 1.4, fontSize: 12, padding: "11px 0" }} disabled={acting} onClick={handlePublishToggle}>
                 <Send size={14} style={{ marginRight: 4 }} /> {viewing.isPublished ? "取消发布" : "发布这个选题"}
               </button>
-              <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4 }} disabled={acting} onClick={() => void handleCreateContent(viewing.id, "article")}>
+              <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4 }} disabled={acting} onClick={() => void handleCreateContent(viewing.id, "article")}>
                 <FileText size={14} /> 创作文章
               </button>
               <button type="button" style={{ flex: "0 0 auto", fontSize: 12, padding: "11px 14px", color: "var(--kaypal-v3-danger)", background: "none", border: "none" }} disabled={acting} onClick={() => void handleDelete(viewing.id)}>

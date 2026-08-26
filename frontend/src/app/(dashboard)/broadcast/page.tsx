@@ -74,7 +74,7 @@ export default function BroadcastPage() {
       setStoreName("");
       setSceneUrl("");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "创建失败");
+      setError("创建失败，请稍后重试");
     } finally {
       setBusy(false);
     }
@@ -87,7 +87,7 @@ export default function BroadcastPage() {
       const job = await api.post<Job>(`/broadcast/jobs/${id}/${verb}`, {});
       setJobs((items) => items.map((item) => (item.id === id ? job : item)));
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "操作失败");
+      setError("操作失败，请稍后重试");
     } finally {
       setBusy(false);
     }
@@ -103,7 +103,7 @@ export default function BroadcastPage() {
       setJobs((items) => items.map((item) => (item.id === selected ? job : item)));
       setSegmentText("");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "添加语音片段失败");
+      setError("添加语音片段失败，请稍后重试");
     } finally {
       setBusy(false);
     }

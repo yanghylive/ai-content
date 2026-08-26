@@ -346,20 +346,20 @@ function MobileDeviceCenter(props: CommonProps) {
         ].map((s) => (
           <div key={s.label} className="mx-card" style={{ flex: 1, padding: "12px 8px", textAlign: "center" }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: s.color }}>{s.value}</div>
-            <div style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>{s.label}</div>
+            <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
       </div>
 
       <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)" }}>设备</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)" }}>设备</span>
           <Link href="/mai-ui" style={{ fontSize: 12, color: "var(--kaypal-v3-purple)", textDecoration: "none" }}>
             去 MAI-UI 工作台 →
           </Link>
         </div>
         {devices.length === 0 ? (
-          <div style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)", padding: "16px 0", textAlign: "center" }}>
+          <div style={{ fontSize: 13, color: "var(--kaypal-v3-muted)", padding: "16px 0", textAlign: "center" }}>
             暂无注册设备 —— 手机端安装 App 后自动注册
           </div>
         ) : (
@@ -372,17 +372,17 @@ function MobileDeviceCenter(props: CommonProps) {
                   alignItems: "center",
                   justifyContent: "space-between",
                   padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1px solid #e2e8f0",
+                  borderRadius: "var(--kaypal-v3-radius-sm)",
+                  border: "1px solid var(--kaypal-v3-border)",
                   background: "var(--kaypal-v3-paper-muted)",
                 }}
               >
                 <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--mx-ink)" }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "var(--mx-ink)" }}>
                     {d.deviceName}
-                    <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginLeft: 6 }}>{d.platform}</span>
+                    <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginLeft: 6 }}>{d.platform}</span>
                   </div>
-                  <div style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>
+                  <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>
                     心跳 {heartbeatAge(d.lastHeartbeatAt, now)} · {d.id.slice(-6)}
                   </div>
                 </div>
@@ -406,19 +406,19 @@ function MobileDeviceCenter(props: CommonProps) {
       </div>
 
       <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>
-          账号租约 <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>（同账号同时仅一个外发租约）</span>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>
+          账号租约 <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>（同账号同时仅一个外发租约）</span>
         </div>
         {leases.length === 0 ? (
-          <div style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)", padding: "12px 0", textAlign: "center" }}>
+          <div style={{ fontSize: 13, color: "var(--kaypal-v3-muted)", padding: "12px 0", textAlign: "center" }}>
             当前无活跃租约 —— 账号互斥保障生效中
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {leases.map((l) => (
-              <div key={l.id} style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #fed7aa", background: "#fffbeb" }}>
+              <div key={l.id} style={{ padding: "10px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-amber-soft)", background: "var(--kaypal-v3-amber-soft)" }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-amber)" }}>账号 {l.accountId}</div>
-                <div style={{ fontSize: 11.5, color: "var(--kaypal-v3-amber)", marginTop: 3 }}>
+                <div style={{ fontSize: 12, color: "var(--kaypal-v3-amber)", marginTop: 3 }}>
                   设备 {l.deviceId.slice(-6)} · 任务 {l.taskId.slice(-6)} · 过期于 {new Date(l.expiresAt).toLocaleTimeString()}
                 </div>
               </div>
@@ -428,9 +428,9 @@ function MobileDeviceCenter(props: CommonProps) {
       </div>
 
       <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>最近任务</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>最近任务</div>
         {tasks.length === 0 ? (
-          <div style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)", padding: "12px 0", textAlign: "center" }}>
+          <div style={{ fontSize: 13, color: "var(--kaypal-v3-muted)", padding: "12px 0", textAlign: "center" }}>
             暂无任务记录
           </div>
         ) : (
@@ -440,29 +440,29 @@ function MobileDeviceCenter(props: CommonProps) {
               const needsAttention = t.status === "failed" || t.status === "unknown" || t.status === "awaiting_approval";
               const expanded = expandedTaskId === t.id;
               return (
-                <div key={t.id} style={{ padding: "8px 10px", borderRadius: 8, background: needsAttention ? "#fef2f2" : "var(--kaypal-v3-paper-muted)", border: `1px solid ${needsAttention ? "#fecaca" : "#e2e8f0"}` }}>
+                <div key={t.id} style={{ padding: "8px 10px", borderRadius: "var(--kaypal-v3-radius-xs)", background: needsAttention ? "var(--kaypal-v3-danger-soft)" : "var(--kaypal-v3-paper-muted)", border: `1px solid ${needsAttention ? "var(--kaypal-v3-danger-soft)" : "var(--kaypal-v3-border)"}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>
                         {t.type === "custom" ? "MAI-UI 任务" : "发布任务"} · {t.id.slice(-6)}
                       </div>
-                      <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>
+                      <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>
                         {new Date(t.createdAt).toLocaleString()}
                       </div>
                       {needsAttention && err && (
-                        <div style={{ fontSize: 11, color: "var(--kaypal-v3-danger)", marginTop: 2, wordBreak: "break-all" }}>
+                        <div style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", marginTop: 2, wordBreak: "break-all" }}>
                           {t.status === "unknown" ? "⚠️ 结果不确定：" : "失败原因："}{err}
                         </div>
                       )}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: taskStatusColor(t.status), background: taskStatusBg(t.status), padding: "3px 8px", borderRadius: 6 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: taskStatusColor(t.status), background: taskStatusBg(t.status), padding: "3px 8px", borderRadius: "var(--kaypal-v3-radius-xs)" }}>
                         {t.status}
                       </span>
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                         <button
                           onClick={() => onExpandTask(t.id)}
-                          style={{ fontSize: 11.5, color: "var(--kaypal-v3-purple)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                          style={{ fontSize: 12, color: "var(--kaypal-v3-purple)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                         >
                           {expanded ? "收起进度" : "执行进度"}
                         </button>
@@ -470,13 +470,13 @@ function MobileDeviceCenter(props: CommonProps) {
                           <button
                             onClick={() => onCancelTask(t.id)}
                             disabled={cancelingTaskId === t.id}
-                            style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger)", background: "none", border: "none", cursor: cancelingTaskId === t.id ? "default" : "pointer", padding: 0, opacity: cancelingTaskId === t.id ? 0.5 : 1 }}
+                            style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", background: "none", border: "none", cursor: cancelingTaskId === t.id ? "default" : "pointer", padding: 0, opacity: cancelingTaskId === t.id ? 0.5 : 1 }}
                           >
                             {cancelingTaskId === t.id ? "取消中…" : "取消"}
                           </button>
                         )}
                         {needsAttention && (
-                          <Link href="/mai-ui" style={{ fontSize: 11.5, color: "var(--kaypal-v3-cobalt)", textDecoration: "none", whiteSpace: "nowrap" }}>
+                          <Link href="/mai-ui" style={{ fontSize: 12, color: "var(--kaypal-v3-cobalt)", textDecoration: "none", whiteSpace: "nowrap" }}>
                             去 MAI-UI 重试 →
                           </Link>
                         )}
@@ -485,16 +485,16 @@ function MobileDeviceCenter(props: CommonProps) {
                   </div>
 
                   {expanded && (
-                    <div style={{ marginTop: 8, borderTop: "1px solid #e2e8f0", paddingTop: 8 }}>
+                    <div style={{ marginTop: 8, borderTop: "1px solid var(--kaypal-v3-border)", paddingTop: 8 }}>
                       {taskRun && taskRun.taskId === t.id ? (
                         <RunSteps run={taskRun} />
                       ) : taskRunError ? (
-                        <div style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger)", padding: "6px 0", textAlign: "center" }}>
+                        <div style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", padding: "6px 0", textAlign: "center" }}>
                           ⚠️ {taskRunError}
                         </div>
 
                       ) : (
-                        <div style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", padding: "6px 0", textAlign: "center" }}>
+                        <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", padding: "6px 0", textAlign: "center" }}>
                           {taskRun === null ? "该任务无执行会话记录" : "加载中…"}
                         </div>
                       )}

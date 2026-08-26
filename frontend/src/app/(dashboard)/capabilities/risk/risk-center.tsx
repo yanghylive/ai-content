@@ -188,7 +188,7 @@ export function RiskCenter() {
                             type="checkbox"
                             checked={getVal(policy, field)}
                             onChange={(e) => togglePolicy(policy.action, field, e.target.checked)}
-                            style={{ width: 15, height: 15, accentColor: "var(--mx-accent, #de9639)" }}
+                            style={{ width: 15, height: 15, accentColor: "var(--kaypal-v3-amber)" }}
                           />
                           {label}
                         </label>

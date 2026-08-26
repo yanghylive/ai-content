@@ -214,7 +214,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
             <button type="button" className="mx-btn-gold" style={{ flex: 1.4, fontSize: 12, padding: "11px 0" }} disabled={preparing} onClick={handleTestSend}>
               {preparing ? "正在准备…" : "抖音测试发送"}
             </button>
-            <button type="button" className="mx-btn-gold" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "rgba(255,255,255,.55)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid rgba(148,163,184,.4)", boxShadow: "none", backgroundImage: "none" }} onClick={() => router.push("/crm")}>返回列表</button>
+            <button type="button" style={{ flex: 1, fontSize: 12, padding: "11px 0", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid var(--kaypal-v3-border)" }} onClick={() => router.push("/crm")}>返回列表</button>
           </div>
         </section>
       </div>

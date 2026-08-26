@@ -1057,8 +1057,7 @@ function PublishCalendarView() {
           </div>
           <button
             type="button"
-            className="mx-btn-gold"
-            style={{ fontSize: 12, padding: "7px 12px", backgroundImage: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid var(--kaypal-v3-border)", boxShadow: "none" }}
+            style={{ fontSize: 12, padding: "7px 12px", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid var(--kaypal-v3-border)" }}
             onClick={() => void load()}
           >
             刷新
@@ -1304,8 +1303,7 @@ function MobilePublishView({
                 {stats.failed > 0 ? (
                   <button
                     type="button"
-                    className="mx-btn-gold"
-                    style={{ background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid var(--kaypal-v3-border)", boxShadow: "none", backgroundImage: "none" }}
+                    style={{ background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-soft-ink)", border: "1px solid var(--kaypal-v3-border)" }}
                     onClick={() => setFilter("failed")}
                   >
                     查看失败

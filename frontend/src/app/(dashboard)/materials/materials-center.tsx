@@ -288,7 +288,8 @@ export function MaterialsCenter() {
       setLinkInput("");
       await refreshMaterials();
     } catch (e) {
-      setCollectMsg(`❌ ${e instanceof Error ? e.message : "采集失败"}`);
+      console.error(e instanceof Error ? e.message : "采集失败");
+      setCollectMsg("采集失败，请稍后重试");
     } finally {
       setLinkBusy(false);
     }
@@ -329,7 +330,8 @@ export function MaterialsCenter() {
       setGenPrompt("");
       await refreshMaterials();
     } catch (e) {
-      setCollectMsg(`❌ ${e instanceof Error ? e.message : "生图失败"}`);
+      console.error(e instanceof Error ? e.message : "生图失败");
+      setCollectMsg("生图失败，请稍后重试");
     } finally {
       setGenBusy(false);
     }
@@ -375,7 +377,8 @@ export function MaterialsCenter() {
       await refreshMaterials();
     } catch (e) {
       setVideoStatus("");
-      setCollectMsg(`❌ ${e instanceof Error ? e.message : "生视频失败"}`);
+      console.error(e instanceof Error ? e.message : "生视频失败");
+      setCollectMsg("生视频失败，请稍后重试");
     } finally {
       setVideoBusy(false);
     }
@@ -536,7 +539,7 @@ export function MaterialsCenter() {
               padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
             }}
           >
-            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
               🔗 粘贴链接去水印
             </div>
             <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12, marginBottom: 12 }}>
@@ -634,34 +637,34 @@ export function MaterialsCenter() {
               type="button"
               onClick={() => uploadInputRef.current?.click()}
               disabled={uploading}
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-cobalt)", border: "1px solid var(--kaypal-v3-cobalt)", cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
             >
               📤 上传
             </button>
             <Link
               href="/video-download"
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-accent-soft)", border: "1px solid var(--kaypal-v3-border)", cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-accent-soft)", border: "1px solid var(--kaypal-v3-border)", cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none" }}
             >
               🔗 去水印
             </Link>
             <button
               type="button"
               onClick={() => setGenSheetOpen(true)}
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               ✨ AI 生图
             </button>
             <button
               type="button"
               onClick={() => setVideoSheetOpen(true)}
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               🎬 AI 生视频
             </button>
             <button
               type="button"
               onClick={() => setTtsSheetOpen(true)}
-              style={{ fontSize: 12, padding: "8px 12px", borderRadius: 10, background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-cobalt)", border: "1px solid var(--kaypal-v3-cobalt)", cursor: "pointer", whiteSpace: "nowrap" }}
+              style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               🎙 AI 配音
             </button>
@@ -759,7 +762,7 @@ export function MaterialsCenter() {
         {/* 详情弹窗：复用桌面 fixed inset-0 弹窗（天然全屏） */}
         {viewing && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] shadow-xl">
+            <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] shadow-sm">
               <div className="flex items-start justify-between border-b border-[var(--kaypal-v3-border)] p-5">
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-[var(--kaypal-v3-ink)]">{viewing.title}</h3>
@@ -804,7 +807,7 @@ export function MaterialsCenter() {
             onClick={(e) => e.stopPropagation()}
             style={{ width: "100%", background: "#0d1b2f", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: "18px 18px calc(20px + env(safe-area-inset-bottom))" }}
           >
-            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🎬 AI 生视频</div>
+            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 16, marginBottom: 4 }}>🎬 AI 生视频</div>
             <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12, marginBottom: 12 }}>
               描述画面生成短视频（happyhorse-1.1），生成后自动存入素材库
             </div>
@@ -899,7 +902,7 @@ export function MaterialsCenter() {
               padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
             }}
           >
-            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
               ✨ AI 生图
             </div>
             <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12, marginBottom: 12 }}>
@@ -1028,7 +1031,7 @@ export function MaterialsCenter() {
               padding: "18px 18px calc(20px + env(safe-area-inset-bottom))",
             }}
           >
-            <div style={{ color: "var(--kaypal-v3-cobalt)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+            <div style={{ color: "var(--kaypal-v3-accent)", fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
               🎙 AI 配音
             </div>
             <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12, marginBottom: 12 }}>
@@ -1061,7 +1064,10 @@ export function MaterialsCenter() {
                 setTtsResult(null);
                 dashGenerateSpeech({ text })
                   .then((r) => setTtsResult({ audioUrl: r.audioUrl, filename: r.filename }))
-                  .catch((e) => setCollectMsg(`❌ ${e instanceof Error ? e.message : "配音失败"}`))
+                  .catch((e) => {
+                    console.error(e instanceof Error ? e.message : "配音失败");
+                    setCollectMsg("配音失败，请稍后重试");
+                  })
                   .finally(() => setTtsBusy(false));
               }}
               disabled={!ttsText.trim() || ttsBusy}
@@ -1396,7 +1402,7 @@ export function MaterialsCenter() {
       {/* 素材详情弹窗 */}
       {viewing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] shadow-xl">
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] shadow-sm">
             <div className="flex items-center justify-between border-b border-[var(--kaypal-v3-border)] p-5">
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-[var(--kaypal-v3-ink)]">
