@@ -320,6 +320,7 @@ class TabManager {
       if (octopToken) setOctopCookie(view.webContents.session, tab.loadUrl, octopToken);
       // 首次加载完成后播种 localStorage.auth_token 并重载（见 _bootstrapOctopAuth 注释）
       if (octopToken) view.webContents.once('did-finish-load', () => this._bootstrapOctopAuth(tab));
+      this._installOctop401AutoRenew(tab);
     } else {
       installWorkspaceHeaderInjection(view.webContents.session, () => tab.workspaceId);
     }
@@ -472,6 +473,49 @@ class TabManager {
    * 故首次加载完成后写入 token 并重载一次，SPA 即视为已登录（免登录）。
    * 失败（如页面还没就绪）时复位标志，等待下次加载重试。
    */
+  /**
+   * Octop 标签 401 自动静默续签（产品要求：octop 无自有登录感知）。
+   * token 过期（默认 24h，现配 7 天）后 octop API 返回 401 → 主进程重换 token
+   * → 更新注入头/cookie/localStorage → 重载标签。用户全程无感，永不见 octop 登录页。
+   * 防抖：续签中/10s 冷却内不重复触发；单标签连续失败 ≤3 次后放弃（避免死循环刷屏）。
+   */
+  _installOctop401AutoRenew(tab) {
+    if (!tab.view || !tab.view.webContents.session || !tab.view.webContents.session.webRequest) return;
+    tab.renewing = false;
+    tab.lastRenewAt = 0;
+    tab.renewFails = 0;
+    tab.view.webContents.session.webRequest.onHeadersReceived({ urls: [`${originOf(tab.loadUrl)}/*`] }, (details, callback) => {
+      callback({});
+      if (details.statusCode !== 401 || tab.renewing) return;
+      const now = Date.now();
+      if (now - tab.lastRenewAt < 10_000) return;
+      if (tab.renewFails >= 3) return;
+      tab.renewing = true;
+      tab.lastRenewAt = now;
+      (async () => {
+        try {
+          const token = await this._exchangeOctopTokenWithRetry();
+          if (!token) throw new Error('renew: exchange failed');
+          tab.octopToken = token;
+          if (tab.view && !tab.view.webContents.isDestroyed()) {
+            await setOctopCookie(tab.view.webContents.session, tab.loadUrl, token);
+            const script = `try{localStorage.setItem('auth_token', ${JSON.stringify(token)})}catch(e){}`;
+            await tab.view.webContents.executeJavaScript(script).catch(() => {});
+            tab.authSeeded = true;
+            tab.view.webContents.loadURL(tab.loadUrl);
+          }
+          tab.renewFails = 0;
+          console.log('[Octop] 401 后已静默续签并重载');
+        } catch (e) {
+          tab.renewFails += 1;
+          console.warn(`[Octop] 401 续签失败(${tab.renewFails}/3):`, e && e.message);
+        } finally {
+          tab.renewing = false;
+        }
+      })();
+    });
+  }
+
   _bootstrapOctopAuth(tab) {
     if (!tab || tab.kind !== 'octop' || !tab.octopToken || tab.authSeeded) return;
     tab.authSeeded = true;

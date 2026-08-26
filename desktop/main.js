@@ -1578,6 +1578,30 @@ async function startOctopSidecar() {
     OCTOP_ADMIN_USERNAME: creds.username,
     OCTOP_ADMIN_PASSWORD: creds.password,
   };
+  // 3010→Octop 同身份 SSO（产品要求：octop 无自有账号体系感知）：
+  // sidecar 与后端必须用同一 OCTOP_USER_SECRET（确定性派生 per-user 账号），
+  // 否则后端开出的派生账号在 sidecar 侧对不上 → 回退 shared。
+  // token TTL 拉长到 7 天，配合 workspace-tabs 的 401 自动续签，用户永不看到 octop 登录页。
+  const backendEnvPath = path.join(getResourcePath('backend'), '.env');
+  if (fs.existsSync(backendEnvPath)) {
+    for (const line of fs.readFileSync(backendEnvPath, 'utf-8').split('\n')) {
+      const t = line.trim();
+      if (!t || t.startsWith('#')) continue;
+      const i = t.indexOf('=');
+      if (i <= 0) continue;
+      const key = t.slice(0, i).trim();
+      if (
+        key === 'OCTOP_USER_SECRET' ||
+        key === 'OCTOP_IDENTITY_MODE' ||
+        key === 'OCTOP_ACCESS_TOKEN_TTL' ||
+        key === 'OCTOP_USER_PREFIX'
+      ) {
+        const value = t.slice(i + 1).trim();
+        if (value) childEnv[key] = value;
+      }
+    }
+  }
+  if (!childEnv.OCTOP_ACCESS_TOKEN_TTL) childEnv.OCTOP_ACCESS_TOKEN_TTL = '604800';
 
   console.log('[Octop] Starting sidecar from:', sidecarRoot);
   if (process.platform === 'win32') {
