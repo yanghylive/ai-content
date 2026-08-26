@@ -192,7 +192,7 @@ export function OnboardingGuide() {
                 flex: 1,
                 height: 4,
                 borderRadius: 2,
-                background: s <= step ? "#f6c478" : "rgba(142,165,190,.2)",
+                background: s <= step ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.2)",
               }}
             />
           ))}
@@ -200,7 +200,7 @@ export function OnboardingGuide() {
 
         {step === 1 ? (
           <>
-            <div style={{ color: "#f6c478", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
+            <div style={{ color: "var(--kaypal-v3-amber)", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
               👋 欢迎使用 JIUZHANG AI
             </div>
             <div style={{ color: "rgba(215,230,248,.7)", fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
@@ -219,7 +219,7 @@ export function OnboardingGuide() {
                     fontSize: 13,
                     border: "1px solid rgba(142,165,190,.3)",
                     background: "rgba(255,255,255,.06)",
-                    color: "#dbe7f5",
+                    color: "var(--kaypal-v3-soft-ink)",
                     cursor: busy ? "wait" : "pointer",
                   }}
                 >
@@ -246,7 +246,7 @@ export function OnboardingGuide() {
 
         {step === 2 ? (
           <>
-            <div style={{ color: "#f6c478", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
+            <div style={{ color: "var(--kaypal-v3-amber)", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
               ✨ 这就是 AI 帮你写的
             </div>
             <div style={{ color: "rgba(215,230,248,.7)", fontSize: 13, marginBottom: 14 }}>
@@ -280,7 +280,7 @@ export function OnboardingGuide() {
 
         {step === 3 ? (
           <>
-            <div style={{ color: "#f6c478", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
+            <div style={{ color: "var(--kaypal-v3-amber)", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
               🎤 说一句话，开始干活
             </div>
             <div style={{ color: "rgba(215,230,248,.7)", fontSize: 13, marginBottom: 16, lineHeight: 1.8 }}>
@@ -319,7 +319,7 @@ export function OnboardingGuide() {
 
         {step === 4 ? (
           <>
-            <div style={{ color: "#f6c478", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
+            <div style={{ color: "var(--kaypal-v3-amber)", fontSize: 20, fontWeight: 800, marginBottom: 6 }}>
               ✅ 示例草稿已生成
             </div>
             <div style={{ color: "rgba(215,230,248,.7)", fontSize: 13, marginBottom: 16, lineHeight: 1.7 }}>
@@ -342,7 +342,7 @@ export function OnboardingGuide() {
                     borderRadius: 12,
                     border: "1px solid rgba(142,165,190,.25)",
                     background: "rgba(255,255,255,.05)",
-                    color: "#dbe7f5",
+                    color: "var(--kaypal-v3-soft-ink)",
                     cursor: "pointer",
                     textAlign: "left",
                   }}
@@ -353,7 +353,7 @@ export function OnboardingGuide() {
                       height: 22,
                       borderRadius: "50%",
                       background: "rgba(246,196,120,.15)",
-                      color: "#f6c478",
+                      color: "var(--kaypal-v3-amber)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -390,7 +390,7 @@ export function OnboardingGuide() {
                 fontWeight: 700,
                 border: "none",
                 cursor: "pointer",
-                background: "#f6c478",
+                background: "var(--kaypal-v3-amber)",
                 color: "#1a1207",
               }}
             >

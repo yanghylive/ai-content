@@ -364,7 +364,7 @@ export function GrowthMobileConsole({ view }: { view: string }) {
                   <button
                     type="button"
                     onClick={() => setGenOpen((v) => !v)}
-                    className="rounded-full bg-[#e39a3e] px-3.5 py-1.5 text-12 font-bold text-white"
+                    className="rounded-full bg-[var(--kaypal-v3-accent)] px-3.5 py-1.5 text-12 font-bold text-white"
                   >
                     {genOpen ? "收起" : "AI 生成策略"}
                   </button>

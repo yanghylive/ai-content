@@ -54,7 +54,7 @@ function SectionCard({
           gap: 8,
           fontSize: 14,
           fontWeight: 700,
-          color: "var(--mx-ink, #e8eef7)",
+          color: "var(--kaypal-v3-ink)",
           marginBottom: 10,
         }}
       >
@@ -74,18 +74,18 @@ function InsightItems({
   emptyText: string;
 }) {
   if (!items || items.length === 0) {
-    return <div style={{ fontSize: 13, color: "var(--mx-muted, #9fb2c8)" }}>{emptyText}</div>;
+    return <div style={{ fontSize: 13, color: "var(--kaypal-v3-muted)" }}>{emptyText}</div>;
   }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {items.map((item, i) => (
         <div key={i} style={{ fontSize: 13, lineHeight: 1.5 }}>
-          <span style={{ color: "var(--mx-ink, #e8eef7)" }}>{item.point}</span>
-          <span style={{ color: "var(--mx-accent, #e39a3e)", marginLeft: 6, fontSize: 12 }}>
+          <span style={{ color: "var(--kaypal-v3-ink)" }}>{item.point}</span>
+          <span style={{ color: "var(--kaypal-v3-accent)", marginLeft: 6, fontSize: 12 }}>
             ×{item.count ?? 1}
           </span>
           {item.examples && item.examples.length > 0 ? (
-            <div style={{ color: "var(--mx-muted, #9fb2c8)", fontSize: 12, marginTop: 2 }}>
+            <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12, marginTop: 2 }}>
               {item.examples.slice(0, 3).map((ex, j) => (
                 <div key={j}>「{ex}」</div>
               ))}
@@ -171,12 +171,12 @@ export function CommentInsightsContent() {
           gap: 10,
           fontSize: 16,
           fontWeight: 700,
-          color: "var(--mx-ink, #e8eef7)",
+          color: "var(--kaypal-v3-ink)",
         }}
       >
-        <MessageCircle size={18} style={{ color: "var(--mx-accent, #e39a3e)" }} />
+        <MessageCircle size={18} style={{ color: "var(--kaypal-v3-accent)" }} />
         评论洞察工作台
-        <span style={{ fontSize: 12, fontWeight: 400, color: "var(--mx-muted, #9fb2c8)" }}>
+        <span style={{ fontSize: 12, fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>
           把评论转成痛点、需求、异议、意向词和回复建议
         </span>
       </div>
@@ -194,7 +194,7 @@ export function CommentInsightsContent() {
               background: "rgba(255,255,255,.05)",
               border: "1px solid rgba(142,165,190,.25)",
               borderRadius: 10,
-              color: "var(--mx-ink, #e8eef7)",
+              color: "var(--kaypal-v3-ink)",
               padding: "10px 12px",
               fontSize: 13,
               resize: "vertical",
@@ -260,7 +260,7 @@ export function CommentInsightsContent() {
                 padding: "8px 18px",
                 borderRadius: 10,
                 border: "none",
-                background: "linear-gradient(135deg,#e39a3e,#f6c478)",
+                background: "linear-gradient(135deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))",
                 color: "var(--kaypal-v3-accent-ink)",
                 fontWeight: 700,
                 fontSize: 13,
@@ -282,7 +282,7 @@ export function CommentInsightsContent() {
                 borderRadius: 10,
                 border: "1px solid rgba(142,165,190,.3)",
                 background: "transparent",
-                color: "var(--mx-ink, #e8eef7)",
+                color: "var(--kaypal-v3-ink)",
                 fontSize: 13,
                 cursor: "pointer",
               }}
@@ -306,17 +306,17 @@ export function CommentInsightsContent() {
               alignItems: "center",
               justifyContent: "space-between",
               fontSize: 13,
-              color: "var(--mx-muted, #9fb2c8)",
+              color: "var(--kaypal-v3-muted)",
             }}
           >
             <span>
               分析 {result.analyzedCount} 条评论 · 洞察编号 {result.insightId}
             </span>
-            <span style={{ color: "var(--mx-accent, #e39a3e)" }}>平台：{result.platform || "全部"}</span>
+            <span style={{ color: "var(--kaypal-v3-accent)" }}>平台：{result.platform || "全部"}</span>
           </div>
           {result.summary ? (
             <SectionCard title="总体摘要" icon={<Lightbulb size={14} />}>
-              <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--mx-ink, #e8eef7)" }}>
+              <div style={{ fontSize: 13, lineHeight: 1.6, color: "var(--kaypal-v3-ink)" }}>
                 {result.summary}
               </div>
             </SectionCard>
@@ -347,7 +347,7 @@ export function CommentInsightsContent() {
                           k.intentLevel === "purchase"
                             ? "rgba(227,154,62,.18)"
                             : "rgba(142,165,190,.14)",
-                        color: k.intentLevel === "purchase" ? "#f6c478" : "var(--mx-ink, #e8eef7)",
+                        color: k.intentLevel === "purchase" ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-ink)",
                       }}
                     >
                       {k.keyword} · {INTENT_LABEL[k.intentLevel] ?? k.intentLevel} ×{k.count}
@@ -355,7 +355,7 @@ export function CommentInsightsContent() {
                   ))}
                 </div>
               ) : (
-                <div style={{ fontSize: 13, color: "var(--mx-muted, #9fb2c8)" }}>无</div>
+                <div style={{ fontSize: 13, color: "var(--kaypal-v3-muted)" }}>无</div>
               )}
             </SectionCard>
             <SectionCard title="高频问题" icon={<BarChart3 size={14} />}>
@@ -363,15 +363,15 @@ export function CommentInsightsContent() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {result.topQuestions.map((q, i) => (
                     <div key={i} style={{ fontSize: 13 }}>
-                      <span style={{ color: "var(--mx-ink, #e8eef7)" }}>{q.question}</span>
-                      <span style={{ color: "var(--mx-accent, #e39a3e)", marginLeft: 6, fontSize: 12 }}>
+                      <span style={{ color: "var(--kaypal-v3-ink)" }}>{q.question}</span>
+                      <span style={{ color: "var(--kaypal-v3-accent)", marginLeft: 6, fontSize: 12 }}>
                         ×{q.count}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div style={{ fontSize: 13, color: "var(--mx-muted, #9fb2c8)" }}>无</div>
+                <div style={{ fontSize: 13, color: "var(--kaypal-v3-muted)" }}>无</div>
               )}
             </SectionCard>
             <SectionCard title="回复建议" icon={<Sparkles size={14} />}>
@@ -379,13 +379,13 @@ export function CommentInsightsContent() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {result.replySuggestions.map((s, i) => (
                     <div key={i} style={{ fontSize: 13, lineHeight: 1.5 }}>
-                      <div style={{ color: "var(--mx-accent, #e39a3e)", fontSize: 12 }}>{s.scenario}</div>
-                      <div style={{ color: "var(--mx-ink, #e8eef7)" }}>{s.reply}</div>
+                      <div style={{ color: "var(--kaypal-v3-accent)", fontSize: 12 }}>{s.scenario}</div>
+                      <div style={{ color: "var(--kaypal-v3-ink)" }}>{s.reply}</div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div style={{ fontSize: 13, color: "var(--mx-muted, #9fb2c8)" }}>无</div>
+                <div style={{ fontSize: 13, color: "var(--kaypal-v3-muted)" }}>无</div>
               )}
             </SectionCard>
           </div>
@@ -394,8 +394,8 @@ export function CommentInsightsContent() {
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {result.suggestedReplyRules.map((r, i) => (
                   <div key={i} style={{ fontSize: 13, lineHeight: 1.5 }}>
-                    <span style={{ color: "var(--mx-muted, #9fb2c8)" }}>当{ r.when }：</span>
-                    <span style={{ color: "var(--mx-ink, #e8eef7)" }}>{r.reply}</span>
+                    <span style={{ color: "var(--kaypal-v3-muted)" }}>当{ r.when }：</span>
+                    <span style={{ color: "var(--kaypal-v3-ink)" }}>{r.reply}</span>
                   </div>
                 ))}
               </div>
@@ -411,7 +411,7 @@ const selectStyle: React.CSSProperties = {
   background: "rgba(255,255,255,.05)",
   border: "1px solid rgba(142,165,190,.25)",
   borderRadius: 8,
-  color: "var(--mx-ink, #e8eef7)",
+  color: "var(--kaypal-v3-ink)",
   padding: "6px 10px",
   fontSize: 13,
 };
@@ -420,7 +420,7 @@ const inputStyle: React.CSSProperties = {
   background: "rgba(255,255,255,.05)",
   border: "1px solid rgba(142,165,190,.25)",
   borderRadius: 8,
-  color: "var(--mx-ink, #e8eef7)",
+  color: "var(--kaypal-v3-ink)",
   padding: "6px 10px",
   fontSize: 13,
   flex: 1,

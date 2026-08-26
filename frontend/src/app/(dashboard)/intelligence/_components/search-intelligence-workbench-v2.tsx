@@ -578,7 +578,7 @@ export function SearchIntelligenceWorkbench() {
                     if (value === "comment" && !commentPlatformValues.has(platform)) setPlatform("douyin");
                     if (value === "engagement") setPlatform("wechat");
                   }}
-                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: target === value ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: target === value ? "#fff" : "var(--mx-ink)", border: target === value ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: target === value ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: target === value ? "#fff" : "var(--mx-ink)", border: target === value ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
                 >
                   {label}
                 </button>

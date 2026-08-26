@@ -662,7 +662,7 @@ export function IntelligenceCommercialShell() {
                 key={role}
                 type="button"
                 onClick={() => setCurrentRole(role)}
-                style={{ flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 600, background: currentRole === role ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: currentRole === role ? "#fff" : "var(--mx-ink)", border: currentRole === role ? "1px solid #d98a2d" : "1px solid rgba(142,165,190,.3)" }}
+                style={{ flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 600, background: currentRole === role ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: currentRole === role ? "#fff" : "var(--mx-ink)", border: currentRole === role ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
               >
                 {roleMeta[role].label}
               </button>

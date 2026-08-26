@@ -182,7 +182,7 @@ export function EngineTaskRecords() {
                   fontSize: 12,
                   padding: "7px 14px",
                   borderRadius: 999,
-                  border: filter === key ? "1.5px solid #2563eb" : "1px solid rgba(142,165,190,.3)",
+                  border: filter === key ? "1.5px solid var(--kaypal-v3-accent)" : "1px solid var(--kaypal-v3-border)",
                   background: filter === key ? "rgba(37,99,235,.12)" : "rgba(255,255,255,.06)",
                   color: filter === key ? "var(--kaypal-v3-cobalt)" : "var(--mx-ink)",
                 }}

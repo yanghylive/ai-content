@@ -121,9 +121,9 @@ export function StrategiesCenter() {
                     padding: "6px 12px",
                     borderRadius: 999,
                     fontSize: 12,
-                    border: activeIndustry === ind.industry ? "1px solid #f6c478" : "1px solid rgba(142,165,190,.3)",
+                    border: activeIndustry === ind.industry ? "1px solid var(--kaypal-v3-amber)" : "1px solid rgba(142,165,190,.3)",
                     background: activeIndustry === ind.industry ? "rgba(246,196,120,.12)" : "transparent",
-                    color: activeIndustry === ind.industry ? "#f6c478" : "rgba(215,230,248,.7)",
+                    color: activeIndustry === ind.industry ? "var(--kaypal-v3-amber)" : "rgba(215,230,248,.7)",
                     cursor: "pointer",
                   }}
                 >
@@ -175,7 +175,7 @@ export function StrategiesCenter() {
                       border: "1px solid rgba(142,165,190,.18)",
                       fontSize: 12.5,
                       lineHeight: 1.6,
-                      color: "#dbe7f5",
+                      color: "var(--kaypal-v3-soft-ink)",
                     }}
                   >
                     {t.title || t.content}
