@@ -267,22 +267,33 @@ function HomeHeader({
         </div>
       ) : home ? (
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-5"
-            >
-              <p className="text-sm text-[var(--kaypal-v3-muted)]">
-                {stat.label}
-              </p>
-              <p
-                className="mt-2 text-2xl font-bold text-[var(--kaypal-v3-ink)]"
-                title={stat.value === stat.emptyText ? stat.emptyText : undefined}
+          {stats.map((stat) => {
+            const isEmpty = stat.value === stat.emptyText;
+            return (
+              <div
+                key={stat.label}
+                className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-5"
               >
-                {stat.value}
-              </p>
-            </div>
-          ))}
+                <p className="text-sm text-[var(--kaypal-v3-muted)]">
+                  {stat.label}
+                </p>
+                {isEmpty ? (
+                  /* 空态文案不占用数字层级：小号灰字，避免文字冒充数字 */
+                  <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">
+                    {stat.value}
+                  </p>
+                ) : (
+                  <p
+                    className="mt-2 text-[32px] font-semibold leading-9 tracking-tight text-[var(--kaypal-v3-ink)]"
+                    style={{ fontVariantNumeric: "tabular-nums" }}
+                    title={stat.value}
+                  >
+                    {stat.value}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </div>
@@ -309,7 +320,10 @@ function BlockerCards({ blockers }: { blockers: GrowthHomeBlocker[] }) {
   return (
     <section
       className="rounded-[var(--kaypal-v3-radius)] p-4"
-      style={{ border: "1px solid var(--kaypal-v3-danger)" }}
+      style={{
+        background: "var(--kaypal-v3-danger-soft)",
+        borderLeft: "3px solid var(--kaypal-v3-danger)",
+      }}
     >
       <div className="flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-[var(--kaypal-v3-danger)]" />
@@ -321,8 +335,7 @@ function BlockerCards({ blockers }: { blockers: GrowthHomeBlocker[] }) {
         {blockers.map((blocker) => (
           <div
             key={blocker.code}
-            className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-paper)] p-3"
-            style={{ border: "1px solid var(--kaypal-v3-border)" }}
+            className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3"
           >
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
