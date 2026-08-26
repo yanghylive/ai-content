@@ -52,8 +52,24 @@ export class PrismaService
     // 注意：两个 PRAGMA 都会返回结果行（WAL 模式名 / busy_timeout 值），必须用
     // $queryRawUnsafe——$executeRawUnsafe 执行返回行的 SQL 在 SQLite 下抛
     //  "Execute returned results, which is not allowed in SQLite"（曾致启动崩溃）。
-    await this.$queryRawUnsafe('PRAGMA journal_mode = WAL');
-    await this.$queryRawUnsafe('PRAGMA busy_timeout = 5000');
+    //
+    // 2026-08-26 真机 P0：Windows 打包端对「预置 166 表 seed」执行 PRAGMA journal_mode=WAL
+    // 时，Prisma 引擎报 SQLITE_CORRUPT（database disk image is malformed / malformed database
+    // schema），导致后端启动即崩。macOS 开发态走空库 + WAL 正常、从未暴露。WAL 只是并发优化、
+    // 非必需 → 改为 best-effort：切 WAL 失败时静默降级为默认 delete 模式继续启动，绝不让优化项
+    // 阻断商用链路。busy_timeout 同样 best-effort（对连接生效，不影响库文件）。
+    try {
+      await this.$queryRawUnsafe('PRAGMA journal_mode = WAL');
+    } catch (error) {
+      this.logger?.warn?.(
+        `SQLite WAL 模式切换失败（降级 delete 模式继续）: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    try {
+      await this.$queryRawUnsafe('PRAGMA busy_timeout = 5000');
+    } catch {
+      // busy_timeout 失败不阻断启动
+    }
 
     const statements = [
       `CREATE TABLE IF NOT EXISTS users (
