@@ -1,0 +1,98 @@
+{
+  "generatedAt": "2026-08-23T06:55:56.947Z",
+  "real": true,
+  "runRestore": true,
+  "downloadBackup": true,
+  "uploadLatestBackup": true,
+  "backupRoot": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness",
+  "objectStoreProvider": "aliyun-oss",
+  "alertProvider": "generic",
+  "alertWebhook": {
+    "configured": false,
+    "provider": "generic",
+    "protocol": null,
+    "host": null,
+    "category": "missing",
+    "productionCandidate": false,
+    "message": "未配置 webhook。"
+  },
+  "restoreDatabaseUrl": "postgresql://postgres:***@127.0.0.1:5432/kaypal_acceptance_restore",
+  "checks": [
+    {
+      "status": "PASS",
+      "name": "latest-local-backup",
+      "message": "commercial-readiness-postgres-pgdump; file=/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-23T06-46-59-422Z/postgres-dump.sql; size=928973",
+      "nextAction": "",
+      "evidence": {
+        "latestDir": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-23T06-46-59-422Z",
+        "manifestFile": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-23T06-46-59-422Z/manifest.json",
+        "backupFile": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-23T06-46-59-422Z/postgres-dump.sql"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "aliyun-oss-write-read-delete",
+      "message": "bucket=kaypal; probe=acceptance-full2-1787468156/_smoke/2026-08-23T06-55-56-947Z-95f0f1bd.json",
+      "nextAction": "",
+      "evidence": {
+        "bucket": "kaypal",
+        "key": "acceptance-full2-1787468156/_smoke/2026-08-23T06-55-56-947Z-95f0f1bd.json"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "aliyun-oss-upload-latest-backup",
+      "message": "bucket=kaypal; manifest=acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/manifest.json; backup=acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/postgres-dump.sql",
+      "nextAction": "",
+      "evidence": {
+        "bucket": "kaypal",
+        "manifestKey": "acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/manifest.json",
+        "backupKey": "acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/postgres-dump.sql",
+        "manifestFile": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-55-56-947Z/uploaded-oss-manifest.json"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "aliyun-oss-latest-backup-readback",
+      "message": "manifest=acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/manifest.json; backup=acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/postgres-dump.sql",
+      "nextAction": "",
+      "evidence": {
+        "manifestKey": "acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/manifest.json",
+        "backupKey": "acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/postgres-dump.sql",
+        "localBackupManifest": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-23T06-46-59-422Z/manifest.json"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "alert-webhook-config",
+      "message": "未配置 COMMERCIAL_BACKUP_ALERT_WEBHOOK_URL。",
+      "nextAction": "填入企业微信/飞书/Slack 值班群 webhook 后再跑。"
+    },
+    {
+      "status": "PASS",
+      "name": "restore-runbook-real-execution",
+      "message": "psql=/opt/homebrew/bin/psql; restored=/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-55-56-947Z/downloaded-backup/postgres-dump.sql",
+      "nextAction": "",
+      "evidence": {
+        "output": "X\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nCREATE INDEX\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\nALTER TABLE\n"
+      }
+    }
+  ],
+  "artifacts": {
+    "latestLocalBackup": {
+      "latestDir": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-23T06-46-59-422Z",
+      "manifestFile": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-23T06-46-59-422Z/manifest.json",
+      "backupFile": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-23T06-46-59-422Z/postgres-dump.sql"
+    },
+    "uploadedOssBackup": {
+      "bucket": "kaypal",
+      "manifestKey": "acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/manifest.json",
+      "backupKey": "acceptance-full2-1787468156/2026-08-23T06-46-59-422Z/postgres-dump.sql",
+      "manifestFile": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-55-56-947Z/uploaded-oss-manifest.json"
+    },
+    "downloadedBackup": {
+      "manifestFile": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-55-56-947Z/downloaded-backup/manifest.json",
+      "backupFile": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-55-56-947Z/downloaded-backup/postgres-dump.sql"
+    }
+  }
+}

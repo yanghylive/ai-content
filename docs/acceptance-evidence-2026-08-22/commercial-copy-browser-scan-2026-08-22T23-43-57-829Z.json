@@ -1,0 +1,202 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-22T23:43:50.282Z",
+  "finishedAt": "2026-08-22T23:43:57.828Z",
+  "frontendUrl": "http://127.0.0.1:3015",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/frontend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 202,
+  "scannedRouteCount": 4,
+  "isPartial": true,
+  "routeCount": 4,
+  "excludedRouteCount": 198,
+  "passCount": 0,
+  "failCount": 4,
+  "consoleErrorCount": 12,
+  "failures": [
+    {
+      "route": "/compliance",
+      "finalUrl": "http://127.0.0.1:3015/login?next=%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3015/login?next=%2Fcompliance"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/collection-center",
+      "finalUrl": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fcollection-center",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fcollection-center"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/image-gen",
+      "finalUrl": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fimage-gen",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fimage-gen"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu-assistant",
+      "finalUrl": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fxiaohongshu-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fxiaohongshu-assistant"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/compliance"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/compliance"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/compliance"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/collection-center"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/collection-center"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/collection-center"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/image-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/image-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/image-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/xiaohongshu-assistant"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/xiaohongshu-assistant"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/xiaohongshu-assistant"
+    }
+  ],
+  "results": [
+    {
+      "route": "/compliance",
+      "finalUrl": "http://127.0.0.1:3015/login?next=%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3015/login?next=%2Fcompliance"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/collection-center",
+      "finalUrl": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fcollection-center",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fcollection-center"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/image-gen",
+      "finalUrl": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fimage-gen",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fimage-gen"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu-assistant",
+      "finalUrl": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fxiaohongshu-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3015/login?next=%2Fcontent%2Fxiaohongshu-assistant"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

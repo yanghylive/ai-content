@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-08-23T03:36:22.271Z",
+  "cwd": "/Users/yanghy/Documents/New project/ai-content",
+  "node": "v22.22.2",
+  "apiBase": "http://127.0.0.1:3011/api",
+  "frontendBase": "http://127.0.0.1:3015",
+  "localAcceptanceSession": true
+}

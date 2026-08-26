@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "backupType": "commercial-readiness-postgres-pgdump",
+  "generatedAt": "2026-08-23T06:46:59.422Z",
+  "generatedBy": {
+    "userId": "cms2ktllp03u9j1wprksvwy8w",
+    "email": "phone-__REDACTED_TEST_USER__@kaypal.invalid",
+    "kaypalUserId": "cmo9p6i5x000a58uckbcyv45u"
+  },
+  "source": {
+    "databaseUrl": "postgresql://***:***@127.0.0.1:5432/ai_content?connect_timeout=5",
+    "sizeBytes": 928973
+  },
+  "command": {
+    "name": "pg_dump",
+    "path": "pg_dump",
+    "args": [
+      "--format=plain",
+      "--no-owner",
+      "--no-privileges",
+      "<redacted-database-url>"
+    ]
+  },
+  "restore": {
+    "dryRunSupported": true,
+    "destructiveRestoreSupported": false,
+    "note": "恢复演练只校验 manifest 和 SQL dump 内容；真实恢复必须在隔离库中执行 psql restore。"
+  },
+  "files": [
+    {
+      "path": "/Users/yanghy/Documents/New project/ai-content/data/backups/commercial-readiness/2026-08-23T06-46-59-422Z/postgres-dump.sql",
+      "sizeBytes": 928973,
+      "kind": "postgres-plain-sql"
+    }
+  ],
+  "warning": "Postgres dump 包含业务数据和授权快照，请按商用密钥策略保存。",
+  "objectStoreMirror": {
+    "enabled": true,
+    "provider": "aliyun-oss",
+    "root": "oss://kaypal",
+    "mirrorDir": null,
+    "manifestFile": "oss://kaypal/recheck-1787475040/2026-08-23T06-46-59-422Z/manifest.json",
+    "bucket": "kaypal",
+    "prefix": "recheck-1787475040",
+    "uploadedKeys": [
+      "recheck-1787475040/2026-08-23T06-46-59-422Z/postgres-dump.sql",
+      "recheck-1787475040/2026-08-23T06-46-59-422Z/manifest.json"
+    ],
+    "fileCount": 2,
+    "sizeBytes": 928973,
+    "valid": true,
+    "message": "备份已通过 external ops smoke 上传到阿里云 OSS。"
+  }
+}

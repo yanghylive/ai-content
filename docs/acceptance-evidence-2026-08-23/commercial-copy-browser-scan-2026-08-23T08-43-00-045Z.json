@@ -1,0 +1,1136 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-23T08:34:28.954Z",
+  "finishedAt": "2026-08-23T08:43:00.045Z",
+  "frontendUrl": "http://127.0.0.1:3015",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/frontend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 202,
+  "scannedRouteCount": 124,
+  "isPartial": true,
+  "routeCount": 124,
+  "excludedRouteCount": 78,
+  "passCount": 124,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3015/today",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 332,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/accounts-matrix",
+      "finalUrl": "http://127.0.0.1:3015/accounts-matrix",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 742,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent",
+      "finalUrl": "http://127.0.0.1:3015/agent",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 608,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/approvals",
+      "finalUrl": "http://127.0.0.1:3015/approvals",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 353,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3015/apps",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 374,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3015/apps/ai-employee",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 441,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3015/growth/acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 949,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/detail",
+      "finalUrl": "http://127.0.0.1:3015/apps/detail",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 361,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3015/artifacts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 121865,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/auto-acquisition/create",
+      "finalUrl": "http://127.0.0.1:3015/auto-acquisition/create",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1332,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/boss-recruit",
+      "finalUrl": "http://127.0.0.1:3015/boss-recruit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 781,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin",
+      "finalUrl": "http://127.0.0.1:3015/case-admin",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 429,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin/[id]",
+      "finalUrl": "http://127.0.0.1:3015/case-admin/[id]",
+      "status": "404",
+      "badMatches": [],
+      "textLength": 55,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin/new",
+      "finalUrl": "http://127.0.0.1:3015/case-admin/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1002,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3015/commercial-readiness",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1592,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance",
+      "finalUrl": "http://127.0.0.1:3015/compliance",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 925,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance-check",
+      "finalUrl": "http://127.0.0.1:3015/compliance-check",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 405,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3015/content",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/ai-image-gen",
+      "finalUrl": "http://127.0.0.1:3015/content/ai-image-gen",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 445,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/ai-video-gen",
+      "finalUrl": "http://127.0.0.1:3015/content/ai-video-gen",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 437,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3015/content/articles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 657,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/collection-center",
+      "finalUrl": "http://127.0.0.1:3015/content/collection-center",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 495,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/image-gen",
+      "finalUrl": "http://127.0.0.1:3015/content/image-gen",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 429,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3015/content/optimization",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1252,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/wechat-official-assistant",
+      "finalUrl": "http://127.0.0.1:3015/content/wechat-official-assistant",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 471,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/workspace",
+      "finalUrl": "http://127.0.0.1:3015/content/workspace?articleId=cmsnbuvx10abzi60r0dnwguku&step=brief",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 645,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3015/content/xiaohongshu",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 3823,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu-assistant",
+      "finalUrl": "http://127.0.0.1:3015/content/xiaohongshu-assistant",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 688,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/copy-compare",
+      "finalUrl": "http://127.0.0.1:3015/copy-compare",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 448,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3015/crm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2225,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-closer",
+      "finalUrl": "http://127.0.0.1:3015/crm/closer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 411,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-connectors",
+      "finalUrl": "http://127.0.0.1:3015/crm/connectors",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 943,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import",
+      "finalUrl": "http://127.0.0.1:3015/crm/import",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 966,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import/flow",
+      "finalUrl": "http://127.0.0.1:3015/crm-import/flow",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 547,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3015/crm/closer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 411,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3015/crm/connectors",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 943,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/customer",
+      "finalUrl": "http://127.0.0.1:3015/crm/customer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 392,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3015/crm/import",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 966,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/customer",
+      "finalUrl": "http://127.0.0.1:3015/crm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2225,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/device-center",
+      "finalUrl": "http://127.0.0.1:3015/device-center",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 456,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3015/distribution",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 970,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/accounts",
+      "finalUrl": "http://127.0.0.1:3015/distribution/accounts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 723,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/articles",
+      "finalUrl": "http://127.0.0.1:3015/distribution/articles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 4215,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3015/distribution/compliance",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 925,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/publish-article",
+      "finalUrl": "http://127.0.0.1:3015/distribution/publish-article",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1576,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/publish-video",
+      "finalUrl": "http://127.0.0.1:3015/distribution/publish-video",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 336,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/scrape",
+      "finalUrl": "http://127.0.0.1:3015/distribution/scrape",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 370,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/tasks",
+      "finalUrl": "http://127.0.0.1:3015/distribution/tasks",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 915,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/effects",
+      "finalUrl": "http://127.0.0.1:3015/effects",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 672,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3015/engagement",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1458,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3015/engagement/channel-messages",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 471,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-acquisition",
+      "finalUrl": "http://127.0.0.1:3015/engagement/comment-acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 536,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3015/engagement/comment-insights",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 468,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customer-service",
+      "finalUrl": "http://127.0.0.1:3015/engagement/customer-service",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 939,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3015/crm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2225,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3015/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 700,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3015/engagement/douyin-messages",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 694,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3015/engagement/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 5562,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3015/engagement/rules",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 426,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 554,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat-channel-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 473,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat-groups",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 521,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat-moments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 520,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments/detail",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat-moments/detail",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 367,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/chat-history",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat/chat-history",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 500,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/contact-add",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat/contact-add",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 421,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/contacts",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat/contacts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 496,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/friend-accept",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat/friend-accept",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 349,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/mass-send",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat/mass-send",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 503,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/moments-publish",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat/moments-publish",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 609,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/plans",
+      "finalUrl": "http://127.0.0.1:3015/engagement/wechat/plans",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 471,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3015/growth",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 573,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3015/growth/account-health",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 331,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3015/growth/acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 949,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3015/growth/reports",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 885,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/rpa-workbench",
+      "finalUrl": "http://127.0.0.1:3015/growth/rpa-workbench",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 3802,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "http://127.0.0.1:3015/growth/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 522,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3015/growth/workflows",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 658,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge",
+      "finalUrl": "http://127.0.0.1:3015/knowledge",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 465,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3015/knowledge-base",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 474,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base/new",
+      "finalUrl": "http://127.0.0.1:3015/knowledge-base/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 497,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mai-ui",
+      "finalUrl": "http://127.0.0.1:3015/mai-ui",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 408,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/message",
+      "finalUrl": "http://127.0.0.1:3015/message",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 931,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mobile-capabilities",
+      "finalUrl": "http://127.0.0.1:3015/mobile-capabilities",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 814,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3015/distribution/accounts",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 349,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/edit",
+      "finalUrl": "http://127.0.0.1:3015/platforms/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 565,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/new",
+      "finalUrl": "http://127.0.0.1:3015/platforms/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 565,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/poi",
+      "finalUrl": "http://127.0.0.1:3015/poi",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 400,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3015/release-notes",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1550,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/reply",
+      "finalUrl": "http://127.0.0.1:3015/reply",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 418,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/risk-confirm",
+      "finalUrl": "http://127.0.0.1:3015/risk-confirm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 367,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings",
+      "finalUrl": "http://127.0.0.1:3015/savings",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 3219,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings/orders",
+      "finalUrl": "http://127.0.0.1:3015/savings/orders",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 416,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings/wallet",
+      "finalUrl": "http://127.0.0.1:3015/savings/wallet",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 575,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3015/schedules",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 357,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules/edit",
+      "finalUrl": "http://127.0.0.1:3015/schedules/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 361,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3015/settings",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1903,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings/legal",
+      "finalUrl": "http://127.0.0.1:3015/settings/legal",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 728,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings/memory",
+      "finalUrl": "http://127.0.0.1:3015/settings/memory",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 451,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3015/solutions",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1003,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/configure",
+      "finalUrl": "http://127.0.0.1:3015/solutions/configure",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 361,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/run",
+      "finalUrl": "http://127.0.0.1:3015/solutions/run",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 361,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3015/strategies",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 498,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/edit",
+      "finalUrl": "http://127.0.0.1:3015/strategies/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 361,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/new",
+      "finalUrl": "http://127.0.0.1:3015/strategies/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 614,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3015/styles",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 371,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/edit",
+      "finalUrl": "http://127.0.0.1:3015/styles/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 361,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/new",
+      "finalUrl": "http://127.0.0.1:3015/styles/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 494,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/task-evidence",
+      "finalUrl": "http://127.0.0.1:3015/task-evidence",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 3916,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3015/tasks",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1275,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3015/tasks/confirmations",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 8772,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3015/tasks/evidence",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 3916,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3015/tasks/records",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 116180,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3015/tasks/runs",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 11223,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3015/templates",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 365,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/edit",
+      "finalUrl": "http://127.0.0.1:3015/templates/edit",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 361,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/new",
+      "finalUrl": "http://127.0.0.1:3015/templates/new",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 425,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3015/today",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 332,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video-download",
+      "finalUrl": "http://127.0.0.1:3015/video-download",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 795,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video-generation",
+      "finalUrl": "http://127.0.0.1:3015/video-generation",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 413,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video/product-cut",
+      "finalUrl": "http://127.0.0.1:3015/video/product-cut",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 477,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video/release-plans",
+      "finalUrl": "http://127.0.0.1:3015/video/release-plans",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 377,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/viral-analysis",
+      "finalUrl": "http://127.0.0.1:3015/viral-analysis",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 639,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3015/war-room",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 494,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

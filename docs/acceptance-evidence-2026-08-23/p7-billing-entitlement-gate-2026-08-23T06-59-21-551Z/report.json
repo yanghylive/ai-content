@@ -1,0 +1,106 @@
+{
+  "generatedAt": "2026-08-23T06:59:21.591Z",
+  "evidenceDate": "2026-08-23",
+  "evidenceRoot": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-23",
+  "strict": false,
+  "status": "BLOCKED_FOR_PRODUCTION",
+  "database": {
+    "connected": true,
+    "kind": "postgres",
+    "evidence": "postgresql://***:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=20&connection_limit=12",
+    "message": "Postgres 数据库已连接。",
+    "tableCount": 0,
+    "tables": [],
+    "webhookEventCount": 0,
+    "subscriptionCount": 0,
+    "invoiceCount": 0,
+    "entitlementCount": 0
+  },
+  "supportingEvidence": {
+    "latestPostgresDump": "docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-55-56-947Z/downloaded-backup/postgres-dump.sql",
+    "postgresDumpHasBillingSchema": true,
+    "postgresDumpHasBillingData": true
+  },
+  "summary": {
+    "total": 7,
+    "byStatus": {
+      "CONFIG_REQUIRED": 6,
+      "PASS": 1
+    },
+    "passCount": 1,
+    "releaseBlockingCount": 6,
+    "releaseBlockingIds": [
+      "billing-webhook-secret-config",
+      "billing-schema-available",
+      "signed-webhook-processed",
+      "active-commercial-subscription",
+      "invoice-and-revoke-lifecycle",
+      "subscription-entitlement-consistency"
+    ]
+  },
+  "rows": [
+    {
+      "id": "billing-webhook-secret-config",
+      "title": "支付回调签名密钥配置",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "",
+      "detail": "未配置 KAYPAL_BILLING_WEBHOOK_SECRET、BILLING_WEBHOOK_SECRET 或 STRIPE_WEBHOOK_SECRET。",
+      "nextAction": "配置真实支付/Kaypal 测试或生产环境 webhook secret 后重跑 P7。"
+    },
+    {
+      "id": "billing-schema-available",
+      "title": "计费审计表结构",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "postgresql://***:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=20&connection_limit=12",
+      "detail": "当前数据库缺少：billing_webhook_events、billing_subscriptions、billing_invoices、tenant_entitlements。",
+      "nextAction": "对当前运行库执行最新 Prisma 迁移，并确认 billing_* 表存在。"
+    },
+    {
+      "id": "signed-webhook-processed",
+      "title": "签名回调已处理",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "postgresql://***:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=20&connection_limit=12",
+      "detail": "当前数据库没有 signature_verified=true 且 status=processed 的支付回调。",
+      "nextAction": "用真实 webhook secret 发送一条签名订阅事件，确认落库并处理为 processed。"
+    },
+    {
+      "id": "active-commercial-subscription",
+      "title": "有效商用订阅快照",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "postgresql://***:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=20&connection_limit=12",
+      "detail": "当前数据库没有 STANDARD 及以上、状态有效且未过期的订阅快照。",
+      "nextAction": "处理 customer.subscription.created/updated，生成有效 BillingSubscription。"
+    },
+    {
+      "id": "invoice-and-revoke-lifecycle",
+      "title": "发票审计与失效降级",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "postgresql://***:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=20&connection_limit=12",
+      "detail": "付费发票=0，失效/降级证据=0，生命周期事件=0。",
+      "nextAction": "补跑 invoice.paid 与 invoice.payment_failed 或 subscription.deleted，确认发票审计和权益降级。"
+    },
+    {
+      "id": "subscription-entitlement-consistency",
+      "title": "订阅与权益一致性",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "postgresql://***:***@127.0.0.1:5432/ai_content?connect_timeout=5&pool_timeout=20&connection_limit=12",
+      "detail": "有效订阅=0，有效权益=0，缺权益=0，孤立权益=0。",
+      "nextAction": "重放订阅 webhook 或修复权益同步，确保权益来自计费订阅而不是本地开关。"
+    },
+    {
+      "id": "billing-backup-supporting-evidence",
+      "title": "备份中的计费数据辅助证据",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-55-56-947Z/downloaded-backup/postgres-dump.sql",
+      "detail": "最近 Postgres 备份包含计费表结构和计费数据。",
+      "nextAction": "保留该证据作为恢复链路的计费数据佐证。"
+    }
+  ]
+}

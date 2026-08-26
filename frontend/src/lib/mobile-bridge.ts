@@ -148,10 +148,11 @@ export function openApp(platform: PlatformKey): {
             };
           }
         } catch {
-          // 非 JSON 忽略，走默认成功
+          // 非 JSON / 解析失败：保守返回失败，避免未安装时误报「已调起」
         }
       }
-      return { ok: true, mode: "bridge", message: `已调起${PLATFORM_LABEL[platform]}` };
+      // 壳返回非 JSON 或格式异常：视为失败（不能假装成功）
+      return { ok: false, mode: "bridge", message: "调起失败，请手动打开 App" };
     } catch {
       // 壳桥抛错则继续走深链
     }
@@ -208,14 +209,20 @@ export async function shareText(text: string): Promise<{
       if (typeof raw === "string" && raw.trim().startsWith("{")) {
         try {
           const parsed = JSON.parse(raw) as { ok?: boolean; message?: string };
-          if (parsed && typeof parsed.ok === "boolean" && parsed.ok) {
-            return { ok: true, mode: "bridge", message: parsed.message || "已唤起系统分享" };
+          if (parsed && typeof parsed.ok === "boolean") {
+            return {
+              ok: parsed.ok,
+              mode: "bridge",
+              message: parsed.ok
+                ? parsed.message || "已唤起系统分享"
+                : parsed.message || "分享失败",
+            };
           }
         } catch {
-          // 非 JSON 忽略，走默认成功
+          // 非 JSON / 解析失败：落到剪贴板（不假装成功）
         }
       }
-      return { ok: true, mode: "bridge", message: "已唤起系统分享" };
+      // 非 JSON 或无 ok 字段：落到剪贴板（不能假装成功）
     } catch {
       // 落到剪贴板
     }
@@ -303,20 +310,25 @@ export function wechatLogin(): {
   try {
     const raw = bridge.wechatLogin();
     if (typeof raw === "string" && raw.trim().startsWith("{")) {
-      const parsed = JSON.parse(raw) as {
-        ok?: boolean;
-        code?: string;
-        message?: string;
-      };
-      return {
-        ok: parsed.ok === true,
-        code: parsed.code,
-        message:
-          parsed.message ||
-          (parsed.ok ? "微信授权成功" : "微信登录未完成"),
-      };
+      try {
+        const parsed = JSON.parse(raw) as {
+          ok?: boolean;
+          code?: string;
+          message?: string;
+        };
+        return {
+          ok: parsed.ok === true,
+          code: parsed.code,
+          message:
+            parsed.message ||
+            (parsed.ok ? "微信授权成功" : "微信登录未完成"),
+        };
+      } catch {
+        return { ok: false, message: "微信授权结果解析失败，请重试" };
+      }
     }
-    return { ok: true, message: "已拉起微信授权" };
+    // 壳返回非 JSON：无法确认是否成功，保守返回失败
+    return { ok: false, message: "微信授权调用异常，请重试" };
   } catch {
     return { ok: false, message: "微信登录调用失败，请重试" };
   }
@@ -337,7 +349,7 @@ export function rpaStatus(): { enabled: boolean; available: boolean } {
         available: true,
       };
     } catch {
-      return { enabled: false, available: true };
+      return { enabled: false, available: false };
     }
   }
   return { enabled: false, available: false };

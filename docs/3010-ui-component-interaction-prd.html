@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3010 UI 组件与交互动效 PRD</title>
+  <style>
+    :root {
+      --ink: #162b44;
+      --muted: #62748b;
+      --line: #dbe5ef;
+      --paper: #ffffff;
+      --canvas: #f3f7fb;
+      --navy: #17395f;
+      --blue: #2374c6;
+      --teal: #138a8a;
+      --orange: #d47c28;
+      --green: #238b65;
+      --red: #c75151;
+      --shadow: 0 10px 30px rgba(24, 57, 95, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font: 14px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    a { color: inherit; }
+    button, input, select { font: inherit; }
+    .topbar { position: sticky; top: 0; z-index: 10; height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; color: white; background: var(--navy); box-shadow: 0 3px 14px rgba(13, 39, 69, .2); }
+    .brand { display: flex; gap: 11px; align-items: center; font-weight: 800; letter-spacing: .02em; }
+    .brand-mark { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; color: #17395f; background: #f7bd68; font-weight: 900; }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+    .top-actions button { border: 1px solid rgba(255,255,255,.25); border-radius: 7px; padding: 6px 11px; color: white; background: transparent; cursor: pointer; }
+    .top-actions button:hover { background: rgba(255,255,255,.12); }
+    .layout { display: grid; grid-template-columns: 238px minmax(0, 1fr); min-height: calc(100vh - 58px); }
+    .sidebar { position: sticky; top: 58px; height: calc(100vh - 58px); overflow: auto; padding: 22px 14px; border-right: 1px solid var(--line); background: #f8fbfe; }
+    .side-label { margin: 3px 11px 8px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .side-nav { display: grid; gap: 3px; }
+    .side-nav a { display: flex; gap: 9px; align-items: center; padding: 8px 10px; border-radius: 7px; color: #52677f; text-decoration: none; }
+    .side-nav a:hover, .side-nav a.active { color: var(--navy); background: #e6f0f9; font-weight: 700; }
+    .side-nav b { width: 20px; color: var(--blue); font-size: 11px; }
+    .main { min-width: 0; padding: 28px clamp(18px, 4vw, 58px) 70px; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(250px, .55fr); gap: 24px; align-items: center; padding: 34px; border-radius: 12px; color: white; background: #1b4778; box-shadow: var(--shadow); }
+    .eyebrow { color: #f7c375; font-size: 12px; font-weight: 800; letter-spacing: .1em; }
+    h1 { margin: 7px 0 10px; font-size: clamp(28px, 4vw, 45px); line-height: 1.15; letter-spacing: -.02em; }
+    h2 { margin: 0; font-size: 24px; line-height: 1.25; }
+    h3 { margin: 0; font-size: 17px; line-height: 1.3; }
+    p { margin: 0; }
+    .hero p { max-width: 760px; color: #dbe9f8; }
+    .hero-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+    .hero-stat { padding: 14px; border: 1px solid rgba(255,255,255,.2); border-radius: 9px; background: rgba(4, 30, 58, .2); }
+    .hero-stat strong { display: block; font-size: 25px; line-height: 1.1; }
+    .hero-stat span { color: #c9dced; font-size: 12px; }
+    .section { margin-top: 36px; scroll-margin-top: 77px; }
+    .section-head { display: flex; justify-content: space-between; gap: 18px; align-items: end; margin-bottom: 14px; }
+    .section-head p { max-width: 760px; color: var(--muted); }
+    .card, .panel { border: 1px solid var(--line); border-radius: 10px; background: var(--paper); box-shadow: var(--shadow); }
+    .card { padding: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .kicker { color: var(--blue); font-size: 12px; font-weight: 800; }
+    .muted { color: var(--muted); }
+    .pill { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 99px; color: #22517e; background: #e8f2fb; font-size: 12px; font-weight: 700; }
+    .pill.orange { color: #8b4d13; background: #fff0dc; }
+    .pill.green { color: #146345; background: #e4f4ec; }
+    .pill.red { color: #963b3b; background: #fbe7e7; }
+    .objective { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+    .objective .card { min-height: 136px; }
+    .objective h3 { margin: 7px 0 6px; }
+    .roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+    .roadmap .card { position: relative; overflow: hidden; }
+    .roadmap .card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--blue); }
+    .roadmap .card.p1::before { background: var(--orange); }
+    .roadmap .card.p2::before { background: var(--green); }
+    .roadmap ul, .card ul { margin: 10px 0 0; padding-left: 19px; }
+    .component-card { min-height: 168px; border-top: 3px solid var(--blue); }
+    .component-card:nth-child(7n+2) { border-top-color: var(--orange); }
+    .component-card:nth-child(7n+3) { border-top-color: var(--teal); }
+    .component-card:nth-child(7n+4) { border-top-color: var(--green); }
+    .component-card:nth-child(7n+5) { border-top-color: #7a65b4; }
+    .component-card:nth-child(7n+6) { border-top-color: var(--red); }
+    .component-card:nth-child(7n+7) { border-top-color: #b58b2a; }
+    .component-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .component-list span { padding: 4px 7px; border: 1px solid var(--line); border-radius: 6px; color: #3f5872; background: #f7fafc; font-size: 12px; }
+    .formula { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--orange); color: #754813; background: #fff6e9; font-weight: 700; }
+    .profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .profile-card { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 13px; }
+    .profile-id { display: grid; place-items: center; height: 42px; border-radius: 9px; color: white; background: var(--navy); font-weight: 900; }
+    .profile-card p { margin-top: 5px; }
+    .profile-components { margin-top: 10px; color: #315b82; font-size: 12px; }
+    .profile-routes { margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .route-tools { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 12px; }
+    .route-tools input, .route-tools select { min-height: 38px; padding: 0 11px; border: 1px solid var(--line); border-radius: 7px; outline: none; color: var(--ink); background: white; }
+    .route-tools input { min-width: min(410px, 100%); flex: 1; }
+    .route-tools input:focus, .route-tools select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #dbeeff; }
+    .route-count { align-self: center; color: var(--muted); font-size: 12px; }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: white; box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    th, td { padding: 11px 13px; border-bottom: 1px solid #edf2f6; text-align: left; vertical-align: top; }
+    th { position: sticky; top: 0; z-index: 1; color: #49627c; background: #f4f8fb; font-size: 12px; }
+    td:first-child { width: 72px; font-weight: 800; }
+    code { padding: 2px 5px; border-radius: 4px; color: #1f547e; background: #edf5fb; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    .checklist { display: grid; gap: 8px; }
+    .check { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; background: white; }
+    .check input { margin-top: 5px; accent-color: var(--green); }
+    .check.done { color: var(--muted); text-decoration: line-through; background: #f5fbf8; }
+    .prompt { position: relative; padding: 16px; border-radius: 9px; color: #e9f2fb; background: #132f4f; }
+    .prompt pre { margin: 10px 0 0; overflow: auto; white-space: pre-wrap; color: #dceaf6; font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .copy { position: absolute; top: 12px; right: 12px; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; padding: 5px 9px; color: white; background: transparent; cursor: pointer; }
+    .note { padding: 12px 14px; border-left: 3px solid var(--orange); color: #6f4b1d; background: #fff8ed; }
+    footer { margin-top: 38px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    @media (max-width: 980px) { .layout { display: block; } .sidebar { position: sticky; top: 58px; z-index: 8; height: auto; padding: 8px 12px; border-right: 0; border-bottom: 1px solid var(--line); } .side-label { display: none; } .side-nav { display: flex; overflow: auto; gap: 5px; } .side-nav a { white-space: nowrap; padding: 6px 9px; } .side-nav b { display: none; } .hero { grid-template-columns: 1fr; } .hero-meta { max-width: 440px; } }
+    @media (max-width: 700px) { .topbar { padding: 0 14px; } .top-actions button:first-child { display: none; } .main { padding: 18px 12px 50px; } .hero { padding: 23px 18px; } .hero h1 { font-size: 30px; } .grid, .grid.two, .objective, .roadmap, .profile-grid { grid-template-columns: 1fr; } .section-head { display: block; } .section-head p { margin-top: 5px; } }
+    @media print { .topbar, .sidebar, .route-tools, .copy { display: none !important; } .layout { display: block; } .main { padding: 0; } .hero, .card, .panel, .table-wrap { box-shadow: none; } .section { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">30</span><span>3010 · UI 交互动效 PRD</span></div>
+    <div class="top-actions"><button type="button" onclick="window.print()">打印 / PDF</button><button type="button" onclick="document.documentElement.classList.toggle('compact')">切换阅读</button></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar" aria-label="PRD 目录">
+      <div class="side-label">Contents</div>
+      <nav class="side-nav">
+        <a href="#overview"><b>01</b>目标与边界</a>
+        <a href="#users"><b>02</b>用户任务</a>
+        <a href="#components"><b>03</b>47 个组件</a>
+        <a href="#profiles"><b>04</b>页面 Profiles</a>
+        <a href="#routes"><b>05</b>全量路由</a>
+        <a href="#responsive"><b>06</b>桌面 / 移动</a>
+        <a href="#roadmap"><b>07</b>实施排期</a>
+        <a href="#acceptance"><b>08</b>验收标准</a>
+      </nav>
+    </aside>
+    <main class="main">
+      <section id="overview" class="hero">
+        <div>
+          <div class="eyebrow">PRODUCT REQUIREMENTS DOCUMENT · V1.0 · 2026-08-23</div>
+          <h1>让 3010 的每个页面<br>都知道该怎么反馈</h1>
+          <p>把附件中的 UI 组件词典转化成 3010 可执行的页面规范：用户知道发生了什么，AI 知道怎么描述，WorkBuddy 知道如何实现，验收人员知道什么算完成。</p>
+        </div>
+        <div class="hero-meta">
+          <div class="hero-stat"><strong>211</strong><span>已盘点 page.tsx 路由</span></div>
+          <div class="hero-stat"><strong>47</strong><span>可复用交互组件</span></div>
+          <div class="hero-stat"><strong>14</strong><span>页面行为 Profile</span></div>
+          <div class="hero-stat"><strong>P0</strong><span>先做状态可靠性</span></div>
+        </div>
+      </section>
+
+      <section class="section" aria-label="产品摘要">
+        <div class="note"><strong>一句话决策：</strong>附件是交互语言和验收词典，不是要复制的紫橙视觉主题；3010 复用现有 HeroUI、Radix、Recharts、Skeleton、风险确认、移动端底栏和 Agent 状态件，优先统一状态、焦点、回滚和移动端替代操作。</div>
+      </section>
+
+      <section id="users" class="section">
+        <div class="section-head"><div><h2>用户任务与产品目标</h2><p>这份 PRD 解决的是“用户不知道系统在做什么”以及“页面每次都重新发明交互”的问题。</p></div></div>
+        <div class="objective">
+          <article class="card"><span class="pill">用户价值</span><h3>看得懂状态</h3><p class="muted">等待、处理中、需要确认、失败、超时和完成必须可区分，不能只显示一个转圈。</p></article>
+          <article class="card"><span class="pill orange">业务价值</span><h3>少走冤枉路</h3><p class="muted">列表详情用 Drawer/Expandable Row，分析可以下钻，表单按 Stepper 推进，尽量保持上下文。</p></article>
+          <article class="card"><span class="pill green">工程价值</span><h3>一次定义，到处复用</h3><p class="muted">每个 Profile 只定义一套行为合同，页面只接入业务数据，不再复制弹窗、加载和错误状态。</p></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><h2>范围与非目标</h2><p>使用附件内容优化交互，不借机改产品导航或下架既有功能。</p></div></div>
+        <div class="grid two">
+          <article class="card"><span class="pill green">本期范围</span><ul><li>统一 7 类交互的触发、反馈、关闭、错误和完成状态。</li><li>为 211 个前端路由绑定主行为 Profile。</li><li>分别定义桌面端和移动端的交互替代。</li><li>建立 P0/P1/P2 实施顺序和验收口径。</li></ul></article>
+          <article class="card"><span class="pill red">明确不做</span><ul><li>不复制演示 HTML 的紫色/橙色主题。</li><li>不为了动画而动画，不使用假百分比。</li><li>不删除或隐藏现有业务功能。</li><li>不在本文件中宣称代码已经完成验收。</li></ul></article>
+        </div>
+      </section>
+
+      <section id="components" class="section">
+        <div class="section-head"><div><h2>47 个组件：选择词典</h2><p>下面的分类、触发方式和描述公式来自附件；业务页面只按任务需要选用。</p></div><span class="pill">7 类 · 47 件</span></div>
+        <div id="componentGrid" class="grid"></div>
+      </section>
+
+      <section id="profiles" class="section">
+        <div class="section-head"><div><h2>页面行为 Profiles</h2><p>先确定页面主任务，再套 Profile；同一页面允许次级组合，但不重新发明基础件。</p></div></div>
+        <div id="profileGrid" class="profile-grid"></div>
+      </section>
+
+      <section id="routes" class="section">
+        <div class="section-head"><div><h2>211 个路由：逐页落位</h2><p>可按 URL 或 Profile 搜索。每个页面都有主 Profile，Profile 决定组件组合、状态和验收方式。</p></div></div>
+        <div class="route-tools"><input id="routeSearch" type="search" placeholder="搜索路由，例如 /growth/leads 或 intelligence"><select id="profileFilter"><option value="">全部 Profile</option></select><span id="routeCount" class="route-count"></span></div>
+        <div class="table-wrap"><table><thead><tr><th>Profile</th><th>路由</th><th>页面主任务</th><th>推荐组件</th><th>关键验收</th></tr></thead><tbody id="routeBody"></tbody></table></div>
+      </section>
+
+      <section id="responsive" class="section">
+        <div class="section-head"><div><h2>桌面端 / 移动端</h2><p>同一个业务能力，不是把桌面布局缩小，而是根据设备改变交互入口。</p></div></div>
+        <div class="grid two">
+          <article class="card"><span class="pill">桌面端</span><h3>保留上下文，提升扫描效率</h3><ul><li>沿用现有 Sidebar 和场景路由。</li><li>高密度表格用 Expandable Row + Drawer。</li><li>图表优先启用 Crosshair、Tooltip、Legend Filter、Drill Down。</li><li>拖拽显示占位、可放置/禁止状态和服务端失败回滚。</li><li>Modal/Drawer 统一焦点陷阱、Esc 和焦点返回。</li></ul></article>
+          <article class="card"><span class="pill orange">移动端</span><h3>拇指可达，操作不依赖 Hover</h3><ul><li>保留今天、内容、互动、线索、客户 5 项 Bottom Navigation。</li><li>Drawer 改为半屏/全屏 Bottom Sheet，保留拖拽条和关闭入口。</li><li>图表用点击数据点、日期范围按钮和可滚动明细替代 Hover/滚轮。</li><li>拖拽排序同时提供长按拖动和上移/下移按钮。</li><li>生成、发布、群发按钮满足 44px 触控区，状态变化不跳布局。</li></ul></article>
+        </div>
+      </section>
+
+      <section id="roadmap" class="section">
+        <div class="section-head"><div><h2>实施排期</h2><p>先修复反馈可靠性，再提升核心业务效率，最后补学习成本和细节。</p></div></div>
+        <div class="roadmap">
+          <article class="card"><span class="pill red">P0 · 可靠性</span><h3>先让状态真实</h3><ul><li>Overlay、Loading、错误/超时/重试统一。</li><li>发布、群发、外部触达、权限和删除接入风险确认。</li><li>Agent/本地引擎/任务/证据明确生命周期。</li><li>首屏列表补 Skeleton，移除空白等待。</li></ul></article>
+          <article class="card p1"><span class="pill orange">P1 · 业务效率</span><h3>再让流程顺手</h3><ul><li>获客和情报图表联动、下钻。</li><li>工作流/分发拖拽占位、跨列和失败回滚。</li><li>CRM/互动列表详情 Drawer、Expandable Row、Load More。</li><li>内容生成支持 Drop Zone、Button Loading 和重试。</li></ul></article>
+          <article class="card p2"><span class="pill green">P2 · 学习成本</span><h3>最后让产品会教</h3><ul><li>Product Tour、Coach Mark、Hotspot、Spotlight。</li><li>Checklist、Context Hint 版本化和埋点。</li><li>知识库/后台 Tree View、Accordion、Collapse。</li><li>案例、媒体、省钱页面渐进展开。</li></ul></article>
+        </div>
+      </section>
+
+      <section id="acceptance" class="section">
+        <div class="section-head"><div><h2>验收清单</h2><p>点击复选框可以在评审时记录当前进度，状态保存在浏览器本地。</p></div></div>
+        <div class="grid two">
+          <div class="checklist" id="checklistA"></div>
+          <div class="checklist" id="checklistB"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><div><h2>交给 WorkBuddy 的开发任务</h2><p>避免“加个弹窗/加个动画”这种无法验收的描述。</p></div></div>
+        <div class="prompt"><button class="copy" type="button" onclick="copyPrompt(this)">复制</button><strong>页面交互任务模板</strong><pre>页面：/growth/leads
+Profile：P01
+组件：Expandable Row + Drawer + Skeleton + Pagination
+触发：点击线索行展开摘要；点击“查看详情”从右侧打开 Drawer
+联动：筛选、分页、汇总数字和图表保持同一查询条件
+状态：加载保留表格骨架；失败显示重试；关闭 Drawer 后焦点和滚动位置回到原处
+设备：桌面右侧 Drawer；移动端半屏 Bottom Sheet
+验收：不丢筛选、不跳滚动、Esc/返回键可关闭、键盘可操作、支持 reduced-motion</pre></div>
+      </section>
+
+      <footer>参考：/Users/yanghy/Desktop/UI组件与交互动效AI描述指南.md · /Users/yanghy/Desktop/UI组件演示系统.html · 本 PRD 为实施方案，不等同于代码完成证明。</footer>
+    </main>
+  </div>
+  <script>
+    const componentGroups = [
+      { name: '弹层组件', color: '#2374c6', formula: '组件名称 + 怎么触发 + 从哪里出现 + 是否先处理', items: ['Tooltip 工具提示','Popover 弹出框','Dropdown 下拉菜单','Modal 模态框','Drawer 抽屉','Bottom Sheet 底部操作面板'], use: '解释、轻量操作、选择、风险确认、详情保留上下文、移动端操作' },
+      { name: '加载动效', color: '#138a8a', formula: '动效名称 + 等待时长 + 使用场景', items: ['Spinner 加载动画','Progress Bar 进度条','Circular Progress 环形进度条','Skeleton 骨架屏','Shimmer 骨架屏亮带','Button Loading 按钮加载','Page Loader 页面加载'], use: '等待反馈、真实进度、页面稳定和提交防连点' },
+      { name: '新手引导', color: '#238b65', formula: '组件名称 + 出现时机 + 指向目标 + 用户操作反馈 + 完成状态', items: ['Product Tour 产品导览','Coach Mark 操作指引标注','Hotspot 热点提示','Spotlight 聚光高亮','Checklist 新手任务清单','Context Hint 情境提示'], use: '首次激活、新功能提示、强制单步和表单情境说明' },
+      { name: '图表交互', color: '#1d8fa3', formula: '交互名称 + 触发方式 + 联动变化 + 最终状态', items: ['Brush Selection 框选范围','Crosshair 十字准线','Data Point Highlight 数据点高亮','Tooltip 数据提示框','Legend Filter 图例筛选','Zoom 图表缩放','Drill Down 数据下钻'], use: '获客、内容、账号、成本和执行结果的分析探索' },
+      { name: '导航组件', color: '#7a65b4', formula: '组件名称 + 放在哪里 + 切换什么内容 + 当前项怎么高亮', items: ['Tabs 标签页','Segmented Control 分段控制器','Breadcrumb 面包屑','Pagination 分页器','Stepper 步骤条','Sidebar 侧边栏','Bottom Navigation 底部导航'], use: '场景导航、页内切换、层级返回、分页和流程推进' },
+      { name: '拖拽交互', color: '#c75151', formula: '什么能拖 + 哪里能接收 + 拖动中怎么提示 + 松手后发生什么', items: ['Reorder 拖动排序','Drop Zone 拖放区域','Placeholder 拖拽占位符','Cross-list Transfer 跨列表转移','Auto Scroll 边缘自动滚动','Snap Back 回弹归位'], use: '素材、工作流、任务列、账号/渠道分组和文件导入' },
+      { name: '内容展开', color: '#b58b2a', formula: '组件名称 + 内容类型 + 展开方向 + 收起方式', items: ['Accordion 手风琴','Collapse 独立折叠区块','Tree View 树形展开','Expandable Row 可展开行','Read More 展开全文','Load More 加载更多','Expandable Card 可展开卡片','Drawer 详情展开'], use: '高密度信息渐进披露、树结构、表格详情、长文和卡片详情' }
+    ];
+
+    const profiles = [
+      { id:'P00', title:'Shell、首页、认证、轻量系统页', task:'让用户知道当前场景并稳定进入页面。', components:'Sidebar / Bottom Navigation / Page Loader / Skeleton / Tooltip / Product Tour', check:'URL 场景正确、首屏不跳、引导可跳过并记忆。', routes:`/ /today /mine /login /dev-clear-browser-cache` },
+      { id:'P01', title:'今日增长、获客总览、线索池', task:'总览到渠道再到线索明细，数据联动且保留上下文。', components:'Tabs / Segmented / Circular Progress / Crosshair / Highlight / Legend Filter / Drill Down / Drawer / Pagination / Expandable Row', check:'筛选、汇总、图表和详情使用同一查询条件。', routes:`/growth /growth/account-health /growth/leads /growth/reports` },
+      { id:'P02', title:'获客创建、策略、工作流、RPA 编排', task:'配置、预览、执行分步完成，拖拽有回滚。', components:'Stepper / Checklist / Context Hint / Dropdown / Popover / Button Loading / Progress / Reorder / Placeholder / Cross-list / Auto Scroll / Snap Back / Modal', check:'非法落点不改数据，高风险执行需确认。', routes:`/apps/auto-acquisition /auto-acquisition/create /growth/acquisition /growth/rpa-workbench /growth/strategies /growth/workflows /strategies /strategies/new /strategies/edit /solutions /solutions/configure /solutions/run` },
+      { id:'P03', title:'CRM、客户、连接器、导入列表', task:'筛选、分页、行详情和编辑不离开列表上下文。', components:'Tabs / Segmented / Skeleton / Pagination / Expandable Row / Drawer / Dropdown / Tooltip / Modal / Bottom Sheet', check:'不丢查询；编辑和删除状态可恢复。', routes:`/crm /crm/customer /crm/import /crm/connectors /crm-import /crm-import/flow /crm-connectors /customer /boss-recruit /wecom-crm` },
+      { id:'P04', title:'客户详情、商机、成交跟进', task:'在客户上下文中推进商机和外发动作。', components:'Breadcrumb / Tabs / Drawer / Accordion / Collapse / Read More / Expandable Row / Context Hint / Risk Modal', check:'外发、成交等真实外部动作先解释影响再确认。', routes:`/crm/closer /crm-closer /growth/leads/detail` },
+      { id:'P05', title:'内容创作、AI 生成、编辑和对比', task:'输入、生成、预览、保存/发布状态明确。', components:'Stepper / Tabs / Segmented / Context Hint / Drop Zone / Button Loading / Progress / Skeleton / Read More / Expandable Card / Drawer / Modal', check:'生成失败可重试，素材拖入有可接收反馈。', routes:`/content /content/articles /content/ai-image-gen /content/ai-video-gen /content/face-swap /content/image-gen /content/optimization /content/wechat-official-assistant /content/workspace /content/xiaohongshu /content/xiaohongshu-assistant /copy-compare /face-swap /poi /reply /seedance-video /styles /styles/new /styles/edit /templates /templates/new /templates/edit /topics /topics/new /video-download /video-generation /video-studio /video-workshop /video/product-cut /video/release-plans` },
+      { id:'P06', title:'发布、分发、平台账号、排期', task:'账号、渠道、发布时间和真实任务回执可追踪。', components:'Stepper / Tabs / Dropdown / Progress / Button Loading / Modal / Drawer / Reorder / Placeholder / Cross-list / Auto Scroll / Snap Back / Pagination', check:'真实进度、失败原因和批量风险清晰可见。', routes:`/accounts-matrix /distribution /distribution/accounts /distribution/articles /distribution/compliance /distribution/logs /distribution/publish-article /distribution/publish-video /distribution/scrape /distribution/tasks /platforms /platforms/new /platforms/edit /schedules /schedules/edit` },
+      { id:'P07', title:'消息、评论、客服、微信互动', task:'会话、历史、回复和群发保持上下文且防重复提交。', components:'Tabs / Segmented / Drawer / Expandable Row / Load More / Read More / Bottom Sheet / Button Loading / Risk Modal / Context Hint', check:'历史追加不丢滚动；发送/群发可取消或重试。', routes:`/message /engagement /engagement/channel-messages /engagement/comment-acquisition /engagement/comment-insights /engagement/customer-service /engagement/customers /engagement/douyin-comments /engagement/douyin-messages /engagement/records /engagement/rules /engagement/wechat /engagement/wechat-channel-comments /engagement/wechat-groups /engagement/wechat-moments /engagement/wechat-moments/detail /engagement/wechat/chat-history /engagement/wechat/contact-add /engagement/wechat/contacts /engagement/wechat/friend-accept /engagement/wechat/mass-send /engagement/wechat/moments-publish /engagement/wechat/plans /engagement/wecom-assistant /wecom-assistant` },
+      { id:'P08', title:'情报、趋势、报告、成本、战情室', task:'从数据总览下钻到证据和明细，分析与触达解耦。', components:'Tabs / Segmented / Breadcrumb / Crosshair / Brush / Highlight / Tooltip / Legend Filter / Zoom / Drill Down / Skeleton / Drawer / Pagination', check:'下钻同步标题、面包屑、URL、图表和返回路径。', routes:`/effects /intelligence /intelligence/accounts /intelligence/collaboration /intelligence/costs /intelligence/inbox /intelligence/inbox-processing /intelligence/industries /intelligence/leads /intelligence/monitor-new /intelligence/monitors /intelligence/redfox /intelligence/report-new /intelligence/reports /intelligence/risks /intelligence/rules /intelligence/search /intelligence/skills /intelligence/trends /intelligence/viral /war-room /viral-analysis` },
+      { id:'P09', title:'AI 助手、Agent、应用和任务工作台', task:'把意图、审批、执行、证据和结果连成一条线。', components:'Product Tour / Coach Mark / Spotlight / Checklist / Context Hint / Stepper / Spinner / Progress / Button Loading / Drawer / Read More / Modal', check:'执行中可取消/重试，状态不被假成功覆盖。', routes:`/agent /agent-workbench /agent-cockpit-canvas /apps /apps/ai-employee /apps/detail /artifacts` },
+      { id:'P10', title:'本地引擎、浏览器、桌面、任务和证据', task:'执行前看权限和风险，执行中看过程，结束后看证据。', components:'Stepper / Spotlight / Checklist / Context Hint / Page Loader / Spinner / Progress / Tree View / Accordion / Expandable Row / Drawer / Risk Modal / Snap Back', check:'证据缺失为阻塞态；无效操作不改状态。', routes:`/admin/executor /admin/local-engine /admin/sandbox /approvals /local-engine /local-engine/ai-action /local-engine/browser /local-engine/browser/agent /local-engine/desktop /local-engine/evidence /local-engine/files /local-engine/logs /local-engine/permissions /local-engine/remote /local-engine/run /local-engine/tasks /local-engine/workbench /mai-ui /task-evidence /tasks /tasks/confirmations /tasks/evidence /tasks/records /tasks/runs /risk-confirm /device-center` },
+      { id:'P11', title:'知识库、素材库、收藏和资产', task:'文件夹、素材和资产可发现、可拖入、可渐进查看。', components:'Tree View / Drop Zone / Reorder / Placeholder / Load More / Read More / Expandable Card / Drawer / Skeleton / Shimmer / Dropdown', check:'上传/移动同步两侧数量，目录层级可访问。', routes:`/content/collection-center /collections/[slug] /knowledge /knowledge-base /knowledge-base/new /materials` },
+      { id:'P12', title:'管理后台、能力、设置、账号和设备', task:'高密度配置可扫描、可回退、可安全修改。', components:'Sidebar / Breadcrumb / Tabs / Segmented / Accordion / Collapse / Tree View / Expandable Row / Tooltip / Popover / Modal / Skeleton', check:'敏感配置阻塞确认；移动端改 Bottom Sheet。', routes:`/admin /admin/account /admin/ai-employee /admin/commercial-readiness /admin/connectors /admin/memory /admin/models /admin/plugins /admin/redfox /admin/redfox-skills /admin/risk /admin/savings /admin/settings /admin/tools /admin/users /capabilities /capabilities/account /capabilities/executor /capabilities/memory /capabilities/models /capabilities/models/new /capabilities/models/edit /capabilities/plugins /capabilities/risk /capabilities/sandbox /capabilities/tools /capabilities/users /commercial-readiness /mobile-capabilities /settings /settings/memory /settings/legal /savings /savings/orders /savings/wallet` },
+      { id:'P13', title:'案例、演示、视频、样式和省钱模块', task:'先看摘要，再渐进打开详情或媒体操作。', components:'Tabs / Segmented / Expandable Card / Read More / Load More / Drawer / Bottom Sheet / Progress / Button Loading / Tooltip', check:'媒体使用真实进度；移动端操作底部化。', routes:`/cases /cases/[slug] /case-admin /case-admin/new /case-admin/[id] /demo-request /demo/video-studio /demo/wechat-personal /release-notes` },
+      { id:'P14', title:'合规、风险、法律和系统工具', task:'先解释影响，再让用户做不可逆决定。', components:'Accordion / Collapse / Context Hint / Risk Modal / Page Loader / Skeleton / Breadcrumb / Tabs', check:'背景不可误触；失败态给出下一步。', routes:`/compliance /compliance-check` }
+    ];
+
+    const flatRoutes = profiles.flatMap(p => p.routes.trim().split(/\s+/).map(route => ({ profile:p.id, route, task:p.task, components:p.components, check:p.check })));
+    const routeLabel = p => p === '/' ? '根路由' : p;
+
+    document.getElementById('componentGrid').innerHTML = componentGroups.map(group => `<article class="card component-card" style="border-top-color:${group.color}"><span class="kicker">${group.name} · ${group.items.length} 件</span><h3>${group.use}</h3><div class="component-list">${group.items.map(item => `<span>${item}</span>`).join('')}</div><div class="formula">AI 描述公式：${group.formula}</div></article>`).join('');
+
+    document.getElementById('profileGrid').innerHTML = profiles.map(p => `<article class="card profile-card"><div class="profile-id">${p.id}</div><div><h3>${p.title}</h3><p class="muted">${p.task}</p><div class="profile-components"><strong>组件：</strong>${p.components}</div><div class="profile-routes"><strong>验收：</strong>${p.check}<br><span class="muted">${p.routes.trim().split(/\s+/).length} 个路由</span></div></div></article>`).join('');
+
+    const filter = document.getElementById('profileFilter');
+    profiles.forEach(p => { const option = document.createElement('option'); option.value = p.id; option.textContent = p.id + ' · ' + p.title; filter.appendChild(option); });
+    const routeBody = document.getElementById('routeBody');
+    const routeSearch = document.getElementById('routeSearch');
+    const routeCount = document.getElementById('routeCount');
+    function renderRoutes() {
+      const q = routeSearch.value.trim().toLowerCase();
+      const selected = filter.value;
+      const rows = flatRoutes.filter(r => (!selected || r.profile === selected) && (!q || `${r.route} ${r.profile} ${r.task} ${r.components}`.toLowerCase().includes(q)));
+      routeCount.textContent = `显示 ${rows.length} / ${flatRoutes.length} 个路由`;
+      routeBody.innerHTML = rows.map(r => `<tr><td><span class="pill">${r.profile}</span></td><td><code>${routeLabel(r.route)}</code></td><td>${r.task}</td><td class="muted">${r.components}</td><td>${r.check}</td></tr>`).join('') || `<tr><td colspan="5" class="muted">没有匹配的路由</td></tr>`;
+    }
+    routeSearch.addEventListener('input', renderRoutes); filter.addEventListener('change', renderRoutes); renderRoutes();
+
+    const checks = [
+      '异步动作都有 idle / loading / success / error / timeout 状态。',
+      '真实进度只绑定后端进度，没有接口进度时不显示百分比。',
+      'Modal、Drawer、Bottom Sheet 支持焦点陷阱、Esc、关闭后焦点返回。',
+      '筛选、分页、Load More、展开详情不丢查询条件和滚动位置。',
+      '拖拽无效落点不改数据，服务端失败能 Snap Back。',
+      '图表下钻同步标题、面包屑、图表、返回路径，移动端有替代操作。',
+      '只使用 Kaypal v3 令牌，动画支持 prefers-reduced-motion。',
+      '生成、发布、群发、权限、删除等外部动作有风险确认。'
+    ];
+    function renderChecks(id, values) { document.getElementById(id).innerHTML = values.map((text, i) => `<label class="check"><input type="checkbox" data-check="${id}-${i}"><span>${text}</span></label>`).join(''); }
+    renderChecks('checklistA', checks.slice(0, 4)); renderChecks('checklistB', checks.slice(4));
+    document.querySelectorAll('[data-check]').forEach(input => { const key = input.dataset.check; input.checked = localStorage.getItem(key) === '1'; input.closest('.check').classList.toggle('done', input.checked); input.addEventListener('change', () => { localStorage.setItem(key, input.checked ? '1' : '0'); input.closest('.check').classList.toggle('done', input.checked); }); });
+
+    function copyPrompt(button) { const text = button.nextElementSibling.nextElementSibling.textContent; navigator.clipboard?.writeText(text).then(() => { button.textContent = '已复制'; setTimeout(() => button.textContent = '复制', 1400); }); }
+    const links = [...document.querySelectorAll('.side-nav a')];
+    const sections = links.map(link => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { links.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id)); } }), { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(section => observer.observe(section));
+  </script>
+</body>
+</html>

@@ -37,11 +37,11 @@ export class AgentGatewayExceptionFilter implements ExceptionFilter {
           : String(exception)
       }`,
     );
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      data: null,
-      message: '内部错误',
-      code: 'INTERNAL',
-    });
+    // 转为 HttpException 交给全局 AllExceptionsFilter 统一输出，
+    // 保证有 requestId / traceId / retryable 等字段（2026-08-26 错误契约修复）
+    throw new HttpException(
+      { code: 'INTERNAL', message: '内部错误', retryable: false },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 }

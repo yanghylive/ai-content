@@ -14,7 +14,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 /** 把契约 AppError 转成真实仓库全局格式的 HttpException（扁平 code/message，由全局 AllExceptionsFilter 统一输出） */
 export function toHttpException(err: AppError): HttpException {
   return new HttpException(
-    { code: err.code, message: err.message, publicDetails: err.details },
+    { code: err.code, message: err.message, publicDetails: err.details, retryable: err.retryable },
     errorSpec(err.code).httpStatus,
   );
 }

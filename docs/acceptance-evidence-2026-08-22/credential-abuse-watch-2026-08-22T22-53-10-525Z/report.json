@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-08-22T22:53:10.525Z",
+  "status": "ALERT",
+  "strict": false,
+  "statePath": "/Users/yanghy/Documents/New project/ai-content/scripts/.credential-watch-state.json",
+  "findings": [
+    {
+      "level": "ALERT",
+      "topic": "gateway-down",
+      "message": "网关上游欠费（402 Insufficient Balance）——用户端 AI 调用全部不可用，需处理 kaypal 上游结算/切百炼"
+    },
+    {
+      "level": "INFO",
+      "topic": "local-usage",
+      "message": "SQLite kaypal-ai.sqlite：近 0 天调用 0 次",
+      "daily": []
+    }
+  ]
+}

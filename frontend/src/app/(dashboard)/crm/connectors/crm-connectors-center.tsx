@@ -85,12 +85,12 @@ export function CrmConnectorsCenter() {
     setLoading(true);
     setError(null);
     try {
-      const result = (await api.get("/crm/connectors/readiness").catch(() => null)) as {
+      const result = (await api.get("/crm/connectors/readiness")) as {
         connectors?: ConnectorItem[];
         summary?: string;
-      } | null;
-      setItems(result?.connectors || []);
-      setSummary(result?.summary || "");
+      };
+      setItems(result.connectors || []);
+      setSummary(result.summary || "");
     } catch (err: unknown) {
       setError(toPublicError(err, "连接状态读取失败"));
     } finally {

@@ -1,0 +1,5566 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-26T05:44:58.762Z",
+  "finishedAt": "2026-08-26T05:46:21.933Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/frontend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 202,
+  "scannedRouteCount": 124,
+  "isPartial": true,
+  "routeCount": 124,
+  "excludedRouteCount": 78,
+  "passCount": 1,
+  "failCount": 123,
+  "consoleErrorCount": 369,
+  "failures": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2F",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2F"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/accounts-matrix",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Faccounts-matrix",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Faccounts-matrix"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fagent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fagent"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/approvals",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapprovals",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapprovals"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fauto-acquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fauto-acquisition"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/detail",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fdetail",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fdetail"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fartifacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fartifacts"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/auto-acquisition/create",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fauto-acquisition%2Fcreate",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fauto-acquisition%2Fcreate"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/boss-recruit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fboss-recruit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fboss-recruit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcase-admin",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcase-admin"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcase-admin%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcase-admin%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcommercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcommercial-readiness"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcompliance"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance-check",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcompliance-check",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcompliance-check"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/ai-image-gen",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fai-image-gen",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fai-image-gen"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/ai-video-gen",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fai-video-gen",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fai-video-gen"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/collection-center",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fcollection-center",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fcollection-center"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/image-gen",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fimage-gen",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fimage-gen"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/wechat-official-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fwechat-official-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fwechat-official-assistant"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/workspace",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fworkspace",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fworkspace"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu-assistant"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/copy-compare",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcopy-compare",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcopy-compare"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-closer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm-closer",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm-closer"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-connectors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm-connectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm-connectors"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm-import",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm-import"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import/flow",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm-import%2Fflow",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm-import%2Fflow"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fconnectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fconnectors"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/customer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcustomer",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcustomer"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/customer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcustomer",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcustomer"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/device-center",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdevice-center",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdevice-center"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/accounts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Faccounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Faccounts"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Farticles"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/publish-article",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fpublish-article",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fpublish-article"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/publish-video",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fpublish-video",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fpublish-video"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/scrape",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fscrape",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fscrape"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/tasks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Ftasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Ftasks"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/effects",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Feffects",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Feffects"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-acquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-acquisition"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customer-service",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomer-service",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomer-service"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-channel-comments"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments/detail",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments%2Fdetail",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments%2Fdetail"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/chat-history",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fchat-history",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fchat-history"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/contact-add",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fcontact-add",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fcontact-add"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/contacts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fcontacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fcontacts"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/friend-accept",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Ffriend-accept",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Ffriend-accept"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/mass-send",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fmass-send",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fmass-send"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/moments-publish",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fmoments-publish",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fmoments-publish"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/plans",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fplans",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fplans"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Freports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Freports"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/rpa-workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Frpa-workbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Frpa-workbench"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fstrategies"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fknowledge",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fknowledge"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fknowledge-base",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fknowledge-base"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fknowledge-base%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fknowledge-base%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mai-ui",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmai-ui",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmai-ui"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/message",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmessage",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmessage"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mobile-capabilities",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmobile-capabilities",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmobile-capabilities"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/poi",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fpoi",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fpoi"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Frelease-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Frelease-notes"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/reply",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Freply",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Freply"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/risk-confirm",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Frisk-confirm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Frisk-confirm"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsavings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsavings"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings/orders",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsavings%2Forders",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsavings%2Forders"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings/wallet",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsavings%2Fwallet",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsavings%2Fwallet"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fschedules"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fschedules%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fschedules%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings/legal",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings%2Flegal",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings%2Flegal"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings/memory",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings%2Fmemory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings%2Fmemory"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/configure",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions%2Fconfigure",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions%2Fconfigure"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/run",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions%2Frun",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions%2Frun"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstrategies"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstrategies%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstrategies%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstrategies%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstrategies%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/task-evidence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftask-evidence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftask-evidence"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftoday",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftoday"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video-download",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo-download",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo-download"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video-generation",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo-generation",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo-generation"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video/product-cut",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo%2Fproduct-cut",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo%2Fproduct-cut"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video/release-plans",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo%2Frelease-plans",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo%2Frelease-plans"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/viral-analysis",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fviral-analysis",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fviral-analysis"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fwar-room",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fwar-room"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/accounts-matrix"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/agent"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/accounts-matrix"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/agent"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/accounts-matrix"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/agent"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/approvals"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps/ai-employee"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/approvals"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps/ai-employee"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/approvals"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps/ai-employee"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps/auto-acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps/detail"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/artifacts"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps/auto-acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps/detail"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/artifacts"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps/auto-acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/apps/detail"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/artifacts"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/auto-acquisition/create"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/boss-recruit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/case-admin"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/auto-acquisition/create"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/boss-recruit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/auto-acquisition/create"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/case-admin"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/boss-recruit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/case-admin"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/case-admin/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/commercial-readiness"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/case-admin/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/commercial-readiness"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/case-admin/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/commercial-readiness"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/compliance"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/compliance"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/compliance"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/compliance-check"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/compliance-check"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/compliance-check"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/ai-image-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/ai-image-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/ai-image-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/ai-video-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/articles"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/ai-video-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/articles"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/ai-video-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/articles"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/collection-center"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/collection-center"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/collection-center"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/image-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/optimization"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/image-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/optimization"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/image-gen"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/optimization"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/wechat-official-assistant"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/wechat-official-assistant"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/wechat-official-assistant"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/workspace"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/xiaohongshu"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/workspace"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/xiaohongshu"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/workspace"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/xiaohongshu"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/xiaohongshu-assistant"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/xiaohongshu-assistant"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/content/xiaohongshu-assistant"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/copy-compare"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/copy-compare"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/copy-compare"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-closer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-closer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-closer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-connectors"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-import"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-connectors"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-connectors"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-import"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-import"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-import/flow"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-import/flow"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm-import/flow"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/closer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/connectors"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/closer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/closer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/connectors"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/connectors"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/customer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/customer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/customer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/import"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/customer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/import"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/crm/import"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/customer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/customer"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/device-center"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/device-center"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/device-center"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/accounts"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/accounts"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/accounts"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/articles"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/articles"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/compliance"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/articles"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/publish-article"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/compliance"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/compliance"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/publish-article"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/publish-article"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/publish-video"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/publish-video"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/scrape"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/publish-video"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/tasks"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/scrape"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/scrape"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/tasks"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/distribution/tasks"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/effects"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/effects"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/effects"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/channel-messages"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/channel-messages"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/channel-messages"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/comment-acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/comment-insights"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/comment-acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/comment-acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/customer-service"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/comment-insights"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/comment-insights"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/customer-service"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/customer-service"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/customers"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/douyin-comments"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/customers"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/customers"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/douyin-messages"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/douyin-comments"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/douyin-comments"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/douyin-messages"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/douyin-messages"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/records"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/rules"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/records"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/records"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/rules"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/rules"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-channel-comments"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-groups"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-channel-comments"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-moments"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-channel-comments"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-groups"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-groups"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-moments"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-moments"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-moments/detail"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/chat-history"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-moments/detail"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat-moments/detail"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/contact-add"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/chat-history"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/chat-history"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/contact-add"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/contact-add"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/contacts"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/friend-accept"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/contacts"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/mass-send"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/contacts"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/friend-accept"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/friend-accept"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/mass-send"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/mass-send"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/moments-publish"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/plans"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/moments-publish"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/moments-publish"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/plans"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/engagement/wechat/plans"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/account-health"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/account-health"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/reports"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/account-health"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/acquisition"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/reports"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/reports"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/rpa-workbench"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/strategies"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/rpa-workbench"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/workflows"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/rpa-workbench"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/strategies"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/strategies"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/workflows"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/growth/workflows"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/knowledge"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/knowledge-base"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/knowledge"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/knowledge-base/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/knowledge"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/knowledge-base"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/knowledge-base"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/knowledge-base/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/knowledge-base/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/mai-ui"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/message"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/mai-ui"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/mobile-capabilities"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/mai-ui"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/message"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/message"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/mobile-capabilities"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/mobile-capabilities"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/platforms"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/platforms/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/platforms"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/platforms/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/platforms"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/platforms/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/platforms/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/platforms/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/platforms/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/poi"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/release-notes"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/poi"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/poi"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/reply"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/release-notes"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/release-notes"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/reply"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/reply"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/risk-confirm"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/savings"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/risk-confirm"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/risk-confirm"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/savings/orders"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/savings"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/savings"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/savings/orders"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/savings/orders"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/savings/wallet"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/schedules"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/savings/wallet"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/savings/wallet"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/schedules/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/schedules"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/schedules"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/schedules/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/schedules/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings/legal"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings/memory"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings/legal"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings/legal"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings/memory"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/settings/memory"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/solutions"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/solutions/configure"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/solutions"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/solutions"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/solutions/run"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/solutions/configure"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/solutions/configure"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/solutions/run"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/solutions/run"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/strategies"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/strategies/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/strategies"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/strategies"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/strategies/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/strategies/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/strategies/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/strategies/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/strategies/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/styles"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/styles/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/styles"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/styles"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/styles/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/styles/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/styles/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/styles/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/styles/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/task-evidence"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/task-evidence"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/task-evidence"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/confirmations"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/confirmations"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/confirmations"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/evidence"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/records"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/evidence"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/evidence"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/runs"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/records"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/records"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/runs"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/tasks/runs"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/templates"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/templates/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/templates"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/templates"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/templates/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/templates/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/templates/edit"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/templates/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/templates/new"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/today"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video-download"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/today"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/today"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video-generation"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video-download"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video-download"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video-generation"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video-generation"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video/product-cut"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video/release-plans"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video/product-cut"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video/product-cut"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/viral-analysis"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video/release-plans"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/video/release-plans"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/viral-analysis"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/viral-analysis"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/war-room"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/war-room"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/war-room"
+    }
+  ],
+  "results": [
+    {
+      "route": "/",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2F",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2F"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/accounts-matrix",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Faccounts-matrix",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Faccounts-matrix"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/agent",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fagent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fagent"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/approvals",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapprovals",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapprovals"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/ai-employee",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fai-employee"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fauto-acquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fauto-acquisition"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/apps/detail",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fapps%2Fdetail",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fapps%2Fdetail"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/artifacts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fartifacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fartifacts"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/auto-acquisition/create",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fauto-acquisition%2Fcreate",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fauto-acquisition%2Fcreate"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/boss-recruit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fboss-recruit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fboss-recruit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcase-admin",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcase-admin"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin/[id]",
+      "finalUrl": "http://127.0.0.1:3010/case-admin/[id]",
+      "status": "404",
+      "badMatches": [],
+      "textLength": 55,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/case-admin/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcase-admin%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcase-admin%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/commercial-readiness",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcommercial-readiness",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcommercial-readiness"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcompliance"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/compliance-check",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcompliance-check",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcompliance-check"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/ai-image-gen",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fai-image-gen",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fai-image-gen"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/ai-video-gen",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fai-video-gen",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fai-video-gen"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Farticles"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/collection-center",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fcollection-center",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fcollection-center"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/image-gen",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fimage-gen",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fimage-gen"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/optimization",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Foptimization"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/wechat-official-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fwechat-official-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fwechat-official-assistant"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/workspace",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fworkspace",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fworkspace"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/content/xiaohongshu-assistant",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu-assistant",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcontent%2Fxiaohongshu-assistant"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/copy-compare",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcopy-compare",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcopy-compare"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-closer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm-closer",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm-closer"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-connectors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm-connectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm-connectors"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm-import",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm-import"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-import/flow",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm-import%2Fflow",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm-import%2Fflow"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcloser"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/connectors",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fconnectors",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fconnectors"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/customer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcustomer",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fcustomer"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/import",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcrm%2Fimport"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/customer",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fcustomer",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fcustomer"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/device-center",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdevice-center",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdevice-center"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/accounts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Faccounts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Faccounts"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/articles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Farticles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Farticles"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/compliance",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fcompliance"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/publish-article",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fpublish-article",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fpublish-article"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/publish-video",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fpublish-video",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fpublish-video"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/scrape",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fscrape",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Fscrape"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/distribution/tasks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Ftasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fdistribution%2Ftasks"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/effects",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Feffects",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Feffects"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fchannel-messages"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-acquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-acquisition"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/comment-insights",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcomment-insights"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customer-service",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomer-service",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomer-service"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/customers",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fcustomers"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-comments"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-messages",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fdouyin-messages"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frecords"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/rules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Frules"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-channel-comments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-channel-comments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-channel-comments"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-groups",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-groups"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat-moments/detail",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments%2Fdetail",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat-moments%2Fdetail"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/chat-history",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fchat-history",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fchat-history"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/contact-add",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fcontact-add",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fcontact-add"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/contacts",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fcontacts",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fcontacts"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/friend-accept",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Ffriend-accept",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Ffriend-accept"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/mass-send",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fmass-send",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fmass-send"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/moments-publish",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fmoments-publish",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fmoments-publish"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/wechat/plans",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fplans",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fengagement%2Fwechat%2Fplans"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/account-health",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Faccount-health"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/acquisition",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Facquisition"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/reports",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Freports",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Freports"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/rpa-workbench",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Frpa-workbench",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Frpa-workbench"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fstrategies"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/workflows",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fgrowth%2Fworkflows"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fknowledge",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fknowledge"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fknowledge-base",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fknowledge-base"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/knowledge-base/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fknowledge-base%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fknowledge-base%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mai-ui",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmai-ui",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmai-ui"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/message",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmessage",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmessage"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mobile-capabilities",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmobile-capabilities",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmobile-capabilities"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/platforms/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fplatforms%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fplatforms%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/poi",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fpoi",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fpoi"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/release-notes",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Frelease-notes",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Frelease-notes"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/reply",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Freply",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Freply"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/risk-confirm",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Frisk-confirm",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Frisk-confirm"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsavings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsavings"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings/orders",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsavings%2Forders",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsavings%2Forders"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/savings/wallet",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsavings%2Fwallet",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsavings%2Fwallet"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fschedules",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fschedules"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/schedules/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fschedules%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fschedules%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings/legal",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings%2Flegal",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings%2Flegal"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/settings/memory",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsettings%2Fmemory",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsettings%2Fmemory"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/configure",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions%2Fconfigure",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions%2Fconfigure"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/solutions/run",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fsolutions%2Frun",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fsolutions%2Frun"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstrategies",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstrategies"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstrategies%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstrategies%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/strategies/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstrategies%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstrategies%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/styles/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fstyles%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fstyles%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/task-evidence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftask-evidence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftask-evidence"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/confirmations",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fconfirmations"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/evidence",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fevidence"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/records",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Frecords"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/tasks/runs",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftasks%2Fruns"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/edit",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates%2Fedit",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates%2Fedit"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/templates/new",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftemplates%2Fnew",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftemplates%2Fnew"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/today",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Ftoday",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Ftoday"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video-download",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo-download",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo-download"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video-generation",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo-generation",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo-generation"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video/product-cut",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo%2Fproduct-cut",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo%2Fproduct-cut"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video/release-plans",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fvideo%2Frelease-plans",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fvideo%2Frelease-plans"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/viral-analysis",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fviral-analysis",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fviral-analysis"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/war-room",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fwar-room",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fwar-room"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

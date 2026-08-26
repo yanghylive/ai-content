@@ -1,0 +1,63 @@
+{
+  "generatedAt": "2026-08-23T06:46:39.967Z",
+  "real": true,
+  "runRestore": false,
+  "downloadBackup": true,
+  "uploadLatestBackup": true,
+  "backupRoot": "/tmp/backup-drill/ops",
+  "objectStoreProvider": "aliyun-oss",
+  "alertProvider": "generic",
+  "alertWebhook": {
+    "configured": false,
+    "provider": "generic",
+    "protocol": null,
+    "host": null,
+    "category": "missing",
+    "productionCandidate": false,
+    "message": "未配置 webhook。"
+  },
+  "restoreDatabaseUrl": "file:/tmp/backup-drill/restore-ops.sqlite",
+  "checks": [
+    {
+      "status": "BLOCKED",
+      "name": "latest-local-backup",
+      "message": "没有找到 manifest：-",
+      "nextAction": "先生成一轮本地备份，再跑外部运维 smoke。"
+    },
+    {
+      "status": "PASS",
+      "name": "aliyun-oss-write-read-delete",
+      "message": "bucket=kaypal; probe=acceptance-backup-1787467599/_smoke/2026-08-23T06-46-39-967Z-6bb67f7a.json",
+      "nextAction": "",
+      "evidence": {
+        "bucket": "kaypal",
+        "key": "acceptance-backup-1787467599/_smoke/2026-08-23T06-46-39-967Z-6bb67f7a.json"
+      }
+    },
+    {
+      "status": "BLOCKED",
+      "name": "aliyun-oss-upload-latest-backup",
+      "message": "没有可上传的本地备份。",
+      "nextAction": "先生成一轮本地备份，再使用 --upload-latest-backup。"
+    },
+    {
+      "status": "BLOCKED",
+      "name": "aliyun-oss-latest-backup-readback",
+      "message": "prefix=acceptance-backup-1787467599; 没有找到远端 manifest",
+      "nextAction": "先用当前后端配置跑一轮 aliyun-oss 备份。"
+    },
+    {
+      "status": "BLOCKED",
+      "name": "alert-webhook-config",
+      "message": "未配置 COMMERCIAL_BACKUP_ALERT_WEBHOOK_URL。",
+      "nextAction": "填入企业微信/飞书/Slack 值班群 webhook 后再跑。"
+    },
+    {
+      "status": "BLOCKED",
+      "name": "restore-backup-file",
+      "message": "没有可用于恢复演练的本地或下载备份文件。",
+      "nextAction": "先生成本地备份，或用 --real --download-backup 从 OSS 下载远端备份。"
+    }
+  ],
+  "artifacts": {}
+}

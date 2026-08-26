@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toPublicError } from "@/lib/public-error";
 
 /** P4 Agent Browser 驾驶台（文档 §7.4）：会话生命周期 + Observe-Act-Verify 事件回放 */
 
@@ -40,7 +41,15 @@ async function jfetch<T>(url: string, init?: RequestInit): Promise<T> {
     headers: { "Content-Type": "application/json" },
     ...init,
   });
-  const json = (await res.json()) as { success?: boolean; data?: T; message?: string };
+  const text = await res.text();
+  let json: { success?: boolean; data?: T; message?: string };
+  try {
+    json = JSON.parse(text) as { success?: boolean; data?: T; message?: string };
+  } catch {
+    // 非 JSON 响应：可能是 HTML 错误页或空响应
+    const isHtml = text.includes("<!DOCTYPE") || text.includes("<html");
+    throw new Error(isHtml ? `服务异常（${res.status}）` : text ? `响应格式错误（${res.status}）` : `空响应（${res.status}）`);
+  }
   if (!json.success) throw new Error(json.message || `请求失败（${res.status}）`);
   return json.data as T;
 }
@@ -80,7 +89,7 @@ export default function AgentBrowserPage() {
       const list = await jfetch<SessionDto[]>(`${B}/sessions`);
       setSessions(list);
     } catch (e) {
-      setError((e as Error).message);
+      setError(toPublicError(e, "会话列表加载失败"));
     }
   }, []);
 
@@ -103,7 +112,7 @@ export default function AgentBrowserPage() {
       setActiveId(s.id);
       await refresh();
     } catch (e) {
-      setError((e as Error).message);
+      setError(toPublicError(e, "创建会话失败"));
     } finally {
       setBusy(false);
     }

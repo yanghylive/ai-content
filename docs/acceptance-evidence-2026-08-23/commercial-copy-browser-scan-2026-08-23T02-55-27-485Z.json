@@ -1,0 +1,101 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-23T02:54:46.204Z",
+  "finishedAt": "2026-08-23T02:55:27.485Z",
+  "frontendUrl": "http://127.0.0.1:3015",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/frontend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 202,
+  "scannedRouteCount": 9,
+  "isPartial": true,
+  "routeCount": 9,
+  "excludedRouteCount": 193,
+  "passCount": 9,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/content/ai-image-gen",
+      "finalUrl": "http://127.0.0.1:3015/content/ai-image-gen",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 485,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-closer",
+      "finalUrl": "http://127.0.0.1:3015/crm/closer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 451,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm-connectors",
+      "finalUrl": "http://127.0.0.1:3015/crm/connectors",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 983,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/crm/closer",
+      "finalUrl": "http://127.0.0.1:3015/crm/closer",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 451,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/customer",
+      "finalUrl": "http://127.0.0.1:3015/crm",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 2103,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/device-center",
+      "finalUrl": "http://127.0.0.1:3015/device-center",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 496,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement",
+      "finalUrl": "http://127.0.0.1:3015/engagement",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 1498,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/channel-messages",
+      "finalUrl": "http://127.0.0.1:3015/engagement/channel-messages",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 555,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/douyin-comments",
+      "finalUrl": "http://127.0.0.1:3015/engagement/douyin-comments",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 751,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}
