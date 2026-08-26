@@ -167,7 +167,7 @@ export function WechatPlanList() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/engagement/wechat")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/engagement/wechat")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回微信中心
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -195,7 +195,7 @@ export function WechatPlanList() {
                 key={key}
                 type="button"
                 onClick={() => setFilter(key)}
-                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: filter === key ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: filter === key ? "#fff" : "var(--mx-ink)", border: filter === key ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
+                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: filter === key ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: filter === key ? "#fff" : "var(--kaypal-v3-ink)", border: filter === key ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
               >
                 {label}{counts[key] > 0 ? ` ${counts[key]}` : ""}
               </button>
@@ -209,11 +209,11 @@ export function WechatPlanList() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 26, textAlign: "center" }}>
-              <Send width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 9 }}>
+              <Send width={26} height={26} style={{ color: "var(--kaypal-v3-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", marginTop: 9 }}>
                 {filter === "all" ? "还没有群发计划" : `没有${FILTERS.find((f) => f.key === filter)?.label}的计划`}
               </p>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>创建一个群发任务，把消息发给你的联系人</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4 }}>创建一个群发任务，把消息发给你的联系人</p>
               <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/engagement/wechat/mass-send")}>新建群发</button>
             </div>
           ) : (
@@ -233,10 +233,10 @@ export function WechatPlanList() {
                 return (
                   <div key={task.id} className="mx-card" style={{ padding: 13 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
                       <span className={`mx-badge ${statusBadge(display.tone)}`} style={{ fontSize: 10, flexShrink: 0 }}>{display.label}</span>
                     </div>
-                    <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>
+                    <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 5, lineHeight: 1.5 }}>
                       {summary?.total ? `共 ${summary.total} 个对象` : task.targetName}
                       {summary?.completed ? ` · 已发 ${summary.completed}` : ""}
                       {summary?.failed ? ` · 失败 ${summary.failed}` : ""}
@@ -244,7 +244,7 @@ export function WechatPlanList() {
                     </p>
                     <div style={{ display: "flex", gap: 7, marginTop: 10, flexWrap: "wrap" }}>
                       {(status === "sending" || status === "scheduled") && (
-                        <button type="button" disabled={acting} onClick={() => void runAction(task, "pause")} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
+                        <button type="button" disabled={acting} onClick={() => void runAction(task, "pause")} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
                           {acting ? "处理中…" : "暂停"}
                         </button>
                       )}
@@ -254,7 +254,7 @@ export function WechatPlanList() {
                         </button>
                       )}
                       {(status === "failed" || status === "blocked") && (
-                        <button type="button" disabled={acting} onClick={() => void runAction(task, "retry")} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
+                        <button type="button" disabled={acting} onClick={() => void runAction(task, "retry")} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
                           {acting ? "处理中…" : "重试"}
                         </button>
                       )}
@@ -264,7 +264,7 @@ export function WechatPlanList() {
                             <button type="button" className="mx-btn-gold" style={{ flex: 1, padding: "7px 0", fontSize: 11.5, background: "var(--kaypal-v3-danger)", borderColor: "var(--kaypal-v3-danger)" }} disabled={acting} onClick={() => void runAction(task, "delete")}>
                               确认删除
                             </button>
-                            <button type="button" onClick={() => setConfirmDeleteId(null)} style={{ flex: "0 0 auto", padding: "7px 12px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
+                            <button type="button" onClick={() => setConfirmDeleteId(null)} style={{ flex: "0 0 auto", padding: "7px 12px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
                               取消
                             </button>
                           </>

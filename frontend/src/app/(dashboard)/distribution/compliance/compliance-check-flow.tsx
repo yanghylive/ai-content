@@ -83,13 +83,13 @@ export function ComplianceCheckFlow() {
       riskDisplay?.tone === "success" ? "var(--kaypal-v3-success)"
         : riskDisplay?.tone === "warning" ? "var(--kaypal-v3-amber)"
           : riskDisplay?.tone === "danger" ? "var(--kaypal-v3-danger)"
-            : "var(--mx-muted)";
+            : "var(--kaypal-v3-muted)";
     return (
       <div className="kx-mobile-ambient">
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/distribution/compliance")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/distribution/compliance")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回合规中心
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -109,8 +109,8 @@ export function ComplianceCheckFlow() {
           {/* 输入区 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <span style={{ fontSize: 12.5, color: "var(--mx-muted)", flexShrink: 0 }}>发布到</span>
-              <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={{ flex: 1, padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}>
+              <span style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)", flexShrink: 0 }}>发布到</span>
+              <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={{ flex: 1, padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}>
                 {PLATFORM_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
@@ -121,10 +121,10 @@ export function ComplianceCheckFlow() {
               placeholder="把你要发布的文章/文案完整粘贴到这里（至少 20 字）…"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              style={{ width: "100%", marginTop: 10, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, resize: "vertical", lineHeight: 1.6 }}
+              style={{ width: "100%", marginTop: 10, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5, resize: "vertical", lineHeight: 1.6 }}
             />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-              <span style={{ fontSize: 11, color: "var(--mx-muted)" }}>
+              <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>
                 {content.length} 字{content.trim().length < 20 ? "（至少 20 字才能检查）" : ""}
               </span>
               <button
@@ -148,7 +148,7 @@ export function ComplianceCheckFlow() {
                   <RiskIcon width={26} height={26} style={{ color: resultColor, flexShrink: 0 }} />
                   <span style={{ minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 15, fontWeight: 800, color: resultColor }}>{riskDisplay.label}</span>
-                    <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>{result.summary}</span>
+                    <span style={{ display: "block", fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 3, lineHeight: 1.5 }}>{result.summary}</span>
                   </span>
                 </div>
               </div>
@@ -162,13 +162,13 @@ export function ComplianceCheckFlow() {
                         <span className={`mx-badge ${finding.riskLevel === "high" ? "mx-badge-red" : finding.riskLevel === "medium" ? "mx-badge-gold" : "mx-badge-blue"}`} style={{ fontSize: 10 }}>
                           {finding.category}
                         </span>
-                        <p style={{ fontSize: 12.5, color: "var(--mx-ink)", background: "rgba(220,80,80,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 8, lineHeight: 1.55 }}>
+                        <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-ink)", background: "rgba(220,80,80,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 8, lineHeight: 1.55 }}>
                           「{finding.matchedText}」
                         </p>
-                        <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 7, lineHeight: 1.55 }}>{finding.reason}</p>
+                        <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 7, lineHeight: 1.55 }}>{finding.reason}</p>
                         <p style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-amber)", marginTop: 6, lineHeight: 1.5 }}>建议：{finding.suggestion}</p>
                         {finding.replacement && (
-                          <p style={{ fontSize: 12, color: "var(--mx-ink)", background: "rgba(5,150,105,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 7, lineHeight: 1.5 }}>
+                          <p style={{ fontSize: 12, color: "var(--kaypal-v3-ink)", background: "rgba(5,150,105,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 7, lineHeight: 1.5 }}>
                             可改成：「{finding.replacement}」
                           </p>
                         )}
@@ -180,7 +180,7 @@ export function ComplianceCheckFlow() {
             </>
           )}
 
-          <button type="button" onClick={() => router.push("/distribution/compliance")} style={{ marginTop: 18, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          <button type="button" onClick={() => router.push("/distribution/compliance")} style={{ marginTop: 18, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
             <ArrowLeft width={14} height={14} /> 返回
           </button>
         </div>

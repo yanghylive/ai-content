@@ -233,10 +233,10 @@ export function ReportGenerator() {
             </div>
             <div className="mx-card" style={{ marginTop: 14, padding: 30, textAlign: "center" }}>
               <FileText width={32} height={32} style={{ color: "var(--kaypal-v3-success)", margin: "0 auto" }} />
-              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", marginTop: 11 }}>报告已开始生成</p>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.55 }}>AI 正在分析数据写报告，稍等片刻就能在报告列表里看到</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginTop: 11 }}>报告已开始生成</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 5, lineHeight: 1.55 }}>AI 正在分析数据写报告，稍等片刻就能在报告列表里看到</p>
               <button type="button" className="mx-btn-gold" style={{ marginTop: 16 }} onClick={() => router.push("/intelligence/reports")}>去看报告</button>
-              <button type="button" onClick={() => setDoneReportId(null)} style={{ display: "block", margin: "10px auto 0", fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none" }}>
+              <button type="button" onClick={() => setDoneReportId(null)} style={{ display: "block", margin: "10px auto 0", fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none" }}>
                 再生成一份
               </button>
             </div>
@@ -250,7 +250,7 @@ export function ReportGenerator() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/intelligence/reports")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/intelligence/reports")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回报告列表
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -284,8 +284,8 @@ export function ReportGenerator() {
                     <KindIcon width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
-                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>{desc}</span>
                   </span>
                   {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
@@ -301,7 +301,7 @@ export function ReportGenerator() {
                 placeholder="例如：最近空气炸锅品类的内容趋势"
                 value={form.topic}
                 onChange={(e) => setForm((p) => ({ ...p, topic: e.target.value }))}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }}
               />
             </>
           )}
@@ -316,7 +316,7 @@ export function ReportGenerator() {
                     key={opt.value}
                     type="button"
                     onClick={() => setForm((p) => ({ ...p, rangeKey: opt.value }))}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.rangeKey === opt.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.rangeKey === opt.value ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: "1px solid " + (form.rangeKey === opt.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.rangeKey === opt.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.rangeKey === opt.value ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-ink)", border: "1px solid " + (form.rangeKey === opt.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
                   >
                     {opt.label}
                   </button>
@@ -327,7 +327,7 @@ export function ReportGenerator() {
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/intelligence/reports")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/intelligence/reports")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
             <button

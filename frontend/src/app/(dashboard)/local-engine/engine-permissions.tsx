@@ -54,7 +54,7 @@ export function EnginePermissions() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回设备状态
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -90,8 +90,8 @@ export function EnginePermissions() {
                   <div key={i} className="mx-card" style={{ padding: 12, display: "flex", gap: 10, alignItems: "flex-start" }}>
                     <XCircle width={16} height={16} style={{ color: "var(--kaypal-v3-danger)", flexShrink: 0, marginTop: 1 }} />
                     <span style={{ minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>{item.capability}</span>
-                      <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>{item.message}</span>
+                      <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{item.capability}</span>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 3, lineHeight: 1.5 }}>{item.message}</span>
                       {item.nextAction && (
                         <span style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-amber)", marginTop: 5 }}>怎么办：{item.nextAction}</span>
                       )}
@@ -113,8 +113,8 @@ export function EnginePermissions() {
                     <div key={i} className="mx-card" style={{ padding: 12, display: "flex", gap: 10, alignItems: "flex-start" }}>
                       <ShieldCheck width={16} height={16} style={{ color: "var(--kaypal-v3-amber)", flexShrink: 0, marginTop: 1 }} />
                       <span style={{ minWidth: 0 }}>
-                        <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>{w.capability || `警告 ${i + 1}`}</span>
-                        <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>{w.message || String(item)}</span>
+                        <span style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{w.capability || `警告 ${i + 1}`}</span>
+                        <span style={{ display: "block", fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 3, lineHeight: 1.5 }}>{w.message || String(item)}</span>
                       </span>
                     </div>
                   );
@@ -131,7 +131,7 @@ export function EnginePermissions() {
             </div>
           )}
 
-          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
             <ArrowLeft width={14} height={14} /> 返回
           </button>
         </div>

@@ -252,7 +252,7 @@ function MobileMineView({
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 17, fontWeight: 700, color: "var(--mx-ink)" }}>{displayName}</span>
+                <span style={{ fontSize: 17, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{displayName}</span>
                 <span
                   className="mx-badge mx-badge-gold"
                   style={{ padding: "1px 7px", fontSize: 9, borderRadius: 999 }}
@@ -278,7 +278,7 @@ function MobileMineView({
                   </a>
                 ) : null}
               </div>
-              <p style={{ marginTop: 4, fontSize: 12, color: "var(--mx-muted)" }}>{creditLabel}</p>
+              <p style={{ marginTop: 4, fontSize: 12, color: "var(--kaypal-v3-muted)" }}>{creditLabel}</p>
             </div>
             {onLogout ? (
               <button
@@ -320,7 +320,7 @@ function MobileMineView({
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 12, color: "var(--mx-ink)" }}>
+                  <span style={{ fontSize: 12, color: "var(--kaypal-v3-ink)" }}>
                     权益状态
                   </span>
                   <span
@@ -338,7 +338,7 @@ function MobileMineView({
                     {entitlementStatusLabel(status)}
                   </span>
                   {periodEnd ? (
-                    <span style={{ fontSize: 10, color: "var(--mx-muted)", marginLeft: "auto" }}>
+                    <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)", marginLeft: "auto" }}>
                       到期 {periodEnd.slice(0, 10)}
                     </span>
                   ) : null}

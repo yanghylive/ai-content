@@ -109,7 +109,7 @@ function MobileTextList({ items }: { items: string[] }) {
       {items.map((item) => (
         <li
           key={item}
-          style={{ display: "flex", gap: 8, fontSize: 12.5, lineHeight: 1.6, color: "var(--mx-ink)" }}
+          style={{ display: "flex", gap: 8, fontSize: 12.5, lineHeight: 1.6, color: "var(--kaypal-v3-ink)" }}
         >
           <CheckCircle2
             width={14}
@@ -126,7 +126,7 @@ function MobileTextList({ items }: { items: string[] }) {
 function MobileSection({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="mx-card" style={{ padding: 14 }}>
-      <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>{title}</p>
+      <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 10 }}>{title}</p>
       <MobileTextList items={items} />
     </div>
   );
@@ -151,10 +151,10 @@ export default function ReleaseNotesPage() {
               <span className="mx-badge mx-badge-green" style={{ fontSize: 10.5 }}>功能完整保留</span>
             </div>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginTop: 10 }}>
-              <span style={{ fontSize: 20, fontWeight: 800, color: "var(--mx-ink)" }}>v{currentVersion}</span>
-              <span style={{ fontSize: 11, color: "var(--mx-muted)" }}>更新说明</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-ink)" }}>v{currentVersion}</span>
+              <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>更新说明</span>
             </div>
-            <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 6, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 6, lineHeight: 1.6 }}>
               这次更新重点解决 Windows 安装后本地服务无法启动的问题，并加强账号凭据保护和安装包发布前自测。
             </p>
           </div>
@@ -168,8 +168,8 @@ export default function ReleaseNotesPage() {
                   {item.icon}
                 </span>
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{item.title}</span>
-                  <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.55 }}>{item.text}</span>
+                  <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{item.title}</span>
+                  <span style={{ display: "block", fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4, lineHeight: 1.55 }}>{item.text}</span>
                 </span>
               </div>
             ))}

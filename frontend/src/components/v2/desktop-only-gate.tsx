@@ -36,7 +36,7 @@ export function DesktopOnlyGate({
         justifyContent: "center",
         padding: "24px",
         textAlign: "center",
-        background: "var(--mx-bg, #0b1524)",
+        background: "var(--kaypal-v3-canvas, #0b1524)",
       }}
     >
       <div

@@ -160,7 +160,7 @@ export function WorkbenchCenter({
             </div>
           )}
           {statsNote ? (
-            <p style={{ marginTop: 6, fontSize: 10, color: "var(--mx-muted)", textAlign: "right" }}>{statsNote}</p>
+            <p style={{ marginTop: 6, fontSize: 10, color: "var(--kaypal-v3-muted)", textAlign: "right" }}>{statsNote}</p>
           ) : null}
           {error ? <p style={{ marginTop: 10, fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</p> : null}
           {notice ? <p style={{ marginTop: 10, fontSize: 12, color: "var(--kaypal-v3-success)" }}>{notice}</p> : null}

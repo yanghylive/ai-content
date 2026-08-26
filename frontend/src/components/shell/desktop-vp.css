@@ -298,7 +298,6 @@
   .bg-background.border.divider,
   .border.border-divider.bg-background,
   .bg-content1,
-  .astryx-card,
   /* heroui Card（default 变体三件套类 + flat/content 变体）与 astryx Card——
      B3 玻璃化，覆盖 /tasks /crm/customer /intelligence /engagement 等 heroui/astryx 卡片页 */
   .bg-default-100.border,
@@ -344,7 +343,6 @@
   html.dark .bg-default-50.border-small,
   html.dark .bg-default-100,
   html.dark .bg-content1,
-  html.dark .astryx-card,
   html.dark .kx-card,
   html.dark .kx-card,
   html.dark .kx-card-lg,

@@ -470,7 +470,7 @@ export function IntelligenceDispatchRecordsPage({
                       <div className="mx-row-title" style={{ marginTop: 8, fontSize: 13.5, fontWeight: 600 }}>
                         {record.title}
                       </div>
-                      <div style={{ marginTop: 4, fontSize: 11, color: "var(--mx-muted)" }}>
+                      <div style={{ marginTop: 4, fontSize: 11, color: "var(--kaypal-v3-muted)" }}>
                         {record.platform} · {record.source} · {formatTime(record.createdAt)}
                       </div>
                     </button>
@@ -478,7 +478,7 @@ export function IntelligenceDispatchRecordsPage({
                     {isOpen ? (
                       <>
                         {record.summary ? (
-                          <p style={{ marginTop: 8, fontSize: 11.5, color: "var(--mx-ink)", lineHeight: 1.6, background: "rgba(142,165,190,.08)", borderRadius: 10, padding: "8px 10px" }}>
+                          <p style={{ marginTop: 8, fontSize: 11.5, color: "var(--kaypal-v3-ink)", lineHeight: 1.6, background: "rgba(142,165,190,.08)", borderRadius: 10, padding: "8px 10px" }}>
                             {record.summary}
                           </p>
                         ) : null}
@@ -496,7 +496,7 @@ export function IntelligenceDispatchRecordsPage({
                                 borderRadius: 10,
                                 border: tone === "danger" ? "1px solid rgba(239,68,68,.25)" : "1px solid rgba(142,165,190,.3)",
                                 background: tone === "primary" ? "rgba(37,99,235,.12)" : tone === "danger" ? "rgba(239,68,68,.08)" : "rgba(120,148,179,.12)",
-                                color: tone === "primary" ? "var(--kaypal-v3-cobalt)" : tone === "danger" ? "var(--kaypal-v3-danger)" : "var(--mx-ink)",
+                                color: tone === "primary" ? "var(--kaypal-v3-cobalt)" : tone === "danger" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-ink)",
                                 opacity: disabled || processingAction === action ? 0.5 : 1,
                               }}
                             >

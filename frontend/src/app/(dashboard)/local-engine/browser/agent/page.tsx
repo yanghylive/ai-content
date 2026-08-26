@@ -167,7 +167,7 @@ export default function AgentBrowserPage() {
         }
       }
     } catch (e) {
-      setError((e as Error).message);
+      setError(toPublicError(e, "会话事件加载失败"));
     } finally {
       setBusy(false);
     }
@@ -198,7 +198,7 @@ export default function AgentBrowserPage() {
       const ev = await jfetch<EventDto[]>(`${B}/sessions/${id}/events`);
       setEvents(ev);
     } catch (e) {
-      setError((e as Error).message);
+      setError(toPublicError(e, "事件记录加载失败"));
     }
   };
 

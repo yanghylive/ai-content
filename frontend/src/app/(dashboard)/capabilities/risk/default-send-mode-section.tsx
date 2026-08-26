@@ -94,10 +94,10 @@ export function DefaultSendModeSection() {
             <span className="mx-badge mx-badge-green" style={{ fontSize: 10 }}>已保存</span>
           ) : null}
         </div>
-        <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 6, lineHeight: 1.5 }}>{description}</p>
+        <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 6, lineHeight: 1.5 }}>{description}</p>
         {error && <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger)", marginTop: 6 }}>{error}</p>}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
-          <span style={{ fontSize: 12, color: isAutoSend ? "var(--mx-muted)" : "var(--mx-ink)", fontWeight: isAutoSend ? 400 : 600 }}>
+          <span style={{ fontSize: 12, color: isAutoSend ? "var(--kaypal-v3-muted)" : "var(--kaypal-v3-ink)", fontWeight: isAutoSend ? 400 : 600 }}>
             确认后执行
           </span>
           <input
@@ -107,7 +107,7 @@ export function DefaultSendModeSection() {
             onChange={(e) => setDraft(e.target.checked ? "auto-send" : "approval-send")}
             style={{ width: 40, height: 22, accentColor: "#22a06b" }}
           />
-          <span style={{ fontSize: 12, color: isAutoSend ? "var(--mx-ink)" : "var(--mx-muted)", fontWeight: isAutoSend ? 600 : 400 }}>
+          <span style={{ fontSize: 12, color: isAutoSend ? "var(--kaypal-v3-ink)" : "var(--kaypal-v3-muted)", fontWeight: isAutoSend ? 600 : 400 }}>
             自动执行
           </span>
         </div>

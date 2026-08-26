@@ -170,7 +170,7 @@ export function WechatChatHistory() {
     /* 消息渲染（列表页与详情页共用） */
     const renderMessages = () => {
       if (!selectedSessionId) {
-        return <p style={{ fontSize: 12.5, color: "var(--mx-muted)", textAlign: "center", padding: 24 }}>选一个会话查看消息</p>;
+        return <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)", textAlign: "center", padding: 24 }}>选一个会话查看消息</p>;
       }
       if (loadingMessages) {
         return (
@@ -180,7 +180,7 @@ export function WechatChatHistory() {
         );
       }
       if (messages.length === 0) {
-        return <p style={{ fontSize: 12.5, color: "var(--mx-muted)", textAlign: "center", padding: 24 }}>这个会话还没有消息记录</p>;
+        return <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)", textAlign: "center", padding: 24 }}>这个会话还没有消息记录</p>;
       }
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: 9, padding: 12 }}>
@@ -189,7 +189,7 @@ export function WechatChatHistory() {
             const isSystem = message.direction === "system" || message.contentType === "system";
             if (isSystem) {
               return (
-                <p key={message.id} style={{ textAlign: "center", fontSize: 10.5, color: "var(--mx-muted)" }}>{message.content}</p>
+                <p key={message.id} style={{ textAlign: "center", fontSize: 10.5, color: "var(--kaypal-v3-muted)" }}>{message.content}</p>
               );
             }
             return (
@@ -200,7 +200,7 @@ export function WechatChatHistory() {
                     borderRadius: 12,
                     padding: "8px 12px",
                     background: isOutgoing ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)",
-                    color: isOutgoing ? "#fff" : "var(--mx-ink)",
+                    color: isOutgoing ? "#fff" : "var(--kaypal-v3-ink)",
                   }}
                 >
                   {!isOutgoing && message.senderName && (
@@ -228,7 +228,7 @@ export function WechatChatHistory() {
         <div className="kx-mobile-ambient">
           <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
             <div className="mx-header">
-              <button type="button" onClick={() => setMobileDetailOpen(false)} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
+              <button type="button" onClick={() => setMobileDetailOpen(false)} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, marginBottom: 6 }}>
                 <ArrowLeft width={14} height={14} /> 返回会话列表
               </button>
               <div className="mx-page-title" style={{ fontSize: 16 }}>{selectedSession.contactName || selectedSession.title}</div>
@@ -252,12 +252,12 @@ export function WechatChatHistory() {
 
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <div style={{ position: "relative", flex: 1 }}>
-              <Search width={15} height={15} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "var(--mx-muted)" }} />
+              <Search width={15} height={15} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "var(--kaypal-v3-muted)" }} />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="搜索会话…"
-                style={{ width: "100%", padding: "9px 11px 9px 32px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+                style={{ width: "100%", padding: "9px 11px 9px 32px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}
               />
             </div>
             <button type="button" className="mx-btn-gold" style={{ flexShrink: 0, padding: "9px 13px" }} disabled={syncing || commercialBlocked} onClick={() => void handleSync()}>
@@ -287,12 +287,12 @@ export function WechatChatHistory() {
             </div>
           ) : filteredSessions.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 26, textAlign: "center" }}>
-              <MessageSquareText width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 9 }}>
+              <MessageSquareText width={26} height={26} style={{ color: "var(--kaypal-v3-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", marginTop: 9 }}>
                 {sessions.length === 0 ? "还没有会话" : "没有匹配的会话"}
               </p>
               {sessions.length === 0 && (
-                <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>点右上角「同步」拉取聊天记录</p>
+                <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4 }}>点右上角「同步」拉取聊天记录</p>
               )}
             </div>
           ) : (
@@ -316,7 +316,7 @@ export function WechatChatHistory() {
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
                     <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {session.contactName || session.title}
                       </span>
                       {session.unreadCount > 0 && (
@@ -325,17 +325,17 @@ export function WechatChatHistory() {
                         </span>
                       )}
                     </span>
-                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {session.lastMessage || "暂无消息"}
                     </span>
                   </span>
-                  <span style={{ color: "var(--mx-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
+                  <span style={{ color: "var(--kaypal-v3-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
                 </button>
               ))}
             </div>
           )}
 
-          <button type="button" onClick={() => router.push("/engagement/wechat")} style={{ marginTop: 18, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          <button type="button" onClick={() => router.push("/engagement/wechat")} style={{ marginTop: 18, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
             <ArrowLeft width={14} height={14} /> 返回
           </button>
         </div>

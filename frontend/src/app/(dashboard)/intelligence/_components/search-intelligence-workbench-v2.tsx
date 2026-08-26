@@ -510,10 +510,10 @@ export function SearchIntelligenceWorkbench() {
           {/* 最近搜索引导 */}
           {!hasSearched && recommendedSearches.length > 0 && (
             <div className="mx-card" style={{ marginTop: 12, padding: 13 }}>
-              <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)", display: "flex", alignItems: "center", gap: 6 }}>
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--kaypal-v3-ink)", display: "flex", alignItems: "center", gap: 6 }}>
                 <TrendingUp width={14} height={14} style={{ color: "var(--kaypal-v3-amber)" }} /> 继续上次的工作
               </p>
-              <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 5, lineHeight: 1.5 }}>
                 你最近搜索了「{recommendedSearches[0].query}」，找到了 {recommendedSearches[0].resultsCount} 个结果
               </p>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 9 }}>
@@ -539,7 +539,7 @@ export function SearchIntelligenceWorkbench() {
           {/* 搜索区 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
             <label style={{ display: "block" }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>
                 {target === "comment" ? "作品链接或作品 ID" : target === "engagement" ? "公众号文章链接" : "你想找什么"}
               </span>
               <input
@@ -553,7 +553,7 @@ export function SearchIntelligenceWorkbench() {
                       ? "粘贴 mp.weixin.qq.com 公众号文章链接"
                       : "例如：私域获客选题、竞品账号、用户痛点"
                 }
-                style={{ width: "100%", marginTop: 7, padding: "11px 13px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+                style={{ width: "100%", marginTop: 7, padding: "11px 13px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }}
               />
             </label>
             <button
@@ -578,7 +578,7 @@ export function SearchIntelligenceWorkbench() {
                     if (value === "comment" && !commentPlatformValues.has(platform)) setPlatform("douyin");
                     if (value === "engagement") setPlatform("wechat");
                   }}
-                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: target === value ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: target === value ? "#fff" : "var(--mx-ink)", border: target === value ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
+                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: target === value ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: target === value ? "#fff" : "var(--kaypal-v3-ink)", border: target === value ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
                 >
                   {label}
                 </button>
@@ -591,7 +591,7 @@ export function SearchIntelligenceWorkbench() {
                   key={item.value}
                   type="button"
                   onClick={() => setPlatform(item.value)}
-                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: platform === item.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: platform === item.value ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: platform === item.value ? "1px solid rgba(222,150,57,.5)" : "1px solid rgba(142,165,190,.3)" }}
+                  style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: platform === item.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: platform === item.value ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-ink)", border: platform === item.value ? "1px solid rgba(222,150,57,.5)" : "1px solid rgba(142,165,190,.3)" }}
                 >
                   {item.label}
                 </button>
@@ -637,7 +637,7 @@ export function SearchIntelligenceWorkbench() {
                         style={{ width: "100%", background: "none", border: "none", padding: 0, textAlign: "left" }}
                       >
                         <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {candidate.title}
                           </span>
                           <span className={`mx-badge ${mobileRiskBadge(candidate.risk)}`} style={{ fontSize: 10, flexShrink: 0 }}>
@@ -645,29 +645,29 @@ export function SearchIntelligenceWorkbench() {
                           </span>
                         </span>
                         <span style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-                          <span style={{ fontSize: 15, fontWeight: 800, color: "var(--mx-ink)" }}>{candidate.quality}</span>
-                          <span style={{ fontSize: 10, color: "var(--mx-muted)" }}>价值</span>
-                          <span style={{ fontSize: 15, fontWeight: 800, color: "var(--mx-ink)", marginLeft: 6 }}>{candidate.relevance}</span>
-                          <span style={{ fontSize: 10, color: "var(--mx-muted)" }}>匹配</span>
-                          <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--mx-muted)" }}>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: "var(--kaypal-v3-ink)" }}>{candidate.quality}</span>
+                          <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)" }}>价值</span>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: "var(--kaypal-v3-ink)", marginLeft: 6 }}>{candidate.relevance}</span>
+                          <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)" }}>匹配</span>
+                          <span style={{ marginLeft: "auto", fontSize: 10.5, color: "var(--kaypal-v3-muted)" }}>
                             {candidate.platform} · {candidate.targetLabel}
                           </span>
                         </span>
                         {!expanded && (
-                          <span style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 7, lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                          <span style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 7, lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                             {candidate.reason}
                           </span>
                         )}
                       </button>
                       {expanded && (
                         <div style={{ marginTop: 10 }}>
-                          <p style={{ fontSize: 12, color: "var(--mx-ink)", lineHeight: 1.6 }}>{candidate.reason}</p>
+                          <p style={{ fontSize: 12, color: "var(--kaypal-v3-ink)", lineHeight: 1.6 }}>{candidate.reason}</p>
                           {candidate.evidence.length > 0 && (
                             <div style={{ marginTop: 9 }}>
-                              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--mx-muted)" }}>证据</p>
+                              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)" }}>证据</p>
                               <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 5 }}>
                                 {candidate.evidence.map((item, index) => (
-                                  <span key={index} style={{ fontSize: 11, color: "var(--mx-ink)", background: "rgba(120,148,179,.08)", padding: "6px 9px", borderRadius: 8, lineHeight: 1.5 }}>
+                                  <span key={index} style={{ fontSize: 11, color: "var(--kaypal-v3-ink)", background: "rgba(120,148,179,.08)", padding: "6px 9px", borderRadius: 8, lineHeight: 1.5 }}>
                                     {item}
                                   </span>
                                 ))}
@@ -675,7 +675,7 @@ export function SearchIntelligenceWorkbench() {
                             </div>
                           )}
                           <div style={{ marginTop: 11 }}>
-                            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--mx-muted)" }}>下一步行动</p>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)" }}>下一步行动</p>
                             <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 6 }}>
                               {candidate.nextActions.map((action) => {
                                 const ActionIcon = action.icon;

@@ -166,38 +166,38 @@ export function HubSpotVaultPanel() {
           <span className="mx-badge mx-badge-green" style={{ fontSize: 10 }}>不写 CRM</span>
         </div>
         <div className="mx-section-head" style={{ marginTop: 10 }}>HubSpot 只读检查接入</div>
-        <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4, lineHeight: 1.5 }}>
           授权信息只进入安全保护区，页面不回显原文。只读检查只拉取脱敏样本，不写入客户管理系统。
         </p>
 
         {error && <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger)", marginTop: 8 }}>{error}</p>}
 
         <label style={{ display: "block", marginTop: 10 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>授权信息（保存后不回显）</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>授权信息（保存后不回显）</span>
           <input
             type="password"
             value={token}
             onChange={(e) => setToken(e.target.value)}
             placeholder="HubSpot 只读访问令牌（粘贴时不要带空格或换行）"
-            style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+            style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}
           />
         </label>
         <label style={{ display: "block", marginTop: 9 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>备注（可选）</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>备注（可选）</span>
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             placeholder="例如：生产门户"
-            style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+            style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}
           />
         </label>
         <label style={{ display: "block", marginTop: 9 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>Portal ID（可选）</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>Portal ID（可选）</span>
           <input
             value={portalId}
             onChange={(e) => setPortalId(e.target.value)}
             placeholder="HubSpot 门户 ID"
-            style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+            style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}
           />
         </label>
         <button
@@ -224,7 +224,7 @@ export function HubSpotVaultPanel() {
                 padding: "6px 10px",
                 border: "1px solid rgba(142,165,190,.3)",
                 background: objects.includes(obj.key) ? "rgba(222,150,57,.12)" : "transparent",
-                color: objects.includes(obj.key) ? "var(--kaypal-v3-amber)" : "var(--mx-muted)",
+                color: objects.includes(obj.key) ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-muted)",
                 borderRadius: 999,
                 cursor: "pointer",
               }}
@@ -234,12 +234,12 @@ export function HubSpotVaultPanel() {
           ))}
         </div>
         <label style={{ display: "block", marginTop: 9 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>每个对象最多读取行数</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>每个对象最多读取行数</span>
           <input
             type="number"
             value={rows}
             onChange={(e) => setRows(e.target.value)}
-            style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+            style={{ width: "100%", marginTop: 6, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}
           />
         </label>
         <button
@@ -255,16 +255,16 @@ export function HubSpotVaultPanel() {
 
         {result ? (
           <div style={{ marginTop: 10 }}>
-            <p style={{ fontSize: 11.5, fontWeight: 600, color: "var(--mx-ink)" }}>
+            <p style={{ fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>
               检查完成 · 每个对象最多 {result.maxRowsPerObject ?? "-"} 行
             </p>
             {result.objectResults?.map((r) => (
-              <p key={r.object} style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>
+              <p key={r.object} style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 3 }}>
                 {r.displayName || r.object}：返回 {r.returnedCount ?? 0} 行{r.hasMore ? "（还有更多）" : ""}
               </p>
             ))}
             {result.audit?.proofHash ? (
-              <p style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 4 }}>留存编号：{result.audit.proofHash.slice(0, 12)}…</p>
+              <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 4 }}>留存编号：{result.audit.proofHash.slice(0, 12)}…</p>
             ) : null}
           </div>
         ) : null}

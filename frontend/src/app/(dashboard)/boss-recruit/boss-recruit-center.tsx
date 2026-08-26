@@ -389,7 +389,7 @@ export function BossRecruitCenter() {
               onChange={(e) => setStorageJson(e.target.value)}
               placeholder='粘贴 storageState JSON，例如 {"cookies":[...],"origins":[...]}'
               rows={4}
-              style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, resize: "vertical" }}
+              style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5, resize: "vertical" }}
             />
             <button type="button" className="mx-btn-gold" onClick={() => void handleUpload()} style={{ marginTop: 10 }}>
               {busy === "upload" ? "上传中…" : "上传并绑定"}
@@ -415,7 +415,7 @@ export function BossRecruitCenter() {
                     <select
                       value={candidateId}
                       onChange={(e) => setCandidateId(e.target.value)}
-                      style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, marginBottom: 8 }}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5, marginBottom: 8 }}
                     >
                       <option value="">选择候选人（可选）</option>
                       {candidates.map((c) => (
@@ -427,19 +427,19 @@ export function BossRecruitCenter() {
                     value={candidateName}
                     onChange={(e) => setCandidateName(e.target.value)}
                     placeholder="候选人名称（如：张三）"
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, marginBottom: 8 }}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5, marginBottom: 8 }}
                   />
                   <input
                     value={helloMessage}
                     onChange={(e) => setHelloMessage(e.target.value)}
                     placeholder="打招呼语（可选）"
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, marginBottom: 8 }}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5, marginBottom: 8 }}
                   />
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <button type="button" className="mx-btn-gold" style={{ fontSize: 11.5, padding: "7px 12px" }} onClick={() => void handleCheckLogin(acc.id)}>
                       {busy === `check-${acc.id}` ? "检测中…" : "检测登录"}
                     </button>
-                    <button type="button" style={{ fontSize: 11.5, padding: "7px 12px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }} onClick={() => void handleRefresh(acc.id)}>
+                    <button type="button" style={{ fontSize: 11.5, padding: "7px 12px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)" }} onClick={() => void handleRefresh(acc.id)}>
                       {busy === `refresh-${acc.id}` ? "刷新中…" : "刷新职位"}
                     </button>
                     <button type="button" style={{ fontSize: 11.5, padding: "7px 12px", borderRadius: 10, background: "rgba(246,196,120,.12)", color: "var(--kaypal-v3-amber)", border: "1px solid rgba(222,150,57,.35)" }} onClick={() => void handleHello(acc.id)}>

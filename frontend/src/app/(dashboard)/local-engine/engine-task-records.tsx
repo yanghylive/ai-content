@@ -184,7 +184,7 @@ export function EngineTaskRecords() {
                   borderRadius: 999,
                   border: filter === key ? "1.5px solid var(--kaypal-v3-accent)" : "1px solid var(--kaypal-v3-border)",
                   background: filter === key ? "rgba(37,99,235,.12)" : "rgba(255,255,255,.06)",
-                  color: filter === key ? "var(--kaypal-v3-cobalt)" : "var(--mx-ink)",
+                  color: filter === key ? "var(--kaypal-v3-cobalt)" : "var(--kaypal-v3-ink)",
                 }}
               >
                 {label}
@@ -215,7 +215,7 @@ export function EngineTaskRecords() {
                       </span>
                       <span className={statusBadge(task.status)}>{display.label}</span>
                     </div>
-                    <div style={{ marginTop: 6, fontSize: 11, color: "var(--mx-muted)" }}>
+                    <div style={{ marginTop: 6, fontSize: 11, color: "var(--kaypal-v3-muted)" }}>
                       {task.typeLabel}
                       {task.accountName ? ` · ${task.accountName}` : ""}
                       {task.updatedAt ? ` · ${new Date(task.updatedAt).toLocaleString("zh-CN")}` : ""}
@@ -237,7 +237,7 @@ export function EngineTaskRecords() {
                         </button>
                       )}
                       {["queued", "running", "paused", "waiting_for_send_confirmation"].includes(task.status) && (
-                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "skip")}>
+                        <button type="button" style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)" }} disabled={actingId === task.id} onClick={() => void handleAction(task, "skip")}>
                           {actingId === task.id ? "处理中…" : "跳过"}
                         </button>
                       )}

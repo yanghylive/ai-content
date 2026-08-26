@@ -350,7 +350,7 @@ export function CrmImportFlow() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/crm/import")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/crm/import")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回客户导入
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -367,10 +367,10 @@ export function CrmImportFlow() {
               const num = (index + 1) as Step;
               return (
                 <div key={title} style={{ flex: 1, display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, background: step >= num ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.3)", color: step >= num ? "#fff" : "var(--mx-muted)" }}>
+                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, background: step >= num ? "var(--kaypal-v3-amber)" : "rgba(142,165,190,.3)", color: step >= num ? "#fff" : "var(--kaypal-v3-muted)" }}>
                     {step > num ? "✓" : num}
                   </span>
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: step >= num ? "var(--mx-ink)" : "var(--mx-muted)" }}>{title}</span>
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: step >= num ? "var(--kaypal-v3-ink)" : "var(--kaypal-v3-muted)" }}>{title}</span>
                 </div>
               );
             })}
@@ -378,10 +378,10 @@ export function CrmImportFlow() {
 
           {crmNotInstalled && (
             <div className="mx-card" style={{ marginTop: 12, padding: 13, borderColor: "rgba(222,150,57,.4)" }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", display: "flex", alignItems: "center", gap: 7 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", display: "flex", alignItems: "center", gap: 7 }}>
                 <FileSpreadsheet width={16} height={16} style={{ color: "var(--kaypal-v3-amber)" }} /> 需要先安装 CRM 客户管理应用
               </p>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>导入客户是 CRM 应用的功能，安装后就能用了</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 5, lineHeight: 1.5 }}>导入客户是 CRM 应用的功能，安装后就能用了</p>
               <button type="button" className="mx-btn-gold" style={{ marginTop: 9 }} onClick={() => router.push("/apps/detail?key=crm")}>去安装 CRM 应用</button>
             </div>
           )}
@@ -402,10 +402,10 @@ export function CrmImportFlow() {
                 ) : (
                   <FileSpreadsheet width={26} height={26} style={{ color: "var(--kaypal-v3-amber)" }} />
                 )}
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>
                   {readingFile ? "正在读取…" : "点击选择 .xlsx / .csv 文件"}
                 </span>
-                <span style={{ fontSize: 11, color: "var(--mx-muted)" }}>第一行要是列名（姓名、电话、微信…）</span>
+                <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>第一行要是列名（姓名、电话、微信…）</span>
                 <input
                   type="file"
                   accept=".xlsx,.xls,.csv,.txt"
@@ -417,7 +417,7 @@ export function CrmImportFlow() {
                   }}
                 />
               </label>
-              <button type="button" onClick={handleDownloadTemplate} style={{ marginTop: 9, width: "100%", padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <button type="button" onClick={handleDownloadTemplate} style={{ marginTop: 9, width: "100%", padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                 <Download width={14} height={14} /> 下载导入模板
               </button>
 
@@ -428,9 +428,9 @@ export function CrmImportFlow() {
                   placeholder={"姓名\t电话\t微信\n张三\t13800001111\tzhangsan\n李四\t13900002222\tlisi"}
                   value={rawText}
                   onChange={(e) => setRawText(e.target.value)}
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5, resize: "vertical", lineHeight: 1.55 }}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5, resize: "vertical", lineHeight: 1.55 }}
                 />
-                <p style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 6, lineHeight: 1.5 }}>
+                <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 6, lineHeight: 1.5 }}>
                   第一行是列名，下面每行一个客户，列之间用 Tab 或逗号分隔
                 </p>
                 {rawText.trim() && (
@@ -454,17 +454,17 @@ export function CrmImportFlow() {
             <>
               <div className="mx-section-head" style={{ marginTop: 14 }}>确认字段对应</div>
               <div className="mx-card" style={{ padding: 13 }}>
-                <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginBottom: 10 }}>已自动匹配 {mappedCount} 列，不对的手动改一下</p>
+                <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginBottom: 10 }}>已自动匹配 {mappedCount} 列，不对的手动改一下</p>
                 {columns.map((col) => (
                   <div key={col} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
                     <span style={{ flex: "0 0 88px", minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{col}</span>
+                      <span style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{col}</span>
                     </span>
-                    <span style={{ color: "var(--mx-muted)", flexShrink: 0 }}>→</span>
+                    <span style={{ color: "var(--kaypal-v3-muted)", flexShrink: 0 }}>→</span>
                     <select
                       value={mapping[col] || ""}
                       onChange={(e) => setMapping((prev) => ({ ...prev, [col]: e.target.value }))}
-                      style={{ flex: 1, minWidth: 0, padding: "7px 9px", borderRadius: 9, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12 }}
+                      style={{ flex: 1, minWidth: 0, padding: "7px 9px", borderRadius: 9, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12 }}
                     >
                       <option value="">不导入这一列</option>
                       {CRM_FIELDS.map((field) => (
@@ -482,8 +482,8 @@ export function CrmImportFlow() {
 
               {previewRows.length > 0 && (
                 <div className="mx-card" style={{ marginTop: 10, padding: 11 }}>
-                  <p style={{ fontSize: 11.5, fontWeight: 600, color: "var(--mx-muted)", marginBottom: 6 }}>数据预览（前 {Math.min(previewRows.length, 3)} 行）：</p>
-                  <pre style={{ margin: 0, fontSize: 10, color: "var(--mx-ink)", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>数据预览（前 {Math.min(previewRows.length, 3)} 行）：</p>
+                  <pre style={{ margin: 0, fontSize: 10, color: "var(--kaypal-v3-ink)", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: 1.6 }}>
                     {previewRows.slice(0, 3).map((row) => JSON.stringify(row.normalized || row.raw)).join("\n")}
                   </pre>
                 </div>
@@ -491,8 +491,8 @@ export function CrmImportFlow() {
 
               {dryRunInfo && (
                 <div className="mx-card" style={{ marginTop: 10, padding: 11 }}>
-                  <p style={{ fontSize: 11.5, fontWeight: 600, color: "var(--mx-muted)", marginBottom: 6 }}>导入检查：</p>
-                  <p style={{ fontSize: 11.5, color: "var(--mx-muted)", margin: 0, lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 11.5, fontWeight: 600, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>导入检查：</p>
+                  <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", margin: 0, lineHeight: 1.6 }}>
                     有效 {dryRunInfo.validCount} 条
                     {dryRunInfo.duplicateCount > 0 ? ` · 重复 ${dryRunInfo.duplicateCount} 条` : ""}
                     {dryRunInfo.invalidCount > 0 ? ` · 无效 ${dryRunInfo.invalidCount} 条` : ""}
@@ -501,7 +501,7 @@ export function CrmImportFlow() {
               )}
 
               <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-                <button type="button" onClick={() => setStep(1)} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                <button type="button" onClick={() => setStep(1)} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
                   <ArrowLeft width={14} height={14} /> 上一步
                 </button>
                 <button
@@ -524,16 +524,16 @@ export function CrmImportFlow() {
               <span style={{ width: 54, height: 54, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(5,150,105,.12)" }}>
                 <FileSpreadsheet width={26} height={26} style={{ color: "var(--kaypal-v3-success)" }} />
               </span>
-              <p style={{ fontSize: 15, fontWeight: 700, color: "var(--mx-ink)", marginTop: 12 }}>导入完成</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginTop: 12 }}>导入完成</p>
               <div style={{ display: "flex", justifyContent: "center", gap: 26, marginTop: 14 }}>
                 <span>
                   <span style={{ display: "block", fontSize: 26, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{importResult.imported}</span>
-                  <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>成功导入</span>
+                  <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>成功导入</span>
                 </span>
                 {importResult.skipped > 0 && (
                   <span>
                     <span style={{ display: "block", fontSize: 26, fontWeight: 800, color: "var(--kaypal-v3-amber)" }}>{importResult.skipped}</span>
-                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>跳过</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>跳过</span>
                   </span>
                 )}
               </div>
@@ -553,7 +553,7 @@ export function CrmImportFlow() {
               ) : null}
               <button
                 type="button"
-                style={{ marginTop: 9, width: "100%", padding: "10px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}
+                style={{ marginTop: 9, width: "100%", padding: "10px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}
                 onClick={() => {
                   setStep(1);
                   setRawText("");

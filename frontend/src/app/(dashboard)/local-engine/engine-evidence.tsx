@@ -55,7 +55,7 @@ export function EngineEvidence() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回设备状态
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -71,7 +71,7 @@ export function EngineEvidence() {
             <span className={`mx-badge ${evidence.length > 0 ? "mx-badge-blue" : "mx-badge-gold"}`} style={{ fontSize: 10.5 }}>
               {loading ? "加载中…" : `${evidence.length} 条留存`}
             </span>
-            <button type="button" onClick={() => void fetchStatus()} style={{ flexShrink: 0, padding: "7px 13px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <button type="button" onClick={() => void fetchStatus()} style={{ flexShrink: 0, padding: "7px 13px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
               <RefreshCcw width={13} height={13} /> 刷新
             </button>
           </div>
@@ -97,7 +97,7 @@ export function EngineEvidence() {
                       style={{ width: "100%", display: "block" }}
                     />
                   ) : (
-                    <p style={{ padding: 16, fontSize: 11.5, color: "var(--mx-muted)", wordBreak: "break-all" }}>
+                    <p style={{ padding: 16, fontSize: 11.5, color: "var(--kaypal-v3-muted)", wordBreak: "break-all" }}>
                       截图路径：{(latest as { path?: string }).path || "未知"}
                     </p>
                   )}
@@ -114,9 +114,9 @@ export function EngineEvidence() {
             </div>
           ) : evidence.length === 0 ? (
             <div className="mx-card mx-empty" style={{ padding: 26, textAlign: "center" }}>
-              <ImageIcon width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 9 }}>还没有留存记录</p>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>系统执行任务时会自动截图留存</p>
+              <ImageIcon width={26} height={26} style={{ color: "var(--kaypal-v3-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", marginTop: 9 }}>还没有留存记录</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4 }}>系统执行任务时会自动截图留存</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -132,19 +132,19 @@ export function EngineEvidence() {
                     onClick={() => setViewing({ src: imageSrc, label: record.label || record.kind || `留存 ${i + 1}`, path: record.path, capturedAt: record.capturedAt })}
                   >
                     <span style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
-                      <ImageIcon width={16} height={16} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                      <ImageIcon width={16} height={16} style={{ color: "var(--kaypal-v3-muted)", flexShrink: 0 }} />
                       <span style={{ minWidth: 0 }}>
-                        <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {record.label || record.kind || `留存 ${i + 1}`}
                         </span>
                         {record.capturedAt && (
-                          <span style={{ display: "block", fontSize: 10, color: "var(--mx-muted)", marginTop: 2 }}>
+                          <span style={{ display: "block", fontSize: 10, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>
                             {new Date(record.capturedAt).toLocaleString("zh-CN")}
                           </span>
                         )}
                       </span>
                     </span>
-                    <span style={{ fontFamily: "monospace", fontSize: 10, color: "var(--mx-muted)", flexShrink: 0 }}>
+                    <span style={{ fontFamily: "monospace", fontSize: 10, color: "var(--kaypal-v3-muted)", flexShrink: 0 }}>
                       {imageSrc ? "查看 ›" : record.path?.split("/").slice(-2).join("/")}
                     </span>
                   </button>
@@ -153,7 +153,7 @@ export function EngineEvidence() {
             </div>
           )}
 
-          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
             <ArrowLeft width={14} height={14} /> 返回
           </button>
         </div>
@@ -164,17 +164,17 @@ export function EngineEvidence() {
             style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.72)", padding: 14 }}
             onClick={() => setViewing(null)}
           >
-            <div style={{ maxHeight: "100%", maxWidth: "100%", overflow: "auto", borderRadius: 12, background: "var(--mx-surface, #10151c)", padding: 12, width: "100%" }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ maxHeight: "100%", maxWidth: "100%", overflow: "auto", borderRadius: 12, background: "var(--kaypal-v3-panel-bg, #10151c)", padding: 12, width: "100%" }} onClick={(e) => e.stopPropagation()}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}>
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{viewing.label}</span>
+                  <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{viewing.label}</span>
                   {viewing.capturedAt && (
-                    <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>
                       {new Date(viewing.capturedAt).toLocaleString("zh-CN")}
                     </span>
                   )}
                 </span>
-                <button type="button" onClick={() => setViewing(null)} style={{ padding: 6, color: "var(--mx-muted)", background: "none", border: "none", flexShrink: 0 }}>
+                <button type="button" onClick={() => setViewing(null)} style={{ padding: 6, color: "var(--kaypal-v3-muted)", background: "none", border: "none", flexShrink: 0 }}>
                   <XCircle width={20} height={20} />
                 </button>
               </div>
@@ -182,7 +182,7 @@ export function EngineEvidence() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={viewing.src} alt={viewing.label} style={{ width: "100%", borderRadius: 8, display: "block" }} />
               ) : (
-                <p style={{ padding: "28px 0", textAlign: "center", fontFamily: "monospace", fontSize: 12, color: "var(--mx-muted)", wordBreak: "break-all" }}>
+                <p style={{ padding: "28px 0", textAlign: "center", fontFamily: "monospace", fontSize: 12, color: "var(--kaypal-v3-muted)", wordBreak: "break-all" }}>
                   {viewing.path || "无法预览"}
                 </p>
               )}

@@ -218,7 +218,7 @@ export function StrategyForm({
       borderRadius: 10,
       border: "1px solid rgba(142,165,190,.3)",
       background: "rgba(255,255,255,.06)",
-      color: "var(--mx-ink)",
+      color: "var(--kaypal-v3-ink)",
       fontSize: 13,
     };
     return (
@@ -226,7 +226,7 @@ export function StrategyForm({
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/strategies")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/strategies")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回策略列表
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -247,14 +247,14 @@ export function StrategyForm({
           {!strategyId && (
             <>
               <div className="mx-section-head" style={{ marginTop: 14 }}>你的行业</div>
-              <p style={{ fontSize: 11, color: "var(--mx-muted)", marginBottom: 8 }}>选一个行业，系统自动帮你填好下面 80% 的内容</p>
+              <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginBottom: 8 }}>选一个行业，系统自动帮你填好下面 80% 的内容</p>
               <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
                 {INDUSTRIES.map((ind) => (
                   <button
                     key={ind}
                     type="button"
                     onClick={() => applyIndustryPreset(ind)}
-                    style={{ padding: "7px 14px", borderRadius: 9, fontSize: 12.5, fontWeight: 600, background: form.industry === ind ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.industry === ind ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: "1px solid " + (form.industry === ind ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                    style={{ padding: "7px 14px", borderRadius: 9, fontSize: 12.5, fontWeight: 600, background: form.industry === ind ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.industry === ind ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-ink)", border: "1px solid " + (form.industry === ind ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
                   >
                     {ind}
                   </button>
@@ -270,23 +270,23 @@ export function StrategyForm({
           <div className="mx-section-head" style={{ marginTop: 16 }}>基础信息</div>
           <div className="mx-card" style={{ padding: 13 }}>
             <label style={{ display: "block" }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>策略名称 *</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>策略名称 *</span>
               <input placeholder="例如：夏季促销主推" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>目标受众 *</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>目标受众 *</span>
               <input placeholder="例如：25-35 岁一二线城市女性" value={form.targetAudience} onChange={(e) => setForm((p) => ({ ...p, targetAudience: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>商业目标 *</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>商业目标 *</span>
               <input placeholder="例如：引导用户到店咨询 / 加微信" value={form.commercialGoal} onChange={(e) => setForm((p) => ({ ...p, commercialGoal: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>核心痛点 *</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>核心痛点 *</span>
               <textarea placeholder="例如：不知道怎么选产品、怕买贵、怕没效果" rows={2} value={form.corePainPoints} onChange={(e) => setForm((p) => ({ ...p, corePainPoints: e.target.value }))} style={{ ...fieldStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55, fontSize: 12.5 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>写作角度 *</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>写作角度 *</span>
               <textarea placeholder="例如：真实使用体验、对比测评、避坑指南" rows={2} value={form.writingAngles} onChange={(e) => setForm((p) => ({ ...p, writingAngles: e.target.value }))} style={{ ...fieldStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55, fontSize: 12.5 }} />
             </label>
           </div>
@@ -295,7 +295,7 @@ export function StrategyForm({
           <div className="mx-section-head" style={{ marginTop: 16 }}>高级设置（可选）</div>
           <div className="mx-card" style={{ padding: 13 }}>
             <label style={{ display: "block" }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>所属行业</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>所属行业</span>
               <select value={form.industry} onChange={(e) => setForm((p) => ({ ...p, industry: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }}>
                 {INDUSTRIES.map((ind) => (
                   <option key={ind} value={ind}>{ind}</option>
@@ -303,22 +303,22 @@ export function StrategyForm({
               </select>
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>语气风格</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>语气风格</span>
               <input placeholder="例如：亲切口语化" value={form.toneAndStyle} onChange={(e) => setForm((p) => ({ ...p, toneAndStyle: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>策略描述</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>策略描述</span>
               <textarea placeholder="补充说明这个策略的用途" rows={2} value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} style={{ ...fieldStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55, fontSize: 12.5 }} />
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 11, cursor: "pointer" }}>
               <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm((p) => ({ ...p, isDefault: e.target.checked }))} style={{ width: 16, height: 16 }} />
-              <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>设为默认策略（生成内容时优先使用）</span>
+              <span style={{ fontSize: 12.5, color: "var(--kaypal-v3-ink)" }}>设为默认策略（生成内容时优先使用）</span>
             </label>
           </div>
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/strategies")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/strategies")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
             {strategyId && (

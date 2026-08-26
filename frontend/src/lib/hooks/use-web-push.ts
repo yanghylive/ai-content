@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
+import { toPublicError } from "@/lib/public-error";
 
 /**
  * Web Push 订阅管理（PRD 16.x：移动端 PWA 推送）。
@@ -97,7 +98,7 @@ export function useWebPush() {
       });
       setEnabled(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "开启推送失败");
+      setError(toPublicError(err, "开启推送失败"));
     } finally {
       setBusy(false);
     }

@@ -41,7 +41,7 @@ export function FeatureRoadmap({
     <div
       style={{
         minHeight: "100dvh",
-        background: "var(--mx-bg, #0b1524)",
+        background: "var(--kaypal-v3-canvas, #0b1524)",
         padding: "28px 20px 40px",
       }}
     >

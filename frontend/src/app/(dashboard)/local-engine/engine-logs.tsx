@@ -60,7 +60,7 @@ export function EngineLogs() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回设备状态
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -76,13 +76,13 @@ export function EngineLogs() {
             <select
               value={service}
               onChange={(e) => setService(e.target.value as LocalEngineRuntimeServiceKey)}
-              style={{ flex: 1, padding: "9px 11px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+              style={{ flex: 1, padding: "9px 11px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}
             >
               {SERVICES.map((s) => (
                 <option key={s.key} value={s.key}>{s.label}</option>
               ))}
             </select>
-            <button type="button" onClick={() => void fetchLog(service)} style={{ flexShrink: 0, padding: "9px 13px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <button type="button" onClick={() => void fetchLog(service)} style={{ flexShrink: 0, padding: "9px 13px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
               <RefreshCcw width={13} height={13} /> 刷新
             </button>
           </div>
@@ -95,16 +95,16 @@ export function EngineLogs() {
 
           {/* 日志 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 0, overflow: "hidden" }}>
-            <div style={{ padding: "9px 12px", borderBottom: "1px solid rgba(142,165,190,.18)", display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--mx-muted)" }}>
+            <div style={{ padding: "9px 12px", borderBottom: "1px solid rgba(142,165,190,.18)", display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--kaypal-v3-muted)" }}>
               <ScrollText width={13} height={13} />
               {SERVICES.find((s) => s.key === service)?.label} · 最近 120 行
             </div>
-            <pre style={{ maxHeight: 380, overflow: "auto", padding: 12, fontFamily: "monospace", fontSize: 10.5, lineHeight: 1.6, color: "var(--mx-ink)", margin: 0 }}>
+            <pre style={{ maxHeight: 380, overflow: "auto", padding: 12, fontFamily: "monospace", fontSize: 10.5, lineHeight: 1.6, color: "var(--kaypal-v3-ink)", margin: 0 }}>
               {loading ? "正在加载日志…" : log || "暂无日志"}
             </pre>
           </div>
 
-          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
             <ArrowLeft width={14} height={14} /> 返回
           </button>
         </div>

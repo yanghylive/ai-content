@@ -157,7 +157,7 @@ export function PlatformAccountForm() {
       borderRadius: 10,
       border: "1px solid rgba(142,165,190,.3)",
       background: "rgba(255,255,255,.06)",
-      color: "var(--mx-ink)",
+      color: "var(--kaypal-v3-ink)",
       fontSize: 13,
     };
     const switchBtn = (checked: boolean, onToggle: () => void) => (
@@ -182,7 +182,7 @@ export function PlatformAccountForm() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/distribution/accounts")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/distribution/accounts")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回平台列表
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -215,8 +215,8 @@ export function PlatformAccountForm() {
                   <PlatformIcon width={16} height={16} />
                 </span>
                 <span style={{ minWidth: 0, flex: 1 }}>
-                  <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
-                  <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
+                  <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{label}</span>
+                  <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>{desc}</span>
                 </span>
                 {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
               </button>
@@ -227,19 +227,19 @@ export function PlatformAccountForm() {
           <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：账号信息</div>
           <div className="mx-card" style={{ padding: 13 }}>
             <label style={{ display: "block" }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>配置名称 *</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>配置名称 *</span>
               <input placeholder="例如：公司主号" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>发布服务地址 *</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>发布服务地址 *</span>
               <input placeholder="https://你的发布服务地址" value={form.config.apiUrl} onChange={(e) => setConfig("apiUrl", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>AppID</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>AppID</span>
               <input placeholder="公众号后台 → 设置与开发 → 基本配置" value={form.appId} onChange={(e) => setForm((p) => ({ ...p, appId: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>访问凭证</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>访问凭证</span>
               <input type="password" placeholder="发布服务里获取" value={form.apiToken} onChange={(e) => setForm((p) => ({ ...p, apiToken: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
           </div>
@@ -247,32 +247,32 @@ export function PlatformAccountForm() {
           {/* 第 3 步：发布细节（可选） */}
           <div className="mx-section-head" style={{ marginTop: 16 }}>第 3 步：发布细节（可选）</div>
           <div className="mx-card" style={{ padding: 13 }}>
-            <p style={{ fontSize: 10, color: "var(--mx-muted)", marginBottom: 9 }}>已按推荐预填，一般不用改</p>
+            <p style={{ fontSize: 10, color: "var(--kaypal-v3-muted)", marginBottom: 9 }}>已按推荐预填，一般不用改</p>
             <label style={{ display: "block" }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>默认封面 media_id</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>默认封面 media_id</span>
               <input placeholder="可选" value={form.config.defaultThumbMediaId} onChange={(e) => setConfig("defaultThumbMediaId", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>分类 ID</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>分类 ID</span>
               <input type="number" placeholder="可选" value={String(form.config.categoryId)} onChange={(e) => setConfig("categoryId", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>页面服务地址</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>页面服务地址</span>
               <input placeholder="https://jpage.cn" value={form.config.baseUrl} onChange={(e) => setConfig("baseUrl", e.target.value)} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
-              <span style={{ fontSize: 13, color: "var(--mx-ink)" }}>开启留言</span>
+              <span style={{ fontSize: 13, color: "var(--kaypal-v3-ink)" }}>开启留言</span>
               {switchBtn(form.config.openComment === 1, () => setConfig("openComment", form.config.openComment === 1 ? 0 : 1))}
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
-              <span style={{ fontSize: 13, color: "var(--mx-ink)" }}>仅限粉丝留言</span>
+              <span style={{ fontSize: 13, color: "var(--kaypal-v3-ink)" }}>仅限粉丝留言</span>
               {switchBtn(form.config.onlyFansCanComment === 1, () => setConfig("onlyFansCanComment", form.config.onlyFansCanComment === 1 ? 0 : 1))}
             </div>
           </div>
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/distribution/accounts")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/distribution/accounts")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
               返回
             </button>
             {isEdit ? (

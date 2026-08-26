@@ -993,7 +993,7 @@ export function SessionsPage({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-              style={{ flex: 1, padding: "9px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--mx-ink)", fontSize: 13 }}
+              style={{ flex: 1, padding: "9px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--kaypal-v3-ink)", fontSize: 13 }}
             >
               {agentStatusFilterOptions.map((option) => (
                 <option key={option.key} value={option.key}>{option.label}</option>
@@ -1002,7 +1002,7 @@ export function SessionsPage({
             <select
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value as typeof sourceFilter)}
-              style={{ flex: 1, padding: "9px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--mx-ink)", fontSize: 13 }}
+              style={{ flex: 1, padding: "9px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--kaypal-v3-ink)", fontSize: 13 }}
             >
               {agentSourceFilterOptions.map((option) => (
                 <option key={option.key} value={option.key}>{option.label}</option>
@@ -1022,7 +1022,7 @@ export function SessionsPage({
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="按指令、标题或目标应用搜索"
-            style={{ width: "100%", marginTop: 8, padding: "10px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", marginTop: 8, padding: "10px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--kaypal-v3-ink)", fontSize: 13, outline: "none", boxSizing: "border-box" }}
           />
 
           {/* 任务列表 */}
@@ -1054,7 +1054,7 @@ export function SessionsPage({
                       {commercialAgentText(session.statusLabel)}
                     </span>
                   </div>
-                  <div style={{ marginTop: 6, fontSize: 12, color: "var(--mx-muted)" }}>
+                  <div style={{ marginTop: 6, fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
                     {confirmationSourceLabel[session.source] || session.source} · {formatAgentDateTime(session.createdAt)}
                     {session.targetApp ? ` · ${session.targetApp}` : ""}
                   </div>
@@ -1105,7 +1105,7 @@ export function SessionsPage({
                     ) : null}
                     <button
                       type="button"
-                      style={{ fontSize: 12, padding: "6px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-paper-muted)", color: "var(--mx-ink)", border: "1px solid var(--kaypal-v3-border)" }}
+                      style={{ fontSize: 12, padding: "6px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-paper-muted)", color: "var(--kaypal-v3-ink)", border: "1px solid var(--kaypal-v3-border)" }}
                       disabled={exportingId === session.id}
                       onClick={() => void exportEvidence(session)}
                     >
@@ -1113,7 +1113,7 @@ export function SessionsPage({
                     </button>
                     <Link
                       href={confirmationSourceHref[session.source]}
-                      style={{ fontSize: 12, padding: "6px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-paper-muted)", color: "var(--mx-ink)", border: "1px solid var(--kaypal-v3-border)", textDecoration: "none" }}
+                      style={{ fontSize: 12, padding: "6px 10px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-paper-muted)", color: "var(--kaypal-v3-ink)", border: "1px solid var(--kaypal-v3-border)", textDecoration: "none" }}
                     >
                       回来源
                     </Link>

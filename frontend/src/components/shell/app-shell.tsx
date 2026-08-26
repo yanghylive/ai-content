@@ -399,7 +399,7 @@ export function AppShell({
           <div className="kx-rail-spacer" />
           <button
             className="kx-rail-tool"
-            aria-label="切换暗色模式"
+            aria-label={dark ? "切换到浅色模式" : "切换到暗色模式"}
             onClick={toggleTheme}
           >
             <ShellIcon name={dark ? "sun" : "moon"} />

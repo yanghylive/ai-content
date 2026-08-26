@@ -101,7 +101,7 @@ export function ContactAddWizard({
       borderRadius: 10,
       border: "1px solid rgba(142,165,190,.3)",
       background: "rgba(255,255,255,.06)",
-      color: "var(--mx-ink)",
+      color: "var(--kaypal-v3-ink)",
       fontSize: 12.5,
     };
     return (
@@ -121,8 +121,8 @@ export function ContactAddWizard({
           {currentStep === "targets" && (
             <>
               <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-                <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)" }}>粘贴要添加的号码</h2>
-                <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>计划名称将自动生成为：{autoPlanName}</p>
+                <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>粘贴要添加的号码</h2>
+                <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 3 }}>计划名称将自动生成为：{autoPlanName}</p>
                 <textarea
                   value={formData.numbers}
                   onChange={(e) => setFormData((prev) => ({ ...prev, numbers: e.target.value }))}
@@ -130,7 +130,7 @@ export function ContactAddWizard({
                   rows={7}
                   style={{ ...inputStyle, marginTop: 10, minHeight: 130, resize: "vertical", lineHeight: 1.6 }}
                 />
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 7, fontSize: 11.5, color: "var(--mx-muted)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 7, fontSize: 11.5, color: "var(--kaypal-v3-muted)" }}>
                   <span>已输入 {numberCount} 个号码</span>
                   {numberCount > 0 && (
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "var(--kaypal-v3-success)", fontWeight: 600 }}>
@@ -140,10 +140,10 @@ export function ContactAddWizard({
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 9 }}>
-                <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                   <Upload width={14} height={14} /> 从 Excel 导入
                 </button>
-                <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                   <Download width={14} height={14} /> 下载模板
                 </button>
               </div>
@@ -153,14 +153,14 @@ export function ContactAddWizard({
           {currentStep === "message" && (
             <>
               <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-                <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)" }}>设置验证消息</h2>
-                <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>将向 {numberCount} 个号码发送好友申请</p>
+                <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>设置验证消息</h2>
+                <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 3 }}>将向 {numberCount} 个号码发送好友申请</p>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 9, padding: 10, borderRadius: 10, background: "rgba(222,150,57,.1)", border: "1px solid rgba(222,150,57,.35)" }}>
                   <ShieldAlert width={16} height={16} style={{ color: "var(--kaypal-v3-amber)", flexShrink: 0, marginTop: 1 }} />
                   <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-amber)", lineHeight: 1.5 }}>加好友是高风险操作，建议 24 小时内不超过 15 人。系统已默认按安全参数执行。</p>
                 </div>
                 <label style={{ display: "block", marginTop: 10 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>验证消息</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>验证消息</span>
                   <textarea
                     value={formData.verifyMessage}
                     onChange={(e) => setFormData((prev) => ({ ...prev, verifyMessage: e.target.value }))}
@@ -169,31 +169,31 @@ export function ContactAddWizard({
                     style={{ ...inputStyle, marginTop: 6, resize: "vertical", lineHeight: 1.55 }}
                   />
                 </label>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)", marginTop: 10 }}>常用模板</p>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)", marginTop: 10 }}>常用模板</p>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 7 }}>
                   {VERIFY_TEMPLATES.map((template) => (
                     <button
                       key={template}
                       type="button"
                       onClick={() => setFormData((prev) => ({ ...prev, verifyMessage: template }))}
-                      style={{ padding: "6px 11px", borderRadius: 9, fontSize: 11.5, fontWeight: 500, background: formData.verifyMessage === template ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: formData.verifyMessage === template ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: "1px solid " + (formData.verifyMessage === template ? "rgba(222,150,57,.45)" : "rgba(142,165,190,.3)") }}
+                      style={{ padding: "6px 11px", borderRadius: 9, fontSize: 11.5, fontWeight: 500, background: formData.verifyMessage === template ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: formData.verifyMessage === template ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-ink)", border: "1px solid " + (formData.verifyMessage === template ? "rgba(222,150,57,.45)" : "rgba(142,165,190,.3)") }}
                     >
                       {template}
                     </button>
                   ))}
                 </div>
 
-                <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} style={{ marginTop: 12, fontSize: 12, fontWeight: 600, color: "var(--mx-muted)", background: "none", border: "none", padding: 0 }}>
+                <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} style={{ marginTop: 12, fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0 }}>
                   {showAdvanced ? "收起高级设置" : "高级设置（可选）"}
                 </button>
                 {showAdvanced && (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, marginTop: 9 }}>
                     <label style={{ display: "block" }}>
-                      <span style={{ fontSize: 11.5, color: "var(--mx-muted)" }}>24 小时上限</span>
+                      <span style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)" }}>24 小时上限</span>
                       <input type="number" min={1} max={20} value={formData.dailyLimit} onChange={(e) => setFormData((prev) => ({ ...prev, dailyLimit: Number(e.target.value) || 15 }))} style={{ ...inputStyle, marginTop: 5 }} />
                     </label>
                     <label style={{ display: "block" }}>
-                      <span style={{ fontSize: 11.5, color: "var(--mx-muted)" }}>备注策略</span>
+                      <span style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)" }}>备注策略</span>
                       <select value={formData.remarkStrategy} onChange={(e) => setFormData((prev) => ({ ...prev, remarkStrategy: e.target.value as ContactAddFormData["remarkStrategy"] }))} style={{ ...inputStyle, marginTop: 5 }}>
                         <option value="request_name">沿用申请名</option>
                         <option value="phone_wechat">电话/微信</option>
@@ -201,11 +201,11 @@ export function ContactAddWizard({
                       </select>
                     </label>
                     <label style={{ display: "block" }}>
-                      <span style={{ fontSize: 11.5, color: "var(--mx-muted)" }}>最小间隔（秒）</span>
+                      <span style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)" }}>最小间隔（秒）</span>
                       <input type="number" min={30} value={formData.minIntervalSeconds} onChange={(e) => setFormData((prev) => ({ ...prev, minIntervalSeconds: Number(e.target.value) || 60 }))} style={{ ...inputStyle, marginTop: 5 }} />
                     </label>
                     <label style={{ display: "block" }}>
-                      <span style={{ fontSize: 11.5, color: "var(--mx-muted)" }}>最大间隔（秒）</span>
+                      <span style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)" }}>最大间隔（秒）</span>
                       <input type="number" min={60} value={formData.maxIntervalSeconds} onChange={(e) => setFormData((prev) => ({ ...prev, maxIntervalSeconds: Number(e.target.value) || 120 }))} style={{ ...inputStyle, marginTop: 5 }} />
                     </label>
                   </div>
@@ -213,8 +213,8 @@ export function ContactAddWizard({
 
                 {/* 任务摘要 */}
                 <div style={{ marginTop: 12, padding: 11, borderRadius: 10, background: "rgba(120,148,179,.08)" }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mx-ink)" }}>任务摘要</p>
-                  <ul style={{ marginTop: 5, fontSize: 11.5, color: "var(--mx-muted)", lineHeight: 1.7 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>任务摘要</p>
+                  <ul style={{ marginTop: 5, fontSize: 11.5, color: "var(--kaypal-v3-muted)", lineHeight: 1.7 }}>
                     <li>计划名称：{autoPlanName}</li>
                     <li>添加人数：{numberCount} 人</li>
                     <li>验证消息：{formData.verifyMessage || "（未填写）"}</li>
@@ -229,7 +229,7 @@ export function ContactAddWizard({
           <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
             {currentStep === "message" ? (
               <>
-                <button type="button" onClick={() => setCurrentStep("targets")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                <button type="button" onClick={() => setCurrentStep("targets")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
                   <ArrowLeft width={14} height={14} /> 上一步
                 </button>
                 <button
@@ -246,7 +246,7 @@ export function ContactAddWizard({
             ) : (
               <>
                 {onCancel && (
-                  <button type="button" onClick={onCancel} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+                  <button type="button" onClick={onCancel} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
                     返回
                   </button>
                 )}

@@ -103,7 +103,7 @@ export function MonitorForm() {
       borderRadius: 10,
       border: "1px solid rgba(142,165,190,.3)",
       background: "rgba(255,255,255,.06)",
-      color: "var(--mx-ink)",
+      color: "var(--kaypal-v3-ink)",
       fontSize: 13,
     };
     return (
@@ -111,7 +111,7 @@ export function MonitorForm() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/intelligence/monitors")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/intelligence/monitors")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回监控列表
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -145,8 +145,8 @@ export function MonitorForm() {
                     <TypeIcon width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
-                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>{desc}</span>
                   </span>
                   {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
@@ -170,7 +170,7 @@ export function MonitorForm() {
                 onChange={(e) => setForm((p) => ({ ...p, keyword: e.target.value }))}
                 style={fieldStyle}
               />
-              <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5 }}>
+              <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>
                 {form.type === "keyword" ? "例如：你的品牌名、产品词、竞品词" : "粘贴对方主页链接或账号名"}
               </p>
             </>
@@ -184,7 +184,7 @@ export function MonitorForm() {
                 key={preset.value}
                 type="button"
                 onClick={() => setForm((p) => ({ ...p, schedule: preset.value }))}
-                style={{ padding: "7px 12px", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.schedule === preset.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.schedule === preset.value ? "var(--kaypal-v3-amber)" : "var(--mx-ink)", border: "1px solid " + (form.schedule === preset.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
+                style={{ padding: "7px 12px", borderRadius: 9, fontSize: 12, fontWeight: 600, background: form.schedule === preset.value ? "rgba(246,196,120,.18)" : "rgba(120,148,179,.12)", color: form.schedule === preset.value ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-ink)", border: "1px solid " + (form.schedule === preset.value ? "rgba(222,150,57,.5)" : "rgba(142,165,190,.3)") }}
               >
                 {preset.label}
               </button>
@@ -195,7 +195,7 @@ export function MonitorForm() {
           <div className="mx-section-head" style={{ marginTop: 16 }}>高级设置（可选）</div>
           <div className="mx-card" style={{ padding: 13 }}>
             <label style={{ display: "block" }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>限定平台</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>限定平台</span>
               <select value={form.platform} onChange={(e) => setForm((p) => ({ ...p, platform: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }}>
                 {PLATFORM_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -203,14 +203,14 @@ export function MonitorForm() {
               </select>
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>每日花费上限（积分）</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>每日花费上限（积分）</span>
               <input type="number" placeholder="不限" value={form.costLimit} onChange={(e) => setForm((p) => ({ ...p, costLimit: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
           </div>
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/intelligence/monitors")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/intelligence/monitors")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
             <button

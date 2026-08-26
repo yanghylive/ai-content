@@ -59,8 +59,8 @@ export function ContactsPanel({
           {/* 头部 + 同步 */}
           <div className="mx-card" style={{ padding: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
             <div>
-              <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--mx-ink)" }}>联系人</h2>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 2 }}>已同步 {contacts.length.toLocaleString()} 个</p>
+              <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>联系人</h2>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>已同步 {contacts.length.toLocaleString()} 个</p>
             </div>
             <button
               type="button"
@@ -76,25 +76,25 @@ export function ContactsPanel({
 
           {/* 搜索 */}
           <div style={{ position: "relative", marginTop: 10 }}>
-            <Search width={15} height={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--mx-muted)" }} />
+            <Search width={15} height={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--kaypal-v3-muted)" }} />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜索昵称、备注或微信号"
-              style={{ width: "100%", padding: "10px 11px 10px 34px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+              style={{ width: "100%", padding: "10px 11px 10px 34px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }}
             />
           </div>
 
           {/* 列表 */}
           {contacts.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 28, textAlign: "center" }}>
-              <Users width={28} height={28} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 10 }}>还没有联系人</p>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>点击上方"同步"从微信导入</p>
+              <Users width={28} height={28} style={{ color: "var(--kaypal-v3-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", marginTop: 10 }}>还没有联系人</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4 }}>点击上方"同步"从微信导入</p>
             </div>
           ) : filteredContacts.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 24, textAlign: "center" }}>
-              <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>没有找到匹配 "{searchQuery}" 的联系人</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)" }}>没有找到匹配 "{searchQuery}" 的联系人</p>
             </div>
           ) : (
             <div className="mx-card" style={{ marginTop: 12, padding: "4px 13px" }}>
@@ -104,24 +104,24 @@ export function ContactsPanel({
                     <Users width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {contact.remark || contact.nickname}
                     </span>
-                    <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {contact.wxid}{contact.tags && contact.tags.length > 0 ? ` · ${contact.tags.join(" / ")}` : ""}
                     </span>
                   </span>
                   <button
                     type="button"
                     onClick={() => onDelete?.(contact.id)}
-                    style={{ flexShrink: 0, padding: 6, color: "var(--mx-muted)", background: "none", border: "none" }}
+                    style={{ flexShrink: 0, padding: 6, color: "var(--kaypal-v3-muted)", background: "none", border: "none" }}
                   >
                     <Trash2 width={15} height={15} />
                   </button>
                 </div>
               ))}
               {filteredContacts.length > 50 && (
-                <p style={{ padding: "9px 0 6px", fontSize: 11, color: "var(--mx-muted)", textAlign: "center" }}>
+                <p style={{ padding: "9px 0 6px", fontSize: 11, color: "var(--kaypal-v3-muted)", textAlign: "center" }}>
                   显示前 50 条，共 {filteredContacts.length} 条
                 </p>
               )}
@@ -132,14 +132,14 @@ export function ContactsPanel({
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 14, fontSize: 12, fontWeight: 600, color: "var(--mx-muted)", background: "none", border: "none" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 14, fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-muted)", background: "none", border: "none" }}
           >
             高级操作
             <ChevronDown width={14} height={14} style={{ transform: showAdvanced ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
           </button>
           {showAdvanced && (
             <div style={{ display: "flex", gap: 8, marginTop: 9 }}>
-              <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+              <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                 <Download width={14} height={14} /> 导出联系人
               </button>
               <button type="button" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(220,80,80,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.35)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
@@ -153,7 +153,7 @@ export function ContactsPanel({
             <button
               type="button"
               onClick={onCancel}
-              style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}
+              style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}
             >
               <ArrowLeft width={14} height={14} /> 返回任务中心
             </button>
