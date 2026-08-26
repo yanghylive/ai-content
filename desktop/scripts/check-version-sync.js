@@ -34,8 +34,9 @@ function main() {
     [
       'frontend dashboard version',
       versionFromSource(
-        path.join(repoRoot, 'frontend/src/app/(dashboard)/layout.tsx'),
-        /DESKTOP_APP_VERSION\s*=\s*["']([^"']+)["']/,
+        // 2026-08-27：DESKTOP_APP_VERSION 随 design 重构迁至 release-notes.ts（layout.tsx 改 import），守卫同步指向新 SSOT
+        path.join(repoRoot, 'frontend/src/lib/release-notes.ts'),
+        /export const DESKTOP_APP_VERSION\s*=\s*["']([^"']+)["']/,
         'frontend dashboard',
       ),
     ],

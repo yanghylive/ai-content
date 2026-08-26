@@ -130,21 +130,21 @@ export function InboxProcessing() {
                       {PLATFORM_LABELS[item.platform] || item.platform}
                     </span>
                     {item.author ? (
-                      <span style={{ fontSize: 11, color: "var(--mx-muted)" }}>{item.author}</span>
+                      <span style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{item.author}</span>
                     ) : null}
                   </div>
                   <div className="mx-row-title" style={{ marginTop: 8, fontSize: 13.5, fontWeight: 600 }}>
                     {item.title || "（无标题）"}
                   </div>
                   {item.summary ? (
-                    <p style={{ marginTop: 4, fontSize: 11.5, color: "var(--mx-muted)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    <p style={{ marginTop: 4, fontSize: 11.5, color: "var(--kaypal-v3-muted)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                       {item.summary}
                     </p>
                   ) : null}
                   <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                     <button
                       type="button"
-                      style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }}
+                      style={{ flex: 1, fontSize: 11.5, padding: "9px 10px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)" }}
                       disabled={actingId === item.id}
                       onClick={() => void handleImportMaterial(item)}
                     >
@@ -177,7 +177,7 @@ export function InboxProcessing() {
 
           <button
             type="button"
-            style={{ marginTop: 16, fontSize: 12.5, color: "var(--mx-muted)", background: "none", border: "none", display: "flex", alignItems: "center", gap: 4 }}
+            style={{ marginTop: 16, fontSize: 12.5, color: "var(--kaypal-v3-muted)", background: "none", border: "none", display: "flex", alignItems: "center", gap: 4 }}
             onClick={() => router.push("/intelligence/inbox")}
           >
             <ArrowLeft size={14} /> 返回收件箱

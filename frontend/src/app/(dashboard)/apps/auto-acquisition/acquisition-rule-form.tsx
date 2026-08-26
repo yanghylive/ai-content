@@ -345,7 +345,7 @@ export function AcquisitionRuleForm() {
       borderRadius: 10,
       border: "1px solid rgba(142,165,190,.3)",
       background: "rgba(255,255,255,.06)",
-      color: "var(--mx-ink)",
+      color: "var(--kaypal-v3-ink)",
       fontSize: 13,
     };
     return (
@@ -353,7 +353,7 @@ export function AcquisitionRuleForm() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/growth/acquisition")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/growth/acquisition")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回获客任务
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -393,8 +393,8 @@ export function AcquisitionRuleForm() {
                     <PlatformIcon width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{label}</span>
-                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{desc}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>{desc}</span>
                   </span>
                   {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
@@ -405,7 +405,7 @@ export function AcquisitionRuleForm() {
           {/* 执行账号（移动端） */}
           <div className="mx-section-head" style={{ marginTop: 16 }}>执行账号</div>
           {accountsLoading ? (
-            <p style={{ fontSize: 12, color: "var(--mx-muted)" }}>正在加载账号…</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>正在加载账号…</p>
           ) : visibleAccounts.length === 0 ? (
             <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)" }}>
               当前平台暂无可用执行账号：请先到「平台账号」页完成账号授权登录，或切换平台
@@ -445,10 +445,10 @@ export function AcquisitionRuleForm() {
                       }}
                     />
                     <span style={{ minWidth: 0, flex: 1 }}>
-                      <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>
+                      <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>
                         {account.accountName || `${account.platform} ${account.accountId}`}
                       </span>
-                      <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>
+                      <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>
                         {account.platform} · 登录 {account.loginStatus} · 风险 {account.riskStatus}
                         {!usable ? "（不可用，请先处理账号状态）" : ""}
                       </span>
@@ -469,7 +469,7 @@ export function AcquisitionRuleForm() {
             rows={3}
             style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.6 }}
           />
-          <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 5 }}>你的客户会关注的话题词，逗号分隔</p>
+          <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>你的客户会关注的话题词，逗号分隔</p>
           {keywords.length > 0 && (
             <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", marginTop: 4 }}>✓ 将监控 {keywords.length} 个关键词：{keywords.join("、")}</p>
           )}
@@ -478,7 +478,7 @@ export function AcquisitionRuleForm() {
           <div className="mx-section-head" style={{ marginTop: 16 }}>第 3 步：找到后说什么？</div>
           <div className="mx-card" style={{ padding: 13 }}>
             <label style={{ display: "block" }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>评论话术</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>评论话术</span>
               <textarea
                 value={form.commentTemplate}
                 onChange={(e) => setForm((p) => ({ ...p, commentTemplate: e.target.value }))}
@@ -487,7 +487,7 @@ export function AcquisitionRuleForm() {
               />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>私信话术</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>私信话术</span>
               <textarea
                 value={form.privateTemplate}
                 onChange={(e) => setForm((p) => ({ ...p, privateTemplate: e.target.value }))}
@@ -501,34 +501,34 @@ export function AcquisitionRuleForm() {
           <div className="mx-section-head" style={{ marginTop: 16 }}>高级设置</div>
           <div className="mx-card" style={{ padding: 13 }}>
             <label style={{ display: "block" }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>每天最多触达</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>每天最多触达</span>
               <input type="number" min={1} max={100} value={form.dailyLimit} onChange={(e) => setForm((p) => ({ ...p, dailyLimit: Number(e.target.value) }))} style={{ ...fieldStyle, marginTop: 6 }} />
-              <span style={{ fontSize: 10, color: "var(--mx-muted)" }}>建议 10-30，太多容易被平台限制</span>
+              <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)" }}>建议 10-30，太多容易被平台限制</span>
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>排除关键词</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>排除关键词</span>
               <input placeholder="例如：同行, 广告" value={form.excludeKeywords} onChange={(e) => setForm((p) => ({ ...p, excludeKeywords: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>昵称黑名单</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>昵称黑名单</span>
               <input placeholder="例如：某某官方旗舰店" value={form.blacklistNicknames} onChange={(e) => setForm((p) => ({ ...p, blacklistNicknames: e.target.value }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             <label style={{ display: "block", marginTop: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>同一个人最多触达几次</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>同一个人最多触达几次</span>
               <input type="number" min={1} max={10} value={form.perTargetLimit} onChange={(e) => setForm((p) => ({ ...p, perTargetLimit: Number(e.target.value) }))} style={{ ...fieldStyle, marginTop: 6 }} />
             </label>
             {/* 定时启动 */}
             <div style={{ marginTop: 12 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>定时启动</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>定时启动</span>
               <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 6 }}>
                 <input type="checkbox" checked={form.scheduleEnabled} onChange={(e) => setForm((p) => ({ ...p, scheduleEnabled: e.target.checked }))} style={{ width: 16, height: 16 }} />
-                <span style={{ fontSize: 12, color: "var(--mx-ink)" }}>每天</span>
+                <span style={{ fontSize: 12, color: "var(--kaypal-v3-ink)" }}>每天</span>
                 <input type="time" value={form.beginTime} disabled={!form.scheduleEnabled} onChange={(e) => setForm((p) => ({ ...p, beginTime: e.target.value }))} style={{ ...fieldStyle, flex: 1, padding: "7px 10px", opacity: form.scheduleEnabled ? 1 : 0.5 }} />
               </div>
             </div>
             {/* 发送方式 */}
             <div style={{ marginTop: 12 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>发送方式</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>发送方式</span>
               <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 7 }}>
                 {[
                   { value: "confirm-first" as const, label: "每条都先给我确认（推荐）" },
@@ -537,7 +537,7 @@ export function AcquisitionRuleForm() {
                 ].map((opt) => (
                   <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                     <input type="radio" name="riskMode" checked={form.riskMode === opt.value} onChange={() => setForm((p) => ({ ...p, riskMode: opt.value }))} style={{ width: 15, height: 15 }} />
-                    <span style={{ fontSize: 13, color: "var(--mx-ink)" }}>{opt.label}</span>
+                    <span style={{ fontSize: 13, color: "var(--kaypal-v3-ink)" }}>{opt.label}</span>
                   </label>
                 ))}
               </div>
@@ -546,7 +546,7 @@ export function AcquisitionRuleForm() {
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/growth/acquisition")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/growth/acquisition")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
               返回
             </button>
             <button
@@ -565,13 +565,13 @@ export function AcquisitionRuleForm() {
           {createdConfigId && (
             <div className="mx-card" style={{ marginTop: 12, padding: 12 }}>
               {preflightLoading ? (
-                <p style={{ fontSize: 13, color: "var(--mx-muted)" }}>正在预检任务…</p>
+                <p style={{ fontSize: 13, color: "var(--kaypal-v3-muted)" }}>正在预检任务…</p>
               ) : preflight ? (
                 <>
                   <p style={{ fontSize: 13, fontWeight: 700, color: preflight.allowed ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)" }}>
                     {preflight.allowed ? "✓ 预检通过" : "✗ 预检未通过"}
                   </p>
-                  <p style={{ fontSize: 12, color: "var(--mx-ink)", marginTop: 4, lineHeight: 1.6 }}>{preflight.summary}</p>
+                  <p style={{ fontSize: 12, color: "var(--kaypal-v3-ink)", marginTop: 4, lineHeight: 1.6 }}>{preflight.summary}</p>
                   {preflight.blockers.length > 0 && (
                     <ul style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 3 }}>
                       {preflight.blockers.map((b) => (

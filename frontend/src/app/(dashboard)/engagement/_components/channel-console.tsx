@@ -384,7 +384,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/engagement")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/engagement")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回互动中心
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -410,15 +410,15 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
           <div className="mx-section-head" style={{ marginTop: 14 }}>第 1 步：用哪个账号？</div>
           {accounts.length === 0 ? (
             <div className="mx-card mx-empty" style={{ padding: 22, textAlign: "center" }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>还没有已登录的{config.platformName}账号</p>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>先到「平台账号」扫码登录一个</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>还没有已登录的{config.platformName}账号</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4 }}>先到「平台账号」扫码登录一个</p>
               <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/distribution/accounts")}>去登录账号</button>
             </div>
           ) : (
             <select
               value={String(selectedAccountId ?? "")}
               onChange={(e) => setSelectedAccountId(Number(e.target.value))}
-              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }}
             >
               {accounts.map((account) => (
                 <option key={account.id} value={account.id}>
@@ -437,7 +437,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
                 <CheckCircle2 width={16} height={16} style={{ flexShrink: 0 }} />
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{backendMessage}</span>
               </span>
-              <button type="button" onClick={() => void handleOpenBackend()} style={{ flexShrink: 0, padding: "6px 11px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
+              <button type="button" onClick={() => void handleOpenBackend()} style={{ flexShrink: 0, padding: "6px 11px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
                 重新连接
               </button>
             </div>
@@ -457,9 +457,9 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
           <div className="mx-section-head" style={{ marginTop: 16 }}>第 3 步：{crmPreparation ? "测试发送" : config.startButtonLabel}</div>
           {crmPreparation && (
             <div className="mx-card" style={{ padding: 12, marginBottom: 9, borderColor: "rgba(222,150,57,.4)" }}>
-              <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>CRM 测试发送</p>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 3 }}>给客户发的消息：</p>
-              <p style={{ fontSize: 12, color: "var(--mx-ink)", background: "rgba(120,148,179,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 6, lineHeight: 1.55 }}>
+              <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>CRM 测试发送</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 3 }}>给客户发的消息：</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-ink)", background: "rgba(120,148,179,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 6, lineHeight: 1.55 }}>
                 {(crmPreparation as { message?: string }).message ||
                   (crmPreparation as { content?: string }).content ||
                   "（准备的消息）"}
@@ -479,7 +479,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
             {taskBusy ? "正在创建…" : crmPreparation ? "开始测试发送" : config.startButtonLabel}
           </button>
           {!backendReady && (
-            <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 7 }}>先完成第 2 步连接后台，才能开始任务</p>
+            <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 7 }}>先完成第 2 步连接后台，才能开始任务</p>
           )}
 
           {/* 当前任务 */}
@@ -491,9 +491,9 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
               {pollStaleIndicator}
               {activeTask.status === "waiting_for_send_confirmation" && (
                 <div className="mx-card" style={{ padding: 13, marginBottom: 9, borderColor: "rgba(222,150,57,.4)" }}>
-                  <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>AI 已写好回复，确认后发送：</p>
+                  <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>AI 已写好回复，确认后发送：</p>
                   {activeTask.replyText && (
-                    <p style={{ fontSize: 12, color: "var(--mx-ink)", background: "rgba(120,148,179,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 7, lineHeight: 1.55 }}>{activeTask.replyText}</p>
+                    <p style={{ fontSize: 12, color: "var(--kaypal-v3-ink)", background: "rgba(120,148,179,.08)", padding: "8px 10px", borderRadius: 8, marginTop: 7, lineHeight: 1.55 }}>{activeTask.replyText}</p>
                   )}
                   <button type="button" className="mx-btn-gold" style={{ marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} onClick={() => void handleApprove(activeTask)}>
                     <Send width={14} height={14} /> 确认发送
@@ -501,13 +501,13 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
                 </div>
               )}
               <div className="mx-card" style={{ padding: 13 }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)", marginBottom: 8 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)", marginBottom: 8 }}>
                   {activeTask.targetName || config.taskTypeLabel}
                 </p>
                 {liveEvents.length > 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                     {liveEvents.map((event, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: "var(--mx-ink)", lineHeight: 1.5 }}>
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: 12, color: "var(--kaypal-v3-ink)", lineHeight: 1.5 }}>
                         {event.level === "success" ? (
                           <CheckCircle2 width={14} height={14} style={{ color: "var(--kaypal-v3-success)", flexShrink: 0, marginTop: 1 }} />
                         ) : event.level === "error" ? (
@@ -522,7 +522,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
                     ))}
                   </div>
                 ) : (
-                  <p style={{ fontSize: 12, color: "var(--mx-muted)" }}>任务已创建，等待系统处理…</p>
+                  <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>任务已创建，等待系统处理…</p>
                 )}
               </div>
             </>
@@ -538,10 +538,10 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
                   return (
                     <button key={task.id} type="button" className="mx-card" style={{ padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, textAlign: "left" }} onClick={() => setActiveTask(task)}>
                       <span style={{ minWidth: 0 }}>
-                        <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {task.targetName || config.taskTypeLabel}
                         </span>
-                        <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>
+                        <span style={{ display: "block", fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>
                           {task.updatedAt ? new Date(task.updatedAt).toLocaleString("zh-CN") : ""}
                         </span>
                       </span>
@@ -554,10 +554,10 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
           )}
 
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/engagement")} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/engagement")} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
               返回
             </button>
-            <button type="button" onClick={() => void refreshTasks()} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+            <button type="button" onClick={() => void refreshTasks()} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
               刷新
             </button>
           </div>

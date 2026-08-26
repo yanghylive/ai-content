@@ -445,11 +445,11 @@ export function AgentConversationWorkbench() {
               <button
                 type="button"
                 onClick={() => setMobileView("list")}
-                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: "4px 0", flexShrink: 0 }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: "4px 0", flexShrink: 0 }}
               >
                 <ArrowLeft width={14} height={14} /> 会话
               </button>
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {agentSConversation?.session.session_name || "新对话"}
               </span>
               <span className={mobileStatusBadge(currentStatus)} style={{ fontSize: 10, flexShrink: 0 }}>
@@ -458,7 +458,7 @@ export function AgentConversationWorkbench() {
             </div>
 
             {/* 助手状态行 */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 7, fontSize: 11, color: "var(--mx-muted)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 7, fontSize: 11, color: "var(--kaypal-v3-muted)" }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: runtimeReady ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-amber)", flexShrink: 0 }} />
               {runtimeReady ? "本机助手可用" : "本机助手未连接"}
               {agentSConversationBusy ? " · 处理中…" : ""}
@@ -480,8 +480,8 @@ export function AgentConversationWorkbench() {
                 </div>
               ) : (
                 <div className="mx-card mx-empty" style={{ padding: 26, textAlign: "center" }}>
-                  <Bot width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
-                  <p style={{ fontSize: 13, color: "var(--mx-muted)", marginTop: 9 }}>发送第一条消息，开始这段对话</p>
+                  <Bot width={26} height={26} style={{ color: "var(--kaypal-v3-muted)", margin: "0 auto" }} />
+                  <p style={{ fontSize: 13, color: "var(--kaypal-v3-muted)", marginTop: 9 }}>发送第一条消息，开始这段对话</p>
                 </div>
               )}
 
@@ -497,7 +497,7 @@ export function AgentConversationWorkbench() {
               )}
 
               {currentStatus === "running" && (
-                <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 12, fontSize: 12, color: "var(--mx-muted)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 12, fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
                   <Spinner size="sm" /> 本机助手正在处理…
                 </div>
               )}
@@ -515,7 +515,7 @@ export function AgentConversationWorkbench() {
               {attachments.length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                   {attachments.map((attachment) => (
-                    <span key={`${attachment.filepath}:${attachment.uploadedAt}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: "var(--kaypal-v3-radius-xs)", background: "var(--kaypal-v3-paper-muted)", fontSize: 11, color: "var(--mx-ink)", maxWidth: "100%" }}>
+                    <span key={`${attachment.filepath}:${attachment.uploadedAt}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: "var(--kaypal-v3-radius-xs)", background: "var(--kaypal-v3-paper-muted)", fontSize: 11, color: "var(--kaypal-v3-ink)", maxWidth: "100%" }}>
                       <ImageIcon width={12} height={12} style={{ flexShrink: 0 }} />
                       <span style={{ maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{attachment.filename}</span>
                       <button
@@ -524,7 +524,7 @@ export function AgentConversationWorkbench() {
                         onClick={() => setAttachments((current) => current.filter((item) => item.filepath !== attachment.filepath))}
                         style={{ display: "inline-flex", padding: 0, background: "none", border: "none" }}
                       >
-                        <X width={12} height={12} style={{ color: "var(--mx-muted)" }} />
+                        <X width={12} height={12} style={{ color: "var(--kaypal-v3-muted)" }} />
                       </button>
                     </span>
                   ))}
@@ -544,7 +544,7 @@ export function AgentConversationWorkbench() {
                   aria-label="添加图片"
                   disabled={isActive || attachments.length >= 3 || uploading}
                   onClick={() => fileInputRef.current?.click()}
-                  style={{ width: 38, height: 38, borderRadius: "var(--kaypal-v3-radius-sm)", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--kaypal-v3-paper-muted)", border: "1px solid var(--kaypal-v3-border)", color: "var(--mx-muted)", flexShrink: 0 }}
+                  style={{ width: 38, height: 38, borderRadius: "var(--kaypal-v3-radius-sm)", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--kaypal-v3-paper-muted)", border: "1px solid var(--kaypal-v3-border)", color: "var(--kaypal-v3-muted)", flexShrink: 0 }}
                 >
                   {uploading ? <Spinner size="sm" /> : <Paperclip width={16} height={16} />}
                 </button>
@@ -561,7 +561,7 @@ export function AgentConversationWorkbench() {
                       void sendMessage();
                     }
                   }}
-                  style={{ flex: 1, minHeight: 38, maxHeight: 110, padding: "9px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--mx-ink)", fontSize: 13, resize: "none", lineHeight: 1.5 }}
+                  style={{ flex: 1, minHeight: 38, maxHeight: 110, padding: "9px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--kaypal-v3-ink)", fontSize: 13, resize: "none", lineHeight: 1.5 }}
                 />
                 <button
                   type="button"
@@ -591,7 +591,7 @@ export function AgentConversationWorkbench() {
 
           {/* 状态条 + 新建 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--mx-muted)" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: runtimeReady ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-amber)", flexShrink: 0 }} />
               {runtimeReady ? "本机助手可用" : "本机助手未连接"}
             </span>
@@ -619,9 +619,9 @@ export function AgentConversationWorkbench() {
           <div className="mx-section-head" style={{ marginTop: 14 }}>对话（{agentSConversations.length}）</div>
           {agentSConversations.length === 0 ? (
             <div className="mx-card mx-empty" style={{ padding: 26, textAlign: "center" }}>
-              <MessageSquare width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", marginTop: 9 }}>还没有对话</p>
-              <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 4 }}>点上方「新建对话」，让 Agent 帮你干活</p>
+              <MessageSquare width={26} height={26} style={{ color: "var(--kaypal-v3-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", marginTop: 9 }}>还没有对话</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 4 }}>点上方「新建对话」，让 Agent 帮你干活</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -637,14 +637,14 @@ export function AgentConversationWorkbench() {
                   }}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {conversation.session.session_name || "新对话"}
                     </span>
                     <span className={mobileStatusBadge(conversation.session.status)} style={{ fontSize: 10, flexShrink: 0 }}>
                       {STATUS_LABEL[conversation.session.status]}
                     </span>
                   </span>
-                  <span style={{ display: "block", fontSize: 10, color: "var(--mx-muted)", marginTop: 6 }}>
+                  <span style={{ display: "block", fontSize: 10, color: "var(--kaypal-v3-muted)", marginTop: 6 }}>
                     {PURPOSES.find((p) => p.key === conversation.purpose)?.label || conversation.purpose}
                     {" · "}
                     {messageModelLabel(models, conversation.model_id)}

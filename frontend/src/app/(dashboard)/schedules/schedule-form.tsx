@@ -115,7 +115,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/schedules")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/schedules")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回定时任务
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -149,8 +149,8 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
                     <CalendarClock width={16} height={16} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{preset.label}</span>
-                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>{preset.desc}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{preset.label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>{preset.desc}</span>
                   </span>
                   {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
@@ -161,8 +161,8 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
           {/* 启用开关 */}
           <div className="mx-card" style={{ marginTop: 14, padding: 13, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
             <span style={{ minWidth: 0 }}>
-              <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>启用这个任务</span>
-              <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 3, lineHeight: 1.5 }}>停用后系统将不再自动执行，随时可以重新开启</span>
+              <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>启用这个任务</span>
+              <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 3, lineHeight: 1.5 }}>停用后系统将不再自动执行，随时可以重新开启</span>
             </span>
             <button
               type="button"
@@ -183,15 +183,15 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
 
           {/* 摘要 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 12 }}>
-            <p style={{ fontSize: 12, color: "var(--mx-muted)", lineHeight: 1.6 }}>
-              当前设置：<b style={{ color: "var(--mx-ink)" }}>{taskInfo.label}</b> 将 <b style={{ color: "var(--mx-ink)" }}>{cronToText(form.cron)}</b> 执行一次，状态为
-              <b style={{ color: form.enabled ? "var(--kaypal-v3-success)" : "var(--mx-muted)" }}>{form.enabled ? " 已启用" : " 已停用"}</b>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", lineHeight: 1.6 }}>
+              当前设置：<b style={{ color: "var(--kaypal-v3-ink)" }}>{taskInfo.label}</b> 将 <b style={{ color: "var(--kaypal-v3-ink)" }}>{cronToText(form.cron)}</b> 执行一次，状态为
+              <b style={{ color: form.enabled ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-muted)" }}>{form.enabled ? " 已启用" : " 已停用"}</b>
             </p>
           </div>
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-            <button type="button" onClick={() => router.push("/schedules")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/schedules")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
             <button

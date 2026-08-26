@@ -89,7 +89,8 @@ import {
 } from "@/lib/api/ai-employee";
 import { AgentStatusDrawer } from "@/components/agent-status-drawer";
 import type { AgentSession } from "@/lib/api/local-engine";
-import { toPublicError } from "@/lib/public-error";
+import { toPublicError, toActionableError } from "@/lib/public-error";
+import { SkeletonList } from "@/components/skeleton";
 import {
   OpsDenseTable,
   OpsMetric,
@@ -2359,7 +2360,7 @@ export function GrowthConsole({ view }: { view: GrowthView }) {
     try {
       const result = await growthApi.syncLeadToCrm(lead.id);
       if (!result.enabled || !result.ok) {
-        toast.error(result.message || "CRM 未启用，无法同步线索");
+        toast.error(toActionableError(result.message, "CRM 未启用，无法同步线索"));
         return;
       }
       setLeads((current) =>
@@ -3078,7 +3079,7 @@ export function GrowthConsole({ view }: { view: GrowthView }) {
         </header>
         <Card className="border-small border-divider bg-background shadow-sm">
           <CardBody className="items-center justify-center py-12">
-            <Spinner label="正在加载增长数据..." />
+            <SkeletonList rows={6} />
           </CardBody>
         </Card>
       </div>

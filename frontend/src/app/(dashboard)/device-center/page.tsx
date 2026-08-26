@@ -353,7 +353,7 @@ function MobileDeviceCenter(props: CommonProps) {
 
       <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)" }}>设备</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>设备</span>
           <Link href="/mai-ui" style={{ fontSize: 12, color: "var(--kaypal-v3-purple)", textDecoration: "none" }}>
             去 MAI-UI 工作台 →
           </Link>
@@ -378,7 +378,7 @@ function MobileDeviceCenter(props: CommonProps) {
                 }}
               >
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "var(--mx-ink)" }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>
                     {d.deviceName}
                     <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginLeft: 6 }}>{d.platform}</span>
                   </div>
@@ -406,7 +406,7 @@ function MobileDeviceCenter(props: CommonProps) {
       </div>
 
       <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 10 }}>
           账号租约 <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>（同账号同时仅一个外发租约）</span>
         </div>
         {leases.length === 0 ? (
@@ -428,7 +428,7 @@ function MobileDeviceCenter(props: CommonProps) {
       </div>
 
       <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>最近任务</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 10 }}>最近任务</div>
         {tasks.length === 0 ? (
           <div style={{ fontSize: 13, color: "var(--kaypal-v3-muted)", padding: "12px 0", textAlign: "center" }}>
             暂无任务记录
@@ -443,7 +443,7 @@ function MobileDeviceCenter(props: CommonProps) {
                 <div key={t.id} style={{ padding: "8px 10px", borderRadius: "var(--kaypal-v3-radius-xs)", background: needsAttention ? "var(--kaypal-v3-danger-soft)" : "var(--kaypal-v3-paper-muted)", border: `1px solid ${needsAttention ? "var(--kaypal-v3-danger-soft)" : "var(--kaypal-v3-border)"}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>
                         {t.type === "custom" ? "MAI-UI 任务" : "发布任务"} · {t.id.slice(-6)}
                       </div>
                       <div style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>

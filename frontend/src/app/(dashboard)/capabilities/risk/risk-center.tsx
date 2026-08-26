@@ -135,7 +135,7 @@ export function RiskCenter() {
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            <button type="button" onClick={() => void load()} style={{ flex: "0 0 auto", padding: "9px 14px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+            <button type="button" onClick={() => void load()} style={{ flex: "0 0 auto", padding: "9px 14px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
               刷新
             </button>
             <button type="button" className="mx-btn-gold" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }} onClick={() => router.push("/tasks/confirmations")}>
@@ -155,8 +155,8 @@ export function RiskCenter() {
             </div>
           ) : policies.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 26, textAlign: "center" }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>还没有风控策略</p>
-              <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 4 }}>系统默认策略会在首次高风险操作时自动生成</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>还没有风控策略</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 4 }}>系统默认策略会在首次高风险操作时自动生成</p>
             </div>
           ) : (
             <>
@@ -165,7 +165,7 @@ export function RiskCenter() {
                 {policies.map((policy) => (
                   <div key={policy.action} className="mx-card" style={{ padding: 13 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {formatAction(policy.action)}
                       </span>
                       <span className={`mx-badge ${levelBadge(policy.riskLevel)}`} style={{ fontSize: 10, flexShrink: 0 }}>
@@ -173,7 +173,7 @@ export function RiskCenter() {
                       </span>
                     </div>
                     {policy.description ? (
-                      <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.45 }}>{policy.description}</p>
+                      <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4, lineHeight: 1.45 }}>{policy.description}</p>
                     ) : null}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 9 }}>
                       {(
@@ -183,7 +183,7 @@ export function RiskCenter() {
                           ["forbidden", "禁止"],
                         ] as const
                       ).map(([field, label]) => (
-                        <label key={field} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--mx-muted)" }}>
+                        <label key={field} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--kaypal-v3-muted)" }}>
                           <input
                             type="checkbox"
                             checked={getVal(policy, field)}

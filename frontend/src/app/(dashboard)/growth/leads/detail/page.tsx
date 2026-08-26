@@ -9,6 +9,7 @@ import { api } from "@/lib/api/client";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { V2StatusChip } from "@/components/v2/ui-kit";
 import { SkeletonList } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 const PLATFORM_LABEL: Record<string, string> = {
   douyin: "抖音",
@@ -199,7 +200,7 @@ function LeadDetailClient() {
       );
       await load();
     } catch (e) {
-      setMsg(`风险确认失败：${(e as Error).message ?? "未知错误"}`);
+      setMsg(toActionableError(e, "风险确认失败，请稍后重试"));
     } finally {
       setActing(false);
     }

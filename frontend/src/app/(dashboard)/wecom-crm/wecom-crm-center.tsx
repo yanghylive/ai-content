@@ -228,11 +228,11 @@ function ConfigPanel() {
         <div className="mx-card" style={{ padding: 14 }}>
           <div className="mx-row-title" style={{ marginBottom: 10, fontSize: 13.5, fontWeight: 700 }}>新增 / 更新企业配置</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <input value={form.corpId} onChange={(e) => setField("corpId")(e.target.value)} placeholder="企业 ID（corpid）*" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }} />
-            <input value={form.corpSecret} onChange={(e) => setField("corpSecret")(e.target.value)} placeholder="应用 Secret" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }} />
+            <input value={form.corpId} onChange={(e) => setField("corpId")(e.target.value)} placeholder="企业 ID（corpid）*" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }} />
+            <input value={form.corpSecret} onChange={(e) => setField("corpSecret")(e.target.value)} placeholder="应用 Secret" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              <input value={form.name} onChange={(e) => setField("name")(e.target.value)} placeholder="配置名称" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }} />
-              <input value={form.agentId} onChange={(e) => setField("agentId")(e.target.value)} placeholder="AgentId" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }} />
+              <input value={form.name} onChange={(e) => setField("name")(e.target.value)} placeholder="配置名称" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }} />
+              <input value={form.agentId} onChange={(e) => setField("agentId")(e.target.value)} placeholder="AgentId" style={{ minHeight: 40, padding: "0 10px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }} />
             </div>
             <button type="button" className="mx-btn-gold" onClick={() => void handleSave()} style={{ alignSelf: "flex-start" }}>保存配置</button>
           </div>
@@ -572,7 +572,7 @@ function GroupMsgPanel() {
             onChange={(e) => setField("text")(e.target.value)}
             placeholder="输入要群发的内容"
             rows={3}
-            style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, resize: "vertical" }}
+            style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13, resize: "vertical" }}
           />
           <button type="button" className="mx-btn-gold" onClick={() => void handleCreate()} style={{ marginTop: 10 }}>
             {creating ? "创建中…" : "创建群发任务"}
@@ -887,7 +887,7 @@ function MomentPanel() {
             onChange={(e) => setField("text")(e.target.value)}
             placeholder="朋友圈内容"
             rows={3}
-            style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, resize: "vertical" }}
+            style={{ width: "100%", minHeight: 72, padding: 8, borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13, resize: "vertical" }}
           />
           <button type="button" className="mx-btn-gold" onClick={() => void handleCreate()} style={{ marginTop: 10 }}>
             {creating ? "创建中…" : "创建朋友圈任务"}

@@ -189,24 +189,24 @@ export function KnowledgeBaseCenter() {
                   if (e.key === "Enter") void runSearch();
                 }}
                 placeholder="输入客户问题、产品名、活动政策…"
-                style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+                style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}
               />
               <button type="button" className="mx-btn-gold" style={{ flexShrink: 0, padding: "0 14px", display: "inline-flex", alignItems: "center", gap: 5 }} disabled={searching} onClick={() => void runSearch()}>
                 <Search width={14} height={14} /> 检索
               </button>
             </div>
             {diagnostics ? (
-              <p style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 8 }}>{diagnostics}</p>
+              <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 8 }}>{diagnostics}</p>
             ) : null}
             {matches.length > 0 ? (
               <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                 {matches.map((m) => (
                   <div key={`${m.assetId}-${m.chunkId || "asset"}`} style={{ padding: 10, borderRadius: 10, background: "rgba(255,255,255,.05)", border: "1px solid rgba(142,165,190,.16)" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</span>
-                      <span style={{ fontSize: 10, color: "var(--mx-muted)", flexShrink: 0 }}>{m.sourceType === "local" ? "本机" : "云端"} · {scoreLabel(m.relevanceScore)}</span>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</span>
+                      <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)", flexShrink: 0 }}>{m.sourceType === "local" ? "本机" : "云端"} · {scoreLabel(m.relevanceScore)}</span>
                     </div>
-                    <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4, lineHeight: 1.5 }}>{m.snippet}</p>
+                    <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4, lineHeight: 1.5 }}>{m.snippet}</p>
                     {m.sourceType === "local" ? (
                       <button type="button" style={{ marginTop: 6, fontSize: 11, fontWeight: 600, color: "var(--kaypal-v3-amber)", background: "none", border: "none", padding: 0 }} disabled={syncingId === m.assetId} onClick={() => void handleSync(m.assetId)}>
                         {syncingId === m.assetId ? "同步中…" : "同步云端"}
@@ -216,7 +216,7 @@ export function KnowledgeBaseCenter() {
                 ))}
               </div>
             ) : hasSearched && query.trim() && !searching ? (
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 8 }}>没有命中本机或云端知识库内容。</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 8 }}>没有命中本机或云端知识库内容。</p>
             ) : null}
           </div>
 

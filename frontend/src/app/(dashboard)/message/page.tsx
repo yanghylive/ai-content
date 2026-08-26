@@ -258,14 +258,14 @@ function MobileMessageView({
               height: 36,
               padding: "0 12px",
               borderRadius: 999,
-              color: "var(--mx-ic-tint)",
+              color: "var(--kaypal-v3-accent)",
               fontSize: 12,
               flexShrink: 0,
             }}
             onClick={() => router.push("/engagement/records")}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-            <span style={{ color: "var(--mx-ic-tint)", opacity: 0.55, whiteSpace: "nowrap" }}>搜索消息/联系人</span>
+            <span style={{ color: "var(--kaypal-v3-accent)", opacity: 0.55, whiteSpace: "nowrap" }}>搜索消息/联系人</span>
           </button>
         </div>
       </header>

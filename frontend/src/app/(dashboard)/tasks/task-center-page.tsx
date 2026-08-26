@@ -1248,10 +1248,10 @@ export function TaskCenterPage() {
 
           {/* 操作条 */}
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            <button type="button" disabled={loading} onClick={() => void refresh()} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+            <button type="button" disabled={loading} onClick={() => void refresh()} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
               {loading ? "刷新中…" : "刷新"}
             </button>
-            <Link href="/agent-workbench" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+            <Link href="/agent-workbench" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
               Agent 工作台
             </Link>
             <Link href="/tasks/confirmations" className="mx-btn-gold" style={{ flex: 1.2, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "9px 0" }}>
@@ -1263,8 +1263,8 @@ export function TaskCenterPage() {
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
               <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)", lineHeight: 1.5 }}>任务中心读取失败，可能是本机服务或登录状态暂时不可用。</p>
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                <Link href="/local-engine" style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600, textAlign: "center" }}>设备状态</Link>
-                <button type="button" onClick={() => void refresh()} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>重新读取</button>
+                <Link href="/local-engine" style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600, textAlign: "center" }}>设备状态</Link>
+                <button type="button" onClick={() => void refresh()} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>重新读取</button>
               </div>
             </div>
           )}
@@ -1272,42 +1272,42 @@ export function TaskCenterPage() {
           {/* 统计 */}
           <div className="mx-stat-grid" style={{ marginTop: 12 }}>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
-              <div style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{sessions.length + confirmations.length + publishTasks.length}</div>
-              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>任务总数</div>
+              <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-ink)" }}>{sessions.length + confirmations.length + publishTasks.length}</div>
+              <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>任务总数</div>
             </div>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
               <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-cobalt)" }}>{runningCount}</div>
-              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>运行中</div>
+              <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>运行中</div>
             </div>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
               <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-amber)" }}>{confirmations.length}</div>
-              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>待确认</div>
+              <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>待确认</div>
             </div>
           </div>
           <div className="mx-stat-grid" style={{ marginTop: 8 }}>
             <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-danger)" }}>{failedCount}</div>
-              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>失败</div>
+              <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>失败</div>
             </div>
             <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{publishTasks.length}</div>
-              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>发布记录</div>
+              <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>发布记录</div>
             </div>
             <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{evidenceCount + publishRecordEvidenceCount}</div>
-              <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>证据留存</div>
+              <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>证据留存</div>
             </div>
           </div>
 
           {/* 任务档案（从「我的」页归位：会话/记录/产物统一放任务中心） */}
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            <Link href="/tasks/runs" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+            <Link href="/tasks/runs" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
               会话记录
             </Link>
-            <Link href="/tasks/records" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+            <Link href="/tasks/records" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
               执行历史
             </Link>
-            <Link href="/tasks/evidence" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
+            <Link href="/tasks/evidence" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
               结果留存
             </Link>
             <Link href="/risk-confirm" style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: "rgba(220,80,80,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.3)", fontSize: 12, fontWeight: 600, textAlign: "center" }}>
@@ -1327,11 +1327,11 @@ export function TaskCenterPage() {
                   <Link key={item.id} href="/tasks/confirmations" className="mx-card" style={{ padding: 12 }}>
                     <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
                       <span className="mx-badge mx-badge-gold" style={{ fontSize: 10, flexShrink: 0 }}>待确认</span>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {confirmationSessionTitle(item)}
                       </span>
                     </span>
-                    <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 5 }}>
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>
                       {confirmationSourceLabel(item)} · 点击去处理
                     </span>
                   </Link>
@@ -1354,11 +1354,11 @@ export function TaskCenterPage() {
                       <span className={`mx-badge ${mobileStatusBadge(session.status)}`} style={{ fontSize: 10, flexShrink: 0 }}>
                         {mobileStatusLabel(session.status)}
                       </span>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {taskDisplayText(session.title, "任务")}
                       </span>
                     </span>
-                    <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 5 }}>
+                    <span style={{ display: "block", fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>
                       {sourceLabel(session.source)} · {formatDateTime(session.updatedAt || session.createdAt)}
                     </span>
                   </Link>
@@ -1370,10 +1370,10 @@ export function TaskCenterPage() {
           {/* 快捷入口 */}
           <div className="mx-section-head" style={{ marginTop: 18 }}>快捷入口</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <Link href="/tasks/runs" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>正在运行 ›</Link>
-            <Link href="/tasks/records" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>任务历史 ›</Link>
-            <Link href="/tasks/evidence" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>执行留痕 ›</Link>
-            <Link href="/distribution/tasks" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>发布记录 ›</Link>
+            <Link href="/tasks/runs" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>正在运行 ›</Link>
+            <Link href="/tasks/records" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>任务历史 ›</Link>
+            <Link href="/tasks/evidence" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>执行留痕 ›</Link>
+            <Link href="/distribution/tasks" className="mx-card" style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>发布记录 ›</Link>
           </div>
         </div>
       </div>

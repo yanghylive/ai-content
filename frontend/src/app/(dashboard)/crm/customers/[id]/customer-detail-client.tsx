@@ -535,7 +535,7 @@ export function CustomerDetailClient({
             ) : null}
             <button
               type="button"
-              style={{ fontSize: 12, padding: "10px 14px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }}
+              style={{ fontSize: 12, padding: "10px 14px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)" }}
               onClick={refreshCustomer}
             >
               刷新
@@ -559,7 +559,7 @@ export function CustomerDetailClient({
                   borderRadius: 999,
                   border: selectedTab === key ? "1.5px solid var(--kaypal-v3-accent)" : "1px solid var(--kaypal-v3-border)",
                   background: selectedTab === key ? "rgba(37,99,235,.12)" : "rgba(255,255,255,.06)",
-                  color: selectedTab === key ? "var(--kaypal-v3-cobalt)" : "var(--mx-ink)",
+                  color: selectedTab === key ? "var(--kaypal-v3-cobalt)" : "var(--kaypal-v3-ink)",
                   fontWeight: selectedTab === key ? 700 : 400,
                 }}
               >
@@ -574,11 +574,11 @@ export function CustomerDetailClient({
                 <>
                   {([["displayName", "姓名/昵称"], ["companyName", "公司"], ["title", "职位"], ["phone", "手机"], ["wechat", "微信"], ["email", "邮箱"]] as Array<[keyof typeof form, string]>).map(([key, label]) => (
                     <div key={key} style={{ marginBottom: 10 }}>
-                      <div style={{ fontSize: 11, color: "var(--mx-muted)", marginBottom: 4 }}>{label}</div>
+                      <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginBottom: 4 }}>{label}</div>
                       <input
                         value={String(form[key] ?? "")}
                         onChange={(e) => setForm((cur) => (cur ? { ...cur, [key]: e.target.value } : cur))}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13, outline: "none", boxSizing: "border-box" }}
                       />
                     </div>
                   ))}
@@ -588,8 +588,8 @@ export function CustomerDetailClient({
                   {visibleFacts.map(([label, value]) => (
                     <div key={label} className="mx-row">
                       <div className="mx-row-main" style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                        <span style={{ fontSize: 12, color: "var(--mx-muted)", flexShrink: 0 }}>{label}</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", textAlign: "right", wordBreak: "break-all" }}>{value}</span>
+                        <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", flexShrink: 0 }}>{label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", textAlign: "right", wordBreak: "break-all" }}>{value}</span>
                       </div>
                     </div>
                   ))}
@@ -624,7 +624,7 @@ export function CustomerDetailClient({
                         <div className="mx-row-title">{eventLabels[event.eventType] || event.eventType}</div>
                         <div className="mx-row-desc">{formatDate(event.createdAt)}</div>
                         {event.replyContent || event.content ? (
-                          <div style={{ marginTop: 4, fontSize: 11.5, color: "var(--mx-ink)", lineHeight: 1.6 }}>
+                          <div style={{ marginTop: 4, fontSize: 11.5, color: "var(--kaypal-v3-ink)", lineHeight: 1.6 }}>
                             {(event.replyContent || event.content || "").slice(0, 80)}
                           </div>
                         ) : null}
@@ -639,19 +639,19 @@ export function CustomerDetailClient({
           {selectedTab === "follow-up" ? (
             <>
               <div className="mx-card" style={{ padding: 14 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>新建跟进任务</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 10 }}>新建跟进任务</div>
                 <input
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   placeholder="任务标题 *"
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 8 }}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 8 }}
                 />
                 <textarea
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
                   placeholder="任务描述（可选）"
                   rows={2}
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box", resize: "vertical", marginBottom: 8 }}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13, outline: "none", boxSizing: "border-box", resize: "vertical", marginBottom: 8 }}
                 />
                 <button
                   type="button"
@@ -665,13 +665,13 @@ export function CustomerDetailClient({
               </div>
 
               <div className="mx-card mx-mt-lg" style={{ padding: 14 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>添加备注</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 10 }}>添加备注</div>
                 <textarea
                   value={noteBody}
                   onChange={(e) => setNoteBody(e.target.value)}
                   placeholder="备注内容"
                   rows={2}
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13, outline: "none", boxSizing: "border-box", resize: "vertical", marginBottom: 8 }}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13, outline: "none", boxSizing: "border-box", resize: "vertical", marginBottom: 8 }}
                 />
                 <button
                   type="button"
@@ -736,7 +736,7 @@ export function CustomerDetailClient({
                           <FileText size={18} strokeWidth={1.8} />
                         </span>
                         <div className="mx-row-main">
-                          <div style={{ fontSize: 12.5, color: "var(--mx-ink)", lineHeight: 1.6 }}>{note.body}</div>
+                          <div style={{ fontSize: 12.5, color: "var(--kaypal-v3-ink)", lineHeight: 1.6 }}>{note.body}</div>
                           <div className="mx-row-desc">{formatDate(note.createdAt)}</div>
                         </div>
                       </div>

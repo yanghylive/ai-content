@@ -119,7 +119,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/apps")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/apps")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回应用市场
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -146,7 +146,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
 
           <div className="mx-section-head" style={{ marginTop: 14 }}>应用介绍</div>
           <div className="mx-card" style={{ padding: 13 }}>
-            <p style={{ fontSize: 13, color: "var(--mx-ink)", lineHeight: 1.65 }}>{app.description}</p>
+            <p style={{ fontSize: 13, color: "var(--kaypal-v3-ink)", lineHeight: 1.65 }}>{app.description}</p>
           </div>
 
           {app.commercialWarnings.length > 0 && (
@@ -163,7 +163,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
           )}
 
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/apps")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/apps")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
               返回市场
             </button>
             {primaryAction !== "none" && primaryAction !== "contact_sales" && (

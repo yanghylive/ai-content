@@ -101,7 +101,7 @@ export function ResourceCenter({
                   borderRadius: 12,
                   border: "1px solid rgba(142,165,190,.3)",
                   background: "rgba(255,255,255,.7)",
-                  color: "var(--mx-ink)",
+                  color: "var(--kaypal-v3-ink)",
                   fontSize: 13,
                   outline: "none",
                   boxSizing: "border-box",

@@ -150,7 +150,7 @@ export function ModelForm({ modelId }: { modelId?: string }) {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/capabilities/models")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/capabilities/models")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回模型列表
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -181,8 +181,8 @@ export function ModelForm({ modelId }: { modelId?: string }) {
                   style={{ padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, borderColor: selected ? "rgba(222,150,57,.6)" : undefined, background: selected ? "rgba(246,196,120,.1)" : undefined }}
                 >
                   <span style={{ textAlign: "left", minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{model.label}</span>
-                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>{model.desc}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{model.label}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>{model.desc}</span>
                   </span>
                   {selected && <span style={{ color: "var(--kaypal-v3-amber)", fontSize: 14, flexShrink: 0 }}>✓</span>}
                 </button>
@@ -198,14 +198,14 @@ export function ModelForm({ modelId }: { modelId?: string }) {
               onChange={(e) => setForm((p) => ({ ...p, modelId: e.target.checked ? "__custom" : "kimi-k2" }))}
               style={{ width: 16, height: 16 }}
             />
-            <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>用其他模型 ID（手动输入）</span>
+            <span style={{ fontSize: 12.5, color: "var(--kaypal-v3-ink)" }}>用其他模型 ID（手动输入）</span>
           </label>
           {form.modelId === "__custom" && (
             <input
               placeholder="输入模型 ID，例如：moonshot-v1-128k"
               value={form.customModelId}
               onChange={(e) => setForm((p) => ({ ...p, customModelId: e.target.value }))}
-              style={{ width: "100%", marginTop: 8, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+              style={{ width: "100%", marginTop: 8, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}
             />
           )}
 
@@ -213,13 +213,13 @@ export function ModelForm({ modelId }: { modelId?: string }) {
           <div className="mx-section-head" style={{ marginTop: 16 }}>接入平台</div>
           {platforms.length === 0 ? (
             <div className="mx-card" style={{ padding: 13 }}>
-              <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>还没有可用的平台，先去「设置 → 平台」添加一个</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)" }}>还没有可用的平台，先去「设置 → 平台」添加一个</p>
             </div>
           ) : (
             <select
               value={form.platformId}
               onChange={(e) => setForm((p) => ({ ...p, platformId: e.target.value }))}
-              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }}
             >
               {platforms.map((platform) => (
                 <option key={platform.id} value={platform.id}>{platform.name}</option>
@@ -233,7 +233,7 @@ export function ModelForm({ modelId }: { modelId?: string }) {
             placeholder={POPULAR_MODELS.find((m) => m.id === form.modelId)?.label || "留空则自动用模型名"}
             value={form.name}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-            style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 13 }}
+            style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 13 }}
           />
 
           {/* 测试连接（继承 legacy 的 testModel 功能） */}
@@ -243,19 +243,19 @@ export function ModelForm({ modelId }: { modelId?: string }) {
               type="button"
               onClick={() => void handleTest()}
               disabled={testing}
-              style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}
+              style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}
             >
               <PlugZap width={14} height={14} />
               {testing ? "测试中…" : "测试连接"}
             </button>
             {testResult && (
-              <span style={{ fontSize: 12, color: "var(--mx-muted)", lineHeight: 1.5 }}>{testResult}</span>
+              <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", lineHeight: 1.5 }}>{testResult}</span>
             )}
           </div>
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/capabilities/models")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/capabilities/models")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
             <button

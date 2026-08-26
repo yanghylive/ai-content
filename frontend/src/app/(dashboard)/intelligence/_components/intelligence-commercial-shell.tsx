@@ -430,7 +430,7 @@ function FocusCard({ item }: FocusProps) {
         </span>
         <div className="flex flex-row items-center gap-2 flex-wrap">
           <a
-            className="text-13 font-semibold text-[color:var(--astryx-color-text-accent,#1677c2)]"
+            className="text-13 font-semibold text-[color:var(--kaypal-v3-accent)]"
             href={item.actionHref}
           >
             {item.actionLabel} →
@@ -662,7 +662,7 @@ export function IntelligenceCommercialShell() {
                 key={role}
                 type="button"
                 onClick={() => setCurrentRole(role)}
-                style={{ flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 600, background: currentRole === role ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: currentRole === role ? "#fff" : "var(--mx-ink)", border: currentRole === role ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
+                style={{ flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 12, fontWeight: 600, background: currentRole === role ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: currentRole === role ? "#fff" : "var(--kaypal-v3-ink)", border: currentRole === role ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
               >
                 {roleMeta[role].label}
               </button>
@@ -673,9 +673,9 @@ export function IntelligenceCommercialShell() {
           <div className="mx-stat-grid" style={{ marginTop: 12 }}>
             {kpis.slice(0, 2).map((kpi) => (
               <div key={kpi.label} className="mx-card" style={{ padding: 12 }}>
-                <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>{kpi.label}</div>
+                <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{kpi.label}</div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 4 }}>
-                  <span style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{kpi.value}</span>
+                  <span style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-ink)" }}>{kpi.value}</span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: kpi.positive ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)" }}>{kpi.delta}</span>
                 </div>
               </div>
@@ -684,9 +684,9 @@ export function IntelligenceCommercialShell() {
           <div className="mx-stat-grid" style={{ marginTop: 8 }}>
             {kpis.slice(2).map((kpi) => (
               <div key={kpi.label} className="mx-card" style={{ padding: 12 }}>
-                <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>{kpi.label}</div>
+                <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{kpi.label}</div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 4 }}>
-                  <span style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{kpi.value}</span>
+                  <span style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-ink)" }}>{kpi.value}</span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: kpi.positive ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)" }}>{kpi.delta}</span>
                 </div>
               </div>
@@ -702,13 +702,13 @@ export function IntelligenceCommercialShell() {
                   <span className={`mx-badge ${toneBadge(item.tone)}`} style={{ fontSize: 10, flexShrink: 0 }}>
                     {toneLabel(item.tone)}
                   </span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {item.title}
                   </span>
                 </div>
-                <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 6, lineHeight: 1.55 }}>{item.summary}</p>
+                <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 6, lineHeight: 1.55 }}>{item.summary}</p>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 9 }}>
-                  <span style={{ fontSize: 10.5, color: "var(--mx-muted)" }}>置信度 {item.evidence.confidence}% · {item.evidence.generatedAt}</span>
+                  <span style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)" }}>置信度 {item.evidence.confidence}% · {item.evidence.generatedAt}</span>
                   <button type="button" className="mx-btn-gold" style={{ padding: "6px 14px", fontSize: 11.5 }} onClick={() => router.push(item.actionHref)}>
                     {item.actionLabel}
                   </button>
@@ -725,7 +725,7 @@ export function IntelligenceCommercialShell() {
                 key={entry.key}
                 type="button"
                 className="mx-card"
-                style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", textAlign: "left" }}
+                style={{ padding: 12, fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)", textAlign: "left" }}
                 onClick={() => router.push(entry.href)}
               >
                 {entry.label} ›

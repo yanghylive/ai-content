@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, CheckCircle2, RefreshCw, ShieldCheck, Sparkles, XCircle } from "lucide-react";
-import { Button, Card, CardBody, Chip, Spinner } from "@heroui/react";
+import { Button, Card, CardBody, Chip } from "@heroui/react";
 import toast from "@/lib/toast";
 import { aiEmployeeApi, type AiEmployeeCapability, type AiEmployeeCapabilitiesSnapshot } from "@/lib/api/ai-employee";
 import { toPublicError } from "@/lib/public-error";
@@ -118,7 +118,7 @@ export function CapabilityWorkbench() {
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            <button type="button" onClick={() => void load()} style={{ flex: 1, padding: "9px 10px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
+            <button type="button" onClick={() => void load()} style={{ flex: 1, padding: "9px 10px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600 }}>
               刷新状态
             </button>
             <Link href="/tasks" className="mx-btn-gold" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
@@ -134,26 +134,26 @@ export function CapabilityWorkbench() {
             <>
               <div className="mx-stat-grid" style={{ marginTop: 12 }}>
                 <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
-                  <div style={{ fontSize: 19, fontWeight: 800, color: "var(--mx-ink)" }}>{snapshot.summary.total}</div>
-                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>全部能力</div>
+                  <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-ink)" }}>{snapshot.summary.total}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>全部能力</div>
                 </div>
                 <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
                   <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{snapshot.summary.real}</div>
-                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>可执行</div>
+                  <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>可执行</div>
                 </div>
                 <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
                   <div style={{ fontSize: 19, fontWeight: 800, color: "var(--kaypal-v3-amber)" }}>{snapshot.summary.needsConfig}</div>
-                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>待配置</div>
+                  <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>待配置</div>
                 </div>
               </div>
               <div className="mx-stat-grid" style={{ marginTop: 8 }}>
                 <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
                   <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-cobalt)" }}>{snapshot.summary.simulated}</div>
-                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>可预览</div>
+                  <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>可预览</div>
                 </div>
                 <div className="mx-card" style={{ padding: 10, textAlign: "center" }}>
                   <div style={{ fontSize: 16, fontWeight: 800, color: "var(--kaypal-v3-danger)" }}>{snapshot.summary.unavailable}</div>
-                  <div style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 2 }}>暂不可用</div>
+                  <div style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>暂不可用</div>
                 </div>
               </div>
               {snapshot.readiness && !snapshot.readiness.ready ? (
@@ -169,7 +169,7 @@ export function CapabilityWorkbench() {
             <button
               type="button"
               onClick={() => setSelectedDomain("all")}
-              style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === "all" ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === "all" ? "#fff" : "var(--mx-ink)", border: selectedDomain === "all" ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
+              style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === "all" ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === "all" ? "#fff" : "var(--kaypal-v3-ink)", border: selectedDomain === "all" ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
             >
               全部
             </button>
@@ -178,7 +178,7 @@ export function CapabilityWorkbench() {
                 key={domain}
                 type="button"
                 onClick={() => setSelectedDomain(domain)}
-                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === domain ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === domain ? "#fff" : "var(--mx-ink)", border: selectedDomain === domain ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
+                style={{ flexShrink: 0, padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 600, background: selectedDomain === domain ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: selectedDomain === domain ? "#fff" : "var(--kaypal-v3-ink)", border: selectedDomain === domain ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
               >
                 {domainLabels[domain] || domain}
               </button>
@@ -187,26 +187,26 @@ export function CapabilityWorkbench() {
 
           {loading ? null : capabilities.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 24, textAlign: "center" }}>
-              <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>当前筛选下没有能力记录。</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)" }}>当前筛选下没有能力记录。</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 10 }}>
               {capabilities.map((capability) => (
                 <div key={capability.key} className="mx-card" style={{ padding: 13 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {capability.title}
                     </span>
                     <span className={`mx-badge ${badgeClass(capability.status)}`} style={{ fontSize: 10, flexShrink: 0 }}>
                       {statusMeta[capability.status].label}
                     </span>
                   </div>
-                  <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.5 }}>{capability.message}</p>
+                  <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 5, lineHeight: 1.5 }}>{capability.message}</p>
                   <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 10.5, padding: "3px 8px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--mx-muted)" }}>
+                    <span style={{ fontSize: 10.5, padding: "3px 8px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-muted)" }}>
                       {domainLabels[capability.domain] || capability.domain}
                     </span>
-                    <span style={{ fontSize: 10.5, padding: "3px 8px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--mx-muted)" }}>
+                    <span style={{ fontSize: 10.5, padding: "3px 8px", borderRadius: 999, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-muted)" }}>
                       {capability.riskLevel === "high" ? "需要确认" : capability.riskLevel === "medium" ? "有风险提示" : "低风险"}
                     </span>
                   </div>
@@ -246,7 +246,7 @@ export function CapabilityWorkbench() {
               <Button as={Link} href="/tasks" size="sm" color="primary" endContent={<ArrowRight size={15} />}>查看任务</Button>
             </div>
           </div>
-          {loading ? <div className="flex min-h-28 items-center justify-center"><Spinner label="正在读取能力状态" /></div> : snapshot ? (
+          {loading ? <div className="py-6"><SkeletonList rows={3} /></div> : snapshot ? (
             <>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 <Metric label="全部能力" value={snapshot.summary.total} />
@@ -270,7 +270,7 @@ export function CapabilityWorkbench() {
               {domains.map((domain) => <Button key={domain} size="sm" variant={selectedDomain === domain ? "solid" : "flat"} color={selectedDomain === domain ? "primary" : "default"} onPress={() => setSelectedDomain(domain)}>{domainLabels[domain] || domain}</Button>)}
             </div>
           </div>
-          {loading ? <Spinner label="正在读取任务能力" /> : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{capabilities.map((capability) => <div key={capability.key}><CapabilityCard capability={capability} /><div className="mt-2"><Button as={Link} href={domainLinks[capability.domain] || "/tasks"} size="sm" variant="light" color="primary" endContent={<ArrowRight size={14} />}>进入模块</Button></div></div>)}</div>}
+          {loading ? <SkeletonList rows={4} /> : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{capabilities.map((capability) => <div key={capability.key}><CapabilityCard capability={capability} /><div className="mt-2"><Button as={Link} href={domainLinks[capability.domain] || "/tasks"} size="sm" variant="light" color="primary" endContent={<ArrowRight size={14} />}>进入模块</Button></div></div>)}</div>}
           {!loading && !capabilities.length ? <p className="rounded-[8px] border border-dashed border-default-300 px-4 py-8 text-center text-sm text-default-500">当前筛选下没有能力记录。</p> : null}
         </CardBody>
       </Card>

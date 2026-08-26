@@ -150,8 +150,8 @@ export function SolutionsCenter() {
                       <Icon width={19} height={19} />
                     </span>
                     <span style={{ minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)" }}>{solution.title}</span>
-                      <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 2, lineHeight: 1.45 }}>{solution.description}</span>
+                      <span style={{ display: "block", fontSize: 13.5, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{solution.title}</span>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 2, lineHeight: 1.45 }}>{solution.description}</span>
                     </span>
                   </div>
                   {solution.recommendReason && (
@@ -190,18 +190,18 @@ export function SolutionsCenter() {
                           ) : run.status === "completed" || run.status === "done" ? (
                             <CheckCircle2 width={16} height={16} style={{ color: "var(--kaypal-v3-success)", flexShrink: 0 }} />
                           ) : (
-                            <Clock width={16} height={16} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                            <Clock width={16} height={16} style={{ color: "var(--kaypal-v3-muted)", flexShrink: 0 }} />
                           )}
                           <span style={{ minWidth: 0 }}>
-                            <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{run.packageName}</span>
-                            <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1 }}>
+                            <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{run.packageName}</span>
+                            <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>
                               进度 {run.progress}%{run.createdAt ? ` · ${new Date(run.createdAt).toLocaleDateString("zh-CN")}` : ""}
                             </span>
                           </span>
                         </span>
                         <Link
                           href={`/solutions/run?id=${run.id}`}
-                          style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, fontSize: 11.5, fontWeight: 600, background: waiting ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: waiting ? "#fff" : "var(--mx-ink)", border: waiting ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
+                          style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, fontSize: 11.5, fontWeight: 600, background: waiting ? "var(--kaypal-v3-amber)" : "rgba(120,148,179,.12)", color: waiting ? "#fff" : "var(--kaypal-v3-ink)", border: waiting ? "1px solid var(--kaypal-v3-accent)" : "1px solid rgba(142,165,190,.3)" }}
                         >
                           {waiting ? "去确认" : "查看"}
                         </Link>
@@ -216,12 +216,12 @@ export function SolutionsCenter() {
           {/* 全部方案 */}
           <div className="mx-section-head" style={{ marginTop: 18 }}>全部方案</div>
           <div style={{ position: "relative", marginTop: 8 }}>
-            <Search width={15} height={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--mx-muted)" }} />
+            <Search width={15} height={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--kaypal-v3-muted)" }} />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜索方案"
-              style={{ width: "100%", padding: "9px 11px 9px 34px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--mx-ink)", fontSize: 12.5 }}
+              style={{ width: "100%", padding: "9px 11px 9px 34px", borderRadius: 10, border: "1px solid rgba(142,165,190,.3)", background: "rgba(255,255,255,.06)", color: "var(--kaypal-v3-ink)", fontSize: 12.5 }}
             />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 10 }}>
@@ -233,17 +233,17 @@ export function SolutionsCenter() {
                     <Icon width={17} height={17} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{solution.title}</span>
-                    <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{solution.description}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{solution.title}</span>
+                    <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{solution.description}</span>
                   </span>
-                  <ArrowRight width={15} height={15} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                  <ArrowRight width={15} height={15} style={{ color: "var(--kaypal-v3-muted)", flexShrink: 0 }} />
                 </Link>
               );
             })}
           </div>
           {filteredSolutions.length === 0 && (
             <div className="mx-card mx-empty" style={{ marginTop: 10, padding: 24, textAlign: "center" }}>
-              <p style={{ fontSize: 12.5, color: "var(--mx-muted)" }}>没有找到匹配 "{searchQuery}" 的方案</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)" }}>没有找到匹配 "{searchQuery}" 的方案</p>
             </div>
           )}
         </div>

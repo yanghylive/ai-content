@@ -266,14 +266,14 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
       borderRadius: 10,
       border: "1px solid rgba(142,165,190,.3)",
       background: "rgba(255,255,255,.06)",
-      color: "var(--mx-ink)",
+      color: "var(--kaypal-v3-ink)",
       fontSize: 13,
     };
     const labelStyle: React.CSSProperties = {
       display: "block",
       fontSize: 12,
       fontWeight: 600,
-      color: "var(--mx-ink)",
+      color: "var(--kaypal-v3-ink)",
       marginBottom: 6,
     };
     return (
@@ -282,13 +282,13 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
           {/* 头部：返回 + 标题 + 状态徽标 */}
           <div className="mx-header">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <Link href="/engagement/wechat-moments" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)" }}>
+              <Link href="/engagement/wechat-moments" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
                 <ArrowLeft width={14} height={14} /> 返回
               </Link>
               <button
                 type="button"
                 onClick={() => void load()}
-                style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--mx-muted)", background: "rgba(120,148,179,.12)", border: "1px solid rgba(142,165,190,.3)", borderRadius: 9, padding: "5px 11px", fontWeight: 600 }}
+                style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--kaypal-v3-muted)", background: "rgba(120,148,179,.12)", border: "1px solid rgba(142,165,190,.3)", borderRadius: 9, padding: "5px 11px", fontWeight: 600 }}
               >
                 <RefreshCw width={12} height={12} /> 刷新
               </button>
@@ -347,14 +347,14 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
 
           {/* AI 改写 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-            <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 10 }}>AI 改写</p>
+            <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 10 }}>AI 改写</p>
             <label style={labelStyle}>修改要求</label>
             <textarea rows={3} placeholder="例如：更简洁，保留时间和活动信息。" value={instruction} onChange={(e) => setInstruction(e.target.value)} style={{ ...fieldStyle, resize: "vertical" }} />
             <button
               type="button"
               onClick={() => void regenerate()}
               disabled={generating}
-              style={{ width: "100%", marginTop: 10, padding: "10px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              style={{ width: "100%", marginTop: 10, padding: "10px 0", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
             >
               <Sparkles width={14} height={14} />
               {generating ? "正在改写…" : "重新生成"}
@@ -363,7 +363,7 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
             {generatedPreview && (
               <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: "rgba(37,99,235,.08)", border: "1px solid rgba(37,99,235,.25)" }}>
                 <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-cobalt)" }}>改写预览</p>
-                <p style={{ marginTop: 7, whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 12.5, lineHeight: 1.6, color: "var(--mx-ink)" }}>
+                <p style={{ marginTop: 7, whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: 12.5, lineHeight: 1.6, color: "var(--kaypal-v3-ink)" }}>
                   {generatedPreview}
                 </p>
                 <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
@@ -381,7 +381,7 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
                   <button
                     type="button"
                     onClick={() => setGeneratedPreview(null)}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}
                   >
                     <X width={13} height={13} /> 保留当前
                   </button>
@@ -392,8 +392,8 @@ export function WechatMomentsPlanDetailClient({ planId }: { planId: string }) {
 
           {/* 当前记录 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-            <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 9 }}>当前记录</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: "var(--mx-muted)" }}>
+            <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 9 }}>当前记录</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
               <p>对象：{task.targetName || "未指定"}</p>
               <p>计划时间：{task.planTime || "未设置"}</p>
               <p>执行方式：{currentExecutionMode.label}</p>

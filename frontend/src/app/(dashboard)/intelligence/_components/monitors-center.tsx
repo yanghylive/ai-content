@@ -241,7 +241,7 @@ export function MonitorsCenter() {
                         {(STATUS_LABELS[rawStatus] || STATUS_LABELS[active ? "active" : "paused"]).label}
                       </span>
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--mx-muted)" }}>
+                    <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>
                       {TYPE_LABELS[monitor.type] || monitor.type} · {freqLabel(monitor.schedule)}
                       {monitor.platform ? ` · ${monitor.platform}` : ""}
                     </div>
@@ -256,7 +256,7 @@ export function MonitorsCenter() {
                       </button>
                       <button
                         type="button"
-                        style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)" }}
+                        style={{ fontSize: 11, padding: "6px 10px", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)" }}
                         disabled={actingId === monitor.id}
                         onClick={() => void handleToggle(monitor)}
                       >
@@ -274,7 +274,7 @@ export function MonitorsCenter() {
                       )}
                     </div>
                     {expandedId === monitor.id && (
-                      <div style={{ fontSize: 11, color: "var(--mx-muted)", lineHeight: 1.7, background: "rgba(142,165,190,.08)", borderRadius: 10, padding: 10, marginTop: 2 }}>
+                      <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", lineHeight: 1.7, background: "rgba(142,165,190,.08)", borderRadius: 10, padding: 10, marginTop: 2 }}>
                         <div>执行频率：{freqLabel(monitor.schedule)}</div>
                         <div>积分：{monitor.costLimitPoints ? `上限 ${monitor.costLimitPoints}` : "成功后扣"}</div>
                         <div>上次运行：{monitor.lastRunAt ? new Date(monitor.lastRunAt).toLocaleString("zh-CN") : "还没跑过"}</div>
@@ -290,7 +290,7 @@ export function MonitorsCenter() {
 
           <button
             type="button"
-            style={{ marginTop: 16, fontSize: 12.5, color: "var(--mx-muted)", background: "none", border: "none", display: "flex", alignItems: "center", gap: 4 }}
+            style={{ marginTop: 16, fontSize: 12.5, color: "var(--kaypal-v3-muted)", background: "none", border: "none", display: "flex", alignItems: "center", gap: 4 }}
             onClick={() => router.push("/intelligence")}
           >
             <ArrowLeft size={14} /> 返回情报中心

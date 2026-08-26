@@ -77,7 +77,7 @@ export function CapabilityInfoPage({
                     padding: "9px 10px",
                     borderRadius: 10,
                     background: "rgba(120,148,179,.12)",
-                    color: "var(--mx-ink)",
+                    color: "var(--kaypal-v3-ink)",
                     border: "1px solid rgba(142,165,190,.3)",
                     fontSize: 12,
                     fontWeight: 600,
@@ -109,10 +109,10 @@ export function CapabilityInfoPage({
                   <Icon icon={item.icon} width={18} />
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)" }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>
                     {item.title}
                   </div>
-                  <div style={{ fontSize: 12, lineHeight: 1.5, color: "var(--mx-muted)", marginTop: 2 }}>
+                  <div style={{ fontSize: 12, lineHeight: 1.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>
                     {item.description}
                   </div>
                 </div>

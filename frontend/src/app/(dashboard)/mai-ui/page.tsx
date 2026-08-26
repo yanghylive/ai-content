@@ -341,7 +341,7 @@ export default function MaiUiWorkbenchPage() {
           className="mx-card"
           style={{ marginTop: 12, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}
         >
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>无障碍操作</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>无障碍操作</span>
           <span
             style={{
               display: "inline-flex",
@@ -359,7 +359,7 @@ export default function MaiUiWorkbenchPage() {
 
         {/* 指令输入 */}
         <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 8 }}>
             操作指令
           </div>
           <textarea
@@ -376,7 +376,7 @@ export default function MaiUiWorkbenchPage() {
               fontFamily: "inherit",
               resize: "none",
               background: "var(--kaypal-v3-paper-muted)",
-              color: "var(--mx-ink)",
+              color: "var(--kaypal-v3-ink)",
             }}
           />
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
@@ -399,11 +399,11 @@ export default function MaiUiWorkbenchPage() {
         {/* 截图预览 */}
         {screenShot && (
           <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 8 }}>
               当前屏幕截图
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>当前屏幕截图</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>当前屏幕截图</span>
               <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
                 拖拽圈选目标 → 一键点击
               </span>
@@ -471,7 +471,7 @@ export default function MaiUiWorkbenchPage() {
         {actions.length > 0 && (
           <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>
                 候选动作（{actions.length} 步）
               </span>
               {model && <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>{model}</span>}
@@ -486,7 +486,7 @@ export default function MaiUiWorkbenchPage() {
                     borderRadius: "var(--kaypal-v3-radius-xs)",
                     background: a.action === "ask_user" ? "var(--kaypal-v3-amber-soft)" : a.action === "done" ? "var(--kaypal-v3-success-soft)" : "var(--kaypal-v3-paper-muted)",
                     border: "1px solid var(--kaypal-v3-border)",
-                    color: "var(--mx-ink)",
+                    color: "var(--kaypal-v3-ink)",
                     fontFamily: "ui-monospace, monospace",
                     wordBreak: "break-all",
                   }}
@@ -531,7 +531,7 @@ export default function MaiUiWorkbenchPage() {
         {/* 日志 */}
         {logs.length > 0 && (
           <div className="mx-card" style={{ marginTop: 12, padding: 14 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--mx-ink)", marginBottom: 8 }}>执行日志</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginBottom: 8 }}>执行日志</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 200, overflowY: "auto" }}>
               {logs.map((l, i) => (
                 <div key={i} style={{ fontSize: 12, color: l.startsWith("❌") ? "var(--kaypal-v3-danger)" : l.startsWith("⏸") ? "var(--kaypal-v3-amber)" : "var(--kaypal-v3-soft-ink)", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}>

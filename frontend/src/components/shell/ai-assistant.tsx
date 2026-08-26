@@ -223,13 +223,13 @@ export function AiAssistant({
                 });
               });
             } else if (event.type === "error") {
-              setError(event.message);
+              setError(toActionableError(event.message, "AI 助手遇到了问题，请重试"));
               setItems((prev) =>
                 prev.map((item) =>
                   item.id === assistantId
                     ? {
                         ...item,
-                        text: `⚠️ ${event.message}`,
+                        text: `⚠️ ${toActionableError(event.message, "AI 助手遇到了问题")}`,
                         streaming: false,
                       }
                     : item,

@@ -34,9 +34,9 @@ export default function FriendAcceptPage() {
               <div className="mx-page-sub">有人加你微信时，申请会实时出现在这里</div>
             </div>
             <div className="mx-card mx-empty" style={{ marginTop: 14, padding: 30, textAlign: "center" }}>
-              <UserPlus width={30} height={30} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
-              <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginTop: 11 }}>没有待处理的好友申请</p>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.55 }}>
+              <UserPlus width={30} height={30} style={{ color: "var(--kaypal-v3-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginTop: 11 }}>没有待处理的好友申请</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 5, lineHeight: 1.55 }}>
                 也可以先去消息台看看有没有新会话
               </p>
               <button type="button" className="mx-btn-gold" style={{ marginTop: 14 }} onClick={() => router.push("/engagement/wechat")}>

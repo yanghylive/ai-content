@@ -65,7 +65,7 @@ export function EngineFiles() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/local-engine")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回设备状态
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -100,8 +100,8 @@ export function EngineFiles() {
             </div>
           ) : items.length === 0 ? (
             <div className="mx-card mx-empty" style={{ padding: 24, textAlign: "center" }}>
-              <Folder width={26} height={26} style={{ color: "var(--mx-muted)", margin: "0 auto" }} />
-              <p style={{ fontSize: 12.5, color: "var(--mx-muted)", marginTop: 9 }}>没有需要检查的文件</p>
+              <Folder width={26} height={26} style={{ color: "var(--kaypal-v3-muted)", margin: "0 auto" }} />
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-muted)", marginTop: 9 }}>没有需要检查的文件</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -112,20 +112,20 @@ export function EngineFiles() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                       <span style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
                         {item.kind === "directory" ? (
-                          <Folder width={16} height={16} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                          <Folder width={16} height={16} style={{ color: "var(--kaypal-v3-muted)", flexShrink: 0 }} />
                         ) : (
-                          <FileText width={16} height={16} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
+                          <FileText width={16} height={16} style={{ color: "var(--kaypal-v3-muted)", flexShrink: 0 }} />
                         )}
-                        <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</span>
                       </span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: ok ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-danger)", flexShrink: 0 }}>
                         {ok ? <CheckCircle2 width={13} height={13} /> : <XCircle width={13} height={13} />}
                         {ok ? "可访问" : !item.exists ? "不存在" : !item.readable ? "不可读" : "异常"}
                       </span>
                     </div>
-                    <p style={{ fontFamily: "monospace", fontSize: 10, color: "var(--mx-muted)", marginTop: 6, wordBreak: "break-all" }}>{item.path}</p>
+                    <p style={{ fontFamily: "monospace", fontSize: 10, color: "var(--kaypal-v3-muted)", marginTop: 6, wordBreak: "break-all" }}>{item.path}</p>
                     {ok && item.fileCount !== undefined && (
-                      <p style={{ fontSize: 10.5, color: "var(--mx-muted)", marginTop: 3 }}>{item.fileCount} 个文件</p>
+                      <p style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 3 }}>{item.fileCount} 个文件</p>
                     )}
                   </div>
                 );
@@ -133,7 +133,7 @@ export function EngineFiles() {
             </div>
           )}
 
-          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          <button type="button" onClick={() => router.push("/local-engine")} style={{ marginTop: 16, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
             <ArrowLeft width={14} height={14} /> 返回
           </button>
         </div>

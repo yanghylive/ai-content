@@ -81,7 +81,7 @@ export function RiskConfirmFlow() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/capabilities/risk")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/capabilities/risk")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--kaypal-v3-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回风险管控
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -107,8 +107,8 @@ export function RiskConfirmFlow() {
           ) : confirmations.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 14, padding: 28, textAlign: "center" }}>
               <CheckCircle2 width={28} height={28} style={{ color: "var(--kaypal-v3-success)", margin: "0 auto" }} />
-              <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)", marginTop: 10 }}>没有待确认的操作</p>
-              <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>有高风险操作需要你确认时，会出现在这里</p>
+              <p style={{ fontSize: 13.5, fontWeight: 700, color: "var(--kaypal-v3-ink)", marginTop: 10 }}>没有待确认的操作</p>
+              <p style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 4 }}>有高风险操作需要你确认时，会出现在这里</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
@@ -127,14 +127,14 @@ export function RiskConfirmFlow() {
                     </span>
                     <span style={{ minWidth: 0, flex: 1 }}>
                       <span style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--mx-ink)" }}>{item.title}</span>
+                        <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{item.title}</span>
                         <span className={`mx-badge ${item.riskLevel === "high" ? "mx-badge-red" : "mx-badge-gold"}`} style={{ fontSize: 10 }}>
                           {item.riskLevel === "high" ? "高风险" : "中风险"}
                         </span>
                       </span>
-                      <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 5, lineHeight: 1.55 }}>{item.description}</span>
+                      <span style={{ display: "block", fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 5, lineHeight: 1.55 }}>{item.description}</span>
                       {item.actionLabel && (
-                        <span style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--mx-ink)", marginTop: 6 }}>将执行：{item.actionLabel}</span>
+                        <span style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)", marginTop: 6 }}>将执行：{item.actionLabel}</span>
                       )}
                     </span>
                   </div>
@@ -162,7 +162,7 @@ export function RiskConfirmFlow() {
             </div>
           )}
 
-          <button type="button" onClick={() => router.push("/capabilities/risk")} style={{ marginTop: 18, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          <button type="button" onClick={() => router.push("/capabilities/risk")} style={{ marginTop: 18, padding: "9px 18px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
             <ArrowLeft width={14} height={14} /> 返回
           </button>
         </div>

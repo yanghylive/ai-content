@@ -216,7 +216,7 @@ export function WechatTaskCenter() {
 
   /* 移动端原生视图（mx-* 明德 VP 风格） */
   if (isMobile) {
-    const connColor = assistantConnected ? "var(--kaypal-v3-success)" : "var(--mx-muted)";
+    const connColor = assistantConnected ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-muted)";
     // 移动端口径：该状态来自电脑端本地引擎，避免手机用户误以为手机可用微信自动化（2026-08-11）
     const connText =
       assistantConnected === null
@@ -234,7 +234,7 @@ export function WechatTaskCenter() {
 
           {/* 助手状态 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)" }}>微信桌面助手</span>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>微信桌面助手</span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: connColor }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: connColor }} />
               {connText}
@@ -244,20 +244,20 @@ export function WechatTaskCenter() {
           {/* 统计 */}
           <div className="mx-stat-grid" style={{ marginTop: 10 }}>
             <div className="mx-card" style={{ padding: 12 }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--mx-ink)" }}>{loading ? "-" : stats.pending}</div>
-              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>待办任务</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-ink)" }}>{loading ? "-" : stats.pending}</div>
+              <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>待办任务</div>
             </div>
             <div className="mx-card" style={{ padding: 12 }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-cobalt)" }}>{loading ? "-" : stats.inProgress}</div>
-              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>进行中</div>
+              <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>进行中</div>
             </div>
             <div className="mx-card" style={{ padding: 12 }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{loading ? "-" : stats.completedToday}</div>
-              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>今日完成</div>
+              <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>今日完成</div>
             </div>
             <div className="mx-card" style={{ padding: 12 }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-amber)" }}>{loading ? "-" : stats.totalContacts.toLocaleString()}</div>
-              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>联系人</div>
+              <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>联系人</div>
             </div>
           </div>
 
@@ -272,15 +272,15 @@ export function WechatTaskCenter() {
                     <ActionIcon width={18} height={18} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>
                       {action.title}
                       {action.badge && (
                         <span style={{ background: "var(--kaypal-v3-danger)", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "1px 7px" }}>{action.badge}</span>
                       )}
                     </span>
-                    <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 2 }}>{action.description}</span>
+                    <span style={{ display: "block", fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>{action.description}</span>
                   </span>
-                  <span style={{ color: "var(--mx-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
+                  <span style={{ color: "var(--kaypal-v3-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
                 </Link>
               );
             })}
@@ -294,8 +294,8 @@ export function WechatTaskCenter() {
                 {inProgressTasks.map((task) => (
                   <div key={task.id} className="mx-card" style={{ padding: 13, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                     <span style={{ minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
-                      <span style={{ display: "block", fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>{task.type} · {task.completedAt}</span>
+                      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
+                      <span style={{ display: "block", fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>{task.type} · {task.completedAt}</span>
                     </span>
                     <Link href="/engagement/wechat?module=mass-send" style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 9, background: "var(--kaypal-v3-amber)", color: "#fff", fontSize: 11.5, fontWeight: 600 }}>
                       详情
@@ -315,10 +315,10 @@ export function WechatTaskCenter() {
                   <div key={task.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: i > 0 ? "1px solid rgba(142,165,190,.15)" : "none" }}>
                     <CheckCircle2 width={16} height={16} style={{ color: "var(--kaypal-v3-success)", flexShrink: 0 }} />
                     <span style={{ minWidth: 0, flex: 1 }}>
-                      <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--mx-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
-                      <span style={{ display: "block", fontSize: 10.5, color: "var(--mx-muted)", marginTop: 1 }}>{task.type} · {task.completedAt}</span>
+                      <span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--kaypal-v3-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
+                      <span style={{ display: "block", fontSize: 10.5, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>{task.type} · {task.completedAt}</span>
                     </span>
-                    <span style={{ fontSize: 10.5, color: "var(--mx-muted)", flexShrink: 0 }}>已完成</span>
+                    <span style={{ fontSize: 10.5, color: "var(--kaypal-v3-muted)", flexShrink: 0 }}>已完成</span>
                   </div>
                 ))}
               </div>
@@ -332,8 +332,8 @@ export function WechatTaskCenter() {
               const ModuleIcon = module.icon;
               return (
                 <Link key={module.key} href={module.href} className="mx-card" style={{ padding: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                  <ModuleIcon width={15} height={15} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>{module.title}</span>
+                  <ModuleIcon width={15} height={15} style={{ color: "var(--kaypal-v3-muted)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>{module.title}</span>
                 </Link>
               );
             })}

@@ -236,7 +236,7 @@ export function EngineHealthCenter() {
 
           {/* 引擎状态条 */}
           <div className="mx-card" style={{ marginTop: 12, padding: 13, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>本机引擎</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>本机引擎</span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 600, color: connColor }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: connColor }} />
               {connText}
@@ -247,15 +247,15 @@ export function EngineHealthCenter() {
           <div className="mx-stat-grid" style={{ marginTop: 10 }}>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-success)" }}>{loading ? "-" : status.healthy}</div>
-              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>正常</div>
+              <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>正常</div>
             </div>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-amber)" }}>{loading ? "-" : status.warning}</div>
-              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>待处理</div>
+              <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>待处理</div>
             </div>
             <div className="mx-card" style={{ padding: 12, textAlign: "center" }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--kaypal-v3-danger)" }}>{loading ? "-" : status.critical}</div>
-              <div style={{ fontSize: 11, color: "var(--mx-muted)", marginTop: 2 }}>需处理</div>
+              <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>需处理</div>
             </div>
           </div>
 
@@ -294,7 +294,7 @@ export function EngineHealthCenter() {
                         <span style={{ width: 32, height: 32, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: todo.severity === "critical" ? "rgba(220,80,80,.12)" : "rgba(222,150,57,.14)", color: todo.severity === "critical" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-amber)", flexShrink: 0 }}>
                           <TodoIcon width={16} height={16} />
                         </span>
-                        <span style={{ fontSize: 12.5, color: "var(--mx-ink)" }}>
+                        <span style={{ fontSize: 12.5, color: "var(--kaypal-v3-ink)" }}>
                           <b>{todo.count}</b> {todo.title}
                         </span>
                       </span>
@@ -317,10 +317,10 @@ export function EngineHealthCenter() {
                     <ActionIcon width={17} height={17} />
                   </span>
                   <span style={{ minWidth: 0, flex: 1 }}>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--mx-ink)" }}>{action.title}</span>
-                    <span style={{ display: "block", fontSize: 11.5, color: "var(--mx-muted)", marginTop: 1 }}>{action.description}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--kaypal-v3-ink)" }}>{action.title}</span>
+                    <span style={{ display: "block", fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginTop: 1 }}>{action.description}</span>
                   </span>
-                  <span style={{ color: "var(--mx-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
+                  <span style={{ color: "var(--kaypal-v3-muted)", fontSize: 14, flexShrink: 0 }}>›</span>
                 </Link>
               );
             })}
@@ -331,8 +331,8 @@ export function EngineHealthCenter() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {advancedModules.map((module) => (
               <Link key={module.key} href={module.href} className="mx-card" style={{ padding: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                <Settings width={15} height={15} style={{ color: "var(--mx-muted)", flexShrink: 0 }} />
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>{module.title}</span>
+                <Settings width={15} height={15} style={{ color: "var(--kaypal-v3-muted)", flexShrink: 0 }} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>{module.title}</span>
               </Link>
             ))}
           </div>

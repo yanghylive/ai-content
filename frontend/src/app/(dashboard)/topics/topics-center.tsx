@@ -243,7 +243,7 @@ export function TopicsCenter() {
                   value={seedInput}
                   onChange={(e) => setSeedInput(e.target.value)}
                   placeholder="输入关键词、事件或一段描述"
-                  style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--mx-ink)", fontSize: 13 }}
+                  style={{ flex: 1, minWidth: 0, padding: "10px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-paper)", color: "var(--kaypal-v3-ink)", fontSize: 13 }}
                 />
                 <button type="button" className="mx-btn-gold" style={{ flexShrink: 0, padding: "0 14px", display: "inline-flex", alignItems: "center", gap: 5 }} disabled={discovering} onClick={() => void handleDiscover()}>
                   {discovering ? "发现中…" : "开始"}
@@ -251,13 +251,13 @@ export function TopicsCenter() {
               </div>
               {discovery ? (
                 <div style={{ marginTop: 10 }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mx-ink)" }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>
                     归一主题：{discovery.analysis.normalizedSeed}
                   </p>
-                  <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 3 }}>
+                  <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 3 }}>
                     目标读者：{discovery.analysis.audience} · {discovery.analysis.intent}
                   </p>
-                  <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 3 }}>
+                  <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", marginTop: 3 }}>
                     扫描 {discovery.retrieval.scannedSources} 渠道，抓取 {discovery.retrieval.fetchedCount} 条，命中 {discovery.retrieval.matchedCount} 条，新增入库 {discovery.retrieval.savedCount} 条。
                   </p>
                 </div>
