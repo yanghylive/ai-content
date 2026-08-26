@@ -101,7 +101,7 @@
   }
 
   /* ---------- 3. 变量覆盖：暗色（新壳 + 旧页面，紫黑同源） ---------- */
-  html[data-theme="dark"],
+  html.dark,
   html.dark,
   .dark {
     --kx-paper: #131019;
@@ -190,9 +190,9 @@
       linear-gradient(165deg, #faf8fd, #f4f0fa 55%, #efebf7);
     background-attachment: fixed;
   }
-  html[data-theme="dark"] body,
   html.dark body,
-  html[data-theme="dark"] .kx-app,
+  html.dark body,
+  html.dark .kx-app,
   html.dark .kx-app {
     background:
       radial-gradient(circle at 88% -4%, rgba(238, 189, 114, 0.06), transparent 32%),
@@ -236,7 +236,7 @@
     border-bottom: 1px solid rgba(205, 195, 228, 0.4);
     backdrop-filter: var(--kx-blur-bar);
     }
-  html[data-theme="dark"] .kx-topbar,
+  html.dark .kx-topbar,
   html.dark .kx-topbar {
     background: linear-gradient(180deg, rgba(19, 16, 25, 0.72), rgba(19, 16, 25, 0.5));
     border-bottom: 1px solid rgba(110, 95, 150, 0.25);
@@ -247,7 +247,7 @@
     box-shadow: 0 6px 18px rgba(60, 30, 100, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.72);
     backdrop-filter: var(--kx-blur-soft);
     }
-  html[data-theme="dark"] .kx-search-pill,
+  html.dark .kx-search-pill,
   html.dark .kx-search-pill {
     background: linear-gradient(145deg, rgba(28, 23, 38, 0.88), rgba(24, 19, 34, 0.75));
     border-color: rgba(110, 95, 150, 0.4);
@@ -257,7 +257,7 @@
     border-color: rgba(210, 198, 235, 0.65);
     backdrop-filter: var(--kx-blur-soft);
     }
-  html[data-theme="dark"] .kx-topbar-select,
+  html.dark .kx-topbar-select,
   html.dark .kx-topbar-select {
     background: rgba(28, 23, 38, 0.8);
     border-color: rgba(110, 95, 150, 0.4);
@@ -273,7 +273,7 @@
     box-shadow: 0 8px 22px rgba(60, 30, 100, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.7);
     backdrop-filter: var(--kx-blur-glass);
     }
-  html[data-theme="dark"] .kx-ticker,
+  html.dark .kx-ticker,
   html.dark .kx-ticker {
     background: linear-gradient(145deg, rgba(28, 23, 38, 0.85), rgba(24, 19, 34, 0.72));
     border-color: rgba(110, 95, 150, 0.35);
@@ -323,45 +323,45 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.72);
     backdrop-filter: var(--kx-blur-glass);
     }
-  html[data-theme="dark"] .kx-todo-card,
   html.dark .kx-todo-card,
-  html[data-theme="dark"] .kaypal-v3-panel,
+  html.dark .kx-todo-card,
   html.dark .kaypal-v3-panel,
-  html[data-theme="dark"] .kaypal-v3-surface,
+  html.dark .kaypal-v3-panel,
   html.dark .kaypal-v3-surface,
-  html[data-theme="dark"] .mx-card,
+  html.dark .kaypal-v3-surface,
   html.dark .mx-card,
-  html[data-theme="dark"] .bg-card.border,
+  html.dark .mx-card,
   html.dark .bg-card.border,
-  html[data-theme="dark"] .bg-default-50.border-default-200,
+  html.dark .bg-card.border,
   html.dark .bg-default-50.border-default-200,
-  html[data-theme="dark"] .bg-background.border-default-200,
+  html.dark .bg-default-50.border-default-200,
   html.dark .bg-background.border-default-200,
-  html[data-theme="dark"] .bg-background.border.divider,
+  html.dark .bg-background.border-default-200,
   html.dark .bg-background.border.divider,
-  html[data-theme="dark"] .border.border-divider.bg-background,
+  html.dark .bg-background.border.divider,
+  html.dark .border.border-divider.bg-background,
   html.dark .border.border-divider.bg-background,
   html.dark .bg-default-50.border-small,
   html.dark .bg-default-100,
   html.dark .bg-content1,
   html.dark .astryx-card,
-  html[data-theme="dark"] .kx-card,
   html.dark .kx-card,
-  html[data-theme="dark"] .kx-card-lg,
+  html.dark .kx-card,
   html.dark .kx-card-lg,
-  html[data-theme="dark"] .kx-action-card,
+  html.dark .kx-card-lg,
   html.dark .kx-action-card,
-  html[data-theme="dark"] .kx-agg-card,
+  html.dark .kx-action-card,
   html.dark .kx-agg-card,
-  html[data-theme="dark"] .kx-stat-card,
+  html.dark .kx-agg-card,
   html.dark .kx-stat-card,
-  html[data-theme="dark"] .kx-chat-main,
+  html.dark .kx-stat-card,
   html.dark .kx-chat-main,
-  html[data-theme="dark"] .kx-palette,
+  html.dark .kx-chat-main,
   html.dark .kx-palette,
-  html[data-theme="dark"] .kx-msg-card,
+  html.dark .kx-palette,
   html.dark .kx-msg-card,
-  html[data-theme="dark"] .kx-legacy-switch-bar,
+  html.dark .kx-msg-card,
+  html.dark .kx-legacy-switch-bar,
   html.dark .kx-legacy-switch-bar {
     background:
       linear-gradient(145deg, rgba(28, 23, 38, 0.9), rgba(22, 18, 32, 0.82)) padding-box,
@@ -427,7 +427,7 @@
   .kx-palette-overlay {
     background: rgba(25, 15, 45, 0.45);
   }
-  html[data-theme="dark"] .kx-palette-overlay,
+  html.dark .kx-palette-overlay,
   html.dark .kx-palette-overlay {
     background: rgba(0, 0, 0, 0.6);
   }
@@ -438,11 +438,11 @@
      （实测 lightBgLeak: tasks=3 / settings=15）。DOM 结构：
      label[Switch] > span(wrapper) > span.z-10.bg-white(滑块)。
      深色下压成紫黑纸色 + 淡紫描边；浅色保持原样。 */
-  html[data-theme="dark"] main label span.z-10.bg-white,
   html.dark main label span.z-10.bg-white,
-  html[data-theme="dark"] main [class*="inline-flex"] span.bg-white.rounded-full,
+  html.dark main label span.z-10.bg-white,
   html.dark main [class*="inline-flex"] span.bg-white.rounded-full,
-  html[data-theme="dark"] main button.rounded-full > .bg-white.rounded-full,
+  html.dark main [class*="inline-flex"] span.bg-white.rounded-full,
+  html.dark main button.rounded-full > .bg-white.rounded-full,
   html.dark main button.rounded-full > .bg-white.rounded-full {
     background-color: var(--kaypal-v3-paper);
     box-shadow: inset 0 0 0 1px var(--kaypal-v3-border-strong),

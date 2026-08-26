@@ -41,7 +41,7 @@
   --space-inset-x: 20px;   /* 卡片内边距（横） */
 }
 
-html[data-theme="dark"] {
+html.dark {
   --kx-paper: #141218;
   --kx-paper-soft: #1d1a24;
   --kx-card: #1c1923;
