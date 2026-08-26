@@ -279,6 +279,24 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
   const databasePath = resolveSqliteDatabasePath(envVars.SQLITE_DATABASE_URL || envVars.DATABASE_URL, backendPath);
   if (!databasePath) return;
 
+  // 孤儿 WAL 防御（2026-08-27 Win P0）：上次进程异常退出会遗留 <db>-wal/-shm，
+  // 它们的页引用指向旧版主库；换版本装包后主库是全新 seed，Prisma 打开时做
+  // WAL 合并校验必然对不上 → SQLITE_CORRUPT "database disk image is malformed"。
+  // 本函数运行于后端 spawn 之前，此时任何 -wal 都是死文件，移到一旁留档。
+  for (const suffix of ['-wal', '-shm']) {
+    const sidecarPath = `${databasePath}${suffix}`;
+    if (fs.existsSync(sidecarPath)) {
+      const orphanPath = `${sidecarPath}.orphan-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+      try {
+        fs.renameSync(sidecarPath, orphanPath);
+        console.warn('[Backend] Orphan SQLite sidecar moved aside:', orphanPath);
+      } catch (error) {
+        // 移不动（文件被占用）时记录即可：若库已被 schema 校验判坏会走 suspect 分支
+        console.warn('[Backend] Unable to move SQLite sidecar:', error.message);
+      }
+    }
+  }
+
   const seedPath = path.join(backendPath, 'prisma', 'dev.db');
 
   // 目标库已存在且 schema 完整（或为桌面端新建的 user_version=1 空库）→ 直接复用
