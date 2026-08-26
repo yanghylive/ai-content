@@ -459,7 +459,7 @@ export function AppShell({
 
           {/* 全局通知滚动条 */}
           <div className="kx-ticker-wrap">
-            <Ticker label="通知" icon="bell" items={noticeItems} speed={52} />
+            <Ticker label="通知" icon="bell" items={noticeItems} />
           </div>
 
           {isSceneRoute(pathname) ? (
