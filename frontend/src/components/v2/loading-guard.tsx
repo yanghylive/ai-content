@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toActionableError } from "@/lib/public-error";
+import { SkeletonCard } from "@/components/skeleton";
 
 /**
  * 加载守卫（2026-08-20）：
@@ -90,9 +91,10 @@ export function LoadingGuard({
 }) {
   if (loading && !timeout) {
     return (
-      <div className="kaypal-v3-panel flex flex-col items-center justify-center gap-3 p-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
-        <p className="text-sm text-[var(--kaypal-v3-muted)]">正在加载…</p>
+      <div className="kaypal-v3-panel p-6">
+        <SkeletonCard height={80} />
+        <div style={{ height: 12 }} />
+        <SkeletonCard height={120} />
       </div>
     );
   }

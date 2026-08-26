@@ -38,7 +38,7 @@ import {
 import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { publicIntelligenceList, publicIntelligenceText } from "./display-text";
 import { publicSourceLabelForItem } from "./redfox-public-labels";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 type RiskLevel = "low" | "medium" | "high";

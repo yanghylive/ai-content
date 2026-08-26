@@ -40,7 +40,7 @@ import { toPublicError } from "@/lib/public-error";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { useCdpSessionStatus } from "../../workbench/use-cdp-session-status";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 /* ============ 频道配置（4 个页面共用此组件） ============ */

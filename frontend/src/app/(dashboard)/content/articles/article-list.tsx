@@ -1,7 +1,7 @@
 "use client";
 
 import { useConfirm } from "@/hooks/use-confirm";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
+import { SkeletonList, SkeletonRow } from "@/components/skeleton";
 
 import { BrandLogo } from "@/components/brand-logo";
 

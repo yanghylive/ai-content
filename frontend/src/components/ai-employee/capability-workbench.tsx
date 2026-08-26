@@ -8,6 +8,7 @@ import toast from "@/lib/toast";
 import { aiEmployeeApi, type AiEmployeeCapability, type AiEmployeeCapabilitiesSnapshot } from "@/lib/api/ai-employee";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList } from "@/components/skeleton";
 
 const domainLabels: Record<string, string> = {
   "douyin-acquisition": "增长获客",
@@ -126,9 +127,8 @@ export function CapabilityWorkbench() {
           </div>
 
           {loading ? (
-            <div style={{ padding: "36px 0", textAlign: "center" }}>
-              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
-              <p style={{ fontSize: 12, color: "var(--mx-muted)", marginTop: 10 }}>正在读取能力状态</p>
+            <div style={{ padding: "12px 0" }}>
+              <SkeletonList rows={4} />
             </div>
           ) : snapshot ? (
             <>

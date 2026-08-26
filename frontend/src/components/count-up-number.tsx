@@ -6,9 +6,10 @@ import { useCountUp } from "@/lib/hooks/use-count-up";
  * 数字 count-up 动画包装组件。
  *
  * - loading 时显示 "-"
- * - number 类型直接 count-up
- * - string 类型先 parseInt，成功则动画数字 + 保留后缀（如 "1.2万"→数字+"万"）
+ * - number 类型直接 count-up（支持负数和小数）
+ * - string 类型先解析数字部分，成功则动画数字 + 保留前缀/后缀（如 "-10" / "1.2万"）
  * - 无法解析的字符串原样显示
+ * - target 变化时先归零再重新动画（由 useCountUp 处理）
  * - 尊重 prefers-reduced-motion（由 useCountUp 处理）
  */
 export function CountUpNumber({
@@ -22,10 +23,14 @@ export function CountUpNumber({
   duration?: number;
   startDelay?: number;
 }) {
+  // 解析数字部分：支持负号、小数点
   const str = String(value);
-  const parsed = parseInt(str, 10);
-  const hasNum = !isNaN(parsed) && parsed !== 0;
-  const suffix = hasNum ? str.replace(/^\d+/, "") : "";
+  // 匹配开头的数字（含负号和小数），如 "-10" / "1.2" / "1.2万"
+  const match = str.match(/^(-?\d+(?:\.\d+)?)/);
+  const parsed = match ? parseFloat(match[1]) : NaN;
+  const hasNum = !isNaN(parsed);
+  // 去掉数字部分，保留剩余文本作为前缀/后缀
+  const remainder = hasNum ? str.slice(match![1].length) : "";
   const target = loading ? 0 : parsed;
   const animated = useCountUp(target, { duration, startDelay });
 
@@ -34,7 +39,7 @@ export function CountUpNumber({
   return (
     <>
       {animated}
-      {suffix}
+      {remainder}
     </>
   );
 }

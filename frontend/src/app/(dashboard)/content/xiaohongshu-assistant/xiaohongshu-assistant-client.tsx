@@ -34,7 +34,7 @@ import {
   type AgentWakerRunStatus,
 } from "@/lib/api/agentwaker";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const STATUS_COLOR: Record<
   AgentWakerRunStatus,

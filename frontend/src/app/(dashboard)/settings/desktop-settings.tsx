@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button, Chip, Spinner, Switch, addToast } from "@heroui/react";
+import { Button, Chip, Switch, addToast } from "@heroui/react";
 import {
   FolderSearch,
   Gauge,
@@ -9,7 +9,7 @@ import {
   RefreshCw,
   UploadCloud,
 } from "lucide-react";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 type DesktopConfigBridge = {
   get: (key: string) => Promise<unknown>;

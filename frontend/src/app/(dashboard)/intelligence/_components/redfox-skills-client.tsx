@@ -28,7 +28,7 @@ import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { publicIntelligenceText } from "./display-text";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 type ScenarioKey =
   | "all"

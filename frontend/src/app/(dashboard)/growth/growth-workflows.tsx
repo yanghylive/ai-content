@@ -23,7 +23,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthWorkflow } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 const FlowCanvas = dynamic(() => import("./workflow-canvas/FlowCanvas"), {
   ssr: false,
   loading: () => (

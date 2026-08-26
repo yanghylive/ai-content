@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   ChevronDown,
   History,
-  Loader2,
   Pause,
   Pencil,
   Play,
@@ -38,7 +37,7 @@ import {
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 const PLATFORM_LABELS: Record<string, string> = {

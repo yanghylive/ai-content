@@ -26,7 +26,7 @@ import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { toActionableError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 /** 商用授权引导条：同步历史需要 STANDARD/PRO 及以上套餐 */
 function CommercialGateBanner() {

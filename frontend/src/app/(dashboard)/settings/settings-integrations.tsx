@@ -31,7 +31,7 @@ import {
 } from "@/lib/api/settings";
 import { materialsApi } from "@/lib/api/materials";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 /* ============ AI 服务（4 个默认模型槽位） ============ */
 

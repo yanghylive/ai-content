@@ -12,7 +12,7 @@ import {
 import { localEngineApi, type LocalEngineDesktopStatus } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 type ViewingItem = {
   src?: string;

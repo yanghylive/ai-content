@@ -17,7 +17,7 @@ import {
 } from "@/lib/api/app-market";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const ACTION_LABELS: Record<string, string> = {
   purchase: "购买应用",

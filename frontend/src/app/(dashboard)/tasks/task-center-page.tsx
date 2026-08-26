@@ -14,7 +14,6 @@ import {
   ModalHeader,
   Select,
   SelectItem,
-  Spinner,
   Switch,
   Textarea,
   addToast,
@@ -66,7 +65,7 @@ import {
   getPublishRecordStatusColor,
   resolvePublishRecordStatus,
 } from "@/lib/publish-record-view";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 function normalizeSessions(value: AgentSession[]) {

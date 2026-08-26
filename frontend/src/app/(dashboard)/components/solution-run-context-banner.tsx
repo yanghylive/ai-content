@@ -2,14 +2,13 @@
 
 import React from "react";
 import Link from "next/link";
-import { Button, Chip, Progress, Spinner } from "@heroui/react";
+import { Button, Chip, Progress } from "@heroui/react";
 import { ArrowRight, RefreshCw, Route } from "lucide-react";
 import {
   getSolutionRun,
-  type SolutionRunRecord,
-} from "@/lib/api/solutions";
+  type SolutionRunRecord} from "@/lib/api/solutions";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonCircle } from "@/components/skeleton";
 
 function statusMeta(status: string) {
   if (["succeeded", "completed"].includes(status)) {

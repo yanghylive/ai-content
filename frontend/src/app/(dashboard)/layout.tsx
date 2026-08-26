@@ -4,7 +4,7 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { Button, Chip, Progress, Spinner, Textarea, cn } from "@heroui/react";
+import { Button, Chip, Progress, Textarea, cn } from "@heroui/react";
 import { ArrowRight, RefreshCw } from "lucide-react";
 import { AppShell } from "@/components/shell/app-shell";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -32,7 +32,7 @@ import { toPublicError } from "@/lib/public-error";
 import { RELEASE_NOTES, DESKTOP_APP_VERSION } from "@/lib/release-notes";
 import { routeAliases } from "@/lib/route-config";
 import { formatPlanLabel, formatCredits, getBillingPlan, hasUsableLocalSession } from "@/lib/dashboard-helpers";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonCircle } from "@/components/skeleton";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";

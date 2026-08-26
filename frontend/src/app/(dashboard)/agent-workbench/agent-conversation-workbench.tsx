@@ -48,7 +48,7 @@ import { settingsApi, type AIModel } from "@/lib/api/settings";
 import { useAgentSState } from "@/lib/ops-workbench/hooks/use-agent-s-state";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const PURPOSES: Array<{
   key: AgentSConversationPurpose;

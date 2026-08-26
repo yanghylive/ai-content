@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Spinner } from "@heroui/react";
 import { ExternalLink, Route } from "lucide-react";
 import {
   getCrmCustomerAttribution,
   type CrmCustomerAttribution,
 } from "@/lib/api/crm";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonCircle } from "@/components/skeleton";
 
 const HOP_LABEL: Record<string, string> = {
   content: "内容",

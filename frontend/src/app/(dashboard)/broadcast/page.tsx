@@ -29,8 +29,7 @@ const statusLabel: Record<string, string> = {
   DEGRADED: "受限",
   PAUSED: "已暂停",
   ENDED: "已结束",
-  FAILED: "失败",
-};
+  FAILED: "失败"};
 
 export default function BroadcastPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -51,8 +50,8 @@ export default function BroadcastPage() {
       ]);
       setJobs(nextJobs);
       setHealth(nextHealth);
-    } catch (cause) {
-      setError(toActionableError(cause, "直播服务不可用"));
+    } catch (e) {
+      setError(toActionableError(e, "直播服务不可用"));
     }
   };
 
@@ -67,14 +66,13 @@ export default function BroadcastPage() {
       const job = await api.post<Job>("/broadcast/jobs", {
         name,
         storeName,
-        sceneUrl,
-      });
+        sceneUrl});
       setJobs((items) => [job, ...items]);
       setSelected(job.id);
       setName("");
       setStoreName("");
       setSceneUrl("");
-    } catch (cause) {
+    } catch {
       setError("创建失败，请稍后重试");
     } finally {
       setBusy(false);
@@ -87,7 +85,7 @@ export default function BroadcastPage() {
     try {
       const job = await api.post<Job>(`/broadcast/jobs/${id}/${verb}`, {});
       setJobs((items) => items.map((item) => (item.id === id ? job : item)));
-    } catch (cause) {
+    } catch {
       setError("操作失败，请稍后重试");
     } finally {
       setBusy(false);
@@ -99,11 +97,10 @@ export default function BroadcastPage() {
     setBusy(true);
     try {
       const job = await api.post<Job>(`/broadcast/jobs/${selected}/segments`, {
-        text: segmentText,
-      });
+        text: segmentText});
       setJobs((items) => items.map((item) => (item.id === selected ? job : item)));
       setSegmentText("");
-    } catch (cause) {
+    } catch {
       setError("添加语音片段失败，请稍后重试");
     } finally {
       setBusy(false);

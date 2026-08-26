@@ -24,7 +24,7 @@ import {
   type SolutionRunTaskRecord,
 } from "@/lib/api/solutions";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const TASK_STATUS: Record<
   string,

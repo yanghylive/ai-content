@@ -27,7 +27,7 @@ import {
   type GrowthAcquisitionMode,
 } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 const PLATFORM_OPTIONS = [

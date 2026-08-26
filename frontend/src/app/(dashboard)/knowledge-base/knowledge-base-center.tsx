@@ -26,7 +26,7 @@ import {
 } from "@/lib/api/auth";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const SYNC_LABELS: Record<string, string> = {
   synced: "已同步",

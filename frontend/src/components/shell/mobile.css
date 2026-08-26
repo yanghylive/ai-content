@@ -1,5 +1,5 @@
 /* ============================================================
- * 移动端样式体系（Mingde VP 风格：深蓝 × 金色玻璃拟态）
+ * 移动端样式体系（品牌紫 token 驱动 · 玻璃拟态）
  * 仅 <768px 生效，桌面端不加载语义
  * ============================================================ */
 
@@ -11,9 +11,9 @@
     --mx-ic-tint: var(--kaypal-v3-accent);   /* 亮色控制钮图标色 */
   }
   html.dark {
-    --mx-ink: #ece9f4;
-    --mx-muted: #847d99;
-    --mx-ic-tint: #d8d3e8;
+    --mx-ink: var(--mx-ink);
+    --mx-muted: var(--mx-muted, var(--kaypal-v3-muted));
+    --mx-ic-tint: var(--mx-ink, var(--mx-ink));
   }
 
   /* ---------- 环境光背景 ---------- */
@@ -23,10 +23,10 @@
     min-height: 100vh;
     min-height: 100dvh;
     background:
-      radial-gradient(circle at 85% 3%, rgba(246, 185, 94, 0.26), transparent 25%),
-      radial-gradient(circle at 7% 24%, rgba(51, 97, 153, 0.18), transparent 32%),
-      linear-gradient(165deg, rgba(237, 242, 249, 0.96), rgba(249, 250, 252, 0.94) 48%, rgba(230, 237, 246, 0.97));
-    color: #17233d;
+      radial-gradient(circle at 85% 3%, color-mix(in srgb, var(--kaypal-v3-amber) 26%, transparent), transparent 25%),
+      radial-gradient(circle at 7% 24%, color-mix(in srgb, var(--kaypal-v3-accent) 18%, transparent), transparent 32%),
+      linear-gradient(165deg, var(--kaypal-v3-canvas), var(--kaypal-v3-paper) 48%, var(--kaypal-v3-paper-soft));
+    color: var(--mx-ink, var(--kaypal-v3-ink));
     padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }
 
@@ -38,13 +38,13 @@
     border: 1px solid transparent;
     border-radius: 22px;
     background:
-      linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(244, 248, 252, 0.62)) padding-box,
-      linear-gradient(128deg, rgba(255, 255, 255, 0.9) 0%, rgba(183, 201, 221, 0.3) 50%, rgba(120, 148, 179, 0.22) 100%) border-box;
+      linear-gradient(145deg, rgba(255, 255, 255, 0.82), var(--kaypal-v3-paper-soft)) padding-box,
+      linear-gradient(128deg, rgba(255, 255, 255, 0.9) 0%, color-mix(in srgb, var(--kaypal-v3-accent-tint, #b37feb) 30%, transparent) 50%, color-mix(in srgb, var(--kaypal-v3-accent-tint, #b37feb) 22%, transparent) 100%) border-box;
     box-shadow:
-      0 1px 2px rgba(16, 43, 80, 0.06),
-      0 4px 12px rgba(16, 43, 80, 0.045),
+      0 1px 2px rgba(42, 36, 56, 0.06),
+      0 4px 12px rgba(42, 36, 56, 0.045),
       inset 0 1px 0 rgba(255, 255, 255, 0.72),
-      inset 0 -1px 0 rgba(82, 112, 146, 0.07);
+      inset 0 -1px 0 rgba(42, 36, 56, 0.07);
     backdrop-filter: var(--kx-blur-glass, blur(24px) saturate(145%));
   }
   .mx-card::before {
@@ -97,18 +97,18 @@
   .mx-control {
     border: 1px solid transparent;
     background:
-      linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(247, 250, 253, 0.58)) padding-box,
-      linear-gradient(132deg, rgba(255, 255, 255, 0.88), rgba(177, 195, 214, 0.3) 54%, rgba(117, 145, 174, 0.2)) border-box;
+      linear-gradient(145deg, rgba(255, 255, 255, 0.78), color-mix(in srgb, var(--kaypal-v3-paper) 58%, transparent)) padding-box,
+      linear-gradient(132deg, rgba(255, 255, 255, 0.88), color-mix(in srgb, var(--kaypal-v3-accent-tint, #b37feb) 30%, transparent) 54%, color-mix(in srgb, var(--kaypal-v3-accent-tint, #b37feb) 20%, transparent)) border-box;
     box-shadow:
-      0 10px 24px rgba(17, 47, 86, 0.075),
+      0 10px 24px rgba(42, 36, 56, 0.075),
       inset 0 1px 0 rgba(255, 255, 255, 0.69),
-      inset 0 -1px 0 rgba(68, 99, 133, 0.055);
+      inset 0 -1px 0 rgba(42, 36, 56, 0.055);
     backdrop-filter: var(--kx-blur-glass, blur(18px) saturate(140%));
   }
 
   /* 金色渐变文字 */
   .mx-gold-text {
-    background: linear-gradient(135deg, #8f5a19 0%, #efb45b 50%, #9e641b 100%);
+    background: linear-gradient(135deg, var(--kaypal-v3-amber) 0%, var(--kaypal-v3-amber) 50%, var(--kaypal-v3-amber) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -142,24 +142,24 @@
     padding: 3px 10px;
     font-size: 10px;
     font-weight: 700;
-    border: 1px solid rgba(184, 198, 213, 0.3);
+    border: 1px solid var(--kaypal-v3-border-strong);
     background: rgba(255, 255, 255, 0.5);
   }
-  .mx-badge-gold { background: rgba(234, 161, 75, 0.16); color: #a9671f; border-color: rgba(222, 150, 57, 0.28); }
+  .mx-badge-gold { background: var(--kaypal-v3-amber-soft); color: var(--kaypal-v3-amber); border-color: var(--kaypal-v3-accent-border); }
   .mx-badge-blue { background: var(--kaypal-v3-accent-soft); color: var(--kaypal-v3-accent); border-color: var(--kaypal-v3-accent-border); }
-  .mx-badge-green { background: rgba(16, 185, 129, 0.1); color: #047857; border-color: rgba(16, 185, 129, 0.24); }
-  .mx-badge-red { background: rgba(239, 68, 68, 0.09); color: #dc2626; border-color: rgba(239, 68, 68, 0.22); }
-  .mx-badge-white { background: rgba(255, 255, 255, 0.12); color: #f6c77e; border-color: rgba(255, 255, 255, 0.18); }
+  .mx-badge-green { background: var(--kaypal-v3-success-soft); color: var(--kaypal-v3-success); border-color: var(--kaypal-v3-success); }
+  .mx-badge-red { background: var(--kaypal-v3-danger-soft); color: var(--kaypal-v3-danger); border-color: var(--kaypal-v3-danger); }
+  .mx-badge-white { background: rgba(255, 255, 255, 0.12); color: var(--kaypal-v3-amber); border-color: rgba(255, 255, 255, 0.18); }
 
   /* 区块标题 */
   .mx-section-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 12px; }
-  .mx-section-title { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; color: #17325b; }
-  .mx-section-eyebrow { margin-top: 3px; font-size: 11px; color: #8994a6; }
-  .mx-section-action { display: flex; align-items: center; gap: 2px; font-size: 11px; font-weight: 500; color: #ad6b22; }
+  .mx-section-title { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; color: var(--mx-ink, var(--kaypal-v3-ink)); }
+  .mx-section-eyebrow { margin-top: 3px; font-size: 11px; color: var(--mx-muted, var(--kaypal-v3-muted)); }
+  .mx-section-action { display: flex; align-items: center; gap: 2px; font-size: 11px; font-weight: 500; color: var(--kaypal-v3-amber); }
   .mx-sec-icon {
     display: flex; align-items: center; justify-content: center;
     width: 26px; height: 26px; border-radius: 9px;
-    background: rgba(231, 158, 68, 0.14); color: #ce8127; flex-shrink: 0;
+    background: var(--kaypal-v3-amber-soft); color: var(--kaypal-v3-amber); flex-shrink: 0;
   }
   .mx-sec-icon svg { width: 15px; height: 15px; }
 
@@ -172,26 +172,26 @@
     width: 42px; height: 42px; margin: 0 auto; border-radius: 14px;
   }
   .mx-svc-ic svg { width: 19px; height: 19px; }
-  .mx-svc-name { display: block; margin-top: 8px; font-size: 12px; font-weight: 700; color: #263a59; }
-  .mx-svc-sub { display: block; margin-top: 2px; font-size: 9px; color: #7f8998; }
+  .mx-svc-name { display: block; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--mx-ink, var(--kaypal-v3-soft-ink)); }
+  .mx-svc-sub { display: block; margin-top: 2px; font-size: 9px; color: var(--mx-muted, var(--kaypal-v3-muted)); }
 
   /* 统计格 */
   .mx-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .mx-stat-item { text-align: center; padding: 10px 2px; border-radius: 18px; }
-  .mx-stat-num { font-size: 19px; font-weight: 700; line-height: 1.2; color: #17325b; }
-  .mx-stat-label { margin-top: 3px; font-size: 10px; color: #7f8998; }
+  .mx-stat-num { font-size: 19px; font-weight: 700; line-height: 1.2; color: var(--mx-ink, var(--kaypal-v3-ink)); }
+  .mx-stat-label { margin-top: 3px; font-size: 10px; color: var(--mx-muted, var(--kaypal-v3-muted)); }
 
   /* 列表行 */
-  .mx-row { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid rgba(142, 165, 190, 0.14); }
+  .mx-row { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid var(--kaypal-v3-border); }
   .mx-row:last-child { border-bottom: none; }
   .mx-row:active { background: rgba(255, 255, 255, 0.5); }
   .mx-row-ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0; }
   .mx-row-ic svg { width: 18px; height: 18px; }
   .mx-row-main { flex: 1; min-width: 0; }
-  .mx-row-title { font-size: 14px; font-weight: 600; color: #203454; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mx-row-desc { margin-top: 2px; font-size: 11px; color: #8994a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mx-row-title { font-size: 14px; font-weight: 600; color: var(--mx-ink, var(--kaypal-v3-soft-ink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mx-row-desc { margin-top: 2px; font-size: 11px; color: var(--mx-muted, var(--kaypal-v3-muted)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mx-row-right { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
-  .mx-row-time { font-size: 10px; color: #9aa5b4; }
+  .mx-row-time { font-size: 10px; color: var(--mx-muted, var(--kaypal-v3-muted)); }
 
   /* 列表卡片 */
   .mx-list-card { border-radius: 22px; padding: 4px 14px; }
@@ -205,9 +205,9 @@
     width: 100%;
     max-width: 767px;
     z-index: 50;
-    border-top: 1px solid rgba(135, 158, 184, 0.22);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(238, 244, 250, 0.86));
-    box-shadow: 0 -16px 42px rgba(12, 41, 78, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.62);
+    border-top: 1px solid var(--kaypal-v3-border);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), color-mix(in srgb, var(--kaypal-v3-paper-soft) 86%, transparent));
+    box-shadow: 0 -16px 42px rgba(42, 36, 56, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.62);
     backdrop-filter: var(--kx-blur-glass, blur(26px) saturate(150%));
     padding: 8px 10px calc(6px + env(safe-area-inset-bottom));
   }
@@ -239,7 +239,7 @@
   }
   .mx-tab {
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-    min-height: 54px; border-radius: 16px; font-size: 10px; font-weight: 500; color: #718096;
+    min-height: 54px; border-radius: 16px; font-size: 10px; font-weight: 500; color: var(--mx-muted, var(--kaypal-v3-muted));
     transition: color 0.25s ease;
     background: none; border: none; cursor: pointer; font-family: inherit;
     -webkit-tap-highlight-color: transparent;
@@ -249,7 +249,7 @@
     width: 46px; height: 32px; border-radius: 14px; border: 1px solid transparent; transition: all 0.25s ease;
   }
   .mx-tab .mx-tab-ic svg { width: 19px; height: 19px; stroke-width: 1.8; }
-  .mx-tab.active { color: #a9651e; }
+  .mx-tab.active { color: var(--kaypal-v3-amber); }
   .mx-tab.active .mx-tab-ic {
     border-color: rgba(202, 145, 75, 0.34);
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(255, 230, 193, 0.58));
@@ -281,11 +281,11 @@
   .mx-brand-eyebrow {
     display: flex; align-items: center; gap: 6px;
     font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
-    color: #a9671f; margin-bottom: 4px;
+    color: var(--kaypal-v3-amber); margin-bottom: 4px;
   }
   .mx-brand-eyebrow svg { width: 14px; height: 14px; }
-  .mx-page-title { font-size: 25px; font-weight: 700; letter-spacing: -0.01em; color: #10284d; }
-  .mx-page-sub { margin-top: 3px; font-size: 12px; color: #64748b; }
+  .mx-page-title { font-size: 25px; font-weight: 700; letter-spacing: -0.01em; color: var(--mx-ink, var(--kaypal-v3-ink)); }
+  .mx-page-sub { margin-top: 3px; font-size: 12px; color: var(--mx-muted, var(--kaypal-v3-muted)); }
 
   .mx-px { padding-left: 16px; padding-right: 16px; }
   .mx-mt { margin-top: 16px; }
@@ -317,7 +317,7 @@
   }
   .mx-skeleton-row {
     display: flex; align-items: center; gap: 12px;
-    padding: 13px 4px; border-bottom: 1px solid rgba(142, 165, 190, 0.14);
+    padding: 13px 4px; border-bottom: 1px solid var(--kaypal-v3-border);
   }
   .mx-skeleton-row:last-child { border-bottom: none; }
   .mx-skeleton-ic { width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0; }
@@ -329,8 +329,8 @@
     background:
       radial-gradient(circle at 85% 3%, rgba(246, 185, 94, 0.12), transparent 25%),
       radial-gradient(circle at 7% 24%, rgba(51, 97, 153, 0.14), transparent 32%),
-      linear-gradient(165deg, #17151d 0%, #1b1823 48%, #14121a 100%);
-    color: #e7e3f0;
+      linear-gradient(165deg, var(--kaypal-v3-canvas) 0%, var(--kaypal-v3-paper-soft) 48%, var(--kaypal-v3-canvas) 100%);
+    color: var(--mx-ink, #ece9f4);
   }
   html.dark .mx-card {
     background:
@@ -359,24 +359,24 @@
     background: linear-gradient(145deg, rgba(60, 50, 40, 0.7), rgba(48, 38, 28, 0.6));
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
-  html.dark .mx-tab.active { color: #eebd72; }
-  html.dark .mx-page-title { color: #ece9f4; }
-  html.dark .mx-page-sub { color: #847d99; }
-  html.dark .mx-section-title { color: #d8d3e8; }
-  html.dark .mx-section-eyebrow { color: #847d99; }
-  html.dark .mx-row-title { color: #e2deee; }
-  html.dark .mx-row-desc { color: #847d99; }
+  html.dark .mx-tab.active { color: var(--kaypal-v3-amber); }
+  html.dark .mx-page-title { color: var(--mx-ink); }
+  html.dark .mx-page-sub { color: var(--mx-muted, var(--kaypal-v3-muted)); }
+  html.dark .mx-section-title { color: var(--mx-ink, var(--mx-ink)); }
+  html.dark .mx-section-eyebrow { color: var(--mx-muted, var(--kaypal-v3-muted)); }
+  html.dark .mx-row-title { color: var(--mx-ink, var(--kaypal-v3-soft-ink)); }
+  html.dark .mx-row-desc { color: var(--mx-muted, var(--kaypal-v3-muted)); }
   html.dark .mx-row { border-bottom: 1px solid rgba(120, 110, 150, 0.14); }
   html.dark .mx-row:last-child { border-bottom: none; }
-  html.dark .mx-svc-name { color: #d8d3e8; }
-  html.dark .mx-svc-sub { color: #847d99; }
-  html.dark .mx-stat-num { color: #ece9f4; }
-  html.dark .mx-stat-label { color: #847d99; }
+  html.dark .mx-svc-name { color: var(--mx-ink, var(--mx-ink)); }
+  html.dark .mx-svc-sub { color: var(--mx-muted, var(--kaypal-v3-muted)); }
+  html.dark .mx-stat-num { color: var(--mx-ink); }
+  html.dark .mx-stat-label { color: var(--mx-muted, var(--kaypal-v3-muted)); }
   html.dark .mx-skeleton { background: rgba(140, 130, 170, 0.16); }
   html.dark .mx-skeleton::after {
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
   }
-  html.dark .mx-empty p { color: #847d99; }
+  html.dark .mx-empty p { color: var(--mx-muted, var(--kaypal-v3-muted)); }
   html.dark .mx-badge {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(120, 110, 150, 0.3);
@@ -387,21 +387,21 @@
   html.dark .mx-chip,
   html.dark .chip {
     background: rgba(255, 255, 255, 0.06);
-    color: #a9a3bd;
+    color: var(--mx-muted, var(--kaypal-v3-muted));
     border-color: rgba(120, 110, 150, 0.3);
   }
   html.dark .chip.active {
-    background: linear-gradient(135deg, #c87922, #eba94e);
+    background: linear-gradient(135deg, var(--kaypal-v3-amber), var(--kaypal-v3-accent-tint, #b37feb));
     color: #fff;
   }
   /* 2026-08-09 暗色补齐：金色强调/激活态/品牌字/服务图标 */
-  html.dark .mx-gold-text { color: #eebd72; }
+  html.dark .mx-gold-text { color: var(--kaypal-v3-amber); }
   html.dark .mx-row:active { background: rgba(255, 255, 255, 0.05); }
-  html.dark .mx-brand-eyebrow { color: #e7e3f0; }
-  html.dark .mx-sec-icon { color: #a9a3bd; }
+  html.dark .mx-brand-eyebrow { color: var(--mx-ink, #ece9f4); }
+  html.dark .mx-sec-icon { color: var(--mx-muted, var(--kaypal-v3-muted)); }
   html.dark .mx-svc-ic { background: rgba(255, 255, 255, 0.06); }
   html.dark .mx-mini-badge {
-    background: linear-gradient(135deg, #c87922, #eba94e);
+    background: linear-gradient(135deg, var(--kaypal-v3-amber), var(--kaypal-v3-accent-tint, #b37feb));
     color: #fff;
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
+import { SkeletonList, SkeletonRow } from "@/components/skeleton";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";

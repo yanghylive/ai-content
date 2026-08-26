@@ -6,7 +6,6 @@ import {
   Chip,
   Select,
   SelectItem,
-  Spinner,
   addToast,
 } from "@heroui/react";
 import { Icon } from "@/components/lucide-icon-compat";
@@ -19,7 +18,7 @@ import {
   type DefaultModels,
   type KaypalModelSyncStatus,
 } from "@/lib/api/settings";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const emptyDefaults: DefaultModels = {
   articleCreation: "",

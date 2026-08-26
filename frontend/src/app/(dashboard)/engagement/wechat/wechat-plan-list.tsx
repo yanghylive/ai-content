@@ -30,7 +30,7 @@ import {
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 type FilterKey = "all" | "active" | "paused" | "done" | "failed";
 

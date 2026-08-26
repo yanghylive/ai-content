@@ -24,7 +24,7 @@ import {
 import { getCrmCustomer, prepareCrmWelcomeMessage, type CrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning" | "accent" | "muted" }> = {
   new: { label: "新客户", tone: "accent" },

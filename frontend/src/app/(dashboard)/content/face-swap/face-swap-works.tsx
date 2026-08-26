@@ -22,7 +22,7 @@ import {
   type VideoFaceSwapJobSummary,
 } from "@/lib/api/video-face-swap";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const MODE_LABELS: Record<string, string> = {
   face_swap: "换脸",

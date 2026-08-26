@@ -2,12 +2,13 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Textarea, addToast } from "@heroui/react";
-import { Check, Loader2, X, RotateCcw } from "lucide-react";
+import { Check, X, RotateCcw } from "lucide-react";
 import { caseAdminApi, type AdminCase } from "@/lib/api/case-admin";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { OpsDesktopPage, OpsPanel, OpsStatusPill } from "../../components/desktop-ops-ui";
 import { CaseForm } from "../case-form";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
+import { toActionableError } from "@/lib/public-error";
 
 const STATUS_META: Record<string, { label: string; tone: "default" | "success" | "warning" | "danger" | "brand" }> = {
   draft: { label: "草稿", tone: "default" },
@@ -30,7 +31,7 @@ export function EditCaseClient({ id }: { id: string }) {
     try {
       setRecord(await caseAdminApi.get(id));
     } catch (e) {
-      addToast({ title: "加载失败", description: String((e as Error)?.message ?? e), color: "danger" });
+      addToast({ title: "加载失败", description: toActionableError(e, "未知错误"), color: "danger" });
     } finally {
       setLoading(false);
     }
@@ -52,7 +53,7 @@ export function EditCaseClient({ id }: { id: string }) {
         setReason("");
         await load();
       } catch (e) {
-        addToast({ title: "操作失败", description: String((e as Error)?.message ?? e), color: "danger" });
+        addToast({ title: "操作失败", description: toActionableError(e, "未知错误"), color: "danger" });
       } finally {
         setActing(false);
       }

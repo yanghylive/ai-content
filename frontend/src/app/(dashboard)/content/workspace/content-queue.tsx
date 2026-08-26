@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Chip, Input, ScrollShadow, Spinner, Tab, Tabs } from "@heroui/react";
+import { Button, Chip, Input, ScrollShadow, Tab, Tabs } from "@heroui/react";
 import { useMemo } from "react";
 import { FilePlus2, Search, X } from "lucide-react";
 import {
@@ -10,7 +10,7 @@ import {
   type WorkspaceQueueItemView,
   type WorkspaceStepId,
 } from "./workspace-types";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 export type ContentQueueStatusFilter =
   | "all"
