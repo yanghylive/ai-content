@@ -21,8 +21,8 @@
   /* 页面统一水平 gutter（桌面端内容边距设计 token，S3 落地）：
      .kx-view / .kx-legacy-wrap 引用，全站 34px 单点可调 */
   --page-gutter: 34px;
-  --kx-shadow-card: 0 3px 14px rgba(90, 70, 160, 0.08);
-  --kx-shadow-hover: 0 6px 18px rgba(114, 46, 209, 0.12);
+  --kx-shadow-card: var(--kaypal-v3-card-shadow);
+  --kx-shadow-hover: 0 2px 8px rgba(114, 46, 209, 0.10);
   --kx-overlay: rgba(24, 19, 38, 0.42);
   /* 图标 chip 七色：商用后台用低饱和描边，不做糖果色块 */
   --kx-cv-bg: #f5f3ff; --kx-cv-fg: #6d28d9; --kx-cv-bd: #ddd6fe;
@@ -32,7 +32,7 @@
   --kx-cr-bg: #fff1f2; --kx-cr-fg: #be123c; --kx-cr-bd: #ffe4e6;
   --kx-cc-bg: #ecfeff; --kx-cc-fg: #0e7490; --kx-cc-bd: #cffafe;
   --kx-cs-bg: #f8fafc; --kx-cs-fg: #475569; --kx-cs-bd: #e2e8f0;
-  --kx-radius: 14px;
+  --kx-radius: var(--kaypal-v3-radius);
   --kx-radius-sm: 10px;
   /* 间距 token（B2 2026-08-23）：全站唯五档，页面/卡片/区块间距单点可调 */
   --space-card: 14px;      /* 卡片 ↔ 卡片 */
@@ -56,8 +56,8 @@ html.dark {
   --kx-success: #4ade80;
   --kx-amber: #eebd72;
   --kx-danger: #f87171;
-  --kx-shadow-card: 0 3px 14px rgba(0, 0, 0, 0.3);
-  --kx-shadow-hover: 0 6px 20px rgba(114, 46, 209, 0.22);
+  --kx-shadow-card: var(--kaypal-v3-card-shadow);
+  --kx-shadow-hover: 0 2px 8px rgba(146, 84, 222, 0.18);
   --kx-overlay: rgba(0, 0, 0, 0.55);
   --kx-cv-bg: rgba(146, 84, 222, 0.1); --kx-cv-fg: #d3adf7; --kx-cv-bd: rgba(146, 84, 222, 0.22);
   --kx-cb-bg: rgba(90, 140, 240, 0.1);  --kx-cb-fg: #93b8f5; --kx-cb-bd: rgba(90, 140, 240, 0.2);
@@ -261,7 +261,7 @@ html.dark {
 /* ---------- ⌘K 命令面板 ---------- */
 .kx-palette-overlay { position: fixed; inset: 0; z-index: 100; background: var(--kx-overlay); backdrop-filter: var(--kx-blur-soft, blur(4px)); display: flex; align-items: flex-start; justify-content: center; padding-top: 16vh; animation: kx-pal-fade 0.16s ease; }
 @keyframes kx-pal-fade { from { opacity: 0; } to { opacity: 1; } }
-.kx-palette { width: 580px; max-width: calc(100vw - 48px); background: var(--kx-card); border: 1px solid var(--kx-border); border-radius: 16px; overflow: hidden; box-shadow: 0 24px 64px rgba(10, 6, 30, 0.28); animation: kx-pal-in 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
+.kx-palette { width: 580px; max-width: calc(100vw - 48px); background: var(--kx-card); border: 1px solid var(--kx-border); border-radius: 16px; overflow: hidden; box-shadow: var(--kaypal-v3-elevated-shadow); animation: kx-pal-in 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
 @keyframes kx-pal-in { from { opacity: 0; transform: translateY(-10px) scale(0.98); } to { opacity: 1; } }
 .kx-palette-input-row { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--kx-border); color: var(--kx-muted); }
 .kx-palette-input { flex: 1; border: none; background: none; outline: none; font-size: 16px; color: var(--kx-ink); font-family: inherit; }
@@ -437,9 +437,9 @@ html.dark {
     color: var(--kx-muted);
   }
   .mx-btn-gold {
-    background: linear-gradient(135deg, #d98f2b, #efb45b);
-    color: #2e0e66;
-    box-shadow: 0 1px 2px rgba(185, 110, 29, 0.12);
+    background: var(--kaypal-v3-accent);
+    color: #fff;
+    box-shadow: var(--kaypal-v3-card-shadow);
   }
   .mx-px {
     width: 100%;
