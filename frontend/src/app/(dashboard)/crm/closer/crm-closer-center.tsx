@@ -64,11 +64,10 @@ export function CrmCloserCenter() {
     setLoading(true);
     setError(null);
     try {
-      const result = (await api.get("/crm/opportunities?limit=200").catch(() => null)) as
+      const result = (await api.get("/crm/opportunities?limit=200")) as
         | { items?: Opportunity[] }
-        | Opportunity[]
-        | null;
-      const list = Array.isArray(result) ? result : result?.items || [];
+        | Opportunity[];
+      const list = Array.isArray(result) ? result : result.items || [];
       // 保留全部阶段（看板要按阶段分列），列表视图再过滤跟进中
       setItems(list);
     } catch (err: unknown) {

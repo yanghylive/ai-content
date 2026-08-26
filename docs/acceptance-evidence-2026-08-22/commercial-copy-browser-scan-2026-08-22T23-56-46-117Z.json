@@ -1,0 +1,38 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-22T23:56:40.992Z",
+  "finishedAt": "2026-08-22T23:56:46.116Z",
+  "frontendUrl": "http://127.0.0.1:3015",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/frontend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 202,
+  "scannedRouteCount": 2,
+  "isPartial": true,
+  "routeCount": 2,
+  "excludedRouteCount": 200,
+  "passCount": 2,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/video/product-cut",
+      "finalUrl": "http://127.0.0.1:3015/video/product-cut",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 433,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/video/release-plans",
+      "finalUrl": "http://127.0.0.1:3015/video/release-plans",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 333,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

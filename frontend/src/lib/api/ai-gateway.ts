@@ -53,9 +53,22 @@ export async function chatStream(
 
   if (!res.ok || !res.body) {
     const text = await res.text().catch(() => "");
-    const message = text.startsWith("{")
-      ? (JSON.parse(text) as { message?: string })?.message
-      : undefined;
+    let message: string | undefined;
+    if (text.trim().startsWith("{")) {
+      try {
+        const parsed = JSON.parse(text) as { message?: string; code?: string };
+        message = parsed.message;
+      } catch {
+        // JSON 解析失败，可能是 HTML 错误页
+        message = text.startsWith("<!DOCTYPE") || text.includes("<html")
+          ? `服务返回了错误页面（${res.status}）`
+          : `对话失败（${res.status}）`;
+      }
+    } else if (!text) {
+      message = `对话失败：空响应（${res.status}）`;
+    } else {
+      message = `对话失败（${res.status}）`;
+    }
     throw new Error(message || `对话失败（${res.status}）`);
   }
 
@@ -76,10 +89,14 @@ export async function chatStream(
         onEvent(event);
         if (event.type === "done" || event.type === "error") return;
       } catch {
-        /* 忽略损坏行 */
+        // 损坏的 SSE 行：忽略但计数，避免静默吞掉整条流的故障
+        onEvent({ type: "error", message: "数据流异常（损坏的事件），请刷新重试" });
+        return;
       }
     }
   }
+  // SSE 流正常结束但未收到 done 事件 → 连接被意外中断
+  onEvent({ type: "error", message: "连接中断，请刷新重试" });
 }
 
 /** 浏览器端语音识别（Web Speech API，P0.5 体验；P1 换阿里 ASR 服务端） */

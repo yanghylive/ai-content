@@ -38,6 +38,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let message: string | string[] = '服务器内部错误';
     let code: string | undefined;
     let publicDetails: unknown;
+    let retryableFromError: boolean | undefined;
     const requestId = this.resolveRequestId(request);
 
     if (exception instanceof HttpException) {
@@ -57,6 +58,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }
         if (record.publicDetails !== undefined) {
           publicDetails = record.publicDetails;
+        }
+        if (typeof record.retryable === 'boolean') {
+          retryableFromError = record.retryable;
         }
       }
     }
@@ -102,7 +106,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       path: request.url,
       requestId,
       traceId: requestId, // §10.2 链路追踪字段（与 X-Request-Id 对齐）
-      retryable: isRetryableStatus(status), // §10.2 可重试语义（429/503/504）
+      retryable: retryableFromError !== undefined ? retryableFromError : isRetryableStatus(status), // 业务错误 retryable 优先，否则按状态码兜底
       ...(code ? { code } : {}),
       ...(publicDetails !== undefined ? { details: publicDetails } : {}),
     });

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3010 交互体系落地 · P0/P1/P2 排期甘特表</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232c; --line:#2a323c;
+    --txt:#e6edf3; --muted:#9aa7b4; --brand:#722ed1; --gold:#e39a3e;
+    --p0:#c0392b; --p1:#1f7a9c; --p2:#238b65; --comp:#7a65b4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;padding:24px}
+  h1{font-size:20px;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 18px}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .card b{font-size:22px;color:var(--gold)}
+  .card span{color:var(--muted);font-size:12px;display:block;margin-top:2px}
+  .sec-title{font-weight:600;margin:22px 0 10px;padding-left:9px;border-left:3px solid var(--brand)}
+  .gantt{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto}
+  .grid{display:grid;grid-template-columns:200px repeat(17,minmax(34px,1fr));gap:4px;min-width:820px}
+  .wk{font-size:11px;color:var(--muted);text-align:center;padding:4px 0;border-bottom:1px solid var(--line)}
+  .wk.head{color:var(--txt);font-weight:600}
+  .rowlabel{font-size:12px;padding:7px 8px;color:var(--txt);background:var(--panel2);border-radius:6px;display:flex;align-items:center}
+  .cell{height:26px;border-radius:5px;background:var(--panel2)}
+  .bar{height:26px;border-radius:5px;color:#fff;font-size:11px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+  .b-comp{background:var(--comp)} .b-p0{background:var(--p0)} .b-p1{background:var(--p1)} .b-p2{background:var(--p2)}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;background:var(--panel2)}
+  .tag{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;color:#fff}
+  .t0{background:var(--p0)} .t1{background:var(--p1)} .t2{background:var(--p2)}
+  .note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;padding:12px 14px;color:var(--muted);font-size:12.5px;margin-top:14px}
+  code{background:var(--panel2);padding:1px 5px;border-radius:4px;color:var(--gold)}
+</style>
+</head>
+<body>
+  <h1>3010 交互组件体系落地 · 排期甘特表</h1>
+  <p class="sub">基于 PRD（7 类 47 组件 / 15 Profile / 211 路由）· 复用 HeroUI/Radix/framer-motion/recharts 现有能力 · 范式推广口径</p>
+
+  <div class="cards">
+    <div class="card"><b>~156</b><span>总人天（1 资深前端）</span></div>
+    <div class="card"><b>~31 周</b><span>1 人并行排期</span></div>
+    <div class="card"><b>~11 周</b><span>3 人团队</span></div>
+    <div class="card"><b>P0→P2</b><span>可靠性→效率→学习成本</span></div>
+  </div>
+
+  <div class="sec-title">甘特图（横轴=周，1 人视角）</div>
+  <div class="gantt">
+    <div class="grid">
+      <div class="rowlabel">阶段 / 任务</div>
+      ${Array.from({length:17},(_,i)=>`<div class="wk head">W${i+1}</div>`).join("")}
+
+      <div class="rowlabel">组件层（并行）</div>
+      ${Array.from({length:17},(_,i)=>`<div class="cell" style="grid-column:${i>=0&&i<3?i+2:1};${i>=0&&i<3?'background:var(--comp);opacity:.25':''}"></div>`).join("")}
+      <div class="rowlabel" style="grid-column:1"></div>
+      <div class="bar b-comp" style="grid-column:2/5">组件层 13–15d（Tree 真自研 + 拖拽封装 + 引导统一）</div>
+
+      <div class="rowlabel">P0 可靠性</div>
+      <div class="bar b-p0" style="grid-column:2/5">P0 状态/风险确认/焦点/移动端/Skeleton · 18d</div>
+
+      <div class="rowlabel">P1 业务效率</div>
+      <div class="bar b-p1" style="grid-column:5/13">P1 图表下钻/拖拽回滚/列表详情/生成 · 76d</div>
+
+      <div class="rowlabel">P2 学习成本</div>
+      <div class="bar b-p2" style="grid-column:13/18">P2 引导/Tree/Accordion/渐进展开 · 49d</div>
+    </div>
+  </div>
+
+  <div class="sec-title">任务明细（人天 / 依赖 / 验收 check）</div>
+  <table>
+    <thead><tr><th>阶段</th><th>任务</th><th>人天</th><th>依赖</th><th>对应 PRD 验收</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tag t0">P0</span></td><td>统一异步状态反馈（use-async-state + 真实进度绑定）</td><td>3</td><td>—</td><td>check 1/2</td></tr>
+      <tr><td><span class="tag t0">P0</span></td><td>风险确认推广（use-risk-confirm 接入发布/群发/删除等）</td><td>4</td><td>已有 RiskConfirmationDialog</td><td>check 8</td></tr>
+      <tr><td><span class="tag t0">P0</span></td><td>焦点陷阱+Esc+焦点返回（Drawer/BottomSheet 封装校验）</td><td>3</td><td>HeroUI/Radix 内置</td><td>check 3</td></tr>
+      <tr><td><span class="tag t0">P0</span></td><td>移动端规范（BottomSheet / 44px / 底部化）</td><td>3</td><td>已有 mobile-shell</td><td>check 3/7</td></tr>
+      <tr><td><span class="tag t0">P0</span></td><td>首屏/列表 Skeleton 补充（桌面列表）</td><td>5</td><td>HeroUI Skeleton</td><td>—</td></tr>
+      <tr><td><span class="tag t0">P0</span></td><td><b>组件层</b>：Tree View 真自研 / 拖拽封装 / DropZone / 引导统一 / Expandable 等</td><td>13–15</td><td>与 P0 并行</td><td>—</td></tr>
+
+      <tr><td><span class="tag t1">P1</span></td><td>图表联动下钻（Crosshair/Tooltip/Legend/DrillDown + URL/面包屑同步）</td><td>10</td><td>P0 状态层</td><td>check 6</td></tr>
+      <tr><td><span class="tag t1">P1</span></td><td>拖拽体系（Reorder/SnapBack/AutoScroll + 失败回滚）</td><td>8</td><td>组件层拖拽封装</td><td>check 5</td></tr>
+      <tr><td><span class="tag t1">P1</span></td><td>列表详情（Drawer / Expandable Row / Load More）</td><td>12</td><td>P0 状态/Skeleton</td><td>check 4</td></tr>
+      <tr><td><span class="tag t1">P1</span></td><td>内容生成（Drop Zone / Button Loading / 重试）</td><td>6</td><td>组件层</td><td>check 1/2</td></tr>
+      <tr><td><span class="tag t1">P1</span></td><td>路由落地 P1 类（P01/P05/P06/P07/P08 等 ~120 路由范式）</td><td>40</td><td>上述 P1 任务</td><td>全部</td></tr>
+
+      <tr><td><span class="tag t2">P2</span></td><td>引导三件套（Tour/Coach/Spotlight 统一 + onboarding 扩展）</td><td>8</td><td>组件层引导</td><td>—</td></tr>
+      <tr><td><span class="tag t2">P2</span></td><td>Tree View / Accordion / Collapse 接入</td><td>6</td><td>组件层</td><td>—</td></tr>
+      <tr><td><span class="tag t2">P2</span></td><td>渐进展开（Expandable Card / Read More）</td><td>5</td><td>组件层</td><td>—</td></tr>
+      <tr><td><span class="tag t2">P2</span></td><td>路由落地 P2 类（P02/P09/P10/P11/P12/P13/P14 等 ~70 路由）</td><td>30</td><td>上述 P2 任务</td><td>全部</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-title">Profile → 阶段映射</div>
+  <table>
+    <thead><tr><th>阶段</th><th>Profile</th><th>代表路由（旗舰页先做范式）</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tag t0">P0</span></td><td>全部 15 个</td><td>全局基础设施；首屏 Skeleton 优先 <code>/</code> <code>/growth</code> <code>/crm</code></td></tr>
+      <tr><td><span class="tag t1">P1</span></td><td>P01/P05/P06/P07/P08</td><td><code>/growth/leads</code> <code>/content</code> <code>/distribution</code> <code>/engagement</code> <code>/intelligence</code></td></tr>
+      <tr><td><span class="tag t2">P2</span></td><td>P02/P09/P10/P11/P12/P13/P14</td><td><code>/auto-acquisition/create</code> <code>/agent</code> <code>/local-engine</code> <code>/knowledge</code> <code>/admin</code> <code>/cases</code> <code>/compliance</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <b>置信度与待确认项</b><br>
+    • 组件层 13–15d 已由 ① 抽样核查钉定（Tree View 真自研、拖拽基于 HeroUI <code>use-draggable</code> 自研封装，未引 @dnd-kit；DropZone 自研轻量）。<br>
+    • 路由落地层采用「每 Profile 1–2 旗舰页完整范式 + 其余批量套用」口径（≈100d），非 211 全量精修（那会超 300d，不现实）。<br>
+    • 总盘 ~156d 落在之前评估区间 85–188d 中值；路由层占比最大且为经验区间（未逐页读 211 路由真实代码），置信度低，建议 P0 试点后按实际速率修正。<br>
+    • 已落地并 <code>eslint</code> 验证通过的 P0 基座：<code>use-async-state</code> / <code>use-risk-confirm</code> / <code>motion-provider</code> / <code>use-scroll-restoration</code> / providers 集成。
+  </div>
+</body>
+</html>

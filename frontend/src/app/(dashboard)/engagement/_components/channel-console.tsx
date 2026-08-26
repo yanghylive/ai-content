@@ -193,9 +193,14 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
       });
   }, [crmHandoff]);
 
-  /* 任务 2 秒轮询（与旧版一致） */
+  /* 任务 2 秒轮询；失败时标记为 stale，避免用户看到旧状态误以为正常 */
+  const [pollStale, setPollStale] = useState(false);
   useEffect(() => {
-    if (!activeTask?.id) return;
+    if (!activeTask?.id) {
+      setPollStale(false);
+      setLastPollAt(null);
+      return;
+    }
     const timer = setInterval(async () => {
       try {
         const task = await localEngineApi.task(activeTask.id);
@@ -203,12 +208,21 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
         setRecentTasks((current) =>
           current.map((item) => (item.id === task.id ? task : item)),
         );
+        setPollStale(false);
       } catch {
-        // 轮询失败静默
+        setPollStale(true);
       }
     }, 2000);
     return () => clearInterval(timer);
   }, [activeTask?.id]);
+
+  // 轮询中断视觉提示（只在任务执行中显示）
+  const pollStaleIndicator = pollStale && activeTask && (activeTask.status === "running" || activeTask.status === "queued") ? (
+    <div className="mb-2 rounded-[6px] border border-warning-200 bg-warning-50 px-2 py-1 text-11 text-warning-700">
+      ⚠️ 连接暂时中断，正在自动重连…
+    </div>
+  ) : null;
+  void pollStaleIndicator;
 
   /* 打开平台后台（与旧版一致：打开后真实复查会话状态） */
   const handleOpenBackend = async () => {
@@ -292,15 +306,24 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
       setRecentTasks((current) => [task, ...current]);
       // CRM 测试发送：把任务关联回客户档案
       if (crmHandoff) {
+        let crmLinked = false;
+        let crmError: string | null = null;
         try {
           await linkCrmCustomerConversation(crmHandoff.customerId, {
             interactionTaskId: task.id,
             preparationId: crmHandoff.preparationId,
           });
-        } catch {
-          // 关联失败不阻断任务
+          crmLinked = true;
+        } catch (err) {
+          crmError = err instanceof Error ? err.message : String(err);
         }
-        flash("测试发送任务已创建，并记录到客户档案");
+        if (crmLinked) {
+          flash("测试发送任务已创建，并记录到客户档案");
+        } else {
+          flash("任务已创建，但客户档案关联失败，互动记录可能缺失");
+          // 记录到错误状态，用户能看到
+          setError("客户档案关联失败：" + (crmError || "未知原因") + "。任务仍在执行，但互动记录可能未同步到 CRM。");
+        }
       } else {
         flash("任务已创建，正在读取真实内容");
       }

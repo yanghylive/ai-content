@@ -28,6 +28,7 @@ export default function VideoGenPage() {
   const [task, setTask] = useState<VideoGenTask | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [pollStale, setPollStale] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const toast = useCallback((title: string, color: "success" | "danger" = "success") => addToast({ title, color }), []);
@@ -43,13 +44,15 @@ export default function VideoGenPage() {
     try {
       const t = await videoGenApi.task(id);
       setTask(t);
+      setPollStale(false);
+      setConsecutivePollFailures(0);
       if (t.status === "ready" || t.status === "failed") {
         stopPoll();
         if (t.status === "ready") toast("🎬 视频已生成");
         else toast("生成失败：" + (t.error || "未知原因"), "danger");
       }
     } catch {
-      /* 轮询失败静默重试 */
+      setPollStale(true);
     }
   }, [stopPoll, toast]);
 
@@ -76,6 +79,7 @@ export default function VideoGenPage() {
     }
     setError("");
     setBusy(true);
+    setPollStale(false);
     try {
       const r = await videoGenApi.create({
         imageData: image,
@@ -136,7 +140,8 @@ export default function VideoGenPage() {
       <div style={{ fontWeight: 700, fontSize: 14 }}>🎬 生成任务</div>
       <div style={{ fontSize: 12.5, opacity: 0.8 }}>
         状态：{STATUS_LABEL[task.status] || task.status}
-        {task.status === "running" && task.progress ? `（${task.progress}%）` : ""}
+        {task.status === "running" && task.progress ? `（${task.progress}%）` : ""} 
+        {pollStale && (task.status === "pending" || task.status === "running") ? "  ⚠️ 连接中断，正在重连…" : ""}
       </div>
       {task.status === "ready" && task.videoUrl ? (
         <video controls src={task.videoUrl} style={{ width: "100%", borderRadius: 12, maxHeight: 420 }} />

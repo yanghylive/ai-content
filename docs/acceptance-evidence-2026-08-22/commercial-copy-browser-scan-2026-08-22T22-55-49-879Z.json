@@ -1,0 +1,109 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-22T22:55:45.595Z",
+  "finishedAt": "2026-08-22T22:55:49.879Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/frontend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 201,
+  "scannedRouteCount": 4,
+  "isPartial": true,
+  "routeCount": 4,
+  "excludedRouteCount": 197,
+  "passCount": 3,
+  "failCount": 1,
+  "consoleErrorCount": 6,
+  "failures": [
+    {
+      "route": "/mai-ui",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmai-ui",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmai-ui"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ],
+  "unexpectedConsole": [
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "route": "/engagement/unified-inbox"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "route": "/growth/growth-reports"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "route": "/apps/auto-acquisition/acquisition-rule-form"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/mai-ui"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/mai-ui"
+    },
+    {
+      "level": "error",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "route": "/mai-ui"
+    }
+  ],
+  "results": [
+    {
+      "route": "/apps/auto-acquisition/acquisition-rule-form",
+      "finalUrl": "http://127.0.0.1:3010/apps/auto-acquisition/acquisition-rule-form",
+      "status": "404",
+      "badMatches": [],
+      "textLength": 55,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/engagement/unified-inbox",
+      "finalUrl": "http://127.0.0.1:3010/engagement/unified-inbox",
+      "status": "404",
+      "badMatches": [],
+      "textLength": 55,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/growth/growth-reports",
+      "finalUrl": "http://127.0.0.1:3010/growth/growth-reports",
+      "status": "404",
+      "badMatches": [],
+      "textLength": 55,
+      "title": "JIUZHANG AI",
+      "error": ""
+    },
+    {
+      "route": "/mai-ui",
+      "finalUrl": "http://127.0.0.1:3010/login?next=%2Fmai-ui",
+      "status": "200",
+      "badMatches": [
+        {
+          "rule": "authRedirect",
+          "match": "login",
+          "context": "http://127.0.0.1:3010/login?next=%2Fmai-ui"
+        }
+      ],
+      "textLength": 618,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

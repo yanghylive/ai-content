@@ -1,0 +1,29 @@
+{
+  "name": "commercial-copy-browser-scan",
+  "startedAt": "2026-08-22T23:36:48.284Z",
+  "finishedAt": "2026-08-22T23:36:51.073Z",
+  "frontendUrl": "http://127.0.0.1:3015",
+  "playwright": "/Users/yanghy/Documents/New project/ai-content/frontend/node_modules/playwright",
+  "localAcceptanceSession": true,
+  "discoveredRouteCount": 201,
+  "scannedRouteCount": 1,
+  "isPartial": true,
+  "routeCount": 1,
+  "excludedRouteCount": 200,
+  "passCount": 1,
+  "failCount": 0,
+  "consoleErrorCount": 0,
+  "failures": [],
+  "unexpectedConsole": [],
+  "results": [
+    {
+      "route": "/apps/auto-acquisition",
+      "finalUrl": "http://127.0.0.1:3015/apps/auto-acquisition",
+      "status": "200",
+      "badMatches": [],
+      "textLength": 232,
+      "title": "JIUZHANG AI",
+      "error": ""
+    }
+  ]
+}

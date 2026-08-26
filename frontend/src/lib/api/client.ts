@@ -58,6 +58,8 @@ export interface ApiResponse<T> {
   code?: string;
   details?: unknown;
   requestId?: string;
+  traceId?: string;
+  retryable?: boolean;
 }
 
 // 分页响应格式
@@ -77,13 +79,19 @@ export class ApiError extends Error {
     readonly errorCode: string | null = null,
     readonly details: unknown = null,
     readonly requestId: string | null = null,
+    readonly traceId: string | null = null,
+    readonly retryable: boolean = false,
   ) {
     super(message);
     this.name = "ApiError";
   }
 }
 
+/** 默认请求超时（毫秒）。传 timeoutMs: 0 可显式禁用超时。 */
+export const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
+
 export interface ApiRequestOptions extends RequestInit {
+  /** 超时时间（毫秒）。不传用默认 30s，传 0 禁用超时。 */
   timeoutMs?: number;
 }
 
@@ -130,7 +138,9 @@ class ApiClient {
         headers["x-tenant-id"] = tenantId;
       }
     }
-    const timeoutController = timeoutMs ? new AbortController() : null;
+    // 默认超时：30s；传 0 显式禁用；传具体值覆盖默认
+    const effectiveTimeout = timeoutMs === 0 ? null : (timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS);
+    const timeoutController = effectiveTimeout ? new AbortController() : null;
     let timedOut = false;
     let timeout: ReturnType<typeof setTimeout> | null = null;
     const abortForCaller = () => timeoutController?.abort(callerSignal?.reason);
@@ -142,11 +152,11 @@ class ApiClient {
         callerSignal.addEventListener("abort", abortForCaller, { once: true });
       }
     }
-    if (timeoutController && timeoutMs) {
+    if (timeoutController && effectiveTimeout) {
       timeout = setTimeout(() => {
         timedOut = true;
         timeoutController.abort();
-      }, timeoutMs);
+      }, effectiveTimeout);
     }
 
     let res: Response;
@@ -159,12 +169,12 @@ class ApiClient {
       });
     } catch (error) {
       if (timedOut) {
-        throw new ApiError("请求超时", 0, "TIMEOUT");
+        throw new ApiError("请求超时", 0, "TIMEOUT", null, null, null, null, true);
       }
       if (callerSignal?.aborted) {
         throw error;
       }
-      throw new ApiError("网络请求失败", 0, "NETWORK_ERROR");
+      throw new ApiError("网络请求失败", 0, "NETWORK_ERROR", null, null, null, null, true);
     } finally {
       if (timeout) clearTimeout(timeout);
       callerSignal?.removeEventListener("abort", abortForCaller);
@@ -194,7 +204,11 @@ class ApiClient {
     if (!raw.ok || !body || body.success !== true) {
       const requestId =
         typeof body?.requestId === "string" ? body.requestId : undefined;
-      // v1.1.89+：5xx 自动上报（带 requestId 精确定位后端日志），静默失败
+      const traceId =
+        typeof body?.traceId === "string" ? body.traceId : undefined;
+      const retryable =
+        typeof body?.retryable === "boolean" ? body.retryable : raw.status >= 500;
+      // v1.1.89+：5xx 自动上报（带 requestId/traceId 精确定位后端日志），静默失败
       if (raw.status >= 500 && typeof window !== "undefined") {
         try {
           void fetch("/api/error-report/client", {
@@ -202,6 +216,7 @@ class ApiClient {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               requestId,
+              traceId,
               url: window.location.href,
               message:
                 typeof body?.message === "string" && body.message
@@ -225,6 +240,8 @@ class ApiClient {
         typeof body?.code === "string" ? body.code : null,
         body?.details ?? null,
         requestId ?? null,
+        traceId ?? null,
+        retryable,
       );
     }
     return body.data as T;

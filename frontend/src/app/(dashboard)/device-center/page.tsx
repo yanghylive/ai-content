@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { toPublicError } from "@/lib/public-error";
 import {
   listDevices,
   listActiveLeases,
@@ -27,6 +28,7 @@ type CommonProps = {
   now: number;
   expandedTaskId: string | null;
   taskRun: ExecutorRunView | null;
+  taskRunError: string | null;
   cancelingTaskId: string | null;
   onReload: () => void;
   onExpandTask: (taskId: string) => void;
@@ -42,6 +44,7 @@ export default function DeviceCenterPage() {
   const [now, setNow] = useState(() => Date.now());
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [taskRun, setTaskRun] = useState<ExecutorRunView | null>(null);
+  const [taskRunError, setTaskRunError] = useState<string | null>(null);
   const [cancelingTaskId, setCancelingTaskId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -57,7 +60,7 @@ export default function DeviceCenterPage() {
       setTasks(t ?? []);
       setNow(Date.now());
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(toPublicError(e, "设备中心数据加载失败，请重试"));
     }
   }, []);
 
@@ -81,15 +84,18 @@ export default function DeviceCenterPage() {
     if (expandedTaskId === taskId) {
       setExpandedTaskId(null);
       setTaskRun(null);
+      setTaskRunError(null);
       return;
     }
     setExpandedTaskId(taskId);
     setTaskRun(null);
+    setTaskRunError(null);
     try {
       const run = await getTaskRun(taskId);
       setTaskRun(run);
-    } catch {
+    } catch (err) {
       setTaskRun(null);
+      setTaskRunError(toPublicError(err, "执行记录加载失败"));
     }
   }, [expandedTaskId]);
 
@@ -100,7 +106,7 @@ export default function DeviceCenterPage() {
       await cancelTask(taskId);
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(toPublicError(e, "取消任务失败，请重试"));
     } finally {
       setCancelingTaskId(null);
     }
@@ -108,7 +114,7 @@ export default function DeviceCenterPage() {
 
   const common: CommonProps = {
     devices, leases, tasks, error, now,
-    expandedTaskId, taskRun, cancelingTaskId,
+    expandedTaskId, taskRun, taskRunError, cancelingTaskId,
     onReload: () => void load(),
     onExpandTask: (id) => void handleExpandTask(id),
     onCancelTask: (id) => void handleCancelTask(id),
@@ -120,7 +126,7 @@ export default function DeviceCenterPage() {
 /* ================= 桌面端：kx 亮色品牌体系 ================= */
 
 function DesktopDeviceCenter(props: CommonProps & { heartbeatAge: (ts: string | null, nowMs: number) => string }) {
-  const { devices, leases, tasks, error, now, expandedTaskId, taskRun, cancelingTaskId, onReload, onExpandTask, onCancelTask, heartbeatAge } = props;
+  const { devices, leases, tasks, error, now, expandedTaskId, taskRun, taskRunError, cancelingTaskId, onReload, onExpandTask, onCancelTask, heartbeatAge } = props;
 
   return (
     <div className="kx-view flex flex-col gap-[var(--space-card)]">
@@ -283,6 +289,10 @@ function DesktopDeviceCenter(props: CommonProps & { heartbeatAge: (ts: string | 
                     <div className="mt-2 border-t pt-2" style={{ borderColor: "var(--kaypal-v3-border)" }}>
                       {taskRun && taskRun.taskId === t.id ? (
                         <RunSteps run={taskRun} />
+                      ) : taskRunError ? (
+                        <div className="py-1.5 text-center text-12" style={{ color: "var(--kaypal-v3-danger)" }}>
+                          ⚠️ {taskRunError}
+                        </div>
                       ) : (
                         <div className="py-1.5 text-center text-12" style={{ color: "var(--kaypal-v3-muted)" }}>
                           {taskRun === null ? "该任务无执行会话记录" : "加载中…"}
@@ -303,7 +313,7 @@ function DesktopDeviceCenter(props: CommonProps & { heartbeatAge: (ts: string | 
 /* ================= 移动端：保留 mx 分支（mobile.css 定义） ================= */
 
 function MobileDeviceCenter(props: CommonProps) {
-  const { devices, leases, tasks, error, now, expandedTaskId, taskRun, cancelingTaskId, onReload, onExpandTask, onCancelTask } = props;
+  const { devices, leases, tasks, error, now, expandedTaskId, taskRun, taskRunError, cancelingTaskId, onReload, onExpandTask, onCancelTask } = props;
 
   const heartbeatAge = (ts: string | null, nowMs: number): string => {
     if (!ts) return "从未心跳";
@@ -478,6 +488,11 @@ function MobileDeviceCenter(props: CommonProps) {
                     <div style={{ marginTop: 8, borderTop: "1px solid #e2e8f0", paddingTop: 8 }}>
                       {taskRun && taskRun.taskId === t.id ? (
                         <RunSteps run={taskRun} />
+                      ) : taskRunError ? (
+                        <div style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger)", padding: "6px 0", textAlign: "center" }}>
+                          ⚠️ {taskRunError}
+                        </div>
+
                       ) : (
                         <div style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", padding: "6px 0", textAlign: "center" }}>
                           {taskRun === null ? "该任务无执行会话记录" : "加载中…"}

@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-08-23T06:46:39.926Z",
+  "real": false,
+  "runRestore": false,
+  "downloadBackup": false,
+  "uploadLatestBackup": false,
+  "backupRoot": "/tmp/backup-drill/ops",
+  "objectStoreProvider": "unconfigured",
+  "alertProvider": "generic",
+  "alertWebhook": {
+    "configured": false,
+    "provider": "generic",
+    "protocol": null,
+    "host": null,
+    "category": "missing",
+    "productionCandidate": false,
+    "message": "未配置 webhook。"
+  },
+  "restoreDatabaseUrl": null,
+  "checks": [
+    {
+      "status": "BLOCKED",
+      "name": "latest-local-backup",
+      "message": "没有找到 manifest：-",
+      "nextAction": "先生成一轮本地备份，再跑外部运维 smoke。"
+    },
+    {
+      "status": "BLOCKED",
+      "name": "object-store-provider",
+      "message": "未配置对象存储 provider。",
+      "nextAction": "配置 COMMERCIAL_BACKUP_OBJECT_STORE_PROVIDER=aliyun-oss 和 OSS 凭据，或配置 COMMERCIAL_BACKUP_OBJECT_STORE_DIR 做本地镜像验收。"
+    },
+    {
+      "status": "BLOCKED",
+      "name": "alert-webhook-config",
+      "message": "未配置 COMMERCIAL_BACKUP_ALERT_WEBHOOK_URL。",
+      "nextAction": "填入企业微信/飞书/Slack 值班群 webhook 后再跑。"
+    },
+    {
+      "status": "BLOCKED",
+      "name": "restore-backup-file",
+      "message": "没有可用于恢复演练的本地或下载备份文件。",
+      "nextAction": "先生成本地备份，或用 --real --download-backup 从 OSS 下载远端备份。"
+    }
+  ],
+  "artifacts": {}
+}

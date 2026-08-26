@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-08-23T06:54:43.309Z",
+  "evidenceDate": "2026-08-23",
+  "evidenceRoot": "/Users/yanghy/Documents/New project/ai-content/docs/acceptance-evidence-2026-08-23",
+  "strict": false,
+  "status": "BLOCKED_FOR_PRODUCTION",
+  "externalOpsEvidence": "docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-47-07-766Z/summary.json",
+  "summary": {
+    "total": 6,
+    "byStatus": {
+      "PASS": 4,
+      "CONFIG_REQUIRED": 2
+    },
+    "passCount": 4,
+    "releaseBlockingCount": 2,
+    "releaseBlockingIds": [
+      "isolated-restore-execution",
+      "backup-alert-real-channel"
+    ]
+  },
+  "rows": [
+    {
+      "id": "backup-source-manifest",
+      "title": "备份源与清单",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-47-07-766Z/summary.json",
+      "detail": "Postgres 备份清单存在，备份文件可读。",
+      "nextAction": "保持每次发布前至少一轮最新备份。"
+    },
+    {
+      "id": "object-store-real-readback",
+      "title": "对象存储真实写读删与远端回读",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-47-07-766Z/summary.json",
+      "detail": "阿里云 OSS 探针写入、读回、删除和最近备份远端回读均通过。",
+      "nextAction": "保留 OSS bucket、prefix、manifest、备份 key 作为生产发布证据。"
+    },
+    {
+      "id": "remote-backup-upload-download",
+      "title": "远端备份上传与下载证据",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-47-07-766Z/summary.json",
+      "detail": "最新备份已上传到 OSS，并下载回证据目录。",
+      "nextAction": "保留 downloaded-backup/manifest.json 和备份文件用于恢复验收。"
+    },
+    {
+      "id": "isolated-restore-execution",
+      "title": "隔离恢复真实执行",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-47-07-766Z/summary.json",
+      "detail": "未执行真实隔离恢复。",
+      "nextAction": "配置 COMMERCIAL_RESTORE_DATABASE_URL 指向隔离库，并用 --real --restore --download-backup 重跑。"
+    },
+    {
+      "id": "backup-alert-real-channel",
+      "title": "值班告警真实通道",
+      "status": "CONFIG_REQUIRED",
+      "releaseBlocking": true,
+      "evidence": "docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-47-07-766Z/summary.json",
+      "detail": "未配置 COMMERCIAL_BACKUP_ALERT_WEBHOOK_URL。",
+      "nextAction": "填入企业微信/飞书/Slack 值班群 webhook 后再跑。"
+    },
+    {
+      "id": "production-config-evidence-freshness",
+      "title": "生产配置证据新鲜度",
+      "status": "PASS",
+      "releaseBlocking": false,
+      "evidence": "docs/acceptance-evidence-2026-08-23/commercial-external-ops-smoke-2026-08-23T06-47-07-766Z/summary.json",
+      "detail": "最近外部运维证据距今 0.1 小时。",
+      "nextAction": "发布当天重跑一次 P6。"
+    }
+  ]
+}

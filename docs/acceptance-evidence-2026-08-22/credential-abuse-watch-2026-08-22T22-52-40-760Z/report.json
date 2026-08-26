@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-08-22T22:52:40.762Z",
+  "status": "WARN",
+  "strict": false,
+  "statePath": "/Users/yanghy/Documents/New project/ai-content/scripts/.credential-watch-state.json",
+  "findings": [
+    {
+      "level": "WARN",
+      "topic": "gateway-probe",
+      "message": "网关 500 500: 402 Insufficient Balance"
+    },
+    {
+      "level": "INFO",
+      "topic": "local-usage",
+      "message": "SQLite 读取失败: no such table: ai_chat_logs"
+    }
+  ]
+}
