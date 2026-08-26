@@ -1,7 +1,7 @@
 "use client";
 
 import { useConfirm } from "@/hooks/use-confirm";
-import { SkeletonRow } from "@/components/skeleton";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
 
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -309,7 +309,7 @@ export function TopicsCenter() {
         {/* 加载详情中 */}
         {loadingDetail && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <Loader2 className="h-8 w-8 animate-spin text-white" />
+            <SkeletonList rows={5} />
           </div>
         )}
 
@@ -475,7 +475,7 @@ export function TopicsCenter() {
       {/* 加载详情中 */}
       {loadingDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <Loader2 className="h-8 w-8 animate-spin text-white" />
+          <SkeletonList rows={5} />
         </div>
       )}
 

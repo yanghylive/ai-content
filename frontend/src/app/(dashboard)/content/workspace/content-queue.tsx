@@ -10,6 +10,7 @@ import {
   type WorkspaceQueueItemView,
   type WorkspaceStepId,
 } from "./workspace-types";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 export type ContentQueueStatusFilter =
   | "all"
@@ -401,7 +402,7 @@ export function ContentQueue({
       <ScrollShadow className="min-h-0 flex-1">
         {loading ? (
           <div className="flex h-48 items-center justify-center">
-            <Spinner label="加载内容队列" size="sm" />
+            <SkeletonList rows={3} />
           </div>
         ) : visibleItems.length ? (
           <>

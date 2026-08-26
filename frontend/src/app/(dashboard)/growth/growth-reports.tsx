@@ -11,6 +11,7 @@ import {
 import { growthApi, type GrowthReports } from "@/lib/api/growth";
 import { statsApi, type StatsSnapshot } from "@/lib/api/stats";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 export function GrowthReportsPage() {
   const router = useRouter();
@@ -171,7 +172,7 @@ export function GrowthReportsPage() {
       <V2Section title="高效话术 TOP" description="用得最多、转化最好的话术">
         {loading ? (
           <div className="py-8 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : copywriting.length === 0 ? (
           <p className="py-6 text-center text-sm text-[var(--kaypal-v3-muted)]">
@@ -216,7 +217,7 @@ export function GrowthReportsPage() {
       >
         {loading ? (
           <div className="py-8 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : funnelContacted === 0 ? (
           <p className="py-6 text-center text-sm text-[var(--kaypal-v3-muted)]">

@@ -25,6 +25,7 @@ import {
 import { useConfirm } from "@/hooks/use-confirm";
 import { growthApi, type GrowthLead, type GrowthLeadStatus } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const STATUS_LABELS: Record<GrowthLeadStatus, { label: string; tone: "success" | "warning" | "accent" | "muted" | "danger" }> = {
   new: { label: "新线索", tone: "accent" },
@@ -386,7 +387,7 @@ export function LeadsPool() {
       <V2Section padding={false}>
         {loading ? (
           <div className="p-12 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : filtered.length === 0 ? (
           <V2EmptyState

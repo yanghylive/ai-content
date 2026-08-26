@@ -23,6 +23,7 @@ import {
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const RISK_TONE: Record<string, "warning" | "danger"> = {
   medium: "warning",
@@ -101,7 +102,7 @@ export function RiskConfirmFlow() {
 
           {loading ? (
             <div style={{ padding: "36px 0", textAlign: "center" }}>
-              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+              <SkeletonList rows={5} />
             </div>
           ) : confirmations.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 14, padding: 28, textAlign: "center" }}>
@@ -202,7 +203,7 @@ export function RiskConfirmFlow() {
 
       {loading ? (
         <div className="kaypal-v3-panel p-12 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       ) : confirmations.length === 0 ? (
         <V2Section>

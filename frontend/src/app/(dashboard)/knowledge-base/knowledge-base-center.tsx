@@ -26,6 +26,7 @@ import {
 } from "@/lib/api/auth";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const SYNC_LABELS: Record<string, string> = {
   synced: "已同步",
@@ -223,7 +224,7 @@ export function KnowledgeBaseCenter() {
           <div className="mx-section-head" style={{ marginTop: 16 }}>本机知识库（{items.length}）</div>
           {loading ? (
             <div className="mx-card mx-list-card" style={{ padding: "22px 0", textAlign: "center" }}>
-              <div style={{ width: 24, height: 24, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+              <SkeletonList rows={5} />
             </div>
           ) : items.length === 0 ? (
             <div className="mx-card mx-empty">
@@ -352,7 +353,7 @@ export function KnowledgeBaseCenter() {
       <V2Section title={`本机知识库（${items.length}）`} description="已经保存到电脑里的知识，内容生产、互动回复和 AI 员工会先从这里取用">
         {loading ? (
           <div className="py-10 text-center">
-            <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : items.length === 0 ? (
           <V2EmptyState

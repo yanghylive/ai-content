@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/app-market";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const ACTION_LABELS: Record<string, string> = {
   purchase: "购买应用",
@@ -81,7 +82,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
   if (loading) {
     return (
       <div className="kaypal-v3-panel p-12 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
         <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
       </div>
     );

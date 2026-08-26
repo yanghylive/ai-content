@@ -57,6 +57,7 @@ import {
   platformTypeToKey,
   type PlatformKey,
 } from "@/lib/mobile-bridge";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -513,7 +514,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
   if (loading) {
     return (
       <div className="kaypal-v3-panel p-12 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
       </div>
     );
   }
@@ -1003,7 +1004,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
         >
           {preflightLoading ? (
             <div className="py-10 text-center">
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-[var(--kaypal-v3-accent)]" />
+              <SkeletonList rows={5} />
               <p className="mt-3 text-sm text-[var(--kaypal-v3-muted)]">正在预检...</p>
             </div>
           ) : !preflightPassed ? (

@@ -28,6 +28,7 @@ import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { publicIntelligenceText } from "./display-text";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type ScenarioKey =
   | "all"
@@ -719,12 +720,7 @@ export function RedfoxSkillsClient() {
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
             {loading ? (
               <div className="flex min-h-[360px] items-center justify-center p-4 text-13 font-semibold text-[var(--kaypal-v3-muted)]">
-                <Loader2
-                  aria-hidden="true"
-                  className="mr-2 h-4 w-4 animate-spin"
-                  strokeWidth={1.8}
-                />
-                正在读取功能
+                <SkeletonList rows={3} />
               </div>
             ) : filteredItems.length === 0 ? (
               <div className="p-4">

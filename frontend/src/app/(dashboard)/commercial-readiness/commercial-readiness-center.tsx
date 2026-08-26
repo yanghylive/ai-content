@@ -32,6 +32,7 @@ import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
 import { MobilePageShell } from "@/components/mobile-page-shell";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 /** check.key 前缀 → 可操作设置页 */
 const CHECK_TARGETS: Array<{ match: RegExp; href: string; label: string }> = [
@@ -320,8 +321,7 @@ export function CommercialReadinessCenter() {
       <section className="flex flex-col gap-3">
         {loading && !summary && (
           <div className="flex min-h-[40vh] items-center justify-center text-default-400">
-            <Loader2 className="mr-2 size-5 animate-spin" />
-            正在检查商用上线状态...
+            <SkeletonList rows={5} />
           </div>
         )}
         {error && !summary && (

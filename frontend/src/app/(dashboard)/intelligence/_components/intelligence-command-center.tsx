@@ -38,6 +38,7 @@ import {
 import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { publicIntelligenceList, publicIntelligenceText } from "./display-text";
 import { publicSourceLabelForItem } from "./redfox-public-labels";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type RiskLevel = "low" | "medium" | "high";
 type IntelligenceStatus =
@@ -995,12 +996,7 @@ export function IntelligenceCommandCenter() {
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
             {overviewState.loading ? (
               <div className="flex min-h-[260px] items-center justify-center p-4 text-13 font-semibold text-[var(--kaypal-v3-muted)]">
-                <Loader2
-                  aria-hidden="true"
-                  className="mr-2 h-4 w-4 animate-spin"
-                  strokeWidth={1.8}
-                />
-                正在读取今日情报
+                <SkeletonList rows={3} />
               </div>
             ) : overviewState.error ? (
               <div className="p-4">

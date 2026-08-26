@@ -15,6 +15,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { DefaultSendModeSection } from "./default-send-mode-section";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const ACTION_LABELS: Record<string, string> = {
   "agent-confirmation-approve": "批准智能任务执行",
@@ -150,7 +151,7 @@ export function RiskCenter() {
 
           {loading ? (
             <div style={{ padding: "32px 0", textAlign: "center" }}>
-              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+              <SkeletonList rows={5} />
             </div>
           ) : policies.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 26, textAlign: "center" }}>
@@ -257,7 +258,7 @@ export function RiskCenter() {
 
       {loading ? (
         <div className="py-10 text-center">
-          <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       ) : policies.length === 0 ? (
         <V2EmptyState

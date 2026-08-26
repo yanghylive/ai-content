@@ -26,6 +26,7 @@ import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { toActionableError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 /** 商用授权引导条：同步历史需要 STANDARD/PRO 及以上套餐 */
 function CommercialGateBanner() {
@@ -174,7 +175,7 @@ export function WechatChatHistory() {
       if (loadingMessages) {
         return (
           <div style={{ padding: "30px 0", textAlign: "center" }}>
-            <div style={{ width: 24, height: 24, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+            <SkeletonList rows={5} />
           </div>
         );
       }
@@ -282,7 +283,7 @@ export function WechatChatHistory() {
 
           {loading ? (
             <div style={{ padding: "36px 0", textAlign: "center" }}>
-              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+              <SkeletonList rows={5} />
             </div>
           ) : filteredSessions.length === 0 ? (
             <div className="mx-card mx-empty" style={{ marginTop: 12, padding: 26, textAlign: "center" }}>
@@ -398,7 +399,7 @@ export function WechatChatHistory() {
           </div>
           {loading ? (
             <div className="p-8 text-center">
-              <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+              <SkeletonList rows={5} />
             </div>
           ) : filteredSessions.length === 0 ? (
             <V2EmptyState
@@ -458,7 +459,7 @@ export function WechatChatHistory() {
             <V2EmptyState icon={MessageSquareText} title="选一个会话查看消息" />
           ) : loadingMessages ? (
             <div className="p-12 text-center">
-              <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+              <SkeletonList rows={5} />
             </div>
           ) : messages.length === 0 ? (
             <V2EmptyState icon={MessageSquareText} title="这个会话还没有消息记录" />

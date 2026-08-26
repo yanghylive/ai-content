@@ -17,6 +17,7 @@ import {
   type CrmOpportunity,
 } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 /** 商机阶段 8 态（对齐后端 OPPORTUNITY_STAGES + status-dictionary CRM_STATUS） */
 const STAGES: Array<{ key: string; label: string }> = [
@@ -148,7 +149,7 @@ export function OpportunityDetailModal({
         <div className="flex-1 overflow-y-auto p-5">
           {loading ? (
             <div className="flex items-center justify-center py-10 text-sm text-[var(--kaypal-v3-muted)]">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 加载中…
+              <SkeletonList rows={3} />
             </div>
           ) : error && !saved ? (
             <p className="text-sm text-[var(--kaypal-v3-danger)]">{error}</p>

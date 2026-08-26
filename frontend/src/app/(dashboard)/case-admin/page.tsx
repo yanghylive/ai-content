@@ -23,6 +23,7 @@ import {OpsButton,
   OpsStatusPill,
   OpsTabs
 } from "../components/desktop-ops-ui";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const PROVENANCE_LABEL: Record<string, string> = {
   delivery: "九章交付",
@@ -194,7 +195,7 @@ export default function CaseAdminPage() {
       <div className="mx-auto max-w-6xl px-4 py-6">
         <V2BackButton label="返回" />
         <div className="py-16 text-center">
-          <Loader2 className="mx-auto h-7 w-7 animate-spin text-[var(--kaypal-v3-accent)]" />
+          <SkeletonList rows={5} />
         </div>
       </div>
     );
@@ -252,7 +253,7 @@ export default function CaseAdminPage() {
 
         {loading ? (
           <div className="py-16 text-center">
-            <Loader2 className="mx-auto h-7 w-7 animate-spin text-[var(--kaypal-v3-accent)]" />
+            <SkeletonList rows={5} />
           </div>
         ) : tab === "list" ? (
           <CaseListTable cases={cases} />

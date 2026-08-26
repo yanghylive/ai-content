@@ -40,6 +40,7 @@ import { toPublicError } from "@/lib/public-error";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { useCdpSessionStatus } from "../../workbench/use-cdp-session-status";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 /* ============ 频道配置（4 个页面共用此组件） ============ */
 
@@ -364,7 +365,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
   if (loading) {
     return (
       <div className="kaypal-v3-panel p-12 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+        <SkeletonList rows={5} />
       </div>
     );
   }

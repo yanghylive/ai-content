@@ -21,6 +21,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { videoFaceSwapApi, type VideoFaceSwapMaterialFile } from "@/lib/api/video-face-swap";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type Step = 1 | 2 | 3;
 
@@ -224,7 +225,7 @@ export function FaceSwapFlow() {
         <V2Section title="选一个换脸模板" description="你的脸会替换到选中的模板里">
           {loadingTemplates ? (
             <div className="p-8 text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+              <SkeletonList rows={5} />
             </div>
           ) : templates.length === 0 ? (
             <V2EmptyState

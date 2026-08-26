@@ -27,6 +27,7 @@ import {
   type GrowthAcquisitionMode,
 } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 const PLATFORM_OPTIONS = [
   { value: "douyin", label: "抖音" },
@@ -183,7 +184,7 @@ export function GrowthStrategies() {
 
       {loading ? (
         <div className="kaypal-v3-panel p-12 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
         </div>
       ) : strategies.length === 0 ? (
         <V2Section>

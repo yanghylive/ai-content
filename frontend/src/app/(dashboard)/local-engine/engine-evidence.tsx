@@ -12,6 +12,7 @@ import {
 import { localEngineApi, type LocalEngineDesktopStatus } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type ViewingItem = {
   src?: string;
@@ -109,7 +110,7 @@ export function EngineEvidence() {
           <div className="mx-section-head" style={{ marginTop: 16 }}>历史留存（{evidence.length}）</div>
           {loading ? (
             <div style={{ padding: "32px 0", textAlign: "center" }}>
-              <div style={{ width: 26, height: 26, margin: "0 auto", borderRadius: "50%", border: "2px solid rgba(222,150,57,.9)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+              <SkeletonList rows={5} />
             </div>
           ) : evidence.length === 0 ? (
             <div className="mx-card mx-empty" style={{ padding: 26, textAlign: "center" }}>
@@ -248,7 +249,7 @@ export function EngineEvidence() {
       <V2Section title={`历史留存（${evidence.length}）`} padding={false}>
         {loading ? (
           <div className="p-12 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+            <SkeletonList rows={5} />
           </div>
         ) : evidence.length === 0 ? (
           <V2EmptyState

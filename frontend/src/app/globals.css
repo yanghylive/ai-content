@@ -2416,9 +2416,9 @@ table tbody tr:hover td { background: var(--kaypal-v3-paper-soft); }
 .kx-skeleton {
   background: linear-gradient(
     90deg,
-    var(--kaypal-v3-surface, #ece9f0) 0%,
-    var(--kaypal-v3-surface-hover, #f3f0f7) 50%,
-    var(--kaypal-v3-surface, #ece9f0) 100%
+    var(--kaypal-v3-paper-soft, #efecf4) 0%,
+    var(--kaypal-v3-paper-muted, #e9e5f2) 50%,
+    var(--kaypal-v3-paper-soft, #efecf4) 100%
   );
   background-size: 200% 100%;
   animation: kx-skeleton-shimmer 1.5s ease-in-out infinite;
@@ -2464,4 +2464,28 @@ table tbody tr:hover td { background: var(--kaypal-v3-paper-soft); }
   ::view-transition-new(root) {
     animation: none;
   }
+}
+
+/* Skeleton line variants for text content */
+.kx-skeleton-line {
+  height: 14px;
+  border-radius: var(--kaypal-v3-radius-xs, 6px);
+}
+.kx-skeleton-line-sm { height: 12px; }
+.kx-skeleton-line-lg { height: 18px; }
+.kx-skeleton-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.kx-skeleton-card {
+  height: 120px;
+  border-radius: var(--kaypal-v3-radius, 12px);
+}
+.kx-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
 }

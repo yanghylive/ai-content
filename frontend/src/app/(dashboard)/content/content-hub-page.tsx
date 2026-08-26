@@ -18,6 +18,7 @@ import { Button, Card, CardBody, Spinner } from "@heroui/react";
 import { BusinessToolResultContext } from "../components/business-tool-result-context";
 import { materialsApi, type Material, type MaterialCollectStatus, type MaterialStats } from "@/lib/api/materials";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 type QuickAction = {
   description: string;
@@ -348,7 +349,7 @@ export function ContentHubPage() {
                     {loading ? (
                       <div className="flex items-center justify-center min-h-[150px] w-full">
                         <div className="flex items-center gap-2">
-                          <Spinner size="sm" />
+                          <SkeletonList rows={3} />
                           <span className="text-sm text-default-500">
                             正在读取采集状态...
                           </span>
@@ -409,7 +410,7 @@ export function ContentHubPage() {
                     {loading ? (
                       <div className="flex items-center justify-center min-h-[150px] w-full">
                         <div className="flex items-center gap-2">
-                          <Spinner size="sm" />
+                          <SkeletonList rows={3} />
                           <span className="text-sm text-default-500">
                             正在读取平台分布...
                           </span>
@@ -509,7 +510,7 @@ export function ContentHubPage() {
                   {loading ? (
                     <div className="flex items-center justify-center min-h-[220px] w-full">
                       <div className="flex items-center gap-2">
-                        <Spinner size="sm" />
+                        <SkeletonList rows={3} />
                         <span className="text-sm text-default-500">
                           正在读取最近素材...
                         </span>

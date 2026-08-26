@@ -1,6 +1,6 @@
 "use client";
 
-import { SkeletonRow } from "@/components/skeleton";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -640,12 +640,7 @@ export function IntelligenceDispatchRecordsPage({
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
             {loading ? (
               <div className="flex min-h-[260px] items-center justify-center p-4 text-13 font-semibold text-[var(--kaypal-v3-muted)]">
-                <Loader2
-                  aria-hidden="true"
-                  className="mr-2 h-4 w-4 animate-spin"
-                  strokeWidth={1.8}
-                />
-                正在读取处理记录
+                <SkeletonList rows={3} />
               </div>
             ) : error ? (
               <div className="p-4">

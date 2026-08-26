@@ -22,6 +22,7 @@ import {
   type InteractionTask,
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
 
 export function EngineInteractionConsole({
   title = "客户互动",
@@ -121,7 +122,7 @@ export function EngineInteractionConsole({
 
       {loading ? (
         <div className="kaypal-v3-panel p-12 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
+          <SkeletonList rows={5} />
           <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">正在加载...</p>
         </div>
       ) : tasks.length === 0 ? (
