@@ -107,7 +107,7 @@ export function PwaInstallBanner() {
         padding: "12px 14px",
         background: "rgba(23, 50, 91, .96)",
         color: "#fff",
-        boxShadow: "0 8px 24px rgba(15, 35, 70, .28)",
+        boxShadow: "0 2px 8px rgba(15, 35, 70, .12)",
         display: "flex",
         alignItems: "center",
         gap: 10,

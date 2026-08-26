@@ -128,7 +128,7 @@
     color: #173052;
     border: 1px solid rgba(230, 168, 84, 0.55);
     background: linear-gradient(90deg, #e39a3e, #f6c478);
-    box-shadow: 0 10px 24px rgba(185, 110, 29, 0.22), inset 0 1px 0 rgba(255, 245, 221, 0.42);
+    box-shadow: 0 1px 2px rgba(185, 110, 29, 0.12), inset 0 1px 0 rgba(255, 245, 221, 0.3);
     transition: transform 0.15s ease, filter 0.2s ease;
   }
   .mx-btn-gold:active { transform: scale(0.97); }
@@ -382,7 +382,7 @@
     border-color: rgba(120, 110, 150, 0.3);
   }
   html[data-theme="dark"] .mx-btn-gold {
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 245, 221, 0.3);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 245, 221, 0.2);
   }
   html[data-theme="dark"] .mx-chip,
   html[data-theme="dark"] .chip {

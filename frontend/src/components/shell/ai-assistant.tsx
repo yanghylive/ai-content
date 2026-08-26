@@ -374,7 +374,7 @@ export function AiAssistant({
             color: "var(--kaypal-v3-accent-ink)",
             fontSize: 18,
             border: "1px solid rgba(230,168,84,.55)",
-            boxShadow: "0 6px 18px rgba(227,154,62,.35)",
+            boxShadow: "0 2px 10px rgba(227,154,62,.18)",
             zIndex: 60,
             display: "flex",
             alignItems: "center",
