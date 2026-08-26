@@ -74,27 +74,7 @@ function extractWinExe(exePath) {
   };
 }
 
-function checkExtracted(label, resources, requiredImgVariants) {
-  if (!resources || !fs.existsSync(resources)) {
-    check(false, `${label}: resources 目录不存在`);
-    return;
-  }
-  const asarPath = path.join(resources, "app.asar");
-  if (!fs.existsSync(asarPath)) {
-    check(false, `${label}: app.asar 缺失`);
-    return;
-  }
-  const files = asarList(asarPath);
-  const topFiles = files.filter((f) => !f.startsWith("/node_modules") && !f.startsWith("/assets"));
-
-  // 1. main.js require 对照
-  const reqs = mainRequires();
-  for (const r of reqs) {
-    const base = r.replace(/^\.\//, "").replace(/\.js$/, "");
-    check(topFiles.includes(`/${base}.js`) || topFiles.includes(`/${base}`), `${label} asar 含 main.js 依赖 ${base}.js`, "");
-  }
-
-  // 2. backend 原生依赖
+function checkBackendCommon(resources, label, requiredImgVariants) {
   const backendNodeModules = path.join(resources, "backend", "node_modules");
   for (const pkg of ["sharp", "detect-libc", "semver"]) {
     check(
@@ -117,6 +97,45 @@ function checkExtracted(label, resources, requiredImgVariants) {
       `${label} backend 内置 @img/${img}`,
     );
   }
+}
+
+function checkExtracted(label, resources, requiredImgVariants) {
+  if (!resources || !fs.existsSync(resources)) {
+    check(false, `${label}: resources 目录不存在`);
+    return;
+  }
+  const asarPath = path.join(resources, "app.asar");
+  // 2026-08-27：支持 asar=false 形态（main 等顶层代码在 resources/app/ 目录）。
+  const appDir = path.join(resources, "app");
+  if (!fs.existsSync(asarPath) && fs.existsSync(path.join(appDir, "main.js"))) {
+    const topFiles = fs
+      .readdirSync(appDir, { withFileTypes: true })
+      .filter((d) => d.isFile())
+      .map((d) => `/${d.name.replace(/\.js$/, "")}`);
+    const reqs = mainRequires();
+    for (const r of reqs) {
+      const base = r.replace(/^\.\//, "").replace(/\.js$/, "");
+      check(topFiles.includes(`/${base}`), `${label} resources/app 含 main.js 依赖 ${base}.js`, "");
+    }
+    checkBackendCommon(resources, label, requiredImgVariants);
+    return;
+  }
+  if (!fs.existsSync(asarPath)) {
+    check(false, `${label}: app.asar 缺失`);
+    return;
+  }
+  const files = asarList(asarPath);
+  const topFiles = files.filter((f) => !f.startsWith("/node_modules") && !f.startsWith("/assets"));
+
+  // 1. main.js require 对照
+  const reqs = mainRequires();
+  for (const r of reqs) {
+    const base = r.replace(/^\.\//, "").replace(/\.js$/, "");
+    check(topFiles.includes(`/${base}.js`) || topFiles.includes(`/${base}`), `${label} asar 含 main.js 依赖 ${base}.js`, "");
+  }
+
+  // 2. backend 原生依赖（两形态共用）
+  checkBackendCommon(resources, label, requiredImgVariants);
 
   // 3. 无本地运行时数据
   const forbidden = [];
