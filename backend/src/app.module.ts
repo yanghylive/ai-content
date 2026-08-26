@@ -67,6 +67,7 @@ import { MultimodalModule } from './modules/multimodal/multimodal.module';
 import { MobileExecutorModule } from './modules/mobile-executor/mobile-executor.module';
 import { DashscopeModule } from './modules/dashscope/dashscope.module';
 import { CaseShowcaseModule } from './modules/case-showcase/case-showcase.module';
+import { BroadcastModule } from './modules/broadcast/broadcast.module';
 
 @Module({
   imports: [
@@ -140,6 +141,7 @@ import { CaseShowcaseModule } from './modules/case-showcase/case-showcase.module
     MobileExecutorModule,
     DashscopeModule,
     CaseShowcaseModule,
+    BroadcastModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -3418,6 +3418,7 @@ describe('GrowthService 今日增长首页聚合（T02 /growth/home）', () => {
     });
     expect(result.recentRuns).toHaveLength(1);
     expect(result.recentRuns[0]).toMatchObject({ id: 'run-1' });
+    expect(result.blockers[0]).toMatchObject({ detail: 'x' });
     // 金额分 → 元
     expect(result.stats.openOpportunityAmount).toBe(1234.56);
   });

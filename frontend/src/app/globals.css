@@ -10,7 +10,7 @@
     /* Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V3 */
     --bg-gradient-from: rgba(255, 255, 255, 0);
     --bg-gradient-to: rgba(255, 255, 255, 0);
-    --kaypal-v3-canvas: #f7f5fa;
+    --kaypal-v3-canvas: #f8f6fc;
     --kaypal-v3-paper: #ffffff;
     --kaypal-v3-panel-bg: #ffffff;
     --kaypal-v3-paper-soft: #efecf4;
@@ -68,7 +68,7 @@
     --kaypal-v3-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
     --kaypal-v3-dur-micro: 120ms;
     --kaypal-v3-dur-short: 180ms;
-    --kaypal-v3-radius: 14px;
+    --kaypal-v3-radius: 12px;
     --kaypal-v3-radius-sm: 10px;
     --kaypal-v3-radius-xs: 6px;
     --kaypal-v3-font-serif: var(--kaypal-v3-font-nav);
@@ -203,19 +203,19 @@
 
   h1 {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 30px;
   }
 
   h2 {
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 24px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 22px;
   }
 
   h3 {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 22px;
     letter-spacing: 0;
   }

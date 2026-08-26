@@ -620,6 +620,8 @@ export interface GrowthHomeFunnel {
 export interface GrowthHomeBlocker {
   code: string;
   title: string;
+  /** 面向用户的具体阻断原因（任务/账号/运行时状态）。 */
+  detail?: string;
   action: string;
 }
 
