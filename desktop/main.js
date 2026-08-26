@@ -158,6 +158,19 @@ function ensureAgentSToken() {
   return cachedAgentSToken;
 }
 
+// 2026-08-27 Win P1：AGENT_GATEWAY_SECRET 兜底注入。
+// 打包 extraResources 同目标覆盖链不保证 backend.env 覆盖 example（实测 1.1.96
+// 部署态 .env 恒为 example 内容），AGENT_GATEWAY_SECRET 因此缺失，非开发环境
+// agent-gateway.module 启动即 throw。复用 per-device 随机持久化密钥（ensureAgentSToken）
+// 兜底，满足"禁止默认密钥"安全约束；backend/.env 若显式提供则优先生效。
+let cachedGatewaySecret = null;
+
+function ensureGatewaySecret() {
+  if (cachedGatewaySecret) return cachedGatewaySecret;
+  cachedGatewaySecret = crypto.randomBytes(32).toString('hex');
+  return cachedGatewaySecret;
+}
+
 let pendingUpdate = {
   configured: false,
   phase: 'idle',
@@ -1316,6 +1329,13 @@ async function startBackendService() {
   envVars.AGENT_S_BASE_URL = envVars.AGENT_S_BASE_URL || `http://127.0.0.1:${AGENT_S_PORT}`;
   envVars.KAYPAL_RUNTIME_SHARED_SECRET = envVars.KAYPAL_RUNTIME_SHARED_SECRET || ensureAgentSToken();
   envVars.KAYPAL_AGENT_S_TOKEN = envVars.KAYPAL_AGENT_S_TOKEN || ensureAgentSToken();
+  // 2026-08-27 Win P1：打包部署态 backend/.env 实为 example 内容（extraResources
+  // 同目标覆盖链失效），AGENT_GATEWAY_SECRET 缺失导致非开发环境后端启动即 throw。
+  // 进程内随机兜底：本机内存中生成并注入，仅主进程↔spawn 后端同生命周期使用，
+  // 无外部消费者；backend/.env 显式提供时优先生效（上方 envFile 解析已入 envVars）。
+  if (!envVars.AGENT_GATEWAY_SECRET) {
+    envVars.AGENT_GATEWAY_SECRET = ensureGatewaySecret();
+  }
   envVars.KAYPAL_NODE_AGENT_RUNTIME = envVars.KAYPAL_NODE_AGENT_RUNTIME || process.env.KAYPAL_NODE_AGENT_RUNTIME || (app.isPackaged ? '1' : '0');
   const bundledBrowserRoot = getResourcePath('playwright-browsers');
   if (fs.existsSync(bundledBrowserRoot)) {
