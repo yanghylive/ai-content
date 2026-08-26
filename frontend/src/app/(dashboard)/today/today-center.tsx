@@ -10,6 +10,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { getApiBase } from "@/lib/api/client";
+import { commercialDisplayText } from "@/lib/commercial-display-text";
 import {
   growthApi,
   type GrowthAcquisitionRun,
@@ -161,6 +162,28 @@ function formatGeneratedAt(iso: string): string {
     minute: "2-digit",
     second: "2-digit",
   });
+}
+
+/** 运行错误文案人性化：清洗 Playwright/技术栈原始错误，保留语义 */
+function runMessageDisplay(raw: string | null | undefined): string {
+  if (!raw) return "";
+  const text = commercialDisplayText(raw);
+  if (/page\.screenshot.*Timeout\s*(\d+)\s*ms/i.test(text)) {
+    return "页面截图超时，可能页面未完全加载或被平台拦截。";
+  }
+  if (/navigation.*Timeout\s*(\d+)\s*ms/i.test(text)) {
+    return "页面加载超时，可能目标页面不可达或被拦截。";
+  }
+  if (/Timeout\s*(\d+)\s*ms/i.test(text)) {
+    return "操作超时，可能页面未响应或网络不稳定。";
+  }
+  if (/waiting.*selector.*timed\s*out/i.test(text) || /element.*not.*found/i.test(text)) {
+    return "页面结构可能发生变化，未找到目标元素。";
+  }
+  if (/net::ERR_|ECONNREFUSED|ENOTFOUND|fetch.*failed/i.test(text)) {
+    return "网络连接异常，无法访问目标页面。";
+  }
+  return text;
 }
 
 /** 运行开始时间：仅显示时分 */
@@ -590,14 +613,24 @@ function RecentRunsSection({
                 <span className={`kx-tag ${meta.className}`}>{meta.label}</span>
                 <span
                   className="min-w-0 flex-1 truncate text-sm text-[var(--kaypal-v3-soft-ink)]"
-                  title={run.message}
+                  title={runMessageDisplay(run.message)}
                 >
-                  {run.message}
+                  {runMessageDisplay(run.message)}
                 </span>
-                <span className="text-xs text-[var(--kaypal-v3-muted)]">
-                  候选 {run.candidateCount ?? 0} · 筛选 {run.selectedCount ?? 0} ·
-                  触达 {run.contactedCount ?? 0} · CRM {run.crmCapturedCount ?? 0}
-                </span>
+                {(() => {
+                  const c = run.candidateCount ?? 0;
+                  const s = run.selectedCount ?? 0;
+                  const t = run.contactedCount ?? 0;
+                  const cr = run.crmCapturedCount ?? 0;
+                  if (c === 0 && s === 0 && t === 0 && cr === 0) {
+                    return <span className="text-xs text-[var(--kaypal-v3-muted)]">暂无数据</span>;
+                  }
+                  return (
+                    <span className="text-xs text-[var(--kaypal-v3-muted)]" style={{ fontVariantNumeric: "tabular-nums" }}>
+                      候选 {c} · 筛选 {s} · 触达 {t} · CRM {cr}
+                    </span>
+                  );
+                })()}
                 {time ? (
                   <span className="text-xs text-[var(--kaypal-v3-muted)]">
                     {time}

@@ -19,6 +19,6 @@ import { VoiceTtsService } from './voice-tts.service';
   ],
   controllers: [VoiceController],
   providers: [VoiceService, VoiceAsrService, VoiceTtsService],
-  exports: [VoiceService],
+  exports: [VoiceService, VoiceTtsService],
 })
 export class VoiceModule {}

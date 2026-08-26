@@ -102,7 +102,7 @@ html[data-theme="dark"] {
 
 /* ---------- 左侧图标栏 ---------- */
 .kx-rail { width: 72px; background: var(--kx-card); border-right: 1px solid var(--kx-border); display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 6px; flex-shrink: 0; transition: background 0.3s ease, border-color 0.3s ease; }
-.kx-rail-logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #9254de, #531dab); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(114, 46, 209, 0.3); }
+.kx-rail-logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #9254de, #531dab); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(114, 46, 209, 0.3); }
 .kx-rail-item { width: 52px; border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 0 8px; border-radius: 12px; cursor: pointer; color: var(--kx-muted); transition: all 0.18s ease; position: relative; }
 .kx-rail-item:hover { background: var(--kx-paper-soft); color: var(--kx-ink); }
 .kx-rail-item.kx-active { background: var(--kx-accent-soft); color: var(--kx-accent-ink); }
@@ -145,7 +145,7 @@ html[data-theme="dark"] {
 /* ---------- 视图通用 ---------- */
 .kx-view { padding: 14px var(--page-gutter) 40px; max-width: 880px; margin: 0 auto; animation: kx-fade 0.25s ease; }
 @keyframes kx-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
-.kx-greet { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; }
+.kx-greet { font-size: 28px; font-weight: 600; letter-spacing: -0.3px; }
 .kx-greet-sub { color: var(--kx-muted); margin-top: 6px; font-size: 14px; }
 
 /* ---------- 待办卡 ---------- */
@@ -179,7 +179,7 @@ html[data-theme="dark"] {
 .kx-section-more { margin-left: auto; font-size: 13px; color: var(--kx-accent-ink); font-weight: 600; cursor: pointer; background: none; border: none; font-family: inherit; }
 .kx-progress-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .kx-stat-card { background: var(--kx-card); border: 1px solid var(--kx-border); border-radius: var(--kx-radius); padding: 16px; text-align: center; }
-.kx-stat-num { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+.kx-stat-num { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
 .kx-stat-ok { color: var(--kx-success); }
 .kx-stat-accent { color: var(--kx-accent-ink); }
 .kx-stat-amber { color: var(--kx-amber); }
@@ -204,7 +204,7 @@ html[data-theme="dark"] {
 /* ---------- 空状态 ---------- */
 .kx-empty-hero { text-align: center; padding: 46px 0 8px; }
 .kx-empty-ico { width: 72px; height: 72px; border: 1px solid var(--kx-chip-bd, var(--kx-border)); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: var(--kx-chip-bg, var(--kx-card)); color: var(--kx-chip-fg, var(--kx-ink-soft)); }
-.kx-empty-title { font-size: 22px; font-weight: 800; margin-top: 18px; letter-spacing: -0.3px; }
+.kx-empty-title { font-size: 22px; font-weight: 600; margin-top: 18px; letter-spacing: -0.3px; }
 .kx-empty-desc { color: var(--kx-muted); font-size: 14px; margin-top: 8px; }
 
 /* ---------- Agent 对话页 ---------- */
@@ -328,10 +328,10 @@ html[data-theme="dark"] {
 .kx-legacy-switch-back:hover { background: var(--kx-accent-soft); }
 .kx-legacy-switch-note { font-size: 12px; color: var(--kx-muted); }
 /* 页面主标题统一为场景页规格（26/800/-0.3px） */
-.kx-legacy-wrap h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; }
+.kx-legacy-wrap h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.3px; }
 /* 页面主标题统一为场景页规格（26/800/-0.3px）——含 astryx Heading 等
    非 kx-greet 类的 h1（B0 2026-08-23，与下方 wrap 版 h1 规则同源） */
-.kx-view h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.3px; }
+.kx-view h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.3px; }
 /* 图标描边统一 1.8（Lucide 用 stroke 属性，可被 CSS 覆盖） */
 .kx-legacy-wrap svg[stroke] { stroke-width: 1.8; }
 
@@ -390,7 +390,7 @@ html[data-theme="dark"] {
   .mx-page-title {
     font-size: 26px;
     line-height: 1.25;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: -0.3px;
     color: var(--kx-ink);
   }

@@ -42,6 +42,7 @@ const COMMANDS: PaletteCommand[] = [
   { cat: "内容运营", name: "知识库", icon: "database", tint: "kx-t-amber", href: "/knowledge-base", kw: "知识库 品牌 素材" },
   { cat: "内容运营", name: "样式库", icon: "layers", tint: "kx-t-slate", href: "/styles", kw: "样式 风格 模板 高级 风格库" },
   { cat: "内容运营", name: "发布", icon: "megaphone", tint: "kx-t-green", href: "/distribution/publish-video", kw: "publish 发布 抖音 小红书" },
+  { cat: "内容运营", name: "实景无人直播", icon: "video", tint: "kx-t-cyan", href: "/broadcast", kw: "直播 实景 无人 AI 语音 推流 门店" },
   { cat: "互动中心", name: "AI 客服", icon: "messageSq", tint: "kx-t-slate", href: "/engagement", kw: "客服 回复 确认" },
   { cat: "互动中心", name: "待我确认", icon: "checkCircle", tint: "kx-t-amber", href: "/tasks/confirmations", kw: "确认 放行 审批" },
   { cat: "互动中心", name: "抖音评论", icon: "message", tint: "kx-t-slate", href: "/engagement/douyin-comments", kw: "抖音 评论" },

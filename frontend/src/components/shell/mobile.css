@@ -178,7 +178,7 @@
   /* 统计格 */
   .mx-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .mx-stat-item { text-align: center; padding: 10px 2px; border-radius: 18px; }
-  .mx-stat-num { font-size: 19px; font-weight: 800; line-height: 1.2; color: #17325b; }
+  .mx-stat-num { font-size: 19px; font-weight: 700; line-height: 1.2; color: #17325b; }
   .mx-stat-label { margin-top: 3px; font-size: 10px; color: #7f8998; }
 
   /* 列表行 */

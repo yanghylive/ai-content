@@ -421,6 +421,7 @@ export class GrowthService implements OnModuleInit {
         return readiness.blockers.slice(0, 5).map((b) => ({
           code: b.code,
           title: b.title,
+          ...(b.detail ? { detail: b.detail } : {}),
           action: b.action,
         }));
       }
