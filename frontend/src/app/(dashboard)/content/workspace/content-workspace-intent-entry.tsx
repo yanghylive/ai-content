@@ -1,22 +1,6 @@
 "use client";
 
-import { Banner } from "@astryxdesign/core/Banner";
-import { Button } from "@astryxdesign/core/Button";
-import { Center } from "@astryxdesign/core/Center";
-import { Card } from "@astryxdesign/core/Card";
-import { FormLayout } from "@astryxdesign/core/FormLayout";
-import { Heading } from "@astryxdesign/core/Heading";
-import { Link as AstryxLink } from "@astryxdesign/core/Link";
-import { Grid } from "@astryxdesign/core/Grid";
-import {
-  MetadataList,
-  MetadataListItem,
-} from "@astryxdesign/core/MetadataList";
-import { SelectableCard } from "@astryxdesign/core/SelectableCard";
-import { Section } from "@astryxdesign/core/Section";
-import { VStack } from "@astryxdesign/core/Stack";
-import { Text } from "@astryxdesign/core/Text";
-import { TextInput } from "@astryxdesign/core/TextInput";
+import { Button, Card, CardBody, Input } from "@heroui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
@@ -107,126 +91,155 @@ export function ContentWorkspaceIntentEntry({
 
   return (
     <main aria-label={`${definition.label}任务设置`}>
-      <Center axis="horizontal" minHeight={560} width="100%">
-        <Section maxWidth={1120} padding={6} variant="section" width="100%">
-          <Grid columns={{ minWidth: 340, max: 2 }} gap={6} width="100%">
-            <Card padding={6} variant="muted">
-              <VStack gap={5}>
-                <VStack gap={0.5}>
-                  <Heading level={1}>{definition.label}</Heading>
-                  <Text as="p" color="secondary" type="supporting">
-                    {definition.description}
-                  </Text>
-                </VStack>
+      <div className="flex items-center justify-center w-full min-h-[560px]">
+        <section className="w-full max-w-[1120px] mx-auto p-6">
+          <div
+            className="grid gap-6 w-full"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+            }}
+          >
+            <Card className="p-6 bg-default-100">
+              <CardBody>
+                <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-0.5">
+                    <h1 className="text-2xl font-bold">{definition.label}</h1>
+                    <p className="text-sm text-default-500">
+                      {definition.description}
+                    </p>
+                  </div>
 
-                <MetadataList columns="single" label={{ position: "start", width: 92 }}>
-                  <MetadataListItem label="提交后">
-                    自动进入简报页，继续把目标和平台说清楚。
-                  </MetadataListItem>
-                  <MetadataListItem label="默认目标">
-                    {definition.defaultGoal}
-                  </MetadataListItem>
-                  <MetadataListItem label="首发平台">
-                    先选一个，后续版本可在工作室继续补齐。
-                  </MetadataListItem>
-                </MetadataList>
+                  <dl className="flex flex-col gap-1.5">
+                    <div className="flex gap-2">
+                      <dt className="w-[92px] shrink-0 text-sm text-default-500">
+                        提交后
+                      </dt>
+                      <dd className="text-sm text-foreground">
+                        自动进入简报页，继续把目标和平台说清楚。
+                      </dd>
+                    </div>
+                    <div className="flex gap-2">
+                      <dt className="w-[92px] shrink-0 text-sm text-default-500">
+                        默认目标
+                      </dt>
+                      <dd className="text-sm text-foreground">
+                        {definition.defaultGoal}
+                      </dd>
+                    </div>
+                    <div className="flex gap-2">
+                      <dt className="w-[92px] shrink-0 text-sm text-default-500">
+                        首发平台
+                      </dt>
+                      <dd className="text-sm text-foreground">
+                        先选一个，后续版本可在工作室继续补齐。
+                      </dd>
+                    </div>
+                  </dl>
 
-                <Banner
-                  container="section"
-                  description="如果你还没想好怎么写，直接用默认目标也可以，先把草稿建起来。"
-                  status="info"
-                  title="先开工，再细化"
-                />
-              </VStack>
+                  <div className="flex flex-col gap-1 rounded-lg border border-primary-200 bg-primary-50 p-4">
+                    <p className="font-semibold text-primary-700">先开工，再细化</p>
+                    <p className="text-sm text-primary-600">
+                      如果你还没想好怎么写，直接用默认目标也可以，先把草稿建起来。
+                    </p>
+                  </div>
+                </div>
+              </CardBody>
             </Card>
 
-            <Card padding={6}>
-              <form noValidate onSubmit={submit}>
-                <FormLayout direction="vertical">
-                  <VStack gap={0.5}>
-                    <Heading level={2}>先创建工作草稿</Heading>
-                    <Text as="p" color="secondary" type="supporting">
-                      只需先填目标和首发平台，提交后就会进入工作室继续推进。
-                    </Text>
-                  </VStack>
+            <Card className="p-6">
+              <CardBody>
+                <form noValidate onSubmit={submit}>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-0.5">
+                      <h2 className="text-xl font-bold">先创建工作草稿</h2>
+                      <p className="text-sm text-default-500">
+                        只需先填目标和首发平台，提交后就会进入工作室继续推进。
+                      </p>
+                    </div>
 
-                  <TextInput
-                    description="说明这次内容要解决的问题或希望读者完成的行动。默认值已经填好。"
-                    hasAutoFocus
-                    isRequired
-                    label="内容目标"
-                    status={
-                      error && goalMissing
-                        ? { type: "error", message: error }
-                        : undefined
-                    }
-                    value={goal}
-                    onChange={(value) => {
-                      setGoal(value);
-                      if (error) setError("");
-                    }}
-                  />
-
-                  <VStack gap={2}>
-                    <Text as="p" color="secondary" type="supporting">
-                      先选择一个首发平台，其他平台版本可以稍后在工作室继续生成。
-                    </Text>
-                    <Grid columns={{ minWidth: 150, max: 3 }} gap={3}>
-                      {WORKSPACE_INTENT_PLATFORMS.map((option) => (
-                        <SelectableCard
-                          key={option.id}
-                          label={option.label}
-                          isSelected={platform === option.id}
-                          padding={3}
-                          onChange={(isSelected) => {
-                            if (!isSelected) return;
-                            setPlatform(option.id);
-                            if (error) setError("");
-                          }}
-                        >
-                          <VStack gap={0.5}>
-                            <Text as="p" type="label">
-                              {option.label}
-                            </Text>
-                            <Text as="p" color="secondary" type="supporting">
-                              {option.description}
-                            </Text>
-                          </VStack>
-                        </SelectableCard>
-                      ))}
-                    </Grid>
-                  </VStack>
-
-                  {error && !goalMissing ? (
-                    <Banner
-                      container="section"
-                      description={`${error} 输入已保留，可以直接重试。`}
-                      status="error"
-                      title="草稿未创建"
+                    <Input
+                      description="说明这次内容要解决的问题或希望读者完成的行动。默认值已经填好。"
+                      autoFocus
+                      isRequired
+                      label="内容目标"
+                      isInvalid={Boolean(error && goalMissing)}
+                      errorMessage={error && goalMissing ? error : undefined}
+                      value={goal}
+                      onValueChange={(value) => {
+                        setGoal(value);
+                        if (error) setError("");
+                      }}
                     />
-                  ) : null}
 
-                  <Button
-                    isDisabled={goalMissing}
-                    isLoading={submitting}
-                    label={definition.submitLabel}
-                    type="submit"
-                    variant="primary"
-                    width="100%"
-                  />
-                  <AstryxLink
-                    as={NextLink}
-                    href="/content/optimization"
-                    isStandalone
-                  >
-                    打开旧版内容改写
-                  </AstryxLink>
-                </FormLayout>
-              </form>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm text-default-500">
+                        先选择一个首发平台，其他平台版本可以稍后在工作室继续生成。
+                      </p>
+                      <div
+                        className="grid gap-3"
+                        style={{
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(150px, 1fr))",
+                        }}
+                      >
+                        {WORKSPACE_INTENT_PLATFORMS.map((option) => (
+                          <div
+                            key={option.id}
+                            role="radio"
+                            aria-checked={platform === option.id}
+                            aria-label={option.label}
+                            onClick={() => {
+                              setPlatform(option.id);
+                              if (error) setError("");
+                            }}
+                            className={`cursor-pointer rounded-lg border p-3 ${
+                              platform === option.id
+                                ? "border-primary ring-2 ring-primary/30 bg-primary-50"
+                                : "border-divider hover:border-default-300"
+                            }`}
+                          >
+                            <div className="flex flex-col gap-0.5">
+                              <p className="text-sm">{option.label}</p>
+                              <p className="text-sm text-default-500">
+                                {option.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {error && !goalMissing ? (
+                      <div className="flex flex-col gap-1 rounded-lg border border-danger-200 bg-danger-50 p-4">
+                        <p className="font-semibold text-danger-600">草稿未创建</p>
+                        <p className="text-sm text-danger-600">
+                          {`${error} 输入已保留，可以直接重试。`}
+                        </p>
+                      </div>
+                    ) : null}
+
+                    <Button
+                      isDisabled={goalMissing}
+                      isLoading={submitting}
+                      type="submit"
+                      color="primary"
+                      className="w-full"
+                    >
+                      {definition.submitLabel}
+                    </Button>
+                    <NextLink
+                      href="/content/optimization"
+                      className="text-sm text-primary hover:text-primary-600"
+                    >
+                      打开旧版内容改写
+                    </NextLink>
+                  </div>
+                </form>
+              </CardBody>
             </Card>
-          </Grid>
-        </Section>
-      </Center>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

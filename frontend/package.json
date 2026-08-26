@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "description": "Full-featured AI content creation dashboard for JIUZHANG AI.",
   "private": true,
-  "astryx": {
-    "theme": "neutral"
-  },
   "scripts": {
     "prepare": "git config core.hooksPath scripts/git-hooks 2>/dev/null || true",
     "dev": "next dev --webpack",
@@ -30,15 +27,10 @@
     "commercial-copy:browser": "node scripts/commercial-copy-browser-scan.mjs",
     "commercial-copy:all": "npm run commercial-copy:guard && npm run commercial-copy:browser -- --require-full",
     "console-quality:browser": "node scripts/console-quality-browser-scan.mjs",
-    "astryx": "node node_modules/@astryxdesign/cli/bin/astryx.mjs",
-    "astryx:doctor": "npm run astryx -- --json doctor",
-    "astryx:migration:guard": "node scripts/astryx-migration-guard.mjs",
     "ui:gate": "node scripts/ui-gate.mjs",
     "ui:gate:changed": "node scripts/ui-gate.mjs --changed"
   },
   "dependencies": {
-    "@astryxdesign/core": "0.1.7",
-    "@astryxdesign/theme-neutral": "0.1.7",
     "@heroui/react": "^2.8.9",
     "@heroui/theme": "^2.4.26",
     "@radix-ui/react-avatar": "^1.1.12",
@@ -68,13 +60,14 @@
     "recharts": "^3.7.0",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
+    "swr": "^2.5.1",
     "tailwind-merge": "^3.6.0",
     "usehooks-ts": "^3.1.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@astryxdesign/cli": "0.1.7",
+    "@next/bundle-analyzer": "^16.3.3",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",

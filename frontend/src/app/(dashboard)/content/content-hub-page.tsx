@@ -14,21 +14,7 @@ import {
   WandSparkles,
   type LucideIcon,
 } from "lucide-react";
-import { Banner } from "@astryxdesign/core/Banner";
-import { Button } from "@astryxdesign/core/Button";
-import { Card } from "@astryxdesign/core/Card";
-import { Center } from "@astryxdesign/core/Center";
-import { Grid } from "@astryxdesign/core/Grid";
-import { Heading } from "@astryxdesign/core/Heading";
-import { Item } from "@astryxdesign/core/Item";
-import {
-  MetadataList,
-  MetadataListItem,
-} from "@astryxdesign/core/MetadataList";
-import { Section } from "@astryxdesign/core/Section";
-import { Spinner } from "@astryxdesign/core/Spinner";
-import { VStack } from "@astryxdesign/core/Stack";
-import { Text } from "@astryxdesign/core/Text";
+import { Button, Card, CardBody, Spinner } from "@heroui/react";
 import { BusinessToolResultContext } from "../components/business-tool-result-context";
 import { materialsApi, type Material, type MaterialCollectStatus, type MaterialStats } from "@/lib/api/materials";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
@@ -201,257 +187,394 @@ export function ContentHubPage() {
   return (
     <main aria-label="素材与品牌">
       <BusinessToolResultContext allowedTools={["private-asset-extractor"]} />
-      <Center axis="horizontal" minHeight={560} width="100%">
-        <Section maxWidth={1280} padding={6} variant="section" width="100%">
-          <VStack gap={6}>
+      <div className="flex flex-row items-center justify-center min-h-[560px] w-full">
+        <section className="max-w-[1280px] mx-auto p-6 w-full">
+          <div className="flex flex-col gap-6">
             {error ? (
-              <Banner
-                container="section"
-                description={error}
-                status="warning"
-                title="部分数据暂时不可用"
-              />
+              <div className="flex flex-col gap-1 rounded-lg border border-warning-200 bg-warning-50 p-4">
+                <p className="font-semibold text-warning-700">
+                  部分数据暂时不可用
+                </p>
+                <p className="text-sm text-warning-600">{error}</p>
+              </div>
             ) : null}
 
-            <Grid columns={{ minWidth: 360, max: 2 }} gap={6} width="100%">
-              <Card padding={6} variant="muted">
-                <VStack gap={4}>
-                  <VStack gap={1}>
-                    <Text color="secondary" type="supporting">
-                      内容运营 · 中枢入口
-                    </Text>
-                    <Heading level={1}>素材与品牌</Heading>
-                    <Text as="p" color="secondary" type="supporting">
-                      先看素材，再去选题、创作、发布或知识沉淀。旧素材管理页仍然保留，
-                      这里只做更快的任务入口。
-                    </Text>
-                  </VStack>
+            <div
+              className="grid gap-6 w-full"
+              style={{
+                gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+              }}
+            >
+              <Card className="p-6 bg-default-100">
+                <CardBody>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm text-default-500">
+                        内容运营 · 中枢入口
+                      </span>
+                      <h1 className="text-2xl font-bold">素材与品牌</h1>
+                      <p className="text-sm text-default-500">
+                        先看素材，再去选题、创作、发布或知识沉淀。旧素材管理页仍然保留，
+                        这里只做更快的任务入口。
+                      </p>
+                    </div>
 
-                  <Banner
-                    container="section"
-                    description="这个页面已经切到 Astryx 结构，功能没有减少，只是把首页从重表格改成更适合任务起步的中枢页。"
-                    status="info"
-                    title="Astryx 中枢页"
-                  />
+                    <div className="flex flex-col gap-1 rounded-lg border border-primary-200 bg-primary-50 p-4">
+                      <p className="font-semibold text-primary-700">
+                        Astryx 中枢页
+                      </p>
+                      <p className="text-sm text-primary-600">
+                        这个页面已经切到 Astryx 结构，功能没有减少，只是把首页从重表格改成更适合任务起步的中枢页。
+                      </p>
+                    </div>
 
-                  <MetadataList columns="single" label={{ position: "start", width: 96 }}>
-                    <MetadataListItem label="可见入口">
-                      素材、选题、创作、改写、发布、知识
-                    </MetadataListItem>
-                    <MetadataListItem label="旧入口">
-                      /materials 继续保留为完整管理页
-                    </MetadataListItem>
-                    <MetadataListItem label="下一步">
-                      {nextAction}
-                    </MetadataListItem>
-                  </MetadataList>
-                </VStack>
+                    <dl className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <dt className="w-[96px] shrink-0 text-sm text-default-500">
+                          可见入口
+                        </dt>
+                        <dd className="text-sm text-foreground">
+                          素材、选题、创作、改写、发布、知识
+                        </dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt className="w-[96px] shrink-0 text-sm text-default-500">
+                          旧入口
+                        </dt>
+                        <dd className="text-sm text-foreground">
+                          /materials 继续保留为完整管理页
+                        </dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt className="w-[96px] shrink-0 text-sm text-default-500">
+                          下一步
+                        </dt>
+                        <dd className="text-sm text-foreground">{nextAction}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </CardBody>
               </Card>
 
-              <Card padding={6}>
-                <VStack gap={4}>
-                  <Grid columns={{ minWidth: 160, max: 2 }} gap={3}>
-                    {quickActions.map((action) => {
-                      const Icon = action.icon;
-                      return (
-                        <VStack key={action.label} gap={1}>
-                          <Button
-                            label={action.label}
-                            onClick={action.onClick}
-                            icon={
-                              <Icon aria-hidden="true" className="h-4 w-4" />
-                            }
-                            variant={action.variant || "ghost"}
-                            width="100%"
-                          />
-                          <Text as="p" color="secondary" type="supporting">
-                            {action.description}
-                          </Text>
-                        </VStack>
-                      );
-                    })}
-                  </Grid>
+              <Card className="p-6">
+                <CardBody>
+                  <div className="flex flex-col gap-4">
+                    <div
+                      className="grid gap-3"
+                      style={{
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(160px, 1fr))",
+                      }}
+                    >
+                      {quickActions.map((action) => {
+                        const Icon = action.icon;
+                        return (
+                          <div
+                            key={action.label}
+                            className="flex flex-col gap-1"
+                          >
+                            <Button
+                              onPress={action.onClick}
+                              startContent={
+                                <Icon
+                                  aria-hidden="true"
+                                  className="h-4 w-4"
+                                />
+                              }
+                              color={
+                                action.variant === "primary"
+                                  ? "primary"
+                                  : "default"
+                              }
+                              variant={
+                                action.variant === "primary"
+                                  ? "solid"
+                                  : action.variant === "secondary"
+                                    ? "flat"
+                                    : "light"
+                              }
+                              className="w-full"
+                            >
+                              {action.label}
+                            </Button>
+                            <p className="text-sm text-default-500">
+                              {action.description}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
 
-                  <Button
-                    label="刷新素材概览"
-                    onClick={() => void load()}
-                    icon={<RefreshCcw aria-hidden="true" className="h-4 w-4" />}
-                    variant="secondary"
-                    width="100%"
-                  />
-                </VStack>
+                    <Button
+                      onPress={() => void load()}
+                      startContent={
+                        <RefreshCcw
+                          aria-hidden="true"
+                          className="h-4 w-4"
+                        />
+                      }
+                      variant="flat"
+                      className="w-full"
+                    >
+                      刷新素材概览
+                    </Button>
+                  </div>
+                </CardBody>
               </Card>
-            </Grid>
+            </div>
 
-            <Grid columns={{ minWidth: 180, max: 4 }} gap={4} width="100%">
+            <div
+              className="grid gap-4 w-full"
+              style={{
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              }}
+            >
               <MetricCard label="素材总数" value={stats?.total} />
               <MetricCard label="待挖掘" value={stats?.unmined} tone="warning" />
               <MetricCard label="已挖掘" value={stats?.mined} tone="success" />
               <MetricCard label="采集失败" value={stats?.failed} tone="danger" />
-            </Grid>
+            </div>
 
-            <Grid columns={{ minWidth: 280, max: 3 }} gap={4} width="100%">
-              <Card padding={4}>
-                <VStack gap={3}>
-                  <Heading level={2}>采集队列</Heading>
-                  {loading ? (
-                    <Center minHeight={150} width="100%">
-                      <Spinner label="正在读取采集状态..." />
-                    </Center>
-                  ) : (
-                    <MetadataList
-                      columns="single"
-                      label={{ position: "start", width: 88 }}
-                    >
-                      <MetadataListItem label="待处理">
-                        {formatCount(collectStatus?.pendingCount)}
-                      </MetadataListItem>
-                      <MetadataListItem label="活跃任务">
-                        {formatCount(activeJobs.length)}
-                      </MetadataListItem>
-                      <MetadataListItem label="等待中">
-                        {formatCount(collectStatus?.counts.waiting)}
-                      </MetadataListItem>
-                      <MetadataListItem label="失败">
-                        {formatCount(collectStatus?.counts.failed)}
-                      </MetadataListItem>
-                      <MetadataListItem label="最近检查">
-                        {formatDateTime(collectStatus?.checkedAt)}
-                      </MetadataListItem>
-                    </MetadataList>
-                  )}
-                </VStack>
+            <div
+              className="grid gap-4 w-full"
+              style={{
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              }}
+            >
+              <Card className="p-4">
+                <CardBody>
+                  <div className="flex flex-col gap-3">
+                    <h2 className="text-xl font-bold">采集队列</h2>
+                    {loading ? (
+                      <div className="flex items-center justify-center min-h-[150px] w-full">
+                        <div className="flex items-center gap-2">
+                          <Spinner size="sm" />
+                          <span className="text-sm text-default-500">
+                            正在读取采集状态...
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <dl className="flex flex-col gap-2">
+                        <div className="flex gap-2">
+                          <dt className="w-[88px] shrink-0 text-sm text-default-500">
+                            待处理
+                          </dt>
+                          <dd className="text-sm text-foreground">
+                            {formatCount(collectStatus?.pendingCount)}
+                          </dd>
+                        </div>
+                        <div className="flex gap-2">
+                          <dt className="w-[88px] shrink-0 text-sm text-default-500">
+                            活跃任务
+                          </dt>
+                          <dd className="text-sm text-foreground">
+                            {formatCount(activeJobs.length)}
+                          </dd>
+                        </div>
+                        <div className="flex gap-2">
+                          <dt className="w-[88px] shrink-0 text-sm text-default-500">
+                            等待中
+                          </dt>
+                          <dd className="text-sm text-foreground">
+                            {formatCount(collectStatus?.counts.waiting)}
+                          </dd>
+                        </div>
+                        <div className="flex gap-2">
+                          <dt className="w-[88px] shrink-0 text-sm text-default-500">
+                            失败
+                          </dt>
+                          <dd className="text-sm text-foreground">
+                            {formatCount(collectStatus?.counts.failed)}
+                          </dd>
+                        </div>
+                        <div className="flex gap-2">
+                          <dt className="w-[88px] shrink-0 text-sm text-default-500">
+                            最近检查
+                          </dt>
+                          <dd className="text-sm text-foreground">
+                            {formatDateTime(collectStatus?.checkedAt)}
+                          </dd>
+                        </div>
+                      </dl>
+                    )}
+                  </div>
+                </CardBody>
               </Card>
 
-              <Card padding={4}>
-                <VStack gap={3}>
-                  <Heading level={2}>平台分布</Heading>
-                  {loading ? (
-                    <Center minHeight={150} width="100%">
-                      <Spinner label="正在读取平台分布..." />
-                    </Center>
-                  ) : topPlatformItems.length ? (
-                    <VStack gap={2}>
-                      {topPlatformItems.map((item) => (
-                        <Item
-                          key={item.platform}
-                          align="start"
-                          density="compact"
-                          description={`${formatCount(item.count)} 条素材`}
-                          label={materialPlatformLabel(item.platform)}
-                          startContent={
+              <Card className="p-4">
+                <CardBody>
+                  <div className="flex flex-col gap-3">
+                    <h2 className="text-xl font-bold">平台分布</h2>
+                    {loading ? (
+                      <div className="flex items-center justify-center min-h-[150px] w-full">
+                        <div className="flex items-center gap-2">
+                          <Spinner size="sm" />
+                          <span className="text-sm text-default-500">
+                            正在读取平台分布...
+                          </span>
+                        </div>
+                      </div>
+                    ) : topPlatformItems.length ? (
+                      <div className="flex flex-col gap-2">
+                        {topPlatformItems.map((item) => (
+                          <div
+                            key={item.platform}
+                            className="flex items-start gap-2"
+                          >
                             <Sparkles
                               aria-hidden="true"
                               className="mt-0.5 h-4 w-4 text-primary"
                             />
-                          }
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-foreground">
+                                {materialPlatformLabel(item.platform)}
+                              </span>
+                              <span className="text-xs text-default-500">
+                                {`${formatCount(item.count)} 条素材`}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center min-h-[150px] w-full">
+                        <p className="text-sm text-default-500">
+                          暂无平台分布数据。
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardBody>
+              </Card>
+
+              <Card className="p-4">
+                <CardBody>
+                  <div className="flex flex-col gap-3">
+                    <h2 className="text-xl font-bold">下一步建议</h2>
+                    <p className="text-sm text-default-500">{nextAction}</p>
+                    <dl className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <dt className="w-[88px] shrink-0 text-sm text-default-500">
+                          推荐动作
+                        </dt>
+                        <dd className="text-sm text-foreground">
+                          {stats?.total
+                            ? stats.unmined > 0
+                              ? "先挖掘再创作"
+                              : "直接去选题和改写"
+                            : "先采集素材"}
+                        </dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt className="w-[88px] shrink-0 text-sm text-default-500">
+                          完整流程
+                        </dt>
+                        <dd className="text-sm text-foreground">
+                          素材 → 选题 → 创作 → 发布检查 → 发布中心
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                </CardBody>
+              </Card>
+            </div>
+
+            <Card className="p-4">
+              <CardBody>
+                <div className="flex flex-col gap-4">
+                  <div
+                    className="grid gap-3 w-full"
+                    style={{
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(220px, 1fr))",
+                    }}
+                  >
+                    <h2 className="text-xl font-bold">最近素材</h2>
+                    <Button
+                      onPress={() => router.push("/materials")}
+                      startContent={
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="h-4 w-4"
                         />
-                      ))}
-                    </VStack>
-                  ) : (
-                    <Center minHeight={150} width="100%">
-                      <Text as="p" color="secondary" type="supporting">
-                        暂无平台分布数据。
-                      </Text>
-                    </Center>
-                  )}
-                </VStack>
-              </Card>
+                      }
+                      variant="light"
+                      className="w-full"
+                    >
+                      打开完整素材库
+                    </Button>
+                  </div>
 
-              <Card padding={4}>
-                <VStack gap={3}>
-                  <Heading level={2}>下一步建议</Heading>
-                  <Text as="p" color="secondary" type="supporting">
-                    {nextAction}
-                  </Text>
-                  <MetadataList columns="single" label={{ position: "start", width: 88 }}>
-                    <MetadataListItem label="推荐动作">
-                      {stats?.total
-                        ? stats.unmined > 0
-                          ? "先挖掘再创作"
-                          : "直接去选题和改写"
-                        : "先采集素材"}
-                    </MetadataListItem>
-                    <MetadataListItem label="完整流程">
-                      素材 → 选题 → 创作 → 发布检查 → 发布中心
-                    </MetadataListItem>
-                  </MetadataList>
-                </VStack>
-              </Card>
-            </Grid>
-
-            <Card padding={4}>
-              <VStack gap={4}>
-                <Grid columns={{ minWidth: 220, max: 2 }} gap={3} width="100%">
-                  <Heading level={2}>最近素材</Heading>
-                  <Button
-                    label="打开完整素材库"
-                    onClick={() => router.push("/materials")}
-                    icon={
-                      <ArrowRight aria-hidden="true" className="h-4 w-4" />
-                    }
-                    variant="ghost"
-                    width="100%"
-                  />
-                </Grid>
-
-                {loading ? (
-                  <Center minHeight={220} width="100%">
-                    <Spinner label="正在读取最近素材..." />
-                  </Center>
-                ) : materials.length ? (
-                  <VStack gap={2}>
-                    {materials.map((material) => (
-                      <Item
-                        key={material.id}
-                        align="start"
-                        density="compact"
-                        description={[
-                          materialSummary(material),
-                          `平台 ${materialPlatformLabel(material.platform)} · 作者 ${commercialDisplayText(material.author) || "—"} · 采集 ${formatDateTime(material.collectDate)}`,
-                          material.keywords.length
-                            ? `关键词：${material.keywords.join(" / ")}`
-                            : "关键词：暂无",
-                        ].join(" · ")}
-                        endContent={
-                          <Text as="span" color="secondary" type="supporting">
-                            {statusLabelMap[material.status]}
-                          </Text>
-                        }
-                        label={commercialDisplayText(material.title)}
-                        startContent={
+                  {loading ? (
+                    <div className="flex items-center justify-center min-h-[220px] w-full">
+                      <div className="flex items-center gap-2">
+                        <Spinner size="sm" />
+                        <span className="text-sm text-default-500">
+                          正在读取最近素材...
+                        </span>
+                      </div>
+                    </div>
+                  ) : materials.length ? (
+                    <div className="flex flex-col gap-2">
+                      {materials.map((material) => (
+                        <div
+                          key={material.id}
+                          className="flex items-start gap-2"
+                        >
                           <Database
                             aria-hidden="true"
                             className="mt-0.5 h-4 w-4 text-primary"
                           />
-                        }
-                      />
-                    ))}
-                  </VStack>
-                ) : (
-                  <Center minHeight={220} width="100%">
-                    <VStack gap={2}>
-                      <Heading level={3}>暂无最近素材</Heading>
-                      <Text as="p" color="secondary" type="supporting">
-                        可以先去完整素材库采集一批内容，再回到这里继续选题和创作。
-                      </Text>
-                      <Button
-                        label="去完整素材库"
-                        onClick={() => router.push("/materials")}
-                        icon={
-                          <Search aria-hidden="true" className="h-4 w-4" />
-                        }
-                        variant="primary"
-                        width="100%"
-                      />
-                    </VStack>
-                  </Center>
-                )}
-              </VStack>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-foreground">
+                              {commercialDisplayText(material.title)}
+                            </span>
+                            <span className="text-xs text-default-500">
+                              {[
+                                materialSummary(material),
+                                `平台 ${materialPlatformLabel(material.platform)} · 作者 ${commercialDisplayText(material.author) || "—"} · 采集 ${formatDateTime(material.collectDate)}`,
+                                material.keywords.length
+                                  ? `关键词：${material.keywords.join(" / ")}`
+                                  : "关键词：暂无",
+                              ].join(" · ")}
+                            </span>
+                          </div>
+                          <span className="ml-auto text-sm text-default-500">
+                            {statusLabelMap[material.status]}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center min-h-[220px] w-full">
+                      <div className="flex flex-col gap-2">
+                        <h3 className="text-lg font-bold">暂无最近素材</h3>
+                        <p className="text-sm text-default-500">
+                          可以先去完整素材库采集一批内容，再回到这里继续选题和创作。
+                        </p>
+                        <Button
+                          onPress={() => router.push("/materials")}
+                          startContent={
+                            <Search
+                              aria-hidden="true"
+                              className="h-4 w-4"
+                            />
+                          }
+                          color="primary"
+                          className="w-full"
+                        >
+                          去完整素材库
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardBody>
             </Card>
-          </VStack>
-        </Section>
-      </Center>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
@@ -475,15 +598,15 @@ function MetricCard({
           : "text-default-900";
 
   return (
-    <Card padding={4} variant="muted">
-      <VStack gap={1}>
-        <Text color="secondary" type="supporting">
-          {label}
-        </Text>
-        <Heading className={toneClass} level={3}>
-          {formatCount(value)}
-        </Heading>
-      </VStack>
+    <Card className="p-4 bg-default-100">
+      <CardBody>
+        <div className="flex flex-col gap-1">
+          <span className="text-sm text-default-500">{label}</span>
+          <h3 className={`text-lg font-bold ${toneClass}`}>
+            {formatCount(value)}
+          </h3>
+        </div>
+      </CardBody>
     </Card>
   );
 }

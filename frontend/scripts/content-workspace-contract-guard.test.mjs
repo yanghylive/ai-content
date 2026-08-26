@@ -489,7 +489,7 @@ test("S1 result-entry work rejects frozen shell changes", () => {
     includeBaseContract: true,
     changedFiles: [
       "frontend/src/app/(dashboard)/layout.tsx",
-      "frontend/scripts/astryx-migration-guard.mjs",
+      "frontend/src/app/providers.tsx",
       "docs/content-workspace/contract.json",
     ],
   });
@@ -500,7 +500,7 @@ test("S1 result-entry work rejects frozen shell changes", () => {
   );
   assert.match(
     result.stderr,
-    /\[OUT_OF_SCOPE_CHANGE\].*frontend\/scripts\/astryx-migration-guard\.mjs/,
+    /\[OUT_OF_SCOPE_CHANGE\].*frontend\/src\/app\/providers\.tsx/,
   );
 });
 

@@ -19,10 +19,6 @@ import {
   Textarea,
   addToast,
 } from "@heroui/react";
-import { Layout, LayoutContent } from "@astryxdesign/core/Layout";
-import { HStack, VStack } from "@astryxdesign/core/Stack";
-import { Heading } from "@astryxdesign/core/Heading";
-import { Text } from "@astryxdesign/core/Text";
 import { AgentSessionLifecycleStepper } from "@/components/agent-session-lifecycle-stepper";
 import { Icon } from "@/components/lucide-icon-compat";
 import {
@@ -1387,19 +1383,19 @@ export function TaskCenterPage() {
     /* B0 容器收编（2026-08-23）：/tasks 为场景路由，根统一 kx-view（34px gutter + 880 居中），
        astryx Layout 仅作内部布局组件，页面级边距由 kx-view 供给 */
     <div className="kx-view">
-    <Layout height="fill">
-      <LayoutContent padding={0}>
-          <VStack gap={3}>
-            <HStack gap={3} hAlign="between" vAlign="start" wrap="wrap">
-              <VStack gap={2}>
-                <Text color="secondary" type="supporting">
+    <div className="min-h-full">
+      <div className="p-0">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-row flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-col gap-2">
+                <span className="text-sm text-default-500">
                   商业增长 · 任务中心
-                </Text>
-                <Heading level={1} className="kx-greet">任务中心</Heading>
-                <Text color="secondary">
+                </span>
+                <h1 className="text-2xl font-bold kx-greet">任务中心</h1>
+                <span className="text-default-500">
                   自动工作流、正在运行、待确认、失败修复和结果留存在同一个操作台处理。
-                </Text>
-                </VStack>
+                </span>
+                </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <Button
                   as={Link}
@@ -1443,9 +1439,9 @@ export function TaskCenterPage() {
                   刷新
                 </Button>
               </div>
-            </HStack>
-          </VStack>
-        </LayoutContent>
+            </div>
+          </div>
+        </div>
       <OpsDesktopPage>
       <OpsToolbar>
         <OpsMetric
@@ -2600,7 +2596,7 @@ export function TaskCenterPage() {
         onStop={stopDrawerSession}
       />
     </OpsDesktopPage>
-    </Layout>
+    </div>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { StatusDot } from "@astryxdesign/core/StatusDot";
 import { RefreshCw } from "lucide-react";
 import { useLocalBridge } from "@/lib/local-bridge/use-local-bridge";
 
@@ -8,19 +7,22 @@ const STATUS_COPY = {
   checking: {
     label: "检查中",
     detail: "正在检查本机发布服务",
-    variant: "accent" as const,
+    color: "bg-primary",
+    pulse: true,
   },
   online: {
     label: "在线",
     detail: "本机发布服务已连接",
-    variant: "success" as const,
+    color: "bg-success",
+    pulse: false,
   },
   offline: {
     label: "离线",
     detail: "请启动桌面应用后重试",
-    variant: "neutral" as const,
+    color: "bg-default-300",
+    pulse: false,
   },
-};
+} as const;
 
 export function LocalBridgeStatus() {
   const { status, version, platformCount, refresh } = useLocalBridge();
@@ -33,11 +35,15 @@ export function LocalBridgeStatus() {
       className="kaypal-v3-surface flex flex-wrap items-center justify-between gap-3 px-4 py-3"
     >
       <div className="flex min-w-0 items-center gap-3">
-        <StatusDot
-          variant={copy.variant}
-          label={`本机发布服务${copy.label}`}
-          isPulsing={status === "checking"}
-        />
+        <span
+          role="img"
+          aria-label={`本机发布服务${copy.label}`}
+          className={`relative inline-flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full ${copy.color}`}
+        >
+          {copy.pulse && (
+            <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${copy.color} opacity-75`} />
+          )}
+        </span>
         <div className="min-w-0">
           <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
             本机发布服务 · {copy.label}

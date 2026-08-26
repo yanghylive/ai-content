@@ -19,7 +19,6 @@ import {
   type KaypalSubscription,
 } from "@/lib/api/auth";
 import { ElectronUpdateBanner } from "@/components/electron-update-banner";
-import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { SolutionRunContextBanner } from "./components/solution-run-context-banner";
 import {
   approveSolutionManualTask,
@@ -30,244 +29,12 @@ import {
   type SolutionRunTaskRecord,
 } from "@/lib/api/solutions";
 import { toPublicError } from "@/lib/public-error";
+import { RELEASE_NOTES, DESKTOP_APP_VERSION } from "@/lib/release-notes";
+import { routeAliases } from "@/lib/route-config";
+import { formatPlanLabel, formatCredits, getBillingPlan, hasUsableLocalSession } from "@/lib/dashboard-helpers";
 
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 const ACTIVE_TENANT_KEY = "ai_content_tenant_id";
-const DESKTOP_APP_VERSION = "1.1.96";
-const RELEASE_NOTES = [
-  {
-    version: "v1.1.96",
-    date: "2026-08-22",
-    highlights: [
-      "安全加固：桌面安装包不再携带服务端凭据（打包源切换占位模板 + 发布守卫拦截真实密钥），脚本内硬编码会话 token 全部清除",
-      "Agent Browser 三轮 20 项修复：导航后真实 URL 闭环 / 断点续跑 / 幂等重试（只补失败动作）/ 确认单两阶段消费 / error 终态拒绝重跑 / 重启保留可恢复会话",
-      "AI 草稿幂等：并发确认原子抢占无孤儿配置 / 执行副作用防重复 / 崩溃残留自动回收",
-      "SQLite 桌面库补全 growth_task_drafts 表（150 模型全对齐）；MAI-UI 视觉模型断链修复（别名列表 + enabled 过滤）；套餐门禁本地旁路绑定开发环境",
-    ],
-  },
-  {
-    version: "v1.1.90",
-    date: "2026-08-20",
-    highlights: [
-      "修复非 C 盘安装（Program Files 等）导致的操作失败：数据/日志迁移到用户数据目录",
-      "错误自动上报：运行异常自动上传云端，无需手动收集日志",
-    ],
-  },
-  {
-    version: "v1.1.89",
-    date: "2026-08-20",
-    highlights: [
-      "错误自动上报：运行异常自动上传云端，无需手动收集日志",
-      "登录浏览器空白修复（Windows）：goto 不跳转时自动用浏览器自身 JS 导航兜底",
-      "登录导航增加诊断日志，便于真机定位",
-    ],
-  },
-  {
-    version: "v1.1.88",
-    date: "2026-08-20",
-    highlights: [
-      "登录浏览器空白修复（Windows）：goto 不跳转时自动用浏览器自身 JS 导航兜底",
-      "登录导航增加诊断日志，便于真机定位",
-    ],
-  },
-  {
-    version: "v1.1.87",
-    date: "2026-08-20",
-    highlights: [
-      "安装包稳定性修复：启动崩溃（sqlite-empty-template 缺失）+ 登录页图标丢失",
-      "抖音登录浏览器空白修复：探活进程无限堆积 + CDP 端口并发竞态",
-    ],
-  },
-  {
-    version: "v1.1.86",
-    date: "2026-08-20",
-    highlights: [
-      "AI 获客体验升级：AI 长期记忆接入，价值感知 12 项落地（简报卡/工作轨迹/自然语言评分理由/价值账单）",
-      "未开放功能整页遮罩（10 页）：全貌可见 + 背景模糊 + 操作锁定",
-      "抖音自动触达防风控 + 反爬拦截时视觉模型自动恢复候选",
-    ],
-  },
-  {
-    version: "v1.1.85",
-    date: "2026-08-15",
-    highlights: [
-      "发布中心修复闭环：确认发布/重试按钮接上行为，账号失效可恢复任务",
-      "移动端界面统一：手写图标收敛为统一图标库，品牌 logo 与骨架屏抽成共享组件",
-    ],
-  },
-  {
-    version: "v1.1.84",
-    date: "2026-08-14",
-    highlights: [
-      "登录页微信登录修复：改为跳转方式，去掉扫码后无反应的二维码展示",
-      "旧入口路由归一：旧任务控制台/文章库/客户详情/企微助手重定向到规范路由",
-    ],
-  },
-  {
-    version: "v1.1.83",
-    date: "2026-08-14",
-    highlights: [
-      "统一线索对象 + 事件流：三套线索表收敛为统一 leads 表，线索全链路可追溯",
-      "AI 质量观测落地：每次 AI 调用 prompt/回复快照、耗时、成败、失败原因自动落库",
-      "多租户双维度 + 成员管理：actorUserId 操作者维度 + 成员邀请/移除闭环",
-    ],
-  },
-  {
-    version: "v1.1.82",
-    date: "2026-08-12",
-    highlights: [
-      "修复素材库「始终 20 篇」、文章反抓正文恒空、抖音私信误报、微信群发入口等真机反馈的闭环断裂",
-      "AI 生图（qwen-image 可选尺寸）/ 生视频（happyhorse 可选时长）切换百炼引擎，稳定出图出片",
-      "视频一键成片独立为专属产品页；功能页统一补齐返回按钮、顶部图标桌面端不再撑大",
-    ],
-  },
-  {
-    version: "v1.1.81",
-    date: "2026-08-12",
-    highlights: [
-      "修复微信联系人同步失败：微信数据组件云端化后 OCR 兜底引擎路径错位、测试下载地址残留，微信 4.x 也能正常同步",
-      "客户端左下角/登录页版本号改为读取应用真实版本，不再错位显示旧版本号",
-    ],
-  },
-  {
-    version: "v1.1.80",
-    date: "2026-08-12",
-    highlights: [
-      "增长工作流升级为行业方案库：14 大行业 × 2 场景，自带行业话术、平台与风控要点",
-      "工作流执行引擎上线：真实执行获客动作、自动推进、人工确认、节点进度一目了然",
-      "AI 助手成为系统全能助手：一句话开流水线、查线索、查获客任务、看热点",
-      "记忆系统全面升级：多轮上下文不再失忆 + 腾讯 Agent Memory 四层长期记忆",
-    ],
-  },
-  {
-    version: "v1.1.79",
-    date: "2026-08-11",
-    highlights: [
-      "修复抖音多账号冲突：新增账号不再跳到已登录账号，不同登录身份的浏览器档案彻底隔离",
-      "平台账号头像/昵称抓取升级：真实头像与真实昵称，账号列表提供「刷新头像」一键重抓",
-      "发布链路加固：批量发布单平台失败不再拖垮全部平台",
-      "发布前内容体检：标题超长/话题超限/敏感词在提交前拦截提示",
-      "定时发布排期器：每日多条时间随机浮动，不跨天",
-    ],
-  },
-  {
-    version: "v1.1.79",
-    date: "2026-08-11",
-    highlights: [
-      "修复登录后 AI 对话/模型台/语音等能力异常：云端服务地址全面切换生产环境",
-      "登录与云端能力链路再加固：不再依赖任何测试服务地址",
-    ],
-  },
-  {
-    version: "v1.1.77",
-    date: "2026-08-11",
-    highlights: [
-      "修复全新安装后登录失败：新装/升级后账号密码登录与微信扫码均可正常使用",
-      "云端认证链路加固：登录统一指向生产服务，不再受本地环境配置影响",
-    ],
-  },
-  {
-    version: "v1.1.76",
-    date: "2026-08-11",
-    highlights: [
-      "微信数据能力改为按需加载：首次使用微信联系人/数据功能时自动下载本地组件（下载失败自动降级提示），安装包更精简",
-      "平台兼容性优化：解决执行任务时浏览器窗口频繁弹出打断操作的问题",
-      "能力边界文案更新：手机端能力说明更清晰",
-    ],
-  },
-  {
-    version: "v1.1.75",
-    date: "2026-08-11",
-    highlights: [
-      "电脑端「助手」页改为手机 App 同款 AI 助手：同一套云端对话（热点选题/文案创作/违禁词/比价返利），语音文字都可用",
-      "获客任务「立即执行」恢复真实执行：修复占位账号、能力误判模拟、确认单缺失，点执行后真实找客户发评论",
-      "企微助手、评论洞察从空壳页变成真实功能：连接企微群机器人/AI 自动回复、粘贴评论一键分析痛点需求",
-      "补齐 11 个功能入口（情报报告/趋势雷达/AI 客服/朋友圈计划/记忆设置等），清理 11 个旧页面",
-      "修复浏览器窗口乱跳：后台轮询不再触发账号验证拉起抖音/小红书窗口",
-    ],
-  },
-  {
-    version: "v1.1.74",
-    date: "2026-08-10",
-    highlights: [
-      "账号密码登录接入云端真实授权：登录后正确显示旗舰版与积分余额，不再回落免费版",
-      "微信扫码登录回调链路优化（云端白名单已同步部署）",
-      "后端自动化测试 1464 项全绿",
-    ],
-  },
-  {
-    version: "v1.1.73",
-    date: "2026-08-10",
-    highlights: [
-      "应用图标更换为九章智能三玖回旋纹（桌面与工作台左上角；登录页保持原版）",
-      "新增商品剪辑配置、BGM 曲库、视频发布计划、素材删除/重命名、合成分类",
-      "新增曝光账号管理与评论扩散/文案扩展/曝光记录",
-      "AI 调用自动统计 Token 用量（每日配额/明细可追溯）",
-      "炼刀能力逐项补齐完成，后端自动化测试 1464 项全绿",
-    ],
-  },
-  {
-    version: "v1.1.72",
-    date: "2026-08-10",
-    highlights: [
-      "登录与云端能力统一走生产环境（kaypal.cn），修复测试环境残留域名",
-      "新增 AI 网页代操作：自然语言指令驱动真实浏览器执行（打开/点击/输入/截图/提取），逐步截图留证",
-      "新增桌面悬浮球：随时唤起 AI 网页代操作，输入指令即可执行并查看证据",
-      "新增 Token 用量追踪（每日配额/预检/上报）、门店 POI 管理、商品视频一键剪辑",
-      "群发计划新增默认配置查询；后端全量自动化测试 1451 项全绿",
-    ],
-  },
-  {
-    version: "v1.1.60",
-    date: "2026-08-04",
-    highlights: [
-      "修复 Windows 安装后 3011 本地服务因安全密钥缺失而无法启动的问题",
-      "账号凭据密钥由系统安全存储保护，并在后续自动更新中稳定复用",
-      "Windows 构建新增安装后后端启动自测，启动失败将阻止发布",
-    ],
-  },
-  {
-    version: "v1.1.59",
-    date: "2026-08-04",
-    highlights: [
-      "修复 Windows 真机首次启动时 3011 本地服务可能超时的问题",
-      "保留 Windows 系统关键环境变量，提升本地后端、Prisma 和原生依赖启动稳定性",
-      "本地服务异常时展示日志目录，便于现场快速定位",
-    ],
-  },
-  {
-    version: "v1.1.58",
-    date: "2026-08-04",
-    highlights: [
-      "平台账号历史数据已清理，重新登录后状态更干净",
-      "视频工坊与换脸入口暂时隐藏，工作台只保留当前可用能力",
-      "全站功能图标更新为更专业的 JIUZHANG AI 风格",
-    ],
-  },
-  {
-    version: "v1.1.57",
-    date: "2026-07-31",
-    highlights: [
-      "全新 Astryx 设计系统界面，全站改版",
-      "登录修复：授权过期可恢复，桌面会话自动检测",
-      "页脚自适应屏幕底部，助手对话满宽满高",
-    ],
-  },
-  {
-    version: "v1.1.56",
-    date: "2026-07-30",
-    highlights: [
-      "白龙马语音桥接自动续期，授权永不过期",
-      "脑图节点修复：嵌套 iframe 中始终可见",
-      "全站品牌升级至 JIUZHANG AI",
-    ],
-  },
-  {
-    version: "v1.1.55",
-    date: "2026-07-25",
-    highlights: ["运营战情室上线", "解决方案运行中心改版"],
-  },
-] as const;
 
 function DashboardFooter({ appVersion }: { appVersion: string }) {
   // 优先读 electron 真实版本号（package.json），web 环境回退到写死常量
@@ -293,13 +60,13 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
         {/* 左下角品牌字标：浅色系统用黑字版，暗色系统用白字版 */}
         <img
-          src="/brand/jiuzhang-wordmark-black.png"
+          src="/brand/jiuzhang-wordmark-black.webp"
           alt="JIUZHANG AI"
           className="h-6 w-auto shrink-0 dark:hidden"
           draggable={false}
         />
         <img
-          src="/brand/jiuzhang-wordmark-white.png"
+          src="/brand/jiuzhang-wordmark-white.webp"
           alt="JIUZHANG AI"
           className="hidden h-6 w-auto shrink-0 dark:block"
           draggable={false}
@@ -344,205 +111,7 @@ function DashboardFooter({ appVersion }: { appVersion: string }) {
   );
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
 
-function formatPlanLabel(value?: string | null, fallback = "未同步") {
-  const normalized = String(value || "").trim();
-  if (!normalized) return fallback;
-  const labels: Record<string, string> = {
-    FREE: "免费版",
-    PRO: "专业版",
-    ADVANCED: "高级版",
-    ENTERPRISE: "企业版",
-  };
-  return labels[normalized.toUpperCase()] || normalized;
-}
-
-function formatCredits(value: number | null | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "未同步";
-  return new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 2 }).format(
-    value,
-  );
-}
-
-function getBillingPlan(billing: KaypalBillingSnapshot | null) {
-  const raw = billing?.subscription;
-  const record = asRecord(raw);
-  if (!record) return null;
-  const data = asRecord(record.data) || record;
-  const subscription = asRecord(data.subscription) || data;
-  const plan = subscription.plan;
-  if (typeof plan === "string") return plan;
-  const planRecord = asRecord(plan);
-  if (planRecord) {
-    return (
-      String(
-        planRecord.legacyId || planRecord.code || planRecord.name || "",
-      ).trim() || null
-    );
-  }
-  const subscriptionPlan = subscription.subscriptionPlan;
-  return typeof subscriptionPlan === "string" ? subscriptionPlan : null;
-}
-
-function hasUsableLocalSession(user: AuthUser | null | undefined) {
-  return Boolean(user?.id && user.status === "active");
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function stripQuery(value?: string) {
-  return String(value || "").split("?")[0];
-}
-
-type BreadcrumbRoute = {
-  sectionTitle: string;
-  title: string;
-  selectedKey?: string;
-};
-
-const routeAliases: Record<string, string> = {
-  // 3010 P0-2：默认首页「今日增长」。根路径统一收敛到 /today，
-  // 与 app-shell SCENES 的 growth-home 场景保持一致。此规则只加不删，
-  // 历史 alias（/admin/*、/capabilities/*）与防重定向循环注释保持不动。
-  "/": "/today",
-  "/admin": "/apps",
-  "/admin/account": "/capabilities/account",
-  "/admin/ai-employee": "/apps/ai-employee",
-  "/admin/commercial-readiness": "/commercial-readiness",
-  "/admin/connectors": "/platforms",
-  "/admin/executor": "/local-engine",
-  "/admin/local-engine": "/local-engine",
-  "/admin/memory": "/tasks/evidence",
-  "/admin/models": "/capabilities/models",
-  "/admin/plugins": "/capabilities/models",
-  "/admin/risk": "/capabilities/risk",
-  "/admin/sandbox": "/capabilities/risk",
-  "/admin/savings": "/savings",
-  "/admin/settings": "/settings",
-  "/admin/tools": "/local-engine",
-  "/admin/users": "/capabilities/account",
-  "/admin/redfox": "/intelligence/redfox",
-  "/admin/redfox-skills": "/intelligence/skills",
-  "/capabilities/users": "/capabilities/account",
-  "/capabilities/tools": "/local-engine",
-  "/capabilities/plugins": "/capabilities/models",
-  "/capabilities/memory": "/tasks/evidence",
-  "/capabilities/executor": "/local-engine",
-  "/capabilities/sandbox": "/capabilities/risk",
-  // 素材库保留独立路由：移除 alias（曾并入 /content 导致 content 页入口被弹回、移动端素材库/去水印进不去）
-  // "/materials": "/content",
-  // 知识库保留独立路由：/knowledge-base 是真实 v2 页，alias 到 /content/knowledge
-  // 会与 content/knowledge 的 redirect("/knowledge-base") 构成重定向循环（P2-10 修复）
-  // "/knowledge-base": "/content/knowledge",
-  // 视频工坊保留独立路由：2026-08-10 收口时已把 /video-workshop-v2 的真实实现
-  // （studio_core 流水线控制台）搬回 /video-workshop 主路由，不再是占位，无需 alias 到 /content
-  // "/video-workshop": "/content",
-  // 2026-08-11 routeAliases 收口：纯归一旧路径（/topics、/strategies、/workbench、/interaction/* 等）
-  // 已全部改为规范路径直连（/content/*、/tasks/*、/engagement/*），删除 alias 条目。
-  // 保留上方 /admin/*、/capabilities/* 功能性隐藏（APK 内不渲染 admin 后台）。
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const routeBreadcrumbs: Record<string, BreadcrumbRoute> = {
-  "/agent-workbench": { sectionTitle: "任务中心", title: "任务历史" },
-  "/apps/auto-acquisition": {
-    sectionTitle: "增长获客",
-    title: "自动获客应用",
-    selectedKey: "/growth",
-  },
-  "/admin/ai-employee": {
-    sectionTitle: "应用与系统",
-    title: "AI 员工",
-    selectedKey: "/apps",
-  },
-  "/admin/commercial-readiness": {
-    sectionTitle: "应用与系统",
-    title: "商用检查",
-    selectedKey: "/capabilities/risk",
-  },
-  "/admin/account": {
-    sectionTitle: "设置",
-    title: "账号与设备",
-    selectedKey: "/capabilities/account",
-  },
-  "/admin/tools": {
-    sectionTitle: "设置",
-    title: "设备状态",
-    selectedKey: "/local-engine",
-  },
-  "/admin/plugins": {
-    sectionTitle: "设置",
-    title: "模型与工具",
-    selectedKey: "/capabilities/models",
-  },
-  "/admin/memory": {
-    sectionTitle: "任务中心",
-    title: "结果留存",
-    selectedKey: "/tasks/evidence",
-  },
-  "/admin/executor": {
-    sectionTitle: "设置",
-    title: "设备状态",
-    selectedKey: "/local-engine",
-  },
-  "/admin/sandbox": {
-    sectionTitle: "应用与系统",
-    title: "安全边界",
-    selectedKey: "/capabilities/risk",
-  },
-  "/crm": { sectionTitle: "CRM", title: "客户与机会", selectedKey: "/crm" },
-  "/crm/import": {
-    sectionTitle: "CRM",
-    title: "数据导入",
-    selectedKey: "/crm/import",
-  },
-  "/crm/closer": {
-    sectionTitle: "CRM",
-    title: "成交助手",
-    selectedKey: "/crm/closer",
-  },
-  "/crm/connectors": {
-    sectionTitle: "CRM",
-    title: "CRM 连接",
-    selectedKey: "/crm/connectors",
-  },
-  "/local-engine": {
-    sectionTitle: "设置",
-    title: "设备状态",
-    selectedKey: "/local-engine",
-  },
-  "/admin/local-engine": {
-    sectionTitle: "设置",
-    title: "设备状态",
-    selectedKey: "/local-engine",
-  },
-  "/intelligence/skills": {
-    sectionTitle: "应用与系统",
-    title: "情报功能模板",
-    selectedKey: "/capabilities/models",
-  },
-  "/intelligence/redfox": {
-    sectionTitle: "应用与系统",
-    title: "数据来源",
-    selectedKey: "/platforms",
-  },
-  "/intelligence/costs": {
-    sectionTitle: "应用与系统",
-    title: "用量明细",
-    selectedKey: "/settings",
-  },
-  "/release-notes": { sectionTitle: "应用与系统", title: "版本更新" },
-  "/sessions": { sectionTitle: "任务中心", title: "任务历史" },
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const routeBreadcrumbPrefixes: Array<[string, BreadcrumbRoute]> = [
-  ["/crm", { sectionTitle: "CRM", title: "客户与机会", selectedKey: "/crm" }],
-];
 
 type ToolEntryDefinition = {
   title: string;
@@ -1251,7 +820,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
     const fetchCurrentUser = async () => {
       const attempts = hasRecentAuthPending()
-        ? [0, 250, 500, 1000, 1500]
+        ? [0, 250, 1000]
         : [0, 250];
 
       for (const delay of attempts) {
@@ -1476,7 +1045,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           toolCode={activeToolCode}
         />
       ) : null}
-      <WorkspaceSwitcher />
       {children}
     </AppShell>
   );

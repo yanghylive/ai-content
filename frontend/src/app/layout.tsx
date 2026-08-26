@@ -1,9 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import "./astryx-layers.css";
-import "@astryxdesign/core/reset.css";
-import "@astryxdesign/core/astryx.css";
-import "@astryxdesign/theme-neutral/theme.css";
-import "./astryx-brand-overrides.css";
 import "./globals.css";
 import { Providers } from "./providers";
 import { OctopLaunchBridge } from "@/components/octop-launch-bridge";
