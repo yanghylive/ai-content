@@ -564,7 +564,7 @@ function FunnelSection({
               {/* 转化率 */}
               <div className="w-14 shrink-0 text-left">
                 {convRate ? (
-                  <span className="text-xs text-[var(--kaypal-v3-muted)]" style={{ fontVariantNumeric: "tabular-nums" }}>
+                  <span className="ml-auto text-xs text-[var(--kaypal-v3-muted)]" style={{ fontVariantNumeric: "tabular-nums" }}>
                     {convRate}%
                   </span>
                 ) : null}
@@ -591,14 +591,18 @@ function RecentRunsSection({
         最近运行
       </h2>
       {loading ? (
-        <p className="mt-3 text-sm text-[var(--kaypal-v3-muted)]">加载中…</p>
+        <div className="mt-3 space-y-2">
+        <div className="kx-skeleton h-10 w-full" />
+        <div className="kx-skeleton h-10 w-full" />
+        <div className="kx-skeleton h-10 w-full" />
+      </div>
       ) : !runs || runs.length === 0 ? (
         <div className="mt-3 flex items-center gap-2 text-sm text-[var(--kaypal-v3-muted)]">
           <Inbox className="h-4 w-4" />
           暂无运行记录
         </div>
       ) : (
-        <ul className="mt-3 divide-y divide-[var(--kaypal-v3-border)]">
+        <ul className="kx-run-list mt-3 divide-y divide-[var(--kaypal-v3-border)]">
           {runs.slice(0, 8).map((run) => {
             const meta = RUN_STATUS_META[run.status] ?? {
               label: run.status,
@@ -608,7 +612,7 @@ function RecentRunsSection({
             return (
               <li
                 key={run.id}
-                className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3"
+                className="flex items-center gap-x-3 py-3" style={{ minHeight: "48px" }}
               >
                 <span className={`kx-tag ${meta.className}`}>{meta.label}</span>
                 <span
@@ -623,7 +627,7 @@ function RecentRunsSection({
                   const t = run.contactedCount ?? 0;
                   const cr = run.crmCapturedCount ?? 0;
                   if (c === 0 && s === 0 && t === 0 && cr === 0) {
-                    return <span className="text-xs text-[var(--kaypal-v3-muted)]">暂无数据</span>;
+                    return <span className="ml-auto text-xs text-[var(--kaypal-v3-muted)]">暂无数据</span>;
                   }
                   return (
                     <span className="text-xs text-[var(--kaypal-v3-muted)]" style={{ fontVariantNumeric: "tabular-nums" }}>
