@@ -13,7 +13,7 @@ import {
 import { schedulesApi, type ScheduleConfig } from "@/lib/api/schedules";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const TASK_TYPE_LABELS: Record<string, { label: string; desc: string }> = {
   collect_materials: { label: "自动采集素材", desc: "从所有已启用的信息源定期获取最新内容" },

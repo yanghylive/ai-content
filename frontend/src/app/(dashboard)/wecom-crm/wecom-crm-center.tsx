@@ -11,7 +11,6 @@ import {
   Input,
   Select,
   SelectItem,
-  Spinner,
   Tab,
   Tabs,
   Textarea,
@@ -38,7 +37,7 @@ import {
   type WecomMsgType,
 } from "@/lib/api/wecom-crm";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "default"> = {
   active: "success",

@@ -11,7 +11,6 @@ import {
   CloudCog,
   Download,
   ExternalLink,
-  Loader2,
   PackageCheck,
   RefreshCw,
   RotateCcw,
@@ -32,7 +31,7 @@ import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
 import { MobilePageShell } from "@/components/mobile-page-shell";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 /** check.key 前缀 → 可操作设置页 */
 const CHECK_TARGETS: Array<{ match: RegExp; href: string; label: string }> = [

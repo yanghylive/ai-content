@@ -18,7 +18,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthAccountHealth } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const PLATFORM_LABELS: Record<string, string> = {
   douyin: "抖音",

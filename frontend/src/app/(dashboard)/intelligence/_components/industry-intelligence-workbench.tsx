@@ -31,7 +31,7 @@ import { FailureActionPanel } from "../../components/failure-action-panel";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { publicIntelligenceList, publicIntelligenceText } from "./display-text";
 import { IntelligenceToolResultContext } from "./intelligence-tool-result-context";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 type RiskLevel = "low" | "medium" | "high";

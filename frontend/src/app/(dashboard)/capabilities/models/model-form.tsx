@@ -15,7 +15,7 @@ import {
 import { settingsApi, type AIPlatform } from "@/lib/api/settings";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const POPULAR_MODELS = [
   { id: "kimi-k2", label: "Kimi K2", desc: "综合能力强，推荐" },

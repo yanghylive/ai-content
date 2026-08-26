@@ -11,7 +11,7 @@ import {
 import { growthApi, type GrowthReports } from "@/lib/api/growth";
 import { statsApi, type StatsSnapshot } from "@/lib/api/stats";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 export function GrowthReportsPage() {
   const router = useRouter();

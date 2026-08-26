@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { ShieldCheck, Loader2, Check, X, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Check, X, AlertTriangle } from "lucide-react";
 import { approvalApi, type ApprovalRecord } from "@/lib/api/approval";
 import { V2BackButton } from "@/components/v2/v2-back-button";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const RISK_LABEL: Record<string, { label: string; cls: string }> = {
   high: { label: "高风险", cls: "bg-red-50 text-red-600" },

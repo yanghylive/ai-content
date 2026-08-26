@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { SkeletonList } from "@/components/skeleton";
 
 export type ResourceItem = {
   id: string;
@@ -216,11 +217,8 @@ export function ResourceCenter({
 
       {/* 内容区 */}
       {loading ? (
-        <section className="kaypal-v3-panel p-12 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--kaypal-v3-accent)] border-t-transparent" />
-          <p className="mt-4 text-sm text-[var(--kaypal-v3-muted)]">
-            正在加载...
-          </p>
+        <section className="kaypal-v3-panel p-6">
+          <SkeletonList rows={4} />
         </section>
       ) : items.length === 0 ? (
         /* 空状态引导 */

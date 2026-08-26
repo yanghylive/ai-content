@@ -36,7 +36,7 @@ import type {
   InteractionReplyRuleConfig,
   InteractionTask,
 } from "@/lib/api/local-engine";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 /* ============ 类型（与旧版一致） ============ */

@@ -18,7 +18,7 @@ import { stylesApi, type Style } from "@/lib/api/styles";
 import { toPublicError } from "@/lib/public-error";
 import { FileText, Image as ImageIcon, LayoutTemplate, BookOpen } from "lucide-react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const TYPE_OPTIONS = [
   { value: "article", label: "文章", desc: "图文内容", icon: FileText },

@@ -29,7 +29,7 @@ import {
 import { toPublicError } from "@/lib/public-error";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { useConfirm } from "@/hooks/use-confirm";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const STATUS_META: Record<
   string,

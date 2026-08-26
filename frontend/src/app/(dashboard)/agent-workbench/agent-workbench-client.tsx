@@ -1,6 +1,6 @@
 "use client";
 
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
+import { SkeletonList, SkeletonRow } from "@/components/skeleton";
 
 import { BrandLogo } from "@/components/brand-logo";
 import { CountUpNumber } from "@/components/count-up-number";

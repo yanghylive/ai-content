@@ -11,7 +11,6 @@ import {
   Input,
   Select,
   SelectItem,
-  Spinner,
   Textarea,
   addToast,
 } from "@heroui/react";
@@ -31,7 +30,7 @@ import {
   type BossTask,
 } from "@/lib/api/boss-recruit";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "default"> = {
   logged_in: "success",

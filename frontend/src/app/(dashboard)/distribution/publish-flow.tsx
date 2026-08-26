@@ -57,7 +57,7 @@ import {
   platformTypeToKey,
   type PlatformKey,
 } from "@/lib/mobile-bridge";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 type Step = 1 | 2 | 3 | 4 | 5;

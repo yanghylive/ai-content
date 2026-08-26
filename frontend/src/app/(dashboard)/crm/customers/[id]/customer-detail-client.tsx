@@ -8,7 +8,6 @@ import {
   Input,
   Select,
   SelectItem,
-  Spinner,
   Tab,
   Tabs,
   Textarea,
@@ -51,7 +50,7 @@ import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
 import { useConfirm } from "@/hooks/use-confirm";
 import { CustomerAttributionPanel } from "./customer-attribution-panel";
 import { WelcomeMessagePanel } from "./welcome-message-panel";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const statusLabels: Record<string, string> = {
   new: "新线索",

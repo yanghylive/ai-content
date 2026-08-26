@@ -27,6 +27,7 @@ import {
   type InteractionTaskType,
 } from "@/lib/api/local-engine";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { toActionableError } from "@/lib/public-error";
 
 const PLATFORM_LABEL: Record<string, string> = {
   douyin: "抖音",
@@ -126,7 +127,7 @@ export function UnifiedInbox() {
         return result.items[0]?.threadKey ?? null;
       });
     } catch (e) {
-      setError((e as Error)?.message || "收件箱加载失败");
+      setError(toActionableError(e, "收件箱加载失败"));
     } finally {
       setLoading(false);
     }
@@ -400,7 +401,7 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
     try {
       setDetail(await getInboxThreadDetail(threadKey));
     } catch (e) {
-      setError((e as Error)?.message || "详情加载失败");
+      setError(toActionableError(e, "详情加载失败"));
     } finally {
       setLoading(false);
     }
@@ -430,7 +431,7 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
       setReplyText("");
       await load();
     } catch (e) {
-      setReplyError((e as Error)?.message || "回复发送失败，请稍后重试");
+      setReplyError(toActionableError(e, "回复发送失败，请稍后重试"));
     } finally {
       setSending(false);
     }

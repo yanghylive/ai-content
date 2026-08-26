@@ -25,7 +25,7 @@ import {
 import { ApiError } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 type PlatformFilter = "all" | "douyin" | "xiaohongshu" | "bilibili" | "wechat";
 type TargetFilter = "all" | "post" | "account" | "comment" | "engagement";

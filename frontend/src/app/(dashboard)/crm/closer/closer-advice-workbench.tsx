@@ -28,7 +28,7 @@ import { FailureActionPanel } from "../../components/failure-action-panel";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { getCrmAppState } from "@/lib/api/app-market";
 import { api } from "@/lib/api/client";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 type ChipColor = "accent" | "success" | "warning" | "danger" | "muted";

@@ -18,7 +18,7 @@ import {
   type SolutionPackageDefinition,
 } from "@/lib/api/solutions";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 export function SolutionConfigure({ packageCode }: { packageCode: string }) {
   const router = useRouter();

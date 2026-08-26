@@ -12,13 +12,12 @@ import {
   ShieldCheck,
   Sparkles,
   WandSparkles,
-  type LucideIcon,
-} from "lucide-react";
-import { Button, Card, CardBody, Spinner } from "@heroui/react";
+  type LucideIcon} from "lucide-react";
+import { Button, Card, CardBody } from "@heroui/react";
 import { BusinessToolResultContext } from "../components/business-tool-result-context";
 import { materialsApi, type Material, type MaterialCollectStatus, type MaterialStats } from "@/lib/api/materials";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 type QuickAction = {
   description: string;
@@ -38,14 +37,12 @@ const platformLabelMap: Record<string, string> = {
   RedFox: "外部数据",
   redfox: "外部数据",
   "X/Twitter": "X (Twitter)",
-  Tophub: "今日热榜",
-};
+  Tophub: "今日热榜"};
 
 const statusLabelMap: Record<Material["status"], string> = {
   unmined: "待挖掘",
   mined: "已挖掘",
-  failed: "采集失败",
-};
+  failed: "采集失败"};
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) return "—";
@@ -56,8 +53,7 @@ function formatDateTime(value: string | null | undefined) {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
-    minute: "2-digit",
-  });
+    minute: "2-digit"});
 }
 
 function formatCount(value: number | null | undefined) {
@@ -99,8 +95,7 @@ export function ContentHubPage() {
           limit: 6,
           page: 1,
           sortBy: "collectDate",
-          sortOrder: "desc",
-        }),
+          sortOrder: "desc"}),
         materialsApi.collectStatus(),
       ]);
 
@@ -141,38 +136,32 @@ export function ContentHubPage() {
       description: "继续筛选、采集、删除与导出素材。",
       icon: Database,
       variant: "primary",
-      onClick: () => router.push("/materials"),
-    },
+      onClick: () => router.push("/materials")},
     {
       label: "生成选题",
       description: "从素材直接转到选题库。",
       icon: Sparkles,
-      onClick: () => router.push("/topics"),
-    },
+      onClick: () => router.push("/topics")},
     {
       label: "开始写内容",
       description: "把选题变成可编辑草稿。",
       icon: FileText,
-      onClick: () => router.push("/content/articles"),
-    },
+      onClick: () => router.push("/content/articles")},
     {
       label: "内容改写",
       description: "把一份内容改成多平台版本。",
       icon: WandSparkles,
-      onClick: () => router.push("/content/optimization"),
-    },
+      onClick: () => router.push("/content/optimization")},
     {
       label: "发布前检查",
       description: "先看风险，再进入发布准备。",
       icon: ShieldCheck,
-      onClick: () => router.push("/compliance"),
-    },
+      onClick: () => router.push("/compliance")},
     {
       label: "打开知识库",
       description: "把可复用知识沉淀起来。",
       icon: LibraryBig,
-      onClick: () => router.push("/knowledge-base"),
-    },
+      onClick: () => router.push("/knowledge-base")},
   ];
 
   const topPlatformItems = (stats?.byPlatform || []).slice(0, 4);
@@ -203,8 +192,7 @@ export function ContentHubPage() {
             <div
               className="grid gap-6 w-full"
               style={{
-                gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
-              }}
+                gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))"}}
             >
               <Card className="p-6 bg-default-100">
                 <CardBody>
@@ -264,8 +252,7 @@ export function ContentHubPage() {
                       className="grid gap-3"
                       style={{
                         gridTemplateColumns:
-                          "repeat(auto-fit, minmax(160px, 1fr))",
-                      }}
+                          "repeat(auto-fit, minmax(160px, 1fr))"}}
                     >
                       {quickActions.map((action) => {
                         const Icon = action.icon;
@@ -327,8 +314,7 @@ export function ContentHubPage() {
             <div
               className="grid gap-4 w-full"
               style={{
-                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-              }}
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))"}}
             >
               <MetricCard label="素材总数" value={stats?.total} />
               <MetricCard label="待挖掘" value={stats?.unmined} tone="warning" />
@@ -339,8 +325,7 @@ export function ContentHubPage() {
             <div
               className="grid gap-4 w-full"
               style={{
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              }}
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))"}}
             >
               <Card className="p-4">
                 <CardBody>
@@ -488,8 +473,7 @@ export function ContentHubPage() {
                     className="grid gap-3 w-full"
                     style={{
                       gridTemplateColumns:
-                        "repeat(auto-fit, minmax(220px, 1fr))",
-                    }}
+                        "repeat(auto-fit, minmax(220px, 1fr))"}}
                   >
                     <h2 className="text-xl font-bold">最近素材</h2>
                     <Button
@@ -583,8 +567,7 @@ export function ContentHubPage() {
 function MetricCard({
   label,
   tone = "default",
-  value,
-}: {
+  value}: {
   label: string;
   tone?: "default" | "success" | "warning" | "danger";
   value: number | undefined | null;

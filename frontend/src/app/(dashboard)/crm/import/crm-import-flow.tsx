@@ -23,7 +23,7 @@ import {
 import { commitCrmImport, dryRunCrmImport, rollbackCrmImport, type CrmImportPreviewRow } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
 type Step = 1 | 2 | 3;

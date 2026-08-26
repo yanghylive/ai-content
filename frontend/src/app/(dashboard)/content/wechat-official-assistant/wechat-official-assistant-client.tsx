@@ -39,7 +39,7 @@ import {
   type JpagePreviewReceipt,
   type PublishAccount,
 } from "@/lib/api/publishing";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const STATUS_COLOR: Record<
   AgentWakerRunStatus,

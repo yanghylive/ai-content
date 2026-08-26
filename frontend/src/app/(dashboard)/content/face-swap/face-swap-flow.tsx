@@ -21,7 +21,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { videoFaceSwapApi, type VideoFaceSwapMaterialFile } from "@/lib/api/video-face-swap";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 type Step = 1 | 2 | 3;
 

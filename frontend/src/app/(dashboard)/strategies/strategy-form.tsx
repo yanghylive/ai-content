@@ -20,7 +20,7 @@ import {
 } from "@/lib/api/content-strategies";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const INDUSTRIES = ["通用", "电商", "教育", "餐饮", "美业", "房产", "金融", "科技"];
 

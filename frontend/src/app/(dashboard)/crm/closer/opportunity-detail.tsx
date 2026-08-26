@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Save, X } from "lucide-react";
+import { Save, X } from "lucide-react";
 import {
   V2Field,
   V2GhostButton,
@@ -17,7 +17,7 @@ import {
   type CrmOpportunity,
 } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 /** 商机阶段 8 态（对齐后端 OPPORTUNITY_STAGES + status-dictionary CRM_STATUS） */
 const STAGES: Array<{ key: string; label: string }> = [

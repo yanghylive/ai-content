@@ -2,7 +2,7 @@
 
 import React from "react";
 import {
-  Button, Card, CardBody, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, useDisclosure,
+  Button, Card, CardBody, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure,
 } from "@heroui/react";
 import {
   kaypalApi,
@@ -13,7 +13,7 @@ import {
 } from "@/lib/api/auth";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 function formatCredits(value?: number | null) {
   if (value == null) return "同步中";

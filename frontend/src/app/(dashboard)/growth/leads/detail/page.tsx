@@ -8,7 +8,7 @@ import { growthApi, type GrowthLead, type LeadScoreHistoryDto, type LeadAttribut
 import { api } from "@/lib/api/client";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { V2StatusChip } from "@/components/v2/ui-kit";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const PLATFORM_LABEL: Record<string, string> = {
   douyin: "抖音",

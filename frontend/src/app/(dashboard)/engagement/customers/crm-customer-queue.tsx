@@ -2,11 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
-import { Button, Chip, Spinner } from "@heroui/react";
+import { Button, Chip } from "@heroui/react";
 import { ArrowRight, RefreshCw, UsersRound } from "lucide-react";
 import { listCrmCustomers, type CrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const statusLabels: Record<string, string> = {
   new: "新线索",
@@ -14,8 +14,7 @@ const statusLabels: Record<string, string> = {
   interested: "有意向",
   follow_up: "待跟进",
   customer: "已成交",
-  invalid: "无效",
-};
+  invalid: "无效"};
 
 export function CrmCustomerQueue() {
   const [customers, setCustomers] = React.useState<CrmCustomer[]>([]);

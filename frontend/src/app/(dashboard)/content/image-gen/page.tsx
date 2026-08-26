@@ -154,7 +154,7 @@ export default function ImageGenPage() {
       const handleEvent = (payload: Record<string, unknown>) => {
         switch (payload.type) {
           case "progress": {
-            setProgressMsg(String(payload.message || ""));
+            setProgressMsg(toActionableError(String(payload.message), ""));
             break;
           }
           case "titles": {
@@ -186,7 +186,7 @@ export default function ImageGenPage() {
                 content: "",
                 imagePrompt: "",
                 status: "failed",
-                error: String(payload.message || "配图失败"),
+                error: toActionableError(String(payload.message), "配图失败"),
               },
             ]);
             break;
@@ -214,8 +214,8 @@ export default function ImageGenPage() {
             break;
           }
           case "error": {
-            setError(String(payload.message || "生成失败"));
-            toast.error(String(payload.message || "生成失败"));
+            setError(toActionableError(String(payload.message), "生成失败"));
+            toast.error(toActionableError(String(payload.message), "生成失败"));
             break;
           }
           default:

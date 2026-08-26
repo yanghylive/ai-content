@@ -23,7 +23,7 @@ import {OpsButton,
   OpsStatusPill,
   OpsTabs
 } from "../components/desktop-ops-ui";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const PROVENANCE_LABEL: Record<string, string> = {
   delivery: "九章交付",

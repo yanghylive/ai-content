@@ -1,13 +1,13 @@
 "use client";
 
 import { useConfirm } from "@/hooks/use-confirm";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle, SkeletonRow } from "@/components/skeleton";
+import { SkeletonList, SkeletonRow } from "@/components/skeleton";
 
 import { BrandLogo } from "@/components/brand-logo";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Lightbulb, Loader2, RefreshCcw, Send, Trash2, Wand2, XCircle } from "lucide-react";
+import { FileText, Lightbulb, RefreshCcw, Send, Trash2, Wand2, XCircle } from "lucide-react";
 import { ResourceCenter, type ResourceItem } from "@/components/v2/resource-center";
 import { topicsApi, type Topic, type TopicDiscoveryResult } from "@/lib/api/topics";
 import { articlesApi } from "@/lib/api/articles";

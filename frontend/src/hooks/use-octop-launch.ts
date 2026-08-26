@@ -2,6 +2,7 @@
 
 import React from "react";
 import toast from "@/lib/toast";
+import { toActionableError } from "@/lib/public-error";
 
 type WorkspaceTabsApi = NonNullable<Window["electronAPI"]>["workspaceTabs"];
 
@@ -43,7 +44,7 @@ export function useOctopLaunch() {
       if (opened) toast.success("已打开 Octop 高级模式");
       else toast.error("打开 Octop 失败");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "打开 Octop 失败");
+      toast.error(toActionableError(err, "打开 Octop 失败"));
     } finally {
       busyRef.current = false;
     }

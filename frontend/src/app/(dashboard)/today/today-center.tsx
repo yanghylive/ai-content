@@ -370,7 +370,7 @@ function HomeHeader({
                   <>
                     <div className="mt-2 flex items-end justify-between gap-2">
                       <p
-                        className="text-[32px] font-semibold leading-9 tracking-tight text-[var(--kaypal-v3-ink)]"
+                        className="text-[var(--kaypal-v3-font-display,32px)] font-semibold leading-9 tracking-tight text-[var(--kaypal-v3-ink)]"
                         style={{ fontVariantNumeric: "tabular-nums" }}
                         title={stat.value}
                       >

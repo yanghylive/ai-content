@@ -62,7 +62,7 @@ import {
   type WorkspaceStepId,
   type WorkspaceVersionView,
 } from "./workspace-types";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 function contentFingerprint(value: Pick<EditorValue, "title" | "content">) {
   return JSON.stringify([value.title, value.content]);

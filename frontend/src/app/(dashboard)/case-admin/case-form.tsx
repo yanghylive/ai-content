@@ -11,6 +11,7 @@ import {
   type CaseAdminInput,
 } from "@/lib/api/case-admin";
 import { OpsFormRow, OpsPanel } from "../components/desktop-ops-ui";
+import { toActionableError } from "@/lib/public-error";
 
 const PROVENANCE_OPTIONS = [
   { key: "delivery", label: "九章交付" },
@@ -197,7 +198,7 @@ export function CaseForm({ caseId, initial }: { caseId?: string; initial?: Admin
         return;
       }
     } catch (e) {
-      addToast({ title: "保存失败", description: String((e as Error)?.message ?? e), color: "danger" });
+      addToast({ title: "保存失败", description: toActionableError(e, "未知错误"), color: "danger" });
     } finally {
       setSaving(false);
     }
@@ -211,7 +212,7 @@ export function CaseForm({ caseId, initial }: { caseId?: string; initial?: Admin
       addToast({ title: "已提交审核", color: "success" });
       router.refresh();
     } catch (e) {
-      addToast({ title: "提交失败", description: String((e as Error)?.message ?? e), color: "danger" });
+      addToast({ title: "提交失败", description: toActionableError(e, "未知错误"), color: "danger" });
     } finally {
       setSubmitting(false);
     }

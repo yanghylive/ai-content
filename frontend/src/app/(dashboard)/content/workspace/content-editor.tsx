@@ -5,7 +5,6 @@ import {
   Button,
   Chip,
   Input,
-  Spinner,
   Tab,
   Tabs,
   Textarea,
@@ -45,7 +44,7 @@ import {
   type WorkspaceStepId,
   type WorkspaceVersionView,
 } from "./workspace-types";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 type ContentEditorProps = {
   activeStep: WorkspaceStepId;

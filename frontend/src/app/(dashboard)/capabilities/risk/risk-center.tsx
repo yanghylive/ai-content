@@ -15,7 +15,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { DefaultSendModeSection } from "./default-send-mode-section";
-import { SkeletonList, SkeletonText, SkeletonCard, SkeletonLine, SkeletonCircle } from "@/components/skeleton";
+import { SkeletonList } from "@/components/skeleton";
 
 const ACTION_LABELS: Record<string, string> = {
   "agent-confirmation-approve": "批准智能任务执行",
