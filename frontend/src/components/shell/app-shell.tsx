@@ -107,7 +107,7 @@ export function sceneOfPath(pathname: string): string {
   return "mine";
 }
 
-/** 6 个业务场景路由（这些页面自带 .kx-view 内边距，不再套容器） */
+/** 7 个业务场景路由（这些页面自带 .kx-view 内边距，不再套容器） */
 const SCENE_ROUTES = new Set(SCENES.map((s) => s.href));
 function isSceneRoute(pathname: string | null) {
   return SCENE_ROUTES.has(pathname || "");
@@ -315,7 +315,7 @@ export function AppShell({
 
   /* 唯一品牌主题（2026-08-23 定稿）：磨砂紫金，无切换无回退；深浅双档走 next-themes。 */
 
-  /* 全局快捷键：⌘K / 1-6 */
+  /* 全局快捷键：⌘K / 1-7 */
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const typing = /INPUT|TEXTAREA|SELECT/.test(
