@@ -919,7 +919,7 @@ function DraftCard({
       setState("confirmed");
     } catch (e) {
       setState("error");
-      setErrorMsg((e as Error).message);
+      setErrorMsg(toActionableError(e, "任务确认失败"));
     } finally {
       setBusy(false);
     }
@@ -940,7 +940,7 @@ function DraftCard({
       onDone("任务草稿已执行 ✅");
     } catch (e) {
       setState("error");
-      setErrorMsg((e as Error).message);
+      setErrorMsg(toActionableError(e, "任务执行失败"));
     } finally {
       setBusy(false);
     }

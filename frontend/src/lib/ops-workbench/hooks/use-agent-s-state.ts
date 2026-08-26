@@ -8,6 +8,7 @@ import {
   type AgentSConversationPurpose,
   type AgentSConversationSession,
 } from "@/lib/api/local-engine";
+import { toPublicError } from "@/lib/public-error";
 
 type AgentSStatus = Awaited<ReturnType<typeof localEngineApi.agentSStatus>>;
 type AgentSEventResult = Awaited<
@@ -68,7 +69,7 @@ export function useAgentSState() {
       setAgentSError(null);
     } catch (error) {
       setAgentSError(
-        error instanceof Error ? error.message : "无法读取本机助手状态",
+        toPublicError(error, "无法读取本机助手状态"),
       );
     }
   }, []);
@@ -80,7 +81,7 @@ export function useAgentSState() {
       await refreshAgentSStatus();
     } catch (error) {
       setAgentSError(
-        error instanceof Error ? error.message : "本机助手启动失败",
+        toPublicError(error, "本机助手启动失败"),
       );
     } finally {
       setAgentSBusy(false);
@@ -94,7 +95,7 @@ export function useAgentSState() {
       await refreshAgentSStatus();
     } catch (error) {
       setAgentSError(
-        error instanceof Error ? error.message : "本机助手停止失败",
+        toPublicError(error, "本机助手停止失败"),
       );
     } finally {
       setAgentSBusy(false);
@@ -178,7 +179,7 @@ export function useAgentSState() {
         return { session, run };
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Agent-S 任务启动失败";
+          toPublicError(error, "Agent-S 任务启动失败");
         setAgentSError(message);
         throw error;
       } finally {
@@ -226,7 +227,7 @@ export function useAgentSState() {
       return sessions;
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "无法读取 Agent 对话";
+        toPublicError(error, "无法读取 Agent 对话");
       setAgentSError(message);
       throw error;
     }
@@ -245,7 +246,7 @@ export function useAgentSState() {
       return conversation;
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "无法读取 Agent 对话";
+        toPublicError(error, "无法读取 Agent 对话");
       setAgentSError(message);
       throw error;
     }
@@ -283,7 +284,7 @@ export function useAgentSState() {
         return conversation;
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Agent 对话创建失败";
+          toPublicError(error, "Agent 对话创建失败");
         setAgentSError(message);
         throw error;
       } finally {
@@ -364,7 +365,7 @@ export function useAgentSState() {
           await refreshAgentSConversations().catch(() => undefined);
         }
         const message =
-          error instanceof Error ? error.message : "Agent 消息发送失败";
+          toPublicError(error, "Agent 消息发送失败");
         setAgentSError(message);
         throw error;
       } finally {
