@@ -18,6 +18,7 @@ import {
   type GrowthHomeNextAction,
   type GrowthHomeResponse,
 } from "@/lib/api/growth";
+/* trend 类型从 GrowthReports.trend 提取（sparkline + 昨日差值用） */
 import { toPublicError } from "@/lib/public-error";
 
 /** 首页聚合接口轮询间隔：与 app-shell useBadges 的 30s 节奏对齐 */
@@ -81,6 +82,54 @@ function trackGrowthHomeViewed(range: string, blockerCount: number): void {
   } catch {
     /* 同步异常（序列化/超长等）不外抛 */
   }
+}
+
+/** 纯 SVG sparkline：不引第三方库，传入 number[] 渲染折线 */
+function Sparkline({
+  data,
+  width = 64,
+  height = 20,
+  color = "var(--kaypal-v3-accent)",
+}: {
+  data: number[];
+  width?: number;
+  height?: number;
+  color?: string;
+}) {
+  if (data.length < 2) return null;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const step = width / (data.length - 1);
+  const points = data
+    .map((v, i) => `${(i * step).toFixed(1)},${(height - ((v - min) / range) * height).toFixed(1)}`)
+    .join(" ");
+  const areaPoints = `0,${height} ${points} ${width},${height}`;
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+      <polygon points={areaPoints} fill={color} opacity={0.08} />
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/** 昨日差值：从 trend 数据提取昨日值，算 delta */
+function computeDelta(
+  todayValue: number | null,
+  trend: Array<{ date: string; leads: number }> | null,
+): { delta: number; direction: "up" | "down" | "flat" } | null {
+  if (todayValue === null || !trend || trend.length < 2) return null;
+  const yesterday = trend[trend.length - 2]?.leads ?? 0;
+  const delta = todayValue - yesterday;
+  if (delta === 0) return { delta: 0, direction: "flat" };
+  return { delta, direction: delta > 0 ? "up" : "down" };
 }
 
 /** 数值展示：null/undefined → 空态文案（绝不显示 0）；0 → 真实 0 */
@@ -170,12 +219,14 @@ function HomeHeader({
   home,
   loading,
   error,
+  trend,
   onRefresh,
   onCreateTask,
 }: {
   home: GrowthHomeResponse | null;
   loading: boolean;
   error: string | null;
+  trend: Array<{ date: string; leads: number }> | null;
   onRefresh: () => void;
   onCreateTask: () => void;
 }) {
@@ -267,7 +318,7 @@ function HomeHeader({
         </div>
       ) : home ? (
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
-          {stats.map((stat) => {
+          {stats.map((stat, index) => {
             const isEmpty = stat.value === stat.emptyText;
             return (
               <div
@@ -283,13 +334,33 @@ function HomeHeader({
                     {stat.value}
                   </p>
                 ) : (
-                  <p
-                    className="mt-2 text-[32px] font-semibold leading-9 tracking-tight text-[var(--kaypal-v3-ink)]"
-                    style={{ fontVariantNumeric: "tabular-nums" }}
-                    title={stat.value}
-                  >
-                    {stat.value}
-                  </p>
+                  <>
+                    <div className="mt-2 flex items-end justify-between gap-2">
+                      <p
+                        className="text-[32px] font-semibold leading-9 tracking-tight text-[var(--kaypal-v3-ink)]"
+                        style={{ fontVariantNumeric: "tabular-nums" }}
+                        title={stat.value}
+                      >
+                        {stat.value}
+                      </p>
+                      {/* sparkline：仅今日新线索卡显示（有 trend 数据时） */}
+                      {index === 0 && trend && trend.length >= 2 ? (
+                        <Sparkline data={trend.map((t) => t.leads)} />
+                      ) : null}
+                    </div>
+                    {/* 昨日差值：仅今日新线索卡显示 */}
+                    {index === 0 ? (() => {
+                      const d = computeDelta(home?.stats.newLeads ?? null, trend);
+                      if (!d) return null;
+                      const color = d.direction === "up" ? "var(--kaypal-v3-success)" : d.direction === "down" ? "var(--kaypal-v3-danger)" : "var(--kaypal-v3-muted)";
+                      const arrow = d.direction === "up" ? "↑" : d.direction === "down" ? "↓" : "→";
+                      return (
+                        <p className="mt-0.5 text-xs" style={{ color }}>
+                          {arrow} {Math.abs(d.delta).toLocaleString("zh-CN")} 较昨日
+                        </p>
+                      );
+                    })() : null}
+                  </>
                 )}
               </div>
             );
@@ -368,7 +439,10 @@ function BlockerCards({ blockers }: { blockers: GrowthHomeBlocker[] }) {
   );
 }
 
-/** 七段漏斗：null 段显示「不可用」，保留整体形状 */
+/**
+ * 七段漏斗：竖向比例条形 + 阶段间转化率。
+ * 全部为 0 或不可用（null）时折叠为设计过的空态，不展示一排 0。
+ */
 function FunnelSection({
   funnel,
   loading,
@@ -376,6 +450,55 @@ function FunnelSection({
   funnel: GrowthHomeFunnel | null;
   loading: boolean;
 }) {
+  // 收集每段值，null 视为 0 用于宽度计算
+  const stages = HOME_FUNNEL_STAGES.map((s) => {
+    const raw = funnel ? funnel[s.key] : null;
+    return { ...s, value: raw, numeric: raw ?? 0 };
+  });
+  const maxValue = Math.max(...stages.map((s) => s.numeric), 1);
+  // 全零（所有段都是 0 或 null）→ 折叠为空态
+  const allZero = stages.every((s) => s.numeric === 0);
+  // 任意一段 null → 标记部分不可用
+  const hasNull = stages.some((s) => s.value === null);
+
+  if (loading && !funnel) {
+    return (
+      <section className="kaypal-v3-panel p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
+            转化漏斗
+          </h2>
+        </div>
+        <div className="mt-4 space-y-3">
+          {HOME_FUNNEL_STAGES.map((s) => (
+            <div key={s.key} className="h-10 animate-pulse rounded bg-[var(--kaypal-v3-accent-soft)]" />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (allZero) {
+    return (
+      <section className="kaypal-v3-panel p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
+            转化漏斗
+          </h2>
+        </div>
+        <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
+          <Inbox className="h-8 w-8 text-[var(--kaypal-v3-muted)]" />
+          <p className="text-sm text-[var(--kaypal-v3-muted)]">
+            今日暂无转化数据
+          </p>
+          <p className="text-xs text-[var(--kaypal-v3-muted)]">
+            运行获客任务后，漏斗各阶段将自动填充
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="kaypal-v3-panel p-6">
       <div className="flex items-center justify-between">
@@ -383,34 +506,45 @@ function FunnelSection({
           转化漏斗
         </h2>
         <span className="text-xs text-[var(--kaypal-v3-muted)]">
-          候选人 → 赢单
+          候选人 → 赢单{hasNull ? " · 部分不可用" : ""}
         </span>
       </div>
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-        {HOME_FUNNEL_STAGES.map((stage, index) => {
-          const value = funnel ? funnel[stage.key] : null;
-          const display =
-            value === null || value === undefined
-              ? "不可用"
-              : value.toLocaleString("zh-CN");
+      <div className="mt-4 space-y-2">
+        {stages.map((stage, index) => {
+          const widthPct = Math.max((stage.numeric / maxValue) * 100, 8);
+          const prevValue = index > 0 ? stages[index - 1].numeric : 0;
+          const convRate =
+            index > 0 && prevValue > 0
+              ? ((stage.numeric / prevValue) * 100).toFixed(0)
+              : null;
           return (
-            <div
-              key={stage.key}
-              className="flex w-full items-center gap-2 sm:flex-1"
-            >
-              {index > 0 && (
-                <span className="text-[var(--kaypal-v3-muted)]">→</span>
-              )}
-              <div
-                className="flex-1 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent-soft)] p-3 text-center transition-all"
-                style={{ opacity: Math.max(1 - index * 0.12, 0.3) }}
-              >
-                <p className="text-xl font-bold text-[var(--kaypal-v3-accent-ink)]">
-                  {loading ? "-" : display}
-                </p>
-                <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+            <div key={stage.key} className="flex items-center gap-3">
+              {/* 标签列 */}
+              <div className="w-16 shrink-0 text-right">
+                <p className="text-xs font-medium text-[var(--kaypal-v3-soft-ink)]">
                   {stage.label}
                 </p>
+              </div>
+              {/* 条形 */}
+              <div className="relative h-9 flex-1 overflow-hidden rounded-[var(--kaypal-v3-radius-xs)] bg-[var(--kaypal-v3-paper-soft)]">
+                <div
+                  className="flex h-full items-center rounded-[var(--kaypal-v3-radius-xs)] bg-[var(--kaypal-v3-accent)] transition-all"
+                  style={{ width: `${widthPct}%`, opacity: Math.max(1 - index * 0.1, 0.35) }}
+                >
+                  <span className="ml-3 text-sm font-semibold text-white" style={{ fontVariantNumeric: "tabular-nums" }}>
+                    {stage.value === null
+                      ? "—"
+                      : stage.numeric.toLocaleString("zh-CN")}
+                  </span>
+                </div>
+              </div>
+              {/* 转化率 */}
+              <div className="w-14 shrink-0 text-left">
+                {convRate ? (
+                  <span className="text-xs text-[var(--kaypal-v3-muted)]" style={{ fontVariantNumeric: "tabular-nums" }}>
+                    {convRate}%
+                  </span>
+                ) : null}
               </div>
             </div>
           );
@@ -518,6 +652,7 @@ function NextActionsSection({
 export function TodayCenter() {
   const router = useRouter();
   const [home, setHome] = useState<GrowthHomeResponse | null>(null);
+  const [trend, setTrend] = useState<Array<{ date: string; leads: number }> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const viewedRef = useRef(false);
@@ -528,6 +663,15 @@ export function TodayCenter() {
       const data = await growthApi.getGrowthHome("today");
       setHome(data);
       setError(null);
+      // 并行加载 7 日趋势（失败不阻塞首页）
+      if (!silent) {
+        try {
+          const reports = await growthApi.reports({});
+          setTrend(reports.trend?.slice(-7) ?? []);
+        } catch {
+          setTrend(null);
+        }
+      }
     } catch (loadError: unknown) {
       setError(toPublicError(loadError, "今日增长数据加载失败，请稍后重试。"));
     } finally {
@@ -559,6 +703,7 @@ export function TodayCenter() {
         home={home}
         loading={loading}
         error={error}
+        trend={trend}
         onRefresh={() => void loadHome()}
         onCreateTask={handleCreateTask}
       />
