@@ -45,7 +45,6 @@ export default function VideoGenPage() {
       const t = await videoGenApi.task(id);
       setTask(t);
       setPollStale(false);
-      setConsecutivePollFailures(0);
       if (t.status === "ready" || t.status === "failed") {
         stopPoll();
         if (t.status === "ready") toast("🎬 视频已生成");

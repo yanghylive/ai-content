@@ -60,7 +60,7 @@ export default function DeviceCenterPage() {
       setTasks(t ?? []);
       setNow(Date.now());
     } catch (e) {
-      setError(toPublicError(e, "设备中心数据加载失败，请重试"));
+      setError(toPublicError(e, "移动设备数据加载失败，请重试"));
     }
   }, []);
 
@@ -132,7 +132,7 @@ function DesktopDeviceCenter(props: CommonProps & { heartbeatAge: (ts: string | 
     <div className="kx-view flex flex-col gap-[var(--space-card)]">
       {/* 页头（26/800 规范标题） */}
       <header className="kaypal-v3-panel p-6">
-        <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">设备中心</h1>
+        <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">移动设备中心</h1>
         <p className="kx-greet-sub text-[var(--kaypal-v3-muted)]">
           手机设备在线状态 · 账号租约 · 执行任务（每 30s 自动刷新）
         </p>
@@ -327,7 +327,7 @@ function MobileDeviceCenter(props: CommonProps) {
   return (
     <div className="mx-px" style={{ maxWidth: 640, margin: "0 auto", padding: "12px 16px 28px" }}>
       <div className="mx-header">
-        <div className="mx-page-title">设备中心</div>
+        <div className="mx-page-title">移动设备中心</div>
         <div className="mx-page-sub">手机设备在线状态 · 账号租约 · 执行任务（每 30s 自动刷新）</div>
       </div>
 

@@ -313,7 +313,7 @@ export function AcquisitionRuleForm() {
         setCreatedConfigId(config.id);
         await runPreflight(config.id);
       } else {
-        router.push("/apps/auto-acquisition");
+        router.push("/growth/acquisition");
       }
     } catch (err: unknown) {
       setError(toPublicError(err, "创建获客任务失败，请稍后重试"));
@@ -353,7 +353,7 @@ export function AcquisitionRuleForm() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/apps/auto-acquisition")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/growth/acquisition")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回获客任务
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -546,7 +546,7 @@ export function AcquisitionRuleForm() {
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/apps/auto-acquisition")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/growth/acquisition")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
             <button
@@ -607,7 +607,7 @@ export function AcquisitionRuleForm() {
           <button
             type="button"
             className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/apps/auto-acquisition")}
+            onClick={() => router.push("/growth/acquisition")}
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -1090,7 +1090,7 @@ export function AcquisitionRuleForm() {
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/apps/auto-acquisition")}>
+        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/growth/acquisition")}>
           返回
         </V2GhostButton>
         {!createdConfigId && (

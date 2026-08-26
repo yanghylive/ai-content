@@ -51,11 +51,11 @@ const COMMANDS: PaletteCommand[] = [
   { cat: "互动中心", name: "会话记录", icon: "history", tint: "kx-t-blue", href: "/tasks/runs", kw: "会话 记录 run" },
   { cat: "执行中心", name: "执行中心 · 任务", icon: "cpu", tint: "kx-t-violet", href: "/tasks", kw: "tasks 执行 记录 任务中心" },
   { cat: "执行中心", name: "审批中心", icon: "alert", tint: "kx-t-red", href: "/approvals", kw: "审批 高风险 批量 触达 私信" },
-  { cat: "执行中心", name: "结果留存", icon: "history", tint: "kx-t-slate", href: "/task-evidence", kw: "结果 留存 证据 evidence 任务" },
+  { cat: "执行中心", name: "结果留存", icon: "history", tint: "kx-t-slate", href: "/tasks/evidence", kw: "结果 留存 证据 evidence 任务" },
   { cat: "执行中心", name: "任务工作台", icon: "cpu", tint: "kx-t-blue", href: "/agent-workbench", kw: "任务 工作台 agent-workbench 失败重试" },
-  { cat: "系统设置", name: "平台账号", icon: "phone", tint: "kx-t-blue", href: "/platforms", kw: "账号 登录 绑定" },
+  { cat: "系统设置", name: "平台账号", icon: "phone", tint: "kx-t-blue", href: "/distribution/accounts", kw: "账号 登录 绑定" },
   { cat: "系统设置", name: "多账号矩阵", icon: "database", tint: "kx-t-green", href: "/accounts-matrix", kw: "多账号 矩阵 账号 分发" },
-  { cat: "系统设置", name: "本地引擎", icon: "cpu", tint: "kx-t-slate", href: "/local-engine", kw: "local engine 本地 引擎 设备" },
+  { cat: "系统设置", name: "电脑本机服务（本地引擎）", icon: "cpu", tint: "kx-t-slate", href: "/local-engine", kw: "local engine 本地 引擎 设备 本机 电脑 服务" },
   { cat: "系统设置", name: "商业就绪", icon: "rocket", tint: "kx-t-amber", href: "/commercial-readiness", kw: "商业 就绪 自检 上线 readiness" },
   { cat: "系统设置", name: "用量与费用", icon: "file", tint: "kx-t-amber", href: "/intelligence/costs", kw: "积分 用量 费用 账单" },
   { cat: "系统设置", name: "设置", icon: "settings", tint: "kx-t-slate", href: "/settings", kw: "settings 设置 ai 模型" },
@@ -76,15 +76,28 @@ const SCENE_NAME: Record<string, string> = {
 };
 
 function sceneOf(href: string) {
+  const base = href.split("?")[0];
   for (const [prefix, name] of Object.entries(SCENE_NAME)) {
-    if (href === prefix) return name;
+    if (base === prefix) return name;
   }
-  if (href.startsWith("/growth") || href.startsWith("/intelligence") || href.startsWith("/engagement/comment-acquisition") || href.startsWith("/effects")) return "获客中心";
-  if (href.startsWith("/crm") || href.startsWith("/customer") || href.startsWith("/boss-recruit") || href.startsWith("/wecom-crm")) return "客户管理";
-  if (href.startsWith("/content") || href.startsWith("/materials") || href.startsWith("/distribution") || href.startsWith("/viral-analysis") || href.startsWith("/redfox-skills") || href.startsWith("/topics") || href.startsWith("/schedules") || href.startsWith("/knowledge-base") || href.startsWith("/styles")) return "内容运营";
-  if (href.startsWith("/engagement") || href.startsWith("/message")) return "互动中心";
-  if (href.startsWith("/tasks") || href.startsWith("/approvals") || href.startsWith("/task-evidence") || href.startsWith("/agent-workbench") || href.startsWith("/rpa-workbench")) return "执行中心";
-  if (href.startsWith("/settings") || href.startsWith("/platforms") || href.startsWith("/local-engine") || href.startsWith("/capabilities")) return "系统设置";
+  // 归类规则：具体前缀优先于宽泛前缀（2026-08-26 修复 用量与费用/多账号矩阵/商业就绪/找客户 的错误归类）
+  if (base.startsWith("/intelligence/costs")) return "系统设置";
+  if (
+    base.startsWith("/settings") ||
+    base.startsWith("/platforms") ||
+    base.startsWith("/accounts-matrix") ||
+    base.startsWith("/commercial-readiness") ||
+    base.startsWith("/savings") ||
+    base.startsWith("/capabilities") ||
+    base.startsWith("/local-engine") ||
+    base.startsWith("/device-center")
+  )
+    return "系统设置";
+  if (base.startsWith("/auto-acquisition") || base.startsWith("/growth") || base.startsWith("/intelligence") || base.startsWith("/engagement/comment-acquisition") || base.startsWith("/effects")) return "获客中心";
+  if (base.startsWith("/crm") || base.startsWith("/customer") || base.startsWith("/boss-recruit") || base.startsWith("/wecom-crm")) return "客户管理";
+  if (base.startsWith("/content") || base.startsWith("/materials") || base.startsWith("/distribution") || base.startsWith("/viral-analysis") || base.startsWith("/topics") || base.startsWith("/schedules") || base.startsWith("/knowledge-base") || base.startsWith("/styles")) return "内容运营";
+  if (base.startsWith("/engagement") || base.startsWith("/message") || base.startsWith("/douyin") || base.startsWith("/wechat")) return "互动中心";
+  if (base.startsWith("/tasks") || base.startsWith("/approvals") || base.startsWith("/task-evidence") || base.startsWith("/agent-workbench") || base.startsWith("/rpa-workbench") || base.startsWith("/war-room")) return "执行中心";
   return "我的";
 }
 

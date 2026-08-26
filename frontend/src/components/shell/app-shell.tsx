@@ -23,7 +23,7 @@ import { OnboardingGuide } from "./onboarding-guide";
 import "./shell.css";
 import "./desktop-vp.css";
 
-/* ---------- 场景定义（顺序 = 快捷键 1-6；「系统设置/助手/我的」固定 rail 底部，不占业务一级导航） ---------- */
+/* ---------- 场景定义（顺序 = 快捷键 1-7；「系统设置/助手/我的」固定 rail 底部，不占业务一级导航） ---------- */
 const SCENES: Array<{
   key: string;
   href: string;
@@ -36,7 +36,7 @@ const SCENES: Array<{
   { key: "content", href: "/content", label: "内容运营", icon: "fileText" },
   { key: "interaction", href: "/message", label: "互动中心", icon: "messageSq" },
   { key: "execution", href: "/tasks", label: "执行中心", icon: "cpu" },
-  { key: "device", href: "/device-center", label: "设备中心", icon: "cpu" },
+  { key: "device", href: "/device-center", label: "移动设备", icon: "phone" },
 ];
 
 /** 任意路径 → 所属场景（旧页面也能点亮正确的 rail 图标） */
@@ -59,7 +59,8 @@ export function sceneOfPath(pathname: string): string {
     pathname.startsWith("/boss-recruit")
   )
     return "customer";
-  if (pathname.startsWith("/device-center") || pathname.startsWith("/mai-ui")) return "execution";
+  // 移动设备（手机/租约/任务）独立场景，不再误高亮为执行中心
+  if (pathname.startsWith("/device-center") || pathname.startsWith("/mai-ui")) return "device";
   // 内容运营：内容/素材/主题/发布/排期/合规/样式
   if (
     pathname.startsWith("/content") ||
@@ -199,7 +200,7 @@ function useNotificationItems(): TickerItem[] {
             id: `acc-${autoUploadAccountIdentityKey(account)}`,
             dot: "warn",
             text: `账号「${account.profileName || account.userName || account.accountName || account.id}」登录状态异常，请重新扫码`,
-            href: "/platforms",
+            href: "/distribution/accounts",
           });
         });
 
@@ -329,7 +330,7 @@ export function AppShell({
         setPaletteOpen(false);
         return;
       }
-      if (!typing && !paletteOpen && /^[1-6]$/.test(e.key)) {
+      if (!typing && !paletteOpen && /^[1-7]$/.test(e.key)) {
         const scene = SCENES[Number(e.key) - 1];
         if (scene) router.push(scene.href);
       }
@@ -429,17 +430,7 @@ export function AppShell({
             <ShellIcon name="user" size={22} />
             <span className="kx-rail-lbl">我的</span>
           </button>
-          <button
-            className="kx-rail-avatar"
-            aria-label={`${user.displayName}的主页`}
-            onClick={() => router.push("/mine")}
-          >
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.displayName} />
-            ) : (
-              user.displayName.slice(0, 1)
-            )}
-          </button>
+          {/* 头像入口已移除（2026-08-26 导航去重）：原与上方「我的」重复指向 /mine */}
         </nav>
 
         {/* 主区 */}

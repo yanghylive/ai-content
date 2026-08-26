@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 
 /**
  * Navigation zero-loss guard v2 测试（2026-08-18 适配场景化导航）。
- * fixture 内联生成 app-shell/command-palette/layout 三个文件，
- * 不再依赖真实 sidebar-items.tsx（已随重构删除）。
+ * fixture 内联生成 app-shell/command-palette/route-config 三个文件，
+ * 与真实源码同构（routeAliases 真实位于 src/lib/route-config.ts）。
  */
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -28,6 +28,7 @@ function makeShellSource({ scenes = snapshot.scenes, prefixes = true } = {}) {
     .join("\n");
   const prefixBlock = prefixes
     ? `  if (pathname.startsWith("/today")) return "growth-home";
+  if (pathname.startsWith("/device-center")) return "device";
   if (pathname.startsWith("/growth") || pathname.startsWith("/intelligence")) return "growth";
   if (pathname.startsWith("/crm") || pathname.startsWith("/customer")) return "customer";
   if (pathname.startsWith("/content") || pathname.startsWith("/materials") || pathname.startsWith("/distribution")) return "content";
@@ -60,11 +61,11 @@ ${lines}
 ];`;
 }
 
-function makeLayoutSource() {
+function makeRouteConfigSource() {
   const aliasLines = snapshot.routeAliases
     .map((alias) => `  "${alias.from}": "${alias.to}",`)
     .join("\n");
-  return `const routeAliases = {
+  return `export const routeAliases = {
 ${aliasLines}
 };`;
 }
@@ -74,10 +75,10 @@ function runGuard({ scenes, hrefs, prefixes } = {}) {
   try {
     const shellPath = path.join(fixtureDir, "app-shell.tsx");
     const commandPath = path.join(fixtureDir, "command-palette.tsx");
-    const layoutPath = path.join(fixtureDir, "layout.tsx");
+    const routeConfigPath = path.join(fixtureDir, "route-config.ts");
     writeFileSync(shellPath, makeShellSource({ scenes, prefixes }), "utf8");
     writeFileSync(commandPath, makeCommandSource({ hrefs }), "utf8");
-    writeFileSync(layoutPath, makeLayoutSource(), "utf8");
+    writeFileSync(routeConfigPath, makeRouteConfigSource(), "utf8");
     return spawnSync(process.execPath, [guardPath], {
       cwd: frontendRoot,
       encoding: "utf8",
@@ -85,7 +86,7 @@ function runGuard({ scenes, hrefs, prefixes } = {}) {
         ...process.env,
         NAV_ZERO_LOSS_SHELL_PATH: shellPath,
         NAV_ZERO_LOSS_COMMAND_PATH: commandPath,
-        NAV_ZERO_LOSS_LAYOUT_PATH: layoutPath,
+        NAV_ZERO_LOSS_ROUTE_CONFIG_PATH: routeConfigPath,
         NAV_ZERO_LOSS_SNAPSHOT_PATH: snapshotPath,
       },
     });

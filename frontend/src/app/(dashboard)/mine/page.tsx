@@ -18,6 +18,12 @@ import { MobileThemeToggle } from "@/components/shell/mobile-theme-toggle";
 import { authApi } from "@/lib/api/auth";
 import { isAdminUser } from "@/lib/admin-user";
 import { useConfirm } from "@/hooks/use-confirm";
+import {
+  MINE_NAV_ENTRIES,
+  MOBILE_MORE_GROUP_ORDER,
+  visibleMineEntries,
+  type MineNavEntry,
+} from "@/lib/nav-registry";
 
 export default function MineScene() {
   const user = useShellUser();
@@ -108,117 +114,18 @@ export default function MineScene() {
           </div>
         ) : undefined
       }
-      cards={[
-        {
-          icon: "phone",
-          tint: "kx-t-green",
-          title: "平台账号",
-          desc: "抖音、小红书等账号的登录状态",
-          href: "/platforms",
-          badge: accountIssue > 0 ? `${accountIssue} 失效` : undefined,
-          group: "账号与设置",
-        },
-        {
-          icon: "database",
-          tint: "kx-t-green",
-          title: "多账号矩阵",
-          desc: "各平台账号 · 多选分发",
-          href: "/accounts-matrix",
-          group: "账号与设置",
-        },
-        {
-          icon: "users",
-          tint: "kx-t-rose",
-          title: "账号与团队",
-          desc: "个人资料、成员权限、版本更新",
-          href: "/capabilities/account",
-          group: "账号与设置",
-        },
-        {
-          icon: "settings",
-          tint: "kx-t-slate",
-          title: "设置",
-          desc: "AI 服务、内容来源、存储、通知",
-          href: "/settings",
-          group: "账号与设置",
-        },
-        {
-          icon: "layers",
-          tint: "kx-t-blue",
-          title: "记忆设置",
-          desc: "长期记忆、画像与偏好",
-          href: "/settings/memory",
-          group: "账号与设置",
-        },
-        {
-          icon: "file",
-          tint: "kx-t-cyan",
-          title: "用量与费用",
-          desc: "积分用量、费用明细、结果留存",
-          href: "/intelligence/costs",
-          group: "账号与设置",
-        },
-        {
-          icon: "cpu",
-          tint: "kx-t-amber",
-          title: "设备状态",
-          desc: "设备服务、微信桌面、运行检查",
-          href: "/local-engine",
-          group: "系统与服务",
-        },
-        {
-          icon: "grid",
-          tint: "kx-t-blue",
-          title: "应用与安装",
-          desc: "开通更多能力（CRM 等）",
-          href: "/apps",
-          group: "系统与服务",
-        },
-        {
-          icon: "bot",
-          tint: "kx-t-violet",
-          title: "Agent 对话",
-          desc: "Agent 会话工作台（对话规划助手）",
-          href: "/agent-workbench",
-          group: "系统与服务",
-        },
-        {
-          icon: "checkCircle",
-          tint: "kx-t-green",
-          title: "任务证据",
-          desc: "执行证据与留痕",
-          href: "/task-evidence",
-          group: "系统与服务",
-        },
-        {
-          icon: "clipboard",
-          tint: "kx-t-slate",
-          title: "引擎权限",
-          desc: "本地引擎权限管理",
-          href: "/local-engine/permissions",
-          group: "系统与服务",
-        },
-        {
-          icon: "archive",
-          tint: "kx-t-slate",
-          title: "AI 工件",
-          desc: "AI 生成的工件产物",
-          href: "/artifacts",
-          group: "系统与服务",
-        },
-        ...(isAdmin
-          ? [
-              {
-                icon: "settings" as const,
-                tint: "kx-t-slate",
-                title: "数据服务管理",
-                desc: "数据源连接与配额配置",
-                href: "/redfox-connection",
-                group: "系统与服务",
-              },
-            ]
-          : []),
-      ]}
+      cards={visibleMineEntries(isAdmin).map((e) => ({
+        icon: e.icon,
+        tint: e.tint ?? "kx-t-slate",
+        title: e.title,
+        desc: e.desc,
+        href: e.href,
+        badge:
+          e.key === "platforms" && accountIssue > 0
+            ? `${accountIssue} 失效`
+            : undefined,
+        group: e.group,
+      }))}
       />
       {modal}
     </>
@@ -227,64 +134,27 @@ export default function MineScene() {
 
 /* ================= 移动端视图（<768px，明德 VP 风格） ================= */
 
-const MOBILE_MINE_MENU: Array<{
+/** 移动端行视图模型（由导航注册表派生，禁止再手写 href 列表） */
+type MobileNavItem = {
   label: string;
   desc: string;
   icon: React.ComponentProps<typeof ShellIcon>["name"];
   tint: string;
   href: string;
   badge?: string;
-}> = [
-  { label: "客户管理", desc: "客户列表与跟进", icon: "users", tint: "var(--kaypal-v3-cobalt)", href: "/customer" },
-  { label: "多账号矩阵", desc: "各平台账号 · 多选分发", icon: "database", tint: "var(--kaypal-v3-success)", href: "/accounts-matrix" },
-  { label: "设置", desc: "AI 服务、存储、通知", icon: "settings", tint: "var(--kaypal-v3-muted)", href: "/settings" },
-  { label: "用量与费用", desc: "积分用量、费用明细", icon: "chart", tint: "#a9671f", href: "/intelligence/costs" },
-  { label: "账号与团队", desc: "资料、成员、版本", icon: "users", tint: "var(--kaypal-v3-purple)", href: "/capabilities/account" },
-  { label: "手机端能力", desc: "手机能做什么 · 边界说明", icon: "phone", tint: "var(--kaypal-v3-cobalt)", href: "/mobile-capabilities" },
-];
+};
+function toMobileItem(e: MineNavEntry): MobileNavItem {
+  return { label: e.title, desc: e.desc, icon: e.icon, tint: e.mobileTint ?? "", href: e.href };
+}
 
-/** 更多功能（补齐移动端无入口的能力域，2026-08-10） */
-const MOBILE_MORE_MENU: Array<{
-  group: string;
-  items: Array<{
-    label: string;
-    desc: string;
-    icon: React.ComponentProps<typeof ShellIcon>["name"];
-    tint: string;
-    href: string;
-  }>;
-}> = [
-  {
-    group: "客户与增长",
-    items: [
-      { label: "企业微信 CRM", desc: "企微客户与跟进", icon: "briefcase", tint: "var(--kaypal-v3-success)", href: "/wecom-crm" },
-      { label: "BOSS 招聘", desc: "招聘线索与跟进", icon: "target", tint: "var(--kaypal-v3-cobalt)", href: "/boss-recruit" },
-      { label: "增长报告", desc: "获客效果汇总", icon: "chart", tint: "#2e7d32", href: "/growth/reports" },
-      { label: "增长工作流", desc: "自动获客流程编排", icon: "cpu", tint: "var(--kaypal-v3-purple)", href: "/growth/workflows" },
-      { label: "账号健康", desc: "账号状态与健康度", icon: "bulb", tint: "var(--kaypal-v3-amber)", href: "/growth/account-health" },
-    ],
-  },
-  {
-    group: "系统与情报",
-    items: [
-      { label: "情报监控", desc: "行业情报实时监控", icon: "target", tint: "var(--kaypal-v3-purple)", href: "/intelligence/monitors" },
-      { label: "商业就绪", desc: "上线能力自检", icon: "rocket", tint: "#c2410c", href: "/commercial-readiness" },
-      { label: "发布前检查", desc: "内容合规校验", icon: "checkCircle", tint: "var(--kaypal-v3-success)", href: "/compliance" },
-      { label: "趋势雷达", desc: "行业趋势实时雷达", icon: "target", tint: "var(--kaypal-v3-amber)", href: "/intelligence/trends-radar" },
-      { label: "情报报告", desc: "情报分析与报告", icon: "chart", tint: "var(--kaypal-v3-cobalt)", href: "/intelligence/report-new" },
-    ],
-  },
-  {
-    group: "更多能力",
-    items: [
-      { label: "Agent 对话", desc: "Agent 会话工作台", icon: "bot", tint: "var(--kaypal-v3-purple)", href: "/agent-workbench" },
-      { label: "记忆设置", desc: "长期记忆、画像与偏好", icon: "layers", tint: "var(--kaypal-v3-cobalt)", href: "/settings/memory" },
-      { label: "任务证据", desc: "执行证据与留痕", icon: "checkCircle", tint: "var(--kaypal-v3-success)", href: "/task-evidence" },
-      { label: "引擎权限", desc: "本地引擎权限管理", icon: "clipboard", tint: "var(--kaypal-v3-muted)", href: "/local-engine/permissions" },
-      { label: "AI 工件", desc: "AI 生成的工件产物", icon: "archive", tint: "var(--kaypal-v3-muted)", href: "/artifacts" },
-    ],
-  },
-];
+/** 首屏菜单（顺序由注册表 mobileTop 条目顺序决定；角标在组件内按 key 注入） */
+const MOBILE_MINE_MENU: MobileNavItem[] = MINE_NAV_ENTRIES.filter((e) => e.mobileTop).map(toMobileItem);
+
+/** 更多功能（补齐移动端无入口的能力域）：分组顺序固定，条目由注册表按 mobileGroup 派生 */
+const MOBILE_MORE_MENU = MOBILE_MORE_GROUP_ORDER.map((group) => ({
+  group,
+  items: MINE_NAV_ENTRIES.filter((e) => e.mobileGroup === group && !e.adminOnly).map(toMobileItem),
+}));
 
 function MobileMineView({
   displayName,
@@ -334,22 +204,11 @@ function MobileMineView({
   // 管理员专属:数据服务管理(数据源运维入口,普通用户不可见)
   const moreGroups = React.useMemo(() => {
     if (!isAdmin) return MOBILE_MORE_MENU;
+    const adminItems = MINE_NAV_ENTRIES.filter(
+      (e) => e.adminOnly && e.mobileGroup === "更多能力",
+    ).map(toMobileItem);
     return MOBILE_MORE_MENU.map((g) =>
-      g.group === "更多能力"
-        ? {
-            ...g,
-            items: [
-              ...g.items,
-              {
-                label: "数据服务管理",
-                desc: "数据源连接与配额配置",
-                icon: "settings" as const,
-                tint: "var(--kaypal-v3-muted)",
-                href: "/redfox-connection",
-              },
-            ],
-          }
-        : g,
+      g.group === "更多能力" ? { ...g, items: [...g.items, ...adminItems] } : g,
     );
   }, [isAdmin]);
   // 多账号矩阵项带失效角标

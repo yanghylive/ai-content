@@ -195,6 +195,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
 
   /* 任务 2 秒轮询；失败时标记为 stale，避免用户看到旧状态误以为正常 */
   const [pollStale, setPollStale] = useState(false);
+  const [lastPollAt, setLastPollAt] = useState<number | null>(null);
   useEffect(() => {
     if (!activeTask?.id) {
       setPollStale(false);
@@ -209,6 +210,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
           current.map((item) => (item.id === task.id ? task : item)),
         );
         setPollStale(false);
+        setLastPollAt(Date.now());
       } catch {
         setPollStale(true);
       }
@@ -216,18 +218,22 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
     return () => clearInterval(timer);
   }, [activeTask?.id]);
 
-  // 轮询中断视觉提示（只在任务执行中显示）
+  // 轮询中断视觉提示（只在任务执行中显示；含最后成功更新时间）
+  const lastPollLabel =
+    lastPollAt !== null
+      ? new Date(lastPollAt).toLocaleTimeString("zh-CN", { hour12: false })
+      : null;
   const pollStaleIndicator = pollStale && activeTask && (activeTask.status === "running" || activeTask.status === "queued") ? (
     <div className="mb-2 rounded-[6px] border border-warning-200 bg-warning-50 px-2 py-1 text-11 text-warning-700">
       ⚠️ 连接暂时中断，正在自动重连…
+      {lastPollLabel ? `（最后更新 ${lastPollLabel}，以下状态可能已过期）` : ""}
     </div>
   ) : null;
-  void pollStaleIndicator;
 
   /* 打开平台后台（与旧版一致：打开后真实复查会话状态） */
   const handleOpenBackend = async () => {
     if (!selectedAccount?.id) {
-      router.push("/platforms");
+      router.push("/distribution/accounts");
       return;
     }
     setOpenBackendBusy(true);
@@ -404,7 +410,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
             <div className="mx-card mx-empty" style={{ padding: 22, textAlign: "center" }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: "var(--mx-ink)" }}>还没有已登录的{config.platformName}账号</p>
               <p style={{ fontSize: 11.5, color: "var(--mx-muted)", marginTop: 4 }}>先到「平台账号」扫码登录一个</p>
-              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/platforms")}>去登录账号</button>
+              <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/distribution/accounts")}>去登录账号</button>
             </div>
           ) : (
             <select
@@ -480,6 +486,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
               <div className="mx-section-head" style={{ marginTop: 18 }}>
                 当前任务 · {statusChip?.label}
               </div>
+              {pollStaleIndicator}
               {activeTask.status === "waiting_for_send_confirmation" && (
                 <div className="mx-card" style={{ padding: 13, marginBottom: 9, borderColor: "rgba(222,150,57,.4)" }}>
                   <p style={{ fontSize: 12.5, fontWeight: 700, color: "var(--mx-ink)" }}>AI 已写好回复，确认后发送：</p>
@@ -602,7 +609,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
             title={`还没有已登录的${config.platformName}账号`}
             description="先到「平台账号」扫码登录一个"
             action={
-              <V2PrimaryButton onClick={() => router.push("/platforms")}>
+              <V2PrimaryButton onClick={() => router.push("/distribution/accounts")}>
                 去登录账号
               </V2PrimaryButton>
             }
@@ -702,6 +709,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
           title="当前任务"
           description={`${activeTask.targetName || config.taskTypeLabel} · ${statusChip?.label}`}
         >
+          {pollStaleIndicator}
           {/* 待确认时给发送按钮 */}
           {activeTask.status === "waiting_for_send_confirmation" && (
             <div className="mb-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)] p-4">

@@ -242,7 +242,7 @@ export default function AccountsMatrixV2Page() {
         ) : grouped.length === 0 ? (
           <div className="mx-empty">
             <p>还没有接入任何平台账号</p>
-            <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/platforms")}>
+            <button type="button" className="mx-btn-gold" style={{ marginTop: 12 }} onClick={() => router.push("/distribution/accounts")}>
               去添加账号
             </button>
           </div>

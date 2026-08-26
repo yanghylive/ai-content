@@ -124,7 +124,7 @@ export function PlatformAccountForm() {
       } else {
         await publishingApi.createAccount(payload);
       }
-      router.push("/platforms");
+      router.push("/distribution/accounts");
     } catch (err: unknown) {
       setError(toPublicError(err, "保存失败，请稍后重试"));
     } finally {
@@ -141,7 +141,7 @@ export function PlatformAccountForm() {
     try {
       const confirmation = await publishingApi.createAccountDeleteConfirmation(accountId);
       await publishingApi.deleteAccount(accountId, confirmation.confirmationId);
-      router.push("/platforms");
+      router.push("/distribution/accounts");
     } catch (err: unknown) {
       setError(toPublicError(err, "删除失败，请稍后重试"));
     } finally {
@@ -182,7 +182,7 @@ export function PlatformAccountForm() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-header-row" style={{ alignItems: "center" }}>
-              <button type="button" onClick={() => router.push("/platforms")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
+              <button type="button" onClick={() => router.push("/distribution/accounts")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mx-muted)", background: "none", border: "none", padding: 0, flexShrink: 0 }}>
                 <ArrowLeft width={14} height={14} /> 返回平台列表
               </button>
               <div style={{ textAlign: "center", flex: 1 }}>
@@ -272,7 +272,7 @@ export function PlatformAccountForm() {
 
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-            <button type="button" onClick={() => router.push("/platforms")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
+            <button type="button" onClick={() => router.push("/distribution/accounts")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--mx-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 12.5, fontWeight: 600 }}>
               返回
             </button>
             {isEdit ? (
@@ -310,7 +310,7 @@ export function PlatformAccountForm() {
           <button
             type="button"
             className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/platforms")}
+            onClick={() => router.push("/distribution/accounts")}
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -456,7 +456,7 @@ export function PlatformAccountForm() {
 
       <section className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/platforms")}>
+          <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/distribution/accounts")}>
             返回
           </V2GhostButton>
           {isEdit ? (

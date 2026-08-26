@@ -689,7 +689,7 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
               title="没有登录正常的账号"
               description="先到「平台账号」扫码登录"
               action={
-                <V2PrimaryButton onClick={() => router.push("/platforms")}>
+                <V2PrimaryButton onClick={() => router.push("/distribution/accounts")}>
                   去登录账号
                 </V2PrimaryButton>
               }
