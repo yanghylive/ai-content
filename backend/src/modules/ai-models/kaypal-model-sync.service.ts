@@ -588,7 +588,9 @@ export class KaypalModelSyncService implements OnApplicationBootstrap {
     return KaypalProviderResolver.resolveBaseUrlFrom(
       [
         this.config.get<string>('KAYPAL_AI_PROXY_BASE_URL'),
-        `${this.getKaypalBaseUrl()}/api/ai`,
+        // 2026-08-27：网关 AI proxy 端点收敛为 /api/v1（老 /api/ai 路径已下线，
+        // 实测 401）。OpenAI SDK 会自动追加 /chat/completions。
+        `${this.getKaypalBaseUrl()}/api/v1`,
       ],
       undefined,
       this.config.get<string>('KAYPAL_EXTRA_ALLOWED_HOSTS'),
