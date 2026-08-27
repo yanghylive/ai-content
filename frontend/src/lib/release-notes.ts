@@ -12,6 +12,14 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.97",
+    date: "2026-08-27",
+    highlights: [
+      "错误自动上报链路修复：修复打包配置双源覆盖导致商用包丢失 OSS 凭证、真机报错无法回传的问题（现在遇到故障我们能第一时间收到日志）",
+      "AI 出站链路加固：登录后自动同步 Kaypal 云端模型清单，AI 对话/视频生成统一走 kaypal.cn 计费网关",
+    ],
+  },
+  {
     version: "v1.1.96",
     date: "2026-08-27",
     highlights: [
@@ -246,4 +254,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.96";
+export const DESKTOP_APP_VERSION = "1.1.97";
