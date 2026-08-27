@@ -384,9 +384,7 @@
 .login-preview-card-head h2 { margin: 9px 0 !important; color: var(--login-ink) !important; font-size: 30px !important; font-weight: 700 !important; letter-spacing: -.04em; line-height: normal !important; }
 .login-preview-card-head p { color: var(--login-muted) !important; font-size: 12px !important; line-height: 1.65 !important; }
 .login-preview-form { gap: 0 !important; }
-.login-preview-form > div:first-child { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 4px; margin-bottom: 8px; border-radius: 14px; background: #f3f0f5; }
-.login-preview-form > div:first-child button { height: 41px; border: 0 !important; border-radius: 10px !important; color: #8b8490 !important; background: transparent !important; font-size: 11px !important; }
-.login-preview-form > div:first-child button:first-child { color: var(--login-purple) !important; background: #fff !important; box-shadow: 0 5px 14px rgba(39,25,50,.08); }
+/* 旧 tab 样式已废弃，由 .preview-tabs 规则接管。旧规则给九章账号按钮永久白底，切 tab 后残留。 */
 .login-preview-card label { color: #58515e !important; font-size: 10px !important; font-weight: 680; }
 .login-preview-card input:not([type="checkbox"]) { height: 50px !important; border: 1px solid var(--login-line) !important; border-radius: 12px !important; background: #fff !important; color: var(--login-ink) !important; font-size: 12px !important; }
 .login-preview-card input:not([type="checkbox"]):focus { border-color: rgba(114,46,209,.62) !important; box-shadow: 0 0 0 4px rgba(114,46,209,.07) !important; }
