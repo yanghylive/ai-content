@@ -624,6 +624,9 @@ export class AiGatewayService {
       billingIdempotencyKey = `aic-chat:${authUser?.id ?? 'anon'}:${selectedModel.modelId}:${requestId}`;
 
       const client = await this.aiClient.getClient(platform.id);
+      // 2026-08-27：流式出站必须携带动态网关头（x-kaypal-api-key/context/user-id），
+      // 仅靠 getClient 的静态 defaultHeaders（sync 时写入，可能过期）会被网关 401。
+      const gatewayDynHeaders = await this.aiClient.resolveDynamicHeaders(platform);
 
       // B4 记忆注入：recall persona + 相关记忆（5s 超时降级，绝不阻塞对话）
       let memoryInject = '';
@@ -724,7 +727,7 @@ export class AiGatewayService {
               tool_choice: 'auto' as const,
               stream: true,
             },
-            { headers: { 'X-Idempotency-Key': billingIdempotencyKey } },
+            { headers: { 'X-Idempotency-Key': billingIdempotencyKey, ...gatewayDynHeaders } },
           );
         } catch (createError) {
           const errInfo = KaypalProviderResolver.classifyError(createError);
@@ -745,7 +748,7 @@ export class AiGatewayService {
                     tool_choice: 'auto' as const,
                     stream: true,
                   },
-                  { headers: { 'X-Idempotency-Key': billingIdempotencyKey } },
+                  { headers: { 'X-Idempotency-Key': billingIdempotencyKey, ...gatewayDynHeaders } },
                 );
                 fallbackModel = cand;
                 break;

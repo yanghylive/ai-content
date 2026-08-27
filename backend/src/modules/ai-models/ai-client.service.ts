@@ -299,7 +299,7 @@ export class AiClientService {
     );
   }
 
-  private async resolveDynamicHeaders(
+  async resolveDynamicHeaders(
     platform: {
       baseUrl?: string | null;
       config?: unknown;
