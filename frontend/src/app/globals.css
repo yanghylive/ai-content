@@ -451,10 +451,11 @@
 .dark .login-preview-card { background: transparent !important; }
 .dark .login-preview-card-head h2 { color: var(--login-ink) !important; }
 .dark .login-preview-card-head p { color: var(--login-muted) !important; }
-.dark .login-preview-form [data-slot="base"] { background: rgba(255,255,255,.04) !important; border-color: var(--login-line) !important; }
-.dark .login-preview-form [data-slot="base"]:focus-within { border-color: var(--login-purple-light) !important; }
-.dark .login-preview-form [data-slot="base"] input { color: #e4e0ee !important; }
-.dark .login-preview-form [data-slot="base"] input::placeholder { color: #5a5566 !important; }
+/* dark: input-wrapper 负责视觉，base 保持透明（同亮色模式） */
+.dark .login-preview-form [data-slot="input-wrapper"]:has(input[data-slot="input"]) { background: rgba(255,255,255,.04) !important; border-color: var(--login-line) !important; }
+.dark .login-preview-form [data-slot="input-wrapper"]:has(input[data-slot="input"]):focus-within { border-color: var(--login-purple-light) !important; }
+.dark .login-preview-form [data-slot="input-wrapper"] input { color: #e4e0ee !important; }
+.dark .login-preview-form [data-slot="input-wrapper"] input::placeholder { color: #5a5566 !important; }
 .dark .login-preview-footer { color: var(--login-muted) !important; }
 .dark .login-preview-footer a { color: #c798ff !important; }
 
