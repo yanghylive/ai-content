@@ -388,6 +388,15 @@ export class AiClientService {
       return headers;
     }
 
+    // 服务商模式：无用户上下文（@Public 路由）时统一挂靠 KAYPAL_BILLING_USER_ID
+    // 出站，保证 x-kaypal-user-id 计费头始终存在（网关对 chat/completions 强校验）。
+    const billingUserId = this.config
+      .get<string>('KAYPAL_BILLING_USER_ID')
+      ?.trim();
+    if (billingUserId) {
+      headers['x-kaypal-user-id'] = billingUserId;
+      return headers;
+    }
     const session = await this.findReusableKaypalSession();
     const userId =
       typeof session?.user?.kaypalUserId === 'string'
