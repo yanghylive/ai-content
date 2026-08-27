@@ -116,6 +116,7 @@ function resolveConfig({
     contextJwtSecret: (env.KAYPAL_CONTEXT_JWT_SECRET || '').trim(),
     appId: (env.KAYPAL_APP_ID || '').trim(),
     tenantId: (env.KAYPAL_TENANT_ID || '').trim(),
+    billingUserId: (env.KAYPAL_BILLING_USER_ID || '').trim(),
   };
   const hasGateway = Object.values(kaypalGateway).some(Boolean);
 
