@@ -410,25 +410,10 @@
   background: transparent !important;
   box-shadow: none !important;
 }
+/* base 是外层容器，不设边框/背景，避免与 input-wrapper 双层叠加 */
 .login-preview-form [data-slot="base"] {
-  min-height: 50px !important;
-  height: 50px !important;
-  padding: 0 12px !important;
-  border: 1px solid var(--login-line) !important;
-  border-radius: 12px !important;
-  background: #fff !important;
-  box-shadow: none !important;
-}
-.login-preview-form [data-slot="base"]:focus-within {
-  border-color: rgba(114,46,209,.62) !important;
-  box-shadow: 0 0 0 4px rgba(114,46,209,.07) !important;
-}
-.login-preview-form [data-slot="base"] input {
-  height: 100% !important;
-  min-height: 0 !important;
   padding: 0 !important;
   border: 0 !important;
-  border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
 }
