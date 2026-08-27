@@ -288,9 +288,12 @@ export class AiClientService {
       ([key]) => key.toLowerCase() === 'x-kaypal-api-key',
     )?.[1];
     return (
-      configuredHeader ||
+      // 2026-08-27：env 显式配置（release-config 注入的 desktop 网关凭据）优先于
+      // sync 落库的 platform.config 值——后者可能是早前会话的 session token，
+      // 网关只认 kaypalcred_* 系列凭据，混用必 401。
       this.config.get<string>('KAYPAL_AI_PROXY_API_KEY')?.trim() ||
       this.config.get<string>('KAYPAL_API_KEY')?.trim() ||
+      configuredHeader ||
       platform.apiKey?.trim() ||
       ''
     );
