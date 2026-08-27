@@ -65,7 +65,7 @@ const SAVINGS_PROMPTS = [
 export const markdownComponents = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- node 是 react-markdown 内部注入属性，需从 props 剔除
   a: ({ node: _node, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => (
-    <a {...props} target="_blank" rel="noopener noreferrer" style={{ color: "#c9d4ff", textDecoration: "underline" }} />
+    <a {...props} target="_blank" rel="noopener noreferrer" style={{ color: "var(--kaypal-v3-accent)", textDecoration: "underline" }} />
   ),
 };
 
@@ -358,7 +358,7 @@ export function AiAssistant({
 
   return (
     <>
-      {/* 悬浮入口（右下角金色语音钮）——内嵌模式不渲染 */}
+      {/* 悬浮入口（右下角品牌紫钮）——内嵌模式不渲染 */}
       {!embedded && (
         <button
           type="button"
@@ -368,34 +368,35 @@ export function AiAssistant({
             position: "fixed",
             right: 18,
             bottom: 84,
-            width: 44,
-            height: 44,
-            borderRadius: 22,
-            background: "linear-gradient(135deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))",
-            color: "var(--kaypal-v3-accent-ink)",
-            fontSize: 18,
-            border: "1px solid rgba(230,168,84,.55)",
-            boxShadow: "0 2px 10px rgba(227,154,62,.18)",
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+            background: "var(--kaypal-v3-accent)",
+            color: "#fff",
+            fontSize: 20,
+            border: "none",
+            boxShadow: "0 4px 16px color-mix(in srgb, var(--kaypal-v3-accent) 40%, transparent)",
             zIndex: 60,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
+            transition: "transform .2s ease, box-shadow .2s ease",
           }}
         >
           {busy ? (
             <span
               style={{
-                width: 16,
-                height: 16,
-                borderRadius: 8,
-                border: "2px solid rgba(23,48,82,.3)",
-                borderTopColor: "var(--kaypal-v3-accent-ink)",
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                border: "2px solid rgba(255,255,255,.3)",
+                borderTopColor: "#fff",
                 animation: "kx-spin .8s linear infinite",
               }}
             />
           ) : (
-            "🎤"
+            "✦"
           )}
         </button>
       )}
@@ -411,7 +412,8 @@ export function AiAssistant({
             flexDirection: "column",
             height: embedded ? "100%" : undefined,
             minHeight: embedded ? "100%" : undefined,
-            background: "linear-gradient(180deg,#0d1b2f 0%,#122a4a 100%)",
+            background: "var(--kaypal-v3-canvas)",
+            color: "var(--kaypal-v3-ink)",
           }}
         >
           {/* 头部 */}
@@ -424,14 +426,14 @@ export function AiAssistant({
               paddingTop: embedded
                 ? "14px"
                 : "calc(14px + env(safe-area-inset-top))",
-              borderBottom: "1px solid rgba(142,165,190,.2)",
+              borderBottom: "1px solid var(--kaypal-v3-paper-muted)",
             }}
           >
             <div>
-              <div style={{ color: "var(--kaypal-v3-amber)", fontSize: 15, fontWeight: 700 }}>
+              <div style={{ color: "var(--kaypal-v3-accent)", fontSize: 15, fontWeight: 700 }}>
                 AI 助手
               </div>
-              <div style={{ color: "rgba(230,240,255,.85)", fontSize: 11 }}>
+              <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 11 }}>
                 正在与 AI 对话，内容由 AI 生成，请注意甄别
               </div>
             </div>
@@ -445,9 +447,9 @@ export function AiAssistant({
                 aria-label="合规中心"
                 title="用户协议 · 隐私 · 投诉"
                 style={{
-                  background: "#1a1d24",
+                  background: "var(--kaypal-v3-paper-soft)",
                   border: "none",
-                  color: "#d7e6f8",
+                  color: "var(--kaypal-v3-muted)",
                   width: 32,
                   height: 32,
                   borderRadius: 16,
@@ -461,9 +463,9 @@ export function AiAssistant({
                 type="button"
                 onClick={() => setOpen(false)}
                 style={{
-                  background: "#1a1d24",
+                  background: "var(--kaypal-v3-paper-soft)",
                   border: "none",
-                  color: "#d7e6f8",
+                  color: "var(--kaypal-v3-muted)",
                   width: 32,
                   height: 32,
                   borderRadius: 16,
@@ -493,18 +495,18 @@ export function AiAssistant({
               <div style={{ marginTop: 18 }}>
                 <div
                   style={{
-                    color: "var(--kaypal-v3-amber)",
+                    color: "var(--kaypal-v3-accent)",
                     fontSize: 16,
                     fontWeight: 700,
                     marginBottom: 6,
                   }}
                 >
-                  嗨，我是你的 AI 内容运营助手 👋
+                  嗨，我是你的 AI 内容运营助手 ✦
                 </div>
-                <div style={{ color: "rgba(215,230,248,.7)", fontSize: 13, lineHeight: 1.7 }}>
+                <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 13, lineHeight: 1.7 }}>
                   可以直接问我热点选题、检查违禁词，或告诉我你想写什么。
                   <br />
-                  试试按住 🎤 说一句：<b style={{ color: "var(--kaypal-v3-amber)" }}>「帮我写一条行业文案」</b>。
+                  试试按住 🎤 说一句：<b style={{ color: "var(--kaypal-v3-accent)" }}>「帮我写一条行业文案」</b>。
                 </div>
                 <div
                   style={{
@@ -520,9 +522,9 @@ export function AiAssistant({
                       type="button"
                       onClick={() => handleQuickPrompt(p)}
                       style={{
-                        background: "rgba(246,196,120,.12)",
-                        border: "1px solid rgba(246,196,120,.35)",
-                        color: "var(--kaypal-v3-amber)",
+                        background: "var(--kaypal-v3-accent-soft)",
+                        border: "1px solid var(--kaypal-v3-accent-border)",
+                        color: "var(--kaypal-v3-accent-ink)",
                         borderRadius: 14,
                         padding: "7px 12px",
                         fontSize: 12,
@@ -532,16 +534,16 @@ export function AiAssistant({
                       {p}
                     </button>
                   ))}
-                  <div style={{ width: "100%", fontSize: 11, color: "rgba(126,226,168,.8)", marginTop: 4 }}>💰 省钱返利</div>
+                  <div style={{ width: "100%", fontSize: 11, color: "var(--kaypal-v3-amber)", marginTop: 4 }}>💰 省钱返利</div>
                   {SAVINGS_PROMPTS.map((p) => (
                     <button
                       key={p}
                       type="button"
                       onClick={() => handleQuickPrompt(p)}
                       style={{
-                        background: "rgba(126,226,168,.12)",
-                        border: "1px solid rgba(126,226,168,.35)",
-                        color: "#7ee2a8",
+                        background: "var(--kaypal-v3-amber-soft)",
+                        border: "1px solid color-mix(in srgb, var(--kaypal-v3-amber) 35%, transparent)",
+                        color: "var(--kaypal-v3-amber)",
                         borderRadius: 14,
                         padding: "7px 12px",
                         fontSize: 12,
@@ -562,8 +564,8 @@ export function AiAssistant({
                   style={{
                     alignSelf: "flex-end",
                     maxWidth: "82%",
-                    background: "linear-gradient(135deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))",
-                    color: "var(--kaypal-v3-accent-ink)",
+                    background: "var(--kaypal-v3-accent)",
+                    color: "#fff",
                     borderRadius: "16px 16px 4px 16px",
                     padding: "10px 14px",
                     fontSize: 14,
@@ -601,9 +603,9 @@ export function AiAssistant({
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
-                    background: "#221e3a",
-                    border: "1px solid rgba(129,140,248,.3)",
-                    color: "#c9d4ff",
+                    background: "var(--kaypal-v3-accent-soft)",
+                    border: "1px solid var(--kaypal-v3-accent-border)",
+                    color: "var(--kaypal-v3-accent-ink)",
                     borderRadius: 12,
                     padding: "8px 12px",
                     fontSize: 12,
@@ -615,7 +617,7 @@ export function AiAssistant({
                     <a
                       href={item.jump.href}
                       style={{
-                        color: "#c9d4ff",
+                        color: "var(--kaypal-v3-accent)",
                         textDecoration: "underline",
                         textUnderlineOffset: 3,
                       }}
@@ -630,9 +632,9 @@ export function AiAssistant({
                   style={{
                     alignSelf: "flex-start",
                     maxWidth: "88%",
-                    background: "#1a1d24",
-                    border: "1px solid rgba(142,165,190,.18)",
-                    color: "#f4f8ff",
+                    background: "var(--kaypal-v3-paper)",
+                    border: "1px solid var(--kaypal-v3-paper-muted)",
+                    color: "var(--kaypal-v3-ink)",
                     borderRadius: "16px 16px 16px 4px",
                     padding: "10px 14px",
                     fontSize: 14,
@@ -652,14 +654,14 @@ export function AiAssistant({
             )}
 
             {busy && (
-              <div style={{ color: "rgba(225,238,255,.75)", fontSize: 12 }}>
+              <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12 }}>
                 <span
                   style={{
                     display: "inline-block",
                     width: 6,
                     height: 6,
                     borderRadius: 3,
-                    background: "var(--kaypal-v3-amber)",
+                    background: "var(--kaypal-v3-accent)",
                     marginRight: 6,
                     animation: "kx-blink 1s ease infinite",
                   }}
@@ -669,7 +671,7 @@ export function AiAssistant({
             )}
 
             {error && !busy && (
-              <div style={{ color: "#fca5a5", fontSize: 12 }}>
+              <div style={{ color: "var(--kaypal-v3-danger, #ef4444)", fontSize: 12 }}>
                 ⚠️ {error}
               </div>
             )}
@@ -680,7 +682,7 @@ export function AiAssistant({
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 4,
-                  color: "#fbbf24",
+                  color: "var(--kaypal-v3-amber)",
                   fontSize: 12,
                   textDecoration: "underline",
                 }}
@@ -720,11 +722,11 @@ export function AiAssistant({
                 }}
                 style={{
                   marginTop: 8,
-                  background: "linear-gradient(135deg,#7ee2a8,#4ecb8b)",
+                  background: "var(--kaypal-v3-accent)",
                   border: "none",
                   borderRadius: 10,
                   padding: "8px 14px",
-                  color: "#1a1d24",
+                  color: "#fff",
                   fontWeight: 700,
                   fontSize: 12,
                   cursor: "pointer",
@@ -741,8 +743,8 @@ export function AiAssistant({
             style={{
               padding: "12px 14px",
               paddingBottom: "calc(14px + env(safe-area-inset-bottom))",
-              borderTop: "1px solid rgba(142,165,190,.2)",
-              background: "rgba(255,255,255,.05)",
+              borderTop: "1px solid var(--kaypal-v3-paper-muted)",
+              background: "var(--kaypal-v3-paper-soft)",
             }}
           >
             {inputMode === "voice" ? (
@@ -755,9 +757,9 @@ export function AiAssistant({
                     width: 44,
                     height: 44,
                     borderRadius: 22,
-                    background: "#1a1d24",
-                    border: "1px solid rgba(142,165,190,.25)",
-                    color: "#d7e6f8",
+                    background: "var(--kaypal-v3-paper)",
+                    border: "1px solid var(--kaypal-v3-paper-muted)",
+                    color: "var(--kaypal-v3-muted)",
                     fontSize: 17,
                     cursor: "pointer",
                     flexShrink: 0,
@@ -779,11 +781,11 @@ export function AiAssistant({
                     flex: 1,
                     padding: "12px 0",
                     borderRadius: 22,
-                    border: "1px solid rgba(230,168,84,.55)",
+                    border: "none",
                     background: listening
-                      ? "linear-gradient(135deg,#d9534f,#e98a8a)"
-                      : "linear-gradient(135deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))",
-                    color: listening ? "#fff" : "var(--kaypal-v3-accent-ink)",
+                      ? "var(--kaypal-v3-danger, #ef4444)"
+                      : "var(--kaypal-v3-accent)",
+                    color: "#fff",
                     fontSize: 14,
                     fontWeight: 700,
                     cursor: "pointer",
@@ -805,9 +807,9 @@ export function AiAssistant({
                     width: 44,
                     height: 44,
                     borderRadius: 22,
-                    background: "#1a1d24",
-                    border: "1px solid rgba(142,165,190,.25)",
-                    color: "#d7e6f8",
+                    background: "var(--kaypal-v3-paper)",
+                    border: "1px solid var(--kaypal-v3-paper-muted)",
+                    color: "var(--kaypal-v3-muted)",
                     fontSize: 17,
                     cursor: "pointer",
                     flexShrink: 0,
@@ -829,9 +831,9 @@ export function AiAssistant({
                     padding: "0 14px",
                     height: 44,
                     borderRadius: 22,
-                    border: "1px solid rgba(142,165,190,.3)",
-                    background: "#1a1d24",
-                    color: "#f4f8ff",
+                    border: "1px solid var(--kaypal-v3-paper-muted)",
+                    background: "var(--kaypal-v3-paper)",
+                    color: "var(--kaypal-v3-ink)",
                     fontSize: 14,
                     outline: "none",
                   }}
@@ -845,8 +847,8 @@ export function AiAssistant({
                     height: 44,
                     borderRadius: 22,
                     border: "none",
-                    background: "linear-gradient(135deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))",
-                    color: "var(--kaypal-v3-accent-ink)",
+                    background: "var(--kaypal-v3-accent)",
+                    color: "#fff",
                     fontSize: 16,
                     cursor: "pointer",
                     opacity: !textInput.trim() || busy ? 0.5 : 1,
@@ -898,10 +900,10 @@ function DraftCard({
     bilibili: "B站",
   };
   const riskTone: Record<string, { bg: string; fg: string }> = {
-    low: { bg: "rgba(52,211,153,.16)", fg: "#6ee7b7" },
-    medium: { bg: "rgba(251,191,36,.16)", fg: "#fcd34d" },
-    high: { bg: "rgba(248,113,113,.18)", fg: "#fca5a5" },
-    blocked: { bg: "rgba(148,163,184,.2)", fg: "#cbd5e1" },
+    low: { bg: "var(--kaypal-v3-accent-soft)", fg: "var(--kaypal-v3-accent-ink)" },
+    medium: { bg: "var(--kaypal-v3-amber-soft)", fg: "var(--kaypal-v3-amber)" },
+    high: { bg: "rgba(239,68,68,.16)", fg: "#ef4444" },
+    blocked: { bg: "var(--kaypal-v3-paper-muted)", fg: "var(--kaypal-v3-muted)" },
   };
 
   const confirm = async () => {
@@ -952,12 +954,12 @@ function DraftCard({
         alignSelf: "flex-start",
         maxWidth: "92%",
         width: 380,
-        background: "rgba(30,30,46,.9)",
-        border: "1px solid rgba(139,92,246,.35)",
+        background: "var(--kaypal-v3-paper)",
+        border: "1px solid var(--kaypal-v3-accent-border)",
         borderRadius: 14,
         padding: "12px 14px",
         fontSize: 13,
-        color: "#e2e8f0",
+        color: "var(--kaypal-v3-ink)",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -971,20 +973,20 @@ function DraftCard({
             fontSize: 11,
             padding: "2px 8px",
             borderRadius: 999,
-            background: "rgba(139,92,246,.2)",
-            color: "#c4b5fd",
+            background: "var(--kaypal-v3-accent-soft)",
+            color: "var(--kaypal-v3-accent-ink)",
           }}
         >
           {draft.platform ? platformLabel[draft.platform] || draft.platform : "未选平台"}
         </span>
       </div>
 
-      <div style={{ fontSize: 12.5, lineHeight: 1.6, color: "#e2e8f0", marginBottom: 8 }}>
+      <div style={{ fontSize: 12.5, lineHeight: 1.6, color: "var(--kaypal-v3-ink)", marginBottom: 8 }}>
         {draft.goal}
       </div>
 
       {draft.readiness === "needs-input" && (
-        <div style={{ fontSize: 12, color: "#fcd34d", marginBottom: 8 }}>
+        <div style={{ fontSize: 12, color: "var(--kaypal-v3-amber)", marginBottom: 8 }}>
           ⚠️ 需要补充：{draft.missingFields?.join("、")}
         </div>
       )}
@@ -1015,9 +1017,9 @@ function DraftCard({
                 >
                   {a.risk}
                 </span>
-                <span style={{ color: "#e2e8f0" }}>{a.label}</span>
+                <span style={{ color: "var(--kaypal-v3-ink)" }}>{a.label}</span>
                 {a.requiresConfirmation && (
-                  <span style={{ color: "#cbd5e1", fontSize: 10.5 }}>需确认</span>
+                  <span style={{ color: "var(--kaypal-v3-muted)", fontSize: 10.5 }}>需确认</span>
                 )}
               </div>
             );
@@ -1026,13 +1028,13 @@ function DraftCard({
       )}
 
       {draft.riskSummary && (
-        <div style={{ fontSize: 11.5, color: "#cbd5e1", marginBottom: 8 }}>
+        <div style={{ fontSize: 11.5, color: "var(--kaypal-v3-muted)", marginBottom: 8 }}>
           风险：{draft.riskSummary}
         </div>
       )}
 
       {state === "error" && (
-        <div style={{ fontSize: 11.5, color: "#fca5a5", marginBottom: 8 }}>
+        <div style={{ fontSize: 11.5, color: "var(--kaypal-v3-danger, #ef4444)", marginBottom: 8 }}>
           ❌ {errorMsg}
         </div>
       )}
@@ -1047,9 +1049,9 @@ function DraftCard({
                 flex: 1,
                 padding: "7px 0",
                 borderRadius: 8,
-                border: "1px solid rgba(139,92,246,.5)",
-                background: "rgba(139,92,246,.18)",
-                color: "#c4b5fd",
+                border: "1px solid var(--kaypal-v3-accent-border)",
+                background: "var(--kaypal-v3-accent-soft)",
+                color: "var(--kaypal-v3-accent-ink)",
                 fontSize: 12.5,
                 cursor: busy ? "not-allowed" : "pointer",
               }}
@@ -1065,9 +1067,9 @@ function DraftCard({
                 flex: 1,
                 padding: "7px 0",
                 borderRadius: 8,
-                border: "1px solid rgba(52,211,153,.5)",
-                background: "rgba(52,211,153,.18)",
-                color: "#6ee7b7",
+                border: "none",
+                background: "var(--kaypal-v3-accent)",
+                color: "#fff",
                 fontSize: 12.5,
                 cursor: busy ? "not-allowed" : "pointer",
               }}
@@ -1078,7 +1080,7 @@ function DraftCard({
         </div>
       )}
       {state === "executed" && (
-        <span style={{ fontSize: 12.5, color: "#6ee7b7" }}>✅ 已执行</span>
+        <span style={{ fontSize: 12.5, color: "var(--kaypal-v3-accent)" }}>✅ 已执行</span>
       )}
     </div>
   );
