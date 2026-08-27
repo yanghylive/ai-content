@@ -242,7 +242,7 @@ export class AiClientService {
    * 而 ai_models 里存的是业务名（deepseek-v4-flash/pro 等）。出站前统一转换；
    * 未命中映射的模型名保持原样（由网关兜底拒绝并给出明确错误）。
    */
-  private resolveKaypalGatewayModel(modelId: string): string {
+  resolveKaypalGatewayModel(modelId: string): string {
     if (!modelId) return modelId;
     const MAP: Record<string, string> = {
       'deepseek-v4-flash': 'kaypal-fast',
