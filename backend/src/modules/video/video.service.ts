@@ -5,10 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { StudioCoreProxyService } from './studio-core-proxy.service';
+import { MultimodalService } from '../multimodal/multimodal.service';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
 
 /**
  * 视频一键成片 service（复用 studio_core 引擎）
@@ -61,6 +63,8 @@ export class VideoService {
     private readonly studioCoreProxy: StudioCoreProxyService,
     private readonly autoUploadService: AutoUploadService,
     private readonly prisma: PrismaService,
+    private readonly multimodal: MultimodalService,
+    private readonly config: ConfigService,
   ) {}
 
   /**
@@ -70,8 +74,41 @@ export class VideoService {
     this.logger.log(
       `generate: pipeline=${dto.pipeline} prompt=${dto.prompt.slice(0, 50)}...`,
     );
-    // 透传到 studio_core
-    return this.studioCoreProxy.postGenerate(dto);
+    // 透传到 studio_core；本机 StudioCore 不可达（打包态典型）时回退
+    // kaypal.cn 云端网关视频通道（/api/ai/v1/video/generations，统一计费）。
+    try {
+      return await this.studioCoreProxy.postGenerate(dto);
+    } catch (error) {
+      const message = this.errorMessage(error);
+      this.logger.warn(
+        `StudioCore 不可达，回退 kaypal 云端视频通道：${message}`,
+      );
+      return this.generateViaKaypalGateway(dto, message);
+    }
+  }
+
+  /** 云端网关视频兜底：提交异步任务，返回任务受理信息 */
+  private async generateViaKaypalGateway(
+    dto: GenerateVideoDto,
+    reason: string,
+  ) {
+    if (!this.multimodal) {
+      throw new Error(`视频服务不可达且云端通道未启用：${reason}`);
+    }
+    // 计费统一挂 KAYPAL_BILLING_USER_ID（主账号），与 chat 同口径
+    const billingUserId =
+      this.config.get<string>('KAYPAL_BILLING_USER_ID')?.trim() || '';
+    const authUser = {
+      kaypalUserId: billingUserId,
+      id: '',
+    } as never;
+    const result = await this.multimodal.generateVideo(authUser, {
+      prompt: dto.prompt,
+    });
+    return {
+      source: 'kaypal-gateway',
+      ...result,
+    };
   }
 
   /**
