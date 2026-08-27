@@ -16,7 +16,7 @@ import type {
   ChatCompletionCreateParamsStreaming,
   ChatCompletionChunk,
 } from 'openai/resources/chat/completions';
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, createHmac, randomUUID } from 'node:crypto';
 import { StorageService } from '../storage/storage.service';
 import {
   KaypalHostNotAllowedError,
@@ -231,6 +231,54 @@ export class AiClientService {
     return source === 'kaypal' || /\/api\/ai\/?$/i.test(baseUrl);
   }
 
+  /**
+   * 2026-08-27：生成网关强制的 X-Kaypal-Context JWT（HS256，kaypal.cn 侧验签）。
+   * iss=kaypal-ai-platform / aud=kaypal-api-v1 固定；app_id 取 KAYPAL_APP_ID；
+   * secret 取 KAYPAL_CONTEXT_JWT_SECRET。缺失配置时返回 null（调用方跳过该头，
+   * 走 legacy 放行路径）。与 octop 已验证接入模式完全一致。
+   */
+  /**
+   * 2026-08-27：业务模型名 → 网关别名映射。kaypal.cn 只放行 6 个 kaypal-* 别名，
+   * 而 ai_models 里存的是业务名（deepseek-v4-flash/pro 等）。出站前统一转换；
+   * 未命中映射的模型名保持原样（由网关兜底拒绝并给出明确错误）。
+   */
+  private resolveKaypalGatewayModel(modelId: string): string {
+    if (!modelId) return modelId;
+    const MAP: Record<string, string> = {
+      'deepseek-v4-flash': 'kaypal-fast',
+      'deepseek-v4-pro': 'kaypal-general',
+      'deepseek-v3': 'kaypal-general',
+      'kimi-k3': 'kaypal-reasoning',
+      'qwen3.8-max': 'kaypal-general',
+    };
+    if (MAP[modelId]) return MAP[modelId];
+    if (/^kaypal-/.test(modelId)) return modelId;
+    return modelId;
+  }
+
+  private buildKaypalContextJwt(userId: string): string | null {
+    const secret = this.config.get<string>('KAYPAL_CONTEXT_JWT_SECRET')?.trim();
+    const appId = this.config.get<string>('KAYPAL_APP_ID')?.trim() || 'ai-content-desktop';
+    if (!secret) return null;
+    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const now = Math.floor(Date.now() / 1000);
+    const payload = Buffer.from(
+      JSON.stringify({
+        iss: 'kaypal-ai-platform',
+        aud: 'kaypal-api-v1',
+        sub: userId,
+        tenant_id: this.config.get<string>('KAYPAL_TENANT_ID')?.trim() || `tenant-${userId}`,
+        app_id: appId,
+        request_id: `req_${randomUUID().replace(/-/g, '').slice(0, 16)}`,
+        jti: randomUUID().replace(/-/g, '').slice(0, 24),
+        iat: now,
+        exp: now + 120,
+      }),
+    ).toString('base64url');
+    const sig = createHmac('sha256', secret).update(`${header}.${payload}`).digest('base64url');
+    return `${header}.${payload}.${sig}`;
+  }
+
   private readKaypalProxyServerApiKey(platform: {
     apiKey?: string | null;
     config?: unknown;
@@ -264,6 +312,19 @@ export class AiClientService {
     const serverApiKey = this.readKaypalProxyServerApiKey(platform);
     if (serverApiKey) {
       headers['x-kaypal-api-key'] = serverApiKey;
+    }
+
+    // 2026-08-27：kaypal.cn 对 chat/completions 强制校验 X-Kaypal-Context JWT。
+    // 计费用户优先用当前登录用户的 kaypalUserId（同一手机号在云端是同一个账户）。
+    const ctxUser =
+      this.authRequestContext?.get()?.user?.kaypalUserId?.trim() ||
+      this.config.get<string>('KAYPAL_BILLING_USER_ID')?.trim() ||
+      '';
+    if (ctxUser) {
+      const contextJwt = this.buildKaypalContextJwt(ctxUser);
+      if (contextJwt) {
+        headers['x-kaypal-context'] = contextJwt;
+      }
     }
 
     const requestContext = this.authRequestContext?.get();
@@ -1342,9 +1403,12 @@ export class AiClientService {
 
     const startedAt = Date.now();
     try {
+      const outboundModel = this.isKaypalProxyPlatform(model.platform)
+        ? this.resolveKaypalGatewayModel(model.modelId)
+        : model.modelId;
       const response = await client.chat.completions.create(
         {
-          model: model.modelId,
+          model: outboundModel,
           messages: contextualMessages,
           temperature: options?.temperature ?? 0.7,
           max_tokens: options?.maxTokens ?? 4000,
