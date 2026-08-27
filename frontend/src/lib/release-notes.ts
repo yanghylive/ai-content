@@ -12,6 +12,14 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.98",
+    date: "2026-08-27",
+    highlights: [
+      "UI 助手 AI 对话修复：流式对话补网关别名映射，修夌用户界面 AI 对话报「鉴权失效/模型不可用」",
+      "前端版本号与包版本同步（1.1.97 前端 build 滞后问题修正）",
+    ],
+  },
+  {
     version: "v1.1.97",
     date: "2026-08-27",
     highlights: [
@@ -254,4 +262,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.97";
+export const DESKTOP_APP_VERSION = "1.1.98";
