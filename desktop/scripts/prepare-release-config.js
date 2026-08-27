@@ -108,6 +108,17 @@ function resolveConfig({
     { production: commercial, trailingSlash: true },
   );
 
+  // 2026-08-27：kaypal.cn 网关 app 凭据（KAYPAL_APP_CREDENTIALS_JSON 中
+  // ai-content-desktop 条目）。生产凭据经 env 注入本生成物（gitignored），
+  // main.js 启动时读取并注入后端 env；缺失时跳过（不阻塞非商用构建）。
+  const kaypalGateway = {
+    apiKey: (env.KAYPAL_GATEWAY_API_KEY || '').trim(),
+    contextJwtSecret: (env.KAYPAL_CONTEXT_JWT_SECRET || '').trim(),
+    appId: (env.KAYPAL_APP_ID || '').trim(),
+    tenantId: (env.KAYPAL_TENANT_ID || '').trim(),
+  };
+  const hasGateway = Object.values(kaypalGateway).some(Boolean);
+
   return {
     schemaVersion: 1,
     environment: commercial ? 'production' : 'testing',
@@ -115,6 +126,7 @@ function resolveConfig({
     kaypalAuthBaseUrl,
     cloudApiEndpoint,
     updateUrl,
+    ...(hasGateway ? { kaypalGateway } : {}),
   };
 }
 

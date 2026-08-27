@@ -1336,6 +1336,25 @@ async function startBackendService() {
   if (!envVars.AGENT_GATEWAY_SECRET) {
     envVars.AGENT_GATEWAY_SECRET = ensureGatewaySecret();
   }
+  // 2026-08-27：加载打包进包的 kaypal 网关凭据（runtime/generated/release-config.json，
+  // 由 prepare-release-config.js 从 KAYPAL_GATEWAY_* env 生成，gitignored），
+  // 注入后端出站用：x-kaypal-api-key（ai-content-desktop 条目）+ context JWT 签名配置。
+  const generatedConfigPath = getResourcePath('generated/release-config.json');
+  if (fs.existsSync(generatedConfigPath)) {
+    try {
+      const generatedConfig = JSON.parse(fs.readFileSync(generatedConfigPath, 'utf8'));
+      const gw = generatedConfig.kaypalGateway || {};
+      if (gw.apiKey) envVars.KAYPAL_AI_PROXY_API_KEY = gw.apiKey;
+      if (gw.contextJwtSecret) envVars.KAYPAL_CONTEXT_JWT_SECRET = gw.contextJwtSecret;
+      if (gw.appId) envVars.KAYPAL_APP_ID = gw.appId;
+      if (gw.tenantId) envVars.KAYPAL_TENANT_ID = gw.tenantId;
+      if (gw.apiKey && gw.contextJwtSecret) {
+        console.log('[Backend] Kaypal gateway credential loaded from release config');
+      }
+    } catch (error) {
+      console.warn('[Backend] 无法读取 release-config.json:', error.message);
+    }
+  }
   envVars.KAYPAL_NODE_AGENT_RUNTIME = envVars.KAYPAL_NODE_AGENT_RUNTIME || process.env.KAYPAL_NODE_AGENT_RUNTIME || (app.isPackaged ? '1' : '0');
   const bundledBrowserRoot = getResourcePath('playwright-browsers');
   if (fs.existsSync(bundledBrowserRoot)) {

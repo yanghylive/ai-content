@@ -276,6 +276,10 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "runtime/generated",
+        "to": "generated"
       }
     ],
     "mac": {
