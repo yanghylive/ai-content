@@ -232,10 +232,6 @@
         ]
       },
       {
-        "from": "backend.env.example",
-        "to": "backend/.env"
-      },
-      {
         "from": "backend.env",
         "to": "backend/.env"
       },
