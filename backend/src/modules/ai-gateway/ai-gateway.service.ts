@@ -716,7 +716,9 @@ export class AiGatewayService {
         try {
           stream = await client.chat.completions.create(
             {
-              model: selectedModel.modelId,
+              // 2026-08-27：流式出站同样走网关别名映射（deepseek-* → kaypal-*），
+          // 否则网关 400 model_not_allowed（UI 助手对话链路实测）。
+          model: this.aiClient.resolveKaypalGatewayModel(selectedModel.modelId),
               messages: history,
               tools: TOOLS,
               tool_choice: 'auto' as const,
@@ -904,7 +906,9 @@ export class AiGatewayService {
       if (authUser?.id) {
         void this.audit.recordChat({
           userId: authUser.id,
-          model: selectedModel.modelId,
+          // 2026-08-27：流式出站同样走网关别名映射（deepseek-* → kaypal-*），
+          // 否则网关 400 model_not_allowed（UI 助手对话链路实测）。
+          model: this.aiClient.resolveKaypalGatewayModel(selectedModel.modelId),
           platform: platform?.name ?? undefined,
           messages: messages.length,
           toolCalls: toolRounds,
@@ -921,7 +925,9 @@ export class AiGatewayService {
         // 隐式标识（《人工智能生成合成内容标识办法》）：生成合成内容属性 + 服务提供者编码
         aiGenerated: true,
         provider: 'jiuzhang-ai-content',
-        model: selectedModel.modelId,
+        // 2026-08-27：流式出站同样走网关别名映射（deepseek-* → kaypal-*），
+          // 否则网关 400 model_not_allowed（UI 助手对话链路实测）。
+          model: this.aiClient.resolveKaypalGatewayModel(selectedModel.modelId),
       });
       response.end();
     } catch (error) {
