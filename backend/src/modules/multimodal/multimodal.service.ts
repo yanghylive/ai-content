@@ -148,11 +148,50 @@ export class MultimodalService {
         '多模态生成需要当前登录用户授权，请在「账号与设备」重新登录后再试',
       );
     }
-    return {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'x-kaypal-api-key': serverKey,
       'x-kaypal-user-id': userId,
     };
+    // 2026-08-27：网关对 images/video/generations 强制校验 X-Kaypal-Context JWT，
+    // 缺失即 401「鉴权失效」。与 ai-client 同一套签名（HS256 / app_id=ai-content-desktop）。
+    const contextJwt = this.buildContextJwt(userId);
+    if (contextJwt) headers['x-kaypal-context'] = contextJwt;
+    return headers;
+  }
+
+  /** 短时效 Context JWT（120s），与 ai-client.buildKaypalContextJwt 同构 */
+  private buildContextJwt(userId: string): string | null {
+    const secret = this.readConfig('KAYPAL_CONTEXT_JWT_SECRET');
+    if (!secret) {
+      console.warn(
+        '[Multimodal] KAYPAL_CONTEXT_JWT_SECRET 未配置，出站将缺少 x-kaypal-context',
+      );
+      return null;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const crypto = require('node:crypto') as typeof import('node:crypto');
+    const b64u = (o: unknown) =>
+      Buffer.from(JSON.stringify(o)).toString('base64url');
+    const now = Math.floor(Date.now() / 1000);
+    const h = b64u({ alg: 'HS256', typ: 'JWT' });
+    const pl = b64u({
+      iss: 'kaypal-ai-platform',
+      aud: 'kaypal-api-v1',
+      sub: userId,
+      tenant_id:
+        this.readConfig('KAYPAL_TENANT_ID') || `tenant-${userId}`,
+      app_id: this.readConfig('KAYPAL_APP_ID') || 'ai-content-desktop',
+      request_id: `req_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`,
+      jti: crypto.randomUUID().replace(/-/g, '').slice(0, 24),
+      iat: now,
+      exp: now + 120,
+    });
+    const sig = crypto
+      .createHmac('sha256', secret)
+      .update(`${h}.${pl}`)
+      .digest('base64url');
+    return `${h}.${pl}.${sig}`;
   }
 
   /** Qwen-Image 生图（提示词 → 图 → 素材库）：
@@ -247,7 +286,7 @@ export class MultimodalService {
 
     let audioBuffer: Buffer;
     try {
-      const resp = await fetch(`${this.getGatewayBaseUrl()}/v1/audio/speech`, {
+      const resp = await fetch(`${this.getGatewayBaseUrl()}/api/ai/v1/audio/speech`, {
         method: 'POST',
         headers: this.buildHeaders(authUser),
         body: JSON.stringify({
@@ -340,7 +379,7 @@ export class MultimodalService {
     let taskId = '';
     try {
       const resp = await fetch(
-        `${this.getGatewayBaseUrl()}/v1/video/generations`,
+        `${this.getGatewayBaseUrl()}/api/ai/v1/video/generations`,
         {
           method: 'POST',
           headers,
@@ -383,7 +422,7 @@ export class MultimodalService {
       await new Promise((r) => setTimeout(r, 5000));
       try {
         const qResp = await fetch(
-          `${this.getGatewayBaseUrl()}/v1/video/generations?id=${encodeURIComponent(taskId)}`,
+          `${this.getGatewayBaseUrl()}/api/ai/v1/video/generations?id=${encodeURIComponent(taskId)}`,
           {
             headers: {
               'x-kaypal-api-key': headers['x-kaypal-api-key'] || '',
