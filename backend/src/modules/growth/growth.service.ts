@@ -8393,389 +8393,398 @@ export class GrowthService implements OnModuleInit {
     store: GrowthStore,
     options: GrowthPersistenceOptions = {},
   ) {
-    await this.prisma.$transaction(async (tx) => {
-      await this.deleteGrowthRecordsWithClient(tx, options);
-      for (const item of this.growthPersistenceItems(
-        store.strategies,
-        options,
-        'strategies',
-      )) {
-        await tx.growthStrategy.upsert({
-          where: { id: item.id },
-          create: {
-            id: item.id,
-            userId: item.userId,
-            actorUserId: options.scope?.userId ?? item.userId,
-            tenantId: item.tenantId ?? null,
-            industry: item.industry,
-            scenario: item.scenario,
-            name: item.name,
-            sourceKeywords: item.sourceKeywords,
-            demandKeywords: item.demandKeywords,
-            excludeKeywords: item.excludeKeywords,
-            blacklistNicknames: item.blacklistNicknames,
-            commentTemplates: item.commentTemplates,
-            privateMessageTemplates: item.privateMessageTemplates,
-            defaultDailyLimit: item.defaultDailyLimit,
-            defaultRiskMode: item.defaultRiskMode,
-            scoringRules: item.scoringRules,
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
-          },
-          update: {
-            tenantId: item.tenantId ?? null,
-            actorUserId: options.scope?.userId ?? item.userId,
-            industry: item.industry,
-            scenario: item.scenario,
-            name: item.name,
-            sourceKeywords: item.sourceKeywords,
-            demandKeywords: item.demandKeywords,
-            excludeKeywords: item.excludeKeywords,
-            blacklistNicknames: item.blacklistNicknames,
-            commentTemplates: item.commentTemplates,
-            privateMessageTemplates: item.privateMessageTemplates,
-            defaultDailyLimit: item.defaultDailyLimit,
-            defaultRiskMode: item.defaultRiskMode,
-            scoringRules: item.scoringRules,
-            updatedAt: new Date(item.updatedAt),
-          },
-        });
-      }
-      for (const item of this.growthPersistenceItems(
-        store.configs,
-        options,
-        'configs',
-      )) {
-        await tx.growthAcquisitionConfig.upsert({
-          where: { id: item.id },
-          create: {
-            id: item.id,
-            userId: item.userId,
-            actorUserId: options.scope?.userId ?? item.userId,
-            tenantId: item.tenantId ?? null,
-            mode: item.mode,
-            taskName: item.taskName,
-            platform: item.platform,
-            accountId: item.accountId,
-            accountName: item.accountName,
-            sourceInputs: item.sourceInputs,
-            includeKeywords: item.includeKeywords,
-            excludeKeywords: item.excludeKeywords,
-            blacklistNicknames: item.blacklistNicknames,
-            commentTemplates: item.commentTemplates,
-            privateMessageTemplates: item.privateMessageTemplates,
-            dailyLimit: item.dailyLimit,
-            perTargetLimit: item.perTargetLimit,
-            deduplicate: item.deduplicate,
-            scheduleEnabled: item.scheduleEnabled,
-            beginTime: item.beginTime,
-            riskMode: item.riskMode,
-            status: item.status,
-            exposureCount: item.exposureCount,
-            exposureDate: item.exposureDate,
-            lastRunAt: item.lastRunAt ? new Date(item.lastRunAt) : undefined,
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
-          },
-          update: {
-            tenantId: item.tenantId ?? null,
-            actorUserId: options.scope?.userId ?? item.userId,
-            mode: item.mode,
-            taskName: item.taskName,
-            platform: item.platform,
-            accountId: item.accountId,
-            accountName: item.accountName,
-            sourceInputs: item.sourceInputs,
-            includeKeywords: item.includeKeywords,
-            excludeKeywords: item.excludeKeywords,
-            blacklistNicknames: item.blacklistNicknames,
-            commentTemplates: item.commentTemplates,
-            privateMessageTemplates: item.privateMessageTemplates,
-            dailyLimit: item.dailyLimit,
-            perTargetLimit: item.perTargetLimit,
-            deduplicate: item.deduplicate,
-            scheduleEnabled: item.scheduleEnabled,
-            beginTime: item.beginTime,
-            riskMode: item.riskMode,
-            status: item.status,
-            exposureCount: item.exposureCount,
-            exposureDate: item.exposureDate,
-            lastRunAt: item.lastRunAt ? new Date(item.lastRunAt) : undefined,
-            updatedAt: new Date(item.updatedAt),
-          },
-        });
-      }
-      for (const item of this.growthPersistenceItems(
-        store.runs,
-        options,
-        'runs',
-      )) {
-        await tx.growthAcquisitionRun.upsert({
-          where: { id: item.id },
-          create: {
-            id: item.id,
-            userId: item.userId,
-            actorUserId: options.scope?.userId ?? item.userId,
-            tenantId: item.tenantId ?? null,
-            configId: item.configId,
-            mode: item.mode,
-            platform: item.platform,
-            status: item.status,
-            failureReason: item.failureReason,
-            message: item.message,
-            candidateCount: item.candidateCount,
-            selectedCount: item.selectedCount,
-            contactedCount: item.contactedCount,
-            crmCapturedCount: item.crmCapturedCount,
-            evidenceUrls: item.evidenceUrls,
-            leadIds: item.leadIds,
-            startedAt: new Date(item.startedAt),
-            endedAt: item.endedAt ? new Date(item.endedAt) : undefined,
-          },
-          update: {
-            tenantId: item.tenantId ?? null,
-            actorUserId: options.scope?.userId ?? item.userId,
-            status: item.status,
-            failureReason: item.failureReason,
-            message: item.message,
-            candidateCount: item.candidateCount,
-            selectedCount: item.selectedCount,
-            contactedCount: item.contactedCount,
-            crmCapturedCount: item.crmCapturedCount,
-            evidenceUrls: item.evidenceUrls,
-            leadIds: item.leadIds,
-            endedAt: item.endedAt ? new Date(item.endedAt) : undefined,
-          },
-        });
-      }
-      for (const item of this.growthPersistenceItems(
-        store.leads,
-        options,
-        'leads',
-      )) {
-        // P0 复核（全面审查）：upsert 用 dedupeKey 复合唯一键（对齐
-        // LeadRepository.dedupeWhere 与 schema @@unique([tenantId,dedupeKey])）——
-        // 原 where:{id} 在重跑任务命中历史 dedupeKey 时 create 撞 P2002，
-        // 整个 $transaction（configs/runs/leads）一起回滚。
-        const dedupeKey = this.unifiedLeadDedupeKey(item);
-        const dedupeWhere = item.tenantId
-          ? {
-              tenantId_dedupeKey: {
-                tenantId: item.tenantId,
-                dedupeKey,
-              },
-            }
-          : {
-              userId_dedupeKey: { userId: item.userId, dedupeKey },
-            };
-        // P0 复核（二次）：update 前取既有记录——已转化（status=converted）的线索
-        // 不允许被任务重跑降级 status / 置空 customerId（转化链路数据不可被采集层抹掉）。
-        const existingLead = await tx.lead.findUnique({ where: dedupeWhere });
-        // P0 复核（三次）：历史数据 dedupeKey 迁移兜底——旧库存的 dedupeKey 是
-        // `lead:growth:{id}`（旧格式），新算法算出 `lead:sha256(...)`，dedupeWhere 命中不到
-        // 会走 create 分支撞 id 唯一约束（P2002）。此处按 id 兜底找到旧记录，先修正 dedupeKey，
-        // 让后续 upsert 稳定走 update 分支。
-        let existingByAny = existingLead;
-        if (!existingByAny) {
-          existingByAny = await tx.lead.findUnique({ where: { id: item.id } });
-          if (existingByAny) {
-            await tx.lead.update({
+    // error-report 0f9f248d (2026-08-26): 交互式事务默认 5000ms 超时，SQLite 单写 +
+    // 最多 1000 条 leads 逐条 findUnique+upsert（约 3000+ 次串行查询）跑不完 5s，
+    // 抛 Transaction already closed → growth execute 500。放宽到 60s（本地单用户，
+    // 幂等 upsert，无锁竞争），超时仅影响单次持久化不产生脏数据。
+    await this.prisma.$transaction(
+      async (tx) => {
+        await this.deleteGrowthRecordsWithClient(tx, options);
+        for (const item of this.growthPersistenceItems(
+          store.strategies,
+          options,
+          'strategies',
+        )) {
+          await tx.growthStrategy.upsert({
+            where: { id: item.id },
+            create: {
+              id: item.id,
+              userId: item.userId,
+              actorUserId: options.scope?.userId ?? item.userId,
+              tenantId: item.tenantId ?? null,
+              industry: item.industry,
+              scenario: item.scenario,
+              name: item.name,
+              sourceKeywords: item.sourceKeywords,
+              demandKeywords: item.demandKeywords,
+              excludeKeywords: item.excludeKeywords,
+              blacklistNicknames: item.blacklistNicknames,
+              commentTemplates: item.commentTemplates,
+              privateMessageTemplates: item.privateMessageTemplates,
+              defaultDailyLimit: item.defaultDailyLimit,
+              defaultRiskMode: item.defaultRiskMode,
+              scoringRules: item.scoringRules,
+              createdAt: new Date(item.createdAt),
+              updatedAt: new Date(item.updatedAt),
+            },
+            update: {
+              tenantId: item.tenantId ?? null,
+              actorUserId: options.scope?.userId ?? item.userId,
+              industry: item.industry,
+              scenario: item.scenario,
+              name: item.name,
+              sourceKeywords: item.sourceKeywords,
+              demandKeywords: item.demandKeywords,
+              excludeKeywords: item.excludeKeywords,
+              blacklistNicknames: item.blacklistNicknames,
+              commentTemplates: item.commentTemplates,
+              privateMessageTemplates: item.privateMessageTemplates,
+              defaultDailyLimit: item.defaultDailyLimit,
+              defaultRiskMode: item.defaultRiskMode,
+              scoringRules: item.scoringRules,
+              updatedAt: new Date(item.updatedAt),
+            },
+          });
+        }
+        for (const item of this.growthPersistenceItems(
+          store.configs,
+          options,
+          'configs',
+        )) {
+          await tx.growthAcquisitionConfig.upsert({
+            where: { id: item.id },
+            create: {
+              id: item.id,
+              userId: item.userId,
+              actorUserId: options.scope?.userId ?? item.userId,
+              tenantId: item.tenantId ?? null,
+              mode: item.mode,
+              taskName: item.taskName,
+              platform: item.platform,
+              accountId: item.accountId,
+              accountName: item.accountName,
+              sourceInputs: item.sourceInputs,
+              includeKeywords: item.includeKeywords,
+              excludeKeywords: item.excludeKeywords,
+              blacklistNicknames: item.blacklistNicknames,
+              commentTemplates: item.commentTemplates,
+              privateMessageTemplates: item.privateMessageTemplates,
+              dailyLimit: item.dailyLimit,
+              perTargetLimit: item.perTargetLimit,
+              deduplicate: item.deduplicate,
+              scheduleEnabled: item.scheduleEnabled,
+              beginTime: item.beginTime,
+              riskMode: item.riskMode,
+              status: item.status,
+              exposureCount: item.exposureCount,
+              exposureDate: item.exposureDate,
+              lastRunAt: item.lastRunAt ? new Date(item.lastRunAt) : undefined,
+              createdAt: new Date(item.createdAt),
+              updatedAt: new Date(item.updatedAt),
+            },
+            update: {
+              tenantId: item.tenantId ?? null,
+              actorUserId: options.scope?.userId ?? item.userId,
+              mode: item.mode,
+              taskName: item.taskName,
+              platform: item.platform,
+              accountId: item.accountId,
+              accountName: item.accountName,
+              sourceInputs: item.sourceInputs,
+              includeKeywords: item.includeKeywords,
+              excludeKeywords: item.excludeKeywords,
+              blacklistNicknames: item.blacklistNicknames,
+              commentTemplates: item.commentTemplates,
+              privateMessageTemplates: item.privateMessageTemplates,
+              dailyLimit: item.dailyLimit,
+              perTargetLimit: item.perTargetLimit,
+              deduplicate: item.deduplicate,
+              scheduleEnabled: item.scheduleEnabled,
+              beginTime: item.beginTime,
+              riskMode: item.riskMode,
+              status: item.status,
+              exposureCount: item.exposureCount,
+              exposureDate: item.exposureDate,
+              lastRunAt: item.lastRunAt ? new Date(item.lastRunAt) : undefined,
+              updatedAt: new Date(item.updatedAt),
+            },
+          });
+        }
+        for (const item of this.growthPersistenceItems(
+          store.runs,
+          options,
+          'runs',
+        )) {
+          await tx.growthAcquisitionRun.upsert({
+            where: { id: item.id },
+            create: {
+              id: item.id,
+              userId: item.userId,
+              actorUserId: options.scope?.userId ?? item.userId,
+              tenantId: item.tenantId ?? null,
+              configId: item.configId,
+              mode: item.mode,
+              platform: item.platform,
+              status: item.status,
+              failureReason: item.failureReason,
+              message: item.message,
+              candidateCount: item.candidateCount,
+              selectedCount: item.selectedCount,
+              contactedCount: item.contactedCount,
+              crmCapturedCount: item.crmCapturedCount,
+              evidenceUrls: item.evidenceUrls,
+              leadIds: item.leadIds,
+              startedAt: new Date(item.startedAt),
+              endedAt: item.endedAt ? new Date(item.endedAt) : undefined,
+            },
+            update: {
+              tenantId: item.tenantId ?? null,
+              actorUserId: options.scope?.userId ?? item.userId,
+              status: item.status,
+              failureReason: item.failureReason,
+              message: item.message,
+              candidateCount: item.candidateCount,
+              selectedCount: item.selectedCount,
+              contactedCount: item.contactedCount,
+              crmCapturedCount: item.crmCapturedCount,
+              evidenceUrls: item.evidenceUrls,
+              leadIds: item.leadIds,
+              endedAt: item.endedAt ? new Date(item.endedAt) : undefined,
+            },
+          });
+        }
+        for (const item of this.growthPersistenceItems(
+          store.leads,
+          options,
+          'leads',
+        )) {
+          // P0 复核（全面审查）：upsert 用 dedupeKey 复合唯一键（对齐
+          // LeadRepository.dedupeWhere 与 schema @@unique([tenantId,dedupeKey])）——
+          // 原 where:{id} 在重跑任务命中历史 dedupeKey 时 create 撞 P2002，
+          // 整个 $transaction（configs/runs/leads）一起回滚。
+          const dedupeKey = this.unifiedLeadDedupeKey(item);
+          const dedupeWhere = item.tenantId
+            ? {
+                tenantId_dedupeKey: {
+                  tenantId: item.tenantId,
+                  dedupeKey,
+                },
+              }
+            : {
+                userId_dedupeKey: { userId: item.userId, dedupeKey },
+              };
+          // P0 复核（二次）：update 前取既有记录——已转化（status=converted）的线索
+          // 不允许被任务重跑降级 status / 置空 customerId（转化链路数据不可被采集层抹掉）。
+          const existingLead = await tx.lead.findUnique({ where: dedupeWhere });
+          // P0 复核（三次）：历史数据 dedupeKey 迁移兜底——旧库存的 dedupeKey 是
+          // `lead:growth:{id}`（旧格式），新算法算出 `lead:sha256(...)`，dedupeWhere 命中不到
+          // 会走 create 分支撞 id 唯一约束（P2002）。此处按 id 兜底找到旧记录，先修正 dedupeKey，
+          // 让后续 upsert 稳定走 update 分支。
+          let existingByAny = existingLead;
+          if (!existingByAny) {
+            existingByAny = await tx.lead.findUnique({
               where: { id: item.id },
-              data: { dedupeKey },
             });
+            if (existingByAny) {
+              await tx.lead.update({
+                where: { id: item.id },
+                data: { dedupeKey },
+              });
+            }
+          }
+          const preserveConverted = existingByAny?.status === 'converted';
+          await tx.lead.upsert({
+            where: dedupeWhere,
+            create: {
+              id: item.id,
+              userId: item.userId,
+              tenantId: item.tenantId ?? null,
+              platform: item.platform,
+              sourceType: item.sourceType,
+              sourceTaskId: item.sourceTaskId,
+              sourceRunId: item.sourceRunId,
+              customerId: item.crmCustomerId ?? null,
+              nickname: item.nickname,
+              profileUrl: item.profileUrl,
+              avatarUrl: item.avatarUrl,
+              externalUserId: item.externalUserId,
+              sourceText: item.sourceText,
+              sourceUrl: item.sourceUrl,
+              videoTitle: item.videoTitle,
+              videoUrl: item.videoUrl,
+              commentTime: item.commentTime,
+              matchedKeywords: item.matchedKeywords ?? [],
+              score: item.score,
+              scoreReasons: item.scoreReasons ?? [],
+              status: item.status,
+              nextFollowUpAt: item.nextFollowUpAt
+                ? new Date(item.nextFollowUpAt)
+                : undefined,
+              ownerUserId: item.ownerUserId ?? undefined,
+              notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
+              evidenceUrls: item.evidenceUrls ?? [],
+              latestReply: item.latestReply,
+              // P1-11 复核：统一 dedupeKey（对齐 LeadRepository 规则 `lead:sha256(platform:uid|nick:...)`），
+              // 不再硬编码 `lead:growth:{id}`——否则 bridge/patchUnifiedLead 找不到统一 Lead。
+              dedupeKey,
+              // P1-11 复核：归因链上游 + 质量字段落库（此前丢失）
+              sourceAccountId: item.sourceAccountId ?? null,
+              sourceArticleId: item.sourceArticleId ?? null,
+              sourcePublishRecordId: item.sourcePublishRecordId ?? null,
+              sourceInteractionEventId: item.sourceInteractionEventId ?? null,
+              enrichmentStatus: item.enrichmentStatus ?? undefined,
+              identityConfidence: item.identityConfidence ?? undefined,
+              missingFields: item.missingFields ?? [],
+              createdAt: new Date(item.createdAt),
+              updatedAt: new Date(item.updatedAt),
+            },
+            update: {
+              tenantId: item.tenantId ?? null,
+              platform: item.platform,
+              sourceType: item.sourceType,
+              sourceTaskId: item.sourceTaskId,
+              sourceRunId: item.sourceRunId,
+              // P0 复核（二次）：已转化线索保护——status/customerId 不被重跑覆盖
+              // （防 converted 降级回 new/pending、customerId 被置空断链）。
+              ...(preserveConverted
+                ? {}
+                : {
+                    customerId: item.crmCustomerId ?? null,
+                  }),
+              nickname: item.nickname,
+              profileUrl: item.profileUrl,
+              avatarUrl: item.avatarUrl,
+              externalUserId: item.externalUserId,
+              sourceText: item.sourceText,
+              sourceUrl: item.sourceUrl,
+              videoTitle: item.videoTitle,
+              videoUrl: item.videoUrl,
+              commentTime: item.commentTime,
+              matchedKeywords: item.matchedKeywords ?? [],
+              score: item.score,
+              scoreReasons: item.scoreReasons ?? [],
+              ...(preserveConverted ? {} : { status: item.status }),
+              nextFollowUpAt: item.nextFollowUpAt
+                ? new Date(item.nextFollowUpAt)
+                : undefined,
+              ownerUserId: item.ownerUserId ?? undefined,
+              notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
+              evidenceUrls: item.evidenceUrls ?? [],
+              latestReply: item.latestReply,
+              // P1-11 复核：update 同样对齐统一 dedupeKey + 补归因/质量字段
+              dedupeKey,
+              sourceAccountId: item.sourceAccountId ?? null,
+              sourceArticleId: item.sourceArticleId ?? null,
+              sourcePublishRecordId: item.sourcePublishRecordId ?? null,
+              sourceInteractionEventId: item.sourceInteractionEventId ?? null,
+              enrichmentStatus: item.enrichmentStatus ?? undefined,
+              identityConfidence: item.identityConfidence ?? undefined,
+              missingFields: item.missingFields ?? [],
+              updatedAt: new Date(item.updatedAt),
+            },
+          });
+        }
+        // 激活事件（报告 16.3 第 1 项）：首个线索 = 首个价值。幂等旁路，失败不阻断。
+        if (this.activation && store.leads.length > 0) {
+          const firstLead = store.leads[0];
+          const ownerId =
+            firstLead.userId ||
+            (this.authRequestContext?.get()?.user?.id ?? null);
+          if (ownerId) {
+            void this.activation
+              .recordFirstValue({
+                userId: ownerId,
+                tenantId: firstLead.tenantId ?? null,
+                eventType: 'first_lead',
+                refId: firstLead.id,
+              })
+              .catch(() => {});
           }
         }
-        const preserveConverted = existingByAny?.status === 'converted';
-        await tx.lead.upsert({
-          where: dedupeWhere,
-          create: {
-            id: item.id,
-            userId: item.userId,
-            tenantId: item.tenantId ?? null,
-            platform: item.platform,
-            sourceType: item.sourceType,
-            sourceTaskId: item.sourceTaskId,
-            sourceRunId: item.sourceRunId,
-            customerId: item.crmCustomerId ?? null,
-            nickname: item.nickname,
-            profileUrl: item.profileUrl,
-            avatarUrl: item.avatarUrl,
-            externalUserId: item.externalUserId,
-            sourceText: item.sourceText,
-            sourceUrl: item.sourceUrl,
-            videoTitle: item.videoTitle,
-            videoUrl: item.videoUrl,
-            commentTime: item.commentTime,
-            matchedKeywords: item.matchedKeywords ?? [],
-            score: item.score,
-            scoreReasons: item.scoreReasons ?? [],
-            status: item.status,
-            nextFollowUpAt: item.nextFollowUpAt
-              ? new Date(item.nextFollowUpAt)
-              : undefined,
-            ownerUserId: item.ownerUserId ?? undefined,
-            notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
-            evidenceUrls: item.evidenceUrls ?? [],
-            latestReply: item.latestReply,
-            // P1-11 复核：统一 dedupeKey（对齐 LeadRepository 规则 `lead:sha256(platform:uid|nick:...)`），
-            // 不再硬编码 `lead:growth:{id}`——否则 bridge/patchUnifiedLead 找不到统一 Lead。
-            dedupeKey,
-            // P1-11 复核：归因链上游 + 质量字段落库（此前丢失）
-            sourceAccountId: item.sourceAccountId ?? null,
-            sourceArticleId: item.sourceArticleId ?? null,
-            sourcePublishRecordId: item.sourcePublishRecordId ?? null,
-            sourceInteractionEventId: item.sourceInteractionEventId ?? null,
-            enrichmentStatus: item.enrichmentStatus ?? undefined,
-            identityConfidence: item.identityConfidence ?? undefined,
-            missingFields: item.missingFields ?? [],
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
-          },
-          update: {
-            tenantId: item.tenantId ?? null,
-            platform: item.platform,
-            sourceType: item.sourceType,
-            sourceTaskId: item.sourceTaskId,
-            sourceRunId: item.sourceRunId,
-            // P0 复核（二次）：已转化线索保护——status/customerId 不被重跑覆盖
-            // （防 converted 降级回 new/pending、customerId 被置空断链）。
-            ...(preserveConverted
-              ? {}
-              : {
-                  customerId: item.crmCustomerId ?? null,
-                }),
-            nickname: item.nickname,
-            profileUrl: item.profileUrl,
-            avatarUrl: item.avatarUrl,
-            externalUserId: item.externalUserId,
-            sourceText: item.sourceText,
-            sourceUrl: item.sourceUrl,
-            videoTitle: item.videoTitle,
-            videoUrl: item.videoUrl,
-            commentTime: item.commentTime,
-            matchedKeywords: item.matchedKeywords ?? [],
-            score: item.score,
-            scoreReasons: item.scoreReasons ?? [],
-            ...(preserveConverted ? {} : { status: item.status }),
-            nextFollowUpAt: item.nextFollowUpAt
-              ? new Date(item.nextFollowUpAt)
-              : undefined,
-            ownerUserId: item.ownerUserId ?? undefined,
-            notes: (item.notes ?? []) as unknown as Prisma.InputJsonValue,
-            evidenceUrls: item.evidenceUrls ?? [],
-            latestReply: item.latestReply,
-            // P1-11 复核：update 同样对齐统一 dedupeKey + 补归因/质量字段
-            dedupeKey,
-            sourceAccountId: item.sourceAccountId ?? null,
-            sourceArticleId: item.sourceArticleId ?? null,
-            sourcePublishRecordId: item.sourcePublishRecordId ?? null,
-            sourceInteractionEventId: item.sourceInteractionEventId ?? null,
-            enrichmentStatus: item.enrichmentStatus ?? undefined,
-            identityConfidence: item.identityConfidence ?? undefined,
-            missingFields: item.missingFields ?? [],
-            updatedAt: new Date(item.updatedAt),
-          },
-        });
-      }
-      // 激活事件（报告 16.3 第 1 项）：首个线索 = 首个价值。幂等旁路，失败不阻断。
-      if (this.activation && store.leads.length > 0) {
-        const firstLead = store.leads[0];
-        const ownerId =
-          firstLead.userId ||
-          (this.authRequestContext?.get()?.user?.id ?? null);
-        if (ownerId) {
-          void this.activation
-            .recordFirstValue({
-              userId: ownerId,
-              tenantId: firstLead.tenantId ?? null,
-              eventType: 'first_lead',
-              refId: firstLead.id,
-            })
-            .catch(() => {});
+        for (const item of this.growthPersistenceItems(
+          store.accountHealth,
+          options,
+          'accountHealth',
+        )) {
+          await tx.growthAccountHealth.upsert({
+            where: { id: item.id },
+            create: {
+              id: item.id,
+              userId: item.userId,
+              tenantId: item.tenantId ?? null,
+              platform: item.platform,
+              accountId: item.accountId,
+              accountName: item.accountName,
+              loginStatus: item.loginStatus,
+              todayActionCount: item.todayActionCount,
+              failureRate: item.failureRate,
+              riskStatus: item.riskStatus,
+              cooldownUntil: item.cooldownUntil
+                ? new Date(item.cooldownUntil)
+                : undefined,
+              recommendation: item.recommendation,
+              lastCheckedAt: new Date(item.lastCheckedAt),
+            },
+            update: {
+              tenantId: item.tenantId ?? null,
+              accountName: item.accountName,
+              loginStatus: item.loginStatus,
+              todayActionCount: item.todayActionCount,
+              failureRate: item.failureRate,
+              riskStatus: item.riskStatus,
+              cooldownUntil: item.cooldownUntil
+                ? new Date(item.cooldownUntil)
+                : undefined,
+              recommendation: item.recommendation,
+              lastCheckedAt: new Date(item.lastCheckedAt),
+            },
+          });
         }
-      }
-      for (const item of this.growthPersistenceItems(
-        store.accountHealth,
-        options,
-        'accountHealth',
-      )) {
-        await tx.growthAccountHealth.upsert({
-          where: { id: item.id },
-          create: {
-            id: item.id,
-            userId: item.userId,
-            tenantId: item.tenantId ?? null,
-            platform: item.platform,
-            accountId: item.accountId,
-            accountName: item.accountName,
-            loginStatus: item.loginStatus,
-            todayActionCount: item.todayActionCount,
-            failureRate: item.failureRate,
-            riskStatus: item.riskStatus,
-            cooldownUntil: item.cooldownUntil
-              ? new Date(item.cooldownUntil)
-              : undefined,
-            recommendation: item.recommendation,
-            lastCheckedAt: new Date(item.lastCheckedAt),
-          },
-          update: {
-            tenantId: item.tenantId ?? null,
-            accountName: item.accountName,
-            loginStatus: item.loginStatus,
-            todayActionCount: item.todayActionCount,
-            failureRate: item.failureRate,
-            riskStatus: item.riskStatus,
-            cooldownUntil: item.cooldownUntil
-              ? new Date(item.cooldownUntil)
-              : undefined,
-            recommendation: item.recommendation,
-            lastCheckedAt: new Date(item.lastCheckedAt),
-          },
-        });
-      }
-      for (const item of this.growthPersistenceItems(
-        store.workflows,
-        options,
-        'workflows',
-      )) {
-        await tx.growthWorkflow.upsert({
-          where: { id: item.id },
-          create: {
-            id: item.id,
-            userId: item.userId,
-            tenantId: item.tenantId ?? null,
-            name: item.name,
-            template: item.template,
-            industry: item.industry,
-            scenario: item.scenario,
-            status: item.status,
-            steps: item.steps,
-            currentStepId: item.currentStepId,
-            lastAction: item.lastAction,
-            lastActionAt: item.lastActionAt
-              ? new Date(item.lastActionAt)
-              : undefined,
-            createdAt: new Date(item.createdAt),
-            updatedAt: new Date(item.updatedAt),
-          },
-          update: {
-            tenantId: item.tenantId ?? null,
-            name: item.name,
-            template: item.template,
-            industry: item.industry,
-            scenario: item.scenario,
-            status: item.status,
-            steps: item.steps,
-            currentStepId: item.currentStepId,
-            lastAction: item.lastAction,
-            lastActionAt: item.lastActionAt
-              ? new Date(item.lastActionAt)
-              : undefined,
-            updatedAt: new Date(item.updatedAt),
-          },
-        });
-      }
-    });
+        for (const item of this.growthPersistenceItems(
+          store.workflows,
+          options,
+          'workflows',
+        )) {
+          await tx.growthWorkflow.upsert({
+            where: { id: item.id },
+            create: {
+              id: item.id,
+              userId: item.userId,
+              tenantId: item.tenantId ?? null,
+              name: item.name,
+              template: item.template,
+              industry: item.industry,
+              scenario: item.scenario,
+              status: item.status,
+              steps: item.steps,
+              currentStepId: item.currentStepId,
+              lastAction: item.lastAction,
+              lastActionAt: item.lastActionAt
+                ? new Date(item.lastActionAt)
+                : undefined,
+              createdAt: new Date(item.createdAt),
+              updatedAt: new Date(item.updatedAt),
+            },
+            update: {
+              tenantId: item.tenantId ?? null,
+              name: item.name,
+              template: item.template,
+              industry: item.industry,
+              scenario: item.scenario,
+              status: item.status,
+              steps: item.steps,
+              currentStepId: item.currentStepId,
+              lastAction: item.lastAction,
+              lastActionAt: item.lastActionAt
+                ? new Date(item.lastActionAt)
+                : undefined,
+              updatedAt: new Date(item.updatedAt),
+            },
+          });
+        }
+      },
+      { timeout: 60_000 },
+    );
     if (
       !options.collections ||
       options.collections.includes('commercialAudits')
