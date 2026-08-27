@@ -1497,6 +1497,21 @@ describe('GrowthService tenant mutation security', () => {
     );
     expect(strategyDelete).not.toHaveBeenCalled();
   });
+
+  it('error-report 0f9f248d: saveStoreToDatabase 事务显式携带 60s 超时（防默认 5s 交互事务超时导致 Transaction already closed）', async () => {
+    const tx = {
+      growthStrategy: { upsert: jest.fn(), deleteMany: jest.fn() },
+    };
+    const transactionMock = jest.fn(
+      async (callback: (client: unknown) => unknown) => callback(tx),
+    );
+    const service = makeService({ $transaction: transactionMock });
+    await service.saveStoreToDatabase(makeStore({}), {});
+    expect(transactionMock).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.objectContaining({ timeout: 60000 }),
+    );
+  });
 });
 
 describe('GrowthService RPA driver 发现接入（阶段 A，fail-safe）', () => {
