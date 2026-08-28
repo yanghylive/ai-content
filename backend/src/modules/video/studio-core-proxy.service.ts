@@ -34,10 +34,50 @@ export class StudioCoreProxyService {
   private token: string | null = null;
   private tokenExpiresAt = 0;
 
+  /** base url 是否指向本机回环地址 */
+  private isLoopbackBaseUrl(): boolean {
+    try {
+      const host = new URL(this.baseUrl).hostname;
+      return host === '127.0.0.1' || host === 'localhost' || host === '::1';
+    } catch {
+      return false;
+    }
+  }
+
+  /** 快速探测本地端口是否可连（不可连立即 reject，避免长挂） */
+  private assertPortOpen(timeoutMs: number): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const net = require('node:net') as typeof import('node:net');
+    return new Promise((resolve, reject) => {
+      const url = new URL(this.baseUrl);
+      const port = Number(url.port) || (url.protocol === 'https:' ? 443 : 80);
+      const socket = new net.Socket();
+      const done = (err: Error | null) => {
+        socket.destroy();
+        if (err) reject(err);
+        else resolve();
+      };
+      socket.setTimeout(timeoutMs);
+      socket.once('error', () =>
+        done(new Error(`studio_core 不可达（${this.baseUrl}）`)),
+      );
+      socket.once('timeout', () =>
+        done(new Error(`studio_core 连接超时（${this.baseUrl}）`)),
+      );
+      socket.connect(port, url.hostname, () => done(null));
+    });
+  }
+
   /** 登录拿 token（token 无过期时间则缓存 30 分钟） */
   private async ensureToken(): Promise<string> {
     if (this.token && Date.now() < this.tokenExpiresAt) {
       return this.token;
+    }
+    // 2026-08-28：本机/打包态通常没有 studio_core（默认 127.0.0.1:8610），
+    // 原先无超时保护会把用户请求挂到 TCP 超时（数分钟）才回退云端通道。
+    // 这里对「本地地址」先做 1.5s 端口探测，连不上立即抛错交给上层回退。
+    if (this.isLoopbackBaseUrl()) {
+      await this.assertPortOpen(1500);
     }
     const res = await fetch(`${this.baseUrl}/api/auth/login`, {
       method: 'POST',
@@ -46,6 +86,7 @@ export class StudioCoreProxyService {
         username: this.username,
         password: this.password,
       }),
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
       throw new Error(
@@ -72,7 +113,11 @@ export class StudioCoreProxyService {
       Authorization: `Bearer ${token}`,
       ...((init.headers as Record<string, string>) || {}),
     };
-    const res = await fetch(`${this.baseUrl}${path}`, { ...init, headers });
+    const res = await fetch(`${this.baseUrl}${path}`, {
+      ...init,
+      headers,
+      signal: init.signal ?? AbortSignal.timeout(15_000),
+    });
     if (res.status === 401 && !retried) {
       this.token = null;
       this.tokenExpiresAt = 0;
