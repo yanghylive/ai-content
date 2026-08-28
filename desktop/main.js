@@ -1349,6 +1349,7 @@ async function startBackendService() {
       if (gw.appId) envVars.KAYPAL_APP_ID = gw.appId;
       if (gw.tenantId) envVars.KAYPAL_TENANT_ID = gw.tenantId;
       if (gw.billingUserId) envVars.KAYPAL_BILLING_USER_ID = gw.billingUserId;
+      if (gw.legacyApiKey) envVars.KAYPAL_LEGACY_API_KEY = gw.legacyApiKey;
       if (gw.apiKey && gw.contextJwtSecret) {
         console.log('[Backend] Kaypal gateway credential loaded from release config');
       }
