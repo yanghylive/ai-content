@@ -383,6 +383,15 @@ export class MultimodalService {
       ? { imageUrl: input.imageUrl as string, prompt, duration }
       : { prompt, duration };
     const headers = this.buildHeaders(authUser);
+    // 2026-08-28：视频家族（/api/ai/v1/video/*）只认 legacy 网关 key，
+    // 提交与轮询必须同用一套头；此前轮询直接用 headers 里的 desktop key，
+    // 网关 401 且响应体无 status 字段 → 循环静默空转 60 次后报「生成超时」。
+    const videoHeaders = {
+      ...headers,
+      'x-kaypal-api-key':
+        this.readConfig('KAYPAL_LEGACY_API_KEY') ||
+        headers['x-kaypal-api-key'],
+    };
 
     // 1. 提交（异步任务）
     let taskId = '';
@@ -391,15 +400,7 @@ export class MultimodalService {
         `${this.getGatewayBaseUrl()}/api/ai/v1/video/generations`,
         {
           method: 'POST',
-          headers: {
-            ...headers,
-            // 2026-08-28：网关视频路由鉴权 = x-kaypal-api-key 精确等于服务端
-            // legacy KAYPAL_API_KEY（实测代码 w()：b===c），与 chat 的 per-app
-            // 凭据体系不同。视频专用 legacy key。
-            'x-kaypal-api-key':
-              this.readConfig('KAYPAL_LEGACY_API_KEY') ||
-              headers['x-kaypal-api-key'],
-          },
+          headers: videoHeaders,
           body: JSON.stringify({ model, input: videoInput }),
           signal: AbortSignal.timeout(60_000),
         },
@@ -441,13 +442,18 @@ export class MultimodalService {
         const qResp = await fetch(
           `${this.getGatewayBaseUrl()}/api/ai/v1/video/generations?id=${encodeURIComponent(taskId)}`,
           {
-            headers: {
-              'x-kaypal-api-key': headers['x-kaypal-api-key'] || '',
-              'x-kaypal-user-id': headers['x-kaypal-user-id'] || '',
-            },
+            headers: videoHeaders,
             signal: AbortSignal.timeout(30_000),
           },
         );
+        if (!qResp.ok) {
+          this.logger.warn(
+            `视频任务轮询未授权/异常 ${taskId}: HTTP ${qResp.status}`,
+          );
+          throw new ServiceUnavailableException(
+            `视频任务查询失败（HTTP ${qResp.status}）：网关视频通道鉴权或状态查询异常`,
+          );
+        }
         const q = (await qResp.json().catch(() => null)) as {
           status?: string;
           videoUrl?: string | null;
