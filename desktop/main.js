@@ -929,6 +929,58 @@ function resolveNodeBinary() {
   return null;
 }
 
+/**
+ * 2026-08-28：打包态后端是 detached 子进程，App 崩溃/被强杀时不会走 before-quit，
+ * 残留孤儿进程会一直占着 3011，导致下次启动后端 EADDRINUSE 连续失败——
+ * 用户表现为「应用起不来 / 功能全挂且注入的网关键据失效（孤儿拿的是旧 env）」。
+ * 这里在 spawn 前探测端口，把占用者（仅本机 3011 上非本进程的 node）清掉。
+ * 只针对打包态，避免开发态误杀用户自己的 dev backend。
+ */
+async function releaseBackendPort(port, backendEntry) {
+  if (!app.isPackaged || process.platform === 'win32') return;
+  const net = require('node:net');
+  const inUse = await new Promise((resolve) => {
+    const server = net.createServer();
+    server.once('error', () => resolve(true));
+    server.once('listening', () => server.close(() => resolve(false)));
+    server.listen(port, '127.0.0.1');
+  });
+  if (!inUse) return;
+  try {
+    const { execFileSync } = require('node:child_process');
+    const out = execFileSync('lsof', ['-tiTCP:' + port, '-sTCP:LISTEN'], {
+      encoding: 'utf8',
+      timeout: 5000,
+    });
+    const pids = `${out}`.split(/\s+/).filter(Boolean);
+    for (const pid of pids) {
+      if (Number(pid) === process.pid) continue;
+      let cmd = '';
+      try {
+        cmd = execFileSync('ps', ['-p', pid, '-o', 'command='], {
+          encoding: 'utf8',
+          timeout: 3000,
+        });
+      } catch {
+        cmd = '';
+      }
+      // 只清理「执行我们打包 backend 入口」的残留后端，避免误杀别的服务
+      if (cmd && backendEntry && cmd.includes(backendEntry)) {
+        console.log(`[Backend] 清理残留后端进程 pid=${pid}（端口 ${port} 被占）`);
+        try {
+          process.kill(Number(pid), 'SIGKILL');
+        } catch (error) {
+          console.warn(`[Backend] 清理失败 pid=${pid}: ${error.message}`);
+        }
+      } else if (cmd) {
+        console.warn(`[Backend] 端口 ${port} 被非本应用进程占用(pid=${pid})，跳过清理`);
+      }
+    }
+  } catch (error) {
+    console.warn(`[Backend] 端口 ${port} 占用检测失败: ${error.message}`);
+  }
+}
+
 function spawnBackendServiceProcess(nodeBin, backendEntry, backendPath, childEnv) {
   return spawn(nodeBin, [backendEntry], {
     cwd: backendPath,
@@ -1513,6 +1565,9 @@ async function startBackendService() {
     playwrightBrowsersPath: childEnv.PLAYWRIGHT_BROWSERS_PATH || null,
     electronRunAsNode: childEnv.ELECTRON_RUN_AS_NODE || null,
   }));
+
+  // 2026-08-28：spawn 前清理上次崩溃遗留的孤儿后端（占着 3011 会让本次启动必失败）
+  await releaseBackendPort(Number(envVars.PORT || BACKEND_PORT), backendEntry);
 
   backendService = spawnBackendServiceProcess(
     nodeBin,
