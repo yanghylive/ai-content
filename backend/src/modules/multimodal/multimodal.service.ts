@@ -388,7 +388,8 @@ export class MultimodalService {
             // legacy KAYPAL_API_KEY（实测代码 w()：b===c），与 chat 的 per-app
             // 凭据体系不同。视频专用 legacy key。
             'x-kaypal-api-key':
-              this.readConfig('KAYPAL_API_KEY') || headers['x-kaypal-api-key'],
+              this.readConfig('KAYPAL_AI_PROXY_API_KEY') ||
+              headers['x-kaypal-api-key'],
           },
           body: JSON.stringify({ model, input: videoInput }),
           signal: AbortSignal.timeout(60_000),
