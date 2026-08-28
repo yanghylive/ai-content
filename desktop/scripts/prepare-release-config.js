@@ -117,6 +117,7 @@ function resolveConfig({
     appId: (env.KAYPAL_APP_ID || '').trim(),
     tenantId: (env.KAYPAL_TENANT_ID || '').trim(),
     billingUserId: (env.KAYPAL_BILLING_USER_ID || '').trim(),
+    legacyApiKey: (env.KAYPAL_LEGACY_API_KEY || '').trim(),
   };
   const hasGateway = Object.values(kaypalGateway).some(Boolean);
 
