@@ -120,12 +120,21 @@ export class MultimodalService {
   private getGatewayBaseUrl(): string {
     // Stage 1A：base url 统一经 KaypalProviderResolver 校验 host（fail-closed），
     // 避免 env 被改成第三方/恶意域名后请求带着凭据直接打过去。
-    const authBase = KaypalProviderResolver.resolveBaseUrlFrom([
-      this.readConfig('KAYPAL_AUTH_BASE_URL'),
-    ]);
+    // 2026-08-28：KAYPAL_AI_PROXY_BASE_URL 是 chat 家族(/api/v1/*)的 API 前缀，
+    // 不能整体当多模态家族(/api/ai/v1/*)的 base——打包态曾把视频打到
+    // /api/v1/api/ai/v1/* 错误路径致网关 401。这里只取其 origin。
+    const proxyBase = this.readConfig('KAYPAL_AI_PROXY_BASE_URL');
+    let origin = '';
+    if (proxyBase) {
+      try {
+        origin = new URL(proxyBase).origin;
+      } catch {
+        origin = '';
+      }
+    }
     return KaypalProviderResolver.resolveBaseUrlFrom([
-      this.readConfig('KAYPAL_AI_PROXY_BASE_URL'),
-      `${authBase}/api/ai`,
+      origin,
+      this.readConfig('KAYPAL_AUTH_BASE_URL'),
     ]);
   }
 
@@ -237,7 +246,7 @@ export class MultimodalService {
   ): Promise<string> {
     try {
       const resp = await fetch(
-        `${this.getGatewayBaseUrl()}/v1/images/generations`,
+        `${this.getGatewayBaseUrl()}/api/ai/v1/images/generations`,
         {
           method: 'POST',
           headers: this.buildHeaders(authUser),
