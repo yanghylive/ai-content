@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
 
@@ -79,15 +79,29 @@ export class StudioCoreProxyService {
     if (this.isLoopbackBaseUrl()) {
       await this.assertPortOpen(1500);
     }
-    const res = await fetch(`${this.baseUrl}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: this.username,
-        password: this.password,
-      }),
-      signal: AbortSignal.timeout(8000),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${this.baseUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: this.username,
+          password: this.password,
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch (error) {
+      // 2026-08-28 Win 真机：原生 fetch 失败抛 TypeError(fetch failed)，
+      // 若直接冒泡会绕过 VideoService 的回退 catch（未处理异常 → 500）。
+      // 统一规范化为 ServiceUnavailableException，保证上层按「不可达」回退云端通道。
+      const cause =
+        (error as { cause?: { code?: string; message?: string } })?.cause?.code ||
+        (error as { cause?: { message?: string } })?.cause?.message ||
+        (error instanceof Error ? error.message : String(error));
+      throw new ServiceUnavailableException(
+        `studio_core 不可达（${this.baseUrl}）：${cause}`,
+      );
+    }
     if (!res.ok) {
       throw new Error(
         `studio_core 登录失败（${res.status}）: ${await res.text()}`,
@@ -113,11 +127,21 @@ export class StudioCoreProxyService {
       Authorization: `Bearer ${token}`,
       ...((init.headers as Record<string, string>) || {}),
     };
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      ...init,
-      headers,
-      signal: init.signal ?? AbortSignal.timeout(15_000),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${this.baseUrl}${path}`, {
+        ...init,
+        headers,
+        signal: init.signal ?? AbortSignal.timeout(15_000),
+      });
+    } catch (error) {
+      const cause =
+        (error as { cause?: { code?: string } })?.cause?.code ||
+        (error instanceof Error ? error.message : String(error));
+      throw new ServiceUnavailableException(
+        `studio_core 请求失败（${this.baseUrl}${path}）：${cause}`,
+      );
+    }
     if (res.status === 401 && !retried) {
       this.token = null;
       this.tokenExpiresAt = 0;
