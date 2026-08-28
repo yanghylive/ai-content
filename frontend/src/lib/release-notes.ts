@@ -12,6 +12,14 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.99",
+    date: "2026-08-28",
+    highlights: [
+      "视频生成 Windows 真机打通：修复网关地址拼错、轮询鉴权不一致、StudioCore 异常逃逸三大问题，无本地引擎时自动回退云端计费通道",
+      "安装包净化：网关凭据改为启动注入，不再随包携带；应用启动前自动清理崩溃残留的后端进程，修复偶发「应用起不来」",
+    ],
+  },
+  {
     version: "v1.1.98",
     date: "2026-08-27",
     highlights: [
@@ -262,4 +270,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.98";
+export const DESKTOP_APP_VERSION = "1.1.99";

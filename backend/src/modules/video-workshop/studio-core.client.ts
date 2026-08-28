@@ -76,15 +76,27 @@ export class StudioCoreClient {
     body?: unknown,
   ): Promise<unknown> {
     const token = await this.getToken();
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal: AbortSignal.timeout(15000),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${path}`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal: AbortSignal.timeout(15000),
+      });
+    } catch (error) {
+      // 2026-08-28 防复发：裸 fetch 失败抛 TypeError 会以「服务器内部错误」冒泡，
+      // 统一规范化为可被上层识别/回退的 ServiceUnavailableException。
+      const cause =
+        (error as { cause?: { code?: string } })?.cause?.code ||
+        (error instanceof Error ? error.message : String(error));
+      throw new ServiceUnavailableException(
+        `视频引擎不可达（${this.baseUrl}${path}）：${cause}`,
+      );
+    }
     if (response.status === 401) {
       this.token = null;
       throw new ServiceUnavailableException('视频引擎会话失效，请重试');
@@ -164,13 +176,21 @@ export class StudioCoreClient {
   /** 下载媒体文件（带认证），返回 Buffer */
   async fetchMedia(projectId: string, relPath: string): Promise<Buffer> {
     const token = await this.getToken();
-    const response = await fetch(
-      `${this.baseUrl}/media/${projectId}/${relPath}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: AbortSignal.timeout(60000),
-      },
-    );
+    let response: Response;
+    try {
+      response = await fetch(
+        `${this.baseUrl}/media/${projectId}/${relPath}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(60000),
+        },
+      );
+    } catch (error) {
+      const cause =
+        (error as { cause?: { code?: string } })?.cause?.code ||
+        (error instanceof Error ? error.message : String(error));
+      throw new ServiceUnavailableException(`成片下载失败：${cause}`);
+    }
     if (!response.ok) {
       throw new ServiceUnavailableException(
         `成片下载失败（${response.status}）`,

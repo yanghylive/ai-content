@@ -238,9 +238,18 @@ export class WanI2vService {
     if (rec.status !== 'ready' || !rec.videoUrl) {
       throw new ServiceUnavailableException('成片尚未就绪');
     }
-    const resp = await fetch(rec.videoUrl, {
-      signal: AbortSignal.timeout(60_000),
-    });
+    let resp: Response;
+    try {
+      resp = await fetch(rec.videoUrl, {
+        signal: AbortSignal.timeout(60_000),
+      });
+    } catch (error) {
+      // 2026-08-28 防复发：裸 fetch 失败统一规范化（同 StudioCoreProxy 事故教训）
+      const cause =
+        (error as { cause?: { code?: string } })?.cause?.code ||
+        (error instanceof Error ? error.message : String(error));
+      throw new ServiceUnavailableException(`成片下载失败：${cause}`);
+    }
     if (!resp.ok || !resp.body) {
       throw new ServiceUnavailableException('成片下载失败');
     }
