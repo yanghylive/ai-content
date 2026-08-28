@@ -139,10 +139,47 @@ function writeReleaseConfig(config, destination = outputPath) {
   fs.renameSync(tempPath, destination);
 }
 
+/**
+ * 2026-08-28：生成打包用净化版 backend.env（runtime/generated/backend.env）。
+ * 背景：desktop/backend.env 是开发态 env（含 KAYPAL_AI_PROXY_API_KEY=legacy 凭据、
+ * KAYPAL_API_KEY=geo 开发 key、KAYPAL_BILLING_USER_ID 等），被 extraResources
+ * 打进包后，NestJS envFilePath 文件值会覆盖 main.js 按 release-config 注入的
+ * 进程变量——chat 因此拿着 legacy 凭据打网关 403「App credential does not match」。
+ * 这里剥离「release-config 注入通道统一管理」的 KAYPAL_* 凭据键，其余键（OSS、
+ * 推客、MEMORY 等）原样保留。source of truth = 注入通道。
+ */
+const GATEWAY_MANAGED_ENV_KEYS = [
+  'KAYPAL_AI_PROXY_API_KEY',
+  'KAYPAL_API_KEY',
+  'KAYPAL_CONTEXT_JWT_SECRET',
+  'KAYPAL_BILLING_USER_ID',
+  'KAYPAL_TENANT_ID',
+  'KAYPAL_APP_ID',
+  'KAYPAL_LEGACY_API_KEY',
+];
+
+const sanitizedEnvOutputPath = path.join(desktopRoot, 'runtime', 'generated', 'backend.env');
+
+function writeSanitizedBackendEnv(sourcePath = path.join(desktopRoot, 'backend.env')) {
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(`backend env source missing: ${sourcePath}`);
+  }
+  const lines = fs.readFileSync(sourcePath, 'utf8').split(/\r?\n/);
+  const kept = lines.filter((line) => {
+    const m = line.match(/^([A-Z_0-9]+)=/);
+    return !(m && GATEWAY_MANAGED_ENV_KEYS.includes(m[1]));
+  });
+  fs.mkdirSync(path.dirname(sanitizedEnvOutputPath), { recursive: true });
+  fs.writeFileSync(sanitizedEnvOutputPath, kept.join('\n'), { mode: 0o600 });
+  return sanitizedEnvOutputPath;
+}
+
 function main() {
   try {
     const config = resolveConfig();
     writeReleaseConfig(config);
+    const sanitizedEnv = writeSanitizedBackendEnv();
+    console.log(`Sanitized backend env written: ${sanitizedEnv}`);
     console.log(
       `Prepared ${config.environment} release config for v${config.version}: ${outputPath}`,
     );

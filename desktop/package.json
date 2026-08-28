@@ -232,7 +232,7 @@
         ]
       },
       {
-        "from": "backend.env",
+        "from": "runtime/generated/backend.env",
         "to": "backend/.env"
       },
       {
