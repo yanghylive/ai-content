@@ -382,7 +382,14 @@ export class MultimodalService {
         `${this.getGatewayBaseUrl()}/api/ai/v1/video/generations`,
         {
           method: 'POST',
-          headers,
+          headers: {
+            ...headers,
+            // 2026-08-28：网关视频路由鉴权 = x-kaypal-api-key 精确等于服务端
+            // legacy KAYPAL_API_KEY（实测代码 w()：b===c），与 chat 的 per-app
+            // 凭据体系不同。视频专用 legacy key。
+            'x-kaypal-api-key':
+              this.readConfig('KAYPAL_API_KEY') || headers['x-kaypal-api-key'],
+          },
           body: JSON.stringify({ model, input: videoInput }),
           signal: AbortSignal.timeout(60_000),
         },
