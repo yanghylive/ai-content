@@ -221,12 +221,10 @@ export class MultimodalService {
     let imageUrl = '';
     imageUrl = await this.generateImageViaKaypal(authUser, prompt, input.size);
 
-    const buffer = Buffer.from(
-      new Uint8Array(
-        await (
-          await fetch(imageUrl, { signal: AbortSignal.timeout(60_000) })
-        ).arrayBuffer(),
-      ),
+    const buffer = await this.downloadArtifact(
+      imageUrl,
+      '图片产物下载失败',
+      60_000,
     );
     const filename = `qwen-image-${Date.now()}.png`;
     const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
@@ -367,6 +365,46 @@ export class MultimodalService {
     return this.generateVideoViaKaypal(authUser, prompt, input);
   }
 
+  /**
+   * 2026-08-28 防复发：产物下载统一走本方法——裸 fetch 失败抛 TypeError 会以
+   * 「服务器内部错误」冒泡掩盖真实原因，这里统一规范化为带语义的 ServiceUnavailable。
+   */
+  private async downloadArtifact(
+    url: string,
+    failMessage: string,
+    timeoutMs: number,
+  ): Promise<Buffer> {
+    try {
+      const resp = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+      if (!resp.ok) {
+        throw new ServiceUnavailableException(
+          `${failMessage}（HTTP ${resp.status}）`,
+        );
+      }
+      return Buffer.from(new Uint8Array(await resp.arrayBuffer()));
+    } catch (err) {
+      if (err instanceof ServiceUnavailableException) throw err;
+      const cause =
+        (err as { cause?: { code?: string } })?.cause?.code ||
+        (err instanceof Error ? err.message : String(err));
+      throw new ServiceUnavailableException(`${failMessage}：${cause}`);
+    }
+  }
+
+  /**
+   * 2026-08-28 防复发收口：视频家族（/api/ai/v1/video/*）出站凭据的唯一出口。
+   * 网关视频路由只认 legacy KAYPAL_API_KEY（与 chat 的 per-app 凭据体系不同），
+   * 提交与轮询必须同用本方法的返回值——禁止在调用点再自行覆盖 x-kaypal-api-key。
+   */
+  private buildVideoHeaders(authUser: AuthenticatedUser): Record<string, string> {
+    return {
+      ...this.buildHeaders(authUser),
+      'x-kaypal-api-key':
+        this.readConfig('KAYPAL_LEGACY_API_KEY') ||
+        this.getServerApiKey(),
+    };
+  }
+
   /** kaypal 网关通道（计费走 kaypal.cn，未配置百炼直连 Key 时的主路径） */
   private async generateVideoViaKaypal(
     authUser: AuthenticatedUser,
@@ -382,16 +420,8 @@ export class MultimodalService {
     const videoInput = isI2v
       ? { imageUrl: input.imageUrl as string, prompt, duration }
       : { prompt, duration };
-    const headers = this.buildHeaders(authUser);
-    // 2026-08-28：视频家族（/api/ai/v1/video/*）只认 legacy 网关 key，
-    // 提交与轮询必须同用一套头；此前轮询直接用 headers 里的 desktop key，
-    // 网关 401 且响应体无 status 字段 → 循环静默空转 60 次后报「生成超时」。
-    const videoHeaders = {
-      ...headers,
-      'x-kaypal-api-key':
-        this.readConfig('KAYPAL_LEGACY_API_KEY') ||
-        headers['x-kaypal-api-key'],
-    };
+    // 凭据单出口（见 buildVideoHeaders）；缺失时立即报错而非轮询期才发现
+    const videoHeaders = this.buildVideoHeaders(authUser);
 
     // 1. 提交（异步任务）
     let taskId = '';
@@ -472,7 +502,12 @@ export class MultimodalService {
         }
       } catch (err) {
         if (err instanceof ServiceUnavailableException) throw err;
-        this.logger.warn(`视频任务轮询异常 ${taskId}: ${String(err)}`);
+        // 2026-08-28 防复发：网络失败不再静默空转 60 次（曾在 401+无 status 字段时
+        // 空转 5 分钟报「生成超时」掩盖真因）——轮询期任何失败立即终止并回传原因。
+        this.logger.warn(`视频任务轮询终止 ${taskId}: ${String(err)}`);
+        throw new ServiceUnavailableException(
+          `视频任务查询失败：${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
     if (!videoUrl) {
@@ -480,12 +515,10 @@ export class MultimodalService {
     }
 
     // 3. 下载入素材库
-    const buffer = Buffer.from(
-      new Uint8Array(
-        await (
-          await fetch(videoUrl, { signal: AbortSignal.timeout(90_000) })
-        ).arrayBuffer(),
-      ),
+    const buffer = await this.downloadArtifact(
+      videoUrl,
+      '视频产物下载失败（云端已生成，可稍后在素材库重试）',
+      90_000,
     );
     const filename = `wan-${Date.now()}.mp4`;
     const saved = this.autoUploadService.saveMaterialBuffer(buffer, filename);
