@@ -18,9 +18,11 @@ const check = (name, ok, detail = '') => {
 };
 
 // 灰度遮罩页抽查（6 个代表）
+// 2026-08-29：企业微信助手 8/24 路由收敛后已从灰度转正（/wecom-assistant 重定向
+// 到 /engagement/wecom-assistant 功能页，无遮罩），从抽查清单移除，换成 /mobile-capabilities
 for (const [name, route] of [
   ['BOSS 直聘', '/boss-recruit'],
-  ['企业微信助手', '/wecom-assistant'],
+  ['移动端能力', '/mobile-capabilities'],
   ['省钱比价', '/savings'],
   ['视频引擎', '/video-workshop'],
   ['朋友圈发布', '/engagement/wechat/moments-publish'],

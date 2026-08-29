@@ -91,7 +91,8 @@ describe('KaypalModelSyncService', () => {
         where: { name: 'Kaypal 模型台' },
       }),
     );
-    expect(created.platform.baseUrl).toBe('https://test.kaypal.cn/api/ai');
+    // 2026-08-27 网关 AI proxy 端点收敛为 /api/v1（老 /api/ai 已下线），spec 对齐实现
+    expect(created.platform.baseUrl).toBe('https://test.kaypal.cn/api/v1');
     expect(created.platform.apiKey).toBe('kaypal-api-key');
     expect(created.platform.config.defaultHeaders['x-kaypal-api-key']).toBe(
       'kaypal-api-key',

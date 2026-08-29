@@ -23,7 +23,20 @@ class CloudAPI {
 
   // 通用请求方法
   async request(path, options = {}) {
-    const url = new URL(path, this.endpoint);
+    // 2026-08-29 修复：endpoint 带路径前缀时（如 https://kaypal.cn/cloud-api），
+    // new URL('/api/v1/x', base) 会丢掉前缀导致请求打到错误服务（401/404）。
+    // 这里改为保留 base 路径前缀的拼接。
+    let url;
+    try {
+      const base = new URL(this.endpoint);
+      if (base.pathname && base.pathname !== '/') {
+        url = new URL(base.pathname.replace(/\/+$/, '') + path, base.origin);
+      } else {
+        url = new URL(path, base.origin);
+      }
+    } catch (err) {
+      url = new URL(path, this.endpoint);
+    }
     const isHttps = url.protocol === 'https:';
     const client = isHttps ? https : http;
 

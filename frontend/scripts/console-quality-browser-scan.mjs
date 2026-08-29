@@ -653,6 +653,9 @@ function isIgnorableConsoleEntry(entry) {
 function isExcludedCommercialRoute(route) {
   return [
     "/admin",
+    // 2026-08-29：/case-admin 调 /api/admin/cases，商用验收账号（operator）被后端
+    // 正确拒绝 403——权限防护工作正常，admin 专管页不适用商用账号扫描
+    "/case-admin",
     "/capabilities",
     "/local-engine",
     "/local-engine-v2",
