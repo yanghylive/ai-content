@@ -12,6 +12,14 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.101",
+    date: "2026-08-29",
+    highlights: [
+      "更新体验：检查到新版本后自动在后台下载，准备好后提示一键安装（此前需手动点下载）",
+      "配合 1.1.100 的后端自愈与崩溃自动回传，故障机器升级更省心",
+    ],
+  },
+  {
     version: "v1.1.100",
     date: "2026-08-29",
     highlights: [
@@ -278,4 +286,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.100";
+export const DESKTOP_APP_VERSION = "1.1.101";

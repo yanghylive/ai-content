@@ -39,7 +39,11 @@ function setupAutoUpdater(win, hooks = {}) {
     return;
   }
 
-  autoUpdater.autoDownload = false;
+  // 2026-08-29 v1.1.101（大王拍板）：检查到更新后自动下载（安装仍由用户触发）。
+  // 背景：3011 后端起不来的机器上，用户本就面对故障，还需手动点「下载更新」
+  // 才能升级到修复版——自动下载让「启动即向新版本靠拢」，配合后端自愈实现
+  // 故障机器无人值守恢复。autoInstallOnAppQuit=true 时下载完的版本在退出时即装。
+  autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.allowDowngrade = false;
   if (!app.isPackaged) {
