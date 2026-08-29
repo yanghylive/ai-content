@@ -234,6 +234,22 @@ class CloudAPI {
       method: 'GET'
     });
   }
+
+  // 客户端兜底错误上报（fire-and-forget，失败静默——上报绝不能影响主流程）。
+  // 2026-08-29 补盲区：后端启动崩溃时本地 3011 转发者已死，error-reports 零上报，
+  // 由主进程把崩溃摘要直接 POST 到云端 /api/v1/client-error 转发落 OSS。
+  async reportClientError(data) {
+    try {
+      await this.request('/api/v1/client-error', {
+        method: 'POST',
+        body: data
+      });
+      return true;
+    } catch (err) {
+      console.warn('[CloudAPI] client-error 上报失败(静默):', err && err.message);
+      return false;
+    }
+  }
 }
 
 module.exports = CloudAPI;

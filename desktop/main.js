@@ -1356,6 +1356,8 @@ async function startBackendService() {
     envVars.SQLITE_DATABASE_URL || envVars.DATABASE_URL,
     backendPath,
   );
+  // 供崩溃自愈（healCorruptedDesktopDatabase）定位本次启动使用的库文件
+  lastBackendDatabasePath = desktopDatabasePath;
 
   try {
     const credentialKey = ensureCredentialMasterKey({
@@ -1601,6 +1603,15 @@ async function startBackendService() {
       .find((line) => /(?:ERROR|Error:|Exception|Cannot find|ENOENT)/i.test(line));
     backendStartupDiagnostic = `后端进程退出（代码 ${code ?? 'unknown'}）${errorLine ? `：${errorLine.slice(0, 500)}` : ''}`;
     appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
+    // 2026-08-29 兜底上报：后端异常退出直接报云端（本地转发者已死，不能依赖 3011 自报）
+    if (code !== 0) {
+      reportBackendCrash(code, stderrTail || backendStartupDiagnostic);
+      // 2026-08-29 自愈：SQLite 数据页损坏时启动前的 schema 预检查发现不了（marker 完好），
+      // Prisma 运行时查询才炸。识别损坏特征 → 自动备份 + 重建空库 → 走现有重启链路自愈。
+      if (DB_CORRUPT_SIGNATURE.test(stderrTail || '')) {
+        healCorruptedDesktopDatabase('backend crash with sqlite corruption signature');
+      }
+    }
     console.log(`[Backend] Service exited with code ${code}`);
     if (backendService && backendService.__killTimer) clearTimeout(backendService.__killTimer);
     backendService = null;
@@ -1619,6 +1630,99 @@ async function startBackendService() {
     appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
     console.error('[Backend] Failed to start:', err.message);
   });
+}
+
+// ============ 后端崩溃兜底上报（2026-08-29 补 error-reports 盲区） ============
+// 背景：error-reports 自动上报的转发者是本地 3011 后端进程（它持 OSS 凭据）；
+// 后端启动即崩时转发者自己死了，前端 bridge 的 POST 也全部失败，OSS 零记录。
+// 主进程在崩溃/就绪超时两个挂点把错误摘要直接 POST 云端 /api/v1/client-error 转发落 OSS。
+// fire-and-forget + 会话频控（MAX_RESTARTS=3 次重启循环下最多 3 条 + 同指纹去重）。
+const backendCrashReportState = { signatures: new Set(), count: 0, maxPerSession: 3 };
+// 最近一次后端启动使用的 SQLite 库路径（startBackendService 内赋值），供崩溃自愈定位
+let lastBackendDatabasePath = null;
+// 每个启动会话最多自愈 1 次：防止非数据库原因的崩溃被反复清库丢数据
+let backendDbHealUsed = false;
+// SQLite 损坏特征：schema marker 预检查覆盖不到的「数据页损坏 / WAL 合并失败 /
+// 文件加密或截断」，Prisma 运行时查询才炸 → 后端进程退出。出现这些字样才允许自愈清库。
+const DB_CORRUPT_SIGNATURE = /malformed|not a database|database disk image|unable to open database|sqlite_corrupt|databasefileerror|file is not a database/i;
+
+function healCorruptedDesktopDatabase(reason) {
+  if (backendDbHealUsed) return false;
+  backendDbHealUsed = true;
+  const databasePath = lastBackendDatabasePath;
+  if (!databasePath || !fs.existsSync(databasePath)) return false;
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  try {
+    const backupPath = `${databasePath}.corrupt-${stamp}`;
+    fs.renameSync(databasePath, backupPath);
+    // 连带 sidecar 一起移走，避免残留 WAL 再次污染重建后的新库
+    for (const suffix of ['-wal', '-shm']) {
+      const sidecar = `${databasePath}${suffix}`;
+      if (fs.existsSync(sidecar)) {
+        try { fs.renameSync(sidecar, `${sidecar}.corrupt-${stamp}`); } catch {}
+      }
+    }
+    fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+    createEmptySqliteDatabase(databasePath);
+    const msg = `[AutoHeal] SQLite database corrupted (reason: ${reason}); backed up to ${backupPath}, recreated from scratch, backend will restart`;
+    console.log('[Backend]', msg);
+    appendRuntimeLog('backend-launch.log', msg);
+    return true;
+  } catch (error) {
+    console.error('[Backend] AutoHeal failed:', error.message);
+    appendRuntimeLog('backend-launch.log', `[AutoHeal] failed: ${error.message}`);
+    return false;
+  }
+}
+
+function tailFileSync(filePath, maxBytes = 4000) {
+  try {
+    const stat = fs.statSync(filePath);
+    if (stat.size <= 0) return '';
+    const start = Math.max(0, stat.size - maxBytes);
+    const length = stat.size - start;
+    const buffer = Buffer.alloc(length);
+    const fd = fs.openSync(filePath, 'r');
+    try {
+      fs.readSync(fd, buffer, 0, length, start);
+      return buffer.toString('utf8');
+    } finally {
+      fs.closeSync(fd);
+    }
+  } catch {
+    return '';
+  }
+}
+
+function reportBackendCrash(exitCode, detailText, kind = 'backend-startup-crash') {
+  try {
+    if (!cloudAPI) return;
+    const state = backendCrashReportState;
+    if (state.count >= state.maxPerSession) return;
+    const detail = String(detailText || '');
+    const signature = `${kind}:${detail.slice(0, 300)}`;
+    if (state.signatures.has(signature)) return;
+    state.signatures.add(signature);
+    if (state.signatures.size > 20) state.signatures.clear();
+    state.count += 1;
+    void cloudAPI.reportClientError({
+      kind,
+      exitCode: typeof exitCode === 'number' ? exitCode : null,
+      message: detail.slice(0, 2000) || '后端启动失败',
+      stderrTail: detail.slice(0, 8000),
+      launchLog: tailFileSync(path.join(app.getPath('userData'), 'logs', 'backend-launch.log'), 4000),
+      version: app.getVersion(),
+      platform: process.platform,
+      arch: process.arch,
+      electron: process.versions.electron || '',
+      node: process.versions.node || '',
+      dataPath: app.getPath('userData'),
+    }).then((ok) => {
+      if (ok) console.log('[Backend] 崩溃摘要已上报云端 error-reports');
+    });
+  } catch (err) {
+    console.warn('[Backend] crash report failed(ignored):', err && err.message);
+  }
 }
 
 // 停止后端服务
@@ -2241,6 +2345,12 @@ app.whenReady().then(async () => {
   await startBackendService();
   const ready = await waitForBackendReady();
   if (!ready) {
+    // 2026-08-29 兜底上报：进程可能还活着但 3011 一直不就绪，与崩溃上报走同频控
+    reportBackendCrash(
+      null,
+      backendStartupDiagnostic || `3011 未在 ${BACKEND_READY_TIMEOUT_MS}ms 内就绪（进程 ${backendService ? '存活' : '已退出'}）`,
+      'backend-not-ready',
+    );
     const diagnostic = backendStartupDiagnostic
       ? `\n\n诊断：${backendStartupDiagnostic}`
       : '';
