@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
+const https = require('https');
 const Database = require('better-sqlite3');
 const OpenAI = require('openai');
 const path = require('path');
@@ -116,6 +117,134 @@ app.get('/health', (req, res) => {
     version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
+});
+
+// ===== 客户端错误上报（匿名 + IP 限流，2026-08-29 补「后端启动崩溃」上报盲区）=====
+// 背景：error-reports 自动上报的转发者是本地 3011 后端进程（它持 OSS 凭据）；
+// 后端启动即崩时转发者自己死了，任何错误都不会落 OSS（8/29 同事 Win 机 3011 崩溃
+// 在 OSS 上零记录）。桌面主进程把崩溃摘要直接 POST 到这里，由云端转发到
+// OSS error-reports/<date>/<uuid>.json —— 凭据不下发客户端（1.1.96 安全加固红线）。
+const REPORT_WINDOW_MS = 60_000;
+const REPORT_MAX_PER_IP = 20; // 与后端 error-report 匿名端点同级限流
+const reportBuckets = new Map();
+
+function reportClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.trim()) {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || 'unknown';
+}
+
+function reportRateLimited(ip) {
+  const now = Date.now();
+  const bucket = reportBuckets.get(ip);
+  if (!bucket || now - bucket.windowStart > REPORT_WINDOW_MS) {
+    reportBuckets.set(ip, { count: 1, windowStart: now });
+    return false;
+  }
+  bucket.count += 1;
+  if (reportBuckets.size > 5000) reportBuckets.clear();
+  return bucket.count > REPORT_MAX_PER_IP;
+}
+
+// 零依赖 OSS V1 签名 PUT（等价 ali-oss put；不改 package.json，部署免重装依赖）
+function ossPutJson(key, report) {
+  return new Promise((resolve, reject) => {
+    const accessKeyId = process.env.OSS_ACCESS_KEY_ID;
+    const accessKeySecret = process.env.OSS_ACCESS_KEY_SECRET;
+    if (!accessKeyId || !accessKeySecret) {
+      return reject(new Error('OSS 凭据未配置（OSS_ACCESS_KEY_ID/SECRET）'));
+    }
+    const bucket = process.env.OSS_BUCKET || 'kaypal';
+    const region = process.env.OSS_REGION || 'oss-cn-hangzhou';
+    const host = `${bucket}.${region}.aliyuncs.com`;
+    const body = Buffer.from(JSON.stringify(report, null, 2));
+    const date = new Date().toUTCString();
+    const contentType = 'application/json';
+    const stringToSign = `PUT\n\n${contentType}\n${date}\n/${bucket}/${key}`;
+    const signature = crypto
+      .createHmac('sha1', accessKeySecret)
+      .update(stringToSign)
+      .digest('base64');
+    const req = https.request(
+      {
+        hostname: host,
+        port: 443,
+        path: `/${key}`,
+        method: 'PUT',
+        headers: {
+          Host: host,
+          Date: date,
+          'Content-Type': contentType,
+          Authorization: `OSS ${accessKeyId}:${signature}`,
+          'Content-Length': body.length,
+        },
+        timeout: 15000,
+      },
+      (res) => {
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) return resolve();
+          reject(new Error(
+            `OSS PUT ${res.statusCode}: ${Buffer.concat(chunks).toString().slice(0, 200)}`,
+          ));
+        });
+      },
+    );
+    req.on('timeout', () => req.destroy(new Error('OSS PUT timeout')));
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+// 注意：必须注册在 `app.use('/api/v1', requireAuth)` 之前 —— 匿名端点，
+// 客户端安装包不带任何凭据（1.1.96 安全加固），鉴权靠 IP 限流 + 字段截断。
+app.post('/api/v1/client-error', async (req, res) => {
+  try {
+    if (reportRateLimited(reportClientIp(req))) {
+      return res.status(204).end(); // 超限静默丢弃（与后端匿名端点行为一致）
+    }
+    const body = req.body || {};
+    const kind = String(body.kind || 'client-error').slice(0, 100);
+    const message = String(body.message || '客户端未知错误').slice(0, 2000);
+    const detail = String(body.stderrTail || body.stack || '').slice(0, 8000);
+
+    const report = {
+      schema: 'error-report/v1',
+      reportId: crypto.randomUUID(),
+      app: 'ai-content-desktop',
+      kind,
+      version: String(body.version || 'unknown').slice(0, 50),
+      requestId: 'client-crash-' + crypto.randomUUID(),
+      method: 'BACKEND-PROCESS',
+      url: 'backend://startup',
+      status: 500,
+      exitCode: Number.isFinite(body.exitCode) ? body.exitCode : null,
+      message,
+      stack: detail,
+      launchLog: String(body.launchLog || '').slice(0, 4000),
+      system: {
+        platform: String(body.platform || '').slice(0, 50),
+        arch: String(body.arch || '').slice(0, 50),
+        electron: String(body.electron || '').slice(0, 50),
+        node: String(body.node || '').slice(0, 50),
+        userData: String(body.dataPath || '').slice(0, 500),
+      },
+      occurredAt: new Date().toISOString(),
+    };
+
+    const ymd = new Date().toISOString().slice(0, 10);
+    const key = `error-reports/${ymd}/${report.reportId}.json`;
+    await ossPutJson(key, report);
+    console.log(`[client-error] 已转发 OSS: ${key} (${kind} v${report.version})`);
+    res.status(204).end();
+  } catch (error) {
+    console.error('[client-error] 转发失败:', error.message);
+    res.status(204).end(); // 上报通道失败静默，不让客户端重试风暴
+  }
 });
 
 app.use('/api/v1', requireAuth);

@@ -12,6 +12,14 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.100",
+    date: "2026-08-29",
+    highlights: [
+      "启动自愈：本地数据库文件损坏导致的「应用起不来」不再需要手动处理——后端异常退出时自动识别库损坏、备份旧库并重建，重启即恢复",
+      "崩溃自动回传：后端启动崩溃/超时的错误摘要自动上报服务器（此前该场景日志只留在本机，需要手动发回）",
+    ],
+  },
+  {
     version: "v1.1.99",
     date: "2026-08-28",
     highlights: [
@@ -270,4 +278,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.99";
+export const DESKTOP_APP_VERSION = "1.1.100";
