@@ -22,6 +22,18 @@ const updateBaseUrl = (
 
 const failures = [];
 const warnings = [];
+const FEED_DEFINITIONS = [
+  { name: 'latest.yml', label: 'Windows', requiresBlockmap: true },
+  { name: 'latest-mac.yml', label: 'macOS', requiresBlockmap: true },
+  { name: 'latest-linux.yml', label: 'Linux', requiresBlockmap: false },
+];
+const requestedFeedNames = (process.env.RELEASE_VERIFY_FEEDS || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+const remoteFeedDefinitions = FEED_DEFINITIONS.filter((feed) =>
+  requestedFeedNames.length === 0 || requestedFeedNames.includes(feed.name),
+);
 
 function fail(message) {
   failures.push(message);
@@ -305,29 +317,47 @@ function verifyPackagedWechatNativeRuntime(resourcesRoot) {
   );
 }
 
-function verifyLocalLatest() {
-  const latestPath = path.join(distDir, 'latest.yml');
-  assert(fs.existsSync(latestPath), `missing local latest.yml: ${latestPath}`);
-  if (!fs.existsSync(latestPath)) return null;
+function verifyLocalFeed(feedName, required = false) {
+  const feedPath = path.join(distDir, feedName);
+  if (!fs.existsSync(feedPath)) {
+    if (required) assert(false, `missing local ${feedName}: ${feedPath}`);
+    return null;
+  }
 
-  const latest = parseLatestYml(readText(latestPath));
-  assert(latest.version === expectedVersion, `local latest version ${latest.version} != ${expectedVersion}`);
-  assert(Boolean(latest.path), 'local latest.yml missing path');
-  assert(Number.isFinite(latest.size), 'local latest.yml missing size');
-  assert(Boolean(latest.sha512), 'local latest.yml missing sha512');
+  const latest = parseLatestYml(readText(feedPath));
+  const feedDefinition = FEED_DEFINITIONS.find((feed) => feed.name === feedName);
+  assert(latest.version === expectedVersion, `local ${feedName} version ${latest.version} != ${expectedVersion}`);
+  assert(Boolean(latest.path), `local ${feedName} missing path`);
+  assert(Number.isFinite(latest.size), `local ${feedName} missing size`);
+  assert(Boolean(latest.sha512), `local ${feedName} missing sha512`);
 
   const installerPath = path.join(distDir, latest.path);
   const blockmapPath = `${installerPath}.blockmap`;
-  assert(fs.existsSync(installerPath), `missing local installer: ${installerPath}`);
-  assert(fs.existsSync(blockmapPath), `missing local blockmap: ${blockmapPath}`);
+  assert(fs.existsSync(installerPath), `missing local installer for ${feedName}: ${installerPath}`);
+  if (feedDefinition?.requiresBlockmap) {
+    assert(fs.existsSync(blockmapPath), `missing local blockmap for ${feedName}: ${blockmapPath}`);
+  }
   if (fs.existsSync(installerPath)) {
     const stat = fs.statSync(installerPath);
-    assert(stat.size === latest.size, `local installer size ${stat.size} != latest.yml ${latest.size}`);
+    assert(stat.size === latest.size, `local installer size ${stat.size} != ${feedName} ${latest.size}`);
     const sha512 = fileHash(installerPath, 'sha512', 'base64');
-    assert(sha512 === latest.sha512, 'local installer sha512 does not match latest.yml');
+    assert(sha512 === latest.sha512, `local installer sha512 does not match ${feedName}`);
     latest.sha256 = fileHash(installerPath, 'sha256', 'hex');
   }
   return latest;
+}
+
+function verifyLocalLatest() {
+  return verifyLocalFeed('latest.yml', true);
+}
+
+function verifyLocalFeeds() {
+  const feeds = {};
+  for (const feed of FEED_DEFINITIONS) {
+    const latest = verifyLocalFeed(feed.name, feed.name === 'latest.yml');
+    if (latest) feeds[feed.name] = latest;
+  }
+  return feeds;
 }
 
 function verifyPackagedApp() {
@@ -382,44 +412,69 @@ function verifyPackagedApp() {
   }
 }
 
-async function verifyRemote(latest) {
+async function verifyRemote(localFeeds) {
   assert(Boolean(updateBaseUrl), 'missing update feed base URL');
-  if (!updateBaseUrl || !latest) return;
+  if (!updateBaseUrl) return null;
   assert(/^https:\/\//.test(updateBaseUrl), `update feed must use HTTPS: ${updateBaseUrl}`);
+  const remoteFeeds = {};
+  for (const feed of remoteFeedDefinitions) {
+    const local = localFeeds?.[feed.name] || null;
+    const latestUrl = artifactUrl(feed.name);
+    const remoteResponse = await request(latestUrl);
+    assert(remoteResponse.statusCode === 200, `remote ${feed.name} HTTP ${remoteResponse.statusCode}`);
+    if (remoteResponse.statusCode !== 200) continue;
 
-  const latestUrl = artifactUrl('latest.yml');
-  const remoteLatestResponse = await request(latestUrl);
-  assert(remoteLatestResponse.statusCode === 200, `remote latest.yml HTTP ${remoteLatestResponse.statusCode}`);
-  const remoteLatest = parseLatestYml(remoteLatestResponse.body || '');
-  assert(remoteLatest.version === latest.version, `remote latest version ${remoteLatest.version} != local ${latest.version}`);
-  assert(remoteLatest.path === latest.path, `remote latest path ${remoteLatest.path} != local ${latest.path}`);
-  assert(remoteLatest.size === latest.size, `remote latest size ${remoteLatest.size} != local ${latest.size}`);
-  assert(remoteLatest.sha512 === latest.sha512, 'remote latest sha512 does not match local latest');
+    const remoteLatest = parseLatestYml(remoteResponse.body || '');
+    assert(remoteLatest.version === expectedVersion, `remote ${feed.name} version ${remoteLatest.version} != ${expectedVersion}`);
+    assert(Boolean(remoteLatest.path), `remote ${feed.name} missing path`);
+    assert(Number.isFinite(remoteLatest.size), `remote ${feed.name} missing size`);
+    assert(Boolean(remoteLatest.sha512), `remote ${feed.name} missing sha512`);
+    if (local) {
+      assert(remoteLatest.version === local.version, `remote ${feed.name} version ${remoteLatest.version} != local ${local.version}`);
+      assert(remoteLatest.path === local.path, `remote ${feed.name} path ${remoteLatest.path} != local ${local.path}`);
+      assert(remoteLatest.size === local.size, `remote ${feed.name} size ${remoteLatest.size} != local ${local.size}`);
+      assert(remoteLatest.sha512 === local.sha512, `remote ${feed.name} sha512 does not match local ${feed.name}`);
+    }
 
-  const installerHead = await request(artifactUrl(latest.path), 'HEAD');
-  assert(installerHead.statusCode === 200, `remote installer HTTP ${installerHead.statusCode}`);
-  const remoteSize = Number(installerHead.headers['content-length']);
-  assert(remoteSize === latest.size, `remote installer size ${remoteSize} != local ${latest.size}`);
+    const installerUrl = artifactUrl(remoteLatest.path);
+    const installerHead = await request(installerUrl, 'HEAD');
+    assert(installerHead.statusCode === 200, `remote ${feed.name} installer HTTP ${installerHead.statusCode}`);
+    const remoteSize = Number(installerHead.headers['content-length']);
+    assert(remoteSize === remoteLatest.size, `remote ${feed.name} installer size ${remoteSize} != feed ${remoteLatest.size}`);
 
-  const blockmapHead = await request(artifactUrl(`${latest.path}.blockmap`), 'HEAD');
-  assert(blockmapHead.statusCode === 200, `remote blockmap HTTP ${blockmapHead.statusCode}`);
-  const blockmapSize = Number(blockmapHead.headers['content-length']);
-  assert(Number.isFinite(blockmapSize) && blockmapSize > 1024, `remote blockmap size is invalid: ${blockmapSize}`);
+    let blockmapSize = null;
+    if (feed.requiresBlockmap) {
+      const blockmapUrl = artifactUrl(`${remoteLatest.path}.blockmap`);
+      const blockmapHead = await request(blockmapUrl, 'HEAD');
+      assert(blockmapHead.statusCode === 200, `remote ${feed.name} blockmap HTTP ${blockmapHead.statusCode}`);
+      blockmapSize = Number(blockmapHead.headers['content-length']);
+      assert(Number.isFinite(blockmapSize) && blockmapSize > 1024, `remote ${feed.name} blockmap size is invalid: ${blockmapSize}`);
+    }
 
-  return {
-    latestUrl,
-    installerUrl: artifactUrl(latest.path),
-    remoteSize,
-    blockmapSize,
-  };
+    remoteFeeds[feed.name] = {
+      label: feed.label,
+      latestUrl,
+      installerUrl,
+      remoteSize,
+      blockmapSize,
+    };
+  }
+  return remoteFeeds;
 }
 
 async function main() {
+  const unknownFeedNames = requestedFeedNames.filter(
+    (name) => !FEED_DEFINITIONS.some((feed) => feed.name === name),
+  );
+  for (const feedName of unknownFeedNames) {
+    fail(`RELEASE_VERIFY_FEEDS contains unknown feed: ${feedName}`);
+  }
   verifyPackageContract();
   verifySourceWechatNativeRuntime();
-  const latest = verifyLocalLatest();
+  const localFeeds = verifyLocalFeeds();
+  const latest = localFeeds['latest.yml'] || null;
   verifyPackagedApp();
-  const remote = localOnly ? null : await verifyRemote(latest);
+  const remote = localOnly ? null : await verifyRemote(localFeeds);
 
   if (warnings.length > 0) {
     console.warn('Release verification warnings:');
@@ -439,16 +494,31 @@ async function main() {
     console.log(`  local sha256: ${latest.sha256}`);
   }
   if (remote) {
-    console.log(`  remote latest: ${remote.latestUrl}`);
-    console.log(`  remote installer: ${remote.installerUrl}`);
-    console.log(`  remote size: ${remote.remoteSize}`);
-    console.log(`  remote blockmap size: ${remote.blockmapSize}`);
+    for (const feed of remoteFeedDefinitions) {
+      const result = remote[feed.name];
+      if (!result) continue;
+      console.log(`  remote ${result.label}: ${result.latestUrl}`);
+      console.log(`  remote installer: ${result.installerUrl}`);
+      console.log(`  remote size: ${result.remoteSize}`);
+      console.log(`  remote blockmap size: ${result.blockmapSize}`);
+    }
   } else if (localOnly) {
     console.log('  remote: skipped (--local-only)');
   }
 }
 
-main().catch((error) => {
-  console.error('Release verification crashed:', error.message || error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error('Release verification crashed:', error.message || error);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  FEED_DEFINITIONS,
+  parseLatestYml,
+  remoteFeedDefinitions,
+  verifyLocalFeed,
+  verifyLocalFeeds,
+  verifyRemote,
+};

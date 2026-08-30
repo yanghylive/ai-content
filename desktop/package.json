@@ -1,6 +1,6 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.1.106",
+  "version": "1.1.107",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
   "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
@@ -27,6 +27,7 @@
     "release:check": "node scripts/check-update-feed.js",
     "test:credential-key-store": "node --test test/credential-key-store.test.cjs",
     "test:local-bridge": "node --test test/local-bridge.test.cjs",
+    "test:release-feed-plan": "node --test scripts/release-feed-plan.test.js scripts/verify-oss-release.test.js",
     "test:local-bridge:e2e": "node scripts/electron-local-bridge-e2e.mjs",
     "release:verify": "node scripts/verify-oss-release.js",
     "check:package-contents": "node scripts/check-package-contents.js"

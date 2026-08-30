@@ -14,7 +14,7 @@ const resourcesRoot = path.join(desktopRoot, 'dist', 'win-unpacked', 'resources'
 const backendRoot = path.join(resourcesRoot, 'backend');
 const nodeBin = path.join(resourcesRoot, 'runtime', 'node', 'bin', 'node.exe');
 const backendEntry = path.join(backendRoot, 'index.js');
-const sqliteSeed = path.join(backendRoot, 'prisma', 'dev.db');
+const sqliteSeed = path.join(backendRoot, 'prisma', 'seed.db');
 const prismaEngine = path.join(backendRoot, 'client', 'query_engine-windows.dll.node');
 const timeoutMs = Number(process.env.KAYPAL_PACKAGED_BACKEND_SMOKE_TIMEOUT_MS || 90_000);
 

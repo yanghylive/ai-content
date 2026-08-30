@@ -99,6 +99,15 @@ npm run build:win
 npm run upload:oss
 ```
 
+上传守卫：`upload:oss` 只收集现有 `latest*.yml` 引用的产物，并固定按“安装包 → blockmap（Windows/macOS）→ feed”上传；feed 引用的安装包或 blockmap 缺失会直接失败，不会留下一个已经切流但无法下载的 feed。Linux 的 AppImage/deb 不生成同等 blockmap，因此只校验其 feed 和安装包。
+
+发布完成后运行远端验收：
+```bash
+npm run release:verify
+```
+
+默认会检查 OSS 上 Windows、macOS、Linux 三条 feed、各自引用的安装包，以及 Windows/macOS blockmap，并核对版本、大小和 SHA-512。单平台构建调试时可显式缩小远端范围，例如 `RELEASE_VERIFY_FEEDS=latest.yml npm run release:verify`；正式发布不要设置该变量。
+
 ### 方法 B：GitHub Actions（推荐）
 
 #### 1. 在 GitHub 仓库加 5 个 Secret
