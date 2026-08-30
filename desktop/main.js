@@ -1711,9 +1711,18 @@ function healCorruptedDesktopDatabase(reason) {
         }
       }
     }
+    // v1.1.107（复核 P1 数据安全）：sidecar（WAL/SHM）rename 失败 = 残留 WAL 仍
+    // 存在——重建的新库会被残留 WAL 污染（SQLite 打开新库时会加载同名 WAL）。
+    // 此时**不得重建**：明确返回 false 阻断，让崩溃链路继续上报 + 走重启循环，
+    // 而不是把「带污染的假重建」当作自愈成功继续跑。
+    if (sidecarFailure) {
+      console.error('[Backend] AutoHeal blocked: sidecar rename failed, refusing to rebuild over stale WAL');
+      appendRuntimeLog('backend-launch.log', `[AutoHeal] BLOCKED: sidecar rename failed (${sidecarFailure}) — refusing to rebuild (stale WAL would pollute new DB)`);
+      return false;
+    }
     fs.mkdirSync(path.dirname(databasePath), { recursive: true });
     createEmptySqliteDatabase(databasePath);
-    const msg = `[AutoHeal] SQLite database corrupted (reason: ${reason}); backed up to ${backupPath}, recreated from scratch, backend will restart${sidecarFailure ? ' [INCOMPLETE: sidecar rename failed]' : ''}`;
+    const msg = `[AutoHeal] SQLite database corrupted (reason: ${reason}); backed up to ${backupPath}, recreated from scratch, backend will restart`;
     console.log('[Backend]', msg);
     appendRuntimeLog('backend-launch.log', msg);
     return true;
