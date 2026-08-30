@@ -16,7 +16,7 @@
  * 前置：3010/3011 已起（launchd），/tmp/electron-test-token.txt 为有效登录 token。
  */
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -123,8 +123,8 @@ async function main() {
   // 校验 win-x64 包内 node.exe / Playwright chrome.exe / Prisma win 引擎真实存在。
   step("L4 Win 包平台资产严格检查（node.exe/chrome.exe/引擎，防交叉构建假绿）", () => {
     if (skipBuild) return;
-    const hasWinInstaller = existsSync(desk) &&
-      require("fs").readdirSync(distDir).some((f) => f.startsWith("JIUZHANG AI 内容创作平台 Setup") && f.endsWith(".exe"));
+    const hasWinInstaller = existsSync(distDir) &&
+      readdirSync(distDir).some((f) => f.startsWith("JIUZHANG AI 内容创作平台 Setup") && f.endsWith(".exe"));
     if (!hasWinInstaller) {
       console.log("    （dist 下无 Win 安装包，跳过 win-x64 严格检查）");
       return;
