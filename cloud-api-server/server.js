@@ -42,6 +42,12 @@ function apiKeyMatches(provided) {
   return crypto.timingSafeEqual(a, b);
 }
 
+// ⚠️ 遗留状态（v1.1.103 复核标注）：以下 4 个业务接口（generate-reply /
+// check-content / check-dedup / mark-sent）为老企业版架构遗留，生产未启用
+// （API_KEY 未配置 → 恒 503）。桌面端无活跃调用方（Agent-S 客服走 local-engine，
+// 浏览器走同源代理）。启用前必须先做产品决策 + 鉴权方案设计——API_KEY 共享
+// 密钥不能下发桌面客户端（1.1.96 凭据红线），建议本地 3011 代理 + 服务端计费。
+// 不要在未完成鉴权设计的情况下直接配置 API_KEY（会形成半开放计费接口）。
 function requireAuth(req, res, next) {
   if (!process.env.API_KEY) {
     return res.status(503).json({ message: '服务端未配置 API_KEY，拒绝访问' });

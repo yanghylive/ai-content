@@ -10,6 +10,7 @@ describe('AgentGatewayController（Nest 接线，首批冻结接口）', () => {
   let app: INestApplication;
   let auth: AuthService;
 
+  // v1.1.103：Nest 模块初始化在系统忙时会超 jest 默认 5s（门禁偶发红），放宽到 60s
   beforeAll(async () => {
     // 本测试断言 mock 工具语义（lead_discover 返回 3 条），显式关真实业务工具（审计 #3 默认已开）
     process.env.AGENT_GATEWAY_REAL_BUSINESS = 'false';
@@ -26,13 +27,13 @@ describe('AgentGatewayController（Nest 接线，首批冻结接口）', () => {
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, transformOptions: { enableImplicitConversion: true } }));
     await app.init();
     auth = moduleRef.get(AuthService);
-  });
+  }, 60_000);
 
   afterAll(async () => {
     delete process.env.AGENT_GATEWAY_REAL_BUSINESS;
     delete process.env.AGENT_GATEWAY_REAL_MEMORY;
     await app.close();
-  });
+  }, 30_000);
 
   const tA = () => auth.issue({ tenantId: 't1', userId: 'u1', agentId: 'a1' });
   const authA = () => ({ authorization: `Bearer ${tA()}` });

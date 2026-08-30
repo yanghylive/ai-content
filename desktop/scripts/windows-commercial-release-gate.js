@@ -1496,7 +1496,25 @@ function checkPortsAndSameBuild(pkg, releaseIdentity) {
 
 function checkWechatContactSync(pkg, releaseIdentity) {
   const targets = new Set(packageExtraResourceTargets(pkg));
-  for (const target of ['wechat-native-runtime', 'wechat-engine', 'wechat-db-helper']) {
+  // v1.1.103（复核 P2 整改）：wechat-db-helper 已隔离为云端按需资源
+  // （desktop/package.json 不得打包，OSS 打包源在 desktop/runtime/wechat-db-helper；
+  // 与 verify-oss-release.js 的断言对齐）。此处改为校验隔离契约本身，
+  // 不再要求安装包内置 helper。
+  if (targets.has('wechat-db-helper')) {
+    block(
+      'WeChat contact runtime package wechat-db-helper',
+      'desktop/package.json packages wechat-db-helper, but it must be isolated to OSS on-demand (see verify-oss-release.js verifyPackageContract)',
+    );
+  } else {
+    pass('WeChat DB helper isolation', 'desktop package correctly excludes wechat-db-helper (OSS on-demand)', 'desktop/package.json');
+  }
+  const dbHelperOssSource = path.join(desktopRoot, 'runtime', 'wechat-db-helper', 'wechat-db-helper.js');
+  if (fs.existsSync(dbHelperOssSource)) {
+    pass('WeChat DB helper OSS packaging source', 'runtime/wechat-db-helper source present for cloud on-demand', 'desktop/runtime/wechat-db-helper');
+  } else {
+    block('WeChat DB helper OSS packaging source', `missing ${dbHelperOssSource}`);
+  }
+  for (const target of ['wechat-native-runtime', 'wechat-engine']) {
     if (targets.has(target)) {
       pass(`WeChat contact runtime package ${target}`, `desktop package includes ${target}`, 'desktop/package.json');
     } else {

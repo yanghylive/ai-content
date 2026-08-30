@@ -1550,6 +1550,16 @@ async function startBackendService() {
   fs.mkdirSync(logDir, { recursive: true });
   const backendStdoutPath = path.join(logDir, 'backend-stdout.log');
   const backendStderrPath = path.join(logDir, 'backend-stderr.log');
+  // v1.1.103（复核 P1 整改）：记录本次启动时 stderr 日志的写入起点。
+  // backend-stderr.log 为追加模式、跨启动累积——自愈特征匹配若读整个文件尾部，
+  // 「本次 EADDRINUSE + 历史启动的 malformed 报错」会误命中并清掉健康库。
+  // 崩溃时只读取本次启动偏移之后的内容。
+  let backendStderrStartOffset = 0;
+  try {
+    backendStderrStartOffset = fs.existsSync(backendStderrPath) ? fs.statSync(backendStderrPath).size : 0;
+  } catch {
+    backendStderrStartOffset = 0;
+  }
   const backendStdout = fs.createWriteStream(backendStdoutPath, { flags: 'a' });
   const backendStderr = fs.createWriteStream(backendStderrPath, { flags: 'a' });
   const backendEntry = path.join(backendPath, 'index.js');
@@ -1610,7 +1620,10 @@ async function startBackendService() {
       // Prisma 运行时查询才炸。识别损坏特征 → 自动备份 + 重建空库 → 走现有重启链路自愈。
       // v1.1.102：特征匹配输入从 4KB stderrTail 扩大为 backend-stderr.log 尾 64KB
       //（早期 Prisma 损坏信息可能被挤出 stderrTail 窗口——复核 P2 整改）。
-      const corruptionEvidence = `${stderrTail || ''}\n${tailFileSync(path.join(app.getPath('userData'), 'logs', 'backend-stderr.log'), 65536)}`;
+      // v1.1.103（复核 P1 整改）：日志为追加模式跨启动累积，必须只读**本次启动**
+      // 写入的部分（backendStderrStartOffset 之后）——否则「本次 EADDRINUSE +
+      // 历史启动的 malformed 报错」会误命中并清掉健康库。
+      const corruptionEvidence = `${stderrTail || ''}\n${tailFileSync(backendStderrPath, 65536, backendStderrStartOffset)}`;
       if (DB_CORRUPT_SIGNATURE.test(corruptionEvidence)) {
         healCorruptedDesktopDatabase('backend crash with sqlite corruption signature');
       }
@@ -1691,12 +1704,15 @@ function healCorruptedDesktopDatabase(reason) {
   }
 }
 
-function tailFileSync(filePath, maxBytes = 4000) {
+function tailFileSync(filePath, maxBytes = 4000, startOffset = 0) {
   try {
     const stat = fs.statSync(filePath);
-    if (stat.size <= 0) return '';
-    const start = Math.max(0, stat.size - maxBytes);
+    // v1.1.103：startOffset 之后的范围才有效（日志追加模式下剔除历史启动内容）；
+    // 若文件被轮转变小（size < startOffset），回退为读文件尾。
+    let start = Math.max(startOffset, stat.size - maxBytes, 0);
+    if (start > stat.size) start = Math.max(stat.size - maxBytes, 0);
     const length = stat.size - start;
+    if (length <= 0) return '';
     const buffer = Buffer.alloc(length);
     const fd = fs.openSync(filePath, 'r');
     try {
