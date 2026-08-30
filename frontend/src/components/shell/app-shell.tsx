@@ -4,6 +4,7 @@
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { motion } from "framer-motion";
 import { ShellIcon, type ShellIconName } from "./icons";
 import { CommandPalette } from "./command-palette";
 import { Ticker, type TickerItem } from "./tickers";
@@ -390,6 +391,14 @@ export function AppShell({
                 aria-current={activeScene === scene.key ? "page" : undefined}
                 onClick={() => router.push(scene.href)}
               >
+                {activeScene === scene.key ? (
+                  <motion.span
+                    layoutId="kx-rail-indicator"
+                    aria-hidden="true"
+                    className="kx-rail-indicator"
+                    transition={{ type: "tween", duration: 0.18, ease: "easeInOut" }}
+                  />
+                ) : null}
                 <ShellIcon name={scene.icon} size={22} />
                 <span className="kx-rail-lbl">{scene.label}</span>
                 {badge > 0 ? <span className="kx-rail-badge">{badge > 99 ? "99+" : badge}</span> : null}
@@ -411,6 +420,14 @@ export function AppShell({
             aria-current={activeScene === "agent" ? "page" : undefined}
             onClick={() => router.push("/agent")}
           >
+            {activeScene === "agent" ? (
+              <motion.span
+                layoutId="kx-rail-indicator"
+                aria-hidden="true"
+                className="kx-rail-indicator"
+                transition={{ type: "tween", duration: 0.18, ease: "easeInOut" }}
+              />
+            ) : null}
             <ShellIcon name="cpu" size={22} />
             <span className="kx-rail-lbl">助手</span>
           </button>
@@ -420,6 +437,7 @@ export function AppShell({
             aria-current={activeScene === "mine" ? "page" : undefined}
             onClick={() => router.push("/settings")}
           >
+            {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
             <ShellIcon name="settings" size={22} />
             <span className="kx-rail-lbl">设置</span>
           </button>
@@ -429,6 +447,7 @@ export function AppShell({
             aria-current={activeScene === "mine" ? "page" : undefined}
             onClick={() => router.push("/mine")}
           >
+            {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
             <ShellIcon name="user" size={22} />
             <span className="kx-rail-lbl">我的</span>
           </button>

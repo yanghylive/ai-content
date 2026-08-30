@@ -2320,10 +2320,11 @@ progress {
   accent-color: var(--kx-accent, #722ed1);
 }
 
-/* 文本输入族：统一品牌外观（边框/圆角/底色/阴影/focus 环） */
+/* 文本输入族：统一品牌外观（边框/圆角/底色/阴影/focus 环）
+   排除 HeroUI [data-slot="input"]，避免与 input-wrapper 叠加形成双层 */
 select,
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]),
-textarea {
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([data-slot="input"]),
+textarea:not([data-slot="input"]) {
   font-family: inherit;
   color: var(--kaypal-v3-ink);
   background-color: var(--kaypal-v3-field-bg);
@@ -2334,8 +2335,8 @@ textarea {
 }
 
 select:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([data-slot="input"]):focus-visible,
+textarea:not([data-slot="input"]):focus-visible {
   outline: none;
   border-color: var(--kaypal-v3-accent);
   box-shadow: var(--kaypal-v3-field-shadow-focus);
@@ -2416,6 +2417,48 @@ table tbody tr:hover td { background: var(--kaypal-v3-paper-soft); }
 
 @media (prefers-reduced-motion: reduce) {
   .kx-skeleton { animation: none; opacity: 0.6; }
+}
+
+/* ---------- 动效工具类（2026-08-29）：只动 transform/opacity，走 --kaypal-v3-ease-out ---------- */
+@keyframes kx-fade-in-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.kx-fade-in-up {
+  animation: kx-fade-in-up 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes kx-scale-fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+.kx-scale-fade-in {
+  animation: kx-scale-fade-in 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 抽屉/遮罩入场：遮罩 fade，面板从右缘滑入（Agent 状态抽屉） */
+@keyframes kx-overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes kx-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.kx-overlay-anim {
+  animation: kx-overlay-fade 200ms ease-out both;
+}
+.kx-drawer-panel-anim {
+  animation: kx-drawer-in 240ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 降级为纯 opacity，不动 transform */
+  .kx-fade-in-up,
+  .kx-scale-fade-in,
+  .kx-drawer-panel-anim {
+    animation: kx-overlay-fade 200ms ease-out both;
+  }
 }
 
 /* View Transitions API: 路由过渡 */

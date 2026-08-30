@@ -218,7 +218,7 @@
     background: linear-gradient(135deg, rgba(227, 154, 62, 0.26), rgba(227, 154, 62, 0.08));
     color: var(--kaypal-v3-accent);
   }
-  .kx-rail-item.kx-active::before {
+  .kx-rail-item .kx-rail-indicator {
     background: var(--kaypal-v3-accent);
   }
   .kx-rail-badge {

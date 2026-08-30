@@ -399,7 +399,7 @@ export function AgentStatusDrawer({
   };
 
   return (
-    <div className="dashboard-overlay agent-status-overlay fixed inset-0 z-50 flex justify-end bg-black/30">
+    <div className="dashboard-overlay kx-overlay-anim agent-status-overlay fixed inset-0 z-50 flex justify-end bg-black/30">
       <button
         aria-label="关闭 AI 专家状态"
         className="dashboard-overlay__backdrop absolute inset-0 cursor-default"
@@ -410,7 +410,7 @@ export function AgentStatusDrawer({
         ref={panelRef}
         aria-labelledby="agent-status-drawer-title"
         aria-modal="true"
-        className="dashboard-overlay__panel agent-status-drawer relative flex h-full w-full max-w-[620px] flex-col border-l border-divider bg-background shadow-2xl"
+        className="dashboard-overlay__panel kx-drawer-panel-anim agent-status-drawer relative flex h-full w-full max-w-[620px] flex-col border-l border-divider bg-background shadow-2xl"
         role="dialog"
         tabIndex={-1}
       >

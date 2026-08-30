@@ -2863,14 +2863,14 @@ function AgentStatusDrawer({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/30">
+    <div className="kx-overlay-anim fixed inset-0 z-50 flex justify-end bg-black/30">
       <button
         aria-label="关闭AI专家状态抽屉"
         className="absolute inset-0 cursor-default"
         type="button"
         onClick={onClose}
       />
-      <aside className="relative flex h-full w-full max-w-[620px] flex-col border-l border-divider bg-background shadow-2xl">
+      <aside className="kx-drawer-panel-anim relative flex h-full w-full max-w-[620px] flex-col border-l border-divider bg-background shadow-2xl">
         <div className="flex items-start justify-between gap-3 border-b border-divider p-4">
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2">

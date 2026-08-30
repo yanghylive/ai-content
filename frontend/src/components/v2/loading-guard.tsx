@@ -91,7 +91,7 @@ export function LoadingGuard({
 }) {
   if (loading && !timeout) {
     return (
-      <div className="kaypal-v3-panel p-6">
+      <div className="kaypal-v3-panel p-6" aria-hidden="true" inert>
         <SkeletonCard height={80} />
         <div style={{ height: 12 }} />
         <SkeletonCard height={120} />
@@ -108,7 +108,7 @@ export function LoadingGuard({
         <button
           type="button"
           onClick={onRetry}
-          className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-semibold text-white transition duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
         >
           重试
         </button>
@@ -123,7 +123,7 @@ export function LoadingGuard({
         <button
           type="button"
           onClick={onRetry}
-          className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-semibold text-white transition duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
         >
           重试
         </button>
@@ -131,5 +131,7 @@ export function LoadingGuard({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <div className="kx-fade-in-up">{children}</div>
+  );
 }
