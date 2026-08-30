@@ -95,6 +95,7 @@
           "**/*.json",
           "**/*.svg",
           "**/*.png",
+          "**/*.webp",
           "**/*.ico",
           "**/*.woff2",
           "**/*.webmanifest",
