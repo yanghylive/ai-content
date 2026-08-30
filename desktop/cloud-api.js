@@ -85,9 +85,14 @@ class CloudAPI {
         });
 
         res.on('end', () => {
+          // v1.1.102（复核整改）：204/205 等「无 body 的 2xx」不能走 JSON.parse——
+          // 空 body 解析抛错会把成功的上报误判为失败（生产 client-error 返回 204）。
+          if ((res.statusCode === 204 || res.statusCode === 205) && !data.trim()) {
+            return settle(resolve, {});
+          }
           try {
-            const json = JSON.parse(data);
-            
+            const json = data.trim() ? JSON.parse(data) : {};
+
             if (res.statusCode >= 200 && res.statusCode < 300) {
               settle(resolve, json);
             } else {

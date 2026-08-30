@@ -118,6 +118,19 @@ async function main() {
     if (skipBuild) return;
     run(`cd ${q(desk)} && node scripts/check-package-contents.js --dir ${q(distDir)} 2>&1 | tail -12`);
   });
+  // v1.1.102（复核 P0 整改）：L4 原 check-package-contents 只查目录存在不查平台
+  // 可执行文件，导致 mac 资源混入 Win 包"15/15 假绿"。补严格平台资产检查：
+  // 校验 win-x64 包内 node.exe / Playwright chrome.exe / Prisma win 引擎真实存在。
+  step("L4 Win 包平台资产严格检查（node.exe/chrome.exe/引擎，防交叉构建假绿）", () => {
+    if (skipBuild) return;
+    const hasWinInstaller = existsSync(desk) &&
+      require("fs").readdirSync(distDir).some((f) => f.startsWith("JIUZHANG AI 内容创作平台 Setup") && f.endsWith(".exe"));
+    if (!hasWinInstaller) {
+      console.log("    （dist 下无 Win 安装包，跳过 win-x64 严格检查）");
+      return;
+    }
+    run(`cd ${q(desk)} && BUILD_PLATFORM=win-x64 node scripts/check-full-installer-assets.js --phase=post 2>&1 | tail -12`);
+  });
 
   /* ── 执行 ───────────────────────────────────────── */
   for (const s of steps) {
