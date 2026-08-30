@@ -261,14 +261,18 @@ function verifySourceWechatNativeRuntime() {
 
 function verifyPackagedWechatNativeRuntime(resourcesRoot) {
   assert(fs.existsSync(resourcesRoot), `missing packaged resources root: ${resourcesRoot}`);
-  const dbHelperRoot = path.join(resourcesRoot, 'wechat-db-helper');
-  assert(fs.existsSync(dbHelperRoot), `missing packaged WeChat DB helper directory: ${dbHelperRoot}`);
-  assert(fs.existsSync(path.join(dbHelperRoot, 'sqlite3.exe')), `missing packaged WeChat DB helper sqlite3.exe: ${path.join(dbHelperRoot, 'sqlite3.exe')}`);
-  assert(fs.existsSync(path.join(dbHelperRoot, 'wechat-db-helper.js')), `missing packaged WeChat DB helper script: ${path.join(dbHelperRoot, 'wechat-db-helper.js')}`);
+  // v1.1.102（复核整改）：wechat-db-helper 已从安装包隔离为云端按需资源
+  // （见 verifyPackageContract 的 NOT-package 断言）。运行时由远程资产下载器
+  // 按需放置，main.js 对其缺席做了优雅跳过——这里只校验 OSS 打包源目录完整，
+  // 不再要求 packaged resources 内存在该目录（旧断言与隔离设计自相矛盾）。
+  const dbHelperSourceRoot = path.join(desktopRoot, 'runtime', 'wechat-db-helper');
+  assert(fs.existsSync(dbHelperSourceRoot), `missing WeChat DB helper OSS packaging source: ${dbHelperSourceRoot}`);
+  assert(fs.existsSync(path.join(dbHelperSourceRoot, 'sqlite3.exe')), `missing WeChat DB helper sqlite3.exe in OSS source: ${path.join(dbHelperSourceRoot, 'sqlite3.exe')}`);
+  assert(fs.existsSync(path.join(dbHelperSourceRoot, 'wechat-db-helper.js')), `missing WeChat DB helper script in OSS source: ${path.join(dbHelperSourceRoot, 'wechat-db-helper.js')}`);
   for (const fileName of ['wechat-dump-rs.exe', 'DbkeyHookCMD.exe', 'Dbkey.exe', 'dump_data.exe', 'wx_key.dll']) {
     assert(
-      fs.existsSync(path.join(dbHelperRoot, fileName)),
-      `missing packaged WeChat DB helper native tool ${fileName}: ${path.join(dbHelperRoot, fileName)}`,
+      fs.existsSync(path.join(dbHelperSourceRoot, fileName)),
+      `missing WeChat DB helper native tool ${fileName} in OSS source: ${path.join(dbHelperSourceRoot, fileName)}`,
     );
   }
 

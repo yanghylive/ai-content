@@ -63,8 +63,11 @@ function main() {
     env: { BUILD_PLATFORM: 'win-x64' },
   });
 
+  // v1.1.102（复核 P0 整改）：此前漏传 BUILD_PLATFORM，交叉构建时 prepare 脚本
+  // fallback 到 mac-arm64，产出 mac Chromium 导致 Win 包缺 chrome.exe（假绿 P0）。
   run('Prepare bundled Playwright Chromium', 'node', ['scripts/prepare-playwright-browsers.js'], {
     cwd: desktopRoot,
+    env: { BUILD_PLATFORM: 'win-x64' },
   });
 
   // 审计 #3：Octop sidecar 直接打包（Windows 真机构建，venv 用 win-x64 Python + win chromium）
