@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const {
   assertMainRuntimePolicy,
   assertPackagedReleaseGuards,
@@ -27,6 +28,13 @@ const detectedPlatform =
         : 'linux-x64';
 const buildPlatform = cliPlatform || process.env.BUILD_PLATFORM || detectedPlatform;
 
+// v1.1.105（复核 P1-1）：--installer=<exe|zip> 时**只**检查指定安装包（7z 解包
+// 真实 NSIS exe / 解压 mac zip），禁止回退中间目录——中间目录（win-unpacked /
+// mac-arm64 目录）与最终安装包可能不一致（8/30 曾用 mac runtime 打出
+// win-unpacked+exe 双坏包且检查通过）。
+const installerArg = process.argv.find((arg) => arg.startsWith('--installer='));
+const cliInstaller = installerArg ? installerArg.split('=')[1] : null;
+
 function distResourcesRootForPlatform(platform) {
   switch (platform) {
     case 'mac-arm64':
@@ -41,7 +49,67 @@ function distResourcesRootForPlatform(platform) {
   }
 }
 
-const distResourcesRoot = distResourcesRootForPlatform(buildPlatform);
+// --installer 解包：win NSIS 用 7z 抽 $PLUGINSDIR/app-64.7z；mac zip 用 unzip。
+// 解包到临时目录，进程结束时清理。返回 resources 根；失败返回 null（调用方 fail）。
+function resolveInstallerResources(installerPath) {
+  const absPath = path.isAbsolute(installerPath)
+    ? installerPath
+    : path.resolve(process.cwd(), installerPath);
+  if (!fs.existsSync(absPath)) {
+    console.error(`- installer not found: ${absPath}`);
+    return null;
+  }
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cfa-installer-'));
+  try {
+    if (/\.exe$/i.test(absPath)) {
+      const { execSync, spawnSync } = require('node:child_process');
+      execSync(`7z x -y -o"${tmp}" "${absPath}" >/dev/null 2>&1`);
+      const plugin = path.join(tmp, '$PLUGINSDIR', 'app-64.7z');
+      if (!fs.existsSync(plugin)) {
+        console.error(`- installer app-64.7z not found: ${absPath}`);
+        fs.rmSync(tmp, { recursive: true, force: true });
+        return null;
+      }
+      const appOut = path.join(tmp, 'app');
+      const r = spawnSync('7z', ['x', '-y', `-o${appOut}`, plugin], { encoding: 'utf8' });
+      if (r.status !== 0) {
+        console.error(`- 7z extract app-64.7z failed: ${r.stderr || r.stdout}`);
+        fs.rmSync(tmp, { recursive: true, force: true });
+        return null;
+      }
+      return path.join(appOut, 'resources');
+    }
+    if (/\.zip$/i.test(absPath)) {
+      const { execSync } = require('node:child_process');
+      const appDir = path.join(tmp, 'app');
+      fs.mkdirSync(appDir, { recursive: true });
+      execSync(`unzip -q -o "${absPath}" -d "${appDir}"`);
+      const candidate = path.join(appDir, 'JIUZHANG AI 内容创作平台.app', 'Contents', 'Resources');
+      if (fs.existsSync(candidate)) return candidate;
+      console.error(`- mac zip app bundle not found: ${absPath}`);
+      fs.rmSync(tmp, { recursive: true, force: true });
+      return null;
+    }
+    console.error(`- unsupported installer type: ${absPath}`);
+    fs.rmSync(tmp, { recursive: true, force: true });
+    return null;
+  } catch (error) {
+    console.error(`- installer extraction failed: ${error.message}`);
+    try { fs.rmSync(tmp, { recursive: true, force: true }); } catch { /* ignore */ }
+    return null;
+  }
+}
+
+let installerResourcesRoot = null;
+if (cliInstaller) {
+  installerResourcesRoot = resolveInstallerResources(cliInstaller);
+  if (!installerResourcesRoot) {
+    console.error('- FAILED: --installer 解包失败，禁止回退中间目录');
+    process.exit(1);
+  }
+  console.log(`检查安装包（精确绑定）: ${cliInstaller}`);
+}
+const distResourcesRoot = installerResourcesRoot || distResourcesRootForPlatform(buildPlatform);
 const appAsarPath = path.join(distResourcesRoot, 'app.asar');
 
 let failed = false;
@@ -684,6 +752,19 @@ function checkPostBuildAssets() {
 
   for (const [label, filePath] of requiredResources) {
     assertPath(label, filePath);
+  }
+  // v1.1.105（复核 P1-1）：平台互斥——后端 client 目录不得混入**非当前平台**的
+  // Prisma 引擎（win 包出现 darwin 引擎 = 交叉构建资源串包，8/30 曾实锤）。
+  const backendClientRoot = path.join(distResourcesRoot, 'backend', 'client');
+  if (fs.existsSync(backendClientRoot)) {
+    const allowedEngine = prismaEngineFileForPlatform(buildPlatform);
+    const foreignEngines = fs
+      .readdirSync(backendClientRoot)
+      .filter((f) => /(?:libquery_engine|query_engine)[^/]*\.(?:node|dylib|so)/i.test(f))
+      .filter((f) => allowedEngine && f !== allowedEngine);
+    for (const engine of foreignEngines) {
+      fail(`平台互斥：${buildPlatform} 包混入非本平台 Prisma 引擎 ${engine}（交叉构建资源串包）`);
+    }
   }
   const packagedGuard = createGuardContext();
   assertPackagedReleaseGuards(packagedGuard, distResourcesRoot, buildPlatform);
