@@ -282,7 +282,12 @@ describe('PrismaService SQLite 列级收敛（真机 500 修复）', () => {
     expect(svc.$executeRawUnsafe).toHaveBeenCalledWith(
       expect.stringContaining('ALTER TABLE crm_customers ADD COLUMN source_article_id'),
     );
-    expect(svc.$executeRawUnsafe.mock.calls.length).toBe(5);
+    // v1.1.104：mobile_devices.device_token_hash 补列加入（真机 P0）——mock 对
+    // 所有迭代返回「表存在且缺列」，5 归因列 + 1 device_token_hash = 6 次 ALTER
+    expect(svc.$executeRawUnsafe).toHaveBeenCalledWith(
+      expect.stringContaining('ALTER TABLE mobile_devices ADD COLUMN device_token_hash'),
+    );
+    expect(svc.$executeRawUnsafe.mock.calls.length).toBe(6);
     delete process.env.SQLITE_DATABASE_URL;
   });
 
@@ -291,6 +296,10 @@ describe('PrismaService SQLite 列级收敛（真机 500 修复）', () => {
     const svc = Object.create(PrismaService.prototype) as any;
     svc.$queryRawUnsafe = jest.fn();
     svc.$executeRawUnsafe = jest.fn();
+    // v1.1.104：清可能残留的 SQLITE_DATABASE_URL（前面测试/jest 环境污染）——
+    // 否则优先取 SQLITE_DATABASE_URL（file: 开头）不会跳过，且 mock 的 queryRaw
+    // 返回 undefined 会在 catch 里打 logger（未 mock 时 TypeError）
+    delete process.env.SQLITE_DATABASE_URL;
     process.env.DATABASE_URL = 'postgres://x';
     await svc.ensureSqliteSchemaColumns();
     expect(svc.$executeRawUnsafe).not.toHaveBeenCalled();
