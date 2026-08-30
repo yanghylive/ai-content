@@ -128,10 +128,14 @@ const REPORT_WINDOW_MS = 60_000;
 const REPORT_MAX_PER_IP = 20; // 与后端 error-report 匿名端点同级限流
 const reportBuckets = new Map();
 
+// v1.1.102（复核整改）：取 X-Forwarded-For 的**最后一段**而非第一段。
+// 反代链 nginx 用 $proxy_add_x_forwarded_for 把真实客户端 IP 追加在末尾，
+// 客户端可自带伪造 XFF（在首段）绕过限流——取末段才能拿到不可伪造的真实 IP。
 function reportClientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
   if (typeof forwarded === 'string' && forwarded.trim()) {
-    return forwarded.split(',')[0].trim();
+    const parts = forwarded.split(',').map((s) => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
   }
   return req.socket?.remoteAddress || 'unknown';
 }

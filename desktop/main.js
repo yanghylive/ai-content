@@ -1608,7 +1608,10 @@ async function startBackendService() {
       reportBackendCrash(code, stderrTail || backendStartupDiagnostic);
       // 2026-08-29 自愈：SQLite 数据页损坏时启动前的 schema 预检查发现不了（marker 完好），
       // Prisma 运行时查询才炸。识别损坏特征 → 自动备份 + 重建空库 → 走现有重启链路自愈。
-      if (DB_CORRUPT_SIGNATURE.test(stderrTail || '')) {
+      // v1.1.102：特征匹配输入从 4KB stderrTail 扩大为 backend-stderr.log 尾 64KB
+      //（早期 Prisma 损坏信息可能被挤出 stderrTail 窗口——复核 P2 整改）。
+      const corruptionEvidence = `${stderrTail || ''}\n${tailFileSync(path.join(app.getPath('userData'), 'logs', 'backend-stderr.log'), 65536)}`;
+      if (DB_CORRUPT_SIGNATURE.test(corruptionEvidence)) {
         healCorruptedDesktopDatabase('backend crash with sqlite corruption signature');
       }
     }
@@ -1640,37 +1643,50 @@ async function startBackendService() {
 const backendCrashReportState = { signatures: new Set(), count: 0, maxPerSession: 3 };
 // 最近一次后端启动使用的 SQLite 库路径（startBackendService 内赋值），供崩溃自愈定位
 let lastBackendDatabasePath = null;
-// 每个启动会话最多自愈 1 次：防止非数据库原因的崩溃被反复清库丢数据
-let backendDbHealUsed = false;
-// SQLite 损坏特征：schema marker 预检查覆盖不到的「数据页损坏 / WAL 合并失败 /
-// 文件加密或截断」，Prisma 运行时查询才炸 → 后端进程退出。出现这些字样才允许自愈清库。
-const DB_CORRUPT_SIGNATURE = /malformed|not a database|database disk image|unable to open database|sqlite_corrupt|databasefileerror|file is not a database/i;
+// 自愈频控（v1.1.102 复核整改）：每会话最多 2 次、失败不永久禁用（rename 被锁等
+// 临时 I/O 错误下允许下次崩溃重试），防止非数据库原因的崩溃被反复清库丢数据。
+let backendDbHealAttempts = 0;
+const BACKEND_DB_HEAL_MAX_ATTEMPTS = 2;
+// SQLite 损坏特征（v1.1.102 收窄）：只匹配「明确的 SQLite 库级错误」，去掉易误伤的
+// 宽泛词（malformed 单词可能出现在无关日志、unable to open 可能是目录权限问题）。
+// 特征匹配输入改为 backend-stderr.log 尾部 64KB（stderrTail 仅 4KB，早期 Prisma
+// 损坏信息可能被挤出窗口——复核 P2 整改）。
+const DB_CORRUPT_SIGNATURE = /database disk image is malformed|file is not a database|SQLITE_CORRUPT|PrismaClientKnownRequestError[\s\S]{0,400}code:\s*['"]?(11|14|26)['"]?|P2010[\s\S]{0,400}database/i;
 
 function healCorruptedDesktopDatabase(reason) {
-  if (backendDbHealUsed) return false;
-  backendDbHealUsed = true;
+  if (backendDbHealAttempts >= BACKEND_DB_HEAL_MAX_ATTEMPTS) return false;
+  backendDbHealAttempts += 1;
   const databasePath = lastBackendDatabasePath;
   if (!databasePath || !fs.existsSync(databasePath)) return false;
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   try {
     const backupPath = `${databasePath}.corrupt-${stamp}`;
     fs.renameSync(databasePath, backupPath);
-    // 连带 sidecar 一起移走，避免残留 WAL 再次污染重建后的新库
+    // 连带 sidecar 一起移走，避免残留 WAL 再次污染重建后的新库。
+    // v1.1.102：rename 失败不再静默吞掉——失败会留下旧 sidecar 污染新库，
+    // 必须记录并视为自愈不完整（返回 false 让崩溃链路继续上报）。
+    let sidecarFailure = null;
     for (const suffix of ['-wal', '-shm']) {
       const sidecar = `${databasePath}${suffix}`;
       if (fs.existsSync(sidecar)) {
-        try { fs.renameSync(sidecar, `${sidecar}.corrupt-${stamp}`); } catch {}
+        try {
+          fs.renameSync(sidecar, `${sidecar}.corrupt-${stamp}`);
+        } catch (error) {
+          sidecarFailure = `${suffix}: ${error.message}`;
+          console.error('[Backend] AutoHeal sidecar rename failed:', sidecarFailure);
+          appendRuntimeLog('backend-launch.log', `[AutoHeal] sidecar rename FAILED (${sidecarFailure}) — rebuilt DB may be polluted by stale WAL`);
+        }
       }
     }
     fs.mkdirSync(path.dirname(databasePath), { recursive: true });
     createEmptySqliteDatabase(databasePath);
-    const msg = `[AutoHeal] SQLite database corrupted (reason: ${reason}); backed up to ${backupPath}, recreated from scratch, backend will restart`;
+    const msg = `[AutoHeal] SQLite database corrupted (reason: ${reason}); backed up to ${backupPath}, recreated from scratch, backend will restart${sidecarFailure ? ' [INCOMPLETE: sidecar rename failed]' : ''}`;
     console.log('[Backend]', msg);
     appendRuntimeLog('backend-launch.log', msg);
     return true;
   } catch (error) {
     console.error('[Backend] AutoHeal failed:', error.message);
-    appendRuntimeLog('backend-launch.log', `[AutoHeal] failed: ${error.message}`);
+    appendRuntimeLog('backend-launch.log', `[AutoHeal] failed (attempt ${backendDbHealAttempts}/${BACKEND_DB_HEAL_MAX_ATTEMPTS}): ${error.message}`);
     return false;
   }
 }

@@ -85,6 +85,9 @@ async function main() {
   // 避免把 dist/ 里历史版本包重复推到更新源（几百 MB × N）。
   // 2026-08-27：此前只读 latest.yml（Win），Mac 通道（latest-mac.yml 引用的 zip/blockmap）
   // 永远漏推 —— 1.1.96 商用发版时抓到，扩为三通道统一收集引用。
+  // v1.1.102（复核 P1 整改）：electron-builder 的 latest.yml 不引用 blockmap（约定
+  // 命名 <安装包>.blockmap），此前每次发版 blockmap 都漏传 → 远端 404 → 差分更新
+  // 断链。这里对每个引用的安装包追加同名 .blockmap。
   const feedFiles = ["latest.yml", "latest-mac.yml", "latest-linux.yml"];
   let referenced = new Set(feedFiles);
   for (const ymlName of feedFiles) {
@@ -97,6 +100,11 @@ async function main() {
     }
     const pathMatch = text.match(/^path:\s*(.+?)\s*$/m);
     if (pathMatch) referenced.add(pathMatch[1].trim());
+  }
+  for (const f of [...referenced]) {
+    if (/\.(exe|zip|dmg|AppImage|deb|snap|pkg)$/i.test(f)) {
+      referenced.add(`${f}.blockmap`);
+    }
   }
 
   const files = fs.readdirSync(distDir).filter((f) => {
