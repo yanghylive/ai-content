@@ -114,7 +114,9 @@ async function main() {
   });
   step("L3 带登录态全路由扫描（149 路由）", () => {
     const token = existsSync(tok) ? readFileSync(tok, "utf8").trim() : "";
-    run(`cd ${q(front)} && CONSOLE_SCAN_SESSION_TOKEN=${token} CONSOLE_SCAN_FRONTEND_URL=${frontendUrl} node scripts/console-quality-browser-scan.mjs 2>&1 | tail -8`);
+    // v1.1.105（复核 P1-4）：路由扫描必须带本地登录态会话 + footer 硬断言——
+    // localAcceptanceSession=false 的扫描不能作为登录态商业验收证据。
+    run(`cd ${q(front)} && CONSOLE_SCAN_LOCAL_ACCEPTANCE_LOGIN=1 CONSOLE_SCAN_REQUIRE_SYSTEM_FOOTER=1 CONSOLE_SCAN_SESSION_TOKEN=${token} CONSOLE_SCAN_FRONTEND_URL=${frontendUrl} node scripts/console-quality-browser-scan.mjs 2>&1 | tail -8`);
   });
 
   /* ── L4 安装包内容完整性（替代 VM 的关键层）──────── */
