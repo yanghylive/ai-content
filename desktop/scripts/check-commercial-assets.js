@@ -100,7 +100,7 @@ assertSourceReleaseGuards(
     mainJs: path.join(desktopRoot, 'main.js'),
     backendEnv: path.join(desktopRoot, 'backend.env.example'),
     backendBundle: backendBundlePath,
-    sqliteSeed: path.join(repoRoot, 'backend', 'prisma', 'dev.db'),
+    sqliteSeed: path.join(repoRoot, 'backend', 'prisma', 'seed.db'),
   },
   buildPlatform,
 );

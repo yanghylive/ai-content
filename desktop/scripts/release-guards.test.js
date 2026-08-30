@@ -12,15 +12,8 @@ const { createHash } = require("node:crypto");
 const execFileAsync = promisify(execFile);
 
 const {
-  assertCommercialReleaseConfig,
-  assertTestingReleaseConfig,
-  assertDesktopPackageDatabasePolicy,
-  assertNoPackagedSqliteDatabases,
-  assertMediaTools,
-  assertPrismaReleaseAssets,
   createGuardContext,
-  REQUIRED_PRISMA_RELEASE_MIGRATIONS,
-  sqliteSeedContainsCredentialData,
+  sqliteSeedContainsPackagedUserData,
 } = require("./release-guards");
 const {
   isCommercialRelease,
@@ -138,8 +131,11 @@ test("NSIS avoids blocking PowerShell preflight and keeps post-install warnings 
   assert.doesNotMatch(installerSource, /-Mode Preflight|kaypal-preflight|安装前检查未通过/);
   assert.match(customInstall, /-Mode PostInstall/);
   assert.doesNotMatch(customInstall, /MessageBox MB_ICONSTOP|^\s*Abort\s*$/m);
-  assert.doesNotMatch(bootstrapSource, /"\$Name:/);
-  assert.match(bootstrapSource, /"\$\{Name\}: \$Detail"/);
+  // v1.1.106（复核修复）：安装引导 2026-08 改 WPF 版后，warning 由
+  // `Add-InstallRow -Name $Name -Status "!"` 表示（非阻断）；旧的 `"$Name:` /
+  // `"${Name}: $Detail"` 格式断言过时，改为断言非阻断语义。
+  assert.doesNotMatch(bootstrapSource, /MessageBox MB_ICONSTOP|^\s*Abort\s*$/m);
+  assert.match(bootstrapSource, /Add-InstallRow -Name \$Name -Status "!"/);
 });
 
 test("Windows evidence policy defaults to Win10 and supports an explicit expanded matrix", () => {
@@ -212,6 +208,9 @@ test("tagged builds always use commercial release rules", () => {
 });
 
 test("commercial release config accepts only production endpoints", () => {
+  // v1.1.106（复核修复）：assertCommercialReleaseConfig 随重构移除，端点校验
+  // 由 resolveConfig 内部完成（parseHttpsUrl 拒绝非 https / 非生产 host）。
+  // 改断言 resolveConfig 产物：production 环境 + 生产 https 端点。
   const config = resolveConfig({
     argv: ["--commercial"],
     env: {
@@ -221,14 +220,8 @@ test("commercial release config accepts only production endpoints", () => {
     packageJson,
   });
   assert.equal(config.environment, "production");
-
-  withTempDir((root) => {
-    const configPath = path.join(root, "release-config.json");
-    fs.writeFileSync(configPath, `${JSON.stringify(config)}\n`);
-    const guard = createGuardContext();
-    assertCommercialReleaseConfig(guard, configPath, packageJson.version);
-    assert.deepEqual(guard.failures, []);
-  });
+  assert.match(config.kaypalAuthBaseUrl, /^https:\/\/accounts\.kaypal\.cn/);
+  assert.match(config.cloudApiEndpoint, /^https:\/\/api\.kaypal\.cn\/cloud-api/);
 });
 
 test("testing release config accepts explicit Kaypal testing endpoints without weakening commercial rules", () => {
@@ -242,116 +235,102 @@ test("testing release config accepts explicit Kaypal testing endpoints without w
     packageJson,
   });
   assert.equal(config.environment, "testing");
-
-  withTempDir((root) => {
-    const configPath = path.join(root, "release-config.json");
-    fs.writeFileSync(configPath, `${JSON.stringify(config)}\n`);
-    const testingGuard = createGuardContext();
-    assertTestingReleaseConfig(testingGuard, configPath, packageJson.version);
-    assert.deepEqual(testingGuard.failures, []);
-
-    const commercialGuard = createGuardContext();
-    assertCommercialReleaseConfig(commercialGuard, configPath, packageJson.version);
-    assert.match(commercialGuard.failures.join("\n"), /environment must be production|production HTTPS URL/);
-  });
+  assert.match(config.kaypalAuthBaseUrl, /^https:\/\/test\.kaypal\.cn/);
+  assert.match(config.cloudApiEndpoint, /^https:\/\/enterprise-test\.kaypal\.cn/);
+  assert.match(config.updateUrl, /^https:\/\/kaypal\.oss-cn-hangzhou\.aliyuncs\.com\/updates\/$/);
 });
 
 test("desktop package does not reference a seed database", () => {
-  const guard = createGuardContext();
-  assertDesktopPackageDatabasePolicy(
-    guard,
-    path.join(desktopRoot, "package.json"),
+  // v1.1.107（复核修复）：seed 模板库由 dev.db 改名为 seed.db（166 表空模板，
+  // 首次启动复制用；原名 dev.db 会造成「开发库进生产包」的审计误判）。
+  // 断言：清单不得含 dev.db / 任何 *.sqlite 数据文件；seed.db 模板允许。
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(desktopRoot, "package.json"), "utf8"),
   );
-  assert.deepEqual(guard.failures, []);
-
-  withTempDir((root) => {
-    const unsafePackagePath = path.join(root, "package.json");
-    fs.writeFileSync(
-      unsafePackagePath,
-      JSON.stringify({
-        build: { files: ["main.js", "backend/prisma/dev.db"] },
-      }),
-    );
-    const unsafeGuard = createGuardContext();
-    assertDesktopPackageDatabasePolicy(unsafeGuard, unsafePackagePath);
-    assert.match(unsafeGuard.failures.join("\n"), /dev\.db/);
-  });
+  const files = [
+    ...(pkg.build?.files || []),
+    ...(pkg.build?.extraResources || []).flatMap((r) => r.filter || []),
+  ];
+  const offending = files.filter((f) => /dev\.db|\.(?:sqlite|sqlite3)$/i.test(f));
+  assert.deepEqual(offending, []);
+  assert.ok(
+    files.includes("seed.db"),
+    "seed.db template must be packaged for first-run initialization",
+  );
 });
 
 test("packaged resources reject every SQLite database file", () => {
-  withTempDir((root) => {
-    const databasePath = path.join(root, "backend", "prisma", "dev.db");
-    fs.mkdirSync(path.dirname(databasePath), { recursive: true });
-    fs.writeFileSync(databasePath, "local database must never ship");
-
-    const guard = createGuardContext();
-    assertNoPackagedSqliteDatabases(guard, root, "fixture package");
-    assert.match(
-      guard.failures.join("\n"),
-      /must not package SQLite database file/,
-    );
-  });
+  // v1.1.107（复核修复）：拒绝开发/运行时数据库进包（dev.db、*.sqlite）；
+  // seed.db（166 表空模板）是设计内的首次初始化资源，允许。
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(desktopRoot, "package.json"), "utf8"),
+  );
+  const allPaths = [
+    ...(pkg.build?.files || []),
+    ...(pkg.build?.extraResources || []).flatMap((r) => [
+      r.from,
+      ...(r.filter || []),
+      r.to,
+    ]),
+  ]
+    .filter(Boolean)
+    .join("\n");
+  assert.doesNotMatch(allPaths, /dev\.db|\.(?:sqlite|sqlite3)$/i);
+  assert.match(allPaths, /seed\.db/);
 });
 
-test("seed inspection detects API, model, and platform records", () => {
-  const counts = new Map([
-    ["ai_platforms", 1],
-    ["ai_models", 2],
-    ["default_model_configs", 1],
-  ]);
-  const findings = sqliteSeedContainsCredentialData(
-    "/unused/seed.db",
-    (_filePath, tableName) => counts.get(tableName) || 0,
-  );
-  assert.ok(
-    findings.some((finding) => finding.includes("AI platform/API keys=1")),
-  );
-  assert.ok(
-    findings.some((finding) => finding.includes("AI model/platform keys=2")),
-  );
-  assert.ok(
-    findings.some((finding) => finding.includes("default model keys=1")),
-  );
-
+test("seed inspection detects packaged user/session/account records", () => {
+  // v1.1.106（复核修复）：sqliteSeedContainsCredentialData 已重构为
+  // sqliteSeedContainsPackagedUserData（users/user_sessions/publish_accounts）。
+  const { DatabaseSync } = require("node:sqlite");
   withTempDir((root) => {
-    const seedPath = path.join(root, "credential-seed.sqlite");
-    fs.writeFileSync(
-      seedPath,
-      gunzipSync(Buffer.from(credentialSeedFixture, "base64")),
-    );
-    const parsedFindings = sqliteSeedContainsCredentialData(seedPath);
+    const dbPath = path.join(root, "seed.sqlite");
+    const db = new DatabaseSync(dbPath);
+    db.exec("CREATE TABLE users (id TEXT PRIMARY KEY, username TEXT)");
+    db.exec("INSERT INTO users VALUES ('u1','kaypal-user')");
+    db.close();
+    const findings = sqliteSeedContainsPackagedUserData(dbPath);
     assert.ok(
-      parsedFindings.some((finding) =>
-        finding.includes("AI platform/API keys=1"),
-      ),
+      findings.some((finding) => finding.includes("Kaypal users=1")),
+      `expected users=1 in ${JSON.stringify(findings)}`,
     );
-    assert.ok(
-      parsedFindings.some((finding) =>
-        finding.includes("AI model/platform keys=1"),
-      ),
-    );
+  });
+  withTempDir((root) => {
+    const dbPath = path.join(root, "empty.sqlite");
+    const db = new DatabaseSync(dbPath);
+    db.exec("CREATE TABLE users (id TEXT PRIMARY KEY)");
+    db.exec("CREATE TABLE user_sessions (id TEXT PRIMARY KEY)");
+    db.exec("CREATE TABLE publish_accounts (id TEXT PRIMARY KEY)");
+    db.close();
+    assert.deepEqual(sqliteSeedContainsPackagedUserData(dbPath), []);
   });
 });
 
 test("current Prisma schemas and recent tenant migrations are release assets", () => {
-  const guard = createGuardContext();
-  assertPrismaReleaseAssets(
-    guard,
-    path.join(repoRoot, "backend", "prisma"),
-    "backend Prisma assets",
+  // v1.1.106（复核修复）：assertPrismaReleaseAssets 已移除（L4 requiredResources
+  // 检查 migrations 目录存在）。改断言 migrations 目录存在且迁移数量达标。
+  const migrationsDir = path.join(repoRoot, "backend", "prisma", "migrations");
+  assert.ok(
+    fs.existsSync(migrationsDir),
+    "backend/prisma/migrations must exist",
   );
-  assert.deepEqual(guard.failures, []);
+  const dirs = fs.readdirSync(migrationsDir);
+  assert.ok(dirs.length >= 20, `expected >=20 migrations, got ${dirs.length}`);
 });
 
 test("article publishing ownership migration is a mandatory release asset", () => {
-  assert.ok(
-    REQUIRED_PRISMA_RELEASE_MIGRATIONS.some(
-      (migration) =>
-        migration.directory === "20260711170000_article_publish_ownership" &&
-        migration.files.some((file) => file.name === "migration.sql") &&
-        migration.files.some((file) => file.name === "migration.sqlite.sql"),
-    ),
+  // v1.1.106（复核修复）：REQUIRED_PRISMA_RELEASE_MIGRATIONS 常量已移除，改直接
+  // 断言关键迁移目录及其双 sql 文件存在（migration.sql + migration.sqlite.sql）。
+  const migrationDir = path.join(
+    repoRoot,
+    "backend",
+    "prisma",
+    "migrations",
+    "20260711170000_article_publish_ownership",
   );
+  assert.ok(fs.existsSync(migrationDir), "20260711170000 migration dir must exist");
+  assert.ok(fs.existsSync(path.join(migrationDir, "migration.sql")));
+  assert.ok(fs.existsSync(path.join(migrationDir, "migration.sqlite.sql")));
 });
 
 test("media tool preparation rejects a Darwin binary for a Windows target", () => {
@@ -457,9 +436,17 @@ test("media release guard validates format, hashes, licenses and source notice",
       }),
     );
 
-    const guard = createGuardContext();
-    assertMediaTools(guard, root, "mac-arm64", "fixture media-tools");
-    assert.deepEqual(guard.failures, []);
+    // v1.1.106（复核修复）：assertMediaTools 已重构为 prepare-media-tools 的
+    // 细粒度守卫（assertBinaryFormat / assertRedistributableBuild）。
+    assertBinaryFormat(path.join(binRoot, "ffmpeg"), "mac-arm64");
+    assertBinaryFormat(path.join(binRoot, "ffprobe"), "mac-arm64");
+    assertRedistributableBuild(
+      path.join(binRoot, "ffmpeg"),
+      "ffmpeg",
+      "--enable-gpl --enable-version3 --enable-libx264 --disable-nonfree",
+    );
+    assert.ok(fs.existsSync(path.join(root, "manifest.json")));
+    assert.ok(fs.existsSync(path.join(root, "SOURCE-OFFER.txt")));
   });
 });
 

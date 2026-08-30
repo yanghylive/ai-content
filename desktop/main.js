@@ -310,7 +310,7 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
     }
   }
 
-  const seedPath = path.join(backendPath, 'prisma', 'dev.db');
+  const seedPath = path.join(backendPath, 'prisma', 'seed.db');
 
   // 目标库已存在且 schema 完整（或为桌面端新建的 user_version=1 空库）→ 直接复用
   if (sqliteDatabaseHasRequiredSchema(databasePath)) {
