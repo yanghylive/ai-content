@@ -353,6 +353,14 @@ function startUpdateDownload(mode = 'manual') {
 function skipUpdate(version) {
   if (!version) return;
   store.set('skippedVersion', version);
+  // v1.1.107（复核 P1/P2）：autoDownload=false 后下载由 update-available 显式
+  // 启动——用户点跳过时若下载已在进行，必须取消（否则跳过版本仍被下载完，
+  // autoInstallOnAppQuit 在退出时仍会安装）。
+  try {
+    autoUpdater.cancelDownload();
+  } catch (error) {
+    flog('[AutoUpdater] cancelDownload failed:', error.message);
+  }
   console.log(`[AutoUpdater] User skipped version ${version}`);
 }
 
