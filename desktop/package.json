@@ -71,6 +71,7 @@
       "tab-strip.html",
       "tab-strip-preload.js",
       "hover-ball.html",
+      "preload-hoverball.js",
       "assets/**/*"
     ],
     "extraResources": [

@@ -711,6 +711,11 @@ function checkPostBuildAssets() {
           ['app icon', 'assets/icon.ico'],
           ['electron-store dependency', 'node_modules/electron-store'],
           ['fix-path dependency', 'node_modules/fix-path'],
+          // v1.1.106（复核修复）：8/11 起悬浮球 preload 缺失致 window.hoverBallAPI
+          // undefined（Cannot read properties of undefined reading runAction）——
+          // build.files 漏了 preload-hoverball.js，1.1.99~1.1.105 全版本包里都缺。
+          ['hover ball html', 'hover-ball.html'],
+          ['hover ball preload', 'preload-hoverball.js'],
         ];
 
         for (const [label, entryPath] of requiredAsarEntries) {
