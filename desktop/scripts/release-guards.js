@@ -618,7 +618,7 @@ function assertPackagedReleaseGuards(ctx, resourcesRoot, platform) {
   );
   assertSqliteSeed(
     ctx,
-    path.join(resourcesRoot, 'backend', 'prisma', 'dev.db'),
+    path.join(resourcesRoot, 'backend', 'prisma', 'seed.db'),
     'packaged SQLite seed',
   );
   assertBackendEnvPolicy(ctx, path.join(resourcesRoot, 'backend', '.env'));

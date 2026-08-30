@@ -1,5 +1,5 @@
 /**
- * Mac 自动更新补传（upload:oss 只传 Windows，Mac 必须手动补传）
+ * Mac 自动更新单平台补传兜底（主流程 upload-to-oss.js 已支持现有三平台 feed）
  * 分片 10MB + parallel 3 + retryMax 5（2026-08-14 实测稳定参数；
  * 50MB + parallel 4 会间歇性 read ETIMEDOUT）
  */

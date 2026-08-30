@@ -12,6 +12,15 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.107",
+    date: "2026-08-31",
+    highlights: [
+      "发布质量：重新打包（数据库模板更名、打包清单收紧，1.1.106 用户请升级到本版）",
+      "安全：跳过某个版本时立即取消下载，不再后台偷偷下载",
+      "稳定性：数据库自愈更保守——临时文件移不动时不再强行重建，保护数据",
+    ],
+  },
+  {
     version: "v1.1.106",
     date: "2026-08-31",
     highlights: [
@@ -327,4 +336,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.106";
+export const DESKTOP_APP_VERSION = "1.1.107";

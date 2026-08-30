@@ -195,6 +195,11 @@ jobs:
         env:
           NODE_OPTIONS: ''
         run: npm run test:local-bridge
+      - name: 跑 OSS 更新 feed 计划单测
+        working-directory: desktop
+        env:
+          NODE_OPTIONS: ''
+        run: npm run test:release-feed-plan
 
   # ==================== 安全扫描 ====================
   secrets-scan:
@@ -362,4 +367,3 @@ jobs:
           NODE_OPTIONS: ''
           UI_GATE_STRICT: '1'
         run: npm run ui:gate
-

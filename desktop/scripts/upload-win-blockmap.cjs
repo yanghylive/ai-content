@@ -1,5 +1,5 @@
 /**
- * Windows blockmap 补传（upload:oss 只传 exe + latest.yml，blockmap 需手动补传）
+ * Windows blockmap 单文件补传兜底（主流程 upload-to-oss.js 已自动收集 blockmap）
  * blockmap 是几百 KB 的小文件，直接用 put（multipartUpload 的分片参数对小文件无意义）
  */
 const path = require("path");

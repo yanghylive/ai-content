@@ -173,7 +173,7 @@ const required = [
   'backend/index.js',
   'backend/package.json',
   'backend/prisma/schema.prisma',
-  'backend/prisma/dev.db',
+  'backend/prisma/seed.db',
   'backend/node_modules/sharp/package.json',
   path.relative(resBase, nodeRuntimePathForPlatform(resBase, platform)),
   'backend/node_modules/@playwright/mcp/cli.js',
@@ -190,7 +190,7 @@ for (const f of required) {
     ok(`${f} (${sizeKB}KB)`);
   }
 }
-const sqliteSeedPath = path.join(resBase, 'backend/prisma/dev.db');
+const sqliteSeedPath = path.join(resBase, 'backend/prisma/seed.db');
 if (!fileContainsMarkers(sqliteSeedPath, ['schedule_configs', 'kaypal_user_id', 'commercial_execution_allowed', 'plan_mode', 'user_sessions'])) {
   fail('SQLite seed 库缺少 Kaypal 登录所需 schema 字段');
 } else {

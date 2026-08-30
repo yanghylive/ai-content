@@ -1,6 +1,11 @@
 const OSS = require("ali-oss");
 const fs = require("fs");
 const path = require("path");
+const {
+  buildUploadPlan,
+  DEFAULT_FEED_FILES,
+  orderUploadFiles,
+} = require("./release-feed-plan");
 
 function loadLocalDotEnv() {
   const envFile = path.join(__dirname, "..", ".env");
@@ -35,10 +40,6 @@ const config = {
 
 const updatePath = (process.env.OSS_UPDATE_PATH || "updates/").replace(/^\/+|\/+$/g, "");
 const distDir = path.resolve(__dirname, "..", "dist");
-
-const allowedExtensions = [
-  ".exe", ".dmg", ".zip", ".AppImage", ".deb", ".snap", ".pkg", ".blockmap", ".yml", ".asc"
-];
 
 async function uploadFile(client, localPath, remoteKey) {
   const stat = fs.statSync(localPath);
@@ -81,38 +82,30 @@ async function main() {
 
   const client = new OSS(config);
 
-  // 只上传各通道 latest*.yml 引用的产物 + yml 本身：
-  // 避免把 dist/ 里历史版本包重复推到更新源（几百 MB × N）。
-  // 2026-08-27：此前只读 latest.yml（Win），Mac 通道（latest-mac.yml 引用的 zip/blockmap）
-  // 永远漏推 —— 1.1.96 商用发版时抓到，扩为三通道统一收集引用。
-  // v1.1.102（复核 P1 整改）：electron-builder 的 latest.yml 不引用 blockmap（约定
-  // 命名 <安装包>.blockmap），此前每次发版 blockmap 都漏传 → 远端 404 → 差分更新
-  // 断链。这里对每个引用的安装包追加同名 .blockmap。
-  const feedFiles = ["latest.yml", "latest-mac.yml", "latest-linux.yml"];
-  let referenced = new Set(feedFiles);
-  for (const ymlName of feedFiles) {
-    const latestYml = path.join(distDir, ymlName);
-    if (!fs.existsSync(latestYml)) continue;
-    const text = fs.readFileSync(latestYml, "utf8");
-    // url 值可含空格（文件名带空格），匹配到行尾
-    for (const m of text.matchAll(/^\s*-\s+url:\s*(.+?)\s*$/gm)) {
-      referenced.add(m[1].trim());
-    }
-    const pathMatch = text.match(/^path:\s*(.+?)\s*$/m);
-    if (pathMatch) referenced.add(pathMatch[1].trim());
+  // 默认只上传现有 latest*.yml 引用的产物 + yml 本身，避免重复推历史包。
+  // 商用单平台脚本可通过 OSS_UPLOAD_FILES 显式限定文件集合；两种模式都统一排序。
+  // 安装包 -> blockmap -> feed 的顺序保证 feed 不会先于它引用的文件切流。
+  // 任一 feed 引用的安装包或 blockmap 缺失时 fail-closed，避免远端出现不可更新的 feed。
+  const explicitFiles = (process.env.OSS_UPLOAD_FILES || "")
+    .split(",")
+    .map((file) => file.trim())
+    .filter(Boolean);
+  const plan = explicitFiles.length > 0
+    ? {
+        files: orderUploadFiles(explicitFiles, DEFAULT_FEED_FILES),
+        missing: explicitFiles.filter((file) => {
+          const local = path.join(distDir, file);
+          return !fs.existsSync(local) || !fs.statSync(local).isFile();
+        }),
+      }
+    : buildUploadPlan({ distDir, feedFiles: DEFAULT_FEED_FILES });
+  if (plan.missing.length > 0) {
+    console.error("Missing feed-referenced artifact(s) in dist/:");
+    for (const file of plan.missing) console.error(`  - ${file}`);
+    console.error("Build the referenced installer and its blockmap before uploading the feed.");
+    process.exit(1);
   }
-  for (const f of [...referenced]) {
-    if (/\.(exe|zip|dmg|AppImage|deb|snap|pkg)$/i.test(f)) {
-      referenced.add(`${f}.blockmap`);
-    }
-  }
-
-  const files = fs.readdirSync(distDir).filter((f) => {
-    if (feedFiles.includes(f)) return true;
-    if (!referenced.has(f)) return false;
-    const ext = path.extname(f).toLowerCase();
-    return allowedExtensions.includes(ext);
-  });
+  const files = plan.files;
 
   if (files.length === 0) {
     console.error("No uploadable artifacts in dist/. Did the build run?");

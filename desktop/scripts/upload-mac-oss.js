@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * 发版辅助：上传 Mac 产物 + blockmap 到 OSS（upload:oss 只传 Windows，Mac 需手动补传）
+ * 发版辅助：上传 Mac 产物 + blockmap 到 OSS。
+ * 主流程 upload-to-oss.js 已支持现有三平台 feed；本脚本仅作为 Mac 单平台补传兜底。
  *
  * 用法：node scripts/upload-mac-oss.js
  * 依赖：desktop/.env 有 OSS_ACCESS_KEY_ID / OSS_ACCESS_KEY_SECRET
