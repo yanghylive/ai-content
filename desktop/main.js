@@ -2410,7 +2410,10 @@ app.whenReady().then(async () => {
   createTray();
 
   // 悬浮球（可经托盘开关）
-  if (store.get('hoverBallEnabled') !== false) {
+  // v1.1.106（大王决策）：悬浮球先禁用——UI 桥断了 5 个版本（preload 漏打包，
+  // 点执行必报错），且无引导、用户不知其用途，半成品不配裸奔。默认关闭，
+  // 做完整（修复 + 首次使用引导 + 场景演示 + 报错可读提示）并真机验证后再灰度放开。
+  if (store.get('hoverBallEnabled') === true) {
     createHoverBall();
   }
 
