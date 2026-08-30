@@ -35,8 +35,16 @@ for (const [name, route] of [
 }
 
 // 获客首页：AI 简报卡
+// v1.1.104（复核整改）：固定 3s 等待是竞态 flaky——后端重启后 /growth 接口
+// 冷查询慢时组件还没渲染完 innerText 就缺「价值」字样（偶发红）。改为
+// waitForSelector 等「AI 价值账单」真实出现（最多 15s），再取 innerText 断言。
 await page.goto(`${BASE}/growth`, { waitUntil: 'domcontentloaded', timeout: 20000 });
-await page.waitForTimeout(3000);
+try {
+  await page.waitForSelector('text=AI 价值账单', { timeout: 15000 });
+} catch {
+  // 兜底：组件块没出现时仍按旧逻辑取 innerText 判定（保留错误暴露能力）
+  await page.waitForTimeout(3000);
+}
 const growthText = await page.evaluate(() => document.body.innerText);
 check('获客首页 AI 简报卡', growthText.includes('AI 简报') || growthText.includes('今日 AI'), '');
 check('获客首页 AI 价值', growthText.includes('价值') || growthText.includes('折算人工'), '');
