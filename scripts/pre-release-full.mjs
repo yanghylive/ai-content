@@ -118,23 +118,37 @@ async function main() {
   });
 
   /* ── L4 安装包内容完整性（替代 VM 的关键层）──────── */
-  // v1.1.105（复核 P0 整改）：以下两个 L4 检查只读 dist 现有产物，不依赖本轮
+  // v1.1.105（复核 P0/P1-1）：以下两个 L4 检查只读 dist 现有产物，不依赖本轮
   // build——`--skip-build` 模式下也必须执行（8/30 曾因 skip-build 跳过 L4 造成
-  // mac 资源混入 Win 包的 16/16 假绿）。check-package-contents 走最新包版本序。
+  // mac 资源混入 Win 包的 16/16 假绿）。check-package-contents 走最新包版本序
+  // 并传 --win-only（平台互斥分支必须执行）；Win 严格检查绑定**精确的最新 exe**
+  // （--installer，禁止回退 win-unpacked 中间目录）。
+  const latestWinInstaller = (() => {
+    const files = readdirSync(distDir).filter((f) => f.startsWith("JIUZHANG AI 内容创作平台 Setup") && f.endsWith(".exe"));
+    const ver = (f) => {
+      const m = f.match(/(\d+)\.(\d+)\.(\d+)/);
+      return m ? m.slice(1).map(Number) : [0, 0, 0];
+    };
+    files.sort((a, b) => {
+      const va = ver(a), vb = ver(b);
+      return vb[0] - va[0] || vb[1] - va[1] || vb[2] - va[2];
+    });
+    return files[0] || null;
+  })();
   step("L4 解包验证 dist 产物（asar 对照 require + 依赖 + 引擎）", () => {
-    run(`cd ${q(desk)} && node scripts/check-package-contents.js --dir ${q(distDir)} 2>&1 | tail -12`);
+    const extra = process.platform === "darwin" ? " --win-only" : "";
+    run(`cd ${q(desk)} && node scripts/check-package-contents.js --dir ${q(distDir)}${extra} 2>&1 | tail -12`);
   });
   // v1.1.102（复核 P0 整改）：L4 原 check-package-contents 只查目录存在不查平台
   // 可执行文件，导致 mac 资源混入 Win 包"15/15 假绿"。补严格平台资产检查：
   // 校验 win-x64 包内 node.exe / Playwright chrome.exe / Prisma win 引擎真实存在。
   step("L4 Win 包平台资产严格检查（node.exe/chrome.exe/引擎，防交叉构建假绿）", () => {
-    const hasWinInstaller = existsSync(distDir) &&
-      readdirSync(distDir).some((f) => f.startsWith("JIUZHANG AI 内容创作平台 Setup") && f.endsWith(".exe"));
-    if (!hasWinInstaller) {
+    if (!latestWinInstaller) {
       console.log("    （dist 下无 Win 安装包，跳过 win-x64 严格检查）");
       return;
     }
-    run(`cd ${q(desk)} && BUILD_PLATFORM=win-x64 node scripts/check-full-installer-assets.js --phase=post 2>&1 | tail -12`);
+    const installerRel = path.join(distDir, latestWinInstaller);
+    run(`cd ${q(desk)} && BUILD_PLATFORM=win-x64 node scripts/check-full-installer-assets.js --phase=post --installer=${q(installerRel)} 2>&1 | tail -12`);
   });
 
   /* ── 执行 ───────────────────────────────────────── */
