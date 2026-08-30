@@ -12,6 +12,13 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.103",
+    date: "2026-08-30",
+    highlights: [
+      "安全修复：数据库自愈改为只识别本次启动的报错——修复历史日志可能误触发清库的隐患（1.1.102 用户建议升级）",
+    ],
+  },
+  {
     version: "v1.1.102",
     date: "2026-08-30",
     highlights: [
@@ -295,4 +302,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.102";
+export const DESKTOP_APP_VERSION = "1.1.103";

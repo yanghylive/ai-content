@@ -50,6 +50,8 @@ describe('全开关端到端（persist + real business + octop + kaypal auth）'
   const phone = envOf('KAYPAL_TEST_PHONE');
   const pwd = envOf('KAYPAL_TEST_PASSWORD');
 
+  // v1.1.103（复核整改）：真实 DB + Kaypal 鉴权 + Nest 初始化的 hook，负载高时
+  // 会超过 jest 默认 5s → 门禁偶发红。显式放宽到 60s。
   beforeAll(async () => {
     if (!hasDb) return;
     // 商用验收门禁（方案 7.1）：连 DB 但缺 Kaypal 凭据 → 显式失败，禁止 passed+0 断言
@@ -78,7 +80,7 @@ describe('全开关端到端（persist + real business + octop + kaypal auth）'
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, transformOptions: { enableImplicitConversion: true } }));
     await app.init();
     prisma = app.get(PrismaService); // 复用 app 内 PrismaService，避免第二个 engine 实例
-  });
+  }, 60_000);
 
   afterAll(async () => {
     delete process.env.AGENT_GATEWAY_PERSISTENCE;

@@ -69,7 +69,11 @@ async function main() {
     run(`cd ${q(front)} && ./node_modules/.bin/tsc --noEmit`);
   });
   step("L1 jest 后端单测（207+ 例）", () => {
-    run(`cd ${q(back)} && npm test -- --runInBand --silent 2>&1 | tail -8`);
+    // v1.1.103（复核整改）：backend 的 build:bundle:sqlite 会把 @prisma/client
+    // 重新生成为 sqlite 版（schema.sqlite.prisma），jest 的 gateway spec 初始化
+    // PrismaModule 时需要 PG 版 client——bundle build 之后跑 jest 必挂
+    //（SQLITE_DATABASE_URL 缺失）。jest 前先恢复 PG client。
+    run(`cd ${q(back)} && ./node_modules/.bin/prisma generate 2>&1 | tail -2 && npm test -- --runInBand --silent 2>&1 | tail -8`);
   });
   step("L1 vitest 前端单测（26 例）", () => {
     run(`cd ${q(front)} && npx vitest run --silent 2>&1 | tail -8`);
