@@ -119,22 +119,31 @@
     const dragBar = document.getElementById('drag-bar');
 
     // 拖拽移动窗口
+    // v1.1.106（修复）：此前用「相对起点的偏移」（dx=screenX-start.x），而主进程
+    // 每次在当前位置累加 → 偏移被重复累加，位移平方级增长，球乱跳/拖不动。
+    // 改为每次 move 发「相对上一次位置的增量」。
     let dragging = false;
+    let lastDragPos = null;
     ball.addEventListener('mousedown', (e) => {
       if (panel.classList.contains('open')) { return; }
       dragging = true;
-      const start = { x: e.screenX, y: e.screenY };
-      
+      lastDragPos = { x: e.screenX, y: e.screenY };
+
       const move = (ev) => {
         if (!dragging) return;
         dragBar.classList.add('active');
-        ipc.drag({
-          dx: ev.screenX - start.x,
-          dy: ev.screenY - start.y,
-        });
+        const pos = { x: ev.screenX, y: ev.screenY };
+        if (lastDragPos) {
+          ipc.drag({
+            dx: pos.x - lastDragPos.x,
+            dy: pos.y - lastDragPos.y,
+          });
+        }
+        lastDragPos = pos;
       };
       const up = () => {
         dragging = false;
+        lastDragPos = null;
         dragBar.classList.remove('active');
         window.removeEventListener('mousemove', move);
         window.removeEventListener('mouseup', up);
