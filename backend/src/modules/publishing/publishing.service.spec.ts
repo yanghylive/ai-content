@@ -183,7 +183,9 @@ describe('PublishingService', () => {
       submitOfficialPublish: jest.fn(),
       getOfficialPublishStatus: jest.fn(),
     };
-    autoUploadService = { listAccounts: jest.fn() };
+    // v1.1.106（复核 P1-2）：getAccounts 现在总触发轻量同步——默认返回空数组
+    //（同步无事发生），需要引擎账号的测试再覆盖 mock 返回值。
+    autoUploadService = { listAccounts: jest.fn().mockResolvedValue([]) };
     authRequestContext = {
       get: jest.fn(() => ({
         sessionId: 'session-1',

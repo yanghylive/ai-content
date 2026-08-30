@@ -120,9 +120,15 @@ export class PublishingService {
     } = {},
   ) {
     const scope = await this.resolvePublishingScope();
-    if (options.force || options.validate || options.ids?.length) {
-      await this.syncLocalEngineAccounts(scope, options);
-    }
+    // v1.1.106（复核 P1-2）：普通列表也触发轻量同步——此前仅 force/validate/ids
+    // 才同步引擎账号，发布中心与验收门禁的普通列表读到空 publish_accounts
+    // （实测 localEngineAccounts=10, publish_accounts=0 → FAILED「账号未持久化」）。
+    // syncLocalEngineAccounts 内部对 listAccounts 有 try-catch，失败仅告警不阻塞列表。
+    await this.syncLocalEngineAccounts(scope, {
+      validate: false,
+      force: false,
+      ...options,
+    });
     const rows = await this.prisma.publishAccount.findMany({
       where: this.ownerWhere(scope),
       orderBy: { createdAt: 'desc' },
