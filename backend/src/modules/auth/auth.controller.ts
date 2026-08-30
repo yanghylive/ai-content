@@ -44,18 +44,30 @@ type AuthenticatedRequest = Request & {
 };
 
 /** 微信登录回跳目标白名单（只允许站内路径） */
-function normalizeWechatNext(value: string | undefined): string {
+export function normalizeWechatNext(value: string | undefined): string {
+  // v1.1.105（登录跳转修复）：wechat/start 与 wechatQr 生成 callbackUrl 时对 next
+  // 做了 encodeURIComponent——callback 收到的 query.next 是编码串（如 %2Fagent），
+  // 直接按原始编码串做 startsWith('/') 白名单校验必然失败 → fallback '/' →
+  // 登录成功跳到根路径而非用户原目标页。这里先安全解码一次再校验。
+  let decoded = value;
+  if (value) {
+    try {
+      decoded = decodeURIComponent(value);
+    } catch {
+      decoded = value; // 非法编码原样，走白名单校验
+    }
+  }
   const fallback = '/';
-  if (!value) return fallback;
+  if (!decoded) return fallback;
   if (
-    !value.startsWith('/') ||
-    value.startsWith('//') ||
-    value.includes('\\')
+    !decoded.startsWith('/') ||
+    decoded.startsWith('//') ||
+    decoded.includes('\\')
   ) {
     return fallback;
   }
-  if (/^[a-z][a-z\d+.-]*:/i.test(value)) return fallback;
-  return value;
+  if (/^[a-z][a-z\d+.-]*:/i.test(decoded)) return fallback;
+  return decoded;
 }
 
 @Controller('auth')
