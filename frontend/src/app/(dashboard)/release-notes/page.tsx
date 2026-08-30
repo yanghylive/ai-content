@@ -5,7 +5,7 @@ import { BadgeCheck, CheckCircle2, RefreshCw, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
-const currentVersion = "1.1.105";
+const currentVersion = "1.1.106";
 
 const highlights = [
   {
