@@ -106,7 +106,8 @@ html.dark {
 .kx-rail-item { width: 52px; border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 0; border-radius: 12px; cursor: pointer; color: var(--kx-muted); transition: all 0.18s ease; position: relative; }
 .kx-rail-item:hover { background: var(--kx-paper-soft); color: var(--kx-ink); }
 .kx-rail-item.kx-active { background: var(--kx-accent-soft); color: var(--kx-accent-ink); }
-.kx-rail-item.kx-active::before { content: ""; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); width: 3px; height: 26px; border-radius: 2px; background: var(--kx-accent); }
+/* 选中指示条：真实元素（app-shell 用 framer-motion layoutId 驱动滑动，动效规范 2026-08-29） */
+.kx-rail-indicator { position: absolute; left: -10px; top: calc(50% - 13px); width: 3px; height: 26px; border-radius: 2px; background: var(--kx-accent, var(--kaypal-v3-accent)); pointer-events: none; }
 .kx-rail-lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
 .kx-rail-badge { position: absolute; top: 5px; right: 7px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--kx-danger); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid var(--kx-card); }
 .kx-rail-spacer { flex: 1; }

@@ -12,6 +12,13 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.104",
+    date: "2026-08-30",
+    highlights: [
+      "关键修复：解决旧版数据库升级后「应用起不来」——1.1.99 及更早版本的数据库升级到 1.1.102+ 时，新版要求的字段在旧库里不存在导致启动崩溃；现启动时自动补齐缺失字段，无需手动处理",
+    ],
+  },
+  {
     version: "v1.1.103",
     date: "2026-08-30",
     highlights: [
@@ -302,4 +309,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.103";
+export const DESKTOP_APP_VERSION = "1.1.104";

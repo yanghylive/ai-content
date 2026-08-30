@@ -128,7 +128,7 @@ export function V2PrimaryButton({
       type="button"
       {...props}
       disabled={props.disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:opacity-60 ${props.className || ""}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-150 ease-out hover:bg-[var(--kaypal-v3-accent-ink)] active:scale-[0.97] disabled:opacity-60 ${props.className || ""}`}
     >
       {Icon && (
         <Icon className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -149,7 +149,7 @@ export function V2GhostButton({
       type="button"
       {...props}
       disabled={props.disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:opacity-60 ${props.className || ""}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition duration-150 ease-out hover:border-[var(--kaypal-v3-border-strong)] active:scale-[0.97] disabled:opacity-60 ${props.className || ""}`}
     >
       {Icon && (
         <Icon className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -170,7 +170,7 @@ export function V2DangerButton({
       type="button"
       {...props}
       disabled={props.disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-danger)] transition hover:bg-[var(--kaypal-v3-danger-soft)] disabled:opacity-60 ${props.className || ""}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-danger)] transition duration-150 ease-out hover:bg-[var(--kaypal-v3-danger-soft)] active:scale-[0.97] disabled:opacity-60 ${props.className || ""}`}
     >
       {Icon && (
         <Icon className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -256,7 +256,7 @@ export function V2EmptyState({
   variant?: "empty" | "unavailable";
 }) {
   return (
-    <div className="py-12 text-center">
+    <div className="kx-scale-fade-in py-12 text-center">
       <div
         className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${
           variant === "unavailable"
@@ -294,6 +294,7 @@ export function V2Disclosure({
     <div>
       <button
         type="button"
+        aria-expanded={open}
         className="inline-flex items-center gap-2 text-sm font-medium text-[var(--kaypal-v3-muted)] transition hover:text-[var(--kaypal-v3-ink)]"
         onClick={() => setOpen(!open)}
       >
@@ -302,9 +303,21 @@ export function V2Disclosure({
           className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
-      {open && (
-        <div className="kaypal-v3-surface mt-3 p-4">{children}</div>
-      )}
+      {/* grid-rows 0fr→1fr 实现高度动画，避免内容瞬移（动效规范 2026-08-29） */}
+      <div
+        aria-hidden={!open}
+        inert={!open}
+        className="grid transition-[grid-template-rows,opacity] duration-200"
+        style={{
+          gridTemplateRows: open ? "1fr" : "0fr",
+          opacity: open ? 1 : 0,
+          transitionTimingFunction: "var(--kaypal-v3-ease-out)",
+        }}
+      >
+        <div className="overflow-hidden">
+          <div className="kaypal-v3-surface mt-3 p-4">{children}</div>
+        </div>
+      </div>
     </div>
   );
 }

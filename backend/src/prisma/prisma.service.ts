@@ -19,8 +19,13 @@ export class PrismaService
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
       try {
         await this.$connect();
-        await this.ensureSqliteCoreTables();
+        // v1.1.104（真机 P0，8/30 15827 实锤）：顺序调整——先做列收敛再建核心表。
+        // 旧库已存在的表（如 mobile_devices）可能缺新增列（device_token_hash），
+        // ensureSqliteCoreTables 的 CREATE INDEX 引用该列会直接崩（P2010 no such
+        // column），而列收敛本来能补——但原来排在建表之后，永远跑不到。
+        // 新顺序：先补旧库缺列 → 再 CREATE TABLE IF NOT EXISTS 建缺失表 + 索引。
         await this.ensureSqliteSchemaColumns();
+        await this.ensureSqliteCoreTables();
         return;
       } catch (error) {
         lastError = error;
@@ -3622,6 +3627,9 @@ export class PrismaService
       },
       { table: 'crm_customers', column: 'source_task_id', ddl: 'TEXT' },
       { table: 'crm_customers', column: 'source_run_id', ddl: 'TEXT' },
+      // v1.1.104（真机 P0，8/30 15827）：旧库 mobile_devices 缺 device_token_hash，
+      // 缺列时 ensureSqliteCoreTables 的 CREATE INDEX 崩（P2010 no such column）
+      { table: 'mobile_devices', column: 'device_token_hash', ddl: 'TEXT' },
     ];
     for (const mig of columnMigrations) {
       try {
