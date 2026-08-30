@@ -77,7 +77,9 @@ function resolveInstallerResources(installerPath) {
         fs.rmSync(tmp, { recursive: true, force: true });
         return null;
       }
-      return path.join(appOut, 'resources');
+      // v1.1.106（复核 P2-B）：成功路径不删 tmp——由调用方 try/finally 统一清理，
+      // 否则每次 --installer 解包都在 os.tmpdir 留下完整安装包内容（曾泄漏 7 个）。
+      return { resources: path.join(appOut, 'resources'), tmp };
     }
     if (/\.zip$/i.test(absPath)) {
       const { execSync } = require('node:child_process');
@@ -85,7 +87,7 @@ function resolveInstallerResources(installerPath) {
       fs.mkdirSync(appDir, { recursive: true });
       execSync(`unzip -q -o "${absPath}" -d "${appDir}"`);
       const candidate = path.join(appDir, 'JIUZHANG AI 内容创作平台.app', 'Contents', 'Resources');
-      if (fs.existsSync(candidate)) return candidate;
+      if (fs.existsSync(candidate)) return { resources: candidate, tmp };
       console.error(`- mac zip app bundle not found: ${absPath}`);
       fs.rmSync(tmp, { recursive: true, force: true });
       return null;
@@ -101,12 +103,15 @@ function resolveInstallerResources(installerPath) {
 }
 
 let installerResourcesRoot = null;
+let installerTempRoot = null;
 if (cliInstaller) {
-  installerResourcesRoot = resolveInstallerResources(cliInstaller);
-  if (!installerResourcesRoot) {
+  const resolved = resolveInstallerResources(cliInstaller);
+  if (!resolved) {
     console.error('- FAILED: --installer 解包失败，禁止回退中间目录');
     process.exit(1);
   }
+  installerResourcesRoot = resolved.resources;
+  installerTempRoot = resolved.tmp;
   console.log(`检查安装包（精确绑定）: ${cliInstaller}`);
 }
 const distResourcesRoot = installerResourcesRoot || distResourcesRootForPlatform(buildPlatform);
@@ -473,6 +478,16 @@ function assertInstallerHelperNoExternalRuntimeDeps() {
 }
 
 function finish() {
+  // v1.1.106（复核 P2-B）：统一出口清理 --installer 解包临时目录（成功/断言失败
+  // 都走这里；process.exit 会跳过 finally，故不放外层 try/finally）。
+  if (installerTempRoot) {
+    try {
+      fs.rmSync(installerTempRoot, { recursive: true, force: true });
+    } catch (error) {
+      console.warn(`- 临时目录清理失败（不覆盖检查结果）: ${error.message}`);
+    }
+    installerTempRoot = null;
+  }
   if (failed) {
     console.error('');
     console.error(`Full installer asset check failed (${phase}, target=${buildPlatform || process.platform}).`);

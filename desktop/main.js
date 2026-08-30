@@ -1603,9 +1603,26 @@ async function startBackendService() {
     console.error('[Backend Error]', text.trim());
   });
 
-  backendService.on('close', (code) => {
-    backendStdout.end();
-    backendStderr.end();
+  backendService.on('close', async (code) => {
+    // v1.1.106（复核 P2-C）：isQuitting 判断必须**最先**执行——应用退出时子进程
+    // 以 signal 关闭，code 为 null，`null !== 0` 会误入上报/自愈分支（清库风险）。
+    // 同时等待两个写流 flush（end() 是异步落盘，立即同步读可能读不到本次
+    // P2010/malformed 最后几行，导致应自愈而未自愈）。
+    const quitting = isQuitting;
+    await Promise.all([
+      new Promise((resolve) => {
+        backendStdout.end();
+        backendStdout.once('finish', resolve);
+        backendStdout.once('close', resolve);
+        setTimeout(resolve, 2000); // 兜底超时，防挂住 close
+      }),
+      new Promise((resolve) => {
+        backendStderr.end();
+        backendStderr.once('finish', resolve);
+        backendStderr.once('close', resolve);
+        setTimeout(resolve, 2000);
+      }),
+    ]).catch(() => {});
     const errorLine = stderrTail
       .replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')
       .split(/\r?\n/)
@@ -1614,7 +1631,7 @@ async function startBackendService() {
     backendStartupDiagnostic = `后端进程退出（代码 ${code ?? 'unknown'}）${errorLine ? `：${errorLine.slice(0, 500)}` : ''}`;
     appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
     // 2026-08-29 兜底上报：后端异常退出直接报云端（本地转发者已死，不能依赖 3011 自报）
-    if (code !== 0) {
+    if (!quitting && code !== 0) {
       reportBackendCrash(code, stderrTail || backendStartupDiagnostic);
       // 2026-08-29 自愈：SQLite 数据页损坏时启动前的 schema 预检查发现不了（marker 完好），
       // Prisma 运行时查询才炸。识别损坏特征 → 自动备份 + 重建空库 → 走现有重启链路自愈。
@@ -1631,7 +1648,7 @@ async function startBackendService() {
     console.log(`[Backend] Service exited with code ${code}`);
     if (backendService && backendService.__killTimer) clearTimeout(backendService.__killTimer);
     backendService = null;
-    if (isQuitting) return;
+    if (quitting) return;
     const restartScheduled = scheduleRestart(
       'Backend',
       () => startBackendService(),
@@ -1662,9 +1679,12 @@ let backendDbHealAttempts = 0;
 const BACKEND_DB_HEAL_MAX_ATTEMPTS = 2;
 // SQLite 损坏特征（v1.1.102 收窄）：只匹配「明确的 SQLite 库级错误」，去掉易误伤的
 // 宽泛词（malformed 单词可能出现在无关日志、unable to open 可能是目录权限问题）。
+// v1.1.106（复核 P2-C 再收窄）：Prisma code 14（SQLITE_CANTOPEN）是权限/路径问题，
+// 不等于数据库损坏，移除；P2010 必须带明确的 corrupted/malformed/not a database
+// 关键词才命中（防 database is locked / raw query 误伤）。
 // 特征匹配输入改为 backend-stderr.log 尾部 64KB（stderrTail 仅 4KB，早期 Prisma
 // 损坏信息可能被挤出窗口——复核 P2 整改）。
-const DB_CORRUPT_SIGNATURE = /database disk image is malformed|file is not a database|SQLITE_CORRUPT|PrismaClientKnownRequestError[\s\S]{0,400}code:\s*['"]?(11|14|26)['"]?|P2010[\s\S]{0,400}database/i;
+const DB_CORRUPT_SIGNATURE = /database disk image is malformed|file is not a database|SQLITE_CORRUPT|SQLITE_NOTADB|PrismaClientKnownRequestError[\s\S]{0,400}code:\s*['"]?(11|26)['"]?|P2010[\s\S]{0,400}(?:malformed|not a database|disk image)/i;
 
 function healCorruptedDesktopDatabase(reason) {
   if (backendDbHealAttempts >= BACKEND_DB_HEAL_MAX_ATTEMPTS) return false;

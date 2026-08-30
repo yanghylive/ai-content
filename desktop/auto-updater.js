@@ -43,7 +43,11 @@ function setupAutoUpdater(win, hooks = {}) {
   // 背景：3011 后端起不来的机器上，用户本就面对故障，还需手动点「下载更新」
   // 才能升级到修复版——自动下载让「启动即向新版本靠拢」，配合后端自愈实现
   // 故障机器无人值守恢复。autoInstallOnAppQuit=true 时下载完的版本在退出时即装。
-  autoUpdater.autoDownload = true;
+  // v1.1.106（复核 P2-E）：autoDownload 必须 false + 显式 downloadUpdate——
+  // electron-updater 在 autoDownload=true 时发出 update-available 事件后内部
+  // 仍继续下载（AppUpdater.js 413-423），skipUpdate() 只隐藏 UI 不能阻止下载；
+  // 改显式下载后，「跳过版本」分支直接 return 即完全不下载，退出也不会安装。
+  autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.allowDowngrade = false;
   if (!app.isPackaged) {
