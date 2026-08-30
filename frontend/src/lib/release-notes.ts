@@ -12,6 +12,14 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.105",
+    date: "2026-08-30",
+    highlights: [
+      "关键修复：Windows 安装包重新构建——1.1.104 的 Win 包误含 Mac 版内置组件（会导致 Windows 后端无法启动），1.1.104 用户请务必升级到本版",
+      "旧库升级自动补字段：1.1.99 及更早版本的数据库升级后启动即恢复（详见 1.1.104 说明）",
+    ],
+  },
+  {
     version: "v1.1.104",
     date: "2026-08-30",
     highlights: [
@@ -309,4 +317,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.104";
+export const DESKTOP_APP_VERSION = "1.1.105";

@@ -156,7 +156,22 @@ function checkExtracted(label, resources, requiredImgVariants) {
   // 4. chromium + prisma 引擎
   check(fs.existsSync(path.join(resources, "playwright-browsers", "chromium")), `${label} 内置 playwright chromium`);
   const engines = fs.readdirSync(path.join(resources, "backend")).filter((f) => f.includes("query_engine") || f.includes("libquery_engine"));
+  // v1.1.105（复核 P0 整改）：引擎必须按平台校验——以前只查"存在某个引擎"，
+  // mac 资源的包也能通过（假绿根因之一）。win 检查要求 windows 引擎存在且
+  // **不得混入 darwin 引擎**；非 win 检查保持存在性。
   check(engines.length > 0, `${label} Prisma 引擎`, engines.join(", "));
+  if (process.argv.includes('--win-only') || process.argv.includes('--platform=win')) {
+    check(
+      engines.some((f) => f.includes("windows.dll.node") || f.includes("windows.node")),
+      `${label} Prisma Windows 引擎`,
+      engines.join(", "),
+    );
+    check(
+      !engines.some((f) => f.includes("darwin")),
+      `${label} 不得混入 darwin 引擎（平台互斥，混入 = 交叉构建资源串包）`,
+      engines.join(", "),
+    );
+  }
 
   // 5. Octop sidecar（审计 #3：Octop 直接打包，不外部依赖。P1 #4 补漏检）
   const octopRoot = path.join(resources, "octop");
@@ -172,8 +187,19 @@ const targetDir = path.join(desk, argDir);
 
 console.log(`═══ 安装包内容完整性检查（${targetDir}）═══\n`);
 
-const macZips = fs.readdirSync(targetDir).filter((f) => /arm64-mac\.zip$/.test(f) && !f.includes("1.1.85"));
-const winExes = fs.readdirSync(targetDir).filter((f) => /Setup.*\.exe$/.test(f) && !f.includes("1.1.85"));
+// v1.1.105（复核 P0 整改）：按版本号降序取最新包（原 readdirSync 目录序会让
+// "1.1.104" 排在 "1.1.99" 前面，取 last 拿到旧包——假绿根因之二）。
+function versionOf(file) {
+  const m = file.match(/(\d+)\.(\d+)\.(\d+)/);
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0, 0, 0];
+}
+function byVersionDesc(a, b) {
+  const va = versionOf(a);
+  const vb = versionOf(b);
+  return vb[0] - va[0] || vb[1] - va[1] || vb[2] - va[2];
+}
+const macZips = fs.readdirSync(targetDir).filter((f) => /arm64-mac\.zip$/.test(f) && !f.includes("1.1.85")).sort(byVersionDesc);
+const winExes = fs.readdirSync(targetDir).filter((f) => /Setup.*\.exe$/.test(f) && !f.includes("1.1.85")).sort(byVersionDesc);
 
 // Mac / Win 装包都共用同一份 backend bundle（含 4 个 sharp 原生变体）——
 // 跨平台安装包抽取同一份 backend 时，4 个变体必须齐。
@@ -186,41 +212,45 @@ const SHARP_REQUIRED_ALL = [
   "sharp-libvips-win32-x64",
 ];
 
-// Mac
-if (macZips.length === 0) {
+// Mac（--win-only 时跳过）
+const winOnly = process.argv.includes('--win-only');
+if (winOnly) {
+  console.log('（--win-only：跳过 Mac 包检查）');
+} else if (macZips.length === 0) {
   check(false, "Mac zip 未找到", targetDir);
 } else {
-  const mac = extractMacApp(path.join(targetDir, macZips[macZips.length - 1]));
+  const mac = extractMacApp(path.join(targetDir, macZips[0]));
   checkExtracted(
-    `Mac(${macZips[macZips.length - 1]})`,
+    `Mac(${macZips[0]})`,
     mac.resources,
     SHARP_REQUIRED_ALL,
   );
   mac.cleanup();
 }
 
-// Win：优先检查 win-unpacked 目录（Windows 原生构建无 7z，electron-builder 的
-// win-unpacked 已含解包后的 resources）；缺失才 fallback 7z 解压 NSIS exe。
-// --mac-only：只检查 Mac 包（Mac 测试包构建时本机 dist 无新 Win 包，跳过 Win 检查）
+// Win：v1.1.105（复核 P0 整改）——优先解包**最新 exe**（不再默认信任 win-unpacked
+// 目录：那是 electron-builder 中间产物，可能与实际 exe 不一致——8/30 曾用 mac
+// runtime 打出 win-unpacked+exe 双坏包且检查通过）。
+// --dir 显式指向 win-unpacked 时仍用目录（Windows 原生构建无 7z 的场景）。
 const macOnly = process.argv.includes('--mac-only');
 if (macOnly) {
   console.log('（--mac-only：跳过 Win 包检查）');
 } else {
-const winUnpacked = path.join(targetDir, "win-unpacked");
-if (fs.existsSync(path.join(winUnpacked, "resources"))) {
-  checkExtracted("Win(win-unpacked)", path.join(winUnpacked, "resources"), SHARP_REQUIRED_ALL);
+const useUnpacked = argDir.includes("win-unpacked");
+if (useUnpacked && fs.existsSync(path.join(targetDir, "resources"))) {
+  checkExtracted("Win(win-unpacked)", path.join(targetDir, "resources"), SHARP_REQUIRED_ALL);
 } else if (winExes.length === 0) {
   check(false, "Win exe 未找到", targetDir);
 } else {
-  const win = extractWinExe(path.join(targetDir, winExes[winExes.length - 1]));
+  const win = extractWinExe(path.join(targetDir, winExes[0]));
   if (win.resources) {
     checkExtracted(
-      `Win(${winExes[winExes.length - 1]})`,
+      `Win(${winExes[0]})`,
       win.resources,
       SHARP_REQUIRED_ALL,
     );
   } else {
-    check(false, "Win exe 解包失败（app-64.7z 未找到）", winExes[winExes.length - 1]);
+    check(false, "Win exe 解包失败（app-64.7z 未找到）", winExes[0]);
   }
   win.cleanup();
 }

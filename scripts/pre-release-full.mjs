@@ -118,15 +118,16 @@ async function main() {
   });
 
   /* ── L4 安装包内容完整性（替代 VM 的关键层）──────── */
+  // v1.1.105（复核 P0 整改）：以下两个 L4 检查只读 dist 现有产物，不依赖本轮
+  // build——`--skip-build` 模式下也必须执行（8/30 曾因 skip-build 跳过 L4 造成
+  // mac 资源混入 Win 包的 16/16 假绿）。check-package-contents 走最新包版本序。
   step("L4 解包验证 dist 产物（asar 对照 require + 依赖 + 引擎）", () => {
-    if (skipBuild) return;
     run(`cd ${q(desk)} && node scripts/check-package-contents.js --dir ${q(distDir)} 2>&1 | tail -12`);
   });
   // v1.1.102（复核 P0 整改）：L4 原 check-package-contents 只查目录存在不查平台
   // 可执行文件，导致 mac 资源混入 Win 包"15/15 假绿"。补严格平台资产检查：
   // 校验 win-x64 包内 node.exe / Playwright chrome.exe / Prisma win 引擎真实存在。
   step("L4 Win 包平台资产严格检查（node.exe/chrome.exe/引擎，防交叉构建假绿）", () => {
-    if (skipBuild) return;
     const hasWinInstaller = existsSync(distDir) &&
       readdirSync(distDir).some((f) => f.startsWith("JIUZHANG AI 内容创作平台 Setup") && f.endsWith(".exe"));
     if (!hasWinInstaller) {
