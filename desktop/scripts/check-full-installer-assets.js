@@ -166,7 +166,7 @@ function assertCleanDesktopSeedDatabase(label, filePath) {
 
 /**
  * 大王铁律（2026-08-20）：安装包不得携带本地运行时数据。
- * 打包产物 backend/ 下只允许：bundle js / schema / 种子库 prisma/dev.db /
+ * 打包产物 backend/ 下只允许：bundle js / schema / 种子库 prisma/seed.db /
  * 引擎 / node_modules（sharp/playwright 等白名单）。
  * 出现 kaypal-ai.sqlite、*.log、*.wal/*.shm、.local-logs/、browser-profiles/ 即 fail。
  */
@@ -183,8 +183,8 @@ function assertNoRuntimeDataFiles(label, backendRoot) {
     for (const e of entries) {
       const full = path.join(dir, e.name);
       const rel = path.relative(backendRoot, full);
-      // 白名单：prisma/dev.db 种子库
-      if (rel === path.join('prisma', 'dev.db')) continue;
+      // 白名单：prisma/seed.db 种子库
+      if (rel === path.join('prisma', 'seed.db')) continue;
       if (e.isDirectory()) {
         if (e.name === '.local-logs' || e.name === 'browser-profiles') {
           hits.push(rel); continue;
@@ -507,7 +507,7 @@ function checkPreBuildAssets() {
     ['backend SQLite bundle', path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'index.js')],
     ['backend runtime package boundary', path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'package.json')],
     ['backend SQLite Prisma schema', path.join(repoRoot, 'backend', 'prisma', 'schema.sqlite.prisma')],
-    ['backend SQLite seed database', path.join(repoRoot, 'backend', 'prisma', 'dev.db')],
+    ['backend SQLite seed database', path.join(repoRoot, 'backend', 'prisma', 'seed.db')],
     ['frontend static export', path.join(repoRoot, 'frontend', 'out', 'index.html')],
     ['frontend Next assets', path.join(repoRoot, 'frontend', 'out', '_next')],
     ['Playwright MCP CLI', path.join(repoRoot, 'backend', 'node_modules', '@playwright', 'mcp', 'cli.js')],
@@ -533,19 +533,19 @@ function checkPreBuildAssets() {
       mainJs: path.join(desktopRoot, 'main.js'),
       backendEnv: path.join(desktopRoot, 'backend.env.example'),
       backendBundle: path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'index.js'),
-      sqliteSeed: path.join(repoRoot, 'backend', 'prisma', 'dev.db'),
+      sqliteSeed: path.join(repoRoot, 'backend', 'prisma', 'seed.db'),
     },
     buildPlatform,
   );
   sourceGuard.failures.forEach(fail);
   assertBinaryFileContains(
     'backend SQLite seed schema markers',
-    path.join(repoRoot, 'backend', 'prisma', 'dev.db'),
+    path.join(repoRoot, 'backend', 'prisma', 'seed.db'),
     ['schedule_configs', 'kaypal_user_id', 'commercial_execution_allowed', 'plan_mode', 'user_sessions']
   );
   assertCleanDesktopSeedDatabase(
     'backend SQLite seed must not include a logged-in user',
-    path.join(repoRoot, 'backend', 'prisma', 'dev.db'),
+    path.join(repoRoot, 'backend', 'prisma', 'seed.db'),
   );
   assertBundledChromium(
     'bundled Playwright Chromium',
@@ -745,7 +745,7 @@ function checkPostBuildAssets() {
     ['backend runtime package boundary', path.join(distResourcesRoot, 'backend', 'package.json')],
     ['backend env', path.join(distResourcesRoot, 'backend', '.env')],
     ['backend SQLite Prisma schema', path.join(distResourcesRoot, 'backend', 'prisma', 'schema.sqlite.prisma')],
-    ['backend SQLite seed database', path.join(distResourcesRoot, 'backend', 'prisma', 'dev.db')],
+    ['backend SQLite seed database', path.join(distResourcesRoot, 'backend', 'prisma', 'seed.db')],
     ['backend Prisma migrations', path.join(distResourcesRoot, 'backend', 'prisma', 'migrations')],
     ['frontend resource', path.join(distResourcesRoot, 'frontend', 'index.html')],
     ['frontend Next assets', path.join(distResourcesRoot, 'frontend', '_next')],
@@ -791,12 +791,12 @@ function checkPostBuildAssets() {
   packagedGuard.failures.forEach(fail);
   assertBinaryFileContains(
     'packaged SQLite seed schema markers',
-    path.join(distResourcesRoot, 'backend', 'prisma', 'dev.db'),
+    path.join(distResourcesRoot, 'backend', 'prisma', 'seed.db'),
     ['schedule_configs', 'kaypal_user_id', 'commercial_execution_allowed', 'plan_mode', 'user_sessions']
   );
   assertCleanDesktopSeedDatabase(
     'packaged SQLite seed must not include a logged-in user',
-    path.join(distResourcesRoot, 'backend', 'prisma', 'dev.db'),
+    path.join(distResourcesRoot, 'backend', 'prisma', 'seed.db'),
   );
   assertNoRuntimeDataFiles(
     'packaged backend must not include local runtime data',

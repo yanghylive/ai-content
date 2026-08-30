@@ -230,7 +230,7 @@
           "schema.prisma",
           "schema.sqlite.prisma",
           "migrations/**/*",
-          "dev.db"
+          "seed.db"
         ]
       },
       {

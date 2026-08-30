@@ -78,6 +78,12 @@ async function main() {
   step("L1 vitest 前端单测（26 例）", () => {
     run(`cd ${q(front)} && npx vitest run --silent 2>&1 | tail -8`);
   });
+  // v1.1.107（复核 P1）：release-guards.test.js 是 node:test（非 jest），此前门禁
+  // L1 jest 跑不到它（jest 报 "must contain at least one test"）——25 项守卫
+  // 一度 16/25 僵尸红灯无人发现。显式纳入门禁：25/25 必须全绿。
+  step("L1 release-guards 25 项守卫（node:test）", () => {
+    run(`cd ${q(desk)} && node --test scripts/release-guards.test.js 2>&1 | tail -6`);
+  });
   step("L1 循环依赖检查", () => {
     run(`cd ${q(back)} && npm run circular:check`);
   });
