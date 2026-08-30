@@ -272,3 +272,28 @@ describe('AuthController · assertSeatAvailable（Bug 修复 2026-08-17）', () 
     await expect(c.assertSeatAvailable('t-1')).resolves.toBeUndefined();
   });
 });
+
+describe('normalizeWechatNext（微信登录回跳白名单）', () => {
+  const { normalizeWechatNext } = require('./auth.controller');
+  it('直接路径原样放行', () => {
+    expect(normalizeWechatNext('/agent')).toBe('/agent');
+    expect(normalizeWechatNext('/workbench')).toBe('/workbench');
+  });
+  it('编码一次（wechat/start → callback 实际收到形态）解码后放行', () => {
+    // v1.1.105 修复：callback 收到的 query.next 是 encodeURIComponent 过的
+    // （%2Fagent），此前直接按编码串白名单校验失败 → fallback '/' → 登录后跳错页
+    expect(normalizeWechatNext(encodeURIComponent('/agent'))).toBe('/agent');
+    expect(normalizeWechatNext('%2Fworkbench')).toBe('/workbench');
+  });
+  it('空/undefined 回落根路径', () => {
+    expect(normalizeWechatNext(undefined)).toBe('/');
+    expect(normalizeWechatNext('')).toBe('/');
+  });
+  it('恶意路径被拦截', () => {
+    expect(normalizeWechatNext('//evil.com')).toBe('/');
+    expect(normalizeWechatNext(encodeURIComponent('//evil.com'))).toBe('/');
+    expect(normalizeWechatNext('javascript:alert(1)')).toBe('/');
+    expect(normalizeWechatNext(encodeURIComponent('javascript:alert(1)'))).toBe('/');
+    expect(normalizeWechatNext('/\\evil')).toBe('/');
+  });
+});
