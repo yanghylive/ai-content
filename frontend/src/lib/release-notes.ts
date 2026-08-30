@@ -12,6 +12,16 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.106",
+    date: "2026-08-31",
+    highlights: [
+      "修复：微信登录成功后跳回原页面（此前跳到首页）",
+      "修复：悬浮球不可用问题（内置组件补齐）；悬浮球默认隐藏，后续完善后重新开放",
+      "修复：发布中心账号列表与本地浏览器账号实时同步",
+      "稳定性：旧库升级自动补字段（1.1.99 及更早版本数据库）",
+    ],
+  },
+  {
     version: "v1.1.105",
     date: "2026-08-30",
     highlights: [
@@ -317,4 +327,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.105";
+export const DESKTOP_APP_VERSION = "1.1.106";
