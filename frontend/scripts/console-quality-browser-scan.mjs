@@ -96,6 +96,17 @@ try {
       (requireSystemFooter && !result.systemFooter?.ok) ||
       (failOnWarning && result.consoleWarnings.length > 0),
   );
+  // v1.1.105（复核 P1-4 整改）：显式请求本地登录态会话（CONSOLE_SCAN_LOCAL_ACCEPTANCE_LOGIN=1）
+  // 但创建失败时不得假绿——localAcceptanceSession=false 不能作为登录态商业验收证据。
+  if (process.env.CONSOLE_SCAN_LOCAL_ACCEPTANCE_LOGIN === "1" && !localSession) {
+    failures.push({
+      route: "(login-session)",
+      error:
+        "localAcceptanceSession 创建失败（token/DB 不可用），登录态验收证据不可信，禁止以未登录态判绿",
+      consoleErrors: [],
+      requestFailures: [],
+    });
+  }
   const report = {
     name: "console-quality-browser-scan",
     scope: failOnWarning
@@ -239,8 +250,12 @@ async function scanRoute(context, route) {
         .map((element) => element.textContent?.replace(/\s+/g, " ").trim())
         .filter(Boolean);
       const footerText = footer.textContent?.replace(/\s+/g, " ").trim() || "";
+      // v1.1.105（复核 P1-4）：v3 重构后 footer 品牌文案由「智能运营系统」改为
+      // 版本号 + 更新入口（v1.1.105 · 更新于 · 检查更新 · 更新历史）。断言对齐：
+      // 版本号可读 + 更新入口齐全（比旧品牌文案断言更能代表「系统信息 footer 生效」）。
+      const versionPattern = /v?\d+\.\d+\.\d+/;
       const brandLabel = Array.from(footer.querySelectorAll("span")).find(
-        (element) => element.textContent?.trim() === "智能运营系统",
+        (element) => versionPattern.test(element.textContent || ""),
       );
       const brandLabelRect = brandLabel?.getBoundingClientRect();
       const brandLabelStyle = brandLabel
@@ -251,7 +266,7 @@ async function scanRoute(context, route) {
       );
       const brandReadable = Boolean(
         brandLabelRect &&
-          brandLabelRect.width >= 60 &&
+          brandLabelRect.width >= 30 &&
           (!brandLabelLineHeight ||
             brandLabelRect.height <= brandLabelLineHeight * 1.6),
       );
@@ -295,7 +310,7 @@ async function scanRoute(context, route) {
               };
             });
       const controlsComplete =
-        footerText.includes("智能运营系统") &&
+        versionPattern.test(footerText) &&
         footerText.includes("检查新版本可获得最新能力") &&
         buttonLabels.includes("检查更新") &&
         buttonLabels.includes("更新历史");
