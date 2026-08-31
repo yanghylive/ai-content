@@ -97,8 +97,8 @@ function sceneOf(href: string) {
   if (base.startsWith("/auto-acquisition") || base.startsWith("/growth") || base.startsWith("/intelligence") || base.startsWith("/engagement/comment-acquisition") || base.startsWith("/effects")) return "获客中心";
   if (base.startsWith("/crm") || base.startsWith("/customer") || base.startsWith("/boss-recruit") || base.startsWith("/wecom-crm")) return "客户管理";
   if (base.startsWith("/content") || base.startsWith("/materials") || base.startsWith("/distribution") || base.startsWith("/viral-analysis") || base.startsWith("/topics") || base.startsWith("/schedules") || base.startsWith("/knowledge-base") || base.startsWith("/styles")) return "内容运营";
-  if (base.startsWith("/engagement") || base.startsWith("/message") || base.startsWith("/douyin") || base.startsWith("/wechat")) return "互动中心";
-  if (base.startsWith("/tasks") || base.startsWith("/approvals") || base.startsWith("/task-evidence") || base.startsWith("/agent-workbench") || base.startsWith("/rpa-workbench") || base.startsWith("/war-room")) return "执行中心";
+  if (base.startsWith("/engagement") || base.startsWith("/message")) return "互动中心";
+  if (base.startsWith("/tasks") || base.startsWith("/approvals") || base.startsWith("/task-evidence") || base.startsWith("/agent-workbench") || base.startsWith("/war-room")) return "执行中心";
   return "我的";
 }
 
