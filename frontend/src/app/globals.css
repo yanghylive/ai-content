@@ -96,6 +96,40 @@
     --agent-cockpit-border: 256 20% 91%;
     --agent-cockpit-input: 256 20% 91%;
     --agent-cockpit-ring: 258 64% 50%;
+
+    /* ── AI员工 设计系统 · 方案 A 补全（2026-08-31，仅新增不改动） ── */
+    /* spacing 间距 8 级 */
+    --kaypal-v3-space-1: 4px;
+    --kaypal-v3-space-2: 8px;
+    --kaypal-v3-space-3: 12px;
+    --kaypal-v3-space-4: 16px;
+    --kaypal-v3-space-5: 24px;
+    --kaypal-v3-space-6: 32px;
+    --kaypal-v3-space-7: 48px;
+    --kaypal-v3-space-8: 64px;
+
+    /* shadows 阴影 5 级 + 紫色 glow（基于品牌紫 #722ed1） */
+    --kaypal-v3-shadow-1: 0 1px 2px rgba(42, 36, 56, 0.04), 0 1px 3px rgba(42, 36, 56, 0.06);
+    --kaypal-v3-shadow-2: 0 2px 4px rgba(42, 36, 56, 0.04), 0 4px 12px -2px rgba(42, 36, 56, 0.08), 0 2px 4px -1px rgba(42, 36, 56, 0.04);
+    --kaypal-v3-shadow-3: 0 4px 8px rgba(42, 36, 56, 0.06), 0 8px 24px -4px rgba(114, 46, 209, 0.12), 0 2px 6px -1px rgba(42, 36, 56, 0.04);
+    --kaypal-v3-shadow-4: 0 8px 16px rgba(42, 36, 56, 0.08), 0 16px 40px -8px rgba(42, 36, 56, 0.2), 0 4px 8px -2px rgba(42, 36, 56, 0.04);
+    --kaypal-v3-shadow-5: 0 12px 24px rgba(42, 36, 56, 0.1), 0 24px 60px -12px rgba(42, 36, 56, 0.28), 0 8px 16px -4px rgba(42, 36, 56, 0.06);
+    --kaypal-v3-glow: 0 0 0 3px rgba(114, 46, 209, 0.1), 0 2px 8px -1px rgba(114, 46, 209, 0.16), 0 4px 16px -4px rgba(114, 46, 209, 0.28);
+    --kaypal-v3-glow-sm: 0 0 0 3px rgba(114, 46, 209, 0.1), 0 1px 4px -1px rgba(114, 46, 209, 0.12);
+
+    /* gradients 渐变（基于 #722ed1 色阶） */
+    --kaypal-v3-gradient-primary: linear-gradient(135deg, #9254de 0%, #722ed1 50%, #531dab 100%);
+    --kaypal-v3-gradient-primary-soft: linear-gradient(135deg, rgba(114, 46, 209, 0.08) 0%, rgba(114, 46, 209, 0.04) 100%);
+    --kaypal-v3-gradient-card-stat: linear-gradient(135deg, rgba(114, 46, 209, 0.03) 0%, rgba(146, 84, 222, 0.06) 50%, rgba(47, 107, 216, 0.02) 100%);
+    --kaypal-v3-gradient-avatar: linear-gradient(135deg, #a87ae0 0%, #722ed1 100%);
+    --kaypal-v3-gradient-shimmer: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.12) 50%, transparent 75%);
+
+    /* motion 动效补全 */
+    --kaypal-v3-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --kaypal-v3-dur-smooth: 200ms;
+    /* button inset highlight(浅色) */
+    --kaypal-v3-btn-inset: rgba(255, 255, 255, 0.18);
+    --kaypal-v3-btn-inset-hover: rgba(255, 255, 255, 0.22);
   }
 
   /* KAYPAL v2 零学习成本改造页 · 浅色模式紫色主题覆盖（已升格为全局 :root 主色，此作用域保留为空不再覆盖） */
@@ -172,6 +206,23 @@
     --agent-cockpit-border: 254 12% 20%;
     --agent-cockpit-input: 254 12% 20%;
     --agent-cockpit-ring: 263 88% 75%;
+
+    /* AI员工 设计系统 · 暗色适配（方案 B 2026-08-31） */
+    --kaypal-v3-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.24);
+    --kaypal-v3-shadow-2: 0 2px 4px rgba(0, 0, 0, 0.24), 0 4px 12px -2px rgba(0, 0, 0, 0.32), 0 2px 4px -1px rgba(0, 0, 0, 0.16);
+    --kaypal-v3-shadow-3: 0 4px 8px rgba(0, 0, 0, 0.28), 0 8px 24px -4px rgba(114, 46, 209, 0.18), 0 2px 6px -1px rgba(0, 0, 0, 0.16);
+    --kaypal-v3-shadow-4: 0 8px 16px rgba(0, 0, 0, 0.32), 0 16px 40px -8px rgba(0, 0, 0, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.16);
+    --kaypal-v3-shadow-5: 0 12px 24px rgba(0, 0, 0, 0.36), 0 24px 60px -12px rgba(0, 0, 0, 0.48), 0 8px 16px -4px rgba(0, 0, 0, 0.2);
+    --kaypal-v3-glow: 0 0 0 3px rgba(146, 84, 222, 0.16), 0 2px 8px -1px rgba(146, 84, 222, 0.22), 0 4px 16px -4px rgba(146, 84, 222, 0.34);
+    --kaypal-v3-glow-sm: 0 0 0 3px rgba(146, 84, 222, 0.16), 0 1px 4px -1px rgba(146, 84, 222, 0.18);
+    --kaypal-v3-gradient-primary: linear-gradient(135deg, #a87ae0 0%, #9254de 50%, #722ed1 100%);
+    --kaypal-v3-gradient-primary-soft: linear-gradient(135deg, rgba(146, 84, 222, 0.14) 0%, rgba(114, 46, 209, 0.07) 100%);
+    --kaypal-v3-gradient-card-stat: linear-gradient(135deg, rgba(146, 84, 222, 0.05) 0%, rgba(114, 46, 209, 0.08) 50%, rgba(147, 184, 245, 0.03) 100%);
+    --kaypal-v3-gradient-avatar: linear-gradient(135deg, #7d57b8 0%, #9254de 100%);
+    --kaypal-v3-gradient-shimmer: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.05) 50%, transparent 75%);
+    /* button inset highlight(深色,柔和) */
+    --kaypal-v3-btn-inset: rgba(255, 255, 255, 0.08);
+    --kaypal-v3-btn-inset-hover: rgba(255, 255, 255, 0.12);
   }
 
   html {
@@ -754,7 +805,28 @@
     border: 1px solid var(--kaypal-v3-border);
     border-radius: var(--kaypal-v3-radius);
     background: var(--kaypal-v3-paper);
-    box-shadow: var(--kaypal-v3-card-shadow);
+    box-shadow: var(--kaypal-v3-shadow-1);
+    transition: border-color 180ms ease-out, box-shadow 180ms ease-out, transform 180ms ease-out;
+    position: relative;
+  }
+  .kaypal-v3-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(114, 46, 209, 0.14), transparent);
+    opacity: 0;
+    transition: opacity 180ms ease-out;
+    pointer-events: none;
+  }
+  .kaypal-v3-panel:hover {
+    border-color: rgba(114, 46, 209, 0.22);
+    box-shadow: var(--kaypal-v3-shadow-2);
+  }
+  .kaypal-v3-panel:hover::before {
+    opacity: 1;
   }
 
   .kaypal-v3-surface {
@@ -767,7 +839,7 @@
     border: 1px solid var(--kaypal-v3-border);
     border-radius: var(--kaypal-v3-radius);
     background: var(--kaypal-v3-paper);
-    box-shadow: var(--kaypal-v3-card-shadow);
+    box-shadow: var(--kaypal-v3-shadow-1);
   }
 
   .kaypal-v3-icon-tile {

@@ -81,9 +81,9 @@ const config: Config = {
                             large: "1.5rem",
                         },
                         boxShadow: {
-                            small: "var(--kaypal-v3-card-shadow)",
-                            medium: "var(--kaypal-v3-card-shadow)",
-                            large: "var(--kaypal-v3-elevated-shadow)",
+                            small: "var(--kaypal-v3-shadow-1)",
+                            medium: "var(--kaypal-v3-shadow-2)",
+                            large: "var(--kaypal-v3-shadow-3)",
                         },
                     },
                     colors: {
@@ -128,9 +128,9 @@ const config: Config = {
                             large: "1.5rem",
                         },
                         boxShadow: {
-                            small: "var(--kaypal-v3-card-shadow)",
-                            medium: "var(--kaypal-v3-card-shadow)",
-                            large: "var(--kaypal-v3-elevated-shadow)",
+                            small: "var(--kaypal-v3-shadow-1)",
+                            medium: "var(--kaypal-v3-shadow-2)",
+                            large: "var(--kaypal-v3-shadow-3)",
                         },
                     },
                     colors: {

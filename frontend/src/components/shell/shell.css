@@ -105,7 +105,8 @@ html.dark {
 .kx-rail-logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #9254de, #531dab); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(114, 46, 209, 0.3); }
 .kx-rail-item { width: 52px; border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 0; border-radius: 12px; cursor: pointer; color: var(--kx-muted); transition: all 0.18s ease; position: relative; }
 .kx-rail-item:hover { background: var(--kx-paper-soft); color: var(--kx-ink); }
-.kx-rail-item.kx-active { background: var(--kx-accent-soft); color: var(--kx-accent-ink); }
+.kx-rail-item.kx-active { background: linear-gradient(135deg, rgba(114, 46, 209, 0.12), rgba(114, 46, 209, 0.06)); color: var(--kx-accent-ink); }
+.kx-rail-item.kx-active .kx-rail-indicator { background: linear-gradient(180deg, #9254de, #531dab); box-shadow: 0 0 8px rgba(114, 46, 209, 0.45); }
 /* 选中指示条：真实元素（app-shell 用 framer-motion layoutId 驱动滑动，动效规范 2026-08-29） */
 .kx-rail-indicator { position: absolute; left: -10px; top: calc(50% - 13px); width: 3px; height: 26px; border-radius: 2px; background: var(--kx-accent, var(--kaypal-v3-accent)); pointer-events: none; }
 .kx-rail-lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
@@ -158,8 +159,8 @@ html.dark {
 .kx-todo-desc { color: var(--kx-muted); font-size: 13px; margin-top: 3px; }
 .kx-btn { border: none; border-radius: var(--kx-radius-sm); padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; font-family: inherit; }
 .kx-btn:active { transform: scale(0.96); }
-.kx-btn-primary { background: var(--kx-accent); color: #fff; box-shadow: 0 2px 8px rgba(114, 46, 209, 0.3); }
-.kx-btn-primary:hover { background: var(--kx-accent-ink); color: #fff; }
+.kx-btn-primary { background: var(--kaypal-v3-gradient-primary, var(--kx-accent)); color: #fff; box-shadow: 0 1px 2px rgba(114, 46, 209, 0.3), 0 2px 8px -2px rgba(114, 46, 209, 0.2), inset 0 1px 0 var(--kaypal-v3-btn-inset, rgba(255, 255, 255, 0.18)); }
+.kx-btn-primary:hover { background: var(--kaypal-v3-gradient-primary, var(--kx-accent-ink)); color: #fff; box-shadow: 0 2px 4px rgba(114, 46, 209, 0.35), 0 4px 16px -2px rgba(114, 46, 209, 0.3), inset 0 1px 0 var(--kaypal-v3-btn-inset-hover, rgba(255, 255, 255, 0.22)); transform: translateY(-1px); }
 .kx-btn-ghost { background: var(--kx-card); color: var(--kx-ink-soft); border: 1px solid var(--kx-border); }
 .kx-btn-ghost:hover { border-color: var(--kx-border-strong); color: var(--kx-ink); }
 

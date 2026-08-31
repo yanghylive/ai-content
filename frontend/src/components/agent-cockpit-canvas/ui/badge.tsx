@@ -33,12 +33,20 @@ function Badge({
   VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : "span";
 
+  if (asChild) {
+    return (
+      <Comp data-slot="badge" className={cn(badgeVariants({ variant }), className)} {...props} />
+    );
+  }
   return (
-    <Comp
+    <span
       data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
+      className={cn(badgeVariants({ variant }), "gap-1.5", className)}
       {...props}
-    />
+    >
+      <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-90" />
+      {props.children}
+    </span>
   );
 }
 

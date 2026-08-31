@@ -80,7 +80,7 @@ export function V2Field({
 }
 
 const inputClass =
-  "h-10 w-full rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-3 text-sm text-[var(--kaypal-v3-ink)] outline-none transition placeholder:text-[var(--kaypal-v3-muted)] focus:border-[var(--kaypal-v3-accent)] focus:ring-4 focus:ring-[var(--kaypal-v3-field-focus-ring)]";
+  "h-10 w-full rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-3 text-sm text-[var(--kaypal-v3-ink)] outline-none transition placeholder:text-[var(--kaypal-v3-muted)] hover:border-[var(--kaypal-v3-field-border-hover)] focus:border-[var(--kaypal-v3-accent)] focus:shadow-[0_0_0_3px_rgba(114,46,209,0.12),0_1px_4px_-1px_rgba(114,46,209,0.12)]";
 
 export function V2Input(
   props: React.InputHTMLAttributes<HTMLInputElement>,
@@ -128,7 +128,7 @@ export function V2PrimaryButton({
       type="button"
       {...props}
       disabled={props.disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-150 ease-out hover:bg-[var(--kaypal-v3-accent-ink)] active:scale-[0.97] disabled:opacity-60 ${props.className || ""}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(114,46,209,0.3),0_2px_8px_-2px_rgba(114,46,209,0.2),inset_0_1px_0_var(--kaypal-v3-btn-inset,rgba(255,255,255,0.18))] transition duration-150 ease-out hover:-translate-y-px hover:shadow-[0_2px_4px_rgba(114,46,209,0.35),0_4px_16px_-2px_rgba(114,46,209,0.3),inset_0_1px_0_var(--kaypal-v3-btn-inset-hover,rgba(255,255,255,0.22))] active:scale-[0.97] disabled:opacity-60 ${props.className || ""}`}
     >
       {Icon && (
         <Icon className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -149,7 +149,7 @@ export function V2GhostButton({
       type="button"
       {...props}
       disabled={props.disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition duration-150 ease-out hover:border-[var(--kaypal-v3-border-strong)] active:scale-[0.97] disabled:opacity-60 ${props.className || ""}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition duration-150 ease-out hover:border-[var(--kaypal-v3-accent-border)] hover:bg-[var(--kaypal-v3-accent-soft)] hover:text-[var(--kaypal-v3-accent-ink)] active:scale-[0.97] disabled:opacity-60 ${props.className || ""}`}
     >
       {Icon && (
         <Icon className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -207,8 +207,9 @@ export function V2StatusChip({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${toneStyles[tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${toneStyles[tone]}`}
     >
+      <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-90" />
       {children}
     </span>
   );
@@ -228,8 +229,9 @@ export function V2StatCard({
 }) {
   return (
     <div
-      className={`rounded-[var(--kaypal-v3-radius)] border p-5 ${toneStyles[tone]}`}
+      className={`relative overflow-hidden rounded-[var(--kaypal-v3-radius)] border p-5 shadow-[var(--kaypal-v3-shadow-1)] transition duration-200 hover:-translate-y-px hover:shadow-[var(--kaypal-v3-shadow-2)] ${toneStyles[tone]}`}
     >
+      <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[var(--kaypal-v3-accent)] via-[var(--kaypal-v3-accent-tint)] to-[var(--kaypal-v3-accent-border)] opacity-70" />
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-[var(--kaypal-v3-muted)]">{label}</p>
