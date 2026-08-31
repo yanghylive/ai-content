@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bot,
@@ -17,6 +17,8 @@ import {
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { growthApi, type GrowthAcquisitionRun, type GrowthHomeBlocker, type GrowthHomeResponse, type GrowthOverview } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+import { runFailureLabel, runFailureHint } from "@/lib/growth-failure";
+import { toast } from "@/lib/toast";
 
 /** T05：把页码值显示成"暂无数据/不可用"（null ≠ 0，口径铁律） */
 function displayStat(value: number | null | undefined, emptyText = "暂无数据"): string {
@@ -93,6 +95,12 @@ function RecentRunsSection({ runs }: { runs: GrowthAcquisitionRun[] }) {
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <RunStatusBadge status={run.status} />
+                {/* 2026-09-01 大王决策：失败原因人话标签，不让用户对着"失败"二字猜 */}
+                {runFailureLabel(run.failureReason) && (
+                  <span className="text-xs font-medium text-[var(--kaypal-v3-warning-ink)]">
+                    {runFailureLabel(run.failureReason)}
+                  </span>
+                )}
                 <span className="text-xs tabular-nums text-[var(--kaypal-v3-muted)]">
                   {run.contactedCount ?? 0}/{run.candidateCount ?? 0} 触达
                 </span>
@@ -269,6 +277,75 @@ export function GrowthCenter() {
 
   const homeFunnel = useMemo(() => home?.funnel, [home]);
   const homeRuns = useMemo(() => home?.recentRuns ?? [], [home]);
+
+
+  // 2026-09-01 大王决策：获客任务失败必须"系统举手"，不能靠用户自己撞见——
+  // 停留在获客中心时每 15s 轮询 home，发现新增 failed run 即 toast 人话原因。
+  // sessionStorage 去重（同一次失败只举一次手；跨会话重进页面不再复读）；
+  // 首批数据里的存量失败静默入集合，不补弹（避免每次进页面轰炸历史失败）。
+  const failureSeenRef = useRef<{
+    seeded: boolean;
+    ids: Set<string>;
+  } | null>(null);
+
+  // 挂载时恢复去重集合
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const announced = JSON.parse(
+        sessionStorage.getItem("growth-failure-toast-announced") ?? "[]",
+      ) as string[];
+      failureSeenRef.current = { seeded: false, ids: new Set(announced) };
+    } catch {
+      failureSeenRef.current = { seeded: false, ids: new Set<string>() };
+    }
+  }, []);
+
+  // 首批 runs 到达时播种存量失败（静默）；此后每轮数据仅用于发现"新增"失败
+  useEffect(() => {
+    const seen = failureSeenRef.current;
+    if (!seen || seen.seeded) return;
+    for (const run of homeRuns) {
+      if (run.status === "failed") seen.ids.add(run.id);
+    }
+    seen.seeded = true;
+    try {
+      sessionStorage.setItem(
+        "growth-failure-toast-announced",
+        JSON.stringify([...seen.ids]),
+      );
+    } catch {
+      // sessionStorage 满/隐私模式 → 去重退化为内存级，可接受
+    }
+  }, [homeRuns]);
+
+  // 轮询发现新增失败 → toast 人话原因（后台刷新不覆盖主数据，仅监控）
+  useEffect(() => {
+    const interval = window.setInterval(async () => {
+      if (document.visibilityState !== "visible") return;
+      const seen = failureSeenRef.current;
+      if (!seen || !seen.seeded) return; // 首批未播种前不判新，防历史轰炸
+      try {
+        const homeData = await growthApi.getGrowthHome("today");
+        const failedRuns = (homeData.recentRuns ?? []).filter(
+          (run) => run.status === "failed",
+        );
+        for (const run of failedRuns) {
+          if (seen.ids.has(run.id)) continue;
+          seen.ids.add(run.id);
+          const hint = runFailureHint(run);
+          toast.error(`获客任务失败：${hint ?? "原因待查明"}`, { duration: 8000 });
+        }
+        sessionStorage.setItem(
+          "growth-failure-toast-announced",
+          JSON.stringify([...seen.ids]),
+        );
+      } catch {
+        // 轮询失败静默（网络抖动不弹错，避免二次噪音）
+      }
+    }, 15_000);
+    return () => window.clearInterval(interval);
+  }, []);
   const homeBlockers = useMemo(() => home?.blockers ?? [], [home]);
 
   // 七段漏斗：candidates→selected→contacted→leads→customers→opportunities→won（/growth/home 口径）

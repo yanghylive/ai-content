@@ -61,6 +61,7 @@ import {
   XCircle,
 } from "lucide-react";
 import toast from "@/lib/toast";
+import { runFailureLabel } from "@/lib/growth-failure";
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
 import {
   growthApi,
@@ -3884,6 +3885,12 @@ function TaskDetailModal({
                         >
                           {statusLabels[run.status] || run.status}
                         </Chip>
+                        {/* 2026-09-01 大王决策：失败原因人话标签 */}
+                        {runFailureLabel(run.failureReason) ? (
+                          <Chip size="sm" variant="flat" color="warning">
+                            {runFailureLabel(run.failureReason)}
+                          </Chip>
+                        ) : null}
                         <Chip size="sm" variant="flat">
                           {runExecutionBoundaryLabel(run)}
                         </Chip>
@@ -5059,7 +5066,7 @@ function ExposurePreviewPanel({
                             <p>{runOutcomeDetail(run)}</p>
                             {run.failureReason ? (
                               <p className="mt-1 text-11 text-danger-600">
-                                原因代码：{run.failureReason}
+                                原因：{runFailureLabel(run.failureReason)}
                               </p>
                             ) : null}
                           </td>
