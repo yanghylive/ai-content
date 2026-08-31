@@ -1,0 +1,14 @@
+# ✅ L1 vitest 前端单测（26 例）
+# commit: 4cb738e8
+# 完整命令输出（未截断）：
+
+
+ RUN  v4.1.10 /Users/yanghy/Documents/New project/ai-content/frontend
+
+
+ Test Files  8 passed (8)
+      Tests  52 passed (52)
+   Start at  17:59:49
+   Duration  2.73s (transform 1.06s, setup 3.34s, import 1.44s, tests 605ms, environment 9.45s)
+
+

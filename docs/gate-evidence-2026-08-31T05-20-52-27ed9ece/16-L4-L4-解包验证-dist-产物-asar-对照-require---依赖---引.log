@@ -1,0 +1,33 @@
+# ✅ L4 解包验证 dist 产物（asar 对照 require + 依赖 + 引擎）
+# commit: 27ed9ece
+# 完整命令输出（未截断）：
+
+═══ 安装包内容完整性检查（/Users/yanghy/Documents/New project/ai-content/desktop/dist）═══
+
+（--win-only：跳过 Mac 包检查）
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) asar 含 main.js 依赖 cloud-api.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) asar 含 main.js 依赖 sqlite-empty-template.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) asar 含 main.js 依赖 credential-key-store.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) asar 含 main.js 依赖 local-bridge.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) asar 含 main.js 依赖 auto-updater.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) asar 含 main.js 依赖 workspace-tabs.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) backend 内置 sharp
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) backend 内置 detect-libc
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) backend 内置 semver
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) backend 内置 @img/sharp-darwin-arm64
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) backend 内置 @img/sharp-libvips-darwin-arm64
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) backend 内置 @img/sharp-win32-x64
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) backend 内置 @img/sharp-libvips-win32-x64
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) backend 无本地运行时数据
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) 内置 playwright chromium
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) Prisma 引擎 — query_engine-windows.dll.node
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) Prisma Windows 引擎 — query_engine-windows.dll.node
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) 不得混入 darwin 引擎（平台互斥，混入 = 交叉构建资源串包） — query_engine-windows.dll.node
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) 内置 Octop sidecar 目录
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) Octop entry.sh
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) Octop entry.bat
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) Octop venv python
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.108.exe) Octop playwright browsers
+
+✅ 安装包内容完整性全部通过
+

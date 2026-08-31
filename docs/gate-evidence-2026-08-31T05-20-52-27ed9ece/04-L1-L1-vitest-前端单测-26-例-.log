@@ -1,0 +1,22 @@
+# ✅ L1 vitest 前端单测（26 例）
+# commit: 27ed9ece
+# 完整命令输出（未截断）：
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/yanghy/Documents/New project/ai-content/frontend[39m
+
+ [32m✓[39m src/app/(dashboard)/content/workspace/workspace-initial-action.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/lib/analytics/case-events.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/lib/publish-status.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/lib/api/client.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/lib/sanitize-article-html.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m src/components/shell/tickers.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m src/components/shell/ai-assistant.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 84[2mms[22m[39m
+ [32m✓[39m src/app/(dashboard)/distribution/distribution-tasks.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 299[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m8 passed[39m[22m[90m (8)[39m
+[2m      Tests [22m [1m[32m52 passed[39m[22m[90m (52)[39m
+[2m   Start at [22m 13:23:16
+[2m   Duration [22m 2.99s[2m (transform 1.10s, setup 3.89s, import 1.72s, tests 549ms, environment 12.55s)[22m
+
+

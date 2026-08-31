@@ -1,0 +1,7 @@
+# ✅ L4 Win 包平台资产严格检查（node.exe/chrome.exe/引擎，防交叉构建假绿）
+# commit: 3d5233e8
+# 完整命令输出（未截断）：
+
+检查安装包（精确绑定）: /Users/yanghy/Documents/New project/ai-content/desktop/dist/JIUZHANG AI 内容创作平台 Setup 1.1.107.exe
+Full installer asset check passed (post, target=win-x64).
+

@@ -1,0 +1,10 @@
+# ✅ L2 desktop 商业资产（check-commercial-assets）
+# commit: 27ed9ece
+# 完整命令输出（未截断）：
+
+
+> ai-content-desktop@1.1.108 check:commercial-assets
+> node scripts/check-commercial-assets.js
+
+Desktop commercial assets check passed.
+
