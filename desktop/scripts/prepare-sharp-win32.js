@@ -39,6 +39,17 @@ const WIN32_PACKAGES = [
   { name: '@img/sharp-libvips-win32-x64', version: '1.3.2' },
 ];
 
+/**
+ * 2026-08-31（CI run 33393818145 实证）：Windows CI 上 npm 装不出 darwin 可选依赖，
+ * 打出的 win 包缺 @img/sharp-darwin-arm64 / sharp-libvips-darwin-arm64 →
+ * check-package-contents 四变体检查失败。win 构建时同样从 registry 补齐
+ * （与 sharp@0.35.3 自带 optionalDependencies 版本一致；mac 构建天然就位，no-op）。
+ */
+const DARWIN_PACKAGES = [
+  { name: '@img/sharp-darwin-arm64', version: '0.35.3' },
+  { name: '@img/sharp-libvips-darwin-arm64', version: '1.3.2' },
+];
+
 const checkOnly = process.argv.includes('--check');
 
 function registryMeta(pkg, ver) {
@@ -126,8 +137,9 @@ function ensureOne(pkg, ver) {
 
 (async () => {
   fs.mkdirSync(targetDir, { recursive: true });
+  const targets = process.platform === 'win32' ? [...WIN32_PACKAGES, ...DARWIN_PACKAGES] : WIN32_PACKAGES;
   let ok = true;
-  for (const p of WIN32_PACKAGES) {
+  for (const p of targets) {
     try {
       await ensureOne(p.name, p.version);
     } catch (e) {
@@ -136,5 +148,5 @@ function ensureOne(pkg, ver) {
     }
   }
   if (!ok) process.exit(1);
-  console.log(checkOnly ? '\n[--check] 完整性检查完成' : '\n✓ sharp Win32 原生包补齐完成');
+  console.log(checkOnly ? '\n[--check] 完整性检查完成' : '\n✓ sharp 平台原生包补齐完成');
 })();

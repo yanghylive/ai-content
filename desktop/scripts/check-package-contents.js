@@ -29,7 +29,10 @@ function run(cmd) {
 function asarList(asarPath) {
   const r = spawnSync(process.execPath, [ASAR, "list", asarPath], { encoding: "utf8" });
   if (r.status !== 0) throw new Error(`asar list 失败: ${r.stderr || r.stdout}`);
-  return r.stdout.split("\n").map((l) => l.trim()).filter(Boolean);
+  // 2026-08-31（CI run 33393818145 实证）：@electron/asar listFiles 用 path.join 拼
+  // 路径，Windows 下输出 \node_modules\... 反斜杠 → 脚本按 / 前缀比对全部落空，
+  // asar 相关检查在 win 上整齐假红（包本身是好的）。归一化成正斜杠再比对。
+  return r.stdout.split("\n").map((l) => l.trim().replace(/\\/g, "/")).filter(Boolean);
 }
 
 function mainRequires() {
@@ -154,6 +157,9 @@ function checkExtracted(label, resources, requiredImgVariants) {
   }
   const files = asarList(asarPath);
   const topFiles = files.filter((f) => !f.startsWith("/node_modules") && !f.startsWith("/assets"));
+  // 2026-08-31（CI run 33393818145）：asar 顶层清单落日志——"works on my machine"
+  // 类缺失（本机过、CI 挂）没清单就只能瞎猜，有了清单一眼定位
+  console.log(`[asar] 顶层 ${topFiles.length} 项: ${topFiles.slice(0, 40).join(" ")}`);
 
   // 1. main.js require 对照
   const reqs = mainRequires();
