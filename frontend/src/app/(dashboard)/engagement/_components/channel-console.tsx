@@ -150,10 +150,14 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
         if (current && list.some((a) => a.id === current)) return current;
         return list[0]?.id ?? null;
       });
-    } catch {
+    } catch (err: unknown) {
+      // 2026-09-01 复核自查：账号加载失败不再静默清空（空列表像"没有账号"），
+      // 原因经 loadError 上屏（复用任务列表的独立加载错误位）
+      console.error(toPublicError(err, "加载账号失败"));
+      reportLoadError(err, "平台账号列表暂时无法读取");
       setAccounts([]);
     }
-  }, [config.accountType]);
+  }, [config.accountType, reportLoadError]);
 
   /* 加载最近任务 */
   const refreshTasks = useCallback(async () => {
