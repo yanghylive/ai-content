@@ -144,11 +144,13 @@ function checkExtracted(label, resources, requiredImgVariants) {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, e.name);
       const rel = path.relative(path.join(resources, "backend"), full);
-      if (rel === path.join("prisma", "dev.db")) continue;
+      // v1.1.108（复核 P2）：白名单只放 seed.db（166 表空模板，首次启动复制用）；
+      // dev.db 及其他任何 .db 一律禁止进包（1.1.107 起 seed 模板已改名 seed.db）。
+      if (rel === path.join("prisma", "seed.db")) continue;
       if (e.isDirectory()) {
         if (e.name === ".local-logs" || e.name === "browser-profiles") forbidden.push(rel);
         else walk(full);
-      } else if (/\.(sqlite|log|wal|shm)$/i.test(e.name)) forbidden.push(rel);
+      } else if (/\.(sqlite|db|log|wal|shm)$/i.test(e.name)) forbidden.push(rel);
     }
   })(path.join(resources, "backend"));
   check(forbidden.length === 0, `${label} backend 无本地运行时数据`, forbidden.join(", ") || "");

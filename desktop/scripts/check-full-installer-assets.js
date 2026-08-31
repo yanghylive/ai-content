@@ -856,12 +856,31 @@ function checkPostBuildAssets() {
   finish();
 }
 
-if (phase === 'pre') {
-  checkPreBuildAssets();
-} else if (phase === 'post') {
-  checkPostBuildAssets();
-} else {
-  console.error(`Unknown phase: ${phase}`);
-  console.error('Use --phase=pre or --phase=post.');
-  process.exit(1);
+// v1.1.108（复核 P2）：顶层同步 try/finally 统一清理 --installer 解包临时目录——
+// checkPostBuildAssets 内部未捕获的异常（readdirSync 等）也会走这里，不留泄漏。
+let phaseExitCode = 0;
+try {
+  if (phase === 'pre') {
+    checkPreBuildAssets();
+  } else if (phase === 'post') {
+    checkPostBuildAssets();
+  } else {
+    console.error(`Unknown phase: ${phase}`);
+    console.error('Use --phase=pre or --phase=post.');
+    phaseExitCode = 1;
+  }
+} catch (error) {
+  console.error(`Uncaught error during ${phase} phase:`, error.message);
+  failed = true;
+  phaseExitCode = 1;
+} finally {
+  if (installerTempRoot) {
+    try {
+      fs.rmSync(installerTempRoot, { recursive: true, force: true });
+    } catch (cleanupError) {
+      console.warn(`- 临时目录清理失败（不覆盖检查结果）: ${cleanupError.message}`);
+    }
+    installerTempRoot = null;
+  }
 }
+if (phaseExitCode !== 0) process.exit(phaseExitCode);

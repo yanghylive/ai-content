@@ -15,13 +15,15 @@
  *
  * 前置：3010/3011 已起（launchd），/tmp/electron-test-token.txt 为有效登录 token。
  */
-import { execSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { execSync, execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
+let commitShort = "";
+try { commitShort = execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).trim(); } catch { commitShort = "unknown"; }
 const argv = process.argv.slice(2);
 const skipBuild = argv.includes("--skip-build");
 const only = argv.find((a) => a.startsWith("--only"))?.split("=")[1] || "all";
@@ -38,13 +40,23 @@ function step(name, fn) {
   steps.push({ name, fn });
 }
 
+// v1.1.108（复核 P1-B）：每步完整输出捕获，供证据文件归档（不丢原始日志）
+let lastRunLog = "";
 function run(cmd, opts = {}) {
   const base = { stdio: "pipe", shell: "/bin/zsh", encoding: "utf8", env: { ...process.env, ...envClean } };
   // P1（P5 门禁 2026-08-22）：启用 pipefail——不加的话 `cmd | tail` 管道里
   // 上游测试/构建失败会被 tail 的成功退出码掩盖，导致门禁误报通过。
   // 显式 `|| true` 的步骤（有意容忍失败）不受影响。
-  const child = execSync(`set -o pipefail; ${cmd}`, { ...base, ...opts });
-  return child;
+  // v1.1.108（复核 P1-B）：去掉调用侧 `| tail` 后 execSync 捕获**完整**输出，
+  // 屏幕摘要由 main 循环控制；失败仍 throw（step 判红），完整输出进证据文件。
+  try {
+    const out = execSync(`set -o pipefail; ${cmd}`, { ...base, ...opts });
+    lastRunLog = String(out);
+    return String(out);
+  } catch (error) {
+    lastRunLog = `${error.stdout || ""}\n${error.stderr || ""}\n[exit ${error.status ?? 1}]`;
+    throw error;
+  }
 }
 
 const q = (p) => `'${p}'`;
@@ -73,16 +85,16 @@ async function main() {
     // 重新生成为 sqlite 版（schema.sqlite.prisma），jest 的 gateway spec 初始化
     // PrismaModule 时需要 PG 版 client——bundle build 之后跑 jest 必挂
     //（SQLITE_DATABASE_URL 缺失）。jest 前先恢复 PG client。
-    run(`cd ${q(back)} && ./node_modules/.bin/prisma generate 2>&1 | tail -2 && npm test -- --runInBand --silent 2>&1 | tail -8`);
+    run(`cd ${q(back)} && ./node_modules/.bin/prisma generate && npm test -- --runInBand --silent`);
   });
   step("L1 vitest 前端单测（26 例）", () => {
-    run(`cd ${q(front)} && npx vitest run --silent 2>&1 | tail -8`);
+    run(`cd ${q(front)} && npx vitest run --silent`);
   });
   // v1.1.107（复核 P1）：release-guards.test.js 是 node:test（非 jest），此前门禁
   // L1 jest 跑不到它（jest 报 "must contain at least one test"）——25 项守卫
   // 一度 16/25 僵尸红灯无人发现。显式纳入门禁：25/25 必须全绿。
   step("L1 release-guards 25 项守卫（node:test）", () => {
-    run(`cd ${q(desk)} && node --test scripts/release-guards.test.js 2>&1 | tail -6`);
+    run(`cd ${q(desk)} && node --test scripts/release-guards.test.js`);
   });
   step("L1 循环依赖检查", () => {
     run(`cd ${q(back)} && npm run circular:check`);
@@ -91,38 +103,38 @@ async function main() {
   /* ── L2 构建 + 守卫 ─────────────────────────────── */
   step("L2 前端生产构建（NEXT_PUBLIC_API_BASE=/api）", () => {
     if (skipBuild) return;
-    run(`cd ${q(front)} && echo 'NEXT_PUBLIC_API_BASE=/api' > .env.local && ./node_modules/.bin/next build 2>&1 | tail -4`);
+    run(`cd ${q(front)} && echo 'NEXT_PUBLIC_API_BASE=/api' > .env.local && ./node_modules/.bin/next build`);
   });
   step("L2 后端 bundle（sqlite）", () => {
     if (skipBuild) return;
-    run(`cd ${q(back)} && npm run build:bundle:sqlite 2>&1 | tail -2`);
+    run(`cd ${q(back)} && npm run build:bundle:sqlite`);
   });
   step("L2 前端产物无 _next/image 残留（桌面端图标 404 坑）", () => {
     const out = run(`grep -rc "_next/image" ${front}/out/ 2>/dev/null | grep -v ":0" | head -3 || true`).trim();
     if (out) throw new Error(`产物仍含 _next/image 引用:\n${out}`);
   });
   step("L2 desktop 版本号一致性（version-sync）", () => {
-    run(`cd ${q(desk)} && node scripts/check-version-sync.js 2>&1 | tail -3`);
+    run(`cd ${q(desk)} && node scripts/check-version-sync.js`);
   });
   step("L2 desktop 商业资产（check-commercial-assets）", () => {
-    run(`cd ${q(desk)} && npm run check:commercial-assets 2>&1 | tail -3`);
+    run(`cd ${q(desk)} && npm run check:commercial-assets`);
   });
 
   /* ── L3 真实功能（需 3010/3011 起服务）───────────── */
   step("L3 防复发守卫 R1-R4", () => {
-    run(`cd ${q(repoRoot)} && REGRESSION_FRONTEND_URL=${frontendUrl} node --experimental-sqlite scripts/ci/mobile-regression-guard.mjs 2>&1 | tail -6`);
+    run(`cd ${q(repoRoot)} && REGRESSION_FRONTEND_URL=${frontendUrl} node --experimental-sqlite scripts/ci/mobile-regression-guard.mjs`);
   });
   step("L3 Mac 包全功能 18 项", () => {
-    run(`cd ${q(repoRoot)} && node mac-app-test.mjs 2>&1 | tail -4`);
+    run(`cd ${q(repoRoot)} && node mac-app-test.mjs`);
   });
   step("L3 发版核心 9 项（遮罩/简报卡/价值）", () => {
-    run(`node scripts/ci/pre-release-core-verify.mjs 2>&1 | tail -6`);
+    run(`node scripts/ci/pre-release-core-verify.mjs`);
   });
   step("L3 带登录态全路由扫描（149 路由）", () => {
     const token = existsSync(tok) ? readFileSync(tok, "utf8").trim() : "";
     // v1.1.105（复核 P1-4）：路由扫描必须带本地登录态会话 + footer 硬断言——
     // localAcceptanceSession=false 的扫描不能作为登录态商业验收证据。
-    run(`cd ${q(front)} && CONSOLE_SCAN_LOCAL_ACCEPTANCE_LOGIN=1 CONSOLE_SCAN_REQUIRE_SYSTEM_FOOTER=1 CONSOLE_SCAN_SESSION_TOKEN=${token} CONSOLE_SCAN_FRONTEND_URL=${frontendUrl} node scripts/console-quality-browser-scan.mjs 2>&1 | tail -8`);
+    run(`cd ${q(front)} && CONSOLE_SCAN_LOCAL_ACCEPTANCE_LOGIN=1 CONSOLE_SCAN_REQUIRE_SYSTEM_FOOTER=1 CONSOLE_SCAN_SESSION_TOKEN=${token} CONSOLE_SCAN_FRONTEND_URL=${frontendUrl} node scripts/console-quality-browser-scan.mjs`);
   });
 
   /* ── L4 安装包内容完整性（替代 VM 的关键层）──────── */
@@ -145,7 +157,7 @@ async function main() {
   })();
   step("L4 解包验证 dist 产物（asar 对照 require + 依赖 + 引擎）", () => {
     const extra = process.platform === "darwin" ? " --win-only" : "";
-    run(`cd ${q(desk)} && node scripts/check-package-contents.js --dir ${q(distDir)}${extra} 2>&1 | tail -12`);
+    run(`cd ${q(desk)} && node scripts/check-package-contents.js --dir ${q(distDir)}${extra}`);
   });
   // v1.1.102（复核 P0 整改）：L4 原 check-package-contents 只查目录存在不查平台
   // 可执行文件，导致 mac 资源混入 Win 包"15/15 假绿"。补严格平台资产检查：
@@ -156,24 +168,37 @@ async function main() {
       return;
     }
     const installerRel = path.join(distDir, latestWinInstaller);
-    run(`cd ${q(desk)} && BUILD_PLATFORM=win-x64 node scripts/check-full-installer-assets.js --phase=post --installer=${q(installerRel)} 2>&1 | tail -12`);
+    run(`cd ${q(desk)} && BUILD_PLATFORM=win-x64 node scripts/check-full-installer-assets.js --phase=post --installer=${q(installerRel)}`);
   });
 
   /* ── 执行 ───────────────────────────────────────── */
+  // v1.1.108（复核 P1-B）：门禁每步完整日志归档（不能只留 tail 摘要）。
+  const evidenceDir = path.join(
+    repoRoot,
+    "docs",
+    `gate-evidence-${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}-${commitShort}`,
+  );
+  mkdirSync(evidenceDir, { recursive: true });
   for (const s of steps) {
     const level = s.name.split(" ")[0];
     if (only !== "all" && level !== only) continue;
     process.stdout.write(`\n▶ ${s.name} ... `);
     const t0 = Date.now();
+    const logPath = path.join(
+      evidenceDir,
+      `${String(results.length + 1).padStart(2, "0")}-${level}-${s.name.replace(/[^\w\u4e00-\u9fa5]/g, "-").slice(0, 40)}.log`,
+    );
     try {
       s.fn();
-      results.push({ name: s.name, ok: true, ms: Date.now() - t0 });
+      results.push({ name: s.name, ok: true, ms: Date.now() - t0, log: logPath });
       console.log(`✅ (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
+      writeFileSync(logPath, `# ✅ ${s.name}\n# commit: ${commitShort}\n# 完整命令输出（未截断）：\n\n${lastRunLog || "(无输出)"}\n`);
     } catch (e) {
       const msg = String(e.message || e).split("\n").slice(-6).join("\n");
-      results.push({ name: s.name, ok: false, ms: Date.now() - t0, err: msg });
+      results.push({ name: s.name, ok: false, ms: Date.now() - t0, err: msg, log: logPath });
       console.log(`❌ (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
       console.log(`   ${msg}`);
+      writeFileSync(logPath, `# ❌ ${s.name}\n# commit: ${commitShort}\n# 完整命令输出（未截断）：\n\n${lastRunLog || "(无输出)"}\n`);
     }
   }
 

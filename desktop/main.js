@@ -1693,33 +1693,34 @@ function healCorruptedDesktopDatabase(reason) {
   if (!databasePath || !fs.existsSync(databasePath)) return false;
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   try {
-    const backupPath = `${databasePath}.corrupt-${stamp}`;
-    fs.renameSync(databasePath, backupPath);
-    // 连带 sidecar 一起移走，避免残留 WAL 再次污染重建后的新库。
-    // v1.1.102：rename 失败不再静默吞掉——失败会留下旧 sidecar 污染新库，
-    // 必须记录并视为自愈不完整（返回 false 让崩溃链路继续上报）。
-    let sidecarFailure = null;
+    // v1.1.108（复核 P1）：**先移 sidecar 再移主库**——旧实现先 rename 主库，
+    // sidecar（WAL/SHM）rename 失败后返回 false，但主库已被移走：重启时
+    // ensureDesktopSqliteDatabase 会复制 seed.db 到缺失路径，旧 WAL 仍在原位，
+    // 打开新库时同名 WAL 被加载 → 污染。现在：sidecar 全部 rename 成功后才动
+    // 主库；任一 sidecar 失败则回滚已移走的 sidecar、主库保持原样，阻断重建。
+    const movedSidecars = [];
     for (const suffix of ['-wal', '-shm']) {
       const sidecar = `${databasePath}${suffix}`;
       if (fs.existsSync(sidecar)) {
         try {
           fs.renameSync(sidecar, `${sidecar}.corrupt-${stamp}`);
+          movedSidecars.push(sidecar);
         } catch (error) {
-          sidecarFailure = `${suffix}: ${error.message}`;
-          console.error('[Backend] AutoHeal sidecar rename failed:', sidecarFailure);
-          appendRuntimeLog('backend-launch.log', `[AutoHeal] sidecar rename FAILED (${sidecarFailure}) — rebuilt DB may be polluted by stale WAL`);
+          // 回滚已移走的 sidecar（尽量恢复原状），主库不动
+          for (const moved of movedSidecars) {
+            try {
+              fs.renameSync(`${moved}.corrupt-${stamp}`, moved);
+            } catch { /* 回滚失败仅记录 */ }
+          }
+          console.error(`[Backend] AutoHeal sidecar rename failed (${suffix}): ${error.message}; rolled back ${movedSidecars.length} sidecar(s), main DB untouched`);
+          appendRuntimeLog('backend-launch.log', `[AutoHeal] BLOCKED: sidecar rename failed (${suffix}) — main DB kept, no rebuild (stale WAL would pollute new DB)`);
+          return false;
         }
       }
     }
-    // v1.1.107（复核 P1 数据安全）：sidecar（WAL/SHM）rename 失败 = 残留 WAL 仍
-    // 存在——重建的新库会被残留 WAL 污染（SQLite 打开新库时会加载同名 WAL）。
-    // 此时**不得重建**：明确返回 false 阻断，让崩溃链路继续上报 + 走重启循环，
-    // 而不是把「带污染的假重建」当作自愈成功继续跑。
-    if (sidecarFailure) {
-      console.error('[Backend] AutoHeal blocked: sidecar rename failed, refusing to rebuild over stale WAL');
-      appendRuntimeLog('backend-launch.log', `[AutoHeal] BLOCKED: sidecar rename failed (${sidecarFailure}) — refusing to rebuild (stale WAL would pollute new DB)`);
-      return false;
-    }
+    // sidecar 全部安全移走 → 再移主库
+    const backupPath = `${databasePath}.corrupt-${stamp}`;
+    fs.renameSync(databasePath, backupPath);
     fs.mkdirSync(path.dirname(databasePath), { recursive: true });
     createEmptySqliteDatabase(databasePath);
     const msg = `[AutoHeal] SQLite database corrupted (reason: ${reason}); backed up to ${backupPath}, recreated from scratch, backend will restart`;

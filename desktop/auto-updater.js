@@ -18,6 +18,9 @@ let mainWindow = null;
 let updateCheckInterval = null;
 let isManualCheck = false;
 let updateDownloaded = false;
+// v1.1.108（复核 P1）：记录「已下载的版本」，供跳过语义精确匹配（下载完成先于
+// 取消时，quitAndInstall 靠它拒绝安装被跳过的版本）。
+let downloadedVersion = null;
 let updatesConfigured = false;
 let onStateChange = null;
 let broadcastToRenderer = null;
@@ -134,6 +137,7 @@ function setupAutoUpdater(win, hooks = {}) {
   autoUpdater.on('update-downloaded', (info) => {
     flog('[AutoUpdater] Update downloaded:', info.version);
     updateDownloaded = true;
+    downloadedVersion = info.version;
 
     if (mainWindow) {
       mainWindow.setProgressBar(-1);
@@ -225,6 +229,13 @@ function checkForUpdates(manual = false) {
 }
 
 function quitAndInstall() {
+  // v1.1.108（复核 P1）：跳过版本即使已下载完也不安装（下载完成先于取消的竞态）
+  if (downloadedVersion && store.get('skippedVersion') === downloadedVersion) {
+    flog(`[AutoUpdater] Skipping install of ${downloadedVersion} (user skipped this version)`);
+    updateDownloaded = false;
+    downloadedVersion = null;
+    return;
+  }
   if (!updateDownloaded) {
     flog('[AutoUpdater] WARN: quitAndInstall called but no update downloaded');
     if (mainWindow) {
@@ -350,17 +361,21 @@ function startUpdateDownload(mode = 'manual') {
   return downloadUpdate();
 }
 
-function skipUpdate(version) {
+async function skipUpdate(version) {
   if (!version) return;
   store.set('skippedVersion', version);
-  // v1.1.107（复核 P1/P2）：autoDownload=false 后下载由 update-available 显式
-  // 启动——用户点跳过时若下载已在进行，必须取消（否则跳过版本仍被下载完，
-  // autoInstallOnAppQuit 在退出时仍会安装）。
+  // v1.1.107/1.1.108（复核 P1/P2）：autoDownload=false 后下载由 update-available
+  // 显式启动——用户点跳过时若下载已在进行必须取消；1.1.108 起等待取消完成并
+  // 清除已下载状态（下载完成先于取消时 quitAndInstall 靠 downloadedVersion +
+  // skippedVersion 精确匹配拒绝安装）。
   try {
-    autoUpdater.cancelDownload();
+    const pending = autoUpdater.cancelDownload();
+    if (pending && typeof pending.then === 'function') await pending;
   } catch (error) {
     flog('[AutoUpdater] cancelDownload failed:', error.message);
   }
+  updateDownloaded = false;
+  downloadedVersion = null;
   console.log(`[AutoUpdater] User skipped version ${version}`);
 }
 
