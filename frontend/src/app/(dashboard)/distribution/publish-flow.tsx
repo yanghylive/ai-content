@@ -166,6 +166,23 @@ export function PublishFlow({ contentKind = "article" }: { contentKind?: "articl
         if (materialData.status === "fulfilled") {
           setMaterials(Array.isArray(materialData.value) ? materialData.value : []);
         }
+        // 2026-09-01 复核回改（allSettled 同类自查）：rejected 不进 catch，
+        // 基础数据加载失败原样静默（文章/账号/素材列表为空像"没数据"）
+        const sourceNames = ["文章", "平台账号", "素材"];
+        const failedNames = [articleData, accountData, materialData]
+          .map((r, i) => (r.status === "rejected" ? sourceNames[i] : null))
+          .filter((n): n is string => n !== null);
+        if (failedNames.length > 0) {
+          [articleData, accountData, materialData].forEach((r) => {
+            if (r.status === "rejected") console.error(r.reason);
+          });
+          setError(
+            toPublicError(
+              "部分基础数据加载失败",
+              `部分基础数据加载失败（${failedNames.join("、")}），请刷新重试`,
+            ),
+          );
+        }
       } finally {
         setLoading(false);
       }

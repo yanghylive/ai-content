@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getEffects, getFunnel, type EffectReport, type FunnelReport } from "@/lib/api/reporting";
+import { toPublicError } from "@/lib/public-error";
 import { shareText, copyText } from "@/lib/mobile-bridge";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 
@@ -41,6 +42,8 @@ export default function EffectsPage() {
   const [range, setRange] = useState<"7d" | "30d">("7d");
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
+  // 加载失败独立状态（2026-09-01 复核回改）：msg 是绿色成功样式，错误不能用
+  const [errMsg, setErrMsg] = useState("");
 
   const refresh = useCallback(async (r: "7d" | "30d") => {
     setLoading(true);
@@ -51,8 +54,21 @@ export default function EffectsPage() {
       ]);
       if (data.status === "fulfilled") setReport(data.value);
       if (funnelData.status === "fulfilled") setFunnel(funnelData.value);
+      // 2026-09-01 复核回改（allSettled 同类自查）：rejected 不进 catch；
+      // 原 catch 把"加载失败"也写进绿色成功样式的 msg，一并修正
+      const rejected = [data, funnelData].filter(
+        (r): r is PromiseRejectedResult => r.status === "rejected",
+      );
+      if (rejected.length > 0) {
+        for (const r of rejected) console.error(r.reason);
+        setErrMsg(
+          toPublicError(rejected[0].reason, "效果数据暂时无法读取，请刷新重试"),
+        );
+      } else {
+        setErrMsg("");
+      }
     } catch {
-      setMsg("加载失败，请稍后重试");
+      setErrMsg("加载失败，请稍后重试");
     } finally {
       setLoading(false);
     }
@@ -178,6 +194,9 @@ export default function EffectsPage() {
 
       {msg ? (
         <div style={{ marginBottom: 10, fontSize: 12, color: "var(--kaypal-v3-success)", textAlign: "center" }}>{msg}</div>
+      ) : null}
+      {errMsg ? (
+        <div role="alert" style={{ marginBottom: 10, fontSize: 12, color: "var(--kaypal-v3-danger)", textAlign: "center" }}>{errMsg}</div>
       ) : null}
 
       {loading ? (

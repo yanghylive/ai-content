@@ -37,6 +37,7 @@ import {
   type CrmWelcomeMessagePreparation,
 } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { useCdpSessionStatus } from "../../workbench/use-cdp-session-status";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
@@ -103,6 +104,8 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
 
   // 消息
   const [error, setError] = useState<string | null>(null);
+  // 任务列表加载失败独立状态（2026-09-01 复核回改，不与操作 error 混用）
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -163,12 +166,14 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
         }
         return tasks[0] || null;
       });
+      clearLoadError();
     } catch (err: unknown) {
-      // 2026-09-01 审计修复：加载失败不再静默（原只 console），写进既有 error 展示位
+      // 2026-09-01 Codex 复核回改：任务加载失败改走独立 loadError——error 是
+      // 多操作共享状态，任务成功时清 error 会误伤建任务/确认的操作错误
       console.error(toPublicError(err, "加载任务失败"));
-      setError(toPublicError(err, "任务列表暂时无法读取，请刷新重试"));
+      reportLoadError(err, "任务列表暂时无法读取，请刷新重试");
     }
-  }, [config.businessRoute]);
+  }, [config.businessRoute, reportLoadError, clearLoadError]);
 
   useEffect(() => {
     setLoading(true);
@@ -407,6 +412,11 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
               <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
+          {loadError && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>任务列表加载失败：{loadError}</p>
+            </div>
+          )}
 
           {/* 第 1 步：选账号 */}
           <div className="mx-section-head" style={{ marginTop: 14 }}>第 1 步：用哪个账号？</div>
@@ -603,6 +613,9 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
           <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
         </div>
+      )}
+      {loadError && (
+        <LoadErrorBanner message={loadError} onRetry={() => void refreshTasks()} />
       )}
 
       {/* 第 1 步：选账号 */}
