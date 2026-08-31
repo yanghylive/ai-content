@@ -1,0 +1,12 @@
+# ✅ L1 循环依赖检查
+# commit: 5c456f16
+# 完整命令输出（未截断）：
+
+
+> ai-content-backend@0.0.1 circular:check
+> madge --circular --extensions ts --ts-config tsconfig.json src
+
+Processed 893 files (7.6s) 
+
+
+

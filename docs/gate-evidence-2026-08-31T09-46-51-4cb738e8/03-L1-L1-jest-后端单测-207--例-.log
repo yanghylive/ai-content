@@ -1,0 +1,385 @@
+# ✅ L1 jest 后端单测（207+ 例）
+# commit: 4cb738e8
+# 完整命令输出（未截断）：
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 388ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+
+> ai-content-backend@0.0.1 test
+> jest --runInBand --silent
+
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:08 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33mRPA 状态机记录创建失败（kuaishou）：this.rpaExecutionStore.createWithLock is not a function[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:08 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33m增长获客 RPA 执行留痕失败（run=run-rpa-1）：db down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:08 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33mRPA 状态机记录创建失败（kuaishou）：db down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:08 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33m[tryFetchCandidatesWithRpaDriver] 会话关闭失败 platform=kuaishou account=douyin-1：browser process gone[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:08 PM [32m    LOG[39m [38;5;3m[GrowthService] [39m[32m本次获客走 driver 真实状态机（record=rpa-state-9），跳过合成 RPA 记录（run=run-x）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:08 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33m[executeFollowUpViaDriver] 会话关闭失败 platform=kuaishou account=douyin-1：close session timeout[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:10 PM [32m    LOG[39m [38;5;3m[GrowthService] [39m[32m[fetchCommentUsersAsLeads] kuaishou 读评论成功 url=https://www.kuaishou.com/short-video/1 items=2[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:10 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33m[fetchCommentUsersAsLeads] 会话关闭失败 platform=kuaishou account=douyin-1：close session timeout[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:10 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33m增长线索桥接统一侧分段失败（lead=lead-1）：interaction_event,scoring[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:12 PM [32m    LOG[39m [38;5;3m[GrowthService] [39m[32m[fetchCommentUsersAsLeads] kuaishou 读评论成功 url=https://www.kuaishou.com/short-video/v1 items=1[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:14 PM [32m    LOG[39m [38;5;3m[GrowthService] [39m[32m[fetchCommentUsersAsLeads] kuaishou 读评论成功 url=https://www.kuaishou.com/short-video/v1 items=2[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:16 PM [32m    LOG[39m [38;5;3m[GrowthService] [39m[32m[fetchCommentUsersAsLeads] kuaishou 读评论成功 url=https://www.kuaishou.com/short-video/v2 items=2[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:16 PM [32m    LOG[39m [38;5;3m[GrowthService] [39m[32m本次获客走 driver 真实状态机（record=driver-record-1），跳过合成 RPA 记录（run=run-2）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:16 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33mgetGrowthHome overview 不可用：store down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:16 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33mgetGrowthHome open opportunity amount 不可用：db down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:16 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33mgetGrowthHome crmCustomer count 不可用：db down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:16 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33mgetGrowthHome crmOpportunity count 不可用：db down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:16 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33mgetGrowthHome won opportunity count 不可用：db down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:16 PM [33m   WARN[39m [38;5;3m[GrowthService] [39m[33mgetGrowthHome commercial readiness 不可用：readiness down[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 3db3d802-c2a6-4a59-bdb9-b5874d8402a4 域名白名单=example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 a2f6ae70-77f6-4fce-86db-8642811586a5 域名白名单=b.com,c.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 5a94e04a-1795-44d7-a3df-7adb5ae6f807 域名白名单=example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 5a94e04a-1795-44d7-a3df-7adb5ae6f807 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 e320cc45-8334-4550-8deb-c7b3f9b87994 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 357c3d00-4b55-488b-9998-fe6fe493edce 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 619654a1-d6a3-4e0a-b005-ba3171dc4629 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 619654a1-d6a3-4e0a-b005-ba3171dc4629 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 b54740e0-b1ea-4d02-81d7-79045f7a8b12 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 1267eabc-954b-4560-93d9-e178a3524772 域名白名单=example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 1267eabc-954b-4560-93d9-e178a3524772 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 1267eabc-954b-4560-93d9-e178a3524772 完成：1 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 2266fd75-4766-447c-ad71-f4ed229182ea 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 2266fd75-4766-447c-ad71-f4ed229182ea 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 2266fd75-4766-447c-ad71-f4ed229182ea 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 bb0b5db0-90b6-4cca-ab95-190ed6af35f0 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 ce680495-aca4-452b-9cf1-64507cc7bd60 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 1e6a5a13-3d7d-4495-8db0-ff3d7f9dfd70 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 123bc720-e0ff-4c68-8306-3f5b90e7203c 域名白名单=example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 123bc720-e0ff-4c68-8306-3f5b90e7203c 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 123bc720-e0ff-4c68-8306-3f5b90e7203c 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 3d946cbd-340b-49b4-ac0d-574c89044f0c 域名白名单=example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 3d946cbd-340b-49b4-ac0d-574c89044f0c 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 8b836437-d304-4ad1-8a60-758440860079 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 8b836437-d304-4ad1-8a60-758440860079 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 7bf0cc7a-f392-4fff-bb19-1d52dbe11f8c 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 7bf0cc7a-f392-4fff-bb19-1d52dbe11f8c 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 7bf0cc7a-f392-4fff-bb19-1d52dbe11f8c 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 ab66a4be-e73b-430b-881d-b6bbcdf5fe01 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 ab66a4be-e73b-430b-881d-b6bbcdf5fe01 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 82288648-dca1-47b8-9826-d452a5d45d04 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 df5edac4-f601-4c42-9349-ad07d9a4d6cf 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 803ed917-6d51-48e1-b096-c97ad6f14425 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 4b0bb67d-4e92-42e2-9b9e-7d2cf3909682 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 52d39666-c6d3-4360-aade-08b82b8db419 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 52d39666-c6d3-4360-aade-08b82b8db419 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 52d39666-c6d3-4360-aade-08b82b8db419 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 c9667a8e-8e89-4aa6-a1c4-01330901413e 域名白名单=example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 c9667a8e-8e89-4aa6-a1c4-01330901413e 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser c9667a8e-8e89-4aa6-a1c4-01330901413e 完成：2 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 3cbfcd52-3487-4de7-afd1-262069463356 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 2c1adb83-7bc9-4ce0-9763-f0be39d2f8f1 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 2c1adb83-7bc9-4ce0-9763-f0be39d2f8f1 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 2c1adb83-7bc9-4ce0-9763-f0be39d2f8f1 完成：1 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 1921c840-0064-4f8c-b86d-9cad605acbb4 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 1921c840-0064-4f8c-b86d-9cad605acbb4 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 1921c840-0064-4f8c-b86d-9cad605acbb4 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 f95fc75c-c38b-4225-8260-a2eead82e139 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 f95fc75c-c38b-4225-8260-a2eead82e139 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser f95fc75c-c38b-4225-8260-a2eead82e139 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 d30e22eb-7b91-4f0e-81d1-f6a5e6f5bc7f 域名白名单=a.com,b.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 d30e22eb-7b91-4f0e-81d1-f6a5e6f5bc7f 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:22 PM [33m   WARN[39m [38;5;3m[AgentBrowserLoopService] [39m[33mAgentBrowser 动作 goto 第 1 次失败，重试：navigation_failed[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:23 PM [33m   WARN[39m [38;5;3m[AgentBrowserLoopService] [39m[33mAgentBrowser 动作 goto 第 2 次失败，重试：navigation_failed[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:23 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser d30e22eb-7b91-4f0e-81d1-f6a5e6f5bc7f 完成：2 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:23 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 a43bcdca-829b-4b87-abd0-55aa7d20adca 域名白名单=a.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:23 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 a43bcdca-829b-4b87-abd0-55aa7d20adca 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:23 PM [33m   WARN[39m [38;5;3m[AgentBrowserLoopService] [39m[33mAgentBrowser 动作 goto 第 1 次失败，重试：navigation_failed[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:23 PM [33m   WARN[39m [38;5;3m[AgentBrowserLoopService] [39m[33mAgentBrowser 动作 goto 第 2 次失败，重试：navigation_failed[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser a43bcdca-829b-4b87-abd0-55aa7d20adca 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 decf686e-22b7-4f73-ae51-02ddb71c9ce1 域名白名单=a.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 decf686e-22b7-4f73-ae51-02ddb71c9ce1 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 10f47d2c-9a36-4960-8206-582bcdceb3c8 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 5c81b349-0bf4-4b0e-aa0a-081ba9f1a72f 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 5c81b349-0bf4-4b0e-aa0a-081ba9f1a72f 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 5c81b349-0bf4-4b0e-aa0a-081ba9f1a72f 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 eff2bf37-25ab-400c-bf08-5f6eb3088692 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 80d93d60-6a9b-4059-bd76-2c097eaf58e8 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgent Browser 会话已从磁盘恢复 5 个（paused/needs-human/partial_success 保留可恢复，其余置 stopped）[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 s-paused 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 6c5edc75-964b-458b-8e1b-b16069a94a75 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 6c5edc75-964b-458b-8e1b-b16069a94a75 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 c3886968-40dc-49bf-a259-924312cfa291 域名白名单=a.com,b.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 c3886968-40dc-49bf-a259-924312cfa291 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser c3886968-40dc-49bf-a259-924312cfa291 导航至 https://b.com，基于新快照重新决策（1 个新动作）[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser c3886968-40dc-49bf-a259-924312cfa291 完成：2 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 27fbe375-2ce4-42cc-908e-55d05d1c08dc 域名白名单=a.com,b.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 27fbe375-2ce4-42cc-908e-55d05d1c08dc 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 27fbe375-2ce4-42cc-908e-55d05d1c08dc 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 92c3fd2b-cb46-407f-b157-3a375845309d 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 92c3fd2b-cb46-407f-b157-3a375845309d 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 a4655b11-6230-444b-9f32-683019c87182 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 a4655b11-6230-444b-9f32-683019c87182 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser a4655b11-6230-444b-9f32-683019c87182 完成：1 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser a4655b11-6230-444b-9f32-683019c87182 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 b04f6efd-e69e-4cfd-a5f2-ecd4ab7191d4 域名白名单=(未配置,导航需确认)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 b04f6efd-e69e-4cfd-a5f2-ecd4ab7191d4 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [33m   WARN[39m [38;5;3m[AgentBrowserLoopService] [39m[33mAgentBrowser 动作 click 第 1 次失败，重试：元素不可点击[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:24 PM [33m   WARN[39m [38;5;3m[AgentBrowserLoopService] [39m[33mAgentBrowser 动作 click 第 2 次失败，重试：元素不可点击[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser b04f6efd-e69e-4cfd-a5f2-ecd4ab7191d4 完成：1 个动作，0 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 a98c1d02-8327-44e6-aa2a-d4194840f61d 域名白名单=a.com,b.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 a98c1d02-8327-44e6-aa2a-d4194840f61d 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser a98c1d02-8327-44e6-aa2a-d4194840f61d 完成：1 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 2b70399d-c244-4660-9947-ea760ab02f5f 域名白名单=a.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 2b70399d-c244-4660-9947-ea760ab02f5f 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 2b70399d-c244-4660-9947-ea760ab02f5f 完成：2 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 fe84ee6f-8a4f-43d4-8fe9-03c600318e89 域名白名单=a.com,b.com,c.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 fe84ee6f-8a4f-43d4-8fe9-03c600318e89 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [33m   WARN[39m [38;5;3m[AgentBrowserLoopService] [39m[33mAgentBrowser 动作 goto 第 1 次失败，重试：导航失败[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [33m   WARN[39m [38;5;3m[AgentBrowserLoopService] [39m[33mAgentBrowser 动作 goto 第 2 次失败，重试：导航失败[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser fe84ee6f-8a4f-43d4-8fe9-03c600318e89 完成：3 个动作，2 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 92c806da-6234-4673-98f4-a4413bf2645b 域名白名单=a.com,b.com,c.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 92c806da-6234-4673-98f4-a4413bf2645b 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 92c806da-6234-4673-98f4-a4413bf2645b resume：从动作 1/3 续跑（已成功 2 个，跳过不重放）[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 92c806da-6234-4673-98f4-a4413bf2645b 完成：3 个动作，2 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 d563f5e9-e0aa-4cec-b1e9-70f37c176a81 域名白名单=a.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 d563f5e9-e0aa-4cec-b1e9-70f37c176a81 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser d563f5e9-e0aa-4cec-b1e9-70f37c176a81 完成：1 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 52d23974-95fe-48b0-875b-c0e32643dd46 域名白名单=a.com,b.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 52d23974-95fe-48b0-875b-c0e32643dd46 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 52d23974-95fe-48b0-875b-c0e32643dd46 resume：从动作 1/2 续跑（已成功 0 个，跳过不重放）[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 52d23974-95fe-48b0-875b-c0e32643dd46 完成：2 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 5a961107-56d0-4caa-aafa-b3b5d73c75eb 域名白名单=a.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 5a961107-56d0-4caa-aafa-b3b5d73c75eb 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserLoopService] [39m[32mAgentBrowser 5a961107-56d0-4caa-aafa-b3b5d73c75eb 完成：1 个动作，1 成功[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话创建 808a24ee-603e-457b-84d5-17298d3ae32d 域名白名单=a.com[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:25 PM [32m    LOG[39m [38;5;3m[AgentBrowserSessionService] [39m[32mAgentBrowser 会话 808a24ee-603e-457b-84d5-17298d3ae32d 引擎就绪 general-web-abc 当前页 https://example.com[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:26 PM [33m   WARN[39m [38;5;3m[AutoUploadClient] [39m[33m登录页 goto 失败: target=https://creator.xiaohongshu.com/login, landed=about:blank, attempt=0, error=page.goto: net::ERR_CONNECTION_CLOSED[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:26 PM [32m    LOG[39m [38;5;3m[AutoUploadClient] [39m[32m登录页 goto 成功: target=https://creator.xiaohongshu.com/login, landed=about:blank, attempt=1[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:26 PM [33m   WARN[39m [38;5;3m[AutoUploadClient] [39m[33m登录页 goto 后仍不在目标域（current=about:blank, target=https://creator.xiaohongshu.com/login），启用 JS 导航兜底[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:26 PM [33m   WARN[39m [38;5;3m[AutoUploadClient] [39m[33mJS 导航兜底失败: page.evaluate is not a function[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:26 PM [32m    LOG[39m [38;5;3m[AutoUploadClient] [39m[32mJS 导航兜底后 URL: about:blank[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:29 PM [32m    LOG[39m [38;5;3m[AutoUploadClient] [39m[32m已从桌面 runtime 库恢复 1 个发布账号[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:29 PM [32m    LOG[39m [38;5;3m[AutoUploadClient] [39m[32m已从桌面 runtime 库恢复 1 个发布账号[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:29 PM [33m   WARN[39m [38;5;3m[AutoUploadClient] [39m[33mvalidate: 浏览器验证超时，保持原状态 wechat-channel:4[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:29 PM [33m   WARN[39m [38;5;3m[AutoUploadClient] [39m[33mvalidate: 会话状态 unknown 非明确失效，保持原状态 douyin:1[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:29 PM [33m   WARN[39m [38;5;3m[AutoUploadClient] [39m[33mpublishBatch 平台执行失败（短路，继续其他平台）: platform=视频号 browser crash[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [33m   WARN[39m [38;5;3m[ArticlesService] [39m[33mHTML 初稿疑似截断，尝试基于同一轮上下文续写补全。原因：HTML 结尾缺少闭合标签，疑似被截断[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [32m    LOG[39m [38;5;3m[ArticlesService] [39m[32mHTML 截断内容已通过续写补全恢复完整[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [33m   WARN[39m [38;5;3m[ArticlesService] [39m[33mHTML 初稿疑似截断，尝试基于同一轮上下文续写补全。原因：HTML 结尾缺少闭合标签，疑似被截断[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [33m   WARN[39m [38;5;3m[ArticlesService] [39m[33mHTML 续写补全后仍未通过校验：HTML 结尾缺少闭合标签，疑似被截断[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [33m   WARN[39m [38;5;3m[ArticlesService] [39m[33mHTML 文章生成第 1 次校验未通过：HTML 结尾缺少闭合标签，疑似被截断[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [32m    LOG[39m [38;5;3m[ArticlesService] [39m[32m选题「OpenClaw 龙虾爆火」嗅探到 1 处图片插图，准备启动混合配图管线...[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [32m    LOG[39m [38;5;3m[ArticlesService] [39m[32m选题「OpenClaw 龙虾爆火」开始独立生成 AI 封面图...[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [32m    LOG[39m [38;5;3m[ArticlesService] [39m[32m选题「OpenClaw 龙虾爆火」独立封面生成成功[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [33m   WARN[39m [38;5;3m[ArticlesService] [39m[33m小红书 JSON 解析失败，尝试容错提取: Unexpected token '标', "标题：商业验收卡片
+"... is not valid JSON[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:37 PM [33m   WARN[39m [38;5;3m[ArticlesService] [39m[33m小红书 JSON 容错提取失败，已启用兜底卡片骨架[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [33m   WARN[39m [38;5;3m[AiEmployeeService] [39m[33mAI employee auto acquisition scheduler is configured but not armed. Set GROWTH_EXECUTION_ENABLED=true and GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED=true to allow unattended real execution.[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing reserved: record=aar_mth21oof_dedb2e, amount=30[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing charged: record=aar_mth21oof_dedb2e, amount=17[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing reserved: record=aar_mth21oom_6782f2, amount=30[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing charged: record=aar_mth21oom_6782f2, amount=17[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing reserved: record=aar_mth21oos_3053c2, amount=30[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing charged: record=aar_mth21oos_3053c2, amount=17[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing reserved: record=aar_mth21oov_c04ce4, amount=30[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing charged: record=aar_mth21oov_c04ce4, amount=17[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing reserved: record=aar_mth21ooz_ff433a, amount=30[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing charged: record=aar_mth21ooz_ff433a, amount=17[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing reserved: record=aar_mth21op2_276119, amount=30[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:40 PM [32m    LOG[39m [38;5;3m[AiEmployeeService] [39m[32mAuto acquisition cloud billing charged: record=aar_mth21op2_276119, amount=17[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [33m   WARN[39m [38;5;3m[AiAssistantService] [39m[33mfollow_up 幂等跳过：草稿 d1 已存在跟进任务，不重复创建[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat-moments-publish session=moments-session[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mRunning wechat-moments-publish skill: target=朋友圈明细 1 mode=approval[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat-contact-add session=contact-session[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat-moments-marketing session=marketing-session[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat-contact-add session=contact-limit-session[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat.group.broadcast session=group-session[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mRunning wechat-auto-reply group skill: target=客户A mode=auto-send[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mRunning wechat-auto-reply group skill: target=客户B mode=auto-send[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat.group.broadcast session=personalized-group-session[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mRunning wechat-auto-reply group skill: target=客户甲 mode=auto-send[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mRunning wechat-auto-reply group skill: target=客户乙 mode=auto-send[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat.group.broadcast session=commercial-guard-session[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat.group.broadcast session=native-group-broadcast[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat.friend.accept session=native-friend-accept[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat.session.auto_reply session=customer-no-reply[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat.group.broadcast session=group-account-mismatch[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S local SkillHub route accepted: skill=wechat.group.broadcast session=group-account-unreadable[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mRunning wechat-auto-reply group skill: target=客户A mode=auto-send[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S RedFox SkillHub route accepted: skill=missing-trending-hub-test session=redfox-blocked-session[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S RedFox SkillHub route accepted: skill=unit-test-redfox-skill session=redfox-install-session[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:42 PM [32m    LOG[39m [38;5;3m[AgentSService] [39m[32mAgent-S RedFox SkillHub route accepted: skill=trending-hub session=redfox-run-session[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:44 PM [33m   WARN[39m [38;5;3m[VoiceService] [39m[33mKAYPAL voice ASR billing failed: Kaypal 地址非法，仅允许 kaypal.cn 及其子域，实际: kaypal.cn.evil.com[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=orch-1 platform=wechat-desktop type=wechat-reply-draft[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=task-1 platform=wechat-desktop type=wechat-reply-draft[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=publish-1 platform=douyin type=platform-publish-image-text[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=face-swap-1 platform=mixed type=video-face-swap[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=face-swap-no-price platform=mixed type=video-face-swap[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [33m   WARN[39m [38;5;3m[RuntimeOrchestrator] [39m[33mRuntime billing reserve blocked task=face-swap-no-price type=video-face-swap: 视频换脸缺少服务端计费金额，已拒绝真实执行。[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=task-1 platform=douyin type=platform-publish-video[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [33m   WARN[39m [38;5;3m[RuntimeOrchestrator] [39m[33mRuntime billing reserve blocked task=task-1 type=platform-publish-video: 真实执行扣积分需要当前账号接通 Kaypal 云端授权，或后端配置 KAYPAL_API_KEY/KAYPAL_AI_PROXY_API_KEY 后再执行。[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=contact-add-1 platform=wechat-desktop type=wechat-contact-add[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=contact-add-1 platform=wechat-desktop type=wechat-contact-add[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=publish-server-key-1 platform=douyin type=platform-publish-image-text[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=publish-fallback-1 platform=douyin type=platform-publish-video[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=publish-refresh-fallback-1 platform=douyin type=platform-publish-image-text[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [33m   WARN[39m [38;5;3m[RuntimeOrchestrator] [39m[33mRuntime billing desktop token refresh failed, falling back to server billing key: refresh_token 无效或已过期[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [33m   WARN[39m [38;5;3m[RuntimeOrchestrator] [39m[33mRuntime billing desktop token refresh failed, falling back to server billing key: refresh_token 无效或已过期[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=task-1 platform=wechat-desktop type=wechat-reply-draft[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:45 PM [95m  DEBUG[39m [38;5;3m[RuntimeOrchestrator] [39m[95mRuntimeOrchestrator.execute: task=task-1 platform=wechat-desktop type=wechat-reply-draft[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:47 PM [33m   WARN[39m [38;5;3m[BrowserControlService] [39m[33mlistCdpSessions failed for douyin/1: cdp query failed[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:47 PM [32m    LOG[39m [38;5;3m[VideoService] [39m[32mproductCut: 扫地机器人 segments=5[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[RedfoxClientService] [39m[33mRedFox GET /story/web/api/doc/platforms failed: REDFOX_API_KEY_REQUIRED 情报数据服务尚未配置，请到「设置」添加数据源后使用。[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[RedfoxClientService] [39m[33mRedFox POST /story/api/dyData/searchArticle succeeded but billing failed: 积分余额不足，请充值或调整任务消耗后再试。[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[RedfoxClientService] [39m[33mRedFox POST /story/api/dyData/searchArticle failed: INSUFFICIENT_CREDITS 积分余额不足，请充值或调整任务消耗后再试。[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[RpaController] [39m[33m回复评论会话关闭失败：close session timeout（platform=kuaishou, account=ks-1）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[RpaController] [39m[33m[openDriverSession] kuaishou/ks-1 preflight 阻断：account_busy（reason=）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[RpaController] [39m[33m[openDriverSession] kuaishou/ks-1 preflight 阻断：browser_not_ready（reason=）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[RpaController] [39m[33m[openDriverSession] kuaishou/ks-1 preflight 阻断：page_not_interactive（reason=）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[DouyinExposureCollector] [39m[33m视觉兜底跳过：AiClientService 未注入[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[DouyinExposureCollector] [39m[33m视觉兜底跳过：AiClientService 未注入[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:49 PM [33m   WARN[39m [38;5;3m[DouyinExposureCollector] [39m[33m视觉兜底跳过：AiClientService 未注入[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [32m    LOG[39m [38;5;3m[TaskQueueProcessor] [39m[32m[queue] picked up 1 queued task(s)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [32m    LOG[39m [38;5;3m[TaskQueueProcessor] [39m[32mdispatch task=task-1 type=douyin-comment-reply accountId=undefined sendMode=auto-send[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [32m    LOG[39m [38;5;3m[TaskQueueProcessor] [39m[32mdispatch done task=task-1 ok=true message=[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [32m    LOG[39m [38;5;3m[TaskQueueProcessor] [39m[32mTaskQueueProcessor started (tick=60000ms, mock=false, processExisting=false)[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [32m    LOG[39m [38;5;3m[TaskQueueProcessor] [39m[32mTaskQueueProcessor started (tick=60000ms, mock=false, processExisting=false)[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [33m   WARN[39m [38;5;3m[RedfoxClientService] [39m[33mRedFox GET /story/web/api/doc/platforms failed: REDFOX_API_KEY_REQUIRED 情报数据服务尚未配置，请到「设置」添加数据源后使用。[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [33m   WARN[39m [38;5;3m[McpController] [39m[33m[mcp-auth] 拒绝请求：token 不匹配 (remote=192.168.1.10)[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [33m   WARN[39m [38;5;3m[McpController] [39m[33m[mcp-auth] 拒绝请求：token 不匹配 (remote=192.168.1.10)[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [33m   WARN[39m [38;5;3m[McpController] [39m[33m[mcp-auth] 拒绝请求：KAYPAL_MCP_TOKEN 未配置 (remote=192.168.1.10)[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [33m   WARN[39m [38;5;3m[McpController] [39m[33m[mcp-auth] 拒绝请求：过渡期旧 token 已过期 (remote=192.168.1.10)[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [33m   WARN[39m [38;5;3m[McpController] [39m[33m[mcp-rate] 限流触发 (remote=10.0.0.5, count=301/60000ms)[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [33m   WARN[39m [38;5;3m[McpController] [39m[33m[mcp-cap] 只读 token 尝试调用敏感工具 browser_click，已拒绝[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:50 PM [33m   WARN[39m [38;5;3m[McpController] [39m[33m[mcp-auth] 拒绝请求：token 不匹配 (remote=192.168.1.10)[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:51 PM [33m   WARN[39m [38;5;3m[ExecutorRouter] [39m[33mNo executor for task test-task-1 (douyin-comment-reply/douyin); reasons: local-runtime: P1 骨架阶段[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:51 PM [95m  DEBUG[39m [38;5;3m[ExecutorRouter] [39m[95mRouting task test-task-1 (douyin-comment-reply/wechat-desktop) to executor agent-s[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:51 PM [95m  DEBUG[39m [38;5;3m[ExecutorRouter] [39m[95mRouting task test-task-1 (douyin-comment-reply/douyin) to executor local-runtime[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:51 PM [95m  DEBUG[39m [38;5;3m[ExecutorRouter] [39m[95mRouting task test-task-1 (douyin-comment-reply/mixed) to executor agent-s[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:51 PM [95m  DEBUG[39m [38;5;3m[ExecutorRouter] [39m[95mRouting task test-task-1 (douyin-comment-reply/douyin) to executor local-runtime[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:51 PM [95m  DEBUG[39m [38;5;3m[ExecutorRouter] [39m[95mRouting task test-task-1 (douyin-comment-reply/wechat-desktop) to executor agent-s[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [33m   WARN[39m [38;5;3m[LocalBrowserEngine] [39m[33m会话 wechat-channel-4 CDP 连接不兼容，改用 Playwright persistent context：browserType.connectOverCDP: Protocol error (Browser.setDownloadBehavior): Browser context management is not supported.[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[LocalBrowserEngine] [39m[32m会话 wechat-channel-4 已有更新的持久 Chrome cookie store，跳过旧 storageState 注入[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[LocalBrowserEngine] [39m[32m会话 wechat-channel-4 加载登录 cookies: 1[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[LocalBrowserEngine] [39m[32m启动持久浏览器会话 douyin-4: profile=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/local-browser-engine-B3eLdf/profiles/douyin-4, visible=true[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[LocalBrowserEngine] [39m[32m启动持久浏览器会话 wechat-channel-4: profile=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/local-browser-engine-cWlHRC/profiles/wechat-channel-4, visible=true[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[LocalBrowserEngine] [39m[32m启动持久浏览器会话 wechat-channel-4: profile=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/local-browser-engine-baLC82/profiles/wechat-channel-4, visible=true[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[DurablePublishWorker] [39m[32mClaimed durable task #42 (db=runtime-1).[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[DurablePublishWorker] [39m[32mClaimed durable task #42 (db=runtime-1).[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[DurablePublishWorker] [39m[32mClaimed durable task #42 (db=runtime-1).[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[SchedulesService] [39m[32mCronJob for collect_materials added and started with expression 0 * * * *[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[SchedulesService] [39m[32mCronJob for collect_materials stopped and removed[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [33m   WARN[39m [38;5;3m[SchedulesService] [39m[33mSchedule startup initialization skipped: Timed out fetching a new connection from the connection pool[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[SchedulesService] [39m[32mCronJob for collect_materials added and started with expression 0 * * * *[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[SchedulesService] [39m[32mCronJob for collect_materials stopped and removed[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [32m    LOG[39m [38;5;3m[SchedulesService] [39m[32mExecuting automated article generation batch...[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:52 PM [33m   WARN[39m [38;5;3m[SchedulesService] [39m[33m定时文章任务已生成 2 篇草稿；旧无人值守发布入口已停用，未向任何平台提交。请在发布中心完成服务端一次性确认后发布。[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [32m    LOG[39m [38;5;3m[PlatformInteractionExecutor] [39m[32mlocal-browser dispatch douyin/comment-reply account=1 action=send url=https://www.douyin.com/video/123[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [32m    LOG[39m [38;5;3m[PlatformInteractionExecutor] [39m[32mlocal-browser dispatch douyin/comment-reply account=1 action=send url=https://creator.douyin.com/creator-micro/interactive/comment[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [32m    LOG[39m [38;5;3m[PlatformInteractionExecutor] [39m[32mlocal-browser dispatch douyin/comment-reply account=1 action=send url=https://www.douyin.com/video/123[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [32m    LOG[39m [38;5;3m[PlatformInteractionExecutor] [39m[32m[trace][douyin-reply] target={"status":"target_found","replyRect":{"x":214,"y":966,"width":44,"height":20},"rootRect":{"x":217,"y":884,"width":917,"height":106}}[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [32m    LOG[39m [38;5;3m[PlatformInteractionExecutor] [39m[32m[trace][douyin-reply] replyOpened={"opened":false,"method":"mouse"}[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [32m    LOG[39m [38;5;3m[PlatformInteractionExecutor] [39m[32m[trace][douyin-reply] editor={"status":"editor_found","rect":{"x":217,"y":1000,"width":600,"height":44}}[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [32m    LOG[39m [38;5;3m[PlatformInteractionExecutor] [39m[32m[trace][douyin-reply] sendButton={"status":"send_button_ready","message":"回复已输入，发送按钮可点击。","rect":{"x":860,"y":1006,"width":52,"height":28}}[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [33m   WARN[39m [38;5;3m[LocalRuntimeEngineClient] [39m[33mLocal interaction engine health check failed: browser profile locked[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [33m   WARN[39m [38;5;3m[LocalRuntimeEngineClient] [39m[33mLocal interaction engine health check failed: browser profile locked[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:53 PM [33m   WARN[39m [38;5;3m[LocalRuntimeEngineClient] [39m[33mpostJson(/interaction/douyin/comments/send) 已废弃 — platform service 应直接用 LocalBrowserEngine[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:54 PM [32m    LOG[39m [38;5;3m[MaterialsService] [39m[32m已执行 1 个本地采集任务（成功 1，失败 0）[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:54 PM [32m    LOG[39m [38;5;3m[MaterialsService] [39m[32m已执行 1 个本地采集任务（成功 1，失败 0）[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:54 PM [95m  DEBUG[39m [38;5;3m[AiClientService] [39m[95mKaypal 代理模型由服务器扣积分: text_generation, model=qwen3.6-plus[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:54 PM [32m    LOG[39m [38;5;3m[AiClientService] [39m[32m调用 AI 模型: Abortable model (abortable-model)[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[TopicMiningService] [39m[33m选题种子分析云端模型不可用，改用本地规则：云端扣积分失败: Unauthorized[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[TopicMiningService] [39m[33m智能挖题云端模型不可用，改用本地规则：云端扣积分失败: Unauthorized[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[TopicMiningService] [39m[33m选题种子分析云端模型不可用，改用本地规则：AI 服务暂时不可用：402 INSUFFICIENT_CREDITS[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[TopicMiningService] [39m[33m智能挖题云端模型不可用，改用本地规则：AI 服务暂时不可用：402 INSUFFICIENT_CREDITS[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[TopicMiningService] [39m[33m选题种子分析云端模型不可用，改用本地规则：Kaypal 模型台服务端授权未放行，请确认 test.kaypal.cn 已部署 billing/AI proxy 服务端 key 配置。[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[TopicMiningService] [39m[33m智能挖题云端模型不可用，改用本地规则：Kaypal 模型台服务端授权未放行，请确认 test.kaypal.cn 已部署 billing/AI proxy 服务端 key 配置。[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[WechatPlanSchedulerService] [39m[33mWechat plan wechat-plan-1 has no tenant scope; skipped.[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[OutboxRelayService] [39m[33mdomain outbox 无消费者，事件 e1（lead.created）保留 published（后续同 type 不再告警）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[OutboxRelayService] [39m[33mdomain outbox 无消费者，事件 e1（lead.created）保留 published（后续同 type 不再告警）[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[OutboxRelayService] [39m[32mCRM outbox 补偿：补写 1 条缺失的 convert_crm 事件[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mImported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-cbmmVo/legacy-auto-upload/cookiesFile/wechat-account.json[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mImported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-feOehC/legacy-auto-upload/cookiesFile/mixed.json[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mImported legacy browser profile for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-NuxKKh/legacy-auto-upload/browser-profiles/interaction/wechat-channel/4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-NuxKKh/profiles/wechat-channel-4[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mImported legacy browser profile for douyin-4: /private/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-3MUdHj/backend/data/browser-profiles/douyin-4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-3MUdHj/profiles/douyin-4[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mImported legacy account cookies for douyin-4: /private/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-EslhnR/backend/data/cookiesFile/douyin-account.json[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mImported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-3oiyO5/legacy-auto-upload/cookiesFile/wechat-account.json[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mCreated profile directory: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-KcIHWX/profiles/wechat-channel-4[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mImported legacy browser profile for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-KcIHWX/legacy-auto-upload/browser-profiles/interaction/wechat-channel/4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-KcIHWX/profiles/wechat-channel-4[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mCreated profile directory: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-weZpd9/profiles/wechat-channel-4[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mImported legacy browser profile for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-weZpd9/legacy-auto-upload/browser-profiles/interaction/wechat-channel/4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-weZpd9/profiles/wechat-channel-4[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [32m    LOG[39m [38;5;3m[CdpBrowserProfileService] [39m[32mImported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-weZpd9/legacy-auto-upload/cookiesFile/wechat-account.json[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[ShortLinkService] [39m[33m短链 abc123 目标非法（协议/主机校验未通过），拒绝跳转[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:55 PM [33m   WARN[39m [38;5;3m[ShortLinkService] [39m[33m短链 abc123 openCount 自增失败（不影响跳转）：db unavailable[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[ArticleScraperService] [39m[32mScraping article from: https://example.com/article/123[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[ArticleScraperService] [39m[32mScraping article from: https://example.com/missing[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[MaiUiService] [39m[32mMAI-UI 规划成功: 1 个候选动作（cmsvis0001visionkaypalvl）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [33m   WARN[39m [38;5;3m[MaiUiService] [39m[33mMAI-UI 视觉模型缺失且缺少 KAYPAL_AI_PROXY_BASE_URL/API_KEY（无法懒创建，保持 404）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [33m   WARN[39m [38;5;3m[MaiUiService] [39m[33mMAI-UI 视觉模型缺失且缺少 KAYPAL_AI_PROXY_BASE_URL/API_KEY（无法懒创建，保持 404）[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[MaiUiService] [39m[32mMAI-UI 视觉模型已懒创建（kaypal-vision @ https://kaypal.cn/api/ai）[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[MaiUiService] [39m[32mMAI-UI 规划成功: 1 个候选动作（kaypal-vision）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [33m   WARN[39m [38;5;3m[MaiUiService] [39m[33mMAI-UI 剔除 1 个非法动作：未知动作类型：evaluate_js[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[MaiUiService] [39m[32mMAI-UI 规划成功: 2 个候选动作（kaypal-vision）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [33m   WARN[39m [38;5;3m[MaiUiService] [39m[33mMAI-UI 剔除 1 个非法动作：bounds 超出截图范围（500×740）：[10, 10, 9999, 9999][39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[MaiUiService] [39m[32mMAI-UI 规划成功: 1 个候选动作（kaypal-vision）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [33m   WARN[39m [38;5;3m[MaiUiService] [39m[33mMAI-UI 剔除 1 个非法动作：动作数 25 超过上限 20，仅取前 20 个[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[MaiUiService] [39m[32mMAI-UI 规划成功: 20 个候选动作（kaypal-vision）[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[LinkHealthCheckService] [39m[32m链接健康检查完成：checked=2, changed=1[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[LinkHealthCheckService] [39m[32m链接健康检查完成：checked=1, changed=1[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[LinkHealthCheckService] [39m[32m链接健康检查完成：checked=1, changed=1[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[LinkHealthCheckService] [39m[32m链接健康检查完成：checked=1, changed=1[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [32m    LOG[39m [38;5;3m[LinkHealthCheckService] [39m[32m链接健康检查完成：checked=1, changed=1[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [33m   WARN[39m [38;5;3m[RemoteImagePreprocessor] [39m[33mImage download error for https://nonexistent.example.invalid/image.jpg: network down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:56 PM [33m   WARN[39m [38;5;3m[RemoteImagePreprocessor] [39m[33mImage download error for https://example.com/image.jpg: network down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:57 PM [33m   WARN[39m [38;5;3m[KaypalModelSyncService] [39m[33mKaypal admin model status unavailable, falling back to chat models: Kaypal 模型台状态读取失败：Forbidden[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:57 PM [33m   WARN[39m [38;5;3m[KaypalModelSyncService] [39m[33mKaypal admin model status unavailable, falling back to chat models: Kaypal 模型台状态读取失败：Forbidden[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:57 PM [33m   WARN[39m [38;5;3m[KaypalModelSyncService] [39m[33mKaypal chat model list unavailable: Kaypal 普通模型列表读取失败：Unauthorized[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:57 PM [33m   WARN[39m [38;5;3m[KaypalModelSyncService] [39m[33mKaypal model list unavailable; using configured fallback model.[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:57 PM [33m   WARN[39m [38;5;3m[GrowthLeadBridgeService] [39m[33m桥接 InteractionEvent 失败（lead=lead-1）：db down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:57 PM [33m   WARN[39m [38;5;3m[GrowthLeadBridgeService] [39m[33m接入统一评分失败（lead=lead-1）：score fail[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:58 PM [33m   WARN[39m [38;5;3m[VoiceTtsService] [39m[33mKAYPAL TTS failed: upstream down[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:58 PM [33m   WARN[39m [38;5;3m[VoiceAsrService] [39m[33mKAYPAL ASR failed: bad key[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:58 PM [32m    LOG[39m [38;5;3m[WechatPayService] [39m[32m微信支付成功：wx-2 充值 334 积分（金额 1000 分）[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:58 PM [33m   WARN[39m [38;5;3m[WechatPayService] [39m[33m微信回调缺少可验资源（apiV3Key=false ciphertext=false），拒绝充值 wx-3[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:47:58 PM [33m   WARN[39m [38;5;3m[WechatPayService] [39m[33m微信回调金额不符：订单 1000 vs 回调 999，拒绝 wx-4[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:58 PM [95m  DEBUG[39m [38;5;3m[CloudApiService] [39m[95mGenerating reply for douyin comment[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:58 PM [95m  DEBUG[39m [38;5;3m[CloudApiService] [39m[95mGenerating reply for douyin comment[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:47:58 PM [95m  DEBUG[39m [38;5;3m[CloudApiService] [39m[95mGenerating reply for douyin comment[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:59 PM [32m    LOG[39m [38;5;3m[CaseAdminService] [39m[32m[cache-invalidate] showcase case case-1 status changed, public cache should be invalidated[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:47:59 PM [32m    LOG[39m [38;5;3m[CaseAdminService] [39m[32m[cache-invalidate] showcase case case-1 status changed, public cache should be invalidated[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [33m   WARN[39m [38;5;3m[EntitlementsService] [39m[33mentitlement snapshot 写入失败: db down[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-0[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-1[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-2[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-3[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-4[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-5[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-6[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-7[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-8[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-9[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-10[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-11[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-12[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-13[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-14[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-15[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-16[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-17[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-18[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: err-19[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m错误上报超出单 IP 限流，已丢弃[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: fresh-ip[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:00 PM [95m  DEBUG[39m [38;5;3m[ErrorReportController] [39m[95m前端错误已代理上报: forwarded[39m
+[33m[Nest] 59638  - [39m08/31/2026, 5:48:01 PM [33m   WARN[39m [38;5;3m[ContentAssetVersioningService] [39m[33m资产版本记录失败: table missing[39m
+[33m[Nest] 59638  - [39m03/11/2026, 6:00:00 PM [33m   WARN[39m [38;5;3m[TopicsService] [39m[33m检测到选题「stale-scored-topic」在 generating 状态停留超过 30 分钟，已自动回收为 completed[39m
+[33m[Nest] 59638  - [39m03/11/2026, 6:00:00 PM [33m   WARN[39m [38;5;3m[TopicsService] [39m[33m检测到选题「stale-article-topic」在 generating 状态停留超过 30 分钟，已自动回收为 completed / published[39m
+[32m[Nest] 59638  - [39m08/31/2026, 5:48:01 PM [32m    LOG[39m [38;5;3m[CaseEventsService] [39m[32m{"name":"case_open","props":{"case_id":"case_1"},"receivedAt":"2026-08-31T09:48:01.803Z"}[39m
+[95m[Nest] 59638  - [39m08/31/2026, 5:48:02 PM [95m  DEBUG[39m [38;5;3m[ActivationService] [39m[95mactivation 记录跳过: first_lead (user-1)[39m
+
