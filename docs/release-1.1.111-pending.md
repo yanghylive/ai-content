@@ -13,7 +13,8 @@
 | `ai_models.platform_id` NULL 回填 | `4a4d1a73` | 旧库（1.1.103- platform_id 可空时代）遗留 NULL 行 → Prisma include 崩 → 模型同步降级。启动时自动回填 Kaypal 模型台 / 删孤儿行。实测通过 | 是（backend） |
 
 **可能追加的候选**（发版前确认）：
-- CI 收尾（mac CI Build artifacts 失败点定位、`skip_upload` 开关）——见 `docs/ai-content-CI发布门禁与修复-交接-20260831.md`
+- ~~CI 收尾（mac CI Build artifacts 失败点定位、`skip_upload` 开关）~~ → **✅ 全部完成（2026-08-31）**：skip_upload 已落地（`89d4bb21`）；CI 连修 6 个本机假绿缺口后 **run 33400106127 双平台全绿**（明细见 `docs/ai-content-CI发布门禁与修复-交接-20260831.md` §四终版表格）。**1.1.111 可走 CI 全自动发版**：升版本号 → push tag v1.1.111（tag 触发 = 商用发布，KAYPAL 生产域 env 已内置）→ CI build + upload + verify:remote 双通道门禁
+- **获客任务验证码误判修复（2026-08-31 20:05 线上实锤）**：抖音滑块验证页文案「请完成下列验证后继续」未命中旧验证码正则 → 被误判 `platform_changed`/`unknown`（历史 16 次同款误报）。修复：①exposure-collector 三处验证码正则补真实变体 + 可行动文案（内置浏览器手动过验证 + 拉大间隔）；②growth-acquisition-tasks 执行记录行补显示 run.message（此前失败原因完全没露出）；③spec 用现场文案锁死回归（douyin 67 用例全绿 + 前后端 tsc 0）。注意：修的是**识别与提示**，验证码本身仍需人工处理，属预期
 - P2：Cloud API 死接口已移除，若有残留观察项
 
 ---

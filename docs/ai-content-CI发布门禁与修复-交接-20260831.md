@@ -38,9 +38,19 @@
 
 ## 四、未完成 / 待办（按优先级）
 
-1. **【待定位】mac CI Build artifacts 仍有失败**：第三次 CI 验证（run 33374468124）里 mac job：octop venv ✅ → octop sidecar ✅ → Build artifacts ❌（electron-builder 阶段新失败点，EEXIST 已修仍失败）。**日志当时拉不下来**（`gh run view --log` 返回空），接手后重新触发一次（用 §七的命令）拉 `--log --job=<mac-job-id>` 定位。本机同配置打包是过的 → 是 CI 环境差异。
-2. **【建议】给 workflow 加 `skip_upload` 输入**（workflow_dispatch 可选）——**验证与发布分离**。教训：本线程用"发布 workflow"当验证工具触发，若全绿会把**未升版本号**的产物推上线覆盖 1.1.108（违反"修复后必升版本号"铁律），run 已 cancel 止损。以后验证 CI 一律 `skip_upload=true`。
-3. **【待大王定】CI 修复是否随下一版发布自然验证**：extraResources 合并产物功能等价，不强制发版；下次正式发版（升 1.1.109）走 CI 时自然验证。
+> **2026-08-31 晚终版更新（二狗）**：1、2 两项收尾完成。EEXIST 根因修复 `e5297c8c` 晚于失败 run（非环境差异）；随后 CI 上连环挖出并修复 6 个"本机假绿"缺口，**skip_upload 验证 run 33400106127 双平台全绿**：
+>
+> | # | 缺口 | 根因 | 修复 commit |
+> |---|---|---|---|
+> | 1 | runtime/generated（release-config + backend.env）从未进构建链 | 本机靠 8/30 手动跑过的残留（版本号停在 1.1.102），CI 无此文件 → 包内缺 backend/.env | `faa37df7`（挂入 build:mac 链 + build-win-full.js；backend.env 缺失回退 example） |
+> | 2 | prepare-media-tools 幽灵依赖 | spdx-license-list 本机 node_modules 历史手动装、lockfile 无 | `faa37df7`（补 devDeps ^6.11.0） |
+> | 3 | check-package-contents `/dev/null` 重定向 | Windows cmd 无 /dev/null + 7z 不保证在 PATH | `6727672a`（find7z + 去重定向 + --win-only） |
+> | 4 | asar 检查 win 假红 | @electron/asar listFiles 用 path.join，Windows 输出 `\` 反斜杠 | `37a4a737`（归一化 `/`） |
+> | 5 | win 包缺 darwin sharp 变体 | Windows npm 装不出 darwin 可选依赖 | `37a4a737`（prepare-sharp-win32 win 平台补齐 darwin 两包）+ `378e9002`（系统 bsdtar 解 tar，Git GNU tar 把 `C:\` 当远程主机） |
+> | 6 | 包内后端冒烟缺 AGENT_GATEWAY_SECRET | 冒烟漏模拟 main.js 注入契约，本机靠开发态 .env 假绿 | `8e526e76`（随机注入） |
+>
+> 教训总纲：**CI 干净环境是"本机残留产物假绿"的照妖镜**——以后 CI 失败先怀疑"本机有但 git/构建链没有的东西"，别先怀疑环境差异。
+3. **【待大王定】CI 修复是否随下一版发布自然验证**：extraResources 合并产物功能等价，不强制发版；下次正式发版（升 1.1.111）走 CI 时自然验证。
 
 ## 五、关键踩坑清单（接手必读）
 
@@ -56,9 +66,9 @@
 
 ## 六、下一步建议（接手线程）
 
-1. 定位并修掉 mac CI Build artifacts 失败点（触发一次带 `--log --job` 拉全量日志）
-2. 加 `skip_upload` 开关 + 用 `skip_upload=true` 完整验证 CI 双平台构建通过
-3. 修完后 CI 发布路径即正式可用；下次发版（升版本号）走 CI 全自动（build → upload → verify:remote 双通道门禁）
+1. ~~定位并修掉 mac CI Build artifacts 失败点~~ → 已修（`e5297c8c`），CI 复验 run 33390502368
+2. ~~加 `skip_upload` 开关 + 用 `skip_upload=true` 完整验证 CI 双平台构建通过~~ → 已落地（`89d4bb21`）+ 验证 run 33390502368
+3. 修完后 CI 发布路径即正式可用；下次发版（升 1.1.111）走 CI 全自动（build → upload → verify:remote 双通道门禁）
 4. 若大王要连发验证，按发版铁律先升版本号再触发
 
 ## 七、验证命令速查
