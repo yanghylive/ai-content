@@ -125,7 +125,14 @@ function ensureOne(pkg, ver) {
     const tarPath = path.join(tmp, 'pkg.tgz');
     return downloadTarball(meta.dist.tarball, tarPath).then(() => {
       fs.mkdirSync(pkgDir, { recursive: true });
-      const r = spawnSync('tar', ['-xzf', tarPath, '-C', pkgDir, '--strip-components=1'], {
+      // 2026-08-31（CI run 33396406506 实证）：Windows runner PATH 上的 tar 是
+      // Git 自带 GNU tar，把 C:\... 当远程主机（"Cannot connect to C: resolve
+      // failed"）——必须用系统 bsdtar（认盘符）。
+      const tarBin =
+        process.platform === 'win32'
+          ? path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe')
+          : 'tar';
+      const r = spawnSync(tarBin, ['-xzf', tarPath, '-C', pkgDir, '--strip-components=1'], {
         stdio: 'inherit',
       });
       fs.rmSync(tmp, { recursive: true, force: true });
