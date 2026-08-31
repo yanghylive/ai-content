@@ -65,6 +65,17 @@ function AiServiceSettings({ onFlash, onError }: { onFlash: (t: string) => void;
           (Array.isArray(modelsData.value) ? modelsData.value : []) as typeof models,
         );
       }
+      // 2026-09-01 复核回改（allSettled 同类自查）：rejected 不进 catch，
+      // 配置/模型加载失败原样静默跳过，经 onError 上屏
+      const rejected = [defaultsData, modelsData].filter(
+        (r): r is PromiseRejectedResult => r.status === "rejected",
+      );
+      if (rejected.length > 0) {
+        for (const r of rejected) console.error(r.reason);
+        onError(
+          toPublicError(rejected[0].reason, "AI 服务配置或模型列表暂时无法读取"),
+        );
+      }
     } catch (err: unknown) {
       onError(toPublicError(err, "加载 AI 服务失败"));
     } finally {

@@ -9,7 +9,7 @@ import { api } from "@/lib/api/client";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { V2StatusChip } from "@/components/v2/ui-kit";
 import { SkeletonList } from "@/components/skeleton";
-import { toActionableError } from "@/lib/public-error";
+import { toActionableError, toPublicError } from "@/lib/public-error";
 
 const PLATFORM_LABEL: Record<string, string> = {
   douyin: "抖音",
@@ -100,6 +100,21 @@ function LeadDetailClient() {
       ]);
       if (scoreRes.status === "fulfilled") setScoreHistory(scoreRes.value);
       if (attrRes.status === "fulfilled") setAttribution(attrRes.value);
+      // 2026-09-01 复核回改（allSettled 同类自查）：评分历史/归因失败不再静默缺板块
+      const rejected = [scoreRes, attrRes].filter(
+        (r): r is PromiseRejectedResult => r.status === "rejected",
+      );
+      if (rejected.length > 0) {
+        for (const r of rejected) console.error(r.reason);
+        setMsg(
+          toPublicError(
+            rejected[0].reason,
+            rejected.length === 2
+              ? "评分历史与归因数据暂时无法读取"
+              : "部分数据（评分历史/归因）暂时无法读取，可能显示不全",
+          ),
+        );
+      }
     } catch {
       setMsg("加载失败，请稍后重试");
     } finally {

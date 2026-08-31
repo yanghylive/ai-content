@@ -132,7 +132,22 @@ export function WechatTaskCenter() {
         const tb = new Date(b.updatedAt || b.createdAt || 0).getTime();
         return tb - ta;
       });
-      clearLoadError();
+      // 2026-09-01 Codex 复核回改：allSettled 的 rejected 不进 catch，
+      // 任一请求失败时失败数据被降成 0/空数组还无条件清错 = 假成功。
+      const rejected = [contactsResult, tasksResult, sessionResult].filter(
+        (r): r is PromiseRejectedResult => r.status === "rejected",
+      );
+      if (rejected.length > 0) {
+        for (const r of rejected) console.error(r.reason);
+        reportLoadError(
+          rejected[0].reason,
+          rejected.length === 3
+            ? "微信任务中心数据暂时无法读取"
+            : "微信任务中心部分数据暂时无法读取，统计可能不准确",
+        );
+      } else {
+        clearLoadError();
+      }
       setRecentTasks(
         sorted.slice(0, 5).map((t) => ({
           id: t.id,

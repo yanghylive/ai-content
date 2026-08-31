@@ -75,13 +75,23 @@ export function EngineHealthCenter() {
           localEngineApi.tasks(50, STATUS_REQUEST_OPTIONS),
         ]);
 
-      const partialFailure = [
+      const settledResults = [
         healthResult,
         readinessResult,
         browserResult,
         tasksResult,
-      ].some((result) => result.status === "rejected");
+      ];
+      // 2026-09-01 Codex 复核回改：partial failure 不进 catch，旧逻辑只置
+      // checkFailed（通用文案），具体原因须从 rejected reason 生成并上屏
+      const rejectedResults = settledResults.filter(
+        (r): r is PromiseRejectedResult => r.status === "rejected",
+      );
+      const partialFailure = rejectedResults.length > 0;
       setCheckFailed(partialFailure);
+      if (partialFailure) {
+        for (const r of rejectedResults) console.error(r.reason);
+        reportLoadError(rejectedResults[0].reason, "部分状态检查失败");
+      }
 
       const health = healthResult.status === "fulfilled" ? healthResult.value : null;
       const readiness =
@@ -142,7 +152,7 @@ export function EngineHealthCenter() {
         });
       }
       setTodos(nextTodos);
-      clearLoadError();
+      if (!partialFailure) clearLoadError();
     } catch (error: unknown) {
       setCheckFailed(true);
       setAssistantConnected(null);

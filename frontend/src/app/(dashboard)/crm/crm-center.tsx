@@ -95,7 +95,22 @@ export function CrmCenter() {
         overdue: summaryData?.overdueTasks ?? 0,
         pipelineYuan: Math.round((summaryData?.pipelineAmountCents ?? 0) / 100),
       });
-      clearLoadError();
+      // 2026-09-01 Codex 复核回改（同类自查）：allSettled 的 rejected 不进 catch，
+      // 客户列表/统计失败会被降成 0 还无条件清错 = 假成功，须检查 rejected
+      const rejected = [list, summary].filter(
+        (r): r is PromiseRejectedResult => r.status === "rejected",
+      );
+      if (rejected.length > 0) {
+        for (const r of rejected) console.error(r.reason);
+        reportLoadError(
+          rejected[0].reason,
+          rejected.length === 2
+            ? "客户数据暂时无法读取"
+            : "客户部分数据暂时无法读取，统计可能不准确",
+        );
+      } else {
+        clearLoadError();
+      }
     } catch (error: unknown) {
       // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(error, "加载客户统计失败"));

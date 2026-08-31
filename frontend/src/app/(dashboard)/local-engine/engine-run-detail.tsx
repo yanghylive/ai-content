@@ -82,6 +82,16 @@ export function EngineRunDetail() {
             ? "重新登录失效账号"
             : undefined,
         });
+      } else {
+        // 2026-09-01 复核回改（allSettled 同类自查）：账号检查失败不再静默缺项，
+        // 作为失败检查项上屏具体原因
+        items.push({
+          key: "accounts",
+          label: "平台账号",
+          ok: false,
+          message: `账号状态检查失败：${toPublicError(readinessResult.reason, "无法读取，请重新检查")}`,
+          nextAction: "重新检查，或确认引擎助手已启动",
+        });
       }
 
       setChecks(items);

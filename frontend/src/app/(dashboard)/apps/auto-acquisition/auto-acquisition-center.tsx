@@ -33,7 +33,22 @@ export function AutoAcquisitionCenter() {
         contacted: o?.todayContactedCount ?? 0,
         tasks: c.filter((x) => x.status === "enabled").length,
       });
-      clearLoadError();
+      // 2026-09-01 Codex 复核回改：allSettled 的 rejected 不进 catch，
+      // 失败数据被降成 0 还无条件清错 = 假成功。须检查 rejected 并上屏原因。
+      const rejected = [overview, configs].filter(
+        (r): r is PromiseRejectedResult => r.status === "rejected",
+      );
+      if (rejected.length > 0) {
+        for (const r of rejected) console.error(r.reason);
+        reportLoadError(
+          rejected[0].reason,
+          rejected.length === 2
+            ? "获客数据暂时无法读取"
+            : "获客部分数据暂时无法读取，统计可能不准确",
+        );
+      } else {
+        clearLoadError();
+      }
     } catch (err: unknown) {
       // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(err, "加载获客数据失败"));
