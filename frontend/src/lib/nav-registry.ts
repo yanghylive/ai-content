@@ -29,8 +29,8 @@ export type InteractionChannelEntry = {
 };
 
 export const INTERACTION_CHANNELS: InteractionChannelEntry[] = [
-  { key: "inbox", title: "统一收件箱", desc: "评论、私信、转人工，集中查看与回复", sub: "集中查看与回复", href: "/engagement", icon: "messageSq", tint: "kx-t-violet", brand: "#722ed1" },
-  { key: "ai-service", title: "客服机器人", desc: "配置机器人风格与回复规则", sub: "配置机器人", href: "/engagement?tab=bot", icon: "bot", tint: "kx-t-slate", brand: "#722ed1" },
+  { key: "inbox", title: "统一收件箱", desc: "评论、私信、转人工，集中查看与回复", sub: "集中查看与回复", href: "/engagement", icon: "messageSq", tint: "kx-t-violet", brand: "var(--kaypal-v3-accent)" },
+  { key: "ai-service", title: "客服机器人", desc: "配置机器人风格与回复规则", sub: "配置机器人", href: "/engagement?tab=bot", icon: "bot", tint: "kx-t-slate", brand: "var(--kaypal-v3-accent)" },
   { key: "douyin-messages", title: "抖音私信", desc: "私信和评论，读取真实的回复给你确认", sub: "读取真实回复", href: "/engagement/douyin-messages", icon: "music", tint: "kx-t-slate", brand: "#fe2c55" },
   { key: "channel-messages", title: "视频号私信", desc: "私信和评论", sub: "私信和评论", href: "/engagement/channel-messages", icon: "play", tint: "kx-t-cyan", brand: "#007fff" },
   { key: "wechat", title: "微信", desc: "会话、加好友", sub: "会话 · 加好友", href: "/engagement/wechat", icon: "messageSq", tint: "kx-t-green", brand: "#07c160" },

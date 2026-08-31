@@ -224,7 +224,7 @@ const CONTENT_TOOL_ENTRIES: Array<{
   { label: "商品视频", desc: "带货文案 + 一键成片", icon: "video", tint: "var(--kaypal-v3-amber)", href: "/video/product-cut" },
   { label: "图生视频", desc: "图片 + 提示词生成短视频", icon: "sparkles", tint: "var(--kaypal-v3-purple)", href: "/video-generation" },
   { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target", tint: "var(--kaypal-v3-success)", href: "/poi" },
-  { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "#76517e", href: "/distribution/publish-article" },
+  { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "var(--kaypal-v3-purple)", href: "/distribution/publish-article" },
   { label: "视频发布计划", desc: "查看定时发布的视频任务", icon: "history", tint: "var(--kaypal-v3-purple)", href: "/video/release-plans" },
   { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "var(--kaypal-v3-amber)", href: "/knowledge-base" },
   { label: "视频特效", desc: "换脸与模板化视频效果", icon: "video", tint: "var(--kaypal-v3-purple)", href: "/content/face-swap" },
@@ -250,49 +250,49 @@ function MobileContentView({
       label: "选题",
       sub: "AI 推荐",
       icon: "bulb",
-      tint: "#722ed1",
+      tint: "var(--kaypal-v3-accent)",
       href: "/topics",
     },
     {
       label: "AI 创作",
       sub: "生成内容",
       icon: "pen",
-      tint: "#bc7120",
+      tint: "var(--kaypal-v3-amber)",
       href: "/content/articles",
     },
     {
       label: "素材库",
       sub: "云端素材",
       icon: "archive",
-      tint: "#37705d",
+      tint: "var(--kaypal-v3-success)",
       href: "/materials",
     },
     {
       label: "文章反抓",
       sub: "链接提取",
       icon: "download",
-      tint: "#76517e",
+      tint: "var(--kaypal-v3-purple)",
       href: "/distribution/scrape",
     },
     {
       label: "模板风格",
       sub: "品牌调性",
       icon: "layers",
-      tint: "#3d5d8f",
+      tint: "var(--kaypal-v3-cobalt)",
       href: "/templates",
     },
     {
       label: "视频成片",
       sub: "AI 一键成片",
       icon: "video",
-      tint: "#37705d",
+      tint: "var(--kaypal-v3-success)",
       href: "/video-studio",
     },
     {
       label: "全部草稿",
       sub: "",
       icon: "fileText",
-      tint: "#a9651e",
+      tint: "var(--kaypal-v3-amber)",
       href: "/content/articles",
     },
   ];
@@ -366,7 +366,7 @@ function MobileContentView({
               <span
                 className="mx-svc-ic"
                 style={{
-                  background: "rgba(233,240,250,.75)",
+                  background: "var(--kaypal-v3-field-bg, rgba(233,240,250,.75))",
                   color: entry.tint,
                 }}
               >
@@ -413,7 +413,7 @@ function MobileContentView({
             >
               <span
                 className="mx-row-ic"
-                style={{ background: `${entry.tint}1f`, color: entry.tint }}
+                style={{ background: `color-mix(in srgb, ${entry.tint} 10%, transparent)`, color: entry.tint }}
               >
                 <ShellIcon name={entry.icon} size={18} />
               </span>

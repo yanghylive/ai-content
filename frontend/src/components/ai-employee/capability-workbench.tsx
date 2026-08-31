@@ -44,11 +44,11 @@ function CapabilityCard({ capability }: { capability: AiEmployeeCapability }) {
   const meta = statusMeta[capability.status];
   const Icon = meta.icon;
   return (
-    <div className="relative overflow-hidden rounded-[10px] border border-default-200 bg-content1 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_4px_16px_-4px_rgba(114,46,209,0.18)]">
+    <div className="relative overflow-hidden rounded-[10px] border border-default-200 bg-content1 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_4px_16px_-4px_hsl(var(--agent-cockpit-primary)_/_0.18)]">
       <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary/0 via-primary/40 to-primary/0 opacity-0 transition-opacity duration-200 hover:opacity-100" />
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-gradient-to-br from-primary/15 to-primary/5 text-primary shadow-[inset_0_0_0_1px_rgba(114,46,209,0.1)]">
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-gradient-to-br from-primary/15 to-primary/5 text-primary shadow-[inset_0_0_0_1px_hsl(var(--agent-cockpit-primary)_/_0.1)]">
             <Icon size={17} />
           </span>
           <div className="min-w-0">
@@ -282,5 +282,5 @@ export function CapabilityWorkbench() {
 function Metric({ label, value, tone = "default" }: { label: string; value: number; tone?: "default" | "success" | "primary" | "warning" | "danger" }) {
   const toneBar = tone === "success" ? "from-emerald-400 to-emerald-600" : tone === "primary" ? "from-[var(--kaypal-v3-accent)] to-[var(--kaypal-v3-accent-tint)]" : tone === "warning" ? "from-amber-400 to-amber-600" : tone === "danger" ? "from-red-400 to-red-600" : "from-[var(--kaypal-v3-accent)] to-transparent";
   const valueColor = tone === "success" ? "text-success" : tone === "primary" ? "text-primary" : tone === "warning" ? "text-warning" : tone === "danger" ? "text-danger" : "text-default-900";
-  return <div className="relative overflow-hidden rounded-[10px] border border-default-200 bg-gradient-to-b from-default-50 to-content1 px-3 py-3 shadow-[0_1px_2px_rgba(42,36,56,0.04)] transition-shadow duration-200 hover:shadow-[0_4px_12px_-4px_rgba(114,46,209,0.12)]"><span aria-hidden="true" className={`pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${toneBar} opacity-70`} /><p className="text-xs text-default-500">{label}</p><p className={`mt-1 text-2xl font-bold ${valueColor}`}>{value}</p></div>;
+  return <div className="relative overflow-hidden rounded-[10px] border border-default-200 bg-gradient-to-b from-default-50 to-content1 px-3 py-3 shadow-[0_1px_2px_rgba(42,36,56,0.04)] transition-shadow duration-200 hover:shadow-[0_4px_12px_-4px_hsl(var(--agent-cockpit-primary)_/_0.12)]"><span aria-hidden="true" className={`pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${toneBar} opacity-70`} /><p className="text-xs text-default-500">{label}</p><p className={`mt-1 text-2xl font-bold ${valueColor}`}>{value}</p></div>;
 }

@@ -256,7 +256,7 @@ function MobileMessageView({
               <span
                 className="mx-svc-ic"
                 style={{
-                  background: `${ch.brand}1f`,
+                  background: `color-mix(in srgb, ${ch.brand} 10%, transparent)`,
                   color: ch.brand,
                   borderRadius: 999,
                 }}
