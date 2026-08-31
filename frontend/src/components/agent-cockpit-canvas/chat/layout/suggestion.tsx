@@ -15,7 +15,7 @@ export const Suggestions = (props: {
           <Card
             className={cn(
               "rounded-[10px] bg-card text-card-foreground border border-border px-3 py-2 shadow-sm",
-              "hover:cursor-pointer hover:bg-accent/10 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_-4px_rgba(114,46,209,0.15)]",
+              "hover:cursor-pointer hover:bg-accent/10 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_-4px_hsl(var(--agent-cockpit-primary)_/_0.15)]",
               "transition-all duration-200",
             )}
             key={index}

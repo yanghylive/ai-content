@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-br from-[#9254de] via-[#722ed1] to-[#531dab] dark:from-[#a87ae0] dark:via-[#9254de] dark:to-[#722ed1] text-primary-foreground shadow-[0_1px_2px_rgba(114,46,209,0.3),0_2px_8px_-2px_rgba(114,46,209,0.2),inset_0_1px_0_var(--kaypal-v3-btn-inset,rgba(255,255,255,0.18))] hover:shadow-[0_2px_4px_rgba(114,46,209,0.35),0_4px_16px_-2px_rgba(114,46,209,0.3),inset_0_1px_0_var(--kaypal-v3-btn-inset-hover,rgba(255,255,255,0.22))] hover:-translate-y-px",
+        default: "bg-gradient-to-br from-[#9254de] via-[#722ed1] to-[#531dab] dark:from-[#a87ae0] dark:via-[#9254de] dark:to-[#722ed1] text-primary-foreground shadow-[0_1px_2px_hsl(var(--agent-cockpit-primary)_/_0.3),0_2px_8px_-2px_hsl(var(--agent-cockpit-primary)_/_0.2),inset_0_1px_0_var(--kaypal-v3-btn-inset,rgba(255,255,255,0.18))] hover:shadow-[0_2px_4px_hsl(var(--agent-cockpit-primary)_/_0.35),0_4px_16px_-2px_hsl(var(--agent-cockpit-primary)_/_0.3),inset_0_1px_0_var(--kaypal-v3-btn-inset-hover,rgba(255,255,255,0.22))] hover:-translate-y-px",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
