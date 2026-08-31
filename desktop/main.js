@@ -2464,6 +2464,12 @@ app.whenReady().then(async () => {
   // v1.1.106（大王决策）：悬浮球先禁用——UI 桥断了 5 个版本（preload 漏打包，
   // 点执行必报错），且无引导、用户不知其用途，半成品不配裸奔。默认关闭，
   // 做完整（修复 + 首次使用引导 + 场景演示 + 报错可读提示）并真机验证后再灰度放开。
+  // v1.1.111（大王决策：悬浮球不要了）：清理存量配置——≤1.1.105 默认开启时代，
+  // 用户 config 里可能已持久化 hoverBallEnabled=true（旧逻辑/开关写入），仅改
+  // 默认值清不掉这些机器的残留。启动时直接删键，悬浮球在任何机器上都不再出现。
+  if (store.has('hoverBallEnabled')) {
+    store.delete('hoverBallEnabled');
+  }
   if (store.get('hoverBallEnabled') === true) {
     createHoverBall();
   }
