@@ -72,6 +72,8 @@ jobs:
         shell: bash
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
+          # GITHUB_PATH 只对后续步骤生效，本步骤内必须立即 export 才能用 uv
+          export PATH="$HOME/.local/bin:$PATH"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           # prepare-octop-sidecar 内部 uv venv 需要真实 python 路径（win 默认
           # C:\Python312\python.exe 在 CI 不存在）——用 setup-python 的 3.12
