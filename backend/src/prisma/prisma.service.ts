@@ -3585,6 +3585,23 @@ export class PrismaService
        WHERE created_at IS NULL`,
     );
 
+    // v1.1.111（云电脑真机 2026-08-31）：旧库（platform_id 可空时代）遗留
+    // platform_id IS NULL 的 ai_models 行与现 schema（NOT NULL）不符 →
+    // Prisma include platform 抛 "Field platform is required to return data,
+    // got null instead"（KaypalModelSyncService 启动同步失败降级）。
+    // 回填到 Kaypal 模型台（无则第一个平台）；仍无可绑定平台时删除孤儿行。
+    await this.$executeRawUnsafe(
+      `UPDATE ai_models
+       SET platform_id = COALESCE(
+         (SELECT id FROM ai_platforms WHERE name = 'Kaypal 模型台' LIMIT 1),
+         (SELECT id FROM ai_platforms ORDER BY created_at LIMIT 1)
+       )
+       WHERE platform_id IS NULL`,
+    );
+    await this.$executeRawUnsafe(
+      `DELETE FROM ai_models WHERE platform_id IS NULL`,
+    );
+
     await this.repairSqliteNullTimestamps();
     await this.repairUnsupportedSqliteTimestampColumns();
     await this.repairRpaEvidenceStepIds();
