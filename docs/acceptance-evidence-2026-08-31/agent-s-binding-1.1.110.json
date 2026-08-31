@@ -1,0 +1,29 @@
+{
+  "kind": "agent-s-package-binding-evidence",
+  "product": "ai-content-desktop",
+  "installerVersion": "1.1.110",
+  "installerWin": {
+    "file": "JIUZHANG AI 内容创作平台 Setup 1.1.110.exe",
+    "sha256": "0554b4124deb171144d5e417c16b9f28d016141e49296344a036729b66deafe8"
+  },
+  "installerMac": {
+    "file": "JIUZHANG AI 内容创作平台-1.1.110-arm64-mac.zip",
+    "sha256": "2d6a7a68e99f318d5ac621b80c16ac4545f18bc8fec1872595295449371e7b5e"
+  },
+  "runner": {
+    "mode": "node-playwright",
+    "browserControl": true,
+    "connected": true,
+    "ready": true
+  },
+  "gateSummary": "PASS=58 WARN=3 BLOCKED=6 FAILED=0",
+  "realExecution": true,
+  "accountsSynced": true,
+  "batchTaskIds": [
+    "le_mth3s45h_3k3txe",
+    "le_mth3s45h_3k3txe"
+  ],
+  "evidenceNote": "1.1.110 环境（dist-bundle-sqlite 1.1.110）跑 commercial-gate：real-execution 5/5（真实账号建读/草稿任务 + 页面读回 + evidence-export），账号同步 10→15。",
+  "gateLog": "/tmp/comm-gate-1110.log",
+  "generatedAt": "2026-08-31T18:37:00+08:00"
+}

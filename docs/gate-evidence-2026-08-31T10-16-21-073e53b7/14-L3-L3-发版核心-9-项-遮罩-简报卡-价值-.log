@@ -1,0 +1,19 @@
+# ✅ L3 发版核心 9 项（遮罩/简报卡/价值）
+# commit: 073e53b7
+# exit: 0
+# duration_ms: 22915
+# command: node scripts/ci/pre-release-core-verify.mjs
+# 完整命令输出（未截断）：
+
+✅ BOSS 直聘遮罩 — /boss-recruit 有灰度文案
+✅ 移动端能力遮罩 — /mobile-capabilities
+✅ 省钱比价遮罩 — /savings 有灰度文案
+✅ 视频引擎遮罩 — /video-workshop 有灰度文案
+✅ 朋友圈发布遮罩 — /engagement/wechat/moments-publish 有灰度文案
+✅ 视频工作室遮罩 — /video-studio 有灰度文案
+✅ 获客首页 AI 简报卡
+✅ 获客首页 AI 价值
+✅ 自动获客页可达 — /growth/acquisition
+
+=== 发版核心验证: 9 通过 / 0 失败 ===
+
