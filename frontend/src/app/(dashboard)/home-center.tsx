@@ -9,27 +9,36 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { dashboardApi, type DashboardStats } from "@/lib/api/dashboard";
 import { toPublicError } from "@/lib/public-error";
 
 export function HomeCenter() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
 
   const fetchStats = useCallback(async () => {
     try {
       const data = await dashboardApi.stats();
       setStats(data);
+      clearLoadError();
     } catch (error: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(error, "加载工作台统计失败"));
+      reportLoadError(error, "工作台统计暂时无法读取，各卡片显示为占位");
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   useEffect(() => {
     void fetchStats();
   }, [fetchStats]);
 
   return (
-    <WorkbenchCenter
+    <div className="flex flex-col gap-3">
+      {loadError ? (
+        <LoadErrorBanner message={loadError} onRetry={() => void fetchStats()} />
+      ) : null}
+      <WorkbenchCenter
       title="工作台总览"
       subtitle={
         stats?.topKeyword
@@ -98,6 +107,7 @@ export function HomeCenter() {
         { key: "wechat", title: "微信工作台", icon: MessageSquareText, href: "/engagement/wechat" },
         { key: "crm", title: "客户管理", icon: TrendingUp, href: "/crm" },
       ]}
-    />
+      />
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { SkeletonList, SkeletonRow } from "@/components/skeleton";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -73,6 +74,7 @@ export function MaterialsCenter() {
   const [materialsPage, setMaterialsPage] = useState(1);
   const MATERIALS_PAGE_SIZE = 100;
   const [loading, setLoading] = useState(true);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -171,12 +173,15 @@ export function MaterialsCenter() {
       setMaterialsTotal(payload?.total ?? items.length);
       setMaterialsPage(nextPage);
       setMaterials((prev) => (nextPage === 1 ? items : [...prev, ...items]));
+      clearLoadError();
     } catch (err: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(err, "加载素材失败"));
+      reportLoadError(err, "素材列表暂时无法读取");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   const loadMoreMaterials = () => {
     void fetchMaterials(materialsPage + 1);
@@ -188,10 +193,14 @@ export function MaterialsCenter() {
       setCollectStatus(status);
       return status;
     } catch (err: unknown) {
-      if (!silent) console.error(toPublicError(err, "采集状态读取失败"));
+      // 2026-09-01 审计修复：非 silent 场景不再只 console，状态读取失败上屏
+      if (!silent) {
+        console.error(toPublicError(err, "采集状态读取失败"));
+        reportLoadError(err, "采集任务状态暂时无法读取，进度可能不准确");
+      }
       return null;
     }
-  }, []);
+  }, [reportLoadError]);
 
   useEffect(() => {
     void fetchMaterials();
@@ -1128,6 +1137,9 @@ export function MaterialsCenter() {
 
   return (
     <div className="flex flex-col gap-6">
+      {loadError ? (
+        <LoadErrorBanner message={loadError} onRetry={() => void fetchMaterials()} />
+      ) : null}
       {/* 顶部 */}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">

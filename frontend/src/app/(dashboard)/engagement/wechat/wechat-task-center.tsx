@@ -18,6 +18,7 @@ import {
   type InteractionTask,
 } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type TaskStats = {
@@ -89,6 +90,7 @@ export function WechatTaskCenter() {
   );
   const [recentTasks, setRecentTasks] = useState<RecentTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
 
   const fetchData = useCallback(async () => {
     try {
@@ -130,6 +132,7 @@ export function WechatTaskCenter() {
         const tb = new Date(b.updatedAt || b.createdAt || 0).getTime();
         return tb - ta;
       });
+      clearLoadError();
       setRecentTasks(
         sorted.slice(0, 5).map((t) => ({
           id: t.id,
@@ -148,11 +151,13 @@ export function WechatTaskCenter() {
         })),
       );
     } catch (error: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(error, "加载微信任务中心失败"));
+      reportLoadError(error, "微信任务中心数据暂时无法读取");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   useEffect(() => {
     void fetchData();
@@ -345,6 +350,9 @@ export function WechatTaskCenter() {
 
   return (
     <div className="kaypal-v2-wechat flex flex-col gap-6">
+      {loadError ? (
+        <LoadErrorBanner message={loadError} onRetry={() => void fetchData()} />
+      ) : null}
       {/* 欢迎区域 */}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center justify-between">

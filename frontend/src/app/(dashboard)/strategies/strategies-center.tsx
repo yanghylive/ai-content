@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Compass } from "lucide-react";
 import { ResourceCenter, type ResourceItem } from "@/components/v2/resource-center";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import {
   contentStrategiesApi,
   strategyTemplateApi,
@@ -17,6 +18,7 @@ export function StrategiesCenter() {
   const router = useRouter();
   const [strategies, setStrategies] = useState<ContentStrategy[]>([]);
   const [loading, setLoading] = useState(true);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
   // 行业模板库（2026-08-09 R1）
   const [industries, setIndustries] = useState<IndustryInfo[]>([]);
   const [activeIndustry, setActiveIndustry] = useState<string>("");
@@ -28,12 +30,15 @@ export function StrategiesCenter() {
       setLoading(true);
       const data = await contentStrategiesApi.list();
       setStrategies(data);
+      clearLoadError();
     } catch (error: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(error, "加载内容策略失败"));
+      reportLoadError(error, "内容策略列表暂时无法读取");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   const fetchIndustries = useCallback(async () => {
     try {
@@ -90,6 +95,13 @@ export function StrategiesCenter() {
 
   return (
     <div>
+      {loadError ? (
+        <LoadErrorBanner
+          className="mb-3"
+          message={loadError}
+          onRetry={() => void fetchStrategies()}
+        />
+      ) : null}
       <ResourceCenter
         title="内容策略"
         subtitle="定义你的内容方向和目标，AI 按策略生成内容"
