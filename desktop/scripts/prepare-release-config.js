@@ -161,8 +161,19 @@ const GATEWAY_MANAGED_ENV_KEYS = [
 const sanitizedEnvOutputPath = path.join(desktopRoot, 'runtime', 'generated', 'backend.env');
 
 function writeSanitizedBackendEnv(sourcePath = path.join(desktopRoot, 'backend.env')) {
+  // 2026-08-31（CI run 33390502368 实证）：desktop/backend.env 是 gitignored 开发态
+  // env，CI 干净环境不存在 → 本脚本从未在 CI 构建链执行过，包内缺 backend/.env，
+  // check-full-installer-assets --phase=post 假红。缺失时回退 backend.env.example
+  // （入库的占位模板；KAYPAL_* 网关托管键本就会被剥除，生产凭据由注入通道补齐）。
   if (!fs.existsSync(sourcePath)) {
-    throw new Error(`backend env source missing: ${sourcePath}`);
+    const examplePath = path.join(desktopRoot, 'backend.env.example');
+    if (!fs.existsSync(examplePath)) {
+      throw new Error(`backend env source missing: ${sourcePath} (and no ${examplePath})`);
+    }
+    console.log(
+      `backend.env not found, falling back to backend.env.example (CI/clean environment): ${examplePath}`,
+    );
+    sourcePath = examplePath;
   }
   const lines = fs.readFileSync(sourcePath, 'utf8').split(/\r?\n/);
   const kept = lines.filter((line) => {

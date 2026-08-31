@@ -17,8 +17,9 @@
     "clean:mac-package-output": "node scripts/clean-mac-package-output.js",
     "prepare:playwright-browsers": "node scripts/prepare-playwright-browsers.js",
     "prepare:node-runtime": "node scripts/prepare-node-runtime.js",
+    "prepare:release-config": "node scripts/prepare-release-config.js",
     "build": "npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && electron-builder",
-    "build:mac": "npm run clean:mac-package-output && npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && BUILD_PLATFORM=mac-arm64 npm run check:full-installer-assets:pre && electron-builder --mac && BUILD_PLATFORM=mac-arm64 npm run check:full-installer-assets:post && BUILD_PLATFORM=mac-arm64 npm run check:release-size",
+    "build:mac": "npm run clean:mac-package-output && npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && npm run prepare:release-config && BUILD_PLATFORM=mac-arm64 npm run check:full-installer-assets:pre && electron-builder --mac && BUILD_PLATFORM=mac-arm64 npm run check:full-installer-assets:post && BUILD_PLATFORM=mac-arm64 npm run check:release-size",
     "build:win": "node scripts/build-win-full.js",
     "build:linux": "npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && electron-builder --linux",
     "release": "node scripts/release.js",
@@ -44,7 +45,8 @@
   "devDependencies": {
     "ali-oss": "^6.23.0",
     "electron": "^32.0.0",
-    "electron-builder": "^25.0.0"
+    "electron-builder": "^25.0.0",
+    "spdx-license-list": "^6.11.0"
   },
   "dependencies": {
     "electron-store": "^8.2.0",
