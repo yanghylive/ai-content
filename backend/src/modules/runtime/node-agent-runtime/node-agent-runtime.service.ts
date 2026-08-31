@@ -126,6 +126,12 @@ export class NodeAgentRuntimeService {
 
   async getStatus() {
     const health = await this.health();
+    // The packaged runtime creates execution sessions in-process.  Keep the
+    // legacy Agent-S field names for API compatibility, but report their
+    // meaning from the real session implementation rather than claiming that
+    // an external sidecar process was spawned.
+    const runtimeImplemented = true;
+    const runtimeReady = health.ok === true;
     return {
       phase: health.ok
         ? 'ready'
@@ -134,8 +140,9 @@ export class NodeAgentRuntimeService {
           : health.status,
       baseUrl: 'in-process://node-agent-runtime',
       connected: health.ok,
-      canSpawn: false,
-      spawnImplemented: false,
+      canSpawn: runtimeReady,
+      spawnImplemented: runtimeImplemented,
+      executionMode: 'in-process-node-playwright',
       lastSeenAt: new Date().toISOString(),
       lastError: health.ok
         ? undefined

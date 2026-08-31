@@ -21,7 +21,6 @@
     "build": "npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && electron-builder",
     "build:mac": "npm run clean:mac-package-output && npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && npm run prepare:release-config && BUILD_PLATFORM=mac-arm64 npm run check:full-installer-assets:pre && electron-builder --mac && BUILD_PLATFORM=mac-arm64 npm run check:full-installer-assets:post && BUILD_PLATFORM=mac-arm64 npm run check:release-size",
     "build:win": "node scripts/build-win-full.js",
-    "build:linux": "npm run prepare:node-runtime && npm run prepare:playwright-browsers && npm run check:commercial-assets && electron-builder --linux",
     "release": "node scripts/release.js",
     "upload:oss": "node scripts/upload-to-oss.js",
     "upload:ssh-updates": "bash scripts/upload-to-ssh-updates.sh",
@@ -298,26 +297,6 @@
         }
       ],
       "icon": "assets/icon.ico"
-    },
-    "linux": {
-      "target": [
-        {
-          "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "deb",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "assets/icon.png",
-      "category": "Office",
-      "maintainer": "JIUZHANG AI <support@kaypal.ai>",
-      "vendor": "JIUZHANG AI"
     },
     "nsis": {
       "oneClick": true,

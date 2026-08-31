@@ -51,22 +51,6 @@ interface MarkSentOutput {
   ok: boolean;
 }
 
-interface CloudUser {
-  id?: string;
-  username?: string;
-  email?: string;
-  [key: string]: unknown;
-}
-
-interface UsageStats {
-  [key: string]: unknown;
-}
-
-interface LoginOutput {
-  token: string;
-  user: CloudUser;
-}
-
 interface ElectronCloudAPI {
   generateReply(input: GenerateReplyInput): Promise<GenerateReplyOutput>;
   checkContent(input: CheckContentInput): Promise<CheckContentOutput>;

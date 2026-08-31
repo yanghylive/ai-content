@@ -64,6 +64,19 @@ const SENSITIVE_MCP_TOOLS = new Set([
 @Controller('mcp')
 export class McpController {
   private readonly logger = new Logger(McpController.name);
+  private readonly publicRuntimeKeys = new Set([
+    'pid',
+    'engineUrl',
+    'baseUrl',
+    'lastSeenAt',
+    'checkedAt',
+    'artifact_root',
+    'profileDir',
+    'profileKey',
+    'command',
+    'commandLabel',
+    'lastError',
+  ]);
 
   /** 按来源 IP 的滑动窗口限流计数 */
   private readonly rateLimit = new Map<
@@ -76,6 +89,30 @@ export class McpController {
     private readonly mcpRuntime: McpRuntimeService,
     private readonly config: ConfigService,
   ) {}
+
+  /** Status is loopback-readable for local probes, but paths and process ids stay private. */
+  private sanitizePublicRuntime(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map((entry) => this.sanitizePublicRuntime(entry));
+    }
+    if (!value || typeof value !== 'object') return value;
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([key]) => !this.publicRuntimeKeys.has(key))
+        .map(([key, entry]) => [
+          key,
+          key === 'message' && typeof entry === 'string'
+            ? entry
+                .replace(/\bpid=\d+\b/gi, 'pid=hidden')
+                .replace(/\bprofile(?:Dir|Key)?=[^,\s)]+/gi, 'profile=hidden')
+                .replace(
+                  /\b(engineUrl|baseUrl|command(?:Label)?)=[^,\s)]+/gi,
+                  '$1=hidden',
+                )
+            : this.sanitizePublicRuntime(entry),
+        ]),
+    );
+  }
 
   private static isLoopbackRemote(remote: string): boolean {
     return (
@@ -262,8 +299,10 @@ export class McpController {
     return {
       success: true,
       data: {
-        playwright: await this.playwrightMcp.getAutomationStatus(),
-        runtime: this.mcpRuntime.getStatus(),
+        playwright: this.sanitizePublicRuntime(
+          await this.playwrightMcp.getAutomationStatus(),
+        ),
+        runtime: this.sanitizePublicRuntime(this.mcpRuntime.getStatus()),
       },
     };
   }

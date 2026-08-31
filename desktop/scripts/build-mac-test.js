@@ -34,6 +34,10 @@ const buildEnv = {
   // 不允许该选项 → bundled node --version 误报「not v20」。构建子进程清空之。
   NODE_OPTIONS: '',
 };
+const runtimeBackupRetentionCount = Math.max(
+  1,
+  Number.parseInt(process.env.KAYPAL_RUNTIME_BACKUP_RETENTION_COUNT || '1', 10) || 1,
+);
 
 function run(command, args, extraEnv = {}) {
   console.log(`\n> ${command} ${args.join(' ')}`);
@@ -75,7 +79,45 @@ function preCleanBulkDirs() {
     }
   }
 }
+
+// preCleanBulkDirs 使用重命名避开批量删除守卫，但旧备份不能无限累积。
+// 每类保留最近一份用于失败回滚，临时 node.tmp-* 目录不属于可回滚产物。
+function prunePreCleanBackups() {
+  const runtimeRoot = path.join(desktopRoot, 'runtime');
+  const prefixes = [
+    'node.bak-',
+    'media-tools.bak-',
+    'octop.bak-',
+    'playwright-browsers.bak-',
+  ];
+  const entries = fs.readdirSync(runtimeRoot, { withFileTypes: true });
+  for (const prefix of prefixes) {
+    const backups = entries
+      .filter((entry) => entry.isDirectory() && entry.name.startsWith(prefix))
+      .map((entry) => {
+        const directory = path.join(runtimeRoot, entry.name);
+        try {
+          return { directory, mtimeMs: fs.statSync(directory).mtimeMs };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.mtimeMs - a.mtimeMs);
+    for (const { directory } of backups.slice(runtimeBackupRetentionCount)) {
+      fs.rmSync(directory, { recursive: true, force: true });
+      console.log(`[pre-clean] prune old runtime backup ${path.basename(directory)}`);
+    }
+  }
+  for (const entry of entries) {
+    if (!entry.isDirectory() || !entry.name.startsWith('node.tmp-')) continue;
+    const directory = path.join(runtimeRoot, entry.name);
+    fs.rmSync(directory, { recursive: true, force: true });
+    console.log(`[pre-clean] prune stale runtime temp ${entry.name}`);
+  }
+}
 preCleanBulkDirs();
+prunePreCleanBackups();
 
 run(process.execPath, [path.join('scripts', 'prepare-release-config.js'), '--commercial']);
 

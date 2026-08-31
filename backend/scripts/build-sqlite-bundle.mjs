@@ -18,6 +18,10 @@ const backendRoot = process.cwd();
 // 构建到 .tmp，成功后原子替换到正式目录——构建失败时不破坏旧 bundle（P0-3）
 const finalBundleDir = join(backendRoot, 'dist-bundle-sqlite');
 const sqliteBundleDir = join(backendRoot, 'dist-bundle-sqlite.tmp');
+const bundleBackupRetentionCount = Math.max(
+  1,
+  Number.parseInt(process.env.KAYPAL_BUNDLE_BACKUP_RETENTION_COUNT || '3', 10) || 3,
+);
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -211,12 +215,32 @@ function promoteTmpToFinal() {
   renameSync(sqliteBundleDir, finalBundleDir);
 
   if (backupDir) {
-    if (process.env.KAYPAL_PRUNE_OLD_BUNDLE === '1') {
-      rmSync(backupDir, { recursive: true, force: true });
-      console.log(`[build-sqlite-bundle] 旧 bundle 已删除（KAYPAL_PRUNE_OLD_BUNDLE=1）`);
-    } else {
-      console.log(`[build-sqlite-bundle] 旧 bundle 备份保留在 ${backupDir}（确认无误后可手动删除）`);
-    }
+    console.log(`[build-sqlite-bundle] 旧 bundle 备份保留在 ${backupDir}`);
+  }
+}
+
+// 备份用于短期回滚，不能无限累积到工作区。只匹配本脚本生成的精确前缀，
+// 默认保留最近 3 个；可通过 KAYPAL_BUNDLE_BACKUP_RETENTION_COUNT 调整。
+function pruneOldBundleBackups() {
+  const backups = readdirSync(backendRoot, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() && entry.name.startsWith('dist-bundle-sqlite.bak-'),
+    )
+    .map((entry) => {
+      const directory = join(backendRoot, entry.name);
+      try {
+        return { directory, mtimeMs: statSync(directory).mtimeMs };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+  for (const { directory } of backups.slice(bundleBackupRetentionCount)) {
+    rmSync(directory, { recursive: true, force: true });
+    console.log(`[build-sqlite-bundle] 已清理旧 bundle 备份: ${directory}`);
   }
 }
 
@@ -228,5 +252,6 @@ try {
 }
 assertDefaultPrismaClientIsPostgres();
 promoteTmpToFinal();
+pruneOldBundleBackups();
 
 console.log(`SQLite backend bundle generated at ${finalBundleDir}`);

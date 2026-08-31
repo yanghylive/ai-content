@@ -1640,6 +1640,11 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     for (const key of [...this.sessions.keys()]) {
       await this.closeSession(key);
     }
+    // CDP browsers are intentionally detached on macOS/Linux so the backend
+    // can survive a browser crash.  A backend crash/restart therefore leaves
+    // no in-memory session to close; sweep only processes carrying this
+    // service's dedicated profile root before exiting to prevent accumulation.
+    this.terminateProcessesUsingProfile(this.profileRoot);
   }
 
   /**

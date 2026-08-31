@@ -10,6 +10,7 @@
     "build": "nest build",
     "build:bundle": "prisma generate && ncc build src/main.ts -o dist-bundle --quiet",
     "build:bundle:sqlite": "node scripts/build-sqlite-bundle.mjs",
+    "sync:runtime-bundle": "node scripts/sync-runtime-bundle.mjs",
     "db:generate": "prisma generate",
     "db:prepare:sqlite": "node scripts/prepare-sqlite-schema.mjs",
     "db:validate:sqlite": "npm run db:prepare:sqlite && node scripts/validate-sqlite-schema.mjs",

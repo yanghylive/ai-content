@@ -6,7 +6,8 @@
   "scripts": {
     "prepare": "git config core.hooksPath scripts/git-hooks 2>/dev/null || true",
     "dev": "next dev --webpack",
-    "build": "next build && node scripts/postbuild-remove-demo.mjs",
+    "build": "next build && node scripts/postbuild-remove-demo.mjs && node scripts/sync-runtime-out.mjs",
+    "sync:runtime-out": "node scripts/sync-runtime-out.mjs",
     "start": "next start",
     "lint": "eslint src",
     "lint:strict": "eslint src --max-warnings=0",

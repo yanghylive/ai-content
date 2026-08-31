@@ -137,6 +137,19 @@ describe('LocalBrowserEngine', () => {
     expect((engine as any).launchPersistentContext).toHaveBeenCalled();
   });
 
+  it('sweeps detached managed browser processes on shutdown after a crash', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const engine = createEngine(root);
+    const terminate = jest
+      .spyOn(engine as any, 'terminateProcessesUsingProfile')
+      .mockImplementation(() => undefined);
+
+    await engine.onModuleDestroy();
+
+    expect(terminate).toHaveBeenCalledWith(join(root, 'profiles'));
+  });
+
   it('does not inject stale storageState when the persistent Chrome cookie store is newer', async () => {
     const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
     roots.push(root);

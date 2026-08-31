@@ -199,6 +199,41 @@ describe('McpController.checkCapability', () => {
   });
 });
 
+describe('McpController public status', () => {
+  it('redacts local process and filesystem metadata', async () => {
+    const playwrightMcp = {
+      getAutomationStatus: jest.fn().mockResolvedValue({
+        online: true,
+        pid: 1234,
+        profileDir: '/private/profile',
+        endpoint: '/api/mcp/playwright',
+        message: 'playwright-mcp sidecar running (pid=1234, profile=shared)',
+      }),
+    } as unknown as PlaywrightMcpService;
+    const mcpRuntime = {
+      getStatus: jest.fn().mockReturnValue({
+        available: false,
+        artifact_root: '/private/evidence',
+      }),
+    } as unknown as McpRuntimeService;
+    const controller = new McpController(
+      playwrightMcp,
+      mcpRuntime,
+      makeConfig({}),
+    );
+    const result = await controller.getStatus(
+      makeReq({ ip: '127.0.0.1', socket: { remoteAddress: '127.0.0.1' } }),
+    );
+    expect(result.data.playwright).toEqual(
+      expect.objectContaining({ online: true, endpoint: '/api/mcp/playwright' }),
+    );
+    expect(result.data.playwright).not.toHaveProperty('pid');
+    expect(result.data.playwright).not.toHaveProperty('profileDir');
+    expect(result.data.playwright.message).not.toMatch(/pid=1234|profile=shared/);
+    expect(result.data.runtime).not.toHaveProperty('artifact_root');
+  });
+});
+
 describe('McpController.handlePlaywrightMcp 错误响应', () => {
   function makePlaywrightMock() {
     return { handleRequest: jest.fn().mockResolvedValue(undefined) } as unknown;

@@ -283,14 +283,64 @@ function sqliteDatabaseHasRequiredSchema(filePath) {
 // 不再复制种子库：schema 交给后端启动时迁移生成。
 function createEmptySqliteDatabase(databasePath) {
   fs.writeFileSync(databasePath, Buffer.from(EMPTY_SQLITE_DATABASE_BASE64, 'base64'));
+  try { fs.chmodSync(databasePath, 0o600); } catch { /* best effort on non-POSIX hosts */ }
+}
+
+const SQLITE_ARTIFACT_RETENTION_COUNT = 20;
+const SQLITE_ARTIFACT_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+
+function pruneDesktopSqliteArtifacts(databasePath) {
+  const directory = path.dirname(databasePath);
+  const baseName = path.basename(databasePath);
+  const prefixes = [
+    `${baseName}-wal.orphan-`,
+    `${baseName}-shm.orphan-`,
+    `${baseName}.bak-`,
+    `${baseName}.suspect-`,
+    `${baseName}.corrupt-`,
+  ];
+  let entries;
+  try {
+    entries = fs.readdirSync(directory, { withFileTypes: true });
+  } catch (error) {
+    console.warn('[Backend] Unable to scan SQLite recovery artifacts:', error.message);
+    return;
+  }
+  const now = Date.now();
+  for (const prefix of prefixes) {
+    const candidates = entries
+      .filter((entry) => entry.isFile() && entry.name.startsWith(prefix))
+      .map((entry) => {
+        const filePath = path.join(directory, entry.name);
+        try { return { filePath, mtimeMs: fs.statSync(filePath).mtimeMs }; } catch { return null; }
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.mtimeMs - a.mtimeMs);
+    candidates.forEach(({ filePath, mtimeMs }, index) => {
+      if (index < SQLITE_ARTIFACT_RETENTION_COUNT && now - mtimeMs <= SQLITE_ARTIFACT_RETENTION_MS) return;
+      try {
+        fs.unlinkSync(filePath);
+        console.warn('[Backend] Pruned old SQLite recovery artifact:', filePath);
+      } catch (error) {
+        console.warn('[Backend] Unable to prune SQLite recovery artifact:', error.message);
+      }
+    });
+  }
 }
 
 function ensureDesktopSqliteDatabase(envVars, backendPath) {
   const mode = (envVars.KAYPAL_DESKTOP_DATABASE_MODE || '').trim().toLowerCase();
-  if (mode !== 'sqlite') return;
+  if (mode !== 'sqlite') return true;
 
   const databasePath = resolveSqliteDatabasePath(envVars.SQLITE_DATABASE_URL || envVars.DATABASE_URL, backendPath);
-  if (!databasePath) return;
+  if (!databasePath) return true;
+
+  pruneDesktopSqliteArtifacts(databasePath);
+  for (const filePath of [databasePath, `${databasePath}-wal`, `${databasePath}-shm`]) {
+    if (fs.existsSync(filePath)) {
+      try { fs.chmodSync(filePath, 0o600); } catch { /* best effort on non-POSIX hosts */ }
+    }
+  }
 
   // 孤儿 WAL 防御（2026-08-27 Win P0）：上次进程异常退出会遗留 <db>-wal/-shm，
   // 它们的页引用指向旧版主库；换版本装包后主库是全新 seed，Prisma 打开时做
@@ -298,36 +348,51 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
   // 本函数运行于后端 spawn 之前，此时任何 -wal 都是死文件，移到一旁留档。
   // v1.1.110（复核 P1）：sidecar 移不动时**禁止**复制 seed.db——此时新库会被
   // 遗留的旧 WAL 污染（Prisma 打开新库即合并同名 WAL → SQLITE_CORRUPT）。
-  // 主库缺失时只记录阻断，交给后端启动后的自愈/上报链路处理，不静默造坏库。
+  // 任一 sidecar 无法安全移位都阻断本次后端启动，不静默造坏库；桌面层会把
+  // 具体原因写入启动诊断，用户可在修复文件权限/占用后重试。
   let orphanSidecarBlocked = false;
+  const movedOrphanSidecars = [];
   for (const suffix of ['-wal', '-shm']) {
     const sidecarPath = `${databasePath}${suffix}`;
     if (fs.existsSync(sidecarPath)) {
       const orphanPath = `${sidecarPath}.orphan-${new Date().toISOString().replace(/[:.]/g, '-')}`;
       try {
         fs.renameSync(sidecarPath, orphanPath);
+        movedOrphanSidecars.push({ sidecarPath, orphanPath });
         console.warn('[Backend] Orphan SQLite sidecar moved aside:', orphanPath);
       } catch (error) {
         orphanSidecarBlocked = true;
         console.warn('[Backend] Unable to move SQLite sidecar:', error.message);
         appendRuntimeLog('backend-launch.log', `[Backend] orphan sidecar move FAILED (${suffix}: ${error.message}) — seed initialization blocked to avoid WAL pollution`);
+        for (const moved of movedOrphanSidecars.reverse()) {
+          try {
+            fs.renameSync(moved.orphanPath, moved.sidecarPath);
+          } catch (rollbackError) {
+            console.error('[Backend] Unable to roll back moved SQLite sidecar:', rollbackError.message);
+          }
+        }
+        movedOrphanSidecars.length = 0;
       }
     }
+  }
+
+  // A valid-looking main DB is not safe to open while an old sidecar remains
+  // beside it. Block startup for every path so SQLite cannot merge stale WAL
+  // pages before the backend gets a chance to report the problem.
+  if (orphanSidecarBlocked) {
+    console.warn('[Backend] SQLite startup blocked: stale WAL/SHM could not be moved aside');
+    return false;
   }
 
   const seedPath = path.join(backendPath, 'prisma', 'seed.db');
 
   // 目标库已存在且 schema 完整（或为桌面端新建的 user_version=1 空库）→ 直接复用
   if (sqliteDatabaseHasRequiredSchema(databasePath)) {
-    return;
+    return true;
   }
 
   // 目标库不存在 → 仅在目标文件不存在时才复制种子库完成首次初始化
   if (!fs.existsSync(databasePath)) {
-    if (orphanSidecarBlocked) {
-      console.warn('[Backend] Seed initialization blocked: stale WAL/SHM could not be moved aside');
-      return;
-    }
     if (sqliteDatabaseHasRequiredSchema(seedPath)) {
       fs.mkdirSync(path.dirname(databasePath), { recursive: true });
       fs.copyFileSync(seedPath, databasePath);
@@ -335,7 +400,7 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
     } else {
       console.warn('[Backend] SQLite seed database is missing or incomplete:', seedPath);
     }
-    return;
+    return true;
   }
 
   // 目标库存在但 schema 校验失败：不覆盖原文件（避免用户数据静默丢失），
@@ -346,12 +411,13 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
     console.error('[Backend] SQLite database failed schema check, preserved original as:', suspectPath);
   } catch (error) {
     console.error('[Backend] Unable to preserve suspect SQLite database, skipping recreation:', error.message);
-    return;
+    return false;
   }
 
   fs.mkdirSync(path.dirname(databasePath), { recursive: true });
   createEmptySqliteDatabase(databasePath);
   console.log('[Backend] SQLite database recreated from scratch (user_version=1):', databasePath);
+  return true;
 }
 
 function fileContainsMarker(filePath, marker) {
@@ -1360,7 +1426,13 @@ async function startBackendService() {
   envVars.APP_VERSION = app.getVersion();
 
   resolveDesktopDatabaseEnv(envVars);
-  ensureDesktopSqliteDatabase(envVars, backendPath);
+  if (ensureDesktopSqliteDatabase(envVars, backendPath) === false) {
+    backendStartupDiagnostic = 'SQLite 数据库启动保护已阻断：旧 WAL/SHM 或可疑主库无法安全移位';
+    backendStartupBlocked = true;
+    appendRuntimeLog('backend-launch.log', backendStartupDiagnostic);
+    console.error('[Backend]', backendStartupDiagnostic);
+    return;
+  }
   const desktopDatabasePath = resolveSqliteDatabasePath(
     envVars.SQLITE_DATABASE_URL || envVars.DATABASE_URL,
     backendPath,
@@ -1704,6 +1776,7 @@ function healCorruptedDesktopDatabase(reason) {
   // v1.1.110（复核 P1）：移走的 sidecar 记在 try 外，供主库 rename 失败时回滚
   //（否则「sidecar 已移走 + 主库仍在」的中间态会让下次启动读到半残状态）。
   const movedSidecars = [];
+  let backupPath = null;
   const rollbackSidecars = () => {
     for (const moved of movedSidecars) {
       try {
@@ -1711,6 +1784,15 @@ function healCorruptedDesktopDatabase(reason) {
       } catch { /* 回滚失败仅记录，不改变阻断结论 */ }
     }
     movedSidecars.length = 0;
+  };
+  const rollbackMainDatabase = () => {
+    if (!backupPath || !fs.existsSync(backupPath)) return;
+    try {
+      if (fs.existsSync(databasePath)) fs.unlinkSync(databasePath);
+      fs.renameSync(backupPath, databasePath);
+    } catch (rollbackError) {
+      console.error(`[Backend] AutoHeal main DB rollback failed: ${rollbackError.message}`);
+    }
   };
   try {
     // v1.1.108（复核 P1）：**先移 sidecar 再移主库**——旧实现先 rename 主库，
@@ -1726,15 +1808,16 @@ function healCorruptedDesktopDatabase(reason) {
           movedSidecars.push(sidecar);
         } catch (error) {
           // 回滚已移走的 sidecar（尽量恢复原状），主库不动
+          const rolledBackCount = movedSidecars.length;
           rollbackSidecars();
-          console.error(`[Backend] AutoHeal sidecar rename failed (${suffix}): ${error.message}; rolled back ${movedSidecars.length} sidecar(s), main DB untouched`);
+          console.error(`[Backend] AutoHeal sidecar rename failed (${suffix}): ${error.message}; rolled back ${rolledBackCount} sidecar(s), main DB untouched`);
           appendRuntimeLog('backend-launch.log', `[AutoHeal] BLOCKED: sidecar rename failed (${suffix}) — main DB kept, no rebuild (stale WAL would pollute new DB)`);
           return false;
         }
       }
     }
     // sidecar 全部安全移走 → 再移主库
-    const backupPath = `${databasePath}.corrupt-${stamp}`;
+    backupPath = `${databasePath}.corrupt-${stamp}`;
     fs.renameSync(databasePath, backupPath);
     fs.mkdirSync(path.dirname(databasePath), { recursive: true });
     createEmptySqliteDatabase(databasePath);
@@ -1745,6 +1828,7 @@ function healCorruptedDesktopDatabase(reason) {
   } catch (error) {
     // v1.1.110（复核 P1）：主库 rename/rebuild 失败 → 回滚已移走的 sidecar，
     // 不允许停在「sidecar 已移走 + 主库仍在」的中间态
+    rollbackMainDatabase();
     rollbackSidecars();
     console.error('[Backend] AutoHeal failed:', error.message);
     appendRuntimeLog('backend-launch.log', `[AutoHeal] failed (attempt ${backendDbHealAttempts}/${BACKEND_DB_HEAL_MAX_ATTEMPTS}): ${error.message}（sidecar 已回滚）`);

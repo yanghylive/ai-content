@@ -137,6 +137,10 @@ async function bootstrap() {
   normalizeDesktopSqliteEnv();
   // bodyParser 手动挂载：全局默认 1mb；/api/mai-ui 放宽到 15mb（截图 base64 提交，2026-08-22）
   const app = await NestFactory.create(AppModule, { bodyParser: false });
+  // launchd restarts the service with SIGTERM. Register Nest shutdown hooks so
+  // detached Playwright/Chrome sessions and other owned children get their
+  // module-level cleanup before the process exits.
+  app.enableShutdownHooks();
   app.use(bodyParser.json({ limit: '1mb' }));
   app.use('/api/mai-ui', bodyParser.json({ limit: '15mb' }));
   app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }));
@@ -278,8 +282,10 @@ async function bootstrap() {
     .setDescription('AI Content Creation System API')
     .setVersion('1.0')
     .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  if (!isProduction) {
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.PORT || 3001;
   const host =
@@ -296,6 +302,8 @@ async function bootstrap() {
   );
   await app.listen(port, host);
   console.log(`🚀 应用运行在: http://${host}:${port}`);
-  console.log(`📖 API 文档: http://${host}:${port}/api/docs`);
+  if (!isProduction) {
+    console.log(`📖 API 文档: http://${host}:${port}/api/docs`);
+  }
 }
 void bootstrap();

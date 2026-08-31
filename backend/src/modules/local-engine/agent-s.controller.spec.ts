@@ -271,4 +271,28 @@ describe('AgentSController runtime switch', () => {
       Reflect.getMetadata(IS_PUBLIC_KEY, AgentSController.prototype.runTask),
     ).toBeUndefined();
   });
+
+  it('redacts process and filesystem metadata from public runtime health', async () => {
+    const { controller, nodeRuntime } = createController('1');
+    nodeRuntime.health.mockResolvedValue({
+      ok: true,
+      status: 'ready',
+      pid: 1234,
+      engineUrl: 'internal://secret',
+      checkedAt: '2026-09-01T00:00:00.000Z',
+      capabilities: { browserControl: true },
+    });
+
+    const health = await controller.health();
+    expect(health).toEqual(
+      expect.objectContaining({
+        ok: true,
+        status: 'ready',
+        capabilities: { browserControl: true },
+      }),
+    );
+    expect(health).not.toHaveProperty('pid');
+    expect(health).not.toHaveProperty('engineUrl');
+    expect(health).not.toHaveProperty('checkedAt');
+  });
 });

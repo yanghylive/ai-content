@@ -12,6 +12,19 @@ import type {
 @Controller('agent-s')
 export class AgentSController {
   private readonly agentSServiceSessionIds = new Set<string>();
+  private readonly publicRuntimeKeys = new Set([
+    'pid',
+    'engineUrl',
+    'baseUrl',
+    'lastSeenAt',
+    'checkedAt',
+    'artifact_root',
+    'profileDir',
+    'profileKey',
+    'command',
+    'commandLabel',
+    'lastError',
+  ]);
 
   constructor(
     private readonly agentSService: AgentSService,
@@ -26,6 +39,30 @@ export class AgentSController {
       .trim()
       .toLowerCase();
     return value !== '0' && value !== 'false';
+  }
+
+  /** Public health/status must not disclose process ids, local paths, or timestamps. */
+  private sanitizePublicRuntime(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map((entry) => this.sanitizePublicRuntime(entry));
+    }
+    if (!value || typeof value !== 'object') return value;
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([key]) => !this.publicRuntimeKeys.has(key))
+        .map(([key, entry]) => [
+          key,
+          key === 'message' && typeof entry === 'string'
+            ? entry
+                .replace(/\bpid=\d+\b/gi, 'pid=hidden')
+                .replace(/\bprofile(?:Dir|Key)?=[^,\s)]+/gi, 'profile=hidden')
+                .replace(
+                  /\b(engineUrl|baseUrl|command(?:Label)?)=[^,\s)]+/gi,
+                  '$1=hidden',
+                )
+            : this.sanitizePublicRuntime(entry),
+        ]),
+    );
   }
 
   private isRedfoxSkillHubInput(input?: {
@@ -112,9 +149,13 @@ export class AgentSController {
   @Public()
   async getStatus() {
     if (this.useNodeRuntime()) {
-      return this.nodeAgentRuntime.getStatus();
+      return this.sanitizePublicRuntime(
+        await this.nodeAgentRuntime.getStatus(),
+      );
     }
-    return this.agentSService.getStatus({ refresh: true });
+    return this.sanitizePublicRuntime(
+      await this.agentSService.getStatus({ refresh: true }),
+    );
   }
 
   @Post('ensure-running')
@@ -137,9 +178,9 @@ export class AgentSController {
   @Public()
   async health() {
     if (this.useNodeRuntime()) {
-      return this.nodeAgentRuntime.health();
+      return this.sanitizePublicRuntime(await this.nodeAgentRuntime.health());
     }
-    return this.agentSService.health();
+    return this.sanitizePublicRuntime(await this.agentSService.health());
   }
 
   @Post('sessions')

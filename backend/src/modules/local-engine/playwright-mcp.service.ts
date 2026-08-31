@@ -508,9 +508,9 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       missingRequiredTools,
       lastError: this.lastError || undefined,
       message: this.child
-        ? `playwright-mcp sidecar running (pid=${this.child.pid}, profile=${this.profileKey}, visible=${this.visibleWindow})`
+        ? `playwright-mcp sidecar running (visible=${this.visibleWindow})`
         : this.lastError
-          ? `playwright-mcp sidecar not running: ${this.lastError}`
+          ? 'playwright-mcp sidecar unavailable'
           : 'playwright-mcp sidecar not running',
     };
   }

@@ -53,10 +53,6 @@ echo ""
 echo "构建 Windows 版本..."
 npm run build:win
 
-echo ""
-echo "构建 Linux 版本..."
-npm run build:linux
-
 # 生成更新信息
 echo ""
 echo "生成更新信息..."
@@ -85,18 +81,6 @@ sha512: $(shasum -a 512 "dist/AI内容创作 Setup $VERSION.exe" | cut -d' ' -f1
 releaseDate: $(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
 EOF
 
-# Linux
-cat > dist/latest-linux.yml <<EOF
-version: $VERSION
-files:
-  - url: AI内容创作-$VERSION.AppImage
-    sha512: $(shasum -a 512 dist/AI内容创作-$VERSION.AppImage | cut -d' ' -f1)
-    size: $(stat -f%z dist/AI内容创作-$VERSION.AppImage)
-path: AI内容创作-$VERSION.AppImage
-sha512: $(shasum -a 512 dist/AI内容创作-$VERSION.AppImage | cut -d' ' -f1)
-releaseDate: $(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
-EOF
-
 echo "更新信息已生成"
 
 # 上传到服务器
@@ -113,10 +97,10 @@ echo "========================================="
 echo "版本: $VERSION"
 echo ""
 echo "构建产物:"
-ls -lh dist/*.{yml,dmg,exe,AppImage} 2>/dev/null || true
+ls -lh dist/*.{yml,dmg,exe} 2>/dev/null || true
 echo ""
 echo "下一步:"
 echo "1. 将 dist/ 目录中的文件上传到 $UPDATE_SERVER"
-echo "2. 确保 latest*.yml 文件可访问"
+echo "2. 确保 latest.yml 与 latest-mac.yml 可访问"
 echo "3. 测试自动更新功能"
 echo "========================================="

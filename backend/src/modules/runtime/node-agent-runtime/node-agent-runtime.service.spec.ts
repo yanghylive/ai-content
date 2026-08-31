@@ -100,6 +100,9 @@ describe('NodeAgentRuntimeService health semantics', () => {
       expect.objectContaining({
         phase: 'ready',
         connected: true,
+        canSpawn: true,
+        spawnImplemented: true,
+        executionMode: 'in-process-node-playwright',
         required: true,
       }),
     );
@@ -130,6 +133,9 @@ describe('NodeAgentRuntimeService health semantics', () => {
       expect.objectContaining({
         phase: 'error',
         connected: false,
+        canSpawn: false,
+        spawnImplemented: true,
+        executionMode: 'in-process-node-playwright',
         required: true,
         nextAction: health.nextAction,
       }),
