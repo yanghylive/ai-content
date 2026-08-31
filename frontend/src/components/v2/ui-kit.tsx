@@ -215,17 +215,19 @@ export function V2StatusChip({
   );
 }
 
-/** 统计卡片 */
+/** 统计卡片(支持可选 trend 迷你趋势线) */
 export function V2StatCard({
   label,
   value,
   tone = "muted",
   icon: Icon,
+  trend,
 }: {
   label: string;
   value: string | number;
   tone?: Tone;
   icon?: LucideIcon;
+  trend?: number[];
 }) {
   return (
     <div
@@ -239,6 +241,9 @@ export function V2StatCard({
         </div>
         {Icon && <Icon className="h-6 w-6" />}
       </div>
+      {trend && trend.length >= 2 ? (
+        <Sparkline data={trend} className="mt-3" />
+      ) : null}
     </div>
   );
 }
@@ -367,5 +372,22 @@ export function V2OptionCard({
         )}
       </div>
     </button>
+  );
+}
+
+/** 迷你趋势线(纯 SVG,零依赖):传入 number[] 渲染折线+面积 */
+function Sparkline({ data, width = 64, height = 20, className }: { data: number[]; width?: number; height?: number; className?: string }) {
+  if (data.length < 2) return null;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const step = width / (data.length - 1);
+  const points = data.map((v, i) => `${(i * step).toFixed(1)},${(height - ((v - min) / range) * height).toFixed(1)}`).join(" ");
+  const areaPoints = `0,${height} ${points} ${width},${height}`;
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className={className} aria-hidden="true">
+      <polygon points={areaPoints} fill="var(--kaypal-v3-accent)" opacity={0.08} />
+      <polyline points={points} fill="none" stroke="var(--kaypal-v3-accent)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

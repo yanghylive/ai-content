@@ -120,11 +120,12 @@ html.dark {
 /* ---------- 顶条（吸顶毛玻璃） ---------- */
 .kx-topbar { position: sticky; top: 0; z-index: 20; padding: 14px 34px 10px; background: color-mix(in srgb, var(--kx-paper) 82%, transparent); backdrop-filter: var(--kx-blur-soft, blur(12px)); display: flex; gap: 10px; align-items: center; }
 .kx-search-pill { flex: 1; max-width: 520px; display: flex; align-items: center; gap: 10px; background: var(--kx-card); border: 1px solid var(--kx-border); border-radius: 12px; padding: 10px 14px; color: var(--kx-muted); font-size: 14px; cursor: text; transition: all 0.18s ease; }
-.kx-search-pill:hover { border-color: var(--kx-border-strong); box-shadow: var(--kx-shadow-card); }
+.kx-search-pill:hover { border-color: rgba(114, 46, 209, 0.25); box-shadow: var(--kx-shadow-card), 0 0 0 3px rgba(114, 46, 209, 0.08); }
+.kx-search-pill:focus-visible { border-color: var(--kx-accent); box-shadow: 0 0 0 3px rgba(114, 46, 209, 0.12), 0 1px 4px -1px rgba(114, 46, 209, 0.12); outline: none; }
 .kx-search-pill .kx-grow { flex: 1; text-align: left; }
 .kx-kbd { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 600; background: var(--kx-paper-soft); color: var(--kx-muted); border: 1px solid var(--kx-border); border-bottom-width: 2px; border-radius: 6px; padding: 2px 6px; }
 .kx-topbar-select { border: 1px solid var(--kx-border); background: var(--kx-card); color: var(--kx-ink-soft); font-size: 13px; font-weight: 600; border-radius: 10px; padding: 9px 13px; cursor: pointer; transition: all 0.18s ease; white-space: nowrap; font-family: inherit; }
-.kx-topbar-select:hover { border-color: var(--kx-border-strong); color: var(--kx-ink); }
+.kx-topbar-select:hover { border-color: rgba(114, 46, 209, 0.3); color: var(--kx-accent-ink); background: var(--kx-accent-soft); }
 
 /* ---------- 滚动条（通知/新闻） ---------- */
 .kx-ticker-wrap { width: 100%; max-width: 880px; min-width: 0; box-sizing: border-box; margin: 0 auto; padding: 12px 34px 0; overflow: hidden; }
@@ -521,3 +522,10 @@ html.dark {
   min-width: 1em;
   height: 1em;
 }
+
+/* AI员工 设计系统 · 表格行 hover/selected(共享规则,覆盖 kx-main 内全部原生表格) */
+.kx-main tbody tr { transition: background 150ms ease-out; }
+.kx-main tbody tr:hover { background: rgba(114, 46, 209, 0.05); }
+.kx-main tbody tr.selected,
+.kx-main tbody tr.kx-selected,
+.kx-main tbody tr[aria-selected="true"] { background: rgba(114, 46, 209, 0.09); box-shadow: inset 3px 0 0 var(--kx-accent, #722ed1); }

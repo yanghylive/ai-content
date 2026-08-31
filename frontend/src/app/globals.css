@@ -10,57 +10,57 @@
     /* Hallmark · pre-emit critique: P4 H4 E4 S5 R5 V3 */
     --bg-gradient-from: rgba(255, 255, 255, 0);
     --bg-gradient-to: rgba(255, 255, 255, 0);
-    --kaypal-v3-canvas: #f8f6fc;
-    --kaypal-v3-paper: #ffffff;
-    --kaypal-v3-panel-bg: #ffffff;
-    --kaypal-v3-paper-soft: #efecf4;
-    --kaypal-v3-paper-muted: #e9e5f2;
-    --kaypal-v3-table-head: #f4f1f9;
-    --kaypal-v3-ink: #2a2438;
-    --kaypal-v3-soft-ink: #4d4560;
-    --kaypal-v3-muted: #8b84a0;
-    --kaypal-v3-border: #e6e2ef;
-    --kaypal-v3-border-strong: #cfc8e0;
-    --kaypal-v3-field-bg: #ffffff;
-    --kaypal-v3-field-border: #e6e2ef;
-    --kaypal-v3-field-border-hover: #b6aed0;
+    --kaypal-v3-canvas: oklch(0.976 0.01 300.8);
+    --kaypal-v3-paper: oklch(1 0 162.0);
+    --kaypal-v3-panel-bg: oklch(1 0 162.0);
+    --kaypal-v3-paper-soft: oklch(0.948 0.014 302.2);
+    --kaypal-v3-paper-muted: oklch(0.929 0.022 299.8);
+    --kaypal-v3-table-head: oklch(0.963 0.014 302.2);
+    --kaypal-v3-ink: oklch(0.276 0.045 297.9);
+    --kaypal-v3-soft-ink: oklch(0.409 0.056 298.2);
+    --kaypal-v3-muted: oklch(0.629 0.052 297.1);
+    --kaypal-v3-border: oklch(0.92 0.022 299.8);
+    --kaypal-v3-border-strong: oklch(0.846 0.042 299.0);
+    --kaypal-v3-field-bg: oklch(1 0 162.0);
+    --kaypal-v3-field-border: oklch(0.92 0.022 299.8);
+    --kaypal-v3-field-border-hover: oklch(0.769 0.06 296.6);
     --kaypal-v3-field-height: 32px;
     --kaypal-v3-field-label-offset: 22px;
-    --kaypal-v3-field-focus-ring: rgba(114, 46, 209, 0.16);
+    --kaypal-v3-field-focus-ring: oklch(0.494 0.268 296.1 / 0.16);
     --kaypal-v3-field-shadow:
       inset 0 1px 0 rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.03);
     --kaypal-v3-field-shadow-focus:
       0 0 0 4px var(--kaypal-v3-field-focus-ring),
       inset 0 1px 0 rgba(15, 23, 42, 0.03);
-    --kaypal-v3-accent: #722ed1;
-    --kaypal-v3-accent-soft: #f9f0ff;
-    --kaypal-v3-accent-border: #d3adf7;
-    --kaypal-v3-accent-tint: #b37feb;
-    --kaypal-v3-accent-ink: #531dab;
-    --kaypal-v3-cobalt: #2f6bd8;
-    --kaypal-v3-blue-soft: #e4eefe;
-    --kaypal-v3-amber: #c26a06;
-    --kaypal-v3-amber-soft: #fdf1e0;
-    --kaypal-v3-orange: #fa8c16;
-    --kaypal-v3-orange-soft: #fdf1e0;
-    --kaypal-v3-danger: #dc2626;
-    --kaypal-v3-danger-soft: #fdeaea;
-    --kaypal-v3-success: #16a34a;
-    --kaypal-v3-success-soft: #e8f7ee;
-    --kaypal-v3-brand: #722ed1;
-    --kaypal-v3-brand-solid: #722ed1;
-    --kaypal-v3-brand-hover: #531dab;
-    --kaypal-v3-brand-border: #d3adf7;
-    --kaypal-v3-brand-soft: #f9f0ff;
-    --kaypal-v3-nav-bg: #ffffff;
-    --kaypal-v3-nav-surface: #efecf4;
-    --kaypal-v3-nav-surface-hover: #e6e2ef;
-    --kaypal-v3-nav-border: #e6e2ef;
-    --kaypal-v3-nav-ink: #2a2438;
-    --kaypal-v3-nav-muted: #4d4560;
+    --kaypal-v3-accent: oklch(0.494 0.268 296.1);
+    --kaypal-v3-accent-soft: oklch(0.966 0.027 309.8);
+    --kaypal-v3-accent-border: oklch(0.807 0.132 306.1);
+    --kaypal-v3-accent-tint: oklch(0.692 0.192 303.9);
+    --kaypal-v3-accent-ink: oklch(0.409 0.236 292.9);
+    --kaypal-v3-cobalt: oklch(0.55 0.206 266.8);
+    --kaypal-v3-blue-soft: oklch(0.946 0.029 267.0);
+    --kaypal-v3-amber: oklch(0.613 0.164 69.1);
+    --kaypal-v3-amber-soft: oklch(0.963 0.031 84.8);
+    --kaypal-v3-orange: oklch(0.745 0.196 69.2);
+    --kaypal-v3-orange-soft: oklch(0.963 0.031 84.8);
+    --kaypal-v3-danger: oklch(0.577 0.215 29.6);
+    --kaypal-v3-danger-soft: oklch(0.952 0.021 18.7);
+    --kaypal-v3-success: oklch(0.627 0.208 143.4);
+    --kaypal-v3-success-soft: oklch(0.963 0.022 154.8);
+    --kaypal-v3-brand: oklch(0.494 0.268 296.1);
+    --kaypal-v3-brand-solid: oklch(0.494 0.268 296.1);
+    --kaypal-v3-brand-hover: oklch(0.409 0.236 292.9);
+    --kaypal-v3-brand-border: oklch(0.807 0.132 306.1);
+    --kaypal-v3-brand-soft: oklch(0.966 0.027 309.8);
+    --kaypal-v3-nav-bg: oklch(1 0 162.0);
+    --kaypal-v3-nav-surface: oklch(0.948 0.014 302.2);
+    --kaypal-v3-nav-surface-hover: oklch(0.92 0.022 299.8);
+    --kaypal-v3-nav-border: oklch(0.92 0.022 299.8);
+    --kaypal-v3-nav-ink: oklch(0.276 0.045 297.9);
+    --kaypal-v3-nav-muted: oklch(0.409 0.056 298.2);
     --kaypal-v3-nav-shadow: 2px 0 12px rgba(15, 23, 42, 0.06);
-    --kaypal-v3-purple: #722ed1;
-    --kaypal-v3-purple-soft: #f9f0ff;
+    --kaypal-v3-purple: oklch(0.494 0.268 296.1);
+    --kaypal-v3-purple-soft: oklch(0.966 0.027 309.8);
     --kaypal-v3-card-shadow:
       0 1px 2px rgba(42, 36, 56, 0.04);
     --kaypal-v3-elevated-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
@@ -118,18 +118,18 @@
     --kaypal-v3-glow-sm: 0 0 0 3px rgba(114, 46, 209, 0.1), 0 1px 4px -1px rgba(114, 46, 209, 0.12);
 
     /* gradients 渐变（基于 #722ed1 色阶） */
-    --kaypal-v3-gradient-primary: linear-gradient(135deg, #9254de 0%, #722ed1 50%, #531dab 100%);
+    --kaypal-v3-gradient-primary: linear-gradient(135deg, oklch(0.584 0.239 300.7) 0%, oklch(0.494 0.268 296.1) 50%, oklch(0.409 0.236 292.9) 100%);
     --kaypal-v3-gradient-primary-soft: linear-gradient(135deg, rgba(114, 46, 209, 0.08) 0%, rgba(114, 46, 209, 0.04) 100%);
     --kaypal-v3-gradient-card-stat: linear-gradient(135deg, rgba(114, 46, 209, 0.03) 0%, rgba(146, 84, 222, 0.06) 50%, rgba(47, 107, 216, 0.02) 100%);
-    --kaypal-v3-gradient-avatar: linear-gradient(135deg, #a87ae0 0%, #722ed1 100%);
+    --kaypal-v3-gradient-avatar: linear-gradient(135deg, oklch(0.667 0.182 302.6) 0%, oklch(0.494 0.268 296.1) 100%);
     --kaypal-v3-gradient-shimmer: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.12) 50%, transparent 75%);
 
     /* motion 动效补全 */
     --kaypal-v3-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
     --kaypal-v3-dur-smooth: 200ms;
     /* button inset highlight(浅色) */
-    --kaypal-v3-btn-inset: rgba(255, 255, 255, 0.18);
-    --kaypal-v3-btn-inset-hover: rgba(255, 255, 255, 0.22);
+    --kaypal-v3-btn-inset: oklch(1 0 162.0 / 0.18);
+    --kaypal-v3-btn-inset-hover: oklch(1 0 162.0 / 0.22);
   }
 
   /* KAYPAL v2 零学习成本改造页 · 浅色模式紫色主题覆盖（已升格为全局 :root 主色，此作用域保留为空不再覆盖） */
@@ -137,54 +137,54 @@
   .dark {
     --bg-gradient-from: rgba(120, 40, 200, 0.15);
     --bg-gradient-to: rgba(0, 0, 0, 0);
-    --kaypal-v3-canvas: #141218;
-    --kaypal-v3-paper: #1c1923;
-    --kaypal-v3-panel-bg: #1c1923;
-    --kaypal-v3-paper-soft: #1d1a24;
-    --kaypal-v3-paper-muted: #2b2735;
-    --kaypal-v3-table-head: #1d1a24;
-    --kaypal-v3-ink: #ece9f4;
-    --kaypal-v3-soft-ink: #c9c3d9;
-    --kaypal-v3-muted: #847d99;
-    --kaypal-v3-border: #2b2735;
-    --kaypal-v3-border-strong: #413a52;
-    --kaypal-v3-field-bg: #1c1923;
-    --kaypal-v3-field-border: #413a52;
-    --kaypal-v3-field-border-hover: #5a5470;
+    --kaypal-v3-canvas: oklch(0.187 0.015 300.2);
+    --kaypal-v3-paper: oklch(0.221 0.024 298.6);
+    --kaypal-v3-panel-bg: oklch(0.221 0.024 298.6);
+    --kaypal-v3-paper-soft: oklch(0.226 0.024 298.6);
+    --kaypal-v3-paper-muted: oklch(0.283 0.032 298.0);
+    --kaypal-v3-table-head: oklch(0.226 0.024 298.6);
+    --kaypal-v3-ink: oklch(0.94 0.019 298.6);
+    --kaypal-v3-soft-ink: oklch(0.829 0.039 298.3);
+    --kaypal-v3-muted: oklch(0.606 0.053 297.0);
+    --kaypal-v3-border: oklch(0.283 0.032 298.0);
+    --kaypal-v3-border-strong: oklch(0.366 0.051 297.9);
+    --kaypal-v3-field-bg: oklch(0.221 0.024 298.6);
+    --kaypal-v3-field-border: oklch(0.366 0.051 297.9);
+    --kaypal-v3-field-border-hover: oklch(0.463 0.056 295.3);
     --kaypal-v3-field-height: 32px;
     --kaypal-v3-field-label-offset: 22px;
-    --kaypal-v3-field-focus-ring: rgba(146, 84, 222, 0.28);
+    --kaypal-v3-field-focus-ring: oklch(0.584 0.239 300.7 / 0.28);
     --kaypal-v3-field-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 8px rgba(0, 0, 0, 0.18);
     --kaypal-v3-field-shadow-focus:
       0 0 0 4px var(--kaypal-v3-field-focus-ring),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    --kaypal-v3-accent: #9254de;
-    --kaypal-v3-accent-soft: rgba(114, 46, 209, 0.18);
-    --kaypal-v3-accent-ink: #d3adf7;
-    --kaypal-v3-accent-border: #3a2b5c;
-    --kaypal-v3-accent-tint: rgba(114, 46, 209, 0.3);
-    --kaypal-v3-purple: #9254de;
-    --kaypal-v3-purple-soft: rgba(114, 46, 209, 0.18);
-    --kaypal-v3-cobalt: #93b8f5;
-    --kaypal-v3-blue-soft: rgba(90, 140, 240, 0.16);
-    --kaypal-v3-amber: #eebd72;
-    --kaypal-v3-amber-soft: rgba(230, 160, 60, 0.14);
-    --kaypal-v3-danger: #f87171;
-    --kaypal-v3-danger-soft: rgba(235, 90, 115, 0.14);
-    --kaypal-v3-success: #4ade80;
-    --kaypal-v3-success-soft: rgba(48, 190, 130, 0.14);
-    --kaypal-v3-brand: #b885f7;
-    --kaypal-v3-brand-solid: #722ed1;
-    --kaypal-v3-brand-hover: #531dab;
-    --kaypal-v3-brand-border: #5a4478;
-    --kaypal-v3-brand-soft: rgba(146,84,222,0.16);
-    --kaypal-v3-nav-bg: #1c1923;
-    --kaypal-v3-nav-surface: #1d1a24;
-    --kaypal-v3-nav-surface-hover: #2b2735;
-    --kaypal-v3-nav-border: #2b2735;
-    --kaypal-v3-nav-ink: #ece9f4;
-    --kaypal-v3-nav-muted: #847d99;
+    --kaypal-v3-accent: oklch(0.584 0.239 300.7);
+    --kaypal-v3-accent-soft: oklch(0.494 0.268 296.1 / 0.18);
+    --kaypal-v3-accent-ink: oklch(0.807 0.132 306.1);
+    --kaypal-v3-accent-border: oklch(0.332 0.101 296.1);
+    --kaypal-v3-accent-tint: oklch(0.494 0.268 296.1 / 0.3);
+    --kaypal-v3-purple: oklch(0.584 0.239 300.7);
+    --kaypal-v3-purple-soft: oklch(0.494 0.268 296.1 / 0.18);
+    --kaypal-v3-cobalt: oklch(0.778 0.113 266.8);
+    --kaypal-v3-blue-soft: oklch(0.652 0.185 268.5 / 0.16);
+    --kaypal-v3-amber: oklch(0.827 0.134 86.0);
+    --kaypal-v3-amber-soft: oklch(0.757 0.17 82.2 / 0.14);
+    --kaypal-v3-danger: oklch(0.711 0.166 23.8);
+    --kaypal-v3-danger-soft: oklch(0.663 0.18 12.2 / 0.14);
+    --kaypal-v3-success: oklch(0.801 0.217 146.0);
+    --kaypal-v3-success-soft: oklch(0.713 0.167 154.5 / 0.14);
+    --kaypal-v3-brand: oklch(0.713 0.2 302.4);
+    --kaypal-v3-brand-solid: oklch(0.494 0.268 296.1);
+    --kaypal-v3-brand-hover: oklch(0.409 0.236 292.9);
+    --kaypal-v3-brand-border: oklch(0.433 0.104 301.9);
+    --kaypal-v3-brand-soft: oklch(0.584 0.239 300.7 / 0.16);
+    --kaypal-v3-nav-bg: oklch(0.221 0.024 298.6);
+    --kaypal-v3-nav-surface: oklch(0.226 0.024 298.6);
+    --kaypal-v3-nav-surface-hover: oklch(0.283 0.032 298.0);
+    --kaypal-v3-nav-border: oklch(0.283 0.032 298.0);
+    --kaypal-v3-nav-ink: oklch(0.94 0.019 298.6);
+    --kaypal-v3-nav-muted: oklch(0.606 0.053 297.0);
     --kaypal-v3-nav-shadow: 2px 0 12px rgba(0, 0, 0, 0.22);
     --kaypal-v3-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
     --kaypal-v3-elevated-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
@@ -215,14 +215,14 @@
     --kaypal-v3-shadow-5: 0 12px 24px rgba(0, 0, 0, 0.36), 0 24px 60px -12px rgba(0, 0, 0, 0.48), 0 8px 16px -4px rgba(0, 0, 0, 0.2);
     --kaypal-v3-glow: 0 0 0 3px rgba(146, 84, 222, 0.16), 0 2px 8px -1px rgba(146, 84, 222, 0.22), 0 4px 16px -4px rgba(146, 84, 222, 0.34);
     --kaypal-v3-glow-sm: 0 0 0 3px rgba(146, 84, 222, 0.16), 0 1px 4px -1px rgba(146, 84, 222, 0.18);
-    --kaypal-v3-gradient-primary: linear-gradient(135deg, #a87ae0 0%, #9254de 50%, #722ed1 100%);
+    --kaypal-v3-gradient-primary: linear-gradient(135deg, oklch(0.667 0.182 302.6) 0%, oklch(0.584 0.239 300.7) 50%, oklch(0.494 0.268 296.1) 100%);
     --kaypal-v3-gradient-primary-soft: linear-gradient(135deg, rgba(146, 84, 222, 0.14) 0%, rgba(114, 46, 209, 0.07) 100%);
     --kaypal-v3-gradient-card-stat: linear-gradient(135deg, rgba(146, 84, 222, 0.05) 0%, rgba(114, 46, 209, 0.08) 50%, rgba(147, 184, 245, 0.03) 100%);
-    --kaypal-v3-gradient-avatar: linear-gradient(135deg, #7d57b8 0%, #9254de 100%);
+    --kaypal-v3-gradient-avatar: linear-gradient(135deg, oklch(0.542 0.177 299.4) 0%, oklch(0.584 0.239 300.7) 100%);
     --kaypal-v3-gradient-shimmer: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.05) 50%, transparent 75%);
     /* button inset highlight(深色,柔和) */
-    --kaypal-v3-btn-inset: rgba(255, 255, 255, 0.08);
-    --kaypal-v3-btn-inset-hover: rgba(255, 255, 255, 0.12);
+    --kaypal-v3-btn-inset: oklch(1 0 162.0 / 0.08);
+    --kaypal-v3-btn-inset-hover: oklch(1 0 162.0 / 0.12);
   }
 
   html {
