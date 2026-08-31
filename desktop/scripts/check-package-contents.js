@@ -56,13 +56,41 @@ function extractMacApp(zipPath) {
   };
 }
 
+// 2026-08-31（CI run 33391994962 实证）：GitHub windows runner 装了 7-Zip 但
+// 不保证在 PATH → 依次尝试 PATH 与常见安装路径。
+let cached7z;
+function find7z() {
+  if (cached7z !== undefined) return cached7z;
+  const tries = ["7z"];
+  if (process.platform === "win32") {
+    tries.push("C:\\Program Files\\7-Zip\\7z.exe", "C:\\Program Files (x86)\\7-Zip\\7z.exe");
+  }
+  cached7z = null;
+  for (const c of tries) {
+    const r = spawnSync(c, [], { encoding: "utf8" });
+    if (!r.error) {
+      cached7z = c;
+      break;
+    }
+  }
+  return cached7z;
+}
+
 function extractWinExe(exePath) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "prl-win-"));
-  run(`7z x -y -o"${tmp}" "${exePath}" >/dev/null 2>&1`);
+  const cleanup = () => fs.rmSync(tmp, { recursive: true, force: true });
+  // 原 `>/dev/null 2>&1` 在 Windows cmd 下无 /dev/null → "The system cannot find
+  // the path specified."；run() 的 stdio 已 pipe 捕获，无需 shell 重定向。
+  const sevenZip = find7z();
+  if (!sevenZip) {
+    console.warn("7z 不存在（macOS: brew install p7zip / Windows: 安装 7-Zip），无法深度解包 exe");
+    return { tmp, resources: null, cleanup };
+  }
+  run(`"${sevenZip}" x -y -o"${tmp}" "${exePath}"`);
   const plugin = path.join(tmp, "$PLUGINSDIR", "app-64.7z");
-  if (!fs.existsSync(plugin)) return { tmp, resources: null, cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }) };
+  if (!fs.existsSync(plugin)) return { tmp, resources: null, cleanup };
   const appOut = path.join(tmp, "app");
-  const r = spawnSync("7z", ["x", "-y", `-o${appOut}`, plugin], { encoding: "utf8" });
+  const r = spawnSync(sevenZip, ["x", "-y", `-o${appOut}`, plugin], { encoding: "utf8" });
   if (r.status !== 0) {
     console.warn(`7z 解 app-64.7z 失败: ${r.stderr || r.stdout}`);
     return { tmp, resources: null, cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }) };

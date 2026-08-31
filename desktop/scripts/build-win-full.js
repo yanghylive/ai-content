@@ -124,7 +124,9 @@ function main() {
 
   // 安装包内容完整性门禁：app.asar 依赖对照 + backend 原生依赖 + chromium + prisma 引擎 + Octop sidecar
   // （win 优先检查 win-unpacked，不依赖 7z，Windows 原生构建可跑）
-  run('Check package contents', 'node', ['scripts/check-package-contents.js'], {
+  // --win-only：Windows 构建环境没有 mac zip（本机 mac dist 残留属历史产物），
+  // 全量模式会因 "Mac zip 未找到" 假红（CI run 33391994962 实证）
+  run('Check package contents', 'node', ['scripts/check-package-contents.js', '--win-only'], {
     cwd: desktopRoot,
     env: { BUILD_PLATFORM: 'win-x64' },
   });
