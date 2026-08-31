@@ -92,6 +92,13 @@ function main() {
     env: { BUILD_PLATFORM: 'win-x64' },
   });
 
+  // 2026-08-31（CI run 33390502368 实证）：release-config + 净化版 backend.env 此前
+  // 从未进构建链（本机靠手动跑过一次的残留产物），CI 干净环境包内缺 backend/.env，
+  // post 检查假红。与 build:mac 链的 prepare:release-config 对齐。
+  run('Prepare release config + sanitized backend env', 'node', ['scripts/prepare-release-config.js'], {
+    cwd: desktopRoot,
+  });
+
   // Windows 安全凭据存储 smoke：仅在 Windows 真机构建时执行（macOS 交叉构建跳过，凭据存储需 Windows DPAPI）
   if (process.platform === 'win32') {
     run('Smoke Windows secure credential storage', 'npx', ['electron', 'scripts/smoke-electron-credential-key.js'], {

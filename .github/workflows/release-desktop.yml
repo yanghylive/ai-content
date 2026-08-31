@@ -101,6 +101,10 @@ jobs:
           AI_CONTENT_UPDATE_URL: ${{ secrets.AI_CONTENT_UPDATE_URL || 'https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OCTOP_VENV: ${{ runner.temp }}/octop-venv
+          # 2026-08-31：tag 触发 = 商用发布，prepare-release-config 强制生产域名校验，
+          # 不给这两个 env 会在 build:mac/build:win 链内直接失败（生产值非机密，硬编码）
+          KAYPAL_AUTH_BASE_URL: https://kaypal.cn
+          KAYPAL_CLOUD_API_ENDPOINT: https://kaypal.cn/cloud-api
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
             npm run build:mac
