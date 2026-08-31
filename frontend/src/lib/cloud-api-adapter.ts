@@ -72,8 +72,7 @@ interface ElectronCloudAPI {
   checkContent(input: CheckContentInput): Promise<CheckContentOutput>;
   checkDedup(input: CheckDedupInput): Promise<CheckDedupOutput>;
   markSent(input: MarkSentInput): Promise<MarkSentOutput>;
-  getUserInfo(): Promise<CloudUser>;
-  getUsageStats(): Promise<UsageStats>;
+  // v1.1.108（复核 P2-8）：getUserInfo/getUsageStats 云端遗留接口已移除
 }
 
 interface ElectronConfigAPI {
@@ -252,47 +251,8 @@ export const cloudAPI = {
     });
   },
 
-  // 用户登录
-  async login(username: string, password: string): Promise<LoginOutput> {
-    if (isElectron() && window.electronAPI) {
-      // Electron 环境中，登录由主进程处理
-      const result = await browserCloudRequest<LoginOutput>('/api/v1/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ username, password })
-      });
-      
-      if (result.token) {
-        await window.electronAPI.config.set('apiToken', result.token);
-      }
-      
-      return result;
-    }
-
-    // 浏览器端不再直连企业登录/持有 token（P1 安全加固），
-    // 业务能力统一走后端代理；保留方法签名兼容调用方。
-    return browserCloudRequest<LoginOutput>('/api/v1/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ username, password })
-    });
-  },
-
-  // 获取用户信息
-  async getUserInfo(): Promise<CloudUser> {
-    if (isElectron() && window.electronAPI) {
-      return window.electronAPI.cloudAPI.getUserInfo();
-    }
-
-    return browserCloudRequest<CloudUser>('/api/v1/auth/me');
-  },
-
-  // 获取使用统计
-  async getUsageStats(): Promise<UsageStats> {
-    if (isElectron() && window.electronAPI) {
-      return window.electronAPI.cloudAPI.getUsageStats();
-    }
-
-    return browserCloudRequest<UsageStats>('/api/v1/usage/stats');
-  }
+  // v1.1.108（复核 P2-8 / 大王决策）：login/getUserInfo/getUsageStats/
+  // getSubscription 云端遗留接口移除（线上 503、主链路走 3011 authApi、无调用方）
 };
 
 // 导出类型
