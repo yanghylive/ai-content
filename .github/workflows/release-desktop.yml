@@ -46,7 +46,10 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         env:
-          NEXT_PUBLIC_API_BASE: http://localhost:3011/api
+          # 2026-08-31 修复（CI 发布路径老坑①）：桌面端前端必须同源 /api（内嵌 3010
+          # 反代）；写死绝对 3011 会跨域丢 cookie → 全跳登录，且被 check:full-installer-assets
+          # pre 阶段抓出（v1.1.99 至今 CI 发布从未跑通的根因之一）
+          NEXT_PUBLIC_API_BASE: /api
           KAYPAL_SKIP_NEXT_BUILD_LINT: "1"
           KAYPAL_SKIP_NEXT_BUILD_TYPECHECK: "1"
         run: npm ci && npm run build
@@ -55,12 +58,42 @@ jobs:
         working-directory: desktop
         run: npm ci
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 2026-08-31 修复（CI 发布路径老坑②）：Octop sidecar 是核心功能（AI 助手），
+      # CI runner 无 ~/.octop/venv。现场用 uv 装 octop==0.9.26（pip 会 resolution-too-deep），
+      # 固定 Python 3.12 + chromium-headless-shell（octop 浏览器会话依赖，python playwright）。
+      # mac 的 build:mac 不调用 prepare-octop-sidecar（依赖 runtime/octop 已存在），
+      # 需显式生成；win 的 build-win-full.js 内部调用，OCTOP_VENV 传给它即可。
+      - name: Prepare Octop venv (octop==0.9.26)
+        shell: bash
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          # prepare-octop-sidecar 内部 uv venv 需要真实 python 路径（win 默认
+          # C:\Python312\python.exe 在 CI 不存在）——用 setup-python 的 3.12
+          echo "OCTOP_PYTHON=$(python -c 'import sys;print(sys.executable)')" >> "$GITHUB_ENV"
+          uv venv "$RUNNER_TEMP/octop-venv" --python 3.12
+          uv pip install --python "$RUNNER_TEMP/octop-venv" octop==0.9.26
+          "$RUNNER_TEMP/octop-venv/${{ matrix.os == 'windows-latest' && 'Scripts' || 'bin' }}/python" -m playwright install chromium-headless-shell
+
+      - name: Prepare Octop sidecar (macOS)
+        if: matrix.os == 'macos-latest'
+        working-directory: desktop
+        env:
+          OCTOP_VENV: ${{ runner.temp }}/octop-venv
+        run: node scripts/prepare-octop-sidecar.js
+
       - name: Build artifacts
         shell: bash
         working-directory: desktop
         env:
           AI_CONTENT_UPDATE_URL: ${{ secrets.AI_CONTENT_UPDATE_URL || 'https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OCTOP_VENV: ${{ runner.temp }}/octop-venv
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
             npm run build:mac
