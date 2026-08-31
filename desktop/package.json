@@ -174,34 +174,6 @@
         ]
       },
       {
-        "from": "../backend/node_modules/@playwright/mcp",
-        "to": "backend/node_modules/@playwright/mcp",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "../backend/node_modules/playwright",
-        "to": "backend/node_modules/playwright",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "../backend/node_modules/playwright-core",
-        "to": "backend/node_modules/playwright-core",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "../backend/node_modules/sharp",
-        "to": "backend/node_modules/sharp",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
         "from": "runtime/playwright-browsers",
         "to": "playwright-browsers",
         "filter": [
@@ -257,29 +229,21 @@
         ]
       },
       {
-        "from": "../backend/node_modules/@img",
-        "to": "backend/node_modules/@img",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "../backend/node_modules/detect-libc",
-        "to": "backend/node_modules/detect-libc",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "../backend/node_modules/semver",
-        "to": "backend/node_modules/semver",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
         "from": "runtime/generated",
         "to": "generated"
+      },
+      {
+        "from": "../backend/node_modules",
+        "to": "backend/node_modules",
+        "filter": [
+          "@playwright/**/*",
+          "playwright/**/*",
+          "playwright-core/**/*",
+          "sharp/**/*",
+          "@img/**/*",
+          "detect-libc/**/*",
+          "semver/**/*"
+        ]
       }
     ],
     "mac": {
