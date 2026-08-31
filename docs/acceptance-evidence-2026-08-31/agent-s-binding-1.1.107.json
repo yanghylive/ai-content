@@ -1,0 +1,29 @@
+{
+  "kind": "agent-s-package-binding-evidence",
+  "product": "ai-content-desktop",
+  "installerVersion": "1.1.107",
+  "installerWin": {
+    "file": "JIUZHANG AI 内容创作平台 Setup 1.1.107.exe",
+    "sha256": "8aae9c27edf638b876b3cc54068f1299d360e76e6b8f2459b94844227d3d7bf2"
+  },
+  "installerMac": {
+    "file": "JIUZHANG AI 内容创作平台-1.1.107-arm64-mac.zip",
+    "sha256": "7d46d19c4c3e416b4f05484f367858d6c401722bf277a62f2126256bae6e7857"
+  },
+  "runner": {
+    "mode": "node-playwright",
+    "browserControl": true,
+    "connected": true,
+    "ready": true
+  },
+  "gateSummary": "PASS=66 WARN=4 BLOCKED=5 FAILED=0",
+  "realExecution": true,
+  "accountsSynced": true,
+  "batchTaskIds": [
+    "le_mtgrw7cw_l25pvh",
+    "le_mtgrw7cw_l25pvh"
+  ],
+  "evidenceNote": "real-execution 5/5 = 真实账号创建读/草稿任务 + 页面读回 + evidence-export 5/5（详见 gate 日志 /tmp/comm-gate-1107.log）",
+  "generatedAt": "2026-08-31T05:04:00+08:00",
+  "gateLog": "/tmp/comm-gate-1107.log"
+}
