@@ -109,3 +109,20 @@ jobs:
           name: desktop-${{ matrix.os }}
           path: desktop/dist/*
           retention-days: 14
+
+  verify-remote-release:
+    name: Verify OSS update feeds after all platform uploads
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Verify Windows, macOS and Linux feeds
+        working-directory: desktop
+        env:
+          AI_CONTENT_UPDATE_URL: ${{ secrets.AI_CONTENT_UPDATE_URL || 'https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/' }}
+          RELEASE_VERIFY_FEEDS: latest.yml,latest-mac.yml,latest-linux.yml
+        run: npm run release:verify:remote

@@ -108,6 +108,8 @@ npm run release:verify
 
 默认会检查 OSS 上 Windows、macOS、Linux 三条 feed、各自引用的安装包，以及 Windows/macOS blockmap，并核对版本、大小和 SHA-512。单平台构建调试时可显式缩小远端范围，例如 `RELEASE_VERIFY_FEEDS=latest.yml npm run release:verify`；正式发布不要设置该变量。
 
+GitHub Actions 的三个平台上传完成后会自动执行无本地产物依赖的远端门禁：`npm run release:verify:remote`。它会检查三条 feed 与安装包的 HTTP 可读性和元数据一致性，任一平台漏传都会让发布工作流失败。
+
 ### 方法 B：GitHub Actions（推荐）
 
 #### 1. 在 GitHub 仓库加 5 个 Secret

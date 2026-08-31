@@ -13,6 +13,7 @@ const packagePath = path.join(desktopRoot, 'package.json');
 const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 const expectedVersion = (process.env.RELEASE_VERSION || pkg.version || '').trim();
 const localOnly = process.argv.includes('--local-only') || process.env.RELEASE_VERIFY_LOCAL_ONLY === 'true';
+const remoteOnly = process.argv.includes('--remote-only');
 const updateBaseUrl = (
   process.env.AI_CONTENT_UPDATE_URL ||
   pkg?.build?.publish?.url ||
@@ -469,12 +470,22 @@ async function main() {
   for (const feedName of unknownFeedNames) {
     fail(`RELEASE_VERIFY_FEEDS contains unknown feed: ${feedName}`);
   }
-  verifyPackageContract();
-  verifySourceWechatNativeRuntime();
-  const localFeeds = verifyLocalFeeds();
-  const latest = localFeeds['latest.yml'] || null;
-  verifyPackagedApp();
-  const remote = localOnly ? null : await verifyRemote(localFeeds);
+  if (remoteOnly && localOnly) {
+    fail('--remote-only cannot be combined with --local-only');
+  }
+
+  let latest = null;
+  let remote = null;
+  if (remoteOnly) {
+    remote = await verifyRemote({});
+  } else {
+    verifyPackageContract();
+    verifySourceWechatNativeRuntime();
+    const localFeeds = verifyLocalFeeds();
+    latest = localFeeds['latest.yml'] || null;
+    verifyPackagedApp();
+    remote = localOnly ? null : await verifyRemote(localFeeds);
+  }
 
   if (warnings.length > 0) {
     console.warn('Release verification warnings:');
@@ -488,6 +499,7 @@ async function main() {
 
   console.log('Release verification passed.');
   console.log(`  version: ${expectedVersion}`);
+  if (remoteOnly) console.log('  local: skipped (--remote-only)');
   if (latest) {
     console.log(`  local installer: ${latest.path}`);
     console.log(`  local size: ${latest.size}`);
@@ -500,7 +512,9 @@ async function main() {
       console.log(`  remote ${result.label}: ${result.latestUrl}`);
       console.log(`  remote installer: ${result.installerUrl}`);
       console.log(`  remote size: ${result.remoteSize}`);
-      console.log(`  remote blockmap size: ${result.blockmapSize}`);
+      if (result.blockmapSize !== null) {
+        console.log(`  remote blockmap size: ${result.blockmapSize}`);
+      }
     }
   } else if (localOnly) {
     console.log('  remote: skipped (--local-only)');
