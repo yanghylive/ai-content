@@ -52,7 +52,17 @@ export class OctopLaunchController {
       const r = await this.bridge.loginOctop({ kaypalUserId: user.id });
       token = r.token;
       isolated = r.isolated === true;
-    } catch {
+    } catch (error) {
+      // v1.1.109（复核整改）：token 换发失败必须显式报日志（不能静默降级让用户
+      // 看到 Octop 自带登录页）。2026-08-31 实证根因：octop-bridge DB 密码与
+      // backend/.env 的 OCTOP_ADMIN_PASSWORD 不一致（0.9.26 升级后）→
+      // /api/auth/login AUTH_FAILED → 前端降级 → 用户被 Octop 登录页拦截。
+      // 修复：`octop user passwd octop-bridge --password <env值>` 重置对齐。
+      // 此处保留告警：healthy=true 但 token 拿不到 = 集成凭据问题（非服务故障）。
+      console.warn(
+        `[OctopLaunch] token 换发失败（healthy=true, token=null）：OCTOP 凭据不匹配或 Octop 账号异常，用户将看到 Octop 自带登录页。检查 backend/.env OCTOP_ADMIN_USERNAME/PASSWORD 与 octop DB users 表是否一致（octop user passwd 重置）。`,
+        error instanceof Error ? error.message : String(error),
+      );
       token = null;
     }
 
