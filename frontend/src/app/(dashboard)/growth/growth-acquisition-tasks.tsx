@@ -443,6 +443,13 @@ export function GrowthAcquisitionTasks() {
                                   ⚠ RPA 执行失败（{run.fallback.reasonCode ?? "未知原因"}），已回退本地适配器
                                 </p>
                               )}
+                            {/* 2026-08-31 复盘：失败原因必须给用户看（此前只显示"失败"徽章，
+                                run.message 里的风控/验证码指引完全没露出，用户无从对症处理） */}
+                            {run.message && run.status !== "success" && (
+                              <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
+                                {run.message}
+                              </p>
+                            )}
                           </Fragment>
                           ))}
                         </div>

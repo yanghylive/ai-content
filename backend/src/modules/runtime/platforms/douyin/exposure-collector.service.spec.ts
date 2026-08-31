@@ -372,6 +372,47 @@ describe('DouyinExposureCollector', () => {
     expect(result.status).toBe('captcha_required');
   });
 
+  // 2026-08-31 20:05:21 线上实锤：滑块验证页文案「请完成下列验证后继续」
+  // 未命中旧验证码正则 → 被误判 platform_changed/unknown，用户看到错误原因。
+  it('returns captcha_required (not platform_changed) for the slide-captcha variant on hot-video search', async () => {
+    const collector = new DouyinExposureCollector(
+      makeBrowserSequenceMock([
+        {
+          url: 'https://www.douyin.com/search/%E8%A3%85%E4%BF%AE',
+          textSample:
+            '请完成下列验证后继续\n按住左边按钮拖动完成上方拼图\n刷新\n反馈',
+        },
+      ]),
+    );
+
+    const result = await collector.collectHotVideos({
+      accountId: '1',
+      searchKeywords: ['装修'],
+      limit: 5,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe('captcha_required');
+    expect(result.message).toContain('手动完成验证');
+  });
+
+  it('returns captcha_required for the slide-captcha variant on comment pages', async () => {
+    const collector = new DouyinExposureCollector(
+      makeBrowserMock({
+        url: 'https://www.douyin.com/video/1',
+        textSample: '请完成下列验证后继续\n按住左边按钮拖动完成上方拼图',
+      }),
+    );
+
+    const result = await collector.collectFromLinks({
+      accountId: '1',
+      links: ['https://v.douyin.com/test/'],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe('captcha_required');
+  });
+
   it('rejects empty links before opening browser', async () => {
     const browser = makeBrowserMock({});
     const collector = new DouyinExposureCollector(browser);
