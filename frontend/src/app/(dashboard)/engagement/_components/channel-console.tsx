@@ -104,8 +104,18 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
 
   // 消息
   const [error, setError] = useState<string | null>(null);
-  // 任务列表加载失败独立状态（2026-09-01 复核回改，不与操作 error 混用）
-  const { loadError, reportLoadError, clearLoadError } = useLoadError();
+  // 加载失败独立状态（2026-09-01 R2 回改：账号/任务两路由 Promise.all 并行启动，
+  // 共用一个 loadError 会互相清错——任务成功的 clear 会抹掉账号失败的上报，拆两个实例）
+  const {
+    loadError: accountLoadError,
+    reportLoadError: reportAccountLoadError,
+    clearLoadError: clearAccountLoadError,
+  } = useLoadError();
+  const {
+    loadError: taskLoadError,
+    reportLoadError: reportTaskLoadError,
+    clearLoadError: clearTaskLoadError,
+  } = useLoadError();
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -150,14 +160,15 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
         if (current && list.some((a) => a.id === current)) return current;
         return list[0]?.id ?? null;
       });
+      clearAccountLoadError();
     } catch (err: unknown) {
       // 2026-09-01 复核自查：账号加载失败不再静默清空（空列表像"没有账号"），
-      // 原因经 loadError 上屏（复用任务列表的独立加载错误位）
+      // 原因上屏——R2 起走账号专属错误位，不再与任务加载共用
       console.error(toPublicError(err, "加载账号失败"));
-      reportLoadError(err, "平台账号列表暂时无法读取");
+      reportAccountLoadError(err, "平台账号列表暂时无法读取");
       setAccounts([]);
     }
-  }, [config.accountType, reportLoadError]);
+  }, [config.accountType, reportAccountLoadError, clearAccountLoadError]);
 
   /* 加载最近任务 */
   const refreshTasks = useCallback(async () => {
@@ -170,14 +181,14 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
         }
         return tasks[0] || null;
       });
-      clearLoadError();
+      clearTaskLoadError();
     } catch (err: unknown) {
-      // 2026-09-01 Codex 复核回改：任务加载失败改走独立 loadError——error 是
+      // 2026-09-01 Codex 复核回改：任务加载失败走任务专属错误位——error 是
       // 多操作共享状态，任务成功时清 error 会误伤建任务/确认的操作错误
       console.error(toPublicError(err, "加载任务失败"));
-      reportLoadError(err, "任务列表暂时无法读取，请刷新重试");
+      reportTaskLoadError(err, "任务列表暂时无法读取，请刷新重试");
     }
-  }, [config.businessRoute, reportLoadError, clearLoadError]);
+  }, [config.businessRoute, reportTaskLoadError, clearTaskLoadError]);
 
   useEffect(() => {
     setLoading(true);
@@ -416,9 +427,14 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
               <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>{error}</p>
             </div>
           )}
-          {loadError && (
+          {accountLoadError && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>任务列表加载失败：{loadError}</p>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>平台账号加载失败：{accountLoadError}</p>
+            </div>
+          )}
+          {taskLoadError && (
+            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
+              <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-danger)" }}>任务列表加载失败：{taskLoadError}</p>
             </div>
           )}
 
@@ -618,8 +634,11 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
           <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
         </div>
       )}
-      {loadError && (
-        <LoadErrorBanner message={loadError} onRetry={() => void refreshTasks()} />
+      {accountLoadError && (
+        <LoadErrorBanner message={accountLoadError} onRetry={() => void loadAccounts()} />
+      )}
+      {taskLoadError && (
+        <LoadErrorBanner message={taskLoadError} onRetry={() => void refreshTasks()} />
       )}
 
       {/* 第 1 步：选账号 */}
