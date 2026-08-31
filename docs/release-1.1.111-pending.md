@@ -2,6 +2,7 @@
 
 > 生成时间：2026-08-31 19:55（大王决策：1.1.110 已是当前发布版，platform_id 回填修复**攒到下一版**一起发）
 > 当前发布版：**1.1.110**（Win/Mac 双通道，远端 feed 已验证）
+> **⭐ 2026-09-01 03:05 大王说「发」：本清单转正式发版记录，走 CI 全自动（tag v1.1.111）**
 > 本文目的：下轮发版直接照做，不重复踩本轮踩过的坑。
 
 ---
@@ -15,6 +16,7 @@
 | 获客验证码误判修复 | `e4a35d61` | 明细见下方候选区（backend+frontend） | 是 |
 | 移动端 AI 助手紫钮移除 | `3ed8ae27` | app-shell.tsx 移动分支去掉 `<AiAssistant />` 悬浮入口；AI 对话保留 /agent 页 + 命令面板搜「AI 助手」+ 桌面 rail 助手钮；ai-assistant.tsx 悬浮按钮分支成死代码（P2 可清理）。前端 tsc 0 | 是（frontend） |
 | 获客失败"前端举手" | `959bdb19` | 失败原因人话标签（16 码 → 人话，`frontend/src/lib/growth-failure.ts`）铺满 4 个展示位（获客任务页 / 获客中心 RecentRuns / 今日中心 run 行 / 控制台卡片+表格）；growth-center 15s 轮询 visibility 门控 + sessionStorage 去重，新失败 run 弹 toast。局限交底：仅覆盖停留在获客中心的用户；recentRuns 只取 8 条，两轮轮询间失败 >8 条可能漏 | 是（frontend） |
+| **报错透明度 P0 批次（搭车）** | `76b15974`+`7c14688d`+`b0efcb60`+`9d5f9f6c` | LoadErrorBanner + useLoadError 组件，16 页接入"加载失败上屏 + 重试"；allSettled rejected 守卫 9 文件（Codex R1/R2 两轮复核，R2 竞态已修：channel-console 拆账号/任务双错误位）。审计文档 `docs/前端报错透明度审计-20260901.md`、复核清单 `docs/codex-复核清单-20260901-前端报错透明度R1.md` | 是（frontend） |
 
 **可能追加的候选**（发版前确认）：
 - ~~CI 收尾（mac CI Build artifacts 失败点定位、`skip_upload` 开关）~~ → **✅ 全部完成（2026-08-31）**：skip_upload 已落地（`89d4bb21`）；CI 连修 6 个本机假绿缺口后 **run 33400106127 双平台全绿**（明细见 `docs/ai-content-CI发布门禁与修复-交接-20260831.md` §四终版表格）。**1.1.111 可走 CI 全自动发版**：升版本号 → push tag v1.1.111（tag 触发 = 商用发布，KAYPAL 生产域 env 已内置）→ CI build + upload + verify:remote 双通道门禁

@@ -12,6 +12,16 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.111",
+    date: "2026-09-01",
+    highlights: [
+      "报错看得见：16 个页面数据加载失败时明确显示原因并提供「重新加载」按钮，不再静默显示空白",
+      "获客失败说人话：失败原因从技术错误码翻译成 16 类人话标签，铺满任务页/获客中心/今日中心/控制台",
+      "修复：旧数据库升级后 AI 模型同步失败（platform_id 空值启动自动回填）",
+      "修复：抖音滑块验证被误报为「平台变更」，提示改为可行动指引",
+    ],
+  },
+  {
     version: "v1.1.110",
     date: "2026-08-31",
     highlights: [
@@ -363,4 +373,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.110";
+export const DESKTOP_APP_VERSION = "1.1.111";
