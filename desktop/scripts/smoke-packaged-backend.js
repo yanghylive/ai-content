@@ -114,6 +114,10 @@ async function main() {
     KAYPAL_NODE_AGENT_RUNTIME: '1',
     KAYPAL_RUNTIME_SHARED_SECRET: 'packaged-backend-smoke-secret',
     KAYPAL_AGENT_S_TOKEN: 'packaged-backend-smoke-secret',
+    // 2026-08-31（CI run 33398306023 实证）：agent-gateway 模块守卫——非 dev 环境
+    // 无 AGENT_GATEWAY_SECRET 直接启动失败。真实安装由 main.js 启动注入，冒烟
+    // 模拟同一契约（随机值，不落盘）；本机真机此前靠开发态 .env 残留通过。
+    AGENT_GATEWAY_SECRET: crypto.randomBytes(32).toString('hex'),
     REDIS_DISABLED: 'true',
     AUTO_START_KAYPAL_RUNTIME: 'false',
     CORS_ORIGIN: 'http://127.0.0.1:3010',
