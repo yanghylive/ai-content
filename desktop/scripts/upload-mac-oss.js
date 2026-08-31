@@ -10,6 +10,7 @@
 const OSS = require("ali-oss");
 const fs = require("fs");
 const path = require("path");
+const { buildUploadPlan } = require("./release-feed-plan");
 
 function loadDotEnv() {
   const envFile = path.join(__dirname, "..", ".env");
@@ -33,24 +34,18 @@ async function main() {
   });
   const updatePath = process.env.OSS_UPDATE_PATH || "updates/";
   const distDir = path.resolve(__dirname, "..", "dist");
-
-  const macYmlPath = path.join(distDir, "latest-mac.yml");
-  const text = fs.readFileSync(macYmlPath, "utf8");
-  const files = new Set(["latest-mac.yml"]);
-  for (const m of text.matchAll(/^\s*-\s+url:\s*(.+?)\s*$/gm)) files.add(m[1].trim());
-  const pathMatch = text.match(/^path:\s*(.+?)\s*$/m);
-  if (pathMatch) files.add(pathMatch[1].trim());
-  // 补 blockmap
-  for (const f of [...files]) {
-    const bm = `${f}.blockmap`;
-    if (fs.existsSync(path.join(distDir, bm))) files.add(bm);
+  const plan = buildUploadPlan({ distDir, feedFiles: ["latest-mac.yml"] });
+  if (!plan.feedFiles.includes("latest-mac.yml")) {
+    throw new Error("missing latest-mac.yml");
+  }
+  if (plan.missing.length > 0) {
+    throw new Error(`missing feed-referenced artifact(s): ${plan.missing.join(", ")}`);
   }
 
-  for (const f of files) {
+  for (const f of plan.files) {
     const local = path.join(distDir, f);
     if (!fs.existsSync(local)) {
-      console.error("缺失:", f);
-      continue;
+      throw new Error(`missing local artifact: ${f}`);
     }
     const sizeMB = (fs.statSync(local).size / 1048576).toFixed(1);
     console.log(`上传 ${f} (${sizeMB}MB)...`);
