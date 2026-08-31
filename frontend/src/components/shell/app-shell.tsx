@@ -19,7 +19,6 @@ import { materialsApi } from "@/lib/api/materials";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { MobileShell } from "./mobile-shell";
 import { PwaInstallBanner } from "./pwa-install-banner";
-import { AiAssistant } from "./ai-assistant";
 import { OnboardingGuide } from "./onboarding-guide";
 import "./shell.css";
 import "./desktop-vp.css";
@@ -364,7 +363,8 @@ export function AppShell({
         {/* 移动端命令面板入口（FAB 触发，替代桌面 ⌘K） */}
         <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
         <PwaInstallBanner />
-        <AiAssistant />
+        {/* 2026-09-01（大王决策）：移动端 AI 助手悬浮球（紫钮）移除——AI 对话入口
+            保留 /agent 页与命令面板搜索「AI 助手」，不再占右下角悬浮位 */}
         <OnboardingGuide />
       </ShellUserContext.Provider>
     );
@@ -413,7 +413,9 @@ export function AppShell({
           >
             <ShellIcon name={dark ? "sun" : "moon"} />
           </button>
-          {/* Q3：rail「助手」下沉为次级入口（与设置同排），不占业务一级导航；悬浮球 AI 入口保留（ai-assistant.tsx 不动） */}
+          {/* Q3：rail「助手」下沉为次级入口（与设置同排），不占业务一级导航。
+              2026-09-01 大王决策：悬浮球 AI 入口全面移除（桌面 Electron 悬浮球 +
+              移动端紫钮均已砍），AI 对话统一走 rail 助手按钮 / /agent 页 */}
           <button
             className={`kx-rail-item${activeScene === "agent" ? " kx-active" : ""}`}
             aria-label="助手"
