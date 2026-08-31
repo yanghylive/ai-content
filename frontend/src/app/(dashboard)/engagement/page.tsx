@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bot, Inbox } from "lucide-react";
 import { CustomerServiceConfig } from "../workbench/customer-service-config";
 import { UnifiedInbox } from "./unified-inbox";
@@ -11,6 +11,12 @@ import { UnifiedInbox } from "./unified-inbox";
  */
 export default function EngagementPage() {
   const [tab, setTab] = useState<"inbox" | "bot">("inbox");
+
+  // 支持 ?tab=bot 直达客服机器人（静态导出安全：hydration 后再读 URL，避免 SSR 不匹配）
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "bot") setTab("bot");
+  }, []);
 
   return (
     <div className="kx-view flex flex-col gap-4">
