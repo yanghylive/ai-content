@@ -1,0 +1,28 @@
+# ✅ L3 Mac 包全功能 18 项
+# commit: 073e53b7
+# exit: 0
+# duration_ms: 40558
+# command: cd '/Users/yanghy/Documents/New project/ai-content' && node mac-app-test.mjs
+# 完整命令输出（未截断）：
+
+✅ 登录态：message 页不跳登录 — /message.html
+✅ 消息页：AI 客服入口
+✅ 消息页：企微助手入口
+✅ 消息页：AI 客服入口可点
+✅ 互动页：不跳登录无 500
+✅ 获客创建页：执行账号区
+✅ 评论获客页：无 500
+✅ CRM页 — /crm.html
+✅ 内容页 — /content.html
+✅ 任务页 — /tasks.html
+✅ 获客中心页 — /growth.html
+✅ 情报页 — /intelligence.html
+✅ 工作台页 — /workbench.html
+✅ 发布中心页 — /distribution.html
+✅ 发布任务列表页 — /distribution/tasks.html
+✅ 账号矩阵页 — /accounts-matrix.html
+✅ 更新说明 v1.1.110 — v1.1.110
+✅ 登录页页脚文案
+
+=== Mac 包测试结果: 18 通过 / 0 失败 ===
+

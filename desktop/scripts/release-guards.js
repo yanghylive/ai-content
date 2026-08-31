@@ -373,13 +373,24 @@ function assertBundledNodeExecutable(ctx, nodePath, platform) {
   if (platform === 'win-x64' && process.platform !== 'win32') {
     return;
   }
+  // v1.1.110（复核）：宿主 shell 泄漏的 NODE_OPTIONS（如 WorkBuddy 常带的
+  // --use-system-ca）会让 node 启动即报 "--use-system-ca is not allowed in
+  // NODE_OPTIONS" 退出非零，被误判成「包内 node 不可执行」（假红，包本身没坏）。
+  // 执行包内 node 前必须清掉这些环境变量（同 Electron 启动清理项）。
+  const cleanEnv = { ...process.env };
+  delete cleanEnv.NODE_OPTIONS;
+  delete cleanEnv.ELECTRON_RUN_AS_NODE;
   const result = spawnSync(nodePath, ['--version'], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
     timeout: 10000,
+    env: cleanEnv,
   });
   if (result.error || result.status !== 0 || !/^v20\./.test((result.stdout || '').trim())) {
-    ctx.fail(`bundled Node runtime is not executable or not v20: ${nodePath}`);
+    ctx.fail(
+      `bundled Node runtime is not executable or not v20: ${nodePath}` +
+        (result.stderr ? ` (stderr: ${String(result.stderr).trim().slice(0, 200)})` : ''),
+    );
   }
 }
 
