@@ -53,7 +53,7 @@ export const ChartCard = ({
             取消
           </Button>
           <Button
-            className="bg-accent/10 border border-accent/40 text-black hover:bg-accent/20"
+            className="bg-accent/10 border border-accent/40 text-foreground hover:bg-accent/20"
             onClick={() => onHumanInput(true)}
           >
             {actionButtonText}

@@ -33,7 +33,7 @@ export function MainLayout({ className }: { className?: string }) {
           </p>
         </div>
         {state.cockpit?.error ? (
-          <Card className="border-amber-300 bg-amber-50 text-amber-950">
+          <Card className="border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
             <CardContent className="p-4 text-sm">
               部分状态暂时无法显示。你仍可继续对话；开始任务前，系统会提示需要完成的准备事项。
             </CardContent>

@@ -97,6 +97,13 @@
     --agent-cockpit-input: 256 20% 91%;
     --agent-cockpit-ring: 258 64% 50%;
 
+    /* chart 图表色阶（品牌紫主导 + 辅助色，驾驶舱图表 chart-renderer 引用） */
+    --chart-1: oklch(0.494 0.268 296.1);
+    --chart-2: oklch(0.584 0.239 300.7);
+    --chart-3: oklch(0.55 0.206 266.8);
+    --chart-4: oklch(0.613 0.164 69.1);
+    --chart-5: oklch(0.627 0.208 143.4);
+
     /* ── AI员工 设计系统 · 方案 A 补全（2026-08-31，仅新增不改动） ── */
     /* spacing 间距 8 级 */
     --kaypal-v3-space-1: 4px;
@@ -206,6 +213,13 @@
     --agent-cockpit-border: 254 12% 20%;
     --agent-cockpit-input: 254 12% 20%;
     --agent-cockpit-ring: 263 88% 75%;
+
+    /* chart 图表色阶（暗色：亮紫主导） */
+    --chart-1: oklch(0.584 0.239 300.7);
+    --chart-2: oklch(0.667 0.182 302.6);
+    --chart-3: oklch(0.778 0.113 266.8);
+    --chart-4: oklch(0.827 0.134 86.0);
+    --chart-5: oklch(0.801 0.217 146.0);
 
     /* AI员工 设计系统 · 暗色适配（方案 B 2026-08-31） */
     --kaypal-v3-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.24);
