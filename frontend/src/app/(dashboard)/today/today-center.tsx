@@ -22,6 +22,7 @@ import {
 } from "@/lib/api/growth";
 /* trend 类型从 GrowthReports.trend 提取（sparkline + 昨日差值用） */
 import { toPublicError } from "@/lib/public-error";
+import { runFailureLabel } from "@/lib/growth-failure";
 
 /** 首页聚合接口轮询间隔：与 app-shell useBadges 的 30s 节奏对齐 */
 const HOME_POLL_INTERVAL_MS = 30_000;
@@ -625,6 +626,10 @@ function RecentRunsSection({
                 className="flex items-center gap-x-3 py-3" style={{ minHeight: "48px" }}
               >
                 <span className={`kx-tag ${meta.className}`}>{meta.label}</span>
+                {/* 2026-09-01 大王决策：失败原因人话标签（对齐 backend code 全集，未收录原样展示） */}
+                {runFailureLabel(run.failureReason) ? (
+                  <span className="kx-tag kx-t-rose">{runFailureLabel(run.failureReason)}</span>
+                ) : null}
                 <span
                   className="min-w-0 flex-1 truncate text-sm text-[var(--kaypal-v3-soft-ink)]"
                   title={runMessageDisplay(run.message)}

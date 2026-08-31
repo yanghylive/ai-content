@@ -37,6 +37,7 @@ import {
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
+import { runFailureLabel } from "@/lib/growth-failure";
 import { SkeletonList } from "@/components/skeleton";
 import { toActionableError } from "@/lib/public-error";
 
@@ -434,6 +435,13 @@ export function GrowthAcquisitionTasks() {
                                       ? "部分完成"
                                       : run.status}
                               </V2StatusChip>
+                              {/* 2026-09-01 大王决策：失败原因人话标签（ unknown→"原因待查明"等，
+                                  后端 code 对齐 growth.types.ts:65-80，未收录原样展示不吞） */}
+                              {runFailureLabel(run.failureReason) && (
+                                <span className="text-xs font-medium text-[var(--kaypal-v3-warning-ink)]">
+                                  {runFailureLabel(run.failureReason)}
+                                </span>
+                              )}
                             </div>
                             {/* P1-2：回退来源如实展示（RPA 失败→回退旧链路时不让用户误以为 RPA 成功） */}
                             {run.fallback &&
