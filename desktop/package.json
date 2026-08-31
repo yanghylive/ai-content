@@ -1,6 +1,6 @@
 {
   "name": "ai-content-desktop",
-  "version": "1.1.108",
+  "version": "1.1.110",
   "homepage": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/",
   "author": "AI Content Team",
   "description": "AI内容创作桌面应用 - 自动回复抖音、视频号评论和私信",
@@ -27,7 +27,7 @@
     "release:check": "node scripts/check-update-feed.js",
     "test:credential-key-store": "node --test test/credential-key-store.test.cjs",
     "test:local-bridge": "node --test test/local-bridge.test.cjs",
-    "test:release-feed-plan": "node --test scripts/release-feed-plan.test.js scripts/verify-oss-release.test.js",
+    "test:release-feed-plan": "node --test scripts/release-feed-plan.test.js scripts/verify-oss-release.test.js scripts/extra-resources.test.js",
     "test:local-bridge:e2e": "node scripts/electron-local-bridge-e2e.mjs",
     "release:verify": "node scripts/verify-oss-release.js",
     "release:verify:remote": "node scripts/verify-oss-release.js --remote-only",
@@ -250,22 +250,6 @@
       "category": "public.app-category.business",
       "extraResources": [
         {
-          "from": "../backend/node_modules/@img/sharp-darwin-arm64",
-          "to": "backend/node_modules/@img/sharp-darwin-arm64",
-          "filter": [
-            "package.json",
-            "lib/**/*"
-          ]
-        },
-        {
-          "from": "../backend/node_modules/@img/sharp-libvips-darwin-arm64",
-          "to": "backend/node_modules/@img/sharp-libvips-darwin-arm64",
-          "filter": [
-            "package.json",
-            "lib/**/*"
-          ]
-        },
-        {
           "from": "../backend/node_modules/.prisma/client",
           "to": "backend/client",
           "filter": [
@@ -291,22 +275,6 @@
           "to": "wechat-ocr",
           "filter": [
             "**/*"
-          ]
-        },
-        {
-          "from": "../backend/node_modules/@img/sharp-win32-x64",
-          "to": "backend/node_modules/@img/sharp-win32-x64",
-          "filter": [
-            "package.json",
-            "lib/**/*"
-          ]
-        },
-        {
-          "from": "../backend/node_modules/@img/sharp-libvips-win32-x64",
-          "to": "backend/node_modules/@img/sharp-libvips-win32-x64",
-          "filter": [
-            "package.json",
-            "lib/**/*"
           ]
         },
         {

@@ -220,3 +220,6 @@ frontend/.next-bk-*/
 frontend/out-stale-*/
 backend/prisma/schema.sqlite.prisma
 scripts/.credential-watch-state.json
+
+# 门禁证据日志（v1.1.110 复核 P2）：逐步完整输出需入库可审计
+!docs/gate-evidence-*/**

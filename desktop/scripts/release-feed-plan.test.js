@@ -48,7 +48,9 @@ test('upload plan sends packages, blockmaps, then feeds and fails on missing ref
   }
 });
 
-test('Linux feed does not require a non-native blockmap', () => {
+test('Linux feed is not part of the default release plan (product scope)', () => {
+  // v1.1.110（复核 / 大王决策）：Linux 桌面端退出产品范围，默认发布计划
+  // 只覆盖 Win/Mac；即便 dist 下残留 latest-linux.yml 也不纳入上传计划。
   const distDir = fs.mkdtempSync(path.join(os.tmpdir(), 'release-feed-linux-'));
   try {
     fs.writeFileSync(
@@ -57,13 +59,11 @@ test('Linux feed does not require a non-native blockmap', () => {
     );
     fs.writeFileSync(path.join(distDir, 'app-1.2.3.AppImage'), 'appimage');
     const plan = buildUploadPlan({ distDir });
-    assert.deepEqual(plan.missing, []);
-    assert.deepEqual(plan.files, ['app-1.2.3.AppImage', 'latest-linux.yml']);
+    assert.deepEqual(plan.files, []);
   } finally {
     fs.rmSync(distDir, { recursive: true, force: true });
   }
-});
-
+})
 test('upload ordering is deterministic for multiple platform artifacts', () => {
   assert.deepEqual(
     orderUploadFiles(['latest-mac.yml', 'z.exe.blockmap', 'a.zip', 'latest.yml', 'z.exe']),

@@ -41,7 +41,10 @@ function step(name, fn) {
 }
 
 // v1.1.108（复核 P1-B）：每步完整输出捕获，供证据文件归档（不丢原始日志）
+// v1.1.110（复核 P2）：补命令、退出码审计元数据
 let lastRunLog = "";
+let lastRunCommand = "";
+let lastRunExit = 0;
 function run(cmd, opts = {}) {
   const base = { stdio: "pipe", shell: "/bin/zsh", encoding: "utf8", env: { ...process.env, ...envClean } };
   // P1（P5 门禁 2026-08-22）：启用 pipefail——不加的话 `cmd | tail` 管道里
@@ -49,12 +52,15 @@ function run(cmd, opts = {}) {
   // 显式 `|| true` 的步骤（有意容忍失败）不受影响。
   // v1.1.108（复核 P1-B）：去掉调用侧 `| tail` 后 execSync 捕获**完整**输出，
   // 屏幕摘要由 main 循环控制；失败仍 throw（step 判红），完整输出进证据文件。
+  lastRunCommand = cmd;
   try {
     const out = execSync(`set -o pipefail; ${cmd}`, { ...base, ...opts });
     lastRunLog = String(out);
+    lastRunExit = 0;
     return String(out);
   } catch (error) {
     lastRunLog = `${error.stdout || ""}\n${error.stderr || ""}\n[exit ${error.status ?? 1}]`;
+    lastRunExit = error.status ?? 1;
     throw error;
   }
 }
@@ -192,13 +198,13 @@ async function main() {
       s.fn();
       results.push({ name: s.name, ok: true, ms: Date.now() - t0, log: logPath });
       console.log(`✅ (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
-      writeFileSync(logPath, `# ✅ ${s.name}\n# commit: ${commitShort}\n# 完整命令输出（未截断）：\n\n${lastRunLog || "(无输出)"}\n`);
+      writeFileSync(logPath, `# ✅ ${s.name}\n# commit: ${commitShort}\n# exit: 0\n# duration_ms: ${Date.now() - t0}\n# command: ${lastRunCommand.replace(/\n/g, " ")}\n# 完整命令输出（未截断）：\n\n${lastRunLog || "(无输出)"}\n`);
     } catch (e) {
       const msg = String(e.message || e).split("\n").slice(-6).join("\n");
       results.push({ name: s.name, ok: false, ms: Date.now() - t0, err: msg, log: logPath });
       console.log(`❌ (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
       console.log(`   ${msg}`);
-      writeFileSync(logPath, `# ❌ ${s.name}\n# commit: ${commitShort}\n# 完整命令输出（未截断）：\n\n${lastRunLog || "(无输出)"}\n`);
+      writeFileSync(logPath, `# ❌ ${s.name}\n# commit: ${commitShort}\n# exit: ${lastRunExit}\n# duration_ms: ${Date.now() - t0}\n# command: ${lastRunCommand.replace(/\n/g, " ")}\n# 完整命令输出（未截断）：\n\n${lastRunLog || "(无输出)"}\n`);
     }
   }
 

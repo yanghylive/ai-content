@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const DEFAULT_FEED_FILES = ['latest.yml', 'latest-mac.yml', 'latest-linux.yml'];
+// v1.1.110（复核 / 大王决策）：Linux 桌面端已退出产品范围（1.1.99 后仅 1.1.107
+// 保留为最后一代），发布计划默认只覆盖 Win/Mac 双通道。
+const DEFAULT_FEED_FILES = ['latest.yml', 'latest-mac.yml'];
 const BLOCKMAP_FEED_FILES = new Set(['latest.yml', 'latest-mac.yml']);
 const ARTIFACT_EXTENSIONS = new Set([
   '.exe',
