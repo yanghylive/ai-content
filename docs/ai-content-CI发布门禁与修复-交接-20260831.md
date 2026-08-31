@@ -17,14 +17,13 @@
    - upload-to-oss.js 已在 2026-08-27 整改（三通道 feed 引用收集 + blockmap 补传）✅
    - **verify-oss-release.js 只查 Windows 通道，Mac 通道是盲区**（Mac 漏传 verify 发现不了）→ P1
    - 上传顺序不可控（yml 可能先于安装包到位）→ P2
-3. 大王已按方案落地主修复（release-feed-plan + upload-to-oss 三通道 + verify 三通道 + CI 门禁），见 `c78d9bc8`；本线程补交了工作区未提交部分（`0d303720`）。
+3. 大王已按方案落地主修复（release-feed-plan + upload-to-oss 三通道 + verify 三通道 + CI 门禁），见 `0d303720`；本线程（大壮）在其上完成 CI 发布路径修复（`3d5233e8`/`3137f5a5`/`75f3276b`）并补交交接文档。
 
 ## 二、已完成（含 commit 与验证证据）
 
 | commit | 内容 | 验证 |
 |---|---|---|
-| `c78d9bc8` | 主修复：release-feed-plan（上传计划，安装包→blockmap→feed 排序 + fail-closed）、upload-to-oss 三平台 feed + OSS_UPLOAD_FILES、verify-oss-release 三通道 remote-only、release-desktop.yml 加 verify job（含 Linux，后被 27ed9ece 移除） | release-feed-plan.test.js 4/4 |
-| `0d303720` | 补交工作区：verify-oss-release 三通道/--remote-only 细化 + CI 门禁 + upload-mac-oss 统一 buildUploadPlan + `release:verify:remote` 脚本 | 测试通过 |
+| `0d303720` | **主修复**：release-feed-plan（上传计划，安装包→blockmap→feed 排序 + fail-closed）、upload-to-oss 三平台 feed + OSS_UPLOAD_FILES、verify-oss-release 三通道 remote-only、release-desktop.yml 加 verify job（含 Linux，后被 27ed9ece 移除）、Mac 兜底统一 buildUploadPlan | release-feed-plan.test.js 4/4 |
 | `3d5233e8` | **Windows checkout invalid path 修复**：验收证据截图文件名内嵌换行符（`window-283059\n283039\n...png`）→ Windows git checkout 挂死 → 整个 workflow 失败（**v1.1.99 至今 CI 发布从未跑通的根因**）。已改名 `window-283059-multi.png`，全仓库 -z 扫描确认仅此 1 个 | - |
 | `3137f5a5` | **CI 发布路径两老坑**：① workflow `NEXT_PUBLIC_API_BASE` 写死绝对 3011 → 改 `/api`（同源，check:full-installer-assets pre 抓出）；② Octop sidecar CI 现场生成方案（uv 装 octop==0.9.26 + Python 3.12 + chromium-headless-shell） | 本机模拟全链路通过（见 §五） |
 | `75f3276b` | **EEXIST 根治**：extraResources 7 个 from 项写入同一 `backend/node_modules/`（@playwright/mcp、playwright、playwright-core、sharp、@img、detect-libc、semver）→ electron-builder 同目标多 from hardlink 冲突（CI 干净环境必现）→ **合并为单 from + filter 子目录**；win octop venv 步骤内 PATH 立即 export（GITHUB_PATH 只对后续步骤生效） | **本机清 dist 跑 `electron-builder --mac --dir`：打包成功无 EEXIST**，@img 全子包（darwin-arm64 + win32-x64）+ sharp + octop sidecar 完整进包 |
