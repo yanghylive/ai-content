@@ -296,6 +296,10 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
   // 它们的页引用指向旧版主库；换版本装包后主库是全新 seed，Prisma 打开时做
   // WAL 合并校验必然对不上 → SQLITE_CORRUPT "database disk image is malformed"。
   // 本函数运行于后端 spawn 之前，此时任何 -wal 都是死文件，移到一旁留档。
+  // v1.1.110（复核 P1）：sidecar 移不动时**禁止**复制 seed.db——此时新库会被
+  // 遗留的旧 WAL 污染（Prisma 打开新库即合并同名 WAL → SQLITE_CORRUPT）。
+  // 主库缺失时只记录阻断，交给后端启动后的自愈/上报链路处理，不静默造坏库。
+  let orphanSidecarBlocked = false;
   for (const suffix of ['-wal', '-shm']) {
     const sidecarPath = `${databasePath}${suffix}`;
     if (fs.existsSync(sidecarPath)) {
@@ -304,8 +308,9 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
         fs.renameSync(sidecarPath, orphanPath);
         console.warn('[Backend] Orphan SQLite sidecar moved aside:', orphanPath);
       } catch (error) {
-        // 移不动（文件被占用）时记录即可：若库已被 schema 校验判坏会走 suspect 分支
+        orphanSidecarBlocked = true;
         console.warn('[Backend] Unable to move SQLite sidecar:', error.message);
+        appendRuntimeLog('backend-launch.log', `[Backend] orphan sidecar move FAILED (${suffix}: ${error.message}) — seed initialization blocked to avoid WAL pollution`);
       }
     }
   }
@@ -319,6 +324,10 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
 
   // 目标库不存在 → 仅在目标文件不存在时才复制种子库完成首次初始化
   if (!fs.existsSync(databasePath)) {
+    if (orphanSidecarBlocked) {
+      console.warn('[Backend] Seed initialization blocked: stale WAL/SHM could not be moved aside');
+      return;
+    }
     if (sqliteDatabaseHasRequiredSchema(seedPath)) {
       fs.mkdirSync(path.dirname(databasePath), { recursive: true });
       fs.copyFileSync(seedPath, databasePath);
@@ -1692,13 +1701,23 @@ function healCorruptedDesktopDatabase(reason) {
   const databasePath = lastBackendDatabasePath;
   if (!databasePath || !fs.existsSync(databasePath)) return false;
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  // v1.1.110（复核 P1）：移走的 sidecar 记在 try 外，供主库 rename 失败时回滚
+  //（否则「sidecar 已移走 + 主库仍在」的中间态会让下次启动读到半残状态）。
+  const movedSidecars = [];
+  const rollbackSidecars = () => {
+    for (const moved of movedSidecars) {
+      try {
+        fs.renameSync(`${moved}.corrupt-${stamp}`, moved);
+      } catch { /* 回滚失败仅记录，不改变阻断结论 */ }
+    }
+    movedSidecars.length = 0;
+  };
   try {
     // v1.1.108（复核 P1）：**先移 sidecar 再移主库**——旧实现先 rename 主库，
     // sidecar（WAL/SHM）rename 失败后返回 false，但主库已被移走：重启时
     // ensureDesktopSqliteDatabase 会复制 seed.db 到缺失路径，旧 WAL 仍在原位，
     // 打开新库时同名 WAL 被加载 → 污染。现在：sidecar 全部 rename 成功后才动
     // 主库；任一 sidecar 失败则回滚已移走的 sidecar、主库保持原样，阻断重建。
-    const movedSidecars = [];
     for (const suffix of ['-wal', '-shm']) {
       const sidecar = `${databasePath}${suffix}`;
       if (fs.existsSync(sidecar)) {
@@ -1707,11 +1726,7 @@ function healCorruptedDesktopDatabase(reason) {
           movedSidecars.push(sidecar);
         } catch (error) {
           // 回滚已移走的 sidecar（尽量恢复原状），主库不动
-          for (const moved of movedSidecars) {
-            try {
-              fs.renameSync(`${moved}.corrupt-${stamp}`, moved);
-            } catch { /* 回滚失败仅记录 */ }
-          }
+          rollbackSidecars();
           console.error(`[Backend] AutoHeal sidecar rename failed (${suffix}): ${error.message}; rolled back ${movedSidecars.length} sidecar(s), main DB untouched`);
           appendRuntimeLog('backend-launch.log', `[AutoHeal] BLOCKED: sidecar rename failed (${suffix}) — main DB kept, no rebuild (stale WAL would pollute new DB)`);
           return false;
@@ -1728,8 +1743,11 @@ function healCorruptedDesktopDatabase(reason) {
     appendRuntimeLog('backend-launch.log', msg);
     return true;
   } catch (error) {
+    // v1.1.110（复核 P1）：主库 rename/rebuild 失败 → 回滚已移走的 sidecar，
+    // 不允许停在「sidecar 已移走 + 主库仍在」的中间态
+    rollbackSidecars();
     console.error('[Backend] AutoHeal failed:', error.message);
-    appendRuntimeLog('backend-launch.log', `[AutoHeal] failed (attempt ${backendDbHealAttempts}/${BACKEND_DB_HEAL_MAX_ATTEMPTS}): ${error.message}`);
+    appendRuntimeLog('backend-launch.log', `[AutoHeal] failed (attempt ${backendDbHealAttempts}/${BACKEND_DB_HEAL_MAX_ATTEMPTS}): ${error.message}（sidecar 已回滚）`);
     return false;
   }
 }
@@ -2333,8 +2351,11 @@ function setupIPC() {
     return { success: ok };
   });
 
-  ipcMain.handle('app:skip-update', (_event, version) => {
-    skipUpdate(version || pendingUpdate.version);
+  ipcMain.handle('app:skip-update', async (_event, version) => {
+    // v1.1.110（复核 P1）：skipUpdate 内部要 await electron-updater 的
+    // cancelDownload（下载中跳过）——IPC 必须等这条异步取消走完再返回，
+    // 否则调用方以为已取消、实际下载仍在跑（退出时仍可能安装被跳过版本）。
+    await skipUpdate(version || pendingUpdate.version);
     setPendingUpdate({ hasUpdate: false, phase: 'idle', version: null });
     return { success: true };
   });

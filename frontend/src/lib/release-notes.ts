@@ -12,6 +12,24 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.110",
+    date: "2026-08-31",
+    highlights: [
+      "数据安全：数据库自愈失败会完整回滚，不会留下半残状态或被旧日志污染的新库",
+      "更新：跳过版本立即停止下载（连进行中的下载也一并取消）",
+      "发布：Linux 通道彻底移除，发布计划与远端门禁只覆盖 Windows / macOS",
+    ],
+  },
+  {
+    version: "v1.1.109",
+    date: "2026-08-31",
+    highlights: [
+      "稳定：Octop 高级模式登录态保障（凭据失配时显式提示，不再无声降级）",
+      "发布：CI 发布路径修复（Windows 换行符文件名、打包资源合并）",
+      "安全：跳过版本彻底不下载/安装；数据库自愈更保守",
+    ],
+  },
+  {
     version: "v1.1.108",
     date: "2026-08-31",
     highlights: [
@@ -345,4 +363,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.108";
+export const DESKTOP_APP_VERSION = "1.1.110";

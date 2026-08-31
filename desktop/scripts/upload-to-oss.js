@@ -126,7 +126,6 @@ async function main() {
   console.log("Done. Update feed URLs:");
   console.log(`  Windows  -> ${baseUrl}latest.yml`);
   console.log(`  macOS    -> ${baseUrl}latest-mac.yml`);
-  console.log(`  Linux    -> ${baseUrl}latest-linux.yml`);
   console.log("");
   console.log(`Set on dev machines: AI_CONTENT_UPDATE_URL=${baseUrl}`);
 }

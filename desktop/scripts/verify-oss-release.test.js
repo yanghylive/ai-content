@@ -7,18 +7,18 @@ const {
   remoteFeedDefinitions,
 } = require('./verify-oss-release');
 
-test('OSS release verification covers all update channels', () => {
+test('OSS release verification covers the supported update channels', () => {
+  // v1.1.110（复核 / 大王决策）：Linux 退出产品范围，远端门禁只查 Win/Mac。
   assert.deepEqual(
     FEED_DEFINITIONS.map((feed) => feed.name),
-    ['latest.yml', 'latest-mac.yml', 'latest-linux.yml'],
+    ['latest.yml', 'latest-mac.yml'],
   );
   assert.deepEqual(
     remoteFeedDefinitions.map((feed) => feed.name),
-    ['latest.yml', 'latest-mac.yml', 'latest-linux.yml'],
+    ['latest.yml', 'latest-mac.yml'],
   );
   assert.equal(FEED_DEFINITIONS.find((feed) => feed.name === 'latest.yml').requiresBlockmap, true);
   assert.equal(FEED_DEFINITIONS.find((feed) => feed.name === 'latest-mac.yml').requiresBlockmap, true);
-  assert.equal(FEED_DEFINITIONS.find((feed) => feed.name === 'latest-linux.yml').requiresBlockmap, false);
 });
 
 test('latest feed parser keeps version, path, size and sha512 metadata', () => {
