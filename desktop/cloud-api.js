@@ -210,49 +210,10 @@ class CloudAPI {
     });
   }
 
-  // 用户登录
-  async login(username, password) {
-    const response = await this.request('/api/v1/auth/login', {
-      method: 'POST',
-      body: { username, password }
-    });
-
-    if (response.token) {
-      this.setToken(response.token);
-    }
-
-    return response;
-  }
-
-  // 用户注册
-  async register(username, password, email) {
-    return await this.request('/api/v1/auth/register', {
-      method: 'POST',
-      body: { username, password, email }
-    });
-  }
-
-  // 获取用户信息
-  async getUserInfo() {
-    return await this.requestWithRetry('/api/v1/auth/me', {
-      method: 'GET'
-    });
-  }
-
-  // 获取使用统计
-  async getUsageStats() {
-    return await this.requestWithRetry('/api/v1/usage/stats', {
-      method: 'GET'
-    });
-  }
-
-  // 获取订阅信息
-  async getSubscription() {
-    return await this.requestWithRetry('/api/v1/subscription', {
-      method: 'GET'
-    });
-  }
-
+  // v1.1.108（复核 P2-8 / 大王决策）：Cloud API 遗留登录/用量/订阅接口移除——
+  // /api/v1/auth/login、auth/me、usage/stats、subscription 线上 503（服务端未配置
+  // API_KEY），且主登录链路已走 3011 本地后端（authApi），这些方法无任何调用方
+  // （main.js/preload/前端均不调）。标注遗留禁用；错误上报 reportClientError 保留。
   // 客户端兜底错误上报（fire-and-forget，失败静默——上报绝不能影响主流程）。
   // 2026-08-29 补盲区：后端启动崩溃时本地 3011 转发者已死，error-reports 零上报，
   // 由主进程把崩溃摘要直接 POST 到云端 /api/v1/client-error 转发落 OSS。

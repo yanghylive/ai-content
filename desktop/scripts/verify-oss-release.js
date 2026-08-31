@@ -26,7 +26,6 @@ const warnings = [];
 const FEED_DEFINITIONS = [
   { name: 'latest.yml', label: 'Windows', requiresBlockmap: true },
   { name: 'latest-mac.yml', label: 'macOS', requiresBlockmap: true },
-  { name: 'latest-linux.yml', label: 'Linux', requiresBlockmap: false },
 ];
 const requestedFeedNames = (process.env.RELEASE_VERIFY_FEEDS || '')
   .split(',')
