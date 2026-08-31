@@ -41,8 +41,7 @@ function activeTabOf(pathname: string): string {
   // 互动（消息/互动/确认）
   if (
     pathname.startsWith("/message") ||
-    pathname.startsWith("/engagement") ||
-    pathname.startsWith("/confirmations")
+    pathname.startsWith("/engagement")
   )
     return "interaction";
   // 线索（获客中心，含 /growth*）

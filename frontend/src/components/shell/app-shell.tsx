@@ -46,8 +46,7 @@ export function sceneOfPath(pathname: string): string {
   if (
     pathname.startsWith("/growth") ||
     pathname.startsWith("/intelligence") ||
-    pathname.startsWith("/effects") ||
-    pathname.startsWith("/report-new")
+    pathname.startsWith("/effects")
   )
     return "growth";
   // 客户管理：CRM 客户/商机/导入/连接器/成交跟进
@@ -74,23 +73,18 @@ export function sceneOfPath(pathname: string): string {
     pathname.startsWith("/knowledge-base")
   )
     return "content";
-  // 互动中心：消息/互动/确认/任务审批（任务执行归 execution，见下）
+  // 互动中心：消息/互动（各渠道子页均在 /engagement/* 下）
   if (
     pathname.startsWith("/message") ||
-    pathname.startsWith("/engagement") ||
-    pathname.startsWith("/douyin") ||
-    pathname.startsWith("/wechat") ||
-    pathname.startsWith("/confirmations")
+    pathname.startsWith("/engagement")
   )
     return "interaction";
-  // 执行中心：任务/审批/证据/工作台（含 RPA 工作台，Q6：仅高亮不 alias）
+  // 执行中心：任务/审批/证据/工作台
   if (
     pathname.startsWith("/tasks") ||
     pathname.startsWith("/approvals") ||
     pathname.startsWith("/task-evidence") ||
-    pathname.startsWith("/agent-workbench") ||
-    pathname.startsWith("/rpa-workbench") ||
-    pathname.startsWith("/agent-console")
+    pathname.startsWith("/agent-workbench")
   )
     return "execution";
   // 系统设置/平台账号/本地引擎/能力页 → mine（固定底部设置/我的）
