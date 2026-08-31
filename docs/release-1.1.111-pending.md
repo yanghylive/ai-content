@@ -11,6 +11,8 @@
 | 项 | commit | 说明 | 进包 |
 |---|---|---|---|
 | `ai_models.platform_id` NULL 回填 | `4a4d1a73` | 旧库（1.1.103- platform_id 可空时代）遗留 NULL 行 → Prisma include 崩 → 模型同步降级。启动时自动回填 Kaypal 模型台 / 删孤儿行。实测通过 | 是（backend） |
+| 悬浮球存量配置启动清理 | `df4f71ed` | ≤1.1.105 时代持久化 hoverBallEnabled=true 的机器升级后仍出球 → 启动时直接删键。本机 Mac 实锤装的是 1.1.104 旧包（旧逻辑默认开+坏桥），升 1.1.110 即消失 | 是（desktop/main.js） |
+| 获客验证码误判修复 | `e4a35d61` | 明细见下方候选区（backend+frontend） | 是 |
 
 **可能追加的候选**（发版前确认）：
 - ~~CI 收尾（mac CI Build artifacts 失败点定位、`skip_upload` 开关）~~ → **✅ 全部完成（2026-08-31）**：skip_upload 已落地（`89d4bb21`）；CI 连修 6 个本机假绿缺口后 **run 33400106127 双平台全绿**（明细见 `docs/ai-content-CI发布门禁与修复-交接-20260831.md` §四终版表格）。**1.1.111 可走 CI 全自动发版**：升版本号 → push tag v1.1.111（tag 触发 = 商用发布，KAYPAL 生产域 env 已内置）→ CI build + upload + verify:remote 双通道门禁
