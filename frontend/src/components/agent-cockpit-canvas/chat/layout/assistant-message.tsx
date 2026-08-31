@@ -24,7 +24,7 @@ export function AssistantBubble({
   if (isLoading && !message.generativeUI) return <Cursor className="mt-3" />;
   return (
     <div className="py-2">
-      <div className="text-foreground rounded-lg p-3">
+      <div className="text-foreground rounded-[10px] p-3 transition-colors duration-150 hover:bg-accent/5">
         <Markdown content={content} />
       </div>
       {message.generativeUI?.()}
