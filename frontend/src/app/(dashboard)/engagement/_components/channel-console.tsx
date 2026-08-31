@@ -164,7 +164,9 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
         return tasks[0] || null;
       });
     } catch (err: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），写进既有 error 展示位
       console.error(toPublicError(err, "加载任务失败"));
+      setError(toPublicError(err, "任务列表暂时无法读取，请刷新重试"));
     }
   }, [config.businessRoute]);
 

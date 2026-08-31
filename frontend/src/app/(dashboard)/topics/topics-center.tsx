@@ -2,6 +2,7 @@
 
 import { useConfirm } from "@/hooks/use-confirm";
 import { SkeletonList, SkeletonRow } from "@/components/skeleton";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -28,6 +29,7 @@ export function TopicsCenter() {
   const router = useRouter();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
 
   // 原生详情弹窗（不再跳旧版页）
   const [viewing, setViewing] = useState<Topic | null>(null);
@@ -40,12 +42,15 @@ export function TopicsCenter() {
       setLoading(true);
       const data = await topicsApi.list();
       setTopics(Array.isArray(data) ? data : (data as { items?: Topic[] }).items || []);
+      clearLoadError();
     } catch (error: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(error, "加载选题失败"));
+      reportLoadError(error, "选题列表暂时无法读取");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   useEffect(() => {
     void fetchTopics();
@@ -420,6 +425,10 @@ export function TopicsCenter() {
         <p className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4 text-sm text-[var(--kaypal-v3-success)]">
           {notice}
         </p>
+      ) : null}
+
+      {loadError ? (
+        <LoadErrorBanner message={loadError} onRetry={() => void fetchTopics()} />
       ) : null}
 
       {/* 挖掘工具栏 */}

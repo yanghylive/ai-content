@@ -17,6 +17,7 @@ import {
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { growthApi, type GrowthAcquisitionRun, type GrowthHomeBlocker, type GrowthHomeResponse, type GrowthOverview } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { runFailureLabel, runFailureHint } from "@/lib/growth-failure";
 import { toast } from "@/lib/toast";
 
@@ -254,6 +255,7 @@ export function GrowthCenter() {
   const [overview, setOverview] = useState<GrowthOverview | null>(null);
   const [home, setHome] = useState<GrowthHomeResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
 
   const fetchOverview = useCallback(async () => {
     try {
@@ -264,12 +266,16 @@ export function GrowthCenter() {
       ]);
       setOverview(overviewData);
       setHome(homeData);
+      clearLoadError();
     } catch (error: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏——
+      // 8/31 获客翻车页自己也在静默名单里，举一反三首个接入点
       console.error(toPublicError(error, "加载增长数据失败"));
+      reportLoadError(error, "增长数据暂时无法读取");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   useEffect(() => {
     void fetchOverview();
@@ -364,6 +370,9 @@ export function GrowthCenter() {
 
   return (
     <div className="kx-view flex flex-col gap-6">
+      {loadError ? (
+        <LoadErrorBanner message={loadError} onRetry={() => void fetchOverview()} />
+      ) : null}
       <AiDailyBriefCard overview={overview} />
       <AiValueBill overview={overview} />
       <WorkbenchCenter

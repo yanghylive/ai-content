@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarClock } from "lucide-react";
 import { ResourceCenter, type ResourceItem } from "@/components/v2/resource-center";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { schedulesApi, type ScheduleConfig } from "@/lib/api/schedules";
 import { toPublicError } from "@/lib/public-error";
 
@@ -36,18 +37,22 @@ export function SchedulesCenter() {
   const router = useRouter();
   const [schedules, setSchedules] = useState<ScheduleConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
 
   const fetchSchedules = useCallback(async () => {
     try {
       setLoading(true);
       const data = await schedulesApi.list();
       setSchedules(data);
+      clearLoadError();
     } catch (error: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(error, "加载定时任务失败"));
+      reportLoadError(error, "定时任务列表暂时无法读取");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   useEffect(() => {
     void fetchSchedules();
@@ -64,14 +69,19 @@ export function SchedulesCenter() {
   }));
 
   return (
-    <ResourceCenter
-      title="定时任务"
-      subtitle="让系统按固定时间自动干活，你不用盯着"
-      resourceName="任务"
-      icon={CalendarClock}
-      items={items}
-      loading={loading}
-      onItemClick={(item) => router.push(`/schedules/edit?taskType=${encodeURIComponent(item.id)}`)}
-    />
+    <div className="flex flex-col gap-3">
+      {loadError ? (
+        <LoadErrorBanner message={loadError} onRetry={() => void fetchSchedules()} />
+      ) : null}
+      <ResourceCenter
+        title="定时任务"
+        subtitle="让系统按固定时间自动干活，你不用盯着"
+        resourceName="任务"
+        icon={CalendarClock}
+        items={items}
+        loading={loading}
+        onItemClick={(item) => router.push(`/schedules/edit?taskType=${encodeURIComponent(item.id)}`)}
+      />
+    </div>
   );
 }

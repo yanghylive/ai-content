@@ -10,12 +10,14 @@ import {
   Users,
 } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { growthApi } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
 
 export function AutoAcquisitionCenter() {
   const [stats, setStats] = useState({ leads: 0, contacted: 0, tasks: 0 });
   const [loading, setLoading] = useState(true);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
 
   const fetchData = useCallback(async () => {
     try {
@@ -31,19 +33,26 @@ export function AutoAcquisitionCenter() {
         contacted: o?.todayContactedCount ?? 0,
         tasks: c.filter((x) => x.status === "enabled").length,
       });
+      clearLoadError();
     } catch (err: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(err, "加载获客数据失败"));
+      reportLoadError(err, "获客数据暂时无法读取");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
 
   return (
-    <WorkbenchCenter
+    <div className="flex flex-col gap-3">
+      {loadError ? (
+        <LoadErrorBanner message={loadError} onRetry={() => void fetchData()} />
+      ) : null}
+      <WorkbenchCenter
       backHref="/apps"
             title="自动获客"
       subtitle="设置好规则，系统自动帮你找客户、加好友"
@@ -95,6 +104,7 @@ export function AutoAcquisitionCenter() {
         { key: "rules", title: "获客策略", icon: Settings2, href: "/growth/strategies" },
         { key: "schedule", title: "增长复盘", icon: Clock, href: "/growth/reports" },
       ]}
-    />
+      />
+    </div>
   );
 }

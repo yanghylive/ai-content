@@ -24,6 +24,7 @@ import {
   Users,
 } from "lucide-react";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
+import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { V2StatusChip } from "@/components/v2/ui-kit";
 import { CrmCustomerFormModal } from "@/components/v2/crm-customer-form";
 import { listCrmCustomers, getCrmSummary, type CrmCustomer } from "@/lib/api/crm";
@@ -68,6 +69,7 @@ export function CrmCenter() {
   });
   const [customers, setCustomers] = useState<CrmCustomer[]>([]);
   const [loading, setLoading] = useState(true);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
 
   const fetchData = useCallback(async () => {
     try {
@@ -93,12 +95,15 @@ export function CrmCenter() {
         overdue: summaryData?.overdueTasks ?? 0,
         pipelineYuan: Math.round((summaryData?.pipelineAmountCents ?? 0) / 100),
       });
+      clearLoadError();
     } catch (error: unknown) {
+      // 2026-09-01 审计修复：加载失败不再静默（原只 console），banner 上屏
       console.error(toPublicError(error, "加载客户统计失败"));
+      reportLoadError(error, "客户数据暂时无法读取");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   useEffect(() => {
     void fetchData();
@@ -238,6 +243,9 @@ export function CrmCenter() {
 
   return (
     <div className="kx-view flex flex-col gap-6">
+      {loadError ? (
+        <LoadErrorBanner message={loadError} onRetry={() => void fetchData()} />
+      ) : null}
       <WorkbenchCenter
         title="客户管理"
         backHref="/crm"

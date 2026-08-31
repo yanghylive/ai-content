@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import { localEngineApi } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";
+import { useLoadError } from "@/components/load-error-banner";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type SystemStatus = {
@@ -61,6 +62,7 @@ export function EngineHealthCenter() {
   const [checking, setChecking] = useState(false);
   const [loading, setLoading] = useState(true);
   const [checkFailed, setCheckFailed] = useState(false);
+  const { loadError, reportLoadError, clearLoadError } = useLoadError();
 
   const fetchData = useCallback(async () => {
     try {
@@ -140,14 +142,17 @@ export function EngineHealthCenter() {
         });
       }
       setTodos(nextTodos);
+      clearLoadError();
     } catch (error: unknown) {
       setCheckFailed(true);
       setAssistantConnected(null);
+      // 2026-09-01 审计修复：原卡片只说"超时或失败"，具体原因经 toPublicError 上屏
       console.error(toPublicError(error, "加载引擎状态失败"));
+      reportLoadError(error, "部分状态检查失败");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearLoadError, reportLoadError]);
 
   useEffect(() => {
     void fetchData();
@@ -262,7 +267,7 @@ export function EngineHealthCenter() {
           {/* 主行动 */}
           {checkFailed && !loading ? (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(222,150,57,.4)" }}>
-              <p style={{ fontSize: 12, color: "var(--kaypal-v3-amber)", lineHeight: 1.5 }}>部分状态检查超时或失败，当前结果可能不完整，请重新检查。</p>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-amber)", lineHeight: 1.5 }}>{loadError ?? "部分状态检查超时或失败，当前结果可能不完整，请重新检查。"}</p>
             </div>
           ) : null}
           {allHealthy && !loading ? (
@@ -422,7 +427,7 @@ export function EngineHealthCenter() {
           {checkFailed && !loading ? (
             <div className="mb-3 flex items-center gap-2 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-3 text-sm font-medium text-[var(--kaypal-v3-amber)]">
               <AlertTriangle className="h-5 w-5 shrink-0" />
-              部分状态检查超时或失败，当前结果可能不完整，请重新检查。
+              {loadError ?? "部分状态检查超时或失败，当前结果可能不完整，请重新检查。"}
             </div>
           ) : null}
           {allHealthy && !loading ? (
