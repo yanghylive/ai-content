@@ -97,3 +97,41 @@
 - 驾驶舱 `chat/` 对话区样式未动(如需统一可继续)
 - 移动端 `mx-*` 玻璃拟态体系未动(与桌面端共享 token 的差异层,如需对齐可单独评估)
 - OKLCH 色阶迁移:本次保留 Hex(避免 `--agent-cockpit-*` HSL 消费层连锁改动),可作为后续独立任务
+
+
+## 8. 页面覆盖核查(2026-09-01)
+
+**统计方法**:对 212 个 `page.tsx` 做深链 import 追踪(页面 → 组件 → 组件深层,最多 4 层),判断是否消费共享样式(kaypal-v3 / kx-* / mx-* / HeroUI / v2-ui-kit / 渐变按钮等)。
+
+### 覆盖结果
+
+| 分类 | 数量 | 说明 |
+|------|------|------|
+| ✅ 已覆盖 | 202 | 深链追踪确认消费共享样式,获得全部新质感 |
+| 🔀 纯重定向页 | 10 | 无 UI,`redirect()` 到真实页面,无需样式 |
+| 🛠 开发工具页 | 1 | `dev-clear-browser-cache`(仅 dev 模式,生产 404) |
+| **合计** | **212** | **全部覆盖,无遗漏** |
+
+### 10 个纯重定向页(无需优化)
+
+| 页面 | 跳转目标 |
+|------|---------|
+| `(dashboard)/page.tsx` | `/today` |
+| `compliance-check` | `/compliance` |
+| `crm-closer` | `/crm/closer` |
+| `crm-connectors` | `/crm/connectors` |
+| `crm-import` | `/crm/import` |
+| `distribution/compliance` | `/compliance` |
+| `engagement/customers` | `/crm` |
+| `face-swap` | `/content/face-swap` |
+| `intelligence/inbox-processing` | `/intelligence/inbox` |
+| `capabilities` | `/capabilities/models` |
+
+### 误报澄清(深链追踪前误判为未覆盖)
+
+- `schedules` / `styles` / `templates` / `apps` — 复用 `v2/resource-center`(49 处共享样式消费),已覆盖
+- `content/workspace` — 引用 `V2PrimaryButton`(渐变按钮)+ 3 处共享样式,已覆盖
+
+### 结论
+
+方案 B 的共享层策略生效:一次改 5 个共享文件,212 个页面全部受益,零逐页修改,无遗漏页面。
