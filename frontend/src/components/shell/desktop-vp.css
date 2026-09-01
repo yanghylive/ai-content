@@ -343,6 +343,12 @@
   html.dark .bg-default-50.border-small,
   html.dark .bg-default-100,
   html.dark .bg-content1,
+  /* 2026-09-01 修复：浅色玻璃化覆盖了 bg-[var(--kaypal-v3-paper/surface/panel)]
+     三个任意值类，但暗色覆盖漏掉这三个选择器，导致暗色模式下统计卡等
+     保持浅色玻璃白（"白卡片"）。补齐 html.dark 版本。 */
+  html.dark [class*="bg-[var(--kaypal-v3-paper)]"],
+  html.dark [class*="bg-[var(--kaypal-v3-surface)]"],
+  html.dark [class*="bg-[var(--kaypal-v3-panel)]"],
   html.dark .kx-card,
   html.dark .kx-card,
   html.dark .kx-card-lg,
