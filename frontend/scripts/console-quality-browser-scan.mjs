@@ -474,7 +474,25 @@ function loadBackendEnv() {
 function alignLocalAcceptanceDatabase() {
   const explicitDatabaseUrl = process.env.CONSOLE_SCAN_DATABASE_URL?.trim();
   const configuredSqliteUrl = process.env.SQLITE_DATABASE_URL?.trim();
+  // 2026-09-01（审计 #20）：运行库优先——桌面端实际使用的 userData 库，
+  // 避免默认扫仓库 SQLite 导致 0/155 假红（旧库 schema 与运行库不一致）。
+  const runningDatabasePaths = [
+    process.env.KAYPAL_DESKTOP_USER_DATA_DIR
+      ? path.join(
+          process.env.KAYPAL_DESKTOP_USER_DATA_DIR.replace(/[\\/]$/, ""),
+          "kaypal-ai.sqlite",
+        )
+      : "",
+    path.join(
+      require("os").homedir(),
+      "Library",
+      "Application Support",
+      "ai-content-desktop",
+      "kaypal-ai.sqlite",
+    ),
+  ].filter(Boolean);
   const fallbackSqlitePaths = [
+    ...runningDatabasePaths,
     path.join(repoRoot, "backend", "prisma", "ai-content-dev.db"),
     path.join(
       repoRoot,
@@ -495,6 +513,17 @@ function alignLocalAcceptanceDatabase() {
   process.env.DATABASE_URL = databaseUrl;
   process.env.SQLITE_DATABASE_URL = databaseUrl;
   process.env.KAYPAL_DESKTOP_DATABASE_MODE = "sqlite";
+  // 标注 DB 来源，防假红/误判（审计 #20）
+  const source = explicitDatabaseUrl
+    ? "explicit(CONSOLE_SCAN_DATABASE_URL)"
+    : configuredSqliteUrl
+      ? "env(SQLITE_DATABASE_URL)"
+      : runningDatabasePaths.some((p) => databaseUrl === `file:${p}`)
+        ? "running(desktop userData)"
+        : "fallback(repo)";
+  console.log(
+    `[scan] acceptance database: ${databaseUrl} (source: ${source})`,
+  );
   return databaseUrl;
 }
 

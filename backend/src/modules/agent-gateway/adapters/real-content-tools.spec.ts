@@ -14,7 +14,7 @@ import { TenantContext, ToolRequest } from '../core/types';
  * - publish/interaction 阻断假成功（TOOL_EXECUTION_FAILED，不再 Mock 成功）
  * 需要 DB（AGENT_GATEWAY_REAL_BUSINESS=true）。
  */
-const hasDb = !!process.env.DATABASE_URL;
+const hasDb = process.env.DATABASE_URL?.startsWith('postgres');
 const test = hasDb ? it : it.skip;
 
 describe('RealContentTools（真实内容工具 + 阻断假成功）', () => {

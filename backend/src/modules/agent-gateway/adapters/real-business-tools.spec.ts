@@ -10,7 +10,7 @@ import { TenantContext, ToolRequest } from '../core/types';
  * RealBusinessTools 集成测试（真实 crm_create → CrmService.createCustomer 落库）。
  * 需本地 pg（DATABASE_URL）+ AGENT_GATEWAY_REAL_BUSINESS=true；无环境自动跳过。
  */
-const hasDb = !!process.env.DATABASE_URL;
+const hasDb = process.env.DATABASE_URL?.startsWith('postgres');
 const test = hasDb ? it : it.skip;
 
 describe('RealBusinessTools（真实 3010 业务工具，crm_create）', () => {

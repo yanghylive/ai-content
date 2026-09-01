@@ -40,7 +40,7 @@ function envOf(key: string): string | undefined {
   return envCache[key];
 }
 
-const hasDb = !!envOf('DATABASE_URL');
+const hasDb = envOf('DATABASE_URL')?.startsWith('postgres');
 // 商用验收门禁（方案 7.1）：缺凭据 → 显式失败，禁止「return 即通过 / passed 但 0 断言」
 const test = hasDb ? it : it.skip;
 

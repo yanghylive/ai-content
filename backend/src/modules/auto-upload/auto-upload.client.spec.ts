@@ -634,6 +634,7 @@ describe('AutoUploadClient', () => {
     expect(click).toHaveBeenCalled();
   });
 
+  // 30s：本机进程探测 + 建目录，全量并发下可能超默认 5s（单独跑 11s 套件内）
   it('detects the real desktop WeChat process instead of returning the old not-integrated placeholder', async () => {
     const root = mkdtempSync(join(tmpdir(), 'kaypal-wechat-desktop-'));
     const scriptRoot = join(root, 'scripts');
@@ -674,7 +675,7 @@ describe('AutoUploadClient', () => {
           return '九章智能｜客户沟通群(5)';
         }
         throw new Error(`unexpected AppleScript ${script}`);
-      });
+  }, 30_000);
 
     const status = await client.getWechatDesktopStatus();
     const alive = await client.checkWechatAlive();

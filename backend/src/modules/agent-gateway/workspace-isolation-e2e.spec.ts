@@ -11,8 +11,8 @@ import { TenantContext, ToolRequest } from './core/types';
  * 链路：createSession → createTask → executeTool（含 tool_call / usage 落库），
  * 断言两个 workspace 的 session/task/toolCall/usageEvent 各行按 workspaceId 归属、互不串扰。
  */
-const hasDb = !!process.env.DATABASE_URL;
-const prisma = new PrismaClient();
+const hasDb = process.env.DATABASE_URL?.startsWith('postgres');
+const prisma = hasDb ? new PrismaClient() : (null as unknown as PrismaClient);
 const T = 'ws_e2e';
 const test = hasDb ? it : it.skip;
 

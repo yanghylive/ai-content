@@ -257,6 +257,10 @@ describe('PrismaService SQLite startup safety', () => {
 
     expect(service.$executeRawUnsafe).not.toHaveBeenCalled();
     expect(service.$queryRawUnsafe).not.toHaveBeenCalled();
+    // 2026-09-01（#21）：还原 DATABASE_URL，防泄漏污染同 worker 后续 spec
+    //（agent-gateway hasDb 判定会误读为 pg 可用 → 连本地 pg 失败）
+    delete process.env.DATABASE_URL;
+    delete process.env.SQLITE_DATABASE_URL;
   });
 });
 
@@ -316,8 +320,34 @@ describe('PrismaService SQLite 列级收敛（真机 500 修复）', () => {
  *  - 切回 A 数据必须完整保留
  *  - ensureAccountDatabase 首登清空业务表但保留认证表（users）
  * 真实 SQLite 临时库（node_modules/.prisma/client 为 sqlite client 时运行）。
+ * 2026-09-01（#21）：client provider 双状态——dev 默认 postgres client 时本套件
+ * 的 PRAGMA/sqlite_master 语法不适用，同步探测 client schema 决定 skip/run，
+ * 避免与 agent-gateway 的 postgres 测试互相破坏。
  */
-describe('PrismaService 账号库隔离（logout 换库）', () => {
+import { readFileSync } from 'node:fs';
+
+const clientSchemaPath = join(
+  __dirname,
+  '..',
+  '..',
+  'node_modules',
+  '.prisma',
+  'client',
+  'schema.prisma',
+);
+let clientProvider = '';
+try {
+  clientProvider =
+    readFileSync(clientSchemaPath, 'utf8').match(/provider\s*=\s*"(\w+)"/)?.[1] ??
+    '';
+} catch {
+  // client schema 缺失时按 sqlite 跑（构建产物环境）
+  clientProvider = 'sqlite';
+}
+const runSqliteIsolation = clientProvider === 'sqlite';
+const describeIsolation = runSqliteIsolation ? describe : describe.skip;
+
+describeIsolation('PrismaService 账号库隔离（logout 换库）', () => {
   let dir: string;
   let svc: PrismaService;
   const A = 'user-a';
@@ -329,11 +359,13 @@ describe('PrismaService 账号库隔离（logout 换库）', () => {
     svc = new PrismaService();
     // 系统库：建核心表（users 等）
     await svc.onModuleInit();
+    // 全量并发下建 164 张表可能超默认 5s hook 超时，放宽到 60s
+    // (Jest hook timeout 由调用方指定：beforeAll(fn, timeout))
     // 业务表（raw 建表 + raw 读写，绕过 Prisma model 字段约束）
     await svc.$executeRawUnsafe(
       'CREATE TABLE IF NOT EXISTS materials (id TEXT PRIMARY KEY, title TEXT)',
     );
-  });
+  }, 60_000);
 
   afterAll(async () => {
     await svc.onModuleDestroy();
