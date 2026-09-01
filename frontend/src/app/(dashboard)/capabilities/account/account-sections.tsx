@@ -373,11 +373,13 @@ export function KaypalAccountSections() {
                   color="primary"
                   variant="flat"
                   onPress={() => {
-                    window.open(
+                    // 2026-09-01：不用 noopener/noreferrer 第三参（规范下 window.open
+                    // 恒返回 null）；_blank 默认隐式 noopener，手动剥离 opener 保持语义。
+                    const popup = window.open(
                       "https://kaypal.cn/zh-CN/dashboard/billing/topup",
                       "_blank",
-                      "noopener,noreferrer",
                     );
+                    if (popup) popup.opener = null;
                   }}
                 >
                   充值积分

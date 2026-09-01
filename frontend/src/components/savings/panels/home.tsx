@@ -300,7 +300,10 @@ export function HomePanel({
         return;
       }
       toast(`✅ 正在打开「${res.actName || item.name}」`);
-      window.open(res.h5, "_blank", "noopener");
+      // 2026-09-01：不用 "noopener" 第三参（规范下 window.open 恒返回 null），
+      // 现代浏览器对 _blank 默认隐式 noopener；显式剥离 opener 保持语义。
+      const popup = window.open(res.h5, "_blank");
+      if (popup) popup.opener = null;
     } catch {
       toast("生活服务暂不可用，请稍后重试", "danger");
     } finally {

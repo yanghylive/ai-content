@@ -962,15 +962,20 @@ function LoginPageContent() {
                                 void desktopBridge.openExternal(verificationUrl);
                                 return;
                               }
+                              // 2026-09-01 修复：window.open 第三参 "noopener" 会让规范浏览器
+                              // 恒返回 null（无论弹窗是否打开），导致"被拦截"误报。
+                              // 改用 "_blank"（现代浏览器默认隐式 noopener），
+                              // 再手动剥离 opener，使空引用只代表真正的拦截。
                               const popup = window.open(
                                 verificationUrl,
                                 "_blank",
-                                "noopener",
                               );
                               if (!popup) {
                                 toast.error(
                                   "浏览器拦截了弹窗，请允许本站点弹出窗口后重试",
                                 );
+                              } else {
+                                popup.opener = null;
                               }
                             }}
                           >
