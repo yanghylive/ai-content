@@ -311,7 +311,10 @@ describe('PrismaService SQLite 列级收敛（真机 500 修复）', () => {
     process.env.DATABASE_URL = 'postgres://x';
     await svc.ensureSqliteSchemaColumns();
     expect(svc.$executeRawUnsafe).not.toHaveBeenCalled();
-    delete process.env.DATABASE_URL;
+    // 2026-09-01（复核第四轮 P1-3）：还原 DATABASE_URL，防止 runInBand
+    // 顺序下 delete 后毒化后续 spec 的 Prisma 构造（P1012 校验失败）
+    process.env.DATABASE_URL =
+      'postgresql://test:test@127.0.0.1:5432/test';
   });
 });
 

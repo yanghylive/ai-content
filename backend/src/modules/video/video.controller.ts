@@ -10,6 +10,7 @@ import {
   Param,
   Post,
   Query,
+  UnauthorizedException,
   Req,
   Res,
 } from '@nestjs/common';
@@ -49,9 +50,11 @@ export class VideoController {
     // 2026-09-01 安全修复（审计 #8）：user_id 以服务端会话为准，忽略客户端传入值；
     // kaypalUserId 用于云端通道计费归属，避免成本静默记到固定主账号。
     dto.user_id = request.authUser?.id ?? '';
+    // 2026-09-01（复核第四轮 P1）：认证用户缺失即拒绝（不创建无归属项目）
     return this.videoService.generate(
       dto,
       request.authUser?.kaypalUserId ?? undefined,
+      this.resolveUserId(),
     );
   }
 
@@ -153,7 +156,7 @@ export class VideoController {
       user_id?: string;
     },
   ) {
-    return this.videoService.productCut(body);
+    return this.videoService.productCut(body, this.resolveUserId());
   }
 
   /** 2026-09-01（复核 P1-D）：当前请求用户 id */
@@ -205,8 +208,9 @@ export class VideoController {
     const ctx = this.authRequestContext?.get() as
       { user?: { role?: string } } | undefined;
     const role = ctx?.user?.role;
-    if (role !== 'admin' && role !== 'SUPER_ADMIN' && role !== 'owner') {
-      throw new ForbiddenException('仅管理员可迁移项目归属');
+    // 2026-09-01（复核第四轮 P2）：收紧为平台管理员（去掉 owner）
+    if (role !== 'admin' && role !== 'SUPER_ADMIN') {
+      throw new ForbiddenException('仅平台管理员可迁移项目归属');
     }
     await this.prisma!.migrateStudioProjectOwner(id, ownerId);
     return { success: true };

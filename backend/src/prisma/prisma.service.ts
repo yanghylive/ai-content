@@ -83,6 +83,17 @@ export class PrismaService
   ]);
 
   constructor(private readonly authRequestContext?: AuthRequestContextService) {
+    // 2026-09-01（复核第四轮 P1-3）：jest 环境构造期兜底——jest 收尾时 env
+    // 可能已被清空，PrismaClient 构造会因 DATABASE_URL 缺失/非法抛 P1012 崩溃。
+    // 仅 jest 生效（JEST_WORKER_ID），生产环境不受影响（缺失时业务访问才报错）。
+    if (
+      process.env.JEST_WORKER_ID !== undefined &&
+      (!process.env.DATABASE_URL ||
+        !process.env.DATABASE_URL.startsWith('postgres'))
+    ) {
+      process.env.DATABASE_URL =
+        'postgresql://test:test@127.0.0.1:5432/test';
+    }
     super();
     const proxy = new Proxy(this, {
       get(target, prop: string | symbol) {

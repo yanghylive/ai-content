@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AgentGatewayModule } from './agent-gateway.module';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { PrismaService } from '../../prisma/prisma.service';
 import { AllExceptionsFilter } from '../../common/filters/http-exception.filter';
 import { AuthService } from './core/auth';
 
@@ -20,6 +21,19 @@ describe('AgentGatewayController（Nest 接线，首批冻结接口）', () => {
     })
       .overrideProvider(AuthService)
       .useValue(new AuthService('test-secret'))
+      // 2026-09-01（复核第四轮 P1-3）：接线测试断言路由/参数/错误格式，
+      // 不依赖真实数据库——override PrismaService 为空壳，避免无 DATABASE_URL
+      // 环境（CI/复核机）下 Prisma 构造/$connect 崩（REAL_MEMORY=false 内存模式）
+      .overrideProvider(PrismaService)
+      .useValue({
+        $connect: async () => undefined,
+        $disconnect: async () => undefined,
+        onModuleInit: async () => undefined,
+        onModuleDestroy: async () => undefined,
+        system: {},
+        getSystemDatabasePath: () => '',
+        ensureSqliteCoreTables: async () => undefined,
+      } as unknown as PrismaService)
       .compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api'); // 与 main.ts 一致 → /api/agent/*

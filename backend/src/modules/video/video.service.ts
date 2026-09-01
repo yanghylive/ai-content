@@ -72,14 +72,26 @@ export class VideoService {
    * 提交视频生成任务
    * @param kaypalUserId 云端通道计费归属（服务端会话注入，2026-09-01 审计 #8）
    */
-  async generate(dto: GenerateVideoDto, kaypalUserId?: string) {
+  async generate(
+    dto: GenerateVideoDto,
+    kaypalUserId?: string,
+    ownerId?: string,
+  ) {
     this.logger.log(
       `generate: pipeline=${dto.pipeline} prompt=${dto.prompt.slice(0, 50)}...`,
     );
     // 透传到 studio_core；本机 StudioCore 不可达（打包态典型）时回退
     // kaypal.cn 云端网关视频通道（/api/ai/v1/video/generations，统一计费）。
     try {
-      return await this.studioCoreProxy.postGenerate(dto);
+      const result = await this.studioCoreProxy.postGenerate(dto);
+      // 2026-09-01（复核第四轮 P1）：创建入口统一登记项目归属（服务端认证用户）
+      if (ownerId && result?.project_id) {
+        await this.prisma.registerStudioProjectOwner(
+          result.project_id,
+          ownerId,
+        );
+      }
+      return result;
     } catch (error) {
       const message = this.errorMessage(error);
       this.logger.warn(
@@ -310,15 +322,18 @@ export class VideoService {
   /**
    * 商品视频自动剪辑：商品信息 → 带货文案 → 提交成片任务（promo 管线）
    */
-  async productCut(input: {
-    productName: string;
-    sellingPoints?: string[];
-    price?: number | string;
-    audience?: string;
-    durationSeconds?: number;
-    imageUrl?: string;
-    user_id?: string;
-  }) {
+  async productCut(
+    input: {
+      productName: string;
+      sellingPoints?: string[];
+      price?: number | string;
+      audience?: string;
+      durationSeconds?: number;
+      imageUrl?: string;
+      user_id?: string;
+    },
+    ownerId?: string,
+  ) {
     const script = this.buildProductCopy(input);
     const prompt = [
       `商品：${input.productName}`,
@@ -332,11 +347,20 @@ export class VideoService {
       `productCut: ${input.productName} segments=${script.segments.length}`,
     );
     try {
-      return await this.studioCoreProxy.postGenerate({
+      const result = await this.studioCoreProxy.postGenerate({
         pipeline: 'promo',
         prompt,
         user_id: input.user_id,
       });
+      // 2026-09-01（复核第四轮 P1）：productCut 创建入口同样登记归属
+      // （归属用服务端认证用户，不信请求体 user_id）
+      if (ownerId && result?.project_id) {
+        await this.prisma.registerStudioProjectOwner(
+          result.project_id,
+          ownerId,
+        );
+      }
+      return result;
     } catch (error) {
       // studio_core 引擎离线时返回可操作的降级信息（文案已生成，可稍后重试成片）
       this.logger.warn(`productCut 成片引擎不可用: ${error}`);
