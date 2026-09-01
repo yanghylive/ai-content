@@ -1,5 +1,6 @@
 "use client";
 
+import { Rss } from "lucide-react";
 import { SkeletonRow } from "@/components/skeleton";
 
 import React from "react";
@@ -8,6 +9,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { ScenePage } from "@/components/shell/scene-page";
 import { ShellIcon } from "@/components/shell/icons";
 import { materialsApi } from "@/lib/api/materials";
+import { ContentSources } from "@/components/shell/content-sources";
 import { articlesApi, type Article } from "@/lib/api/articles";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -70,7 +72,8 @@ export default function ContentScene() {
   }
 
   return (
-    <ScenePage
+    <div className="flex flex-col gap-6">
+      <ScenePage
       title="内容"
       sub="从选题到发布，一条流水线"
       hint={
@@ -206,7 +209,15 @@ export default function ContentScene() {
           group: "视频与发布",
         },
       ]}
-    />
+      />
+      <div className="kaypal-v3-panel p-5">
+        <h2 className="mb-1 text-base font-semibold text-[var(--kaypal-v3-ink)]">内容来源</h2>
+        <p className="mb-4 text-sm text-[var(--kaypal-v3-muted)]">
+          素材采集从这些地方抓内容，管理后可到素材库「开始采集」
+        </p>
+        <ContentSources />
+      </div>
+    </div>
   );
 }
 
@@ -669,6 +680,22 @@ function MobileContentView({
             <path d="m9 18 6-6-6-6" />
           </svg>
         </button>
+      </section>
+
+      {/* 内容来源（2026-09-01 从设置迁移：素材采集上下文） */}
+      <section className="mx-px mx-mt-lg" style={{ paddingBottom: 28 }}>
+        <div className="mx-section-head">
+          <div>
+            <div className="mx-section-title">
+              <span className="mx-sec-icon"><Rss /></span>
+              内容来源
+            </div>
+            <p className="mx-section-eyebrow">素材采集从这些地方抓内容</p>
+          </div>
+        </div>
+        <div className="mx-card" style={{ padding: 16 }}>
+          <ContentSources />
+        </div>
       </section>
     </div>
   );

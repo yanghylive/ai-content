@@ -431,7 +431,7 @@ export function AppShell({
             className={`kx-rail-item${activeScene === "mine" ? " kx-active" : ""}`}
             aria-label="我的"
             aria-current={activeScene === "mine" ? "page" : undefined}
-            onClick={() => router.push("/mine")}
+            onClick={() => router.push("/settings/account")}
           >
             {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
             <ShellIcon name="user" size={22} />

@@ -18,7 +18,7 @@ import {
   V2GhostButton,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
-import { SettingsIntegrations } from "./settings-integrations";
+import { FileStorageSettings } from "./settings-integrations";
 import { DesktopSettings } from "./desktop-settings";
 import {
   AccountSettingsSection,
@@ -246,8 +246,20 @@ export function SettingsDetail() {
             </div>
           </div>
 
-          {/* 集成设置 */}
-          <SettingsIntegrations />
+          {/* 文件存储 */}
+          <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
+            <div className="mx-section-title" style={{ marginBottom: 12 }}>
+              <span className="mx-sec-icon"><Database /></span>
+              文件存储
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>生成的图片、视频存在哪里</p>
+                <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>本地存储或对象存储（七牛云 / 阿里 OSS）</p>
+              </div>
+              <button type="button" className="mx-btn-gold" onClick={() => router.push("/settings/integrations")}>去配置</button>
+            </div>
+          </div>
 
           {/* 桌面设置（本机应用专属） */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
@@ -334,8 +346,8 @@ export function SettingsDetail() {
         <DesktopSettings />
       </V2Section>
 
-      {/* 集成设置：AI 服务 / 内容来源 / 文件存储 */}
-      <SettingsIntegrations />
+      {/* 文件存储 */}
+      <FileStorageSettings />
 
       <section className="flex items-center justify-between">
         <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/")}>

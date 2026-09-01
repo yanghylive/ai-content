@@ -13,13 +13,11 @@ import {
   Bell,
   Database,
   Download,
-  KeyRound,
-  Save,
+  ExternalLink,
+  UserRound,
 } from "lucide-react";
 import {
   V2Section,
-  V2Field,
-  V2Input,
   V2PrimaryButton,
   V2GhostButton,
 } from "@/components/v2/ui-kit";
@@ -39,112 +37,39 @@ export function SettingsPageHeader({ title, sub }: { title: string; sub: string 
   );
 }
 
-/* ═══════════ 账号与安全（个人资料 + 修改密码） ═══════════ */
+/* ═══════════ 账号与安全（由 Kaypal 账号底座统一管理） ═══════════ */
 
 export function AccountSettingsSection() {
-  const [profile, setProfile] = useState({ name: "", email: "" });
-  const [passwords, setPasswords] = useState({ current: "", next: "", confirm: "" });
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const flash = (text: string) => {
-    setMessage(text);
-    setError(null);
-    setTimeout(() => setMessage(null), 3000);
-  };
-
-  const handleSaveProfile = () => {
-    flash(NOT_READY);
-  };
-
-  const handleChangePassword = () => {
-    if (!passwords.current || passwords.next.length < 8) {
-      setError("新密码至少 8 位");
-      setMessage(null);
-      return;
-    }
-    if (passwords.next !== passwords.confirm) {
-      setError("两次输入的新密码不一致");
-      setMessage(null);
-      return;
-    }
-    flash(NOT_READY);
-  };
-
   return (
     <div className="flex flex-col gap-6">
-      {message && (
-        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4">
-          <p className="text-sm font-medium text-[var(--kaypal-v3-success)]">{message}</p>
+      <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-6">
+        <div className="flex items-start gap-4">
+          <span
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
+            aria-hidden="true"
+          >
+            <UserRound className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+              账号信息由 Kaypal 账号统一管理
+            </p>
+            <p className="mt-1 text-sm leading-6 text-[var(--kaypal-v3-muted)]">
+              昵称、头像、登录邮箱、密码与安全设置都在 Kaypal 账号中心维护，
+              修改后回到这里即可看到最新信息。JIUZHANG AI 不在前端重复提供这些表单。
+            </p>
+          </div>
+          <a
+            href="https://kaypal.cn"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2 text-sm font-medium text-white transition hover:brightness-105"
+          >
+            <ExternalLink className="h-4 w-4" />
+            前往 Kaypal 管理
+          </a>
         </div>
-      )}
-      {error && (
-        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
-          <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
-        </div>
-      )}
-
-      <V2Section
-        title="个人资料"
-        description="你的昵称和登录邮箱"
-        action={
-          <V2PrimaryButton icon={Save} onClick={handleSaveProfile}>
-            保存
-          </V2PrimaryButton>
-        }
-      >
-        <div className="grid gap-5 sm:grid-cols-2">
-          <V2Field label="昵称">
-            <V2Input
-              placeholder="你的名字"
-              value={profile.name}
-              onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
-            />
-          </V2Field>
-          <V2Field label="登录邮箱">
-            <V2Input
-              type="email"
-              placeholder="you@example.com"
-              value={profile.email}
-              onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
-            />
-          </V2Field>
-        </div>
-      </V2Section>
-
-      <V2Section
-        title="修改密码"
-        description="定期修改密码更安全"
-        action={
-          <V2PrimaryButton icon={KeyRound} onClick={handleChangePassword}>
-            修改密码
-          </V2PrimaryButton>
-        }
-      >
-        <div className="grid gap-5 sm:grid-cols-3">
-          <V2Field label="当前密码" required>
-            <V2Input
-              type="password"
-              value={passwords.current}
-              onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))}
-            />
-          </V2Field>
-          <V2Field label="新密码" required hint="至少 8 位">
-            <V2Input
-              type="password"
-              value={passwords.next}
-              onChange={(e) => setPasswords((p) => ({ ...p, next: e.target.value }))}
-            />
-          </V2Field>
-          <V2Field label="再输一遍新密码" required>
-            <V2Input
-              type="password"
-              value={passwords.confirm}
-              onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))}
-            />
-          </V2Field>
-        </div>
-      </V2Section>
+      </div>
     </div>
   );
 }

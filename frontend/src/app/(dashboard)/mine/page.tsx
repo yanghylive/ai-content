@@ -16,7 +16,7 @@ import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { MobileThemeToggle } from "@/components/shell/mobile-theme-toggle";
 import { authApi } from "@/lib/api/auth";
 import { isAdminUser } from "@/lib/admin-user";
-import { useConfirm } from "@/hooks/use-confirm";
+import { useRouter } from "next/navigation";
 import {
   MINE_NAV_ENTRIES,
   MOBILE_MORE_GROUP_ORDER,
@@ -28,8 +28,6 @@ export default function MineScene() {
   const [accountIssue, setAccountIssue] = React.useState(0);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const isMobile = useIsMobile();
-  const { confirm, modal } = useConfirm();
-
   React.useEffect(() => {
     let active = true;
     authApi
@@ -76,52 +74,17 @@ export default function MineScene() {
     );
   }
 
-  return (
-    <>
-      <div className="kx-view">
-        <h1 className="kx-greet">我的</h1>
-        <p className="kx-greet-sub">账户信息与订阅</p>
+  // 桌面端：不再保留独立的「我的」页（账号信息显示在左栏账号区，退出在左栏）。
+  // 与 WorkBuddy 一致 —— 点「我的」直接进入设置中心首个设置项。
+  return <DesktopRedirect />;
+}
 
-        {/* 账户信息卡（WorkBuddy 账户页：头像 + 名字 + 套餐 + 退出，无重复入口） */}
-        {user ? (
-          <div className="kaypal-v3-panel flex items-center gap-4 p-5" style={{ marginTop: 4 }}>
-            <span
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl font-bold text-white"
-              style={{ background: "var(--kaypal-v3-gradient-avatar)" }}
-            >
-              {user.displayName.slice(0, 1)}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">{user.displayName}</p>
-              <p className="mt-0.5 text-sm text-[var(--kaypal-v3-muted)]">
-                {user.planLabel} · {user.creditLabel} 积分
-              </p>
-              <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
-                账号、通知、AI 服务与数据管理等全部设置，请在左侧导航进入
-              </p>
-            </div>
-            <button
-              className="kx-btn kx-btn-danger"
-              disabled={user.loggingOut}
-              onClick={() => {
-                void confirm({
-                  kind: "danger",
-                  title: "退出登录？",
-                  description: "退出后需要重新登录 JIUZHANG AI 账号才能使用全部功能",
-                  confirmText: "退出",
-                }).then((ok) => {
-                  if (ok) user.onLogout?.();
-                });
-              }}
-            >
-              {user.loggingOut ? "正在退出..." : "退出登录"}
-            </button>
-          </div>
-        ) : null}
-      </div>
-      {modal}
-    </>
-  );
+function DesktopRedirect() {
+  const router = useRouter();
+  React.useEffect(() => {
+    router.replace("/settings/account");
+  }, [router]);
+  return null;
 }
 
 /* ================= 移动端视图（<768px，明德 VP 风格） ================= */
