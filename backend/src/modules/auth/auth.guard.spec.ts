@@ -39,7 +39,11 @@ describe('AuthGuard', () => {
     };
 
     const prisma = {
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
       system: {
+        ensureAccountDatabase: jest
+          .fn()
+          .mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
         userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: sessionId,
@@ -128,7 +132,11 @@ describe('AuthGuard', () => {
     };
 
     const prisma = {
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
       system: {
+        ensureAccountDatabase: jest
+          .fn()
+          .mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
         userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: sessionId,
@@ -204,7 +212,11 @@ describe('AuthGuard', () => {
       kaypalMetadataSyncedAt: new Date(Date.now() - 60 * 60_000).toISOString(),
     };
     const prisma = {
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
       system: {
+        ensureAccountDatabase: jest
+          .fn()
+          .mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
         userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: sessionId,
@@ -272,7 +284,11 @@ describe('AuthGuard', () => {
       kaypalRole: 'SUPER_ADMIN',
     };
     const prisma = {
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
       system: {
+        ensureAccountDatabase: jest
+          .fn()
+          .mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
         userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
@@ -350,7 +366,11 @@ describe('AuthGuard', () => {
       kaypalRole: 'SUPER_ADMIN',
     };
     const prisma = {
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
       system: {
+        ensureAccountDatabase: jest
+          .fn()
+          .mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
         userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
@@ -426,7 +446,11 @@ describe('AuthGuard', () => {
       kaypalRole: 'SUPER_ADMIN',
     };
     const prisma = {
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
       system: {
+        ensureAccountDatabase: jest
+          .fn()
+          .mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
         userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
@@ -496,7 +520,11 @@ describe('AuthGuard', () => {
       kaypalCreditBalanceUserId: 'kaypal-user-from-metadata',
     };
     const prisma = {
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
       system: {
+        ensureAccountDatabase: jest
+          .fn()
+          .mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
         userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
@@ -569,7 +597,11 @@ describe('AuthGuard', () => {
       kaypalMetadataSyncedAt: new Date().toISOString(),
     };
     const prisma = {
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
       system: {
+        ensureAccountDatabase: jest
+          .fn()
+          .mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
         userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
@@ -650,7 +682,11 @@ describe('AuthGuard', () => {
   const buildRoleCheckFixture = (role: string, cloudRole?: string) => {
     const sessionToken = 'session-token';
     const prisma = {
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
       system: {
+        ensureAccountDatabase: jest
+          .fn()
+          .mockResolvedValue('/tmp/accounts/guard-user.sqlite'),
         userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',

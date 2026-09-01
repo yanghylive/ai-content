@@ -608,14 +608,11 @@ export function HomePanel({
         </div>
       )}
 
-      {/* 2026-09-01（复核 P2）：美团/运营位失败不再静默降级空——明示错误 */}
+      {/* 2026-09-01（复核 P2）：美团/运营位失败不再静默降级空——分区级明示，
+          不再要求全部区块为空才显示（复核指出的残留） */}
       {panelErrors &&
         Object.entries(panelErrors).length > 0 &&
-        !initialLoading &&
-        offers.length === 0 &&
-        meituanActs.length === 0 &&
-        featured99.length === 0 &&
-        featured30.length === 0 && (
+        !initialLoading && (
           <div
             role="alert"
             className="mb-4 rounded-[var(--kaypal-v3-radius-sm)] border-small border-danger-200 bg-danger-50 p-4 text-sm text-danger-700"

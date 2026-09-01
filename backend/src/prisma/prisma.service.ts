@@ -126,9 +126,12 @@ export class PrismaService
     }
     if (requestUserId) {
       const accountPath = this.accountPaths.get(requestUserId);
-      if (accountPath) {
-        return this.getAccountClient(accountPath);
+      if (!accountPath) {
+        // 2026-09-01（复核 P1-A）：已认证请求但账号库映射缺失（进程重启后
+        // accountPaths 为空）→ 拒绝，绝不回退全局活跃库（会串到别的账号）
+        throw new ServiceUnavailableException('账号库尚未就绪，请重新登录');
       }
+      return this.getAccountClient(accountPath);
     }
     return this.activeAccountPath
       ? this.getAccountClient(this.activeAccountPath)
@@ -197,7 +200,7 @@ export class PrismaService
       // 2026-09-01（复核 P1-3）：必须复制 WAL/SHM 三件套——SQLite 在 WAL 模式下
       // 已提交事务可能只在 -wal 文件里（实测现网库 4.4MB WAL），只复制主库会丢数据；
       // 新库首次打开时自动 checkpoint 合并 WAL，数据完整。
-      this.copySqliteDatabaseWithSidecars(systemPath, accountPath);
+      await this.copySqliteDatabaseWithSidecars(systemPath, accountPath);
       await this.clearAccountBusinessTables(accountPath);
       // 模板净化：系统库业务数据首登后不再需要（已随账号库隔离）
       if (!this.accountTablesCleared.has('__system__')) {
@@ -214,11 +217,25 @@ export class PrismaService
     return accountPath;
   }
 
-  /** 复制 SQLite 主库 + WAL + SHM 三件套（WAL 模式数据完整性） */
-  private copySqliteDatabaseWithSidecars(
+  /**
+   * 2026-09-01（复核 P2）：复制 SQLite 主库 + WAL + SHM 三件套（WAL 模式数据完整性）。
+   * 串行文件复制不是一致性快照——先对源库做 wal_checkpoint(TRUNCATE) 把 WAL
+   * 合并进主库，复制期间源库不可再写（调用方应处于空闲窗口），之后复制主库即一致。
+   * checkpoint 失败不阻断（回退三件套复制）。
+   */
+  private async copySqliteDatabaseWithSidecars(
     sourcePath: string,
     targetPath: string,
-  ): void {
+  ): Promise<void> {
+    try {
+      await this.system.$queryRawUnsafe('PRAGMA wal_checkpoint(TRUNCATE)');
+    } catch (error) {
+      this.logger.warn(
+        `迁移前 WAL checkpoint 失败（回退三件套复制）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
     copyFileSync(sourcePath, targetPath);
     for (const suffix of ['-wal', '-shm']) {
       const source = `${sourcePath}${suffix}`;
@@ -255,7 +272,8 @@ export class PrismaService
       }
     }
     renameSync(accountPath, `${accountPath}.corrupt-${stamp}`);
-    copyFileSync(systemPath, accountPath);
+    // 2026-09-01（复核 P2）：恢复复制前 checkpoint，避免丢 WAL 中已提交数据
+    await this.copySqliteDatabaseWithSidecars(systemPath, accountPath);
     this.accountTablesCleared.delete(accountPath);
     await this.clearAccountBusinessTables(accountPath);
   }
@@ -574,6 +592,14 @@ export class PrismaService
       `CREATE INDEX IF NOT EXISTS attribution_links_to_idx ON attribution_links(tenant_id, to_type, to_id)`,
       `DROP INDEX IF EXISTS attribution_links_from_idx`,
       `CREATE INDEX IF NOT EXISTS attribution_links_from_idx ON attribution_links(tenant_id, from_type, from_id)`,
+      // 2026-09-01（复核 P1-D）：StudioCore 项目认领表（用户级授权）——
+      // 项目由上游 8610 创建（本后端无创建入口），首个访问当前项目的用户认领，
+      // 之后所有项目 ID 操作校验归属（跨账号不可见/不可操作）。
+      `CREATE TABLE IF NOT EXISTS studio_project_owners (
+        project_id TEXT PRIMARY KEY NOT NULL,
+        user_id TEXT NOT NULL,
+        claimed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
       // —— 唯一约束批量补齐（schema drift 检测发现：以下表的 @@unique 在 SQLite 建表时漏建唯一索引，导致 upsert 静默失败）——
       `CREATE UNIQUE INDEX IF NOT EXISTS billing_subscriptions_provider_external_key ON billing_subscriptions(provider, external_subscription_id)`,
       `CREATE UNIQUE INDEX IF NOT EXISTS billing_invoices_provider_external_key ON billing_invoices(provider, external_invoice_id)`,

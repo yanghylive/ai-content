@@ -322,12 +322,15 @@ export class VideoWorkshopController {
 
   @Get('phone-upload/sessions/:id')
   phoneUploadSession(@Param('id') id: string) {
-    return this.videoWorkshop.phoneUploadSession(id);
+    return this.videoWorkshop.phoneUploadSession(id, this.resolveOwnerId());
   }
 
   @Post('phone-upload/sessions/:id/cancel')
   cancelPhoneUploadSession(@Param('id') id: string) {
-    return this.videoWorkshop.cancelPhoneUploadSession(id);
+    return this.videoWorkshop.cancelPhoneUploadSession(
+      id,
+      this.resolveOwnerId(),
+    );
   }
 
   @Get('preview')

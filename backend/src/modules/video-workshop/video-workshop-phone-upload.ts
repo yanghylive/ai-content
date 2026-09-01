@@ -93,16 +93,16 @@ export class VideoWorkshopPhoneUploadService implements OnModuleDestroy {
     });
   }
 
-  async getSession(id: string) {
+  async getSession(id: string, ownerId?: string) {
     await this.ensureInitialized();
-    const session = this.requireSession(id);
+    const session = this.requireSession(id, ownerId);
     await this.expireIfNeeded(session);
     return this.toPublicSession(session);
   }
 
-  async cancelSession(id: string) {
+  async cancelSession(id: string, ownerId?: string) {
     await this.ensureInitialized();
-    const session = this.requireSession(id);
+    const session = this.requireSession(id, ownerId);
     if (
       ['succeeded', 'failed', 'cancelled', 'expired'].includes(session.status)
     ) {
@@ -497,9 +497,13 @@ button.addEventListener('click',()=>{const file=fileInput.files&&fileInput.files
     return createHash('sha256').update(token).digest('hex');
   }
 
-  private requireSession(id: string) {
+  private requireSession(id: string, ownerId?: string) {
     const session = this.sessions.get(id);
     if (!session) throw new NotFoundException('手机上传会话不存在');
+    // 2026-09-01（复核 P1-C）：会话归属校验（不匹配按不存在处理，不泄露存在性）
+    if (ownerId && session.userId !== ownerId) {
+      throw new NotFoundException('手机上传会话不存在');
+    }
     return session;
   }
 

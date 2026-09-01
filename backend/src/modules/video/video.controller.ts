@@ -14,6 +14,7 @@ import {
 import type { Response } from 'express';
 import { VideoService } from './video.service';
 import { StudioCoreProxyService } from './studio-core-proxy.service';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
 import type { AuthenticatedRequest } from '../auth/auth.guard';
@@ -29,6 +30,7 @@ export class VideoController {
   constructor(
     private readonly videoService: VideoService,
     private readonly studioCoreProxy: StudioCoreProxyService,
+    private readonly authRequestContext?: AuthRequestContextService,
   ) {}
 
   /**
@@ -150,6 +152,17 @@ export class VideoController {
     return this.videoService.productCut(body);
   }
 
+  /** 2026-09-01（复核 P1-D）：当前请求用户 id */
+  private resolveUserId(): string | undefined {
+    try {
+      const ctx = this.authRequestContext?.get() as
+        { user?: { id?: string } } | undefined;
+      return ctx?.user?.id?.trim() || undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
   /**
    * 查询视频项目列表
    * GET /api/video/projects
@@ -165,7 +178,7 @@ export class VideoController {
    */
   @Get('projects/:id')
   async getProject(@Param('id') id: string) {
-    return this.videoService.getProject(id);
+    return this.videoService.getProject(id, this.resolveUserId());
   }
 
   /**
@@ -175,7 +188,7 @@ export class VideoController {
   @Get('projects/:id/compose.mp4')
   async getComposeMp4(@Param('id') id: string, @Res() res: Response) {
     const { buffer, contentType, length } =
-      await this.videoService.getComposeMp4(id);
+      await this.videoService.getComposeMp4(id, this.resolveUserId());
     res.set({
       'Content-Type': contentType,
       'Content-Length': String(length),
@@ -191,7 +204,7 @@ export class VideoController {
    */
   @Post('projects/:id/import-material')
   async importMaterial(@Param('id') id: string) {
-    return this.videoService.importComposeMp4(id);
+    return this.videoService.importComposeMp4(id, this.resolveUserId());
   }
 
   /**
@@ -209,6 +222,8 @@ export class VideoController {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
     // 2026-09-01（复核 P1-6）：SSE 按 :id 过滤帧内项目，不再转发全量快照
+    // 2026-09-01（复核 P1-D）：SSE 订阅前同样校验项目归属
+    await this.videoService.getProject(id, this.resolveUserId());
     const stream = await this.studioCoreProxy.proxySse(id);
     const reader = stream.getReader();
     const pump = async () => {

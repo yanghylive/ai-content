@@ -2,6 +2,7 @@ import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { PrismaService } from './prisma.service';
+import { AuthRequestContextService } from '../common/auth-request-context.service';
 
 type TestablePrismaService = {
   ensureSqliteCoreTables(): Promise<void>;
@@ -448,5 +449,45 @@ describeIsolation('PrismaService 账号库隔离（logout 换库）', () => {
     // 重建后可正常读写（业务表空）
     await svc.switchDatabase(cPath);
     expect(await materialCount()).toBe(0);
+  });
+
+});
+
+/**
+ * 2026-09-01（复核 P1-A）：重启后请求级路由——映射缺失拒绝、guard 确保后恢复。
+ * 独立套件（不依赖 sqlite client）：ensureAccountDatabase 打桩（只测路由逻辑）。
+ */
+describe('PrismaService 重启后请求级路由（复核 P1-A）', () => {
+  it('已认证但映射缺失 → 拒绝业务访问，不回退全局；ensure 后恢复', async () => {
+    const ctxService = {
+      get: jest.fn(),
+    } as unknown as AuthRequestContextService;
+    const rebootSvc = new PrismaService(ctxService);
+    // 打桩 ensureAccountDatabase（登记映射即可，不真实建库）
+    rebootSvc.ensureAccountDatabase = jest.fn(
+      async (userId: string) => {
+        (rebootSvc as unknown as { accountPaths: Map<string, string> }).accountPaths.set(
+          userId,
+          `/tmp/accounts/${userId}.sqlite`,
+        );
+        return `/tmp/accounts/${userId}.sqlite`;
+      },
+    );
+    // 模拟进程重启：accountPaths 为空 + 无全局活跃库
+    (ctxService.get as jest.Mock).mockReturnValue({ user: { id: 'user-reboot' } });
+    // 已认证但无账号库映射 → 拒绝（不回退全局/系统库）
+    await expect(
+      Promise.resolve().then(() => rebootSvc.material),
+    ).rejects.toThrow('账号库尚未就绪');
+    // guard 已确保账号库（登记映射）→ 请求级路由恢复
+    await rebootSvc.ensureAccountDatabase('user-reboot');
+    expect(rebootSvc.material).toBeDefined();
+    // 切换另一用户：映射缺失同样拒绝（A/B 不串库）
+    (ctxService.get as jest.Mock).mockReturnValue({ user: { id: 'user-other' } });
+    await expect(
+      Promise.resolve().then(() => rebootSvc.material),
+    ).rejects.toThrow('账号库尚未就绪');
+    await rebootSvc.ensureAccountDatabase('user-other');
+    expect(rebootSvc.material).toBeDefined();
   });
 });

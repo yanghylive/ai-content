@@ -168,6 +168,21 @@ export class AuthGuard implements CanActivate {
     };
     request.authUser = await this.applyEffectiveEntitlement(authUser);
 
+    // 2026-09-01（复核 P1-A）：每个已认证请求先确保账号库映射登记（进程内存
+    // accountPaths 重启后为空，否则请求级路由会回退全局活跃库 → 重启后 A 的
+    // 持久会话可能读 B 刚登录的库）。确保失败直接拒绝，不静默放行到系统库。
+    if (session?.user?.id) {
+      try {
+        await this.prisma.ensureAccountDatabase(session.user.id);
+      } catch (error) {
+        throw new UnauthorizedException(
+          `账号数据初始化失败，请重新登录：${
+            error instanceof Error ? error.message.slice(0, 120) : '未知错误'
+          }`,
+        );
+      }
+    }
+
     this.authRequestContext?.enter({
       sessionId: session.id,
       user: request.authUser,

@@ -48,19 +48,34 @@ export function MePanel({ watches }: MePanelProps) {
   const [invite, setInvite] = useState<{ inviteCode: string; inviteUrl: string; shareText: string } | null>(null);
   const [buyOffer, setBuyOffer] = useState<OfferView | null>(null);
   const [checking, setChecking] = useState(false);
+  // 2026-09-01（复核 P2）：收藏/签到/邀请三路失败不再静默吞掉
+  const [panelErrors, setPanelErrors] = useState<Record<string, string>>({});
 
   const loadGrowth = useCallback(async () => {
+    setPanelErrors({});
+    const recordError = (key: string) => (error: unknown) => {
+      setPanelErrors((prev) => ({
+        ...prev,
+        [key]:
+          (error as { message?: string })?.message?.slice?.(0, 80) ||
+          "加载失败",
+      }));
+      return null;
+    };
     try {
       const [favs, ci, iv] = await Promise.all([
-        savingsApi.listFavorites().catch(() => []),
-        savingsApi.checkinStatus().catch(() => null),
-        savingsApi.invite().catch(() => null),
+        savingsApi.listFavorites().catch(() => {
+          recordError("favorites")(new Error("收藏加载失败"));
+          return [] as FavoriteRow[];
+        }),
+        savingsApi.checkinStatus().catch((e) => recordError("checkin")(e)),
+        savingsApi.invite().catch((e) => recordError("invite")(e)),
       ]);
       setFavorites(favs);
       setCheckin(ci);
       setInvite(iv);
     } catch {
-      /* 静默 */
+      /* Promise.all 已逐路 catch，这里兜底 */
     }
   }, []);
 
@@ -143,6 +158,26 @@ export function MePanel({ watches }: MePanelProps) {
       </div>
       <div className="mt-0.5 text-12 text-default-500">收藏 · 签到 · 门店 · 邀请</div>
 
+      {/* 2026-09-01（复核 P2）：分区加载失败明示 */}
+      {Object.keys(panelErrors).length > 0 && (
+        <div
+          role="alert"
+          className="mb-3 rounded-[var(--kaypal-v3-radius-sm)] border-small border-danger-200 bg-danger-50 p-3 text-sm text-danger-700"
+        >
+          <span className="font-semibold">部分数据加载失败</span>
+          <ul className="mt-1 list-inside list-disc space-y-0.5 text-xs opacity-90">
+            {Object.entries(panelErrors).map(([key, message]) => (
+              <li key={key}>
+                {key === "favorites"
+                  ? "收藏"
+                  : key === "checkin"
+                    ? "签到"
+                    : "邀请"}：{message}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {/* 签到卡 */}
       <div className="mt-4 overflow-hidden rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500 to-amber-500 p-4 text-white shadow-lg shadow-orange-500/10">
         <div className="flex items-center justify-between">

@@ -290,14 +290,18 @@ export class VideoWorkshopService implements OnModuleInit {
     return this.phoneUploads.createSession(maxBytes, userId);
   }
 
-  phoneUploadSession(id: string): Promise<VideoWorkshopPhoneUploadSession> {
-    return this.phoneUploads.getSession(id);
+  phoneUploadSession(
+    id: string,
+    ownerId?: string,
+  ): Promise<VideoWorkshopPhoneUploadSession> {
+    return this.phoneUploads.getSession(id, ownerId);
   }
 
   cancelPhoneUploadSession(
     id: string,
+    ownerId?: string,
   ): Promise<VideoWorkshopPhoneUploadSession> {
-    return this.phoneUploads.cancelSession(id);
+    return this.phoneUploads.cancelSession(id, ownerId);
   }
 
   private newTask(
@@ -718,7 +722,8 @@ export class VideoWorkshopService implements OnModuleInit {
     const task = this.tasks.get(id);
     if (!task) throw new NotFoundException('视频工坊任务不存在');
     // 2026-09-01（复核 P1-4）：任务归属校验（不匹配按不存在处理，不泄露存在性）
-    if (ownerId && task.userId && task.userId !== ownerId) {
+    // 2026-09-01（复核 P1-C）：无归属旧任务对登录用户同样拒绝（fail-closed）
+    if (ownerId && task.userId !== ownerId) {
       throw new NotFoundException('视频工坊任务不存在');
     }
     return task;

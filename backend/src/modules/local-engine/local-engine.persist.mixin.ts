@@ -163,10 +163,14 @@ export async function persistTaskNow(this: PersistHost, task: InteractionTask) {
     throw new ForbiddenException('互动任务缺少租户归属，已拒绝写入。');
   }
   this.refreshTaskDiagnostics(task);
-  const taskType = (this.taskTypeToPrisma[task.type] ||
-    task.type) as PrismaInteractionTaskType;
-  const status = (this.taskStatusToPrisma[task.status] ||
-    task.status) as PrismaInteractionTaskStatus;
+  const taskType: PrismaInteractionTaskType =
+    (this.taskTypeToPrisma[task.type] as
+      PrismaInteractionTaskType | undefined) ||
+    (task.type as PrismaInteractionTaskType);
+  const status: PrismaInteractionTaskStatus =
+    (this.taskStatusToPrisma[task.status] as
+      PrismaInteractionTaskStatus | undefined) ||
+    (task.status as PrismaInteractionTaskStatus);
   const data = {
     tenantId: task.tenantId,
     userId: task.userId,

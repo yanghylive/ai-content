@@ -90,9 +90,10 @@ export class WanI2vService {
     const estimatedCost = Number((duration * this.pricePerSecond()).toFixed(2));
 
     const serverKey = this.getServerApiKey();
+    // 2026-09-01（复核 P1-B）：本地 user.id 作为唯一所有者键；kaypalUserId 仅上游计费
     const userId =
-      (typeof user?.kaypalUserId === 'string' && user.kaypalUserId) ||
       (typeof user?.id === 'string' && user.id) ||
+      (typeof user?.kaypalUserId === 'string' && user.kaypalUserId) ||
       '';
     if (!serverKey) {
       throw new ServiceUnavailableException('视频生成服务暂不可用，请稍后重试');
@@ -177,7 +178,9 @@ export class WanI2vService {
     if (!rec) {
       throw new NotFoundException('视频生成任务不存在');
     }
-    if (ownerId && rec.userId && rec.userId !== ownerId) {
+    // 2026-09-01（复核 P1-B）：旧记录无归属 → 拒绝访问（fail-closed）；
+    // 归属不匹配 → 按不存在处理（不泄露存在性）
+    if (ownerId && (!rec.userId || rec.userId !== ownerId)) {
       throw new NotFoundException('视频生成任务不存在');
     }
     if (rec.status === 'ready' || rec.status === 'failed') {
@@ -243,7 +246,9 @@ export class WanI2vService {
       throw new NotFoundException('视频生成任务不存在');
     }
     // 2026-09-01（复核 P1-5）：下载同样按所有者校验
-    if (ownerId && rec.userId && rec.userId !== ownerId) {
+    // 2026-09-01（复核 P1-B）：旧记录无归属 → 拒绝访问（fail-closed）；
+    // 归属不匹配 → 按不存在处理（不泄露存在性）
+    if (ownerId && (!rec.userId || rec.userId !== ownerId)) {
       throw new NotFoundException('视频生成任务不存在');
     }
     if (rec.status !== 'ready' || !rec.videoUrl) {
