@@ -94,9 +94,7 @@
 
 ## 7. 后续可选项
 
-- 驾驶舱 `chat/` 对话区样式未动(如需统一可继续)
-- 移动端 `mx-*` 玻璃拟态体系未动(与桌面端共享 token 的差异层,如需对齐可单独评估)
-- OKLCH 色阶迁移:本次保留 Hex(避免 `--agent-cockpit-*` HSL 消费层连锁改动),可作为后续独立任务
+- 移动端 `mx-*` 玻璃拟态体系对齐评估(与桌面端共享 token 的差异层,如需对齐可单独评估)——chat 区/OKLCH/登录页等项均已在本轮完成,详见第 10/11 章
 
 
 ## 8. 页面覆盖核查(2026-09-01)
@@ -253,3 +251,33 @@
 | `55c467d2` | light-only 页面 token 化(video/seedance/copy-compare) |
 | `6ccf99ed` | 轮扫修复(ai-assistant/settings/scrape) |
 | `41d6face` | HeroUI 主题色阶 hex → HSL 迁移 |
+
+
+## 11. 登录页收编与文案优化(2026-09-01)
+
+### 11.1 品牌紫硬编码 token 化(`7f4f9c06`)
+
+登录页样式此前已有 `--login-*` 变量基础,但 8 处品牌紫硬编码在暗色下不跟随亮紫:
+
+| 项 | 处理 |
+|----|------|
+| 变量层 | 新增 `--login-purple-grad/-glow/-focus/-ring/-soft`、`--login-tabs-bg/-tab-active-bg`、`--login-sso-bg` 共 8 个 |
+| 输入框 focus / wrapper focus-within | `rgba(114,46,209,.62)` + ring `.07` → 变量 |
+| 主按钮 | 渐变 `#6021b8→#7730d3→#9251e6` + glow `.22` → `--login-purple-grad/-glow` |
+| tab 激活/kicker/sso 编号/signup 链接/qr 按钮 | `#722ed1` → `--login-purple` |
+| tab 容器/sso 浅底/tab 激活底 | 硬编码浅色 → 变量 |
+| dark 覆盖 | `--login-purple` → `#b885f7` 亮紫;主按钮渐变提亮 `#5c3c8a→#9254de→#b885f7`;浅色容器 → 半透明白 |
+
+修复的真实问题:暗色下 tab 激活、kicker、sso 编号、注册链接、QR 按钮原为深紫不可读。
+
+### 11.2 退出按钮危险色 + 文案去工程词(`4784f789`)
+
+- 退出是破坏性操作,原用主 CTA 样式 → 新增 `.kx-btn-danger`(桌面红描边)/`.mx-btn-danger`(移动红实底),「我的」页两处退出按钮切换
+- 退出确认描述内部代号 "Kaypal 账号" → "JIUZHANG AI 账号"
+- 九章账号登录流程文案口语化:去掉 "Codex 用 ChatGPT 账号" 类比、授权/设备/撤销/回传术语 → 一键登录/验证码/退出登录;"授权码" → "验证码";错误态口语化("授权未通过" → "登录未确认")
+
+### 11.3 账号中心代号统一(`本次`)
+
+`capabilities/account/account-sections.tsx` 4 处 "Kaypal 账号" → "JIUZHANG AI 账号"(已连接提示/连接标题/余额来源/断开确认)。
+
+> 说明:第二次文案精简(`feceac86`)因删除过多(SSO 说明句/4 点阵/waiting 步骤标题)被用户要求回退,`b4c825be` 已 revert,保留说明与步骤引导的版本(`4784f789`)为最终态。

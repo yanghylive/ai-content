@@ -97,7 +97,7 @@ function KaypalLinkPanel({ onLinked }: { onLinked: () => void }) {
       setError(null);
       setSuccess(null);
       await kaypalApi.linkKaypalAccount(connectionCode.trim());
-      setSuccess("Kaypal 账号已连接。");
+      setSuccess("JIUZHANG AI 账号已连接。");
       setConnectionCode("");
       onLinked();
     } catch (err) {
@@ -111,7 +111,7 @@ function KaypalLinkPanel({ onLinked }: { onLinked: () => void }) {
       <CardBody className="gap-3 py-3">
         <div className="flex items-center justify-between gap-2">
           <p className="text-small font-semibold text-warning-700">
-            连接 Kaypal 账号
+            连接 JIUZHANG AI 账号
           </p>
           <Button
             size="sm"
@@ -400,7 +400,7 @@ export function KaypalAccountSections() {
                 </p>
               ) : (
                 <p className="text-tiny text-default-500">
-                  余额来自当前 Kaypal 账号
+                  余额来自当前 JIUZHANG AI 账号
                 </p>
               )}
             </div>
@@ -500,7 +500,7 @@ export function KaypalAccountSections() {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                确认断开 Kaypal 账号
+                确认断开 JIUZHANG AI 账号
               </ModalHeader>
               <ModalBody>
                 <p className="text-small text-default-600">
