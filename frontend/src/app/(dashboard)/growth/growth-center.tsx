@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  ArrowRight,
   Bot,
   ChartNoAxesCombined,
   ClipboardList,
@@ -149,9 +150,9 @@ function AiDailyBriefCard({ overview }: { overview: GrowthOverview | null }) {
     >
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-[var(--kaypal-v3-accent)]" />
-        <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
+        <div className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
           今日 AI 简报
-        </h2>
+        </div>
       </div>
       <p className="mt-2 text-sm leading-relaxed text-[var(--kaypal-v3-soft-ink)]">
         {summary}
@@ -218,9 +219,9 @@ function AiValueBill({ overview }: { overview: GrowthOverview | null }) {
     <div className="kaypal-v3-panel p-5">
       <div className="flex items-center gap-2">
         <Wallet className="h-4 w-4 text-[var(--kaypal-v3-accent)]" />
-        <h2 className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
+        <div className="text-sm font-bold text-[var(--kaypal-v3-ink)]">
           AI 价值账单
-        </h2>
+        </div>
         <span className="rounded-full bg-[var(--kaypal-v3-accent-soft)] px-2 py-0.5 text-11 font-medium text-[var(--kaypal-v3-accent-ink)]">
           估算
         </span>
@@ -373,11 +374,28 @@ export function GrowthCenter() {
       {loadError ? (
         <LoadErrorBanner message={loadError} onRetry={() => void fetchOverview()} />
       ) : null}
+      {/* 页面头（h1 置顶，避免摘要卡 h2 倒挂——2026-09-01） */}
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">增长控制台</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            今天的获客进展和漏斗，一目了然
+          </p>
+        </div>
+        <a
+          href="/auto-acquisition/create"
+          className="kx-btn-primary inline-flex items-center gap-2 px-6 py-3 text-base font-semibold"
+        >
+          新建获客任务
+          <ArrowRight className="h-5 w-5" />
+        </a>
+      </div>
       <AiDailyBriefCard overview={overview} />
       <AiValueBill overview={overview} />
       <WorkbenchCenter
         title="增长控制台"
         subtitle="今天的获客进展和漏斗，一目了然"
+        hideHeader
         icon={ChartNoAxesCombined}
         stats={[
           {
@@ -401,7 +419,6 @@ export function GrowthCenter() {
             tone: (overview?.highIntentLeadCount ?? 0) > 0 ? "warning" : "default",
           },
         ]}
-        primaryAction={{ label: "新建获客任务", href: "/auto-acquisition/create" }}
         quickActions={[
           {
             key: "leads",

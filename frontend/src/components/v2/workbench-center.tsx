@@ -79,10 +79,13 @@ export function WorkbenchCenter({
   error,
   notice,
   backHref,
+  hideHeader = false,
 }: {
   title: string;
   subtitle: string;
   icon: LucideIcon;
+  /** 由外层自行渲染 h1 页头时传 true，避免重复标题（2026-09-01） */
+  hideHeader?: boolean;
   stats?: WorkbenchStat[];
   /** 统计数据来源说明，例如"示例数据，接口接入后显示真实值" */
   statsNote?: string;
@@ -116,8 +119,8 @@ export function WorkbenchCenter({
           <div className="mx-header-row">
             <div style={{ minWidth: 0 }}>
               <div className="mx-brand-eyebrow">JIUZHANG AI</div>
-              <h1 className="mx-page-title">{title}</h1>
-              {subtitle ? <p className="mx-page-sub">{subtitle}</p> : null}
+              {!hideHeader && <h1 className="mx-page-title">{title}</h1>}
+              {!hideHeader && subtitle ? <p className="mx-page-sub">{subtitle}</p> : null}
             </div>
             {primaryAction &&
               (primaryAction.href ? (
@@ -252,16 +255,17 @@ export function WorkbenchCenter({
       {backHref ? <V2BackButton to={backHref} /> : null}
       {/* 顶部：统一页头（无卡大字——2026-08-23 全站页头规范：标题独立、
           h1 kx-greet 26/800 + 副标题，磨砂卡留给内容区；主 CTA 右置金渐变） */}
-      <div className="kx-page-head">
-        <div>
-          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
-            {title}
-          </h1>
-          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
-            {subtitle}
-          </p>
-        </div>
-        {primaryAction &&
+      {!hideHeader && (
+        <div className="kx-page-head">
+          <div>
+            <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
+              {title}
+            </h1>
+            <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+              {subtitle}
+            </p>
+          </div>
+          {primaryAction &&
           (primaryAction.href ? (
             <Link
               href={primaryAction.href}
@@ -280,7 +284,8 @@ export function WorkbenchCenter({
               {primaryAction.label}
             </button>
           ))}
-      </div>
+        </div>
+      )}
 
       {/* 统计卡片（独立区块，磨砂玻璃卡） */}
       {stats.length > 0 && (
