@@ -7,8 +7,7 @@
  * 移动端继续走 settings-detail（mx-* 列表），见 settings/page.tsx 分支。
  */
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { ShellIcon } from "@/components/shell/icons";
 import { useShellUser } from "@/components/shell/app-shell";
 import { MINE_NAV_ENTRIES } from "@/lib/nav-registry";
@@ -16,21 +15,13 @@ import { MINE_NAV_ENTRIES } from "@/lib/nav-registry";
 const GROUP_ORDER = ["账号与设置", "设置", "系统与服务"] as const;
 
 export function SettingsHome() {
-  const router = useRouter();
   const user = useShellUser();
 
   return (
     <div className="flex flex-col gap-6">
       <div className="kx-page-head">
         <div>
-          <button
-            type="button"
-            onClick={() => router.push("/mine")}
-            className="inline-flex items-center gap-1 text-xs font-medium text-[var(--kaypal-v3-muted)] transition hover:text-[var(--kaypal-v3-accent-ink)]"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" /> 返回我的
-          </button>
-          <h1 className="kx-greet mt-1 text-[var(--kaypal-v3-ink)]">设置中心</h1>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">设置中心</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
             账号、通知、AI 服务、数据与合规，全部从这里进入
           </p>
