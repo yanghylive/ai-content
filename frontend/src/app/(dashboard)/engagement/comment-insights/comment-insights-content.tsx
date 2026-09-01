@@ -5,7 +5,6 @@ import {
   BarChart3,
   Lightbulb,
   Loader2,
-  MessageCircle,
   Play,
   Sparkles,
 } from "lucide-react";
@@ -163,22 +162,14 @@ export function CommentInsightsContent() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {/* 头部 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          fontSize: 16,
-          fontWeight: 700,
-          color: "var(--kaypal-v3-ink)",
-        }}
-      >
-        <MessageCircle size={18} style={{ color: "var(--kaypal-v3-accent)" }} />
-        评论洞察工作台
-        <span style={{ fontSize: 12, fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>
-          把评论转成痛点、需求、异议、意向词和回复建议
-        </span>
+      {/* 头部（统一页头规范 2026-09-02） */}
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">评论洞察工作台</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            把评论转成痛点、需求、异议、意向词和回复建议
+          </p>
+        </div>
       </div>
 
       {/* 输入区 */}
