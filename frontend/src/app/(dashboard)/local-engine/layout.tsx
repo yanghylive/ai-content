@@ -2,10 +2,10 @@
 
 import { SettingsNavShell } from "@/components/shell/settings-nav-shell";
 
-export default function SettingsShellLayout({
+export default function LocalEngineLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <SettingsNavShell only={["/local-engine", "/local-engine/permissions"]}>{children}</SettingsNavShell>;
+  return <SettingsNavShell>{children}</SettingsNavShell>;
 }

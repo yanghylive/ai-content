@@ -431,7 +431,15 @@ export function AppShell({
             className={`kx-rail-item${activeScene === "mine" ? " kx-active" : ""}`}
             aria-label="我的"
             aria-current={activeScene === "mine" ? "page" : undefined}
-            onClick={() => router.push("/settings/account")}
+            onClick={() => {
+              // 2026-09-01 P3：设置导航改为抽屉。点「我的」先跳到设置页，
+              // 再触发抽屉事件弹出左栏导航（SettingsNavShell 监听）
+              if (pathname.startsWith("/settings") || pathname === "/settings") {
+                window.dispatchEvent(new Event("jz:settings-drawer"));
+              } else {
+                router.push("/settings/account");
+              }
+            }}
           >
             {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
             <ShellIcon name="user" size={22} />
