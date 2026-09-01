@@ -743,7 +743,7 @@ function LoginPageContent() {
                       <h2 className="text-xl font-semibold">{phase === "waiting" ? "请在 JIUZHANG AI 页面确认" : forceReauth ? "重新登录账号" : "进入九章智能"}</h2>
                       <p className="text-small text-default-500">
                         {phase === "waiting"
-                          ? "确认后会自动进入当前工作台。"
+                          ? "确认后自动回来。"
                           : forceReauth
                             ? "确认后即可重新登录。"
                             : "选择一种方式登录。"}
@@ -785,14 +785,7 @@ function LoginPageContent() {
                             <div className="sso-head flex flex-row items-center gap-3">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img alt="" src="/brand/jiuzhang-ai-icon.webp" width={512} height={512} />
-                              <div className="flex flex-col gap-0"><span className="text-sm font-bold">使用 JIUZHANG AI 账号</span><span className="text-small text-default-500">登录一次，全端可用</span></div>
-                            </div>
-                            <p className="text-sm">用你的 JIUZHANG AI 账号一键登录，登录后即可直接开始工作。</p>
-                            <div
-                              className="sso-points grid gap-2"
-                              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}
-                            >
-                              {["自动识别当前账号", "随时可以退出登录", "工作区内容自动同步", "操作记录安全留存"].map((point) => <span key={point} className="text-small text-default-500"><b>✓</b>{point}</span>)}
+                              <div className="flex flex-col gap-0"><span className="text-sm font-bold">使用 JIUZHANG AI 账号</span></div>
                             </div>
                             <Button className="preview-main-button w-full" color="primary" isLoading={phase === "starting"} startContent={<LogIn aria-hidden="true" className="h-4 w-4" />} onPress={() => void startDeviceAuth()}>
                               {phase === "starting" ? "正在准备 JIUZHANG AI 登录..." : "使用 JIUZHANG AI 账号继续"}
@@ -934,9 +927,6 @@ function LoginPageContent() {
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-4 p-4">
                         <div className="flex flex-col gap-2">
-                          <span className="text-default-500 text-small font-bold">
-                            1. 打开 JIUZHANG AI 登录页
-                          </span>
                           <Button
                             className="w-full"
                             color="primary"
@@ -978,9 +968,6 @@ function LoginPageContent() {
                           </Button>
                         </div>
                         <div className="flex flex-col gap-2">
-                          <span className="text-default-500 text-small font-bold">
-                            2. 输入页面上的验证码
-                          </span>
                           <Button
                             className="w-full"
                             variant="flat"
@@ -1021,9 +1008,7 @@ function LoginPageContent() {
                             </div>
                           </Button>
                         </div>
-                        <p className="text-small text-default-500">
-                          3. 在打开的页面确认登录，确认后会自动回到这里。
-                        </p>
+                        <p className="text-small text-default-500">确认后自动回到这里。</p>
                         {errorMessage ? (
                           <div className="flex flex-col gap-1 rounded-lg border border-warning-200 bg-warning-50 p-4">
                             <p className="font-semibold text-warning">网络恢复中</p>
