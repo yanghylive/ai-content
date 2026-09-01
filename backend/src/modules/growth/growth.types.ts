@@ -664,6 +664,8 @@ export interface GrowthSixStageFunnel {
   attributedCustomerCount: number;
   /** 归因置信度（有确定性归因链为 high，仅有规则/推断为 medium/low） */
   attributionConfidence: 'high' | 'medium' | 'low';
+  /** 2026-09-01（审计 #12）：计算失败时的错误信息——不再静默归零，前端上屏 */
+  funnelError?: string;
   platformComparison: Array<{
     platform: string;
     content: number;

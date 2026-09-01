@@ -3135,9 +3135,12 @@ export class GrowthService implements OnModuleInit {
       try {
         sixStage = await this.computeSixStageFunnel(scope, platform);
       } catch (error) {
-        this.logger.warn(
-          `六步闭环复盘计算失败：${error instanceof Error ? error.message : String(error)}`,
-        );
+        const message =
+          error instanceof Error ? error.message : String(error);
+        this.logger.warn(`六步闭环复盘计算失败：${message}`);
+        // 2026-09-01（审计 #12）：不再静默归零——错误上屏（前端展示原因，
+        // 页面不至于把"计算失败"误读成"没有数据"）
+        sixStage.funnelError = message.slice(0, 200);
       }
     }
 

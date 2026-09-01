@@ -111,6 +111,19 @@ export function GrowthReportsPage() {
                 : "按归因链统计（与整体漏斗口径不同）· 归因数据尚未完整采集"
           }
         >
+          {/* 2026-09-01（审计 #12）：计算失败不再静默显示全零——原因上屏 */}
+          {sixStage.funnelError && (
+            <div
+              role="alert"
+              className="mb-4 rounded-[var(--kaypal-v3-radius-sm)] border-small border-danger-200 bg-danger-50 p-3 text-sm text-danger-700"
+            >
+              <span className="font-semibold">增长流程计算失败：</span>
+              {sixStage.funnelError}
+              <span className="mt-1 block text-xs opacity-80">
+                下方显示空数据不代表没有数据，请稍后重试或检查本地数据库状态。
+              </span>
+            </div>
+          )}
           {sixStage.attributionConfidence === "low" &&
           sixStage.attributedLeadCount === 0 ? (
             /* T2-1/T2-13：归因链路没有数据时降级为空态说明，不渲染 N/A 假象 */

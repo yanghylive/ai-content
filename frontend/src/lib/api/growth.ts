@@ -452,6 +452,8 @@ export interface GrowthReports {
         attributedLeadCount: number;
         attributedCustomerCount: number;
         attributionConfidence: "high" | "medium" | "low";
+        /** 2026-09-01（审计 #12）：计算失败原因上屏 */
+        funnelError?: string;
         platformComparison: Array<{
             platform: string;
             content: number;
