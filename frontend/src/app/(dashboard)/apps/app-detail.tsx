@@ -94,7 +94,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
         <div className="py-8 text-center">
           <p className="text-[var(--kaypal-v3-muted)]">没找到这个应用</p>
           <div className="mt-4">
-            <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/apps")}>
+            <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/apps")}>
               返回应用市场
             </V2GhostButton>
           </div>
@@ -241,7 +241,7 @@ export function AppDetail({ appKey }: { appKey: string }) {
 
       {/* 单一主行动：由 access 策略驱动，用户不用想 */}
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/apps")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/apps")}>
           返回应用市场
         </V2GhostButton>
         {primaryAction !== "none" && primaryAction !== "contact_sales" && (

@@ -360,7 +360,7 @@ export function ArticleList({
       </V2Section>
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push(backHref)}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push(backHref)}>
           {backLabel}
         </V2GhostButton>
       </section>

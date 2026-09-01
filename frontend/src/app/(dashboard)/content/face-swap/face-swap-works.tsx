@@ -162,7 +162,7 @@ export function FaceSwapWorks() {
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/content/face-swap")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/content/face-swap")}>
           返回
         </V2GhostButton>
         <V2GhostButton icon={RefreshCcw} onClick={() => void fetchJobs()}>

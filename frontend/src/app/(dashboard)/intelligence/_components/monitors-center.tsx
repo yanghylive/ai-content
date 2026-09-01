@@ -494,7 +494,7 @@ export function MonitorsCenter() {
       </V2Section>
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/intelligence")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/intelligence")}>
           返回
         </V2GhostButton>
       </section>

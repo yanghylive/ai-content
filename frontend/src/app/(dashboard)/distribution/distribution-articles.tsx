@@ -207,7 +207,7 @@ export function DistributionArticles() {
       </V2Section>
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/distribution")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/distribution")}>
           返回
         </V2GhostButton>
       </section>

@@ -1090,7 +1090,7 @@ export function AcquisitionRuleForm() {
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/growth/acquisition")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/growth/acquisition")}>
           返回
         </V2GhostButton>
         {!createdConfigId && (

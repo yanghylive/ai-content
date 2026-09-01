@@ -94,7 +94,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
           icon={UserRound}
           title="没找到这个客户"
           action={
-            <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/crm")}>
+            <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/crm")}>
               返回客户列表
             </V2GhostButton>
           }
@@ -320,7 +320,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/crm")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/crm")}>
           返回客户列表
         </V2GhostButton>
         <V2PrimaryButton

@@ -309,7 +309,7 @@ export function GrowthReportsPage() {
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/growth")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/growth")}>
           返回增长控制台
         </V2GhostButton>
         <V2GhostButton icon={TrendingUp} onClick={() => void fetchReports()}>

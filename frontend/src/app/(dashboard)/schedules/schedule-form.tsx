@@ -296,7 +296,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
 
       {/* 底部操作栏 — 单一主行动 */}
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/schedules")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/schedules")}>
           返回
         </V2GhostButton>
         <V2PrimaryButton icon={Save} loading={saving} onClick={handleSubmit}>

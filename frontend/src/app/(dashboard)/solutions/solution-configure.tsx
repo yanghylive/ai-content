@@ -101,7 +101,7 @@ export function SolutionConfigure({ packageCode }: { packageCode: string }) {
           icon={Rocket}
           title="没找到这个方案"
           action={
-            <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/solutions")}>
+            <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/solutions")}>
               返回解决方案
             </V2GhostButton>
           }
@@ -186,7 +186,7 @@ export function SolutionConfigure({ packageCode }: { packageCode: string }) {
 
       {/* 单一主行动 */}
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/solutions")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/solutions")}>
           返回
         </V2GhostButton>
         <V2PrimaryButton

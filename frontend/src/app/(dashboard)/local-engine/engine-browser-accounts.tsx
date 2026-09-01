@@ -134,7 +134,7 @@ export function EngineBrowserAccounts() {
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/local-engine")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/local-engine")}>
           返回
         </V2GhostButton>
         <V2PrimaryButton icon={RefreshCcw} loading={checking} onClick={() => void handleRecheck()}>

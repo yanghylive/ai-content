@@ -341,7 +341,7 @@ export function ComplianceCheckFlow() {
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/distribution/compliance")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/distribution/compliance")}>
           返回
         </V2GhostButton>
       </section>

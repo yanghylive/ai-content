@@ -456,7 +456,7 @@ export function PlatformAccountForm() {
 
       <section className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/distribution/accounts")}>
+          <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/distribution/accounts")}>
             返回
           </V2GhostButton>
           {isEdit ? (

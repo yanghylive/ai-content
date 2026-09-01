@@ -194,7 +194,7 @@ export function EngineInteractionConsole({
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push(backHref)}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push(backHref)}>
           返回
         </V2GhostButton>
         <V2GhostButton icon={RefreshCcw} onClick={() => void fetchTasks()}>

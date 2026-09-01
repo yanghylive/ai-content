@@ -1158,7 +1158,7 @@ export function CustomerServiceConfig() {
 
           {/* 保存 */}
           <div className="flex items-center justify-between">
-            <V2GhostButton icon={ArrowLeft} onClick={goBack}>
+            <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={goBack}>
               返回
             </V2GhostButton>
             <V2PrimaryButton icon={Save} loading={saving} onClick={handleSave}>

@@ -310,7 +310,7 @@ export function KnowledgeForm() {
       </V2Section>
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/knowledge-base")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/knowledge-base")}>
           返回
         </V2GhostButton>
         <V2PrimaryButton

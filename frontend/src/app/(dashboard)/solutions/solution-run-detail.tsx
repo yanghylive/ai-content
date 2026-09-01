@@ -98,7 +98,7 @@ export function SolutionRunDetail({ runId }: { runId: string }) {
           icon={XCircle}
           title="没找到这个运行记录"
           action={
-            <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/solutions")}>
+            <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/solutions")}>
               返回解决方案
             </V2GhostButton>
           }
@@ -223,7 +223,7 @@ export function SolutionRunDetail({ runId }: { runId: string }) {
       </V2Section>
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/solutions")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/solutions")}>
           返回
         </V2GhostButton>
         <div className="flex items-center gap-2">

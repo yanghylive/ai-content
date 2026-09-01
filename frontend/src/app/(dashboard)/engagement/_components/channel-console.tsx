@@ -829,7 +829,7 @@ export function ChannelConsole({ config }: { config: ChannelConsoleConfig }) {
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/engagement")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/engagement")}>
           返回
         </V2GhostButton>
         <V2GhostButton icon={RefreshCcw} onClick={() => void refreshTasks()}>

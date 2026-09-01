@@ -350,7 +350,7 @@ export function SettingsDetail() {
       <FileStorageSettings />
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/")}>
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/")}>
           返回首页
         </V2GhostButton>
         <V2StatusChip tone="muted">设置实时生效</V2StatusChip>

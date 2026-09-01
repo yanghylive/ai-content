@@ -344,7 +344,7 @@ export function StyleForm({
 
       <section className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <V2GhostButton icon={ArrowLeft} onClick={() => router.push(backHref)}>
+          <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push(backHref)}>
             返回
           </V2GhostButton>
           {styleId && (
