@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { ShellIcon, type ShellIconName } from "./icons";
 import { CommandPalette } from "./command-palette";
+import { SettingsNavPanel } from "./settings-nav-panel";
 import { Ticker, type TickerItem } from "./tickers";
 import { localEngineApi } from "@/lib/api/local-engine";
 import { autoUploadApi, type AutoUploadPublishTask } from "@/lib/api/auto-upload";
@@ -291,9 +292,15 @@ export function AppShell({
   const pathname = usePathname();
   const router = useRouter();
   const [paletteOpen, setPaletteOpen] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
   const badges = useBadges(pathname);
   const noticeItems = useNotificationItems();
   const activeScene = sceneOfPath(pathname || "/today");
+
+  // 路由变化自动关闭设置面板
+  React.useEffect(() => {
+    setSettingsOpen(false);
+  }, [pathname]);
   const isMobile = useIsMobile();
 
   /* 暗色模式：next-themes 统一驱动（.dark 类 → 旧页面/heroui，data-theme → 新壳） */
@@ -355,7 +362,8 @@ export function AppShell({
           {children}
         </MobileShell>
         {/* 移动端命令面板入口（FAB 触发，替代桌面 ⌘K） */}
-        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+        <SettingsNavPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
         <PwaInstallBanner />
         {/* 2026-09-01（大王决策）：移动端 AI 助手悬浮球（紫钮）移除——AI 对话入口
             保留 /agent 页与命令面板搜索「AI 助手」，不再占右下角悬浮位 */}
@@ -431,15 +439,8 @@ export function AppShell({
             className={`kx-rail-item${activeScene === "mine" ? " kx-active" : ""}`}
             aria-label="我的"
             aria-current={activeScene === "mine" ? "page" : undefined}
-            onClick={() => {
-              // 2026-09-01 P3：设置导航改为抽屉。点「我的」先跳到设置页，
-              // 再触发抽屉事件弹出左栏导航（SettingsNavShell 监听）
-              if (pathname.startsWith("/settings") || pathname === "/settings") {
-                window.dispatchEvent(new Event("jz:settings-drawer"));
-              } else {
-                router.push("/settings/account");
-              }
-            }}
+            aria-expanded={settingsOpen}
+            onClick={() => setSettingsOpen((v) => !v)}
           >
             {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
             <ShellIcon name="user" size={22} />
@@ -490,6 +491,7 @@ export function AppShell({
         </main>
       </div>
 
+      <SettingsNavPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </ShellUserContext.Provider>
   );
