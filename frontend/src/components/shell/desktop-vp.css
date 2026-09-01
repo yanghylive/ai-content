@@ -414,11 +414,11 @@
     filter: brightness(0.95);
   }
   .kx-chat-input:focus { border-color: #722ed1; }
-  .kx-sug-chip:hover { border-color: #722ed1; color: #531dab; }
+  .kx-sug-chip:hover { border-color: var(--kx-accent); color: var(--kx-accent-ink); }
   .kx-agent-item.kx-active { border-color: #722ed1; box-shadow: var(--kx-shadow-card); }
   .kx-palette-item.kx-sel { background: var(--kx-accent-soft); }
-  .kx-hint-bar { background: #f9f0ff; color: #531dab; }
-  .kx-section-more { color: #531dab; }
+  .kx-hint-bar { background: var(--kx-accent-soft); color: var(--kx-accent-ink); }
+  .kx-section-more { color: var(--kx-accent-ink); }
 
   /* ---------- 9. 消息气泡（用户侧金色渐变） ---------- */
   .kx-msg-user .kx-msg-body {

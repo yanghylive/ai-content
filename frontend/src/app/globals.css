@@ -1127,7 +1127,7 @@
 
   .growth-table-th {
     height: 38px !important;
-    background: #fafafa !important;
+    background: var(--kaypal-v3-table-head, #fafafa) !important;
     color: var(--kaypal-v3-muted) !important;
     font-size: 11px !important;
     font-weight: 600 !important;
