@@ -17,29 +17,18 @@ import { MobileThemeToggle } from "@/components/shell/mobile-theme-toggle";
 import { authApi } from "@/lib/api/auth";
 import { isAdminUser } from "@/lib/admin-user";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useRouter } from "next/navigation";
 import {
   MINE_NAV_ENTRIES,
   MOBILE_MORE_GROUP_ORDER,
-  visibleMineEntries,
   type MineNavEntry,
 } from "@/lib/nav-registry";
 
-const OVERVIEW_KEYS = ["platforms", "matrix", "settings-entry", "settings-account", "local-service", "costs", "evidence", "commercial-readiness"];
-
 export default function MineScene() {
-  const router = useRouter();
   const user = useShellUser();
   const [accountIssue, setAccountIssue] = React.useState(0);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const isMobile = useIsMobile();
   const { confirm, modal } = useConfirm();
-
-  const overviewEntries = React.useMemo(() => {
-    const all = visibleMineEntries(isAdmin);
-    const map = new Map(all.map((e) => [e.key, e]));
-    return OVERVIEW_KEYS.map((k) => map.get(k)).filter((e): e is NonNullable<typeof e> => Boolean(e));
-  }, [isAdmin]);
 
   React.useEffect(() => {
     let active = true;
@@ -91,19 +80,25 @@ export default function MineScene() {
     <>
       <div className="kx-view">
         <h1 className="kx-greet">我的</h1>
-        <p className="kx-greet-sub">账号、套餐、设备与数据</p>
+        <p className="kx-greet-sub">账户信息与订阅</p>
 
-        {/* 账号卡 */}
+        {/* 账户信息卡（WorkBuddy 账户页：头像 + 名字 + 套餐 + 退出，无重复入口） */}
         {user ? (
-          <div className="kx-todo-card" style={{ marginTop: 4 }}>
-            <div className="kx-todo-ico kx-t-violet" style={{ borderRadius: "50%" }}>
-              <ShellIcon name="user" size={22} />
-            </div>
-            <div className="kx-todo-body">
-              <div className="kx-todo-title">{user.displayName}</div>
-              <div className="kx-todo-desc">
+          <div className="kaypal-v3-panel flex items-center gap-4 p-5" style={{ marginTop: 4 }}>
+            <span
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl font-bold text-white"
+              style={{ background: "var(--kaypal-v3-gradient-avatar)" }}
+            >
+              {user.displayName.slice(0, 1)}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">{user.displayName}</p>
+              <p className="mt-0.5 text-sm text-[var(--kaypal-v3-muted)]">
                 {user.planLabel} · {user.creditLabel} 积分
-              </div>
+              </p>
+              <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+                账号、通知、AI 服务与数据管理等全部设置，请在左侧导航进入
+              </p>
             </div>
             <button
               className="kx-btn kx-btn-danger"
@@ -123,88 +118,6 @@ export default function MineScene() {
             </button>
           </div>
         ) : null}
-
-        {/* 常用快捷入口（个人概览只放少量真实入口，完整导航在左栏） */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 12,
-            fontWeight: 700,
-            color: "var(--kx-muted)",
-            margin: "20px 0 8px",
-            letterSpacing: "0.02em",
-          }}
-        >
-          常用入口
-          <span style={{ flex: 1, height: 1, background: "var(--kx-border, rgba(120,148,179,.18))" }} />
-        </div>
-        <div className="kx-agg-grid">
-          {overviewEntries.map((e) => (
-            <button key={e.key} className="kx-agg-card" onClick={() => router.push(e.href)}>
-              <div className={`kx-agg-ico ${e.tint}`}>
-                <ShellIcon name={e.icon} />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="kx-agg-title">{e.title}</div>
-                <div className="kx-agg-desc">{e.desc}</div>
-              </div>
-              {e.key === "platforms" && accountIssue > 0 ? (
-                <span className="kx-agg-badge">{accountIssue} 失效</span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-
-        {/* 账号状态 */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 12,
-            fontWeight: 700,
-            color: "var(--kx-muted)",
-            margin: "20px 0 8px",
-            letterSpacing: "0.02em",
-          }}
-        >
-          账号状态
-          <span style={{ flex: 1, height: 1, background: "var(--kx-border, rgba(120,148,179,.18))" }} />
-        </div>
-        <div className="kx-agg-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
-          <div className="kx-todo-card">
-            <div className="kx-todo-ico kx-t-green"><ShellIcon name="checkCircle" size={18} /></div>
-            <div className="kx-todo-body">
-              <div className="kx-todo-title">订阅与授权</div>
-              <div className="kx-todo-desc">{user?.planLabel || "免费版"} · 正常</div>
-            </div>
-          </div>
-          <div className="kx-todo-card">
-            <div className="kx-todo-ico kx-t-amber"><ShellIcon name="phone" size={18} /></div>
-            <div className="kx-todo-body">
-              <div className="kx-todo-title">平台账号</div>
-              <div className="kx-todo-desc">
-                {accountIssue > 0 ? `${accountIssue} 个需要处理` : "全部正常"}
-              </div>
-            </div>
-          </div>
-          <div className="kx-todo-card">
-            <div className="kx-todo-ico kx-t-blue"><ShellIcon name="cpu" size={18} /></div>
-            <div className="kx-todo-body">
-              <div className="kx-todo-title">本地引擎</div>
-              <div className="kx-todo-desc">运行正常 · v2.4.1</div>
-            </div>
-          </div>
-          <div className="kx-todo-card">
-            <div className="kx-todo-ico kx-t-violet"><ShellIcon name="layers" size={18} /></div>
-            <div className="kx-todo-body">
-              <div className="kx-todo-title">AI 工件</div>
-              <div className="kx-todo-desc">执行证据与产出物</div>
-            </div>
-          </div>
-        </div>
       </div>
       {modal}
     </>

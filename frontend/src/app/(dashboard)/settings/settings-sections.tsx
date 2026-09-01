@@ -27,18 +27,12 @@ import { useWebPush } from "@/lib/hooks/use-web-push";
 
 const NOT_READY = "保存接口还没开放（后端开发中），已列入需求清单";
 
-/** 子页面统一页头（V2 风格，含返回按钮） */
+/** 子页面统一页头（WorkBuddy 双栏：左栏即导航，不再保留返回链接） */
 export function SettingsPageHeader({ title, sub }: { title: string; sub: string }) {
   return (
     <div className="kx-page-head">
       <div>
-        <a
-          href="/settings"
-          className="inline-flex items-center gap-1 text-xs font-medium text-[var(--kaypal-v3-muted)] transition hover:text-[var(--kaypal-v3-accent-ink)]"
-        >
-          ‹ 返回设置
-        </a>
-        <h1 className="kx-greet mt-1 text-[var(--kaypal-v3-ink)]">{title}</h1>
+        <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">{title}</h1>
         <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">{sub}</p>
       </div>
     </div>
