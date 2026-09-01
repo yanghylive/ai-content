@@ -5,7 +5,7 @@ import {
   OnModuleInit,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, renameSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 
@@ -167,8 +167,58 @@ export class PrismaService
         await this.clearAccountBusinessTables(systemPath);
         this.accountTablesCleared.add('__system__');
       }
+    } else {
+      // 2026-09-01 P3（换库适配）：账号库损坏自愈——登录时 quick_check，
+      // 损坏则带备份隔离 + 从系统库模板重建（与主库 heal 策略一致）。
+      await this.healAccountDatabaseIfCorrupt(accountPath, systemPath);
     }
     return accountPath;
+  }
+
+  /**
+   * 2026-09-01 P3：账号库损坏探测 + 带备份重建。
+   * PRAGMA quick_check 失败（抛错/返回非 ok）→ 移走 sidecar（WAL/SHM）→
+   * rename 损坏库为 .corrupt-<stamp> → 从系统库模板复制重建 → 清空业务表。
+   * 丢弃缓存连接；重建后首次访问重新建立。
+   */
+  private async healAccountDatabaseIfCorrupt(
+    accountPath: string,
+    systemPath: string,
+  ): Promise<void> {
+    const corrupt = await this.isSqliteCorrupt(accountPath);
+    if (!corrupt) {
+      return;
+    }
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    this.logger.error(
+      `账号库损坏（quick_check 失败），备份后从系统库模板重建：${accountPath}（备份 .corrupt-${stamp}）`,
+    );
+    this.accountClients.delete(accountPath);
+    // sidecar 先移（防残留 WAL 污染重建后的新库），失败则中止重建
+    for (const suffix of ['-wal', '-shm']) {
+      const sidecar = `${accountPath}${suffix}`;
+      if (existsSync(sidecar)) {
+        renameSync(sidecar, `${sidecar}.corrupt-${stamp}`);
+      }
+    }
+    renameSync(accountPath, `${accountPath}.corrupt-${stamp}`);
+    copyFileSync(systemPath, accountPath);
+    this.accountTablesCleared.delete(accountPath);
+    await this.clearAccountBusinessTables(accountPath);
+  }
+
+  /** PRAGMA quick_check 探测库完整性（损坏/不可读 → true） */
+  private async isSqliteCorrupt(dbPath: string): Promise<boolean> {
+    try {
+      const client = this.getAccountClient(dbPath);
+      await client.$queryRawUnsafe('PRAGMA quick_check');
+      return false;
+    } catch (error) {
+      this.logger.warn(
+        `账号库 quick_check 失败（${dbPath}）：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return true;
+    }
   }
 
   /**

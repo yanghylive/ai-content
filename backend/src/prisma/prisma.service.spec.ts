@@ -1,6 +1,6 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { PrismaService } from './prisma.service';
 
 type TestablePrismaService = {
@@ -386,5 +386,35 @@ describe('PrismaService 账号库隔离（logout 换库）', () => {
     ).rejects.toThrow('数据正在切换');
     (svc as unknown as { switching: boolean }).switching = false;
     expect(svc.material).toBeDefined();
+  });
+
+  it('账号库损坏自愈：quick_check 失败 → 带备份重建，可正常读写', async () => {
+    const cPath = await svc.ensureAccountDatabase('user-c');
+    await svc.switchDatabase(cPath);
+    // 先写入一条正常数据
+    await svc.$executeRawUnsafe(
+      "INSERT INTO materials (id, title) VALUES ('m-c1', 'C 的数据')",
+    );
+    expect(await materialCount()).toBe(1);
+
+    // 制造损坏：用垃圾字节覆盖库文件（先切回系统库释放连接）
+    await svc.switchDatabase(null);
+    (svc as unknown as {
+      accountClients: Map<string, unknown>;
+    }).accountClients.delete(cPath);
+    writeFileSync(cPath, 'this is not a sqlite database at all........');
+    expect(existsSync(cPath)).toBe(true);
+
+    // 再次 ensure：检测到损坏 → 备份 + 重建
+    const healedPath = await svc.ensureAccountDatabase('user-c');
+    expect(healedPath).toBe(cPath);
+    // 备份文件存在
+    const backups = readdirSync(dirname(cPath)).filter((f) =>
+      f.includes('.corrupt-'),
+    );
+    expect(backups.length).toBeGreaterThan(0);
+    // 重建后可正常读写（业务表空）
+    await svc.switchDatabase(cPath);
+    expect(await materialCount()).toBe(0);
   });
 });

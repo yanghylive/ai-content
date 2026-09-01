@@ -8,6 +8,7 @@ import {
   mkdirSync,
   mkdtempSync,
   openSync,
+  readdirSync,
   readSync,
   rmSync,
   statSync,
@@ -35,6 +36,20 @@ if (!existsSync(sourceFile) || !statSync(sourceFile).isFile()) {
   fail(`SQLite source file does not exist: ${sourceFile}`);
 }
 
+// 2026-09-01 换库适配：备份主库（系统库）+ accounts/ 下全部账号库。
+// 账号库 = 每账号独立 SQLite（logout 换库架构），漏备份 = 换机/回滚丢该账号业务数据。
+const accountsDir = join(dirname(sourceFile), 'accounts');
+const accountFiles = existsSync(accountsDir)
+  ? readdirSync(accountsDir)
+      .filter((name) => name.endsWith('.sqlite'))
+      .map((name) => join(accountsDir, name))
+      .filter((file) => existsSync(file) && statSync(file).isFile())
+  : [];
+const targets = [
+  { path: sourceFile, kind: 'sqlite-system' },
+  ...accountFiles.map((file) => ({ path: file, kind: 'sqlite-account' })),
+];
+
 mkdirSync(backupRoot, { recursive: true });
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const backupDir = mkdtempSync(join(backupRoot, `${stamp}-`));
@@ -48,12 +63,31 @@ try {
       'sqlite3 is required. Install it or set SQLITE3_PATH/AI_CONTENT_SQLITE_EXE.',
     );
   }
-  const escapedBackupFile = backupFile.replaceAll("'", "''");
-  runSqlite(sqliteCommand, sourceFile, `VACUUM INTO '${escapedBackupFile}';`);
+  const files = [];
+  for (const target of targets) {
+    const fileBackupPath = join(backupDir, basename(target.path));
+    const escapedBackupFile = fileBackupPath.replaceAll("'", "''");
+    runSqlite(
+      sqliteCommand,
+      target.path,
+      `VACUUM INTO '${escapedBackupFile}';`,
+    );
 
-  const verification = inspectDatabase(sqliteCommand, backupFile);
-  if (verification.integrityCheck !== 'ok') {
-    throw new Error(`integrity_check=${verification.integrityCheck}`);
+    const verification = inspectDatabase(sqliteCommand, fileBackupPath);
+    if (verification.integrityCheck !== 'ok') {
+      throw new Error(
+        `integrity_check=${verification.integrityCheck} (${target.path})`,
+      );
+    }
+
+    const sizeBytes = statSync(fileBackupPath).size;
+    const sha256 = hashFile(fileBackupPath);
+    files.push({
+      path: basename(fileBackupPath),
+      sizeBytes,
+      sha256,
+      kind: target.kind,
+    });
   }
 
   const sizeBytes = statSync(backupFile).size;
@@ -64,26 +98,19 @@ try {
     generatedAt: new Date().toISOString(),
     source: {
       databaseFile: sourceFile,
+      accountDatabaseCount: accountFiles.length,
       sizeBytes: statSync(sourceFile).size,
     },
     verification: {
-      sha256,
-      integrityCheck: verification.integrityCheck,
-      tableCount: verification.tableCount,
+      integrityCheck: 'ok',
+      databaseCount: files.length,
     },
     restore: {
       dryRunSupported: true,
       destructiveRestoreSupported: false,
       note: 'Use verify-sqlite-backup.mjs for hash, integrity, and isolated restore checks.',
     },
-    files: [
-      {
-        path: basename(backupFile),
-        sizeBytes,
-        sha256,
-        kind: 'sqlite-database',
-      },
-    ],
+    files,
   };
   writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   process.stdout.write(
@@ -92,10 +119,11 @@ try {
       backupDir,
       databaseFile: backupFile,
       manifestFile,
+      databaseCount: files.length,
+      accountDatabaseCount: accountFiles.length,
       sizeBytes,
       sha256,
-      integrityCheck: verification.integrityCheck,
-      tableCount: verification.tableCount,
+      integrityCheck: 'ok',
     })}\n`,
   );
 } catch (error) {

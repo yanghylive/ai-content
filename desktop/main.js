@@ -339,6 +339,67 @@ function createEmptySqliteDatabase(databasePath) {
   try { fs.chmodSync(databasePath, 0o600); } catch { /* best effort on non-POSIX hosts */ }
 }
 
+/**
+ * 2026-09-01 换库适配（审计 #1/2/6/7/9/11）：启动扫描账号库（accounts/*.sqlite）。
+ * 文件头非 SQLite（前 16 字节非 "SQLite format 3\0"）→ 带备份隔离 + 从系统库模板重建。
+ * 运行态完整性（PRAGMA quick_check）由后端 ensureAccountDatabase 登录时自愈兜底，
+ * 这里只做启动期静态隔离（提前发现问题库，避免拖到登录才暴露）。
+ * 0 字节文件跳过（SQLite 打开时会自动初始化，非损坏）。
+ */
+function scanAndHealAccountDatabases(systemDatabasePath) {
+  try {
+    const accountsDir = path.join(path.dirname(systemDatabasePath), 'accounts');
+    if (!fs.existsSync(accountsDir)) return 0;
+    const entries = fs
+      .readdirSync(accountsDir)
+      .filter((name) => name.endsWith('.sqlite'));
+    let healed = 0;
+    for (const name of entries) {
+      const accountPath = path.join(accountsDir, name);
+      if (!isSqliteFileHeaderValid(accountPath)) {
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupPath = `${accountPath}.corrupt-${stamp}`;
+        for (const suffix of ['-wal', '-shm']) {
+          const sidecar = `${accountPath}${suffix}`;
+          if (fs.existsSync(sidecar)) {
+            try {
+              fs.renameSync(sidecar, `${sidecar}.corrupt-${stamp}`);
+            } catch { /* sidecar 隔离失败不阻断主库处理 */ }
+          }
+        }
+        fs.renameSync(accountPath, backupPath);
+        fs.copyFileSync(systemDatabasePath, accountPath);
+        try { fs.chmodSync(accountPath, 0o600); } catch { /* best effort */ }
+        const msg = `[AutoHeal] account DB ${name} header invalid; backed up to ${backupPath}, rebuilt from system template`;
+        console.log('[Backend]', msg);
+        appendRuntimeLog('backend-launch.log', msg);
+        healed += 1;
+      }
+    }
+    return healed;
+  } catch (error) {
+    console.error('[Backend] scanAndHealAccountDatabases failed:', error.message);
+    return 0;
+  }
+}
+
+function isSqliteFileHeaderValid(filePath) {
+  try {
+    const stat = fs.statSync(filePath);
+    if (stat.size === 0) return true; // 空文件：SQLite 打开时自动初始化，非损坏
+    const fd = fs.openSync(filePath, 'r');
+    try {
+      const header = Buffer.alloc(16);
+      const read = fs.readSync(fd, header, 0, 16, 0);
+      return read === 16 && header.toString('latin1') === 'SQLite format 3\0';
+    } finally {
+      fs.closeSync(fd);
+    }
+  } catch {
+    return false;
+  }
+}
+
 const SQLITE_ARTIFACT_RETENTION_COUNT = 20;
 const SQLITE_ARTIFACT_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -1443,6 +1504,8 @@ async function startBackendService() {
   );
   // 供崩溃自愈（healCorruptedDesktopDatabase）定位本次启动使用的库文件
   lastBackendDatabasePath = desktopDatabasePath;
+  // 2026-09-01 换库适配：启动扫描账号库文件头，损坏带备份重建
+  scanAndHealAccountDatabases(desktopDatabasePath);
 
   try {
     const credentialKey = ensureCredentialMasterKey({
