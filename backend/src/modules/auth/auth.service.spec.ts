@@ -5,18 +5,22 @@ import { hashPassword } from './auth.utils';
 describe('AuthService', () => {
   const createService = () => {
     const prisma = {
-      user: {
-        count: jest.fn(),
-        findFirst: jest.fn(),
-        findUnique: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
+      system: {
+        user: {
+          count: jest.fn(),
+          findFirst: jest.fn(),
+          findUnique: jest.fn(),
+          create: jest.fn(),
+          update: jest.fn(),
+        },
+        userSession: {
+          create: jest.fn(),
+          deleteMany: jest.fn(),
+          findFirst: jest.fn(),
+        },
       },
-      userSession: {
-        create: jest.fn(),
-        deleteMany: jest.fn(),
-        findFirst: jest.fn(),
-      },
+      switchDatabase: jest.fn().mockResolvedValue(undefined),
+      ensureAccountDatabase: jest.fn().mockResolvedValue('/tmp/accounts/u.sqlite'),
     };
 
     const service = new AuthService(prisma as any);
@@ -26,8 +30,8 @@ describe('AuthService', () => {
 
   it('首次初始化时会创建后台账号', async () => {
     const { service, prisma } = createService();
-    prisma.user.count.mockResolvedValue(0);
-    prisma.user.create.mockImplementation(async ({ data }) => ({
+    prisma.system.user.count.mockResolvedValue(0);
+    prisma.system.user.create.mockImplementation(async ({ data }) => ({
       id: 'user-1',
       username: data.username,
       email: data.email,
@@ -43,7 +47,7 @@ describe('AuthService', () => {
       password: 'admin123',
     });
 
-    expect(prisma.user.create).toHaveBeenCalledWith({
+    expect(prisma.system.user.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         username: 'admin',
         email: 'admin@local',
@@ -56,11 +60,11 @@ describe('AuthService', () => {
 
   it('setup status 不会自动创建默认管理员', async () => {
     const { service, prisma } = createService();
-    prisma.user.count.mockResolvedValue(0);
+    prisma.system.user.count.mockResolvedValue(0);
 
     const result = await service.getSetupStatus();
 
-    expect(prisma.user.create).not.toHaveBeenCalled();
+    expect(prisma.system.user.create).not.toHaveBeenCalled();
     expect(result).toEqual({
       hasUsers: false,
       totalUsers: 0,
@@ -69,7 +73,7 @@ describe('AuthService', () => {
 
   it('系统已有账号时不允许重复初始化', async () => {
     const { service, prisma } = createService();
-    prisma.user.count.mockResolvedValue(1);
+    prisma.system.user.count.mockResolvedValue(1);
 
     await expect(
       service.bootstrapUser({
@@ -85,7 +89,7 @@ describe('AuthService', () => {
     const createdAt = new Date('2026-03-17T00:00:00.000Z');
     const updatedAt = new Date('2026-03-17T00:00:00.000Z');
 
-    prisma.user.findFirst.mockResolvedValue({
+    prisma.system.user.findFirst.mockResolvedValue({
       id: 'user-1',
       username: 'admin',
       email: 'admin@local',
@@ -97,11 +101,11 @@ describe('AuthService', () => {
       updatedAt,
       kaypalUserId: null,
     });
-    prisma.userSession.create.mockResolvedValue({
+    prisma.system.userSession.create.mockResolvedValue({
       id: 'session-1',
     });
-    prisma.userSession.findFirst.mockResolvedValue(null);
-    prisma.user.update.mockResolvedValue({
+    prisma.system.userSession.findFirst.mockResolvedValue(null);
+    prisma.system.user.update.mockResolvedValue({
       id: 'user-1',
       username: 'admin',
       email: 'admin@local',
@@ -118,7 +122,7 @@ describe('AuthService', () => {
       password: 'admin123',
     });
 
-    expect(prisma.userSession.create).toHaveBeenCalledWith({
+    expect(prisma.system.userSession.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         userId: 'user-1',
         tokenHash: expect.any(String),
@@ -144,7 +148,7 @@ describe('AuthService', () => {
       ignoredUndefined: undefined,
     };
 
-    prisma.user.findFirst.mockResolvedValue({
+    prisma.system.user.findFirst.mockResolvedValue({
       id: 'user-1',
       username: 'admin',
       email: 'admin@local',
@@ -156,13 +160,13 @@ describe('AuthService', () => {
       updatedAt,
       kaypalUserId: 'kaypal-user-1',
     });
-    prisma.userSession.findFirst.mockResolvedValue({
+    prisma.system.userSession.findFirst.mockResolvedValue({
       metadata,
     });
-    prisma.userSession.create.mockResolvedValue({
+    prisma.system.userSession.create.mockResolvedValue({
       id: 'session-1',
     });
-    prisma.user.update.mockResolvedValue({
+    prisma.system.user.update.mockResolvedValue({
       id: 'user-1',
       username: 'admin',
       email: 'admin@local',
@@ -179,7 +183,7 @@ describe('AuthService', () => {
       password: 'admin123',
     });
 
-    expect(prisma.userSession.findFirst).toHaveBeenCalledWith({
+    expect(prisma.system.userSession.findFirst).toHaveBeenCalledWith({
       where: {
         userId: 'user-1',
         expiresAt: { gt: expect.any(Date) },
@@ -187,7 +191,7 @@ describe('AuthService', () => {
       orderBy: [{ lastUsedAt: 'desc' }, { createdAt: 'desc' }],
       select: { metadata: true },
     });
-    expect(prisma.userSession.create).toHaveBeenCalledWith({
+    expect(prisma.system.userSession.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         userId: 'user-1',
         metadata: expect.objectContaining({
@@ -198,13 +202,13 @@ describe('AuthService', () => {
       }),
     });
     expect(
-      prisma.userSession.create.mock.calls[0][0].data.metadata.ignoredUndefined,
+      prisma.system.userSession.create.mock.calls[0][0].data.metadata.ignoredUndefined,
     ).toBeUndefined();
   });
 
   it('密码错误时会拒绝登录', async () => {
     const { service, prisma } = createService();
-    prisma.user.findFirst.mockResolvedValue({
+    prisma.system.user.findFirst.mockResolvedValue({
       id: 'user-1',
       username: 'admin',
       email: 'admin@local',
@@ -216,7 +220,7 @@ describe('AuthService', () => {
       updatedAt: new Date('2026-03-17T00:00:00.000Z'),
       kaypalUserId: null,
     });
-    prisma.userSession.findFirst.mockResolvedValue(null);
+    prisma.system.userSession.findFirst.mockResolvedValue(null);
 
     await expect(
       service.login({
@@ -245,12 +249,12 @@ describe('AuthService', () => {
       const restore = withWechatEnv();
       try {
         const { service, prisma } = createService();
-        prisma.user.findUnique.mockResolvedValue(null);
+        prisma.system.user.findUnique.mockResolvedValue(null);
         await expect(
           service.wechatAppLogin('valid-code'),
         ).rejects.toThrow('已并入九章统一账号');
         // 不再创建 wechat- 假号
-        expect(prisma.user.create).not.toHaveBeenCalled();
+        expect(prisma.system.user.create).not.toHaveBeenCalled();
       } finally {
         restore();
       }
@@ -260,18 +264,18 @@ describe('AuthService', () => {
       const restore = withWechatEnv();
       try {
         const { service, prisma } = createService();
-        prisma.user.findUnique.mockResolvedValue({
+        prisma.system.user.findUnique.mockResolvedValue({
           id: 'legacy-wechat-user',
           status: 'active',
         });
-        prisma.userSession.create.mockResolvedValue({ id: 'session-1' });
-        prisma.user.update.mockResolvedValue({
+        prisma.system.userSession.create.mockResolvedValue({ id: 'session-1' });
+        prisma.system.user.update.mockResolvedValue({
           id: 'legacy-wechat-user',
           status: 'active',
         });
         const result = await service.wechatAppLogin('valid-code');
         expect(result.user).toBeDefined();
-        expect(prisma.user.create).not.toHaveBeenCalled();
+        expect(prisma.system.user.create).not.toHaveBeenCalled();
       } finally {
         restore();
       }

@@ -127,7 +127,7 @@ export class AuthService {
     cloudUser: { id: string; email?: string | null; name?: string | null },
     metadata: Record<string, unknown>,
   ) {
-    let localUser = await this.prisma.user.findUnique({
+    let localUser = await this.prisma.system.user.findUnique({
       where: { kaypalUserId: cloudUser.id },
     });
 
@@ -135,7 +135,7 @@ export class AuthService {
       const safeId = cloudUser.id.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 40);
       const username = `kaypal_${safeId}`;
       const email = cloudUser.email || `${cloudUser.id}@kaypal.local`;
-      const existingEmailUser = await this.prisma.user.findUnique({
+      const existingEmailUser = await this.prisma.system.user.findUnique({
         where: { email },
       });
       if (existingEmailUser) {
@@ -145,7 +145,7 @@ export class AuthService {
         ) {
           throw new BadRequestException('该邮箱已绑定其他 Kaypal 账号');
         }
-        localUser = await this.prisma.user.update({
+        localUser = await this.prisma.system.user.update({
           where: { id: existingEmailUser.id },
           data: {
             kaypalUserId: cloudUser.id,
@@ -159,7 +159,7 @@ export class AuthService {
       } else {
         const randomPassword = `${Date.now()}-${Math.random()}-${cloudUser.id}`;
         const passwordHash = await hashPassword(randomPassword);
-        localUser = await this.prisma.user.create({
+        localUser = await this.prisma.system.user.create({
           data: {
             username,
             email,
@@ -174,7 +174,7 @@ export class AuthService {
       throw new BadRequestException('本地账号已停用');
     }
 
-    await this.prisma.user.update({
+    await this.prisma.system.user.update({
       where: { id: localUser.id },
       data: { lastLoginAt: new Date() },
     });
@@ -183,7 +183,7 @@ export class AuthService {
     const expiresAt = new Date(
       Date.now() + AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
     );
-    await this.prisma.userSession.create({
+    await this.prisma.system.userSession.create({
       data: {
         userId: localUser.id,
         tokenHash: hashSessionToken(sessionToken),
@@ -191,6 +191,11 @@ export class AuthService {
         metadata: metadata as Prisma.InputJsonObject,
       },
     });
+
+    // 2026-09-01 logout 换库：微信登录成功同样切账号库
+    await this.prisma.switchDatabase(
+      await this.prisma.ensureAccountDatabase(localUser.id),
+    );
 
     return {
       sessionToken,
@@ -216,7 +221,7 @@ export class AuthService {
   }
 
   async getSetupStatus() {
-    const totalUsers = await this.prisma.user.count();
+    const totalUsers = await this.prisma.system.user.count();
     return {
       hasUsers: totalUsers > 0,
       totalUsers,
@@ -231,7 +236,7 @@ export class AuthService {
       throw new BadRequestException('账号和密码不能为空');
     }
 
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.system.user.findFirst({
       where: {
         OR: [
           { username },
@@ -277,7 +282,7 @@ export class AuthService {
     const inheritedMetadata = await this.findReusableKaypalSessionMetadata(
       user.id,
     );
-    const session = await this.prisma.userSession.create({
+    const session = await this.prisma.system.userSession.create({
       data: {
         userId: user.id,
         tokenHash: hashSessionToken(sessionToken),
@@ -286,12 +291,17 @@ export class AuthService {
       },
     });
 
-    const updatedUser = await this.prisma.user.update({
+    const updatedUser = await this.prisma.system.user.update({
       where: { id: user.id },
       data: {
         lastLoginAt: new Date(),
       },
     });
+
+    // 2026-09-01 logout 换库：登录成功 → 切换到该账号的业务库（首登自动创建）
+    await this.prisma.switchDatabase(
+      await this.prisma.ensureAccountDatabase(user.id),
+    );
 
     return {
       sessionToken,
@@ -313,7 +323,7 @@ export class AuthService {
     // 本端点仅兼容历史存量 `wechat-${openid}` 假号登录，不再创建新假号。
     const openid = await this.resolveWechatOpenId(code);
     const wechatUsername = `wechat-${openid}`;
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.system.user.findUnique({
       where: { username: wechatUsername },
     });
     if (!user) {
@@ -333,7 +343,7 @@ export class AuthService {
     const inheritedMetadata = await this.findReusableKaypalSessionMetadata(
       user.id,
     );
-    const session = await this.prisma.userSession.create({
+    const session = await this.prisma.system.userSession.create({
       data: {
         userId: user.id,
         tokenHash: hashSessionToken(sessionToken),
@@ -341,10 +351,14 @@ export class AuthService {
         ...(inheritedMetadata ? { metadata: inheritedMetadata } : {}),
       },
     });
-    const updatedUser = await this.prisma.user.update({
+    const updatedUser = await this.prisma.system.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
     });
+    // 2026-09-01 logout 换库：kaypal 登录成功同样切账号库
+    await this.prisma.switchDatabase(
+      await this.prisma.ensureAccountDatabase(user.id),
+    );
     return {
       sessionToken,
       sessionId: session.id,
@@ -510,7 +524,7 @@ export class AuthService {
     try {
       const cloudUser = await this.kaypalClient!.login(identifier, password);
       if (!cloudUser?.id) return;
-      const existing = await this.prisma.user.findUnique({
+      const existing = await this.prisma.system.user.findUnique({
         where: { kaypalUserId: cloudUser.id },
         select: { id: true },
       });
@@ -520,7 +534,7 @@ export class AuthService {
         subscriptionPlan: cloudUser.subscriptionPlan,
         subscriptionPeriodEnd: cloudUser.subscriptionPeriodEnd,
       });
-      await this.prisma.user.update({
+      await this.prisma.system.user.update({
         where: { id: localUserId },
         data: {
           kaypalUserId: cloudUser.id,
@@ -543,9 +557,12 @@ export class AuthService {
       return { success: true };
     }
 
-    await this.prisma.userSession.deleteMany({
+    await this.prisma.system.userSession.deleteMany({
       where: { id: sessionId },
     });
+
+    // 2026-09-01 logout 换库：登出切回系统库，业务数据留在账号库原地（数据不删）
+    await this.prisma.switchDatabase(null);
 
     return { success: true };
   }
@@ -566,13 +583,13 @@ export class AuthService {
       throw new BadRequestException('密码长度不能少于 8 位');
     }
 
-    const existingUserCount = await this.prisma.user.count();
+    const existingUserCount = await this.prisma.system.user.count();
     if (existingUserCount > 0) {
       throw new BadRequestException('系统已存在账号，请勿重复初始化');
     }
 
     const passwordHash = await hashPassword(password);
-    const user = await this.prisma.user.create({
+    const user = await this.prisma.system.user.create({
       data: {
         username,
         email,
@@ -609,7 +626,7 @@ export class AuthService {
   }
 
   private async findReusableKaypalSessionMetadata(userId: string) {
-    const session = await this.prisma.userSession.findFirst({
+    const session = await this.prisma.system.userSession.findFirst({
       where: {
         userId,
         expiresAt: { gt: new Date() },

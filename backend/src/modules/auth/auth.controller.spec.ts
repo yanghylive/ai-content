@@ -63,6 +63,7 @@ describe('AuthController', () => {
 
   it('lists active tenant memberships for the workspace selector', async () => {
     const prisma = {
+      system: {
       tenantMember: {
         findMany: jest.fn().mockResolvedValue([
           {
@@ -71,6 +72,7 @@ describe('AuthController', () => {
             tenant: { name: '品牌工作区', slug: 'brand' },
           },
         ]),
+      },
       },
     };
     const scopedController = new AuthController({} as never, prisma as never);
@@ -89,11 +91,13 @@ describe('AuthController', () => {
 
   it('lists users only from the administered tenant', async () => {
     const prisma = {
+      system: {
       tenantMember: {
         findFirst: jest.fn().mockResolvedValue({ tenantId: 'tenant-1' }),
       },
       user: {
         findMany: jest.fn().mockResolvedValue([]),
+      },
       },
     };
     const scopedController = new AuthController({} as never, prisma as never);
@@ -103,7 +107,7 @@ describe('AuthController', () => {
       headers: { 'x-tenant-id': 'tenant-1' },
     } as never);
 
-    expect(prisma.user.findMany).toHaveBeenCalledWith(
+    expect(prisma.system.user.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           tenantMemberships: {
@@ -116,11 +120,13 @@ describe('AuthController', () => {
 
   it('rejects administration of a user outside the current tenant', async () => {
     const prisma = {
+      system: {
       tenantMember: {
         findFirst: jest
           .fn()
           .mockResolvedValueOnce({ tenantId: 'tenant-1' })
           .mockResolvedValueOnce(null),
+      },
       },
     };
     const scopedController = new AuthController({} as never, prisma as never);
@@ -216,6 +222,7 @@ describe('AuthController', () => {
 describe('AuthController · assertSeatAvailable（Bug 修复 2026-08-17）', () => {
   function makeController(overrides: Record<string, unknown> = {}) {
     const prisma = {
+      system: {
       tenantEntitlement: {
         findFirst: jest.fn().mockResolvedValue({ plan: 'FREE' }),
       },
@@ -232,6 +239,7 @@ describe('AuthController · assertSeatAvailable（Bug 修复 2026-08-17）', () 
         findFirst: jest.fn().mockResolvedValue({ id: 'u-2', username: 'u2', email: 'u2@x.com', name: 'U2', status: 'active' }),
       },
       ...overrides,
+      },
     };
     const controller = new AuthController(
       { getSetupStatus: jest.fn() } as never,
@@ -247,7 +255,7 @@ describe('AuthController · assertSeatAvailable（Bug 修复 2026-08-17）', () 
     const c = makeController();
     await expect(c.assertSeatAvailable('t-1')).resolves.toBeUndefined();
     // 断言 count 排除 owner
-    expect(c.prisma.tenantMember.count).toHaveBeenCalledWith(
+    expect(c.prisma.system.tenantMember.count).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ userId: { not: 'owner-1' } }),
       }),

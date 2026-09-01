@@ -392,7 +392,7 @@ export class AuthController {
     if (name === undefined && avatar === undefined) {
       throw new BadRequestException('没有可更新的字段');
     }
-    const updated = await this.prisma.user.update({
+    const updated = await this.prisma.system.user.update({
       where: { id: user.id },
       data: {
         ...(name !== undefined ? { name } : {}),
@@ -433,7 +433,7 @@ export class AuthController {
   async listCurrentUserTenants(@Req() request: AuthenticatedRequest) {
     const user = request.authUser;
     if (!user) return [];
-    const memberships = await this.prisma.tenantMember.findMany({
+    const memberships = await this.prisma.system.tenantMember.findMany({
       where: {
         userId: user.id,
         status: 'active',
@@ -472,7 +472,7 @@ export class AuthController {
   @Get('users')
   async listUsers(@Req() request: AuthenticatedRequest) {
     const tenantId = await this.requireAdminTenant(request);
-    const users = await this.prisma.user.findMany({
+    const users = await this.prisma.system.user.findMany({
       where: {
         tenantMemberships: {
           some: { tenantId, status: 'active' },
@@ -508,7 +508,7 @@ export class AuthController {
     @Req() request: AuthenticatedRequest,
   ) {
     const tenantId = await this.requireAdminTenant(request);
-    const targetMembership = await this.prisma.tenantMember.findFirst({
+    const targetMembership = await this.prisma.system.tenantMember.findFirst({
       where: { tenantId, userId: id, status: 'active' },
       select: { id: true, role: true },
     });
@@ -531,7 +531,7 @@ export class AuthController {
         request.authUser?.id === id &&
         targetMembership.role === 'admin'
       ) {
-        const adminCount = await this.prisma.tenantMember.count({
+        const adminCount = await this.prisma.system.tenantMember.count({
           where: { tenantId, status: 'active', role: 'admin' },
         });
         if (adminCount <= 1) {
@@ -557,7 +557,7 @@ export class AuthController {
       throw new BadRequestException('请至少传一个要更新的字段');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.system.$transaction(async (tx) => {
       if (body.role !== undefined) {
         await tx.tenantMember.update({
           where: { id: targetMembership.id },
@@ -605,7 +605,7 @@ export class AuthController {
       throw new BadRequestException('请提供 email 或 username');
     }
 
-    const targetUser = await this.prisma.user.findFirst({
+    const targetUser = await this.prisma.system.user.findFirst({
       where: {
         ...(email ? { email } : {}),
         ...(username ? { username } : {}),
@@ -631,7 +631,7 @@ export class AuthController {
     }
 
     const role = body.role === 'admin' ? 'admin' : 'member';
-    const existing = await this.prisma.tenantMember.findUnique({
+    const existing = await this.prisma.system.tenantMember.findUnique({
       where: { tenantId_userId: { tenantId, userId: targetUser.id } },
     });
     if (existing && existing.status === 'active') {
@@ -642,12 +642,12 @@ export class AuthController {
     await this.assertSeatAvailable(tenantId);
 
     const member = existing
-      ? await this.prisma.tenantMember.update({
+      ? await this.prisma.system.tenantMember.update({
           where: { id: existing.id },
           data: { role, status: 'active' },
           select: { id: true, role: true, status: true },
         })
-      : await this.prisma.tenantMember.create({
+      : await this.prisma.system.tenantMember.create({
           data: { tenantId, userId: targetUser.id, role },
           select: { id: true, role: true, status: true },
         });
@@ -672,7 +672,7 @@ export class AuthController {
     @Req() request: AuthenticatedRequest,
   ) {
     const tenantId = await this.requireAdminTenant(request);
-    const membership = await this.prisma.tenantMember.findFirst({
+    const membership = await this.prisma.system.tenantMember.findFirst({
       where: { tenantId, userId, status: 'active' },
       select: { id: true, role: true },
     });
@@ -684,7 +684,7 @@ export class AuthController {
     }
     // 防自锁：不能移除最后一个 admin/owner
     if (membership.role === 'admin' || membership.role === 'owner') {
-      const adminCount = await this.prisma.tenantMember.count({
+      const adminCount = await this.prisma.system.tenantMember.count({
         where: {
           tenantId,
           status: 'active',
@@ -696,7 +696,7 @@ export class AuthController {
       }
     }
 
-    await this.prisma.tenantMember.update({
+    await this.prisma.system.tenantMember.update({
       where: { id: membership.id },
       data: { status: 'removed' },
     });
@@ -709,7 +709,7 @@ export class AuthController {
     const requestedTenantId = Array.isArray(requestedTenantHeader)
       ? requestedTenantHeader[0]
       : requestedTenantHeader;
-    const membership = await this.prisma.tenantMember.findFirst({
+    const membership = await this.prisma.system.tenantMember.findFirst({
       where: {
         userId: request.authUser!.id,
         status: 'active',
@@ -739,12 +739,12 @@ export class AuthController {
    */
   private async assertSeatAvailable(tenantId: string): Promise<void> {
     const [entitlement, tenant] = await Promise.all([
-      this.prisma.tenantEntitlement.findFirst({
+      this.prisma.system.tenantEntitlement.findFirst({
         where: { tenantId, status: 'active' },
         orderBy: { updatedAt: 'desc' },
         select: { plan: true },
       }),
-      this.prisma.tenant.findUnique({
+      this.prisma.system.tenant.findUnique({
         where: { id: tenantId },
         select: { ownerUserId: true },
       }),
@@ -754,7 +754,7 @@ export class AuthController {
 
     // Bug 修复（2026-08-17）：owner 也写进 tenantMember（tenants.service upsert），
     // 若不排除，single 方案（maxSeats=1）owner 占满唯一席位 → 永远无法邀请成员。
-    const activeCount = await this.prisma.tenantMember.count({
+    const activeCount = await this.prisma.system.tenantMember.count({
       where: {
         tenantId,
         status: 'active',

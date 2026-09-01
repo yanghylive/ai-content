@@ -86,7 +86,7 @@ export class AuthGuard implements CanActivate {
     const session = await this.runPrismaTransientRetry(
       'auth session lookup',
       () =>
-        this.prisma.userSession.findFirst({
+        this.prisma.system.userSession.findFirst({
           where: {
             tokenHash,
           },
@@ -102,7 +102,7 @@ export class AuthGuard implements CanActivate {
 
     if (session.expiresAt <= new Date()) {
       await this.runPrismaTransientRetry('expired auth session delete', () =>
-        this.prisma.userSession.delete({ where: { id: session.id } }),
+        this.prisma.system.userSession.delete({ where: { id: session.id } }),
       );
       throw new UnauthorizedException('登录状态已过期，请重新登录');
     }
@@ -227,7 +227,7 @@ export class AuthGuard implements CanActivate {
 
     const newExpiresAt = new Date(now + windowMs);
     void this.runPrismaTransientRetry('session sliding renew', () =>
-      this.prisma.userSession.update({
+      this.prisma.system.userSession.update({
         where: { id: sessionId },
         data: { expiresAt: newExpiresAt },
       }),
@@ -293,7 +293,7 @@ export class AuthGuard implements CanActivate {
 
     this.lastUsedAtWriteCache.set(sessionId, now);
     this.maybePruneSessionCaches();
-    this.prisma.userSession
+    this.prisma.system.userSession
       .update({
         where: { id: sessionId },
         data: { lastUsedAt: new Date(now) },
@@ -642,7 +642,7 @@ export class AuthGuard implements CanActivate {
     const currentSession = await this.runPrismaTransientRetry(
       'concurrent auth metadata lookup',
       () =>
-        this.prisma.userSession.findUnique({
+        this.prisma.system.userSession.findUnique({
           where: { id: sessionId },
           select: { metadata: true },
         }),
@@ -780,7 +780,7 @@ export class AuthGuard implements CanActivate {
     metadata: Record<string, unknown>,
   ) {
     await this.runPrismaTransientRetry('auth metadata persist', () =>
-      this.prisma.userSession.update({
+      this.prisma.system.userSession.update({
         where: { id: sessionId },
         data: { metadata: this.toJsonObject(metadata) },
       }),

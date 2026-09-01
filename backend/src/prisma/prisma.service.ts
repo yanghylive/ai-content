@@ -4,14 +4,182 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
+import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 
+/**
+ * 2026-09-01 logout 换库（审计 #1/#2/#6/#7/#9/#11 隔离总解，设计见
+ * docs/logout-db-isolation-20260901-design.md）：
+ *  - 主库（kaypal-ai.sqlite）= 系统库：认证表（users/user_sessions）+ 模板
+ *  - 账号库 = <userDataDir>/accounts/<uid>.sqlite：该账号全部业务数据（物理隔离）
+ *  - 本类 extends PrismaClient 即系统库连接；构造返回 Proxy，把业务访问
+ *    （model 属性 / $queryRaw / $transaction …）路由到"当前活跃库"：
+ *      未登录 → 系统库；登录后 → 账号库
+ *  - 认证相关模块（auth.service/auth.guard）显式走 `this.prisma.system` 读系统库
+ *  - 白名单（TARGET_ONLY）属性永远访问未代理的系统库 this，防生命周期/内部方法串库
+ */
 @Injectable()
 export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly logger = new Logger(PrismaService.name);
+
+  /** 账号库缓存：路径 → PrismaClient（首次访问惰性创建连接） */
+  private readonly accountClients = new Map<string, PrismaClient>();
+
+  /** 当前活跃账号库路径；null = 未登录（业务访问走系统库） */
+  private activeAccountPath: string | null = null;
+
+  /** 已清空业务数据的账号库（防重复清空） */
+  private readonly accountTablesCleared = new Set<string>();
+
+  private static readonly TARGET_ONLY = new Set<string>([
+    // 生命周期与内部建表/修复方法（必须跑在系统库上）
+    'onModuleInit',
+    'onModuleDestroy',
+    'ensureSqliteCoreTables',
+    'ensureSqliteSchemaColumns',
+    'ensureSqliteColumn',
+    'isSqliteIndexStatement',
+    'repairRpaEvidenceStepIds',
+    'repairSqliteNullTimestamps',
+    'repairUnsupportedSqliteTimestampColumns',
+    'rebuildSqliteTableWithDatetimeColumns',
+    'quoteSqliteIdentifier',
+    // 换库控制面（自身内部状态）
+    'switchDatabase',
+    'getActiveAccountPath',
+    'getAccountClient',
+    'getSystemDatabasePath',
+    'ensureAccountDatabase',
+    'clearAccountBusinessTables',
+    'system',
+    'accountClients',
+    'activeAccountPath',
+    'accountTablesCleared',
+    'logger',
+  ]);
+
+  constructor() {
+    super();
+    const proxy = new Proxy(this, {
+      get(target, prop: string | symbol) {
+        if (typeof prop !== 'string') {
+          return (target as unknown as Record<string | symbol, unknown>)[prop];
+        }
+        if (PrismaService.TARGET_ONLY.has(prop)) {
+          return (target as unknown as Record<string, unknown>)[prop];
+        }
+        // 业务访问：路由到当前活跃库（账号库或系统库）
+        const active = target.activeAccountPath
+          ? target.getAccountClient(target.activeAccountPath)
+          : target;
+        const value = (active as unknown as Record<string, unknown>)[prop];
+        return typeof value === 'function' ? value.bind(active) : value;
+      },
+      set(target, prop: string | symbol, value: unknown) {
+        (target as unknown as Record<string | symbol, unknown>)[prop] = value;
+        return true;
+      },
+    });
+    return proxy;
+  }
+
+  /** 系统库连接句柄：认证表（users / user_sessions）永远走它，不随登录切换 */
+  get system(): PrismaClient {
+    return this;
+  }
+
+  /** 当前活跃账号库路径（null = 未登录，业务走系统库） */
+  getActiveAccountPath(): string | null {
+    return this.activeAccountPath;
+  }
+
+  /** 切换业务访问目标库：path=账号库文件绝对路径；null 切回系统库 */
+  async switchDatabase(path: string | null): Promise<void> {
+    this.activeAccountPath = path;
+    if (path) {
+      // 预连接，尽早暴露路径错误
+      this.getAccountClient(path);
+    }
+  }
+
+  /** 账号库 client（惰性创建 + 连接，缓存复用） */
+  getAccountClient(path: string): PrismaClient {
+    let client = this.accountClients.get(path);
+    if (!client) {
+      const url = path.startsWith('file:') ? path : `file:${path}`;
+      client = new PrismaClient({
+        datasources: { db: { url } },
+      });
+      this.accountClients.set(path, client);
+      // 惰性连接：首次调用即连，失败抛错由调用方兜底
+      void client.$connect();
+    }
+    return client;
+  }
+
+  /** 系统库文件路径（file: 前缀剥离后） */
+  getSystemDatabasePath(): string {
+    const dbUrl = `${process.env.SQLITE_DATABASE_URL || process.env.DATABASE_URL || ''}`;
+    return dbUrl.replace(/^file:/, '');
+  }
+
+  /**
+   * 确保某账号的业务库存在：首登从系统库（模板）复制 + 清空业务表。
+   * 返回账号库绝对路径。复制后再清空系统库业务表，保证模板干净。
+   */
+  async ensureAccountDatabase(userId: string): Promise<string> {
+    const systemPath = this.getSystemDatabasePath();
+    if (!systemPath) {
+      throw new Error('系统库路径未配置（SQLITE_DATABASE_URL 缺失）');
+    }
+    const accountsDir = join(dirname(systemPath), 'accounts');
+    mkdirSync(accountsDir, { recursive: true });
+    const safeKey = userId.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 64);
+    const accountPath = join(accountsDir, `${safeKey}.sqlite`);
+
+    if (!existsSync(accountPath)) {
+      // 首登：系统库作为模板复制（含结构 + 认证表），业务数据按账号物理隔离
+      copyFileSync(systemPath, accountPath);
+      await this.clearAccountBusinessTables(accountPath);
+      // 模板净化：系统库业务数据首登后不再需要（已随账号库隔离）
+      if (!this.accountTablesCleared.has('__system__')) {
+        await this.clearAccountBusinessTables(systemPath);
+        this.accountTablesCleared.add('__system__');
+      }
+    }
+    return accountPath;
+  }
+
+  /**
+   * 清空指定库的业务表数据（保留表结构），排除认证表与迁移表。
+   * 表清单运行时枚举 sqlite_master，零维护。
+   */
+  private async clearAccountBusinessTables(dbPath: string): Promise<void> {
+    if (this.accountTablesCleared.has(dbPath)) {
+      return;
+    }
+    const client = this.getAccountClient(dbPath);
+    const tables = (await client.$queryRawUnsafe<Array<{ name: string }>>(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('users', 'user_sessions', '_prisma_migrations')`,
+    )).map((row) => row.name);
+    for (const table of tables) {
+      try {
+        await client.$executeRawUnsafe(`DELETE FROM "${table}"`);
+      } catch (error) {
+        this.logger.warn(
+          `清空业务表 ${table} 失败（跳过）：${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+    this.accountTablesCleared.add(dbPath);
+    this.logger.log(
+      `账号库业务数据已清空（保留结构）：${dbPath}（表数 ${tables.length}）`,
+    );
+  }
 
   async onModuleInit() {
     const attempts = 8;
@@ -44,6 +212,15 @@ export class PrismaService
 
   async onModuleDestroy() {
     await this.$disconnect();
+    // 2026-09-01 换库：登出时关闭所有账号库连接，避免残留文件句柄
+    for (const client of this.accountClients.values()) {
+      try {
+        await client.$disconnect();
+      } catch {
+        // 单个账号库断开失败不阻塞关闭
+      }
+    }
+    this.accountClients.clear();
   }
 
   private async ensureSqliteCoreTables() {

@@ -39,7 +39,8 @@ describe('AuthGuard', () => {
     };
 
     const prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: sessionId,
           userId,
@@ -66,6 +67,7 @@ describe('AuthGuard', () => {
         }),
         update: jest.fn().mockResolvedValue({}),
         delete: jest.fn(),
+      },
       },
     };
     const kaypalClient = {
@@ -99,7 +101,7 @@ describe('AuthGuard', () => {
       },
     });
     expect(kaypalClient.getUserFromDesktopToken).not.toHaveBeenCalled();
-    expect(prisma.userSession.update).not.toHaveBeenCalledWith(
+    expect(prisma.system.userSession.update).not.toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           metadata: expect.not.objectContaining({
@@ -126,7 +128,8 @@ describe('AuthGuard', () => {
     };
 
     const prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: sessionId,
           userId,
@@ -151,6 +154,7 @@ describe('AuthGuard', () => {
         findUnique: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
         delete: jest.fn(),
+      },
       },
     };
     const kaypalClient = {
@@ -200,7 +204,8 @@ describe('AuthGuard', () => {
       kaypalMetadataSyncedAt: new Date(Date.now() - 60 * 60_000).toISOString(),
     };
     const prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: sessionId,
           userId,
@@ -225,6 +230,7 @@ describe('AuthGuard', () => {
         findUnique: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
         delete: jest.fn(),
+      },
       },
     };
     const kaypalClient = {
@@ -266,7 +272,8 @@ describe('AuthGuard', () => {
       kaypalRole: 'SUPER_ADMIN',
     };
     const prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
           tokenHash: hashSessionToken(sessionToken),
@@ -290,6 +297,7 @@ describe('AuthGuard', () => {
         findUnique: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
         delete: jest.fn(),
+      },
       },
     };
     const kaypalClient = {
@@ -321,7 +329,7 @@ describe('AuthGuard', () => {
         kaypalDesktopAccessToken: 'expired-access-token',
       },
     });
-    expect(prisma.userSession.update).not.toHaveBeenCalledWith(
+    expect(prisma.system.userSession.update).not.toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           metadata: expect.not.objectContaining({
@@ -342,7 +350,8 @@ describe('AuthGuard', () => {
       kaypalRole: 'SUPER_ADMIN',
     };
     const prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
           tokenHash: hashSessionToken(sessionToken),
@@ -366,6 +375,7 @@ describe('AuthGuard', () => {
         findUnique: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
         delete: jest.fn(),
+      },
       },
     };
     const kaypalClient = {
@@ -397,7 +407,7 @@ describe('AuthGuard', () => {
         kaypalDesktopAccessToken: 'expired-access-token',
       },
     });
-    expect(prisma.userSession.update).not.toHaveBeenCalledWith(
+    expect(prisma.system.userSession.update).not.toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           metadata: expect.not.objectContaining({
@@ -416,7 +426,8 @@ describe('AuthGuard', () => {
       kaypalRole: 'SUPER_ADMIN',
     };
     const prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
           tokenHash: hashSessionToken(sessionToken),
@@ -440,6 +451,7 @@ describe('AuthGuard', () => {
         findUnique: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
         delete: jest.fn(),
+      },
       },
     };
     const kaypalClient = {
@@ -484,7 +496,8 @@ describe('AuthGuard', () => {
       kaypalCreditBalanceUserId: 'kaypal-user-from-metadata',
     };
     const prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
           tokenHash: hashSessionToken(sessionToken),
@@ -508,6 +521,7 @@ describe('AuthGuard', () => {
         findUnique: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
         delete: jest.fn(),
+      },
       },
     };
     const kaypalClient = {
@@ -555,7 +569,8 @@ describe('AuthGuard', () => {
       kaypalMetadataSyncedAt: new Date().toISOString(),
     };
     const prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
           tokenHash: hashSessionToken(sessionToken),
@@ -579,6 +594,7 @@ describe('AuthGuard', () => {
         findUnique: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
         delete: jest.fn(),
+      },
       },
     };
     const kaypalClient = {
@@ -634,7 +650,8 @@ describe('AuthGuard', () => {
   const buildRoleCheckFixture = (role: string, cloudRole?: string) => {
     const sessionToken = 'session-token';
     const prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findFirst: jest.fn().mockResolvedValue({
           id: 'session-1',
           userId: 'user-1',
@@ -665,6 +682,7 @@ describe('AuthGuard', () => {
         }),
         update: jest.fn().mockResolvedValue({}),
         delete: jest.fn(),
+      },
       },
     };
     const kaypalClient = {
