@@ -34,7 +34,7 @@
     {
       "key": "device",
       "href": "/device-center",
-      "label": "移动设备"
+      "label": "设备任务"
     }
   ],
   "commandHrefs": [
@@ -66,6 +66,7 @@
     "/knowledge-base",
     "/styles",
     "/distribution/publish-video",
+    "/broadcast",
     "/engagement",
     "/tasks/confirmations",
     "/engagement/douyin-comments",
@@ -83,6 +84,10 @@
     "/commercial-readiness",
     "/intelligence/costs",
     "/settings",
+    "/settings/account",
+    "/settings/notifications",
+    "/settings/appearance",
+    "/settings/data",
     "/savings"
   ],
   "routeAliases": [

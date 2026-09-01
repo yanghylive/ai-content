@@ -429,16 +429,6 @@ export function AppShell({
           </button>
           <button
             className={`kx-rail-item${activeScene === "mine" ? " kx-active" : ""}`}
-            aria-label="系统设置"
-            aria-current={activeScene === "mine" ? "page" : undefined}
-            onClick={() => router.push("/settings")}
-          >
-            {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
-            <ShellIcon name="settings" size={22} />
-            <span className="kx-rail-lbl">设置</span>
-          </button>
-          <button
-            className={`kx-rail-item${activeScene === "mine" ? " kx-active" : ""}`}
             aria-label="我的"
             aria-current={activeScene === "mine" ? "page" : undefined}
             onClick={() => router.push("/mine")}

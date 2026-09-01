@@ -60,6 +60,10 @@ const COMMANDS: PaletteCommand[] = [
   { cat: "系统设置", name: "商业就绪", icon: "rocket", tint: "kx-t-amber", href: "/commercial-readiness", kw: "商业 就绪 自检 上线 readiness" },
   { cat: "系统设置", name: "用量与费用", icon: "file", tint: "kx-t-amber", href: "/intelligence/costs", kw: "积分 用量 费用 账单" },
   { cat: "系统设置", name: "设置", icon: "settings", tint: "kx-t-slate", href: "/settings", kw: "settings 设置 ai 模型" },
+  { cat: "系统设置", name: "账号与安全", icon: "user", tint: "kx-t-rose", href: "/settings/account", kw: "个人资料 密码 账号 安全" },
+  { cat: "系统设置", name: "通知设置", icon: "bell", tint: "kx-t-blue", href: "/settings/notifications", kw: "通知 提醒 推送" },
+  { cat: "系统设置", name: "显示设置", icon: "sun", tint: "kx-t-amber", href: "/settings/appearance", kw: "显示 字体 放大 文字" },
+  { cat: "系统设置", name: "数据管理", icon: "download", tint: "kx-t-cyan", href: "/settings/data", kw: "导出 数据 备份" },
   { cat: "系统设置", name: "省钱返利", icon: "wallet", tint: "kx-t-green", href: "/savings", kw: "省钱 返利 美团 特惠 优惠" },
 ];
 

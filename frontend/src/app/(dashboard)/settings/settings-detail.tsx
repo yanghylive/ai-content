@@ -6,31 +6,31 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Bell,
+  ChevronRight,
   Database,
-  Download,
-  KeyRound,
   Lock,
   MonitorCog,
-  Save,
   Shield,
   User,
 } from "lucide-react";
 import {
   V2Section,
-  V2Field,
-  V2Input,
-  V2PrimaryButton,
   V2GhostButton,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
 import { SettingsIntegrations } from "./settings-integrations";
 import { DesktopSettings } from "./desktop-settings";
+import {
+  AccountSettingsSection,
+  AppearanceSettingsSection,
+  NotificationsSettingsSection,
+  DataSettingsSection,
+} from "./settings-sections";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useWebPush } from "@/lib/hooks/use-web-push";
 
 export function SettingsDetail() {
   const router = useRouter();
-  const [saving] = useState<string | null>(null);
   const [fontScale, setFontScale] = useState<number>(() => {
     if (typeof window === "undefined") return 1;
     try {
@@ -307,176 +307,27 @@ export function SettingsDetail() {
         </div>
       )}
 
-      {/* 个人资料 */}
-      <V2Section
-        title="个人资料"
-        description="你的昵称和登录邮箱"
-        action={
-          <V2PrimaryButton
-            icon={Save}
-            loading={saving === "profile"}
-            onClick={handleSaveProfile}
-          >
-            保存
-          </V2PrimaryButton>
-        }
-      >
-        <div className="grid gap-5 sm:grid-cols-2">
-          <V2Field label="昵称">
-            <V2Input
-              placeholder="你的名字"
-              value={profile.name}
-              onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
-            />
-          </V2Field>
-          <V2Field label="登录邮箱">
-            <V2Input
-              type="email"
-              placeholder="you@example.com"
-              value={profile.email}
-              onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
-            />
-          </V2Field>
-        </div>
-      </V2Section>
+      {/* 2026-09-01 设置拆分：四大区块提取为独立组件（子路由 /settings/* 同源复用） */}
+      <AccountSettingsSection />
+      <AppearanceSettingsSection />
+      <NotificationsSettingsSection />
+      <DataSettingsSection />
 
-      {/* 修改密码 */}
-      <V2Section
-        title="修改密码"
-        description="定期修改密码更安全"
-        action={
-          <V2PrimaryButton
-            icon={KeyRound}
-            loading={saving === "password"}
-            onClick={handleChangePassword}
-          >
-            修改密码
-          </V2PrimaryButton>
-        }
-      >
-        <div className="grid gap-5 sm:grid-cols-3">
-          <V2Field label="当前密码" required>
-            <V2Input
-              type="password"
-              value={passwords.current}
-              onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))}
-            />
-          </V2Field>
-          <V2Field label="新密码" required hint="至少 8 位">
-            <V2Input
-              type="password"
-              value={passwords.next}
-              onChange={(e) => setPasswords((p) => ({ ...p, next: e.target.value }))}
-            />
-          </V2Field>
-          <V2Field label="再输一遍新密码" required>
-            <V2Input
-              type="password"
-              value={passwords.confirm}
-              onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))}
-            />
-          </V2Field>
-        </div>
-      </V2Section>
-
-      {/* 显示设置（PRD 16.3 字体放大，无障碍） */}
-      <V2Section
-        title="显示设置"
-        description="调整文字大小（本机保存，仅当前设备生效）"
-      >
-        <div className="flex gap-2">
-          {(
-            [
-              { key: "1", label: "标准", scale: 1 },
-              { key: "1.1", label: "大", scale: 1.1 },
-              { key: "1.25", label: "特大", scale: 1.25 },
-            ] as const
-          ).map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              onClick={() => {
-                setFontScale(option.scale);
-                try {
-                  localStorage.setItem("jiuzhang.fontScale", option.key);
-                } catch {
-                  /* 隐私模式下忽略 */
-                }
-                if (typeof document !== "undefined") {
-                  document.documentElement.style.zoom = String(option.scale);
-                }
-              }}
-              className={`flex-1 rounded-[var(--kaypal-v3-radius-sm)] border px-3 py-2 text-sm font-medium transition ${
-                fontScale === option.scale
-                  ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
-                  : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)]"
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </V2Section>
-
-      {/* 通知设置 */}
-      <V2Section
-        title="通知设置"
-        description="什么时候提醒你"
-        action={
-          <V2PrimaryButton
-            icon={Bell}
-            loading={saving === "notifications"}
-            onClick={handleSaveNotifications}
-          >
-            保存
-          </V2PrimaryButton>
-        }
-      >
-        <div className="space-y-4">
-          {notifItems.map((item) => (
-            <label key={item.key} className="flex items-center justify-between">
-              <span className="text-sm text-[var(--kaypal-v3-soft-ink)]">
-                {item.label}
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={notifications[item.key]}
-                className={`flex h-6 w-11 items-center rounded-full p-0.5 transition ${
-                  notifications[item.key]
-                    ? "justify-end bg-[var(--kaypal-v3-accent)]"
-                    : "justify-start bg-[var(--kaypal-v3-border-strong)]"
-                }`}
-                onClick={() =>
-                  setNotifications((p) => ({ ...p, [item.key]: !p[item.key] }))
-                }
-              >
-                <div className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
-              </button>
-            </label>
-          ))}
-        </div>
-      </V2Section>
-
-      {/* 数据管理 */}
-      <V2Section title="数据管理" description="导出和备份你的数据">
+      {/* 合规中心（用户协议/隐私/AI 说明/投诉/备案公示，独立入口 /settings/legal） */}
+      <V2Section title="合规中心" description="用户协议、隐私政策、AI 说明、投诉举报">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Database className="h-5 w-5 text-[var(--kaypal-v3-muted)]" />
-            <div>
-              <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
-                导出全部数据
-              </p>
-              <p className="text-xs text-[var(--kaypal-v3-muted)]">
-                客户、内容、任务记录打包下载
-              </p>
-            </div>
+            <Shield className="h-5 w-5 text-[var(--kaypal-v3-muted)]" />
+            <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
+              用户协议 · 隐私政策 · AI 说明 · 投诉举报
+            </p>
           </div>
-          <V2GhostButton icon={Download} onClick={() => flash(NOT_READY)}>
-            导出
+          <V2GhostButton icon={ChevronRight} onClick={() => router.push("/settings/legal")}>
+            查看
           </V2GhostButton>
         </div>
       </V2Section>
+
 
       {/* 桌面设置（本机应用专属） */}
       <V2Section title="桌面设置" description="微信应用位置、自动恢复连接等本机选项">
