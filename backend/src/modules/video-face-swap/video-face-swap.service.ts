@@ -1,9 +1,10 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { basename, extname, join, resolve } from 'node:path';
 import type {
@@ -644,17 +645,26 @@ export class VideoFaceSwapService {
 
   private resolveMaterialPath(path: string) {
     const text = this.readOptionalText(path);
-    const direct = resolve(text);
-    if (existsSync(direct)) return direct;
-    return resolve(
-      join(
-        process.cwd(),
-        'data',
-        'video-face-swap',
-        'materials',
-        basename(text),
-      ),
+    const materialsRoot = resolve(
+      join(process.cwd(), 'data', 'video-face-swap', 'materials'),
     );
+    const direct = resolve(text);
+    if (existsSync(direct)) {
+      // 2026-09-01 安全修复：绝对路径必须落在素材根目录内（realpath 前缀校验），
+      // 否则已登录调用者可读本机任意存在的媒体文件（原实现 existsSync 即放行）。
+      let realRoot: string;
+      try {
+        realRoot = realpathSync(materialsRoot);
+      } catch {
+        realRoot = materialsRoot;
+      }
+      const realDirect = realpathSync(direct);
+      if (realDirect !== realRoot && !realDirect.startsWith(`${realRoot}/`)) {
+        throw new ForbiddenException('素材文件路径超出素材根目录');
+      }
+      return direct;
+    }
+    return resolve(join(materialsRoot, basename(text)));
   }
 
   private resolvePreviewPath(path: string) {

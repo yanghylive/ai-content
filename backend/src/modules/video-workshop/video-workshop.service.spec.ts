@@ -7,6 +7,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { resolveProjectDataPath } from '../../common/project-paths';
 import { VideoWorkshopService } from './video-workshop.service';
 import type { VideoWorkshopDownloader } from './video-workshop-downloader';
 import type { VideoWorkshopPhoneUploadService } from './video-workshop-phone-upload';
@@ -83,7 +84,7 @@ describe('VideoWorkshopService', () => {
     const service = makeService(runtime);
 
     const result = await service.clipWithTemplate({
-      materialPath: '/tmp/material.mp4',
+      materialPath: resolveProjectDataPath('video-workshop') + '/material.mp4',
       templateName: '产品卖点模板',
       titlePrompt: '突出优惠',
       outputName: 'workbench-output.mp4',
@@ -97,7 +98,7 @@ describe('VideoWorkshopService', () => {
         type: 'video-template-clip',
         platform: 'mixed',
         payload: expect.objectContaining({
-          materialPath: '/tmp/material.mp4',
+          materialPath: resolveProjectDataPath('video-workshop') + '/material.mp4',
           templateName: '产品卖点模板',
           titlePrompt: '突出优惠',
           outputName: 'workbench-output.mp4',
@@ -140,7 +141,7 @@ describe('VideoWorkshopService', () => {
       const service = makeService(runtime);
 
       const result = await service.clipWithTemplate({
-        materialPath: '/tmp/material.mp4',
+        materialPath: resolveProjectDataPath('video-workshop') + '/material.mp4',
         templateName: '产品卖点模板',
       });
 
@@ -158,7 +159,7 @@ describe('VideoWorkshopService', () => {
     const service = makeService(runtime);
 
     await service.clipWithTemplate({
-      materialPath: '/tmp/material.mp4',
+      materialPath: resolveProjectDataPath('video-workshop') + '/material.mp4',
       templateName: '产品卖点模板',
       source: 'ai-employee',
     });
@@ -359,7 +360,7 @@ describe('VideoWorkshopService', () => {
         });
       const service = makeService(makeRuntime(), { render });
       const queued = await service.createRenderTask({
-        materialPath: '/tmp/material.mp4',
+        materialPath: resolveProjectDataPath('video-workshop') + '/material.mp4',
         templateName: '产品卖点模板',
         titlePrompt: '突出优惠',
         outputName: 'retry-output.mp4',
@@ -419,7 +420,7 @@ describe('VideoWorkshopService', () => {
       );
       const service = makeService(makeRuntime(), { render });
       const queued = await service.createRenderTask({
-        materialPath: '/tmp/material.mp4',
+        materialPath: resolveProjectDataPath('video-workshop') + '/material.mp4',
         templateName: '产品卖点模板',
         titlePrompt: '突出优惠',
       });
@@ -497,7 +498,7 @@ describe('VideoWorkshopService', () => {
       const service = makeService();
       await expect(
         service.createRenderTask({
-          materialPath: '/tmp/material.mp4',
+          materialPath: resolveProjectDataPath('video-workshop') + '/material.mp4',
           templateName: '产品卖点模板',
           titlePrompt: '突出优惠',
           settings: { filterPreset: '不存在的滤镜' },
@@ -535,7 +536,7 @@ describe('VideoWorkshopService', () => {
             finishedAt: '2026-07-10T00:01:00.000Z',
             outputPath: missingOutput,
             renderInput: {
-              materialPath: '/tmp/material.mp4',
+              materialPath: resolveProjectDataPath('video-workshop') + '/material.mp4',
               templateName: '产品卖点模板',
               titlePrompt: '突出优惠',
             },
@@ -598,7 +599,7 @@ describe('VideoWorkshopService', () => {
             createdAt: '2026-07-10T00:00:00.000Z',
             updatedAt: '2026-07-10T00:01:00.000Z',
             renderInput: {
-              materialPath: '/tmp/material.mp4',
+              materialPath: resolveProjectDataPath('video-workshop') + '/material.mp4',
               templateName: '产品卖点模板',
               titlePrompt: '突出优惠',
               outputName: 'recovered.mp4',

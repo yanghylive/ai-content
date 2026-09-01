@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { RuntimeOrchestrator } from '../runtime/orchestrator/runtime-orchestrator.service';
@@ -123,7 +123,8 @@ describe('VideoFaceSwapService', () => {
   });
 
   it('创建任务时把后端计费金额写入 Runtime payload', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'video-face-swap-service-'));
+    mkdirSync(join(process.cwd(), 'data', 'video-face-swap', 'materials'), { recursive: true });
+    const dir = mkdtempSync(join(process.cwd(), 'data', 'video-face-swap', 'materials', 'spec-'));
     const targetPath = join(dir, 'target.mp4');
     const sourcePath = join(dir, 'face.jpg');
     writeFileSync(targetPath, 'fake video bytes');
@@ -171,7 +172,8 @@ describe('VideoFaceSwapService', () => {
   });
 
   it('前端确认点数低于后端估算时拒绝执行', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'video-face-swap-price-'));
+    mkdirSync(join(process.cwd(), 'data', 'video-face-swap', 'materials'), { recursive: true });
+    const dir = mkdtempSync(join(process.cwd(), 'data', 'video-face-swap', 'materials', 'spec-'));
     const targetPath = join(dir, 'target.mp4');
     const sourcePath = join(dir, 'face.jpg');
     writeFileSync(targetPath, 'fake video bytes');
@@ -196,7 +198,8 @@ describe('VideoFaceSwapService', () => {
   it('本机生成环境未就绪时不进入 Runtime，也不会触发扣点', async () => {
     executor = makeExecutorMock(false);
     service = new VideoFaceSwapService(runtime, executor);
-    const dir = mkdtempSync(join(tmpdir(), 'video-face-swap-health-'));
+    mkdirSync(join(process.cwd(), 'data', 'video-face-swap', 'materials'), { recursive: true });
+    const dir = mkdtempSync(join(process.cwd(), 'data', 'video-face-swap', 'materials', 'spec-'));
     const targetPath = join(dir, 'target.mp4');
     const sourcePath = join(dir, 'face.jpg');
     writeFileSync(targetPath, 'fake video bytes');

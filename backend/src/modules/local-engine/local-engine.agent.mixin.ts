@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { extname, join, resolve } from 'node:path';
 import {
@@ -871,13 +871,31 @@ export function resolveEvidenceFilePath(
     resolve(getProjectRoot(), '.local-logs'),
     resolve(getProjectRoot(), 'backend', '.local-logs'),
     resolve(process.cwd(), '.local-logs'),
-    resolve('/tmp'),
+    // 2026-09-01 安全修复：移除 /tmp 直读——证据不产生于 /tmp
+    //（历史宽松口子，见 agent-browser/agent-s spec 中的 /tmp mock 路径），
+    // 任意已登录用户可借此读本机已知 /tmp 文件。
   ];
   const isAllowed = allowedRoots.some(
     (root) => resolvedPath === root || resolvedPath.startsWith(`${root}/`),
   );
   if (!isAllowed) {
     throw new ForbiddenException('证据文件不在允许读取的目录内');
+  }
+
+  // 2026-09-01 安全修复：realpath 双校验，防符号链接逃逸出允许根目录
+  // （resolve+前缀只挡 ../，symlink 场景可把 allowedRoot 内路径指到外部文件）
+  let realPath = resolvedPath;
+  try {
+    realPath = realpathSync(resolvedPath);
+  } catch {
+    // 文件不存在/读取无权限：交给下方 existsSync / readFile 抛出明确错误
+    realPath = resolvedPath;
+  }
+  const isRealAllowed = allowedRoots.some(
+    (root) => realPath === root || realPath.startsWith(`${root}/`),
+  );
+  if (!isRealAllowed) {
+    throw new ForbiddenException('证据文件路径经过符号链接指向允许目录之外');
   }
 
   const extension = extname(resolvedPath).toLowerCase();

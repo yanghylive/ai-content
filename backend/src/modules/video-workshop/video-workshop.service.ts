@@ -1,11 +1,18 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  statSync,
+} from 'node:fs';
 import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import type {
@@ -92,7 +99,9 @@ export class VideoWorkshopService implements OnModuleInit {
   }
 
   async clipWithTemplate(input: VideoWorkshopTemplateClipInput) {
-    const materialPath = this.requireText(input.materialPath, '请填写素材路径');
+    const materialPath = this.resolveClipMaterialPath(
+      this.requireText(input.materialPath, '请填写素材路径'),
+    );
     const templateName = this.requireText(input.templateName, '请填写剪辑模板');
     const outputName = this.readOptionalText(input.outputName);
     const titlePrompt = this.readOptionalText(input.titlePrompt);
@@ -102,7 +111,7 @@ export class VideoWorkshopService implements OnModuleInit {
     const source =
       input.source === 'ai-employee' ? 'ai-employee' : 'video-workshop';
     const outputDir =
-      this.readOptionalText(input.outputDir) ||
+      this.resolveWorkshopOutputDir(input.outputDir, source) ||
       resolveProjectDataPath(
         'video-workshop',
         source === 'ai-employee' ? 'ai-employee' : 'workbench',
@@ -156,7 +165,9 @@ export class VideoWorkshopService implements OnModuleInit {
     const source =
       input.source === 'ai-employee' ? 'ai-employee' : 'video-workshop';
     const renderInput: VideoWorkshopTemplateClipInput = {
-      materialPath: this.requireText(input.materialPath, '请选择要剪辑的素材'),
+      materialPath: this.resolveClipMaterialPath(
+        this.requireText(input.materialPath, '请选择要剪辑的素材'),
+      ),
       templateName: this.requireText(input.templateName, '请选择剪辑模板'),
       titlePrompt: this.requireText(input.titlePrompt, '请填写创作目标'),
       titleText: this.readOptionalText(input.titleText),
@@ -1053,6 +1064,84 @@ export class VideoWorkshopService implements OnModuleInit {
 
   private readOptionalText(value: unknown) {
     return typeof value === 'string' ? value.trim() : '';
+  }
+
+  /** 素材根目录集合（realpath 前缀校验用） */
+  private clipMaterialRoots(): string[] {
+    return [
+      resolveProjectDataPath('video-workshop'),
+      resolveProjectDataPath('video-face-swap', 'materials'),
+      resolve(join(process.cwd(), 'data', 'video-face-swap', 'materials')),
+    ].map((root) => resolve(root));
+  }
+
+  /**
+   * 2026-09-01 安全修复：剪辑素材路径收口。
+   * 原实现直接把用户传入的 materialPath 交给执行器（任意已存在路径即放行），
+   * 已登录调用者可读取本机任意媒体文件。现要求：
+   *  - 绝对路径必须 realpath 后仍落在素材根目录内（防 ../ 与 symlink 逃逸）
+   *  - 否则按 basename 回落到 video-workshop 素材根解析
+   */
+  private resolveClipMaterialPath(raw: string): string {
+    const text = this.readOptionalText(raw);
+    if (!text) {
+      throw new BadRequestException('请填写素材路径');
+    }
+    const direct = resolve(text);
+    const roots = this.clipMaterialRoots();
+    if (existsSync(direct)) {
+      const realDirect = realpathSync(direct);
+      const inside = roots.some((root) => {
+        let realRoot = root;
+        try {
+          realRoot = realpathSync(root);
+        } catch {
+          // 素材根目录不存在：按原路径前缀判断
+        }
+        return realDirect === realRoot || realDirect.startsWith(`${realRoot}/`);
+      });
+      if (!inside) {
+        throw new ForbiddenException('素材文件路径超出素材根目录');
+      }
+      return direct;
+    }
+    return resolve(join(roots[0], basename(text)));
+  }
+
+  /**
+   * 2026-09-01 安全修复：输出目录收口到视频工作台目录，
+   * 不允许用自定义 outputDir 创建/覆盖任意目录。
+   * 返回 null 时调用方使用默认目录。
+   */
+  private resolveWorkshopOutputDir(
+    value: unknown,
+    source: string,
+  ): string | null {
+    const text = this.readOptionalText(value);
+    if (!text) return null;
+    const dir = resolve(text);
+    const root = resolve(
+      resolveProjectDataPath(
+        'video-workshop',
+        source === 'ai-employee' ? 'ai-employee' : 'workbench',
+      ),
+    );
+    let realDir = dir;
+    let realRoot = root;
+    try {
+      realDir = realpathSync(dir);
+    } catch {
+      // 目录尚不存在：按原路径前缀判断
+    }
+    try {
+      realRoot = realpathSync(root);
+    } catch {
+      // 根目录尚不存在：按原路径前缀判断
+    }
+    if (realDir !== realRoot && !realDir.startsWith(`${realRoot}/`)) {
+      throw new ForbiddenException('输出目录超出视频工作台目录');
+    }
+    return dir;
   }
 
   private readDurationSeconds(value: unknown) {
