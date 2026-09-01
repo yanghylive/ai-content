@@ -347,7 +347,7 @@ describe('BillingService', () => {
         amountDue: 19900,
         amountPaid: 19900,
         currency: 'cny',
-        metadata: { currentPeriodEnd: '2026-09-01T00:00:00.000Z' },
+        metadata: { currentPeriodEnd: '2099-08-01T00:00:00.000Z' },
       },
     };
 
@@ -374,7 +374,7 @@ describe('BillingService', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           status: 'active',
-          currentPeriodEnd: new Date('2026-09-01T00:00:00.000Z'),
+          currentPeriodEnd: new Date('2099-08-01T00:00:00.000Z'),
         }),
       }),
     );

@@ -11,6 +11,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import {
   createHmac,
   createSign,
+  createVerify,
   createDecipheriv,
   timingSafeEqual,
 } from 'node:crypto';
@@ -27,6 +28,7 @@ export interface WechatPayConfig {
   serialNo?: string;
   privateKeyPath?: string;
   notifyUrl?: string;
+  platformCertPath?: string;
 }
 
 export function resolveWechatPayConfig(
@@ -39,6 +41,7 @@ export function resolveWechatPayConfig(
     serialNo: env.WXPAY_SERIAL_NO,
     privateKeyPath: env.WXPAY_PRIVATE_KEY_PATH,
     notifyUrl: env.WXPAY_NOTIFY_URL,
+    platformCertPath: env.WXPAY_PLATFORM_CERT_PATH,
   };
 }
 
@@ -234,7 +237,11 @@ export class WechatPayService {
       return { code: 'FAIL', message: '回调不是合法 JSON' };
     }
 
-    // 验签（APIv3 需要平台证书；未配置 → 记录并跳过验签，开发期降级）
+    // 验签（APIv3 RSA-SHA256，微信平台证书公钥）。
+    // 2026-09-01 安全修复（审计 #10）：原实现仅检查签名头存在+时间戳新鲜（注释自认"简化验签"），
+    // 伪造请求带合法头即可过——现改为 fail-closed：
+    //   · 有平台证书 → 必须真验签通过
+    //   · 无平台证书 → 拒绝（回调地址也未配置时本段为死路，启用前强制配证书）
     if (config.apiV3Key) {
       const signature = this.headerValue(input.headers, 'wechatpay-signature');
       const timestamp = this.headerValue(input.headers, 'wechatpay-timestamp');
@@ -242,10 +249,26 @@ export class WechatPayService {
       if (!signature || !timestamp || !nonce) {
         return { code: 'FAIL', message: '缺少验签头' };
       }
-      // 简化验签：APIv3 用平台证书公钥验签，此处校验时间戳新鲜度 + 记录
       const ts = Number(timestamp);
       if (!Number.isFinite(ts) || Math.abs(Date.now() / 1000 - ts) > 300) {
         return { code: 'FAIL', message: '回调时间戳过期' };
+      }
+      if (!config.platformCertPath) {
+        this.logger.warn(
+          '微信回调收到但未配置 WXPAY_PLATFORM_CERT_PATH，无法验签，拒绝处理（fail-closed）',
+        );
+        return { code: 'FAIL', message: '平台证书未配置，无法验签' };
+      }
+      const verified = this.verifyWechatNotifySignature(
+        config.platformCertPath,
+        timestamp,
+        nonce,
+        rawBody,
+        signature,
+      );
+      if (!verified) {
+        this.logger.warn(`微信回调签名校验失败，拒绝：${rawBody.slice(0, 120)}`);
+        return { code: 'FAIL', message: '回调签名校验失败' };
       }
     }
 
@@ -417,6 +440,31 @@ export class WechatPayService {
     const v = headers[key] ?? headers[key.toLowerCase()];
     if (Array.isArray(v)) return v[0] ?? '';
     return v ?? '';
+  }
+
+  /**
+   * 2026-09-01 安全修复（审计 #10）：微信支付 APIv3 回调 RSA-SHA256 真验签。
+   * 签名内容 = `${timestamp}\n${nonce}\n${rawBody}\n`，用平台证书公钥验 wechatpay-signature。
+   */
+  private verifyWechatNotifySignature(
+    platformCertPath: string,
+    timestamp: string,
+    nonce: string,
+    rawBody: string,
+    signature: string,
+  ): boolean {
+    try {
+      const publicKey = readFileSync(platformCertPath, 'utf8');
+      const verifier = createVerify('RSA-SHA256');
+      verifier.update(`${timestamp}\n${nonce}\n${rawBody}\n`);
+      verifier.end();
+      return verifier.verify(publicKey, signature, 'base64');
+    } catch (error) {
+      this.logger.warn(
+        `微信回调验签异常：${error instanceof Error ? error.message : String(error)}`,
+      );
+      return false;
+    }
   }
 
   /** AES-256-GCM 解密微信回调 resource（返回金额分） */

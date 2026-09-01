@@ -129,11 +129,38 @@ describe('WechatPayService', () => {
     };
   }
   const API_V3_KEY = '0123456789abcdef0123456789abcdef';
-  function signedHeaders() {
+
+  // 2026-09-01（审计 #10）：验签升级为 fail-closed 真 RSA 验签后，测试生成真实
+  // 平台证书密钥对，用私钥对 timestamp\nnonce\nbody 签名，走完整验签路径。
+  const crypto = require('node:crypto') as typeof import('node:crypto');
+  const { publicKey: PLATFORM_PUBLIC_KEY, privateKey: PLATFORM_PRIVATE_KEY } =
+    crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const PLATFORM_CERT_PATH = require('node:path').join(
+    require('node:os').tmpdir(),
+    `wxpay-platform-cert-${process.pid}.pem`,
+  );
+  require('node:fs').writeFileSync(
+    PLATFORM_CERT_PATH,
+    PLATFORM_PUBLIC_KEY.export({ type: 'spki', format: 'pem' }),
+  );
+  afterAll(() => {
+    try {
+      require('node:fs').unlinkSync(PLATFORM_CERT_PATH);
+    } catch {
+      // 清理失败不阻塞测试
+    }
+  });
+
+  function signedHeaders(rawBody: string) {
+    const timestamp = String(Math.floor(Date.now() / 1000));
+    const nonce = 'n1';
+    const signer = crypto.createSign('RSA-SHA256');
+    signer.update(`${timestamp}\n${nonce}\n${rawBody}\n`);
+    signer.end();
     return {
-      'wechatpay-timestamp': String(Math.floor(Date.now() / 1000)),
-      'wechatpay-nonce': 'n1',
-      'wechatpay-signature': 'dummy-sig', // 真实验签需平台证书，测试仅验证时间戳新鲜度分支
+      'wechatpay-timestamp': timestamp,
+      'wechatpay-nonce': nonce,
+      'wechatpay-signature': signer.sign(PLATFORM_PRIVATE_KEY, 'base64'),
     };
   }
 
@@ -149,16 +176,19 @@ describe('WechatPayService', () => {
       },
     });
     Object.defineProperty(process.env, 'WXPAY_APIV3_KEY', { value: API_V3_KEY, configurable: true });
+    Object.defineProperty(process.env, 'WXPAY_PLATFORM_CERT_PATH', { value: PLATFORM_CERT_PATH, configurable: true });
     try {
       const svc = new WechatPayService(prisma as never, makeAuth() as never);
       const resource = encryptResource(API_V3_KEY, { out_trade_no: 'wx-2', transaction_id: 'tx-1', amount: { total: 1000, currency: 'CNY' } });
+      const body = { out_trade_no: 'wx-2', transaction_id: 'tx-1', resource };
       const r = await svc.handleNotify({
-        headers: signedHeaders(),
-        body: { out_trade_no: 'wx-2', transaction_id: 'tx-1', resource },
+        headers: signedHeaders(JSON.stringify(body)),
+        body,
       });
       expect(r.code).toBe('SUCCESS');
     } finally {
       delete process.env.WXPAY_APIV3_KEY;
+      delete process.env.WXPAY_PLATFORM_CERT_PATH;
     }
   });
 
@@ -193,17 +223,20 @@ describe('WechatPayService', () => {
       },
     });
     Object.defineProperty(process.env, 'WXPAY_APIV3_KEY', { value: API_V3_KEY, configurable: true });
+    Object.defineProperty(process.env, 'WXPAY_PLATFORM_CERT_PATH', { value: PLATFORM_CERT_PATH, configurable: true });
     try {
       const svc = new WechatPayService(prisma as never, makeAuth() as never);
       const resource = encryptResource(API_V3_KEY, { out_trade_no: 'wx-4', transaction_id: 'tx-1', amount: { total: 999, currency: 'CNY' } });
+      const body = { out_trade_no: 'wx-4', transaction_id: 'tx-1', resource };
       const r = await svc.handleNotify({
-        headers: signedHeaders(),
-        body: { out_trade_no: 'wx-4', transaction_id: 'tx-1', resource },
+        headers: signedHeaders(JSON.stringify(body)),
+        body,
       });
       expect(r.code).toBe('FAIL');
       expect(r.message).toContain('金额不一致');
     } finally {
       delete process.env.WXPAY_APIV3_KEY;
+      delete process.env.WXPAY_PLATFORM_CERT_PATH;
     }
   });
 
