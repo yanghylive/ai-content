@@ -902,7 +902,7 @@ function DraftCard({
   const riskTone: Record<string, { bg: string; fg: string }> = {
     low: { bg: "var(--kaypal-v3-accent-soft)", fg: "var(--kaypal-v3-accent-ink)" },
     medium: { bg: "var(--kaypal-v3-amber-soft)", fg: "var(--kaypal-v3-amber)" },
-    high: { bg: "rgba(239,68,68,.16)", fg: "#ef4444" },
+    high: { bg: "var(--kaypal-v3-danger-soft)", fg: "var(--kaypal-v3-danger)" },
     blocked: { bg: "var(--kaypal-v3-paper-muted)", fg: "var(--kaypal-v3-muted)" },
   };
 

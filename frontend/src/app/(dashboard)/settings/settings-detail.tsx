@@ -119,11 +119,11 @@ export function SettingsDetail() {
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>昵称</p>
-              <input value={profile.name} onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))} placeholder="你的名字" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
+              <input value={profile.name} onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))} placeholder="你的名字" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>登录邮箱</p>
-              <input type="email" value={profile.email} onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} placeholder="you@example.com" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
+              <input type="email" value={profile.email} onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} placeholder="you@example.com" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <button type="button" className="mx-btn-gold" style={{ width: "100%", fontSize: 12, padding: "10px 0" }} onClick={handleSaveProfile}>保存</button>
           </div>
@@ -136,15 +136,15 @@ export function SettingsDetail() {
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>当前密码</p>
-              <input type="password" value={passwords.current} onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
+              <input type="password" value={passwords.current} onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>新密码 <span style={{ fontWeight: 400 }}>（至少 8 位）</span></p>
-              <input type="password" value={passwords.next} onChange={(e) => setPasswords((p) => ({ ...p, next: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
+              <input type="password" value={passwords.next} onChange={(e) => setPasswords((p) => ({ ...p, next: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>再输一遍新密码</p>
-              <input type="password" value={passwords.confirm} onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(148,163,184,.35)", outline: "none", background: "rgba(255,255,255,.7)", color: "var(--kaypal-v3-ink)" }} />
+              <input type="password" value={passwords.confirm} onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
             </div>
             <button type="button" className="mx-btn-gold" style={{ width: "100%", fontSize: 12, padding: "10px 0" }} onClick={handleChangePassword}>修改密码</button>
           </div>

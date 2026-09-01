@@ -100,7 +100,7 @@ export default function ScrapeArticlePage() {
                   style={{
                     flex: 1, minWidth: 0, padding: "11px 14px", borderRadius: 12, fontSize: 13,
                     border: "1px solid var(--kaypal-v3-accent)", background: "var(--kaypal-v3-field-bg)",
-                    color: "#fff", outline: "none",
+                    color: "var(--kaypal-v3-ink)", outline: "none",
                   }}
                 />
                 <button
