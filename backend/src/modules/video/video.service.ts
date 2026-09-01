@@ -69,8 +69,9 @@ export class VideoService {
 
   /**
    * 提交视频生成任务
+   * @param kaypalUserId 云端通道计费归属（服务端会话注入，2026-09-01 审计 #8）
    */
-  async generate(dto: GenerateVideoDto) {
+  async generate(dto: GenerateVideoDto, kaypalUserId?: string) {
     this.logger.log(
       `generate: pipeline=${dto.pipeline} prompt=${dto.prompt.slice(0, 50)}...`,
     );
@@ -83,7 +84,7 @@ export class VideoService {
       this.logger.warn(
         `StudioCore 不可达，回退 kaypal 云端视频通道：${message}`,
       );
-      return this.generateViaKaypalGateway(dto, message);
+      return this.generateViaKaypalGateway(dto, message, kaypalUserId);
     }
   }
 
@@ -91,16 +92,25 @@ export class VideoService {
   private async generateViaKaypalGateway(
     dto: GenerateVideoDto,
     reason: string,
+    kaypalUserId?: string,
   ) {
     if (!this.multimodal) {
       throw new Error(`视频服务不可达且云端通道未启用：${reason}`);
     }
-    // 计费统一挂 KAYPAL_BILLING_USER_ID（主账号），与 chat 同口径
+    // 计费归属：优先当前会话用户；无会话用户时回退主账号（KAYPAL_BILLING_USER_ID）。
+    // 2026-09-01 安全修复（审计 #8）：两者皆空时显式报错，不再静默记到空账号。
     const billingUserId =
-      this.config.get<string>('KAYPAL_BILLING_USER_ID')?.trim() || '';
+      kaypalUserId?.trim() ||
+      this.config.get<string>('KAYPAL_BILLING_USER_ID')?.trim() ||
+      '';
+    if (!billingUserId) {
+      throw new Error(
+        `视频服务不可达且无法确定计费用户（无会话 kaypalUserId、未配置 KAYPAL_BILLING_USER_ID）：${reason}`,
+      );
+    }
     const authUser = {
       kaypalUserId: billingUserId,
-      id: '',
+      id: dto.user_id ?? '',
     } as never;
     const result = await this.multimodal.generateVideo(authUser, {
       prompt: dto.prompt,

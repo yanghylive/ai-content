@@ -26,7 +26,7 @@ import {
   decryptSessionToken,
 } from './session-token-cipher';
 
-type AuthenticatedRequest = Request & {
+export type AuthenticatedRequest = Request & {
   authUser?: AuthenticatedUser;
   authSessionId?: string;
   kaypalPlan?: string;

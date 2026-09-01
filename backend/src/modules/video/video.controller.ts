@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Query,
+  Req,
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
@@ -15,6 +16,7 @@ import { VideoService } from './video.service';
 import { StudioCoreProxyService } from './studio-core-proxy.service';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
+import type { AuthenticatedRequest } from '../auth/auth.guard';
 
 /**
  * 视频一键成片 controller（复用 studio_core 引擎）
@@ -34,8 +36,11 @@ export class VideoController {
    * POST /api/video/generate
    */
   @Post('generate')
-  async generate(@Body() dto: GenerateVideoDto) {
-    return this.videoService.generate(dto);
+  async generate(@Body() dto: GenerateVideoDto, @Req() request: AuthenticatedRequest) {
+    // 2026-09-01 安全修复（审计 #8）：user_id 以服务端会话为准，忽略客户端传入值；
+    // kaypalUserId 用于云端通道计费归属，避免成本静默记到固定主账号。
+    dto.user_id = request.authUser?.id ?? '';
+    return this.videoService.generate(dto, request.authUser?.kaypalUserId ?? undefined);
   }
 
   /**
