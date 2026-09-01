@@ -224,6 +224,38 @@ async function bootstrap() {
     }
     next();
   });
+
+  // 2026-09-01（审计 #16）：敏感路径 IP 级限流（真正阻断，不只记录）。
+  // 127.0.0.1 单机场景阈值宽松（120 次/60s/IP，正常使用不触达）；
+  // 开放局域网/共享部署时防登录/LLM 代理暴力滥用。登录已有失败锁定，此为第二层。
+  const RATE_LIMIT_PATHS = ['/api/auth/login', '/api/auth/wechat', '/api/ai/'];
+  const RATE_LIMIT_WINDOW_MS = 60_000;
+  const RATE_LIMIT_MAX_PER_IP = 120;
+  const rateBuckets = new Map<string, { count: number; windowStart: number }>();
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const reqPath = req.path || '';
+    if (!RATE_LIMIT_PATHS.some((p) => reqPath.startsWith(p))) {
+      next();
+      return;
+    }
+    const ip = String(req.ip || req.socket.remoteAddress || 'unknown');
+    const now = Date.now();
+    const bucket = rateBuckets.get(ip);
+    if (!bucket || now - bucket.windowStart > RATE_LIMIT_WINDOW_MS) {
+      rateBuckets.set(ip, { count: 1, windowStart: now });
+      next();
+      return;
+    }
+    bucket.count += 1;
+    if (bucket.count > RATE_LIMIT_MAX_PER_IP) {
+      res.status(429).json({
+        success: false,
+        message: '请求过于频繁，请稍后重试',
+      });
+      return;
+    }
+    next();
+  });
   // S17 修复（2026-08-18）：仅告警高频路径（≥10 次/10s），低频路径不再每 10s
   // 打印——消除长期运行的日志噪声，保留"高频接口"排查信号
   setInterval(() => {

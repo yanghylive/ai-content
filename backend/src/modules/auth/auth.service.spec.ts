@@ -65,9 +65,9 @@ describe('AuthService', () => {
     const result = await service.getSetupStatus();
 
     expect(prisma.system.user.create).not.toHaveBeenCalled();
+    // 2026-09-01（审计 #17）：未登录接口不再返回 totalUsers（信息收敛）
     expect(result).toEqual({
       hasUsers: false,
-      totalUsers: 0,
     });
   });
 

@@ -165,10 +165,14 @@ http.createServer(async (req, res) => {
   const isShortLinkRequest = urlPath === "/r" || urlPath.startsWith("/r/");
   if (isApiRequest || isLegacyAuthRequest || isShortLinkRequest) {
     const target = API_BASE + (isLegacyAuthRequest ? "/api" : "") + req.url;
+    // 2026-09-01（审计 #14）：按目标协议选 http/https client——
+    // 原实现恒用 http.request，API_BASE=https 时抛 "Protocol https not supported"。
+    const targetUrl = new URL(target);
+    const client = targetUrl.protocol === "https:" ? https : http;
     let proxyReq;
     try {
-      proxyReq = http.request(
-        target,
+      proxyReq = client.request(
+        targetUrl,
         {
           method: req.method,
           headers: { ...req.headers, host: "127.0.0.1:3011" },
@@ -316,6 +320,21 @@ http.createServer(async (req, res) => {
       file = path.join(file, "index.html");
       if (!fs.existsSync(file)) { res.writeHead(404); res.end(); return; }
     }
+  }
+  /* 2026-09-01（审计 #15）：realpath 双校验——resolve+前缀只挡 ../，
+     symlink 场景（out/ 下链接指向根外）可绕过；最终文件真实路径必须仍在根内。 */
+  let realFile = file;
+  let rootReal = rootResolved;
+  try {
+    realFile = fs.realpathSync(file);
+    rootReal = fs.realpathSync(rootResolved);
+  } catch {
+    // realpath 失败（权限/竞态）按原路径继续，下方 stat/read 兜底
+  }
+  if (realFile !== rootReal && !realFile.startsWith(rootReal + path.sep)) {
+    res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Forbidden");
+    return;
   }
   streamFile(res, file, 200, { "Content-Type": MIME[path.extname(file)] || "application/octet-stream" });
 }).listen(PORT, "127.0.0.1", () => console.log(`✅ static server on ${PORT} -> ${ROOT}`));

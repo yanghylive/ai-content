@@ -47,9 +47,25 @@ export function FaceSwapFlow() {
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
 
+  // 2026-09-01（审计 #24）：换脸引擎状态（needs_setup 时提示配置，不静默失败）
+  const [engineStatus, setEngineStatus] = useState<{
+    ok: boolean;
+    message?: string;
+  } | null>(null);
+
   const fetchTemplates = useCallback(async () => {
     try {
       setLoadingTemplates(true);
+      // 引擎状态与模板一起探（health 失败不阻断模板加载）
+      void videoFaceSwapApi
+        .health()
+        .then((health: { ok?: boolean; message?: string } | null) =>
+          setEngineStatus({
+            ok: Boolean(health?.ok),
+            message: health?.message,
+          }),
+        )
+        .catch(() => setEngineStatus(null));
       const data = await videoFaceSwapApi.materialFiles(50);
       setTemplates(Array.isArray(data) ? data : []);
     } catch {
@@ -106,6 +122,21 @@ export function FaceSwapFlow() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* 2026-09-01（审计 #24）：引擎未配置时明示，不静默失败 */}
+      {engineStatus && !engineStatus.ok && (
+        <div
+          role="alert"
+          className="flex flex-col gap-2 rounded-[var(--kaypal-v3-radius)] border-small border-danger-200 bg-danger-50 p-4 text-danger-700"
+        >
+          <span className="text-sm font-semibold">换脸引擎未就绪</span>
+          <span className="text-sm opacity-90">
+            {engineStatus.message || "本地换脸引擎需要先完成配置。"}
+          </span>
+          <span className="text-xs opacity-75">
+            请检查本机换脸引擎安装与配置后再继续，避免生成失败。
+          </span>
+        </div>
+      )}
       {/* 顶部 */}
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">

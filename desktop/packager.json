@@ -35,6 +35,7 @@
       "agent-s-executor",
       "installer/wheelhouse"
     ],
-    "maxSizeMB": 500
+    "maxSizeMB": 1800,
+    "_maxSizeMB_note": "2026-09-01（审计 #19）：与 scripts/check-release-size.js 的 DEFAULT_APP_LIMIT_MB=1800 / DEFAULT_ARCHIVE_LIMIT_MB=700 对齐（原 500 与实际检查不符）。app 含内置 chromium/media-tools/wechat-ocr，~1351MB 属正常。"
   }
 }

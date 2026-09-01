@@ -35,7 +35,8 @@ export interface AuthUser {
 
 export interface SetupStatus {
   hasUsers: boolean;
-  totalUsers: number;
+  /** 2026-09-01（审计 #17）：后端不再返回用户总数（信息收敛），字段保留兼容 */
+  totalUsers?: number;
 }
 
 export interface AuthTenantMembership {

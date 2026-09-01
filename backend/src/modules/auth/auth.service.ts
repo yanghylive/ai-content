@@ -221,11 +221,10 @@ export class AuthService {
   }
 
   async getSetupStatus() {
-    const totalUsers = await this.prisma.system.user.count();
-    return {
-      hasUsers: totalUsers > 0,
-      totalUsers,
-    };
+    // 2026-09-01（审计 #17）：未登录接口不再暴露用户总数（信息收敛），
+    // 只回答"是否需要初始化"。
+    const hasUsers = (await this.prisma.system.user.count()) > 0;
+    return { hasUsers };
   }
 
   async login(input: LoginInput) {
