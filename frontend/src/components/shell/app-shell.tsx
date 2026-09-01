@@ -36,7 +36,7 @@ const SCENES: Array<{
   { key: "content", href: "/content", label: "内容运营", icon: "fileText" },
   { key: "interaction", href: "/message", label: "互动中心", icon: "messageSq" },
   { key: "execution", href: "/tasks", label: "执行中心", icon: "cpu" },
-  { key: "device", href: "/device-center", label: "移动设备", icon: "phone" },
+  { key: "device", href: "/device-center", label: "设备任务", icon: "phone" },
 ];
 
 /** 任意路径 → 所属场景（旧页面也能点亮正确的 rail 图标） */
