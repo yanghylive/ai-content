@@ -114,7 +114,7 @@ export default function CopyComparePage() {
       </div>
 
       <section className="mx-px" style={{ marginTop: 14 }}>
-        <div className="kx-card" style={{ borderRadius: 20, padding: 16, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
+        <div className="kx-card" style={{ borderRadius: 20, padding: 16, background: "var(--kaypal-v3-panel-bg)", border: "1px solid var(--kaypal-v3-border)" }}>
           <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "var(--kaypal-v3-ink)" }}>
             输入文案（每行一条，最多 10 条）
           </p>
@@ -127,8 +127,8 @@ export default function CopyComparePage() {
               width: "100%",
               padding: "10px 12px",
               borderRadius: 12,
-              border: "1px solid rgba(148,163,184,.35)",
-              background: "#fff",
+              border: "1px solid var(--kaypal-v3-field-border)",
+              background: "var(--kaypal-v3-field-bg)",
               fontSize: 14,
               color: "var(--kaypal-v3-ink)",
               resize: "vertical",
@@ -137,7 +137,7 @@ export default function CopyComparePage() {
               fontFamily: "inherit",
             }}
           />
-          <p style={{ fontSize: 12, color: "#6b7a93", margin: "12px 0 6" }}>适配方向</p>
+          <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", margin: "12px 0 6" }}>适配方向</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {PLATFORMS.map((p) => (
               <button
@@ -147,8 +147,8 @@ export default function CopyComparePage() {
                 style={{
                   padding: "8px 14px",
                   borderRadius: 999,
-                  border: platform === p.value ? "1px solid rgba(16,185,129,.5)" : "1px solid rgba(148,163,184,.3)",
-                  background: platform === p.value ? "rgba(16,185,129,.08)" : "#fff",
+                  border: platform === p.value ? "1px solid rgba(16,185,129,.5)" : "1px solid var(--kaypal-v3-field-border)",
+                  background: platform === p.value ? "rgba(16,185,129,.08)" : "var(--kaypal-v3-field-bg)",
                   color: platform === p.value ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-soft-ink)",
                   fontSize: 13,
                 }}
@@ -170,13 +170,13 @@ export default function CopyComparePage() {
         </div>
 
         {rows.length > 0 && (
-          <div className="kx-card" style={{ borderRadius: 20, padding: 16, marginTop: 12, background: "rgba(255,255,255,.72)", border: "1px solid rgba(148,163,184,.18)" }}>
+          <div className="kx-card" style={{ borderRadius: 20, padding: 16, marginTop: 12, background: "var(--kaypal-v3-panel-bg)", border: "1px solid var(--kaypal-v3-border)" }}>
             <p style={{ fontSize: 13, fontWeight: 700, margin: "0 0 12", color: "var(--kaypal-v3-ink)" }}>
               对比结果（{rows.length} 条 × {variantLabels.length + 1} 版本）
             </p>
             {rows.map((row, ri) => (
-              <div key={ri} style={{ marginBottom: 16, padding: 12, borderRadius: 14, border: "1px solid rgba(148,163,184,.18)", background: "#fff" }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "#6b7a93", margin: "0 0 8" }}>
+              <div key={ri} style={{ marginBottom: 16, padding: 12, borderRadius: 14, border: "1px solid var(--kaypal-v3-border)", background: "var(--kaypal-v3-field-bg)" }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-muted)", margin: "0 0 8" }}>
                   原文 #{ri + 1}
                   {row.error && <span style={{ color: "var(--kaypal-v3-danger)", marginLeft: 8 }}>❌ {row.error}</span>}
                 </p>
@@ -185,7 +185,7 @@ export default function CopyComparePage() {
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {row.variants.map((v, vi) => (
-                    <div key={vi} style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(241,245,249,.7)" }}>
+                    <div key={vi} style={{ padding: "10px 12px", borderRadius: 12, background: "var(--kaypal-v3-accent-soft)" }}>
                       <p style={{ fontSize: 12, fontWeight: 700, color: "var(--kaypal-v3-success)", margin: "0 0 4" }}>
                         {v.label} <span style={{ fontWeight: 400, color: "var(--kaypal-v3-muted)" }}>· {v.title}</span>
                       </p>

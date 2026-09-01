@@ -152,8 +152,8 @@ export default function SeedanceVideoPage() {
           style={{
             borderRadius: 20,
             padding: 16,
-            background: "rgba(255,255,255,.72)",
-            border: "1px solid rgba(148,163,184,.18)",
+            background: "var(--kaypal-v3-panel-bg)",
+            border: "1px solid var(--kaypal-v3-border)",
           }}
         >
           <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "var(--kaypal-v3-ink)" }}>
@@ -168,8 +168,8 @@ export default function SeedanceVideoPage() {
               width: "100%",
               padding: "10px 12px",
               borderRadius: 12,
-              border: "1px solid rgba(148,163,184,.35)",
-              background: "#fff",
+              border: "1px solid var(--kaypal-v3-field-border)",
+              background: "var(--kaypal-v3-field-bg)",
               fontSize: 14,
               color: "var(--kaypal-v3-ink)",
               resize: "none",
@@ -177,7 +177,7 @@ export default function SeedanceVideoPage() {
               boxSizing: "border-box",
             }}
           />
-          <p style={{ fontSize: 12, color: "#6b7a93", margin: "12px 0 6" }}>画幅比例</p>
+          <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", margin: "12px 0 6" }}>画幅比例</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {RATIOS.map((r) => (
               <button
@@ -191,8 +191,8 @@ export default function SeedanceVideoPage() {
                   border:
                     ratio === r.value
                       ? "1px solid rgba(16,185,129,.5)"
-                      : "1px solid rgba(148,163,184,.3)",
-                  background: ratio === r.value ? "rgba(16,185,129,.08)" : "#fff",
+                      : "1px solid var(--kaypal-v3-field-border)",
+                  background: ratio === r.value ? "rgba(16,185,129,.08)" : "var(--kaypal-v3-field-bg)",
                   color: ratio === r.value ? "var(--kaypal-v3-success)" : "var(--kaypal-v3-soft-ink)",
                   fontSize: 13,
                 }}
@@ -241,7 +241,7 @@ export default function SeedanceVideoPage() {
               <p style={{ fontSize: 13, color: "var(--kaypal-v3-ink)", margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
                 {confirmPrompt}
               </p>
-              <p style={{ fontSize: 12, color: "#6b7a93", margin: "10px 0 0" }}>
+              <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", margin: "10px 0 0" }}>
                 画幅：{RATIOS.find((r) => r.value === ratio)?.label} · 预计消耗 150 积分
               </p>
               <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
@@ -253,10 +253,10 @@ export default function SeedanceVideoPage() {
                     flex: 1,
                     padding: "10px",
                     borderRadius: 12,
-                    border: "1px solid rgba(148,163,184,.35)",
-                    background: "#fff",
+                    border: "1px solid var(--kaypal-v3-field-border)",
+                    background: "var(--kaypal-v3-field-bg)",
                     fontSize: 13,
-                    color: "#6b7a93",
+                    color: "var(--kaypal-v3-muted)",
                   }}
                 >
                   返回修改
@@ -282,8 +282,8 @@ export default function SeedanceVideoPage() {
               borderRadius: 20,
               padding: 16,
               marginTop: 12,
-              background: "rgba(255,255,255,.72)",
-              border: "1px solid rgba(148,163,184,.18)",
+              background: "var(--kaypal-v3-panel-bg)",
+              border: "1px solid var(--kaypal-v3-border)",
             }}
           >
             <p style={{ fontSize: 13, fontWeight: 700, margin: 0, color: "var(--kaypal-v3-ink)" }}>
@@ -336,10 +336,10 @@ export default function SeedanceVideoPage() {
                   width: "100%",
                   padding: "10px",
                   borderRadius: 12,
-                  border: "1px solid rgba(148,163,184,.35)",
+                  border: "1px solid var(--kaypal-v3-field-border)",
                   background: "transparent",
                   fontSize: 13,
-                  color: "#6b7a93",
+                  color: "var(--kaypal-v3-muted)",
                 }}
               >
                 再来一条
@@ -354,8 +354,8 @@ export default function SeedanceVideoPage() {
               borderRadius: 20,
               padding: 16,
               marginTop: 12,
-              background: "rgba(255,255,255,.72)",
-              border: "1px solid rgba(148,163,184,.18)",
+              background: "var(--kaypal-v3-panel-bg)",
+              border: "1px solid var(--kaypal-v3-border)",
             }}
           >
             <p style={{ fontSize: 13, fontWeight: 700, margin: "0 0 10", color: "var(--kaypal-v3-ink)" }}>
@@ -371,8 +371,8 @@ export default function SeedanceVideoPage() {
                     textAlign: "left",
                     padding: "10px 12px",
                     borderRadius: 12,
-                    border: "1px solid rgba(148,163,184,.25)",
-                    background: "#fff",
+                    border: "1px solid var(--kaypal-v3-field-border)",
+                    background: "var(--kaypal-v3-field-bg)",
                     fontSize: 12,
                     color: "var(--kaypal-v3-soft-ink)",
                     cursor: "pointer",

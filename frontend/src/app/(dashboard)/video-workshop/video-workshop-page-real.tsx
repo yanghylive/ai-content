@@ -258,7 +258,7 @@ export default function VideoWorkshopV2Page() {
               {status?.online ? "视频引擎在线 · 9 条流水线可用" : "视频成片引擎未连接"}
             </p>
             {!status?.online && (
-              <p style={{ fontSize: 11, margin: 0, color: "#6b7a93", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 11, margin: 0, color: "var(--kaypal-v3-muted)", lineHeight: 1.5 }}>
                 {status?.error === "引擎响应超时"
                   ? "引擎响应超时，可能正在启动，稍后再试。"
                   : "本机未部署视频成片引擎（studio_core），一键成片暂不可用。"}
@@ -274,14 +274,14 @@ export default function VideoWorkshopV2Page() {
             style={{
               borderRadius: 20,
               padding: 16,
-              background: "rgba(255,255,255,.72)",
-              border: "1px solid rgba(148,163,184,.18)",
+              background: "var(--kaypal-v3-panel-bg)",
+              border: "1px solid var(--kaypal-v3-border)",
             }}
           >
             <p style={{ fontSize: 14, fontWeight: 700, margin: "0 0 10", color: "var(--kaypal-v3-ink)" }}>
               生成一条成片
             </p>
-            <label style={{ fontSize: 12, color: "#6b7a93" }}>选择流水线</label>
+            <label style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>选择流水线</label>
             <select
               value={pipeline}
               onChange={(e) => setPipeline(e.target.value)}
@@ -290,8 +290,8 @@ export default function VideoWorkshopV2Page() {
                 margin: "6px 0 12px",
                 padding: "10px 12px",
                 borderRadius: 12,
-                border: "1px solid rgba(148,163,184,.35)",
-                background: "#fff",
+                border: "1px solid var(--kaypal-v3-field-border)",
+                background: "var(--kaypal-v3-field-bg)",
                 fontSize: 14,
                 color: "var(--kaypal-v3-ink)",
               }}
@@ -305,7 +305,7 @@ export default function VideoWorkshopV2Page() {
             <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", margin: "-6px 0 12px" }}>
               企业宣传片为真实渲染（配音+画面+合成），约 10-30 分钟；其余流水线建议使用「视频一键成片」（12 条全真跑）
             </p>
-            <label style={{ fontSize: 12, color: "#6b7a93" }}>选题（一句话描述你要讲什么）</label>
+            <label style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>选题（一句话描述你要讲什么）</label>
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
@@ -316,8 +316,8 @@ export default function VideoWorkshopV2Page() {
                 margin: "6px 0 14px",
                 padding: "10px 12px",
                 borderRadius: 12,
-                border: "1px solid rgba(148,163,184,.35)",
-                background: "#fff",
+                border: "1px solid var(--kaypal-v3-field-border)",
+                background: "var(--kaypal-v3-field-bg)",
                 fontSize: 14,
                 color: "var(--kaypal-v3-ink)",
                 resize: "none",
@@ -345,14 +345,14 @@ export default function VideoWorkshopV2Page() {
             style={{
               borderRadius: 20,
               padding: 16,
-              background: "rgba(255,255,255,.72)",
-              border: "1px solid rgba(148,163,184,.18)",
+              background: "var(--kaypal-v3-panel-bg)",
+              border: "1px solid var(--kaypal-v3-border)",
             }}
           >
             <p style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "var(--kaypal-v3-ink)" }}>
               {project.title}
             </p>
-            <p style={{ fontSize: 12, color: "#6b7a93", margin: "4px 0 12" }}>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)", margin: "4px 0 12" }}>
               {project.pipeline} · 自动生成中，8 秒刷新
             </p>
             {(project.stages || []).map((s) => {
@@ -365,7 +365,7 @@ export default function VideoWorkshopV2Page() {
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "9px 4px",
-                    borderBottom: "1px solid rgba(148,163,184,.12)",
+                    borderBottom: "1px solid var(--kaypal-v3-border)",
                   }}
                 >
                   <span style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)" }}>
@@ -420,10 +420,10 @@ export default function VideoWorkshopV2Page() {
                 width: "100%",
                 padding: "10px",
                 borderRadius: 12,
-                border: "1px solid rgba(148,163,184,.35)",
+                border: "1px solid var(--kaypal-v3-field-border)",
                 background: "transparent",
                 fontSize: 13,
-                color: "#6b7a93",
+                color: "var(--kaypal-v3-muted)",
               }}
             >
               再来一条
