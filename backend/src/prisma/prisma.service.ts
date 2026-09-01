@@ -8,6 +8,7 @@ import {
 import { copyFileSync, existsSync, mkdirSync, renameSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { PrismaClient } from '@prisma/client';
+import { AuthRequestContextService } from '../common/auth-request-context.service';
 
 /**
  * 2026-09-01 logout 换库（审计 #1/#2/#6/#7/#9/#11 隔离总解，设计见
@@ -29,6 +30,9 @@ export class PrismaService
 
   /** 账号库缓存：路径 → PrismaClient（首次访问惰性创建连接） */
   private readonly accountClients = new Map<string, PrismaClient>();
+
+  /** 2026-09-01（复核 P1-2）：userId → 账号库路径（请求级路由用） */
+  private readonly accountPaths = new Map<string, string>();
 
   /** 当前活跃账号库路径；null = 未登录（业务访问走系统库） */
   private activeAccountPath: string | null = null;
@@ -65,12 +69,15 @@ export class PrismaService
     'system',
     'switching',
     'accountClients',
+    'accountPaths',
     'activeAccountPath',
     'accountTablesCleared',
+    'resolveActiveClient',
+    'authRequestContext',
     'logger',
   ]);
 
-  constructor() {
+  constructor(private readonly authRequestContext?: AuthRequestContextService) {
     super();
     const proxy = new Proxy(this, {
       get(target, prop: string | symbol) {
@@ -85,11 +92,11 @@ export class PrismaService
           throw new ServiceUnavailableException('数据正在切换，请稍后重试');
         }
         // 业务访问：路由到当前活跃库（账号库或系统库）。
-        // 注意：不 bind——调用方 this=proxy，属性访问再经 proxy 递归转发到 active，
-        // 行为等价且不破坏 jest.fn 的 .mock 属性（bind 会丢失它，实测）。
-        const active = target.activeAccountPath
-          ? target.getAccountClient(target.activeAccountPath)
-          : target;
+        // 2026-09-01（复核 P1-2）：请求级上下文优先——当前请求带 user.id 时
+        // 按该用户账号库路由（并发/切换期间不串库）；无请求上下文回退全局
+        // activeAccountPath（登录/登出/后台任务）。注意：不 bind——调用方
+        // this=proxy，属性访问再经 proxy 递归转发，行为等价且不破坏 jest.fn。
+        const active = target.resolveActiveClient();
         return (active as unknown as Record<string, unknown>)[prop];
       },
       set(target, prop: string | symbol, value: unknown) {
@@ -102,6 +109,30 @@ export class PrismaService
     // 故 system 不能用 getter，改为构造期实例字段（复制引用），proxy 访问稳定返回系统库 this。
     this.system = this;
     return proxy;
+  }
+
+  /**
+   * 2026-09-01（复核 P1-2）：解析当前业务访问的目标 client。
+   * 请求级（AsyncLocalStorage 的 user.id）> 全局 activeAccountPath > 系统库。
+   */
+  private resolveActiveClient(): PrismaClient {
+    let requestUserId: string | undefined;
+    try {
+      const ctx = this.authRequestContext?.get() as
+        { user?: { id?: string } } | undefined;
+      requestUserId = ctx?.user?.id?.trim() || undefined;
+    } catch {
+      requestUserId = undefined;
+    }
+    if (requestUserId) {
+      const accountPath = this.accountPaths.get(requestUserId);
+      if (accountPath) {
+        return this.getAccountClient(accountPath);
+      }
+    }
+    return this.activeAccountPath
+      ? this.getAccountClient(this.activeAccountPath)
+      : this;
   }
 
   /** 系统库连接句柄：认证表（users / user_sessions）永远走它，不随登录切换（构造期赋值） */
@@ -178,6 +209,8 @@ export class PrismaService
       // 损坏则带备份隔离 + 从系统库模板重建（与主库 heal 策略一致）。
       await this.healAccountDatabaseIfCorrupt(accountPath, systemPath);
     }
+    // 2026-09-01（复核 P1-2）：登记 userId → 账号库路径（请求级路由）
+    this.accountPaths.set(userId, accountPath);
     return accountPath;
   }
 
@@ -250,9 +283,11 @@ export class PrismaService
       return;
     }
     const client = this.getAccountClient(dbPath);
-    const tables = (await client.$queryRawUnsafe<Array<{ name: string }>>(
-      `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('users', 'user_sessions', '_prisma_migrations')`,
-    )).map((row) => row.name);
+    const tables = (
+      await client.$queryRawUnsafe<Array<{ name: string }>>(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('users', 'user_sessions', '_prisma_migrations')`,
+      )
+    ).map((row) => row.name);
     // 2026-09-01（复核 P1-3）：删除失败不再吞掉照样标记完成——失败表会导致
     // 账号库残留上一账号业务数据（隔离破坏），汇总失败并抛错中止（首登可重试）。
     const failed: Array<{ table: string; message: string }> = [];
@@ -270,9 +305,7 @@ export class PrismaService
       const detail = failed
         .map((item) => `${item.table}(${item.message.slice(0, 80)})`)
         .join('; ');
-      throw new Error(
-        `清空业务表失败（${dbPath}），未标记已清空：${detail}`,
-      );
+      throw new Error(`清空业务表失败（${dbPath}），未标记已清空：${detail}`);
     }
     this.accountTablesCleared.add(dbPath);
     this.logger.log(

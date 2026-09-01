@@ -527,7 +527,7 @@ export class RuntimeOrchestrator {
       return null;
     }
 
-    const session = await this.prisma.userSession
+    const session = await this.prisma.system.userSession
       .findFirst({
         where: {
           id: sessionId,
@@ -576,7 +576,7 @@ export class RuntimeOrchestrator {
     if (!sessionId || !this.prisma) {
       return;
     }
-    await this.prisma.userSession
+    await this.prisma.system.userSession
       .update({
         where: { id: sessionId },
         data: {

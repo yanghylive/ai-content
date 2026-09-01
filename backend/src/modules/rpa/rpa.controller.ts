@@ -89,7 +89,7 @@ export class RpaController {
     if (owner.tenantId) {
       let sameTenant: { id: string } | null;
       try {
-        sameTenant = await this.prisma.tenantMember.findFirst({
+        sameTenant = await this.prisma.system.tenantMember.findFirst({
           where: {
             tenantId: owner.tenantId,
             userId: account.userId,

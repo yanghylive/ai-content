@@ -43,7 +43,8 @@ describe('AutoUploadService', () => {
   };
   let runtimeRows: Array<Record<string, any>>;
   let prisma: {
-    tenantMember: { findFirst: jest.Mock };
+    system: {
+      tenantMember: { findFirst: jest.Mock };
     article?: { findFirst: jest.Mock };
     runtimeExecution: {
       findFirst: jest.Mock;
@@ -51,6 +52,7 @@ describe('AutoUploadService', () => {
       create: jest.Mock;
       update: jest.Mock;
       delete: jest.Mock;
+    };
     };
   };
   let service: AutoUploadService;
@@ -132,8 +134,10 @@ describe('AutoUploadService', () => {
       where: Record<string, any> = {},
     ) => Object.entries(where).every(([key, value]) => row[key] === value);
     prisma = {
+      system: {
       tenantMember: {
         findFirst: jest.fn().mockResolvedValue({ tenantId: 'tenant-1' }),
+      },
       },
       runtimeExecution: {
         findFirst: jest.fn().mockImplementation(async ({ where }) => {
@@ -1199,7 +1203,7 @@ describe('AutoUploadService', () => {
       [payload],
       publishApproval().context,
     );
-    prisma.tenantMember.findFirst.mockResolvedValue({ tenantId: 'tenant-2' });
+    prisma.system.tenantMember.findFirst.mockResolvedValue({ tenantId: 'tenant-2' });
     riskPolicyService.consumeHighRiskApproval.mockImplementationOnce(
       async (_input, actor) => {
         if (actor.tenantId !== 'tenant-1' || actor.userId !== 'user-1') {

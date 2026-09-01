@@ -627,7 +627,7 @@ export class AiClientService {
         this.extractBillingBalanceValue(payloadData) ??
           this.extractBillingBalanceValue(payloadRecord),
       );
-      const session = await this.prisma.userSession.findUnique({
+      const session = await this.prisma.system.userSession.findUnique({
         where: { id: sessionId },
         select: { metadata: true },
       });
@@ -638,7 +638,7 @@ export class AiClientService {
         (cachedBalance === null ? null : Math.max(0, cachedBalance - amount));
       if (nextBalance === null) return;
 
-      await this.prisma.userSession.update({
+      await this.prisma.system.userSession.update({
         where: { id: sessionId },
         data: {
           metadata: {
@@ -866,7 +866,7 @@ export class AiClientService {
       return null;
     }
 
-    const sessions = await this.prisma.userSession.findMany({
+    const sessions = await this.prisma.system.userSession.findMany({
       where: {
         expiresAt: { gt: new Date() },
         user: { kaypalUserId: billingUserId },
@@ -1012,7 +1012,7 @@ export class AiClientService {
           Date.now() + Number(payload.expires_in || 3600) * 1000,
         ).toISOString(),
       };
-      await this.prisma.userSession.update({
+      await this.prisma.system.userSession.update({
         where: { id: sessionId },
         data: { metadata: nextMetadata },
       });

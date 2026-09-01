@@ -62,21 +62,23 @@ describe('KaypalProfileController', () => {
 
   const createController = (options?: { localOnly?: boolean }) => {
     const prisma = {
-      user: {
-        findUnique: jest.fn().mockResolvedValue({
-          kaypalUserId: 'kaypal-user-1',
-        }),
-      },
-      userSession: {
-        findUnique: jest.fn(),
-        update: jest.fn(),
-      },
       material: {
         findUnique: jest.fn(),
         findMany: jest.fn().mockResolvedValue([]),
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
+      },
+      system: {
+            user: {
+              findUnique: jest.fn().mockResolvedValue({
+                kaypalUserId: 'kaypal-user-1',
+              }),
+            },
+            userSession: {
+              findUnique: jest.fn(),
+              update: jest.fn(),
+            },
       },
     };
     const kaypalClient = {
@@ -151,7 +153,7 @@ describe('KaypalProfileController', () => {
     expect(kaypalClient.getCloudSubscription).not.toHaveBeenCalled();
     expect(kaypalClient.getCloudBilling).not.toHaveBeenCalled();
     expect(kaypalClient.refreshDesktopAuthToken).not.toHaveBeenCalled();
-    expect(prisma.userSession.update).not.toHaveBeenCalled();
+    expect(prisma.system.userSession.update).not.toHaveBeenCalled();
   });
 
   it('keeps local profile visible when Kaypal cloud profile is temporarily unavailable', async () => {
@@ -204,7 +206,7 @@ describe('KaypalProfileController', () => {
         source: 'local-session-cache',
       }),
     );
-    expect(prisma.userSession.update).not.toHaveBeenCalled();
+    expect(prisma.system.userSession.update).not.toHaveBeenCalled();
   });
 
   it('keeps local billing snapshot non-blocking when Kaypal cloud billing is temporarily unavailable', async () => {
@@ -226,12 +228,12 @@ describe('KaypalProfileController', () => {
         source: 'kaypal-cloud-billing',
       }),
     });
-    expect(prisma.userSession.update).not.toHaveBeenCalled();
+    expect(prisma.system.userSession.update).not.toHaveBeenCalled();
   });
 
   it('caches a synced Kaypal credit balance from cloud billing', async () => {
     const { controller, kaypalClient, req, prisma } = createController();
-    prisma.userSession.findUnique.mockResolvedValue({
+    prisma.system.userSession.findUnique.mockResolvedValue({
       metadata: { kaypalSubscriptionPlan: 'ADVANCED' },
     });
     kaypalClient.getCloudBilling.mockResolvedValue({
@@ -249,7 +251,7 @@ describe('KaypalProfileController', () => {
         userId: 'kaypal-user-1',
       },
     });
-    expect(prisma.userSession.update).toHaveBeenCalledWith(
+    expect(prisma.system.userSession.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'session-1' },
         data: {
@@ -268,7 +270,7 @@ describe('KaypalProfileController', () => {
     req.authUser.kaypalDesktopAccessToken = null;
     req.authUser.kaypalDesktopRefreshToken = null;
     req.authUser.kaypalDesktopDeviceId = null;
-    prisma.userSession.findUnique.mockResolvedValue({
+    prisma.system.userSession.findUnique.mockResolvedValue({
       metadata: { kaypalCreditBalance: 88 },
     });
     kaypalClient.getCloudBilling.mockResolvedValue({
@@ -297,7 +299,7 @@ describe('KaypalProfileController', () => {
     expect(kaypalClient.getCloudBilling).toHaveBeenCalledWith('', {
       userId: 'kaypal-user-1',
     });
-    expect(prisma.userSession.update).toHaveBeenCalledWith(
+    expect(prisma.system.userSession.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'session-1' },
         data: {
@@ -313,7 +315,7 @@ describe('KaypalProfileController', () => {
 
   it('does not use subscription quota as balance fallback when cloud billing has no balance field', async () => {
     const { controller, kaypalClient, req, prisma } = createController();
-    prisma.userSession.findUnique.mockResolvedValue({
+    prisma.system.userSession.findUnique.mockResolvedValue({
       metadata: { kaypalSubscriptionPlan: 'ADVANCED' },
     });
     kaypalClient.getCloudBilling.mockResolvedValue({
@@ -357,7 +359,7 @@ describe('KaypalProfileController', () => {
         message: 'Kaypal 云端未返回真实积分余额',
       }),
     });
-    expect(prisma.userSession.update).toHaveBeenCalledWith(
+    expect(prisma.system.userSession.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'session-1' },
         data: {
@@ -371,7 +373,7 @@ describe('KaypalProfileController', () => {
 
   it('does not expose cached Kaypal credit balance when cloud billing is unavailable', async () => {
     const { controller, kaypalClient, req, prisma } = createController();
-    prisma.userSession.findUnique.mockResolvedValue({
+    prisma.system.userSession.findUnique.mockResolvedValue({
       metadata: {
         kaypalCreditBalance: 88,
         kaypalCreditBalanceUserId: 'kaypal-user-1',
@@ -395,7 +397,7 @@ describe('KaypalProfileController', () => {
         source: 'kaypal-cloud-billing',
       }),
     });
-    expect(prisma.userSession.update).not.toHaveBeenCalled();
+    expect(prisma.system.userSession.update).not.toHaveBeenCalled();
   });
 
   it('keeps cached plan in billing when only the Kaypal cloud subscription inside billing is unavailable', async () => {
@@ -424,7 +426,7 @@ describe('KaypalProfileController', () => {
         unavailable: true,
       }),
     });
-    expect(prisma.userSession.update).not.toHaveBeenCalled();
+    expect(prisma.system.userSession.update).not.toHaveBeenCalled();
   });
 
   it('repairs legacy local knowledge names stored as latin1 mojibake', async () => {
@@ -615,7 +617,7 @@ describe('KaypalProfileController', () => {
     );
     expect(kaypalClient.searchCloudKnowledge).not.toHaveBeenCalled();
     expect(kaypalClient.refreshDesktopAuthToken).not.toHaveBeenCalled();
-    expect(prisma.userSession.update).not.toHaveBeenCalled();
+    expect(prisma.system.userSession.update).not.toHaveBeenCalled();
   });
 
   it('keeps local knowledge sync non-blocking when Kaypal cloud auth expires', async () => {

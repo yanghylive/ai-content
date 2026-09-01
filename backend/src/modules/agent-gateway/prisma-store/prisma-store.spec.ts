@@ -15,7 +15,7 @@ import { UsageEvent, AgentSession, AgentTask, AgentEvent, Artifact } from '../co
  * Prisma 仓储集成测试（需本地 pg：DATABASE_URL 指向已 deploy agent_gateway_entities 的库）。
  * 无 DATABASE_URL 环境自动跳过（CI 安全）。
  */
-const hasDb = process.env.DATABASE_URL?.startsWith('postgres');
+const hasDb = process.env.E2E_REAL_CHAIN === '1';
 const prisma = hasDb ? new PrismaClient() : (null as unknown as PrismaClient);
 
 async function cleanTables() {

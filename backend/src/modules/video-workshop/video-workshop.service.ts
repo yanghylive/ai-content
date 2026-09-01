@@ -160,6 +160,7 @@ export class VideoWorkshopService implements OnModuleInit {
 
   async createRenderTask(
     input: VideoWorkshopTemplateClipInput,
+    ownerId?: string,
   ): Promise<VideoWorkshopTask> {
     await this.ensureTasksInitialized();
     const source =
@@ -183,7 +184,7 @@ export class VideoWorkshopService implements OnModuleInit {
         this.readOptionalText(input.templateName),
       ),
     };
-    const task = this.newTask('render');
+    const task = this.newTask('render', ownerId);
     task.renderInput = renderInput;
     task.stage = '剪辑任务已进入处理队列';
     this.tasks.set(task.id, task);
@@ -194,10 +195,11 @@ export class VideoWorkshopService implements OnModuleInit {
 
   async createDownloadTask(
     input: VideoWorkshopDownloadInput,
+    ownerId?: string,
   ): Promise<VideoWorkshopTask> {
     await this.ensureTasksInitialized();
     const url = this.requireText(input.url, '请填写视频链接');
-    const task = this.newTask('download');
+    const task = this.newTask('download', ownerId);
     task.downloadInput = {
       url,
       outputName: this.readOptionalText(input.outputName),
@@ -213,29 +215,33 @@ export class VideoWorkshopService implements OnModuleInit {
     return this.cloneTask(task);
   }
 
-  async listTasks(limit = 50): Promise<VideoWorkshopTask[]> {
+  async listTasks(limit = 50, ownerId?: string): Promise<VideoWorkshopTask[]> {
     await this.ensureTasksInitialized();
     await this.reconcileCompletedTaskOutputs();
     this.scheduleTaskWorker();
-    return Array.from(this.tasks.values())
-      .sort(
-        (left, right) =>
-          new Date(right.createdAt).getTime() -
-          new Date(left.createdAt).getTime(),
-      )
-      .slice(0, Math.max(1, Math.min(100, Math.round(limit))))
-      .map((task) => this.cloneTask(task));
+    return (
+      Array.from(this.tasks.values())
+        // 2026-09-01（复核 P1-4）：按创建者过滤（ownerId 有值时；无归属任务保留）
+        .filter((task) => !ownerId || !task.userId || task.userId === ownerId)
+        .sort(
+          (left, right) =>
+            new Date(right.createdAt).getTime() -
+            new Date(left.createdAt).getTime(),
+        )
+        .slice(0, Math.max(1, Math.min(100, Math.round(limit))))
+        .map((task) => this.cloneTask(task))
+    );
   }
 
-  async getTask(id: string): Promise<VideoWorkshopTask> {
+  async getTask(id: string, ownerId?: string): Promise<VideoWorkshopTask> {
     await this.ensureTasksInitialized();
     await this.reconcileCompletedTaskOutputs();
-    return this.cloneTask(this.requireTask(id));
+    return this.cloneTask(this.requireTask(id, ownerId));
   }
 
-  async retryTask(id: string): Promise<VideoWorkshopTask> {
+  async retryTask(id: string, ownerId?: string): Promise<VideoWorkshopTask> {
     await this.ensureTasksInitialized();
-    const task = this.requireTask(id);
+    const task = this.requireTask(id, ownerId);
     if (!['failed', 'cancelled'].includes(task.status)) {
       throw new BadRequestException('只有失败或已取消的任务可以重试');
     }
@@ -257,9 +263,9 @@ export class VideoWorkshopService implements OnModuleInit {
     return this.cloneTask(task);
   }
 
-  async cancelTask(id: string): Promise<VideoWorkshopTask> {
+  async cancelTask(id: string, ownerId?: string): Promise<VideoWorkshopTask> {
     await this.ensureTasksInitialized();
-    const task = this.requireTask(id);
+    const task = this.requireTask(id, ownerId);
     if (['succeeded', 'failed', 'cancelled'].includes(task.status)) {
       return this.cloneTask(task);
     }
@@ -280,8 +286,8 @@ export class VideoWorkshopService implements OnModuleInit {
     return this.downloader.policy();
   }
 
-  createPhoneUploadSession(maxBytes?: number) {
-    return this.phoneUploads.createSession(maxBytes);
+  createPhoneUploadSession(maxBytes?: number, userId?: string) {
+    return this.phoneUploads.createSession(maxBytes, userId);
   }
 
   phoneUploadSession(id: string): Promise<VideoWorkshopPhoneUploadSession> {
@@ -294,10 +300,14 @@ export class VideoWorkshopService implements OnModuleInit {
     return this.phoneUploads.cancelSession(id);
   }
 
-  private newTask(kind: VideoWorkshopTask['kind']): VideoWorkshopTask {
+  private newTask(
+    kind: VideoWorkshopTask['kind'],
+    userId?: string,
+  ): VideoWorkshopTask {
     const now = new Date().toISOString();
     return {
       id: `video-workshop-${kind}-${randomUUID()}`,
+      userId,
       kind,
       status: 'queued',
       progress: 0,
@@ -704,9 +714,13 @@ export class VideoWorkshopService implements OnModuleInit {
     return this.taskWriteQueue;
   }
 
-  private requireTask(id: string) {
+  private requireTask(id: string, ownerId?: string) {
     const task = this.tasks.get(id);
     if (!task) throw new NotFoundException('视频工坊任务不存在');
+    // 2026-09-01（复核 P1-4）：任务归属校验（不匹配按不存在处理，不泄露存在性）
+    if (ownerId && task.userId && task.userId !== ownerId) {
+      throw new NotFoundException('视频工坊任务不存在');
+    }
     return task;
   }
 

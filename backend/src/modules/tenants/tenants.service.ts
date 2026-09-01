@@ -21,7 +21,7 @@ export class TenantsService {
     const permissions = user.kaypalPermissionNames ?? [];
     const role = this.tenantRoleFromUserRole(user.role);
 
-    const tenant = await this.prisma.tenant.upsert({
+    const tenant = await this.prisma.system.tenant.upsert({
       where: { slug },
       create: {
         name: this.defaultTenantName(user),
@@ -40,7 +40,7 @@ export class TenantsService {
       },
     });
 
-    const member = await this.prisma.tenantMember.upsert({
+    const member = await this.prisma.system.tenantMember.upsert({
       where: {
         tenantId_userId: {
           tenantId: tenant.id,
@@ -62,7 +62,7 @@ export class TenantsService {
       },
     });
 
-    await this.prisma.tenantEntitlement.upsert({
+    await this.prisma.system.tenantEntitlement.upsert({
       where: {
         tenantId_source: {
           tenantId: tenant.id,
@@ -102,7 +102,7 @@ export class TenantsService {
   async findCommercialEntitlementForTenant(
     tenantId: string,
   ): Promise<StoredTenantEntitlement | null> {
-    const record = await this.prisma.tenantEntitlement.findFirst({
+    const record = await this.prisma.system.tenantEntitlement.findFirst({
       where: {
         tenantId,
         source: 'kaypal-subscription',

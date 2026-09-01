@@ -153,7 +153,7 @@ export class MobileExecutorController {
   ) {
     const dev = await this.requireDevice(request);
     // 设备 token → userId → 默认租户（设备侧无 session context，从 tenant_members 取）
-    const member = await this.prisma.tenantMember.findFirst({
+    const member = await this.prisma.system.tenantMember.findFirst({
       where: { userId: dev.userId },
       orderBy: { createdAt: 'asc' },
     });

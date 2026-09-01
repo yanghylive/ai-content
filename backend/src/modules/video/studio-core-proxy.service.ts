@@ -286,7 +286,7 @@ export class StudioCoreProxyService {
    * SSE 实时进度推送：反代 8610 /api/events（每 5s 全量快照）
    * 返回可迭代的原始 SSE 文本块（由 controller 透传或包装）。
    */
-  async proxySse(): Promise<ReadableStream<Uint8Array>> {
+  async proxySse(projectId?: string): Promise<ReadableStream<Uint8Array>> {
     this.logger.log(`proxySse: ${this.baseUrl}/api/events`);
     const token = await this.ensureToken();
     const res = await fetch(`${this.baseUrl}/api/events`, {
@@ -300,6 +300,82 @@ export class StudioCoreProxyService {
     if (!res.body) {
       throw new Error('studio_core SSE 响应无 body');
     }
-    return res.body;
+    // 2026-09-01（复核 P1-6）：原实现忽略 :id 透传全量项目快照——账号 A 订阅
+    // :id 会收到所有项目的事件。指定 projectId 时解析 SSE 帧，只透传该项目的
+    // 快照（数组/含 projects 字段/单对象三种形态都处理；ping/心跳帧不转发）。
+    if (!projectId) {
+      return res.body;
+    }
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    let buffer = '';
+    const filterFrame = (frame: string): Uint8Array | null =>
+      this.filterSseFrame(frame, projectId, encoder);
+    return res.body.pipeThrough(
+      new TransformStream<Uint8Array, Uint8Array>({
+        transform(chunk, controller) {
+          buffer += decoder.decode(chunk, { stream: true });
+          let idx: number;
+          while ((idx = buffer.indexOf('\n\n')) >= 0) {
+            const frame = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 2);
+            const forwarded = filterFrame(frame);
+            if (forwarded) {
+              controller.enqueue(forwarded);
+            }
+          }
+        },
+        flush(controller) {
+          if (buffer.trim()) {
+            const forwarded = filterFrame(buffer);
+            if (forwarded) {
+              controller.enqueue(forwarded);
+            }
+          }
+        },
+      }),
+    );
+  }
+
+  /** 按项目 id 过滤单个 SSE 帧；不匹配返回 null */
+  private filterSseFrame(
+    frame: string,
+    projectId: string,
+    encoder: TextEncoder,
+  ): Uint8Array | null {
+    const dataLine = frame.split('\n').find((line) => line.startsWith('data:'));
+    if (!dataLine) {
+      return null;
+    }
+    const raw = dataLine.slice(5).trim();
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return null; // 非 JSON 帧（注释/心跳）不转发
+    }
+    const match = (item: unknown): boolean =>
+      String((item as { id?: unknown })?.id) === projectId;
+    if (Array.isArray(parsed)) {
+      const filtered = parsed.filter(match);
+      if (filtered.length === 0) return null;
+      return encoder.encode(`data: ${JSON.stringify(filtered)}\n\n`);
+    }
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      Array.isArray((parsed as { projects?: unknown }).projects)
+    ) {
+      const record = parsed as { projects: Array<unknown> };
+      const filtered = record.projects.filter(match);
+      if (filtered.length === 0) return null;
+      return encoder.encode(
+        `data: ${JSON.stringify({ ...record, projects: filtered })}\n\n`,
+      );
+    }
+    if (match(parsed)) {
+      return encoder.encode(`${frame}\n\n`);
+    }
+    return null;
   }
 }

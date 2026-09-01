@@ -60,13 +60,15 @@ export class VideoWorkshopPhoneUploadService implements OnModuleDestroy {
     this.server = null;
   }
 
-  async createSession(maxBytes?: number) {
+  async createSession(maxBytes?: number, userId?: string) {
     await this.ensureInitialized();
     await this.ensureServer();
     const token = randomBytes(24).toString('base64url');
     const now = new Date();
     const session: StoredPhoneUploadSession = {
       id: randomUUID(),
+      // 2026-09-01（复核 P1-4）：会话归属
+      userId,
       tokenHash: this.hashToken(token),
       status: 'pending',
       progress: 0,

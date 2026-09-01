@@ -49,13 +49,6 @@ describe('LocalEngineService tenant isolation', () => {
       (!where.revision || row.revision === where.revision);
 
     const prisma = {
-      tenantMember: {
-        findFirst: jest.fn(async ({ where }: any) => {
-          const tenantId = tenantByUser.get(where.userId);
-          if (where.tenantId && where.tenantId !== tenantId) return null;
-          return tenantId ? { tenantId } : null;
-        }),
-      },
       interactionReplyRule: {
         findMany: jest.fn(async ({ where }: any) =>
           replyRows.filter((row) => matchesScope(row, where)),
@@ -124,6 +117,15 @@ describe('LocalEngineService tenant isolation', () => {
           async ({ where }: any) =>
             taskRows.find((row) => matchesScope(row, where)) || null,
         ),
+      },
+      system: {
+            tenantMember: {
+              findFirst: jest.fn(async ({ where }: any) => {
+                const tenantId = tenantByUser.get(where.userId);
+                if (where.tenantId && where.tenantId !== tenantId) return null;
+                return tenantId ? { tenantId } : null;
+              }),
+            },
       },
     };
 

@@ -1362,9 +1362,11 @@ export function resolveWechatChatHistorySyncScriptPath(
 
 /** 2026-09-01 换库（审计 #2）：微信缓存按账号目录隔离（账号库之外的全局文件缓存） */
 function wechatCacheAccountScope(host: WechatContactsHost): string {
-  const ctx = (host as unknown as {
-    authRequestContext?: { get(): { user?: { id?: string } } | undefined };
-  }).authRequestContext?.get();
+  const ctx = (
+    host as unknown as {
+      authRequestContext?: { get(): { user?: { id?: string } } | undefined };
+    }
+  ).authRequestContext?.get();
   const uid = ctx?.user?.id?.trim();
   return uid ? uid.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 64) : 'guest';
 }

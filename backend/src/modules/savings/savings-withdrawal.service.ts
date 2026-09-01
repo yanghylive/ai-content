@@ -71,7 +71,7 @@ export class SavingsWithdrawalService {
 
   /** M5-4 实名校验：提现前必须已实名（User.name 为实名姓名） */
   private async assertVerified(userId: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.system.user.findUnique({
       where: { id: userId },
       select: { name: true },
     });

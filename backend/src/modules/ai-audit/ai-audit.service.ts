@@ -329,7 +329,7 @@ export class AiAuditService {
   }
 
   private async tenantUserIds(tenantId: string): Promise<string[]> {
-    const members = await this.prisma.tenantMember.findMany({
+    const members = await this.prisma.system.tenantMember.findMany({
       where: { tenantId, status: 'active' },
       select: { userId: true },
     });

@@ -36,11 +36,17 @@ export class VideoController {
    * POST /api/video/generate
    */
   @Post('generate')
-  async generate(@Body() dto: GenerateVideoDto, @Req() request: AuthenticatedRequest) {
+  async generate(
+    @Body() dto: GenerateVideoDto,
+    @Req() request: AuthenticatedRequest,
+  ) {
     // 2026-09-01 安全修复（审计 #8）：user_id 以服务端会话为准，忽略客户端传入值；
     // kaypalUserId 用于云端通道计费归属，避免成本静默记到固定主账号。
     dto.user_id = request.authUser?.id ?? '';
-    return this.videoService.generate(dto, request.authUser?.kaypalUserId ?? undefined);
+    return this.videoService.generate(
+      dto,
+      request.authUser?.kaypalUserId ?? undefined,
+    );
   }
 
   /**
@@ -174,7 +180,7 @@ export class VideoController {
       'Content-Type': contentType,
       'Content-Length': String(length),
       'Accept-Ranges': 'bytes',
-      'Cache-Control': 'public, max-age=300',
+      'Cache-Control': 'private, max-age=300',
     });
     res.send(buffer);
   }
@@ -198,11 +204,12 @@ export class VideoController {
   @Get('projects/:id/events')
   @Header('Cache-Control', 'no-cache')
   @Header('X-Accel-Buffering', 'no')
-  async projectEvents(@Res() res: Response) {
+  async projectEvents(@Param('id') id: string, @Res() res: Response) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
-    const stream = await this.studioCoreProxy.proxySse();
+    // 2026-09-01（复核 P1-6）：SSE 按 :id 过滤帧内项目，不再转发全量快照
+    const stream = await this.studioCoreProxy.proxySse(id);
     const reader = stream.getReader();
     const pump = async () => {
       try {

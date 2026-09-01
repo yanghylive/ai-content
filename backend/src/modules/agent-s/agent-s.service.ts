@@ -5226,7 +5226,7 @@ export class AgentSService {
 
     if (this.prisma) {
       try {
-        const membership = await this.prisma.tenantMember.findFirst({
+        const membership = await this.prisma.system.tenantMember.findFirst({
           where: { userId, status: 'active' },
           orderBy: [{ joinedAt: 'asc' }, { createdAt: 'asc' }],
           select: { tenantId: true },

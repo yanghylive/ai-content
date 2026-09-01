@@ -7,7 +7,7 @@ import { TenantContext } from './core/types';
  * Workspace 服务集成测试：聚焦归属隔离（跨用户不可见/不可操作）、
  * 重名冲突(409)、软删除(archived 不出现在列表)。需本地 pg；无 DATABASE_URL 跳过。
  */
-const hasDb = process.env.DATABASE_URL?.startsWith('postgres');
+const hasDb = process.env.E2E_REAL_CHAIN === '1';
 const prisma = hasDb ? new PrismaClient() : (null as unknown as PrismaClient);
 
 const ctxA: TenantContext = { tenantId: 'ws_t', userId: 'ws_u_a', agentId: 'a1' };

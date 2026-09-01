@@ -1167,12 +1167,14 @@ describe('AiEmployeeService', () => {
       get: jest.fn(() => ({ user: currentUser })),
     } as unknown as AuthRequestContextService;
     const prisma = {
-      tenantMember: {
-        findFirst: jest.fn(
-          async ({ where }: { where: { userId: string } }) => ({
-            tenantId: where.userId === 'user-c' ? 'tenant-c' : 'tenant-shared',
-          }),
-        ),
+      system: {
+            tenantMember: {
+              findFirst: jest.fn(
+                async ({ where }: { where: { userId: string } }) => ({
+                  tenantId: where.userId === 'user-c' ? 'tenant-c' : 'tenant-shared',
+                }),
+              ),
+            },
       },
     };
     const runtime = makeRuntimeMock();
@@ -1330,8 +1332,10 @@ describe('AiEmployeeService', () => {
       undefined,
       undefined,
       {
-        tenantMember: {
-          findFirst: jest.fn().mockResolvedValue({ tenantId: 'tenant-1' }),
+        system: {
+          tenantMember: {
+            findFirst: jest.fn().mockResolvedValue({ tenantId: 'tenant-1' }),
+          },
         },
       } as never,
     );

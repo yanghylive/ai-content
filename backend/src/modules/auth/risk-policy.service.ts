@@ -496,7 +496,7 @@ export class RiskPolicyService {
       return requestedTenantId;
     }
 
-    const membership = await this.prisma.tenantMember.findFirst({
+    const membership = await this.prisma.system.tenantMember.findFirst({
       where: {
         userId: actor.userId,
         status: 'active',

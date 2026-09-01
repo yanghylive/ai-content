@@ -217,12 +217,14 @@ describe('AiEmployeeWorkflowService', () => {
     } as unknown as jest.Mocked<RuntimeOrchestrator>;
     const context = new AuthRequestContextService();
     const prisma = {
-      tenantMember: {
-        findFirst: jest.fn(
-          async ({ where }: { where: { userId: string } }) => ({
-            tenantId: `tenant-${where.userId}`,
-          }),
-        ),
+      system: {
+            tenantMember: {
+              findFirst: jest.fn(
+                async ({ where }: { where: { userId: string } }) => ({
+                  tenantId: `tenant-${where.userId}`,
+                }),
+              ),
+            },
       },
     };
     const service = new AiEmployeeWorkflowService(
@@ -833,12 +835,14 @@ describe('AiEmployeeWorkflowService', () => {
     );
     const context = new AuthRequestContextService();
     const prisma = {
-      tenantMember: {
-        findFirst: jest.fn(
-          async ({ where }: { where: { userId: string } }) => ({
-            tenantId: where.userId === 'user-b' ? 'tenant-b' : 'tenant-a',
-          }),
-        ),
+      system: {
+            tenantMember: {
+              findFirst: jest.fn(
+                async ({ where }: { where: { userId: string } }) => ({
+                  tenantId: where.userId === 'user-b' ? 'tenant-b' : 'tenant-a',
+                }),
+              ),
+            },
       },
     };
     const scopedService = new AiEmployeeWorkflowService(

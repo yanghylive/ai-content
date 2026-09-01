@@ -267,7 +267,9 @@ export class WechatPayService {
         signature,
       );
       if (!verified) {
-        this.logger.warn(`微信回调签名校验失败，拒绝：${rawBody.slice(0, 120)}`);
+        this.logger.warn(
+          `微信回调签名校验失败，拒绝：${rawBody.slice(0, 120)}`,
+        );
         return { code: 'FAIL', message: '回调签名校验失败' };
       }
     }

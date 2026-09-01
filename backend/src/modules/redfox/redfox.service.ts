@@ -303,7 +303,7 @@ export class RedfoxService {
 
   private async resolveTenantId(userId: string) {
     try {
-      const member = await this.prisma.tenantMember.findFirst({
+      const member = await this.prisma.system.tenantMember.findFirst({
         where: { userId, status: 'active' },
         orderBy: { joinedAt: 'asc' },
         select: { tenantId: true },

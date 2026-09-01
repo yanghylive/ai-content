@@ -90,7 +90,7 @@ export class VoiceService {
       },
     };
 
-    const session = await this.prisma.userSession.create({
+    const session = await this.prisma.system.userSession.create({
       data: {
         userId: user!.id,
         tokenHash: hashSessionToken(sessionToken),
@@ -793,7 +793,7 @@ export class VoiceService {
 
   private async loadSessionMetadata(sessionId?: string) {
     if (!sessionId) return {};
-    const session = await this.prisma.userSession.findUnique({
+    const session = await this.prisma.system.userSession.findUnique({
       where: { id: sessionId },
       select: { metadata: true },
     });

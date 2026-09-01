@@ -4,9 +4,6 @@ import { RiskPolicyService } from './risk-policy.service';
 
 function makePrisma() {
   return {
-    tenantMember: {
-      findFirst: jest.fn().mockResolvedValue({ tenantId: 'tenant-1' }),
-    },
     agentConfirmation: {
       create: jest.fn().mockResolvedValue({
         id: 'approval-server-1',
@@ -29,6 +26,11 @@ function makePrisma() {
         .fn()
         .mockResolvedValueOnce({ count: 1 })
         .mockResolvedValueOnce({ count: 0 }),
+    },
+    system: {
+        tenantMember: {
+          findFirst: jest.fn().mockResolvedValue({ tenantId: 'tenant-1' }),
+        },
     },
   } as any;
 }
@@ -72,7 +74,7 @@ describe('RiskPolicyService high-risk approvals', () => {
 
   it('supports an isolated local-desktop tenant without a cloud membership', async () => {
     const prisma = makePrisma();
-    prisma.tenantMember.findFirst.mockResolvedValue(null);
+    prisma.system.tenantMember.findFirst.mockResolvedValue(null);
     const service = new RiskPolicyService(prisma);
 
     await service.issueHighRiskApproval(
@@ -89,7 +91,7 @@ describe('RiskPolicyService high-risk approvals', () => {
       },
     );
 
-    expect(prisma.tenantMember.findFirst).not.toHaveBeenCalled();
+    expect(prisma.system.tenantMember.findFirst).not.toHaveBeenCalled();
     expect(prisma.agentConfirmation.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -103,7 +105,7 @@ describe('RiskPolicyService high-risk approvals', () => {
 
   it('consumes a local-desktop approval atomically without a cloud membership', async () => {
     const prisma = makePrisma();
-    prisma.tenantMember.findFirst.mockResolvedValue(null);
+    prisma.system.tenantMember.findFirst.mockResolvedValue(null);
     prisma.agentConfirmation.findFirst.mockResolvedValue({
       id: 'approval-local-1',
       tenantId: 'local-desktop:user-local',
@@ -133,7 +135,7 @@ describe('RiskPolicyService high-risk approvals', () => {
       ),
     ).resolves.toEqual(expect.objectContaining({ confirmed: true }));
 
-    expect(prisma.tenantMember.findFirst).not.toHaveBeenCalled();
+    expect(prisma.system.tenantMember.findFirst).not.toHaveBeenCalled();
     expect(prisma.agentConfirmation.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -172,7 +174,7 @@ describe('RiskPolicyService high-risk approvals', () => {
       },
     );
 
-    expect(prisma.tenantMember.findFirst).toHaveBeenCalledWith({
+    expect(prisma.system.tenantMember.findFirst).toHaveBeenCalledWith({
       where: {
         tenantId: 'tenant-1',
         userId: 'user-1',

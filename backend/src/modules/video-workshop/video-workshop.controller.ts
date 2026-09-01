@@ -26,13 +26,26 @@ import {
   type VideoWorkshopUploadFile,
 } from './video-workshop.service';
 import { StudioCoreClient } from './studio-core.client';
+import { AuthRequestContextService } from '../../common/auth-request-context.service';
 
 @Controller('video-workshop')
 export class VideoWorkshopController {
   constructor(
     private readonly videoWorkshop: VideoWorkshopService,
     private readonly studioCore: StudioCoreClient,
+    private readonly authRequestContext?: AuthRequestContextService,
   ) {}
+
+  /** 2026-09-01（复核 P1-4）：当前请求用户 id */
+  private resolveOwnerId(): string | undefined {
+    try {
+      const ctx = this.authRequestContext?.get() as
+        { user?: { id?: string } } | undefined;
+      return ctx?.user?.id?.trim() || undefined;
+    } catch {
+      return undefined;
+    }
+  }
 
   /**
    * BGM 曲库预设（对标炼刀 /system/music/bgm）
@@ -263,40 +276,48 @@ export class VideoWorkshopController {
   tasks(@Query('limit') limit?: string) {
     return this.videoWorkshop.listTasks(
       limit ? Number.parseInt(limit, 10) : 50,
+      this.resolveOwnerId(),
     );
   }
 
   @Get('tasks/:id')
   task(@Param('id') id: string) {
-    return this.videoWorkshop.getTask(id);
+    return this.videoWorkshop.getTask(id, this.resolveOwnerId());
   }
 
   @Post('tasks/render')
   createRenderTask(@Body() body: VideoWorkshopTemplateClipInput) {
-    return this.videoWorkshop.createRenderTask({
-      ...body,
-      source: body.source === 'ai-employee' ? 'ai-employee' : 'video-workshop',
-    });
+    return this.videoWorkshop.createRenderTask(
+      {
+        ...body,
+        source:
+          body.source === 'ai-employee' ? 'ai-employee' : 'video-workshop',
+      },
+      this.resolveOwnerId(),
+    );
   }
 
   @Post('tasks/download')
   createDownloadTask(@Body() body: VideoWorkshopDownloadInput) {
-    return this.videoWorkshop.createDownloadTask(body);
+    return this.videoWorkshop.createDownloadTask(body, this.resolveOwnerId());
   }
 
   @Post('tasks/:id/retry')
   retryTask(@Param('id') id: string) {
-    return this.videoWorkshop.retryTask(id);
+    return this.videoWorkshop.retryTask(id, this.resolveOwnerId());
   }
 
   @Post('tasks/:id/cancel')
   cancelTask(@Param('id') id: string) {
-    return this.videoWorkshop.cancelTask(id);
+    return this.videoWorkshop.cancelTask(id, this.resolveOwnerId());
   }
 
   @Post('phone-upload/sessions')
   createPhoneUploadSession(@Body() body: { maxBytes?: number } = {}) {
-    return this.videoWorkshop.createPhoneUploadSession(body.maxBytes);
+    return this.videoWorkshop.createPhoneUploadSession(
+      body.maxBytes,
+      this.resolveOwnerId(),
+    );
   }
 
   @Get('phone-upload/sessions/:id')

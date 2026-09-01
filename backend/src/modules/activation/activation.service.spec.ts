@@ -9,8 +9,10 @@ describe('ActivationService', () => {
           .mockResolvedValueOnce({ id: 'evt-1' })
           .mockRejectedValueOnce(new Error('unique constraint')),
       },
-      user: {
-        findUnique: jest.fn(),
+      system: {
+            user: {
+              findUnique: jest.fn(),
+            },
       },
     };
     const service = new ActivationService(prisma as any);
@@ -48,10 +50,12 @@ describe('ActivationService', () => {
         ]),
         create: jest.fn(),
       },
-      user: {
-        findUnique: jest
-          .fn()
-          .mockResolvedValue({ createdAt: new Date('2026-08-16T13:00:00Z') }),
+      system: {
+            user: {
+              findUnique: jest
+                .fn()
+                .mockResolvedValue({ createdAt: new Date('2026-08-16T13:00:00Z') }),
+            },
       },
     };
     const service = new ActivationService(prisma as any);
@@ -67,7 +71,9 @@ describe('ActivationService', () => {
   it('getActivation 无事件时 activated=false，耗时 null', async () => {
     const prisma = {
       activationEvent: { findMany: jest.fn().mockResolvedValue([]), create: jest.fn() },
-      user: { findUnique: jest.fn().mockResolvedValue({ createdAt: new Date() }) },
+      system: {
+            user: { findUnique: jest.fn().mockResolvedValue({ createdAt: new Date() }) },
+      },
     };
     const service = new ActivationService(prisma as any);
 

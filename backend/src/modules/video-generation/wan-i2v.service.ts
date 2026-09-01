@@ -167,11 +167,17 @@ export class WanI2vService {
   }
 
   /**
-   * 查询任务：本地状态 + 必要时轮询云端网关
+   * 查询任务：本地状态 + 必要时轮询云端网关。
+   * 2026-09-01（复核 P1-5）：任务记录了 userId，但查询只按 taskId——
+   * 账号 A 可查/下载 B 的任务。增加所有者校验（ownerId 不匹配按不存在处理，
+   * 不泄露存在性）。
    */
-  async getTask(taskId: string): Promise<WanTaskRecord> {
+  async getTask(taskId: string, ownerId?: string): Promise<WanTaskRecord> {
     const rec = this.tasks.get(taskId);
     if (!rec) {
+      throw new NotFoundException('视频生成任务不存在');
+    }
+    if (ownerId && rec.userId && rec.userId !== ownerId) {
       throw new NotFoundException('视频生成任务不存在');
     }
     if (rec.status === 'ready' || rec.status === 'failed') {
@@ -230,9 +236,14 @@ export class WanI2vService {
    */
   async download(
     taskId: string,
+    ownerId?: string,
   ): Promise<{ stream: NodeJS.ReadableStream; filename: string }> {
     const rec = this.tasks.get(taskId);
     if (!rec) {
+      throw new NotFoundException('视频生成任务不存在');
+    }
+    // 2026-09-01（复核 P1-5）：下载同样按所有者校验
+    if (ownerId && rec.userId && rec.userId !== ownerId) {
       throw new NotFoundException('视频生成任务不存在');
     }
     if (rec.status !== 'ready' || !rec.videoUrl) {

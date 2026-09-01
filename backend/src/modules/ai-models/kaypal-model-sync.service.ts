@@ -305,7 +305,7 @@ export class KaypalModelSyncService implements OnApplicationBootstrap {
   ): Promise<KaypalAuthContext | null> {
     const sessionToken = this.getSessionToken(request);
     if (sessionToken) {
-      const session = await this.prisma.userSession.findFirst({
+      const session = await this.prisma.system.userSession.findFirst({
         where: {
           tokenHash: hashSessionToken(sessionToken),
           expiresAt: { gt: new Date() },

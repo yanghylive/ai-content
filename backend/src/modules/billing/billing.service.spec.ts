@@ -28,7 +28,26 @@ function makeUser() {
   };
 }
 
+const PRISMA_SYSTEM_FIELDS = new Set([
+  'user',
+  'userSession',
+  'tenant',
+  'tenantMember',
+  'tenantEntitlement',
+  'tenantMembership',
+]);
+
 function makePrismaMock(overrides: Partial<Record<string, any>> = {}) {
+  // 2026-09-01（复核 P1-7）：overrides 里的认证表字段合并进 system（mock 结构对齐）
+  const restOverrides: Record<string, any> = {};
+  const systemOverrides: Record<string, any> = {};
+  for (const [key, value] of Object.entries(overrides)) {
+    if (PRISMA_SYSTEM_FIELDS.has(key)) {
+      systemOverrides[key] = value;
+    } else {
+      restOverrides[key] = value;
+    }
+  }
   return {
     billingWebhookEvent: {
       findUnique: jest.fn().mockResolvedValue(null),
@@ -51,18 +70,22 @@ function makePrismaMock(overrides: Partial<Record<string, any>> = {}) {
       upsert: jest.fn().mockResolvedValue({ id: 'invoice-row-1' }),
       count: jest.fn().mockResolvedValue(0),
     },
-    tenant: {
-      findUnique: jest.fn().mockResolvedValue({ id: 'tenant-1' }),
+    ...restOverrides,
+    system: {
+        tenant: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'tenant-1' }),
+        },
+        tenantEntitlement: {
+          upsert: jest.fn().mockResolvedValue({ id: 'ent-1' }),
+          findFirst: jest.fn().mockResolvedValue(null),
+          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        },
+        user: {
+          findUnique: jest.fn().mockResolvedValue(makeUser()),
+          findFirst: jest.fn().mockResolvedValue(makeUser()),
+        },
+        ...systemOverrides,
     },
-    tenantEntitlement: {
-      upsert: jest.fn().mockResolvedValue({ id: 'ent-1' }),
-      findFirst: jest.fn().mockResolvedValue(null),
-    },
-    user: {
-      findUnique: jest.fn().mockResolvedValue(makeUser()),
-      findFirst: jest.fn().mockResolvedValue(makeUser()),
-    },
-    ...overrides,
   } as unknown as jest.Mocked<PrismaService>;
 }
 
@@ -141,7 +164,7 @@ describe('BillingService', () => {
         },
       }),
     );
-    expect(prisma.tenantEntitlement.upsert).toHaveBeenCalledWith(
+    expect(prisma.system.tenantEntitlement.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           tenantId_source: {
@@ -204,7 +227,7 @@ describe('BillingService', () => {
 
     expect(result.duplicate).toBe(true);
     expect(prisma.billingSubscription.upsert).not.toHaveBeenCalled();
-    expect(prisma.tenantEntitlement.upsert).not.toHaveBeenCalled();
+    expect(prisma.system.tenantEntitlement.upsert).not.toHaveBeenCalled();
   });
 
   it('does not grant commercial execution for an expired subscription period', async () => {
@@ -227,7 +250,7 @@ describe('BillingService', () => {
     });
 
     expect(result.commercialExecutionAllowed).toBe(false);
-    expect(prisma.tenantEntitlement.upsert).toHaveBeenCalledWith(
+    expect(prisma.system.tenantEntitlement.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({
           status: 'expired',
@@ -258,7 +281,7 @@ describe('BillingService', () => {
     });
 
     expect(result.commercialExecutionAllowed).toBe(false);
-    expect(prisma.tenantEntitlement.upsert).toHaveBeenCalledWith(
+    expect(prisma.system.tenantEntitlement.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({
           status: 'canceled',
@@ -309,7 +332,7 @@ describe('BillingService', () => {
       tenantId: 'tenant-1',
     });
     expect(prisma.billingSubscription.upsert).not.toHaveBeenCalled();
-    expect(prisma.tenantEntitlement.upsert).not.toHaveBeenCalled();
+    expect(prisma.system.tenantEntitlement.upsert).not.toHaveBeenCalled();
     expect(prisma.billingWebhookEvent.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: 'ignored_out_of_order' }),
@@ -378,7 +401,7 @@ describe('BillingService', () => {
         }),
       }),
     );
-    expect(prisma.tenantEntitlement.upsert).toHaveBeenCalledWith(
+    expect(prisma.system.tenantEntitlement.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         update: expect.objectContaining({
           status: 'active',
@@ -407,6 +430,7 @@ describe('BillingService', () => {
       },
       tenantEntitlement: {
         upsert: jest.fn().mockResolvedValue({ id: 'ent-1' }),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         findFirst: jest.fn().mockResolvedValue(null),
       },
@@ -441,7 +465,7 @@ describe('BillingService', () => {
         }),
       }),
     );
-    expect(prisma.tenantEntitlement.updateMany).toHaveBeenCalledWith(
+    expect(prisma.system.tenantEntitlement.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           status: 'past_due',
@@ -472,6 +496,7 @@ describe('BillingService', () => {
     const prisma = makePrismaMock({
       tenantEntitlement: {
         upsert: jest.fn().mockResolvedValue({ id: 'ent-1' }),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         findFirst: jest.fn().mockResolvedValue({
           source: 'kaypal-subscription',
           plan: 'ADVANCED',

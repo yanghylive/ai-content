@@ -63,7 +63,10 @@ export class VideoGenerationController {
 
   @Get('tasks/:id')
   async getTask(@Param('id') id: string) {
-    const task = await this.wanI2v.getTask(id);
+    // 2026-09-01（复核 P1-5）：按当前用户校验任务所有者
+    const user = this.resolveUser();
+    const ownerId = typeof user?.id === 'string' ? user.id : undefined;
+    const task = await this.wanI2v.getTask(id, ownerId);
     return {
       success: true,
       task: {
@@ -81,7 +84,10 @@ export class VideoGenerationController {
 
   @Get('tasks/:id/file')
   async download(@Param('id') id: string, @Res() res: Response) {
-    const { stream, filename } = await this.wanI2v.download(id);
+    // 2026-09-01（复核 P1-5）：下载同样按当前用户校验所有者
+    const user = this.resolveUser();
+    const ownerId = typeof user?.id === 'string' ? user.id : undefined;
+    const { stream, filename } = await this.wanI2v.download(id, ownerId);
     res.setHeader('Content-Type', 'video/mp4');
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
     res.setHeader('X-Content-Type-Options', 'nosniff');

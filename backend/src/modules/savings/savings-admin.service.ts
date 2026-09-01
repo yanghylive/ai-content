@@ -30,7 +30,7 @@ export class SavingsAdminService {
       throw new UnauthorizedException('请先登录后访问管理端');
     }
     const tenantId = await this.authRequestContext.resolveTenantId(this.prisma);
-    const membership = await this.prisma.tenantMember.findFirst({
+    const membership = await this.prisma.system.tenantMember.findFirst({
       where: {
         userId,
         status: 'active',

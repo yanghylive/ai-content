@@ -100,6 +100,8 @@ export interface VideoWorkshopDownloadInput {
 
 export interface VideoWorkshopTask {
   id: string;
+  /** 2026-09-01（复核 P1-4）：任务创建者 userId（隔离归属；后台/存量任务可空） */
+  userId?: string;
   kind: VideoWorkshopTaskKind;
   status: VideoWorkshopTaskStatus;
   progress: number;
@@ -140,6 +142,8 @@ export type VideoWorkshopPhoneUploadStatus =
 
 export interface VideoWorkshopPhoneUploadSession {
   id: string;
+  /** 2026-09-01（复核 P1-4）：会话创建者 userId（隔离归属） */
+  userId?: string;
   status: VideoWorkshopPhoneUploadStatus;
   progress: number;
   bytesReceived: number;

@@ -236,7 +236,7 @@ export class BillingService {
       },
     });
 
-    await this.prisma.tenantEntitlement.upsert({
+    await this.prisma.system.tenantEntitlement.upsert({
       where: {
         tenantId_source: {
           tenantId,
@@ -543,7 +543,7 @@ export class BillingService {
       },
     });
     const [entitlement, subscription, invoice] = await Promise.all([
-      this.prisma.tenantEntitlement.findFirst({
+      this.prisma.system.tenantEntitlement.findFirst({
         where: { tenantId: tenant.tenantId, source: 'kaypal-subscription' },
         orderBy: [{ updatedAt: 'desc' }],
       }),
@@ -748,7 +748,7 @@ export class BillingService {
   }): Promise<string> {
     const payloadTenantId = this.toString(input.payload.tenantId);
     if (payloadTenantId) {
-      const tenant = await this.prisma.tenant.findUnique({
+      const tenant = await this.prisma.system.tenant.findUnique({
         where: { id: payloadTenantId },
         select: { id: true },
       });
@@ -816,13 +816,15 @@ export class BillingService {
   private async resolveUser(payload: BillingWebhookPayload) {
     const userId = this.toString(payload.userId);
     if (userId) {
-      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      const user = await this.prisma.system.user.findUnique({
+        where: { id: userId },
+      });
       if (user) return user;
     }
 
     const kaypalUserId = this.toString(payload.kaypalUserId);
     if (kaypalUserId) {
-      const user = await this.prisma.user.findFirst({
+      const user = await this.prisma.system.user.findFirst({
         where: { kaypalUserId },
       });
       if (user) return user;
@@ -972,7 +974,7 @@ export class BillingService {
           updatedAt: input.now,
         },
       });
-      await this.prisma.tenantEntitlement.updateMany({
+      await this.prisma.system.tenantEntitlement.updateMany({
         where: {
           tenantId: input.tenantId,
           source: 'kaypal-subscription',
@@ -1037,7 +1039,7 @@ export class BillingService {
           updatedAt: input.now,
         },
       });
-      await this.prisma.tenantEntitlement.upsert({
+      await this.prisma.system.tenantEntitlement.upsert({
         where: {
           tenantId_source: {
             tenantId: input.tenantId,

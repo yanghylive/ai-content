@@ -51,6 +51,8 @@ interface HomePanelProps {
   featured30: OfferView[];
   initialLoading: boolean;
   loadError?: string | null;
+  /** 2026-09-01（复核 P2）：美团/运营位等分区加载失败来源（不静默降级空） */
+  panelErrors?: Record<string, string>;
   reload: () => Promise<void>;
   onNavigate: (tab: TabKey) => void;
 }
@@ -92,6 +94,7 @@ export function HomePanel({
   initialLoading,
   loadError,
   reload,
+  panelErrors,
   onNavigate,
 }: HomePanelProps) {
   const [input, setInput] = useState("");
@@ -604,6 +607,32 @@ export function HomePanel({
           </div>
         </div>
       )}
+
+      {/* 2026-09-01（复核 P2）：美团/运营位失败不再静默降级空——明示错误 */}
+      {panelErrors &&
+        Object.entries(panelErrors).length > 0 &&
+        !initialLoading &&
+        offers.length === 0 &&
+        meituanActs.length === 0 &&
+        featured99.length === 0 &&
+        featured30.length === 0 && (
+          <div
+            role="alert"
+            className="mb-4 rounded-[var(--kaypal-v3-radius-sm)] border-small border-danger-200 bg-danger-50 p-4 text-sm text-danger-700"
+          >
+            <span className="font-semibold">部分数据加载失败</span>
+            <ul className="mt-1 list-inside list-disc space-y-0.5 text-xs opacity-90">
+              {Object.entries(panelErrors).map(([key, message]) => (
+                <li key={key}>
+                  {key === "meituan" ? "美团活动" : "运营位"}：{message}
+                </li>
+              ))}
+            </ul>
+            <span className="mt-1 block text-xs opacity-75">
+              当前展示为空不代表没有数据，可下拉刷新重试。
+            </span>
+          </div>
+        )}
 
       {/* 空态引导 */}
       {!initialLoading && !searched && offers.length === 0 && meituanActs.length === 0 && featured99.length === 0 && (

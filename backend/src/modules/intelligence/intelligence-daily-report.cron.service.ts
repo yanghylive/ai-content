@@ -35,7 +35,7 @@ export class IntelligenceDailyReportCronService {
     );
 
     // 近 7 天活跃用户（有登录行为才生成，避免给休眠账号发日报）
-    const users = await this.prisma.user.findMany({
+    const users = await this.prisma.system.user.findMany({
       where: { lastLoginAt: { gte: since } },
       select: {
         id: true,

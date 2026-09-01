@@ -630,7 +630,9 @@ describe('账号归属 fail-closed 校验（复核 P0/P1）', () => {
     const store = makeStore();
     const prisma = {
       exposureAccount: { findFirst: jest.fn().mockResolvedValue(null) },
-      tenantMember: { findFirst: jest.fn().mockResolvedValue(null) },
+      system: {
+            tenantMember: { findFirst: jest.fn().mockResolvedValue(null) },
+      },
     };
     const controller = makeControllerWithPrisma(
       makeRegistry(driver),
@@ -655,7 +657,9 @@ describe('账号归属 fail-closed 校验（复核 P0/P1）', () => {
           .fn()
           .mockResolvedValue({ userId: 'other-user', status: 'active' }),
       },
-      tenantMember: { findFirst: jest.fn().mockResolvedValue(null) },
+      system: {
+            tenantMember: { findFirst: jest.fn().mockResolvedValue(null) },
+      },
     };
     const controller = makeControllerWithPrisma(
       makeRegistry(driver),
@@ -701,7 +705,9 @@ describe('账号归属 fail-closed 校验（复核 P0/P1）', () => {
           .fn()
           .mockResolvedValue({ userId: 'teammate-1', status: 'active' }),
       },
-      tenantMember: { findFirst: jest.fn().mockResolvedValue({ id: 'tm-1' }) },
+      system: {
+            tenantMember: { findFirst: jest.fn().mockResolvedValue({ id: 'tm-1' }) },
+      },
     };
     const controller = makeControllerWithPrisma(
       makeRegistry(driver),
@@ -724,7 +730,9 @@ describe('账号归属 fail-closed 校验（复核 P0/P1）', () => {
           .fn()
           .mockResolvedValue({ userId: 'other-user', status: 'active' }),
       },
-      tenantMember: { findFirst: jest.fn().mockResolvedValue(null) },
+      system: {
+            tenantMember: { findFirst: jest.fn().mockResolvedValue(null) },
+      },
     };
     const controller = makeControllerWithPrisma(
       makeRegistry(driver),

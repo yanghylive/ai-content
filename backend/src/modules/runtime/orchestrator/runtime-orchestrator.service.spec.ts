@@ -405,21 +405,23 @@ describe('RuntimeOrchestrator', () => {
       const billingFetch = mockBillingFetch();
       const router = makeRouterMock();
       const prisma = {
-        userSession: {
-          findFirst: jest.fn(async () => ({
-            metadata: {
-              kaypalDesktopAccessToken: 'session-token-1',
-              kaypalDesktopRefreshToken: 'session-refresh-1',
-              kaypalDesktopDeviceId: 'session-device-1',
-              kaypalDesktopTokenExpiresAt: new Date(
-                Date.now() + 10 * 60_000,
-              ).toISOString(),
-            },
-            user: {
-              kaypalUserId: 'cloud-user-1',
-            },
-          })),
-          update: jest.fn(),
+        system: {
+                userSession: {
+                  findFirst: jest.fn(async () => ({
+                    metadata: {
+                      kaypalDesktopAccessToken: 'session-token-1',
+                      kaypalDesktopRefreshToken: 'session-refresh-1',
+                      kaypalDesktopDeviceId: 'session-device-1',
+                      kaypalDesktopTokenExpiresAt: new Date(
+                        Date.now() + 10 * 60_000,
+                      ).toISOString(),
+                    },
+                    user: {
+                      kaypalUserId: 'cloud-user-1',
+                    },
+                  })),
+                  update: jest.fn(),
+                },
         },
       };
       const orchestrator = new RuntimeOrchestrator(
@@ -451,7 +453,7 @@ describe('RuntimeOrchestrator', () => {
       );
 
       expect(result.billing?.status).toBe('charged');
-      expect(prisma.userSession.findFirst).toHaveBeenCalledWith(
+      expect(prisma.system.userSession.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             id: 'session-1',

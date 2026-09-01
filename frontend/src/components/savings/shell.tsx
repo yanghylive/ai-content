@@ -40,20 +40,47 @@ export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
   const [featured30, setFeatured30] = useState<OfferView[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // 2026-09-01（复核 P2）：美团/运营位失败不再静默降级空——记录来源，区块明示
+  const [panelErrors, setPanelErrors] = useState<Record<string, string>>({});
 
   const isMobile = useIsMobile();
 
   const loadAll = useCallback(async () => {
     setInitialLoading(true);
     setLoadError(null);
+    setPanelErrors({});
     try {
       const [b, c, w, mt, f99, f30] = await Promise.all([
         savingsApi.rebateBalance(),
         savingsApi.creditBalance(),
         savingsApi.listWatches(),
-        savingsApi.meituanActivities().catch(() => []),
-        savingsApi.featured(2).catch(() => []),
-        savingsApi.featured(3).catch(() => []),
+        savingsApi.meituanActivities().catch((error) => {
+          setPanelErrors((prev) => ({
+            ...prev,
+            meituan:
+              (error as { message?: string })?.message?.slice?.(0, 80) ||
+              "美团活动加载失败",
+          }));
+          return [];
+        }),
+        savingsApi.featured(2).catch((error) => {
+          setPanelErrors((prev) => ({
+            ...prev,
+            featured99:
+              (error as { message?: string })?.message?.slice?.(0, 80) ||
+              "运营位加载失败",
+          }));
+          return [];
+        }),
+        savingsApi.featured(3).catch((error) => {
+          setPanelErrors((prev) => ({
+            ...prev,
+            featured30:
+              (error as { message?: string })?.message?.slice?.(0, 80) ||
+              "运营位加载失败",
+          }));
+          return [];
+        }),
       ]);
       setBalance(b);
       setCredit(c);
@@ -73,7 +100,18 @@ export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
     void loadAll();
   }, [loadAll]);
 
-  const shared = { balance, credit, watches, meituanActs, featured99, featured30, initialLoading, loadError, reload: loadAll };
+  const shared = {
+    balance,
+    credit,
+    watches,
+    meituanActs,
+    featured99,
+    featured30,
+    initialLoading,
+    loadError,
+    panelErrors,
+    reload: loadAll,
+  };
 
   // ---------- 桌面端：顶部导航 + 宽容器 ----------
   if (!isMobile) {

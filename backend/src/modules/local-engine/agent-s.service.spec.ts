@@ -37,12 +37,6 @@ describe('AgentSService approval compatibility', () => {
       ['user-b', 'tenant-b'],
     ]);
     const prisma = {
-      tenantMember: {
-        findFirst: jest.fn(async ({ where }: any) => {
-          const tenantId = memberships.get(where.userId);
-          return tenantId ? { tenantId } : null;
-        }),
-      },
       agentSession: {
         findUnique: jest.fn(
           async ({ where }: any) => rows.get(where.id) || null,
@@ -81,6 +75,14 @@ describe('AgentSService approval compatibility', () => {
           rows.set(where.id, { ...row, ...data });
           return { count: 1 };
         }),
+      },
+      system: {
+            tenantMember: {
+              findFirst: jest.fn(async ({ where }: any) => {
+                const tenantId = memberships.get(where.userId);
+                return tenantId ? { tenantId } : null;
+              }),
+            },
       },
     };
     const authFor = (userId: string) => ({

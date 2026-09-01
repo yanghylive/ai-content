@@ -30,16 +30,18 @@ function makeUser(
 describe('TenantsService', () => {
   it('creates or updates default tenant, membership, and entitlement snapshot', async () => {
     const prisma = {
-      tenant: {
-        upsert: jest
-          .fn()
-          .mockResolvedValue({ id: 'tenant-1', slug: 'user-user-1' }),
-      },
-      tenantMember: {
-        upsert: jest.fn().mockResolvedValue({ role: 'admin' }),
-      },
-      tenantEntitlement: {
-        upsert: jest.fn().mockResolvedValue({ id: 'ent-1' }),
+      system: {
+            tenant: {
+              upsert: jest
+                .fn()
+                .mockResolvedValue({ id: 'tenant-1', slug: 'user-user-1' }),
+            },
+            tenantMember: {
+              upsert: jest.fn().mockResolvedValue({ role: 'admin' }),
+            },
+            tenantEntitlement: {
+              upsert: jest.fn().mockResolvedValue({ id: 'ent-1' }),
+            },
       },
     } as unknown as jest.Mocked<PrismaService>;
     const service = new TenantsService(prisma);
@@ -63,11 +65,11 @@ describe('TenantsService', () => {
       permissions: ['crm:read'],
       warnings: [],
     });
-    expect(prisma.tenant.upsert).toHaveBeenCalledWith(
+    expect(prisma.system.tenant.upsert).toHaveBeenCalledWith(
       expect.objectContaining({ where: { slug: 'user-user-1' } }),
     );
-    expect(prisma.tenantMember.upsert).toHaveBeenCalled();
-    expect(prisma.tenantEntitlement.upsert).toHaveBeenCalledWith(
+    expect(prisma.system.tenantMember.upsert).toHaveBeenCalled();
+    expect(prisma.system.tenantEntitlement.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
           tenantId_source: {

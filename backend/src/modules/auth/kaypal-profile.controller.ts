@@ -165,7 +165,7 @@ export class KaypalProfileController {
     if (!localUserId) {
       throw new BadRequestException('当前用户未登录');
     }
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.system.user.findUnique({
       where: { id: localUserId },
       select: { kaypalUserId: true },
     });
@@ -251,7 +251,7 @@ export class KaypalProfileController {
     refreshToken: string;
     deviceId: string;
   }): Promise<string> {
-    const currentSession = await this.prisma.userSession.findUnique({
+    const currentSession = await this.prisma.system.userSession.findUnique({
       where: { id: input.sessionId },
       select: { metadata: true },
     });
@@ -291,7 +291,7 @@ export class KaypalProfileController {
           input.deviceId,
       });
     } catch {
-      await this.prisma.userSession
+      await this.prisma.system.userSession
         .update({
           where: { id: input.sessionId },
           data: {
@@ -318,7 +318,7 @@ export class KaypalProfileController {
       ).toISOString(),
       kaypalDesktopDeviceId: refreshed.device_id || input.deviceId,
     };
-    await this.prisma.userSession.update({
+    await this.prisma.system.userSession.update({
       where: { id: input.sessionId },
       data: {
         metadata: {
@@ -1272,12 +1272,12 @@ for imagePath in CommandLine.arguments.dropFirst() {
     const extracted = this.extractSubscriptionMetadata(subscriptionPayload);
     if (!extracted.plan) return;
 
-    const session = await this.prisma.userSession.findUnique({
+    const session = await this.prisma.system.userSession.findUnique({
       where: { id: req.authSessionId },
       select: { metadata: true },
     });
     const metadata = this.toMetadataRecord(session?.metadata);
-    await this.prisma.userSession.update({
+    await this.prisma.system.userSession.update({
       where: { id: req.authSessionId },
       data: {
         metadata: {
@@ -1339,7 +1339,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
 
   private async getSessionMetadata(req: AuthenticatedRequest) {
     if (!req.authSessionId) return {};
-    const session = await this.prisma.userSession.findUnique({
+    const session = await this.prisma.system.userSession.findUnique({
       where: { id: req.authSessionId },
       select: { metadata: true },
     });
@@ -1367,7 +1367,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
     if (!extracted) return;
 
     const metadata = await this.getSessionMetadata(req);
-    await this.prisma.userSession.update({
+    await this.prisma.system.userSession.update({
       where: { id: req.authSessionId },
       data: {
         metadata: {
@@ -1949,14 +1949,14 @@ for imagePath in CommandLine.arguments.dropFirst() {
     if (!kaypalUserId) {
       throw new BadRequestException('kaypalUserId 不能为空');
     }
-    const existing = await this.prisma.user.findUnique({
+    const existing = await this.prisma.system.user.findUnique({
       where: { kaypalUserId },
       select: { id: true },
     });
     if (existing && existing.id !== localUserId) {
       throw new BadRequestException('该 Kaypal 账号已绑定到其他本地账号');
     }
-    await this.prisma.user.update({
+    await this.prisma.system.user.update({
       where: { id: localUserId },
       data: { kaypalUserId },
     });
@@ -1982,7 +1982,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
       throw new BadRequestException('Kaypal 登录返回数据不完整');
     }
 
-    const existing = await this.prisma.user.findUnique({
+    const existing = await this.prisma.system.user.findUnique({
       where: { kaypalUserId: cloudUser.id },
       select: { id: true },
     });
@@ -1994,7 +1994,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
       subscriptionPlan: cloudUser.subscriptionPlan,
       subscriptionPeriodEnd: cloudUser.subscriptionPeriodEnd,
     });
-    await this.prisma.user.update({
+    await this.prisma.system.user.update({
       where: { id: localUserId },
       data: {
         kaypalUserId: cloudUser.id,
@@ -2018,7 +2018,7 @@ for imagePath in CommandLine.arguments.dropFirst() {
     if (!localUserId) {
       throw new UnauthorizedException('当前用户未登录');
     }
-    await this.prisma.user.update({
+    await this.prisma.system.user.update({
       where: { id: localUserId },
       data: { kaypalUserId: null },
     });

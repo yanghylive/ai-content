@@ -30,9 +30,6 @@ function makeResult(
 
 function makePrismaMock() {
   return {
-    tenantMember: {
-      findFirst: jest.fn().mockResolvedValue({ tenantId: 'tenant-1' }),
-    },
     interactionTask: {
       findFirst: jest.fn().mockResolvedValue({
         tenantId: 'tenant-1',
@@ -48,6 +45,11 @@ function makePrismaMock() {
     runtimeExecution: {
       create: jest.fn().mockResolvedValue({ id: 'exec-1' }),
       findMany: jest.fn().mockResolvedValue([]),
+    },
+    system: {
+        tenantMember: {
+          findFirst: jest.fn().mockResolvedValue({ tenantId: 'tenant-1' }),
+        },
     },
   };
 }

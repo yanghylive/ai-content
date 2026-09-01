@@ -31,13 +31,15 @@ describe('KaypalModelSyncService', () => {
           return created.platform;
         }),
       },
-      userSession: {
-        findFirst: jest.fn().mockResolvedValue({
-          metadata: {
-            kaypalDesktopAccessToken: 'desktop-token',
-            kaypalDesktopTokenExpiresAt: now,
-          },
-        }),
+      system: {
+            userSession: {
+              findFirst: jest.fn().mockResolvedValue({
+                metadata: {
+                  kaypalDesktopAccessToken: 'desktop-token',
+                  kaypalDesktopTokenExpiresAt: now,
+                },
+              }),
+            },
       },
     };
     const config = {

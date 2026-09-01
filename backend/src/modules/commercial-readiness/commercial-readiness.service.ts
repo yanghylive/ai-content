@@ -110,9 +110,9 @@ export class CommercialReadinessService
       crmTimelineCount,
       crmApp,
     ] = await Promise.all([
-      this.safeCount(() => this.prisma.user.count()),
+      this.safeCount(() => this.prisma.system.user.count()),
       this.safeCount(() =>
-        this.prisma.userSession.count({
+        this.prisma.system.userSession.count({
           where: { expiresAt: { gt: new Date() } },
         }),
       ),

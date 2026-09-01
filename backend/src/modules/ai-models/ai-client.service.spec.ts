@@ -14,10 +14,12 @@ describe('AiClientService knowledge context', () => {
       material: {
         findMany: jest.fn().mockResolvedValue(materials),
       },
-      userSession: {
-        findUnique: jest.fn().mockResolvedValue(null),
-        findMany: jest.fn().mockResolvedValue([]),
-        update: jest.fn(),
+      system: {
+            userSession: {
+              findUnique: jest.fn().mockResolvedValue(null),
+              findMany: jest.fn().mockResolvedValue([]),
+              update: jest.fn(),
+            },
       },
     };
     const config = {
@@ -114,7 +116,7 @@ describe('AiClientService knowledge context', () => {
       }),
     };
     const { service, prisma } = createService([]);
-    prisma.userSession.findUnique.mockResolvedValue({
+    prisma.system.userSession.findUnique.mockResolvedValue({
       metadata: {
         kaypalCreditBalance: 12,
         kaypalCreditBalanceUserId: 'cloud-user-1',
@@ -143,7 +145,7 @@ describe('AiClientService knowledge context', () => {
     });
 
     expect(global.fetch).not.toHaveBeenCalled();
-    expect(prisma.userSession.update).toHaveBeenCalledWith({
+    expect(prisma.system.userSession.update).toHaveBeenCalledWith({
       where: { id: 'session-1' },
       data: {
         metadata: expect.objectContaining({
@@ -301,9 +303,11 @@ describe('AiClientService token usage auto-report (P0)', () => {
   function makeService() {
     const prisma = {
       aIModel: { findUnique: jest.fn() },
-      userSession: { update: jest.fn() },
       aiUsageQuota: { upsert: jest.fn(async () => ({})) },
       aiToolCallLog: { create: jest.fn(async () => ({})) },
+      system: {
+            userSession: { update: jest.fn() },
+      },
     };
     const config = { get: jest.fn(() => undefined) } as any;
     const storage = {} as any;
@@ -354,7 +358,9 @@ describe('AiClientService token usage auto-report (P0)', () => {
   it('无 aiAudit 注入时静默跳过', async () => {
     const prisma = {
       aIModel: { findUnique: jest.fn() },
-      userSession: { update: jest.fn() },
+      system: {
+            userSession: { update: jest.fn() },
+      },
     };
     const service = new AiClientService(prisma as any, {} as any, {} as any);
     await expect(

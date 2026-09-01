@@ -51,7 +51,7 @@ export class ActivationService {
         where: { userId },
         orderBy: { createdAt: 'asc' },
       }),
-      this.prisma.user.findUnique({
+      this.prisma.system.user.findUnique({
         where: { id: userId },
         select: { createdAt: true },
       }),
