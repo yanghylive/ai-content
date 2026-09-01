@@ -165,13 +165,15 @@ export default function PoiPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 p-6">
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="kx-page-head">
         <div>
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>门店 POI 管理</h2>
-          <p style={{ fontSize: 13, opacity: 0.7, marginTop: 2 }}>门店数据 + 城市/分类统计（对标炼刀 /poi）</p>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">门店 POI 管理</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            门店数据 + 城市/分类统计（对标炼刀 /poi）
+          </p>
         </div>
         <Button color="primary" onPress={() => setShowForm((v) => !v)}>{showForm ? "收起" : "添加门店"}</Button>
-      </header>
+      </div>
       {error ? <p style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>⚠️ {error}</p> : null}
       {showForm ? formView : null}
       {reportView}

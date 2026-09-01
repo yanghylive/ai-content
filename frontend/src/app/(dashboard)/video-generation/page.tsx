@@ -172,10 +172,14 @@ export default function VideoGenPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 p-6">
-      <header>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>AI 图生视频</h2>
-        <p style={{ fontSize: 13, opacity: 0.7, marginTop: 2 }}>Wan2.1 引擎：图片 + 提示词 → 短视频（竖屏 9:16）</p>
-      </header>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">AI 图生视频</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            上传图片 + 提示词，生成短视频
+          </p>
+        </div>
+      </div>
       {form}
       {taskView}
     </div>

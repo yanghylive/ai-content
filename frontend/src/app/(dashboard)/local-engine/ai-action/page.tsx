@@ -164,10 +164,14 @@ export default function AiActionPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 p-6">
-      <header>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>AI 网页代操作</h2>
-        <p style={{ fontSize: 13, opacity: 0.7, marginTop: 2 }}>用自然语言让浏览器自动执行：打开页面、输入、点击、提取、截图（依赖本机引擎，每步留证据）</p>
-      </header>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">AI 网页代操作</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            用自然语言让浏览器自动执行：打开页面、输入、点击、提取、截图（依赖本机引擎，每步留证据）
+          </p>
+        </div>
+      </div>
       {form}
       {resultView}
     </div>

@@ -161,10 +161,14 @@ export default function ProductCutPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 p-6">
-      <header>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>商品视频剪辑</h2>
-        <p style={{ fontSize: 13, opacity: 0.7, marginTop: 2 }}>填商品信息 → 生成带货文案 → studio_core 一键成片</p>
-      </header>
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">商品视频剪辑</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            填商品信息 → 生成带货文案 → studio_core 一键成片
+          </p>
+        </div>
+      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {form}
         {err ? <p style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>⚠️ {err}</p> : null}
