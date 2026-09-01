@@ -289,7 +289,7 @@ export function RedfoxCostsClient() {
         </div>
       </div>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2">
         {metrics.map(({ label, value, detail, icon: Icon, tone }) => (
           <article
             className={[
@@ -467,10 +467,10 @@ export function RedfoxCostsClient() {
         </article>
       </section>
 
-      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <section className="grid min-w-0 gap-4">
         <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="kaypal-v3-label">使用明细</p>
                 <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
@@ -582,7 +582,7 @@ export function RedfoxCostsClient() {
           ) : null}
         </article>
 
-        <aside className="kaypal-v3-panel min-w-0 overflow-hidden">
+        <article className="kaypal-v3-panel min-w-0 overflow-hidden">
           <div className="border-b border-[var(--kaypal-v3-border)] p-4">
             <p className="kaypal-v3-label">功能用量</p>
             <h2 className="mt-1 text-base font-bold text-[var(--kaypal-v3-ink)]">
@@ -669,7 +669,7 @@ export function RedfoxCostsClient() {
               </Link>
             </div>
           </div>
-        </aside>
+        </article>
       </section>
     </div>
   );
