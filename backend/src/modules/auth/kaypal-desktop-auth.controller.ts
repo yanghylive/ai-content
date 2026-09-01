@@ -163,7 +163,7 @@ export class KaypalDesktopAuthController {
       throw new BadRequestException('Kaypal 登录返回数据不完整');
     }
 
-    let localUser = await this.prisma.user.findUnique({
+    let localUser = await this.prisma.system.user.findUnique({
       where: { kaypalUserId: cloudUser.id },
     });
 
@@ -171,7 +171,7 @@ export class KaypalDesktopAuthController {
       const safeId = cloudUser.id.replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 40);
       const username = `kaypal_${safeId}`;
       const email = cloudUser.email || `${cloudUser.id}@kaypal.local`;
-      const existingEmailUser = await this.prisma.user.findUnique({
+      const existingEmailUser = await this.prisma.system.user.findUnique({
         where: { email },
       });
       if (existingEmailUser) {
@@ -181,7 +181,7 @@ export class KaypalDesktopAuthController {
         ) {
           throw new BadRequestException('该邮箱已绑定其他 Kaypal 账号');
         }
-        localUser = await this.prisma.user.update({
+        localUser = await this.prisma.system.user.update({
           where: { id: existingEmailUser.id },
           data: {
             kaypalUserId: cloudUser.id,
@@ -197,7 +197,7 @@ export class KaypalDesktopAuthController {
         const randomPassword = `${Date.now()}-${Math.random()}-${cloudUser.id}`;
         const passwordHash = await hashPassword(randomPassword);
         try {
-          localUser = await this.prisma.user.create({
+          localUser = await this.prisma.system.user.create({
             data: {
               username,
               email,
@@ -220,7 +220,7 @@ export class KaypalDesktopAuthController {
       throw new BadRequestException('本地账号已停用');
     }
 
-    await this.prisma.user.update({
+    await this.prisma.system.user.update({
       where: { id: localUser.id },
       data: { lastLoginAt: new Date() },
     });
@@ -249,7 +249,7 @@ export class KaypalDesktopAuthController {
       kaypalPermissionNames: cloudUser.userPermissionNames,
     };
     const tenantId = await this.ensureDesktopTenant(localUser, sessionMetadata);
-    await this.prisma.userSession.create({
+    await this.prisma.system.userSession.create({
       data: {
         userId: localUser.id,
         tokenHash: hashSessionToken(sessionToken),
@@ -395,7 +395,7 @@ export class KaypalDesktopAuthController {
     // S12 优化（2026-08-18）：SQL 层先过滤未过期 + 用户活跃，避免 take 50
     // 中大量无效候选（过期/停用）挤占窗口；deviceId 存于 JSON metadata，
     // SQLite 下无法 Prisma where，保留内存过滤
-    const sessions = await this.prisma.userSession.findMany({
+    const sessions = await this.prisma.system.userSession.findMany({
       include: { user: true },
       where: {
         expiresAt: { gt: new Date() },
@@ -436,7 +436,7 @@ export class KaypalDesktopAuthController {
       const expiresAt = new Date(
         Date.now() + AUTH_SESSION_DAYS * 24 * 60 * 60 * 1000,
       );
-      await this.prisma.userSession.create({
+      await this.prisma.system.userSession.create({
         data: {
           userId: session.userId,
           tokenHash: hashSessionToken(sessionToken),
@@ -444,6 +444,12 @@ export class KaypalDesktopAuthController {
           metadata: restorableMetadata,
         },
       });
+
+      // 2026-09-01（复核 P1-1）：会话恢复同样要切账号库——否则重启后认证有效
+      // 但业务请求仍落系统库，读不到该账号业务数据
+      await this.prisma.switchDatabase(
+        await this.prisma.ensureAccountDatabase(session.userId),
+      );
 
       return {
         sessionToken,
@@ -611,7 +617,7 @@ export class KaypalDesktopAuthController {
     sessionId: string,
     metadata: Record<string, unknown>,
   ) {
-    await this.prisma.userSession
+    await this.prisma.system.userSession
       .update({
         where: { id: sessionId },
         data: {

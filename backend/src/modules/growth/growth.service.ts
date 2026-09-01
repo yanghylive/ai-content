@@ -8352,7 +8352,11 @@ export class GrowthService implements OnModuleInit {
       return {
         OR: [
           { tenantId: scope.tenantId },
-          { userId: scope.userId, tenantId: null },
+          // 2026-09-01（复核 P1-8 根因）：原分支 { userId, tenantId: null } 对非空
+          // tenantId 字段（Article.tenantId String NOT NULL）传 null → Prisma 运行时
+          // 参数校验报 Argument tenantId is missing，六步漏斗真实运行态持续失败。
+          // 且该分支语义为死分支（tenantId 有默认值，永不为 null）——改为"该用户数据"。
+          { userId: scope.userId },
         ],
       };
     }

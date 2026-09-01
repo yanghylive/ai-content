@@ -36,7 +36,8 @@ describe('KaypalDesktopAuthController', () => {
     };
 
     controller.prisma = {
-      userSession: {
+      system: {
+        userSession: {
         findMany: jest.fn().mockResolvedValue([
           {
             id: 'session-1',
@@ -61,6 +62,11 @@ describe('KaypalDesktopAuthController', () => {
         ]),
         create: jest.fn().mockResolvedValue({ id: 'restored-session' }),
       },
+      },
+      switchDatabase: jest.fn().mockResolvedValue(undefined),
+      ensureAccountDatabase: jest
+        .fn()
+        .mockResolvedValue('/tmp/accounts/user-1.sqlite'),
     };
     controller.entitlements = {
       getEffectiveEntitlementForUser: jest.fn().mockResolvedValue({
@@ -85,7 +91,7 @@ describe('KaypalDesktopAuthController', () => {
         kaypalDesktopDeviceId: 'desktop-device-1',
       }),
     );
-    expect(controller.prisma.userSession.create).toHaveBeenCalledWith({
+    expect(controller.prisma.system.userSession.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         userId: 'user-1',
         tokenHash: expect.any(String),

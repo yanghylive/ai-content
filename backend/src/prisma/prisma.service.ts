@@ -59,6 +59,9 @@ export class PrismaService
     'getSystemDatabasePath',
     'ensureAccountDatabase',
     'clearAccountBusinessTables',
+    'copySqliteDatabaseWithSidecars',
+    'healAccountDatabaseIfCorrupt',
+    'isSqliteCorrupt',
     'system',
     'switching',
     'accountClients',
@@ -159,8 +162,11 @@ export class PrismaService
     const accountPath = join(accountsDir, `${safeKey}.sqlite`);
 
     if (!existsSync(accountPath)) {
-      // 首登：系统库作为模板复制（含结构 + 认证表），业务数据按账号物理隔离
-      copyFileSync(systemPath, accountPath);
+      // 首登：系统库作为模板复制（含结构 + 认证表），业务数据按账号物理隔离。
+      // 2026-09-01（复核 P1-3）：必须复制 WAL/SHM 三件套——SQLite 在 WAL 模式下
+      // 已提交事务可能只在 -wal 文件里（实测现网库 4.4MB WAL），只复制主库会丢数据；
+      // 新库首次打开时自动 checkpoint 合并 WAL，数据完整。
+      this.copySqliteDatabaseWithSidecars(systemPath, accountPath);
       await this.clearAccountBusinessTables(accountPath);
       // 模板净化：系统库业务数据首登后不再需要（已随账号库隔离）
       if (!this.accountTablesCleared.has('__system__')) {
@@ -173,6 +179,20 @@ export class PrismaService
       await this.healAccountDatabaseIfCorrupt(accountPath, systemPath);
     }
     return accountPath;
+  }
+
+  /** 复制 SQLite 主库 + WAL + SHM 三件套（WAL 模式数据完整性） */
+  private copySqliteDatabaseWithSidecars(
+    sourcePath: string,
+    targetPath: string,
+  ): void {
+    copyFileSync(sourcePath, targetPath);
+    for (const suffix of ['-wal', '-shm']) {
+      const source = `${sourcePath}${suffix}`;
+      if (existsSync(source)) {
+        copyFileSync(source, `${targetPath}${suffix}`);
+      }
+    }
   }
 
   /**
@@ -233,14 +253,26 @@ export class PrismaService
     const tables = (await client.$queryRawUnsafe<Array<{ name: string }>>(
       `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('users', 'user_sessions', '_prisma_migrations')`,
     )).map((row) => row.name);
+    // 2026-09-01（复核 P1-3）：删除失败不再吞掉照样标记完成——失败表会导致
+    // 账号库残留上一账号业务数据（隔离破坏），汇总失败并抛错中止（首登可重试）。
+    const failed: Array<{ table: string; message: string }> = [];
     for (const table of tables) {
       try {
         await client.$executeRawUnsafe(`DELETE FROM "${table}"`);
       } catch (error) {
-        this.logger.warn(
-          `清空业务表 ${table} 失败（跳过）：${error instanceof Error ? error.message : String(error)}`,
-        );
+        failed.push({
+          table,
+          message: error instanceof Error ? error.message : String(error),
+        });
       }
+    }
+    if (failed.length > 0) {
+      const detail = failed
+        .map((item) => `${item.table}(${item.message.slice(0, 80)})`)
+        .join('; ');
+      throw new Error(
+        `清空业务表失败（${dbPath}），未标记已清空：${detail}`,
+      );
     }
     this.accountTablesCleared.add(dbPath);
     this.logger.log(
