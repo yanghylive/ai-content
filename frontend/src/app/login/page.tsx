@@ -342,7 +342,7 @@ function LoginPageContent() {
 
   const markDeviceAuthExpired = React.useCallback(() => {
     clearDeviceAuthState();
-    setErrorMessage("本次授权码已过期，请获取新的授权码后继续。");
+    setErrorMessage("本次验证码已过期，请获取新的验证码后继续。");
     setPhase("expired");
   }, []);
 
@@ -480,7 +480,7 @@ function LoginPageContent() {
       console.error("[device-auth] start failed:", error);
       const message = toActionableError(
         error,
-        "登录授权未能启动，请稍后重试。",
+        "登录未能启动，请稍后重试。",
       );
       setErrorMessage(message);
       setPhase("error");
@@ -555,7 +555,7 @@ function LoginPageContent() {
         }
         if (result.status === "denied") {
           setPhase("denied");
-          setErrorMessage("JIUZHANG AI 拒绝了授权，请重新发起。");
+          setErrorMessage("没有完成确认，请重试，请重新发起。");
           return;
         }
         consecutiveFailures = 0;
@@ -579,7 +579,7 @@ function LoginPageContent() {
           schedulePoll(retryDelayMs);
           return;
         }
-        setErrorMessage("本次授权无法继续，请重新获取授权码。");
+        setErrorMessage("本次登录未能继续，请重新获取验证码。");
         setPhase("error");
       }
     };
@@ -740,13 +740,13 @@ function LoginPageContent() {
                     </div>
                     <div className="flex flex-col gap-1">
                       <span className="preview-login-kicker text-small text-default-500">WELCOME TO JIUZHANG AI</span>
-                      <h2 className="text-xl font-semibold">{phase === "waiting" ? "请在 JIUZHANG AI 页面确认" : forceReauth ? "重新授权账号" : "进入九章智能"}</h2>
+                      <h2 className="text-xl font-semibold">{phase === "waiting" ? "请在 JIUZHANG AI 页面确认" : forceReauth ? "重新登录账号" : "进入九章智能"}</h2>
                       <p className="text-small text-default-500">
                         {phase === "waiting"
                           ? "确认后会自动进入当前工作台。"
                           : forceReauth
-                            ? "完成确认后会更新当前账号授权。"
-                            : "选择一种方式登录你的智能运营工作台。"}
+                            ? "确认后即可重新登录。"
+                            : "选择一种方式登录。"}
                       </p>
                     </div>
                   </div>
@@ -785,20 +785,20 @@ function LoginPageContent() {
                             <div className="sso-head flex flex-row items-center gap-3">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img alt="" src="/brand/jiuzhang-ai-icon.webp" width={512} height={512} />
-                              <div className="flex flex-col gap-0"><span className="text-sm font-bold">使用 JIUZHANG AI 账号</span><span className="text-small text-default-500">统一身份授权 · 无需再次输入密码</span></div>
+                              <div className="flex flex-col gap-0"><span className="text-sm font-bold">使用 JIUZHANG AI 账号</span><span className="text-small text-default-500">登录一次，全端可用</span></div>
                             </div>
-                            <p className="text-sm">像 Codex 使用 ChatGPT 账号一样，通过你的九章统一账号完成授权，并安全连接当前浏览器或桌面设备。</p>
+                            <p className="text-sm">用你的 JIUZHANG AI 账号一键登录，登录后即可直接开始工作。</p>
                             <div
                               className="sso-points grid gap-2"
                               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}
                             >
-                              {["自动识别当前账号", "设备授权随时撤销", "工作区权限自动同步", "任务与证据安全回传"].map((point) => <span key={point} className="text-small text-default-500"><b>✓</b>{point}</span>)}
+                              {["自动识别当前账号", "随时可以退出登录", "工作区内容自动同步", "操作记录安全留存"].map((point) => <span key={point} className="text-small text-default-500"><b>✓</b>{point}</span>)}
                             </div>
                             <Button className="preview-main-button w-full" color="primary" isLoading={phase === "starting"} startContent={<LogIn aria-hidden="true" className="h-4 w-4" />} onPress={() => void startDeviceAuth()}>
                               {phase === "starting" ? "正在准备 JIUZHANG AI 登录..." : "使用 JIUZHANG AI 账号继续"}
                             </Button>
                           </div>
-                          <span className="sso-note text-small text-default-500">授权过程由九章统一账号中心完成，本页面不会读取你的密码</span>
+                          <span className="sso-note text-small text-default-500">登录由 JIUZHANG AI 官方完成，本页面不会读取你的密码</span>
                         </div>
                       ) : loginTab === "password" ? (
                         <div className="flex flex-col gap-3">
@@ -904,7 +904,7 @@ function LoginPageContent() {
                         <div className="qr-pane flex flex-col gap-3">
                           <div className="flex flex-col gap-1">
                             <h3 className="text-lg font-semibold">微信扫码登录</h3>
-                            <span className="text-small text-default-500">点击下方按钮，跳转到微信完成扫码授权，登录后自动回到本页。</span>
+                            <span className="text-small text-default-500">点击按钮，用微信扫码完成登录，确认后会自动回到本页。</span>
                           </div>
                           {!isMobileShell() && (
                             <Button className="qr-login-button w-full" color="primary" onPress={handleWechatLogin}>
@@ -974,17 +974,17 @@ function LoginPageContent() {
                               }
                             }}
                           >
-                            打开 JIUZHANG AI 确认页
+                            打开确认页面
                           </Button>
                         </div>
                         <div className="flex flex-col gap-2">
                           <span className="text-default-500 text-small font-bold">
-                            2. 确认授权码
+                            2. 输入页面上的验证码
                           </span>
                           <Button
                             className="w-full"
                             variant="flat"
-                            aria-label={`复制授权码 ${userCode}`}
+                            aria-label={`点击复制 ${userCode}`}
                             onPress={() => {
                               // 桌面 Electron：走主进程原生剪贴板（renderer 的 navigator.clipboard 可能被权限拒绝）
                               const desktopBridge =
@@ -994,7 +994,7 @@ function LoginPageContent() {
                                 void desktopBridge
                                   .writeClipboard(userCode)
                                   .then((ok) => {
-                                    if (ok) toast.success("授权码已复制");
+                                    if (ok) toast.success("验证码已复制");
                                     else toast.error("复制失败");
                                   })
                                   .catch(() => toast.error("复制失败"));
@@ -1005,7 +1005,7 @@ function LoginPageContent() {
                                 navigator.clipboard
                               ) {
                                 navigator.clipboard.writeText(userCode).then(
-                                  () => toast.success("授权码已复制"),
+                                  () => toast.success("验证码已复制"),
                                   () => toast.error("复制失败"),
                                 );
                               }
@@ -1016,23 +1016,23 @@ function LoginPageContent() {
                                 {userCode}
                               </span>
                               <span className="text-small text-default-500">
-                                复制授权码
+                                点击复制
                               </span>
                             </div>
                           </Button>
                         </div>
                         <p className="text-small text-default-500">
-                          3. 在 JIUZHANG AI 页面确认授权，确认后会自动回到工作台。
+                          3. 在打开的页面确认登录，确认后会自动回到这里。
                         </p>
                         {errorMessage ? (
                           <div className="flex flex-col gap-1 rounded-lg border border-warning-200 bg-warning-50 p-4">
-                            <p className="font-semibold text-warning">连接恢复中</p>
+                            <p className="font-semibold text-warning">网络恢复中</p>
                             <p className="text-sm text-warning-600">{errorMessage}</p>
                           </div>
                         ) : null}
                         {expiresIn ? (
                           <span className="text-small text-default-500">
-                            授权码 {Math.round(expiresIn / 60)} 分钟内有效
+                            验证码 {Math.round(expiresIn / 60)} 分钟内有效
                           </span>
                         ) : null}
                       </div>
@@ -1040,8 +1040,8 @@ function LoginPageContent() {
                         <Spinner size="sm" />
                         <span className="text-small text-default-500">
                           {errorMessage
-                            ? "连接恢复中，正在自动重试..."
-                            : "正在等待授权确认..."}
+                            ? "网络恢复中，正在自动重试..."
+                            : "等待确认中..."}
                         </span>
                       </div>
                       <Button
@@ -1049,7 +1049,7 @@ function LoginPageContent() {
                         variant="light"
                         onPress={resetDeviceAuth}
                       >
-                        取消，重新发起
+                        重新发起
                       </Button>
                     </div>
                   ) : null}
@@ -1057,10 +1057,10 @@ function LoginPageContent() {
                   {phase === "expired" ? (
                     <div className="flex flex-col gap-3">
                       <div className="flex flex-col gap-1 rounded-lg border border-warning-200 bg-warning-50 p-4">
-                        <p className="font-semibold text-warning">授权码已过期</p>
+                        <p className="font-semibold text-warning">验证码已过期</p>
                         <p className="text-sm text-warning-600">
                           {errorMessage ||
-                            "本次授权码已过期，请获取新的授权码后继续。"}
+                            "本次验证码已过期，请获取新的验证码后继续。"}
                         </p>
                       </div>
                       <Button
@@ -1068,7 +1068,7 @@ function LoginPageContent() {
                         color="primary"
                         onPress={() => void startDeviceAuth()}
                       >
-                        获取新授权码
+                        获取新验证码
                       </Button>
                     </div>
                   ) : null}
@@ -1076,9 +1076,9 @@ function LoginPageContent() {
                   {phase === "denied" ? (
                     <div className="flex flex-col gap-3">
                       <div className="flex flex-col gap-1 rounded-lg border border-warning-200 bg-warning-50 p-4">
-                        <p className="font-semibold text-warning">授权未通过</p>
+                        <p className="font-semibold text-warning">登录未确认</p>
                         <p className="text-sm text-warning-600">
-                          {errorMessage || "JIUZHANG AI 拒绝了授权"}
+                          {errorMessage || "没有完成确认，请重试"}
                         </p>
                       </div>
                       <Button
@@ -1086,7 +1086,7 @@ function LoginPageContent() {
                         color="primary"
                         onPress={() => void startDeviceAuth()}
                       >
-                        重新发起授权
+                        重新登录
                       </Button>
                     </div>
                   ) : null}

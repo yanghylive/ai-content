@@ -164,6 +164,8 @@ html.dark {
 .kx-btn-primary:hover { background: var(--kaypal-v3-gradient-primary, var(--kx-accent-ink)); color: #fff; box-shadow: 0 2px 4px rgba(114, 46, 209, 0.35), 0 4px 16px -2px rgba(114, 46, 209, 0.3), inset 0 1px 0 var(--kaypal-v3-btn-inset-hover, rgba(255, 255, 255, 0.22)); transform: translateY(-1px); }
 .kx-btn-ghost { background: var(--kx-card); color: var(--kx-ink-soft); border: 1px solid var(--kx-border); }
 .kx-btn-ghost:hover { border-color: var(--kx-border-strong); color: var(--kx-ink); }
+.kx-btn-danger { background: color-mix(in srgb, var(--kaypal-v3-danger, #dc2626) 8%, var(--kx-card)); color: var(--kaypal-v3-danger, #dc2626); border: 1px solid color-mix(in srgb, var(--kaypal-v3-danger, #dc2626) 35%, transparent); }
+.kx-btn-danger:hover { background: var(--kaypal-v3-danger, #dc2626); color: #fff; border-color: var(--kaypal-v3-danger, #dc2626); }
 
 /* ---------- 大动作 ---------- */
 .kx-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 26px; }

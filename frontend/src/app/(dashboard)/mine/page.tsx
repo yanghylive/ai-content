@@ -96,13 +96,13 @@ export default function MineScene() {
               </div>
             </div>
             <button
-              className="kx-btn kx-btn-ghost"
+              className="kx-btn kx-btn-danger"
               disabled={user.loggingOut}
               onClick={() => {
                 void confirm({
                   kind: "danger",
                   title: "退出登录？",
-                  description: "退出后需要重新登录 Kaypal 账号才能使用全部功能",
+                  description: "退出后需要重新登录 JIUZHANG AI 账号才能使用全部功能",
                   confirmText: "退出",
                 }).then((ok) => {
                   if (ok) user.onLogout?.();
@@ -283,7 +283,7 @@ function MobileMineView({
             {onLogout ? (
               <button
                 type="button"
-                className="mx-btn-gold"
+                className="mx-btn-danger"
                 disabled={loggingOut}
                 onClick={onLogout}
               >
