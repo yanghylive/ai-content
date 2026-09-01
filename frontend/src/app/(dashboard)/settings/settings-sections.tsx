@@ -88,10 +88,7 @@ export function AppearanceSettingsSection() {
   });
 
   return (
-    <V2Section
-      title="显示设置"
-      description="调整文字大小（本机保存，仅当前设备生效）"
-    >
+    <V2Section>
       <div className="flex gap-2">
         {(
           [
@@ -153,15 +150,7 @@ export function NotificationsSettingsSection() {
   };
 
   return (
-    <V2Section
-      title="通知设置"
-      description="什么时候提醒你"
-      action={
-        <V2PrimaryButton icon={Bell} onClick={() => flash(NOT_READY)}>
-          保存
-        </V2PrimaryButton>
-      }
-    >
+    <V2Section>
       {message && (
         <div
           className="mb-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-3"
@@ -225,6 +214,12 @@ export function NotificationsSettingsSection() {
           </label>
         ))}
       </div>
+
+      <div className="mt-6 flex justify-end">
+        <V2PrimaryButton icon={Bell} onClick={() => flash(NOT_READY)}>
+          保存
+        </V2PrimaryButton>
+      </div>
     </V2Section>
   );
 }
@@ -240,7 +235,7 @@ export function DataSettingsSection() {
   };
 
   return (
-    <V2Section title="数据管理" description="导出和备份你的数据">
+    <V2Section>
       {message && (
         <div
           className="mb-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-3"

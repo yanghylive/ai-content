@@ -1,6 +1,7 @@
 "use client";
 
 import { KaypalAccountSections } from "./account-sections";
+import { SettingsPageHeader } from "../../settings/settings-sections";
 
 /**
  * 账号与团队（2026-09-01 WorkBuddy 化去重）
@@ -12,6 +13,7 @@ import { KaypalAccountSections } from "./account-sections";
 export function AccountCenter() {
   return (
     <div className="flex flex-col gap-6">
+      <SettingsPageHeader title="账号与团队" sub="个人资料、成员权限、版本更新" />
       <KaypalAccountSections />
     </div>
   );

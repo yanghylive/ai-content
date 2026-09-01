@@ -415,6 +415,8 @@ html.dark {
  * 移动端 mx-header 仍由 mobile.css 保留；桌面不再出现深色卡片页头。
  * ============================================================ */
 @media (min-width: 768px) {
+  /* WorkBuddy 化（2026-09-01）：左侧 rail 已承担导航，桌面端隐藏遗留返回按钮 */
+  .v2-back-btn { display: none; }
   .mx-header {
     padding: 6px 0 10px;
     background: transparent;

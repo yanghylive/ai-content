@@ -6,7 +6,6 @@ import { ArrowLeft, CheckCircle2, XCircle, ShieldCheck, RefreshCcw } from "lucid
 import {
   V2Section,
   V2StatusChip,
-  V2GhostButton,
   V2PrimaryButton,
 } from "@/components/v2/ui-kit";
 import { localEngineApi, type LocalEngineReadiness } from "@/lib/api/local-engine";
@@ -143,13 +142,6 @@ export function EnginePermissions() {
     <div className="flex flex-col gap-6">
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/local-engine")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
           <div className="flex-1">
             <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               安全检查
@@ -227,10 +219,7 @@ export function EnginePermissions() {
         </div>
       )}
 
-      <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} onClick={() => router.push("/local-engine")}>
-          返回
-        </V2GhostButton>
+      <section className="flex justify-end">
         <V2PrimaryButton icon={RefreshCcw} loading={checking} onClick={() => void handleRecheck()}>
           {checking ? "正在检查..." : "重新检查"}
         </V2PrimaryButton>
