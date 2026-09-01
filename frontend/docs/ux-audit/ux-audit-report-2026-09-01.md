@@ -25,12 +25,12 @@
 
 ### 2.2 功能重叠（建议收敛主入口）
 
-| 功能 | 页面 | 入口 |
-|------|------|------|
-| 爆款拆解 | `/viral-analysis`（爆款拆解） | 内容运营页 |
-| 爆款拆解 | `/intelligence/viral`（拆解台） | 情报/获客域（intelligence 组件引用） |
+| 功能 | 页面 | 入口 | 判定 |
+|------|------|------|------|
+| 爆款拆解 | `/viral-analysis`（爆款拆解） | 内容运营页 | 单视频链接拆解工具,保留 |
+| 爆款拆解 | `/intelligence/viral`（拆解台） | 情报/获客域 | 爆款样本工作台(承接派发样本),与单链拆解互补,保留 |
 
-同一"爆款拆解"能力拆成两个实现（`viral-analysis/page.tsx` 与 `intelligence/_components/viral-analysis-workbench.tsx`）,分别挂在内容运营与获客中心,用户从不同入口看到两套界面。
+**修正**:两者是不同层次(单链工具 vs 样本工作台),非简单重复,保留双入口。
 
 | 功能 | 页面 | 入口 |
 |------|------|------|
@@ -57,8 +57,8 @@
 | `/video-studio` | AI 视频 | 视频一键成片 | 内容运营 ✅ |
 | `/video-generation` | AI 图生视频 | 图生视频 | 内容运营 ✅ |
 | `/content/ai-video-gen` | AI 生视频 | 文生视频 | 内容运营 ✅ |
-| `/seedance-video` | Seedance 快速生成 | AI 视频 | **孤儿** |
-| `/video-workshop` | 视频引擎 | 流水线成片（studio_core） | **孤儿**（仅能力页/素材页间接引用） |
+| `/seedance-video` | Seedance 快速生成 | AI 视频 | **已合并** → `/content/ai-video-gen`（P1） |
+| `/video-workshop` | 视频生产 | 流水线成片（studio_core） | **已补入口** → 内容运营「视频生产」卡片（P1） |
 | `/video/product-cut` | 商品视频 | 带货视频 | 内容运营 ✅ |
 | `/video/release-plans` | 发布计划 | 定时发布视频 | 内容运营 ✅ |
 | `/content/face-swap` | 换脸 | 视频换脸 | 内容运营 ✅ |
@@ -80,14 +80,14 @@
 
 | 路由 | 功能 | 建议 |
 |------|------|------|
-| `/strategies` | 策略中心（旧版） | 合并到 `/growth/strategies` 后删除 |
-| `/knowledge` | 品牌知识 | 合并到 `/knowledge-base` 后删除 |
-| `/reply` | AI 回复建议 | 挂到互动中心（互动记录/评论区入口） |
-| `/seedance-video` | Seedance 快速生成 | 收敛进 `/video-studio` 或明确独立入口 |
-| `/video-workshop` | 视频引擎 | 收敛进 `/video-studio` 或明确独立入口 |
-| `/case-admin` | 案例管理（含 `[id]`/`new`） | 若为内部工具,接入 apps 或 mine;若废弃则删除 |
-| `/commercial-readiness` | 商业就绪自检 | 移动端有入口但桌面无;确认桌面是否需入口 |
-| `/solutions` | 解决方案（含 configure/run） | 仅被 intelligence 工具结果上下文引用,确认是否运营落地页 |
+| `/strategies` | 策略中心（旧版） | **已合并** → `/growth/strategies`（P0） |
+| `/knowledge` | 品牌知识 | **已合并** → `/knowledge-base`（P0） |
+| `/reply` | AI 回复建议 | **已挂入口** → 互动中心渠道（P1） |
+| `/seedance-video` | Seedance 快速生成 | **已合并** → `/content/ai-video-gen`（P1,与 AI 生视频同 API 重复） |
+| `/video-workshop` | 视频生产 | **已补入口** → 内容运营「视频生产」卡片（P1） |
+| `/case-admin` | 案例管理（含 `[id]`/`new`） | 待确认:管理端/展示端配对,无入口(建议挂 mine 或废弃) |
+| `/commercial-readiness` | 商业就绪自检 | **已补桌面入口** → 「我的→系统与服务」(P1) |
+| `/solutions` | 组合方案（含 configure/run） | **非孤儿**:layout「继续组合方案」+ intelligence 工具结果引用,审计脚本漏判 |
 
 > 说明:`/admin/*`（18 个）虽是旧路径,但 layout.tsx 有全局别名重定向（routeAliases → capabilities/apps 等）,不属于孤儿。
 
@@ -159,9 +159,9 @@
 2. ~~删除/重定向孤儿旧页~~ **已完成**(2026-09-01):`/strategies`、`/strategies/new`、`/strategies/edit` → `/growth/strategies`;`/knowledge` → `/knowledge-base`;旧组件死代码已删
 
 ### P1（用户可见困惑,中等工作量）
-3. 收敛视频生成入口:确定 `video-studio` 为主入口,`video-generation`/`ai-video-gen`/`seedance-video` 统一命名或并入
-4. 统一爆款拆解:保留 `/viral-analysis` 或 `/intelligence/viral` 其一,另一个重定向
-5. `/reply`、`/commercial-readiness` 挂到对应场景入口
+3. **已完成**:`/seedance-video` 并入 `/content/ai-video-gen`(同 API 重复);`/video-workshop` 补内容运营入口
+4. **已修正**:爆款拆解双入口(单链工具 + 样本工作台)为互补结构,保留
+5. **已完成**:`/reply` → 互动中心渠道;`/commercial-readiness` → 「我的→系统与服务」(桌面)+「系统与情报」(移动)
 
 ### P2（结构性优化,需产品决策）
 6. 一级导航「移动设备」职责重审（改名或拆内容）

@@ -35,6 +35,7 @@ export const INTERACTION_CHANNELS: InteractionChannelEntry[] = [
   { key: "channel-messages", title: "视频号私信", desc: "私信和评论", sub: "私信和评论", href: "/engagement/channel-messages", icon: "play", tint: "kx-t-cyan", brand: "#007fff" },
   { key: "wechat", title: "微信", desc: "会话、加好友", sub: "会话 · 加好友", href: "/engagement/wechat", icon: "messageSq", tint: "kx-t-green", brand: "#07c160" },
   { key: "wecom-assistant", title: "企微助手", desc: "企业微信客户智能回复助手", sub: "企微智能回复", href: "/engagement/wecom-assistant", icon: "messageSq", tint: "kx-t-green", brand: "#07c160" },
+  { key: "reply", title: "AI 回复建议", desc: "AI 生成回复建议，确认后快速发出", sub: "AI 回复建议", href: "/reply", icon: "messageSq", tint: "kx-t-violet", brand: "var(--kaypal-v3-accent)" },
   { key: "records", title: "互动记录", desc: "所有发出过的回复，可追溯", sub: "所有回复可追溯", href: "/engagement/records", icon: "history", tint: "kx-t-slate", brand: "#76517e" },
   { key: "wechat-plans", title: "群发计划", desc: "群发任务管理：暂停、继续、重试", sub: "群发任务管理", href: "/engagement/wechat/plans", icon: "megaphone", tint: "kx-t-amber", brand: "var(--kaypal-v3-amber)" },
   { key: "war-room", title: "执行态势", desc: "跨平台执行任务态势总览", sub: "跨平台任务态势", href: "/war-room", icon: "cpu", tint: "kx-t-violet", brand: "var(--kaypal-v3-purple)" },
@@ -79,6 +80,7 @@ export const MINE_NAV_ENTRIES: MineNavEntry[] = [
   { key: "engine-permissions", title: "引擎权限", desc: "本地引擎权限管理", href: "/local-engine/permissions", icon: "clipboard", tint: "kx-t-slate", group: "系统与服务", desktopOrder: 11, mobileTint: "var(--kaypal-v3-muted)", mobileGroup: "更多能力" },
   { key: "artifacts", title: "AI 工件", desc: "AI 生成的工件产物", href: "/artifacts", icon: "archive", tint: "kx-t-slate", group: "系统与服务", desktopOrder: 12, mobileTint: "var(--kaypal-v3-muted)", mobileGroup: "更多能力" },
   { key: "redfox-admin", title: "数据服务管理", desc: "数据源连接与配额配置", href: "/intelligence/redfox", icon: "settings", tint: "kx-t-slate", group: "系统与服务", desktopOrder: 13, mobileTint: "var(--kaypal-v3-muted)", mobileGroup: "更多能力", adminOnly: true },
+  { key: "commercial-readiness", title: "商业就绪", desc: "上线能力自检", href: "/commercial-readiness", icon: "rocket", tint: "kx-t-amber", group: "系统与服务", desktopOrder: 14, mobileTint: "#c2410c", mobileGroup: "系统与情报" },
 
   // 移动端首屏专属（顺序即展示顺序）
   { key: "customer-entry", title: "客户管理", desc: "客户列表与跟进", href: "/crm", icon: "users", mobileTint: "var(--kaypal-v3-cobalt)", mobileTop: true },

@@ -175,6 +175,14 @@ export default function ContentScene() {
         },
         {
           icon: "video",
+          tint: "kx-t-violet",
+          title: "视频生产",
+          desc: "流水线成片，选题到成片全流程",
+          href: "/video-workshop",
+          group: "视频与发布",
+        },
+        {
+          icon: "video",
           tint: "kx-t-amber",
           title: "商品视频",
           desc: "带货文案 + 一键成片",
@@ -225,6 +233,7 @@ const CONTENT_TOOL_ENTRIES: Array<{
   { label: "图生视频", desc: "图片 + 提示词生成短视频", icon: "sparkles", tint: "var(--kaypal-v3-purple)", href: "/video-generation" },
   { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target", tint: "var(--kaypal-v3-success)", href: "/poi" },
   { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "var(--kaypal-v3-purple)", href: "/distribution/publish-article" },
+  { label: "视频生产", desc: "流水线成片，选题到成片全流程", icon: "video", tint: "var(--kaypal-v3-violet)", href: "/video-workshop" },
   { label: "视频发布计划", desc: "查看定时发布的视频任务", icon: "history", tint: "var(--kaypal-v3-purple)", href: "/video/release-plans" },
   { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "var(--kaypal-v3-amber)", href: "/knowledge-base" },
   { label: "视频特效", desc: "换脸与模板化视频效果", icon: "video", tint: "var(--kaypal-v3-purple)", href: "/content/face-swap" },
