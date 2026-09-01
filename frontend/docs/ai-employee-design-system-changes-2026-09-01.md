@@ -175,3 +175,81 @@
 | `5d6dba82` | 方案 A+B 主体落地(token + 视觉升级 + 深浅色) |
 | `86e5680d` | 覆盖核查报告文档 |
 | `be732c46` | Table/导航补全 + sparkline + 全量 OKLCH 迁移 |
+
+## 10. 视觉对齐审计与收尾(2026-09-01)
+
+在驾驶舱 chat 区升级之后,对全站做多轮视觉差距审计,修复所有未对齐细节,并完成最后一项 OKLCH/HSL 色阶迁移。
+
+### 10.1 驾驶舱 chat 区升级(`1ddfe9a2`)
+
+| 元素 | 升级内容 |
+|------|---------|
+| 发送按钮 | 普通态 → 品牌紫渐变,与全局 CTA 一致 |
+| 输入框 | focus-within 紫色 glow 光环,textarea 透明底融入容器 |
+| 用户消息气泡 | 纯色块 → 紫渐变气泡(明暗自校准) |
+| 建议卡片 | hover 变紫 + 上浮,与 capability-workbench 对齐 |
+| 助手消息 | hover 底色 tint,弱化高对比边框 |
+
+### 10.2 品牌紫硬编码 → HSL token 主题化
+
+**问题**:多处阴影/glow/文字硬编码 `rgba(114,46,209,...)` 深紫 RGB,暗色模式下 `primary` token 切亮紫 `#b885f7` 后不跟随,视觉脱节。
+
+**统一方案**:`hsl(var(--agent-cockpit-primary) / alpha)` — 与 Tailwind 语义类同源,明暗自适应。
+
+| Commit | 修复范围 |
+|--------|---------|
+| `9ef6dd84` | chat 区 3 处 + `ui/button.tsx` 阴影(6 处)+ 输入框 px 冲突 + 停止按钮 destructive 语义 |
+| `3810f226` | 驾驶舱 dashboard:error 卡暗色适配、确认按钮 `text-black`、`ui/card.tsx` hover 阴影 |
+| `fee59719` | 能力工作台 3 处 + `ui-kit.tsx` 输入框/按钮 3 处 + content/message 移动端 tint + nav-registry |
+
+### 10.3 补全缺失 chart 色阶(`3810f226`)
+
+驾驶舱图表引用 `--chart-1..5` 但全局从未定义(编译产物 0 定义),图表颜色会回退失效。在 `globals.css` 补全品牌紫主导的明暗两套色阶。
+
+### 10.4 `${color}xx` hex-alpha 拼接修复(`910207a3`)
+
+**问题**:8 处用模板字符串 `${color}1f`/`22`/`55`/`1a` 拼 hex 透明度。色值迁移到 `var(--kaypal-v3-*)` 后拼接失效(`var(...)1f` 非法),图标/徽标背景丢失。
+
+**修复**:统一改 `color-mix(in srgb, ${color} 12%, transparent)`(hex 精确映射:1a=10%、1f=12%、22=13%、55=33%)。
+
+涉及:growth-mobile-console、settings/memory、knowledge、publish-center、distribution-tasks、accounts-matrix、mine 共 7 文件。
+
+### 10.5 light-only 页面 token 化(`55c467d2`、`6ccf99ed`)
+
+早期实现的真实页面残留 `rgba(255,255,255,.72)` 白卡 + `#fff` 输入框 + `#6b7a93` 灰字,暗色下刺眼不可读:
+
+| 文件 | 修复 |
+|------|------|
+| `video-workshop-page-real.tsx` | 表单/进度卡 → `panel-bg`,select/textarea → `field-bg`,灰字 → `muted` |
+| `seedance-video/page.tsx` | 同上 3 处白卡 + 输入框 + 历史卡 |
+| `copy-compare/page.tsx` | 2 处白卡 + 平台按钮 + 结果行卡 + 变体行 |
+| `settings-detail.tsx` | 5 处输入框 `.7` 白底 → `field-bg` |
+| `scrape/page.tsx` | **可读性 bug**:白字配浅底 → `ink` |
+| `ai-assistant.tsx` | high risk 硬编码 → `danger`/`danger-soft` token |
+
+### 10.6 HeroUI 主题色阶迁移(`41d6face`)
+
+最后遗留项:`tailwind.config.ts` HeroUI 主题 33 处 hex 色阶。
+
+**过程**:先尝试 OKLCH 迁移,对比验证发现 **HeroUI 插件不解析 `oklch()`,静默丢弃整个 primary 主题**(产物中 `--heroui-primary-50..900` 全部缺失),会造成 `color="primary"` 组件渲染损坏。排除 OKLCH。
+
+**最终方案**:hex → **HSL 三元组**(HeroUI 原生格式 + 与 `--agent-cockpit-*` HSL token 同体系),精确转换零视觉回归。产物验证 33 个 primary 变量完整输出,light `primary-600 = 265 63.9% 50%`(#722ed1)、dark `primary-600 = 266.8 87.7% 74.5%`(#b885f7)。
+
+### 10.7 审计结论
+
+- 全站(除 demo 路由,postbuild 删除)视觉对齐完成,无未对齐细节
+- 保留的硬编码均属正常:平台品牌色(抖音红/微信绿)、领域语义色(savings 橙/AI 专家粉)、HeroUI `bg-white + dark:` 双轨写法、彩色实底白字按钮
+- 共享层策略贯穿始终:修复集中在基础组件与 token,引用方自动受益
+
+### 10.8 完整提交链
+
+| Commit | 内容 |
+|--------|------|
+| `1ddfe9a2` | 驾驶舱 chat 区统一设计系统视觉 |
+| `9ef6dd84` | chat 区阴影/glow 主题化 + 语义清理 |
+| `3810f226` | 驾驶舱 dashboard 修复 + chart 色阶补全 |
+| `fee59719` | 跨区域品牌紫硬编码主题化(content/message/nav) |
+| `910207a3` | `${color}xx` 拼接 → color-mix 统一修复 |
+| `55c467d2` | light-only 页面 token 化(video/seedance/copy-compare) |
+| `6ccf99ed` | 轮扫修复(ai-assistant/settings/scrape) |
+| `41d6face` | HeroUI 主题色阶 hex → HSL 迁移 |
