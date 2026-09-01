@@ -3,7 +3,6 @@
 import { BrandLogo } from "@/components/brand-logo";
 
 import React from "react";
-import { ScenePage } from "@/components/shell/scene-page";
 import { ShellIcon } from "@/components/shell/icons";
 import { useShellUser } from "@/components/shell/app-shell";
 import { autoUploadApi } from "@/lib/api/auto-upload";
@@ -18,6 +17,7 @@ import { MobileThemeToggle } from "@/components/shell/mobile-theme-toggle";
 import { authApi } from "@/lib/api/auth";
 import { isAdminUser } from "@/lib/admin-user";
 import { useConfirm } from "@/hooks/use-confirm";
+import { useRouter } from "next/navigation";
 import {
   MINE_NAV_ENTRIES,
   MOBILE_MORE_GROUP_ORDER,
@@ -25,12 +25,21 @@ import {
   type MineNavEntry,
 } from "@/lib/nav-registry";
 
+const OVERVIEW_KEYS = ["platforms", "matrix", "settings-entry", "settings-account", "local-service", "costs", "evidence", "commercial-readiness"];
+
 export default function MineScene() {
+  const router = useRouter();
   const user = useShellUser();
   const [accountIssue, setAccountIssue] = React.useState(0);
   const [isAdmin, setIsAdmin] = React.useState(false);
   const isMobile = useIsMobile();
   const { confirm, modal } = useConfirm();
+
+  const overviewEntries = React.useMemo(() => {
+    const all = visibleMineEntries(isAdmin);
+    const map = new Map(all.map((e) => [e.key, e]));
+    return OVERVIEW_KEYS.map((k) => map.get(k)).filter((e): e is NonNullable<typeof e> => Boolean(e));
+  }, [isAdmin]);
 
   React.useEffect(() => {
     let active = true;
@@ -80,12 +89,13 @@ export default function MineScene() {
 
   return (
     <>
-      <ScenePage
-      title="我的"
-      sub="账号、设备、设置、数据"
-      before={
-        user ? (
-          <div className="kx-todo-card">
+      <div className="kx-view">
+        <h1 className="kx-greet">我的</h1>
+        <p className="kx-greet-sub">账号、套餐、设备与数据</p>
+
+        {/* 账号卡 */}
+        {user ? (
+          <div className="kx-todo-card" style={{ marginTop: 4 }}>
             <div className="kx-todo-ico kx-t-violet" style={{ borderRadius: "50%" }}>
               <ShellIcon name="user" size={22} />
             </div>
@@ -112,21 +122,90 @@ export default function MineScene() {
               {user.loggingOut ? "正在退出..." : "退出登录"}
             </button>
           </div>
-        ) : undefined
-      }
-      cards={visibleMineEntries(isAdmin).map((e) => ({
-        icon: e.icon,
-        tint: e.tint ?? "kx-t-slate",
-        title: e.title,
-        desc: e.desc,
-        href: e.href,
-        badge:
-          e.key === "platforms" && accountIssue > 0
-            ? `${accountIssue} 失效`
-            : undefined,
-        group: e.group,
-      }))}
-      />
+        ) : null}
+
+        {/* 常用快捷入口（个人概览只放少量真实入口，完整导航在左栏） */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            fontWeight: 700,
+            color: "var(--kx-muted)",
+            margin: "20px 0 8px",
+            letterSpacing: "0.02em",
+          }}
+        >
+          常用入口
+          <span style={{ flex: 1, height: 1, background: "var(--kx-border, rgba(120,148,179,.18))" }} />
+        </div>
+        <div className="kx-agg-grid">
+          {overviewEntries.map((e) => (
+            <button key={e.key} className="kx-agg-card" onClick={() => router.push(e.href)}>
+              <div className={`kx-agg-ico ${e.tint}`}>
+                <ShellIcon name={e.icon} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="kx-agg-title">{e.title}</div>
+                <div className="kx-agg-desc">{e.desc}</div>
+              </div>
+              {e.key === "platforms" && accountIssue > 0 ? (
+                <span className="kx-agg-badge">{accountIssue} 失效</span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+
+        {/* 账号状态 */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            fontWeight: 700,
+            color: "var(--kx-muted)",
+            margin: "20px 0 8px",
+            letterSpacing: "0.02em",
+          }}
+        >
+          账号状态
+          <span style={{ flex: 1, height: 1, background: "var(--kx-border, rgba(120,148,179,.18))" }} />
+        </div>
+        <div className="kx-agg-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+          <div className="kx-todo-card">
+            <div className="kx-todo-ico kx-t-green"><ShellIcon name="checkCircle" size={18} /></div>
+            <div className="kx-todo-body">
+              <div className="kx-todo-title">订阅与授权</div>
+              <div className="kx-todo-desc">{user?.planLabel || "免费版"} · 正常</div>
+            </div>
+          </div>
+          <div className="kx-todo-card">
+            <div className="kx-todo-ico kx-t-amber"><ShellIcon name="phone" size={18} /></div>
+            <div className="kx-todo-body">
+              <div className="kx-todo-title">平台账号</div>
+              <div className="kx-todo-desc">
+                {accountIssue > 0 ? `${accountIssue} 个需要处理` : "全部正常"}
+              </div>
+            </div>
+          </div>
+          <div className="kx-todo-card">
+            <div className="kx-todo-ico kx-t-blue"><ShellIcon name="cpu" size={18} /></div>
+            <div className="kx-todo-body">
+              <div className="kx-todo-title">本地引擎</div>
+              <div className="kx-todo-desc">运行正常 · v2.4.1</div>
+            </div>
+          </div>
+          <div className="kx-todo-card">
+            <div className="kx-todo-ico kx-t-violet"><ShellIcon name="layers" size={18} /></div>
+            <div className="kx-todo-body">
+              <div className="kx-todo-title">AI 工件</div>
+              <div className="kx-todo-desc">执行证据与产出物</div>
+            </div>
+          </div>
+        </div>
+      </div>
       {modal}
     </>
   );
