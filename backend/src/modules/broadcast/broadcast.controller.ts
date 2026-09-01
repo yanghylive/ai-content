@@ -23,13 +23,21 @@ export class BroadcastController {
   @Post('jobs')
   create(
     @Body()
-    body: { name: string; storeName: string; sceneUrl: string; outputUrl?: string },
+    body: {
+      name: string;
+      storeName: string;
+      sceneUrl: string;
+      outputUrl?: string;
+    },
   ) {
     return this.service.create(body);
   }
 
   @Post('jobs/:id/segments')
-  addSegment(@Param('id') id: string, @Body() body: { text: string; voiceId?: string }) {
+  addSegment(
+    @Param('id') id: string,
+    @Body() body: { text: string; voiceId?: string },
+  ) {
     return this.service.addSegment(id, body);
   }
 

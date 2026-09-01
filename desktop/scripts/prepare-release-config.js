@@ -145,8 +145,8 @@ function writeReleaseConfig(config, destination = outputPath) {
  * KAYPAL_API_KEY=geo 开发 key、KAYPAL_BILLING_USER_ID 等），被 extraResources
  * 打进包后，NestJS envFilePath 文件值会覆盖 main.js 按 release-config 注入的
  * 进程变量——chat 因此拿着 legacy 凭据打网关 403「App credential does not match」。
- * 这里剥离「release-config 注入通道统一管理」的 KAYPAL_* 凭据键，其余键（OSS、
- * 推客、MEMORY 等）原样保留。source of truth = 注入通道。
+ * 包内 env 只能携带非敏感运行参数；所有第三方服务凭据和本机身份密钥都由
+ * 主进程在安装后按设备注入，绝不能从开发机 env 复制进安装包。
  */
 const GATEWAY_MANAGED_ENV_KEYS = [
   'KAYPAL_AI_PROXY_API_KEY',
@@ -157,6 +157,27 @@ const GATEWAY_MANAGED_ENV_KEYS = [
   'KAYPAL_APP_ID',
   'KAYPAL_LEGACY_API_KEY',
 ];
+
+// 任何命中这些键的值都不能进入安装包。Octop 的本地 sidecar 凭据由主进程
+// 在启动时补齐（新安装回退其本地初始化默认值），不从开发机继承。
+const SHIPPED_SECRET_KEYS = new Set([
+  ...GATEWAY_MANAGED_ENV_KEYS,
+  'MEMORY_CORE_USER_KEY',
+  'REDFOX_API_KEY',
+  'HAODANKU_APIKEY',
+  'JUTUIKE_APIKEY',
+  'JUTUIKE_PUB_ID',
+  'JUTUIKE_SID',
+  'OSS_ACCESS_KEY_ID',
+  'OSS_ACCESS_KEY_SECRET',
+  'AGENT_GATEWAY_SECRET',
+  'KAYPAL_RUNTIME_SHARED_SECRET',
+  'KAYPAL_AGENT_S_TOKEN',
+  'OCTOP_ACCESS_TOKEN',
+  'OCTOP_PASSWORD',
+  'OCTOP_USER_SECRET',
+  'OCTOP_ADMIN_PASSWORD',
+]);
 
 const sanitizedEnvOutputPath = path.join(desktopRoot, 'runtime', 'generated', 'backend.env');
 
@@ -175,10 +196,13 @@ function writeSanitizedBackendEnv(sourcePath = path.join(desktopRoot, 'backend.e
     );
     sourcePath = examplePath;
   }
+  // 即使 sourcePath 指向本机开发 env，也只保留键名，敏感值统一清空。
   const lines = fs.readFileSync(sourcePath, 'utf8').split(/\r?\n/);
-  const kept = lines.filter((line) => {
+  const kept = lines.map((line) => {
     const m = line.match(/^([A-Z_0-9]+)=/);
-    return !(m && GATEWAY_MANAGED_ENV_KEYS.includes(m[1]));
+    if (m?.[1] === 'OCTOP_ENABLED') return 'OCTOP_ENABLED=true';
+    if (!m || !SHIPPED_SECRET_KEYS.has(m[1])) return line;
+    return `${m[1]}=`;
   });
   fs.mkdirSync(path.dirname(sanitizedEnvOutputPath), { recursive: true });
   fs.writeFileSync(sanitizedEnvOutputPath, kept.join('\n'), { mode: 0o600 });

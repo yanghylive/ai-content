@@ -12,6 +12,15 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.112",
+    date: "2026-09-01",
+    highlights: [
+      "稳定性：3010/3011 运行副本采用原子同步，避免发布期间读到半套前端或后端文件",
+      "安全：Agent-S 任务终态、取消和执行证据持久化，浏览器读取/草稿必须有回读证据",
+      "安全：安装包门禁收紧，禁止默认凭据、运行数据和跨平台资源混入发布物",
+    ],
+  },
+  {
     version: "v1.1.111",
     date: "2026-09-01",
     highlights: [
@@ -373,4 +382,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.111";
+export const DESKTOP_APP_VERSION = "1.1.112";

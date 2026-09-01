@@ -535,7 +535,7 @@ export class PlatformInteractionExecutor {
 
       let readbackText: string | undefined;
       let replyVisible = false;
-      if (fillOk && clickOk && input.action === 'send') {
+      if (fillOk && clickOk) {
         const readbackResult = await this.mcp.rpcCall({
           jsonrpc: '2.0',
           id: this.nextId(),
@@ -552,7 +552,7 @@ export class PlatformInteractionExecutor {
         );
         if (!replyVisible) {
           this.logger.warn(
-            `readback failed: ${input.platform}/${input.taskType} reply not visible after send`,
+            `readback failed: ${input.platform}/${input.taskType} reply not visible after ${input.action}`,
           );
         }
       }
@@ -562,7 +562,7 @@ export class PlatformInteractionExecutor {
         `${input.platform}-${input.action}`,
       );
 
-      const sendReadbackOk = input.action !== 'send' || replyVisible;
+      const sendReadbackOk = fillOk && clickOk && replyVisible;
       const finalStatus =
         fillOk && clickOk && sendReadbackOk
           ? input.action === 'send'
@@ -574,7 +574,9 @@ export class PlatformInteractionExecutor {
           ? `通过 playwright-mcp 已 fill 编辑器${input.action === 'send' ? ' + click 发送' : ''}（${input.platform} ${input.taskType}）`
           : input.action === 'send' && fillOk && clickOk
             ? `MCP 已点击发送，但页面回读未确认回复内容`
-            : `MCP fill/click 失败: 编辑器未找到 (账号可能未登录或页面结构变了)`;
+            : fillOk && clickOk
+              ? `MCP 已填入草稿，但页面回读未确认回复内容`
+              : `MCP fill/click 失败: 编辑器未找到 (账号可能未登录或页面结构变了)`;
       this.logger.warn(
         `dispatch final: ${input.platform}/${input.taskType} fillOk=${fillOk} clickOk=${clickOk} replyVisible=${replyVisible} status=${finalStatus}`,
       );
@@ -593,7 +595,9 @@ export class PlatformInteractionExecutor {
               ? replyVisible
                 ? '已通过 MCP 真实发送，并在页面回读到回复内容'
                 : '已点击发送，但未在页面回读到回复内容，请检查平台页面结构和回读选择器'
-              : '草稿已填入'
+              : replyVisible
+                ? '草稿已填入，并在页面回读到编辑器内容'
+                : '草稿填入后页面回读未确认内容，已阻断成功状态'
             : '检查 playwright-mcp 状态 + 平台账号登录态',
       };
     } catch (error) {

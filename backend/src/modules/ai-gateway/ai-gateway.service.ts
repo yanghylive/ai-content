@@ -626,7 +626,8 @@ export class AiGatewayService {
       const client = await this.aiClient.getClient(platform.id);
       // 2026-08-27：流式出站必须携带动态网关头（x-kaypal-api-key/context/user-id），
       // 仅靠 getClient 的静态 defaultHeaders（sync 时写入，可能过期）会被网关 401。
-      const gatewayDynHeaders = await this.aiClient.resolveDynamicHeaders(platform);
+      const gatewayDynHeaders =
+        await this.aiClient.resolveDynamicHeaders(platform);
 
       // B4 记忆注入：recall persona + 相关记忆（5s 超时降级，绝不阻塞对话）
       let memoryInject = '';
@@ -720,14 +721,21 @@ export class AiGatewayService {
           stream = await client.chat.completions.create(
             {
               // 2026-08-27：流式出站同样走网关别名映射（deepseek-* → kaypal-*），
-          // 否则网关 400 model_not_allowed（UI 助手对话链路实测）。
-          model: this.aiClient.resolveKaypalGatewayModel(selectedModel.modelId),
+              // 否则网关 400 model_not_allowed（UI 助手对话链路实测）。
+              model: this.aiClient.resolveKaypalGatewayModel(
+                selectedModel.modelId,
+              ),
               messages: history,
               tools: TOOLS,
               tool_choice: 'auto' as const,
               stream: true,
             },
-            { headers: { 'X-Idempotency-Key': billingIdempotencyKey, ...gatewayDynHeaders } },
+            {
+              headers: {
+                'X-Idempotency-Key': billingIdempotencyKey,
+                ...gatewayDynHeaders,
+              },
+            },
           );
         } catch (createError) {
           const errInfo = KaypalProviderResolver.classifyError(createError);
@@ -748,7 +756,12 @@ export class AiGatewayService {
                     tool_choice: 'auto' as const,
                     stream: true,
                   },
-                  { headers: { 'X-Idempotency-Key': billingIdempotencyKey, ...gatewayDynHeaders } },
+                  {
+                    headers: {
+                      'X-Idempotency-Key': billingIdempotencyKey,
+                      ...gatewayDynHeaders,
+                    },
+                  },
                 );
                 fallbackModel = cand;
                 break;
@@ -929,8 +942,8 @@ export class AiGatewayService {
         aiGenerated: true,
         provider: 'jiuzhang-ai-content',
         // 2026-08-27：流式出站同样走网关别名映射（deepseek-* → kaypal-*），
-          // 否则网关 400 model_not_allowed（UI 助手对话链路实测）。
-          model: this.aiClient.resolveKaypalGatewayModel(selectedModel.modelId),
+        // 否则网关 400 model_not_allowed（UI 助手对话链路实测）。
+        model: this.aiClient.resolveKaypalGatewayModel(selectedModel.modelId),
       });
       response.end();
     } catch (error) {

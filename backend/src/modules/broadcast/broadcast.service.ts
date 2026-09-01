@@ -3,13 +3,7 @@ import { randomUUID } from 'crypto';
 import { VoiceTtsService } from '../voice/voice-tts.service';
 
 export type BroadcastStatus =
-  | 'DRAFT'
-  | 'STARTING'
-  | 'LIVE'
-  | 'DEGRADED'
-  | 'PAUSED'
-  | 'ENDED'
-  | 'FAILED';
+  'DRAFT' | 'STARTING' | 'LIVE' | 'DEGRADED' | 'PAUSED' | 'ENDED' | 'FAILED';
 
 export interface BroadcastSegment {
   id: string;
@@ -134,7 +128,9 @@ export class BroadcastService {
     // 真实 FFmpeg/SRS worker 在下一阶段接入；当前状态不会伪装成 LIVE。
     job.status = 'DEGRADED';
     job.lastError = '推流 worker 尚未接入，当前仅完成控制平面校验';
-    this.logger.warn(`Broadcast ${id} blocked: worker adapter is not connected`);
+    this.logger.warn(
+      `Broadcast ${id} blocked: worker adapter is not connected`,
+    );
     return job;
   }
 

@@ -221,9 +221,13 @@ function main() {
     '# 与 backend 的 OCTOP_USERNAME/OCTOP_PASSWORD 一致，backend 才能登录本 sidecar。\n' +
     'if [ ! -f "$OCTOP_HOME/.octop-initialized" ]; then\n' +
     '  echo "[octop-sidecar] 首次启动，初始化 admin 账号..."\n' +
+    '  if [ -z "${OCTOP_ADMIN_PASSWORD:-}" ]; then\n' +
+    '    echo "[octop-sidecar] OCTOP_ADMIN_PASSWORD 未由桌面主进程注入，拒绝使用默认凭据。" >&2\n' +
+    '    exit 78\n' +
+    '  fi\n' +
     '  "$DIR/venv/bin/python" -m octop.cli.main init \\\n' +
     '    --admin-username "${OCTOP_ADMIN_USERNAME:-octop-bridge}" \\\n' +
-    '    --admin-password "${OCTOP_ADMIN_PASSWORD:-Octop1234}" \\\n' +
+    '    --admin-password "$OCTOP_ADMIN_PASSWORD" \\\n' +
     '    --yes\n' +
     '  touch "$OCTOP_HOME/.octop-initialized"\n' +
     'fi\n' +
@@ -246,7 +250,7 @@ function main() {
     'if not exist "%OCTOP_HOME%\\.octop-initialized" (\r\n' +
     '  echo [octop-sidecar] 首次启动，初始化 admin 账号...\r\n' +
     '  if "%OCTOP_ADMIN_USERNAME%"=="" set "OCTOP_ADMIN_USERNAME=octop-bridge"\r\n' +
-    '  if "%OCTOP_ADMIN_PASSWORD%"=="" set "OCTOP_ADMIN_PASSWORD=Octop1234"\r\n' +
+    '  if "%OCTOP_ADMIN_PASSWORD%"=="" (echo [octop-sidecar] OCTOP_ADMIN_PASSWORD 未由桌面主进程注入，拒绝使用默认凭据。 1>&2 & exit /b 78)\r\n' +
     '  "%DIR%venv\\Scripts\\python.exe" -m octop.cli.main init --admin-username "%OCTOP_ADMIN_USERNAME%" --admin-password "%OCTOP_ADMIN_PASSWORD%" --yes\r\n' +
     '  type nul > "%OCTOP_HOME%\\.octop-initialized"\r\n' +
     ')\r\n' +

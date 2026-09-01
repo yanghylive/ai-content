@@ -7,6 +7,7 @@
  *   --root  out 产物目录名（相对 frontend/，默认 out）；也支持绝对路径
  * ============================================================ */
 import http from "node:http";
+import https from "node:https";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -87,13 +88,43 @@ function isPublicPath(urlPath) {
 }
 
 /**
- * P0-1: 检查请求是否已认证（仅检查 cookie 存在性，不验证 session 有效性）
- * session 有效性由后端 /api/auth/me 验证；此处只做快速拦截，避免未登录用户
- * 下载 JS 后才发现需要跳转登录页。
+ * P0-1: 通过后端 /api/auth/me 验证 session，而不是把任意 cookie 当成登录态。
+ * 静态服务器只转发当前认证 cookie，不信任浏览器自报的身份头。
  */
 function isAuthenticated(req) {
   const cookie = getCookie(req.headers.cookie, AUTH_COOKIE_NAME);
-  return Boolean(cookie);
+  if (!cookie) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+    try {
+      const target = new URL("/api/auth/me", API_BASE);
+      const client = target.protocol === "https:" ? https : http;
+      const authReq = client.request(
+        target,
+        {
+          method: "GET",
+          headers: { cookie: `${AUTH_COOKIE_NAME}=${cookie}`, host: target.host },
+        },
+        (authRes) => {
+          authRes.resume();
+          finish((authRes.statusCode || 500) >= 200 && (authRes.statusCode || 500) < 300);
+        },
+      );
+      authReq.setTimeout(REQUEST_TIMEOUT_MS, () => {
+        authReq.destroy();
+        finish(false);
+      });
+      authReq.once("error", () => finish(false));
+      authReq.end();
+    } catch {
+      finish(false);
+    }
+  });
 }
 
 function endWithError(res, statusCode, message) {
@@ -122,7 +153,7 @@ function streamFile(res, file, statusCode, headers = {}) {
   stream.pipe(res);
 }
 
-http.createServer((req, res) => {
+http.createServer(async (req, res) => {
   res.setTimeout(REQUEST_TIMEOUT_MS, () => {
     console.error(`[static-server] request timeout: ${req.method} ${req.url}`);
     endWithError(res, 504, "请求超时");
@@ -228,7 +259,7 @@ http.createServer((req, res) => {
   }
 
   /* P0-1: HTML 层鉴权 —— 未登录用户直接 302 到登录页，不返回 HTML/JS */
-  if (!isPublicPath(urlPath) && !isAuthenticated(req)) {
+  if (!isPublicPath(urlPath) && !(await isAuthenticated(req))) {
     const redirectUrl = `/login?next=${encodeURIComponent(urlPath)}`;
     res.writeHead(302, {
       "Location": redirectUrl,

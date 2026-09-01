@@ -14,12 +14,17 @@ import { Public } from '../auth/auth.decorator';
 /** P2：匿名上报每 IP 窗口内最多条数（防日志/OSS 滥用） */
 const IP_WINDOW_MS = 60_000;
 const IP_MAX_PER_WINDOW = 20;
+const IP_BUCKET_MAX = 4096;
 const ipBuckets = new Map<string, { count: number; windowStart: number }>();
 
 function clientIpOf(request: Request): string {
-  const forwarded = request.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.trim()) {
-    return forwarded.split(',')[0].trim();
+  // X-Forwarded-For is client-controlled unless the deployment explicitly
+  // declares a trusted reverse proxy. The desktop/local deployment has none.
+  if (process.env.TRUST_PROXY === 'true') {
+    const forwarded = request.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string' && forwarded.trim()) {
+      return forwarded.split(',')[0].trim();
+    }
   }
   return request.socket?.remoteAddress || 'unknown';
 }
@@ -28,6 +33,16 @@ function ipRateLimited(ip: string): boolean {
   const now = Date.now();
   const bucket = ipBuckets.get(ip);
   if (!bucket || now - bucket.windowStart > IP_WINDOW_MS) {
+    if (ipBuckets.size >= IP_BUCKET_MAX) {
+      for (const [key, value] of ipBuckets) {
+        if (now - value.windowStart > IP_WINDOW_MS) ipBuckets.delete(key);
+      }
+      if (ipBuckets.size >= IP_BUCKET_MAX) {
+        const oldest: string | undefined = ipBuckets.keys().next().value as
+          string | undefined;
+        if (oldest) ipBuckets.delete(oldest);
+      }
+    }
     ipBuckets.set(ip, { count: 1, windowStart: now });
     return false;
   }

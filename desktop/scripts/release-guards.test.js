@@ -13,6 +13,8 @@ const execFileAsync = promisify(execFile);
 
 const {
   createGuardContext,
+  assertMainRuntimePolicy,
+  assertNoHardcodedOctopCredentials,
   sqliteSeedContainsPackagedUserData,
 } = require("./release-guards");
 const {
@@ -136,6 +138,18 @@ test("NSIS avoids blocking PowerShell preflight and keeps post-install warnings 
   // `"${Name}: $Detail"` 格式断言过时，改为断言非阻断语义。
   assert.doesNotMatch(bootstrapSource, /MessageBox MB_ICONSTOP|^\s*Abort\s*$/m);
   assert.match(bootstrapSource, /Add-InstallRow -Name \$Name -Status "!"/);
+});
+
+test("desktop runtime does not carry the shared Octop default credential", () => {
+  const ctx = createGuardContext();
+  assertNoHardcodedOctopCredentials(ctx, desktopRoot);
+  assert.deepEqual(ctx.failures, []);
+});
+
+test("desktop privileged IPC and SQLite startup recovery stay fail-closed", () => {
+  const ctx = createGuardContext();
+  assertMainRuntimePolicy(ctx, path.join(desktopRoot, "main.js"));
+  assert.deepEqual(ctx.failures, []);
 });
 
 test("Windows evidence policy defaults to Win10 and supports an explicit expanded matrix", () => {

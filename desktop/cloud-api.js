@@ -152,64 +152,6 @@ class CloudAPI {
     }
   }
 
-  // AI 生成回复
-  async generateReply(data) {
-    const { platform, scene, customerMessage, recentContext, businessProfile } = data;
-
-    return await this.requestWithRetry('/api/v1/generate-reply', {
-      method: 'POST',
-      body: {
-        platform,
-        scene,
-        customerMessage,
-        recentContext: recentContext || [],
-        businessProfile: businessProfile || ''
-      }
-    });
-  }
-
-  // 检查内容是否可发送
-  async checkContent(data) {
-    const { replyText, platform } = data;
-
-    return await this.requestWithRetry('/api/v1/check-content', {
-      method: 'POST',
-      body: {
-        replyText,
-        platform
-      }
-    });
-  }
-
-  // 检查是否重复
-  async checkDedup(data) {
-    const { accountId, targetText, kind } = data;
-
-    return await this.requestWithRetry('/api/v1/check-dedup', {
-      method: 'POST',
-      body: {
-        accountId,
-        targetText,
-        kind
-      }
-    });
-  }
-
-  // 标记已发送
-  async markSent(data) {
-    const { accountId, targetText, replyText, kind } = data;
-
-    return await this.requestWithRetry('/api/v1/mark-sent', {
-      method: 'POST',
-      body: {
-        accountId,
-        targetText,
-        replyText,
-        kind
-      }
-    });
-  }
-
   // v1.1.108（复核 P2-8 / 大王决策）：Cloud API 遗留登录/用量/订阅接口移除——
   // /api/v1/auth/login、auth/me、usage/stats、subscription 线上 503（服务端未配置
   // API_KEY），且主登录链路已走 3011 本地后端（authApi），这些方法无任何调用方

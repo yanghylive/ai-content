@@ -106,7 +106,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       path: request.url,
       requestId,
       traceId: requestId, // §10.2 链路追踪字段（与 X-Request-Id 对齐）
-      retryable: retryableFromError !== undefined ? retryableFromError : isRetryableStatus(status), // 业务错误 retryable 优先，否则按状态码兜底
+      retryable:
+        retryableFromError !== undefined
+          ? retryableFromError
+          : isRetryableStatus(status), // 业务错误 retryable 优先，否则按状态码兜底
       ...(code ? { code } : {}),
       ...(publicDetails !== undefined ? { details: publicDetails } : {}),
     });

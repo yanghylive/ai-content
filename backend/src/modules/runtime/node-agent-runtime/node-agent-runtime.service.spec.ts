@@ -201,6 +201,37 @@ describe('NodeAgentRuntimeService health semantics', () => {
     );
   });
 
+  it('does not treat an unknown read status as a successful read', async () => {
+    const interactionEngine = makeInteractionEngine(true);
+    const interactionExecutor = makeInteractionExecutor(true);
+    interactionExecutor.read.mockResolvedValue({
+      status: 'pending',
+      url: 'https://creator.douyin.com/creator-micro/interactive/comment',
+      comments: [],
+      summary: { loadBlocked: false },
+    });
+    const service = new NodeAgentRuntimeService(
+      interactionEngine as any,
+      interactionExecutor as any,
+    );
+    const created = service.createSession({
+      task_type: 'douyin-comment-reply',
+      metadata: { platform: 'douyin', accountId: 1 },
+    });
+
+    const result = await service.runTask(created.session.session_id, {
+      instruction: 'read douyin comments',
+      task_type: 'douyin-comment-reply',
+      action: 'read',
+    });
+
+    expect(result.status).toBe('failed');
+    expect(result.reasonCode).toBeUndefined();
+    expect(service.getEvents(created.session.session_id).events.at(-1)).toEqual(
+      expect.objectContaining({ event_type: 'task_failed' }),
+    );
+  });
+
   it('returns blocked status immediately for local WeChat tasks with missing required metadata', async () => {
     const interactionEngine = makeInteractionEngine(true);
     const interactionExecutor = makeInteractionExecutor(true);

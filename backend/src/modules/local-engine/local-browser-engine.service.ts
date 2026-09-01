@@ -100,6 +100,8 @@ export type EngineSessionSummary = {
 @Injectable()
 export class LocalBrowserEngine implements OnModuleDestroy {
   private readonly logger = new Logger(LocalBrowserEngine.name);
+  private runtimeProbeAt = 0;
+  private runtimeProbeResult = false;
   private readonly sessions = new Map<string, EngineSession>();
   private readonly sessionLaunches = new Map<string, Promise<EngineSession>>();
   private startedAt: string | null = null;
@@ -144,6 +146,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
    */
   getStatus(): EngineStatus {
     const chromeExists = existsSync(this.chromePath);
+    const runtimeReady = chromeExists && this.probeChromeRuntime();
     let version = 'unknown';
     for (const session of this.sessions.values()) {
       try {
@@ -154,17 +157,34 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       }
     }
     return {
-      online: chromeExists,
+      online: runtimeReady,
       chromePath: this.chromePath,
       version,
       startedAt: this.startedAt ?? new Date().toISOString(),
       activeSessions: this.sessions.size,
       visibleWindow: this.visibleWindow,
       isolated: this.isolated,
-      message: chromeExists
+      message: runtimeReady
         ? `in-process persistent Playwright Chromium via ${this.browserRuntime.source} (${this.visibleWindow ? 'visible' : 'headless'})`
         : this.browserRuntime.message,
     };
+  }
+
+  private probeChromeRuntime(): boolean {
+    const now = Date.now();
+    if (now - this.runtimeProbeAt < 30_000) return this.runtimeProbeResult;
+    this.runtimeProbeAt = now;
+    try {
+      execFileSync(this.chromePath, ['--version'], {
+        stdio: 'ignore',
+        timeout: 5_000,
+        windowsHide: true,
+      });
+      this.runtimeProbeResult = true;
+    } catch {
+      this.runtimeProbeResult = false;
+    }
+    return this.runtimeProbeResult;
   }
 
   /**

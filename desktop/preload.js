@@ -62,14 +62,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     secureStoreDelete: (key) => ipcRenderer.invoke('secure-store:delete', key)
   },
 
-  // 云端 API
-  cloudAPI: {
-    generateReply: (data) => ipcRenderer.invoke('cloud-api:generate-reply', data),
-    checkContent: (data) => ipcRenderer.invoke('cloud-api:check-content', data),
-    checkDedup: (data) => ipcRenderer.invoke('cloud-api:check-dedup', data),
-    markSent: (data) => ipcRenderer.invoke('cloud-api:mark-sent', data)
-  },
-
   // 配置管理
   config: {
     get: (key) => ipcRenderer.invoke('config:get', key),

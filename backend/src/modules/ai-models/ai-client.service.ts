@@ -258,16 +258,21 @@ export class AiClientService {
 
   private buildKaypalContextJwt(userId: string): string | null {
     const secret = this.config.get<string>('KAYPAL_CONTEXT_JWT_SECRET')?.trim();
-    const appId = this.config.get<string>('KAYPAL_APP_ID')?.trim() || 'ai-content-desktop';
+    const appId =
+      this.config.get<string>('KAYPAL_APP_ID')?.trim() || 'ai-content-desktop';
     if (!secret) return null;
-    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const header = Buffer.from(
+      JSON.stringify({ alg: 'HS256', typ: 'JWT' }),
+    ).toString('base64url');
     const now = Math.floor(Date.now() / 1000);
     const payload = Buffer.from(
       JSON.stringify({
         iss: 'kaypal-ai-platform',
         aud: 'kaypal-api-v1',
         sub: userId,
-        tenant_id: this.config.get<string>('KAYPAL_TENANT_ID')?.trim() || `tenant-${userId}`,
+        tenant_id:
+          this.config.get<string>('KAYPAL_TENANT_ID')?.trim() ||
+          `tenant-${userId}`,
         app_id: appId,
         request_id: `req_${randomUUID().replace(/-/g, '').slice(0, 16)}`,
         jti: randomUUID().replace(/-/g, '').slice(0, 24),
@@ -275,7 +280,9 @@ export class AiClientService {
         exp: now + 120,
       }),
     ).toString('base64url');
-    const sig = createHmac('sha256', secret).update(`${header}.${payload}`).digest('base64url');
+    const sig = createHmac('sha256', secret)
+      .update(`${header}.${payload}`)
+      .digest('base64url');
     return `${header}.${payload}.${sig}`;
   }
 

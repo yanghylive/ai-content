@@ -178,13 +178,10 @@ export class StudioCoreClient {
     const token = await this.getToken();
     let response: Response;
     try {
-      response = await fetch(
-        `${this.baseUrl}/media/${projectId}/${relPath}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          signal: AbortSignal.timeout(60000),
-        },
-      );
+      response = await fetch(`${this.baseUrl}/media/${projectId}/${relPath}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(60000),
+      });
     } catch (error) {
       const cause =
         (error as { cause?: { code?: string } })?.cause?.code ||

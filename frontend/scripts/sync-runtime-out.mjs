@@ -26,7 +26,22 @@ if (!(await fs.stat(source).catch(() => null))?.isDirectory()) {
   throw new Error(`frontend export directory does not exist: ${source}`);
 }
 
-await fs.mkdir(destination, { recursive: true });
-await fs.cp(source, destination, { recursive: true, force: true });
+const staging = `${destination}.staging-${process.pid}`;
+const backup = `${destination}.previous-${process.pid}`;
+await fs.rm(staging, { recursive: true, force: true });
+await fs.rm(backup, { recursive: true, force: true });
+await fs.mkdir(path.dirname(destination), { recursive: true });
+await fs.cp(source, staging, { recursive: true, force: true });
+try {
+  if (await fs.stat(destination).catch(() => null)) await fs.rename(destination, backup);
+  await fs.rename(staging, destination);
+  await fs.rm(backup, { recursive: true, force: true });
+} catch (error) {
+  await fs.rm(staging, { recursive: true, force: true });
+  if (!(await fs.stat(destination).catch(() => null)) && (await fs.stat(backup).catch(() => null))) {
+    await fs.rename(backup, destination);
+  }
+  throw error;
+}
 await fs.copyFile(serverSource, serverDestination);
 console.log(`[sync-runtime-out] ${source} -> ${destination}`);

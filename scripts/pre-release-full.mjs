@@ -161,6 +161,11 @@ async function main() {
     });
     return files[0] || null;
   })();
+  const expectedPackageVersion = JSON.parse(readFileSync(path.join(desk, "package.json"), "utf8")).version;
+  const versionOfFile = (f) => {
+    const m = f.match(/(\d+)\.(\d+)\.(\d+)/);
+    return m ? m.slice(1).join(".") : null;
+  };
   step("L4 解包验证 dist 产物（asar 对照 require + 依赖 + 引擎）", () => {
     const extra = process.platform === "darwin" ? " --win-only" : "";
     run(`cd ${q(desk)} && node scripts/check-package-contents.js --dir ${q(distDir)}${extra}`);
@@ -170,8 +175,10 @@ async function main() {
   // 校验 win-x64 包内 node.exe / Playwright chrome.exe / Prisma win 引擎真实存在。
   step("L4 Win 包平台资产严格检查（node.exe/chrome.exe/引擎，防交叉构建假绿）", () => {
     if (!latestWinInstaller) {
-      console.log("    （dist 下无 Win 安装包，跳过 win-x64 严格检查）");
-      return;
+      throw new Error(`dist 下缺少当前版本 ${expectedPackageVersion} 的 Win 安装包`);
+    }
+    if (versionOfFile(latestWinInstaller) !== expectedPackageVersion) {
+      throw new Error(`Win 安装包版本 ${versionOfFile(latestWinInstaller)} 与 package.json ${expectedPackageVersion} 不一致`);
     }
     const installerRel = path.join(distDir, latestWinInstaller);
     run(`cd ${q(desk)} && BUILD_PLATFORM=win-x64 node scripts/check-full-installer-assets.js --phase=post --installer=${q(installerRel)}`);

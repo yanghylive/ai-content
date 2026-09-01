@@ -22,9 +22,10 @@ const {
   nodeRuntimePathForPlatform,
 } = require('./release-guards');
 
-// 2026-08-11 更新：安装包内置完整 Chromium（playwright 浏览器）+ media-tools + wechat-ocr，
-// .app 实际 1351MB / zip 552MB，旧限制（app 1200 / archive 350）已过时，放宽留余量
-const DEFAULT_APP_LIMIT_MB = 1600;
+// 2026-09-01 更新：当前一键包还内置 Octop venv + Chromium（约 1.14GB），
+// mac-arm64 .app 实测约 1646MB；1600MB 已低于必需资源的实际基线。保留
+// 约 150MB 增长余量，同时继续用 700MB 压缩包上限阻止异常膨胀。
+const DEFAULT_APP_LIMIT_MB = 1800;
 const DEFAULT_ARCHIVE_LIMIT_MB = 700;
 
 const PLATFORM_CONFIG = {

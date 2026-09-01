@@ -23,7 +23,7 @@ export class AgentGatewayExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(AgentGatewayExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost) {
-    const res = host.switchToHttp().getResponse<Response>();
+    const _res = host.switchToHttp().getResponse<Response>();
     if (isAppErrorLike(exception)) {
       throw toHttpException(exception);
     }

@@ -478,20 +478,13 @@ function assertInstallerHelperNoExternalRuntimeDeps() {
 }
 
 function finish() {
-  // v1.1.106（复核 P2-B）：统一出口清理 --installer 解包临时目录（成功/断言失败
-  // 都走这里；process.exit 会跳过 finally，故不放外层 try/finally）。
-  if (installerTempRoot) {
-    try {
-      fs.rmSync(installerTempRoot, { recursive: true, force: true });
-    } catch (error) {
-      console.warn(`- 临时目录清理失败（不覆盖检查结果）: ${error.message}`);
-    }
-    installerTempRoot = null;
-  }
+  // 统一由文件末尾的 try/finally 清理 --installer 临时目录；这里不能
+  // process.exit，否则会跳过 finally 并在断言失败时泄漏解包目录。
   if (failed) {
     console.error('');
     console.error(`Full installer asset check failed (${phase}, target=${buildPlatform || process.platform}).`);
-    process.exit(1);
+    phaseExitCode = 1;
+    return;
   }
 
   console.log(`Full installer asset check passed (${phase}, target=${buildPlatform || process.platform}).`);
@@ -531,7 +524,9 @@ function checkPreBuildAssets() {
     {
       desktopRoot,
       mainJs: path.join(desktopRoot, 'main.js'),
-      backendEnv: path.join(desktopRoot, 'backend.env.example'),
+      // source guard must inspect the exact generated file used by packaging;
+      // backend.env.example alone cannot catch a developer env leaking secrets.
+      backendEnv: path.join(desktopRoot, 'runtime', 'generated', 'backend.env'),
       backendBundle: path.join(repoRoot, 'backend', 'dist-bundle-sqlite', 'index.js'),
       sqliteSeed: path.join(repoRoot, 'backend', 'prisma', 'seed.db'),
     },

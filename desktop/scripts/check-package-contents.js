@@ -49,14 +49,21 @@ function check(ok, label, detail = "") {
 
 function extractMacApp(zipPath) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "prl-mac-"));
-  run(`unzip -q -o "${zipPath}" -d "${tmp}"`);
-  const appDir = fs.readdirSync(tmp).find((f) => f.endsWith(".app"));
-  return {
-    tmp,
-    app: path.join(tmp, appDir),
-    resources: path.join(tmp, appDir, "Contents", "Resources"),
-    cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }),
-  };
+  const cleanup = () => fs.rmSync(tmp, { recursive: true, force: true });
+  try {
+    run(`unzip -q -o "${zipPath}" -d "${tmp}"`);
+    const appDir = fs.readdirSync(tmp).find((f) => f.endsWith(".app"));
+    if (!appDir) throw new Error(`macOS app bundle not found in ${zipPath}`);
+    return {
+      tmp,
+      app: path.join(tmp, appDir),
+      resources: path.join(tmp, appDir, "Contents", "Resources"),
+      cleanup,
+    };
+  } catch (error) {
+    cleanup();
+    throw error;
+  }
 }
 
 // 2026-08-31（CI run 33391994962 实证）：GitHub windows runner 装了 7-Zip 但
@@ -82,27 +89,32 @@ function find7z() {
 function extractWinExe(exePath) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "prl-win-"));
   const cleanup = () => fs.rmSync(tmp, { recursive: true, force: true });
-  // 原 `>/dev/null 2>&1` 在 Windows cmd 下无 /dev/null → "The system cannot find
-  // the path specified."；run() 的 stdio 已 pipe 捕获，无需 shell 重定向。
-  const sevenZip = find7z();
-  if (!sevenZip) {
-    console.warn("7z 不存在（macOS: brew install p7zip / Windows: 安装 7-Zip），无法深度解包 exe");
-    return { tmp, resources: null, cleanup };
+  try {
+    // 原 `>/dev/null 2>&1` 在 Windows cmd 下无 /dev/null → "The system cannot find
+    // the path specified."；run() 的 stdio 已 pipe 捕获，无需 shell 重定向。
+    const sevenZip = find7z();
+    if (!sevenZip) {
+      console.warn("7z 不存在（macOS: brew install p7zip / Windows: 安装 7-Zip），无法深度解包 exe");
+      return { tmp, resources: null, cleanup };
+    }
+    run(`"${sevenZip}" x -y -o"${tmp}" "${exePath}"`);
+    const plugin = path.join(tmp, "$PLUGINSDIR", "app-64.7z");
+    if (!fs.existsSync(plugin)) return { tmp, resources: null, cleanup };
+    const appOut = path.join(tmp, "app");
+    const r = spawnSync(sevenZip, ["x", "-y", `-o${appOut}`, plugin], { encoding: "utf8" });
+    if (r.status !== 0) {
+      console.warn(`7z 解 app-64.7z 失败: ${r.stderr || r.stdout}`);
+      return { tmp, resources: null, cleanup };
+    }
+    return {
+      tmp,
+      resources: path.join(appOut, "resources"),
+      cleanup,
+    };
+  } catch (error) {
+    cleanup();
+    throw error;
   }
-  run(`"${sevenZip}" x -y -o"${tmp}" "${exePath}"`);
-  const plugin = path.join(tmp, "$PLUGINSDIR", "app-64.7z");
-  if (!fs.existsSync(plugin)) return { tmp, resources: null, cleanup };
-  const appOut = path.join(tmp, "app");
-  const r = spawnSync(sevenZip, ["x", "-y", `-o${appOut}`, plugin], { encoding: "utf8" });
-  if (r.status !== 0) {
-    console.warn(`7z 解 app-64.7z 失败: ${r.stderr || r.stdout}`);
-    return { tmp, resources: null, cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }) };
-  }
-  return {
-    tmp,
-    resources: path.join(appOut, "resources"),
-    cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }),
-  };
 }
 
 function checkBackendCommon(resources, label, requiredImgVariants) {
@@ -218,8 +230,17 @@ function checkExtracted(label, resources, requiredImgVariants) {
   check(fs.existsSync(path.join(octopRoot, "browsers")), `${label} Octop playwright browsers`);
 }
 
-const argDir = process.argv.find((a) => a.startsWith("--dir"))?.split("=")[1] || "dist";
-const targetDir = path.join(desk, argDir);
+const dirArgIndex = process.argv.findIndex((a) => a === "--dir" || a.startsWith("--dir="));
+const dirArg =
+  dirArgIndex >= 0
+    ? process.argv[dirArgIndex].startsWith("--dir=")
+      ? process.argv[dirArgIndex].slice("--dir=".length)
+      : process.argv[dirArgIndex + 1]
+    : null;
+const argDir = dirArg || "dist";
+// --dir may be absolute (pre-release-full passes desktop/dist). path.join would
+// duplicate the desktop root and make L4 inspect a non-existent directory.
+const targetDir = path.isAbsolute(argDir) ? argDir : path.resolve(desk, argDir);
 
 console.log(`═══ 安装包内容完整性检查（${targetDir}）═══\n`);
 
@@ -255,13 +276,19 @@ if (winOnly) {
 } else if (macZips.length === 0) {
   check(false, "Mac zip 未找到", targetDir);
 } else {
-  const mac = extractMacApp(path.join(targetDir, macZips[0]));
-  checkExtracted(
-    `Mac(${macZips[0]})`,
-    mac.resources,
-    SHARP_REQUIRED_ALL,
-  );
-  mac.cleanup();
+  let mac;
+  try {
+    mac = extractMacApp(path.join(targetDir, macZips[0]));
+    checkExtracted(
+      `Mac(${macZips[0]})`,
+      mac.resources,
+      SHARP_REQUIRED_ALL,
+    );
+  } catch (error) {
+    check(false, `Mac(${macZips[0]}) 解包失败`, error.message);
+  } finally {
+    mac?.cleanup();
+  }
 }
 
 // Win：v1.1.105（复核 P0 整改）——优先解包**最新 exe**（不再默认信任 win-unpacked
@@ -278,17 +305,23 @@ if (useUnpacked && fs.existsSync(path.join(targetDir, "resources"))) {
 } else if (winExes.length === 0) {
   check(false, "Win exe 未找到", targetDir);
 } else {
-  const win = extractWinExe(path.join(targetDir, winExes[0]));
-  if (win.resources) {
-    checkExtracted(
-      `Win(${winExes[0]})`,
-      win.resources,
-      SHARP_REQUIRED_ALL,
-    );
-  } else {
-    check(false, "Win exe 解包失败（app-64.7z 未找到）", winExes[0]);
+  let win;
+  try {
+    win = extractWinExe(path.join(targetDir, winExes[0]));
+    if (win.resources) {
+      checkExtracted(
+        `Win(${winExes[0]})`,
+        win.resources,
+        SHARP_REQUIRED_ALL,
+      );
+    } else {
+      check(false, "Win exe 解包失败（app-64.7z 未找到）", winExes[0]);
+    }
+  } catch (error) {
+    check(false, `Win(${winExes[0]}) 解包失败`, error.message);
+  } finally {
+    win?.cleanup();
   }
-  win.cleanup();
 }
 }
 

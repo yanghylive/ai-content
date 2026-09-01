@@ -4,6 +4,7 @@ import {
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import * as crypto from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -178,8 +179,7 @@ export class MultimodalService {
       );
       return null;
     }
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const crypto = require('node:crypto') as typeof import('node:crypto');
+
     const b64u = (o: unknown) =>
       Buffer.from(JSON.stringify(o)).toString('base64url');
     const now = Math.floor(Date.now() / 1000);
@@ -188,8 +188,7 @@ export class MultimodalService {
       iss: 'kaypal-ai-platform',
       aud: 'kaypal-api-v1',
       sub: userId,
-      tenant_id:
-        this.readConfig('KAYPAL_TENANT_ID') || `tenant-${userId}`,
+      tenant_id: this.readConfig('KAYPAL_TENANT_ID') || `tenant-${userId}`,
       app_id: this.readConfig('KAYPAL_APP_ID') || 'ai-content-desktop',
       request_id: `req_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`,
       jti: crypto.randomUUID().replace(/-/g, '').slice(0, 24),
@@ -293,16 +292,19 @@ export class MultimodalService {
 
     let audioBuffer: Buffer;
     try {
-      const resp = await fetch(`${this.getGatewayBaseUrl()}/api/ai/v1/audio/speech`, {
-        method: 'POST',
-        headers: this.buildHeaders(authUser),
-        body: JSON.stringify({
-          model: DEFAULT_TTS_MODEL,
-          input: text,
-          voice,
-        }),
-        signal: AbortSignal.timeout(60_000),
-      });
+      const resp = await fetch(
+        `${this.getGatewayBaseUrl()}/api/ai/v1/audio/speech`,
+        {
+          method: 'POST',
+          headers: this.buildHeaders(authUser),
+          body: JSON.stringify({
+            model: DEFAULT_TTS_MODEL,
+            input: text,
+            voice,
+          }),
+          signal: AbortSignal.timeout(60_000),
+        },
+      );
       if (!resp.ok) {
         const payload = (await resp.json().catch(() => null)) as {
           error?: { message?: string } | string;
@@ -396,12 +398,13 @@ export class MultimodalService {
    * 网关视频路由只认 legacy KAYPAL_API_KEY（与 chat 的 per-app 凭据体系不同），
    * 提交与轮询必须同用本方法的返回值——禁止在调用点再自行覆盖 x-kaypal-api-key。
    */
-  private buildVideoHeaders(authUser: AuthenticatedUser): Record<string, string> {
+  private buildVideoHeaders(
+    authUser: AuthenticatedUser,
+  ): Record<string, string> {
     return {
       ...this.buildHeaders(authUser),
       'x-kaypal-api-key':
-        this.readConfig('KAYPAL_LEGACY_API_KEY') ||
-        this.getServerApiKey(),
+        this.readConfig('KAYPAL_LEGACY_API_KEY') || this.getServerApiKey(),
     };
   }
 

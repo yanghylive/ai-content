@@ -1,4 +1,10 @@
-import { Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import * as net from 'node:net';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
 
@@ -46,8 +52,6 @@ export class StudioCoreProxyService {
 
   /** 快速探测本地端口是否可连（不可连立即 reject，避免长挂） */
   private assertPortOpen(timeoutMs: number): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const net = require('node:net') as typeof import('node:net');
     return new Promise((resolve, reject) => {
       const url = new URL(this.baseUrl);
       const port = Number(url.port) || (url.protocol === 'https:' ? 443 : 80);
@@ -95,7 +99,8 @@ export class StudioCoreProxyService {
       // 若直接冒泡会绕过 VideoService 的回退 catch（未处理异常 → 500）。
       // 统一规范化为 ServiceUnavailableException，保证上层按「不可达」回退云端通道。
       const cause =
-        (error as { cause?: { code?: string; message?: string } })?.cause?.code ||
+        (error as { cause?: { code?: string; message?: string } })?.cause
+          ?.code ||
         (error as { cause?: { message?: string } })?.cause?.message ||
         (error instanceof Error ? error.message : String(error));
       throw new ServiceUnavailableException(

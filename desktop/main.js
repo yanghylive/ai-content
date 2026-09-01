@@ -158,6 +158,59 @@ function ensureAgentSToken() {
   return cachedAgentSToken;
 }
 
+// Octop sidecar admin 密码只能由当前设备持有，不能在模板、启动脚本或安装包中
+// 固定一个所有用户共用的默认值。与 Agent-S token 相同，优先 safeStorage 加密，
+// 不可用时才回退到用户目录 0600 文件。
+const OCTOP_ADMIN_PASSWORD_FILE = 'octop-admin-password.v1';
+let cachedOctopAdminPassword = null;
+
+function octopAdminPasswordStoragePath() {
+  return path.join(app.getPath('userData'), 'security', OCTOP_ADMIN_PASSWORD_FILE);
+}
+
+function readOctopAdminPasswordFromDisk() {
+  const passwordPath = octopAdminPasswordStoragePath();
+  if (!fs.existsSync(passwordPath)) return null;
+  const raw = fs.readFileSync(passwordPath, 'utf8').trim();
+  if (!raw) return null;
+  if (/^[0-9a-fA-F]{64}$/.test(raw)) return raw;
+  try {
+    if (safeStorage.isEncryptionAvailable()) {
+      const decrypted = safeStorage.decryptString(Buffer.from(raw, 'base64'));
+      return decrypted.trim() || null;
+    }
+  } catch (error) {
+    console.warn('[Security] Octop admin password 解密失败，将重新生成:', error.message);
+  }
+  return null;
+}
+
+function persistOctopAdminPassword(password) {
+  const passwordPath = octopAdminPasswordStoragePath();
+  fs.mkdirSync(path.dirname(passwordPath), { recursive: true, mode: 0o700 });
+  if (safeStorage.isEncryptionAvailable()) {
+    const encrypted = safeStorage.encryptString(password);
+    fs.writeFileSync(passwordPath, encrypted.toString('base64'), { encoding: 'utf8', mode: 0o600 });
+    return 'safeStorage';
+  }
+  console.warn('[Security] safeStorage 不可用，Octop admin password 将以明文保存在用户数据目录（权限 0600）');
+  fs.writeFileSync(passwordPath, password, { encoding: 'utf8', mode: 0o600 });
+  return 'plaintext';
+}
+
+function ensureOctopAdminPassword() {
+  if (cachedOctopAdminPassword) return cachedOctopAdminPassword;
+  const stored = readOctopAdminPasswordFromDisk();
+  if (stored) {
+    cachedOctopAdminPassword = stored;
+    return cachedOctopAdminPassword;
+  }
+  cachedOctopAdminPassword = crypto.randomBytes(32).toString('hex');
+  persistOctopAdminPassword(cachedOctopAdminPassword);
+  console.log('[Security] Generated new per-device Octop admin password');
+  return cachedOctopAdminPassword;
+}
+
 // 2026-08-27 Win P1：AGENT_GATEWAY_SECRET 兜底注入。
 // 打包 extraResources 同目标覆盖链不保证 backend.env 覆盖 example（实测 1.1.96
 // 部署态 .env 恒为 example 内容），AGENT_GATEWAY_SECRET 因此缺失，非开发环境
@@ -342,81 +395,32 @@ function ensureDesktopSqliteDatabase(envVars, backendPath) {
     }
   }
 
-  // 孤儿 WAL 防御（2026-08-27 Win P0）：上次进程异常退出会遗留 <db>-wal/-shm，
-  // 它们的页引用指向旧版主库；换版本装包后主库是全新 seed，Prisma 打开时做
-  // WAL 合并校验必然对不上 → SQLITE_CORRUPT "database disk image is malformed"。
-  // 本函数运行于后端 spawn 之前，此时任何 -wal 都是死文件，移到一旁留档。
-  // v1.1.110（复核 P1）：sidecar 移不动时**禁止**复制 seed.db——此时新库会被
-  // 遗留的旧 WAL 污染（Prisma 打开新库即合并同名 WAL → SQLITE_CORRUPT）。
-  // 任一 sidecar 无法安全移位都阻断本次后端启动，不静默造坏库；桌面层会把
-  // 具体原因写入启动诊断，用户可在修复文件权限/占用后重试。
-  let orphanSidecarBlocked = false;
-  const movedOrphanSidecars = [];
-  for (const suffix of ['-wal', '-shm']) {
-    const sidecarPath = `${databasePath}${suffix}`;
-    if (fs.existsSync(sidecarPath)) {
-      const orphanPath = `${sidecarPath}.orphan-${new Date().toISOString().replace(/[:.]/g, '-')}`;
-      try {
-        fs.renameSync(sidecarPath, orphanPath);
-        movedOrphanSidecars.push({ sidecarPath, orphanPath });
-        console.warn('[Backend] Orphan SQLite sidecar moved aside:', orphanPath);
-      } catch (error) {
-        orphanSidecarBlocked = true;
-        console.warn('[Backend] Unable to move SQLite sidecar:', error.message);
-        appendRuntimeLog('backend-launch.log', `[Backend] orphan sidecar move FAILED (${suffix}: ${error.message}) — seed initialization blocked to avoid WAL pollution`);
-        for (const moved of movedOrphanSidecars.reverse()) {
-          try {
-            fs.renameSync(moved.orphanPath, moved.sidecarPath);
-          } catch (rollbackError) {
-            console.error('[Backend] Unable to roll back moved SQLite sidecar:', rollbackError.message);
-          }
-        }
-        movedOrphanSidecars.length = 0;
-      }
-    }
-  }
-
-  // A valid-looking main DB is not safe to open while an old sidecar remains
-  // beside it. Block startup for every path so SQLite cannot merge stale WAL
-  // pages before the backend gets a chance to report the problem.
-  if (orphanSidecarBlocked) {
-    console.warn('[Backend] SQLite startup blocked: stale WAL/SHM could not be moved aside');
-    return false;
-  }
+  // 不要在 SQLite 打开前移走 WAL/SHM：异常退出时合法的已提交事务可能仍只
+  // 存在 WAL，提前隔离会直接丢数据。SQLite 会校验 WAL 与主库的 salt；只有
+  // 后端实际返回明确的 SQLITE_CORRUPT 特征时，healCorruptedDesktopDatabase()
+  // 才负责带备份地隔离损坏库并重建。启动阶段只收紧权限，不做不可逆判断。
 
   const seedPath = path.join(backendPath, 'prisma', 'seed.db');
 
-  // 目标库已存在且 schema 完整（或为桌面端新建的 user_version=1 空库）→ 直接复用
-  if (sqliteDatabaseHasRequiredSchema(databasePath)) {
-    return true;
-  }
-
-  // 目标库不存在 → 仅在目标文件不存在时才复制种子库完成首次初始化
-  if (!fs.existsSync(databasePath)) {
-    if (sqliteDatabaseHasRequiredSchema(seedPath)) {
-      fs.mkdirSync(path.dirname(databasePath), { recursive: true });
-      fs.copyFileSync(seedPath, databasePath);
-      console.log('[Backend] SQLite database initialized from packaged seed:', databasePath);
-    } else {
-      console.warn('[Backend] SQLite seed database is missing or incomplete:', seedPath);
+  // 已存在的库（包括 WAL/SHM）必须原样交给 SQLite 打开和恢复。读取主库前几 MB
+  // 只能得到不完整的预检结论：最新 schema/事务可能尚在合法 WAL，启动前据此
+  // 替换主库会把用户数据当成损坏数据丢弃。明确的 SQLITE_CORRUPT/NOTADB 只在
+  // 后端实际崩溃后由 healCorruptedDesktopDatabase() 带备份处理。
+  if (fs.existsSync(databasePath)) {
+    if (!sqliteDatabaseHasRequiredSchema(databasePath)) {
+      console.warn('[Backend] SQLite schema precheck inconclusive; preserving existing database and sidecars for SQLite recovery:', databasePath);
     }
     return true;
   }
 
-  // 目标库存在但 schema 校验失败：不覆盖原文件（避免用户数据静默丢失），
-  // 先保留为 .suspect-<ts>，再从零建一个空库供后端迁移重建。
-  const suspectPath = `${databasePath}.suspect-${new Date().toISOString().replace(/[:.]/g, '-')}`;
-  try {
-    fs.renameSync(databasePath, suspectPath);
-    console.error('[Backend] SQLite database failed schema check, preserved original as:', suspectPath);
-  } catch (error) {
-    console.error('[Backend] Unable to preserve suspect SQLite database, skipping recreation:', error.message);
-    return false;
+  // 目标库不存在 → 仅此首次初始化场景允许复制无用户数据的包内种子库。
+  if (sqliteDatabaseHasRequiredSchema(seedPath)) {
+    fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+    fs.copyFileSync(seedPath, databasePath);
+    console.log('[Backend] SQLite database initialized from packaged seed:', databasePath);
+  } else {
+    console.warn('[Backend] SQLite seed database is missing or incomplete:', seedPath);
   }
-
-  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
-  createEmptySqliteDatabase(databasePath);
-  console.log('[Backend] SQLite database recreated from scratch (user_version=1):', databasePath);
   return true;
 }
 
@@ -1464,6 +1468,11 @@ async function startBackendService() {
   envVars.AGENT_S_BASE_URL = envVars.AGENT_S_BASE_URL || `http://127.0.0.1:${AGENT_S_PORT}`;
   envVars.KAYPAL_RUNTIME_SHARED_SECRET = envVars.KAYPAL_RUNTIME_SHARED_SECRET || ensureAgentSToken();
   envVars.KAYPAL_AGENT_S_TOKEN = envVars.KAYPAL_AGENT_S_TOKEN || ensureAgentSToken();
+  const octopCredentials = getOctopAdminCredentials();
+  envVars.OCTOP_USERNAME = envVars.OCTOP_USERNAME || octopCredentials.username;
+  envVars.OCTOP_PASSWORD = envVars.OCTOP_PASSWORD || octopCredentials.password;
+  envVars.OCTOP_ADMIN_USERNAME = envVars.OCTOP_ADMIN_USERNAME || octopCredentials.username;
+  envVars.OCTOP_ADMIN_PASSWORD = envVars.OCTOP_ADMIN_PASSWORD || octopCredentials.password;
   // 2026-08-27 Win P1：打包部署态 backend/.env 实为 example 内容（extraResources
   // 同目标覆盖链失效），AGENT_GATEWAY_SECRET 缺失导致非开发环境后端启动即 throw。
   // 进程内随机兜底：本机内存中生成并注入，仅主进程↔spawn 后端同生命周期使用，
@@ -1918,7 +1927,7 @@ function getOctopSidecarEntry() {
 
 function getOctopAdminCredentials() {
   // 与 backend 的 OCTOP_USERNAME/OCTOP_PASSWORD 保持一致，backend 才能登录本 sidecar。
-  // 读取 backend/.env 里的 OCTOP_*（若有），否则用默认占位（首启 octop init 会用它建 admin）。
+  // 读取 backend/.env 里的 OCTOP_*（若有），否则使用当前设备随机持久化凭据。
   const envFile = path.join(getResourcePath('backend'), '.env');
   const env = { ...process.env };
   if (fs.existsSync(envFile)) {
@@ -1931,7 +1940,7 @@ function getOctopAdminCredentials() {
   }
   return {
     username: env.OCTOP_ADMIN_USERNAME || env.OCTOP_USERNAME || 'octop-bridge',
-    password: env.OCTOP_ADMIN_PASSWORD || env.OCTOP_PASSWORD || 'Octop1234',
+    password: env.OCTOP_ADMIN_PASSWORD || env.OCTOP_PASSWORD || ensureOctopAdminPassword(),
   };
 }
 
@@ -2253,10 +2262,29 @@ function setPendingUpdate(partial) {
 const localBridgeNonceCache = createNonceCache();
 
 function setupIPC() {
+  const isTrustedRendererSender = (event) => {
+    if (
+      !mainWindow ||
+      mainWindow.isDestroyed() ||
+      !getTabManager().isOwnedWebContents(event.sender) ||
+      !event.senderFrame ||
+      event.senderFrame !== event.sender.mainFrame
+    ) return false;
+    try {
+      const senderUrl = new URL(event.senderFrame.url);
+      const allowedOrigins = new Set(['http://localhost:3010', 'http://127.0.0.1:3010']);
+      if (frontendServerUrl) allowedOrigins.add(new URL(frontendServerUrl).origin);
+      return allowedOrigins.has(senderUrl.origin);
+    } catch {
+      return false;
+    }
+  };
+
   // 桌面端系统能力（v1.1.66 修复）：剪贴板写入、登录凭据 safeStorage 加密记忆
   // （登录页「记住账号和密码」）。外部链接走下方已有的 shell:open-external。
 
-  ipcMain.handle('clipboard:write-text', (_event, text) => {
+  ipcMain.handle('clipboard:write-text', (event, text) => {
+    if (!isTrustedRendererSender(event)) return false;
     try {
       const { clipboard } = require('electron');
       clipboard.writeText(String(text ?? ''));
@@ -2267,7 +2295,8 @@ function setupIPC() {
   });
 
   const SECURE_STORE_PREFIX = 'loginCredential:';
-  ipcMain.handle('secure-store:get', (_event, key) => {
+  ipcMain.handle('secure-store:get', (event, key) => {
+    if (!isTrustedRendererSender(event) || typeof key !== 'string' || key.length > 128) return null;
     try {
       const raw = store.get(`${SECURE_STORE_PREFIX}${key}`);
       if (typeof raw !== 'string' || !raw) return null;
@@ -2278,7 +2307,8 @@ function setupIPC() {
     }
   });
 
-  ipcMain.handle('secure-store:set', (_event, key, value) => {
+  ipcMain.handle('secure-store:set', (event, key, value) => {
+    if (!isTrustedRendererSender(event) || typeof key !== 'string' || key.length > 128) return false;
     try {
       if (!safeStorage.isEncryptionAvailable()) return false;
       const encrypted = safeStorage.encryptString(String(value ?? ''));
@@ -2289,7 +2319,8 @@ function setupIPC() {
     }
   });
 
-  ipcMain.handle('secure-store:delete', (_event, key) => {
+  ipcMain.handle('secure-store:delete', (event, key) => {
+    if (!isTrustedRendererSender(event) || typeof key !== 'string' || key.length > 128) return false;
     try {
       store.delete(`${SECURE_STORE_PREFIX}${key}`);
       return true;
@@ -2342,25 +2373,18 @@ function setupIPC() {
     return requestLocalBridgeBackend({ request, host, cookieHeader });
   });
 
-  // 云端 API 调用
-  ipcMain.handle('cloud-api:generate-reply', async (event, data) => {
-    return await cloudAPI.generateReply(data);
-  });
-
-  ipcMain.handle('cloud-api:check-content', async (event, data) => {
-    return await cloudAPI.checkContent(data);
-  });
-
-  ipcMain.handle('cloud-api:check-dedup', async (event, data) => {
-    return await cloudAPI.checkDedup(data);
-  });
-
-  ipcMain.handle('cloud-api:mark-sent', async (event, data) => {
-    return await cloudAPI.markSent(data);
-  });
-
   // 配置管理
+  const CONFIG_GET_ALLOWED_KEYS = new Set([
+    'autoStartService',
+    'hoverBallEnabled',
+    'windowBounds',
+    'lastLoginUser',
+  ]);
   ipcMain.handle('config:get', (event, key) => {
+    if (!isTrustedRendererSender(event) || typeof key !== 'string' || !CONFIG_GET_ALLOWED_KEYS.has(key)) {
+      console.warn(`[Config] 拒绝通过 config:get 读取未授权 key: ${key}`);
+      return null;
+    }
     return store.get(key);
   });
 
@@ -2375,7 +2399,7 @@ function setupIPC() {
   ]);
 
   ipcMain.handle('config:set', (event, key, value) => {
-    if (typeof key !== 'string' || !CONFIG_SET_ALLOWED_KEYS.has(key)) {
+    if (!isTrustedRendererSender(event) || typeof key !== 'string' || !CONFIG_SET_ALLOWED_KEYS.has(key)) {
       console.warn(`[Config] 拒绝通过 config:set 修改未授权 key: ${key}`);
       return false;
     }
@@ -2384,7 +2408,8 @@ function setupIPC() {
   });
 
   // 服务管理
-  ipcMain.handle('service:restart', async () => {
+  ipcMain.handle('service:restart', async (event) => {
+    if (!isTrustedRendererSender(event)) return { success: false };
     isQuitting = true;
     stopAgentSService();
     stopBackendService();
@@ -2398,7 +2423,8 @@ function setupIPC() {
     return { success: true };
   });
 
-  ipcMain.handle('service:status', () => {
+  ipcMain.handle('service:status', (event) => {
+    if (!isTrustedRendererSender(event)) return { success: false };
     return {
       agentS: {
         mode: isNodeAgentRuntimeEnabled() ? 'node-runtime' : 'legacy-sidecar',
@@ -2413,29 +2439,35 @@ function setupIPC() {
   });
 
   // 应用控制
-  ipcMain.handle('app:get-version', () => {
+  ipcMain.handle('app:get-version', (event) => {
+    if (!isTrustedRendererSender(event)) return null;
     return app.getVersion();
   });
 
-  ipcMain.handle('app:check-update', () => {
+  ipcMain.handle('app:check-update', (event) => {
+    if (!isTrustedRendererSender(event)) return { success: false };
     checkForUpdates(true);
     return { success: true };
   });
 
-  ipcMain.handle('app:install-update', () => {
+  ipcMain.handle('app:install-update', (event) => {
+    if (!isTrustedRendererSender(event)) return { success: false };
     quitAndInstall();
   });
 
-  ipcMain.handle('app:get-update-status', () => {
+  ipcMain.handle('app:get-update-status', (event) => {
+    if (!isTrustedRendererSender(event)) return { success: false };
     return { ...pendingUpdate };
   });
 
-  ipcMain.handle('app:download-update', () => {
+  ipcMain.handle('app:download-update', (event) => {
+    if (!isTrustedRendererSender(event)) return { success: false };
     const ok = downloadUpdate();
     return { success: ok };
   });
 
-  ipcMain.handle('app:skip-update', async (_event, version) => {
+  ipcMain.handle('app:skip-update', async (event, version) => {
+    if (!isTrustedRendererSender(event)) return { success: false };
     // v1.1.110（复核 P1）：skipUpdate 内部要 await electron-updater 的
     // cancelDownload（下载中跳过）——IPC 必须等这条异步取消走完再返回，
     // 否则调用方以为已取消、实际下载仍在跑（退出时仍可能安装被跳过版本）。
@@ -2444,21 +2476,24 @@ function setupIPC() {
     return { success: true };
   });
 
-  ipcMain.handle('app:get-update-feed-info', () => {
+  ipcMain.handle('app:get-update-feed-info', (event) => {
+    if (!isTrustedRendererSender(event)) return { success: false };
     return getUpdateFeedInfo();
   });
 
-  ipcMain.handle('app:get-platform', () => {
+  ipcMain.handle('app:get-platform', (event) => {
+    if (!isTrustedRendererSender(event)) return null;
     return process.platform;
   });
 
-  ipcMain.handle('app:get-data-path', () => {
+  ipcMain.handle('app:get-data-path', (event) => {
+    if (!isTrustedRendererSender(event)) return null;
     return app.getPath('userData');
   });
 
   // 打开外部链接（仅允许 http/https，防 file:// 等本地协议被任意打开）
   ipcMain.handle('shell:open-external', async (event, url) => {
-    if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return false;
+    if (!isTrustedRendererSender(event) || typeof url !== 'string' || !/^https?:\/\//i.test(url)) return false;
     try {
       await shell.openExternal(url);
       return true;
@@ -2470,7 +2505,18 @@ function setupIPC() {
 
   // 打开文件目录
   ipcMain.handle('shell:show-item-in-folder', (event, fullPath) => {
-    shell.showItemInFolder(fullPath);
+    if (!isTrustedRendererSender(event) || typeof fullPath !== 'string') return false;
+    const resolved = path.resolve(fullPath);
+    const allowedRoots = [app.getPath('userData'), process.resourcesPath]
+      .filter(Boolean)
+      .map((root) => path.resolve(root));
+    const allowed = allowedRoots.some((root) => resolved === root || resolved.startsWith(`${root}${path.sep}`));
+    if (!allowed) {
+      console.warn(`[Shell] 拒绝打开沙盒外路径: ${resolved}`);
+      return false;
+    }
+    shell.showItemInFolder(resolved);
+    return true;
   });
 
   // 多工作区标签壳 IPC（tab 条 + 前端 workspace 切换器调用）

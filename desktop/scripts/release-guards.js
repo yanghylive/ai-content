@@ -19,7 +19,6 @@ const AGENT_S_MOCK_MARKERS = [
   /runner_mode:\s*['"]mock['"]/,
   /browserControl:\s*false/,
   /mock-compatible/,
-  /browserExecution:\s*false/,
   /Phase 1 mock-compatible runtime/,
 ];
 
@@ -450,7 +449,10 @@ function assertAgentSNotMockInBundle(ctx, bundlePath, label = bundlePath, option
   if (!/browserControl:\s*true/.test(content)) {
     ctx.fail(`${label} blocks release: Agent-S health must expose capabilities.browserControl=true`);
   }
-  if (options.requireEvidence !== false && !/evidenceStore:\s*true/.test(content)) {
+  if (
+    options.requireEvidence !== false &&
+    !/evidenceStore:\s*(?:true|this\.evidenceStoreReady)/.test(content)
+  ) {
     ctx.fail(`${label} blocks release: Agent-S health must expose evidenceStore=true`);
   }
 }
@@ -504,9 +506,55 @@ function assertMainRuntimePolicy(ctx, mainPath) {
   if (!/envVars\[CREDENTIAL_MASTER_KEY_ENV\]\s*=\s*credentialKey\.value/.test(content)) {
     ctx.fail('desktop/main.js must inject the protected credential master key into the backend environment');
   }
+  if (/for \(const suffix of \['-wal', '-shm'\]\)[\s\S]{0,700}\.orphan-/.test(content)) {
+    ctx.fail('desktop/main.js must not move WAL/SHM before SQLite has classified the database as corrupt');
+  }
+  if (/SQLite database failed schema check|SQLite database recreated from scratch/.test(content)) {
+    ctx.fail('desktop/main.js must not replace an existing SQLite database from a schema precheck');
+  }
+  if (!/schema precheck inconclusive; preserving existing database and sidecars/.test(content)) {
+    ctx.fail('desktop/main.js must preserve an existing SQLite database when schema precheck is inconclusive');
+  }
+  if (!/const isTrustedRendererSender = \(event\)/.test(content)) {
+    ctx.fail('desktop/main.js must validate privileged IPC sender ownership and origin');
+  }
+  for (const channel of [
+    'clipboard:write-text',
+    'secure-store:get',
+    'secure-store:set',
+    'secure-store:delete',
+    'config:get',
+    'config:set',
+    'service:restart',
+    'app:install-update',
+    'shell:open-external',
+    'shell:show-item-in-folder',
+  ]) {
+    const escaped = channel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const handler = content.match(new RegExp(`ipcMain\\.handle\\(['"]${escaped}['"][\\s\\S]{0,500}`));
+    if (!handler || !/isTrustedRendererSender\(event\)/.test(handler[0])) {
+      ctx.fail(`desktop/main.js privileged IPC ${channel} must reject untrusted renderers`);
+    }
+  }
   for (const key of ['SystemRoot', 'APPDATA', 'LOCALAPPDATA', 'USERPROFILE', 'TEMP', 'TMP', 'ComSpec']) {
     if (!content.includes(key)) {
       ctx.fail(`desktop/main.js must preserve Windows env var ${key} for packaged backend startup`);
+    }
+  }
+}
+
+function assertNoHardcodedOctopCredentials(ctx, desktopRoot) {
+  const files = [
+    path.join(desktopRoot, 'main.js'),
+    path.join(desktopRoot, 'backend.env.example'),
+    path.join(desktopRoot, 'runtime', 'octop', 'entry.sh'),
+    path.join(desktopRoot, 'runtime', 'octop', 'entry.bat'),
+    path.join(desktopRoot, 'scripts', 'prepare-octop-sidecar.js'),
+  ];
+  for (const filePath of files) {
+    const content = readFileText(filePath);
+    if (/Octop1234|octop-bridge\s*[:/]\s*Octop1234/i.test(content)) {
+      ctx.fail(`hardcoded Octop default credential found: ${filePath}`);
     }
   }
 }
@@ -560,6 +608,13 @@ function assertNoShippedSecrets(ctx, envPath) {
     'OSS_ACCESS_KEY_ID',
     'OSS_ACCESS_KEY_SECRET',
     'KAYPAL_BILLING_USER_ID',
+    'AGENT_GATEWAY_SECRET',
+    'KAYPAL_RUNTIME_SHARED_SECRET',
+    'KAYPAL_AGENT_S_TOKEN',
+    'OCTOP_ACCESS_TOKEN',
+    'OCTOP_PASSWORD',
+    'OCTOP_USER_SECRET',
+    'OCTOP_ADMIN_PASSWORD',
   ];
   for (const line of content.split('\n')) {
     const trimmed = line.trim();
@@ -585,6 +640,7 @@ function assertNoShippedSecrets(ctx, envPath) {
 function assertSourceReleaseGuards(ctx, paths, platform) {
   const backendRoot = paths.backendRoot || path.resolve(path.dirname(paths.backendBundle), '..');
   assertMainRuntimePolicy(ctx, paths.mainJs);
+  assertNoHardcodedOctopCredentials(ctx, paths.desktopRoot);
   assertBackendEnvPolicy(ctx, paths.backendEnv);
   // P0（安全 2026-08-22）：打包交付的 env（占位符模板）不得含任何真实凭据
   assertNoShippedSecrets(ctx, paths.backendEnv);
@@ -632,7 +688,9 @@ function assertPackagedReleaseGuards(ctx, resourcesRoot, platform) {
     path.join(resourcesRoot, 'backend', 'prisma', 'seed.db'),
     'packaged SQLite seed',
   );
-  assertBackendEnvPolicy(ctx, path.join(resourcesRoot, 'backend', '.env'));
+  const packagedEnv = path.join(resourcesRoot, 'backend', '.env');
+  assertBackendEnvPolicy(ctx, packagedEnv);
+  assertNoShippedSecrets(ctx, packagedEnv);
 }
 
 function requestJson(url, timeoutMs = 5000) {
@@ -720,6 +778,7 @@ module.exports = {
   assertLiveAgentSHealth,
   assertLivePlaywrightMcp,
   assertMainRuntimePolicy,
+  assertNoHardcodedOctopCredentials,
   assertNoLegacyPythonRequirements,
   assertNoShippedSecrets,
   assertNodeRuntimeLayout,

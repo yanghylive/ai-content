@@ -1,6 +1,13 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { spawn } from 'child_process';
-import { existsSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -112,6 +119,8 @@ export class NodeAgentRuntimeService {
   private readonly logger = new Logger(NodeAgentRuntimeService.name);
   private readonly sessions = new Map<string, StoredSession>();
   private readonly startedAt = Date.now();
+  private readonly evidenceRootPath: string;
+  private readonly evidenceStoreReady: boolean;
 
   constructor(
     @Optional()
@@ -122,7 +131,38 @@ export class NodeAgentRuntimeService {
     private readonly aiClient?: AiClientService,
     @Optional()
     private readonly defaultModels?: DefaultModelsService,
-  ) {}
+  ) {
+    const configuredRoot = process.env.NODE_AGENT_RUNTIME_EVIDENCE_ROOT?.trim();
+    const userDataRoot = process.env.KAYPAL_DESKTOP_USER_DATA_DIR?.trim();
+    this.evidenceRootPath =
+      configuredRoot ||
+      join(
+        userDataRoot || join(homedir(), '.workbuddy', 'ai-content-runtime'),
+        'agent-s-evidence',
+      );
+    try {
+      mkdirSync(join(this.evidenceRootPath, 'sessions'), {
+        recursive: true,
+        mode: 0o700,
+      });
+      mkdirSync(join(this.evidenceRootPath, 'artifacts'), {
+        recursive: true,
+        mode: 0o700,
+      });
+      const probePath = join(
+        this.evidenceRootPath,
+        `.write-probe-${process.pid}`,
+      );
+      writeFileSync(probePath, 'ok', { encoding: 'utf8', mode: 0o600 });
+      rmSync(probePath, { force: true });
+      this.evidenceStoreReady = true;
+    } catch (error) {
+      this.evidenceStoreReady = false;
+      this.logger.warn(
+        `Agent-S evidence store unavailable: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
 
   async getStatus() {
     const health = await this.health();
@@ -161,7 +201,7 @@ export class NodeAgentRuntimeService {
           running_session_count: Array.from(this.sessions.values()).filter(
             (session) => session.status === 'running',
           ).length,
-          artifact_root: 'app-data://evidence',
+          artifact_root: this.evidenceRootPath,
         },
       },
     };
@@ -172,6 +212,24 @@ export class NodeAgentRuntimeService {
   }
 
   async stop() {
+    for (const session of this.sessions.values()) {
+      if (!session.active_run_id && session.status !== 'waiting_approval')
+        continue;
+      const runId = session.active_run_id;
+      session.cancellation_requested = true;
+      session.pendingRun = null;
+      session.status = 'cancelled';
+      session.active_run_id = null;
+      session.updated_at = new Date().toISOString();
+      session.completed_at = session.updated_at;
+      this.pushEvent(session, {
+        event_type: 'task_cancelled',
+        status: 'cancelled',
+        run_id: runId,
+        message: '3011 正在停止，未完成的 Agent-S 任务已取消。',
+        payload: { reasonCode: 'runtime_unavailable' },
+      });
+    }
     return {
       ...(await this.getStatus()),
       phase: 'stopped',
@@ -202,7 +260,7 @@ export class NodeAgentRuntimeService {
           browserControl: disabled,
           persistentProfiles: disabled,
           localQueue: true,
-          evidenceStore: true,
+          evidenceStore: this.evidenceStoreReady,
           approvalGate: true,
         },
         blockers,
@@ -236,7 +294,7 @@ export class NodeAgentRuntimeService {
               browserControl: disabled,
               persistentProfiles: disabled,
               localQueue: true,
-              evidenceStore: true,
+              evidenceStore: this.evidenceStoreReady,
               approvalGate: true,
             },
             blockers,
@@ -259,7 +317,7 @@ export class NodeAgentRuntimeService {
             browserControl: true,
             persistentProfiles: true,
             localQueue: true,
-            evidenceStore: true,
+            evidenceStore: this.evidenceStoreReady,
             approvalGate: true,
           },
           blockers: [],
@@ -287,7 +345,7 @@ export class NodeAgentRuntimeService {
           browserControl: disabled,
           persistentProfiles: disabled,
           localQueue: true,
-          evidenceStore: true,
+          evidenceStore: this.evidenceStoreReady,
           approvalGate: true,
         },
         blockers,
@@ -311,7 +369,7 @@ export class NodeAgentRuntimeService {
           browserControl: disabled,
           persistentProfiles: disabled,
           localQueue: true,
-          evidenceStore: true,
+          evidenceStore: this.evidenceStoreReady,
           approvalGate: true,
         },
         blockers: [message],
@@ -348,6 +406,7 @@ export class NodeAgentRuntimeService {
       pendingRun: null,
     };
 
+    this.sessions.set(session.session_id, session);
     this.pushEvent(session, {
       event_type: 'session_created',
       status: 'idle',
@@ -357,7 +416,6 @@ export class NodeAgentRuntimeService {
         mode: 'node-playwright',
       },
     });
-    this.sessions.set(session.session_id, session);
     return { session: this.toPublicSession(session) };
   }
 
@@ -372,6 +430,15 @@ export class NodeAgentRuntimeService {
     reasonCode?: RuntimeExecution['reasonCode'];
   }> {
     const session = this.requireSession(sessionId);
+    if (session.active_run_id) {
+      return {
+        accepted: false,
+        session_id: sessionId,
+        run_id: session.active_run_id,
+        status: session.status,
+        reasonCode: 'review_required',
+      };
+    }
     const instruction =
       typeof input.instruction === 'string' && input.instruction.trim()
         ? input.instruction
@@ -386,6 +453,7 @@ export class NodeAgentRuntimeService {
     session.completed_at = null;
     session.run_count += 1;
     session.active_run_id = runId;
+    session.cancellation_requested = false;
 
     this.pushEvent(session, {
       event_type: 'task_started',
@@ -443,15 +511,18 @@ export class NodeAgentRuntimeService {
 
   cancelSession(sessionId: string) {
     const session = this.requireSession(sessionId);
+    const activeRunId = session.active_run_id;
+    const waitingForApproval = session.status === 'waiting_approval';
     session.status = 'cancelled';
     session.cancellation_requested = true;
     session.pendingRun = null;
     session.updated_at = new Date().toISOString();
     session.completed_at = session.updated_at;
+    if (waitingForApproval) session.active_run_id = null;
     this.pushEvent(session, {
       event_type: 'task_cancelled',
       status: 'cancelled',
-      run_id: session.active_run_id,
+      run_id: activeRunId,
       message: 'Node Agent Runtime session cancelled',
       payload: {},
     });
@@ -475,6 +546,7 @@ export class NodeAgentRuntimeService {
       session.completed_at = session.updated_at;
       session.last_error = input.comment || 'approval rejected';
       session.pendingRun = null;
+      session.active_run_id = null;
       this.pushEvent(session, {
         event_type: 'task_failed',
         status: session.status,
@@ -495,6 +567,7 @@ export class NodeAgentRuntimeService {
       session.completed_at = new Date().toISOString();
       session.last_error =
         'approval accepted but no pending browser task exists';
+      session.active_run_id = null;
       this.pushEvent(session, {
         event_type: 'task_failed',
         status: session.status,
@@ -560,6 +633,7 @@ export class NodeAgentRuntimeService {
       artifact,
       content:
         session.artifactContents.get(artifactId) ||
+        this.readArtifactContent(artifact) ||
         JSON.stringify({ artifact }, null, 2),
     };
   }
@@ -587,9 +661,47 @@ export class NodeAgentRuntimeService {
       },
     });
 
-    const result = localSkillId
-      ? await this.performWechatDesktopExecution(session, input, localSkillId)
-      : await this.performBrowserExecution(session, input);
+    let result: RuntimeExecution;
+    try {
+      result = session.cancellation_requested
+        ? this.cancelledExecution()
+        : localSkillId
+          ? await this.performWechatDesktopExecution(
+              session,
+              input,
+              localSkillId,
+            )
+          : await this.performBrowserExecution(session, input, runId);
+    } catch (error) {
+      const cancelled = session.cancellation_requested;
+      session.status = cancelled ? 'cancelled' : 'failed';
+      session.updated_at = new Date().toISOString();
+      session.completed_at = session.updated_at;
+      session.last_error = cancelled
+        ? '任务已取消，浏览器执行被中止。'
+        : error instanceof Error
+          ? error.message
+          : String(error);
+      session.lastExecutionReasonCode = cancelled
+        ? 'review_required'
+        : 'runtime_unavailable';
+      if (session.active_run_id === runId) session.active_run_id = null;
+      this.pushEvent(session, {
+        event_type: cancelled ? 'task_cancelled' : 'task_failed',
+        status: session.status,
+        run_id: runId,
+        message: session.last_error,
+        payload: {
+          reasonCode: session.lastExecutionReasonCode,
+          technicalMessage: cancelled ? undefined : session.last_error,
+        },
+      });
+      if (!cancelled) throw error;
+      return;
+    }
+    if (session.cancellation_requested && result.ok) {
+      result = this.cancelledExecution();
+    }
     const artifact = this.createExecutionArtifact(
       session,
       runId,
@@ -612,6 +724,11 @@ export class NodeAgentRuntimeService {
         2,
       ),
     );
+    artifact.path = this.persistArtifactContent(
+      session,
+      artifact,
+      session.artifactContents.get(artifact.artifact_id) || '',
+    );
 
     this.pushEvent(session, {
       event_type: 'artifact_created',
@@ -626,13 +743,21 @@ export class NodeAgentRuntimeService {
       },
     });
 
-    session.status = result.status;
+    const cancelled = session.cancellation_requested === true;
+    session.status = cancelled ? 'cancelled' : result.status;
     session.updated_at = new Date().toISOString();
     session.completed_at = session.updated_at;
     session.last_error = result.ok ? null : result.userMessage;
-    session.lastExecutionReasonCode = result.reasonCode;
+    session.lastExecutionReasonCode = cancelled
+      ? 'review_required'
+      : result.reasonCode;
+    if (session.active_run_id === runId) session.active_run_id = null;
     this.pushEvent(session, {
-      event_type: result.ok ? 'task_completed' : 'task_failed',
+      event_type: cancelled
+        ? 'task_cancelled'
+        : result.ok
+          ? 'task_completed'
+          : 'task_failed',
       status: session.status,
       run_id: runId,
       message: result.userMessage,
@@ -742,6 +867,9 @@ export class NodeAgentRuntimeService {
     input: NodeAgentRuntimeRunTaskInput,
     skillId: string,
   ): Promise<RuntimeExecution> {
+    if (session.cancellation_requested) {
+      return this.cancelledExecution();
+    }
     const metadata = {
       ...this.readRecord(session.metadata),
       ...this.readRecord(input.metadata),
@@ -846,7 +974,8 @@ export class NodeAgentRuntimeService {
           '--limit',
           String(limit),
         ];
-        const result = await this.runWechatCommand(
+        const result = await this.runWechatCommandForSession(
+          session,
           'wechat-chat-history',
           args,
           '微信聊天记录同步超时',
@@ -886,7 +1015,8 @@ export class NodeAgentRuntimeService {
           message: '正在读取当前微信会话。',
           payload: { skill_id: skillId },
         });
-        const readResult = await this.runWechatCommand(
+        const readResult = await this.runWechatCommandForSession(
+          session,
           'wechat-live-auto-reply',
           [contextNote, 'read-only'],
           'wechat-live-auto-reply 读取超时',
@@ -895,7 +1025,8 @@ export class NodeAgentRuntimeService {
         const reply =
           this.firstString(metadata.wechat_reply_draft) ||
           this.buildWechatFallbackReply(readResult.readText || '', contextNote);
-        const result = await this.runWechatCommand(
+        const result = await this.runWechatCommandForSession(
+          session,
           'wechat-live-auto-reply',
           [contextNote, 'auto-send', reply],
           'wechat-live-auto-reply 发送超时',
@@ -933,7 +1064,8 @@ export class NodeAgentRuntimeService {
           message: `正在读取 ${contact} 的当前微信会话。`,
           payload: { skill_id: skillId, contact },
         });
-        const readResult = await this.runWechatCommand(
+        const readResult = await this.runWechatCommandForSession(
+          session,
           'wechat-live-auto-reply',
           [contact, 'read-only'],
           `wechat-live-auto-reply 读取超时：${contact}`,
@@ -968,7 +1100,8 @@ export class NodeAgentRuntimeService {
               }
             : await this.generateWechatDesktopReply(sourceText, contact);
         const message = generatedReply.reply;
-        const result = await this.runWechatCommand(
+        const result = await this.runWechatCommandForSession(
+          session,
           'wechat-auto-reply',
           [contact, message, mode],
           `wechat-auto-reply 执行超时：${contact}`,
@@ -1022,7 +1155,8 @@ export class NodeAgentRuntimeService {
             if (!targetMessage) {
               throw new Error(`缺少 ${target} 的群发内容。`);
             }
-            return this.runWechatCommand(
+            return this.runWechatCommandForSession(
+              session,
               'wechat-auto-reply',
               [target, targetMessage, mode],
               `wechat-auto-reply 执行超时：${target}`,
@@ -1066,7 +1200,8 @@ export class NodeAgentRuntimeService {
         const results = await this.runWechatTargets(
           targets,
           async (target) =>
-            this.runWechatCommand(
+            this.runWechatCommandForSession(
+              session,
               'wechat-contact-add',
               [target, verifyMessage, mode],
               `wechat-contact-add 执行超时：${target}`,
@@ -1145,7 +1280,8 @@ export class NodeAgentRuntimeService {
             if (actions.comment && !commentText) {
               throw new Error('缺少朋友圈评论内容，不能执行朋友圈营销。');
             }
-            return this.runWechatCommand(
+            return this.runWechatCommandForSession(
+              session,
               'wechat-moments-marketing',
               [
                 target,
@@ -1218,7 +1354,8 @@ export class NodeAgentRuntimeService {
                 `朋友圈可见范围「${detail.visibilityLabel}」当前不能自动设置，本条未发布。`,
               );
             }
-            return this.runWechatCommand(
+            return this.runWechatCommandForSession(
+              session,
               'wechat-moments-publish',
               [
                 detail.content,
@@ -1574,7 +1711,11 @@ export class NodeAgentRuntimeService {
   private async performBrowserExecution(
     session: StoredSession,
     input: NodeAgentRuntimeRunTaskInput,
+    runId?: string,
   ): Promise<RuntimeExecution> {
+    if (this.isRunCancelled(session, runId)) {
+      return this.cancelledExecution();
+    }
     if (!this.interactionEngine) {
       return this.failedExecution(
         'LocalInteractionEngineClient 未注入，包内 Agent-S 无法操作浏览器。',
@@ -1603,6 +1744,9 @@ export class NodeAgentRuntimeService {
       accountId: context.accountId,
       taskType: context.taskType,
     });
+    if (this.isRunCancelled(session, runId)) {
+      return this.cancelledExecution();
+    }
     const baseContext = {
       platform: context.platform,
       accountId: context.accountId,
@@ -1652,6 +1796,9 @@ export class NodeAgentRuntimeService {
     }
 
     if (context.action === 'read') {
+      if (this.isRunCancelled(session, runId)) {
+        return this.cancelledExecution();
+      }
       const readResult = await this.interactionExecutor.read({
         platform: context.platform,
         accountId: context.accountId,
@@ -1659,11 +1806,37 @@ export class NodeAgentRuntimeService {
         limit: context.limit,
       });
       const readStatus = String(readResult.status || '');
-      const readOk = ![
+      const readStatusFailure = [
         'failed',
         'account_not_logged_in',
         'comment_page_not_ready',
+        'error',
+        'blocked',
       ].includes(readStatus);
+      const readStatusRecognized = [
+        '',
+        'ok',
+        'success',
+        'completed',
+        'ready',
+      ].includes(readStatus);
+      const readSummary = this.readRecord(readResult.summary);
+      const payloadPresent =
+        Array.isArray(readResult.comments) ||
+        Array.isArray(readResult.messages) ||
+        Array.isArray(readResult.items);
+      const evidencePresent =
+        (typeof readResult.url === 'string' &&
+          readResult.url.trim().length > 0) ||
+        (typeof readResult.currentUrl === 'string' &&
+          readResult.currentUrl.trim().length > 0) ||
+        payloadPresent;
+      const readOk =
+        readStatusRecognized &&
+        !readStatusFailure &&
+        readSummary.loadBlocked !== true &&
+        !readResult.scanError &&
+        (Boolean(readStatus) || evidencePresent);
       return {
         ok: readOk,
         status: readOk ? 'completed' : 'failed',
@@ -1702,6 +1875,9 @@ export class NodeAgentRuntimeService {
       };
     }
 
+    if (this.isRunCancelled(session, runId)) {
+      return this.cancelledExecution();
+    }
     const dispatchResult = await this.interactionExecutor.dispatch({
       platform: context.platform,
       accountId: context.accountId,
@@ -1762,6 +1938,24 @@ export class NodeAgentRuntimeService {
       blockers: blockers.length ? blockers : [message],
       nextAction,
     };
+  }
+
+  private cancelledExecution(): RuntimeExecution {
+    return {
+      ok: false,
+      status: 'failed',
+      reasonCode: 'review_required',
+      userMessage: '任务已取消，浏览器执行被中止。',
+      technicalMessage:
+        'Cancellation was requested before the next execution step.',
+      browserExecution: false,
+      blockers: ['任务已取消。'],
+      nextAction: '如需执行，请重新提交任务。',
+    };
+  }
+
+  private isRunCancelled(session: StoredSession, _runId?: string): boolean {
+    return session.cancellation_requested === true;
   }
 
   private blockedExecution(
@@ -1942,6 +2136,28 @@ export class NodeAgentRuntimeService {
     const numeric = Number(value);
     if (!Number.isFinite(numeric)) return undefined;
     return Math.max(1, Math.min(50, Math.floor(numeric)));
+  }
+
+  private async runWechatCommandForSession(
+    session: StoredSession,
+    command: string,
+    args: string[],
+    timeoutMessage: string,
+    timeoutMs: number,
+  ): Promise<WechatCommandResult> {
+    if (session.cancellation_requested) {
+      throw new Error('任务已取消，微信命令未启动。');
+    }
+    const result = await this.runWechatCommand(
+      command,
+      args,
+      timeoutMessage,
+      timeoutMs,
+    );
+    if (session.cancellation_requested) {
+      throw new Error('任务已取消，微信命令结果未被采纳。');
+    }
+    return result;
   }
 
   private runWechatCommand(
@@ -2317,11 +2533,139 @@ export class NodeAgentRuntimeService {
   }
 
   private requireSession(sessionId: string): StoredSession {
-    const session = this.sessions.get(sessionId);
+    const session =
+      this.sessions.get(sessionId) || this.loadPersistedSession(sessionId);
+    if (session && !this.sessions.has(sessionId)) {
+      this.sessions.set(sessionId, session);
+    }
     if (!session) {
       throw new Error(`Node Agent Runtime session not found: ${sessionId}`);
     }
     return session;
+  }
+
+  private sessionFilePath(sessionId: string): string {
+    return join(
+      this.evidenceRootPath,
+      'sessions',
+      `${encodeURIComponent(sessionId)}.json`,
+    );
+  }
+
+  private artifactFilePath(sessionId: string, artifactId: string): string {
+    return join(
+      this.evidenceRootPath,
+      'artifacts',
+      encodeURIComponent(sessionId),
+      `${encodeURIComponent(artifactId)}.json`,
+    );
+  }
+
+  private persistSession(session: StoredSession): void {
+    if (!this.evidenceStoreReady) return;
+    const filePath = this.sessionFilePath(session.session_id);
+    const tempPath = `${filePath}.tmp-${process.pid}`;
+    const { artifactContents, ...serializable } = session;
+    void artifactContents;
+    try {
+      mkdirSync(join(this.evidenceRootPath, 'sessions'), {
+        recursive: true,
+        mode: 0o700,
+      });
+      writeFileSync(tempPath, JSON.stringify(serializable, null, 2), {
+        encoding: 'utf8',
+        mode: 0o600,
+      });
+      renameSync(tempPath, filePath);
+    } catch (error) {
+      this.logger.warn(
+        `Agent-S session evidence write failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  private loadPersistedSession(sessionId: string): StoredSession | null {
+    if (!this.evidenceStoreReady) return null;
+    try {
+      const parsed = JSON.parse(
+        readFileSync(this.sessionFilePath(sessionId), 'utf8'),
+      ) as Partial<StoredSession>;
+      if (parsed.session_id !== sessionId) return null;
+      const session = {
+        ...parsed,
+        events: Array.isArray(parsed.events) ? parsed.events : [],
+        artifacts: Array.isArray(parsed.artifacts) ? parsed.artifacts : [],
+        artifactContents: new Map<string, string>(),
+        pendingRun: parsed.pendingRun || null,
+      } as StoredSession;
+      if (
+        session.status === 'running' ||
+        session.status === 'waiting_approval'
+      ) {
+        session.status = 'failed';
+        session.completed_at = new Date().toISOString();
+        session.updated_at = session.completed_at;
+        session.last_error = '3011 在任务执行期间重启，未确认的任务已中止。';
+        session.active_run_id = null;
+        session.pendingRun = null;
+        this.pushEvent(session, {
+          event_type: 'task_failed',
+          status: 'failed',
+          run_id: null,
+          message: session.last_error,
+          payload: { reasonCode: 'runtime_unavailable' },
+        });
+      }
+      return session;
+    } catch {
+      return null;
+    }
+  }
+
+  private persistArtifactContent(
+    session: StoredSession,
+    artifact: NodeAgentRuntimeArtifact,
+    content: string,
+  ): string {
+    const filePath = this.artifactFilePath(
+      session.session_id,
+      artifact.artifact_id,
+    );
+    if (!this.evidenceStoreReady)
+      return `evidence-unavailable://${artifact.artifact_id}`;
+    const directory = join(
+      this.evidenceRootPath,
+      'artifacts',
+      encodeURIComponent(session.session_id),
+    );
+    const tempPath = `${filePath}.tmp-${process.pid}`;
+    try {
+      mkdirSync(directory, { recursive: true, mode: 0o700 });
+      writeFileSync(tempPath, content, { encoding: 'utf8', mode: 0o600 });
+      renameSync(tempPath, filePath);
+      return filePath;
+    } catch (error) {
+      this.logger.warn(
+        `Agent-S artifact evidence write failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return `evidence-unavailable://${artifact.artifact_id}`;
+    }
+  }
+
+  private readArtifactContent(
+    artifact: NodeAgentRuntimeArtifact,
+  ): string | null {
+    if (
+      !artifact.path ||
+      artifact.path.startsWith('memory://') ||
+      artifact.path.startsWith('evidence-unavailable://')
+    )
+      return null;
+    try {
+      return readFileSync(artifact.path, 'utf8');
+    } catch {
+      return null;
+    }
   }
 
   private pushEvent(
@@ -2338,6 +2682,7 @@ export class NodeAgentRuntimeService {
       artifact_id: null,
       ...event,
     });
+    this.persistSession(session);
   }
 
   private createExecutionArtifact(
@@ -2358,7 +2703,10 @@ export class NodeAgentRuntimeService {
       run_id: runId,
       kind: 'json',
       filename: `${session.session_id}-${runId}-execution.json`,
-      path: `memory://${session.session_id}/${runId}-execution.json`,
+      path: this.artifactFilePath(
+        session.session_id,
+        `node-runtime-artifact-${Date.now()}`,
+      ),
       created_at: now,
       size_bytes: sizeBytes,
       metadata: {
