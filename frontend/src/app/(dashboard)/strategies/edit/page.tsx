@@ -1,16 +1,9 @@
-"use client";
+import { QueryPreservingRedirect } from "@/lib/redirect-with-query";
 
-import { useEffect, useState } from "react";
-import { EditEntryHint } from "@/components/edit-entry-hint";
-import { StrategyForm } from "../strategy-form";
-
-export default function EditStrategyPage() {
-  const [id, setId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setId(new URLSearchParams(window.location.search).get("id"));
-  }, []);
-
-  if (id === null) return <EditEntryHint />;
-  return <StrategyForm strategyId={id || undefined} />;
+/**
+ * 路由收敛（2026-09-01 UX 审计 P0）：编辑策略 已并入 获客策略，
+ * 保留旧深链兼容跳转（静态导出安全，不丢查询参数）。
+ */
+export default function Page() {
+  return <QueryPreservingRedirect target="/growth/strategies" />;
 }

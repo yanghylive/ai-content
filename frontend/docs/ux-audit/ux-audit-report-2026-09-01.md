@@ -19,13 +19,9 @@
 
 ## 2. 重复功能页
 
-### 2.1 同组件双路由（明确冗余,建议立即合并）
+### 2.1 修正说明（原误判撤回）
 
-| 路由 A | 路由 B | 证据 |
-|--------|--------|------|
-| `/intelligence/rules`（情报规则） | `/intelligence/risks`（风险审核） | **引用同一个组件** `intelligence-dispatch-records-page.tsx`,仅 title 不同（"情报规则"/"风险审核"） |
-
-两个导航入口指向同一功能,用户会困惑为何"规则"和"风险审核"页面长一样。
+`/intelligence/rules` 与 `/intelligence/risks` 并非冗余——二者是同一派发记录组件 `intelligence-dispatch-records-page.tsx` 的**不同 kind 配置**（risks=风险审核 / rules=规则种子 / leads=线索洞察 / accounts=对标账号）,各 kind 有独立标题、描述、空状态与语义,属合理并列结构。原审计误判已撤回。
 
 ### 2.2 功能重叠（建议收敛主入口）
 
@@ -39,14 +35,14 @@
 | 功能 | 页面 | 入口 |
 |------|------|------|
 | 知识管理 | `/knowledge-base`（知识库） | 内容运营页 ✅ |
-| 知识管理 | `/knowledge`（品牌知识） | **无导航入口**（孤儿） |
+| 知识管理 | `/knowledge`（品牌知识） | **已合并** → `/knowledge-base`（2026-09-01 P0 完成） |
 
 `/knowledge` 是"品牌知识"管理,与 `/knowledge-base` 高度重叠且不可达。
 
 | 功能 | 页面 | 入口 |
 |------|------|------|
 | 获客策略 | `/growth/strategies`（获客策略） | 获客中心 + 命令面板 ✅ |
-| 获客策略 | `/strategies`（策略中心） | **无导航入口**（孤儿）,仅被自己表单返回引用 |
+| 获客策略 | `/strategies`（策略中心） | **已合并** → `/growth/strategies`（2026-09-01 P0 完成） |
 
 新旧两套策略中心并存,旧版 `/strategies` 已无入口。
 
@@ -159,8 +155,8 @@
 ## 10. 建议优先级
 
 ### P0（明确冗余,低风险高收益）
-1. 合并 `/intelligence/rules` 与 `/intelligence/risks`（保留一个,另一个重定向）
-2. 删除/重定向孤儿旧页:`/strategies` → `/growth/strategies`、`/knowledge` → `/knowledge-base`
+1. ~~合并 `/intelligence/rules` 与 `/intelligence/risks`~~ **撤回**:4 个 kind 是合理并列结构,非冗余
+2. ~~删除/重定向孤儿旧页~~ **已完成**(2026-09-01):`/strategies`、`/strategies/new`、`/strategies/edit` → `/growth/strategies`;`/knowledge` → `/knowledge-base`;旧组件死代码已删
 
 ### P1（用户可见困惑,中等工作量）
 3. 收敛视频生成入口:确定 `video-studio` 为主入口,`video-generation`/`ai-video-gen`/`seedance-video` 统一命名或并入
