@@ -113,8 +113,8 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('reads legacy string contacts as structured items', async () => {
-    const cachePath = join(root, '.local-logs', 'wechat-contacts.json');
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    const cachePath = join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json');
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
       cachePath,
       JSON.stringify({
@@ -137,8 +137,8 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('hides accountless legacy runtime contacts instead of showing a stale switched-account cache', async () => {
-    const cachePath = join(root, '.local-logs', 'wechat-contacts.json');
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    const cachePath = join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json');
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
       cachePath,
       JSON.stringify({
@@ -170,8 +170,8 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('keeps runtime contacts when diagnostics identify the selected WeChat account', async () => {
-    const cachePath = join(root, '.local-logs', 'wechat-contacts.json');
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    const cachePath = join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json');
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
       cachePath,
       JSON.stringify({
@@ -200,8 +200,8 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('filters polluted OCR cache entries before returning contacts', async () => {
-    const cachePath = join(root, '.local-logs', 'wechat-contacts.json');
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    const cachePath = join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json');
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
       cachePath,
       JSON.stringify({
@@ -227,8 +227,8 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('treats a mostly polluted OCR cache as empty instead of showing stale contacts', async () => {
-    const cachePath = join(root, '.local-logs', 'wechat-contacts.json');
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    const cachePath = join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json');
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
       cachePath,
       JSON.stringify({
@@ -325,7 +325,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
     expect(cleared.count).toBe(0);
 
     const raw = JSON.parse(
-      await readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      await readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     );
     expect(raw.contacts).toEqual([]);
     expect(raw.items).toEqual([]);
@@ -347,7 +347,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
     );
 
     await expect(
-      readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     ).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
@@ -364,16 +364,16 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
     expect(result.contacts).toEqual(['客户A', '客户B']);
     const raw = JSON.parse(
-      await readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      await readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     );
     expect(raw.contacts).toEqual(['客户A', '客户B']);
     expect(raw.currentWechatId).toBe('mac-dev-wechat');
   });
 
   it('keeps clean cached contacts when macOS OCR cannot identify the WeChat window', async () => {
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
-      join(root, '.local-logs', 'wechat-contacts.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'),
       JSON.stringify({
         source: 'macos-wechat-ocr',
         currentWechatId: 'mac-dev-wechat',
@@ -406,7 +406,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
     const diagnostics = JSON.parse(
       await readFile(
-        join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+        join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
         'utf8',
       ),
     );
@@ -433,7 +433,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
     expect(result.count).toBe(2);
 
     const raw = JSON.parse(
-      await readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      await readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     );
     expect(raw.source).toBe('windows-wechat-uia');
     expect(raw.items).toHaveLength(2);
@@ -461,7 +461,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
     expect(result.count).toBe(5);
     expect(result.currentWechatId).toBe('seller-current');
     const cache = JSON.parse(
-      await readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      await readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     );
     expect(cache.currentWechatId).toBe('seller-current');
   });
@@ -484,11 +484,11 @@ describe('LocalEngineService WeChat contacts cache', () => {
     ).rejects.toThrow('没有微信账号标识');
 
     await expect(
-      readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     ).rejects.toMatchObject({ code: 'ENOENT' });
     const diagnostics = JSON.parse(
       await readFile(
-        join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+        join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
         'utf8',
       ),
     );
@@ -566,7 +566,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
     );
 
     const raw = JSON.parse(
-      await readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      await readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     );
     expect(raw.source).toBe('windows-wechat-db');
     expect(raw.currentWechatId).toBe('yanghylive_ddd3');
@@ -577,9 +577,9 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('does not expose cached contacts when the latest diagnostics point to another WeChat account', async () => {
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
-      join(root, '.local-logs', 'wechat-contacts.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'),
       JSON.stringify({
         source: 'windows-wechat-db',
         currentWechatId: 'dazhuang_old',
@@ -593,7 +593,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
       'utf8',
     );
     await writeFile(
-      join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
       JSON.stringify({
         diagnostics: {
           selectedDbAccountFolder: 'yanghylive_ddd3',
@@ -680,9 +680,9 @@ describe('LocalEngineService WeChat contacts cache', () => {
       };
       throw error;
     });
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
-      join(root, '.local-logs', 'wechat-contacts.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'),
       JSON.stringify({
         source: 'windows-wechat-db',
         currentWechatId: 'dazhuang_old',
@@ -731,7 +731,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
     const diagnostics = JSON.parse(
       await readFile(
-        join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+        join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
         'utf8',
       ),
     );
@@ -780,9 +780,9 @@ describe('LocalEngineService WeChat contacts cache', () => {
       };
       throw error;
     });
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
-      join(root, '.local-logs', 'wechat-contacts.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'),
       JSON.stringify({
         source: 'windows-wechat-db',
         currentWechatId: 'yanghylive_ddd3',
@@ -813,7 +813,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
     const diagnostics = JSON.parse(
       await readFile(
-        join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+        join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
         'utf8',
       ),
     );
@@ -849,9 +849,9 @@ describe('LocalEngineService WeChat contacts cache', () => {
       };
       throw error;
     });
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
-      join(root, '.local-logs', 'wechat-contacts.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'),
       JSON.stringify({
         source: 'windows-wechat-db-decrypted',
         currentWechatId: 'yanghylive_ddd3',
@@ -884,7 +884,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
     const diagnostics = JSON.parse(
       await readFile(
-        join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+        join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
         'utf8',
       ),
     );
@@ -906,9 +906,9 @@ describe('LocalEngineService WeChat contacts cache', () => {
         dbContactCount: 1,
       },
     }));
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
-      join(root, '.local-logs', 'wechat-contacts.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'),
       JSON.stringify({
         source: 'windows-wechat-db',
         currentWechatId: 'dazhuang_old',
@@ -968,7 +968,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
     );
 
     const raw = JSON.parse(
-      await readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      await readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     );
     expect(raw.diagnostics.attemptedSources).toEqual([
       'windows-uia',
@@ -993,7 +993,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
     );
 
     await expect(
-      readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     ).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
@@ -1083,7 +1083,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
     const raw = JSON.parse(
       await readFile(
-        join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+        join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
         'utf8',
       ),
     );
@@ -1116,7 +1116,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
     const raw = JSON.parse(
       await readFile(
-        join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+        join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
         'utf8',
       ),
     );
@@ -1474,9 +1474,9 @@ describe('LocalEngineService WeChat contacts cache', () => {
     await writeFile(enginePath, 'engine', 'utf8');
     await writeFile(helperPath, 'helper', 'utf8');
     await writeFile(sqlitePath, 'sqlite', 'utf8');
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
-      join(root, '.local-logs', 'wechat-contacts.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'),
       JSON.stringify({
         source: 'windows-wechat-native-db',
         currentWechatId: 'seller-current',
@@ -1487,7 +1487,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
       'utf8',
     );
     await writeFile(
-      join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
       JSON.stringify({
         ok: false,
         error: 'helper not configured',
@@ -1550,9 +1550,9 @@ describe('LocalEngineService WeChat contacts cache', () => {
   });
 
   it('does not expose [object Object] when latest contact sync failure stores structured error data', async () => {
-    await mkdir(join(root, '.local-logs'), { recursive: true });
+    await mkdir(join(root, '.local-logs', 'accounts', 'guest'), { recursive: true });
     await writeFile(
-      join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+      join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
       JSON.stringify({
         ok: false,
         error: {
@@ -2006,7 +2006,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
         const rawDiagnostics = JSON.parse(
           await readFile(
-            join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+            join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
             'utf8',
           ),
         );
@@ -2152,7 +2152,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
       }),
     );
     await expect(
-      readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     ).rejects.toThrow();
   });
 
@@ -2190,7 +2190,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
     expect(result.contacts).toEqual(['客户A', '客户B', '客户C']);
     expect(result.syncFallbackReason).toBeUndefined();
     const cache = JSON.parse(
-      await readFile(join(root, '.local-logs', 'wechat-contacts.json'), 'utf8'),
+      await readFile(join(root, '.local-logs', 'accounts', 'guest', 'wechat-contacts.json'), 'utf8'),
     );
     expect(cache.contacts).toEqual(['客户A', '客户B', '客户C']);
   });
@@ -2322,7 +2322,7 @@ describe('LocalEngineService WeChat contacts cache', () => {
 
     const raw = JSON.parse(
       await readFile(
-        join(root, '.local-logs', 'wechat-contact-sync-diagnostics.json'),
+        join(root, '.local-logs', 'accounts', 'guest', 'wechat-contact-sync-diagnostics.json'),
         'utf8',
       ),
     );

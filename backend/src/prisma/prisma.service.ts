@@ -3,6 +3,7 @@ import {
   Logger,
   OnModuleDestroy,
   OnModuleInit,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -32,6 +33,9 @@ export class PrismaService
   /** 当前活跃账号库路径；null = 未登录（业务访问走系统库） */
   private activeAccountPath: string | null = null;
 
+  /** 切库闸（2026-09-01）：切换瞬间拒绝业务访问，防半切换态用错库 */
+  private switching = false;
+
   /** 已清空业务数据的账号库（防重复清空） */
   private readonly accountTablesCleared = new Set<string>();
 
@@ -56,6 +60,7 @@ export class PrismaService
     'ensureAccountDatabase',
     'clearAccountBusinessTables',
     'system',
+    'switching',
     'accountClients',
     'activeAccountPath',
     'accountTablesCleared',
@@ -72,12 +77,17 @@ export class PrismaService
         if (PrismaService.TARGET_ONLY.has(prop)) {
           return (target as unknown as Record<string, unknown>)[prop];
         }
-        // 业务访问：路由到当前活跃库（账号库或系统库）
+        // 切库闸：切换瞬间业务访问直接拒绝（防半切换态用错库）
+        if (target.switching) {
+          throw new ServiceUnavailableException('数据正在切换，请稍后重试');
+        }
+        // 业务访问：路由到当前活跃库（账号库或系统库）。
+        // 注意：不 bind——调用方 this=proxy，属性访问再经 proxy 递归转发到 active，
+        // 行为等价且不破坏 jest.fn 的 .mock 属性（bind 会丢失它，实测）。
         const active = target.activeAccountPath
           ? target.getAccountClient(target.activeAccountPath)
           : target;
-        const value = (active as unknown as Record<string, unknown>)[prop];
-        return typeof value === 'function' ? value.bind(active) : value;
+        return (active as unknown as Record<string, unknown>)[prop];
       },
       set(target, prop: string | symbol, value: unknown) {
         (target as unknown as Record<string | symbol, unknown>)[prop] = value;
@@ -101,10 +111,15 @@ export class PrismaService
 
   /** 切换业务访问目标库：path=账号库文件绝对路径；null 切回系统库 */
   async switchDatabase(path: string | null): Promise<void> {
-    this.activeAccountPath = path;
-    if (path) {
-      // 预连接，尽早暴露路径错误
-      this.getAccountClient(path);
+    this.switching = true;
+    try {
+      this.activeAccountPath = path;
+      if (path) {
+        // 预连接，尽早暴露路径错误
+        this.getAccountClient(path);
+      }
+    } finally {
+      this.switching = false;
     }
   }
 

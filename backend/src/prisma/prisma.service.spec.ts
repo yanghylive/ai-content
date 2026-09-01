@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { PrismaService } from './prisma.service';
 
 type TestablePrismaService = {
@@ -304,5 +307,84 @@ describe('PrismaService SQLite 列级收敛（真机 500 修复）', () => {
     await svc.ensureSqliteSchemaColumns();
     expect(svc.$executeRawUnsafe).not.toHaveBeenCalled();
     delete process.env.DATABASE_URL;
+  });
+});
+
+/**
+ * logout 换库负向用例（2026-09-01，审计 #1/#2/#6/#7/#9/#11 隔离总解）：
+ *  - A 账号库写入的数据，B 账号切换后必须查不到（物理隔离）
+ *  - 切回 A 数据必须完整保留
+ *  - ensureAccountDatabase 首登清空业务表但保留认证表（users）
+ * 真实 SQLite 临时库（node_modules/.prisma/client 为 sqlite client 时运行）。
+ */
+describe('PrismaService 账号库隔离（logout 换库）', () => {
+  let dir: string;
+  let svc: PrismaService;
+  const A = 'user-a';
+  const B = 'user-b';
+
+  beforeAll(async () => {
+    dir = mkdtempSync(join(tmpdir(), 'prisma-acct-'));
+    process.env.SQLITE_DATABASE_URL = `file:${join(dir, 'system.sqlite')}`;
+    svc = new PrismaService();
+    // 系统库：建核心表（users 等）
+    await svc.onModuleInit();
+    // 业务表（raw 建表 + raw 读写，绕过 Prisma model 字段约束）
+    await svc.$executeRawUnsafe(
+      'CREATE TABLE IF NOT EXISTS materials (id TEXT PRIMARY KEY, title TEXT)',
+    );
+  });
+
+  afterAll(async () => {
+    await svc.onModuleDestroy();
+    rmSync(dir, { recursive: true, force: true });
+    delete process.env.SQLITE_DATABASE_URL;
+  });
+
+  async function materialCount(): Promise<number> {
+    const rows = await svc.$queryRawUnsafe<Array<{ c: number }>>(
+      'SELECT count(*) as c FROM materials',
+    );
+    return Number(rows[0]?.c ?? 0);
+  }
+
+  it('A 账号库写入的素材，B 账号查不到；切回 A 数据保留', async () => {
+    const aPath = await svc.ensureAccountDatabase(A);
+    await svc.switchDatabase(aPath);
+    await svc.$executeRawUnsafe(
+      "INSERT INTO materials (id, title) VALUES ('m-1', 'A 的素材')",
+    );
+    expect(await materialCount()).toBe(1);
+
+    // B 首登：独立库 + 清空业务表
+    const bPath = await svc.ensureAccountDatabase(B);
+    await svc.switchDatabase(bPath);
+    expect(await materialCount()).toBe(0);
+
+    // 切回 A：数据完整
+    await svc.switchDatabase(aPath);
+    expect(await materialCount()).toBe(1);
+  });
+
+  it('ensureAccountDatabase 保留认证表（users），系统库业务表模板净化', async () => {
+    // 认证表结构保留（模板复制自系统库 users，不在清空清单内）
+    const tables = await svc.system.$queryRawUnsafe<Array<{ name: string }>>(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name = 'users'",
+    );
+    expect(tables.length).toBe(1);
+    // A 数据仍在
+    expect(await materialCount()).toBe(1);
+    // 切回系统库：业务表已净化（首登时清空）
+    await svc.switchDatabase(null);
+    expect(await materialCount()).toBe(0);
+  });
+
+  it('切换期间业务访问被切库闸拒绝（switching 标志）', async () => {
+    (svc as unknown as { switching: boolean }).switching = true;
+    await expect(
+      Promise.resolve().then(() => svc.material),
+    ).rejects.toThrow('数据正在切换');
+    (svc as unknown as { switching: boolean }).switching = false;
+    expect(svc.material).toBeDefined();
   });
 });
