@@ -1,5 +1,7 @@
 import {
+  BadRequestException,
   Body,
+  ForbiddenException,
   Controller,
   Patch,
   Delete,
@@ -15,6 +17,7 @@ import type { Response } from 'express';
 import { VideoService } from './video.service';
 import { StudioCoreProxyService } from './studio-core-proxy.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
 import type { AuthenticatedRequest } from '../auth/auth.guard';
@@ -31,6 +34,7 @@ export class VideoController {
     private readonly videoService: VideoService,
     private readonly studioCoreProxy: StudioCoreProxyService,
     private readonly authRequestContext?: AuthRequestContextService,
+    private readonly prisma?: PrismaService,
   ) {}
 
   /**
@@ -169,7 +173,7 @@ export class VideoController {
    */
   @Get('projects')
   async listProjects(@Query() query: VideoProjectListQueryDto) {
-    return this.videoService.listProjects(query);
+    return this.videoService.listProjects(query, this.resolveUserId());
   }
 
   /**
@@ -185,6 +189,29 @@ export class VideoController {
    * 获取视频项目产物（compose.mp4）
    * GET /api/video/projects/:id/compose.mp4
    */
+  /**
+   * 受控迁移项目归属（复核 P0）：仅平台管理员可调用。
+   * POST /api/video/projects/:id/migrate-owner  { "userId": "..." }
+   */
+  @Post('projects/:id/migrate-owner')
+  async migrateProjectOwner(
+    @Param('id') id: string,
+    @Body() body: { userId?: string },
+  ) {
+    const ownerId = body?.userId?.trim();
+    if (!ownerId) {
+      throw new BadRequestException('缺少目标 userId');
+    }
+    const ctx = this.authRequestContext?.get() as
+      { user?: { role?: string } } | undefined;
+    const role = ctx?.user?.role;
+    if (role !== 'admin' && role !== 'SUPER_ADMIN' && role !== 'owner') {
+      throw new ForbiddenException('仅管理员可迁移项目归属');
+    }
+    await this.prisma!.migrateStudioProjectOwner(id, ownerId);
+    return { success: true };
+  }
+
   @Get('projects/:id/compose.mp4')
   async getComposeMp4(@Param('id') id: string, @Res() res: Response) {
     const { buffer, contentType, length } =

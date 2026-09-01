@@ -125,38 +125,6 @@ export class VideoService {
   /**
    * 查询视频项目列表
    */
-  /**
-   * 2026-09-01（复核 P1-D）：StudioCore 项目认领制授权——项目由上游创建，
-   * 首个访问用户认领（studio_project_owners 表），之后校验归属。
-   * 返回 true=可访问（认领/放行）；抛 NotFound=无权/不存在（不泄露存在性）。
-   */
-  private async claimProjectForUser(
-    projectId: string,
-    userId?: string,
-  ): Promise<void> {
-    if (!userId) {
-      return; // 无当前用户（后台/系统调用）不校验
-    }
-    const row = await this.prisma.system.$queryRawUnsafe<
-      Array<{ user_id: string }>
-    >(
-      `SELECT user_id FROM studio_project_owners WHERE project_id = ?`,
-      projectId,
-    );
-    if (row.length === 0) {
-      // 未认领：首个访问者认领
-      await this.prisma.system.$executeRawUnsafe(
-        `INSERT OR IGNORE INTO studio_project_owners (project_id, user_id) VALUES (?, ?)`,
-        projectId,
-        userId,
-      );
-      return;
-    }
-    if (row[0].user_id !== userId) {
-      throw new NotFoundException(`视频项目 ${projectId} 不存在`);
-    }
-  }
-
   /** 项目归属查询（列表标注用） */
   async resolveProjectOwner(projectId: string): Promise<string | null> {
     const rows = await this.prisma.system.$queryRawUnsafe<
@@ -168,9 +136,18 @@ export class VideoService {
     return rows.length > 0 ? rows[0].user_id : null;
   }
 
-  async listProjects(query: VideoProjectListQueryDto) {
+  async listProjects(query: VideoProjectListQueryDto, userId?: string) {
     try {
-      return await this.studioCoreProxy.getProjects(query);
+      const result = await this.studioCoreProxy.getProjects(query);
+      // 2026-09-01（复核 P0）：列表按创建者过滤——只返回当前用户拥有的项目
+      if (userId) {
+        const owned = await this.prisma.listStudioProjectOwnerIds(userId);
+        const projects = result.projects.filter((p) =>
+          owned.has(String((p as { id?: unknown })?.id)),
+        );
+        return { projects, total: projects.length };
+      }
+      return result;
     } catch (error) {
       this.logger.warn(`视频服务暂不可用：${this.errorMessage(error)}`);
       // 2026-09-01（复核 P2）：不再静默降级空列表——抛错让前端错误处理上屏
@@ -182,8 +159,10 @@ export class VideoService {
    * 查询单个视频项目详情
    */
   async getProject(id: string, userId?: string) {
-    // 2026-09-01（复核 P1-D）：项目 ID 操作前校验归属
-    await this.claimProjectForUser(id, userId);
+    // 2026-09-01（复核 P0）：项目 ID 操作前校验归属（无记录/不匹配拒绝，不认领）
+    if (userId) {
+      await this.prisma.assertStudioProjectOwner(id, userId);
+    }
     const project = await this.studioCoreProxy.getProject(id);
     if (!project) {
       throw new NotFoundException(`视频项目 ${id} 不存在`);
@@ -195,8 +174,10 @@ export class VideoService {
    * 获取视频项目产物（compose.mp4）
    */
   async getComposeMp4(id: string, userId?: string) {
-    // 2026-09-01（复核 P1-D）：成片下载同样校验归属
-    await this.claimProjectForUser(id, userId);
+    // 2026-09-01（复核 P0）：成片下载同样校验归属（不认领）
+    if (userId) {
+      await this.prisma.assertStudioProjectOwner(id, userId);
+    }
     return this.studioCoreProxy.getComposeMp4(id);
   }
 
@@ -207,10 +188,9 @@ export class VideoService {
     try {
       return await this.studioCoreProxy.getPipelines();
     } catch (error) {
-      this.logger.warn(
-        `视频服务暂不可用，流水线列表返回空结果：${this.errorMessage(error)}`,
-      );
-      return [];
+      this.logger.warn(`视频服务暂不可用：${this.errorMessage(error)}`);
+      // 2026-09-01（复核第三轮 P2）：不再静默降级空列表
+      throw new ServiceUnavailableException('视频服务暂不可用，请稍后重试');
     }
   }
 
@@ -226,8 +206,10 @@ export class VideoService {
     id: string,
     userId?: string,
   ): Promise<{ filename: string; sizeBytes: number }> {
-    // 2026-09-01（复核 P1-D）：导入成片同样校验归属
-    await this.claimProjectForUser(id, userId);
+    // 2026-09-01（复核 P0）：导入成片同样校验归属（不认领）
+    if (userId) {
+      await this.prisma.assertStudioProjectOwner(id, userId);
+    }
     const project = await this.studioCoreProxy.getProject(id);
     if (!project || !project.video) {
       throw new BadRequestException(

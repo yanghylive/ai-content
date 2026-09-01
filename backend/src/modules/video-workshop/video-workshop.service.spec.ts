@@ -636,3 +636,53 @@ describe('VideoWorkshopService', () => {
     }
   });
 });
+
+describe('VideoWorkshopService 任务归属过滤（复核 P1）', () => {
+  it('旧任务（无 userId）对登录用户不可见，跨账号任务互相不可见', async () => {
+    const cwd = process.cwd();
+    const projectDir = mkdtempSync(
+      join(tmpdir(), 'video-workshop-owner-filter-'),
+    );
+    process.chdir(projectDir);
+    try {
+      const runtime = makeRuntime();
+      const render = jest.fn(async () => ({
+        unsupportedSettings: [],
+      }));
+      const service = makeService(runtime, { render });
+      // A 创建任务（带归属）
+      const taskA = await service.createRenderTask(
+        {
+          materialPath:
+            resolveProjectDataPath('video-workshop') + '/material.mp4',
+          templateName: '产品卖点模板',
+          titlePrompt: 'A 的任务',
+        },
+        'user-a',
+      );
+      // 模拟历史任务：无 userId（直接塞入 Map 私有状态不可行，改用 createDownloadTask 无 owner）
+      const taskLegacy = await service.createDownloadTask(
+        { url: 'https://example.com/v.mp4', outputName: 'legacy.mp4' },
+        undefined,
+      );
+      // A 的列表：只看得到自己的任务，看不到无归属旧任务
+      const listA = await service.listTasks(50, 'user-a');
+      expect(listA.map((t) => t.id)).toContain(taskA.id);
+      expect(listA.map((t) => t.id)).not.toContain(taskLegacy.id);
+      // B 的列表：A 的任务与旧任务都不可见
+      const listB = await service.listTasks(50, 'user-b');
+      expect(listB.map((t) => t.id)).not.toContain(taskA.id);
+      expect(listB.map((t) => t.id)).not.toContain(taskLegacy.id);
+      // B 直接读取 A 的任务 → 拒绝（不泄露存在性）
+      await expect(
+        service.getTask(taskA.id, 'user-b'),
+      ).rejects.toThrow('视频工坊任务不存在');
+      // B 读取无归属旧任务 → 同样拒绝（fail-closed）
+      await expect(
+        service.getTask(taskLegacy.id, 'user-b'),
+      ).rejects.toThrow('视频工坊任务不存在');
+    } finally {
+      process.chdir(cwd);
+    }
+  });
+});

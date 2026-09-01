@@ -221,8 +221,9 @@ export class VideoWorkshopService implements OnModuleInit {
     this.scheduleTaskWorker();
     return (
       Array.from(this.tasks.values())
-        // 2026-09-01（复核 P1-4）：按创建者过滤（ownerId 有值时；无归属任务保留）
-        .filter((task) => !ownerId || !task.userId || task.userId === ownerId)
+        // 2026-09-01（复核 P1-4）：按创建者过滤（ownerId 有值时）
+        // 2026-09-01（复核第三轮 P1）：无归属旧任务对登录用户同样不可见（fail-closed）
+        .filter((task) => !ownerId || task.userId === ownerId)
         .sort(
           (left, right) =>
             new Date(right.createdAt).getTime() -

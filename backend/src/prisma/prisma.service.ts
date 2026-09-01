@@ -1,11 +1,12 @@
 import {
   Injectable,
   Logger,
+  NotFoundException,
   OnModuleDestroy,
   OnModuleInit,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { copyFileSync, existsSync, mkdirSync, renameSync } from 'node:fs';
+import { existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequestContextService } from '../common/auth-request-context.service';
@@ -73,6 +74,10 @@ export class PrismaService
     'activeAccountPath',
     'accountTablesCleared',
     'resolveActiveClient',
+    'registerStudioProjectOwner',
+    'assertStudioProjectOwner',
+    'listStudioProjectOwnerIds',
+    'migrateStudioProjectOwner',
     'authRequestContext',
     'logger',
   ]);
@@ -136,6 +141,57 @@ export class PrismaService
     return this.activeAccountPath
       ? this.getAccountClient(this.activeAccountPath)
       : this;
+  }
+
+  /**
+   * 2026-09-01（复核 P0）：StudioCore 项目 owner 原子登记（创建入口调用）。
+   * INSERT OR IGNORE 后回读实际 owner——并发下两人同时登记只放行真 owner（防抢占）。
+   */
+  async registerStudioProjectOwner(projectId: string, userId: string) {
+    await this.system.$executeRawUnsafe(
+      `INSERT OR IGNORE INTO studio_project_owners (project_id, user_id) VALUES (?, ?)`,
+      projectId,
+      userId,
+    );
+    const rows = await this.system.$queryRawUnsafe<Array<{ user_id: string }>>(
+      `SELECT user_id FROM studio_project_owners WHERE project_id = ?`,
+      projectId,
+    );
+    const actual = rows.length > 0 ? rows[0].user_id : null;
+    if (actual !== userId) {
+      throw new ServiceUnavailableException(
+        `视频项目 ${projectId} 已归属其他账号`,
+      );
+    }
+  }
+
+  /** 校验项目 owner（无记录或不匹配 → 拒绝，不泄露存在性） */
+  async assertStudioProjectOwner(projectId: string, userId: string) {
+    const rows = await this.system.$queryRawUnsafe<Array<{ user_id: string }>>(
+      `SELECT user_id FROM studio_project_owners WHERE project_id = ?`,
+      projectId,
+    );
+    if (rows.length === 0 || rows[0].user_id !== userId) {
+      throw new NotFoundException(`视频项目 ${projectId} 不存在`);
+    }
+  }
+
+  /** 当前用户拥有的全部项目 id（列表过滤用） */
+  async listStudioProjectOwnerIds(userId: string): Promise<Set<string>> {
+    const rows = await this.system.$queryRawUnsafe<
+      Array<{ project_id: string }>
+    >(`SELECT project_id FROM studio_project_owners WHERE user_id = ?`, userId);
+    return new Set(rows.map((row) => row.project_id));
+  }
+
+  /** 受控迁移项目归属（仅 admin 调用；无记录则创建） */
+  async migrateStudioProjectOwner(projectId: string, newOwnerId: string) {
+    await this.system.$executeRawUnsafe(
+      `INSERT INTO studio_project_owners (project_id, user_id) VALUES (?, ?)
+       ON CONFLICT(project_id) DO UPDATE SET user_id = excluded.user_id`,
+      projectId,
+      newOwnerId,
+    );
   }
 
   /** 系统库连接句柄：认证表（users / user_sessions）永远走它，不随登录切换（构造期赋值） */
@@ -218,31 +274,26 @@ export class PrismaService
   }
 
   /**
-   * 2026-09-01（复核 P2）：复制 SQLite 主库 + WAL + SHM 三件套（WAL 模式数据完整性）。
-   * 串行文件复制不是一致性快照——先对源库做 wal_checkpoint(TRUNCATE) 把 WAL
-   * 合并进主库，复制期间源库不可再写（调用方应处于空闲窗口），之后复制主库即一致。
-   * checkpoint 失败不阻断（回退三件套复制）。
+   * 2026-09-01（复核 P2/第三轮）：SQLite 一致性快照——用 VACUUM INTO 生成
+   * 事务内一致快照（含 WAL 中已提交数据），替代串行复制主库/WAL/SHM（复制期间
+   * 源库变化会不一致）。失败直接抛错阻断迁移（不静默回退）。
+   * 兼容性：VACUUM INTO 需 SQLite ≥3.27（2019，Prisma 内置满足）。
    */
   private async copySqliteDatabaseWithSidecars(
     sourcePath: string,
     targetPath: string,
   ): Promise<void> {
-    try {
-      await this.system.$queryRawUnsafe('PRAGMA wal_checkpoint(TRUNCATE)');
-    } catch (error) {
-      this.logger.warn(
-        `迁移前 WAL checkpoint 失败（回退三件套复制）：${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
+    // VACUUM INTO 目标必须不存在
+    if (existsSync(targetPath)) {
+      rmSync(targetPath, { force: true });
     }
-    copyFileSync(sourcePath, targetPath);
     for (const suffix of ['-wal', '-shm']) {
-      const source = `${sourcePath}${suffix}`;
-      if (existsSync(source)) {
-        copyFileSync(source, `${targetPath}${suffix}`);
-      }
+      rmSync(`${targetPath}${suffix}`, { force: true });
     }
+    // 路径转义（SQLite VACUUM INTO 不接受参数绑定，须字面量）
+    const escaped = targetPath.replace(/'/g, "''");
+    await this.system.$queryRawUnsafe(`VACUUM INTO '${escaped}'`);
+    this.logger.log(`账号库一致性快照完成（VACUUM INTO）：${targetPath}`);
   }
 
   /**

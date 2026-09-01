@@ -92,8 +92,8 @@ export interface PersistHost {
   ): Promise<LocalEngineTenantScope>;
   authRequestContext?: { get(): { user?: { id?: string } } };
   tenantScopeKey(scope: LocalEngineTenantScope): string;
-  taskStatusToPrisma: Record<string, string>;
-  taskTypeToPrisma: Record<string, string>;
+  taskStatusToPrisma: Record<string, PrismaInteractionTaskStatus>;
+  taskTypeToPrisma: Record<string, PrismaInteractionTaskType>;
   ensureTaskStore(): Promise<void>;
   persistTask(task: InteractionTask): Promise<void>;
   persistTaskNow(task: InteractionTask): Promise<void>;
@@ -164,12 +164,10 @@ export async function persistTaskNow(this: PersistHost, task: InteractionTask) {
   }
   this.refreshTaskDiagnostics(task);
   const taskType: PrismaInteractionTaskType =
-    (this.taskTypeToPrisma[task.type] as
-      PrismaInteractionTaskType | undefined) ||
+    this.taskTypeToPrisma[task.type] ||
     (task.type as PrismaInteractionTaskType);
   const status: PrismaInteractionTaskStatus =
-    (this.taskStatusToPrisma[task.status] as
-      PrismaInteractionTaskStatus | undefined) ||
+    this.taskStatusToPrisma[task.status] ||
     (task.status as PrismaInteractionTaskStatus);
   const data = {
     tenantId: task.tenantId,

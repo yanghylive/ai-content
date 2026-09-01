@@ -27,6 +27,7 @@ import {
 } from './video-workshop.service';
 import { StudioCoreClient } from './studio-core.client';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Controller('video-workshop')
 export class VideoWorkshopController {
@@ -34,6 +35,7 @@ export class VideoWorkshopController {
     private readonly videoWorkshop: VideoWorkshopService,
     private readonly studioCore: StudioCoreClient,
     private readonly authRequestContext?: AuthRequestContextService,
+    private readonly prisma?: PrismaService,
   ) {}
 
   /** 2026-09-01（复核 P1-4）：当前请求用户 id */
@@ -141,6 +143,11 @@ export class VideoWorkshopController {
       prompt: input.prompt,
       pipeline: input.type === 'corporate' ? 'corporate' : input.type,
     });
+    // 2026-09-01（复核 P0）：创建入口原子登记项目归属（并发防抢占）
+    const ownerId = this.resolveOwnerId();
+    if (ownerId && project?.id) {
+      await this.prisma?.registerStudioProjectOwner(project.id, ownerId);
+    }
     // 企业宣传片：workbench 任务走 real executor（真 TTS/画面/合成）
     if (input.type === 'corporate') {
       await this.studioCore.createWorkbenchTask(project.id, {
@@ -156,6 +163,11 @@ export class VideoWorkshopController {
   /** 成片导入素材库（发布流程可用）：取 deliverables 视频文件 → 存素材目录 */
   @Post('jobs/:projectId/import-material')
   async importVideoMaterial(@Param('projectId') projectId: string) {
+    // 2026-09-01（复核 P0）：import-material 同样校验项目归属（不绕过）
+    const ownerId = this.resolveOwnerId();
+    if (ownerId) {
+      await this.prisma?.assertStudioProjectOwner(projectId, ownerId);
+    }
     const deliverables = await this.studioCore.getDeliverables(projectId);
     const video = (deliverables.deliverables || []).find(
       (item) =>
