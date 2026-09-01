@@ -246,67 +246,50 @@ export function RedfoxCostsClient() {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <section className="kaypal-v3-panel overflow-hidden">
-        <div className="border-b border-[var(--kaypal-v3-border)] p-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
-            <div className="flex min-w-0 items-start gap-3">
-              <span className="kaypal-v3-icon-tile shrink-0">
-                <CircleDollarSign
-                  aria-hidden="true"
-                  className="h-5 w-5"
-                  strokeWidth={1.8}
-                />
-              </span>
-              <div className="min-w-0">
-                <p className="kaypal-v3-label">用量记录</p>
-                <h1 className="mt-1 kx-greet text-[var(--kaypal-v3-ink)]">
-                  看今天扣了多少、哪里失败、每次采集是否成功
-                </h1>
-                <p className="mt-1 max-w-4xl text-13 leading-5 text-[var(--kaypal-v3-soft-ink)]">
-                  用户只看用量和结果。系统会把每次查找、失败、需处理项和点数消耗记录下来，方便复盘。
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 xl:justify-end">
-              <Link
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
-                href="/intelligence/redfox"
-              >
-                <Plug
-                  aria-hidden="true"
-                  className="h-4 w-4"
-                  strokeWidth={1.8}
-                />
-                管理员连接
-              </Link>
-              <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={loading}
-                onClick={() => void load()}
-                type="button"
-              >
-                {loading ? (
-                  <Loader2
-                    aria-hidden="true"
-                    className="h-4 w-4 animate-spin"
-                    strokeWidth={1.8}
-                  />
-                ) : (
-                  <RefreshCw
-                    aria-hidden="true"
-                    className="h-4 w-4"
-                    strokeWidth={1.8}
-                  />
-                )}
-                刷新
-              </button>
-            </div>
-          </div>
-
+      <div className="kx-page-head">
+        <div>
+          <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">数据用量</h1>
+          <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
+            看今天扣了多少、哪里失败、每次采集是否成功
+          </p>
         </div>
-      </section>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+            href="/intelligence/redfox"
+          >
+            <Plug
+              aria-hidden="true"
+              className="h-4 w-4"
+              strokeWidth={1.8}
+            />
+            管理员连接
+          </Link>
+          <button
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={loading}
+            onClick={() => void load()}
+            type="button"
+          >
+            {loading ? (
+              <Loader2
+                aria-hidden="true"
+                className="h-4 w-4 animate-spin"
+                strokeWidth={1.8}
+              />
+            ) : (
+              <RefreshCw
+                aria-hidden="true"
+                className="h-4 w-4"
+                strokeWidth={1.8}
+              />
+            )}
+            刷新
+          </button>
+        </div>
+      </div>
 
-      <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map(({ label, value, detail, icon: Icon, tone }) => (
           <article
             className={[

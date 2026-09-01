@@ -79,8 +79,6 @@ export const MINE_NAV_ENTRIES: MineNavEntry[] = [
   { key: "memory", title: "记忆设置", desc: "长期记忆、画像与偏好", href: "/settings/memory", icon: "layers", tint: "kx-t-blue", group: "账号与设置", desktopOrder: 5, mobileTint: "var(--kaypal-v3-cobalt)", mobileGroup: "更多能力" },
   { key: "costs", title: "数据用量", desc: "数据服务用量与调用明细", href: "/intelligence/costs", icon: "file", tint: "kx-t-cyan", group: "系统与服务", desktopOrder: 14, mobileTint: "#a9671f", mobileGroup: "系统与情报" },
   { key: "local-service", title: "电脑本机服务", desc: "电脑端引擎、微信桌面、运行检查", href: "/local-engine", icon: "cpu", tint: "kx-t-amber", group: "系统与服务", desktopOrder: 7 },
-  { key: "apps-entry", title: "应用与安装", desc: "开通更多能力（CRM 等）", href: "/apps", icon: "grid", tint: "kx-t-blue", group: "系统与服务", desktopOrder: 8 },
-  { key: "agent-chat", title: "Agent 对话", desc: "Agent 会话工作台（对话规划助手）", href: "/agent-workbench", icon: "bot", tint: "kx-t-violet", group: "系统与服务", desktopOrder: 9, mobileTint: "var(--kaypal-v3-purple)", mobileGroup: "更多能力" },
   { key: "evidence", title: "任务证据", desc: "执行证据与留痕", href: "/tasks/evidence", icon: "checkCircle", tint: "kx-t-green", group: "系统与服务", desktopOrder: 10, mobileTint: "var(--kaypal-v3-success)", mobileGroup: "更多能力" },
   { key: "engine-permissions", title: "引擎权限", desc: "本地引擎权限管理", href: "/local-engine/permissions", icon: "clipboard", tint: "kx-t-slate", group: "系统与服务", desktopOrder: 11, mobileTint: "var(--kaypal-v3-muted)", mobileGroup: "更多能力" },
   { key: "artifacts", title: "AI 工件", desc: "AI 生成的工件产物", href: "/artifacts", icon: "archive", tint: "kx-t-slate", group: "系统与服务", desktopOrder: 12, mobileTint: "var(--kaypal-v3-muted)", mobileGroup: "更多能力" },

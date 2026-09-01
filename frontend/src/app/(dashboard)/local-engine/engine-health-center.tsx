@@ -408,27 +408,33 @@ export function EngineHealthCenter() {
         </div>
 
         {/* 三态状态卡片 */}
-        <div className="mt-6 grid grid-cols-3 gap-4">
-          <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-5 text-center">
-            <CheckCircle2 className="mx-auto h-6 w-6 text-[var(--kaypal-v3-success)]" />
-            <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-success)]">
-              {loading ? "-" : status.healthy}
-            </p>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">正常</p>
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="flex items-center gap-3 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4">
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--kaypal-v3-success)]" />
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-bold text-[var(--kaypal-v3-success)]">
+                {loading ? "-" : status.healthy}
+              </p>
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">正常</p>
+            </div>
           </div>
-          <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-5 text-center">
-            <AlertTriangle className="mx-auto h-6 w-6 text-[var(--kaypal-v3-amber)]" />
-            <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-amber)]">
-              {loading ? "-" : status.warning}
-            </p>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">待处理</p>
+          <div className="flex items-center gap-3 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-4">
+            <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--kaypal-v3-amber)]" />
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-bold text-[var(--kaypal-v3-amber)]">
+                {loading ? "-" : status.warning}
+              </p>
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">待处理</p>
+            </div>
           </div>
-          <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-5 text-center">
-            <XCircle className="mx-auto h-6 w-6 text-[var(--kaypal-v3-danger)]" />
-            <p className="mt-2 text-3xl font-bold text-[var(--kaypal-v3-danger)]">
-              {loading ? "-" : status.critical}
-            </p>
-            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">需处理</p>
+          <div className="flex items-center gap-3 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
+            <XCircle className="h-5 w-5 shrink-0 text-[var(--kaypal-v3-danger)]" />
+            <div className="min-w-0 flex-1">
+              <p className="text-lg font-bold text-[var(--kaypal-v3-danger)]">
+                {loading ? "-" : status.critical}
+              </p>
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">需处理</p>
+            </div>
           </div>
         </div>
 
@@ -441,33 +447,35 @@ export function EngineHealthCenter() {
             </div>
           ) : null}
           {allHealthy && !loading ? (
-            <div className="flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-4">
+            <div className="flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-3">
               <CheckCircle2 className="h-5 w-5 text-[var(--kaypal-v3-success)]" />
-              <span className="font-medium text-[var(--kaypal-v3-success)]">
+              <span className="text-sm font-medium text-[var(--kaypal-v3-success)]">
                 系统运行正常，无需处理
               </span>
             </div>
           ) : (
-            <button
-              type="button"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-accent)] px-6 py-4 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:opacity-60"
-              disabled={checking || loading}
-              onClick={handleCheckAll}
-            >
-              {checking ? (
-                <>
-                  <RefreshCcw className="h-5 w-5 animate-spin" />
-                  正在检查...
-                </>
-              ) : (
-                <>
-                  <Wrench className="h-5 w-5" />
-                  {problemCount > 0
-                    ? `检查 ${problemCount} 个问题`
-                    : "重新检查"}
-                </>
-              )}
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-accent-border)] hover:bg-[var(--kaypal-v3-accent-soft)] hover:text-[var(--kaypal-v3-accent-ink)] disabled:opacity-60"
+                disabled={checking || loading}
+                onClick={handleCheckAll}
+              >
+                {checking ? (
+                  <>
+                    <RefreshCcw className="h-4 w-4 animate-spin" />
+                    正在检查...
+                  </>
+                ) : (
+                  <>
+                    <Wrench className="h-4 w-4" />
+                    {problemCount > 0
+                      ? `检查 ${problemCount} 个问题`
+                      : "重新检查"}
+                  </>
+                )}
+              </button>
+            </div>
           )}
         </div>
       </section>

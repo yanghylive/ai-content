@@ -127,7 +127,7 @@ export function FileStorageSettings() {
         description="生成的图片、视频存在哪里"
       >
         <div className="grid gap-5">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {STORAGE_PROVIDERS.map((p) => (
               <V2OptionCard
                 key={p.value}
