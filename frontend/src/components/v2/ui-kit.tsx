@@ -128,7 +128,7 @@ export function V2PrimaryButton({
       type="button"
       {...props}
       disabled={props.disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_1px_2px_hsl(var(--agent-cockpit-primary)_/_0.3),0_2px_8px_-2px_hsl(var(--agent-cockpit-primary)_/_0.2),inset_0_1px_0_var(--kaypal-v3-btn-inset,rgba(255,255,255,0.18))] transition duration-150 ease-out hover:-translate-y-px hover:shadow-[0_2px_4px_hsl(var(--agent-cockpit-primary)_/_0.35),0_4px_16px_-2px_hsl(var(--agent-cockpit-primary)_/_0.3),inset_0_1px_0_var(--kaypal-v3-btn-inset-hover,rgba(255,255,255,0.22))] active:scale-[0.97] disabled:opacity-60 ${props.className || ""}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_1px_2px_hsl(var(--agent-cockpit-primary)_/_0.3),0_2px_8px_-2px_hsl(var(--agent-cockpit-primary)_/_0.2),inset_0_1px_0_var(--kaypal-v3-btn-inset,rgba(255,255,255,0.18))] transition duration-150 ease-out hover:-translate-y-px hover:shadow-[0_2px_4px_hsl(var(--agent-cockpit-primary)_/_0.35),0_4px_16px_-2px_hsl(var(--agent-cockpit-primary)_/_0.3),inset_0_1px_0_var(--kaypal-v3-btn-inset-hover,rgba(255,255,255,0.22))] active:scale-[0.97] disabled:opacity-60 ${props.className || ""}`}
     >
       {Icon && (
         <Icon className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
