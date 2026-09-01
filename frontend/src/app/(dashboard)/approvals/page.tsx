@@ -7,9 +7,9 @@ import { V2BackButton } from "@/components/v2/v2-back-button";
 import { SkeletonList } from "@/components/skeleton";
 
 const RISK_LABEL: Record<string, { label: string; cls: string }> = {
-  high: { label: "高风险", cls: "bg-red-50 text-red-600" },
-  medium: { label: "中风险", cls: "bg-amber-50 text-amber-600" },
-  low: { label: "低风险", cls: "bg-emerald-50 text-emerald-600" },
+  high: { label: "高风险", cls: "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300" },
+  medium: { label: "中风险", cls: "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300" },
+  low: { label: "低风险", cls: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300" },
 };
 
 const ACTION_LABEL: Record<string, string> = {

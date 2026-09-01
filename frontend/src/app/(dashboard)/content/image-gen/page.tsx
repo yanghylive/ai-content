@@ -533,8 +533,8 @@ export default function ImageGenPage() {
             <div
               className={`rounded-xl border p-4 ${
                 reviewInfo.pass
-                  ? "border-green-200 bg-green-50"
-                  : "border-amber-200 bg-amber-50"
+                  ? "border-green-200 bg-green-50 dark:border-green-500/30 dark:bg-green-500/15"
+                  : "border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/15"
               }`}
             >
               <h3 className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">

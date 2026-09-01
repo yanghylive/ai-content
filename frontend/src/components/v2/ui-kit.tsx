@@ -267,7 +267,7 @@ export function V2EmptyState({
       <div
         className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${
           variant === "unavailable"
-            ? "bg-amber-50 text-amber-500"
+            ? "bg-amber-50 text-amber-500 dark:bg-amber-500/15 dark:text-amber-300"
             : "bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
         }`}
       >
