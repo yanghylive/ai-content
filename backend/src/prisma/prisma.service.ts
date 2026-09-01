@@ -84,13 +84,15 @@ export class PrismaService
         return true;
       },
     });
+    // 2026-09-01 实锤：Prisma 6 client 内部本身是 Proxy（own prop 含 _originalClient），
+    // prototype getter 的 this 会被 Prisma 内部劫持（实测 getter 内 this !== target）。
+    // 故 system 不能用 getter，改为构造期实例字段（复制引用），proxy 访问稳定返回系统库 this。
+    this.system = this;
     return proxy;
   }
 
-  /** 系统库连接句柄：认证表（users / user_sessions）永远走它，不随登录切换 */
-  get system(): PrismaClient {
-    return this;
-  }
+  /** 系统库连接句柄：认证表（users / user_sessions）永远走它，不随登录切换（构造期赋值） */
+  system!: PrismaClient;
 
   /** 当前活跃账号库路径（null = 未登录，业务走系统库） */
   getActiveAccountPath(): string | null {
