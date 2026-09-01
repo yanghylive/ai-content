@@ -1,11 +1,8 @@
 "use client";
 
-/**
- * 设置中心双栏壳（P0 WorkBuddy 化）—— 薄封装，逻辑在共享组件 SettingsNavShell
- */
 import { SettingsNavShell } from "@/components/shell/settings-nav-shell";
 
-export default function SettingsLayout({
+export default function SettingsShellLayout({
   children,
 }: {
   children: React.ReactNode;
