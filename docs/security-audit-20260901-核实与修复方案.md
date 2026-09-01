@@ -105,11 +105,15 @@
 | #10 支付验签 | ✅ 已修 | `834bffd7` | fail-closed 真 RSA 验签（平台证书必须）；无证书拒绝处理 |
 | #21 日期敏感 | ✅ 已修 | `834bffd7` | billing spec currentPeriodEnd 2099（3 处） |
 | #1/#2/#6/#7/#9/#11 隔离类 | 🔧 换库覆盖 | — | **关键发现**：Material/Source 等模型无 userId 字段，逐模块加字段成本巨大；logout 换库=每账号独立 SQLite 物理隔离，天然全解。设计定稿 `docs/logout-db-isolation-20260901-design.md`，P0 实施待开工 |
-| #12/#13 数据正确性 | ⏳ 批次 B | — | 待开工 |
-| #14-19/#24 P2 | ⏳ 批次 D | — | 待开工 |
-| #20/#22/#23 | ⏳ 批次 C | — | #22 已由 1.1.111 发版覆盖 |
+| #12/#13 数据正确性 | ✅ 批次 B | `ff192cef` | #12 funnelError 上屏（根因=静默 catch，报告"约束冲突"不成立）；#13 核实 fail-closed 正确无需改码 |
+| #14-19/#24 P2 | ✅ 批次 D | `36797553` | 全部收口（见下） |
+| #20/#22/#23 | ✅/⏳ 批次 C | `972e7d2a` | #20 扫运行库 + 来源标注；#22 已由 1.1.111 覆盖；**#23 本机抽样✅ 全量挂账云电脑** |
 
-验证证据：backend tsc 0 ×3 轮；换脸+workshop 46/46；billing 18/18；spec 升级为真 RSA 签名走完整验签链（原 dummy-sig 已删）。
+**批次 D 明细**（`36797553`）：#14 代理按协议选 http/https（实测 200）；#15 realpath 防 symlink（验证 2/2）；#16 敏感路径 IP 限流阻断（60s/120）；#17 setup-status 去 totalUsers；#18 外部依赖清单文档；#19 packager maxSizeMB→1800；#24 换脸 engine banner。
+**#23 本机抽样**（新 bundle 冒烟）：setup-status 收敛生效、登录 201、账号库生成、素材读 200 走账号库、collect 业务逻辑提示正常、agent-gateway 独立授权层 401 符合预期；全路由写/删/发布/读回挂账云电脑。
+**提交链**：41b0a8a5→bf6b3082→834bffd7→724861d9→e0f867f4→f4667e67→bb7c2c53→ff192cef→972e7d2a→36797553（10 commit 全推 main）。
+
+验证证据（终局）：backend tsc 0；前端 tsc 0；全量 jest 241 suites/2696 passed 0 failed；换脸+workshop 46/46；billing 18/18；auth 99/99；growth 117/117；prisma 隔离 11/11；release-guards 27/27；换库真实启动冒烟全链路绿。
 
 ---
 
