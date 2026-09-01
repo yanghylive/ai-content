@@ -171,7 +171,7 @@ export default function MemorySettingsPage() {
                       padding: "3px 8px",
                       borderRadius: 999,
                       fontSize: 10,
-                      background: `${TYPE_COLOR[m.type] || "#888"}22`,
+                      background: `color-mix(in srgb, ${TYPE_COLOR[m.type] || "#888"} 13%, transparent)`,
                       color: TYPE_COLOR[m.type] || "#888",
                       marginTop: 2,
                     }}

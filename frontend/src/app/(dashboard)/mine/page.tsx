@@ -438,7 +438,7 @@ function MobileMineView({
               <span
                 className="mx-row-ic"
                 style={{
-                  background: `${item.tint}1f`,
+                  background: `color-mix(in srgb, ${item.tint} 12%, transparent)`,
                   color: item.tint,
                 }}
               >
@@ -472,7 +472,7 @@ function MobileMineView({
                 style={{ width: "100%", textAlign: "left", background: "none", border: "none" }}
                 onClick={() => { window.location.href = item.href; }}
               >
-                <span className="mx-row-ic" style={{ background: `${item.tint}1f`, color: item.tint }}>
+                <span className="mx-row-ic" style={{ background: `color-mix(in srgb, ${item.tint} 12%, transparent)`, color: item.tint }}>
                   <ShellIcon name={item.icon} size={18} />
                 </span>
                 <div className="mx-row-main">

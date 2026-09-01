@@ -288,7 +288,7 @@ function KnowledgeList() {
               const tags = Array.isArray(item.tags) ? item.tags : [];
               return (
                 <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 4px", borderBottom: "1px solid var(--kaypal-v3-border)" }}>
-                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 13, flexShrink: 0, background: `${color}1a`, color }}>
+                  <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 13, flexShrink: 0, background: `color-mix(in srgb, ${color} 10%, transparent)`, color }}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17">
                       <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2Z" />
                       <path d="M14 2v6h6" />

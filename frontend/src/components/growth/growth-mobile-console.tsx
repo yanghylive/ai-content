@@ -472,7 +472,7 @@ export function GrowthMobileConsole({ view }: { view: string }) {
                         <div key={a.id} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/40">
                           <div className="flex items-center justify-between gap-2">
                             <span className="truncate text-13 font-semibold text-slate-800 dark:text-slate-100">{a.accountName}</span>
-                            <span className="shrink-0 rounded px-1.5 py-0.5 text-11 font-bold" style={{ background: `${riskColor}1a`, color: riskColor }}>
+                            <span className="shrink-0 rounded px-1.5 py-0.5 text-11 font-bold" style={{ background: `color-mix(in srgb, ${riskColor} 10%, transparent)`, color: riskColor }}>
                               {a.riskStatus}
                             </span>
                           </div>

@@ -292,7 +292,7 @@ export function DistributionTasks() {
                     onClick={() => openTask(task)}
                   >
                     {/* P1-10：平台图标统一占位——平台名首字符 + 主题色背景圆角容器（图标加载失败不再显示乱码） */}
-                    <span className="mx-row-ic" style={{ background: `${platformThemeColor(task.platform)}1F`, color: platformThemeColor(task.platform) }}>
+                    <span className="mx-row-ic" style={{ background: `color-mix(in srgb, ${platformThemeColor(task.platform)} 12%, transparent)`, color: platformThemeColor(task.platform) }}>
                       <span style={{ fontSize: 15, fontWeight: 700, lineHeight: 1 }}>{platformInitial(task.platform)}</span>
                     </span>
                     <div className="mx-row-main">

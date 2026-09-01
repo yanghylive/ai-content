@@ -1108,7 +1108,7 @@ function PublishCalendarView() {
                       <span
                         className="mx-row-ic"
                         style={{
-                          background: `${CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)"}1f`,
+                          background: `color-mix(in srgb, ${CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)"} 12%, transparent)`,
                           color: CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)",
                         }}
                       >
@@ -1145,7 +1145,7 @@ function PublishCalendarView() {
                         ) : null}
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                        <span className="mx-badge" style={{ background: `${CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)"}22`, color: CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)", border: `1px solid ${CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)"}55` }}>
+                        <span className="mx-badge" style={{ background: `color-mix(in srgb, ${CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)"} 13%, transparent)`, color: CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)", border: `1px solid color-mix(in srgb, ${CALENDAR_STATUS_COLOR[item.status] ?? "var(--kaypal-v3-muted)"} 33%, transparent)` }}>
                           {CALENDAR_STATUS_LABEL[item.status] ?? item.status}
                         </span>
                         {canOperate ? (
@@ -1369,7 +1369,7 @@ function MobilePublishView({
                 <div className="mx-row-main">
                   <div className="mx-row-title">{item.title}</div>
                   <div className="mx-row-desc" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span className="platform-dot" style={{ background: MOBILE_STATUS_DOT[item.status], boxShadow: `0 0 0 3px ${MOBILE_STATUS_DOT[item.status]}22`, width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
+                    <span className="platform-dot" style={{ background: MOBILE_STATUS_DOT[item.status], boxShadow: `0 0 0 3px color-mix(in srgb, ${MOBILE_STATUS_DOT[item.status]} 13%, transparent)`, width: 7, height: 7, borderRadius: 999, flexShrink: 0 }} />
                     {mobilePlatformName(item.platforms[0] || "未指定平台")}
                     {item.failReason ? ` · ${item.failReason}` : ""}
                   </div>

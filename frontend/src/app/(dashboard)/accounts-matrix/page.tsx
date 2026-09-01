@@ -267,7 +267,7 @@ export default function AccountsMatrixV2Page() {
                       <span
                         className="mx-row-ic"
                         style={{
-                          background: `${meta.color}1f`,
+                          background: `color-mix(in srgb, ${meta.color} 12%, transparent)`,
                           color: meta.color,
                           overflow: "hidden",
                           borderRadius: 12,
@@ -328,7 +328,7 @@ export default function AccountsMatrixV2Page() {
                         </div>
                       </div>
                       <div className="mx-row-right">
-                        <span className="mx-badge" style={{ background: `${meta.color}22`, color: meta.color, border: `1px solid ${meta.color}55` }}>
+                        <span className="mx-badge" style={{ background: `color-mix(in srgb, ${meta.color} 13%, transparent)`, color: meta.color, border: `1px solid color-mix(in srgb, ${meta.color} 33%, transparent)` }}>
                           {meta.label}
                         </span>
                       </div>
