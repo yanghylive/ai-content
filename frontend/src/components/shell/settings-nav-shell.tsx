@@ -164,7 +164,8 @@ export function SettingsNavShell({
       </aside>
 
       {/* ── 右栏内容 ── */}
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="settings-pane min-w-0 flex-1">{children}</main>
+      <style>{`.settings-pane .v2-back-btn { display: none; }`}</style>
     </div>
   );
 }
