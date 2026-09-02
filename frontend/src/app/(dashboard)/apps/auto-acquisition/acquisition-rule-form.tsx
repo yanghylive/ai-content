@@ -28,6 +28,7 @@ import {
   V2Disclosure,
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthAccountHealth, type GrowthAcquisitionPreflight, type GrowthPlatform } from "@/lib/api/growth";
+import { buildRiskConfirmation } from "@/lib/api/auto-upload";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -530,7 +531,11 @@ export function AcquisitionRuleForm() {
         scheduleEnabled: form.scheduleEnabled,
         beginTime: form.scheduleEnabled ? form.beginTime : "",
         riskMode: form.riskMode,
-        status: "disabled",
+        // 止血策略按风控模式区分（2026-09-02 修复死锁）：
+        // confirm-first（逐条确认）/draft-only（纯草稿）有安全闸，创建即启用可让
+        // 「创建→预检→立即执行」闭环成立；auto（自动发送·高风险）保持停用，
+        // 需到获客任务列表显式启用并完成风险确认，防保存即自动启用污染。
+        status: form.riskMode === "auto" ? "disabled" : "enabled",
       });
       if (config?.id) {
         setCreatedConfigId(config.id);
@@ -551,7 +556,10 @@ export function AcquisitionRuleForm() {
     setExecuting(true);
     setError(null);
     try {
-      await growthApi.executeConfig(createdConfigId);
+      await growthApi.executeConfig(
+        createdConfigId,
+        buildRiskConfirmation("batch-touch"),
+      );
       router.push("/growth/acquisition");
     } catch (err: unknown) {
       setError(toPublicError(err, "任务执行失败，请稍后重试"));
