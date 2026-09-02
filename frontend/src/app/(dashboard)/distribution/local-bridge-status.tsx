@@ -24,9 +24,49 @@ const STATUS_COPY = {
   },
 } as const;
 
-export function LocalBridgeStatus() {
+export function LocalBridgeStatus({ inline = false }: { inline?: boolean }) {
   const { status, version, platformCount, refresh } = useLocalBridge();
   const copy = STATUS_COPY[status];
+
+  if (inline) {
+    const detail = [
+      copy.detail,
+      status === "online" && version ? `v${version}` : "",
+      status === "online" && platformCount != null ? `${platformCount} 个平台可用` : "",
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    return (
+      <div
+        aria-label="本机发布服务状态"
+        aria-live="polite"
+        className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] py-1 pl-2.5 pr-1 text-xs text-[var(--kaypal-v3-muted)]"
+      >
+        <span
+          role="img"
+          aria-label={`本机发布服务${copy.label}`}
+          className={`relative inline-flex h-2 w-2 shrink-0 rounded-full ${copy.color}`}
+        >
+          {copy.pulse && (
+            <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${copy.color} opacity-75`} />
+          )}
+        </span>
+        <span className="hidden whitespace-nowrap lg:inline">
+          本机发布服务 · {copy.label}
+          {detail ? ` · ${detail}` : ""}
+        </span>
+        <button
+          type="button"
+          onClick={() => void refresh()}
+          disabled={status === "checking"}
+          aria-label="重新检查本机发布服务"
+          className="inline-flex items-center justify-center rounded-full p-1 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-muted)] disabled:cursor-wait disabled:opacity-60"
+        >
+          <RefreshCw aria-hidden="true" className={`h-3.5 w-3.5 ${status === "checking" ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <section

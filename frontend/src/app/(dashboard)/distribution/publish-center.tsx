@@ -20,10 +20,12 @@ import {
   CheckCircle2,
   Clock,
   FileText,
+  LayoutDashboard,
   Loader2,
   Plus,
   RefreshCw,
   Video,
+  Wrench,
   XCircle,
   Zap,
   type LucideIcon,
@@ -39,6 +41,7 @@ import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { useConfirm } from "@/hooks/use-confirm";
 import { LocalBridgeStatus } from "./local-bridge-status";
+import { PlatformBadge } from "@/components/platform-badge";
 import { toActionableError } from "@/lib/public-error";
 
 type PublishItem = {
@@ -249,7 +252,7 @@ export function PublishCenter() {
           {/* 单一主行动 */}
           <Link
             href="/distribution/articles"
-            className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+            className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-6 py-3 text-base font-semibold text-white shadow-[0_1px_2px_hsl(var(--agent-cockpit-primary)_/_0.3),0_2px_8px_-2px_hsl(var(--agent-cockpit-primary)_/_0.2),inset_0_1px_0_var(--kaypal-v3-btn-inset,rgba(255,255,255,0.18))] transition duration-150 ease-out hover:-translate-y-px hover:shadow-[0_2px_4px_hsl(var(--agent-cockpit-primary)_/_0.35),0_4px_16px_-2px_hsl(var(--agent-cockpit-primary)_/_0.3),inset_0_1px_0_var(--kaypal-v3-btn-inset-hover,rgba(255,255,255,0.22))] active:scale-[0.97]"
           >
             <Plus className="h-5 w-5" />
             新建发布
@@ -326,77 +329,103 @@ export function PublishCenter() {
           </div>
       </div>
 
-      {/* 四视图 Tab（报告 4.1：看板 + 失败队列 + 日历 + 账号健康） */}
-      <div className="flex items-center gap-1 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-1">
-        {(
-          [
-            { key: "kanban", label: "看板" },
-            { key: "failed", label: `失败队列${stats.failed > 0 ? ` (${stats.failed})` : ""}` },
-            { key: "calendar", label: "发布日历" },
-            { key: "accounts", label: "账号健康" },
-          ] as const
-        ).map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActiveTab(tab.key)}
-            className={`rounded-[var(--kaypal-v3-radius-sm)] px-4 py-2 text-sm font-medium transition ${
-              activeTab === tab.key
-                ? "bg-[var(--kaypal-v3-accent)] text-white"
-                : "text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-muted)]"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* 四视图 Tab + 本机服务状态（同行，服务条作为环境指示器不再占整行） */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-1 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-1">
+          {(
+            [
+              { key: "kanban", label: "看板" },
+              { key: "failed", label: `失败队列${stats.failed > 0 ? ` (${stats.failed})` : ""}` },
+              { key: "calendar", label: "发布日历" },
+              { key: "accounts", label: "账号健康" },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`rounded-[var(--kaypal-v3-radius-sm)] px-4 py-2 text-sm font-medium transition ${
+                activeTab === tab.key
+                  ? "bg-[var(--kaypal-v3-accent)] text-white"
+                  : "text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-muted)]"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <LocalBridgeStatus inline />
       </div>
 
       {activeTab === "failed" ? (
-        <FailedQueueTab
-          items={items}
-          loading={loading}
-          actingId={actingId}
-          onRetry={handleRetry}
-        />
+        <>
+          {/* 失败提醒：只在专注处理失败队列时出现，去重（顶部统计卡 + 失败列已覆盖） */}
+          {stats.failed > 0 && (
+            <section className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-4 py-3">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--kaypal-v3-danger)]" />
+                <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">
+                  有 {stats.failed} 个内容发布失败，多数是账号登录失效导致
+                </p>
+              </div>
+              <Link
+                href="/distribution/accounts"
+                className="text-sm font-medium text-[var(--kaypal-v3-danger)] underline"
+              >
+                去修复账号 →
+              </Link>
+            </section>
+          )}
+          <FailedQueueTab
+            items={items}
+            loading={loading}
+            actingId={actingId}
+            onRetry={handleRetry}
+          />
+        </>
       ) : activeTab === "calendar" ? (
         <PublishCalendarTab />
       ) : activeTab === "accounts" ? (
         <AccountHealthTab />
       ) : (
         <>
-          <LocalBridgeStatus />
-
-          {/* 失败提醒（上下文引导） */}
-          {stats.failed > 0 && (
-        <section className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-[var(--kaypal-v3-danger)]" />
-              <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">
-                有 {stats.failed} 个内容发布失败，多数是账号登录失效导致
-              </p>
-            </div>
-            <Link
-              href="/distribution/accounts"
-              className="text-sm font-medium text-[var(--kaypal-v3-danger)] underline"
-            >
-              去修复账号 →
-            </Link>
-          </div>
-        </section>
-      )}
-
       {/* 看板视图 */}
       <section>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
-            📋 发布看板
-          </h2>
-          <span className="text-sm text-[var(--kaypal-v3-muted)]">
-            内容从计划到发布的全过程
+        <div className="mb-4 flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[image:var(--kaypal-v3-gradient-primary)] text-white shadow-[0_4px_10px_-4px_hsl(var(--agent-cockpit-primary)_/_0.5)]">
+            <LayoutDashboard className="h-4 w-4" strokeWidth={1.9} />
           </span>
+          <div>
+            <h2 className="text-lg font-semibold leading-6 text-[var(--kaypal-v3-ink)]">
+              发布看板
+            </h2>
+            <p className="text-xs text-[var(--kaypal-v3-muted)]">
+              内容从计划到发布的全过程
+            </p>
+          </div>
         </div>
 
+        {items.length === 0 && !loading ? (
+          /* 空态引导：无任何任务时整区引导，避免多列空卡片堆积 */
+          <div className="kaypal-v3-surface flex flex-col items-center gap-2 px-6 py-12 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[image:var(--kaypal-v3-gradient-primary)] text-white shadow-[0_8px_20px_-8px_hsl(var(--agent-cockpit-primary)_/_0.55)]">
+              <LayoutDashboard className="h-6 w-6" strokeWidth={1.8} />
+            </span>
+            <p className="mt-2 text-base font-semibold text-[var(--kaypal-v3-ink)]">
+              还没有发布内容
+            </p>
+            <p className="text-sm text-[var(--kaypal-v3-muted)]">
+              写好内容、排好时间，到点自动发布到你的账号
+            </p>
+            <Link
+              href="/distribution/articles"
+              className="mt-4 inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_1px_2px_hsl(var(--agent-cockpit-primary)_/_0.3),0_2px_8px_-2px_hsl(var(--agent-cockpit-primary)_/_0.2),inset_0_1px_0_var(--kaypal-v3-btn-inset,rgba(255,255,255,0.18))] transition duration-150 ease-out hover:-translate-y-px active:scale-[0.97]"
+            >
+              <Plus className="h-4 w-4" />
+              新建第一篇内容
+            </Link>
+          </div>
+        ) : (
         <div className="grid gap-4 lg:grid-cols-3">
           {kanbanColumns.map((column) => {
             const config = STATUS_CONFIG[column.status];
@@ -446,9 +475,10 @@ export function PublishCenter() {
                                 {item.platforms.map((platform) => (
                                   <span
                                     key={platform}
-                                    className="rounded-full bg-[var(--kaypal-v3-paper-muted)] px-2 py-0.5 text-xs text-[var(--kaypal-v3-soft-ink)]"
+                                    className="inline-flex items-center gap-1 rounded-full bg-[var(--kaypal-v3-paper-muted)] py-0.5 pl-0.5 pr-2 text-xs text-[var(--kaypal-v3-soft-ink)]"
                                   >
-                                    {platform}
+                                    <PlatformBadge platform={platform} size={16} />
+                                    {platformName(platform)}
                                   </span>
                                 ))}
                               </div>
@@ -502,13 +532,17 @@ export function PublishCenter() {
             );
           })}
         </div>
+        )}
       </section>
 
       {/* 高级功能 */}
       <section>
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
-            ⚙️ 高级功能
+        <div className="mb-4 flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[image:var(--kaypal-v3-gradient-primary)] text-white shadow-[0_4px_10px_-4px_hsl(var(--agent-cockpit-primary)_/_0.5)]">
+            <Wrench className="h-4 w-4" strokeWidth={1.9} />
+          </span>
+          <h2 className="text-lg font-semibold leading-6 text-[var(--kaypal-v3-ink)]">
+            高级功能
           </h2>
         </div>
 
@@ -598,7 +632,8 @@ function FailedQueueTab({
               <p className="truncate text-sm font-medium text-[var(--kaypal-v3-ink)]">
                 {item.title}
               </p>
-              <span className="shrink-0 rounded-full bg-[var(--kaypal-v3-paper-muted)] px-2 py-0.5 text-xs text-[var(--kaypal-v3-soft-ink)]">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--kaypal-v3-paper-muted)] py-0.5 pl-0.5 pr-2 text-xs text-[var(--kaypal-v3-soft-ink)]">
+                <PlatformBadge platform={item.platforms[0]} size={16} />
                 {platformName(item.platforms[0] || "未指定平台")}
               </span>
             </div>
@@ -611,7 +646,7 @@ function FailedQueueTab({
               type="button"
               disabled={actingId === item.id}
               onClick={() => onRetry(item)}
-              className="inline-flex items-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-3 py-2 text-sm font-medium text-white transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 py-2 text-sm font-medium text-white shadow-[0_1px_2px_hsl(var(--agent-cockpit-primary)_/_0.3),inset_0_1px_0_var(--kaypal-v3-btn-inset,rgba(255,255,255,0.18))] transition duration-150 ease-out hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               {actingId === item.id ? "重试中…" : "重试"}
