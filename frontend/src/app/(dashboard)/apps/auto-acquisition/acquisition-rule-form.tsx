@@ -408,7 +408,26 @@ export function AcquisitionRuleForm() {
             <p style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>正在加载账号…</p>
           ) : visibleAccounts.length === 0 ? (
             <p style={{ fontSize: 12, color: "var(--kaypal-v3-danger)" }}>
-              当前平台暂无可用执行账号：请先到「平台账号」页完成账号授权登录，或切换平台
+              当前平台暂无可用执行账号：请先到
+              <a
+                href="/distribution/accounts"
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push("/distribution/accounts");
+                }}
+                style={{
+                  margin: "0 3px",
+                  fontWeight: 700,
+                  color: "var(--kaypal-v3-accent-ink)",
+                  textDecoration: "underline",
+                  textUnderlineOffset: 2,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                平台账号 ↗
+              </a>
+              页完成账号授权登录，或切换平台
             </p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -756,7 +775,18 @@ export function AcquisitionRuleForm() {
           <p className="text-sm text-[var(--kaypal-v3-muted)]">正在加载账号…</p>
         ) : visibleAccounts.length === 0 ? (
           <p className="text-sm text-[var(--kaypal-v3-danger)]">
-            当前平台暂无可用执行账号：请先到「平台账号」页完成平台账号授权登录，或切换平台
+            当前平台暂无可用执行账号：请先到
+            <a
+              href="/distribution/accounts"
+              onClick={(e) => {
+                e.preventDefault();
+                router.push("/distribution/accounts");
+              }}
+              className="mx-1 inline-flex items-center font-bold text-[var(--kaypal-v3-accent-ink)] underline underline-offset-2 transition-colors hover:text-[var(--kaypal-v3-accent)]"
+            >
+              平台账号 ↗
+            </a>
+            页完成平台账号授权登录，或切换平台
           </p>
         ) : (
           <div className="grid gap-2">
