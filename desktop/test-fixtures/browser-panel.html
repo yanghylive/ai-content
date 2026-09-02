@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>BrowserPanel P0 Fixture</title></head>
+<body>
+  <h1 id="title">browser-panel-p0</h1>
+  <div id="counter" data-testid="counter">0</div>
+  <button id="inc" type="button">+1</button>
+  <input id="field" type="text" placeholder="type here" />
+  <div id="keylog">-</div>
+  <div id="userops">-</div>
+  <script>
+    const counter = document.getElementById('counter');
+    const keylog = document.getElementById('keylog');
+    const userops = document.getElementById('userops');
+    document.getElementById('inc').addEventListener('click', () => {
+      counter.textContent = String(Number(counter.textContent) + 1);
+    });
+    document.getElementById('field').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') keylog.textContent = 'enter:' + document.getElementById('field').value;
+    });
+    document.getElementById('field').addEventListener('input', () => {
+      userops.textContent = 'input:' + document.getElementById('field').value;
+    });
+    window.__panelProbe = () => ({
+      url: location.href,
+      title: document.title,
+      counter: counter.textContent,
+      field: document.getElementById('field').value,
+      keylog: keylog.textContent,
+    });
+    // 供"用户通道"模拟真实用户键入（不经过 CDP）
+    window.__simulateUserTyping = (text) => {
+      const f = document.getElementById('field');
+      f.value = text;
+      f.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    window.__openTab = () => { window.open('about:blank', '_blank'); };
+  </script>
+</body>
+</html>
