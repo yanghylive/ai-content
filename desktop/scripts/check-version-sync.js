@@ -69,6 +69,21 @@ function main() {
   const releaseNotes = fs.readFileSync(releaseNotesPath, 'utf8').trim();
   if (!releaseNotes) throw new Error(`${releaseNotesFile} is empty`);
 
+  // 2026-09-02（复核第七轮 P2）：标题一致性——release-notes.md 首个版本标题
+  // 必须等于当前包版本（原门禁只查非空，导致 1.1.112 发布物带着
+  // "## v1.1.111" 标题上线的假成功）。
+  const firstHeading = releaseNotes.match(/^##\s+v?(\d+\.\d+\.\d+)/m);
+  if (!firstHeading) {
+    throw new Error(
+      `${releaseNotesFile} 首个标题缺少版本号（期望 "## v${expected}（…）"）`,
+    );
+  }
+  if (firstHeading[1] !== expected) {
+    throw new Error(
+      `${releaseNotesFile} 首标题版本 v${firstHeading[1]} 与包版本 v${expected} 不一致`,
+    );
+  }
+
   console.log(
     `Version sync passed: v${expected}; updater notes=${path.relative(desktopRoot, releaseNotesPath)}`,
   );

@@ -216,11 +216,20 @@ export class VideoController {
     if (!ownerId) {
       throw new BadRequestException('缺少目标 userId');
     }
+    // 2026-09-02（复核第七轮 P1）：管理员判定必须走 service 公共方法
+    //（与 auth.guard 对齐：本地 admin/super_admin + 云 kaypalRole/kaypalPlatformRole
+    // 的 SUPER_ADMIN）。上一轮 python 替换未生效导致控制器仍是旧逻辑——教训：
+    // 安全改动必须 Edit 直改 + grep 验证。
     const ctx = this.authRequestContext?.get() as
-      { user?: { role?: string } } | undefined;
-    const role = ctx?.user?.role;
-    // 2026-09-01（复核第四轮 P2）：收紧为平台管理员（去掉 owner）
-    if (role !== 'admin' && role !== 'SUPER_ADMIN') {
+      | {
+          user?: {
+            role?: string;
+            kaypalRole?: string;
+            kaypalPlatformRole?: string;
+          };
+        }
+      | undefined;
+    if (!this.videoService.isAdminForProjectMigration(ctx?.user)) {
       throw new ForbiddenException('仅平台管理员可迁移项目归属');
     }
     await this.prisma!.migrateStudioProjectOwner(id, ownerId);

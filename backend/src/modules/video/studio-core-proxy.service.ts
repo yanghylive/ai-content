@@ -122,9 +122,17 @@ export class StudioCoreProxyService {
       );
     }
     if (!res.ok) {
-      throw new Error(
-        `studio_core 登录失败（${res.status}）: ${await res.text()}`,
-      );
+      // 2026-09-02（复核第七轮 P1）：登录 4xx（凭据错误/权限拒绝）是业务拒绝，
+      // 不是"引擎不可达"——抛 StudioCoreBusinessError 阻断云端计费回退，
+      // 避免 StudioCore 配置错误被误判为离线并继续创建云端计费任务。
+      const detail = await res.text();
+      if (res.status >= 400 && res.status < 500) {
+        throw new StudioCoreBusinessError(
+          `studio_core 登录被拒（${res.status}），请检查 STUDIO_CORE 凭据配置: ${detail.slice(0, 200)}`,
+          res.status,
+        );
+      }
+      throw new Error(`studio_core 登录失败（${res.status}）: ${detail}`);
     }
     const data = (await res.json()) as { token?: string };
     if (!data.token) {

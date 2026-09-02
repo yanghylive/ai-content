@@ -425,7 +425,9 @@ export class PrismaService
       !systemTables.includes('tenants') ||
       !systemTables.includes('tenant_members')
     ) {
-      this.logger.warn(`系统库无组织表，跳过账号库组织关系回补：${accountPath}`);
+      this.logger.warn(
+        `系统库无组织表，跳过账号库组织关系回补：${accountPath}`,
+      );
       this.tenantOrgSynced.add(accountPath);
       return;
     }
@@ -480,7 +482,8 @@ export class PrismaService
     );
     const tenantsToInsert = tenants.filter(
       (tenant) =>
-        localUserIds.has(tenant.owner_user_id) || neededTenantIds.has(tenant.id),
+        localUserIds.has(tenant.owner_user_id) ||
+        neededTenantIds.has(tenant.id),
     );
 
     // Prisma raw 会把 Json 列解析成对象/数组（如 permissions '[]' → []），
