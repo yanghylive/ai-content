@@ -267,6 +267,11 @@
     color: #5d5273;
     border-color: rgba(205, 195, 228, 0.55);
   }
+  html.dark .kx-kbd {
+    background: rgba(41, 35, 56, 0.9);
+    color: #b9b1cc;
+    border-color: rgba(110, 95, 150, 0.42);
+  }
   .kx-ticker {
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(250, 248, 253, 0.62));
     border-color: rgba(210, 198, 235, 0.55);
@@ -401,6 +406,14 @@
     background: var(--kx-accent);
     color: #fff;
     box-shadow: 0 1px 3px rgba(114, 46, 209, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  /* 暗色：--kx-accent 提亮为亮紫（#b885f7），白字对比度不足 → 恢复加深后的主渐变 */
+  html.dark .kx-btn-primary,
+  html.dark .kx-chat-send,
+  html.dark .kx-btn-sm-primary {
+    background: var(--kaypal-v3-gradient-primary, var(--kx-accent));
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28), inset 0 1px 0 var(--kaypal-v3-btn-inset, rgba(255, 255, 255, 0.1));
   }
   .kx-btn-primary:hover,
   .kx-chat-send:hover,
