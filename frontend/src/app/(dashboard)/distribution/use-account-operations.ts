@@ -56,9 +56,21 @@ export function useAccountOperations(options: {
   const [loginStatus, setLoginStatus] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginConnecting, setLoginConnecting] = useState(false);
+  // 登录阶段（实时反馈用）：idle → connecting → qr/manual → detecting → done / failed / reconnecting
+  const [loginPhase, setLoginPhase] = useState<
+    | "idle"
+    | "connecting"
+    | "qr"
+    | "manual"
+    | "detecting"
+    | "reconnecting"
+    | "failed"
+  >("idle");
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const loginTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loginPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const loginPollCountRef = useRef(0);
 
   const closeLoginStream = useCallback(() => {
     eventSourceRef.current?.close();
@@ -67,6 +79,11 @@ export function useAccountOperations(options: {
       clearTimeout(loginTimerRef.current);
       loginTimerRef.current = null;
     }
+    if (loginPollRef.current) {
+      clearInterval(loginPollRef.current);
+      loginPollRef.current = null;
+    }
+    loginPollCountRef.current = 0;
   }, []);
 
   useEffect(() => {
@@ -101,6 +118,33 @@ export function useAccountOperations(options: {
     return () => window.clearInterval(timer);
   }, [refreshCdpSessions]);
 
+  const isAccountLoggedIn = (account: AutoUploadAccount) =>
+    account.lifecycleStatus === "online" ||
+    account.sessionStatus === "logged_in" ||
+    account.statusCode === "ok";
+
+  /** 断线/手动重检：拉一次账号列表，判断目标账号是否已登录成功 */
+  const detectLoginNow = useCallback(async (): Promise<boolean> => {
+    try {
+      const list = await autoUploadApi.accounts();
+      const arr = Array.isArray(list) ? list : [];
+      if (loginRecord) {
+        return arr.some(
+          (a) => String(a.id) === String(loginRecord.id) && isAccountLoggedIn(a),
+        );
+      }
+      const name = loginProfileName.trim();
+      if (!name) return false;
+      return arr.some(
+        (a) =>
+          (a.profileName === name || a.userName === name) &&
+          isAccountLoggedIn(a),
+      );
+    } catch {
+      return false;
+    }
+  }, [loginRecord, loginProfileName]);
+
   const openLoginModal = (account?: AutoUploadAccount) => {
     closeLoginStream();
     setLoginRecord(account || null);
@@ -111,6 +155,7 @@ export function useAccountOperations(options: {
     setLoginStatus("");
     setLoginError("");
     setLoginConnecting(false);
+    setLoginPhase("idle");
     setLoginOpen(true);
   };
 
@@ -129,6 +174,7 @@ export function useAccountOperations(options: {
     setLoginStatus("");
     setLoginError("");
     setLoginRequestId("");
+    setLoginPhase("idle");
     if (closeModal) {
       setLoginOpen(false);
     }
@@ -143,28 +189,102 @@ export function useAccountOperations(options: {
 
     closeLoginStream();
     const requestId = createRequestId();
+    const targetRecord = loginRecord;
+    const targetName = profileName;
+    const targetPlatformType = loginPlatformType;
     setLoginRequestId(requestId);
     setLoginQrCode("");
     setLoginStatus("");
     setLoginError("");
     setLoginConnecting(true);
+    setLoginPhase("connecting");
+
+    // 成功收尾（SSE 200 / 轮询命中 / 手动「我已登录」共用）
+    const finishSuccess = () => {
+      setLoginConnecting(false);
+      setLoginPhase("detecting");
+      setLoginStatus("200");
+      notify({
+        title: targetRecord ? "重新登录成功" : "绑定成功",
+        tone: "success",
+      });
+      onRefresh().catch(() => undefined);
+      setTimeout(() => {
+        setLoginOpen(false);
+        setLoginPhase("idle");
+      }, 900);
+    };
+
+    // 轮询兜底：SSE 断线不代表登录失败——后端通常仍在等待浏览器
+    // 完成登录并保存账号。断开后转为每 3s 轮询账号列表，识别到目标
+    // 账号已登录即自动收尾，用户无需重试。
+    const startPolling = (reason: string) => {
+      closeLoginStream();
+      setLoginConnecting(false);
+      setLoginPhase("reconnecting");
+      setLoginStatus("reconnecting");
+      setLoginError(reason);
+      loginPollCountRef.current = 0;
+      const tick = async () => {
+        loginPollCountRef.current += 1;
+        if (loginPollCountRef.current > 20) {
+          if (loginPollRef.current) clearInterval(loginPollRef.current);
+          loginPollRef.current = null;
+          loginPollCountRef.current = 0;
+          setLoginPhase("failed");
+          setLoginStatus("500");
+          setLoginError(
+            "仍未检测到登录。如已在浏览器中完成登录，点下方「我已登录」立即同步；否则请重试。",
+          );
+          return;
+        }
+        try {
+          const list = await autoUploadApi.accounts();
+          const arr = Array.isArray(list) ? list : [];
+          const hit = targetRecord
+            ? arr.some(
+                (a) =>
+                  String(a.id) === String(targetRecord.id) &&
+                  isAccountLoggedIn(a),
+              )
+            : arr.some(
+                (a) =>
+                  (a.profileName === targetName ||
+                    a.userName === targetName) &&
+                  isAccountLoggedIn(a),
+              );
+          if (hit) {
+            if (loginPollRef.current) clearInterval(loginPollRef.current);
+            loginPollRef.current = null;
+            loginPollCountRef.current = 0;
+            finishSuccess();
+          }
+        } catch {
+          // 本地服务暂不可达，继续下一轮
+        }
+      };
+      void tick();
+      loginPollRef.current = setInterval(() => void tick(), 3000);
+    };
 
     let hasLoginPrompt = false;
     let completed = false;
     let lastStreamError = "";
     const source = new EventSource(
       autoUploadApi.loginUrl({
-        type: loginPlatformType,
-        profileName,
+        type: targetPlatformType,
+        profileName: targetName,
         requestId,
-        update: Boolean(loginRecord),
-        recordId: loginRecord?.id,
+        update: Boolean(targetRecord),
+        recordId: targetRecord?.id,
       }),
       { withCredentials: true },
     );
     eventSourceRef.current = source;
     loginTimerRef.current = setTimeout(() => {
       if (!hasLoginPrompt && !completed) {
+        completed = true;
+        setLoginPhase("failed");
         setLoginStatus("500");
         setLoginError("登录页面加载超时，暂未获取到二维码。");
         closeLoginStream();
@@ -174,11 +294,13 @@ export function useAccountOperations(options: {
 
     source.onmessage = (event) => {
       const data = event.data;
+      if (completed) return;
       if (data.startsWith("ERROR:")) {
         const message =
           data.replace(/^ERROR:\s*/, "") || "绑定失败，请稍后再试";
         lastStreamError = message;
         completed = true;
+        setLoginPhase("failed");
         setLoginStatus("500");
         setLoginError(message);
         closeLoginStream();
@@ -191,6 +313,7 @@ export function useAccountOperations(options: {
         completed = true;
         closeLoginStream();
         setLoginConnecting(false);
+        setLoginPhase("idle");
         setLoginOpen(false);
         return;
       }
@@ -203,9 +326,10 @@ export function useAccountOperations(options: {
         const trustedUrl = parseTrustedWechatChannelLoginUrl(
           data.slice("LOGIN_URL:".length),
         );
-        if (loginPlatformType !== 2 || !trustedUrl) {
+        if (targetPlatformType !== 2 || !trustedUrl) {
           completed = true;
           const message = "登录页地址未通过安全校验，请关闭窗口后重试。";
+          setLoginPhase("failed");
           setLoginStatus("500");
           setLoginError(message);
           closeLoginStream();
@@ -220,6 +344,7 @@ export function useAccountOperations(options: {
         }
         setLoginQrCode("");
         setLoginStatus("manual");
+        setLoginPhase("manual");
         setLoginError("");
         return;
       }
@@ -233,38 +358,59 @@ export function useAccountOperations(options: {
           data.startsWith("//") ||
           data.startsWith("blob:");
         setLoginQrCode(isImageUrl ? data : `data:image/png;base64,${data}`);
+        setLoginPhase("qr");
         return;
       }
 
       if (data === "200" || data === "500") {
         completed = true;
-        setLoginStatus(data);
         closeLoginStream();
-        setLoginConnecting(false);
         if (data === "200") {
-          notify({
-            title: loginRecord ? "重新登录成功" : "绑定成功",
-            tone: "success",
-          });
-          onRefresh().catch(() => undefined);
-          setTimeout(() => setLoginOpen(false), 900);
+          finishSuccess();
         } else {
+          setLoginPhase("failed");
+          setLoginStatus("500");
+          setLoginConnecting(false);
           setLoginError(
             lastStreamError ||
-              "绑定失败：平台登录未完成或登录态校验失败。请确认新打开的平台窗口已经完成登录，再点击刷新账号状态。",
+              "绑定失败：平台登录未完成或登录态校验失败。请确认新打开的平台窗口已经完成登录，再点击「我已登录」同步状态。",
           );
         }
       }
     };
 
     source.onerror = () => {
+      // SSE 断线不判死：转轮询确认登录结果，识别到已登录自动收尾
+      if (completed) return;
       completed = true;
-      closeLoginStream();
-      setLoginConnecting(false);
-      setLoginStatus("500");
-      setLoginError("登录连接中断，请确认本地服务仍在运行。");
-      notify({ title: "登录连接中断", tone: "danger" });
+      startPolling("本地服务连接不稳定，正在确认登录状态…");
     };
+  };
+
+  /** 手动兜底：「我已登录」——立即检测一次，命中则自动完成绑定收尾 */
+  const checkLoginNow = async () => {
+    if (loginConnecting && loginPhase === "connecting") return;
+    const ok = await detectLoginNow();
+    if (ok) {
+      setLoginConnecting(false);
+      setLoginPhase("detecting");
+      setLoginStatus("200");
+      notify({
+        title: loginRecord ? "重新登录成功" : "绑定成功",
+        tone: "success",
+      });
+      onRefresh().catch(() => undefined);
+      setTimeout(() => {
+        setLoginOpen(false);
+        setLoginPhase("idle");
+      }, 900);
+    } else {
+      notify({
+        title: "尚未检测到登录",
+        description: "请确认在浏览器中已完成该平台的登录，再点击同步。",
+        tone: "warning",
+      });
+    }
   };
 
   const handleCheckAccounts = async (): Promise<AutoUploadAccount[] | null> => {
@@ -385,6 +531,7 @@ export function useAccountOperations(options: {
     loginStatus,
     loginError,
     loginConnecting,
+    loginPhase,
     setLoginProfileName,
     setLoginPlatformType,
     setAccountToDelete,
@@ -393,6 +540,7 @@ export function useAccountOperations(options: {
     openLoginModal,
     cancelLogin,
     startLogin,
+    checkLoginNow,
     handleCheckAccounts,
     handleOpenAccount,
     handleRefreshAvatar,

@@ -327,9 +327,15 @@ export function AccountManagement() {
                 </div>
               </div>
 
-              {ops.loginConnecting || ops.loginQrCode || ops.loginStatus ? (
+              {ops.loginPhase !== "idle" && (
                 <div className="flex flex-col items-center gap-3 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] p-4">
-                  {ops.loginQrCode && !ops.loginStatus ? (
+                  {ops.loginPhase === "connecting" && (
+                    <p className="py-4 text-sm text-[var(--kaypal-v3-muted)]">
+                      正在建立本地登录通道…
+                    </p>
+                  )}
+
+                  {ops.loginPhase === "qr" && ops.loginQrCode && (
                     <>
                       <p className="text-sm text-[var(--kaypal-v3-muted)]">
                         请使用对应平台 APP 扫码登录
@@ -340,24 +346,53 @@ export function AccountManagement() {
                         className="h-48 w-48 rounded-lg"
                         src={ops.loginQrCode}
                       />
+                      <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                        扫码后稍等片刻，系统会自动识别登录结果
+                      </p>
                     </>
-                  ) : !ops.loginQrCode && !ops.loginStatus ? (
-                    <p className="py-6 text-sm text-[var(--kaypal-v3-muted)]">
-                      正在获取登录二维码...
-                    </p>
-                  ) : null}
-                  {ops.loginStatus === "manual" && (
-                    <p className="text-sm text-[var(--kaypal-v3-amber)]">
-                      请在打开的登录页中手动完成登录
+                  )}
+
+                  {ops.loginPhase === "manual" && (
+                    <p className="py-4 text-sm text-[var(--kaypal-v3-amber)]">
+                      请在打开的浏览器页面中完成登录，完成后会自动识别
                     </p>
                   )}
-                  {ops.loginStatus === "500" && (
-                    <p className="text-sm text-[var(--kaypal-v3-danger)]">
-                      {ops.loginError || "绑定失败，请稍后重试"}
+
+                  {ops.loginPhase === "detecting" && (
+                    <p className="py-4 text-sm text-[var(--kaypal-v3-success)]">
+                      ✓ 已检测到登录，正在同步账号…
                     </p>
+                  )}
+
+                  {ops.loginPhase === "reconnecting" && (
+                    <>
+                      <p className="text-sm text-[var(--kaypal-v3-amber)]">
+                        {ops.loginError || "连接不稳定，正在确认登录状态…"}
+                      </p>
+                      <V2GhostButton
+                        icon={RefreshCw}
+                        onClick={() => void ops.checkLoginNow()}
+                      >
+                        我已登录，同步状态
+                      </V2GhostButton>
+                    </>
+                  )}
+
+                  {ops.loginPhase === "failed" && (
+                    <>
+                      <p className="text-sm text-[var(--kaypal-v3-danger)]">
+                        {ops.loginError || "绑定失败，请稍后重试"}
+                      </p>
+                      <V2GhostButton
+                        icon={RefreshCw}
+                        onClick={() => void ops.checkLoginNow()}
+                      >
+                        我已登录，同步状态
+                      </V2GhostButton>
+                    </>
                   )}
                 </div>
-              ) : null}
+              )}
             </div>
 
             <div className="mt-5 flex justify-end gap-2">
