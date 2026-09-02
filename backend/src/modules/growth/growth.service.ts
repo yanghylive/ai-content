@@ -8408,7 +8408,14 @@ export class GrowthService implements OnModuleInit {
     // interactive transaction; otherwise Prisma can create a transaction id
     // before the SQLite connection is ready and invalidate it on the first
     // model write (P2028 / "Transaction not found").
-    await this.prisma.runActiveTransaction(
+    const transactionRunner = (
+      callback: (tx: Prisma.TransactionClient) => Promise<void>,
+      options: { timeout: number },
+    ) =>
+      typeof this.prisma.runActiveTransaction === 'function'
+        ? this.prisma.runActiveTransaction(callback, options)
+        : this.prisma.$transaction(callback, options);
+    await transactionRunner(
       async (tx) => {
         await this.deleteGrowthRecordsWithClient(tx, options);
         for (const item of this.growthPersistenceItems(

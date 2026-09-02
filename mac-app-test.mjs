@@ -35,13 +35,13 @@ async function run() {
   check("登录态：message 页不跳登录", !page.url().includes("/login"), page.url().split("3010")[1]);
 
   // 2. 消息页入口
-  check("消息页：AI 客服入口", await page.evaluate(() => document.body.innerText.includes("AI 客服")));
+  check("消息页：客服机器人入口", await page.evaluate(() => document.body.innerText.includes("客服机器人")));
   check("消息页：企微助手入口", await page.evaluate(() => document.body.innerText.includes("企微助手")));
 
   // 3. AI 客服页（返回按钮 + 标题；入口在消息页，页面标题为「互动」区）
   await page.goto(`${BASE}/message.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
   await page.waitForTimeout(3000);
-  check("消息页：AI 客服入口可点", await page.locator('text=AI 客服').first().isVisible().catch(() => false));
+  check("消息页：客服机器人入口可点", await page.locator('text=客服机器人').first().isVisible().catch(() => false));
   await page.goto(`${BASE}/engagement.html`, { waitUntil: "domcontentloaded", timeout: 20000 });
   await page.waitForTimeout(3000);
   check("互动页：不跳登录无 500", !page.url().includes("/login") && !(await page.evaluate(() => document.body.innerText.includes("服务器内部错误"))));
