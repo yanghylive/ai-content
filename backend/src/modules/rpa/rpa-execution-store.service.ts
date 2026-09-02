@@ -69,6 +69,7 @@ export interface RpaExecutionStepInput {
  */
 const BUSINESS_ACTION_STEPS = [
   'discover-keyword',
+  'discover-account-search',
   'discover-account-works',
   'discover-recommended',
   'read-comments',

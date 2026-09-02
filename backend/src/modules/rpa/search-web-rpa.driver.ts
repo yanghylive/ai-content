@@ -140,6 +140,8 @@ export class SearchWebRpaDriver extends BaseRpaDriver {
       : unavailable;
     return [
       { action: 'discover-keyword' as const, supported: ready, ...unavailable },
+      { action: 'discover-account-search' as const, supported: ready, ...unavailable },
+
       {
         action: 'discover-account-works' as const,
         supported: accountWorksSupported,
@@ -313,6 +315,66 @@ export class SearchWebRpaDriver extends BaseRpaDriver {
         items: mapped,
       });
     }
+if (action === 'discover-account-search') {
+      const keyword = this.text(input.keyword).trim();
+      if (!keyword) {
+        return this.stepResult(
+          'discover-account-search',
+          'failed',
+          'parse_failed',
+          startedAt,
+          { message: '缺少关键词' },
+        );
+      }
+      const userId = this.text(input.userId);
+      const items = await this.runner.searchAccounts({
+        platform: this.platform as SearchPlatform,
+        accountId: session.accountId,
+        keyword,
+        limit: Number(input.limit ?? 20),
+        userId: userId || undefined,
+      });
+      if (!items.length) {
+        return this.stepResult(
+          'discover-account-search',
+          'failed',
+          'parse_failed',
+          startedAt,
+          { message: '搜索页未解析到账号（页面结构变化或未加载）' },
+        );
+      }
+      const { mapped, dropped } = this.mapDiscoveryItems(items);
+      if (!mapped?.length) {
+        return this.stepResult(
+          'discover-account-search',
+          'failed',
+          'parse_failed',
+          startedAt,
+          {
+            message: `解析到 ${items.length} 条账号但均缺少真实内容 ID/URL（无法证明候选真实存在），已判失败`,
+          },
+        );
+      }
+      if (dropped > 0) {
+        return this.stepResult(
+          'discover-account-search',
+          'failed',
+          'parse_failed',
+          startedAt,
+          {
+            message: `解析到 ${items.length} 条账号，其中 ${dropped} 条缺少真实内容 ID/URL，已整体判失败待人工核对`,
+          },
+        );
+      }
+      return this.stepResult(
+        'discover-account-search',
+        'success',
+        'ok',
+        startedAt,
+        { items: mapped },
+      );
+    }
+
     if (action === 'discover-recommended') {
       // 推荐流不需要关键词（空则用默认值，仅用于配额/审计标识）
       const keyword = this.text(input.keyword) || 'recommended';

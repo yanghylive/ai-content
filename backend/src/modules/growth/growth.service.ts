@@ -4746,8 +4746,13 @@ export class GrowthService implements OnModuleInit {
   ): Promise<AiEmployeeLeadResponse> {
     const limit = Math.min(Math.max(remaining, 20), 50);
     const primaryInput = await this.nextGrowthAcquisitionSourceInput(config);
-    if (config.platform !== 'douyin') {
-      // 阶段 A：非抖音平台优先走统一 RPA driver（快手/小红书浏览器搜索发现），
+    const shouldTryRpa =
+      config.platform !== 'douyin' ||
+      config.mode === 'keyword' ||
+      config.mode === 'search-account';
+    if (shouldTryRpa) {
+      // 阶段 A：优先走统一 RPA driver（浏览器行为式搜索，绕 /search/ 验证码）。
+      // 抖音 keyword/search-account 也纳入（原直接 goto /search/ 触发验证码）。
       // 失败/不支持静默回退旧链路（fail-safe，不破坏现有行为）
       const driverResult = await this.tryFetchCandidatesWithRpaDriver(
         config,
@@ -4770,17 +4775,20 @@ export class GrowthService implements OnModuleInit {
             'RPA 执行成功但审计落库失败，已阻断成功标记',
         };
       }
-      // P1-2：RPA 失败/不可用 → 回退旧链路，回退信息随响应带出（前端可展示来源与执行 ID）
-      const legacy = this.fetchCandidatesWithPlatformAdapter(config);
-      const fallback: FallbackTrace = driverResult?.fallback ?? {
-        attempted: false,
-        source: 'legacy-adapter',
-        rpaExecutionId: null,
-        reasonCode: null,
-        fallbackAllowed: true,
-        message: 'RPA 路径未尝试，直接使用本地适配器',
-      };
-      return { ...legacy, fallback };
+      if (config.platform !== 'douyin') {
+        // P1-2：非抖音 RPA 失败/不可用 → 回退旧链路
+        const legacy = this.fetchCandidatesWithPlatformAdapter(config);
+        const fallback: FallbackTrace = driverResult?.fallback ?? {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: null,
+          fallbackAllowed: true,
+          message: 'RPA 路径未尝试，直接使用本地适配器',
+        };
+        return { ...legacy, fallback };
+      }
+      // 抖音 keyword/search-account：RPA 失败则 fallthrough 到下方抖音分支（回退 exposure-collector）
     }
     if (config.mode === 'search-account') {
       return this.aiEmployeeService.findDouyinLeadsByKeyword({
@@ -4980,14 +4988,21 @@ export class GrowthService implements OnModuleInit {
                   limit: remaining,
                   userId: config.userId,
                 }
-              : action === 'discover-recommended'
+              : action === 'discover-account-search'
                 ? {
-                    // P2 复核：推荐流不需要关键词/目标，keyword 仅作配额与审计标识
-                    keyword: config.taskName ?? 'recommended',
+                    keyword:
+                      config.sourceInputs[0] ?? config.taskName ?? '',
                     limit: remaining,
                     userId: config.userId,
                   }
-                : {
+                : action === 'discover-recommended'
+                  ? {
+                      // P2 复核：推荐流不需要关键词/目标，keyword 仅作配额与审计标识
+                      keyword: config.taskName ?? 'recommended',
+                      limit: remaining,
+                      userId: config.userId,
+                    }
+                  : {
                     targetId: config.sourceInputs[0] ?? '',
                     limit: remaining,
                     userId: config.userId,
@@ -5362,6 +5377,7 @@ export class GrowthService implements OnModuleInit {
     mode: GrowthAcquisitionMode,
   ):
     | 'discover-keyword'
+    | 'discover-account-search'
     | 'discover-account-works'
     | 'read-comments'
     | 'discover-recommended'
@@ -5369,8 +5385,8 @@ export class GrowthService implements OnModuleInit {
     if (mode === 'keyword') return 'discover-keyword';
     // 复核#4-5：video-link 是打开视频详情页读评论区（评论者 = 候选），不是关键词搜索
     if (mode === 'video-link') return 'read-comments';
-    if (mode === 'search-account' || mode === 'target-account')
-      return 'discover-account-works';
+    if (mode === 'search-account') return 'discover-account-search';
+    if (mode === 'target-account') return 'discover-account-works';
     // P2 复核：推荐流独立模式（与关键词搜索解耦，对齐 rpa.controller.modeToAction）
     if (mode === 'recommended') return 'discover-recommended';
     return null;

@@ -193,6 +193,51 @@ export class DiscoveryBrowserRunner {
     return items.slice(0, Math.max(1, Math.min(input.limit ?? 20, 50)));
   }
 
+  /** 行为式搜索账号（抖音：搜索页切用户tab；对齐 keyword 先搜账号的两段式发现） */
+  async searchAccounts(input: BrowserSearchInput): Promise<DiscoveryItem[]> {
+    const quotaUser = input.userId ?? String(input.accountId);
+    await this.assertQuota(quotaUser);
+    const behavior = this.behavior(input.platform);
+    if (!behavior) {
+      throw new BrowserDiscoverError(
+        'parse_failed',
+        `平台 ${input.platform} 无浏览器发现行为实现`,
+      );
+    }
+    if (!behavior.searchAccounts) {
+      throw new BrowserDiscoverError(
+        'parse_failed',
+        `平台 ${input.platform} 不支持账号搜索`,
+      );
+    }
+    const session = await this.openSession(input.platform, input.accountId);
+    const page = session.page;
+    void page;
+
+    let items: DiscoveryItem[];
+    try {
+      items = await behavior.searchAccounts(page, input.keyword);
+    } catch (error) {
+      if (error instanceof BrowserDiscoverError) throw error;
+      throw new BrowserDiscoverError(
+        'network_error',
+        `账号搜索失败：${(error as Error).message}`,
+      );
+    }
+    if (items.length === 0) {
+      throw new BrowserDiscoverError(
+        'parse_failed',
+        '搜索页未解析到账号（页面结构变化或未加载）',
+      );
+    }
+    await this.quota?.recordDiscover(quotaUser).catch((error) => {
+      if (error instanceof AcquisitionQuotaExceededError) {
+        throw new BrowserDiscoverError('quota_exceeded', error.message);
+      }
+    });
+    return items.slice(0, Math.max(1, Math.min(input.limit ?? 20, 50)));
+  }
+
   /**
    * 行为式搜索（D 阶段实测适配：抖音/快手）：
    * 打开平台首页 → 搜索框输入关键词 → 回车 → 等待结果区。
@@ -1048,6 +1093,69 @@ export class DiscoveryBrowserRunner {
     return items;
   }
 
+
+  /** 抖音搜索「用户」tab 账号卡片解析：a[href*='/user/'] + 容器文本（昵称/粉丝数） */
+  async extractDouyinUserSearchResults(page: Page): Promise<DiscoveryItem[]> {
+    const items: DiscoveryItem[] = [];
+    try {
+      const parsed = await page.evaluate(() => {
+        const out: Array<{
+          userId: string;
+          nickname: string;
+          profileUrl: string;
+          rawText: string;
+        }> = [];
+        const seen = new Set<string>();
+        const links = Array.from(document.querySelectorAll('a[href*="/user/"]'));
+        for (const link of links) {
+          const href = link.getAttribute('href') || '';
+          const m = href.match(/\/user\/([A-Za-z0-9_-]+)/);
+          if (!m) continue;
+          const userId = m[1];
+          if (seen.has(userId)) continue;
+          seen.add(userId);
+          const container = (link.closest(
+            'li, [class*="card"], [class*="item"], [class*="user"]',
+          ) || link.parentElement) as HTMLElement | null;
+          const text = (container?.innerText || link.textContent || '')
+            .replace(/\s+/g, ' ')
+            .trim();
+          const nickname =
+            (text.split(/粉丝|获赞|作品/)[0] || '').trim().slice(0, 60) ||
+            text.slice(0, 60);
+          out.push({
+            userId,
+            nickname,
+            profileUrl: 'https://www.douyin.com/user/' + userId,
+            rawText: text.slice(0, 120),
+          });
+          if (out.length >= 30) break;
+        }
+        return out;
+      });
+      for (const account of parsed) {
+        items.push({
+          platform: 'douyin',
+          accountId: 'browser-session',
+          sourceContent: {
+            externalContentId: account.userId,
+            url: account.profileUrl,
+            contentType: 'user',
+            title: account.nickname || account.rawText,
+            rawHash: createId('douyin-user:' + account.userId),
+          },
+          identityHint: {
+            externalUserId: account.userId,
+            profileUrl: account.profileUrl,
+            nickname: account.nickname,
+          },
+        });
+      }
+    } catch {
+      // 解析失败返回空，由调用方抛 parse_failed
+    }
+    return items;
+  }
   /** 滚动评论区加载更多（模拟用户行为，最多 3 轮） */
   async scrollComments(page: Page, rounds = 3): Promise<void> {
     for (let i = 0; i < rounds; i++) {

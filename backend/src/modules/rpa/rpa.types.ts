@@ -31,6 +31,7 @@ export type RpaReasonCode =
 /** 统一 RPA 动作（发现 + 触达） */
 export type RpaAction =
   | 'discover-keyword'
+  | 'discover-account-search'
   | 'discover-account-works'
   | 'discover-recommended'
   | 'read-comments'

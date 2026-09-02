@@ -17,6 +17,7 @@ export interface BehaviorHost {
   scrollComments(page: Page, rounds?: number): Promise<void>;
   extractDouyinJingxuanResults(page: Page): Promise<DiscoveryItem[]>;
   extractDouyinAccountWorks(page: Page): Promise<DiscoveryItem[]>;
+  extractDouyinUserSearchResults(page: Page): Promise<DiscoveryItem[]>;
   extractXhsNoteResults(page: Page): Promise<DiscoveryItem[]>;
   extractXhsComments(page: Page): Promise<DiscoveryItem[]>;
   extractKuaishouRecoResults(page: Page): Promise<DiscoveryItem[]>;
@@ -45,6 +46,8 @@ export interface PlatformBehavior {
   ): Promise<DiscoveryItem[]>;
   /** 账号主页 → 作品候选 */
   listAccountWorks(page: Page, targetId: string): Promise<DiscoveryItem[]>;
+  /** 行为式搜索 → 账号候选（抖音：搜索页切用户tab；其他平台可选实现） */
+  searchAccounts?(page: Page, keyword: string): Promise<DiscoveryItem[]>;
 }
 
 /** 抖音行为：行为式搜索 + jingxuan 卡片解析 + 主页作品解析 */
@@ -101,6 +104,29 @@ export class DouyinBehavior implements PlatformBehavior {
       );
     }
     return this.host.extractDouyinAccountWorks(page);
+  }
+
+  async searchAccounts(
+    page: Page,
+    keyword: string,
+  ): Promise<DiscoveryItem[]> {
+    // 行为式搜索（首页输入+回车，绕 /search/ 验证码）→ 切「用户」tab → 解析账号
+    await this.host.behaviorSearch(this.platform, page, keyword);
+    const state = await this.host.checkPageState(page, this.platform);
+    if (state !== 'ok') {
+      throw new BrowserDiscoverError(
+        state as never,
+        '搜索页被拦截：' + state,
+      );
+    }
+    // 切到「用户」tab（账号列表）。tab 文本定位，容错：点击失败不中断（解析仍可兜底）
+    await page
+      .getByText('用户', { exact: true })
+      .first()
+      .click({ timeout: 5000 })
+      .catch(() => undefined);
+    await page.waitForTimeout(2000).catch(() => undefined);
+    return this.host.extractDouyinUserSearchResults(page);
   }
 
   /** 通用评论区解析（给定选择器列表） */
