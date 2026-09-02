@@ -1,5 +1,6 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { VideoService } from './video.service';
+import { StudioCoreBusinessError } from './studio-core-proxy.service';
 
 describe('VideoService product-cut', () => {
   let studioCoreProxy: any;
@@ -251,5 +252,104 @@ describe('VideoService listReleasePlans', () => {
     ];
     const list = await service.listReleasePlans();
     expect(list).toHaveLength(0);
+  });
+});
+
+describe('VideoService generate 回退语义与迁移判定（复核第六轮）', () => {
+  let proxy: { postGenerate: jest.Mock };
+  let prisma: { registerStudioProjectOwner: jest.Mock };
+  let service: VideoService;
+  let gatewayCalls: number;
+
+  beforeEach(() => {
+    gatewayCalls = 0;
+    proxy = { postGenerate: jest.fn() };
+    prisma = {
+      registerStudioProjectOwner: jest.fn().mockResolvedValue(undefined),
+    };
+    service = new VideoService(
+      proxy as never,
+      {} as never,
+      prisma as never,
+      {} as never,
+      {} as never,
+    );
+    (service as unknown as { generateViaKaypalGateway: jest.Mock }).generateViaKaypalGateway =
+      jest.fn(async () => {
+        gatewayCalls += 1;
+        return { queued: true };
+      });
+  });
+
+  it('引擎错误（网络/5xx 普通 Error）→ 回退云端计费通道', async () => {
+    proxy.postGenerate.mockRejectedValue(new Error('connect ECONNREFUSED'));
+    await service.generate(
+      { pipeline: 'x', prompt: 'p' } as never,
+      'kaypal-1',
+      'user-1',
+    );
+    expect(gatewayCalls).toBe(1);
+  });
+
+  it('业务拒绝（4xx）→ 不回退，原样抛错', async () => {
+    proxy.postGenerate.mockRejectedValue(
+      new StudioCoreBusinessError('参数不被接受', 400),
+    );
+    await expect(
+      service.generate(
+        { pipeline: 'x', prompt: 'p' } as never,
+        'kaypal-1',
+        'user-1',
+      ),
+    ).rejects.toThrow('参数不被接受');
+    expect(gatewayCalls).toBe(0);
+  });
+
+  it('owner 登记失败 → 不回退（避免云端重复生成/孤儿项目）', async () => {
+    proxy.postGenerate.mockResolvedValue({
+      project_id: 'proj-1',
+      status: 'queued',
+    });
+    prisma.registerStudioProjectOwner.mockRejectedValue(
+      new Error('owner db down'),
+    );
+    await expect(
+      service.generate(
+        { pipeline: 'x', prompt: 'p' } as never,
+        'kaypal-1',
+        'user-1',
+      ),
+    ).rejects.toThrow('owner db down');
+    expect(gatewayCalls).toBe(0);
+  });
+
+  it('productCut 业务拒绝（4xx）→ 不降级为引擎离线', async () => {
+    proxy.postGenerate.mockRejectedValue(
+      new StudioCoreBusinessError('无权限', 403),
+    );
+    await expect(
+      service.productCut({ productName: '养生壶' } as never, 'user-1'),
+    ).rejects.toThrow('无权限');
+  });
+
+  it('迁移管理员判定：四类管理员通过、普通用户拒绝', () => {
+    expect(
+      service.isAdminForProjectMigration({ role: 'admin' }),
+    ).toBe(true);
+    expect(
+      service.isAdminForProjectMigration({ role: 'super_admin' }),
+    ).toBe(true);
+    expect(
+      service.isAdminForProjectMigration({ kaypalRole: 'SUPER_ADMIN' }),
+    ).toBe(true);
+    expect(
+      service.isAdminForProjectMigration({
+        kaypalPlatformRole: 'SUPER_ADMIN',
+      }),
+    ).toBe(true);
+    expect(
+      service.isAdminForProjectMigration({ role: 'operator' }),
+    ).toBe(false);
+    expect(service.isAdminForProjectMigration(null)).toBe(false);
   });
 });

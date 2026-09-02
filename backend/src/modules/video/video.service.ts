@@ -5,7 +5,10 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { StudioCoreProxyService } from './studio-core-proxy.service';
+import {
+  StudioCoreBusinessError,
+  StudioCoreProxyService,
+} from './studio-core-proxy.service';
 import { MultimodalService } from '../multimodal/multimodal.service';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
@@ -88,6 +91,10 @@ export class VideoService {
     } catch (error) {
       // 2026-09-01（复核第五轮 P1-3）：只捕获引擎连接失败回退云端；
       // owner 登记失败必须原样抛错（否则 StudioCore 已建项目 + 云端重复生成）
+      // 2026-09-01（复核第六轮 P1）：业务拒绝（4xx）同样不得回退——原样抛
+      if (error instanceof StudioCoreBusinessError) {
+        throw error;
+      }
       const message = this.errorMessage(error);
       this.logger.warn(
         `StudioCore 不可达，回退 kaypal 云端视频通道：${message}`,
@@ -147,6 +154,24 @@ export class VideoService {
       projectId,
     );
     return rows.length > 0 ? rows[0].user_id : null;
+  }
+
+  /**
+   * 2026-09-01（复核第六轮 P2）：项目归属迁移管理员判定（与 auth.guard 角色
+   * 检查对齐：本地 admin / super_admin + 云角色 SUPER_ADMIN）。提取为公共方法可测。
+   */
+  isAdminForProjectMigration(
+    user?: {
+      role?: string;
+      kaypalRole?: string;
+      kaypalPlatformRole?: string;
+    } | null,
+  ): boolean {
+    const role = user?.role ?? 'operator';
+    const cloudRole = user?.kaypalRole ?? user?.kaypalPlatformRole ?? null;
+    return (
+      role === 'admin' || role === 'super_admin' || cloudRole === 'SUPER_ADMIN'
+    );
   }
 
   async listProjects(query: VideoProjectListQueryDto, userId: string) {
@@ -348,6 +373,10 @@ export class VideoService {
     } catch (error) {
       // 2026-09-01（复核第五轮 P1-3）：只捕获引擎连接失败（引擎离线可降级）；
       // owner 登记失败不伪装成"引擎离线"
+      // 2026-09-01（复核第六轮 P1）：业务拒绝（4xx）原样抛，不降级
+      if (error instanceof StudioCoreBusinessError) {
+        throw error;
+      }
       this.logger.warn(`productCut 成片引擎不可用: ${error}`);
       return {
         queued: false,

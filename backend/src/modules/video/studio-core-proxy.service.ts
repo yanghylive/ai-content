@@ -27,6 +27,20 @@ import { VideoProjectListQueryDto } from './dto/video-project-list-query.dto';
  * 鉴权：studio_core 用独立账号（STUDIO_CORE_USER/PASSWORD，默认 admin/admin123），
  * 与 JIUZHANG 会话解耦；token 缓存 + 401 自动重登一次。
  */
+/**
+ * 2026-09-01（复核第六轮 P1）：StudioCore 业务拒绝异常（4xx 参数/权限/不存在）。
+ * 与引擎错误（5xx/网络）区分——业务拒绝不得触发云端计费回退。
+ */
+export class StudioCoreBusinessError extends Error {
+  constructor(
+    message: string,
+    readonly statusCode: number,
+  ) {
+    super(message);
+    this.name = 'StudioCoreBusinessError';
+  }
+}
+
 @Injectable()
 export class StudioCoreProxyService {
   private readonly logger = new Logger(StudioCoreProxyService.name);
@@ -170,9 +184,16 @@ export class StudioCoreProxyService {
       body: JSON.stringify({ prompt: dto.prompt, pipeline: dto.pipeline }),
     });
     if (!res.ok) {
-      throw new Error(
-        `studio_core 创建项目失败（${res.status}）: ${await res.text()}`,
-      );
+      const detail = await res.text();
+      if (res.status >= 400 && res.status < 500) {
+        // 2026-09-01（复核第六轮 P1）：业务拒绝（参数/权限/不存在）——
+        // 不得触发云端计费回退（与"仅连接失败回退"语义一致）
+        throw new StudioCoreBusinessError(
+          `studio_core 拒绝创建项目（${res.status}）: ${detail.slice(0, 200)}`,
+          res.status,
+        );
+      }
+      throw new Error(`studio_core 创建项目失败（${res.status}）: ${detail}`);
     }
     const data = (await res.json()) as { status: string; project: string };
     return {
