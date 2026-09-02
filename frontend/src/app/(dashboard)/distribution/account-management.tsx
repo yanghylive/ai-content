@@ -294,10 +294,12 @@ export function AccountManagement() {
           >
             {/* 顶部品牌渐变装饰条 */}
             <div
-              className="h-1 w-full"
+              className="w-full"
               style={{
-                background:
-                  "linear-gradient(90deg, var(--kaypal-v3-accent), var(--kaypal-v3-accent-2, var(--kaypal-v3-accent)))",
+                height: 5,
+                background: "var(--kaypal-v3-gradient-primary)",
+                boxShadow:
+                  "0 1px 0 0 var(--kaypal-v3-accent, rgba(114,46,209,0.35))",
               }}
             />
 
@@ -305,7 +307,14 @@ export function AccountManagement() {
               {/* 头部：图标徽章 + 标题 + 关闭 */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[image:var(--kaypal-v3-gradient-primary)] text-white shadow-sm">
+                  <div
+                    className="flex h-10 w-10 items-center justify-center rounded-[12px] text-white"
+                    style={{
+                      backgroundImage: "var(--kaypal-v3-gradient-primary)",
+                      boxShadow:
+                        "0 6px 16px -6px var(--kaypal-v3-accent, rgba(114,46,209,0.55))",
+                    }}
+                  >
                     <KeyRound className="h-5 w-5" strokeWidth={1.9} />
                   </div>
                   <div>
@@ -361,14 +370,18 @@ export function AccountManagement() {
                         <button
                           key={p.type}
                           type="button"
-                          className={`flex flex-col items-center gap-1.5 rounded-[12px] border px-1 py-2.5 text-[13px] font-medium transition disabled:opacity-50 ${
+                          className={`flex flex-col items-center gap-1.5 rounded-[12px] border px-1 py-2.5 text-[13px] font-semibold transition disabled:opacity-50 ${
                             active
-                              ? "border-transparent text-[var(--kaypal-v3-ink)] ring-2"
+                              ? "border-transparent"
                               : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)] hover:bg-[var(--kaypal-v3-hover,rgba(114,46,209,0.06))]"
                           }`}
                           style={
                             active
-                              ? { boxShadow: `0 0 0 1.5px ${p.brand}22`, background: `${p.brand}14` }
+                              ? {
+                                  background: `${p.brand}2b`,
+                                  boxShadow: `0 0 0 2px ${p.brand}66, 0 4px 10px -4px ${p.brand}59`,
+                                  color: p.brand,
+                                }
                               : undefined
                           }
                           disabled={ops.loginConnecting}
@@ -376,7 +389,12 @@ export function AccountManagement() {
                         >
                           <span
                             className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                            style={{ background: active ? p.brand : `${p.brand}66` }}
+                            style={{
+                              background: active ? p.brand : `${p.brand}8c`,
+                              boxShadow: active
+                                ? `0 2px 6px -1px ${p.brand}99`
+                                : undefined,
+                            }}
                           >
                             {p.label.replace("B站", "B").charAt(0)}
                           </span>
