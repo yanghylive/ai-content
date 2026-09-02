@@ -420,7 +420,11 @@ describe('AutoUploadClient', () => {
       localBrowser as any,
     );
     jest.spyOn(client as any, 'prepareLoginPage').mockResolvedValue(undefined);
-    jest.spyOn(client as any, 'pageLooksLoggedIn').mockResolvedValue(false);
+    jest
+      .spyOn(client as any, 'pageLooksLoggedIn')
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
     const extractQr = jest
       .spyOn(client as any, 'extractLoginQrData')
       .mockResolvedValue(null);
