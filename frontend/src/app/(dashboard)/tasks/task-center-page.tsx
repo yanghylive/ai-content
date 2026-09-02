@@ -1535,10 +1535,11 @@ export function TaskCenterPage() {
                           {status.label}
                         </OpsStatusPill>
                       </td>
-                      <td>
+                      <td className="whitespace-nowrap">
                         <Button
                           color="primary"
                           data-testid={`core-task-preview-${task.type}`}
+                          className="min-w-[104px]"
                           isLoading={previewBusy === task.type}
                           size="sm"
                           variant="flat"
