@@ -15,6 +15,7 @@ import {
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { CountUpNumber } from "@/components/count-up-number";
 import { Avatar } from "@/components/avatar";
+import { PlatformBadge } from "@/components/platform-badge";
 import styles from "./accounts-matrix.module.css";
 import { toActionableError } from "@/lib/public-error";
 
@@ -254,7 +255,7 @@ export default function AccountsMatrixV2Page() {
             return (
               <div key={platform} className="mx-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
-                  <span className="platform-dot" style={{ background: color, width: 8, height: 8, borderRadius: 999, flexShrink: 0 }} />
+                  <PlatformBadge platform={platform} size={22} />
                   <span style={{ fontSize: 14, fontWeight: 600 }}>{platform}</span>
                   <span style={{ fontSize: 11, color: "rgba(219,234,254,.55)", marginLeft: "auto" }}>
                     {items.length} 个账号

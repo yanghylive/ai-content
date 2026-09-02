@@ -25,6 +25,7 @@ import {
   V2EmptyState,
 } from "@/components/v2/ui-kit";
 import { RiskConfirmationDialog } from "@/components/risk-confirmation-dialog";
+import { PlatformBadge } from "@/components/platform-badge";
 import { useAccountOperations } from "./use-account-operations";
 import {
   accountIdentityKey,
@@ -226,7 +227,10 @@ export function AccountManagement() {
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <V2StatusChip tone="accent">{account.platform}</V2StatusChip>
+                      <PlatformBadge platform={account.platform} size={20} />
+                      <span className="text-[13px] text-[var(--kaypal-v3-muted)]">
+                        {account.platform}
+                      </span>
                       <span className="font-medium text-[var(--kaypal-v3-ink)]">
                         {account.profileName ||
                           account.accountName ||
