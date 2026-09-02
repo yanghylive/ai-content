@@ -82,8 +82,8 @@ export function FailureActionPanel({
           </div>
         ) : null}
         {normalizedDetails.length ? (
-          <details className="rounded-[6px] border border-warning-200 bg-background px-2.5 py-1.5 text-tiny text-default-500">
-            <summary className="cursor-pointer font-semibold text-default-700">
+          <details className="mt-1 text-tiny text-default-500">
+            <summary className="inline-flex cursor-pointer items-center gap-1 font-medium text-warning-700 underline decoration-dotted underline-offset-4 transition-colors hover:text-warning-900">
               查看高级信息
             </summary>
             <div className="mt-2 grid gap-1">
