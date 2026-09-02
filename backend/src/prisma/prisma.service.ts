@@ -347,17 +347,37 @@ export class PrismaService
     await this.clearAccountBusinessTables(accountPath);
   }
 
-  /** PRAGMA quick_check 探测库完整性（损坏/不可读 → true） */
+  /** PRAGMA quick_check 探测库完整性（仅 SQLite 文件损坏 → true） */
   private async isSqliteCorrupt(dbPath: string): Promise<boolean> {
     try {
       const client = this.getAccountClient(dbPath);
-      await client.$queryRawUnsafe('PRAGMA quick_check');
-      return false;
-    } catch (error) {
-      this.logger.warn(
-        `账号库 quick_check 失败（${dbPath}）：${error instanceof Error ? error.message : String(error)}`,
+      const rows = await client.$queryRawUnsafe<
+        Array<{ quick_check: string }>
+      >('PRAGMA quick_check');
+      const result = rows?.[0]?.quick_check;
+      return (
+        typeof result === 'string' && result.trim().toLowerCase() !== 'ok'
       );
-      return true;
+    } catch (error) {
+      // 2026-09-02（数据事故修复）：只有 SQLite 文件损坏类错误才判定损坏并
+      // 触发带备份重建。engine 缺失/连接失败（PrismaClientInitializationError、
+      // P2010/P1001/P1017 等）不是库损坏——若误判会删库重建。13:49 实况：
+      // 后端 bundle 缺 query engine 启动失败期间，ensureAccountDatabase 探测
+      // 账号库把 engine 错误当成损坏，166MB 账号库被改名 .corrupt，重建出的
+      // 新库 0 字节 → 后续所有登录都报 no such table: users（登录了不识别）。
+      const message =
+        error instanceof Error ? error.message : String(error);
+      if (
+        /SQLITE_CORRUPT|database disk image is malformed|file is not a database|SQLITE_NOTADB|disk I\/O error|SQLITE_IOERR/i.test(
+          message,
+        )
+      ) {
+        return true;
+      }
+      this.logger.warn(
+        `账号库 quick_check 未能执行（非库损坏，跳过自愈重建）：${dbPath}：${message.slice(0, 160)}`,
+      );
+      return false;
     }
   }
 
