@@ -12,6 +12,15 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.115",
+    date: "2026-09-02",
+    highlights: [
+      "修复：工作流步骤失败时直接展示失败原因与下一步动作，避免只能盲目重试",
+      "修复：创建预览加载状态独立显示，不再挤乱快捷任务表",
+      "视觉：恢复表单字段的单层输入框样式，避免玻璃卡片叠加双层边框",
+    ],
+  },
+  {
     version: "v1.1.114",
     date: "2026-09-02",
     highlights: [
@@ -391,4 +400,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.114";
+export const DESKTOP_APP_VERSION = "1.1.115";
