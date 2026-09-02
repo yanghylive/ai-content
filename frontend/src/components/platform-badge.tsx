@@ -143,7 +143,7 @@ export function PlatformBadge({
         src={meta.logo}
         draggable={false}
         className="object-contain"
-        style={{ width: Math.round(dim * 0.66), height: Math.round(dim * 0.66) }}
+        style={{ width: Math.round(dim * 0.7), height: Math.round(dim * 0.7) }}
       />
     </span>
   );

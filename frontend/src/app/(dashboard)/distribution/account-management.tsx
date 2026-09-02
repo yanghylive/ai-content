@@ -227,7 +227,7 @@ export function AccountManagement() {
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <PlatformBadge platform={account.platform} size={20} />
+                      <PlatformBadge platform={account.platform} size={24} />
                       <span className="text-[13px] text-[var(--kaypal-v3-muted)]">
                         {account.platform}
                       </span>
@@ -394,7 +394,7 @@ export function AccountManagement() {
                           onClick={() => ops.setLoginPlatformType(p.type)}
                         >
                           <span
-                            className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full"
+                            className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full"
                             style={{
                               background: active ? p.brand : `${p.brand}99`,
                               boxShadow: active
@@ -406,11 +406,11 @@ export function AccountManagement() {
                             <img
                               alt={p.label}
                               src={p.logo}
-                              className="h-[18px] w-[18px] object-contain"
+                              className="h-[22px] w-[22px] object-contain"
                               draggable={false}
                             />
                           </span>
-                          <span>{p.label}</span>
+                          <span className="leading-none">{p.label}</span>
                         </button>
                       );
                     })}
