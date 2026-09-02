@@ -319,6 +319,7 @@ export function AcquisitionRuleForm() {
     scene: "",
     platform: "douyin" as GrowthPlatform,
     keywords: "",
+    intentKeywords: "",
     dailyLimit: 20,
     commentTemplate: "你好，看到你关注这个话题，我们正好在做这个，可以聊聊～",
     privateTemplate: "你好，我是{品牌}，看到你对我们这个领域感兴趣，方便加个微信详聊吗？",
@@ -482,6 +483,10 @@ export function AcquisitionRuleForm() {
     .split(/[,，\n]/)
     .map((k) => k.trim())
     .filter(Boolean);
+  const intentKeywords = form.intentKeywords
+    .split(/[,，\n]/)
+    .map((k) => k.trim())
+    .filter(Boolean);
   const autoTaskName =
     form.taskName ||
     (keywords.length > 0
@@ -527,7 +532,8 @@ export function AcquisitionRuleForm() {
         accountId: selectedAccount.accountId,
         accountName: selectedAccount.accountName,
         sourceInputs: keywords,
-        includeKeywords: keywords,
+        includeKeywords:
+          intentKeywords.length > 0 ? intentKeywords : keywords,
         excludeKeywords: form.excludeKeywords
           .split(/[,，\n]/)
           .map((k) => k.trim())
@@ -730,18 +736,35 @@ export function AcquisitionRuleForm() {
             </div>
           )}
 
-          {/* 第 2 步：关键词 */}
-          <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：他们会搜/聊什么词？</div>
-          <textarea
-            placeholder="例如：空气净化器, 除甲醛, 新房装修"
-            value={form.keywords}
-            onChange={(e) => setForm((p) => ({ ...p, keywords: e.target.value }))}
-            rows={3}
-            style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.6 }}
-          />
-          <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 5 }}>你的客户会关注的话题词，逗号分隔</p>
+          {/* 第 2 步：行业词 + 意向词 */}
+          <div className="mx-section-head" style={{ marginTop: 16 }}>第 2 步：你的客户在哪类账号/话题下？</div>
+          <label style={{ display: "block" }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>行业词（找账号）</span>
+            <textarea
+              placeholder="例如：装修, 旧房翻新, 全屋定制"
+              value={form.keywords}
+              onChange={(e) => setForm((p) => ({ ...p, keywords: e.target.value }))}
+              rows={2}
+              style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.6, marginTop: 6 }}
+            />
+            <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)" }}>系统用这些词去找相关账号/博主</span>
+          </label>
+          <label style={{ display: "block", marginTop: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>意向词（找客户）</span>
+            <textarea
+              placeholder="例如：多少钱, 报价, 求推荐"
+              value={form.intentKeywords}
+              onChange={(e) => setForm((p) => ({ ...p, intentKeywords: e.target.value }))}
+              rows={2}
+              style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.6, marginTop: 6 }}
+            />
+            <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)" }}>在这些账号的作品/评论里，按这些词识别真正有购买意向的客户；不填则用行业词</span>
+          </label>
           {keywords.length > 0 && (
-            <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", marginTop: 4 }}>✓ 将监控 {keywords.length} 个关键词：{keywords.join("、")}</p>
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", marginTop: 4 }}>✓ 行业词 {keywords.length} 个：{keywords.join("、")}</p>
+          )}
+          {intentKeywords.length > 0 && (
+            <p style={{ fontSize: 12, color: "var(--kaypal-v3-success)", marginTop: 4 }}>✓ 意向词 {intentKeywords.length} 个：{intentKeywords.join("、")}</p>
           )}
 
           {/* 第 3 步：话术 */}
@@ -1202,22 +1225,35 @@ export function AcquisitionRuleForm() {
         )}
       </V2Section>
 
-      {/* 第 2 步：关键词 */}
-      <V2Section title="第 3 步：他们会搜/聊什么词？">
+      {/* 第 3 步：行业词 + 意向词 */}
+      <V2Section title="第 3 步：你的客户在哪类账号/话题下？">
         <V2Field
-          label="关键词"
+          label="行业词（找账号）"
           required
-          hint="你的客户会关注的话题词，逗号分隔。系统会去找聊这些词的人"
+          hint="系统用这些词去找相关账号/博主，逗号分隔"
         >
           <V2Textarea
-            placeholder="例如：空气净化器, 除甲醛, 新房装修"
+            placeholder="例如：装修, 旧房翻新, 全屋定制"
             value={form.keywords}
             onChange={(e) => setForm((p) => ({ ...p, keywords: e.target.value }))}
           />
         </V2Field>
+        <V2Field
+          label="意向词（找客户）"
+          hint="在这些账号的作品/评论里，按这些词识别真正有购买意向的客户；不填则用行业词"
+        >
+          <V2Textarea
+            placeholder="例如：多少钱, 报价, 求推荐"
+            value={form.intentKeywords}
+            onChange={(e) => setForm((p) => ({ ...p, intentKeywords: e.target.value }))}
+          />
+        </V2Field>
         {keywords.length > 0 && (
           <p className="mt-2 text-sm text-[var(--kaypal-v3-success)]">
-            ✓ 将监控 {keywords.length} 个关键词：{keywords.join("、")}
+            ✓ 行业词 {keywords.length} 个：{keywords.join("、")}
+            {intentKeywords.length > 0
+              ? `；意向词 ${intentKeywords.length} 个：${intentKeywords.join("、")}`
+              : ""}
           </p>
         )}
       </V2Section>
