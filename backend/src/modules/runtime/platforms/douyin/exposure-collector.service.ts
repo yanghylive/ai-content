@@ -243,8 +243,7 @@ export class DouyinExposureCollector {
       await this.browser.open(session.key, searchUrl, {
         waitUntil: 'domcontentloaded',
       });
-      await session.page.waitForTimeout(2500).catch(() => undefined);
-      await this.scrollForComments(session.page, input.limit ?? 20);
+      await this.settleSearchPage(session.page, input.limit ?? 20);
 
       const snapshot = await this.browser.readPageSnapshot({
         sessionKey: session.key,
@@ -368,8 +367,7 @@ export class DouyinExposureCollector {
       await this.browser.open(session.key, searchUrl, {
         waitUntil: 'domcontentloaded',
       });
-      await session.page.waitForTimeout(2500).catch(() => undefined);
-      await this.scrollForComments(session.page, input.limit ?? 20);
+      await this.settleSearchPage(session.page, input.limit ?? 20);
 
       const searchSnapshot = await this.browser.readPageSnapshot({
         sessionKey: session.key,
@@ -704,7 +702,7 @@ export class DouyinExposureCollector {
           await this.browser.open(session.key, searchUrl, {
             waitUntil: 'domcontentloaded',
           });
-          await session.page.waitForTimeout(2500).catch(() => undefined);
+          await this.settleSearchPage(session.page, 20);
           const searchSnapshot = await this.browser.readPageSnapshot({
             sessionKey: session.key,
             label: 'douyin-targeted-account-search-read',
@@ -1196,6 +1194,59 @@ export class DouyinExposureCollector {
         targetText.includes(keyword),
       );
     });
+  }
+
+  /**
+   * 等待抖音搜索页渲染稳定（SPA 动态加载，2026-09-02）。
+   * 搜索页在 domcontentloaded 后才异步加载结果，固定 2500ms 直接读快照
+   * 常拿到空文本 → 被 diagnoseSearch 误判「页面未出现搜索结果信号」。
+   * 改为轮询等待结果信号（配合滚动触发懒加载），最多 15s。
+   */
+  private async settleSearchPage(
+    page: import('playwright').Page,
+    limit: number,
+  ): Promise<void> {
+    const deadline = Date.now() + 15_000;
+    let scrollRound = 0;
+    while (Date.now() < deadline) {
+      const text = await this.readBodyText(page);
+      // 结果信号：只认「结果卡片专属」信号（粉丝/获赞/作品/点赞）或明确的空结果提示。
+      // 注意：抖音搜索页顶部导航栏固定有「综合/视频/用户/直播/关注」这些 tab 文字，
+      // 若纳入判定会在导航栏刚渲染时就提前返回，结果卡片仍未懒加载。
+      if (
+        /无搜索结果|没有找到|暂无结果|换个关键词/.test(text) ||
+        /粉丝|获赞|作品|点赞/.test(text)
+      ) {
+        return;
+      }
+      if (scrollRound < 4) {
+        await page.mouse.wheel(0, 900).catch(() => undefined);
+        await page
+          .evaluate(() => window.scrollBy(0, 600))
+          .catch(() => undefined);
+        scrollRound += 1;
+      }
+      await page.waitForTimeout(1000).catch(() => undefined);
+    }
+    // 超时：最后再滚动一轮，尽量带出懒加载内容
+    await this.scrollForComments(page, limit);
+  }
+
+  /** 读取 body 文本：优先 innerText（仅可见文本），渲染中/半透明时回退 textContent。 */
+  private async readBodyText(page: import('playwright').Page): Promise<string> {
+    const inner = await page
+      .locator('body')
+      .innerText({ timeout: 2000 })
+      .then((t) => (t || '').replace(/\s+/g, ' ').trim())
+      .catch(() => '');
+    if (inner.length >= 20) return inner;
+    const content = await page
+      .evaluate(
+        () => document.body?.innerText || document.body?.textContent || '',
+      )
+      .then((t) => String(t || '').replace(/\s+/g, ' ').trim())
+      .catch(() => '');
+    return content.length > inner.length ? content : inner;
   }
 
   private async scrollForComments(
