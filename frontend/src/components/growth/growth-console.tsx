@@ -63,6 +63,7 @@ import {
 import toast from "@/lib/toast";
 import { runFailureLabel } from "@/lib/growth-failure";
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
+import { api } from "@/lib/api/client";
 import {
   growthApi,
   type GrowthAccountHealth,
@@ -2107,9 +2108,23 @@ export function GrowthConsole({ view }: { view: GrowthView }) {
     }
     setPreflightExecuting(true);
     try {
+      const cfg = preflight.config;
+      // 高风险触达需要后端一次性确认编号：先创建确认单再执行（与获客任务列表链路一致）
+      const approval = (await api.post<{ confirmationId: string }>(
+        "/risk-policies/approvals",
+        {
+          action: "batch-touch",
+          riskLevel: "high",
+          target: `${cfg.taskName || "增长获客执行"} · ${cfg.accountName || cfg.accountId || ""} · ${cfg.id}`,
+          reason: "执行增长获客任务会触发外部平台采集、评论或私信动作，系统将确认真实触达风险。",
+        },
+      )) as { confirmationId: string };
+      if (!approval?.confirmationId) {
+        throw new Error("后端未返回确认编号，请稍后重试");
+      }
       const result = await growthApi.executeConfig(
         preflight.config.id,
-        buildRiskConfirmation("batch-touch"),
+        buildRiskConfirmation("batch-touch", "high", approval.confirmationId),
       );
       notifyRunResult(result.run);
       setSelectedRunId(result.run.id);

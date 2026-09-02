@@ -29,6 +29,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthAccountHealth, type GrowthAcquisitionPreflight, type GrowthPlatform } from "@/lib/api/growth";
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
+import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
@@ -562,15 +563,27 @@ export function AcquisitionRuleForm() {
     }
   };
 
-  /** T06：强制执行（仅预检通过后可用） */
+  /** T06：强制执行（仅预检通过后可用）——真实触达需服务端一次性确认编号（与获客任务列表执行链路一致） */
   const handleExecute = async () => {
     if (!createdConfigId || !preflight?.allowed) return;
     setExecuting(true);
     setActionError(null);
     try {
+      const config = preflight.config;
+      const approval = (await api.post<{
+        confirmationId: string;
+      }>("/risk-policies/approvals", {
+        action: "batch-touch",
+        riskLevel: "high",
+        target: `${config?.taskName || autoTaskName} · ${config?.accountName || selectedAccount?.accountName || selectedAccount?.accountId || ""} · ${createdConfigId}`,
+        reason: "执行增长获客任务会触发外部平台采集、评论或私信动作，系统将确认真实触达风险。",
+      })) as { confirmationId: string };
+      if (!approval?.confirmationId) {
+        throw new Error("后端未返回确认编号，请稍后重试");
+      }
       await growthApi.executeConfig(
         createdConfigId,
-        buildRiskConfirmation("batch-touch"),
+        buildRiskConfirmation("batch-touch", "high", approval.confirmationId),
       );
       router.push("/growth/acquisition");
     } catch (err: unknown) {
