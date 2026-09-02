@@ -72,6 +72,30 @@ class BrowserPanelManager {
     this._visible = false;
     this._destroyed = false;
     this._knownWebContents = new Set();
+    // 2026-09-03（阶段 3）：会话变更钩子——Broker 接线订阅（open/rebuild/
+    // hide/show/close 时同步 Agent 侧会话与 capability token）。
+    this._sessionListeners = new Set();
+  }
+
+  /**
+   * 订阅会话变更（阶段 3 wiring 入口）。回调同步调用，异常互不影响。
+   * @param {(event: { type: 'opened'|'account-switched'|'hidden'|'shown'|'destroyed', manager: BrowserPanelManager }) => void} listener
+   * @returns {() => void} 取消订阅
+   */
+  onSessionEvent(listener) {
+    if (typeof listener !== 'function') return () => undefined;
+    this._sessionListeners.add(listener);
+    return () => this._sessionListeners.delete(listener);
+  }
+
+  _emitSessionEvent(type) {
+    for (const listener of this._sessionListeners) {
+      try {
+        listener({ type, manager: this });
+      } catch {
+        /* 订阅方异常不拖垮面板 */
+      }
+    }
   }
 
   // ---------- 生命周期 ----------
@@ -209,6 +233,7 @@ class BrowserPanelManager {
     } = input || {};
     const targetUrl = normalizePanelUrl(url);
     const partition = `persist:kaypal-browser-${ownerId}${accountId ? `-${accountId}` : ''}`;
+    let accountSwitched = false;
     if (!this.session) {
       this.session = {
         panelId: `panel-${crypto.randomBytes(6).toString('hex')}`,
@@ -227,6 +252,7 @@ class BrowserPanelManager {
       if (this.session.ownerId !== ownerId || this.session.accountId !== accountId) {
         this.session.partition = partition;
         this._disposePanelView();
+        accountSwitched = true;
       }
       this.session.status = 'starting';
       this.session.ownerId = ownerId;
@@ -240,6 +266,7 @@ class BrowserPanelManager {
     this.relayout();
     this.panelView.webContents.loadURL(targetUrl);
     this._emitState();
+    this._emitSessionEvent(accountSwitched ? 'account-switched' : 'opened');
     return this.publicState();
   }
 
@@ -254,6 +281,7 @@ class BrowserPanelManager {
       this._tabManager.relayout();
     }
     this._emitState();
+    this._emitSessionEvent('hidden');
     return this.publicState();
   }
 
@@ -264,6 +292,7 @@ class BrowserPanelManager {
     this.relayout();
     if (this.session.status === 'stopped') this.session.status = 'ready';
     this._emitState();
+    this._emitSessionEvent('shown');
     return this.publicState();
   }
 
@@ -419,6 +448,8 @@ class BrowserPanelManager {
       }
     }
     this.stripView = null;
+    // 先通知订阅方（wiring 需在此撤销 broker 会话/token），再清空状态
+    this._emitSessionEvent('destroyed');
     this.session = null;
     this._visible = false;
   }

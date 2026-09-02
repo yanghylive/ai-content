@@ -88,6 +88,14 @@ function getBrowserPanel() {
   return browserPanel;
 }
 
+// 阶段 3：Broker × 面板接线——capability token 只存活主进程，Agent 桥（阶段 4）
+// 经 authenticated local IPC 调 getBrowserWiring().*ForAgent(panelId, actor, ...)。
+const { wireBrowserPanel } = require('./browser-broker-wiring');
+const browserWiring = wireBrowserPanel({ manager: browserPanel });
+function getBrowserWiring() {
+  return browserWiring;
+}
+
 let mainWindow = null;
 let tray = null;
 let agentSService = null;

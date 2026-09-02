@@ -37,6 +37,30 @@ const READONLY_METHODS = new Set([
   'DOM.getOuterHTML',
 ]);
 
+/**
+ * 2026-09-03（阶段 3）：证据文本 URL 脱敏——事件流/日志不得带查询串里的
+ * 凭据类参数（token/code/key/secret 等常见命名），路径与域名保留可读性。
+ */
+const SENSITIVE_QUERY_KEYS = /(^|[_.-])(token|access[_-]?token|auth|apikey|api[_-]key|secret|password|passwd|pwd|code|sid|session[_-]?id)(?:[_.-]|$)/i;
+
+function redactUrlForEvidence(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return rawUrl;
+  try {
+    const url = new URL(rawUrl);
+    const redacted = [];
+    for (const [key] of url.searchParams.entries()) {
+      if (SENSITIVE_QUERY_KEYS.test(key)) redacted.push(`${key}=***`);
+    }
+    for (const pair of redacted) {
+      const [key] = pair.split('=');
+      url.searchParams.set(key, '***');
+    }
+    return url.toString();
+  } catch {
+    return '[unparseable-url]';
+  }
+}
+
 const MUTATION_METHODS = new Set([
   'Input.dispatchMouseEvent',
   'Input.dispatchKeyEvent',
@@ -189,7 +213,7 @@ class BrowserPanelBroker {
     const wc = this._resolveWebContents(panelId);
 
     if (!CDP_WHITELIST.has(method)) {
-      this._emit(panelId, 'blocked', { reason: 'cdp-method-not-allowed', method, ...target });
+      this._emit(panelId, 'blocked', { reason: 'cdp-method-not-allowed', method, ...this._redactTarget(target) });
       throw new Error(`CDP 方法不在白名单：${method}`);
     }
     const isMutation = MUTATION_METHODS.has(method);
@@ -197,21 +221,23 @@ class BrowserPanelBroker {
       const approved = opts.approvedActionId && this._consumeApproval(opts.approvedActionId, panelId, method, target);
       if (!approved && !READONLY_AUTO_APPROVE_MUTATIONS) {
         // 写动作必须先经 requestAction -> approve 拿 actionId；未带/已消耗一律拒绝
-        this._emit(panelId, 'blocked', { reason: 'approval-required', method, ...target });
+        this._emit(panelId, 'blocked', { reason: 'approval-required', method, ...this._redactTarget(target) });
         throw new Error(`动作需要审批（先 requestAction 再携带 approvedActionId）：${method}`);
       }
     }
     const kind = isMutation ? 'action' : 'observe';
-    this._emit(panelId, `${kind}.started`, { method, ...target });
+    this._emit(panelId, `${kind}.started`, { method, ...this._redactTarget(target) });
     try {
       if (!wc.debugger.isAttached()) {
         wc.debugger.attach('1.3');
       }
       const result = await wc.debugger.sendCommand(method, params);
+      const afterWcUrl =
+        typeof wc.getURL === 'function' ? wc.getURL() : wc.url;
       this._emit(panelId, `${kind}.completed`, {
         method,
-        ...target,
-        ...(isMutation ? { afterUrl: wc.url } : {}),
+        ...this._redactTarget(target),
+        ...(isMutation ? { afterUrl: redactUrlForEvidence(afterWcUrl) } : {}),
       });
       return { result, target };
     } catch (error) {
@@ -219,7 +245,7 @@ class BrowserPanelBroker {
         reason: 'cdp-command-failed',
         method,
         message: error && error.message ? String(error.message).slice(0, 200) : String(error),
-        ...target,
+        ...this._redactTarget(target),
       });
       throw error;
     }
@@ -242,7 +268,7 @@ class BrowserPanelBroker {
       binding: { sessionId: session.sessionId, ...target, summary: summary || null },
       createdAt: this._now(),
     });
-    this._emit(panelId, 'action.requested', { actionId, method, ...target });
+    this._emit(panelId, 'action.requested', { actionId, method, ...this._redactTarget(target) });
     return { actionId, binding: target };
   }
 
@@ -267,6 +293,41 @@ class BrowserPanelBroker {
     const { session } = this._authorize(panelId, capabilityToken);
     void session;
     return (this._events.get(panelId) || []).map((event) => ({ ...event }));
+  }
+
+  /**
+   * 2026-09-03（阶段 3）：actor 断言——调用方（3011 Agent 桥 / 面板所有者）
+   * 必须声明自己的 owner/tenant，与会话一致才放行；错配一律 fail-closed 并留痕。
+   * 跨租户读取 cookie/页面/会话即由此挡下。
+   */
+  assertActor(panelId, capabilityToken, actor) {
+    const { session } = this._authorize(panelId, capabilityToken);
+    const ownerId = actor && actor.ownerId;
+    const tenantId = actor && actor.tenantId;
+    if (!ownerId || !tenantId) {
+      this._emit(panelId, 'blocked', { reason: 'actor-missing-identity' });
+      throw new Error('actor 必须携带 ownerId/tenantId（fail-closed）');
+    }
+    if (ownerId !== session.ownerId || tenantId !== session.tenantId) {
+      this._emit(panelId, 'blocked', {
+        reason: 'actor-tenant-mismatch',
+        sessionId: session.sessionId,
+      });
+      throw new Error('actor 与面板会话 owner/tenant 不一致，拒绝访问');
+    }
+    return { sessionId: session.sessionId, panelId };
+  }
+
+  /**
+   * 2026-09-03（阶段 3）：Broker 重启语义 = 实例已换新——旧实例发出的所有
+   * actionId/句柄在新实例里天然不存在，一切旧动作失效（wiring 层丢弃旧 token
+   * 并重建会话即此语义的显式实现）。
+   */
+  hasPendingHandle(handleId) {
+    return (
+      this._pendingApprovalsDetail?.has(handleId) === true ||
+      Array.from(this._panels.values()).some((panel) => panel.tokens.has(handleId))
+    );
   }
 
   // ---- 内部 ----
@@ -310,9 +371,20 @@ class BrowserPanelBroker {
     });
     this._events.set(panelId, list);
   }
+
+  /** 事件流里的 target：URL 一律脱敏（凭据类 query 参数 → ***） */
+  _redactTarget(target) {
+    return { ...target, url: redactUrlForEvidence(target.url) };
+  }
 }
 
 // 阶段 1 smoke 开关：真实产品路径必须保持 false（写动作走审批）。
 const READONLY_AUTO_APPROVE_MUTATIONS = false;
 
-module.exports = { BrowserPanelBroker, CDP_WHITELIST, MUTATION_METHODS, READONLY_METHODS };
+module.exports = {
+  BrowserPanelBroker,
+  CDP_WHITELIST,
+  MUTATION_METHODS,
+  READONLY_METHODS,
+  redactUrlForEvidence,
+};
