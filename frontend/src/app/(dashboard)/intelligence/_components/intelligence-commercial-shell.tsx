@@ -670,7 +670,7 @@ export function IntelligenceCommercialShell() {
           </div>
 
           {/* KPI */}
-          <div className="mx-stat-grid" style={{ marginTop: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginTop: 12 }}>
             {kpis.slice(0, 2).map((kpi) => (
               <div key={kpi.label} className="mx-card" style={{ padding: 12 }}>
                 <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{kpi.label}</div>
@@ -681,7 +681,7 @@ export function IntelligenceCommercialShell() {
               </div>
             ))}
           </div>
-          <div className="mx-stat-grid" style={{ marginTop: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginTop: 8 }}>
             {kpis.slice(2).map((kpi) => (
               <div key={kpi.label} className="mx-card" style={{ padding: 12 }}>
                 <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)" }}>{kpi.label}</div>

@@ -364,14 +364,14 @@ export function CommercialReadinessCenter() {
                       {meta.label}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-default-600">
+                  <p className="mt-1 break-words text-sm text-default-600">
                     {publicText(
                       check.summary,
                       check.status === "pass" ? "此项已准备完成。" : "此项需要处理。",
                     )}
                   </p>
                   {check.nextAction && check.status !== "pass" && (
-                    <p className="mt-1.5 text-sm text-default-500">
+                    <p className="mt-1.5 break-words text-sm text-default-500">
                       下一步：{publicText(check.nextAction, "完成设置后重新检查。")}
                     </p>
                   )}

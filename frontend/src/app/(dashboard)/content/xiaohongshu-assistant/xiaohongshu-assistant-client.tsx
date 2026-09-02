@@ -435,7 +435,7 @@ export function XiaohongshuAssistantClient() {
           {QUICK_START_PRESETS.map((preset) => (
             <Button
               key={preset.title}
-              className="h-auto min-h-[84px] justify-start border-[var(--kaypal-v3-border)] px-4 py-3 text-left text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
+              className="h-auto min-h-[84px] justify-start whitespace-normal border-[var(--kaypal-v3-border)] px-4 py-3 text-left text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
               variant="bordered"
               onPress={() => applyPreset(preset)}
             >

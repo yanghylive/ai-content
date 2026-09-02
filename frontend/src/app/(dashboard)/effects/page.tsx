@@ -341,7 +341,7 @@ export default function EffectsPage() {
                           }}
                         />
                       </span>
-                      <span style={{ width: 150, flexShrink: 0, fontSize: 10, color: "var(--kaypal-v3-muted)", textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span className="hidden md:block" style={{ width: 150, flexShrink: 0, fontSize: 10, color: "var(--kaypal-v3-muted)", textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {meta?.definition ?? stage.definition}
                       </span>
                     </button>

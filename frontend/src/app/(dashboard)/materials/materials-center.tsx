@@ -643,40 +643,42 @@ export function MaterialsCenter() {
               <h1 className="mx-page-title">素材库</h1>
               <p className="mx-page-sub">自动采集的内容素材，可直接用于创作</p>
             </div>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
             <button
               type="button"
               onClick={() => uploadInputRef.current?.click()}
               disabled={uploading}
               style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
             >
-              📤 上传
+              上传
             </button>
             <Link
               href="/video-download"
               style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-accent-soft)", border: "1px solid var(--kaypal-v3-border)", cursor: "pointer", whiteSpace: "nowrap", textDecoration: "none" }}
             >
-              🔗 去水印
+              去水印
             </Link>
             <button
               type="button"
               onClick={() => setGenSheetOpen(true)}
               style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
-              ✨ AI 生图
+              AI 生图
             </button>
             <button
               type="button"
               onClick={() => setVideoSheetOpen(true)}
               style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
-              🎬 AI 生视频
+              AI 生视频
             </button>
             <button
               type="button"
               onClick={() => setTtsSheetOpen(true)}
               style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--kaypal-v3-radius-sm)", background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)", border: "1px solid var(--kaypal-v3-accent)", cursor: "pointer", whiteSpace: "nowrap" }}
             >
-              🎙 AI 配音
+              AI 配音
             </button>
             <button
               type="button"
