@@ -1,0 +1,265 @@
+'use strict';
+/**
+ * browser-agent-bridge-server.spec.js — 上行桥安全边界端到端测试（纯 node http）
+ * 运行：node desktop/browser-agent-bridge-server.spec.js
+ *
+ * 覆盖：
+ *  - 无 token / 错 token → 401；重放 nonce → 409；时钟偏差 → 401；
+ *  - 缺 actor → 400；跨 owner/tenant → 403（wiring 透传 broker fail-closed）；
+ *  - observe 只读通路成功且 URL 脱敏；action-request 只签发确认单（不自批）；
+ *  - 未知路由 404；不代理任意 CDP（无 /cdp 泛化端点）。
+ */
+const assert = require('node:assert/strict');
+const http = require('node:http');
+const crypto = require('node:crypto');
+const {
+  startBrowserBridge,
+  timingSafeEqualStr,
+  TOKEN_HEADER,
+  NONCE_HEADER,
+  TS_HEADER,
+} = require('./browser-agent-bridge-server');
+
+function makeFakeWiring() {
+  const session = {
+    panelId: 'panel-x',
+    sessionId: 'sess-x',
+    ownerId: 'user-a',
+    tenantId: 'tenant-a',
+    url: 'http://127.0.0.1:80/page?token=SECRET-abc&keep=1',
+    webContentsId: 77,
+  };
+  const redact = (u) => String(u).replace(/token=[^&]+/, 'token=***');
+  return {
+    hasHandle: (id) => id === 'panel-x',
+    resolveTargetForAgent(panelId, actor) {
+      if (panelId !== 'panel-x') throw new Error('未登记');
+      if (!actor || !actor.ownerId) throw new Error('actor 必须携带身份');
+      if (actor.ownerId !== session.ownerId || actor.tenantId !== session.tenantId) {
+        throw new Error('actor 与面板会话 owner/tenant 不一致，拒绝访问');
+      }
+      return { ...session };
+    },
+    async sendCDPForAgent(panelId, actor, method) {
+      this._lastCdp = method;
+      // observe 内部会 evaluate 拿 title/text
+      if (method === 'Runtime.evaluate') {
+        return { result: { result: { value: JSON.stringify({ title: 'T', text: 'hello' }) } } };
+      }
+      return { ok: true };
+    },
+    requestActionForAgent(panelId, actor, method) {
+      if (!actor || actor.ownerId !== session.ownerId) throw new Error('不一致');
+      return { actionId: 'act-1', binding: { webContentsId: 77, method } };
+    },
+    listEventsForAgent() {
+      return [];
+    },
+  };
+}
+
+function request(port, token, path, body, opts = {}) {
+  return new Promise((resolve, reject) => {
+    const data = body ? JSON.stringify(body) : null;
+    const req = http.request(
+      {
+        host: '127.0.0.1',
+        port,
+        path,
+        method: data ? 'POST' : 'GET',
+        headers: {
+          [TOKEN_HEADER]: opts.wrongToken ? 'wrong' : token,
+          [NONCE_HEADER]: opts.nonce ?? crypto.randomBytes(16).toString('hex'),
+          [TS_HEADER]: String(opts.ts ?? Date.now()),
+          ...(data ? { 'Content-Type': 'application/json' } : {}),
+        },
+      },
+      (res) => {
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => {
+          const text = Buffer.concat(chunks).toString('utf8');
+          let json = null;
+          try {
+            json = JSON.parse(text);
+          } catch {
+            /* ignore */
+          }
+          resolve({ status: res.statusCode, json, text });
+        });
+      },
+    );
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+
+const ACTOR_A = { ownerId: 'user-a', tenantId: 'tenant-a' };
+
+const tests = [];
+const test = (name, fn) => tests.push([name, fn]);
+
+async function withBridge(fn) {
+  const wiring = makeFakeWiring();
+  const bridge = await startBrowserBridge({ wiring, logger: { warn: () => {}, error: () => {} } });
+  try {
+    await fn(bridge, wiring);
+  } finally {
+    await bridge.close();
+  }
+}
+
+test('无 token → 401', async () => {
+  await withBridge(async (bridge) => {
+    const res = await new Promise((resolve) => {
+      const req = http.request({ host: '127.0.0.1', port: bridge.port, path: '/health', method: 'GET' }, (r) => {
+        r.resume();
+        r.on('end', () => resolve(r.statusCode));
+      });
+      req.end();
+    });
+    assert.equal(res, 401);
+  });
+});
+
+test('错 token → 401（timing-safe）', async () => {
+  await withBridge(async (bridge) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/health', null, { wrongToken: true });
+    assert.equal(status, 401);
+    assert.equal(json.error.code, 'UNAUTHORIZED');
+  });
+});
+
+test('重放 nonce → 409', async () => {
+  await withBridge(async (bridge) => {
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const first = await request(bridge.port, bridge.token, '/health', null, { nonce });
+    assert.equal(first.status, 200);
+    const replay = await request(bridge.port, bridge.token, '/health', null, { nonce });
+    assert.equal(replay.status, 409);
+    assert.equal(replay.json.error.code, 'REPLAY');
+  });
+});
+
+test('时钟偏差过大 → 401 STALE', async () => {
+  await withBridge(async (bridge) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/health', null, {
+      ts: Date.now() - 10 * 60_000,
+    });
+    assert.equal(status, 401);
+    assert.equal(json.error.code, 'STALE_REQUEST');
+  });
+});
+
+test('observe 成功且 URL 脱敏（凭据 query 不出网）', async () => {
+  await withBridge(async (bridge) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/observe', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+    });
+    assert.equal(status, 200);
+    assert.equal(json.data.target.sessionId, 'sess-x');
+    assert.ok(json.data.target.url.includes('token=***'), 'token 应脱敏');
+    assert.ok(!json.data.target.url.includes('SECRET-abc'), '原文不得出现');
+    assert.ok(json.data.target.url.includes('keep=1'), '非敏感保留');
+    assert.equal(json.data.title, 'T');
+  });
+});
+
+test('observe 跨 owner → 403 POLICY_DENIED', async () => {
+  await withBridge(async (bridge) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/observe', {
+      panelId: 'panel-x',
+      actor: { ownerId: 'user-b', tenantId: 'tenant-b' },
+    });
+    assert.equal(status, 403);
+    assert.equal(json.error.code, 'POLICY_DENIED');
+  });
+});
+
+test('缺 actor → 400', async () => {
+  await withBridge(async (bridge) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/observe', {
+      panelId: 'panel-x',
+    });
+    assert.equal(status, 400);
+    assert.equal(json.error.code, 'ACTOR_REQUIRED');
+  });
+});
+
+test('action-request 只签发确认单（不自批）', async () => {
+  await withBridge(async (bridge) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/action-request', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+      method: 'Input.dispatchMouseEvent',
+      summary: { label: '点击' },
+    });
+    assert.equal(status, 200);
+    assert.equal(json.data.actionId, 'act-1');
+    assert.equal(json.data.binding.webContentsId, 77);
+  });
+});
+
+test('未知路由 → 404（无任意 CDP 代理端点）', async () => {
+  await withBridge(async (bridge) => {
+    const { status } = await request(bridge.port, bridge.token, '/cdp', { method: 'Network.getAllCookies' });
+    assert.equal(status, 404);
+  });
+});
+
+test('health 免 actor', async () => {
+  await withBridge(async (bridge) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/health');
+    assert.equal(status, 200);
+    assert.equal(json.data.ok, true);
+    assert.equal(json.data.protocol, 'kaypal-browser-bridge');
+  });
+});
+
+test('timingSafeEqualStr：长度不等也返回 false 不抛', () => {
+  assert.equal(timingSafeEqualStr('abc', 'abcdef'), false);
+  assert.equal(timingSafeEqualStr('same', 'same'), true);
+});
+
+test('close 后端口释放 + 后续调用不可达（before-quit 收尾语义）', async () => {
+  const bridge = await startBrowserBridge({
+    wiring: makeFakeWiring(),
+    logger: { warn: () => {}, error: () => {} },
+  });
+  const { port, token } = bridge;
+  // 关桥前可用
+  const alive = await request(port, token, '/health');
+  assert.equal(alive.status, 200);
+  await bridge.close();
+  // 关桥后：同一端口应拒绝连接（token 与 endpoint 一并失效）
+  let refused = false;
+  try {
+    await request(port, token, '/health');
+  } catch (error) {
+    refused = /ECONNREFUSED/i.test(String(error && error.message));
+  }
+  assert.equal(refused, true, 'close() 后端口必须释放，旧 token 不再可用');
+  // 重复 close 幂等
+  await bridge.close();
+});
+
+(async () => {
+  let failed = 0;
+  for (const [name, fn] of tests) {
+    try {
+      await fn();
+      console.log(`PASS ${name}`);
+    } catch (error) {
+      failed += 1;
+      console.error(`FAIL ${name}: ${error && error.message}`);
+    }
+  }
+  if (failed > 0) {
+    console.error(`BRIDGE SPEC FAILED: ${failed}`);
+    process.exitCode = 1;
+  } else {
+    console.log(`BRIDGE SPEC PASSED (${tests.length})`);
+  }
+})();

@@ -96,6 +96,53 @@ function getBrowserWiring() {
   return browserWiring;
 }
 
+// 阶段 4（地基）：3011 Agent-S ⇄ desktop 面板上行桥（127.0.0.1 随机端口 + 随机
+// token，只读 observe + 签发确认单，绝不代理裸 CDP、绝不自我批准）。
+// ⚠️ 安全边界：bridge token 只存活主进程（getBrowserBridgeInfo），**不经任何
+// web/前端广播通道下发**；把 endpoint+token 安全投递给 3011 Agent（改 Agent-S
+// 执行路径的高风险动作）需用户单独批准后在后续轮接入。本轮桥默认不启动。
+const { startBrowserBridge } = require('./browser-agent-bridge-server');
+let browserBridge = null;
+let browserBridgePromise = null;
+async function ensureBrowserBridge() {
+  if (browserBridge) return browserBridge;
+  if (!browserBridgePromise) {
+    browserBridgePromise = startBrowserBridge({
+      wiring: getBrowserWiring(),
+      logger: console,
+    })
+      .then((bridge) => {
+        browserBridge = bridge;
+        return bridge;
+      })
+      .catch((error) => {
+        browserBridgePromise = null;
+        throw error;
+      });
+  }
+  return browserBridgePromise;
+}
+function getBrowserBridgeInfo() {
+  return browserBridge
+    ? { port: browserBridge.port, endpoint: browserBridge.endpoint, token: browserBridge.token }
+    : null;
+}
+async function closeBrowserBridge() {
+  const pending = browserBridgePromise;
+  browserBridgePromise = null;
+  const bridge = browserBridge;
+  browserBridge = null;
+  if (bridge) await bridge.close();
+  else if (pending) {
+    try {
+      const started = await pending;
+      await started.close();
+    } catch {
+      /* 启动未完成 */
+    }
+  }
+}
+
 let mainWindow = null;
 let tray = null;
 let agentSService = null;
@@ -2758,6 +2805,18 @@ app.on('before-quit', () => {
   stopBackendService();
   stopOctopService();
   destroyUpdater();
+  // 阶段 4：关桥 = 释放随机端口 + 销毁主进程内的 bridge token（不再可被任何
+  // 本地进程调用 observe/action-request）。失败不得阻断退出。
+  try {
+    const maybe = closeBrowserBridge();
+    if (maybe && typeof maybe.catch === 'function') {
+      maybe.catch((error) => {
+        console.warn('[App] closeBrowserBridge failed:', error?.message || error);
+      });
+    }
+  } catch (error) {
+    console.warn('[App] closeBrowserBridge failed:', error?.message || error);
+  }
 });
 
 app.on('window-all-closed', () => {

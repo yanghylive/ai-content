@@ -1,6 +1,6 @@
 {
   "meta": {
-    "runAt": "2026-09-02T16:37:22.239Z",
+    "runAt": "2026-09-02T17:26:11.530Z",
     "electron": "32.3.3",
     "platform": "darwin-arm64"
   },
@@ -16,7 +16,7 @@
       "name": "S1 面板 open → 真实加载 fixture",
       "pass": true,
       "detail": {
-        "url": "http://127.0.0.1:59657/browser-panel.html",
+        "url": "http://127.0.0.1:65493/browser-panel.html",
         "status": "ready"
       }
     },
@@ -53,15 +53,15 @@
       "name": "S4 navigate 真实生效（URL 回读一致）",
       "pass": true,
       "detail": {
-        "url": "http://127.0.0.1:59657/browser-panel.html?nav=2",
-        "sessionUrl": "http://127.0.0.1:59657/browser-panel.html?nav=2"
+        "url": "http://127.0.0.1:65493/browser-panel.html?nav=2",
+        "sessionUrl": "http://127.0.0.1:65493/browser-panel.html?nav=2"
       }
     },
     {
       "name": "S4b goBack 生效",
       "pass": true,
       "detail": {
-        "url": "http://127.0.0.1:59657/browser-panel.html"
+        "url": "http://127.0.0.1:65493/browser-panel.html"
       }
     },
     {

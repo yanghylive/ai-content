@@ -1,6 +1,6 @@
 {
   "meta": {
-    "runAt": "2026-09-02T16:15:25.864Z",
+    "runAt": "2026-09-02T17:25:57.267Z",
     "electron": "32.3.3",
     "node": "20.18.1",
     "platform": "darwin-arm64",
@@ -11,7 +11,7 @@
       "name": "C1 WebContentsView 加载 fixture",
       "pass": true,
       "detail": {
-        "url": "http://127.0.0.1:50957/browser-panel.html"
+        "url": "http://127.0.0.1:65369/browser-panel.html"
       }
     },
     {
@@ -26,7 +26,7 @@
       "pass": true,
       "detail": {
         "title": "BrowserPanel P0 Fixture",
-        "url": "http://127.0.0.1:50957/browser-panel.html",
+        "url": "http://127.0.0.1:65369/browser-panel.html",
         "domRoot": true,
         "axNodes": 21
       }
@@ -67,8 +67,8 @@
       "name": "C6 Agent 操作对视图实时可见（URL 一致 + 页面值同一文档）",
       "pass": true,
       "detail": {
-        "inPageUrl": "http://127.0.0.1:50957/browser-panel.html",
-        "brokerUrl": "http://127.0.0.1:50957/browser-panel.html",
+        "inPageUrl": "http://127.0.0.1:65369/browser-panel.html",
+        "brokerUrl": "http://127.0.0.1:65369/browser-panel.html",
         "fieldValue": "user-typed-abc"
       }
     },
@@ -95,283 +95,290 @@
       "name": "C7c 失败后可恢复",
       "pass": true,
       "detail": {
-        "url": "http://127.0.0.1:50957/browser-panel.html"
+        "url": "http://127.0.0.1:65369/browser-panel.html"
       }
     }
   ],
   "events": [
     {
       "seq": 1,
-      "at": 1788365725991,
+      "at": 1788369957366,
       "type": "panel.created",
       "sessionId": "sess-p0-001",
       "partition": "persist:kaypal-browser-user-p0"
     },
     {
       "seq": 2,
-      "at": 1788365726083,
+      "at": 1788369957442,
       "type": "action.requested",
-      "actionId": "ae1d3f5c06ca9b9f1a1274be",
+      "actionId": "9b0ae2dcea72ad664e964daa",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 3,
-      "at": 1788365726083,
+      "at": 1788369957442,
       "type": "action.approved",
-      "actionId": "ae1d3f5c06ca9b9f1a1274be",
+      "actionId": "9b0ae2dcea72ad664e964daa",
       "method": "Input.dispatchMouseEvent"
     },
     {
       "seq": 4,
-      "at": 1788365726083,
+      "at": 1788369957442,
       "type": "action.started",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 5,
-      "at": 1788365726084,
+      "at": 1788369957442,
       "type": "action.completed",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 6,
-      "at": 1788365726084,
+      "at": 1788369957443,
       "type": "action.requested",
-      "actionId": "17abde5b1e930187675fa244",
+      "actionId": "d3f4479cd0c7e42f478e5a0e",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 7,
-      "at": 1788365726084,
+      "at": 1788369957443,
       "type": "action.approved",
-      "actionId": "17abde5b1e930187675fa244",
+      "actionId": "d3f4479cd0c7e42f478e5a0e",
       "method": "Input.dispatchMouseEvent"
     },
     {
       "seq": 8,
-      "at": 1788365726084,
+      "at": 1788369957443,
       "type": "action.started",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 9,
-      "at": 1788365726085,
+      "at": 1788369957443,
       "type": "action.completed",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 10,
-      "at": 1788365726085,
+      "at": 1788369957444,
       "type": "action.requested",
-      "actionId": "c4c5e297dc0803bf84f72bbc",
+      "actionId": "6cb22f2fd46e9ead88ac5946",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 11,
-      "at": 1788365726085,
+      "at": 1788369957444,
       "type": "action.approved",
-      "actionId": "c4c5e297dc0803bf84f72bbc",
+      "actionId": "6cb22f2fd46e9ead88ac5946",
       "method": "Input.dispatchMouseEvent"
     },
     {
       "seq": 12,
-      "at": 1788365726085,
+      "at": 1788369957444,
       "type": "action.started",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 13,
-      "at": 1788365726087,
+      "at": 1788369957444,
       "type": "action.completed",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 14,
-      "at": 1788365726087,
+      "at": 1788369957444,
       "type": "action.requested",
-      "actionId": "a4eeb7b27349a9558627ed18",
+      "actionId": "5a9de3b7f4470b984eddc631",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 15,
-      "at": 1788365726087,
+      "at": 1788369957444,
       "type": "action.approved",
-      "actionId": "a4eeb7b27349a9558627ed18",
+      "actionId": "5a9de3b7f4470b984eddc631",
       "method": "Input.dispatchMouseEvent"
     },
     {
       "seq": 16,
-      "at": 1788365726087,
+      "at": 1788369957444,
       "type": "action.started",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 17,
-      "at": 1788365726087,
+      "at": 1788369957444,
       "type": "action.completed",
       "method": "Input.dispatchMouseEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 18,
-      "at": 1788365726087,
+      "at": 1788369957444,
       "type": "action.requested",
-      "actionId": "108395efc2ed3d4a4720b3a4",
+      "actionId": "44d56c2a6adec127f51e8164",
       "method": "Input.insertText",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 19,
-      "at": 1788365726087,
+      "at": 1788369957444,
       "type": "action.approved",
-      "actionId": "108395efc2ed3d4a4720b3a4",
+      "actionId": "44d56c2a6adec127f51e8164",
       "method": "Input.insertText"
     },
     {
       "seq": 20,
-      "at": 1788365726087,
+      "at": 1788369957444,
       "type": "action.started",
       "method": "Input.insertText",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 21,
-      "at": 1788365726088,
+      "at": 1788369957445,
       "type": "action.completed",
       "method": "Input.insertText",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 22,
-      "at": 1788365726088,
+      "at": 1788369957445,
       "type": "action.requested",
-      "actionId": "275ac9658de6adf6e5a3286e",
+      "actionId": "09c5a960008d880b78c05476",
       "method": "Input.dispatchKeyEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 23,
-      "at": 1788365726088,
+      "at": 1788369957445,
       "type": "action.approved",
-      "actionId": "275ac9658de6adf6e5a3286e",
+      "actionId": "09c5a960008d880b78c05476",
       "method": "Input.dispatchKeyEvent"
     },
     {
       "seq": 24,
-      "at": 1788365726088,
+      "at": 1788369957445,
       "type": "action.started",
       "method": "Input.dispatchKeyEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 25,
-      "at": 1788365726167,
+      "at": 1788369957473,
       "type": "action.completed",
       "method": "Input.dispatchKeyEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 26,
-      "at": 1788365726167,
+      "at": 1788369957473,
       "type": "action.requested",
-      "actionId": "f0855547e70da531ed17b049",
+      "actionId": "fb7e2a439dcf9b6bdd765d2e",
       "method": "Input.dispatchKeyEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 27,
-      "at": 1788365726167,
+      "at": 1788369957473,
       "type": "action.approved",
-      "actionId": "f0855547e70da531ed17b049",
+      "actionId": "fb7e2a439dcf9b6bdd765d2e",
       "method": "Input.dispatchKeyEvent"
     },
     {
       "seq": 28,
-      "at": 1788365726167,
+      "at": 1788369957473,
       "type": "action.started",
       "method": "Input.dispatchKeyEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     {
       "seq": 29,
-      "at": 1788365726172,
+      "at": 1788369957476,
       "type": "action.completed",
       "method": "Input.dispatchKeyEvent",
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:65369/browser-panel.html"
     }
   ],
   "binding": {
@@ -382,14 +389,14 @@
       "panelId": "panel-p0",
       "sessionId": "sess-p0-001",
       "webContentsId": 3,
-      "url": "http://127.0.0.1:50957/browser-panel.html"
+      "url": "http://127.0.0.1:65369/browser-panel.html"
     },
     "sameWebContents": true,
     "sameSession": true
   },
   "screenshots": [
     {
-      "file": "docs/browser-panel-baseline/smoke-screenshot-2026-09-02T16-15-25.png",
+      "file": "docs/browser-panel-baseline/smoke-screenshot-2026-09-02T17-25-57.png",
       "sha256_16": "7b2c179120d7caba",
       "bytes": 34550,
       "webContentsId": 3
