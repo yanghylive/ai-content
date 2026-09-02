@@ -51,7 +51,7 @@ export function LocalBridgeStatus({ inline = false }: { inline?: boolean }) {
             <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${copy.color} opacity-75`} />
           )}
         </span>
-        <span className="hidden whitespace-nowrap lg:inline">
+        <span className="hidden whitespace-nowrap md:inline">
           本机发布服务 · {copy.label}
           {detail ? ` · ${detail}` : ""}
         </span>

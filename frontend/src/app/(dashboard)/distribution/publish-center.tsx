@@ -271,7 +271,7 @@ export function PublishCenter() {
       )}
 
       {/* 统计五卡（独立区块，磨砂玻璃卡） */}
-      <div className="grid grid-cols-2 gap-[var(--space-card)] lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-[var(--space-card)] md:grid-cols-3 lg:grid-cols-5">
           <div className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] p-5">
             <div className="flex items-center justify-between">
               <div>
@@ -426,7 +426,7 @@ export function PublishCenter() {
             </Link>
           </div>
         ) : (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {kanbanColumns.map((column) => {
             const config = STATUS_CONFIG[column.status];
             const Icon = config.icon;
@@ -546,7 +546,7 @@ export function PublishCenter() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           {[
             { key: "materials", title: "素材库", href: "/materials" },
             { key: "accounts", title: "发布账号", href: "/distribution/accounts" },
