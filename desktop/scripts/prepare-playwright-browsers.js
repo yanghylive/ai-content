@@ -212,11 +212,43 @@ function main() {
 
   fs.rmSync(targetChromiumRoot, { recursive: true, force: true });
   fs.mkdirSync(targetRoot, { recursive: true });
+  // 2026-09-02（复核第七轮 P0 根治）：只复制目标平台浏览器目录——playwright
+  // 缓存/交叉源里常同时存在 chrome-mac-arm64 + chrome-win64（一次 win 构建后
+  // mac 包曾膨胀到 813MB、3011 运行副本被 Windows chrome.exe 污染 → Agent-S
+  // blocked）。非目标平台的 chrome-* 目录一律跳过。
+  const targetDirNames = new Set(
+    Object.values({
+      darwin: ['chrome-mac-arm64'],
+      'mac-arm64': ['chrome-mac-arm64'],
+      'mac-x64': ['chrome-mac'],
+      win32: ['chrome-win64'],
+      'win-x64': ['chrome-win64'],
+      linux: ['chrome-linux64'],
+      'linux-x64': ['chrome-linux64'],
+    }[targetPlatform] || []),
+  );
+  const foreignPlatformDirs = [
+    'chrome-win64',
+    'chrome-mac',
+    'chrome-mac-arm64',
+    'chrome-linux',
+    'chrome-linux64',
+    'chrome-headless-shell-win64',
+    'chrome-headless-shell-mac',
+    'chrome-headless-shell-mac-arm64',
+    'chrome-headless-shell-linux',
+    'chrome-headless-shell-linux64',
+  ].filter((dir) => !targetDirNames.has(dir));
   fs.cpSync(browserRoot, targetChromiumRoot, {
     recursive: true,
     dereference: false,
     verbatimSymlinks: true,
     preserveTimestamps: true,
+    filter: (src) => {
+      const rel = path.relative(browserRoot, src);
+      const top = rel.split(path.sep)[0];
+      return !(top && foreignPlatformDirs.includes(top));
+    },
   });
 
   const relativeExecutable = path.relative(browserRoot, executablePath);
