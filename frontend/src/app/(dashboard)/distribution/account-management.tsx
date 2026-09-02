@@ -33,14 +33,16 @@ import {
   findAccountCdpSession,
 } from "./account-utils";
 
-// 平台品牌色（与 distribution-tasks / nav-registry 一致：#fe2c55 抖音等），
-// 弹窗内用作选中态与标识圆点。
+// 平台品牌色 + 官方图形 logo（本地白色版，圆形品牌底上展示）：
+// douyin/xiaohongshu/kuaishou/bilibili 取自 simple-icons（品牌官方图形，
+// TikTok 同源音符代抖音——抖音暂缺开源 SVG）；视频号取自 Remix Icon
+// wechat-channels（Apache-2.0）。
 const PLATFORMS = [
-  { type: 3, label: "抖音", brand: "#fe2c55" },
-  { type: 1, label: "小红书", brand: "#ff2442" },
-  { type: 2, label: "视频号", brand: "#007fff" },
-  { type: 4, label: "快手", brand: "#ff4d2e" },
-  { type: 5, label: "B站", brand: "#00a1d6" },
+  { type: 3, label: "抖音", brand: "#fe2c55", logo: "/platform-logos/douyin.svg" },
+  { type: 1, label: "小红书", brand: "#ff2442", logo: "/platform-logos/xiaohongshu.svg" },
+  { type: 2, label: "视频号", brand: "#007fff", logo: "/platform-logos/shipinhao.svg" },
+  { type: 4, label: "快手", brand: "#ff4d2e", logo: "/platform-logos/kuaishou.svg" },
+  { type: 5, label: "B站", brand: "#00a1d6", logo: "/platform-logos/bilibili.svg" },
 ] as const;
 
 function sessionStatusTone(status?: string) {
@@ -388,15 +390,21 @@ export function AccountManagement() {
                           onClick={() => ops.setLoginPlatformType(p.type)}
                         >
                           <span
-                            className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                            className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full"
                             style={{
-                              background: active ? p.brand : `${p.brand}8c`,
+                              background: active ? p.brand : `${p.brand}99`,
                               boxShadow: active
                                 ? `0 2px 6px -1px ${p.brand}99`
                                 : undefined,
                             }}
                           >
-                            {p.label.replace("B站", "B").charAt(0)}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              alt={p.label}
+                              src={p.logo}
+                              className="h-[18px] w-[18px] object-contain"
+                              draggable={false}
+                            />
                           </span>
                           <span>{p.label}</span>
                         </button>
