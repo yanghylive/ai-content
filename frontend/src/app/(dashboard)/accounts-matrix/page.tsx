@@ -255,7 +255,7 @@ export default function AccountsMatrixV2Page() {
             return (
               <div key={platform} className="mx-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,.07)" }}>
-                  <PlatformBadge platform={platform} size={22} />
+                  <PlatformBadge platform={platform} size={26} solid />
                   <span style={{ fontSize: 14, fontWeight: 600 }}>{platform}</span>
                   <span style={{ fontSize: 11, color: "rgba(219,234,254,.55)", marginLeft: "auto" }}>
                     {items.length} 个账号

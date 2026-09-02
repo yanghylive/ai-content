@@ -293,7 +293,7 @@ export function DistributionTasks() {
                     onClick={() => openTask(task)}
                   >
                     {/* P1-10：平台图标统一占位——平台名首字符 + 主题色背景圆角容器（图标加载失败不再显示乱码） */}
-                    <PlatformBadge platform={task.platform} size={40} solid />
+                    <PlatformBadge platform={task.platform} size={36} solid />
                     <div className="mx-row-main">
                       <div className="mx-row-title">{task.title || `任务 #${task.id}`}</div>
                       <div className="mx-row-desc">
