@@ -134,6 +134,9 @@ class TabManager {
     this.activeId = null;
     this.frontendServerUrl = null;
     this.knownWebContents = new Set(); // 我们持有的所有 webContents（标签视图 + tab 条）
+    // 2026-09-03（浏览器面板阶段 2）：右侧面板占用宽度（BrowserPanelManager 维护），
+    // relayout 时业务内容视图让出该宽度，避免被面板视图遮挡。
+    this.rightInset = 0;
   }
 
   setFrontendUrl(url) {
@@ -652,12 +655,16 @@ class TabManager {
     const h = Math.max(0, height);
     // tab 条：顶部通栏
     this.tabStrip.setBounds({ x: 0, y: 0, width: w, height: TAB_STRIP_HEIGHT });
-    // 内容：tab 条下方铺满
+    // 内容：tab 条下方铺满。
+    // 2026-09-03（浏览器面板阶段 2）：右侧面板打开时业务区让出 rightInset 宽度，
+    // 避免 WebContentsView 重叠遮挡 3010 主内容（面板自身负责 rightInset 区域）。
+    const inset = Math.max(0, Math.min(this.rightInset || 0, Math.floor(w * 0.6)));
     const contentY = TAB_STRIP_HEIGHT;
+    const contentW = Math.max(0, w - inset);
     const contentH = Math.max(0, h - TAB_STRIP_HEIGHT);
     for (const tab of this.tabs.values()) {
       try {
-        tab.view.setBounds({ x: 0, y: contentY, width: w, height: contentH });
+        tab.view.setBounds({ x: 0, y: contentY, width: contentW, height: contentH });
       } catch {
         /* ignore */
       }

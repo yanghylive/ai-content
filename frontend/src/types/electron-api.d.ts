@@ -39,6 +39,18 @@ interface ElectronAPI {
     list: () => Promise<unknown[]>;
     getActive: () => Promise<unknown>;
   };
+  browserPanel: {
+    open: (input: {
+      url: string;
+      ownerId?: string;
+      tenantId?: string;
+      accountId?: string;
+      platform?: string;
+    }) => Promise<{ success: boolean; state?: BrowserPanelState; error?: string }>;
+    getState: () => Promise<{ success: boolean; state?: BrowserPanelState; error?: string }>;
+    onState: (callback: (state: BrowserPanelState) => void) => string;
+    removeOnState: (key: string) => void;
+  };
   onUpdateState: (callback: (state: Record<string, unknown>) => void) => string;
   onUpdateDownloadProgress: (callback: (progress: Record<string, number>) => void) => string;
   onUpdateAvailable: (callback: (info: Record<string, unknown>) => void) => string;
@@ -51,6 +63,28 @@ interface ElectronAPI {
   removeListener: (key: string) => void;
   removeAllListeners: () => void;
 }
+
+export type BrowserPanelSessionView = {
+  panelId: string;
+  sessionId: string;
+  ownerId: string;
+  tenantId: string;
+  accountId?: string;
+  platform: string;
+  partition: string;
+  currentUrl?: string;
+  status: 'starting' | 'ready' | 'needs-human' | 'blocked' | 'stopped' | 'error';
+  webContentsId?: number | null;
+};
+
+export type BrowserPanelState = {
+  visible: boolean;
+  hasSession: boolean;
+  panelWidth: number;
+  session: BrowserPanelSessionView | null;
+  canGoBack: boolean;
+  canGoForward: boolean;
+};
 
 declare global {
   interface Window {

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>浏览器面板控制条</title>
+  <style>
+    /* 对齐 tab-strip 深色工具条姿态：紧凑、不抢视觉 */
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      display: flex; align-items: center; gap: 6px;
+      padding: 0 8px;
+      background: #1e1f24; color: #d7d9e0;
+      font: 12px/1.4 -apple-system, "PingFang SC", "Segoe UI", sans-serif;
+      border-top: 1px solid #2c2d34;
+    }
+    button {
+      flex: none; width: 26px; height: 26px; border: none; border-radius: 6px;
+      background: transparent; color: #aeb1bc; font-size: 13px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    button:hover:not(:disabled) { background: #2c2d34; color: #eef0f6; }
+    button:disabled { opacity: 0.35; cursor: default; }
+    #addr {
+      flex: 1 1 auto; min-width: 0; height: 26px;
+      background: #2a2b31; border: 1px solid #34353d; border-radius: 6px;
+      color: #e8eaf0; font-size: 12px; padding: 0 8px;
+      outline: none;
+    }
+    #addr:focus { border-color: #722ed1; }
+    #status {
+      flex: none; font-size: 11px; max-width: 84px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap; color: #8a8d98;
+    }
+    #status.ready { color: #52c41a; }
+    #status.starting { color: #faad14; }
+    #status.needs-human, #status.blocked, #status.error { color: #ff4d4f; }
+    #resize { flex: none; width: 5px; height: 100%; cursor: ew-resize; background: #34353d; }
+    #resize:hover { background: #722ed1; }
+  </style>
+</head>
+<body>
+  <div id="resize" title="拖拽调整面板宽度"></div>
+  <button id="back" title="后退">‹</button>
+  <button id="forward" title="前进">›</button>
+  <button id="reload" title="刷新">↻</button>
+  <input id="addr" placeholder="输入网址，回车打开" spellcheck="false" />
+  <span id="status"></span>
+  <button id="hide" title="收起面板">✕</button>
+  <script>
+    const api = window.browserControl;
+    const $ = (id) => document.getElementById(id);
+    const STATUS_LABEL = {
+      starting: '加载中…', ready: '就绪', 'needs-human': '需要接管',
+      blocked: '已阻断', stopped: '已收起', error: '出错',
+    };
+
+    function invoke(channel, ...args) {
+      api.invoke(channel, ...args).catch(() => { /* 状态由 onState 统一刷新 */ });
+    }
+
+    $('back').addEventListener('click', () => invoke('browser-panel:back'));
+    $('forward').addEventListener('click', () => invoke('browser-panel:forward'));
+    $('reload').addEventListener('click', () => invoke('browser-panel:reload'));
+    $('hide').addEventListener('click', () => invoke('browser-panel:hide'));
+    $('addr').addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      const raw = $('addr').value.trim();
+      if (!raw) return;
+      const url = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw) ? raw : `https://${raw}`;
+      invoke('browser-panel:navigate', url);
+      $('addr').blur();
+    });
+
+    // 左缘拖拽调宽（面板在右，向左拖变宽）
+    let dragStartX = null;
+    let dragStartWidth = null;
+    $('resize').addEventListener('pointerdown', (event) => {
+      dragStartX = event.clientX;
+      dragStartWidth = lastState?.panelWidth || 480;
+      $('resize').setPointerCapture(event.pointerId);
+    });
+    $('resize').addEventListener('pointermove', (event) => {
+      if (dragStartX == null) return;
+      const next = dragStartWidth + (dragStartX - event.clientX);
+      invoke('browser-panel:set-width', next);
+    });
+    $('resize').addEventListener('pointerup', () => { dragStartX = null; });
+
+    let lastState = null;
+    api.onState((state) => {
+      lastState = state;
+      const session = state.session;
+      $('back').disabled = !state.canGoBack;
+      $('forward').disabled = !state.canGoForward;
+      if (document.activeElement !== $('addr')) {
+        $('addr').value = session && session.currentUrl ? session.currentUrl : '';
+      }
+      const status = $('status');
+      const s = session ? session.status : '';
+      status.textContent = STATUS_LABEL[s] || (s ? s : '');
+      status.className = s || '';
+    });
+  </script>
+</body>
+</html>

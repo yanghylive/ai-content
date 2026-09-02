@@ -105,6 +105,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getActive: () => ipcRenderer.invoke('workspace-tabs:getActive')
   },
 
+  // 浏览器面板（工作流阶段 2）：3010 前端挂 dock、开面板、订阅状态。
+  // 安全：仅白名单 channel；dock 按钮/事件走面板状态广播，不透传 webContents。
+  browserPanel: {
+    open: (input) => ipcRenderer.invoke('browser-panel:open', input),
+    getState: () => ipcRenderer.invoke('browser-panel:state'),
+    onState: (callback) => addManagedListener('browser-panel:state', callback),
+    removeOnState: (key) => removeManagedListener(key)
+  },
+
   // 事件监听（带清理机制）
   onUpdateChecking: (callback) => {
     return addManagedListener('update-checking', callback);

@@ -76,6 +76,18 @@ function getTabManager() {
   return tabManager;
 }
 
+// 浏览器面板（工作流阶段 2）：右侧 WebContentsView + 本地控制条，
+// 与 TabManager 通过 rightInset 协同布局。
+const { BrowserPanelManager } = require('./browser-panel-manager');
+const browserPanel = new BrowserPanelManager({
+  electron: require('electron'),
+  store,
+  tabManager,
+});
+function getBrowserPanel() {
+  return browserPanel;
+}
+
 let mainWindow = null;
 let tray = null;
 let agentSService = null;
@@ -871,6 +883,7 @@ function createWindow() {
     throw new Error('前端本地服务未启动');
   }
   getTabManager().attach(mainWindow);
+  getBrowserPanel().attach(mainWindow);
 
   // 保存窗口大小
   mainWindow.on('resize', () => {
@@ -2584,6 +2597,51 @@ function setupIPC() {
 
   // 多工作区标签壳 IPC（tab 条 + 前端 workspace 切换器调用）
   getTabManager().registerIpc(ipcMain);
+
+  // 浏览器面板 IPC（工作流阶段 2）
+  //  - 控制条 sender：必须是本地 strip 视图（isStripSender），导航结果由
+  //    strip 视图内 did-navigate 回读为准（防伪造）；
+  //  - 前端 sender：必须是受信业务标签（isTrustedRendererSender + 3010 origin），
+  //    与 workspace-tabs 同等级校验。
+  const panel = getBrowserPanel();
+  ipcMain.handle('browser-panel:open', async (event, input) => {
+    const fromStrip = panel.isStripSender(event.sender);
+    const fromTrusted = typeof isTrustedRendererSender === 'function' && isTrustedRendererSender(event);
+    if (!fromStrip && !fromTrusted) {
+      return { success: false, error: 'untrusted-sender' };
+    }
+    try {
+      const state = panel.open(input || {});
+      return { success: true, state };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+  const stripOnly = (handler) => async (event, ...args) => {
+    if (!panel.isStripSender(event.sender)) {
+      return { success: false, error: 'untrusted-sender' };
+    }
+    try {
+      return { success: true, result: handler(...args) };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+  ipcMain.handle('browser-panel:navigate', stripOnly((url) => panel.navigate(url)));
+  ipcMain.handle('browser-panel:back', stripOnly(() => panel.goBack()));
+  ipcMain.handle('browser-panel:forward', stripOnly(() => panel.goForward()));
+  ipcMain.handle('browser-panel:reload', stripOnly(() => panel.reload()));
+  ipcMain.handle('browser-panel:hide', stripOnly(() => panel.hide()));
+  ipcMain.handle('browser-panel:show', stripOnly(() => panel.show()));
+  ipcMain.handle('browser-panel:set-width', stripOnly((w) => panel.setWidth(w)));
+  ipcMain.handle('browser-panel:state', async (event) => {
+    const fromStrip = panel.isStripSender(event.sender);
+    const fromTrusted = typeof isTrustedRendererSender === 'function' && isTrustedRendererSender(event);
+    if (!fromStrip && !fromTrusted) {
+      return { success: false, error: 'untrusted-sender' };
+    }
+    return { success: true, state: panel.publicState() };
+  });
 }
 
 // 单实例锁：Windows/macOS 下用户再次点击任务栏/Dock 图标时，系统会启动
