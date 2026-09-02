@@ -44,6 +44,9 @@ export class PrismaService
   /** 已清空业务数据的账号库（防重复清空） */
   private readonly accountTablesCleared = new Set<string>();
 
+  /** 2026-09-02：已回补组织关系（tenants/tenant_members）的账号库（进程内防重复回补） */
+  private readonly tenantOrgSynced = new Set<string>();
+
   private static readonly TARGET_ONLY = new Set<string>([
     // 生命周期与内部建表/修复方法（必须跑在系统库上）
     'onModuleInit',
@@ -73,6 +76,7 @@ export class PrismaService
     'accountPaths',
     'activeAccountPath',
     'accountTablesCleared',
+    'tenantOrgSynced',
     'resolveActiveClient',
     'registerStudioProjectOwner',
     'assertStudioProjectOwner',
@@ -277,6 +281,10 @@ export class PrismaService
       // 2026-09-01 P3（换库适配）：账号库损坏自愈——登录时 quick_check，
       // 损坏则带备份隔离 + 从系统库模板重建（与主库 heal 策略一致）。
       await this.healAccountDatabaseIfCorrupt(accountPath, systemPath);
+      // 2026-09-02（logout 换库隔离回归修复）：旧白名单把 tenants /
+      // tenant_members 当业务表清空过，存量账号库缺组织关系 →
+      // resolveTenantId 查空 → growth/overview 等 403。存量库幂等回补。
+      await this.syncTenantOrgTables(accountPath);
     }
     // 2026-09-01（复核 P1-2）：登记 userId → 账号库路径（请求级路由）
     this.accountPaths.set(userId, accountPath);
@@ -354,8 +362,11 @@ export class PrismaService
   }
 
   /**
-   * 清空指定库的业务表数据（保留表结构），排除认证表与迁移表。
+   * 清空指定库的业务表数据（保留表结构），排除认证表、系统级组织关系表与迁移表。
    * 表清单运行时枚举 sqlite_master，零维护。
+   * 2026-09-02（修复）：tenants / tenant_members 是系统级组织关系（用户↔组织），
+   * 账号库派生自系统库时保留——否则 resolveTenantId 查账号库 tenant_members
+   * 为空 → 所有带租户校验的接口（growth/overview 等）403 TENANT_MEMBERSHIP_REQUIRED。
    */
   private async clearAccountBusinessTables(dbPath: string): Promise<void> {
     if (this.accountTablesCleared.has(dbPath)) {
@@ -364,7 +375,7 @@ export class PrismaService
     const client = this.getAccountClient(dbPath);
     const tables = (
       await client.$queryRawUnsafe<Array<{ name: string }>>(
-        `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('users', 'user_sessions', '_prisma_migrations')`,
+        `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('users', 'user_sessions', 'tenants', 'tenant_members', '_prisma_migrations')`,
       )
     ).map((row) => row.name);
     // 2026-09-01（复核 P1-3）：删除失败不再吞掉照样标记完成——失败表会导致
@@ -390,6 +401,138 @@ export class PrismaService
     this.logger.log(
       `账号库业务数据已清空（保留结构）：${dbPath}（表数 ${tables.length}）`,
     );
+  }
+
+  /**
+   * 2026-09-02（logout 换库隔离回归修复）：旧版 clearAccountBusinessTables
+   * 白名单不含 tenants/tenant_members，存量账号库（已存在文件）的组织关系行
+   * 被当业务数据清空 → resolveTenantId 查账号库 tenant_members 为空 →
+   * 所有租户校验接口（growth/overview 等）403 TENANT_MEMBERSHIP_REQUIRED。
+   * 白名单修复只影响新派生库；存量库在这里幂等回补（INSERT OR IGNORE，
+   * 进程内每库只跑一次；重启后 accountPaths 清空，首个请求经守卫重入）。
+   * 只回补与账号库 users 相关的组织行，规避 FK 失败；模板无组织表则跳过。
+   */
+  private async syncTenantOrgTables(accountPath: string): Promise<void> {
+    if (this.tenantOrgSynced.has(accountPath)) {
+      return;
+    }
+    const systemTables = (
+      await this.system.$queryRawUnsafe<Array<{ name: string }>>(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name IN ('tenants', 'tenant_members')`,
+      )
+    ).map((row) => row.name);
+    if (
+      !systemTables.includes('tenants') ||
+      !systemTables.includes('tenant_members')
+    ) {
+      this.logger.warn(`系统库无组织表，跳过账号库组织关系回补：${accountPath}`);
+      this.tenantOrgSynced.add(accountPath);
+      return;
+    }
+    const account = this.getAccountClient(accountPath);
+    const localUserIds = new Set(
+      (
+        await account.$queryRawUnsafe<Array<{ id: string }>>(
+          `SELECT id FROM users`,
+        )
+      ).map((row) => row.id),
+    );
+    if (localUserIds.size === 0) {
+      this.tenantOrgSynced.add(accountPath);
+      return;
+    }
+
+    const members = await this.system.$queryRawUnsafe<
+      Array<{
+        id: string;
+        tenant_id: string;
+        user_id: string;
+        role: string;
+        status: string;
+        permissions: string | null;
+        joined_at: string;
+        created_at: string;
+        updated_at: string;
+      }>
+    >(
+      `SELECT id, tenant_id, user_id, role, status, permissions, joined_at, created_at, updated_at FROM tenant_members`,
+    );
+    const eligibleMembers = members.filter((member) =>
+      localUserIds.has(member.user_id),
+    );
+    const neededTenantIds = new Set(
+      eligibleMembers.map((member) => member.tenant_id),
+    );
+
+    const tenants = await this.system.$queryRawUnsafe<
+      Array<{
+        id: string;
+        name: string;
+        slug: string;
+        status: string;
+        owner_user_id: string;
+        metadata: string | null;
+        created_at: string;
+        updated_at: string;
+      }>
+    >(
+      `SELECT id, name, slug, status, owner_user_id, metadata, created_at, updated_at FROM tenants`,
+    );
+    const tenantsToInsert = tenants.filter(
+      (tenant) =>
+        localUserIds.has(tenant.owner_user_id) || neededTenantIds.has(tenant.id),
+    );
+
+    // Prisma raw 会把 Json 列解析成对象/数组（如 permissions '[]' → []），
+    // 数组参数在 SQLite 绑定直接报 "Arrays are not supported" → 统一序列化。
+    const serialize = (value: unknown): string | number | null => {
+      if (value === null || value === undefined) {
+        return null;
+      }
+      if (typeof value === 'object') {
+        // 库内 DATETIME 以 INTEGER(ms) 存储 → Date 也序列化为毫秒数，避免混存格式
+        return value instanceof Date ? value.getTime() : JSON.stringify(value);
+      }
+      if (typeof value === 'bigint') {
+        return value.toString();
+      }
+      return value as string | number;
+    };
+    for (const tenant of tenantsToInsert) {
+      await account.$executeRawUnsafe(
+        `INSERT OR IGNORE INTO tenants (id, name, slug, status, owner_user_id, metadata, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        tenant.id,
+        tenant.name,
+        tenant.slug,
+        tenant.status,
+        tenant.owner_user_id,
+        serialize(tenant.metadata),
+        serialize(tenant.created_at),
+        serialize(tenant.updated_at),
+      );
+    }
+    for (const member of eligibleMembers) {
+      await account.$executeRawUnsafe(
+        `INSERT OR IGNORE INTO tenant_members (id, tenant_id, user_id, role, status, permissions, joined_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        member.id,
+        member.tenant_id,
+        member.user_id,
+        member.role,
+        member.status,
+        serialize(member.permissions),
+        serialize(member.joined_at),
+        serialize(member.created_at),
+        serialize(member.updated_at),
+      );
+    }
+    this.tenantOrgSynced.add(accountPath);
+    if (tenantsToInsert.length > 0 || eligibleMembers.length > 0) {
+      this.logger.log(
+        `账号库组织关系已回补（tenants ${tenantsToInsert.length} / members ${eligibleMembers.length}）：${accountPath}`,
+      );
+    }
   }
 
   async onModuleInit() {
