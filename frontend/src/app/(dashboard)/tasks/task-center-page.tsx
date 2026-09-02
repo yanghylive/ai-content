@@ -1622,7 +1622,7 @@ export function TaskCenterPage() {
             </p>
           </div>
         </div>
-        <div className="mb-3 grid gap-2 md:grid-cols-3 xl:grid-cols-6">
+        <div className="mb-3 grid gap-2.5 md:grid-cols-3">
           {[
             {
               key: "clip",
@@ -1642,12 +1642,15 @@ export function TaskCenterPage() {
           ].map((item) => (
             <div
               key={item.key}
-              className="flex h-[46px] items-center justify-between rounded-[6px] border border-divider bg-default-50 px-3"
+              className="flex h-12 min-w-0 items-center justify-between gap-3 rounded-[6px] border border-divider bg-default-50 px-3.5"
             >
-              <span className="text-13 font-medium text-default-700">
+              <span className="min-w-0 truncate text-13 font-medium text-default-700">
                 {item.label}
               </span>
-              <OpsStatusPill tone={item.selected ? "brand" : "default"}>
+              <OpsStatusPill
+                tone={item.selected ? "brand" : "default"}
+                className="shrink-0"
+              >
                 {item.selected ? "已选择" : "未选择"}
               </OpsStatusPill>
             </div>

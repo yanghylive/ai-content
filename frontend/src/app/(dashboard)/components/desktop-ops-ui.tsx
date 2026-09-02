@@ -251,9 +251,11 @@ export function OpsButton({
 export function OpsStatusPill({
   children,
   tone = "default",
+  className,
 }: {
   children: React.ReactNode;
   tone?: "default" | "success" | "warning" | "danger" | "brand";
+  className?: string;
 }) {
   const toneClass =
     tone === "success"
@@ -270,6 +272,7 @@ export function OpsStatusPill({
       className={cx(
         "inline-flex h-6 items-center rounded-[999px] border px-2 text-12 font-medium",
         toneClass,
+        className,
       )}
     >
       {children}
