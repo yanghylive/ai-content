@@ -12,12 +12,12 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
-    version: "v1.1.113",
+    version: "v1.1.114",
     date: "2026-09-02",
     highlights: [
-      "安全：StudioCore 登录凭据错误/权限拒绝不再误判为引擎离线，避免误创建云端计费任务",
-      "安全：项目归属迁移仅平台管理员可用（与全局鉴权角色口径统一）",
-      "修复：存量账号库缺组织关系表导致租户校验 403（启动自动回补）",
+      "稳定性：平台后台状态查询改为纯只读，移除高频 CDP 轮询，避免浏览器窗口反复弹出",
+      "修复：登录等待期间保持 SSE 长连接并显示实时状态，降低“已登录但未识别”误报",
+      "安全：账号库损坏探测仅对明确 SQLite 损坏触发自愈，避免运行时错误误删账号库",
     ],
   },
   {
@@ -391,4 +391,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.113";
+export const DESKTOP_APP_VERSION = "1.1.114";
