@@ -2032,15 +2032,32 @@ export function TaskCenterPage() {
                       </td>
                       <td>
                         <div className="flex max-w-[360px] flex-wrap gap-1">
-                          {run.steps.map((step) => (
-                            <OpsStatusPill
-                              key={`${run.id}-${step.stepId}`}
-                              tone={workflowStepStatusTone(step.status)}
-                            >
-                              {step.title} ·{" "}
-                              {workflowStepStatusLabel(step.status)}
-                            </OpsStatusPill>
-                          ))}
+                          {run.steps.map((step) => {
+                            const blocked =
+                              step.status === "failed" ||
+                              step.status === "blocked";
+                            return (
+                              <div
+                                key={`${run.id}-${step.stepId}`}
+                                className="flex flex-col gap-1"
+                              >
+                                <OpsStatusPill
+                                  tone={workflowStepStatusTone(step.status)}
+                                >
+                                  {step.title} ·{" "}
+                                  {workflowStepStatusLabel(step.status)}
+                                </OpsStatusPill>
+                                {blocked && step.message ? (
+                                  <span className="max-w-[280px] text-tiny leading-4 text-danger">
+                                    {step.message}
+                                    {step.nextAction
+                                      ? ` · ${step.nextAction}`
+                                      : ""}
+                                  </span>
+                                ) : null}
+                              </div>
+                            );
+                          })}
                         </div>
                       </td>
                       <td>
@@ -2079,7 +2096,7 @@ export function TaskCenterPage() {
                               variant="flat"
                               onPress={() => void retrySavedWorkflow(run)}
                             >
-                              重试未完成
+                              重试失败步骤
                             </Button>
                           ) : null}
                           {canCancel ? (
