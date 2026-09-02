@@ -465,4 +465,29 @@
     box-shadow: inset 0 0 0 1px var(--kaypal-v3-border-strong),
       var(--kaypal-v3-field-shadow);
   }
+  /* ---------- 12. 表单字段还原（2026-09-02）：HeroUI Input/Textarea/Select
+     字段容器 bg-default-100 被第 7 节"卡片玻璃化"命中：输入框被套上渐变描边、
+     内发光与背景模糊，与玻璃卡片叠成"双层框"。字段按 v3 field token
+     还原为普通输入框外观（明暗自适应），背景/阴影/模糊强制收敛。 ---------- */
+  [data-slot="input-wrapper"],
+  [data-slot="input-wrapper"].bg-default-100,
+  [data-slot="trigger"],
+  [data-slot="trigger"].bg-default-100 {
+    background-image: none !important;
+    background-color: var(--kaypal-v3-field-bg, var(--kx-card)) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+  html.dark [data-slot="input-wrapper"],
+  html.dark [data-slot="input-wrapper"].bg-default-100,
+  html.dark [data-slot="trigger"],
+  html.dark [data-slot="trigger"].bg-default-100 {
+    background-image: none !important;
+    background-color: var(--kaypal-v3-field-bg) !important;
+  }
+  [data-slot="input-wrapper"]:hover,
+  [data-slot="trigger"]:hover {
+    background-color: var(--kaypal-v3-field-bg, var(--kx-card)) !important;
+    background-image: none !important;
+  }
 }
