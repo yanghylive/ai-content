@@ -102,13 +102,8 @@ export function useCdpSessionStatus(
   }, [refresh]);
 
   // 2026-09-02（弹窗风暴根治）：不做 5s 高频轮询（每轮触发后端逐个账号的
-  // CDP 探测，曾导致浏览器窗口反复弹出）。挂载拉一次 + 账号切换自动刷新；
+  // CDP 探测，曾导致浏览器窗口反复弹出）。挂载拉一次 + 账号/平台切换自动刷新；
   // 用户点「打开后台 / 执行任务」前走 refreshAndGetSession 实时确认。
-  React.useEffect(() => {
-    if (!account?.id) return;
-    void refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅账号切换时刷新
-  }, [account?.id]);
 
   const session = React.useMemo(
     () =>

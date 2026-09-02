@@ -1148,6 +1148,70 @@ describe('AutoUploadClient', () => {
     );
   });
 
+  it('keeps cdp status reads side-effect free when an active page is logged out', async () => {
+    const prisma = {
+      publishAccount: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 4,
+            platform: 'wechat-channel',
+            name: '视频号账号',
+            config: { engineAccountId: 4, status: 'ready' },
+            createdAt: new Date('2026-06-07T00:00:00.000Z'),
+          },
+        ]),
+      },
+      interactionTask: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+    };
+    const interactionExecutor = {
+      getStatus: jest.fn().mockResolvedValue({
+        online: true,
+        visibleWindow: true,
+        isolated: false,
+      }),
+      listSessions: jest.fn().mockReturnValue([
+        {
+          platform: 'wechat-channel',
+          accountId: 4,
+          status: 'ready',
+          currentUrl: 'https://channels.weixin.qq.com/login.html',
+        },
+      ]),
+    };
+    const page = {
+      evaluate: jest.fn().mockResolvedValue({
+        url: 'https://channels.weixin.qq.com/login.html',
+        text: '请先登录视频号助手',
+      }),
+    };
+    const recoverAccountSessionFromSavedCookies = jest.fn();
+    const localBrowser = {
+      getSession: jest.fn().mockReturnValue({ page }),
+      recoverAccountSessionFromSavedCookies,
+    };
+    const client = new AutoUploadClient(
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      prisma as any,
+      { getStatus: jest.fn().mockReturnValue({ online: true }) } as any,
+      interactionExecutor as any,
+      { execute: jest.fn() } as any,
+      {} as any,
+      localBrowser as any,
+    );
+
+    const result = await client.getCdpSessions();
+
+    expect(result.sessions[0]).toEqual(
+      expect.objectContaining({
+        status: 'needs_login',
+        currentUrl: 'https://channels.weixin.qq.com/login.html',
+      }),
+    );
+    expect(recoverAccountSessionFromSavedCookies).not.toHaveBeenCalled();
+  });
+
   it('lets a current platform page override a stale login failure after relogin', async () => {
     const prisma = {
       publishAccount: {
