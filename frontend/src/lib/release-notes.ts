@@ -12,6 +12,15 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.113",
+    date: "2026-09-02",
+    highlights: [
+      "安全：StudioCore 登录凭据错误/权限拒绝不再误判为引擎离线，避免误创建云端计费任务",
+      "安全：项目归属迁移仅平台管理员可用（与全局鉴权角色口径统一）",
+      "修复：存量账号库缺组织关系表导致租户校验 403（启动自动回补）",
+    ],
+  },
+  {
     version: "v1.1.112",
     date: "2026-09-01",
     highlights: [
@@ -382,4 +391,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.112";
+export const DESKTOP_APP_VERSION = "1.1.113";
