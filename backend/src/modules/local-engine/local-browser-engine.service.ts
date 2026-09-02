@@ -197,6 +197,13 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     reuseLoggedInSession?: boolean;
     /** 探活档（②探活/执行分离）：只读检查用，不弹窗（不恢复登录态、不 bringToFront、新会话 headless） */
     probe?: boolean;
+    /**
+     * 执行必需前台（2026-09-02 修复）：调用方即将在页面执行真实采集/触达
+     * （读 DOM、截图等依赖真实渲染）。此时强制把会话窗口带到前台，
+     * 无视弹窗打扰预算——macOS 下窗口离屏/最小化时 Chromium 渲染被节流，
+     * 截图会得到纯灰画面、DOM 读取为空，导致任务在 fetch-candidates 静默失败。
+     */
+    foregroundRequired?: boolean;
   }): Promise<EngineSession> {
     const key = `${input.platform}-${input.accountId}`;
     const existing = this.sessions.get(key);
@@ -255,7 +262,9 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         }
         // 探活档：不 bringToFront（不弹窗）
         if (!input.probe) {
-          await this.bringToFrontWithinBudget(existing.page, key);
+          await this.bringToFrontWithinBudget(existing.page, key, {
+            force: input.foregroundRequired === true,
+          });
         }
         existing.lastActivityAt = new Date().toISOString();
         return existing;
@@ -288,8 +297,21 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   private async bringToFrontWithinBudget(
     page: EngineSession['page'],
     key: string,
+    options: { force?: boolean } = {},
   ): Promise<void> {
     const now = Date.now();
+    if (options.force) {
+      // 执行必需前台：无视打扰预算，确保窗口激活后页面真实渲染
+      this.lastBringToFrontAt = now;
+      try {
+        await page.bringToFront();
+        // macOS 离屏/最小化恢复渲染需要时间，给渲染器短暂恢复窗口
+        await page.waitForTimeout(800).catch(() => undefined);
+      } catch {
+        // 页面可能已关闭，忽略
+      }
+      return;
+    }
     if (now - this.lastBringToFrontAt < this.BRING_TO_FRONT_COOLDOWN_MS) {
       this.logger.warn(
         `会话 ${key} bringToFront 触发过于频繁（${Math.round(

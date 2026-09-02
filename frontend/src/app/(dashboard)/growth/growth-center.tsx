@@ -433,7 +433,7 @@ export function GrowthCenter() {
             title: "获客任务",
             description: "自动找客户的任务",
             icon: Target,
-            href: "/auto-acquisition/create",
+            href: "/growth/acquisition",
           },
           {
             key: "strategies",

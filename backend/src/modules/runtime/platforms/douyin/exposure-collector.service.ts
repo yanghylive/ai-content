@@ -1,10 +1,16 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import type { Page } from 'playwright';
 import { safeText } from '../../../../common/text.utils';
+import { PrismaService } from '../../../../prisma/prisma.service';
 import { LocalBrowserEngine } from '../../../local-engine/local-browser-engine.service';
 import { AiClientService } from '../../../ai-models/ai-client.service';
+import {
+  ensureKaypalVisionModel,
+  VISION_MODEL_ALIASES,
+} from '../../../ai-models/vision-model.util';
 
 export type DouyinExposureCollectorInput = {
   accountId: string | number;
@@ -84,6 +90,8 @@ export class DouyinExposureCollector {
   constructor(
     private readonly browser: LocalBrowserEngine,
     @Optional() private readonly aiClient?: AiClientService,
+    @Optional() private readonly prisma?: PrismaService,
+    @Optional() private readonly config?: ConfigService,
   ) {}
 
   async collectFromLinks(
@@ -103,6 +111,8 @@ export class DouyinExposureCollector {
       const session = await this.browser.getOrCreateSession({
         platform: 'douyin',
         accountId: input.accountId,
+        // 执行必需前台：抖音采集/触达依赖真实渲染，置前窗口避免 macOS 离屏节流导致灰屏/读取为空
+        foregroundRequired: true,
       });
       await this.browser.open(session.key, firstLink, {
         waitUntil: 'domcontentloaded',
@@ -227,6 +237,8 @@ export class DouyinExposureCollector {
       const session = await this.browser.getOrCreateSession({
         platform: 'douyin',
         accountId: input.accountId,
+        // 执行必需前台：抖音采集/触达依赖真实渲染，置前窗口避免 macOS 离屏节流导致灰屏/读取为空
+        foregroundRequired: true,
       });
       await this.browser.open(session.key, searchUrl, {
         waitUntil: 'domcontentloaded',
@@ -350,6 +362,8 @@ export class DouyinExposureCollector {
       const session = await this.browser.getOrCreateSession({
         platform: 'douyin',
         accountId: input.accountId,
+        // 执行必需前台：抖音采集/触达依赖真实渲染，置前窗口避免 macOS 离屏节流导致灰屏/读取为空
+        foregroundRequired: true,
       });
       await this.browser.open(session.key, searchUrl, {
         waitUntil: 'domcontentloaded',
@@ -671,6 +685,8 @@ export class DouyinExposureCollector {
       const session = await this.browser.getOrCreateSession({
         platform: 'douyin',
         accountId: input.accountId,
+        // 执行必需前台：抖音采集/触达依赖真实渲染，置前窗口避免 macOS 离屏节流导致灰屏/读取为空
+        foregroundRequired: true,
       });
       const candidates: DouyinExposureCandidate[] = [];
       const scans: Array<Record<string, unknown>> = [];
@@ -996,6 +1012,8 @@ export class DouyinExposureCollector {
       const session = await this.browser.getOrCreateSession({
         platform: 'douyin',
         accountId: input.accountId,
+        // 执行必需前台：抖音采集/触达依赖真实渲染，置前窗口避免 macOS 离屏节流导致灰屏/读取为空
+        foregroundRequired: true,
       });
       await this.browser.open(session.key, profileUrl, {
         waitUntil: 'domcontentloaded',
@@ -2672,8 +2690,35 @@ export class DouyinExposureCollector {
       this.logger.warn('视觉兜底跳过：无截图文件');
       return null;
     }
-    // 视觉模型：kaypal.cn 服务器注册的 qwen-vl-max（ai_models.kaypal-vision）
-    const visionModel = 'cmsvis0001visionkaypalvl';
+    // 视觉模型解析（2026-09-02 修复）：不再把 modelId 当数据库主键硬编码——
+    // 先按别名列表找启用的视觉模型（kaypal-vision / cmsvis0001visionkaypalvl 任一命中），
+    // 干净环境缺失时按 kaypal 代理 env 懒创建，仍无则明确告警返回 null（保持原拦截逻辑）。
+    let visionModelId: string | null = null;
+    if (this.prisma) {
+      const found = await this.prisma.aIModel.findFirst({
+        where: {
+          modelId: { in: [...VISION_MODEL_ALIASES] },
+          enabled: true,
+        },
+      });
+      visionModelId = found?.id ?? null;
+      if (!visionModelId && this.config) {
+        await ensureKaypalVisionModel(this.prisma, this.config, this.logger);
+        const retried = await this.prisma.aIModel.findFirst({
+          where: {
+            modelId: { in: [...VISION_MODEL_ALIASES] },
+            enabled: true,
+          },
+        });
+        visionModelId = retried?.id ?? null;
+      }
+    }
+    if (!visionModelId) {
+      this.logger.warn(
+        '[视觉兜底] 无可用视觉模型：ai_models 缺少任一启用的 ' + VISION_MODEL_ALIASES.join(' / ') + ' 记录（懒创建需 KAYPAL_AI_PROXY_BASE_URL + KAYPAL_AI_PROXY_API_KEY）',
+      );
+      return null;
+    }
     try {
       // 压缩截图：全尺寸 1600x1000 PNG 直接传会超 qwen-vl-max 输入 token 限制
       // （实测 500x740 文字密集图 ≈10 万 token，>8 万即输出空/网关异常）。
@@ -2740,7 +2785,7 @@ export class DouyinExposureCollector {
             `以 JSON 数组输出，格式：[{"videoTitle":"视频标题","authorName":"作者昵称","videoUrl":"视频链接"}]。` +
             `如果画面是验证码、登录页或没有可见内容，输出空数组 []。不要输出其他内容。`;
       const visionContent = await this.aiClient.generateWithImage(
-        visionModel,
+        visionModelId,
         {
           system: '你是获客助手，负责从抖音页面截图提取用户线索。只输出 JSON。',
           prompt,
@@ -2784,7 +2829,7 @@ export class DouyinExposureCollector {
       return {
         ok: true,
         status: 'collected',
-        message: `验证码/反爬拦截后经视觉识别恢复：从截图提取 ${candidates.length} 条${mode === 'comments' ? '评论用户' : '搜索结果'}（qwen-vl-max）`,
+        message: `验证码/反爬拦截后经视觉识别恢复：从截图提取 ${candidates.length} 条${mode === 'comments' ? '评论用户' : '搜索结果'}（${visionModelId}）`,
         currentUrl: sourceUrl,
         candidates,
         evidence: {
