@@ -1591,6 +1591,13 @@ export class LocalBrowserEngine implements OnModuleDestroy {
           session.browserProcess.kill('SIGTERM');
         } else if (session.browserProcess.pid) {
           process.kill(-session.browserProcess.pid, 'SIGTERM');
+          // headless chrome 可能忽略 SIGTERM，补一发 SIGKILL 兜底，确保探活进程不残留
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          try {
+            process.kill(-session.browserProcess.pid, 'SIGKILL');
+          } catch {
+            /* 进程已退出 */
+          }
         }
       } catch (error) {
         this.logger.error(

@@ -4390,7 +4390,10 @@ export class AutoUploadClient {
     } finally {
       // 探活档新启动的 headless 会话：无论校验成功/失败/超时，用完即关
       if (probeStarted) {
-        const probeKey = `${input.platform}:${String(input.accountId)}`;
+        // 探活会话 key 必须与 getOrCreateSession 内部 `${platform}-${accountId}` 一致；
+        // 此前拼成冒号 `platform:accountId`，closeSession 找不到会话直接 return true，
+        // headless 进程残留，执行档复用 headless 会话导致截图灰屏（2026-09-02 根因）。
+        const probeKey = session.key;
         const closed = await this.localBrowser
           .closeSession(probeKey)
           .catch((error) => {
