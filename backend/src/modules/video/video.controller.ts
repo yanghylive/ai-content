@@ -159,14 +159,25 @@ export class VideoController {
     return this.videoService.productCut(body, this.resolveUserId());
   }
 
-  /** 2026-09-01（复核 P1-D）：当前请求用户 id */
-  private resolveUserId(): string | undefined {
+  /**
+   * 2026-09-01（复核 P1-D/第五轮 P1）：当前请求用户 id。
+   * 认证上下文缺失/异常直接抛 401（项目端点均受 AuthGuard 保护），
+   * 不再返回 undefined 退化为无过滤访问。
+   */
+  private resolveUserId(): string {
     try {
       const ctx = this.authRequestContext?.get() as
         { user?: { id?: string } } | undefined;
-      return ctx?.user?.id?.trim() || undefined;
-    } catch {
-      return undefined;
+      const id = ctx?.user?.id?.trim();
+      if (!id) {
+        throw new UnauthorizedException('登录状态无效，请重新登录');
+      }
+      return id;
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('登录状态无效，请重新登录');
     }
   }
 

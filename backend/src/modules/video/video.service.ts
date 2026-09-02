@@ -82,23 +82,24 @@ export class VideoService {
     );
     // 透传到 studio_core；本机 StudioCore 不可达（打包态典型）时回退
     // kaypal.cn 云端网关视频通道（/api/ai/v1/video/generations，统一计费）。
+    let result: { project_id: string; status: string } | undefined;
     try {
-      const result = await this.studioCoreProxy.postGenerate(dto);
-      // 2026-09-01（复核第四轮 P1）：创建入口统一登记项目归属（服务端认证用户）
-      if (ownerId && result?.project_id) {
-        await this.prisma.registerStudioProjectOwner(
-          result.project_id,
-          ownerId,
-        );
-      }
-      return result;
+      result = await this.studioCoreProxy.postGenerate(dto);
     } catch (error) {
+      // 2026-09-01（复核第五轮 P1-3）：只捕获引擎连接失败回退云端；
+      // owner 登记失败必须原样抛错（否则 StudioCore 已建项目 + 云端重复生成）
       const message = this.errorMessage(error);
       this.logger.warn(
         `StudioCore 不可达，回退 kaypal 云端视频通道：${message}`,
       );
       return this.generateViaKaypalGateway(dto, message, kaypalUserId);
     }
+    // 2026-09-01（复核第四轮 P1）：创建入口统一登记项目归属（服务端认证用户）。
+    // 登记失败抛错并记录补偿（不进入云端回退，避免重复任务/孤儿项目）。
+    if (ownerId && result?.project_id) {
+      await this.prisma.registerStudioProjectOwner(result.project_id, ownerId);
+    }
+    return result;
   }
 
   /** 云端网关视频兜底：提交异步任务，返回任务受理信息 */
@@ -148,18 +149,15 @@ export class VideoService {
     return rows.length > 0 ? rows[0].user_id : null;
   }
 
-  async listProjects(query: VideoProjectListQueryDto, userId?: string) {
+  async listProjects(query: VideoProjectListQueryDto, userId: string) {
     try {
       const result = await this.studioCoreProxy.getProjects(query);
       // 2026-09-01（复核 P0）：列表按创建者过滤——只返回当前用户拥有的项目
-      if (userId) {
-        const owned = await this.prisma.listStudioProjectOwnerIds(userId);
-        const projects = result.projects.filter((p) =>
-          owned.has(String((p as { id?: unknown })?.id)),
-        );
-        return { projects, total: projects.length };
-      }
-      return result;
+      const owned = await this.prisma.listStudioProjectOwnerIds(userId);
+      const projects = result.projects.filter((p) =>
+        owned.has(String((p as { id?: unknown })?.id)),
+      );
+      return { projects, total: projects.length };
     } catch (error) {
       this.logger.warn(`视频服务暂不可用：${this.errorMessage(error)}`);
       // 2026-09-01（复核 P2）：不再静默降级空列表——抛错让前端错误处理上屏
@@ -170,11 +168,9 @@ export class VideoService {
   /**
    * 查询单个视频项目详情
    */
-  async getProject(id: string, userId?: string) {
+  async getProject(id: string, userId: string) {
     // 2026-09-01（复核 P0）：项目 ID 操作前校验归属（无记录/不匹配拒绝，不认领）
-    if (userId) {
-      await this.prisma.assertStudioProjectOwner(id, userId);
-    }
+    await this.prisma.assertStudioProjectOwner(id, userId);
     const project = await this.studioCoreProxy.getProject(id);
     if (!project) {
       throw new NotFoundException(`视频项目 ${id} 不存在`);
@@ -185,11 +181,9 @@ export class VideoService {
   /**
    * 获取视频项目产物（compose.mp4）
    */
-  async getComposeMp4(id: string, userId?: string) {
+  async getComposeMp4(id: string, userId: string) {
     // 2026-09-01（复核 P0）：成片下载同样校验归属（不认领）
-    if (userId) {
-      await this.prisma.assertStudioProjectOwner(id, userId);
-    }
+    await this.prisma.assertStudioProjectOwner(id, userId);
     return this.studioCoreProxy.getComposeMp4(id);
   }
 
@@ -216,12 +210,10 @@ export class VideoService {
    */
   async importComposeMp4(
     id: string,
-    userId?: string,
+    userId: string,
   ): Promise<{ filename: string; sizeBytes: number }> {
     // 2026-09-01（复核 P0）：导入成片同样校验归属（不认领）
-    if (userId) {
-      await this.prisma.assertStudioProjectOwner(id, userId);
-    }
+    await this.prisma.assertStudioProjectOwner(id, userId);
     const project = await this.studioCoreProxy.getProject(id);
     if (!project || !project.video) {
       throw new BadRequestException(
@@ -346,23 +338,16 @@ export class VideoService {
     this.logger.log(
       `productCut: ${input.productName} segments=${script.segments.length}`,
     );
+    let result: { project_id: string; status: string } | undefined;
     try {
-      const result = await this.studioCoreProxy.postGenerate({
+      result = await this.studioCoreProxy.postGenerate({
         pipeline: 'promo',
         prompt,
         user_id: input.user_id,
       });
-      // 2026-09-01（复核第四轮 P1）：productCut 创建入口同样登记归属
-      // （归属用服务端认证用户，不信请求体 user_id）
-      if (ownerId && result?.project_id) {
-        await this.prisma.registerStudioProjectOwner(
-          result.project_id,
-          ownerId,
-        );
-      }
-      return result;
     } catch (error) {
-      // studio_core 引擎离线时返回可操作的降级信息（文案已生成，可稍后重试成片）
+      // 2026-09-01（复核第五轮 P1-3）：只捕获引擎连接失败（引擎离线可降级）；
+      // owner 登记失败不伪装成"引擎离线"
       this.logger.warn(`productCut 成片引擎不可用: ${error}`);
       return {
         queued: false,
@@ -373,6 +358,12 @@ export class VideoService {
         segments: script.segments,
       };
     }
+    // 2026-09-01（复核第四轮 P1）：创建入口统一登记归属（服务端认证用户）。
+    // 登记失败原样抛错（不留无归属项目）
+    if (ownerId && result?.project_id) {
+      await this.prisma.registerStudioProjectOwner(result.project_id, ownerId);
+    }
+    return result;
   }
   // ============ 商品剪辑配置（对标炼刀 /auto/product_video_clip/config） ============
 

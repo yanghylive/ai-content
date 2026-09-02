@@ -91,8 +91,7 @@ export class PrismaService
       (!process.env.DATABASE_URL ||
         !process.env.DATABASE_URL.startsWith('postgres'))
     ) {
-      process.env.DATABASE_URL =
-        'postgresql://test:test@127.0.0.1:5432/test';
+      process.env.DATABASE_URL = 'postgresql://test:test@127.0.0.1:5432/test';
     }
     super();
     const proxy = new Proxy(this, {
