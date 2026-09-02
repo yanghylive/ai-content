@@ -40,26 +40,37 @@ function makeFakeWiring() {
       }
       return { ...session };
     },
-    async sendCDPForAgent(_panelId, _actor, method) {
-      if (method === 'Runtime.evaluate') {
-        return { result: { result: { value: JSON.stringify({ title: 'T', text: 'hello' }) } } };
+    async sendCDPForAgent(_panelId, actor, method, params, opts) {
+      if (!actor || actor.ownerId !== session.ownerId || actor.tenantId !== session.tenantId) {
+        throw new Error('actor 与面板会话 owner/tenant 不一致，拒绝访问');
       }
-      return { ok: true };
+      this._lastCall = { method, params, opts };
+      if (method === 'Runtime.evaluate') {
+        return {
+          result: { result: { value: JSON.stringify({ title: 'T', text: 'hello' }) } },
+          target: { ...session },
+        };
+      }
+      return { result: { ok: true }, target: { ...session } };
     },
     requestActionForAgent(panelId, actor, method) {
       if (!actor || actor.ownerId !== session.ownerId) throw new Error('不一致');
       return { actionId: 'act-1', binding: { webContentsId: 77, method } };
     },
+    listPendingActions() {
+      return [{ actionId: 'act-1', method: 'Page.navigate' }];
+    },
   };
 }
 
 async function withBridge(fn) {
+  const wiring = makeFakeWiring();
   const bridge = await startBrowserBridge({
-    wiring: makeFakeWiring(),
+    wiring,
     logger: { warn: () => {}, error: () => {} },
   });
   try {
-    await fn(bridge);
+    await fn(bridge, wiring);
   } finally {
     await bridge.close();
   }
@@ -196,6 +207,85 @@ test('requestAction 只拿到确认单（含 webContentsId 绑定）', async () 
     assert.equal(ticket.actionId, 'act-1');
     assert.equal(ticket.binding.webContentsId, 77);
     assert.equal(ticket.binding.method, 'Input.dispatchMouseEvent');
+  });
+});
+
+test('execute：写动作必须带 actionId，缺单被服务端拒（不静默执行）', async () => {
+  await withBridge(async (bridge) => {
+    const client = createBrowserBridgeClient({ endpoint: bridge.endpoint, token: bridge.token });
+    await expectBridgeError(
+      client.execute({ panelId: 'panel-x', actor: ACTOR_A, method: 'Page.navigate', params: {} }),
+      'POLICY_DENIED',
+      403,
+    );
+  });
+});
+
+test('execute：带已批准 actionId 的写动作成功，confirmed 单号透传到闸门', async () => {
+  await withBridge(async (bridge, wiring) => {
+    const client = createBrowserBridgeClient({ endpoint: bridge.endpoint, token: bridge.token });
+    const out = await client.execute({
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+      method: 'Page.navigate',
+      params: { url: 'https://kaypal.cn/x' },
+      actionId: 'act-1',
+    });
+    assert.equal(out.executed, true);
+    assert.equal(out.binding.webContentsId, 77);
+    assert.equal(out.result, null, '写动作不回传原始 CDP 结果');
+    assert.equal(wiring._lastCall.opts.approvedActionId, 'act-1');
+  });
+});
+
+test('execute：客户端本地拒绝缺 panelId / 缺 method（不发无效请求）', async () => {
+  await withBridge(async (bridge) => {
+    const client = createBrowserBridgeClient({ endpoint: bridge.endpoint, token: bridge.token });
+    await expectBridgeError(
+      client.execute({ actor: ACTOR_A, method: 'Page.navigate', actionId: 'a1' }),
+      'PANEL_REQUIRED',
+      400,
+    );
+    await expectBridgeError(
+      client.execute({ panelId: 'panel-x', actor: ACTOR_A, actionId: 'a1' }),
+      'METHOD_REQUIRED',
+      400,
+    );
+  });
+});
+
+test('pendingActions：拿到待批列表（不含 token）', async () => {
+  await withBridge(async (bridge) => {
+    const client = createBrowserBridgeClient({ endpoint: bridge.endpoint, token: bridge.token });
+    const out = await client.pendingActions({ panelId: 'panel-x', actor: ACTOR_A });
+    assert.equal(out.items[0].actionId, 'act-1');
+    assert.ok(!JSON.stringify(out).includes(bridge.token));
+  });
+});
+
+test('actionState：pending / approved / none 三态可读；缺参本地拒绝', async () => {
+  await withBridge(async (bridge, wiring) => {
+    wiring.actionStateForAgent = (panelId, actor, actionId) => ({
+      actionId,
+      state: actionId === 'ok-1' ? 'approved' : 'pending',
+      panelId,
+      method: 'Page.navigate',
+      approvedAt: actionId === 'ok-1' ? Date.now() : null,
+    });
+    const client = createBrowserBridgeClient({ endpoint: bridge.endpoint, token: bridge.token });
+    assert.equal(
+      (await client.actionState({ panelId: 'panel-x', actor: ACTOR_A, actionId: 'ok-1' })).state,
+      'approved',
+    );
+    assert.equal(
+      (await client.actionState({ panelId: 'panel-x', actor: ACTOR_A, actionId: 'p-1' })).state,
+      'pending',
+    );
+    await expectBridgeError(
+      client.actionState({ panelId: 'panel-x', actor: ACTOR_A }),
+      'METHOD_REQUIRED',
+      400,
+    );
   });
 });
 

@@ -12,12 +12,13 @@
  *    （action/request）走 wiring → Broker 审批闸门，且服务端拒绝自我批准；
  *  - 所有响应 URL 经 wiring/broker 脱敏，token 不出服务端。
  *
- * 本模块只建地基与只读通路：Agent-S 真实执行路径的切换（observe→act 闭环、
- * 审批 UI、证据链落库）需用户单独批准后在后续轮接入（AGENTS.md：Agent-S 为
- * 主执行器，非授权不改其执行路径）。
+ * 阶段 5（用户已批准接入）：新增 `/execute`，但**桥仍没有执行权**——写动作
+ * 必须携带用户已批准的确认单 actionId，由 Broker 闸门消费确认单后放行；
+ * 确认单的批准权始终在桌面端用户通道，后端拿不到也伪造不了。
  */
 const http = require('node:http');
 const crypto = require('node:crypto');
+const { MUTATION_METHODS } = require('./browser-panel-broker');
 
 const PROTOCOL = 'kaypal-browser-bridge';
 const VERSION = 1;
@@ -168,6 +169,65 @@ async function startBrowserBridge(deps) {
       // 服务端拒绝自我批准：只签发确认单，批准权在用户通道（阶段 4b）
       return wiring.requestActionForAgent(panelId, actor, method, summary);
     },
+    /**
+     * 执行（阶段 5 后端接入缝）。
+     * **桥本身没有执行权**——写动作必须带用户已批准的确认单 actionId，
+     * 由 Broker 的审批闸门消费确认单后放行；缺单/错单/换页后旧单一律拒绝。
+     * 只读方法可以无单执行（等价 observe 的能力，白名单由 Broker 把守）。
+     */
+    'POST /execute': async (body) => {
+      const { panelId, actor, actionId, method, params } = body;
+      if (!method || typeof method !== 'string') {
+        throw new Error('CDP method 必填');
+      }
+      if (MUTATION_METHODS.has(method) && !actionId) {
+        throw new Error(
+          `写动作 ${method} 必须携带用户已批准的确认单 actionId（fail-closed，桥不自我批准）`,
+        );
+      }
+      const out = await wiring.sendCDPForAgent(
+        panelId,
+        actor,
+        method,
+        params || {},
+        { approvedActionId: actionId },
+      );
+      const redacted = redactTarget(out && out.target) || {};
+      return {
+        binding: {
+          panelId: redacted.panelId ?? null,
+          sessionId: redacted.sessionId ?? null,
+          webContentsId: redacted.webContentsId ?? null,
+          url: redacted.url ?? null,
+        },
+        method,
+        executed: true,
+        actionId: actionId ?? null,
+        // 写动作只回执（+ 脱敏后的落地 URL），不回传原始 CDP 结果：
+        // 避免把页面内容/凭据带回后端进程，写动作的证据走桌面端自有证据链。
+        result: MUTATION_METHODS.has(method) ? null : (out.result ?? null),
+      };
+    },
+    /** 待批确认单列表（供桌面端审批 UI / 排障查询；不含 token） */
+    'POST /pending-actions': (body) => ({
+      items: wiring.listPendingActions ? wiring.listPendingActions(body.panelId) || [] : [],
+    }),
+    /** 确认单状态查询（后端执行写动作前的合法前置；查询本身不消费确认单） */
+    'POST /action-state': (body) => {
+      const { panelId, actor, actionId } = body;
+      if (!actionId || typeof actionId !== 'string') {
+        throw new Error('actionId 必填');
+      }
+      return (
+        wiring.actionStateForAgent?.(panelId, actor, actionId) || {
+          actionId,
+          state: 'none',
+          panelId: null,
+          method: null,
+          approvedAt: null,
+        }
+      );
+    },
   };
 
   function fail(res, status, code) {
@@ -225,7 +285,7 @@ async function startBrowserBridge(deps) {
     } catch (error) {
       const message = error && error.message ? String(error.message) : 'internal';
       // actor/审批/白名单类错误按 403 透出；其余 500。不回显内部堆栈。
-      if (/不一致|拒绝|未登记|需要审批|actor|fail-closed|自我批准/i.test(message)) {
+      if (/不一致|拒绝|未登记|需要审批|actor|必填|fail-closed|自我批准/i.test(message)) {
         fail(res, 403, 'POLICY_DENIED');
       } else {
         logger.warn('[browser-bridge] 请求处理失败：', message);

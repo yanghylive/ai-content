@@ -96,51 +96,33 @@ function getBrowserWiring() {
   return browserWiring;
 }
 
-// 阶段 4（地基）：3011 Agent-S ⇄ desktop 面板上行桥（127.0.0.1 随机端口 + 随机
-// token，只读 observe + 签发确认单，绝不代理裸 CDP、绝不自我批准）。
-// ⚠️ 安全边界：bridge token 只存活主进程（getBrowserBridgeInfo），**不经任何
-// web/前端广播通道下发**；把 endpoint+token 安全投递给 3011 Agent（改 Agent-S
-// 执行路径的高风险动作）需用户单独批准后在后续轮接入。本轮桥默认不启动。
-const { startBrowserBridge } = require('./browser-agent-bridge-server');
-let browserBridge = null;
-let browserBridgePromise = null;
-async function ensureBrowserBridge() {
-  if (browserBridge) return browserBridge;
-  if (!browserBridgePromise) {
-    browserBridgePromise = startBrowserBridge({
-      wiring: getBrowserWiring(),
-      logger: console,
-    })
-      .then((bridge) => {
-        browserBridge = bridge;
-        return bridge;
-      })
-      .catch((error) => {
-        browserBridgePromise = null;
-        throw error;
-      });
-  }
-  return browserBridgePromise;
-}
-function getBrowserBridgeInfo() {
-  return browserBridge
-    ? { port: browserBridge.port, endpoint: browserBridge.endpoint, token: browserBridge.token }
-    : null;
-}
-async function closeBrowserBridge() {
-  const pending = browserBridgePromise;
-  browserBridgePromise = null;
-  const bridge = browserBridge;
-  browserBridge = null;
-  if (bridge) await bridge.close();
-  else if (pending) {
+// 阶段 5：桥的生命周期编排（与阶段 5 端到端脚本共用同一模块，避免"E2E 验副本、
+// 生产跑另一份"）。规则：面板可见(opened/shown)→起桥+写 0600 凭据文件；
+// 隐藏/销毁/换账号→关桥+删凭据文件（详见模块头注释）。
+const { createBrowserBridgeRuntime } = require('./browser-panel-bridge-runtime');
+const browserBridgeRuntime = createBrowserBridgeRuntime({
+  manager: browserPanel,
+  wiring: browserWiring,
+  getUserDataDir: () => {
     try {
-      const started = await pending;
-      await started.close();
+      return app.getPath('userData');
     } catch {
-      /* 启动未完成 */
+      return null;
     }
-  }
+  },
+  logger: console,
+});
+
+/** 桥是否可用 + endpoint（**不含 token**，供诊断/日志） */
+function getBrowserBridgeInfo() {
+  const info = browserBridgeRuntime.info();
+  return info ? { port: info.port, endpoint: info.endpoint } : null;
+}
+
+if (typeof browserPanel.onSessionEvent === 'function') {
+  browserPanel.onSessionEvent((event) => {
+    browserBridgeRuntime.sync(event);
+  });
 }
 
 let mainWindow = null;
@@ -2805,12 +2787,11 @@ app.on('before-quit', () => {
   stopBackendService();
   stopOctopService();
   destroyUpdater();
-  // 阶段 4：关桥 = 释放随机端口 + 销毁主进程内的 bridge token（不再可被任何
-  // 本地进程调用 observe/action-request）。失败不得阻断退出。
+  // 阶段 5：关桥 = 停监听 + 销毁 token + 删磁盘凭据文件（退出不留残留 token）
   try {
-    const maybe = closeBrowserBridge();
-    if (maybe && typeof maybe.catch === 'function') {
-      maybe.catch((error) => {
+    const closing = browserBridgeRuntime.close();
+    if (closing && typeof closing.catch === 'function') {
+      closing.catch((error) => {
         console.warn('[App] closeBrowserBridge failed:', error?.message || error);
       });
     }

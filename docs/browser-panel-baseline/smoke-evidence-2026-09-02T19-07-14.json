@@ -1,0 +1,405 @@
+{
+  "meta": {
+    "runAt": "2026-09-02T19:07:14.060Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "fixture": "desktop/test-fixtures/browser-panel.html"
+  },
+  "checks": [
+    {
+      "name": "C1 WebContentsView 加载 fixture",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:60892/browser-panel.html"
+      }
+    },
+    {
+      "name": "C2 webContents.debugger CDP attach",
+      "pass": true,
+      "detail": {
+        "version": "1.3"
+      }
+    },
+    {
+      "name": "C3 读 URL/标题/DOM 快照（含 AX 树）",
+      "pass": true,
+      "detail": {
+        "title": "BrowserPanel P0 Fixture",
+        "url": "http://127.0.0.1:60892/browser-panel.html",
+        "domRoot": true,
+        "axNodes": 21
+      }
+    },
+    {
+      "name": "C4a CDP 真实点击 → 页面状态变化（计数 +1）",
+      "pass": true,
+      "detail": {
+        "before": "0",
+        "after": "1",
+        "x": 23.6015625,
+        "y": 123.125
+      }
+    },
+    {
+      "name": "C4b CDP 输入文本 + 键盘事件 → 页面读取一致",
+      "pass": true,
+      "detail": {
+        "keylog": "enter:agent-typed"
+      }
+    },
+    {
+      "name": "C4c CDP 截图产出证据文件",
+      "pass": true,
+      "detail": {
+        "bytes": 34550
+      }
+    },
+    {
+      "name": "C5 用户操作（页面内事件）→ CDP 侧读到同一变化",
+      "pass": true,
+      "detail": {
+        "cdp": "input:user-typed-abc",
+        "inPage": "user-typed-abc"
+      }
+    },
+    {
+      "name": "C6 Agent 操作对视图实时可见（URL 一致 + 页面值同一文档）",
+      "pass": true,
+      "detail": {
+        "inPageUrl": "http://127.0.0.1:60892/browser-panel.html",
+        "brokerUrl": "http://127.0.0.1:60892/browser-panel.html",
+        "fieldValue": "user-typed-abc"
+      }
+    },
+    {
+      "name": "C7a 新 tab 被拦截且可观测",
+      "pass": true,
+      "detail": {
+        "interceptedUrl": "about:blank"
+      }
+    },
+    {
+      "name": "C7b 导航失败状态可读",
+      "pass": true,
+      "detail": {
+        "failEvents": [
+          {
+            "code": -102,
+            "desc": "ERR_CONNECTION_REFUSED"
+          }
+        ]
+      }
+    },
+    {
+      "name": "C7c 失败后可恢复",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:60892/browser-panel.html"
+      }
+    }
+  ],
+  "events": [
+    {
+      "seq": 1,
+      "at": 1788376034233,
+      "type": "panel.created",
+      "sessionId": "sess-p0-001",
+      "partition": "persist:kaypal-browser-user-p0"
+    },
+    {
+      "seq": 2,
+      "at": 1788376034372,
+      "type": "action.requested",
+      "actionId": "c59d665ce7ec62120f304a45",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 3,
+      "at": 1788376034372,
+      "type": "action.approved",
+      "actionId": "c59d665ce7ec62120f304a45",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "seq": 4,
+      "at": 1788376034372,
+      "type": "action.started",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 5,
+      "at": 1788376034372,
+      "type": "action.completed",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 6,
+      "at": 1788376034372,
+      "type": "action.requested",
+      "actionId": "260d5e2edfb7c33633edc95d",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 7,
+      "at": 1788376034372,
+      "type": "action.approved",
+      "actionId": "260d5e2edfb7c33633edc95d",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "seq": 8,
+      "at": 1788376034372,
+      "type": "action.started",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 9,
+      "at": 1788376034374,
+      "type": "action.completed",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 10,
+      "at": 1788376034376,
+      "type": "action.requested",
+      "actionId": "673647c2a06adb3759ba29e3",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 11,
+      "at": 1788376034376,
+      "type": "action.approved",
+      "actionId": "673647c2a06adb3759ba29e3",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "seq": 12,
+      "at": 1788376034376,
+      "type": "action.started",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 13,
+      "at": 1788376034377,
+      "type": "action.completed",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 14,
+      "at": 1788376034377,
+      "type": "action.requested",
+      "actionId": "0a070579553c8b8c69ee49a5",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 15,
+      "at": 1788376034377,
+      "type": "action.approved",
+      "actionId": "0a070579553c8b8c69ee49a5",
+      "method": "Input.dispatchMouseEvent"
+    },
+    {
+      "seq": 16,
+      "at": 1788376034377,
+      "type": "action.started",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 17,
+      "at": 1788376034377,
+      "type": "action.completed",
+      "method": "Input.dispatchMouseEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 18,
+      "at": 1788376034377,
+      "type": "action.requested",
+      "actionId": "8d99e0c379796558a4bb25e4",
+      "method": "Input.insertText",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 19,
+      "at": 1788376034377,
+      "type": "action.approved",
+      "actionId": "8d99e0c379796558a4bb25e4",
+      "method": "Input.insertText"
+    },
+    {
+      "seq": 20,
+      "at": 1788376034377,
+      "type": "action.started",
+      "method": "Input.insertText",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 21,
+      "at": 1788376034379,
+      "type": "action.completed",
+      "method": "Input.insertText",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 22,
+      "at": 1788376034379,
+      "type": "action.requested",
+      "actionId": "c827aa9de4aa4b474ee5d5e4",
+      "method": "Input.dispatchKeyEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 23,
+      "at": 1788376034379,
+      "type": "action.approved",
+      "actionId": "c827aa9de4aa4b474ee5d5e4",
+      "method": "Input.dispatchKeyEvent"
+    },
+    {
+      "seq": 24,
+      "at": 1788376034379,
+      "type": "action.started",
+      "method": "Input.dispatchKeyEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 25,
+      "at": 1788376034413,
+      "type": "action.completed",
+      "method": "Input.dispatchKeyEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 26,
+      "at": 1788376034413,
+      "type": "action.requested",
+      "actionId": "eb4e0e67bdee7551579701fb",
+      "method": "Input.dispatchKeyEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 27,
+      "at": 1788376034413,
+      "type": "action.approved",
+      "actionId": "eb4e0e67bdee7551579701fb",
+      "method": "Input.dispatchKeyEvent"
+    },
+    {
+      "seq": 28,
+      "at": 1788376034413,
+      "type": "action.started",
+      "method": "Input.dispatchKeyEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    {
+      "seq": 29,
+      "at": 1788376034422,
+      "type": "action.completed",
+      "method": "Input.dispatchKeyEvent",
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html",
+      "afterUrl": "http://127.0.0.1:60892/browser-panel.html"
+    }
+  ],
+  "binding": {
+    "panelId": "panel-p0",
+    "sessionId": "sess-p0-001",
+    "webContentsId": 3,
+    "brokerResolved": {
+      "panelId": "panel-p0",
+      "sessionId": "sess-p0-001",
+      "webContentsId": 3,
+      "url": "http://127.0.0.1:60892/browser-panel.html"
+    },
+    "sameWebContents": true,
+    "sameSession": true
+  },
+  "screenshots": [
+    {
+      "file": "docs/browser-panel-baseline/smoke-screenshot-2026-09-02T19-07-14.png",
+      "sha256_16": "7b2c179120d7caba",
+      "bytes": 34550,
+      "webContentsId": 3
+    }
+  ]
+}

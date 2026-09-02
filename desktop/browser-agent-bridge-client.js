@@ -178,6 +178,48 @@ function createBrowserBridgeClient({ endpoint, token } = {}) {
         actor,
       );
     },
+  /**
+   * 执行（阶段 5 后端接入缝）。
+   * - 只读方法：可直接调用（白名单由 Broker 把守）；
+   * - 写方法（Page.navigate / Input.*）：**必须**带 actionId，且该确认单必须
+   *   已被桌面端用户批准。缺单/错单/换页后旧单 → Broker 拒绝（fail-closed）。
+   * 拿执行权 ≠ 拿批准权：批准永远在用户手上。
+   */
+  execute({ panelId, actor, method, params, actionId } = {}) {
+    if (!panelId) {
+      return Promise.reject(new BridgeError('PANEL_REQUIRED', 400, 'panelId 必填'));
+    }
+    if (!method || typeof method !== 'string') {
+      return Promise.reject(new BridgeError('METHOD_REQUIRED', 400, 'CDP method 必填'));
+    }
+    return call(
+      '/execute',
+      'POST',
+      { panelId, actor, method, params: params || {}, actionId: actionId || null },
+      actor,
+    );
+  },
+
+  /** 待批确认单列表（不含 token） */
+  pendingActions({ panelId, actor } = {}) {
+    if (!panelId) {
+      return Promise.reject(new BridgeError('PANEL_REQUIRED', 400, 'panelId 必填'));
+    }
+    return call('/pending-actions', 'POST', { panelId, actor }, actor);
+  },
+  /**
+   * 查确认单状态（pending / approved / none）。
+   * 后端执行写动作前的合法前置：只有 approved 才允许带单 execute。
+   */
+  actionState({ panelId, actor, actionId } = {}) {
+    if (!panelId) {
+      return Promise.reject(new BridgeError('PANEL_REQUIRED', 400, 'panelId 必填'));
+    }
+    if (!actionId) {
+      return Promise.reject(new BridgeError('METHOD_REQUIRED', 400, 'actionId 必填'));
+    }
+    return call('/action-state', 'POST', { panelId, actor, actionId }, actor);
+  },
   };
 }
 

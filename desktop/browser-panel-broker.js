@@ -27,6 +27,9 @@ const CDP_WHITELIST = new Set([
   'Input.dispatchMouseEvent',
   'Input.dispatchKeyEvent',
   'Input.insertText',
+  // 2026-09-03（阶段 5）：导航——走 CDP 而非 wc.loadURL，保证"用户看到的
+  // 那一次导航"与 Agent 触发的是同一条命令，且受同一审批闸门与事件流约束。
+  'Page.navigate',
 ]);
 
 const READONLY_METHODS = new Set([
@@ -36,6 +39,15 @@ const READONLY_METHODS = new Set([
   'DOM.getDocument',
   'DOM.getOuterHTML',
 ]);
+
+/**
+ * 2026-09-03（阶段 5）：占位身份——desktop 主进程不知道"当前登录的是谁"
+ * （登录态在 3010/3011 侧），面板会话的 ownerId/tenantId 建成时只能是占位值。
+ * 在此身份下，面板视为「待绑定」：第一个带完整 actor 的访问者把它绑走，
+ * 之后只认这一个 actor（防跨会话漂移）。真实身份一旦注入则按真实身份比对。
+ */
+const PLACEHOLDER_OWNER_ID = 'local-desktop';
+const PLACEHOLDER_TENANT_ID = 'local-tenant';
 
 /**
  * 2026-09-03（阶段 3）：证据文本 URL 脱敏——事件流/日志不得带查询串里的
@@ -65,7 +77,50 @@ const MUTATION_METHODS = new Set([
   'Input.dispatchMouseEvent',
   'Input.dispatchKeyEvent',
   'Input.insertText',
+  'Page.navigate',
 ]);
+
+/**
+ * 2026-09-03（阶段 5）：导航 origin 允许表。
+ * - 空白名单（默认）＝**任何** Agent 发起的导航都要走确认单；
+ * - 命中白名单的 origin 视为低风险，可免确认（但仍进 MUTATION 事件流留痕）。
+ * 配置：构造注入 `allowedOrigins`（数组或逗号分隔字符串）。
+ * 注意：白名单只跳过"确认单"，不跳过协议校验——非 http(s) 一律拒绝。
+ */
+function normalizeOrigins(input) {
+  const list = Array.isArray(input)
+    ? input
+    : typeof input === 'string'
+      ? input.split(',')
+      : [];
+  return new Set(
+    list
+      .map((v) => String(v || '').trim().toLowerCase())
+      .filter(Boolean)
+      .map((v) => v.replace(/\/+$/, '')),
+  );
+}
+
+/**
+ * 导航目标校验（fail-closed）。非 http(s)、或 origin 不在允许表 → 抛错。
+ * @returns {{url: string, origin: string}}
+ */
+function assertNavigable(url, allowedOrigins) {
+  let parsed;
+  try {
+    parsed = new URL(String(url || ''));
+  } catch {
+    throw new Error('导航目标不是合法 URL（拒绝执行）');
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error(`导航协议只允许 http/https，收到：${parsed.protocol}`);
+  }
+  const origin = parsed.origin.toLowerCase();
+  if (allowedOrigins && allowedOrigins.size > 0 && !allowedOrigins.has(origin)) {
+    throw new Error(`导航目标 origin 不在允许表：${origin}`);
+  }
+  return { url: parsed.toString(), origin };
+}
 
 /**
  * 会话契约（工作流文档 §3.3 / 阶段 3 的超集字段，阶段 1 先立形状）
@@ -99,6 +154,13 @@ class BrowserPanelBroker {
     this._resolveWebContents = deps.webContentsResolver || (() => null);
     this._now = deps.now || Date.now;
     this._tokenTtlMs = deps.tokenTtlMs || 15 * 60 * 1000;
+    /** 导航 origin 允许表（空白＝全部需确认单） */
+    this._allowedOrigins = normalizeOrigins(deps.allowedOrigins);
+  }
+
+  /** 当前导航 origin 允许表（只读副本，供上层展示/测试） */
+  allowedOrigins() {
+    return [...this._allowedOrigins];
   }
 
   /** 创建面板会话；返回 capability token（只此一次交付给面板所有者） */
@@ -216,6 +278,23 @@ class BrowserPanelBroker {
       this._emit(panelId, 'blocked', { reason: 'cdp-method-not-allowed', method, ...this._redactTarget(target) });
       throw new Error(`CDP 方法不在白名单：${method}`);
     }
+    // 2026-09-03（阶段 5）：导航目标单独校验——非 http(s) / 不在 origin 允许表
+    // 一律拒绝，且**先于**审批闸门（不合规的导航连确认单都不该签）。
+    if (method === 'Page.navigate') {
+      let navigable;
+      try {
+        navigable = assertNavigable(params && params.url, this._allowedOrigins);
+      } catch (error) {
+        this._emit(panelId, 'blocked', {
+          reason: 'navigate-target-denied',
+          method,
+          message: error.message,
+          ...this._redactTarget(target),
+        });
+        throw error;
+      }
+      params = { ...params, url: navigable.url };
+    }
     const isMutation = MUTATION_METHODS.has(method);
     if (isMutation) {
       const approved = opts.approvedActionId && this._consumeApproval(opts.approvedActionId, panelId, method, target);
@@ -276,7 +355,7 @@ class BrowserPanelBroker {
    * 批准确认单（阶段 1 由 smoke 脚本代表用户调用；阶段 4 起走真实用户审批 UI）。
    * 批准人必须与会话 owner 一致。
    */
-  approveAction(actionId, capabilityToken, approverToken) {
+  approveAction(actionId, capabilityToken, approverToken, context = {}) {
     const detail = this._pendingApprovalsDetail && this._pendingApprovalsDetail.get(actionId);
     if (!detail) throw new Error('确认单不存在或已过期');
     const panel = this._authorize(detail.panelId, capabilityToken);
@@ -286,7 +365,71 @@ class BrowserPanelBroker {
       throw new Error('批准人必须是面板所有者');
     }
     detail.approved = true;
+    detail.approvedAt = this._now();
+    detail.approvalContext = { ...(context || {}), channel: (context && context.channel) || 'owner' };
     this._emit(detail.panelId, 'action.approved', { actionId, method: detail.method });
+  }
+
+  /**
+   * 待批确认单列表（阶段 4 审批 UI 用）。只暴露描述信息，**不含 token**。
+   * @returns {Array<{actionId: string, method: string, summary: object|null, createdAt: number, binding: object}>}
+   */
+  listPendingActions(panelId, capabilityToken) {
+    this._authorize(panelId, capabilityToken);
+    const details = this._pendingApprovalsDetail || new Map();
+    const out = [];
+    for (const [actionId, detail] of details.entries()) {
+      if (detail.panelId !== panelId) continue;
+      if (detail.approved || detail.consumed) continue;
+      out.push({
+        actionId,
+        method: detail.method,
+        summary: detail.summary || null,
+        createdAt: detail.createdAt,
+        binding: detail.binding,
+      });
+    }
+    return out;
+  }
+
+  /**
+   * 确认单状态查询（阶段 5 后端接入缝）。
+   * 后端驱动写动作前必须先看这里：只有 `approved` 才允许带单执行，
+   * `pending` = 用户还没点头，`none` = 不存在/已消费（一次性）。
+   * 注意：查询**不消费**确认单（消费仍由 sendCDP 的审批闸门完成）。
+   */
+  actionState(actionId, capabilityToken) {
+    const detail = this._pendingApprovalsDetail && this._pendingApprovalsDetail.get(actionId);
+    if (!detail) {
+      return { actionId, state: 'none', panelId: null, method: null, approvedAt: null };
+    }
+    this._authorize(detail.panelId, capabilityToken);
+    const target = this.resolveTarget(detail.panelId, capabilityToken);
+    return {
+      actionId,
+      state: detail.approved ? 'approved' : 'pending',
+      panelId: detail.panelId,
+      method: detail.method,
+      approvedAt: detail.approvedAt ?? null,
+      binding: {
+        sessionId: target.sessionId,
+        webContentsId: target.webContentsId,
+        url: target.url,
+      },
+      summary: detail.summary || null,
+    };
+  }
+
+  /** 审批 UI 落审计上下文（谁点的批准、来自哪个界面），只增不改已批状态 */
+  noteActionApprovalContext(actionId, context = {}) {
+    const detail = this._pendingApprovalsDetail && this._pendingApprovalsDetail.get(actionId);
+    if (!detail) return false;
+    detail.approvalContext = {
+      ...(detail.approvalContext || {}),
+      ...context,
+      notedAt: this._now(),
+    };
+    return true;
   }
 
   listEvents(panelId, capabilityToken) {
@@ -296,9 +439,16 @@ class BrowserPanelBroker {
   }
 
   /**
-   * 2026-09-03（阶段 3）：actor 断言——调用方（3011 Agent 桥 / 面板所有者）
-   * 必须声明自己的 owner/tenant，与会话一致才放行；错配一律 fail-closed 并留痕。
-   * 跨租户读取 cookie/页面/会话即由此挡下。
+   * 2026-09-03（阶段 5）**首次绑定**语义：
+   * desktop 主进程拿不到"当前登录用户"（登录态在 3010/3011 侧），面板会话建成时
+   * ownerId/tenantId 只能是占位值 `local-desktop`/`local-tenant`。要求调用方
+   * actor 与占位值相等是不现实的——那会让 3011 的每一次调用都被 403。
+   *
+   * 真实的安全不变量其实是"**一个面板只能被一个身份驱动**"（防跨会话漂移），
+   * 而不是"面板预先知道租户"。因此：
+   *   - 身份为占位值 → 面板待绑定，第一个带完整 actor 的访问者把它绑走；
+   *   - 已有绑定或真实身份 → actor 必须**完全一致**（ownerId+tenantId 全等）；
+   *   - 绑定关系随会话销毁而释放，且全程进事件流留痕（审计可查）。
    */
   assertActor(panelId, capabilityToken, actor) {
     const { session } = this._authorize(panelId, capabilityToken);
@@ -308,14 +458,49 @@ class BrowserPanelBroker {
       this._emit(panelId, 'blocked', { reason: 'actor-missing-identity' });
       throw new Error('actor 必须携带 ownerId/tenantId（fail-closed）');
     }
-    if (ownerId !== session.ownerId || tenantId !== session.tenantId) {
-      this._emit(panelId, 'blocked', {
-        reason: 'actor-tenant-mismatch',
-        sessionId: session.sessionId,
-      });
-      throw new Error('actor 与面板会话 owner/tenant 不一致，拒绝访问');
+
+    const isPlaceholder =
+      session.ownerId === PLACEHOLDER_OWNER_ID && session.tenantId === PLACEHOLDER_TENANT_ID;
+    const bound = session.boundActor || null;
+
+    if (bound) {
+      if (bound.ownerId !== ownerId || bound.tenantId !== tenantId) {
+        this._emit(panelId, 'blocked', {
+          reason: 'actor-tenant-mismatch',
+          sessionId: session.sessionId,
+          boundOwnerId: bound.ownerId,
+          actorOwnerId: ownerId,
+        });
+        throw new Error('面板已绑定到其他身份，拒绝访问（防跨会话漂移）');
+      }
+      return { sessionId: session.sessionId, panelId };
     }
+
+    if (!isPlaceholder) {
+      if (ownerId !== session.ownerId || tenantId !== session.tenantId) {
+        this._emit(panelId, 'blocked', {
+          reason: 'actor-tenant-mismatch',
+          sessionId: session.sessionId,
+        });
+        throw new Error('actor 与面板会话 owner/tenant 不一致，拒绝访问');
+      }
+    }
+
+    // 首次绑定：占位身份与真实身份都在此落定绑定关系
+    session.boundActor = { ownerId, tenantId, boundAt: this._now() };
+    this._emit(panelId, 'actor.bound', {
+      sessionId: session.sessionId,
+      ownerId,
+      tenantId,
+      fromPlaceholder: isPlaceholder,
+    });
     return { sessionId: session.sessionId, panelId };
+  }
+
+  /** 当前绑定身份（未绑定返回 null） */
+  boundActor(panelId, capabilityToken) {
+    const { session } = this._authorize(panelId, capabilityToken);
+    return session.boundActor ? { ...session.boundActor } : null;
   }
 
   /**

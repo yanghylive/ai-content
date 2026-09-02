@@ -40,17 +40,55 @@ function makeFakeWiring() {
       }
       return { ...session };
     },
-    async sendCDPForAgent(panelId, actor, method) {
+    async sendCDPForAgent(panelId, actor, method, params, opts) {
+      // 与真实 wiring.handleFor 对齐：actor 断言在**每个**入口都要过，
+      // 不能只在 resolveTarget 上（否则 /execute 会成为绕过缝）
+      if (!actor || actor.ownerId !== session.ownerId || actor.tenantId !== session.tenantId) {
+        throw new Error('actor 与面板会话 owner/tenant 不一致，拒绝访问');
+      }
       this._lastCdp = method;
+      this._lastCall = { panelId, actor, method, params, opts };
       // observe 内部会 evaluate 拿 title/text
       if (method === 'Runtime.evaluate') {
-        return { result: { result: { value: JSON.stringify({ title: 'T', text: 'hello' }) } } };
+        return {
+          result: { result: { value: JSON.stringify({ title: 'T', text: 'hello' }) } },
+          target: { ...session },
+        };
       }
-      return { ok: true };
+      return { result: { ok: true }, target: { ...session } };
     },
     requestActionForAgent(panelId, actor, method) {
       if (!actor || actor.ownerId !== session.ownerId) throw new Error('不一致');
       return { actionId: 'act-1', binding: { webContentsId: 77, method } };
+    },
+    listPendingActions(panelId) {
+      return panelId === 'panel-x'
+        ? [{ actionId: 'act-1', method: 'Page.navigate', summary: { label: '导航' } }]
+        : [];
+    },
+    actionStateForAgent(panelId, actor, actionId) {
+      if (!actor || actor.ownerId !== session.ownerId) {
+        throw new Error('actor 与面板会话 owner/tenant 不一致，拒绝访问');
+      }
+      if (actionId === 'approved-1') {
+        return {
+          actionId,
+          state: 'approved',
+          panelId,
+          method: 'Page.navigate',
+          approvedAt: Date.now(),
+        };
+      }
+      if (actionId === 'act-1') {
+        return {
+          actionId,
+          state: 'pending',
+          panelId,
+          method: 'Page.navigate',
+          approvedAt: null,
+        };
+      }
+      return { actionId, state: 'none', panelId: null, method: null, approvedAt: null };
     },
     listEventsForAgent() {
       return [];
@@ -199,6 +237,113 @@ test('action-request 只签发确认单（不自批）', async () => {
     assert.equal(status, 200);
     assert.equal(json.data.actionId, 'act-1');
     assert.equal(json.data.binding.webContentsId, 77);
+  });
+});
+
+test('execute 写动作缺确认单 → 403（桥不自我批准，fail-closed）', async () => {
+  await withBridge(async (bridge) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/execute', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+      method: 'Page.navigate',
+      params: { url: 'https://kaypal.cn/x' },
+    });
+    assert.equal(status, 403);
+    assert.equal(json.error.code, 'POLICY_DENIED');
+  });
+});
+
+test('execute 写动作带已批准确认单 → 200，且不回传原始 CDP 结果', async () => {
+  await withBridge(async (bridge, wiring) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/execute', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+      method: 'Page.navigate',
+      params: { url: 'https://kaypal.cn/x' },
+      actionId: 'act-1',
+    });
+    assert.equal(status, 200);
+    assert.equal(json.data.executed, true);
+    assert.equal(json.data.binding.webContentsId, 77);
+    // 写动作只回执，不把页面内容/凭据带回后端进程
+    assert.equal(json.data.result, null);
+    // 确认单确实传到了闸门（否则等于绕过审批）
+    assert.equal(wiring._lastCall.opts.approvedActionId, 'act-1');
+    assert.equal(wiring._lastCall.method, 'Page.navigate');
+  });
+});
+
+test('execute 只读方法无需确认单 → 200 且回传结果', async () => {
+  await withBridge(async (bridge, wiring) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/execute', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+      method: 'Runtime.evaluate',
+      params: { expression: '1+1', returnByValue: true },
+    });
+    assert.equal(status, 200);
+    assert.equal(json.data.executed, true);
+    assert.equal(json.data.result.result.value, JSON.stringify({ title: 'T', text: 'hello' }));
+    assert.equal(wiring._lastCall.opts.approvedActionId, undefined);
+  });
+});
+
+test('execute 跨 owner → 403（执行缝同样受 actor 断言保护）', async () => {
+  await withBridge(async (bridge) => {
+    const { status } = await request(bridge.port, bridge.token, '/execute', {
+      panelId: 'panel-x',
+      actor: { ownerId: 'user-b', tenantId: 'tenant-b' },
+      method: 'Page.navigate',
+      actionId: 'act-1',
+    });
+    assert.equal(status, 403);
+  });
+});
+
+test('pending-actions 返回待批列表（不含 token）', async () => {
+  await withBridge(async (bridge) => {
+    const { status, json } = await request(bridge.port, bridge.token, '/pending-actions', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+    });
+    assert.equal(status, 200);
+    assert.equal(json.data.items.length, 1);
+    assert.equal(json.data.items[0].actionId, 'act-1');
+    assert.ok(!JSON.stringify(json).includes(bridge.token), '列表不得回传 token');
+  });
+});
+
+test('action-state：待批=pending / 已批准=approved / 未知=none', async () => {
+  await withBridge(async (bridge) => {
+    const q = (actionId) => request(bridge.port, bridge.token, '/action-state', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+      actionId,
+    });
+    const pending = await q('act-1');
+    assert.equal(pending.status, 200);
+    assert.equal(pending.json.data.state, 'pending');
+    const approved = await q('approved-1');
+    assert.equal(approved.json.data.state, 'approved');
+    assert.ok(approved.json.data.approvedAt > 0);
+    const none = await q('does-not-exist');
+    assert.equal(none.json.data.state, 'none');
+  });
+});
+
+test('action-state：缺 actionId → 403 fail-closed；跨 owner → 403', async () => {
+  await withBridge(async (bridge) => {
+    const missing = await request(bridge.port, bridge.token, '/action-state', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+    });
+    assert.equal(missing.status, 403);
+    const cross = await request(bridge.port, bridge.token, '/action-state', {
+      panelId: 'panel-x',
+      actor: { ownerId: 'user-b', tenantId: 'tenant-b' },
+      actionId: 'act-1',
+    });
+    assert.equal(cross.status, 403);
   });
 });
 

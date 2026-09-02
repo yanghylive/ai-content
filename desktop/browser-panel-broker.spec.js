@@ -243,6 +243,247 @@ test('非 persist 分区拒绝', () => {
   );
 });
 
+// ── 阶段 5 新增：导航能力 + origin 允许表 + actor 首次绑定 ────────────────
+
+function setupPanel(opts = {}) {
+  const wcs = new Map();
+  const broker = new BrowserPanelBroker({
+    webContentsResolver: (panelId) => wcs.get(panelId) || null,
+    ...opts,
+  });
+  const created = broker.createPanel({
+    panelId: 'panel-1',
+    sessionId: 'sess-1',
+    ownerId: 'user-a',
+    tenantId: 'tenant-a',
+    platform: 'general-web',
+  });
+  wcs.set('panel-1', fakeWebContents());
+  return { broker, wcs, created };
+}
+
+/** 建一个占位身份面板（模拟 desktop 主进程：不知道当前登录用户） */
+function setupPlaceholderPanel(opts = {}) {
+  const wcs = new Map();
+  const broker = new BrowserPanelBroker({
+    webContentsResolver: (panelId) => wcs.get(panelId) || null,
+    ...opts,
+  });
+  const created = broker.createPanel({
+    panelId: 'panel-p',
+    sessionId: 'sess-p',
+    ownerId: 'local-desktop',
+    tenantId: 'local-tenant',
+    platform: 'general-web',
+  });
+  wcs.set('panel-p', fakeWebContents());
+  return { broker, created };
+}
+
+function approve(broker, created, method) {
+  const ticket = broker.requestAction(created.panelId, created.capabilityToken, method, {});
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  return ticket.actionId;
+}
+
+test('Page.navigate 进白名单：确认单 + 允许表内 origin 可导航', async () => {
+  const { broker, created } = setupPanel({ allowedOrigins: ['https://kaypal.cn', 'http://127.0.0.1:9'] });
+  const actionId = approve(broker, created, 'Page.navigate');
+  const { result } = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Page.navigate',
+    { url: 'https://kaypal.cn/publish' },
+    { approvedActionId: actionId },
+  );
+  assert.equal(result.echo, 'Page.navigate');
+});
+
+test('Page.navigate 无确认单 → 拒绝（写动作必须审批）', async () => {
+  const { broker, created } = setupPanel({ allowedOrigins: ['https://kaypal.cn'] });
+  await assert.rejects(
+    () => broker.sendCDP(created.panelId, created.capabilityToken, 'Page.navigate', { url: 'https://kaypal.cn/x' }),
+    /动作需要审批/,
+  );
+});
+
+test('Page.navigate origin 不在允许表 → 先于审批闸门拒绝', async () => {
+  const { broker, created } = setupPanel({ allowedOrigins: ['https://kaypal.cn'] });
+  const actionId = approve(broker, created, 'Page.navigate');
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Page.navigate',
+      { url: 'https://evil.example.com/steal' },
+      { approvedActionId: actionId },
+    ),
+    /origin 不在允许表/,
+  );
+  const reasons = broker.listEvents(created.panelId, created.capabilityToken)
+    .filter((e) => e.type === 'blocked').map((e) => e.reason);
+  assert.ok(reasons.includes('navigate-target-denied'), `实际 blocked 原因：${reasons}`);
+});
+
+test('Page.navigate 非 http(s) 协议 → 拒绝（javascript:/file:/data: 全挡）', async () => {
+  const { broker, created } = setupPanel({ allowedOrigins: [] });
+  for (const bad of ['javascript:alert(1)', 'file:///etc/passwd', 'data:text/html,x']) {
+    await assert.rejects(
+      () => broker.sendCDP(created.panelId, created.capabilityToken, 'Page.navigate', { url: bad }),
+      /协议只允许 http\/https|不是合法 URL/,
+      bad,
+    );
+  }
+});
+
+test('空白名单（默认）＝ 任何导航都要确认单，但不拦 origin', async () => {
+  const { broker, created } = setupPanel();
+  assert.deepEqual(broker.allowedOrigins(), []);
+  await assert.rejects(
+    () => broker.sendCDP(created.panelId, created.capabilityToken, 'Page.navigate', { url: 'https://anywhere.example.com/x' }),
+    /动作需要审批/,
+  );
+  const actionId = approve(broker, created, 'Page.navigate');
+  const { result } = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Page.navigate',
+    { url: 'https://anywhere.example.com/x' },
+    { approvedActionId: actionId },
+  );
+  assert.equal(result.echo, 'Page.navigate');
+});
+
+test('actor 首次绑定：占位身份面板被第一个 actor 绑走', () => {
+  const { broker, created } = setupPlaceholderPanel();
+  assert.equal(broker.boundActor(created.panelId, created.capabilityToken), null, '初始未绑定');
+  const first = broker.assertActor(created.panelId, created.capabilityToken, {
+    ownerId: 'user-real', tenantId: 'tenant-real',
+  });
+  assert.equal(first.panelId, 'panel-p');
+  const bound = broker.boundActor(created.panelId, created.capabilityToken);
+  assert.equal(bound.ownerId, 'user-real');
+  assert.equal(bound.tenantId, 'tenant-real');
+  assert.equal(typeof bound.boundAt, 'number');
+});
+
+test('actor 首次绑定后：同一 actor 可复用，换 actor 一律拒绝', () => {
+  const { broker, created } = setupPlaceholderPanel();
+  const A = { ownerId: 'u1', tenantId: 't1' };
+  broker.assertActor(created.panelId, created.capabilityToken, A);
+  broker.assertActor(created.panelId, created.capabilityToken, A);
+  assert.throws(
+    () => broker.assertActor(created.panelId, created.capabilityToken, { ownerId: 'u2', tenantId: 't1' }),
+    /已绑定到其他身份/,
+  );
+  assert.throws(
+    () => broker.assertActor(created.panelId, created.capabilityToken, { ownerId: 'u1', tenantId: 't2' }),
+    /已绑定到其他身份/,
+  );
+});
+
+test('真实身份面板：actor 必须完全一致（占位绑定逻辑不生效）', () => {
+  const { broker, created } = setupPanel();
+  assert.throws(
+    () => broker.assertActor(created.panelId, created.capabilityToken, { ownerId: 'user-b', tenantId: 'tenant-b' }),
+    /owner\/tenant 不一致/,
+  );
+  broker.assertActor(created.panelId, created.capabilityToken, { ownerId: 'user-a', tenantId: 'tenant-a' });
+});
+
+test('actor 绑定进事件流留痕（审计可查）', () => {
+  const { broker, created } = setupPlaceholderPanel();
+  broker.assertActor(created.panelId, created.capabilityToken, { ownerId: 'u1', tenantId: 't1' });
+  const bound = broker.listEvents(created.panelId, created.capabilityToken)
+    .filter((e) => e.type === 'actor.bound');
+  assert.equal(bound.length, 1);
+  assert.equal(bound[0].ownerId, 'u1');
+  assert.equal(bound[0].fromPlaceholder, true);
+});
+
+test('缺 actor 仍然 fail-closed（绑定逻辑不绕过身份校验）', () => {
+  const { broker, created } = setupPlaceholderPanel();
+  assert.throws(
+    () => broker.assertActor(created.panelId, created.capabilityToken, { ownerId: 'u1' }),
+    /actor 必须携带 ownerId\/tenantId/,
+  );
+  assert.throws(
+    () => broker.assertActor(created.panelId, created.capabilityToken, null),
+    /actor 必须携带 ownerId\/tenantId/,
+  );
+});
+
+test('确认单状态：签出=pending，批准后=approved，执行消费后=none', async () => {
+  const { broker, created } = setupPanel({ allowedOrigins: ['https://kaypal.cn'] });
+  const actor = { ownerId: 'user-a', tenantId: 'tenant-a' };
+  broker.assertActor(created.panelId, created.capabilityToken, actor);
+  const ticket = broker.requestAction(
+    created.panelId,
+    created.capabilityToken,
+    'Page.navigate',
+    { label: '导航' },
+  );
+  const pending = broker.actionState(ticket.actionId, created.capabilityToken);
+  assert.equal(pending.state, 'pending');
+  assert.equal(pending.method, 'Page.navigate');
+  assert.equal(pending.binding.webContentsId, 101);
+
+  broker.approveAction(
+    ticket.actionId,
+    created.capabilityToken,
+    created.capabilityToken,
+    { channel: 'owner-ui' },
+  );
+  const approved = broker.actionState(ticket.actionId, created.capabilityToken);
+  assert.equal(approved.state, 'approved');
+  assert.ok(approved.approvedAt > 0, '批准时间要留痕');
+
+  await broker.sendCDP(
+    created.panelId,
+    created.capabilityToken,
+    'Page.navigate',
+    { url: 'https://kaypal.cn/ok' },
+    { approvedActionId: ticket.actionId },
+  );
+  assert.equal(
+    broker.actionState(ticket.actionId, created.capabilityToken).state,
+    'none',
+    '确认单一次性：执行后即消费',
+  );
+});
+
+test('确认单状态：不存在的单 = none；查询不消费（approved 可重复查）', () => {
+  const { broker, created } = setupPanel();
+  assert.equal(broker.actionState('nope', created.capabilityToken).state, 'none');
+  const ticket = broker.requestAction(
+    created.panelId,
+    created.capabilityToken,
+    'Page.navigate',
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  assert.equal(broker.actionState(ticket.actionId, created.capabilityToken).state, 'approved');
+  assert.equal(
+    broker.actionState(ticket.actionId, created.capabilityToken).state,
+    'approved',
+    '查询不得消费确认单',
+  );
+});
+
+test('确认单状态：换页后旧单不可执行（webContentsId 变了）', async () => {
+  const { broker, wcs, created } = setupPanel({ allowedOrigins: ['https://kaypal.cn'] });
+  const ticket = broker.requestAction(
+    created.panelId,
+    created.capabilityToken,
+    'Page.navigate',
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  wcs.set('panel-1', fakeWebContents({ id: 999 }));
+  await assert.rejects(
+    broker.sendCDP(
+      created.panelId,
+      created.capabilityToken,
+      'Page.navigate',
+      { url: 'https://kaypal.cn/x' },
+      { approvedActionId: ticket.actionId },
+    ),
+    /审批/,
+  );
+});
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of tests) {

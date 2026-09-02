@@ -334,12 +334,18 @@ export class AgentBrowserLoopService {
       // 3.3 单动作执行（allowed 才执行；否则记录 blocked）
       // P4-2：maxRetries 接入——可重试错误（导航/提取/按键等执行类失败）重试，
       // 门禁类（策略阻断/需确认/写操作未开启/mock）不重试
+      // 阶段 5：面板模式需要调用方身份做 actor 断言（会话租约里就有，
+      // 拿不到就传空——面板模式会据此 fail-closed，不静默改走无头浏览器）
+      const actor = session.lease?.ownerId
+        ? { ownerId: session.lease.ownerId, tenantId: session.lease.tenantId ?? '' }
+        : undefined;
       const r = allowed
         ? await this.executeWithRetry(
             action,
             session.accountId,
             cfg.timeoutMs,
             cfg.maxRetries,
+            actor,
           )
         : {
             index: i,
@@ -647,6 +653,8 @@ export class AgentBrowserLoopService {
     accountId: string,
     timeoutMs: number,
     maxRetries: number,
+    /** 阶段 5：调用方身份（面板模式下的 actor 断言需要 ownerId/tenantId） */
+    actor?: { ownerId: string; tenantId: string },
   ): Promise<{
     index: number;
     action: string;
@@ -674,6 +682,7 @@ export class AgentBrowserLoopService {
         action,
         accountId,
         timeoutMs,
+        actor,
       });
       lastResult = r;
       if (r.ok) return r;

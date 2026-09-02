@@ -19,6 +19,7 @@ import { CdpBrowserProfileService } from './cdp-browser-profile.service';
 import { CdpBrowserSessionService } from './cdp-browser-session.service';
 import { AiBrowserActionService } from './ai-browser-action.service';
 import { AgentBrowserExecutor } from './agent-browser-executor.service';
+import { AgentPanelBridgeService } from './agent-panel-bridge.service';
 import { AgentBrowserController } from './agent-browser.controller';
 import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
@@ -68,6 +69,7 @@ import { SavingsModule } from '../savings/savings.module';
     AgentBrowserSessionService,
     AgentBrowserPolicyService,
     AgentBrowserExecutor,
+    AgentPanelBridgeService,
     AgentBrowserLoopService,
     WechatPlanSchedulerService,
     WechatPlanEditorService,

@@ -152,6 +152,42 @@ function wireBrowserPanel(deps) {
       return broker.requestAction(panelId, handle.capabilityToken, method, summary);
     },
     /**
+     * **用户（面板所有者）批准通道** —— 阶段 4 审批 UI 的主进程接缝。
+     *
+     * 与 Agent 通道严格分离：
+     *  - 走这条路的调用方**必须**是主进程里代表用户的那一侧（面板审批 UI 经 IPC
+     *    进来），它持有 owner capability token；
+     *  - Agent 侧永远走 approveActionForAgent，默认无条件抛错（硬约束 5）；
+     *  - 批准只认 actionId，不认"谁在问"，因此 Agent 无法靠换 actor 绕过。
+     *
+     * @param {string} panelId
+     * @param {string} actionId 由 Agent 侧 requestActionForAgent 签出的确认单
+     * @param {{reason?: string}} [context] 审计留痕用（谁点批、为什么）
+     */
+    approveActionAsOwner(panelId, actionId, context = {}) {
+      const handle = handles.get(panelId);
+      if (!handle) {
+        throw new Error('面板会话未登记（无主可批）');
+      }
+      if (!actionId) throw new Error('缺少 actionId');
+      broker.approveAction(actionId, handle.capabilityToken, handle.capabilityToken, {
+        channel: 'owner-ui',
+        ...context,
+      });
+      return { actionId, panelId, approved: true };
+    },
+    /** 确认单状态（pending/approved/none）；查询不消费，消费仍由审批闸门完成 */
+    actionStateForAgent(panelId, actor, actionId) {
+      const handle = handleFor(panelId, actor);
+      return broker.actionState(actionId, handle.capabilityToken);
+    },
+    /** 当前待批确认单（供审批 UI 列表；不含 token） */
+    listPendingActions(panelId) {
+      const handle = handles.get(panelId);
+      if (!handle) return [];
+      return broker.listPendingActions(panelId, handle.capabilityToken);
+    },
+    /**
      * 用户批准通道（阶段 4 由面板审批 UI 调用）。默认拒绝：Agent 通道不得
      * 自我批准写动作（硬约束 5）——仅测试 harness allowSelfApprove 可放行。
      */
@@ -168,6 +204,7 @@ function wireBrowserPanel(deps) {
         actionId,
         handle.capabilityToken,
         handle.capabilityToken,
+        { channel: 'self-approve-harness', actor },
       );
     },
     listEventsForAgent(panelId, actor) {
