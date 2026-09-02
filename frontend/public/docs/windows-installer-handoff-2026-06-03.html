@@ -13,6 +13,14 @@
   pre{white-space:pre-wrap;word-break:break-word;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:20px;margin:0;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:13px;line-height:1.7;color:#e5e7eb}
   .bar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px;color:var(--muted);font-size:12px}.pill{border:1px solid #214d78;background:#0d2238;color:#9dc9ff;border-radius:999px;padding:4px 10px;font-weight:700}
 </style>
+<style id="resp-scroll-guard">
+    /* 响应式兜底：超宽表格在卡片内横向滚动，不再撑破页面 */
+    section { overflow-x: auto; }
+    th, td { word-break: break-word; }
+    @media (max-width: 720px) {
+      .page { width: auto; padding: 24px 14px 48px; }
+    }
+  </style>
 </head>
 <body>
 <main>

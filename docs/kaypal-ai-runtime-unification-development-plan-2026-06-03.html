@@ -261,6 +261,14 @@
       .arrow { transform: rotate(90deg); min-height: 18px; }
     }
   </style>
+<style id="resp-scroll-guard">
+    /* 响应式兜底：超宽表格在卡片内横向滚动，不再撑破页面 */
+    section { overflow-x: auto; }
+    th, td { word-break: break-word; }
+    @media (max-width: 720px) {
+      .page { width: auto; padding: 24px 14px 48px; }
+    }
+  </style>
 </head>
 <body>
   <main class="page">
