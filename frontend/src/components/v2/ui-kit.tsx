@@ -336,12 +336,16 @@ export function V2OptionCard({
   description,
   selected,
   onClick,
+  badge,
+  onDelete,
 }: {
   icon: LucideIcon;
   title: string;
   description?: string;
   selected: boolean;
   onClick: () => void;
+  badge?: string;
+  onDelete?: () => void;
 }) {
   return (
     <button
@@ -353,21 +357,49 @@ export function V2OptionCard({
       }`}
       onClick={onClick}
     >
-      <div className="flex items-center gap-3">
-        <div className="kaypal-v3-icon-tile">
+      <div className="relative flex items-center gap-3">
+        <div className="shrink-0 kaypal-v3-icon-tile">
           <Icon className="h-5 w-5" />
         </div>
-        <div className="flex-1">
-          <p className="font-medium text-[var(--kaypal-v3-ink)]">{title}</p>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium text-[var(--kaypal-v3-ink)]">
+            {title}
+          </p>
           {description && (
-            <p className="mt-0.5 text-sm text-[var(--kaypal-v3-muted)]">
+            <p className="mt-0.5 truncate text-sm text-[var(--kaypal-v3-muted)]">
               {description}
             </p>
           )}
         </div>
+        {badge && (
+          <span className="shrink-0 rounded-full border border-[var(--kaypal-v3-brand-border)] bg-[var(--kaypal-v3-brand-soft)] px-2 py-0.5 text-11 font-medium text-[var(--kaypal-v3-brand)]">
+            {badge}
+          </span>
+        )}
         {selected && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent)] text-xs text-white">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--kaypal-v3-accent)] text-xs text-white">
             ✓
+          </span>
+        )}
+        {onDelete && (
+          <span
+            role="button"
+            aria-label="删除该自定义行业"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete();
+              }
+            }}
+            className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-sm leading-none text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)]"
+          >
+            ×
           </span>
         )}
       </div>

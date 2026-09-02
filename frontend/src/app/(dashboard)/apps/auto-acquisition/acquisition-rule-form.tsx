@@ -10,6 +10,7 @@ import {
   Music2,
   Play,
   PlayCircle,
+  Plus,
   Save,
   Sparkles,
   Target,
@@ -23,6 +24,7 @@ import {
   V2PrimaryButton,
   V2GhostButton,
   V2OptionCard,
+  V2Select,
   V2Disclosure,
 } from "@/components/v2/ui-kit";
 import { growthApi, type GrowthAccountHealth, type GrowthAcquisitionPreflight, type GrowthPlatform } from "@/lib/api/growth";
@@ -94,6 +96,105 @@ const SCENARIO_OPTIONS = [
     },
   },
   {
+    value: "catering",
+    label: "餐饮",
+    desc: "本地到店/团购客户",
+    preset: {
+      platform: "douyin" as const,
+      keywords: "探店,美食,团购,聚餐",
+      commentTemplate: "老板，看到你也在找好吃的，我们有本地团购套餐，需要了解下吗？",
+      privateTemplate: "你好，我是{品牌}，本地餐饮店，看你关注美食，方便加微信发你套餐详情吗？",
+    },
+  },
+  {
+    value: "wechat-business",
+    label: "微商/私域",
+    desc: "微信私域与朋友圈客户",
+    preset: {
+      platform: "wechat" as const,
+      keywords: "副业,货源,朋友圈,私域",
+      commentTemplate: "看你也做私域这块，我们有供应链货源资源，交流下？",
+      privateTemplate: "你好，我是{品牌}，专注私域好货供应链，看你也做这块，方便交流下吗？",
+    },
+  },
+  {
+    value: "direct-sales",
+    label: "直销/轻创业",
+    desc: "副业与轻创业人群",
+    preset: {
+      platform: "wechat" as const,
+      keywords: "副业,轻创业,项目,兼职",
+      commentTemplate: "想了解轻创业项目的话可以聊聊，模式透明不画饼",
+      privateTemplate: "你好，我是{品牌}团队，正在招募轻创业伙伴，想了解可以聊，模式与投入全程透明",
+    },
+  },
+  {
+    value: "fitness",
+    label: "健身",
+    desc: "减脂健身与私教客户",
+    preset: {
+      platform: "douyin" as const,
+      keywords: "健身,减脂,私教,增肌",
+      commentTemplate: "看到你在练这个，我们有体验课，需要了解下吗？",
+      privateTemplate: "你好，我是{品牌}健身教练，看你关注健身，方便加微信约节体验课吗？",
+    },
+  },
+  {
+    value: "maternal-baby",
+    label: "母婴/产后",
+    desc: "产后恢复与母婴服务客户",
+    preset: {
+      platform: "xiaohongshu" as const,
+      keywords: "产后恢复,育儿,母婴",
+      commentTemplate: "宝妈你好，看到你也在关注这个，我们做产后恢复，想了解下吗？",
+      privateTemplate: "你好，我是{品牌}，专注产后恢复服务，看你在了解，方便聊聊吗？",
+    },
+  },
+  {
+    value: "healthcare",
+    label: "医疗健康",
+    desc: "体检与健康管理客户",
+    preset: {
+      platform: "douyin" as const,
+      keywords: "体检,健康管理,养生",
+      commentTemplate: "健康问题建议咨询专业人士，我们有体检服务，需要了解可以聊聊",
+      privateTemplate: "您好，我是{品牌}健康顾问，如有体检或健康管理需求，方便沟通下吗？",
+    },
+  },
+  {
+    value: "auto-aftermarket",
+    label: "汽车后市场",
+    desc: "本地养车保养车主",
+    preset: {
+      platform: "douyin" as const,
+      keywords: "养车,洗车,保养,汽修",
+      commentTemplate: "老铁，看到你也在聊养车，我们店保养透明不宰客，需要了解吗？",
+      privateTemplate: "你好，我是{品牌}汽服店，本地养车保养，看你在关注，方便加微信咨询吗？",
+    },
+  },
+  {
+    value: "real-estate",
+    label: "房产中介",
+    desc: "买房/租房客源",
+    preset: {
+      platform: "douyin" as const,
+      keywords: "买房,看房,二手房,租房",
+      commentTemplate: "看到你在看房，我们这有真实房源，需要推荐吗？",
+      privateTemplate: "您好，我是{品牌}房产顾问，本地真实房源，看你有购房需求，方便加微信发你几套房源吗？",
+    },
+  },
+  {
+    value: "wedding-photo",
+    label: "婚庆摄影",
+    desc: "婚纱照与婚庆客户",
+    preset: {
+      platform: "xiaohongshu" as const,
+      keywords: "婚纱照,婚礼,婚庆,跟拍",
+      commentTemplate: "看到你在看婚纱照，我们有真实客片，想看看吗？",
+      privateTemplate: "你好，我是{品牌}摄影工作室，看你在了解婚纱照，方便发你真实客片参考吗？",
+    },
+  },
+  {
     value: "b2b-leads",
     label: "B2B 线索",
     desc: "企业采购决策人",
@@ -105,6 +206,51 @@ const SCENARIO_OPTIONS = [
     },
   },
 ] as const;
+
+// 自定义行业（用户新增）：结构与系统预置完全一致，本地持久化
+const CUSTOM_SCENARIOS_KEY = "kaypal.v3.customScenarios.v1";
+
+type CustomScenarioPreset = {
+  platform: GrowthPlatform;
+  keywords: string;
+  commentTemplate: string;
+  privateTemplate: string;
+};
+
+type CustomScenario = {
+  value: string;
+  label: string;
+  desc: string;
+  preset: CustomScenarioPreset;
+};
+
+const DEFAULT_CUSTOM_DRAFT = {
+  label: "",
+  desc: "",
+  platform: "douyin" as GrowthPlatform,
+  keywords: "",
+  commentTemplate: "你好，看到你关注这个话题，我们正好在做这个，可以聊聊～",
+  privateTemplate: "你好，我是{品牌}，看到你对我们这个领域感兴趣，方便加个微信详聊吗？",
+};
+
+function loadCustomScenarios(): CustomScenario[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_SCENARIOS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as CustomScenario[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomScenarios(items: CustomScenario[]) {
+  try {
+    localStorage.setItem(CUSTOM_SCENARIOS_KEY, JSON.stringify(items));
+  } catch {
+    // 存储不可用静默忽略，不影响本次会话
+  }
+}
 
 // 平台与执行账号联动：只展示与所选平台匹配的账号。
 // 微信任务的执行账号来自视频号（账号体系同源），故 wechat 兼容 wechat-channel。
@@ -169,6 +315,83 @@ export function AcquisitionRuleForm() {
     scheduleEnabled: false,
     beginTime: "09:00",
   });
+
+  // 自定义行业：本地持久化，选中后与系统预置走同一套预填逻辑
+  const [customScenarios, setCustomScenarios] = useState<CustomScenario[]>(
+    loadCustomScenarios,
+  );
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [scenarioDraft, setScenarioDraft] = useState(DEFAULT_CUSTOM_DRAFT);
+  const [scenarioError, setScenarioError] = useState<string | null>(null);
+
+  const allScenarios = useMemo<CustomScenario[]>(
+    () => [...SCENARIO_OPTIONS, ...customScenarios],
+    [customScenarios],
+  );
+
+  const resetScenarioDraft = () => {
+    setScenarioDraft(DEFAULT_CUSTOM_DRAFT);
+    setScenarioError(null);
+  };
+
+  const addCustomScenario = () => {
+    const label = scenarioDraft.label.trim();
+    const keywords = scenarioDraft.keywords.trim();
+    if (!label) {
+      setScenarioError("请填写行业名称");
+      return;
+    }
+    if (!keywords) {
+      setScenarioError("请填写获客关键词（逗号分隔）");
+      return;
+    }
+    if (allScenarios.some((s) => s.label === label)) {
+      setScenarioError(`「${label}」已存在，请换一个名称`);
+      return;
+    }
+    const preset: CustomScenarioPreset = {
+      platform: scenarioDraft.platform,
+      keywords,
+      commentTemplate:
+        scenarioDraft.commentTemplate.trim() || DEFAULT_CUSTOM_DRAFT.commentTemplate,
+      privateTemplate:
+        scenarioDraft.privateTemplate.trim() || DEFAULT_CUSTOM_DRAFT.privateTemplate,
+    };
+    const item: CustomScenario = {
+      value: `custom-${Date.now().toString(36)}`,
+      label,
+      desc: scenarioDraft.desc.trim(),
+      preset,
+    };
+    const next = [...customScenarios, item];
+    setCustomScenarios(next);
+    saveCustomScenarios(next);
+    // 新增即选中并预填（与系统预置行为一致）
+    setForm((p) => ({
+      ...p,
+      scene: item.value,
+      platform: preset.platform,
+      keywords: preset.keywords,
+      commentTemplate: preset.commentTemplate,
+      privateTemplate: preset.privateTemplate,
+    }));
+    setShowCustomForm(false);
+    resetScenarioDraft();
+  };
+
+  const removeCustomScenario = (value: string) => {
+    const item = customScenarios.find((s) => s.value === value);
+    if (!item) return;
+    if (!window.confirm(`删除自定义行业「${item.label}」？删除后可随时重新添加。`)) {
+      return;
+    }
+    const next = customScenarios.filter((s) => s.value !== value);
+    setCustomScenarios(next);
+    saveCustomScenarios(next);
+    if (form.scene === value) {
+      setForm((p) => ({ ...p, scene: "" }));
+    }
+  };
 
   // T3-4：AI 记得你上次——加载 kaypal 长期记忆，预填行业/关键词/话术
   const [memoryHint, setMemoryHint] = useState<string | null>(null);
@@ -714,28 +937,135 @@ export function AcquisitionRuleForm() {
       </div>
 
       {/* 第 1 步：场景和客户类型（§8.2-B，选中预填平台/关键词/话术） */}
-      <V2Section title="第 1 步：场景和客户类型" description="选择一个常见场景，自动帮你预填平台、关键词和话术">
+      <V2Section
+        title="第 1 步：场景和客户类型"
+        description="选择一个常见场景，自动帮你预填平台、关键词和话术；也可新增自己的行业"
+        action={
+          <V2GhostButton icon={Plus} onClick={() => setShowCustomForm((v) => !v)}>
+            {showCustomForm ? "收起新增" : "新增自定义行业"}
+          </V2GhostButton>
+        }
+      >
         <div className="grid gap-3 sm:grid-cols-3">
-          {SCENARIO_OPTIONS.map(({ value, label, desc, preset }) => (
-            <V2OptionCard
-              key={value}
-              icon={Target}
-              title={label}
-              description={desc}
-              selected={form.scene === value}
-              onClick={() =>
-                setForm((p) => ({
-                  ...p,
-                  scene: value,
-                  platform: preset.platform,
-                  keywords: preset.keywords,
-                  commentTemplate: preset.commentTemplate,
-                  privateTemplate: preset.privateTemplate,
-                }))
-              }
-            />
-          ))}
+          {allScenarios.map(({ value, label, desc, preset }) => {
+            const isCustom = value.startsWith("custom-");
+            return (
+              <V2OptionCard
+                key={value}
+                icon={Target}
+                title={label}
+                description={desc}
+                selected={form.scene === value}
+                badge={isCustom ? "自定义" : undefined}
+                onDelete={isCustom ? () => removeCustomScenario(value) : undefined}
+                onClick={() =>
+                  setForm((p) => ({
+                    ...p,
+                    scene: value,
+                    platform: preset.platform,
+                    keywords: preset.keywords,
+                    commentTemplate: preset.commentTemplate,
+                    privateTemplate: preset.privateTemplate,
+                  }))
+                }
+              />
+            );
+          })}
         </div>
+
+        {showCustomForm && (
+          <div className="mt-4 rounded-[var(--kaypal-v3-radius)] border border-dashed border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper-soft)] p-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <V2Field label="行业名称" required hint="例如：宠物店、口腔诊所">
+                <V2Input
+                  value={scenarioDraft.label}
+                  placeholder="填写你的行业名称"
+                  onChange={(e) =>
+                    setScenarioDraft((d) => ({ ...d, label: e.target.value }))
+                  }
+                />
+              </V2Field>
+              <V2Field label="客户描述" hint="一句话描述你的目标客户（可选）">
+                <V2Input
+                  value={scenarioDraft.desc}
+                  placeholder="例如：本地养宠家庭"
+                  onChange={(e) =>
+                    setScenarioDraft((d) => ({ ...d, desc: e.target.value }))
+                  }
+                />
+              </V2Field>
+              <V2Field label="主平台" required>
+                <V2Select
+                  value={scenarioDraft.platform}
+                  onChange={(e) =>
+                    setScenarioDraft((d) => ({
+                      ...d,
+                      platform: e.target.value as GrowthPlatform,
+                    }))
+                  }
+                >
+                  {PLATFORM_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </V2Select>
+              </V2Field>
+              <V2Field label="获客关键词" required hint="逗号分隔，例如：宠物,美容,洗澡">
+                <V2Input
+                  value={scenarioDraft.keywords}
+                  placeholder="例如：宠物,美容,洗澡"
+                  onChange={(e) =>
+                    setScenarioDraft((d) => ({ ...d, keywords: e.target.value }))
+                  }
+                />
+              </V2Field>
+              <V2Field label="评论话术" hint="主动评论目标客户时使用，可用 {品牌} 占位">
+                <V2Textarea
+                  value={scenarioDraft.commentTemplate}
+                  rows={3}
+                  onChange={(e) =>
+                    setScenarioDraft((d) => ({
+                      ...d,
+                      commentTemplate: e.target.value,
+                    }))
+                  }
+                />
+              </V2Field>
+              <V2Field label="私信话术" hint="私信触达时使用，可用 {品牌} 占位">
+                <V2Textarea
+                  value={scenarioDraft.privateTemplate}
+                  rows={3}
+                  onChange={(e) =>
+                    setScenarioDraft((d) => ({
+                      ...d,
+                      privateTemplate: e.target.value,
+                    }))
+                  }
+                />
+              </V2Field>
+            </div>
+            {scenarioError && (
+              <p className="mt-3 text-sm text-[var(--kaypal-v3-danger)]">
+                {scenarioError}
+              </p>
+            )}
+            <div className="mt-4 flex items-center gap-2">
+              <V2PrimaryButton icon={Plus} onClick={addCustomScenario}>
+                保存并使用该行业
+              </V2PrimaryButton>
+              <V2GhostButton
+                onClick={() => {
+                  setShowCustomForm(false);
+                  resetScenarioDraft();
+                }}
+              >
+                取消
+              </V2GhostButton>
+            </div>
+          </div>
+        )}
+
         {form.scene && (
           <p
             style={{
@@ -744,7 +1074,8 @@ export function AcquisitionRuleForm() {
               color: "var(--kaypal-v3-success)",
             }}
           >
-            ✓ 已选择「{SCENARIO_OPTIONS.find((s) => s.value === form.scene)?.label}
+            ✓ 已选择「
+            {allScenarios.find((s) => s.value === form.scene)?.label}
             」，平台/关键词/话术已预填，可继续微调
           </p>
         )}
