@@ -589,10 +589,6 @@ export class AutoUploadClient {
    */
   private readonly validationCooldownMs = 60_000;
   private readonly lastValidationAt = new Map<string, number>();
-  // 2026-09-02（弹窗风暴修复）：cdp-sessions/accounts 高频轮询下，同账号
-  // 自动恢复最少间隔 60s；恢复静默（focusWindow:false）不弹窗打扰。
-  private readonly autoRecoverCooldownMs = 60_000;
-  private readonly lastAutoRecoverAt = new Map<string, number>();
 
   constructor(
     private readonly configService: ConfigService,
@@ -1220,48 +1216,11 @@ export class AutoUploadClient {
             5000,
           )
         : (profileCdpSession?.loginState ?? null);
-      if (
-        activeSession &&
-        (currentPageLoginState === 'logged_out' ||
-          this.isLoginPageUrl(currentUrl)) &&
-        typeof this.localBrowser?.recoverAccountSessionFromSavedCookies ===
-          'function'
-      ) {
-        // 2026-09-02（弹窗风暴修复）：本函数被 cdp-sessions（前端 6s 轮询）
-        // 与 listAccounts（各页 30s 轮询）高频调用。原先每轮判定登出都会
-        // 执行恢复（goto + bringToFront），导致浏览器窗口不停弹出。改为：
-        //  1) 同账号 60s 冷却，冷却期内仅如实上报登出状态；
-        //  2) 自动恢复静默执行（focusWindow:false，不抢占前台）。
-        // 用户显式操作（重登/打开后台/校验状态/任务预检）走各自路径，不受影响。
-        const cooldownKey = `${row.platform}:${String(engineAccountId)}`;
-        const lastAutoRecoverAt = this.lastAutoRecoverAt.get(cooldownKey) ?? 0;
-        if (Date.now() - lastAutoRecoverAt >= this.autoRecoverCooldownMs) {
-          this.lastAutoRecoverAt.set(cooldownKey, Date.now());
-          const recovered = await this.withTimedResult(
-            this.localBrowser.recoverAccountSessionFromSavedCookies({
-              platform: this.resolvePlatformSlugFromString(row.platform),
-              accountId: engineAccountId,
-              targetUrl: this.resolvePlatformHomeUrl(row.platform),
-              focusWindow: false,
-            }),
-            null,
-            `CDP 当前页登录态恢复超时 ${row.platform}:${String(engineAccountId)}`,
-            10000,
-          );
-          if (recovered) {
-            currentUrl = recovered.page.url();
-            currentPageLoginState = await this.withTimedResult(
-              this.inspectActiveSessionLoginState(
-                row.platform,
-                String(engineAccountId),
-              ),
-              'unknown',
-              `CDP 当前页恢复后登录态读取超时 ${row.platform}:${String(engineAccountId)}`,
-              5000,
-            );
-          }
-        }
-      }
+      // 2026-09-02（弹窗风暴根治）：状态类接口（cdp-sessions / accounts 列表
+      // 装饰）绝对只读——只 evaluate 已存在页面做登录态判断，绝不 goto /
+      // recover / bringToFront。登出恢复仅发生在用户显式动作路径
+      // （打开平台后台 / 重登 / 任务预检的 getOrCreateSession 内部）。
+      // 否则页面 5-30s 轮询会反复拉起浏览器窗口。
       const latestInteractionTask = this.findLatestInteractionTaskForAccount(
         recentInteractionTasks,
         row.platform,

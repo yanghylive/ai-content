@@ -110,12 +110,11 @@ export function useAccountOperations(options: {
     }
   }, []);
 
+  // 2026-09-02（弹窗风暴根治）：cdp-sessions 会触发后端对每个账号做浏览器
+  // 会话探测，不能做成 6s 高频轮询（页面一直弹浏览器窗口 + 引擎持续忙碌）。
+  // 只在页面挂载拉一次；打开后台 / 校验状态 / 重登同步等显式操作后再刷新。
   useEffect(() => {
     void refreshCdpSessions();
-    const timer = window.setInterval(() => {
-      void refreshCdpSessions();
-    }, 6000);
-    return () => window.clearInterval(timer);
   }, [refreshCdpSessions]);
 
   const isAccountLoggedIn = (account: AutoUploadAccount) =>
