@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -271,7 +271,8 @@ export function AcquisitionRuleForm() {
   const [saving, setSaving] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [memoryLoaded, setMemoryLoaded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const actionAreaRef = useRef<HTMLDivElement | null>(null);
 
   // 执行账号：自动拉取账号健康列表，按所选平台联动过滤，默认选中该平台
   // online+normal 的真实账号。选择用后端复合 key（platform:accountId）定位，
@@ -279,6 +280,17 @@ export function AcquisitionRuleForm() {
   const [accounts, setAccounts] = useState<GrowthAccountHealth[]>([]);
   const [selectedKey, setSelectedKey] = useState("");
   const [accountsLoading, setAccountsLoading] = useState(true);
+
+  // 操作失败就近提示：错误出现在底部操作区时自动滚到可见位置
+  useEffect(() => {
+    if (!actionError) return;
+    const el = actionAreaRef.current;
+    if (!el) return;
+    const timer = window.setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [actionError]);
 
   useEffect(() => {
     let cancelled = false;
@@ -492,7 +504,7 @@ export function AcquisitionRuleForm() {
       setPreflight(result);
       return result;
     } catch (err: unknown) {
-      setError(toPublicError(err, "预检失败，请稍后重试"));
+      setActionError(toPublicError(err, "预检失败，请稍后重试"));
       return null;
     } finally {
       setPreflightLoading(false);
@@ -502,11 +514,11 @@ export function AcquisitionRuleForm() {
   const handleSubmit = async () => {
     if (!canSubmit) return;
     if (!selectedAccount) {
-      setError("请先选择执行账号（账号健康列表为空或未加载到可用账号）");
+      setActionError("请先选择执行账号（账号健康列表为空或未加载到可用账号）");
       return;
     }
     setSaving(true);
-    setError(null);
+    setActionError(null);
     try {
       const config = await growthApi.createConfig({
         taskName: autoTaskName,
@@ -544,7 +556,7 @@ export function AcquisitionRuleForm() {
         router.push("/growth/acquisition");
       }
     } catch (err: unknown) {
-      setError(toPublicError(err, "创建获客任务失败，请稍后重试"));
+      setActionError(toPublicError(err, "创建获客任务失败，请稍后重试"));
     } finally {
       setSaving(false);
     }
@@ -554,7 +566,7 @@ export function AcquisitionRuleForm() {
   const handleExecute = async () => {
     if (!createdConfigId || !preflight?.allowed) return;
     setExecuting(true);
-    setError(null);
+    setActionError(null);
     try {
       await growthApi.executeConfig(
         createdConfigId,
@@ -562,7 +574,7 @@ export function AcquisitionRuleForm() {
       );
       router.push("/growth/acquisition");
     } catch (err: unknown) {
-      setError(toPublicError(err, "任务执行失败，请稍后重试"));
+      setActionError(toPublicError(err, "任务执行失败，请稍后重试"));
     } finally {
       setExecuting(false);
     }
@@ -595,11 +607,6 @@ export function AcquisitionRuleForm() {
             </div>
           </div>
 
-          {error && (
-            <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(220,80,80,.4)" }}>
-              <p style={{ fontSize: 13, color: "var(--kaypal-v3-danger)" }}>{error}</p>
-            </div>
-          )}
 
           {memoryHint && (
             <div className="mx-card" style={{ marginTop: 10, padding: 11, borderColor: "rgba(246,196,120,.5)", background: "rgba(246,196,120,.08)" }}>
@@ -794,6 +801,12 @@ export function AcquisitionRuleForm() {
             </div>
           </div>
 
+          {actionError && (
+            <div ref={actionAreaRef} role="alert" className="mx-card" style={{ marginTop: 14, padding: 12, borderColor: "rgba(220,80,80,.45)" }}>
+              <p style={{ fontSize: 13, lineHeight: 1.55, color: "var(--kaypal-v3-danger)" }}>{actionError}</p>
+            </div>
+          )}
+
           {/* 操作 */}
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
             <button type="button" onClick={() => router.push("/growth/acquisition")} style={{ flex: "0 0 auto", padding: "10px 16px", borderRadius: 10, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 13, fontWeight: 600 }}>
@@ -872,11 +885,6 @@ export function AcquisitionRuleForm() {
         </div>
       </section>
 
-      {error && (
-        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
-          <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
-        </div>
-      )}
 
       {memoryHint && (
         <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-warning)] bg-[var(--kaypal-v3-warning-soft)] p-4">
@@ -1456,6 +1464,18 @@ export function AcquisitionRuleForm() {
             </V2GhostButton>
           </div>
         </section>
+      )}
+
+      {actionError && (
+        <div
+          ref={actionAreaRef}
+          role="alert"
+          className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4"
+        >
+          <p className="text-sm font-medium leading-5 text-[var(--kaypal-v3-danger)]">
+            {actionError}
+          </p>
+        </div>
       )}
 
       <section className="flex items-center justify-between">
