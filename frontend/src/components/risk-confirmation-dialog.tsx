@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { AlertTriangle, ShieldAlert } from "lucide-react";
 import {
   Button,
   Chip,
@@ -35,22 +36,30 @@ const riskMeta: Record<
   {
     label: string;
     color: "default" | "warning" | "danger";
+    iconColor: string;
+    iconBg: string;
     panelClassName: string;
   }
 > = {
   low: {
     label: "低风险",
     color: "default",
+    iconColor: "text-default-600",
+    iconBg: "bg-default-100",
     panelClassName: "border-default-200 bg-default-50 text-default-700",
   },
   medium: {
     label: "中风险",
     color: "warning",
+    iconColor: "text-warning-600",
+    iconBg: "bg-warning-100",
     panelClassName: "border-warning-200 bg-warning-50 text-warning-700",
   },
   high: {
     label: "高风险",
     color: "danger",
+    iconColor: "text-danger",
+    iconBg: "bg-danger-50",
     panelClassName: "border-danger-200 bg-danger-50 text-danger-700",
   },
 };
@@ -88,18 +97,31 @@ export function RiskConfirmationDialog({
       <ModalContent>
         {() => (
           <>
-            <ModalHeader className="flex flex-col gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-lg font-bold leading-6">
-                  {title}
+            <ModalHeader className="flex flex-col gap-3 pt-6">
+              <div className="flex items-start gap-3">
+                <span
+                  className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] ${meta.iconBg} ${meta.iconColor}`}
+                >
+                  {riskLevel === "high" ? (
+                    <ShieldAlert className="h-5 w-5" strokeWidth={1.9} />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5" strokeWidth={1.9} />
+                  )}
                 </span>
-                <Chip color={meta.color} size="sm" variant="flat">
-                  {meta.label}
-                </Chip>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-lg font-bold leading-6">
+                      {title}
+                    </span>
+                    <Chip color={meta.color} size="sm" variant="flat">
+                      {meta.label}
+                    </Chip>
+                  </div>
+                  <p className="mt-1 text-small font-normal leading-6 text-default-500">
+                    {description}
+                  </p>
+                </div>
               </div>
-              <p className="text-small font-normal leading-6 text-default-500">
-                {description}
-              </p>
             </ModalHeader>
             <ModalBody className="gap-4 py-5">
               {impactItems.length ? (

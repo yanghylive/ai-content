@@ -3,13 +3,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  CheckCircle2,
   ExternalLink,
   KeyRound,
+  Loader2,
+  LogIn,
   Plus,
   RefreshCw,
   ShieldCheck,
   Trash2,
   UserCheck,
+  X,
 } from "lucide-react";
 import { autoUploadApi, type AutoUploadAccount } from "@/lib/api/auto-upload";
 import {
@@ -29,12 +33,14 @@ import {
   findAccountCdpSession,
 } from "./account-utils";
 
+// 平台品牌色（与 distribution-tasks / nav-registry 一致：#fe2c55 抖音等），
+// 弹窗内用作选中态与标识圆点。
 const PLATFORMS = [
-  { type: 3, label: "抖音" },
-  { type: 1, label: "小红书" },
-  { type: 2, label: "视频号" },
-  { type: 4, label: "快手" },
-  { type: 5, label: "B站" },
+  { type: 3, label: "抖音", brand: "#fe2c55" },
+  { type: 1, label: "小红书", brand: "#ff2442" },
+  { type: 2, label: "视频号", brand: "#007fff" },
+  { type: 4, label: "快手", brand: "#ff4d2e" },
+  { type: 5, label: "B站", brand: "#00a1d6" },
 ] as const;
 
 function sessionStatusTone(status?: string) {
@@ -277,144 +283,208 @@ export function AccountManagement() {
       {/* 登录弹窗 */}
       {ops.loginOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
           onClick={() => {
             if (!ops.loginConnecting) ops.cancelLogin(true).catch(() => undefined);
           }}
         >
           <div
-            className="kaypal-v3-panel w-full max-w-md p-6"
+            className="relative w-full max-w-md overflow-hidden rounded-[20px] border border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper)] shadow-[0_24px_64px_-16px_rgba(0,0,0,0.28)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-[var(--kaypal-v3-ink)]">
-              {ops.loginRecord ? "重新登录平台账号" : "绑定平台账号"}
-            </h2>
+            {/* 顶部品牌渐变装饰条 */}
+            <div
+              className="h-1 w-full"
+              style={{
+                background:
+                  "linear-gradient(90deg, var(--kaypal-v3-accent), var(--kaypal-v3-accent-2, var(--kaypal-v3-accent)))",
+              }}
+            />
 
-            <div className="mt-4 flex flex-col gap-3">
-              <div>
-                <p className="mb-1 text-sm text-[var(--kaypal-v3-muted)]">
-                  账号主体
-                </p>
-                <input
-                  className="h-10 w-full rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] px-3 text-sm text-[var(--kaypal-v3-ink)] outline-none disabled:opacity-50"
-                  placeholder="例如：矩阵账号01"
-                  disabled={ops.loginConnecting}
-                  value={ops.loginProfileName}
-                  onChange={(e) => ops.setLoginProfileName(e.target.value)}
-                />
+            <div className="p-6">
+              {/* 头部：图标徽章 + 标题 + 关闭 */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[image:var(--kaypal-v3-gradient-primary)] text-white shadow-sm">
+                    <KeyRound className="h-5 w-5" strokeWidth={1.9} />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold leading-6 text-[var(--kaypal-v3-ink)]">
+                      {ops.loginRecord ? "重新登录平台账号" : "绑定平台账号"}
+                    </h2>
+                    <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+                      {ops.loginRecord
+                        ? "重新授权后，发布与互动任务将沿用新的登录状态"
+                        : "绑定后即可用于发布、互动与账号健康检测"}
+                    </p>
+                  </div>
+                </div>
+                {!ops.loginConnecting && (
+                  <button
+                    type="button"
+                    aria-label="关闭"
+                    className="rounded-lg p-1.5 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-hover,rgba(114,46,209,0.06))] hover:text-[var(--kaypal-v3-ink)]"
+                    onClick={() => ops.cancelLogin(true).catch(() => undefined)}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
 
-              <div>
-                <p className="mb-1 text-sm text-[var(--kaypal-v3-muted)]">
-                  登录平台
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {PLATFORMS.map((p) => (
-                    <button
-                      key={p.type}
-                      type="button"
-                      className={`rounded-full border px-3 py-1 text-sm font-medium transition ${
-                        ops.loginPlatformType === p.type
-                          ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
-                          : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)]"
-                      }`}
+              <div className="mt-5 flex flex-col gap-4">
+                {/* 账号主体 */}
+                <div>
+                  <p className="mb-1.5 text-[13px] font-medium text-[var(--kaypal-v3-soft-ink)]">
+                    账号主体
+                  </p>
+                  <div className="relative">
+                    <UserCheck className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--kaypal-v3-muted)]" />
+                    <input
+                      className="h-10 w-full rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-field-border)] bg-[var(--kaypal-v3-field-bg)] pl-9 pr-3 text-sm text-[var(--kaypal-v3-ink)] outline-none transition placeholder:text-[var(--kaypal-v3-muted)] focus:border-[var(--kaypal-v3-accent)] disabled:opacity-50"
+                      placeholder="例如：矩阵账号01"
                       disabled={ops.loginConnecting}
-                      onClick={() => ops.setLoginPlatformType(p.type)}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
+                      value={ops.loginProfileName}
+                      onChange={(e) => ops.setLoginProfileName(e.target.value)}
+                    />
+                  </div>
                 </div>
+
+                {/* 登录平台：品牌色标识胶囊 */}
+                <div>
+                  <p className="mb-1.5 text-[13px] font-medium text-[var(--kaypal-v3-soft-ink)]">
+                    登录平台
+                  </p>
+                  <div className="grid grid-cols-5 gap-2">
+                    {PLATFORMS.map((p) => {
+                      const active = ops.loginPlatformType === p.type;
+                      return (
+                        <button
+                          key={p.type}
+                          type="button"
+                          className={`flex flex-col items-center gap-1.5 rounded-[12px] border px-1 py-2.5 text-[13px] font-medium transition disabled:opacity-50 ${
+                            active
+                              ? "border-transparent text-[var(--kaypal-v3-ink)] ring-2"
+                              : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)] hover:bg-[var(--kaypal-v3-hover,rgba(114,46,209,0.06))]"
+                          }`}
+                          style={
+                            active
+                              ? { boxShadow: `0 0 0 1.5px ${p.brand}22`, background: `${p.brand}14` }
+                              : undefined
+                          }
+                          disabled={ops.loginConnecting}
+                          onClick={() => ops.setLoginPlatformType(p.type)}
+                        >
+                          <span
+                            className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                            style={{ background: active ? p.brand : `${p.brand}66` }}
+                          >
+                            {p.label.replace("B站", "B").charAt(0)}
+                          </span>
+                          <span>{p.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 登录状态区 */}
+                {ops.loginPhase !== "idle" && (
+                  <div className="flex flex-col items-center gap-3 overflow-hidden rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-surface-soft, var(--kaypal-v3-field-bg))] p-5 text-center">
+                    {ops.loginPhase === "connecting" && (
+                      <div className="flex flex-col items-center gap-3 py-3">
+                        <Loader2 className="h-6 w-6 animate-spin text-[var(--kaypal-v3-accent)]" />
+                        <p className="text-sm text-[var(--kaypal-v3-muted)]">
+                          正在建立本地登录通道…
+                        </p>
+                      </div>
+                    )}
+
+                    {ops.loginPhase === "qr" && ops.loginQrCode && (
+                      <div className="flex flex-col items-center gap-3">
+                        <p className="text-sm font-medium text-[var(--kaypal-v3-soft-ink)]">
+                          请使用对应平台 APP 扫码登录
+                        </p>
+                        <div className="rounded-[14px] border border-[var(--kaypal-v3-border)] bg-white p-3 shadow-sm">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            alt="登录二维码"
+                            className="h-48 w-48 rounded-lg"
+                            src={ops.loginQrCode}
+                          />
+                        </div>
+                        <p className="flex items-center gap-1.5 text-xs text-[var(--kaypal-v3-muted)]">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          {ops.loginStatus || "扫码后稍等片刻，系统会自动识别登录结果"}
+                        </p>
+                      </div>
+                    )}
+
+                    {ops.loginPhase === "manual" && (
+                      <div className="flex flex-col items-center gap-2 py-2">
+                        <LogIn className="h-6 w-6 text-[var(--kaypal-v3-amber)]" />
+                        <p className="text-sm font-medium text-[var(--kaypal-v3-amber)]">
+                          {ops.loginStatus || "请在打开的浏览器页面中完成登录"}
+                        </p>
+                        <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                          完成后无需操作，系统会自动识别并同步账号
+                        </p>
+                      </div>
+                    )}
+
+                    {ops.loginPhase === "detecting" && (
+                      <div className="flex flex-col items-center gap-2 py-2">
+                        <CheckCircle2 className="h-6 w-6 text-[var(--kaypal-v3-success)]" />
+                        <p className="text-sm font-medium text-[var(--kaypal-v3-success)]">
+                          已检测到登录，正在同步账号…
+                        </p>
+                      </div>
+                    )}
+
+                    {ops.loginPhase === "reconnecting" && (
+                      <div className="flex flex-col items-center gap-3 py-1">
+                        <p className="text-sm text-[var(--kaypal-v3-amber)]">
+                          {ops.loginError || "连接不稳定，正在确认登录状态…"}
+                        </p>
+                        <V2GhostButton
+                          icon={RefreshCw}
+                          onClick={() => void ops.checkLoginNow()}
+                        >
+                          我已登录，同步状态
+                        </V2GhostButton>
+                      </div>
+                    )}
+
+                    {ops.loginPhase === "failed" && (
+                      <div className="flex flex-col items-center gap-3 py-1">
+                        <p className="text-sm text-[var(--kaypal-v3-danger)]">
+                          {ops.loginError || "绑定失败，请稍后重试"}
+                        </p>
+                        <V2GhostButton
+                          icon={RefreshCw}
+                          onClick={() => void ops.checkLoginNow()}
+                        >
+                          我已登录，同步状态
+                        </V2GhostButton>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {ops.loginPhase !== "idle" && (
-                <div className="flex flex-col items-center gap-3 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] p-4">
-                  {ops.loginPhase === "connecting" && (
-                    <p className="py-4 text-sm text-[var(--kaypal-v3-muted)]">
-                      正在建立本地登录通道…
-                    </p>
-                  )}
-
-                  {ops.loginPhase === "qr" && ops.loginQrCode && (
-                    <>
-                      <p className="text-sm text-[var(--kaypal-v3-muted)]">
-                        请使用对应平台 APP 扫码登录
-                      </p>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        alt="登录二维码"
-                        className="h-48 w-48 rounded-lg"
-                        src={ops.loginQrCode}
-                      />
-                      <p className="text-xs text-[var(--kaypal-v3-muted)]">
-                        {ops.loginStatus ||
-                          "扫码后稍等片刻，系统会自动识别登录结果"}
-                      </p>
-                    </>
-                  )}
-
-                  {ops.loginPhase === "manual" && (
-                    <>
-                      <p className="py-4 text-sm text-[var(--kaypal-v3-amber)]">
-                        {ops.loginStatus ||
-                          "请在打开的浏览器页面中完成登录，完成后会自动识别"}
-                      </p>
-                      <p className="text-xs text-[var(--kaypal-v3-muted)]">
-                        完成后无需操作，系统会自动识别并同步账号
-                      </p>
-                    </>
-                  )}
-
-                  {ops.loginPhase === "detecting" && (
-                    <p className="py-4 text-sm text-[var(--kaypal-v3-success)]">
-                      ✓ 已检测到登录，正在同步账号…
-                    </p>
-                  )}
-
-                  {ops.loginPhase === "reconnecting" && (
-                    <>
-                      <p className="text-sm text-[var(--kaypal-v3-amber)]">
-                        {ops.loginError || "连接不稳定，正在确认登录状态…"}
-                      </p>
-                      <V2GhostButton
-                        icon={RefreshCw}
-                        onClick={() => void ops.checkLoginNow()}
-                      >
-                        我已登录，同步状态
-                      </V2GhostButton>
-                    </>
-                  )}
-
-                  {ops.loginPhase === "failed" && (
-                    <>
-                      <p className="text-sm text-[var(--kaypal-v3-danger)]">
-                        {ops.loginError || "绑定失败，请稍后重试"}
-                      </p>
-                      <V2GhostButton
-                        icon={RefreshCw}
-                        onClick={() => void ops.checkLoginNow()}
-                      >
-                        我已登录，同步状态
-                      </V2GhostButton>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="mt-5 flex justify-end gap-2">
-              <V2GhostButton
-                onClick={() => ops.cancelLogin(true).catch(() => undefined)}
-              >
-                取消
-              </V2GhostButton>
-              <V2PrimaryButton
-                loading={ops.loginConnecting}
-                disabled={ops.loginConnecting}
-                onClick={ops.startLogin}
-              >
-                开始登录
-              </V2PrimaryButton>
+              <div className="mt-6 flex justify-end gap-2">
+                <V2GhostButton
+                  onClick={() => ops.cancelLogin(true).catch(() => undefined)}
+                >
+                  取消
+                </V2GhostButton>
+                <V2PrimaryButton
+                  loading={ops.loginConnecting}
+                  disabled={ops.loginConnecting}
+                  onClick={ops.startLogin}
+                >
+                  开始登录
+                </V2PrimaryButton>
+              </div>
             </div>
           </div>
         </div>
