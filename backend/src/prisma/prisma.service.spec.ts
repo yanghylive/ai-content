@@ -1,4 +1,10 @@
-import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { PrismaService } from './prisma.service';
@@ -276,11 +282,7 @@ describe('PrismaService SQLite 列级收敛（真机 500 修复）', () => {
       // 奇数次 = sqlite_master 表检查；偶数次 = PRAGMA table_info
       return rawCall % 2 === 1
         ? [{ name: 'crm_customers' }]
-        : [
-            { name: 'id' },
-            { name: 'owner_id' },
-            { name: 'source_url' },
-          ];
+        : [{ name: 'id' }, { name: 'owner_id' }, { name: 'source_url' }];
     });
     svc.$executeRawUnsafe = jest.fn().mockResolvedValue(undefined);
     svc.logger = { log: jest.fn(), warn: jest.fn() };
@@ -288,12 +290,16 @@ describe('PrismaService SQLite 列级收敛（真机 500 修复）', () => {
     await svc.ensureSqliteSchemaColumns();
     // 5 个归因列应触发 ADD COLUMN
     expect(svc.$executeRawUnsafe).toHaveBeenCalledWith(
-      expect.stringContaining('ALTER TABLE crm_customers ADD COLUMN source_article_id'),
+      expect.stringContaining(
+        'ALTER TABLE crm_customers ADD COLUMN source_article_id',
+      ),
     );
     // v1.1.104：mobile_devices.device_token_hash 补列加入（真机 P0）——mock 对
     // 所有迭代返回「表存在且缺列」，5 归因列 + 1 device_token_hash = 6 次 ALTER
     expect(svc.$executeRawUnsafe).toHaveBeenCalledWith(
-      expect.stringContaining('ALTER TABLE mobile_devices ADD COLUMN device_token_hash'),
+      expect.stringContaining(
+        'ALTER TABLE mobile_devices ADD COLUMN device_token_hash',
+      ),
     );
     expect(svc.$executeRawUnsafe.mock.calls.length).toBe(6);
     delete process.env.SQLITE_DATABASE_URL;
@@ -313,8 +319,7 @@ describe('PrismaService SQLite 列级收敛（真机 500 修复）', () => {
     expect(svc.$executeRawUnsafe).not.toHaveBeenCalled();
     // 2026-09-01（复核第四轮 P1-3）：还原 DATABASE_URL，防止 runInBand
     // 顺序下 delete 后毒化后续 spec 的 Prisma 构造（P1012 校验失败）
-    process.env.DATABASE_URL =
-      'postgresql://test:test@127.0.0.1:5432/test';
+    process.env.DATABASE_URL = 'postgresql://test:test@127.0.0.1:5432/test';
   });
 });
 
@@ -342,8 +347,9 @@ const clientSchemaPath = join(
 let clientProvider = '';
 try {
   clientProvider =
-    readFileSync(clientSchemaPath, 'utf8').match(/provider\s*=\s*"(\w+)"/)?.[1] ??
-    '';
+    readFileSync(clientSchemaPath, 'utf8').match(
+      /provider\s*=\s*"(\w+)"/,
+    )?.[1] ?? '';
 } catch {
   // client schema 缺失时按 sqlite 跑（构建产物环境）
   clientProvider = 'sqlite';
@@ -417,9 +423,9 @@ describeIsolation('PrismaService 账号库隔离（logout 换库）', () => {
 
   it('切换期间业务访问被切库闸拒绝（switching 标志）', async () => {
     (svc as unknown as { switching: boolean }).switching = true;
-    await expect(
-      Promise.resolve().then(() => svc.material),
-    ).rejects.toThrow('数据正在切换');
+    await expect(Promise.resolve().then(() => svc.material)).rejects.toThrow(
+      '数据正在切换',
+    );
     (svc as unknown as { switching: boolean }).switching = false;
     expect(svc.material).toBeDefined();
   });
@@ -435,9 +441,11 @@ describeIsolation('PrismaService 账号库隔离（logout 换库）', () => {
 
     // 制造损坏：用垃圾字节覆盖库文件（先切回系统库释放连接）
     await svc.switchDatabase(null);
-    (svc as unknown as {
-      accountClients: Map<string, unknown>;
-    }).accountClients.delete(cPath);
+    (
+      svc as unknown as {
+        accountClients: Map<string, unknown>;
+      }
+    ).accountClients.delete(cPath);
     writeFileSync(cPath, 'this is not a sqlite database at all........');
     expect(existsSync(cPath)).toBe(true);
 
@@ -453,7 +461,6 @@ describeIsolation('PrismaService 账号库隔离（logout 换库）', () => {
     await svc.switchDatabase(cPath);
     expect(await materialCount()).toBe(0);
   });
-
 });
 
 /**
@@ -467,17 +474,16 @@ describe('PrismaService 重启后请求级路由（复核 P1-A）', () => {
     } as unknown as AuthRequestContextService;
     const rebootSvc = new PrismaService(ctxService);
     // 打桩 ensureAccountDatabase（登记映射即可，不真实建库）
-    rebootSvc.ensureAccountDatabase = jest.fn(
-      async (userId: string) => {
-        (rebootSvc as unknown as { accountPaths: Map<string, string> }).accountPaths.set(
-          userId,
-          `/tmp/accounts/${userId}.sqlite`,
-        );
-        return `/tmp/accounts/${userId}.sqlite`;
-      },
-    );
+    rebootSvc.ensureAccountDatabase = jest.fn(async (userId: string) => {
+      (
+        rebootSvc as unknown as { accountPaths: Map<string, string> }
+      ).accountPaths.set(userId, `/tmp/accounts/${userId}.sqlite`);
+      return `/tmp/accounts/${userId}.sqlite`;
+    });
     // 模拟进程重启：accountPaths 为空 + 无全局活跃库
-    (ctxService.get as jest.Mock).mockReturnValue({ user: { id: 'user-reboot' } });
+    (ctxService.get as jest.Mock).mockReturnValue({
+      user: { id: 'user-reboot' },
+    });
     // 已认证但无账号库映射 → 拒绝（不回退全局/系统库）
     await expect(
       Promise.resolve().then(() => rebootSvc.material),
@@ -486,11 +492,40 @@ describe('PrismaService 重启后请求级路由（复核 P1-A）', () => {
     await rebootSvc.ensureAccountDatabase('user-reboot');
     expect(rebootSvc.material).toBeDefined();
     // 切换另一用户：映射缺失同样拒绝（A/B 不串库）
-    (ctxService.get as jest.Mock).mockReturnValue({ user: { id: 'user-other' } });
+    (ctxService.get as jest.Mock).mockReturnValue({
+      user: { id: 'user-other' },
+    });
     await expect(
       Promise.resolve().then(() => rebootSvc.material),
     ).rejects.toThrow('账号库尚未就绪');
     await rebootSvc.ensureAccountDatabase('user-other');
     expect(rebootSvc.material).toBeDefined();
+  });
+});
+
+describe('PrismaService 当前账号库事务（复核 R2）', () => {
+  it('在当前请求选中的 client 上连接并开启交互事务', async () => {
+    const tx = { growthAcquisitionConfig: { upsert: jest.fn() } };
+    const active = {
+      $connect: jest.fn().mockResolvedValue(undefined),
+      $transaction: jest.fn(async (callback: (client: typeof tx) => unknown) =>
+        callback(tx),
+      ),
+    };
+    const service = Object.create(PrismaService.prototype) as PrismaService & {
+      resolveActiveClient: jest.Mock;
+    };
+    service.resolveActiveClient = jest.fn().mockReturnValue(active);
+
+    const result = await service.runActiveTransaction(
+      async (client) => client === tx,
+      { timeout: 60_000 },
+    );
+
+    expect(result).toBe(true);
+    expect(active.$connect).toHaveBeenCalledTimes(1);
+    expect(active.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      timeout: 60_000,
+    });
   });
 });

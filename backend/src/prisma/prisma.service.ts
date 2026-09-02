@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { AuthRequestContextService } from '../common/auth-request-context.service';
 
 /**
@@ -78,6 +78,7 @@ export class PrismaService
     'accountTablesCleared',
     'tenantOrgSynced',
     'resolveActiveClient',
+    'runActiveTransaction',
     'registerStudioProjectOwner',
     'assertStudioProjectOwner',
     'listStudioProjectOwnerIds',
@@ -113,8 +114,7 @@ export class PrismaService
         // 业务访问：路由到当前活跃库（账号库或系统库）。
         // 2026-09-01（复核 P1-2）：请求级上下文优先——当前请求带 user.id 时
         // 按该用户账号库路由（并发/切换期间不串库）；无请求上下文回退全局
-        // activeAccountPath（登录/登出/后台任务）。注意：不 bind——调用方
-        // this=proxy，属性访问再经 proxy 递归转发，行为等价且不破坏 jest.fn。
+        // activeAccountPath（登录/登出/后台任务）。
         const active = target.resolveActiveClient();
         return (active as unknown as Record<string, unknown>)[prop];
       },
@@ -155,6 +155,16 @@ export class PrismaService
     return this.activeAccountPath
       ? this.getAccountClient(this.activeAccountPath)
       : this;
+  }
+
+  /** Run an interactive transaction on the request-selected database. */
+  async runActiveTransaction<T>(
+    callback: (tx: Prisma.TransactionClient) => Promise<T>,
+    options?: { timeout?: number; maxWait?: number },
+  ): Promise<T> {
+    const active = this.resolveActiveClient();
+    await active.$connect();
+    return active.$transaction(callback, options);
   }
 
   /**
@@ -351,13 +361,12 @@ export class PrismaService
   private async isSqliteCorrupt(dbPath: string): Promise<boolean> {
     try {
       const client = this.getAccountClient(dbPath);
-      const rows = await client.$queryRawUnsafe<
-        Array<{ quick_check: string }>
-      >('PRAGMA quick_check');
+      const rows =
+        await client.$queryRawUnsafe<Array<{ quick_check: string }>>(
+          'PRAGMA quick_check',
+        );
       const result = rows?.[0]?.quick_check;
-      return (
-        typeof result === 'string' && result.trim().toLowerCase() !== 'ok'
-      );
+      return typeof result === 'string' && result.trim().toLowerCase() !== 'ok';
     } catch (error) {
       // 2026-09-02（数据事故修复）：只有 SQLite 文件损坏类错误才判定损坏并
       // 触发带备份重建。engine 缺失/连接失败（PrismaClientInitializationError、
@@ -365,8 +374,7 @@ export class PrismaService
       // 后端 bundle 缺 query engine 启动失败期间，ensureAccountDatabase 探测
       // 账号库把 engine 错误当成损坏，166MB 账号库被改名 .corrupt，重建出的
       // 新库 0 字节 → 后续所有登录都报 no such table: users（登录了不识别）。
-      const message =
-        error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : String(error);
       if (
         /SQLITE_CORRUPT|database disk image is malformed|file is not a database|SQLITE_NOTADB|disk I\/O error|SQLITE_IOERR/i.test(
           message,

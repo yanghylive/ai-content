@@ -87,6 +87,9 @@ async function startSelfHosted() {
         PORT: '3199',
         DATABASE_URL: dbUrl,
         SQLITE_DATABASE_URL: dbUrl,
+        // 让增长快照、账号库等运行时文件也落在临时目录，不能读到开发机的
+        // 本地数据后再迁入测试库，否则首个登录请求不再是干净包的真实路径。
+        KAYPAL_DESKTOP_USER_DATA_DIR: tmpDbDir,
         // 关键：不要设 KAYPAL_DESKTOP_DATABASE_MODE=sqlite！
         // main.ts 的 normalizeDesktopSqliteEnv 会强制把库覆盖成
         // KAYPAL_DESKTOP_USER_DATA_DIR/kaypal-ai.sqlite，导致临时库白建。
@@ -127,6 +130,7 @@ async function startSelfHosted() {
   return {
     child,
     apiBase,
+    getBootLog: () => bootLog,
     prismaEnv: {
       DATABASE_URL: dbUrl,
       SQLITE_DATABASE_URL: dbUrl,
@@ -189,7 +193,7 @@ async function checkSchemaTables(sqliteDbPath) {
 // 用 node:sqlite 直插测试数据，绕开 PrismaClient provider 限制
 // ─────────────────────────────────────────────────────────────
 
-async function checkPermissionOpen(sqliteDbPath, apiBase) {
+async function checkPermissionOpen(sqliteDbPath, apiBase, getBootLog = () => '') {
   const { DatabaseSync } = await import('node:sqlite');
   const crypto = await import('node:crypto');
   const db = new DatabaseSync(sqliteDbPath);
@@ -264,8 +268,15 @@ async function checkPermissionOpen(sqliteDbPath, apiBase) {
   report(
     ok,
     `R2 权限放开：member 创建获客 → HTTP ${res.status}（非 403）`,
-    res.status === 403 ? '仍被权限拦截！' : '',
+    res.status === 403
+      ? '仍被权限拦截！'
+      : ok
+        ? ''
+        : `响应: ${body.replace(/\s+/g, ' ').slice(0, 300)}`,
   );
+  if (!ok) {
+    console.error(`R2 后端日志:\n${getBootLog().slice(-1500)}`);
+  }
 
   // 清理
   const db2 = new DatabaseSync(sqliteDbPath);
@@ -422,7 +433,7 @@ async function main() {
   if (selfHosted) {
     const dbPath = selfHosted.prismaEnv.DATABASE_URL.replace('file:', '');
     await checkSchemaTables(dbPath);
-    await checkPermissionOpen(dbPath, API_BASE);
+    await checkPermissionOpen(dbPath, API_BASE, selfHosted.getBootLog);
     await checkBigIntSerialization(dbPath, API_BASE);
   } else {
     report(false, 'R1-R3 需自起模式（临时库）运行，请勿用 REGRESSION_API_BASE 连接模式');

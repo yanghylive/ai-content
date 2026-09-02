@@ -8,6 +8,7 @@ import {
   type OfferView,
   type RebateBalance,
   type PriceWatch,
+  type VendorOffersResponse,
 } from "@/lib/api/savings";
 import { MobileTabBar } from "../shell/mobile-tab-bar";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
@@ -28,6 +29,13 @@ const TABS: Array<{ key: TabKey; label: string; icon: typeof Home }> = [
   { key: "wallet", label: "钱包", icon: Wallet },
   { key: "me", label: "我的", icon: User },
 ];
+
+function unavailableResult(message: string): VendorOffersResponse {
+  return {
+    items: [],
+    unavailable: { code: "VENDOR_CREDENTIAL_MISSING", message },
+  };
+}
 
 /** 5 Tab 信息架构中枢：共享资产/监控状态 + 底部导航（移动）/ 顶部导航（桌面） */
 export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
@@ -55,39 +63,39 @@ export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
         savingsApi.creditBalance(),
         savingsApi.listWatches(),
         savingsApi.meituanActivities().catch((error) => {
-          setPanelErrors((prev) => ({
-            ...prev,
-            meituan:
-              (error as { message?: string })?.message?.slice?.(0, 80) ||
+          return unavailableResult(
+            (error as { message?: string })?.message?.slice?.(0, 80) ||
               "美团活动加载失败",
-          }));
-          return [];
+          );
         }),
         savingsApi.featured(2).catch((error) => {
-          setPanelErrors((prev) => ({
-            ...prev,
-            featured99:
-              (error as { message?: string })?.message?.slice?.(0, 80) ||
+          return unavailableResult(
+            (error as { message?: string })?.message?.slice?.(0, 80) ||
               "运营位加载失败",
-          }));
-          return [];
+          );
         }),
         savingsApi.featured(3).catch((error) => {
-          setPanelErrors((prev) => ({
-            ...prev,
-            featured30:
-              (error as { message?: string })?.message?.slice?.(0, 80) ||
+          return unavailableResult(
+            (error as { message?: string })?.message?.slice?.(0, 80) ||
               "运营位加载失败",
-          }));
-          return [];
+          );
         }),
       ]);
       setBalance(b);
       setCredit(c);
       setWatches(w);
-      setMeituanActs(mt);
-      setFeatured99(f99);
-      setFeatured30(f30);
+      setMeituanActs(mt.items);
+      setFeatured99(f99.items);
+      setFeatured30(f30.items);
+      const unavailablePanels: Record<string, string> = {};
+      if (mt.unavailable) unavailablePanels.meituan = mt.unavailable.message;
+      if (f99.unavailable) {
+        unavailablePanels.featured99 = f99.unavailable.message;
+      }
+      if (f30.unavailable) {
+        unavailablePanels.featured30 = f30.unavailable.message;
+      }
+      setPanelErrors(unavailablePanels);
     } catch {
       /* 未登录或接口暂不可用时静默 */
       setLoadError("数据加载失败，请检查网络后刷新重试");
@@ -145,9 +153,13 @@ export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
         </nav>
 
         {tab === "home" && <HomePanel {...shared} onNavigate={setTab} />}
-        {tab === "compare" && <ComparePanel watches={watches} onWatchCreated={loadAll} />}
+        {tab === "compare" && (
+          <ComparePanel watches={watches} onWatchCreated={loadAll} />
+        )}
         {tab === "orders" && <OrdersPanel onNavigate={setTab} />}
-        {tab === "wallet" && <WalletPanel balance={balance} credit={credit} reload={loadAll} />}
+        {tab === "wallet" && (
+          <WalletPanel balance={balance} credit={credit} reload={loadAll} />
+        )}
         {tab === "me" && <MePanel watches={watches} />}
       </div>
     );
@@ -157,9 +169,13 @@ export function SavingsShell({ initialTab = "home" }: { initialTab?: TabKey }) {
   return (
     <div className="mx-auto max-w-[560px] px-4 pb-24 pt-4">
       {tab === "home" && <HomePanel {...shared} onNavigate={setTab} />}
-      {tab === "compare" && <ComparePanel watches={watches} onWatchCreated={loadAll} />}
+      {tab === "compare" && (
+        <ComparePanel watches={watches} onWatchCreated={loadAll} />
+      )}
       {tab === "orders" && <OrdersPanel onNavigate={setTab} />}
-      {tab === "wallet" && <WalletPanel balance={balance} credit={credit} reload={loadAll} />}
+      {tab === "wallet" && (
+        <WalletPanel balance={balance} credit={credit} reload={loadAll} />
+      )}
       {tab === "me" && <MePanel watches={watches} />}
 
       {/* 底部固定 Tab（统一 MobileTabBar；state 驱动） */}

@@ -21,6 +21,14 @@ export interface OfferView {
   unitPrice?: number;
 }
 
+export interface VendorOffersResponse {
+  items: OfferView[];
+  unavailable: {
+    code: "VENDOR_CREDENTIAL_MISSING";
+    message: string;
+  } | null;
+}
+
 /** 返利余额 */
 export interface RebateBalance {
   estimated: number;
@@ -81,21 +89,27 @@ export const savingsApi = {
   },
   /** 同款跨平台比价（SKU 归并，含全网最低价差） */
   skuCompare(keyword: string) {
-    return api.get<Array<{
-      masterTitle: string;
-      offers: Array<{
-        platformCode: string;
-        shopName?: string | null;
-        payPrice: number;
-        unitPrice?: number;
-        estRebate: number;
-        estNetCost: number;
-        commissionRate: number;
-      }>;
-      cheapest: { platformCode: string; estNetCost: number; payPrice: number };
-      priceGap: number;
-      total: number;
-    }>>(`/savings/sku-compare?keyword=${encodeURIComponent(keyword)}`);
+    return api.get<
+      Array<{
+        masterTitle: string;
+        offers: Array<{
+          platformCode: string;
+          shopName?: string | null;
+          payPrice: number;
+          unitPrice?: number;
+          estRebate: number;
+          estNetCost: number;
+          commissionRate: number;
+        }>;
+        cheapest: {
+          platformCode: string;
+          estNetCost: number;
+          payPrice: number;
+        };
+        priceGap: number;
+        total: number;
+      }>
+    >(`/savings/sku-compare?keyword=${encodeURIComponent(keyword)}`);
   },
   /** 创建/更新价格监控（幂等，P3） */
   upsertWatch(input: {
@@ -198,15 +212,23 @@ export const savingsApi = {
   },
   /** 补货建议 */
   restockSuggestion(listId: string) {
-    return api.get<{ name: string; suggestions: unknown[]; substitutes: unknown[]; total: number }>(
-      `/savings/procurement/${listId}/restock`,
-    );
+    return api.get<{
+      name: string;
+      suggestions: unknown[];
+      substitutes: unknown[];
+      total: number;
+    }>(`/savings/procurement/${listId}/restock`);
   },
   /** 门店列表（P0b-5 多门店） */
   listStores() {
-    return api.get<Array<{ id: string; name: string; address?: string | null; owner?: string | null }>>(
-      "/savings/stores",
-    );
+    return api.get<
+      Array<{
+        id: string;
+        name: string;
+        address?: string | null;
+        owner?: string | null;
+      }>
+    >("/savings/stores");
   },
   /** 创建门店 */
   createStore(input: { name: string; address?: string }) {
@@ -226,11 +248,13 @@ export const savingsApi = {
       min30: number | null;
       current: number | null;
       belowAvgPct: number | null;
-    }>(`/savings/price-history?itemId=${encodeURIComponent(itemId)}&days=${days}`);
+    }>(
+      `/savings/price-history?itemId=${encodeURIComponent(itemId)}&days=${days}`,
+    );
   },
   /** 运营位选品（type=2 9.9包邮 / 3 30元封顶） */
   featured(type = 2) {
-    return api.get<OfferView[]>(`/savings/featured?type=${type}`);
+    return api.get<VendorOffersResponse>(`/savings/featured?type=${type}`);
   },
   /** 分类商品列表（首页导航 + 默认商品流，P3-2） */
   category(key = "hot", limit = 10) {
@@ -243,7 +267,7 @@ export const savingsApi = {
   },
   /** 美团本地生活活动列表（好单库） */
   meituanActivities() {
-    return api.get<OfferView[]>("/savings/meituan-activities");
+    return api.get<VendorOffersResponse>("/savings/meituan-activities");
   },
   /** 生成推广链接（美团活动/商品转链） */
   translink(input: {
@@ -289,7 +313,9 @@ export const savingsApi = {
       longH5?: string;
       weApp: { appId?: string; pagePath?: string; miniCode?: string } | null;
       error?: "VENDOR_CREDENTIAL_MISSING" | "VENDOR_API_ERROR";
-    }>(`/savings/life-services/${actId}/link${q.toString() ? `?${q.toString()}` : ""}`);
+    }>(
+      `/savings/life-services/${actId}/link${q.toString() ? `?${q.toString()}` : ""}`,
+    );
   },
   /** ===== P2 增长能力 ===== */
   /** 收藏商品 */
@@ -313,20 +339,22 @@ export const savingsApi = {
   },
   /** 收藏列表 */
   listFavorites() {
-    return api.get<Array<{
-      id: string;
-      itemId: string;
-      platformCode: string;
-      vendorCode: string;
-      title: string;
-      imageUrl?: string | null;
-      payPrice: number;
-      couponAmount: number;
-      estRebate: number;
-      estNetCost: number;
-      commissionRate: number | null;
-      createdAt: string;
-    }>>("/savings/favorites");
+    return api.get<
+      Array<{
+        id: string;
+        itemId: string;
+        platformCode: string;
+        vendorCode: string;
+        title: string;
+        imageUrl?: string | null;
+        payPrice: number;
+        couponAmount: number;
+        estRebate: number;
+        estNetCost: number;
+        commissionRate: number | null;
+        createdAt: string;
+      }>
+    >("/savings/favorites");
   },
   /** 每日签到 */
   checkin() {
@@ -349,9 +377,11 @@ export const savingsApi = {
   },
   /** 邀请码与专属链接 */
   invite() {
-    return api.get<{ inviteCode: string; inviteUrl: string; shareText: string }>(
-      "/savings/invite",
-    );
+    return api.get<{
+      inviteCode: string;
+      inviteUrl: string;
+      shareText: string;
+    }>("/savings/invite");
   },
   /** ===== 管理端（admin）===== */
   /** 全量订单 */
@@ -390,8 +420,12 @@ export const savingsApi = {
   },
   /** 供应商状态 */
   adminVendors() {
-    return api.get<Array<{ code: string; configured: Record<string, boolean>; ready: boolean }>>(
-      "/admin/savings/vendors",
-    );
+    return api.get<
+      Array<{
+        code: string;
+        configured: Record<string, boolean>;
+        ready: boolean;
+      }>
+    >("/admin/savings/vendors");
   },
 };

@@ -576,15 +576,55 @@ export class SavingsService {
   /** 运营位选品（好单库 column：type=2 9.9包邮 / 3 30元封顶 / 5 淘抢购 等） */
   async featured(type: number) {
     const adapter = this.adapterRegistry.resolve('haodanku');
-    const snapshots = adapter.featured ? await adapter.featured(type, 10) : [];
-    return snapshots.map((s) => this.toOfferView(s));
+    try {
+      const snapshots = adapter.featured
+        ? await adapter.featured(type, 10)
+        : [];
+      return {
+        items: snapshots.map((s) => this.toOfferView(s)),
+        unavailable: null,
+      };
+    } catch (error) {
+      if (!this.isMissingVendorCredential(error)) throw error;
+      this.logger.warn('省钱运营位未配置供应商凭证，返回空结果');
+      return {
+        items: [],
+        unavailable: {
+          code: 'VENDOR_CREDENTIAL_MISSING',
+          message: '运营位服务尚未配置，请联系管理员完成供应商接入。',
+        },
+      };
+    }
   }
 
   /** 美团本地生活活动列表（好单库，普通接口无需额外权限） */
   async meituanActivities() {
     const adapter = this.adapterRegistry.resolve('haodanku');
-    const snapshots = await adapter.search('', 'meituan');
-    return snapshots.map((s) => this.toOfferView(s));
+    try {
+      const snapshots = await adapter.search('', 'meituan');
+      return {
+        items: snapshots.map((s) => this.toOfferView(s)),
+        unavailable: null,
+      };
+    } catch (error) {
+      if (!this.isMissingVendorCredential(error)) throw error;
+      this.logger.warn('省钱美团活动未配置供应商凭证，返回空结果');
+      return {
+        items: [],
+        unavailable: {
+          code: 'VENDOR_CREDENTIAL_MISSING',
+          message: '美团活动服务尚未配置，请联系管理员完成供应商接入。',
+        },
+      };
+    }
+  }
+
+  private isMissingVendorCredential(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return (
+      message.includes('VENDOR_CREDENTIAL_MISSING') ||
+      message.includes('凭证未配置')
+    );
   }
 
   /** 生成推广链接（美团活动/商品转链；归因服务端生成，落库幂等） */
@@ -658,11 +698,12 @@ export class SavingsService {
     // 美团分类走本地生活活动接口（外卖/到店/买菜）
     if (key === 'meituan') {
       try {
-        const acts = await this.meituanActivities();
+        const result = await this.meituanActivities();
         return {
           key: 'meituan',
           label: '🍜 美团',
-          items: acts.slice(0, limit),
+          items: result.items.slice(0, limit),
+          ...(result.unavailable ? { error: result.unavailable.code } : {}),
         };
       } catch {
         return {

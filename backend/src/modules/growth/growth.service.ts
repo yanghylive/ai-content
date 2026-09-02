@@ -8403,7 +8403,12 @@ export class GrowthService implements OnModuleInit {
     // 最多 1000 条 leads 逐条 findUnique+upsert（约 3000+ 次串行查询）跑不完 5s，
     // 抛 Transaction already closed → growth execute 500。放宽到 60s（本地单用户，
     // 幂等 upsert，无锁竞争），超时仅影响单次持久化不产生脏数据。
-    await this.prisma.$transaction(
+    // AuthGuard may have just switched this request to a lazily-created
+    // account Prisma client. Wait for that client explicitly before opening an
+    // interactive transaction; otherwise Prisma can create a transaction id
+    // before the SQLite connection is ready and invalidate it on the first
+    // model write (P2028 / "Transaction not found").
+    await this.prisma.runActiveTransaction(
       async (tx) => {
         await this.deleteGrowthRecordsWithClient(tx, options);
         for (const item of this.growthPersistenceItems(
