@@ -589,6 +589,10 @@ export class AutoUploadClient {
    */
   private readonly validationCooldownMs = 60_000;
   private readonly lastValidationAt = new Map<string, number>();
+  // 2026-09-02（弹窗风暴修复）：cdp-sessions/accounts 高频轮询下，同账号
+  // 自动恢复最少间隔 60s；恢复静默（focusWindow:false）不弹窗打扰。
+  private readonly autoRecoverCooldownMs = 60_000;
+  private readonly lastAutoRecoverAt = new Map<string, number>();
 
   constructor(
     private readonly configService: ConfigService,
@@ -1223,27 +1227,39 @@ export class AutoUploadClient {
         typeof this.localBrowser?.recoverAccountSessionFromSavedCookies ===
           'function'
       ) {
-        const recovered = await this.withTimedResult(
-          this.localBrowser.recoverAccountSessionFromSavedCookies({
-            platform: this.resolvePlatformSlugFromString(row.platform),
-            accountId: engineAccountId,
-            targetUrl: this.resolvePlatformHomeUrl(row.platform),
-          }),
-          null,
-          `CDP 当前页登录态恢复超时 ${row.platform}:${String(engineAccountId)}`,
-          10000,
-        );
-        if (recovered) {
-          currentUrl = recovered.page.url();
-          currentPageLoginState = await this.withTimedResult(
-            this.inspectActiveSessionLoginState(
-              row.platform,
-              String(engineAccountId),
-            ),
-            'unknown',
-            `CDP 当前页恢复后登录态读取超时 ${row.platform}:${String(engineAccountId)}`,
-            5000,
+        // 2026-09-02（弹窗风暴修复）：本函数被 cdp-sessions（前端 6s 轮询）
+        // 与 listAccounts（各页 30s 轮询）高频调用。原先每轮判定登出都会
+        // 执行恢复（goto + bringToFront），导致浏览器窗口不停弹出。改为：
+        //  1) 同账号 60s 冷却，冷却期内仅如实上报登出状态；
+        //  2) 自动恢复静默执行（focusWindow:false，不抢占前台）。
+        // 用户显式操作（重登/打开后台/校验状态/任务预检）走各自路径，不受影响。
+        const cooldownKey = `${row.platform}:${String(engineAccountId)}`;
+        const lastAutoRecoverAt = this.lastAutoRecoverAt.get(cooldownKey) ?? 0;
+        if (Date.now() - lastAutoRecoverAt >= this.autoRecoverCooldownMs) {
+          this.lastAutoRecoverAt.set(cooldownKey, Date.now());
+          const recovered = await this.withTimedResult(
+            this.localBrowser.recoverAccountSessionFromSavedCookies({
+              platform: this.resolvePlatformSlugFromString(row.platform),
+              accountId: engineAccountId,
+              targetUrl: this.resolvePlatformHomeUrl(row.platform),
+              focusWindow: false,
+            }),
+            null,
+            `CDP 当前页登录态恢复超时 ${row.platform}:${String(engineAccountId)}`,
+            10000,
           );
+          if (recovered) {
+            currentUrl = recovered.page.url();
+            currentPageLoginState = await this.withTimedResult(
+              this.inspectActiveSessionLoginState(
+                row.platform,
+                String(engineAccountId),
+              ),
+              'unknown',
+              `CDP 当前页恢复后登录态读取超时 ${row.platform}:${String(engineAccountId)}`,
+              5000,
+            );
+          }
         }
       }
       const latestInteractionTask = this.findLatestInteractionTaskForAccount(

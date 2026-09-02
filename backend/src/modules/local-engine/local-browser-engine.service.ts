@@ -393,7 +393,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   private async recoverSessionFromSavedCookies(
     session: EngineSession,
     platform: LocalBrowserPlatform,
-    options: { targetUrl?: string } = {},
+    options: { targetUrl?: string; focusWindow?: boolean } = {},
   ): Promise<EngineSession | null> {
     if (
       !session.key ||
@@ -423,8 +423,11 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     session.page = page;
     session.lastActivityAt = new Date().toISOString();
     if (await this.pageLooksLoggedIn(page, platform)) {
-      // 仅恢复成功才把窗口带到前台（恢复失败高频调用时不打扰用户）
-      await page.bringToFront().catch(() => undefined);
+      // 2026-09-02（弹窗风暴修复）：默认恢复成功带前台（交互路径需要）；
+      // 高频轮询触发的自动恢复传 focusWindow:false 静默恢复，不弹窗打扰。
+      if (options.focusWindow !== false) {
+        await page.bringToFront().catch(() => undefined);
+      }
       this.logger.log(
         `会话 ${session.key} 已从 .login-cookies.json 恢复登录态`,
       );
@@ -1678,12 +1681,14 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     accountId: string | number;
     platform: LocalBrowserPlatform;
     targetUrl?: string;
+    focusWindow?: boolean;
   }): Promise<EngineSession | null> {
     const key = `${input.platform}-${input.accountId}`;
     const session = this.sessions.get(key);
     if (!session) return null;
     return this.recoverSessionFromSavedCookies(session, input.platform, {
       targetUrl: input.targetUrl,
+      focusWindow: input.focusWindow,
     });
   }
 
