@@ -347,15 +347,22 @@ export function AccountManagement() {
                         src={ops.loginQrCode}
                       />
                       <p className="text-xs text-[var(--kaypal-v3-muted)]">
-                        扫码后稍等片刻，系统会自动识别登录结果
+                        {ops.loginStatus ||
+                          "扫码后稍等片刻，系统会自动识别登录结果"}
                       </p>
                     </>
                   )}
 
                   {ops.loginPhase === "manual" && (
-                    <p className="py-4 text-sm text-[var(--kaypal-v3-amber)]">
-                      请在打开的浏览器页面中完成登录，完成后会自动识别
-                    </p>
+                    <>
+                      <p className="py-4 text-sm text-[var(--kaypal-v3-amber)]">
+                        {ops.loginStatus ||
+                          "请在打开的浏览器页面中完成登录，完成后会自动识别"}
+                      </p>
+                      <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                        完成后无需操作，系统会自动识别并同步账号
+                      </p>
+                    </>
                   )}
 
                   {ops.loginPhase === "detecting" && (

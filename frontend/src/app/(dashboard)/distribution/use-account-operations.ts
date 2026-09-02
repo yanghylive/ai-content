@@ -308,6 +308,20 @@ export function useAccountOperations(options: {
         return;
       }
 
+      if (data.startsWith("STATUS:")) {
+        // 2026-09-02：登录等待期心跳（后端每 5s 一条），显示实时进度，
+        // 不清除二维码 / 不打断流程。
+        const statusText = data.slice("STATUS:".length).trim();
+        if (statusText && !completed) {
+          setLoginStatus(statusText);
+          if (loginTimerRef.current) {
+            clearTimeout(loginTimerRef.current);
+            loginTimerRef.current = null;
+          }
+        }
+        return;
+      }
+
       if (data === "CANCELLED") {
         completed = true;
         closeLoginStream();

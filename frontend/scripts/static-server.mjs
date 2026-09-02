@@ -154,10 +154,17 @@ function streamFile(res, file, statusCode, headers = {}) {
 }
 
 http.createServer(async (req, res) => {
-  res.setTimeout(REQUEST_TIMEOUT_MS, () => {
-    console.error(`[static-server] request timeout: ${req.method} ${req.url}`);
-    endWithError(res, 504, "请求超时");
-  });
+  // 2026-09-02（登录 SSE 断线根因修复 #2）：不要对 SSE/长响应设置 socket
+  // 空闲超时。原实现对所有响应设 10s 空闲超时，EventSource 登录流等待
+  // 二维码/扫码识别期间无输出字节 → 10s 后被服务端掐断 → 前端转轮询 →
+  // 用户已完成平台登录却显示失败。SSE 请求跳过超时（关闭/上游断开自然结束）。
+  const isSseRequest = /text\/event-stream/i.test(req.headers.accept || "");
+  if (!isSseRequest) {
+    res.setTimeout(REQUEST_TIMEOUT_MS, () => {
+      console.error(`[static-server] request timeout: ${req.method} ${req.url}`);
+      endWithError(res, 504, "请求超时");
+    });
+  }
   const urlPath = (req.url || "/").split("?")[0];
   /* /api 以及旧版 /auth 入口代理到后端。后端实际统一挂在 /api 下。短链 /r/:code 走 exclude 无 api 前缀，同样反代。 */
   const isApiRequest = urlPath === "/api" || urlPath.startsWith("/api/");
@@ -191,7 +198,14 @@ http.createServer(async (req, res) => {
       endWithError(res, 502, "后端代理失败");
       return;
     }
-    proxyReq.setTimeout(REQUEST_TIMEOUT_MS, () => {
+    // 2026-09-02（登录 SSE 断线根因修复）：EventSource 请求（Accept:
+    // text/event-stream，如 /api/auto-upload/accounts/login 登录流）是长连接，
+    // 等待二维码/扫码识别期间后端可能数分钟无输出字节。socket 空闲超时
+    // 会让登录流 10s 必断 → 前端转轮询 → 用户已完成平台登录却显示失败。
+    // SSE 禁用代理超时（浏览器关闭/上游断开会自行结束）；普通 API 维持
+    // 原 10s 超时（响应快，超时=上游卡死）。
+    const isSse = /text\/event-stream/i.test(req.headers.accept || "");
+    proxyReq.setTimeout(isSse ? 0 : REQUEST_TIMEOUT_MS, () => {
       proxyReq.destroy(new Error("upstream request timeout"));
     });
     proxyReq.on("error", (e) => {

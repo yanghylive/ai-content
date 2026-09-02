@@ -1196,7 +1196,7 @@ export class AutoUploadClient {
             6000,
           )
         : null;
-      let currentUrl =
+      const currentUrl =
         activeSession?.currentUrl ?? profileCdpSession?.currentUrl;
       const activePageProbeAvailable = Boolean(
         activeSession &&
@@ -1205,7 +1205,7 @@ export class AutoUploadClient {
           `${row.platform}-${String(engineAccountId)}`,
         )?.page,
       );
-      let currentPageLoginState = activeSession
+      const currentPageLoginState = activeSession
         ? await this.withTimedResult(
             this.inspectActiveSessionLoginState(
               row.platform,
@@ -4771,8 +4771,20 @@ export class AutoUploadClient {
       .catch(() => '');
     if (platformType === 3) {
       if (!url.includes('creator.douyin.com')) return false;
+      // 2026-09-02（误绑修复）：抖音登录浮层/引导可能渲染在 iframe 内
+      // （实测主 frame body 为空壳，innerText 不含登录字样 → 误判"已登录"
+      // → 未扫码就把空登录账号绑定保存）。遍历所有 frame 合并判断。
+      let combined = text;
+      for (const frame of page.frames()) {
+        if (frame === page.mainFrame()) continue;
+        const frameText = await frame
+          .locator('body')
+          .innerText({ timeout: 800 })
+          .catch(() => '');
+        if (frameText) combined = `${combined}\n${frameText}`;
+      }
       return !/扫码登录|验证码登录|密码登录|登录\/注册|打开「抖音APP」点击左上角/.test(
-        text,
+        combined,
       );
     }
     if (platformType === 2) {
@@ -5718,17 +5730,39 @@ export class AutoUploadClient {
         yield qr;
       }
 
-      const loggedIn = await this.waitForLoginSuccess(
-        session.page,
-        platformType,
-        input.requestId,
-      );
+      // 2026-09-02（登录体验修复）：等待扫码识别期间最多 200s 且无任何 SSE
+      // 输出。两个问题：1) 无心跳 → 前端长时间无反馈（"已登录但不识别"）；
+      // 2) 代理层即使无超时，静默等待也让用户无法判断状态。改为 500ms
+      // 探测登录态 + 每 5s 发一条 STATUS 心跳，前端实时显示等待进度。
+      const loginDeadline = Date.now() + 200000;
+      let loggedIn: 'logged_in' | 'cancelled' | 'timeout' = 'timeout';
+      let lastLoginBeatAt = 0;
+      while (Date.now() < loginDeadline) {
+        if (this.cancelledLoginRequestIds.has(input.requestId)) {
+          this.cancelledLoginRequestIds.delete(input.requestId);
+          loggedIn = 'cancelled';
+          break;
+        }
+        if (await this.pageLooksLoggedIn(platformType, session.page)) {
+          loggedIn = 'logged_in';
+          break;
+        }
+        const now = Date.now();
+        if (now - lastLoginBeatAt >= 5000) {
+          lastLoginBeatAt = now;
+          const waitedSeconds = Math.floor(
+            (now - (loginDeadline - 200000)) / 1000,
+          );
+          yield `STATUS:已等待 ${waitedSeconds}s，正在检测登录结果，请稍候…`;
+        }
+        await session.page.waitForTimeout(500).catch(() => undefined);
+      }
       if (loggedIn === 'cancelled') {
         yield 'CANCELLED';
         return;
       }
       if (loggedIn !== 'logged_in') {
-        yield 'ERROR: 登录未完成或平台没有进入已登录状态。请在本机打开的平台窗口完成扫码/登录后，再刷新账号状态。';
+        yield 'ERROR: 登录未完成或平台没有进入已登录状态。请在本机打开的平台窗口完成扫码/登录后，再点「我已登录」同步状态。';
         yield '500';
         return;
       }
