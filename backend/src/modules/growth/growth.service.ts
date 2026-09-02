@@ -4746,10 +4746,16 @@ export class GrowthService implements OnModuleInit {
   ): Promise<AiEmployeeLeadResponse> {
     const limit = Math.min(Math.max(remaining, 20), 50);
     const primaryInput = await this.nextGrowthAcquisitionSourceInput(config);
-    const shouldTryRpa =
-      config.platform !== 'douyin' ||
-      config.mode === 'keyword' ||
-      config.mode === 'search-account';
+    // 抖音 keyword/search-account：优先两段式（行业词搜账号 → 读作品 → 读评论）
+    if (
+      config.platform === 'douyin' &&
+      (config.mode === 'keyword' || config.mode === 'search-account')
+    ) {
+      const journey = await this.tryFetchDouyinAccountJourney(config, remaining);
+      if (journey?.ok === true) return journey;
+      // 两段式失败/不可用 → fallthrough 到下方 findDouyinXXX 旧链路兜底
+    }
+    const shouldTryRpa = config.platform !== 'douyin';
     if (shouldTryRpa) {
       // 阶段 A：优先走统一 RPA driver（浏览器行为式搜索，绕 /search/ 验证码）。
       // 抖音 keyword/search-account 也纳入（原直接 goto /search/ 触发验证码）。
@@ -4775,20 +4781,17 @@ export class GrowthService implements OnModuleInit {
             'RPA 执行成功但审计落库失败，已阻断成功标记',
         };
       }
-      if (config.platform !== 'douyin') {
-        // P1-2：非抖音 RPA 失败/不可用 → 回退旧链路
-        const legacy = this.fetchCandidatesWithPlatformAdapter(config);
-        const fallback: FallbackTrace = driverResult?.fallback ?? {
-          attempted: false,
-          source: 'legacy-adapter',
-          rpaExecutionId: null,
-          reasonCode: null,
-          fallbackAllowed: true,
-          message: 'RPA 路径未尝试，直接使用本地适配器',
-        };
-        return { ...legacy, fallback };
-      }
-      // 抖音 keyword/search-account：RPA 失败则 fallthrough 到下方抖音分支（回退 exposure-collector）
+      // 非抖音：RPA 失败/不可用 → 回退旧链路（抖音两段式已在上方优先处理，此处不再涉及抖音）
+      const legacy = this.fetchCandidatesWithPlatformAdapter(config);
+      const fallback: FallbackTrace = driverResult?.fallback ?? {
+        attempted: false,
+        source: 'legacy-adapter',
+        rpaExecutionId: null,
+        reasonCode: null,
+        fallbackAllowed: true,
+        message: 'RPA 路径未尝试，直接使用本地适配器',
+      };
+      return { ...legacy, fallback };
     }
     if (config.mode === 'search-account') {
       return this.aiEmployeeService.findDouyinLeadsByKeyword({
@@ -5196,6 +5199,342 @@ export class GrowthService implements OnModuleInit {
         ...outcome,
         // 关闭失败：候选已发现但浏览器会话状态不可确认 → 降级 partial（需人工核对），
         // 与 rpa_executions 的 reconcile_required 语义对齐，避免状态不一致。
+        status: 'partial',
+        reasonCode: 'session_close_failed',
+        message: `${outcome.message}；浏览器会话关闭失败，需人工核对平台实际结果`,
+      };
+    }
+    return outcome;
+  }
+
+  /**
+   * 抖音两段式发现（2026-09-03）：行业词搜账号 → 进账号主页读作品 → 读评论找客户。
+   *
+   * 背景：keyword/search-account 直接拿「提示词」goto /search/ 会触发验证码，且搜不到
+   * 「先找账号再找客户」的正确链路。改为三段 RPA 动作串行（同一会话）：
+   *   1. discover-account-search（sourceInputs 行业词）→ 相关账号
+   *   2. discover-account-works（账号 targetId）→ 账号作品
+   *   3. read-comments（作品 url）→ 评论用户（这才是客户候选）
+   * 评论用户候选交回 executeConfig → planDouyinFollowUp 用 includeKeywords（意向词）匹配触达。
+   * 失败/不可用返回 ok:false + fallback，调用方回退 exposure-collector 旧链路。
+   */
+  private async tryFetchDouyinAccountJourney(
+    config: GrowthAcquisitionConfig,
+    remaining: number,
+  ): Promise<
+    | ({ ok: true } & AiEmployeeLeadResponse & { fallback?: undefined })
+    | { ok: false; fallback: FallbackTrace }
+  > {
+    if (!this.rpaDriverRegistry) {
+      return {
+        ok: false,
+        fallback: {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: 'no_driver',
+          fallbackAllowed: true,
+          message: 'RPA driver 注册表不可用，回退本地适配器',
+        },
+      };
+    }
+    const driver = this.rpaDriverRegistry.get(config.platform);
+    if (!driver) {
+      return {
+        ok: false,
+        fallback: {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: 'no_driver',
+          fallbackAllowed: true,
+          message: `${config.platform} 无统一 RPA driver，回退本地适配器`,
+        },
+      };
+    }
+    const caps = await driver.capabilities({ accountId: config.accountId });
+    const probe = caps.accountProbe;
+    if (probe && (!probe.loggedIn || probe.captchaRequired || probe.riskControl)) {
+      return {
+        ok: false,
+        fallback: {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: probe.reasonCode ?? 'not_logged_in',
+          fallbackAllowed: true,
+          message: `账号 ${config.accountId} 预检未通过（${probe.reasonCode ?? 'not_logged_in'}），回退本地适配器`,
+        },
+      };
+    }
+    const searchCap = caps.actions.find((a) => a.action === 'discover-account-search');
+    const worksCap = caps.actions.find((a) => a.action === 'discover-account-works');
+    const commentsCap = caps.actions.find((a) => a.action === 'read-comments');
+    if (
+      !caps.runtimeReady ||
+      !searchCap?.supported ||
+      !worksCap?.supported ||
+      !commentsCap?.supported
+    ) {
+      return {
+        ok: false,
+        fallback: {
+          attempted: false,
+          source: 'legacy-adapter',
+          rpaExecutionId: null,
+          reasonCode: 'unsupported_action',
+          fallbackAllowed: true,
+          message: `${driver.displayName} 两段式发现能力不完整（搜账号/读作品/读评论缺一），回退本地适配器`,
+        },
+      };
+    }
+
+    const owner = {
+      userId: config.userId,
+      tenantId: config.tenantId ?? 'legacy-local-desktop',
+    };
+    const sessionRunId = `growth-rpa-journey-${config.id}-${Date.now()}`;
+    let recordId: string | null = null;
+    const sessionRef: { current: RpaSession | null } = { current: null };
+
+    const outcome:
+      | ({ ok: true } & AiEmployeeLeadResponse & { fallback?: undefined })
+      | { ok: false; fallback: FallbackTrace } = await (async () => {
+      try {
+        sessionRef.current = await driver.openSession({
+          userId: config.userId,
+          accountId: config.accountId,
+          runId: sessionRunId,
+        });
+        recordId = await this.openDriverExecutionRecord(
+          driver,
+          config,
+          sessionRef.current.sessionId,
+          sessionRunId,
+        );
+
+        // 第一段：行业词搜账号
+        const accountKeyword = config.sourceInputs[0] ?? config.taskName ?? '';
+        const accountResult = await driver.execute(sessionRef.current, {
+          name: 'discover-account-search',
+          action: 'discover-account-search',
+          input: { keyword: accountKeyword, limit: 10, userId: config.userId },
+        });
+        if (accountResult.status !== 'success' || !accountResult.items?.length) {
+          const failReason = accountResult.reasonCode ?? 'parse_failed';
+          await this.appendDriverStep(recordId, owner, {
+            stepName: 'discover-account-search',
+            status: 'failed',
+            reasonCode: failReason,
+            message: accountResult.message || '行业词搜账号未解析到结果',
+          });
+          await this.finalizeDriverRecord(recordId, owner, {
+            status: 'failed',
+            reasonCode: failReason,
+            nextAction: '已回退本地适配器；请检查浏览器登录态与页面结构后重试',
+          });
+          return {
+            ok: false,
+            fallback: {
+              attempted: true,
+              source: 'legacy-adapter',
+              rpaExecutionId: recordId,
+              reasonCode: failReason,
+              fallbackAllowed: true,
+              message:
+                accountResult.message ||
+                `两段式发现：行业词搜账号未解析到结果，已回退本地适配器（执行 ${recordId}）`,
+            },
+          };
+        }
+        const accountIds = accountResult.items
+          .map((item) => item.externalUserId || item.externalContentId)
+          .filter((value): value is string => Boolean(value));
+        await this.appendDriverStep(recordId, owner, {
+          stepName: 'discover-account-search',
+          status: 'success',
+          reasonCode: 'ok',
+          message: `行业词「${accountKeyword}」搜到 ${accountIds.length} 个账号`,
+        });
+
+        // 第二段 + 第三段：读账号作品 → 读评论
+        const commentUsers: DouyinFollowUpCandidateInput[] = [];
+        const seen = new Set<string>();
+        const accountLimit = Math.min(3, accountIds.length);
+        for (let ai = 0; ai < accountLimit && commentUsers.length < remaining; ai += 1) {
+          const targetId = accountIds[ai];
+          const worksResult = await driver.execute(sessionRef.current, {
+            name: 'discover-account-works',
+            action: 'discover-account-works',
+            input: { targetId, limit: 3, userId: config.userId },
+          });
+          if (worksResult.status !== 'success' || !worksResult.items?.length) {
+            continue;
+          }
+          for (const work of worksResult.items.slice(0, 3)) {
+            if (commentUsers.length >= remaining) break;
+            const workUrl = this.text(work.url);
+            if (!workUrl) continue;
+            const commentResult = await driver.execute(sessionRef.current, {
+              name: 'read-comments',
+              action: 'read-comments',
+              input: { contentUrl: workUrl, limit: 10, userId: config.userId },
+            });
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            if (commentResult.status !== 'success' || !commentResult.items?.length) {
+              continue;
+            }
+            for (const item of commentResult.items) {
+              if (commentUsers.length >= remaining) break;
+              const rawNickname = this.text(item.authorName);
+              const nickname = rawNickname.replace(/作者$/, '').trim();
+              const commentText = this.text(item.text);
+              const externalUserId = this.text(item.externalUserId) || '';
+              const dedupe = `${workUrl}:${externalUserId}:${nickname}:${commentText}`;
+              if (!commentText || seen.has(dedupe)) continue;
+              if (nickname && /作者|商家|客服|官方/.test(nickname)) continue;
+              seen.add(dedupe);
+              commentUsers.push({
+                text: commentText,
+                sourceUrl: workUrl,
+                targetName: nickname || '抖音用户',
+                kind: 'douyin-account-comment-user',
+                index: commentUsers.length,
+                reason: `评论区用户：${nickname || '匿名'}`,
+                score: this.scoreText(commentText).score,
+                externalUserId: externalUserId || undefined,
+                profileUrl: this.text(item.profileUrl) || undefined,
+                commentTime: this.text(item.occurredAt) || undefined,
+                externalEventId: this.text(item.externalEventId) || undefined,
+                externalContentId: this.text(item.externalContentId) || undefined,
+                rawHash: this.text(item.rawHash) || undefined,
+              });
+            }
+          }
+        }
+
+        if (!commentUsers.length) {
+          await this.finalizeDriverRecord(recordId, owner, {
+            status: 'failed',
+            reasonCode: 'target_not_found',
+            nextAction: '已回退本地适配器；账号作品评论区无可读评论',
+          });
+          return {
+            ok: false,
+            fallback: {
+              attempted: true,
+              source: 'legacy-adapter',
+              rpaExecutionId: recordId,
+              reasonCode: 'target_not_found',
+              fallbackAllowed: true,
+              message: `两段式发现：搜到 ${accountIds.length} 个账号但未读到评论用户，已回退本地适配器（执行 ${recordId}）`,
+            },
+          };
+        }
+
+        const stepPersisted = await this.appendDriverStep(recordId, owner, {
+          stepName: 'read-comments',
+          status: 'success',
+          reasonCode: 'ok',
+          message: `两段式读评论获得 ${commentUsers.length} 个评论用户`,
+        });
+        const finalizePersisted = await this.finalizeDriverRecord(recordId, owner, {
+          status: 'success',
+          reasonCode: 'ok',
+          evidence: commentUsers.map((candidate) => ({
+            type: 'rpa-discover',
+            label: candidate.targetName || candidate.externalContentId,
+            url: candidate.sourceUrl,
+            createdAt: new Date().toISOString(),
+          })),
+        });
+        if (!stepPersisted || !finalizePersisted) {
+          return {
+            ok: false,
+            fallback: {
+              attempted: true,
+              source: 'legacy-adapter',
+              rpaExecutionId: recordId,
+              reasonCode: 'audit_persist_failed',
+              fallbackAllowed: true,
+              message: `两段式发现成功但审计落库失败（步骤=${stepPersisted} 终态=${finalizePersisted}），已阻断成功标记（执行 ${recordId}）`,
+            },
+          };
+        }
+        return {
+          ok: true,
+          fallback: undefined,
+          status: 'success',
+          message: `两段式发现：${accountIds.length} 个账号 → ${commentUsers.length} 个评论用户`,
+          candidates: commentUsers,
+          rpaRecordId: recordId,
+          evidence: commentUsers.map((candidate) => ({
+            type: 'rpa-discover',
+            label: candidate.targetName || candidate.externalContentId,
+            url: candidate.sourceUrl,
+            createdAt: new Date().toISOString(),
+          })),
+        };
+      } catch (error) {
+        if (error instanceof ConflictException) {
+          throw error;
+        }
+        await this.appendDriverStep(recordId, owner, {
+          stepName: 'discover-account-search',
+          status: 'failed',
+          reasonCode: 'network_error',
+          message: error instanceof Error ? error.message : '两段式发现执行异常',
+        });
+        await this.finalizeDriverRecord(recordId, owner, {
+          status: 'failed',
+          reasonCode: 'network_error',
+          nextAction: '已回退本地适配器；请检查平台会话后重试',
+        });
+        return {
+          ok: false,
+          fallback: {
+            attempted: true,
+            source: 'legacy-adapter',
+            rpaExecutionId: recordId,
+            reasonCode: 'network_error',
+            fallbackAllowed: true,
+            message: `两段式发现执行异常，已回退本地适配器（执行 ${recordId}）：${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        };
+      }
+    })();
+
+    let sessionCloseFailed = false;
+    const activeSession: RpaSession | null = sessionRef.current;
+    if (activeSession) {
+      try {
+        await driver.closeSession({
+          sessionId: activeSession.sessionId,
+          platform: config.platform,
+          accountId: config.accountId,
+          engineSessionKey: `${config.platform}-${config.accountId}`,
+          pageAvailable: false,
+        });
+      } catch (closeErr) {
+        sessionCloseFailed = true;
+        this.logger.warn(
+          `[tryFetchDouyinAccountJourney] 会话关闭失败 platform=${config.platform} account=${config.accountId}：${
+            closeErr instanceof Error ? closeErr.message : String(closeErr)
+          }`,
+        );
+        await this.markDriverSessionCloseFailure(
+          config,
+          recordId,
+          closeErr,
+          'tryFetchDouyinAccountJourney',
+        );
+      }
+    }
+    if (sessionCloseFailed && outcome.ok === true) {
+      return {
+        ...outcome,
         status: 'partial',
         reasonCode: 'session_close_failed',
         message: `${outcome.message}；浏览器会话关闭失败，需人工核对平台实际结果`,
