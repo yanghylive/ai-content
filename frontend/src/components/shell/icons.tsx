@@ -2,7 +2,10 @@ import React from "react";
 import {
   Comments as IPComments,
   Headset as IPHeadset,
+  Inbox as IPInbox,
+  MessagesOne as IPMessagesOne,
   Tiktok as IPTiktok,
+  UnorderedList as IPUnorderedList,
   History as IPHistory,
   Message as IPMessage,
   MessageEmoji as IPMessageEmoji,
@@ -381,6 +384,32 @@ const PATHS = {
     </>
   ),
 
+  /** 统一收件箱: 托盘造型(IconPark Inbox 映射,此处为兜底) */
+  inboxTray: (
+    <>
+      <path d="M22 12h-4l-3 9H9a7 7 0 1 1 13.5-5.5L22 12Z" />
+      <path d="M5 21h14" />
+    </>
+  ),
+  /** 互动记录: 列表清单(IconPark UnorderedList 映射,此处为兜底) */
+  recordList: (
+    <>
+      <line x1="8" x2="21" y1="6" y2="6" />
+      <line x1="8" x2="21" y1="12" y2="12" />
+      <line x1="8" x2="21" y1="18" y2="18" />
+      <line x1="3" x2="3.01" y1="6" y2="6" />
+      <line x1="3" x2="3.01" y1="12" y2="12" />
+      <line x1="3" x2="3.01" y1="18" y2="18" />
+    </>
+  ),
+  /** 群发计划: 叠泡向多方发送(IconPark MessagesOne 映射,此处为兜底) */
+  groupSend: (
+    <>
+      <path d="M14 9a5 5 0 0 0-5-5H7a5 5 0 0 0-5 5v5a5 5 0 0 0 5 5h1v4l4-4h1a5 5 0 0 0 5-5V9Z" />
+      <path d="M16.5 3.5h1a5 5 0 0 1 5 5v3a5 5 0 0 1-3 4.6" />
+    </>
+  ),
+
 } as const;
 
 export type ShellIconName = keyof typeof PATHS;
@@ -401,6 +430,9 @@ const PARK_ICONS: Partial<Record<ShellIconName, ParkComp>> = {
   logout: Logout,
   chat: IPTiktok,
   chatRound: IPMessage,
+  inboxTray: IPInbox,
+  recordList: IPUnorderedList,
+  groupSend: IPMessagesOne,
   wechatBubble: IPWechat,
   botHead: IPRobotOne,
   botSq: IPHeadset,

@@ -29,15 +29,15 @@ export type InteractionChannelEntry = {
 };
 
 export const INTERACTION_CHANNELS: InteractionChannelEntry[] = [
-  { key: "inbox", title: "统一收件箱", desc: "评论、私信、转人工，集中查看与回复", sub: "集中查看与回复", href: "/engagement", icon: "messageSq", tint: "kx-t-violet", brand: "var(--kaypal-v3-accent)" },
+  { key: "inbox", title: "统一收件箱", desc: "评论、私信、转人工，集中查看与回复", sub: "集中查看与回复", href: "/engagement", icon: "inboxTray", tint: "kx-t-violet", brand: "var(--kaypal-v3-accent)" },
   { key: "ai-service", title: "客服机器人", desc: "配置机器人风格与回复规则", sub: "配置机器人", href: "/engagement?tab=bot", icon: "botHead", tint: "kx-t-slate", brand: "var(--kaypal-v3-accent)" },
   { key: "douyin-messages", title: "抖音私信", desc: "私信和评论，读取真实的回复给你确认", sub: "读取真实回复", href: "/engagement/douyin-messages", icon: "chat", tint: "kx-t-slate", brand: "#fe2c55" },
   { key: "channel-messages", title: "视频号私信", desc: "私信和评论", sub: "私信和评论", href: "/engagement/channel-messages", icon: "channelCircle", tint: "kx-t-cyan", brand: "#007fff" },
   { key: "wechat", title: "微信", desc: "会话、加好友", sub: "会话 · 加好友", href: "/engagement/wechat", icon: "wechatBubble", tint: "kx-t-green", brand: "#07c160" },
   { key: "wecom-assistant", title: "企微助手", desc: "企业微信客户智能回复助手", sub: "企微智能回复", href: "/engagement/wecom-assistant", icon: "wecomBubble", tint: "kx-t-green", brand: "#07c160" },
   { key: "reply", title: "AI 回复建议", desc: "AI 生成回复建议，确认后快速发出", sub: "AI 回复建议", href: "/reply", icon: "replySq", tint: "kx-t-violet", brand: "var(--kaypal-v3-accent)" },
-  { key: "records", title: "互动记录", desc: "所有发出过的回复，可追溯", sub: "所有回复可追溯", href: "/engagement/records", icon: "history", tint: "kx-t-slate", brand: "#76517e" },
-  { key: "wechat-plans", title: "群发计划", desc: "群发任务管理：暂停、继续、重试", sub: "群发任务管理", href: "/engagement/wechat/plans", icon: "megaphone", tint: "kx-t-amber", brand: "var(--kaypal-v3-amber)" },
+  { key: "records", title: "互动记录", desc: "所有发出过的回复，可追溯", sub: "所有回复可追溯", href: "/engagement/records", icon: "recordList", tint: "kx-t-slate", brand: "#76517e" },
+  { key: "wechat-plans", title: "群发计划", desc: "群发任务管理：暂停、继续、重试", sub: "群发任务管理", href: "/engagement/wechat/plans", icon: "groupSend", tint: "kx-t-amber", brand: "var(--kaypal-v3-amber)" },
 ];
 
 /* ──────────────── 「我的」页面入口 ──────────────── */
