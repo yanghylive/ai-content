@@ -20,6 +20,7 @@ import {
 import { toPublicError } from "@/lib/public-error";
 import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
+import { WechatAutoReceptionCard } from "./wechat-auto-reception-card";
 
 type TaskStats = {
   pending: number;
@@ -281,6 +282,11 @@ export function WechatTaskCenter() {
             </div>
           </div>
 
+          {/* AI 自动接待（移动 compact） */}
+          <div className="mx-px" style={{ marginTop: 12 }}>
+            <WechatAutoReceptionCard compact />
+          </div>
+
           {/* 快捷操作 */}
           <div className="mx-section-head" style={{ marginTop: 16 }}>快捷操作</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
@@ -409,6 +415,9 @@ export function WechatTaskCenter() {
           </div>
         </div>
       </section>
+
+      {/* AI 自动接待（方案 2） */}
+      <WechatAutoReceptionCard />
 
       {/* 统计卡片 */}
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">

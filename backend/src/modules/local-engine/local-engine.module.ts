@@ -31,6 +31,8 @@ import { PlaywrightBrowserRuntimeService } from './playwright-browser-runtime.se
 import { WechatPlanSchedulerService } from './wechat-plan-scheduler.service';
 import { WechatPlanEditorController } from './wechat-plan-editor.controller';
 import { WechatPlanEditorService } from './wechat-plan-editor.service';
+import { WechatAutoReceptionController } from './wechat-auto-reception.controller';
+import { WechatAutoReceptionGuardService } from './wechat-auto-reception.service';
 import { EntitlementsModule } from '../entitlements/entitlements.module';
 import { SavingsModule } from '../savings/savings.module';
 
@@ -49,6 +51,7 @@ import { SavingsModule } from '../savings/savings.module';
   controllers: [
     LocalEngineController,
     WechatPlanEditorController,
+    WechatAutoReceptionController,
     AgentSController,
     McpController,
     AgentBrowserController,
@@ -73,6 +76,7 @@ import { SavingsModule } from '../savings/savings.module';
     AgentBrowserLoopService,
     WechatPlanSchedulerService,
     WechatPlanEditorService,
+    WechatAutoReceptionGuardService,
     AgentSidecarService,
     SandboxRuntimeService,
     PluginRuntimeService,

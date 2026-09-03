@@ -914,6 +914,31 @@ export interface InteractionRecordsResult {
   summary: InteractionRecordsSummary;
 }
 
+export interface WechatAutoReceptionBotSummary {
+  id: string;
+  name: string;
+  enabled: boolean;
+  contactScope?: string;
+}
+
+export interface WechatAutoReceptionStatus {
+  running: boolean;
+  enabled: boolean;
+  intervalMs: number;
+  lastRunAt: string | null;
+  lastDetectedAt: string | null;
+  lastError: string | null;
+  paused: boolean;
+  pausedReason: string | null;
+  detectedSessions: number;
+  createdTasks: number;
+  skipped: number;
+  todayCreated: number;
+  watermarkCount: number;
+  reasons: Record<string, string>;
+  bots: WechatAutoReceptionBotSummary[];
+}
+
 export interface WechatContactsResult {
   source: string;
   contacts: string[];
@@ -1799,6 +1824,17 @@ export const localEngineApi = {
   wechatSessionStatus() {
     return api.get<LocalEngineWechatSessionStatus>(
       "/local-engine/wechat/session/status",
+    );
+  },
+  wechatAutoReceptionStatus() {
+    return api.get<WechatAutoReceptionStatus>(
+      "/local-engine/wechat/auto-reception/status",
+    );
+  },
+  setWechatAutoReceptionEnabled(enabled: boolean) {
+    return api.post<{ enabled: boolean }>(
+      "/local-engine/wechat/auto-reception/enabled",
+      { enabled },
     );
   },
   wechatContacts() {
