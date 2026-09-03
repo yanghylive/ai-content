@@ -13,6 +13,9 @@ const INVOKE_CHANNELS = new Set([
   'browser-panel:set-width',
   // ③：面板模式开关（Agent 是否通过面板代操作）
   'browser-panel:toggle-agent-mode',
+  // round15：用户手动切/关 tab（控制条 tab 条）
+  'browser-panel:switch-tab',
+  'browser-panel:close-tab',
 ]);
 
 // main → 控制条（事件推送通道）

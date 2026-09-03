@@ -8,11 +8,38 @@
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
     html, body { height: 100%; overflow: hidden; }
     body {
-      display: flex; align-items: center; gap: 6px;
-      padding: 0 8px;
+      display: flex; flex-direction: column;
       background: #1e1f24; color: #d7d9e0;
       font: 12px/1.4 -apple-system, "PingFang SC", "Segoe UI", sans-serif;
       border-top: 1px solid #2c2d34;
+    }
+    /* round15：tab 条行——多 tab 时才显示（单 tab 零干扰，控制条一行不变） */
+    #tabbar {
+      display: none; flex: none; height: 26px; align-items: center; gap: 2px;
+      padding: 2px 6px 0; overflow-x: auto; overflow-y: hidden;
+      border-bottom: 1px solid #2c2d34;
+    }
+    #tabbar.show { display: flex; }
+    .tab {
+      flex: 0 1 auto; min-width: 0; max-width: 150px; height: 22px;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 0 6px; border-radius: 5px 5px 0 0;
+      background: transparent; color: #aeb1bc; font-size: 11px; cursor: pointer;
+      border: none; border-bottom: 2px solid transparent;
+    }
+    .tab:hover { background: #2c2d34; }
+    .tab.active { background: #2c2d34; color: #eef0f6; border-bottom-color: #722ed1; }
+    .tab .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tab .x {
+      flex: none; width: 14px; height: 14px; border: none; border-radius: 3px;
+      background: transparent; color: #8a8d98; font-size: 10px; line-height: 1;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      padding: 0;
+    }
+    .tab .x:hover { background: #3a3b44; color: #ff6b6d; }
+    #toolbar {
+      flex: 1 1 auto; display: flex; align-items: center; gap: 6px;
+      padding: 0 8px; min-height: 0;
     }
     button {
       flex: none; width: 26px; height: 26px; border: none; border-radius: 6px;
@@ -44,14 +71,17 @@
   </style>
 </head>
 <body>
-  <div id="resize" title="拖拽调整面板宽度"></div>
-  <button id="back" title="后退">‹</button>
-  <button id="forward" title="前进">›</button>
-  <button id="reload" title="刷新">↻</button>
-  <input id="addr" placeholder="输入网址，回车打开" spellcheck="false" />
-  <span id="status"></span>
-  <button id="agent-mode" title="AI 代操作：开启后 AI 助手将在你正在看的这个页面上代你操作（每一步写动作仍需你在此面板批准）">AI 代操作</button>
-  <button id="hide" title="收起面板">✕</button>
+  <div id="tabbar"></div>
+  <div id="toolbar">
+    <div id="resize" title="拖拽调整面板宽度"></div>
+    <button id="back" title="后退">‹</button>
+    <button id="forward" title="前进">›</button>
+    <button id="reload" title="刷新">↻</button>
+    <input id="addr" placeholder="输入网址，回车打开" spellcheck="false" />
+    <span id="status"></span>
+    <button id="agent-mode" title="AI 代操作：开启后 AI 助手将在你正在看的这个页面上代你操作（每一步写动作仍需你在此面板批准）">AI 代操作</button>
+    <button id="hide" title="收起面板">✕</button>
+  </div>
   <script>
     const api = window.browserControl;
     const $ = (id) => document.getElementById(id);
@@ -80,6 +110,42 @@
       invoke('browser-panel:navigate', url);
       $('addr').blur();
     });
+
+    // round15：tab 条（用户手动切/关；面板只暴露自己的页面，无第三方 IPC 特权）
+    function renderTabbar(state) {
+      const bar = $('tabbar');
+      const list = Array.isArray(state.tabList) ? state.tabList : [];
+      if (!state.hasSession || list.length < 2) {
+        bar.classList.remove('show');
+        bar.innerHTML = '';
+        return;
+      }
+      bar.classList.add('show');
+      bar.innerHTML = '';
+      list.forEach((tab, i) => {
+        const el = document.createElement('div');
+        el.className = 'tab' + (i === state.tabActiveIndex ? ' active' : '');
+        el.title = tab.url || '';
+        const label = document.createElement('span');
+        label.className = 't';
+        label.textContent = tab.title || tab.url || '空白页';
+        el.appendChild(label);
+        // 最后一个 tab 不显示关闭（面板至少保留一个页面）
+        if (list.length > 1) {
+          const x = document.createElement('button');
+          x.className = 'x';
+          x.textContent = '✕';
+          x.title = '关闭此标签页';
+          x.addEventListener('click', (event) => {
+            event.stopPropagation();
+            invoke('browser-panel:close-tab', i);
+          });
+          el.appendChild(x);
+        }
+        el.addEventListener('click', () => invoke('browser-panel:switch-tab', i));
+        bar.appendChild(el);
+      });
+    }
 
     // 左缘拖拽调宽（面板在右，向左拖变宽）
     let dragStartX = null;
@@ -112,6 +178,8 @@
       // ③：AI 代操作开关态（publicState.agentMode 驱动高亮）
       const agentOn = state.agentMode === 'on';
       $('agent-mode').classList.toggle('on', agentOn);
+      // round15：tab 条（tabList/tabActiveIndex 驱动，多 tab 才出现）
+      renderTabbar(state);
     });
   </script>
 </body>

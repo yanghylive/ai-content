@@ -31,6 +31,8 @@ const PANEL_MIN_WIDTH = 360;
 const PANEL_DEFAULT_WIDTH = 480;
 const PANEL_WIDTH_RATIO_MAX = 0.6;
 const STRIP_HEIGHT = 40;
+/** round15：tab 条行高（多 tab 时控制条两行；单 tab 不显示，零干扰） */
+const TABBAR_HEIGHT = 26;
 const TAB_STRIP_HEIGHT = 38; // 与 workspace-tabs.js 保持一致（顶部通栏高度）
 
 // 阶段 6：审批浮层尺寸（与 browser-approval-overlay.html 的 CSS 保持一致，
@@ -300,6 +302,13 @@ class BrowserPanelManager {
     });
     wc.on('unresponsive', () => push({ status: 'needs-human' }));
     wc.on('responsive', () => push({ status: 'ready' }));
+    // round15：标题变化 → tab 条明细刷新（不 merge session，只广播）。
+    // 沿用 active-only 判断：后台 tab 标题变化不打扰状态流。
+    wc.on('page-title-updated', (_e, title) => {
+      if (!this.session) return;
+      if (this.panelView && wc.id !== this.panelView.webContents.id) return;
+      this._emitState();
+    });
     // 新窗口一律 deny 并回报（阶段 1 P0 已验证可观测；策略后续走确认外开）
     wc.setWindowOpenHandler((details) => {
       this._sendToPanelOwner('browser-panel:popup-blocked', { url: details.url });
@@ -478,8 +487,10 @@ class BrowserPanelManager {
         // 关的是 active：active 落到相邻 tab（优先原位，末端则前移）
         this._setActiveTab(Math.min(i, this._panelTabs.length - 1));
       } else {
-        // 关的是后台 tab：panelView 不变，仅修正 active 下标
+        // 关的是后台 tab：panelView 不变，仅修正 active 下标。
+        // round15：tab 数变化会改变控制条高度（tab 条出现/消失），必须 relayout。
         this._activeTabIndex = this._panelTabs.findIndex((t) => t.view === this.panelView);
+        this.relayout();
         this._emitState();
       }
       return this._tabSnapshot();
@@ -522,6 +533,40 @@ class BrowserPanelManager {
           ? this.panelView.webContents.getURL() || 'about:blank'
           : null,
     };
+  }
+
+  /** round15：tab 条明细（title/url），publicState.tabList 供控制条渲染 */
+  _tabList() {
+    return this._panelTabs.map((t) => {
+      const wc = t.view && !t.view.webContents.isDestroyed() ? t.view.webContents : null;
+      const title = wc && typeof wc.getTitle === 'function' ? wc.getTitle() : '';
+      return {
+        title: String(title || '').slice(0, 40),
+        url: wc ? wc.getURL() || 'about:blank' : 'about:blank',
+      };
+    });
+  }
+
+  /**
+   * round15：用户经控制条手动切/关 tab（tabsOperation 复用语义与校验）。
+   * **用户操作不走 Agent 审批闸门**——审批只约束 Agent 动作；用户在自家面板
+   * 点 tab 与点后退/刷新同权（stripOnly 通道 + isStripSender 门禁已在 IPC 层）。
+   * UI 通道不抛异常：错误转 {ok:false, error} 交给控制条状态刷新。
+   */
+  switchTabByUser(index) {
+    try {
+      return { ok: true, snapshot: this.tabsOperation('switch', index) };
+    } catch (error) {
+      return { ok: false, error: error?.message || String(error) };
+    }
+  }
+
+  closeTabByUser(index) {
+    try {
+      return { ok: true, snapshot: this.tabsOperation('close', index) };
+    } catch (error) {
+      return { ok: false, error: error?.message || String(error) };
+    }
   }
 
   setWidth(width) {
@@ -608,9 +653,12 @@ class BrowserPanelManager {
         : null,
       canGoBack: !!(this.panelView && this.panelView.webContents.canGoBack()),
       canGoForward: !!(this.panelView && this.panelView.webContents.canGoForward()),
-      // 阶段 7 tabs：台账规模与 active 下标（冒烟/排障断言用；控制条 tab 条 UI 本轮未做）
+      // 阶段 7 tabs：台账规模与 active 下标（冒烟/排障断言用）
       tabCount: this._panelTabs.length,
       tabActiveIndex: this._activeTabIndex,
+      // round15：tab 条明细（title/url），控制条 tab 条渲染用。
+      // 本地面板显示完整 url（与地址栏同权，非对外证据流）。
+      tabList: this._tabList(),
       // ③：面板模式开关当前态（读文件，控制条按钮据此高亮）
       agentMode: this.getAgentMode(),
     };
@@ -667,6 +715,11 @@ class BrowserPanelManager {
 
   // ---------- 布局 ----------
 
+  /** 控制条总高：多 tab 时加 tab 条行（round15；单 tab 零干扰不变高） */
+  _stripHeight() {
+    return this._panelTabs.length > 1 ? STRIP_HEIGHT + TABBAR_HEIGHT : STRIP_HEIGHT;
+  }
+
   relayout() {
     if (!this.window || this.window.isDestroyed() || !this._visible) return;
     const { width, height } = this.window.getContentBounds();
@@ -675,21 +728,22 @@ class BrowserPanelManager {
     const panelW = this._currentWidth;
     const contentY = TAB_STRIP_HEIGHT;
     const contentH = Math.max(0, height - TAB_STRIP_HEIGHT);
+    const stripH = this._stripHeight();
     if (this._tabManager) {
       this._tabManager.rightInset = panelW;
       this._tabManager.relayout();
     }
     const x = Math.max(0, width - panelW);
     if (this.stripView && !this.stripView.webContents.isDestroyed()) {
-      this.stripView.setBounds({ x, y: contentY, width: panelW, height: STRIP_HEIGHT });
+      this.stripView.setBounds({ x, y: contentY, width: panelW, height: stripH });
       this.stripView.setVisible(true);
     }
     if (this.panelView && !this.panelView.webContents.isDestroyed()) {
       this.panelView.setBounds({
         x,
-        y: contentY + STRIP_HEIGHT,
+        y: contentY + stripH,
         width: panelW,
-        height: Math.max(0, contentH - STRIP_HEIGHT),
+        height: Math.max(0, contentH - stripH),
       });
       this.panelView.setVisible(true);
     }
@@ -700,7 +754,7 @@ class BrowserPanelManager {
       const bottom = contentY + contentH - APPROVAL_MARGIN;
       this.approvalView.setBounds({
         x: x + APPROVAL_MARGIN,
-        y: Math.max(contentY + STRIP_HEIGHT, bottom - h),
+        y: Math.max(contentY + stripH, bottom - h),
         width: Math.max(0, panelW - APPROVAL_MARGIN * 2),
         height: h,
       });

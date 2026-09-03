@@ -100,6 +100,17 @@ function registerBrowserPanelIpc(deps) {
     stripOnly((on) => getPanel().setAgentMode(!!on)),
   );
 
+  // round15：用户手动切/关 tab（只有控制条 tab 条能发；用户自家操作不走 Agent
+  // 审批闸门，与后退/刷新同权；manager 侧错误转 {ok:false} 不抛）
+  ipcMain.handle(
+    'browser-panel:switch-tab',
+    stripOnly((index) => getPanel().switchTabByUser(Number(index))),
+  );
+  ipcMain.handle(
+    'browser-panel:close-tab',
+    stripOnly((index) => getPanel().closeTabByUser(Number(index))),
+  );
+
   // 阶段 6：审批浮层三通道
   ipcMain.handle(
     'browser-panel:list-pending-actions',
@@ -137,6 +148,8 @@ function registerBrowserPanelIpc(deps) {
       'browser-panel:show',
       'browser-panel:set-width',
       'browser-panel:toggle-agent-mode',
+      'browser-panel:switch-tab',
+      'browser-panel:close-tab',
       'browser-panel:list-pending-actions',
       'browser-panel:approve-action',
       'browser-panel:reject-action',

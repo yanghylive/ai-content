@@ -1,0 +1,121 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T14:42:41.332Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "scenario": "round15：控制条 tab 条 UI（用户手动切/关 tab + 与 Agent 链状态互通）"
+  },
+  "checks": [
+    {
+      "name": "S1 面板 open + strip 就绪；单 tab 时 tab 条隐藏（零干扰）",
+      "pass": true,
+      "detail": {
+        "stripReady": true,
+        "bar0": {
+          "shown": false,
+          "count": 0,
+          "activeIndex": -1,
+          "labels": []
+        }
+      }
+    },
+    {
+      "name": "S2 Agent new tab（审批链）→ strip tab 条出现 2 个 tab、active 高亮第 2 个",
+      "pass": true,
+      "detail": {
+        "bar": {
+          "shown": true,
+          "count": 2,
+          "activeIndex": 1,
+          "labels": [
+            "page-a-title",
+            "about:blank"
+          ]
+        }
+      }
+    },
+    {
+      "name": "S3 strip 真实点击 tab0 → active 切换、panelView 换绑、URL=A、高亮第 1 个",
+      "pass": true,
+      "detail": {
+        "click": {
+          "clicked": true,
+          "what": "switch"
+        },
+        "bar": {
+          "shown": true,
+          "count": 2,
+          "activeIndex": 0,
+          "labels": [
+            "page-a-title",
+            "about:blank"
+          ]
+        },
+        "url": "http://127.0.0.1:54426/page-a",
+        "currentUrl": "http://127.0.0.1:54426/page-a"
+      }
+    },
+    {
+      "name": "S4 strip 点 ✕ 关 tab1 → 台账 1、tab 条隐藏（单 tab 零干扰）",
+      "pass": true,
+      "detail": {
+        "click": {
+          "clicked": true,
+          "what": "close"
+        },
+        "bar": {
+          "shown": false,
+          "count": 0,
+          "activeIndex": -1,
+          "labels": []
+        },
+        "tabs": 1
+      }
+    },
+    {
+      "name": "S5 Agent new+goto B → tab 条 2 个、active=1、tab 标签含 page-b-title",
+      "pass": true,
+      "detail": {
+        "bar": {
+          "shown": true,
+          "count": 2,
+          "activeIndex": 1,
+          "labels": [
+            "page-a-title",
+            "page-b-title"
+          ]
+        }
+      }
+    },
+    {
+      "name": "S6 越界防护：switch-tab 9 → result.ok=false 带原因（UI 通道不抛不炸）",
+      "pass": true,
+      "detail": {
+        "out": {
+          "success": true,
+          "result": {
+            "ok": false,
+            "error": "切换目标标签页不存在：index=9（当前共 2 个）"
+          }
+        }
+      }
+    },
+    {
+      "name": "S7 strip 动态高度：多 tab 66 → 单 tab 40",
+      "pass": true,
+      "detail": {
+        "h2": 66,
+        "h1": 40
+      }
+    },
+    {
+      "name": "S8 Agent 动作作用于用户当前 tab（evaluate #title=page-a-title）",
+      "pass": true,
+      "detail": {
+        "title": "page-a-title",
+        "url": "http://127.0.0.1:54426/page-a"
+      }
+    }
+  ]
+}

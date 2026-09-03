@@ -54,6 +54,7 @@ function makeFakeElectron() {
     }
     loadFile() { return Promise.resolve(); }
     getURL() { return this._url; }
+    getTitle() { return this._title || ''; }
     isDestroyed() { return this._destroyed; }
     canGoBack() { return this._canGoBack; }
     canGoForward() { return this._canGoForward; }
@@ -444,6 +445,78 @@ test('⑪ 换账号 → 台账全清（不留幽灵 view）；destroy 同样清�
   manager.destroy();
   assert.equal(manager._panelTabs.length, 0);
   assert.equal(manager.panelView, null);
+});
+
+// ===== ⑮ tab 条 UI（round15）：用户手动切/关 tab + tabList + 动态 strip 高度 =====
+
+test('⑮ switchTabByUser 合法 → ok+换绑+tabList 进 publicState；越界 → ok:false 不抛', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/page-a', ownerId: 'u1', tenantId: 't1' });
+  manager.tabsOperation('new');
+  const wc1 = manager.panelView.webContents;
+  const out = manager.switchTabByUser(0);
+  assert.equal(out.ok, true);
+  assert.equal(out.snapshot.activeIndex, 0);
+  assert.notEqual(manager.panelView.webContents.id, wc1.id, 'panelView 换绑回 tab0');
+  const state = manager.publicState();
+  assert.equal(state.tabList.length, 2);
+  assert.equal(state.tabActiveIndex, 0);
+  assert.equal(state.tabList[0].url, 'http://127.0.0.1:8080/page-a');
+  // 越界：UI 通道不抛，转 ok:false
+  const bad = manager.switchTabByUser(9);
+  assert.equal(bad.ok, false);
+  assert.match(bad.error, /不存在/);
+});
+
+test('⑮ closeTabByUser：关后台修正下标 + 触发 relayout；最后一个 → ok:false 不抛', () => {
+  const { manager, tabManager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/a', ownerId: 'u1', tenantId: 't1' });
+  manager.tabsOperation('new');
+  manager.tabsOperation('new'); // active=2，台账 3
+  const relayoutsBefore = tabManager.relayouts.length;
+  const out = manager.closeTabByUser(0); // 关后台
+  assert.equal(out.ok, true);
+  assert.equal(out.snapshot.tabs, 2);
+  assert.equal(manager._activeTabIndex, 1, '关后台 tab 后 active 下标修正');
+  assert.ok(tabManager.relayouts.length > relayoutsBefore, 'tab 数变化必须 relayout（tab 条出现/消失改变 strip 高度）');
+  // 关到只剩一个，再关 → ok:false 不抛
+  manager.closeTabByUser(0);
+  const last = manager.closeTabByUser(0);
+  assert.equal(last.ok, false);
+  assert.match(last.error, /最后一个/);
+  assert.equal(manager._panelTabs.length, 1);
+});
+
+test('⑮ strip 动态高度：单 tab 40px、多 tab 66px（tab 条只在多 tab 时占位）', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/a', ownerId: 'u1', tenantId: 't1' });
+  manager.show();
+  assert.equal(manager.stripView._bounds.height, 40, '单 tab：控制条一行不变');
+  assert.equal(manager.panelView._bounds.y, 38 + 40);
+  manager.tabsOperation('new');
+  assert.equal(manager.stripView._bounds.height, 66, '多 tab：tab 条行出现');
+  assert.equal(manager.panelView._bounds.y, 38 + 66, '面板页随之下移');
+  manager.tabsOperation('close', 1);
+  assert.equal(manager.stripView._bounds.height, 40, '回到单 tab：tab 条消失');
+});
+
+test('⑮ page-title-updated：active 刷新 tabList；后台不广播（active-only 隔离）', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/a', ownerId: 'u1', tenantId: 't1' });
+  manager.tabsOperation('new');
+  const bgWc = manager._panelTabs[0].view.webContents;
+  const activeWc = manager.panelView.webContents;
+  bgWc.getTitle = () => '后台标题';
+  activeWc.getTitle = () => '前台标题';
+  let emits = 0;
+  const orig = manager._emitState.bind(manager);
+  manager._emitState = () => { emits += 1; orig(); };
+  const emitsBefore = emits;
+  bgWc.emit('page-title-updated', null, '后台标题');
+  assert.equal(emits, emitsBefore, '后台 tab 标题变化不广播');
+  activeWc.emit('page-title-updated', null, '前台标题');
+  assert.equal(emits, emitsBefore + 1, 'active 标题变化触发广播');
+  assert.equal(manager.publicState().tabList[1].title, '前台标题');
 });
 
 (async () => {
