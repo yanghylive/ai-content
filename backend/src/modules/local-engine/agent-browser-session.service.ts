@@ -278,9 +278,13 @@ export class AgentBrowserSessionService implements OnModuleInit {
     }
 
     // 引擎会话以 platform-accountId 为 key，每 agent 会话独立 accountId 实现隔离
+    // 2026-09-04：agent-browser 一律 forceHeadless——用户可视面是内置浏览器面板
+    // （面板会话四合一），引擎只作 headless 执行/观察面，绝不向桌面弹 Chrome 窗口
+    // （修「点卡片/跑任务调起系统浏览器」投诉：引擎执行档窗口 visible=true 弹 Chrome）。
     const engine = await this.browser.getOrCreateSession({
       platform: 'general-web',
       accountId: session.accountId,
+      forceHeadless: true,
     });
     session.engineKey = engine.key;
     session.status = 'running';

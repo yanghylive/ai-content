@@ -208,6 +208,13 @@ export class LocalBrowserEngine implements OnModuleDestroy {
      * 截图会得到纯灰画面、DOM 读取为空，导致任务在 fetch-candidates 静默失败。
      */
     foregroundRequired?: boolean;
+    /**
+     * 2026-09-04：调用方自带可视面（如 browser-panel 面板会话——用户看的页面
+     * 就是内置面板），引擎窗口一律 headless，不再向桌面弹 Chrome 窗口。
+     * 大王实证：点平台登录卡片/跑任务时会弹出可见 Chrome（引擎执行档窗口），
+     * 被当成"调起系统浏览器"。
+     */
+    forceHeadless?: boolean;
   }): Promise<EngineSession> {
     const key = `${input.platform}-${input.accountId}`;
     const existing = this.sessions.get(key);
@@ -338,6 +345,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       platform: LocalBrowserPlatform;
       reuseLoggedInSession?: boolean;
       probe?: boolean;
+      forceHeadless?: boolean;
     },
     key: string,
   ): Promise<EngineSession> {
@@ -370,8 +378,9 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       input.platform,
       String(input.accountId),
     );
+    const effectiveVisible = this.visibleWindow && input.forceHeadless !== true;
     this.logger.log(
-      `启动持久浏览器会话 ${key}: profile=${profileDir}, visible=${this.visibleWindow}`,
+      `启动持久浏览器会话 ${key}: profile=${profileDir}, visible=${effectiveVisible}`,
     );
     const cdpSession = await this.launchCdpContextWithRecovery(
       key,
@@ -379,14 +388,15 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       input.platform,
       String(input.accountId),
       input.probe,
+      input.forceHeadless,
     );
     const context = cdpSession.context;
     await this.loadProfileCookies(context, profileDir, key, input.platform);
     const page =
       this.selectBestSessionPage(context.pages(), input.platform) ||
       (await context.newPage());
-    // 探活档不 bringToFront（不弹窗）
-    if (!input.probe) {
+    // 探活档/headless 档不 bringToFront（不弹窗）
+    if (!input.probe && effectiveVisible) {
       await page.bringToFront().catch(() => undefined);
     }
     const session: EngineSession = {
@@ -400,7 +410,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       browser: this.chromePath,
       browserProcess: cdpSession.process,
       browserReused: cdpSession.reused,
-      visibleWindow: this.visibleWindow,
+      visibleWindow: effectiveVisible,
       startedAt: new Date().toISOString(),
       lastActivityAt: new Date().toISOString(),
     };
@@ -707,6 +717,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     platform: string,
     accountId: string,
     probe?: boolean,
+    forceHeadless?: boolean,
   ): Promise<{
     context: BrowserContext;
     debuggingPort?: number;
@@ -716,6 +727,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     try {
       return await this.launchCdpContext(profileDir, platform, accountId, {
         probe,
+        forceHeadless,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -729,7 +741,11 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         this.terminateProcessesUsingProfile(profileDir);
         this.cleanupProfileLockFiles(profileDir);
         return {
-          context: await this.launchPersistentContext(profileDir, probe),
+          context: await this.launchPersistentContext(
+            profileDir,
+            probe,
+            forceHeadless,
+          ),
           reused: false,
         };
       }
@@ -742,6 +758,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         return await this.launchCdpContext(profileDir, platform, accountId, {
           forceNewPort: true,
           probe,
+          forceHeadless,
         });
       } catch (retryError) {
         const retryMessage =
@@ -781,7 +798,7 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     profileDir: string,
     platform: string,
     accountId: string,
-    options: { forceNewPort?: boolean; probe?: boolean } = {},
+    options: { forceNewPort?: boolean; probe?: boolean; forceHeadless?: boolean } = {},
   ): Promise<{
     context: BrowserContext;
     debuggingPort: number;
@@ -801,7 +818,12 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       let reused = false;
 
       if (!(await this.isCdpResponding(port))) {
-        const args = this.buildCdpLaunchArgs(profileDir, port, options.probe);
+        const args = this.buildCdpLaunchArgs(
+          profileDir,
+          port,
+          options.probe,
+          options.forceHeadless,
+        );
         this.logger.log(
           `启动 5409 同款 CDP 浏览器: port=${port}, profile=${profileDir}${
             options.probe ? '（探活 headless）' : ''
@@ -837,11 +859,12 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   private async launchPersistentContext(
     profileDir: string,
     probe?: boolean,
+    forceHeadless?: boolean,
   ): Promise<BrowserContext> {
     return await chromium.launchPersistentContext(profileDir, {
       executablePath: this.chromePath,
-      // 探活档强制 headless（不弹窗）；执行档才用可见窗口
-      headless: probe === true ? true : !this.visibleWindow,
+      // 探活档/forceHeadless 强制 headless（不弹窗）；执行档才用可见窗口
+      headless: probe === true || forceHeadless === true ? true : !this.visibleWindow,
       locale: 'zh-CN',
       timezoneId: 'Asia/Shanghai',
       viewport: { width: 1600, height: 1000 },
@@ -870,13 +893,16 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     profileDir: string,
     port: number,
     probe = false,
+    forceHeadless = false,
   ): string[] {
     return [
       `--remote-debugging-port=${port}`,
       '--remote-debugging-address=127.0.0.1',
       `--user-data-dir=${profileDir}`,
       // 探活档强制 headless：账号健康检查/登录态验证不弹窗打扰用户
-      ...(probe ? ['--headless=new'] : []),
+      // 2026-09-04：forceHeadless——调用方自带可视面（browser-panel 面板会话），
+      // 引擎窗口不弹桌面（修「调起系统浏览器」投诉）
+      ...(probe || forceHeadless ? ['--headless=new'] : []),
       '--window-size=1600,1000',
       '--window-position=48,36',
       '--autoplay-policy=no-user-gesture-required',

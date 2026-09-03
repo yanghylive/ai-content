@@ -60,10 +60,14 @@ describe('AgentBrowserSessionService（P4 会话生命周期）', () => {
     const s = svc.create('u-1', { startUrl: 'https://example.com' });
     const { engineKey } = await svc.acquireEngineSession(s.id);
     expect(engineKey).toBe('general-web-abc');
-    expect(browser.getOrCreateSession).toHaveBeenCalledWith({
-      platform: 'general-web',
-      accountId: s.accountId,
-    });
+    expect(browser.getOrCreateSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        platform: 'general-web',
+        accountId: s.accountId,
+        // 2026-09-04 修复「调起系统浏览器」：agent-browser 执行档强制 headless（不弹可见 Chrome 窗口）
+        forceHeadless: true,
+      }),
+    );
     expect(svc.get(s.id).status).toBe('running');
   });
 
