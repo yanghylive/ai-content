@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/brand-logo";
 
 import React from "react";
 import { ShellIcon } from "@/components/shell/icons";
+import { BrandIcon, brandForMineKey } from "@/components/shell/brand-icons";
 import { useShellUser } from "@/components/shell/app-shell";
 import { autoUploadApi } from "@/lib/api/auto-upload";
 import {
@@ -94,12 +95,13 @@ type MobileNavItem = {
   label: string;
   desc: string;
   icon: React.ComponentProps<typeof ShellIcon>["name"];
+  brand?: React.ComponentProps<typeof BrandIcon>["name"];
   tint: string;
   href: string;
   badge?: string;
 };
 function toMobileItem(e: MineNavEntry): MobileNavItem {
-  return { label: e.title, desc: e.desc, icon: e.icon, tint: e.mobileTint ?? "", href: e.href };
+  return { label: e.title, desc: e.desc, icon: e.icon, brand: brandForMineKey(e.key), tint: e.mobileTint ?? "", href: e.href };
 }
 
 /** 首屏菜单（顺序由注册表 mobileTop 条目顺序决定；角标在组件内按 key 注入） */
@@ -397,7 +399,11 @@ function MobileMineView({
                   color: item.tint,
                 }}
               >
-                <ShellIcon name={item.icon} size={18} />
+                {item.brand ? (
+                  <BrandIcon name={item.brand} size={18} />
+                ) : (
+                  <ShellIcon name={item.icon} size={18} />
+                )}
               </span>
               <div className="mx-row-main">
                 <div className="mx-row-title">{item.label}</div>
@@ -428,7 +434,11 @@ function MobileMineView({
                 onClick={() => { window.location.href = item.href; }}
               >
                 <span className="mx-row-ic" style={{ background: `color-mix(in srgb, ${item.tint} 12%, transparent)`, color: item.tint }}>
-                  <ShellIcon name={item.icon} size={18} />
+                  {item.brand ? (
+                    <BrandIcon name={item.brand} size={18} />
+                  ) : (
+                    <ShellIcon name={item.icon} size={18} />
+                  )}
                 </span>
                 <div className="mx-row-main">
                   <div className="mx-row-title">{item.label}</div>

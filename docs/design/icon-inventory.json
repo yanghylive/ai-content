@@ -1,0 +1,2603 @@
+{
+ "Home": [
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/error.tsx",
+  "app/error.tsx",
+  "app/not-found.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/savings/shell.tsx",
+  "components/shell/icons.tsx"
+ ],
+ "RefreshCw": [
+  "app/(cases)/error.tsx",
+  "app/(dashboard)/admin/error.tsx",
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/boss-recruit/boss-recruit-center.tsx",
+  "app/(dashboard)/capabilities/error.tsx",
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/components/content-result-entry.tsx",
+  "app/(dashboard)/components/solution-run-context-banner.tsx",
+  "app/(dashboard)/content/error.tsx",
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/content/workspace/content-workspace-client.tsx",
+  "app/(dashboard)/content/workspace/error.tsx",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/crm/error.tsx",
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/distribution/distribution-engine-logs.tsx",
+  "app/(dashboard)/distribution/error.tsx",
+  "app/(dashboard)/distribution/local-bridge-status.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/engagement/customers/crm-customer-queue.tsx",
+  "app/(dashboard)/engagement/error.tsx",
+  "app/(dashboard)/engagement/unified-inbox.tsx",
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx",
+  "app/(dashboard)/engagement/wechat/error.tsx",
+  "app/(dashboard)/error.tsx",
+  "app/(dashboard)/growth/error.tsx",
+  "app/(dashboard)/growth/rpa-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/error.tsx",
+  "app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx",
+  "app/(dashboard)/knowledge-base/knowledge-base-center.tsx",
+  "app/(dashboard)/layout.tsx",
+  "app/(dashboard)/local-engine/error.tsx",
+  "app/(dashboard)/platforms/error.tsx",
+  "app/(dashboard)/release-notes/page.tsx",
+  "app/(dashboard)/schedules/error.tsx",
+  "app/(dashboard)/settings/desktop-settings.tsx",
+  "app/(dashboard)/settings/error.tsx",
+  "app/(dashboard)/tasks/error.tsx",
+  "app/(dashboard)/today/today-center.tsx",
+  "app/(dashboard)/wecom-crm/wecom-crm-center.tsx",
+  "app/error.tsx",
+  "components/ai-employee/capability-workbench.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/savings/panels/home.tsx",
+  "components/savings/panels/orders.tsx"
+ ],
+ "TriangleAlert": [
+  "app/(cases)/error.tsx",
+  "app/(dashboard)/admin/error.tsx",
+  "app/(dashboard)/capabilities/error.tsx",
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/components/functional-page-experience.tsx",
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/content/error.tsx",
+  "app/(dashboard)/content/workspace/error.tsx",
+  "app/(dashboard)/crm/error.tsx",
+  "app/(dashboard)/distribution/error.tsx",
+  "app/(dashboard)/engagement/error.tsx",
+  "app/(dashboard)/engagement/wechat/error.tsx",
+  "app/(dashboard)/error.tsx",
+  "app/(dashboard)/growth/error.tsx",
+  "app/(dashboard)/intelligence/error.tsx",
+  "app/(dashboard)/local-engine/error.tsx",
+  "app/(dashboard)/platforms/error.tsx",
+  "app/(dashboard)/schedules/error.tsx",
+  "app/(dashboard)/settings/error.tsx",
+  "app/(dashboard)/tasks/error.tsx",
+  "app/error.tsx"
+ ],
+ "ArrowLeft": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/apps/app-detail.tsx",
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/capabilities/models/model-form.tsx",
+  "app/(dashboard)/capabilities/risk/risk-confirm-flow.tsx",
+  "app/(dashboard)/content/articles/article-list.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-flow.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-works.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx",
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/crm/import/crm-import-flow.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-check-flow.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/distribution/distribution-articles.tsx",
+  "app/(dashboard)/distribution/distribution-tasks.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx",
+  "app/(dashboard)/engagement/wechat/chat-history-panel.tsx",
+  "app/(dashboard)/engagement/wechat/contact-add-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/contacts-panel.tsx",
+  "app/(dashboard)/engagement/wechat/friend-accept-panel.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send/page.tsx",
+  "app/(dashboard)/engagement/wechat/moments-marketing-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-chat-history.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/growth/growth-account-health.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/growth/growth-reports.tsx",
+  "app/(dashboard)/growth/growth-strategies.tsx",
+  "app/(dashboard)/growth/growth-workflows.tsx",
+  "app/(dashboard)/growth/leads-pool.tsx",
+  "app/(dashboard)/growth/workflow-canvas/FlowCanvas.tsx",
+  "app/(dashboard)/intelligence/_components/inbox-processing.tsx",
+  "app/(dashboard)/intelligence/_components/monitor-form.tsx",
+  "app/(dashboard)/intelligence/_components/monitors-center.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/report-generator.tsx",
+  "app/(dashboard)/knowledge-base/knowledge-form.tsx",
+  "app/(dashboard)/local-engine/engine-browser-accounts.tsx",
+  "app/(dashboard)/local-engine/engine-desktop-check.tsx",
+  "app/(dashboard)/local-engine/engine-evidence.tsx",
+  "app/(dashboard)/local-engine/engine-files.tsx",
+  "app/(dashboard)/local-engine/engine-interaction-console.tsx",
+  "app/(dashboard)/local-engine/engine-logs.tsx",
+  "app/(dashboard)/local-engine/engine-permissions.tsx",
+  "app/(dashboard)/local-engine/engine-remote.tsx",
+  "app/(dashboard)/local-engine/engine-run-detail.tsx",
+  "app/(dashboard)/local-engine/engine-task-records.tsx",
+  "app/(dashboard)/not-found.tsx",
+  "app/(dashboard)/platforms/platform-account-form.tsx",
+  "app/(dashboard)/schedules/schedule-form.tsx",
+  "app/(dashboard)/settings/settings-detail.tsx",
+  "app/(dashboard)/solutions/solution-configure.tsx",
+  "app/(dashboard)/solutions/solution-run-detail.tsx",
+  "app/(dashboard)/styles/style-form.tsx",
+  "app/(dashboard)/topics/topic-form.tsx",
+  "app/(dashboard)/workbench/customer-service-config.tsx",
+  "app/not-found.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/v2/desktop-only-gate.tsx",
+  "components/v2/editor-shell.tsx",
+  "components/v2/feature-roadmap.tsx",
+  "components/v2/gray-test-overlay.tsx",
+  "components/v2/hybrid-route.tsx",
+  "components/v2/v2-back-button.tsx"
+ ],
+ "SearchX": [
+  "app/(cases)/components/case-states.tsx",
+  "app/(dashboard)/not-found.tsx",
+  "app/not-found.tsx"
+ ],
+ "BellRing": [
+  "app/(dashboard)/growth/leads-pool.tsx",
+  "app/(dashboard)/home-center.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/monitors-center.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "components/savings/masonry-card.tsx",
+  "components/savings/panels/compare.tsx",
+  "components/savings/panels/home.tsx",
+  "components/savings/panels/me.tsx",
+  "components/savings/product-card.tsx"
+ ],
+ "Clock": [
+  "app/(dashboard)/apps/auto-acquisition/auto-acquisition-center.tsx",
+  "app/(dashboard)/capabilities/account/account-sections.tsx",
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-center.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/engagement/unified-inbox.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-task-center.tsx",
+  "app/(dashboard)/home-center.tsx",
+  "app/(dashboard)/local-engine/engine-task-records.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx",
+  "app/(dashboard)/video/release-plans/page.tsx",
+  "components/savings/panels/compare.tsx",
+  "components/v2/feature-roadmap.tsx"
+ ],
+ "FileText": [
+  "app/(cases)/components/case-detail-client.tsx",
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/content/articles/article-list.tsx",
+  "app/(dashboard)/content/content-hub-page.tsx",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-center.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/distribution/distribution-articles.tsx",
+  "app/(dashboard)/distribution/distribution-engine-logs.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/growth/workflow-canvas/nodeTypes.tsx",
+  "app/(dashboard)/home-center.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/report-generator.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "app/(dashboard)/knowledge-base/knowledge-base-center.tsx",
+  "app/(dashboard)/local-engine/engine-files.tsx",
+  "app/(dashboard)/styles/style-form.tsx",
+  "app/(dashboard)/topics/topics-center.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/shell/icons.tsx"
+ ],
+ "MessageSquareText": [
+  "app/(dashboard)/apps/auto-acquisition/auto-acquisition-center.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-center.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/crm/customers/[id]/welcome-message-panel.tsx",
+  "app/(dashboard)/engagement/rules/reply-rules-center.tsx",
+  "app/(dashboard)/engagement/wechat/chat-history-panel.tsx",
+  "app/(dashboard)/engagement/wechat/moments-marketing-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-chat-history.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-task-center.tsx",
+  "app/(dashboard)/growth/growth-reports.tsx",
+  "app/(dashboard)/growth/rpa-workbench.tsx",
+  "app/(dashboard)/home-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/local-engine/engine-interaction-console.tsx",
+  "app/(dashboard)/workbench/customer-service-config.tsx",
+  "app/(dashboard)/workbench/douyin-messages/douyin-messages-center.tsx"
+ ],
+ "TrendingUp": [
+  "app/(dashboard)/apps/auto-acquisition/auto-acquisition-center.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-center.tsx",
+  "app/(dashboard)/engagement/wechat/moments-marketing-wizard.tsx",
+  "app/(dashboard)/growth/growth-reports.tsx",
+  "app/(dashboard)/home-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-commercial-shell.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/report-generator.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "app/(dashboard)/today/today-center.tsx",
+  "components/agent-cockpit-canvas/dashboard/metrics/pinnedMetrics.tsx",
+  "components/growth/growth-mobile-console.tsx",
+  "components/savings/panels/compare.tsx",
+  "components/savings/panels/home.tsx",
+  "components/savings/shell.tsx"
+ ],
+ "ArrowRight": [
+  "app/(cases)/components/case-card.tsx",
+  "app/(cases)/components/cases-home-sections.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/components/content-result-entry.tsx",
+  "app/(dashboard)/components/redfox-workflow-page.tsx",
+  "app/(dashboard)/components/result-summary-panel.tsx",
+  "app/(dashboard)/components/solution-run-context-banner.tsx",
+  "app/(dashboard)/components/trend-card.tsx",
+  "app/(dashboard)/content/articles/article-list.tsx",
+  "app/(dashboard)/content/content-hub-page.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-flow.tsx",
+  "app/(dashboard)/content/image-gen/page.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/crm/import/crm-import-flow.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/customers/crm-customer-queue.tsx",
+  "app/(dashboard)/engagement/wechat/contact-add-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-marketing-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-task-center.tsx",
+  "app/(dashboard)/growth/leads-pool.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/layout.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "app/(dashboard)/today/today-center.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx",
+  "components/ai-employee/capability-workbench.tsx",
+  "components/growth/growth-mobile-console.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/v2/resource-center.tsx",
+  "components/v2/workbench-center.tsx"
+ ],
+ "Bell": [
+  "app/(dashboard)/settings/settings-center.tsx",
+  "app/(dashboard)/settings/settings-detail.tsx",
+  "app/(dashboard)/settings/settings-sections.tsx"
+ ],
+ "Database": [
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/content/content-hub-page.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-page-shell.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/settings/settings-center.tsx",
+  "app/(dashboard)/settings/settings-detail.tsx",
+  "app/(dashboard)/settings/settings-integrations.tsx",
+  "app/(dashboard)/settings/settings-sections.tsx"
+ ],
+ "Download": [
+  "app/(cases)/components/demo-endpoint-panel.tsx",
+  "app/(cases)/components/qr-code.tsx",
+  "app/(dashboard)/apps/app-detail.tsx",
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/components/result-summary-panel.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-center.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-works.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/import/crm-import-center.tsx",
+  "app/(dashboard)/crm/import/crm-import-flow.tsx",
+  "app/(dashboard)/distribution/distribution-engine-logs.tsx",
+  "app/(dashboard)/engagement/wechat/chat-history-panel.tsx",
+  "app/(dashboard)/engagement/wechat/contact-add-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/contacts-panel.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/settings/settings-sections.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx",
+  "app/(dashboard)/workbench/douyin-messages/douyin-messages-center.tsx",
+  "components/electron-update-banner.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "ExternalLink": [
+  "app/(cases)/components/demo-endpoint-panel.tsx",
+  "app/(cases)/components/qr-code.tsx",
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/components/geo-bridge-banner.tsx",
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-attribution-panel.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/settings/settings-sections.tsx",
+  "app/login/page.tsx",
+  "components/savings/buy-modal.tsx",
+  "components/workspace-switcher.tsx"
+ ],
+ "UserRound": [
+  "app/(dashboard)/boss-recruit/boss-recruit-center.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-flow.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-center.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-chat-history.tsx",
+  "app/(dashboard)/growth/leads-pool.tsx",
+  "app/(dashboard)/intelligence/_components/monitor-form.tsx",
+  "app/(dashboard)/settings/settings-center.tsx",
+  "app/(dashboard)/settings/settings-sections.tsx"
+ ],
+ "RefreshCcw": [
+  "app/(dashboard)/capabilities/account/account-sections.tsx",
+  "app/(dashboard)/capabilities/risk/risk-center.tsx",
+  "app/(dashboard)/content/content-hub-page.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-works.tsx",
+  "app/(dashboard)/content/image-gen/page.tsx",
+  "app/(dashboard)/crm/closer/crm-closer-center.tsx",
+  "app/(dashboard)/crm/connectors/crm-connectors-center.tsx",
+  "app/(dashboard)/distribution/distribution-tasks.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/engagement/comment-acquisition/page.tsx",
+  "app/(dashboard)/engagement/wechat/chat-history-panel.tsx",
+  "app/(dashboard)/engagement/wechat/contacts-panel.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-chat-history.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/local-engine/engine-browser-accounts.tsx",
+  "app/(dashboard)/local-engine/engine-desktop-check.tsx",
+  "app/(dashboard)/local-engine/engine-evidence.tsx",
+  "app/(dashboard)/local-engine/engine-files.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/local-engine/engine-interaction-console.tsx",
+  "app/(dashboard)/local-engine/engine-logs.tsx",
+  "app/(dashboard)/local-engine/engine-permissions.tsx",
+  "app/(dashboard)/local-engine/engine-remote.tsx",
+  "app/(dashboard)/local-engine/engine-run-detail.tsx",
+  "app/(dashboard)/local-engine/engine-task-records.tsx",
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/settings/ai-service-settings.tsx",
+  "app/(dashboard)/solutions/solution-run-detail.tsx",
+  "app/(dashboard)/tasks/evidence/task-evidence-center.tsx",
+  "app/(dashboard)/topics/topics-center.tsx"
+ ],
+ "Save": [
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/capabilities/models/model-form.tsx",
+  "app/(dashboard)/capabilities/risk/default-send-mode-section.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx",
+  "app/(dashboard)/content/workspace/workspace-header.tsx",
+  "app/(dashboard)/crm/closer/opportunity-detail.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/growth/workflow-canvas/FlowCanvas.tsx",
+  "app/(dashboard)/intelligence/_components/monitor-form.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/knowledge-base/knowledge-form.tsx",
+  "app/(dashboard)/platforms/platform-account-form.tsx",
+  "app/(dashboard)/schedules/schedule-form.tsx",
+  "app/(dashboard)/settings/ai-service-settings.tsx",
+  "app/(dashboard)/settings/settings-integrations.tsx",
+  "app/(dashboard)/styles/style-form.tsx",
+  "app/(dashboard)/topics/topic-form.tsx",
+  "app/(dashboard)/workbench/customer-service-config.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/shell/content-sources.tsx",
+  "components/v2/editor-shell.tsx"
+ ],
+ "Sparkles": [
+  "app/(cases)/components/case-detail-client.tsx",
+  "app/(cases)/components/cases-home-sections.tsx",
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/content/articles/article-list.tsx",
+  "app/(dashboard)/content/content-hub-page.tsx",
+  "app/(dashboard)/content/image-gen/page.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/engagement/comment-acquisition/page.tsx",
+  "app/(dashboard)/engagement/comment-insights/comment-insights-content.tsx",
+  "app/(dashboard)/engagement/unified-inbox.tsx",
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-marketing-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-auto-reception-card.tsx",
+  "app/(dashboard)/growth/growth-strategies.tsx",
+  "app/(dashboard)/growth/leads/detail/page.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-commercial-shell.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "app/(dashboard)/knowledge-base/knowledge-form.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/settings/ai-service-settings.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "app/(dashboard)/today/today-center.tsx",
+  "app/(dashboard)/workbench/customer-service-config.tsx",
+  "components/ai-employee/capability-workbench.tsx",
+  "components/electron-update-banner.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/shell/ai-assistant.tsx"
+ ],
+ "UserRoundPlus": [
+  "app/(dashboard)/capabilities/account/account-sections.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/engagement/wechat/contact-add-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-task-center.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/settings/ai-service-settings.tsx",
+  "components/v2/crm-customer-form.tsx"
+ ],
+ "FolderSearch": [
+  "app/(dashboard)/settings/desktop-settings.tsx"
+ ],
+ "Gauge": [
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/settings/desktop-settings.tsx"
+ ],
+ "MonitorCog": [
+  "app/(dashboard)/settings/desktop-settings.tsx",
+  "app/(dashboard)/settings/settings-detail.tsx"
+ ],
+ "UploadCloud": [
+  "app/(dashboard)/settings/desktop-settings.tsx"
+ ],
+ "ChevronRight": [
+  "app/(cases)/components/media-gallery.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/settings/settings-detail.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Cpu": [
+  "app/(cases)/components/case-detail-client.tsx",
+  "app/(dashboard)/capabilities/models/models-center.tsx",
+  "app/(dashboard)/settings/settings-detail.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/shell/icons.tsx"
+ ],
+ "Lock": [
+  "app/(cases)/components/inquiry-form.tsx",
+  "app/(dashboard)/crm/connectors/hubspot-vault-panel.tsx",
+  "app/(dashboard)/settings/settings-detail.tsx"
+ ],
+ "Shield": [
+  "app/(dashboard)/settings/settings-detail.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "User": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "app/(dashboard)/settings/settings-detail.tsx",
+  "components/savings/panels/me.tsx",
+  "components/savings/shell.tsx",
+  "components/shell/icons.tsx"
+ ],
+ "KeyRound": [
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/settings/settings-center.tsx",
+  "app/login/page.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Settings2": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/apps/auto-acquisition/auto-acquisition-center.tsx",
+  "app/(dashboard)/engagement/comment-insights/comment-insights-center.tsx",
+  "app/(dashboard)/engagement/rules/reply-rules-center.tsx",
+  "app/(dashboard)/growth/workflow-canvas/FlowCanvas.tsx",
+  "app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx",
+  "app/(dashboard)/settings/settings-center.tsx"
+ ],
+ "CheckCircle2": [
+  "app/(cases)/components/case-detail-client.tsx",
+  "app/(cases)/components/inquiry-form.tsx",
+  "app/(dashboard)/apps/app-detail.tsx",
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/capabilities/risk/risk-confirm-flow.tsx",
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/components/ai-fill-assistant-dialog.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/components/functional-page-experience.tsx",
+  "app/(dashboard)/components/redfox-workflow-page.tsx",
+  "app/(dashboard)/components/result-summary-panel.tsx",
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-flow.tsx",
+  "app/(dashboard)/content/image-gen/page.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/crm/import/crm-import-flow.tsx",
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-check-flow.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/distribution/distribution-engine-logs.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/engagement/comment-acquisition/page.tsx",
+  "app/(dashboard)/engagement/wechat/contact-add-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/friend-accept-panel.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send/page.tsx",
+  "app/(dashboard)/engagement/wechat/moments-marketing-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-task-center.tsx",
+  "app/(dashboard)/growth/growth-account-health.tsx",
+  "app/(dashboard)/growth/leads-pool.tsx",
+  "app/(dashboard)/intelligence/_components/inbox-processing.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx",
+  "app/(dashboard)/local-engine/engine-browser-accounts.tsx",
+  "app/(dashboard)/local-engine/engine-desktop-check.tsx",
+  "app/(dashboard)/local-engine/engine-files.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/local-engine/engine-interaction-console.tsx",
+  "app/(dashboard)/local-engine/engine-permissions.tsx",
+  "app/(dashboard)/local-engine/engine-run-detail.tsx",
+  "app/(dashboard)/local-engine/engine-task-records.tsx",
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/release-notes/page.tsx",
+  "app/(dashboard)/settings/settings-integrations.tsx",
+  "app/(dashboard)/solutions/solution-run-detail.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx",
+  "app/(dashboard)/workbench/customer-service-config.tsx",
+  "components/ai-employee/capability-workbench.tsx",
+  "components/electron-update-banner.tsx"
+ ],
+ "Loader2": [
+  "app/(cases)/components/cases-list-client.tsx",
+  "app/(cases)/components/inquiry-form.tsx",
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-flow.tsx",
+  "app/(dashboard)/content/image-gen/page.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/workspace/workspace-header.tsx",
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "app/(dashboard)/crm/import/crm-import-flow.tsx",
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/engagement/comment-acquisition/page.tsx",
+  "app/(dashboard)/engagement/comment-insights/comment-insights-content.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/growth/growth-strategies.tsx",
+  "app/(dashboard)/growth/workflow-canvas/FlowCanvas.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/monitors-center.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/report-generator.tsx",
+  "app/(dashboard)/local-engine/engine-task-records.tsx",
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/settings/settings-integrations.tsx",
+  "app/(dashboard)/solutions/solution-configure.tsx",
+  "app/(dashboard)/solutions/solution-run-detail.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "app/(dashboard)/video-download/page.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx",
+  "components/growth/growth-mobile-console.tsx",
+  "components/savings/buy-modal.tsx",
+  "components/shell/content-sources.tsx",
+  "components/v2/crm-customer-form.tsx",
+  "components/v2/editor-shell.tsx"
+ ],
+ "CalendarClock": [
+  "app/(cases)/components/demo-endpoint-panel.tsx",
+  "app/(dashboard)/engagement/wechat-moments/moments-plan-center.tsx",
+  "app/(dashboard)/schedules/schedule-form.tsx",
+  "app/(dashboard)/schedules/schedules-center.tsx",
+  "app/(dashboard)/video/release-plans/page.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Share2": [
+  "app/(dashboard)/platforms/platforms-center.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/savings/panels/me.tsx"
+ ],
+ "MessageCircle": [
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/boss-recruit/boss-recruit-center.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/content/articles/article-list.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/engagement/comment-insights/comment-insights-center.tsx",
+  "app/(dashboard)/platforms/platform-account-form.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Trash2": [
+  "app/(dashboard)/case-admin/case-form.tsx",
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/content/articles/article-list.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx",
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/distribution/distribution-tasks.tsx",
+  "app/(dashboard)/engagement/wechat/contacts-panel.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/growth/growth-workflows.tsx",
+  "app/(dashboard)/growth/leads-pool.tsx",
+  "app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx",
+  "app/(dashboard)/knowledge-base/knowledge-base-center.tsx",
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/platforms/platform-account-form.tsx",
+  "app/(dashboard)/topics/topics-center.tsx",
+  "app/(dashboard)/wecom-crm/wecom-crm-center.tsx",
+  "components/agent-cockpit-canvas/dashboard/charts/chart-grid.tsx",
+  "components/agent-cockpit-canvas/dashboard/metrics/pinnedMetrics.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/shell/ai-assistant.tsx",
+  "components/shell/content-sources.tsx"
+ ],
+ "FileSearch": [
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/tasks/evidence/task-evidence-center.tsx"
+ ],
+ "FolderOpen": [
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/shell/content-sources.tsx"
+ ],
+ "ImageIcon": [
+  "app/(cases)/components/media-gallery.tsx",
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-center.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-flow.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-works.tsx",
+  "app/(dashboard)/content/image-gen/page.tsx",
+  "app/(dashboard)/engagement/wechat-moments/moments-plan-center.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/local-engine/engine-evidence.tsx",
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/styles/style-form.tsx"
+ ],
+ "Play": [
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/apps/auto-acquisition/auto-acquisition-center.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/engagement/comment-insights/comment-insights-content.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/growth/growth-workflows.tsx",
+  "app/(dashboard)/growth/workflow-canvas/FlowCanvas.tsx",
+  "app/(dashboard)/intelligence/_components/monitors-center.tsx",
+  "app/(dashboard)/local-engine/engine-task-records.tsx",
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/solutions/solution-run-detail.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx",
+  "app/(dashboard)/workbench/customer-service-config.tsx"
+ ],
+ "Search": [
+  "app/(cases)/components/cases-list-client.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/content/content-hub-page.tsx",
+  "app/(dashboard)/content/workspace/content-queue.tsx",
+  "app/(dashboard)/content/workspace/workspace-context.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/engagement/comment-insights/comment-insights-center.tsx",
+  "app/(dashboard)/engagement/wechat/chat-history-panel.tsx",
+  "app/(dashboard)/engagement/wechat/contacts-panel.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-chat-history.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/monitor-form.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "app/(dashboard)/knowledge-base/knowledge-base-center.tsx",
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "app/(dashboard)/workbench/douyin-messages/douyin-messages-center.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/savings/panels/compare.tsx",
+  "components/savings/panels/home.tsx",
+  "components/savings/panels/orders.tsx",
+  "components/shell/icons.tsx",
+  "components/v2/resource-center.tsx"
+ ],
+ "XCircle": [
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/capabilities/risk/risk-confirm-flow.tsx",
+  "app/(dashboard)/components/result-summary-panel.tsx",
+  "app/(dashboard)/content/image-gen/page.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-check-flow.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/engagement/comment-acquisition/page.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/growth/growth-account-health.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/growth/growth-strategies.tsx",
+  "app/(dashboard)/growth/rpa-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx",
+  "app/(dashboard)/local-engine/engine-browser-accounts.tsx",
+  "app/(dashboard)/local-engine/engine-desktop-check.tsx",
+  "app/(dashboard)/local-engine/engine-evidence.tsx",
+  "app/(dashboard)/local-engine/engine-files.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/local-engine/engine-permissions.tsx",
+  "app/(dashboard)/local-engine/engine-run-detail.tsx",
+  "app/(dashboard)/local-engine/engine-task-records.tsx",
+  "app/(dashboard)/materials/materials-center.tsx",
+  "app/(dashboard)/solutions/solution-run-detail.tsx",
+  "app/(dashboard)/topics/topics-center.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx",
+  "components/ai-employee/capability-workbench.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "FileVideo": [
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx"
+ ],
+ "PackagePlus": [
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx"
+ ],
+ "Smartphone": [
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/growth/growth-account-health.tsx",
+  "app/(dashboard)/growth/growth-workflows.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx"
+ ],
+ "LucideIcon": [
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/components/functional-empty-state.tsx",
+  "app/(dashboard)/components/functional-page-experience.tsx",
+  "app/(dashboard)/components/redfox-workflow-page.tsx",
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/content/content-hub-page.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-task-center.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "app/(dashboard)/video-workshop/video-workshop-center.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/v2/resource-center.tsx",
+  "components/v2/ui-kit.tsx",
+  "components/v2/workbench-center.tsx"
+ ],
+ "PlugZap": [
+  "app/(dashboard)/capabilities/models/model-form.tsx",
+  "app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx"
+ ],
+ "Logout": [
+  "app/(dashboard)/capabilities/account/account-sections.tsx",
+  "components/shell/icons.tsx"
+ ],
+ "Monitor": [
+  "app/(dashboard)/capabilities/account/account-sections.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/v2/desktop-only-gate.tsx"
+ ],
+ "ShieldCheck": [
+  "app/(cases)/components/attribution-disclaimer.tsx",
+  "app/(cases)/components/case-detail-client.tsx",
+  "app/(dashboard)/approvals/page.tsx",
+  "app/(dashboard)/capabilities/account/account-sections.tsx",
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/components/functional-page-experience.tsx",
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/content/content-hub-page.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/content/workspace/workspace-context.tsx",
+  "app/(dashboard)/content/workspace/workspace-types.ts",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/crm/connectors/hubspot-vault-panel.tsx",
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-check-flow.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/rules/reply-rules-center.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/growth/growth-account-health.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-commercial-shell.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/local-engine/engine-permissions.tsx",
+  "app/(dashboard)/release-notes/page.tsx",
+  "app/(dashboard)/today/today-center.tsx",
+  "app/login/page.tsx",
+  "components/ai-employee/capability-workbench.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/savings/buy-modal.tsx",
+  "components/savings/panels/wallet.tsx"
+ ],
+ "UserRoundCheck": [
+  "app/(dashboard)/capabilities/account/account-sections.tsx",
+  "app/(dashboard)/engagement/wechat/friend-accept-panel.tsx"
+ ],
+ "Wallet": [
+  "app/(dashboard)/capabilities/account/account-sections.tsx",
+  "app/(dashboard)/today/today-center.tsx",
+  "components/savings/panels/home.tsx",
+  "components/savings/panels/wallet.tsx",
+  "components/savings/shell.tsx",
+  "components/shell/ai-assistant.tsx"
+ ],
+ "AlertTriangle": [
+  "app/(cases)/components/case-states.tsx",
+  "app/(dashboard)/approvals/page.tsx",
+  "app/(dashboard)/capabilities/risk/risk-center.tsx",
+  "app/(dashboard)/capabilities/risk/risk-confirm-flow.tsx",
+  "app/(dashboard)/components/failure-action-panel.tsx",
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-check-flow.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/distribution/distribution-engine-logs.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/engagement/unified-inbox.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/growth/growth-account-health.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/local-engine/engine-desktop-check.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/local-engine/engine-run-detail.tsx",
+  "app/(dashboard)/local-engine/engine-task-records.tsx",
+  "app/(dashboard)/today/today-center.tsx",
+  "components/ai-employee/capability-workbench.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/risk-confirmation-dialog.tsx"
+ ],
+ "ShieldAlert": [
+  "app/(cases)/components/demo-endpoint-panel.tsx",
+  "app/(cases)/components/qr-code.tsx",
+  "app/(dashboard)/capabilities/risk/risk-center.tsx",
+  "app/(dashboard)/capabilities/risk/risk-confirm-flow.tsx",
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/engagement/wechat/contact-add-wizard.tsx",
+  "app/(dashboard)/growth/growth-workflows.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "components/growth/growth-mobile-console.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/risk-confirmation-dialog.tsx",
+  "components/v2/feature-roadmap.tsx"
+ ],
+ "Bot": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/components/ai-fill-assistant-dialog.tsx",
+  "app/(dashboard)/components/functional-page-experience.tsx",
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/crm/closer/closer-page.tsx",
+  "app/(dashboard)/engagement/page.tsx",
+  "app/(dashboard)/growth/workflow-canvas/nodeTypes.tsx",
+  "app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx",
+  "app/(dashboard)/today/today-center.tsx",
+  "app/(dashboard)/workbench/customer-service-config.tsx",
+  "components/shell/ai-assistant.tsx"
+ ],
+ "ClipboardList": [
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/content/workspace/content-workspace-client.tsx",
+  "app/(dashboard)/content/workspace/workspace-types.ts",
+  "app/(dashboard)/growth/growth-strategies.tsx",
+  "app/(dashboard)/growth/rpa-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-commercial-shell.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "app/(dashboard)/today/today-center.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Inbox": [
+  "app/(cases)/components/case-states.tsx",
+  "app/(dashboard)/distribution/distribution-engine-logs.tsx",
+  "app/(dashboard)/engagement/page.tsx",
+  "app/(dashboard)/engagement/unified-inbox.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-auto-reception-card.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "app/(dashboard)/today/today-center.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Route": [
+  "app/(dashboard)/components/solution-run-context-banner.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-attribution-panel.tsx",
+  "app/(dashboard)/growth/growth-workflows.tsx",
+  "app/(dashboard)/today/today-center.tsx"
+ ],
+ "Target": [
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/crm/closer/closer-page.tsx",
+  "app/(dashboard)/crm/closer/crm-closer-center.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/engagement/wechat/moments-marketing-wizard.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/growth/workflow-canvas/nodeTypes.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-commercial-shell.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx",
+  "app/(dashboard)/today/today-center.tsx",
+  "components/growth/growth-mobile-console.tsx"
+ ],
+ "UsersRound": [
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/crm/customer/page.tsx",
+  "app/(dashboard)/engagement/customers/crm-customer-queue.tsx",
+  "app/(dashboard)/growth/leads-pool.tsx",
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "app/(dashboard)/today/today-center.tsx",
+  "app/(dashboard)/wecom-crm/wecom-crm-center.tsx"
+ ],
+ "Blocks": [
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/data.ts"
+ ],
+ "CircleDollarSign": [
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-commercial-shell.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/intelligence/data.ts"
+ ],
+ "Flame": [
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "app/(dashboard)/intelligence/data.ts"
+ ],
+ "Globe2": [
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/data.ts"
+ ],
+ "Plug": [
+  "app/(dashboard)/crm/connectors/crm-connectors-center.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/data.ts",
+  "app/(dashboard)/wecom-crm/wecom-crm-center.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Radar": [
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/intelligence/_components/report-generator.tsx",
+  "app/(dashboard)/intelligence/data.ts"
+ ],
+ "SlidersHorizontal": [
+  "app/(cases)/components/cases-list-client.tsx",
+  "app/(cases)/components/filter-panel.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-skills-client.tsx",
+  "app/(dashboard)/intelligence/data.ts"
+ ],
+ "UserRoundSearch": [
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench.tsx"
+ ],
+ "ArrowDownRight": [
+  "app/(dashboard)/components/trend-card.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-commercial-shell.tsx"
+ ],
+ "ArrowUpRight": [
+  "app/(dashboard)/components/trend-card.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-commercial-shell.tsx"
+ ],
+ "Eye": [
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/growth/rpa-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-commercial-shell.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Activity": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/distribution/distribution-engine-logs.tsx",
+  "app/(dashboard)/growth/rpa-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx",
+  "components/growth/growth-mobile-console.tsx"
+ ],
+ "WifiOff": [
+  "app/(dashboard)/intelligence/_components/redfox-connection-client.tsx"
+ ],
+ "Archive": [
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/crm/customers/[id]/welcome-message-panel.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/monitors-center.tsx"
+ ],
+ "ClipboardCheck": [
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/components/functional-page-experience.tsx",
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "app/(dashboard)/intelligence/_components/viral-analysis-workbench.tsx"
+ ],
+ "GitBranch": [
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-inbox-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx"
+ ],
+ "Lightbulb": [
+  "app/(cases)/components/case-detail-client.tsx",
+  "app/(dashboard)/components/functional-empty-state.tsx",
+  "app/(dashboard)/engagement/comment-insights/comment-insights-center.tsx",
+  "app/(dashboard)/engagement/comment-insights/comment-insights-content.tsx",
+  "app/(dashboard)/intelligence/_components/inbox-processing.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-tool-result-context.tsx",
+  "app/(dashboard)/topics/topics-center.tsx",
+  "components/shell/ai-assistant.tsx"
+ ],
+ "BarChart3": [
+  "app/(dashboard)/engagement/comment-insights/comment-insights-content.tsx",
+  "app/(dashboard)/growth/workflow-canvas/nodeTypes.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/report-generator.tsx",
+  "components/agent-cockpit-canvas/dashboard/charts/chart-type-icon.tsx"
+ ],
+ "Clock3": [
+  "app/(dashboard)/components/functional-page-experience.tsx",
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-page-shell.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-reports-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/redfox-costs-client.tsx"
+ ],
+ "UserCheck": [
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/engagement/unified-inbox.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-collaboration-workbench.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Pause": [
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/growth/growth-workflows.tsx",
+  "app/(dashboard)/intelligence/_components/monitors-center.tsx",
+  "app/(dashboard)/local-engine/engine-task-records.tsx"
+ ],
+ "Plus": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/case-admin/case-form.tsx",
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/crm/customers/[id]/welcome-message-panel.tsx",
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/engagement/rules/reply-rules-center.tsx",
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx",
+  "app/(dashboard)/engagement/wechat-moments/moments-plan-center.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/growth/rpa-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/monitors-center.tsx",
+  "app/(dashboard)/knowledge-base/knowledge-base-center.tsx",
+  "app/(dashboard)/workbench/customer-service-config.tsx",
+  "components/agent-cockpit-canvas/dashboard/layout/charts.tsx",
+  "components/agent-cockpit-canvas/dashboard/layout/metrics.tsx",
+  "components/shell/content-sources.tsx",
+  "components/v2/crm-customer-form.tsx",
+  "components/v2/resource-center.tsx",
+  "components/workspace-switcher.tsx"
+ ],
+ "Zap": [
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/intelligence/_components/monitors-center.tsx"
+ ],
+ "PauseCircle": [
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "PlayCircle": [
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/components/functional-page-experience.tsx",
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/crm/connectors/hubspot-vault-panel.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx",
+  "components/growth/growth-mobile-console.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "TimerReset": [
+  "app/(dashboard)/intelligence/_components/intelligence-monitors-workbench.tsx"
+ ],
+ "Filter": [
+  "app/(dashboard)/intelligence/_components/intelligence-page-shell.tsx"
+ ],
+ "Radio": [
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-operations-page.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Layers3": [
+  "app/(dashboard)/intelligence/_components/industry-intelligence-workbench.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx"
+ ],
+ "ChevronDown": [
+  "app/(cases)/components/cases-list-client.tsx",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "app/(dashboard)/engagement/wechat/contacts-panel.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/v2/ui-kit.tsx"
+ ],
+ "X": [
+  "app/(cases)/components/filter-drawer.tsx",
+  "app/(cases)/components/media-gallery.tsx",
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/approvals/page.tsx",
+  "app/(dashboard)/case-admin/[id]/edit-case-client.tsx",
+  "app/(dashboard)/content/workspace/content-queue.tsx",
+  "app/(dashboard)/crm/closer/opportunity-detail.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/intelligence/_components/search-intelligence-workbench-v2.tsx",
+  "components/electron-update-banner.tsx",
+  "components/shell/ai-assistant.tsx",
+  "components/v2/crm-customer-form.tsx",
+  "components/v2/gray-test-overlay.tsx"
+ ],
+ "Send": [
+  "app/(cases)/components/inquiry-form.tsx",
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/case-admin/case-form.tsx",
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "app/(dashboard)/crm/customers/[id]/welcome-message-panel.tsx",
+  "app/(dashboard)/distribution/distribution-articles.tsx",
+  "app/(dashboard)/distribution/distribution-tasks.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/engagement/comment-acquisition/page.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/moments-publish-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-plan-list.tsx",
+  "app/(dashboard)/growth/workflow-canvas/nodeTypes.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "app/(dashboard)/interaction/wecom-assistant/wecom-assistant-center.tsx",
+  "app/(dashboard)/local-engine/engine-interaction-console.tsx",
+  "app/(dashboard)/topics/topics-center.tsx",
+  "app/(dashboard)/wecom-crm/wecom-crm-center.tsx",
+  "app/(dashboard)/workbench/customer-service-config.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/shell/ai-assistant.tsx",
+  "components/v2/editor-shell.tsx"
+ ],
+ "Star": [
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/intelligence/_components/intelligence-dispatch-records-page.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/v2/resource-center.tsx"
+ ],
+ "ListChecks": [
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx",
+  "app/(dashboard)/intelligence/_components/trends-radar-workbench.tsx",
+  "components/growth/growth-mobile-console.tsx"
+ ],
+ "LineChart": [
+  "app/(dashboard)/intelligence/_components/intelligence-command-center.tsx",
+  "components/growth/growth-mobile-console.tsx"
+ ],
+ "FolderInput": [
+  "app/(dashboard)/intelligence/_components/inbox-processing.tsx"
+ ],
+ "Building2": [
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "app/(dashboard)/growth/growth-workflows.tsx",
+  "app/(dashboard)/intelligence/_components/monitor-form.tsx",
+  "app/(dashboard)/intelligence/_components/report-generator.tsx"
+ ],
+ "Newspaper": [
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/intelligence/_components/report-generator.tsx"
+ ],
+ "MonitorSmartphone": [
+  "app/(cases)/components/case-hero.tsx",
+  "app/(cases)/components/demo-endpoint-panel.tsx",
+  "app/(dashboard)/engagement/_components/channel-console.tsx",
+  "app/(dashboard)/local-engine/engine-desktop-check.tsx"
+ ],
+ "Folder": [
+  "app/(dashboard)/local-engine/engine-files.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "MonitorPlay": [
+  "app/(dashboard)/local-engine/engine-remote.tsx"
+ ],
+ "SkipForward": [
+  "app/(dashboard)/local-engine/engine-task-records.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "ScrollText": [
+  "app/(dashboard)/local-engine/engine-logs.tsx"
+ ],
+ "Users": [
+  "app/(dashboard)/apps/auto-acquisition/auto-acquisition-center.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/import/crm-import-center.tsx",
+  "app/(dashboard)/engagement/wechat/chat-history-panel.tsx",
+  "app/(dashboard)/engagement/wechat/contacts-panel.tsx",
+  "app/(dashboard)/engagement/wechat/friend-accept-panel.tsx",
+  "app/(dashboard)/engagement/wechat/mass-send-wizard.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-task-center.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/growth/workflow-canvas/nodeTypes.tsx",
+  "app/(dashboard)/local-engine/engine-browser-accounts.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "components/agent-cockpit-canvas/dashboard/metrics/pinnedMetrics.tsx",
+  "components/growth/growth-mobile-console.tsx"
+ ],
+ "Settings": [
+  "app/(dashboard)/engagement/wechat/wechat-task-center.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "app/(dashboard)/wecom-crm/wecom-crm-center.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Wrench": [
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/local-engine/engine-health-center.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Link": [
+  "app/(dashboard)/crm/crm-center.tsx"
+ ],
+ "Phone": [
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "components/shell/icons.tsx"
+ ],
+ "Upload": [
+  "app/(dashboard)/boss-recruit/boss-recruit-center.tsx",
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-center.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-flow.tsx",
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/crm/customer/page.tsx",
+  "app/(dashboard)/crm/import/crm-import-center.tsx",
+  "app/(dashboard)/crm/import/crm-import-flow.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/engagement/wechat/contact-add-wizard.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "UserPlus": [
+  "app/(dashboard)/crm/crm-center.tsx",
+  "app/(dashboard)/engagement/comment-acquisition/page.tsx",
+  "app/(dashboard)/engagement/wechat/friend-accept/page.tsx"
+ ],
+ "Mail": [
+  "app/(cases)/components/cases-home-sections.tsx",
+  "app/(cases)/components/inquiry-form.tsx",
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Pencil": [
+  "app/(dashboard)/crm/customer-profile.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "components/agent-cockpit-canvas/dashboard/charts/chart-grid.tsx",
+  "components/agent-cockpit-canvas/dashboard/metrics/pinnedMetrics.tsx"
+ ],
+ "Braces": [
+  "app/(dashboard)/crm/customers/[id]/welcome-message-panel.tsx"
+ ],
+ "Edit3": [
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/crm/customers/[id]/welcome-message-panel.tsx"
+ ],
+ "Check": [
+  "app/(cases)/components/filter-sections.tsx",
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/approvals/page.tsx",
+  "app/(dashboard)/case-admin/[id]/edit-case-client.tsx",
+  "app/(dashboard)/case-admin/case-form.tsx",
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx",
+  "app/(dashboard)/content/workspace/workflow-steps.tsx",
+  "app/(dashboard)/content/workspace/workspace-header.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx"
+ ],
+ "Link2": [
+  "app/(cases)/components/attribution-disclaimer.tsx",
+  "app/(dashboard)/crm/customers/[id]/customer-detail-client.tsx",
+  "app/(dashboard)/video-download/page.tsx"
+ ],
+ "FileSpreadsheet": [
+  "app/(dashboard)/crm/import/crm-import-center.tsx",
+  "app/(dashboard)/crm/import/crm-import-flow.tsx"
+ ],
+ "History": [
+  "app/(dashboard)/content/face-swap/face-swap-center.tsx",
+  "app/(dashboard)/crm/import/crm-import-center.tsx",
+  "app/(dashboard)/distribution/compliance/compliance-workbench.tsx",
+  "app/(dashboard)/engagement/wechat-moments/moments-plan-center.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-task-center.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/workbench/douyin-messages/douyin-messages-center.tsx",
+  "components/savings/panels/wallet.tsx"
+ ],
+ "RotateCcw": [
+  "app/(cases)/components/case-states.tsx",
+  "app/(cases)/components/filter-drawer.tsx",
+  "app/(cases)/components/filter-panel.tsx",
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/case-admin/[id]/edit-case-client.tsx",
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx",
+  "app/(dashboard)/components/failure-action-panel.tsx",
+  "app/(dashboard)/components/functional-page-experience.tsx",
+  "app/(dashboard)/components/result-summary-panel.tsx",
+  "app/(dashboard)/components/task-experience-flow.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/crm/import/crm-import-center.tsx",
+  "app/(dashboard)/growth/rpa-workbench.tsx",
+  "app/(dashboard)/growth/workflow-canvas/FlowCanvas.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "FileQuestion": [
+  "app/(dashboard)/crm/customer/page.tsx",
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx"
+ ],
+ "Clipboard": [
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "components/shell/ai-assistant.tsx"
+ ],
+ "Copy": [
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/savings/buy-modal.tsx",
+  "components/savings/panels/me.tsx"
+ ],
+ "DatabaseZap": [
+  "app/(dashboard)/crm/closer/closer-advice-workbench.tsx"
+ ],
+ "PenLine": [
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/content/articles/article-list.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/growth/growth-workflows.tsx",
+  "components/lucide-icon-compat.tsx",
+  "components/shell/content-sources.tsx"
+ ],
+ "Video": [
+  "app/(cases)/components/demo-endpoint-panel.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-works.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/(dashboard)/distribution/publish-flow.tsx",
+  "app/(dashboard)/solutions/solutions-center.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Ban": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/distribution/publish-center.tsx"
+ ],
+ "LayoutDashboard": [
+  "app/(dashboard)/distribution/publish-center.tsx",
+  "app/login/page.tsx",
+  "components/agent-cockpit-canvas/dashboard/charts/chart-type-icon.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "LogIn": [
+  "app/(dashboard)/distribution/account-management.tsx",
+  "app/login/page.tsx"
+ ],
+ "CircleDashed": [
+  "app/(dashboard)/solutions/solution-run-detail.tsx"
+ ],
+ "Rocket": [
+  "app/(dashboard)/apps/app-detail.tsx",
+  "app/(dashboard)/growth/growth-acquisition-tasks.tsx",
+  "app/(dashboard)/growth/growth-strategies.tsx",
+  "app/(dashboard)/solutions/solution-configure.tsx"
+ ],
+ "LibraryBig": [
+  "app/(dashboard)/content/content-hub-page.tsx"
+ ],
+ "WandSparkles": [
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "app/(dashboard)/content/content-hub-page.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Rss": [
+  "app/(dashboard)/content/page.tsx"
+ ],
+ "BookOpenCheck": [
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx"
+ ],
+ "FileCode2": [
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx"
+ ],
+ "LockKeyhole": [
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx",
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx"
+ ],
+ "MonitorCheck": [
+  "app/(dashboard)/content/wechat-official-assistant/wechat-official-assistant-client.tsx"
+ ],
+ "Wand2": [
+  "app/(dashboard)/content/face-swap/face-swap-center.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-flow.tsx",
+  "app/(dashboard)/content/face-swap/face-swap-works.tsx",
+  "app/(dashboard)/content/image-gen/page.tsx",
+  "app/(dashboard)/topics/topics-center.tsx"
+ ],
+ "BookOpen": [
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/workspace/workspace-context.tsx",
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx",
+  "app/(dashboard)/knowledge-base/knowledge-base-center.tsx",
+  "app/(dashboard)/styles/style-form.tsx"
+ ],
+ "FilePenLine": [
+  "app/(dashboard)/components/content-result-entry.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "app/(dashboard)/content/workspace/workspace-types.ts"
+ ],
+ "GitCompare": [
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx"
+ ],
+ "Layers": [
+  "app/(cases)/components/case-card.tsx",
+  "app/(cases)/components/case-hero.tsx",
+  "app/(cases)/components/collection-client.tsx",
+  "app/(dashboard)/content/optimization/content-optimization-workbench.tsx",
+  "components/growth/growth-mobile-console.tsx",
+  "components/shell/ai-assistant.tsx",
+  "components/workspace-switcher.tsx"
+ ],
+ "Library": [
+  "app/(dashboard)/content/workspace/workspace-context.tsx",
+  "app/(dashboard)/content/workspace/workspace-mobile-tools.tsx"
+ ],
+ "Palette": [
+  "app/(dashboard)/content/workspace/workspace-context.tsx",
+  "app/(dashboard)/styles/styles-center.tsx"
+ ],
+ "FilePlus2": [
+  "app/(dashboard)/components/functional-empty-state.tsx",
+  "app/(dashboard)/content/workspace/content-queue.tsx",
+  "app/(dashboard)/content/workspace/content-workspace-client.tsx",
+  "app/(dashboard)/content/workspace/workspace-header.tsx"
+ ],
+ "ArrowDown": [
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx"
+ ],
+ "ArrowUp": [
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/content/workspace/content-editor.tsx",
+  "components/agent-cockpit-canvas/chat/layout/input.tsx"
+ ],
+ "CircleCheck": [
+  "app/(dashboard)/content/workspace/content-editor.tsx"
+ ],
+ "GitCompareArrows": [
+  "app/(dashboard)/content/workspace/content-editor.tsx"
+ ],
+ "AlertCircle": [
+  "app/(dashboard)/content/workspace/workspace-header.tsx"
+ ],
+ "Cloud": [
+  "app/(dashboard)/content/workspace/workspace-header.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "CloudOff": [
+  "app/(dashboard)/content/workspace/workspace-header.tsx"
+ ],
+ "ListTree": [
+  "app/(dashboard)/content/workspace/workspace-types.ts"
+ ],
+ "PanelsTopLeft": [
+  "app/(dashboard)/content/workspace/workspace-types.ts"
+ ],
+ "ChevronUp": [
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Images": [
+  "app/(dashboard)/content/xiaohongshu-assistant/xiaohongshu-assistant-client.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Camera": [
+  "app/(dashboard)/wecom-crm/wecom-crm-center.tsx"
+ ],
+ "MessagesSquare": [
+  "app/(dashboard)/wecom-crm/wecom-crm-center.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "BadgeCheck": [
+  "app/(dashboard)/release-notes/page.tsx"
+ ],
+ "CirclePause": [
+  "app/(dashboard)/growth/rpa-workbench.tsx"
+ ],
+ "CirclePlay": [
+  "app/(dashboard)/growth/rpa-workbench.tsx"
+ ],
+ "Hammer": [
+  "app/(dashboard)/growth/rpa-workbench.tsx"
+ ],
+ "MessageSquare": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "app/(dashboard)/engagement/comment-acquisition/page.tsx",
+  "app/(dashboard)/engagement/unified-inbox.tsx",
+  "app/(dashboard)/growth/workflow-canvas/nodeTypes.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Workflow": [
+  "app/(dashboard)/growth/workflow-canvas/FlowCanvas.tsx"
+ ],
+ "CloudCog": [
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx"
+ ],
+ "PackageCheck": [
+  "app/(dashboard)/commercial-readiness/commercial-readiness-center.tsx"
+ ],
+ "CircleAlert": [
+  "app/(dashboard)/engagement/wechat-moments/[id]/wechat-moments-plan-detail-client.tsx",
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Heart": [
+  "app/(dashboard)/case-admin/page.tsx",
+  "app/(dashboard)/engagement/wechat/moments-marketing-wizard.tsx",
+  "components/savings/masonry-card.tsx",
+  "components/savings/panels/me.tsx",
+  "components/savings/product-card.tsx"
+ ],
+ "Shuffle": [
+  "app/(dashboard)/engagement/wechat/moments-marketing-wizard.tsx"
+ ],
+ "ScanSearch": [
+  "app/(dashboard)/engagement/wechat/wechat-workbench-client.tsx"
+ ],
+ "LayoutTemplate": [
+  "app/(dashboard)/styles/style-form.tsx",
+  "app/(dashboard)/templates/templates-center.tsx"
+ ],
+ "FileCheck2": [
+  "app/(dashboard)/components/content-result-entry.tsx"
+ ],
+ "Files": [
+  "app/(dashboard)/components/content-result-entry.tsx"
+ ],
+ "CopyPlus": [
+  "app/(dashboard)/components/result-summary-panel.tsx"
+ ],
+ "HeartPulse": [
+  "app/(dashboard)/components/business-tool-result-context.tsx",
+  "components/growth/growth-mobile-console.tsx"
+ ],
+ "BriefcaseBusiness": [
+  "app/(dashboard)/boss-recruit/boss-recruit-center.tsx"
+ ],
+ "CloudUpload": [
+  "app/(dashboard)/knowledge-base/knowledge-base-center.tsx"
+ ],
+ "FileUp": [
+  "app/(dashboard)/knowledge-base/knowledge-form.tsx"
+ ],
+ "ShoppingCart": [
+  "app/(dashboard)/apps/app-detail.tsx",
+  "components/savings/panels/compare.tsx",
+  "components/savings/panels/home.tsx"
+ ],
+ "LayoutGrid": [
+  "app/(dashboard)/apps/apps-center.tsx"
+ ],
+ "Music2": [
+  "app/(dashboard)/apps/auto-acquisition/acquisition-rule-form.tsx"
+ ],
+ "Sparkle": [
+  "app/(dashboard)/topics/topic-form.tsx"
+ ],
+ "Paperclip": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx"
+ ],
+ "Square": [
+  "app/(dashboard)/agent-workbench/agent-conversation-workbench.tsx",
+  "components/agent-cockpit-canvas/chat/layout/input.tsx"
+ ],
+ "CalendarDays": [
+  "app/(cases)/components/case-hero.tsx",
+  "app/(cases)/components/demo-endpoint-panel.tsx",
+  "app/(cases)/demo-request/demo-request-client.tsx"
+ ],
+ "QrCode": [
+  "app/(cases)/components/demo-endpoint-panel.tsx",
+  "app/(cases)/components/qr-code.tsx"
+ ],
+ "Briefcase": [
+  "app/(cases)/components/case-card.tsx",
+  "app/(cases)/components/case-detail-client.tsx",
+  "components/growth/growth-mobile-console.tsx"
+ ],
+ "FileBadge": [
+  "app/(cases)/components/attribution-disclaimer.tsx"
+ ],
+ "Scale": [
+  "app/(cases)/components/attribution-disclaimer.tsx"
+ ],
+ "ArrowUpDown": [
+  "app/(cases)/components/cases-list-client.tsx"
+ ],
+ "ChevronLeft": [
+  "app/(cases)/components/media-gallery.tsx"
+ ],
+ "MapPinned": [
+  "app/login/page.tsx"
+ ],
+ "AppWindow": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Bolt": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "CheckCircle": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Circle": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "CloudDownload": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Code": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "File": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "FilePlus": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "FolderX": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Globe": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Handshake": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Image": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Laptop": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "PlusCircle": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Repeat2": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "SendHorizontal": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "Server": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "SquareCheck": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "StopCircle": [
+  "components/lucide-icon-compat.tsx"
+ ],
+ "ParkAddOne": [
+  "components/iconpark.tsx"
+ ],
+ "ParkAddUser": [
+  "components/iconpark.tsx"
+ ],
+ "ParkAdjustment": [
+  "components/iconpark.tsx"
+ ],
+ "ParkAppSwitch": [
+  "components/iconpark.tsx"
+ ],
+ "ParkApplication": [
+  "components/iconpark.tsx"
+ ],
+ "ParkApplicationMenu": [
+  "components/iconpark.tsx"
+ ],
+ "ParkArrowDown": [
+  "components/iconpark.tsx"
+ ],
+ "ParkArrowLeft": [
+  "components/iconpark.tsx"
+ ],
+ "ParkArrowRight": [
+  "components/iconpark.tsx"
+ ],
+ "ParkArrowRightDown": [
+  "components/iconpark.tsx"
+ ],
+ "ParkArrowRightUp": [
+  "components/iconpark.tsx"
+ ],
+ "ParkArrowUp": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBalance": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBank": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBankCard": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBill": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBook": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBookOpen": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBox": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBellRing": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBranch": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBriefcase": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBrightness": [
+  "components/iconpark.tsx"
+ ],
+ "ParkBuildingTwo": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCalendar": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCamera": [
+  "components/iconpark.tsx"
+ ],
+ "ParkAttention": [
+  "components/iconpark.tsx"
+ ],
+ "ParkChartHistogram": [
+  "components/iconpark.tsx"
+ ],
+ "ParkChartLine": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCheck": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCheckCorrect": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCheckOne": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCheckbox": [
+  "components/iconpark.tsx"
+ ],
+ "ParkChecklist": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCaution": [
+  "components/iconpark.tsx"
+ ],
+ "ParkClipboard": [
+  "components/iconpark.tsx"
+ ],
+ "ParkClose": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCloseOne": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCloudStorage": [
+  "components/iconpark.tsx"
+ ],
+ "ParkComments": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCode": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCollectionFiles": [
+  "components/iconpark.tsx"
+ ],
+ "ParkComputer": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCooperativeHandshake": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCopy": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCpu": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCycle": [
+  "components/iconpark.tsx"
+ ],
+ "ParkCylinder": [
+  "components/iconpark.tsx"
+ ],
+ "ParkDashboard": [
+  "components/iconpark.tsx"
+ ],
+ "ParkDelete": [
+  "components/iconpark.tsx"
+ ],
+ "ParkDollar": [
+  "components/iconpark.tsx"
+ ],
+ "ParkDown": [
+  "components/iconpark.tsx"
+ ],
+ "ParkDownload": [
+  "components/iconpark.tsx"
+ ],
+ "ParkEdit": [
+  "components/iconpark.tsx"
+ ],
+ "ParkExport": [
+  "components/iconpark.tsx"
+ ],
+ "ParkEyes": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileAddition": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileCabinet": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileCode": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileCollection": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileEditing": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileExcel": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileQuestion": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileSearch": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileSuccess": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFileText": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFilter": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFire": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFlask": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFolder": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFolderConversion": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFolderFailed": [
+  "components/iconpark.tsx"
+ ],
+ "ParkFolderOpen": [
+  "components/iconpark.tsx"
+ ],
+ "ParkForbid": [
+  "components/iconpark.tsx"
+ ],
+ "ParkForkSpoon": [
+  "components/iconpark.tsx"
+ ],
+ "ParkGift": [
+  "components/iconpark.tsx"
+ ],
+ "ParkGridNine": [
+  "components/iconpark.tsx"
+ ],
+ "ParkHammerAndAnvil": [
+  "components/iconpark.tsx"
+ ],
+ "ParkHeart": [
+  "components/iconpark.tsx"
+ ],
+ "ParkHeartbeat": [
+  "components/iconpark.tsx"
+ ],
+ "ParkHistory": [
+  "components/iconpark.tsx"
+ ],
+ "ParkHome": [
+  "components/iconpark.tsx"
+ ],
+ "ParkInbox": [
+  "components/iconpark.tsx"
+ ],
+ "ParkInboxIn": [
+  "components/iconpark.tsx"
+ ],
+ "ParkInfo": [
+  "components/iconpark.tsx"
+ ],
+ "ParkIphone": [
+  "components/iconpark.tsx"
+ ],
+ "ParkKey": [
+  "components/iconpark.tsx"
+ ],
+ "ParkLayers": [
+  "components/iconpark.tsx"
+ ],
+ "ParkLeft": [
+  "components/iconpark.tsx"
+ ],
+ "ParkLight": [
+  "components/iconpark.tsx"
+ ],
+ "ParkLightning": [
+  "components/iconpark.tsx"
+ ],
+ "ParkLink": [
+  "components/iconpark.tsx"
+ ],
+ "ParkLoading": [
+  "components/iconpark.tsx"
+ ],
+ "ParkLocal": [
+  "components/iconpark.tsx"
+ ],
+ "ParkLock": [
+  "components/iconpark.tsx"
+ ],
+ "ParkLogout": [
+  "components/iconpark.tsx"
+ ],
+ "ParkMagic": [
+  "components/iconpark.tsx"
+ ],
+ "ParkMagicWand": [
+  "components/iconpark.tsx"
+ ],
+ "ParkMail": [
+  "components/iconpark.tsx"
+ ],
+ "ParkMessage": [
+  "components/iconpark.tsx"
+ ],
+ "ParkMessageOne": [
+  "components/iconpark.tsx"
+ ],
+ "ParkMonitor": [
+  "components/iconpark.tsx"
+ ],
+ "ParkMonitorOne": [
+  "components/iconpark.tsx"
+ ],
+ "ParkMoon": [
+  "components/iconpark.tsx"
+ ],
+ "ParkMusic": [
+  "components/iconpark.tsx"
+ ],
+ "ParkNewspaperFolding": [
+  "components/iconpark.tsx"
+ ],
+ "ParkNext": [
+  "components/iconpark.tsx"
+ ],
+ "ParkOrderedList": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPaint": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPaperclip": [
+  "components/iconpark.tsx"
+ ],
+ "ParkOpenOne": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPause": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPauseOne": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPencil": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPeople": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPhone": [
+  "components/iconpark.tsx"
+ ],
+ "ParkProtect": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPic": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPictureAlbum": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPie": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPin": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPlay": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPlayOne": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPlug": [
+  "components/iconpark.tsx"
+ ],
+ "ParkPlus": [
+  "components/iconpark.tsx"
+ ],
+ "ParkProcessLine": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRadar": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRadio": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRefresh": [
+  "components/iconpark.tsx"
+ ],
+ "ParkReload": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRemind": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRight": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRoad": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRobotOne": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRocket": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRound": [
+  "components/iconpark.tsx"
+ ],
+ "ParkRss": [
+  "components/iconpark.tsx"
+ ],
+ "ParkSave": [
+  "components/iconpark.tsx"
+ ],
+ "ParkScan": [
+  "components/iconpark.tsx"
+ ],
+ "ParkSearch": [
+  "components/iconpark.tsx"
+ ],
+ "ParkSend": [
+  "components/iconpark.tsx"
+ ],
+ "ParkServer": [
+  "components/iconpark.tsx"
+ ],
+ "ParkSetting": [
+  "components/iconpark.tsx"
+ ],
+ "ParkSettingTwo": [
+  "components/iconpark.tsx"
+ ],
+ "ParkShare": [
+  "components/iconpark.tsx"
+ ],
+ "ParkShield": [
+  "components/iconpark.tsx"
+ ],
+ "ParkShop": [
+  "components/iconpark.tsx"
+ ],
+ "ParkShoppingBag": [
+  "components/iconpark.tsx"
+ ],
+ "ParkShoppingCart": [
+  "components/iconpark.tsx"
+ ],
+ "ParkShuffle": [
+  "components/iconpark.tsx"
+ ],
+ "ParkSpeed": [
+  "components/iconpark.tsx"
+ ],
+ "ParkSquare": [
+  "components/iconpark.tsx"
+ ],
+ "ParkStar": [
+  "components/iconpark.tsx"
+ ],
+ "ParkSun": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTag": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTarget": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTextMessage": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTime": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTimer": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTool": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTreeList": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTrendingDown": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTrendingUp": [
+  "components/iconpark.tsx"
+ ],
+ "ParkTwoDimensionalCode": [
+  "components/iconpark.tsx"
+ ],
+ "ParkUp": [
+  "components/iconpark.tsx"
+ ],
+ "ParkUpAndDown": [
+  "components/iconpark.tsx"
+ ],
+ "ParkUpdateRotation": [
+  "components/iconpark.tsx"
+ ],
+ "ParkUpload": [
+  "components/iconpark.tsx"
+ ],
+ "ParkUser": [
+  "components/iconpark.tsx"
+ ],
+ "ParkVideo": [
+  "components/iconpark.tsx"
+ ],
+ "ParkVideoFile": [
+  "components/iconpark.tsx"
+ ],
+ "ParkWallet": [
+  "components/iconpark.tsx"
+ ],
+ "ParkWifi": [
+  "components/iconpark.tsx"
+ ],
+ "ParkWorld": [
+  "components/iconpark.tsx"
+ ],
+ "Moon": [
+  "components/ThemeToggle.tsx",
+  "components/shell/icons.tsx"
+ ],
+ "Sun": [
+  "components/ThemeToggle.tsx",
+  "components/shell/icons.tsx"
+ ],
+ "Package": [
+  "components/savings/panels/home.tsx",
+  "components/savings/panels/orders.tsx",
+  "components/savings/shell.tsx"
+ ],
+ "ShoppingBag": [
+  "components/savings/buy-modal.tsx",
+  "components/savings/masonry-card.tsx",
+  "components/savings/product-card.tsx"
+ ],
+ "Tag": [
+  "components/savings/masonry-card.tsx"
+ ],
+ "Gift": [
+  "components/savings/panels/me.tsx"
+ ],
+ "Landmark": [
+  "components/savings/panels/me.tsx"
+ ],
+ "Store": [
+  "components/savings/panels/home.tsx",
+  "components/savings/panels/me.tsx"
+ ],
+ "CreditCard": [
+  "components/savings/panels/home.tsx",
+  "components/savings/panels/wallet.tsx"
+ ],
+ "ReceiptText": [
+  "components/savings/panels/wallet.tsx"
+ ],
+ "Utensils": [
+  "components/savings/panels/home.tsx"
+ ],
+ "Message": [
+  "components/shell/icons.tsx"
+ ],
+ "People": [
+  "components/shell/icons.tsx"
+ ],
+ "IPComments": [
+  "components/shell/icons.tsx"
+ ],
+ "IPFilm": [
+  "components/shell/icons.tsx"
+ ],
+ "IPHeadset": [
+  "components/shell/icons.tsx"
+ ],
+ "IPImportAndExport": [
+  "components/shell/icons.tsx"
+ ],
+ "IPInbox": [
+  "components/shell/icons.tsx"
+ ],
+ "IPMessagesOne": [
+  "components/shell/icons.tsx"
+ ],
+ "IPTiktok": [
+  "components/shell/icons.tsx"
+ ],
+ "IPUnorderedList": [
+  "components/shell/icons.tsx"
+ ],
+ "IPVideo": [
+  "components/shell/icons.tsx"
+ ],
+ "IPVideocamera": [
+  "components/shell/icons.tsx"
+ ],
+ "IPPlayOne": [
+  "components/shell/icons.tsx"
+ ],
+ "IPCalendar": [
+  "components/shell/icons.tsx"
+ ],
+ "IPCollectPicture": [
+  "components/shell/icons.tsx"
+ ],
+ "IPSendOne": [
+  "components/shell/icons.tsx"
+ ],
+ "IPHistory": [
+  "components/shell/icons.tsx"
+ ],
+ "IPMessage": [
+  "components/shell/icons.tsx"
+ ],
+ "IPMessageEmoji": [
+  "components/shell/icons.tsx"
+ ],
+ "IPMessageOne": [
+  "components/shell/icons.tsx"
+ ],
+ "IPMessageSent": [
+  "components/shell/icons.tsx"
+ ],
+ "IPRobotOne": [
+  "components/shell/icons.tsx"
+ ],
+ "IPVolumeNotice": [
+  "components/shell/icons.tsx"
+ ],
+ "IPWechat": [
+  "components/shell/icons.tsx"
+ ],
+ "Info": [
+  "components/shell/ai-assistant.tsx",
+  "components/v2/desktop-only-gate.tsx"
+ ],
+ "XIcon": [
+  "components/agent-cockpit-canvas/ui/dialog.tsx"
+ ],
+ "CheckIcon": [
+  "components/agent-cockpit-canvas/ui/dropdown-menu.tsx"
+ ],
+ "ChevronRightIcon": [
+  "components/agent-cockpit-canvas/ui/dropdown-menu.tsx"
+ ],
+ "CircleIcon": [
+  "components/agent-cockpit-canvas/ui/dropdown-menu.tsx"
+ ],
+ "Pin": [
+  "components/agent-cockpit-canvas/dashboard/metrics/pinnedMetrics.tsx"
+ ],
+ "TrendingDown": [
+  "components/agent-cockpit-canvas/dashboard/metrics/pinnedMetrics.tsx"
+ ],
+ "DollarSign": [
+  "components/agent-cockpit-canvas/dashboard/metrics/pinnedMetrics.tsx"
+ ],
+ "ChartLine": [
+  "components/agent-cockpit-canvas/dashboard/charts/chart-type-icon.tsx"
+ ],
+ "PieChartIcon": [
+  "components/agent-cockpit-canvas/dashboard/charts/chart-type-icon.tsx"
+ ],
+ "FlaskConical": [
+  "components/v2/gray-test-banner.tsx",
+  "components/v2/gray-test-overlay.tsx"
+ ],
+ "MapPin": [
+  "components/v2/feature-roadmap.tsx"
+ ]
+}

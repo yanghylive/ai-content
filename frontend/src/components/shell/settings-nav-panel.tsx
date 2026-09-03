@@ -11,6 +11,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShellIcon } from "@/components/shell/icons";
+import { BrandIcon, brandForMineKey } from "@/components/shell/brand-icons";
 import { useShellUser } from "@/components/shell/app-shell";
 import { MINE_NAV_ENTRIES, type MineNavEntry } from "@/lib/nav-registry";
 
@@ -124,7 +125,14 @@ export function SettingsNavPanel({
                     }`}
                     aria-current={active ? "page" : undefined}
                   >
-                    <ShellIcon name={item.icon} size={18} strokeWidth={1.8} />
+                    {(() => {
+                      const b = brandForMineKey(item.key);
+                      return b ? (
+                        <BrandIcon name={b} size={18} />
+                      ) : (
+                        <ShellIcon name={item.icon} size={18} strokeWidth={1.8} />
+                      );
+                    })()}
                     <span className="min-w-0 truncate">{item.title}</span>
                     {active ? (
                       <span className="ml-auto h-4 w-1 shrink-0 rounded-full bg-[var(--kaypal-v3-accent)]" aria-hidden="true" />

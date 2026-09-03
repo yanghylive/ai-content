@@ -3,9 +3,12 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { ShellIcon, type ShellIconName } from "./icons";
+import { BrandIcon, type BrandIconName } from "./brand-icons";
 
 export type SceneCard = {
   icon: ShellIconName;
+  /** 升格为层一品牌图形时传该字段（无容器面性），否则渲染线性图标 */
+  brand?: BrandIconName;
   tint: string;
   title: string;
   desc: string;
@@ -50,9 +53,15 @@ export function ScenePage({
       className="kx-agg-card"
       onClick={() => router.push(card.href)}
     >
-      <div className={`kx-agg-ico ${card.tint}`}>
-        <ShellIcon name={card.icon} />
-      </div>
+      {card.brand ? (
+        <div className="kx-agg-ico kx-agg-ico-bare" aria-hidden="true">
+          <BrandIcon name={card.brand} size={28} tone="gold" />
+        </div>
+      ) : (
+        <div className={`kx-agg-ico ${card.tint}`}>
+          <ShellIcon name={card.icon} />
+        </div>
+      )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="kx-agg-title">{card.title}</div>
         <div className="kx-agg-desc">{card.desc}</div>

@@ -199,6 +199,12 @@ html.dark {
 .kx-agg-ico { position: relative; width: 44px; height: 44px; border: 1px solid var(--kx-chip-bd, var(--kx-border)); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: color-mix(in srgb, var(--kx-chip-bg, var(--kx-card)) 86%, #fff); color: var(--kx-chip-fg, var(--kx-ink-soft)); box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03); transition: transform 0.18s ease, border-color 0.18s ease; }
 .kx-agg-ico::after { content: ""; position: absolute; right: 8px; top: 8px; width: 6px; height: 6px; border-radius: 999px; background: var(--kx-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--kx-card) 88%, transparent); }
 .kx-agg-card:hover .kx-agg-ico { transform: translateY(-1px); border-color: color-mix(in srgb, var(--kx-chip-bd, var(--kx-border)) 70%, var(--kx-ink)); }
+/* 层一品牌图形卡位：去掉 chip 底/描边/角点，仅保留 44px 占位与色 */
+.kx-agg-ico-bare { background: transparent !important; border-color: transparent !important; box-shadow: none !important; color: var(--kx-ink-soft); }
+.kx-agg-ico-bare::after { display: none; }
+.kx-agg-card:hover .kx-agg-ico-bare { transform: none; border-color: transparent; }
+.kx-agg-ico-bare svg { transition: transform 0.18s ease; }
+.kx-agg-card:hover .kx-agg-ico-bare svg { transform: translateY(-1px) scale(1.03); }
 .kx-agg-title { font-weight: 700; font-size: 15px; color: var(--kx-ink); }
 .kx-agg-desc { color: var(--kx-muted); font-size: 13px; margin-top: 4px; line-height: 1.55; }
 .kx-agg-badge { margin-left: auto; background: var(--kx-ca-bg); color: var(--kx-ca-fg); font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 8px; white-space: nowrap; }

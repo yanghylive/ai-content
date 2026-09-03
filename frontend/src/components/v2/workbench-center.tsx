@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { V2BackButton } from "@/components/v2/v2-back-button";
+import { BrandIcon, type BrandIconName } from "@/components/shell/brand-icons";
 import { CountUpNumber } from "@/components/count-up-number";
 
 export type WorkbenchStat = {
@@ -22,7 +23,9 @@ export type WorkbenchAction = {
   key: string;
   title: string;
   description: string;
-  icon: LucideIcon;
+  /** 品牌图形优先；有 brand 时不渲染 icon 与图标容器 */
+  brand?: BrandIconName;
+  icon?: LucideIcon;
   /** 不传 href 时渲染为按钮（需配 onClick） */
   href?: string;
   onClick?: () => void;
@@ -205,9 +208,15 @@ export function WorkbenchCenter({
                       else action.onClick?.();
                     }}
                   >
-                    <span className="mx-svc-ic" style={{ margin: "0 auto" }}>
-                      <action.icon size={19} strokeWidth={1.8} />
-                    </span>
+                    {action.brand ? (
+                      <span style={{ margin: "0 auto", lineHeight: 0 }}>
+                        <BrandIcon name={action.brand} size={26} tone="gold" />
+                      </span>
+                    ) : action.icon ? (
+                      <span className="mx-svc-ic" style={{ margin: "0 auto" }}>
+                        <action.icon size={19} strokeWidth={1.8} />
+                      </span>
+                    ) : null}
                     <span className="mx-svc-name">{action.title}</span>
                     {action.description ? <span className="mx-svc-sub">{action.description}</span> : null}
                   </button>
@@ -225,9 +234,15 @@ export function WorkbenchCenter({
                         else action.onClick?.();
                       }}
                     >
-                      <span className="mx-svc-ic" style={{ margin: "0 auto" }}>
-                        <action.icon size={19} strokeWidth={1.8} />
-                      </span>
+                      {action.brand ? (
+                        <span style={{ margin: "0 auto", lineHeight: 0 }}>
+                          <BrandIcon name={action.brand} size={26} tone="gold" />
+                        </span>
+                      ) : action.icon ? (
+                        <span className="mx-svc-ic" style={{ margin: "0 auto" }}>
+                          <action.icon size={19} strokeWidth={1.8} />
+                        </span>
+                      ) : null}
                       <span className="mx-svc-name">{action.title}</span>
                     </button>
                   ))}
@@ -394,9 +409,13 @@ export function WorkbenchCenter({
               const inner = (
                 <>
                   <div className="flex items-center gap-3">
-                    <div className="kaypal-v3-icon-tile">
-                      <ActionIcon className="h-5 w-5" />
-                    </div>
+                    {action.brand ? (
+                      <BrandIcon name={action.brand} size={30} tone="gold" />
+                    ) : ActionIcon ? (
+                      <div className="kaypal-v3-icon-tile">
+                        <ActionIcon className="h-5 w-5" />
+                      </div>
+                    ) : null}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-[var(--kaypal-v3-ink)]">

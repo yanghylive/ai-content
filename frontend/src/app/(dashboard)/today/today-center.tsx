@@ -20,6 +20,7 @@ import {
   Wallet,
 } from "@/components/iconpark";
 import { getApiBase } from "@/lib/api/client";
+import { BrandIcon, type BrandIconName } from "@/components/shell/brand-icons";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { useCountUp } from "@/lib/hooks/use-count-up";
 import {
@@ -1498,6 +1499,7 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
     title: string;
     description: string;
     icon: typeof Target;
+    brand?: BrandIconName;
     href: string;
     badge?: string;
     /** 主枢纽：与今日数据直接相关，渲染为更大一号的 hero 卡 */
@@ -1505,6 +1507,7 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
   }> = [
     {
       key: "leads",
+      brand: "leads",
       title: "线索池",
       description: "今天抓到的潜在客户，评分与 AI 判断依据都在这里",
       icon: UsersRound,
@@ -1517,6 +1520,7 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
     },
     {
       key: "acquisition",
+      brand: "acquisition",
       title: "获客任务",
       description: "创建与查看自动找客户的任务",
       icon: Target,
@@ -1525,6 +1529,7 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
     },
     {
       key: "strategies",
+      brand: "strategies",
       title: "获客策略",
       description: "按行业的获客打法",
       icon: ClipboardList,
@@ -1532,6 +1537,7 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
     },
     {
       key: "workflows",
+      brand: "workflows",
       title: "增长工作流",
       description: "多步骤自动化流程",
       icon: Route,
@@ -1539,6 +1545,7 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
     },
     {
       key: "account-health",
+      brand: "accountHealth",
       title: "账号健康",
       description: "各平台账号登录与风控状态",
       icon: ShieldCheck,
@@ -1551,6 +1558,7 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
     },
     {
       key: "reports",
+      brand: "reports",
       title: "增长复盘",
       description: "效果数据回顾",
       icon: TrendingUp,
@@ -1558,6 +1566,7 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
     },
     {
       key: "rpa-workbench",
+      brand: "rpa",
       title: "RPA 工作台",
       description: "平台自动化执行与接管",
       icon: Bot,
@@ -1572,6 +1581,17 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
    * 尺寸必须内联 style（h-13/w-13 不在 Tailwind3 档位，类会失效坍缩）。
    */
   const renderActionIcon = (action: (typeof links)[number], size: number) => {
+    if (action.brand) {
+      return (
+        <div
+          className="flex shrink-0 items-center justify-center"
+          style={{ width: size, height: size }}
+          aria-hidden="true"
+        >
+          <BrandIcon name={action.brand} size={size >= 52 ? 38 : 30} tone="gold" />
+        </div>
+      );
+    }
     const ActionIcon = action.icon;
     return (
       <div

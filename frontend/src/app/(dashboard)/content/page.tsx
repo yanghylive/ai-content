@@ -137,6 +137,7 @@ export default function ContentScene() {
         },
         {
           icon: "archive",
+          brand: "materials",
           tint: "kx-t-slate",
           title: "素材库",
           desc: "自动采集的内容素材，可直接用",
