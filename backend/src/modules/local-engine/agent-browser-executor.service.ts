@@ -247,10 +247,15 @@ export class AgentBrowserExecutor {
       if (kind === 'click') {
         return await this.clickViaPanel(action, actor, input.sessionId, input.actionId);
       }
+      // 5.5) 输入：写动作——先解析坐标（元素不存在不签单）→ 签单 → 用户批准 →
+      //      带单执行（聚焦 pressed 消耗 insertText 单 + insertText 配对放行）
+      if (kind === 'type') {
+        return await this.typeViaPanel(action, actor, input.sessionId, input.actionId);
+      }
       // 6) 其余动作：面板桥还没开通，明确不支持（不许假装成功，也不许偷偷走老路径）
       return this.failed(
         kind,
-        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click）；` +
+        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type）；` +
           `未执行、未回退（阶段 7 按 navigate→click→type→press_key/wait/tabs 顺序开通）`,
       );
     } catch (error) {
@@ -465,6 +470,103 @@ export class AgentBrowserExecutor {
     return this.failed(
       'click',
       `需用户确认后执行（面板点击确认单 ${ticket.actionId}，目标"${probe.text ?? action.selector}"，请在右侧浏览器面板批准后携带该 id 重试）`,
+      ticket.actionId,
+    );
+  }
+
+  /**
+   * 面板输入（type）：一次批准 = 一次逻辑输入。
+   *
+   * 语义对齐 `panelMethodForAction('type') = 'Input.insertText'`（loop 闸门按
+   *这个 method 比对确认单指纹），但确认单覆盖两步 CDP：
+   *  1. 聚焦 mousePressed（dispatchMouseEvent）——消耗 insertText 型确认单
+   *     （broker _consumeApproval 的 method 组匹配放行）；
+   *  2. Input.insertText——走 broker 配对通道放行（一次性，免坐标）。
+   *
+   * ⚠️ 语义差异交底：CDP insertText 是"拟真键入"（React onChange 等事件链
+   * 完整），**不清空输入框已有内容**（追加式）；旧无头路径是 Playwright
+   * fill()（清空后设值）。需要清空时上层应显式发清空动作（后续轮次议）。
+   */
+  private async typeViaPanel(
+    action: Extract<AiBrowserAction, { action: 'type' }>,
+    actor: PanelBridgeActor,
+    sessionId?: string,
+    lockedActionId?: string,
+  ): Promise<AgentBrowserExecuteResult> {
+    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
+    if (carried) {
+      const state = await this.panelBridge!.actionState(actor, carried);
+      if (state.state === 'approved') {
+        await this.markApprovalSafe('approved', carried);
+        // 批准后执行时重新解析聚焦坐标（防页面滚动/元素移动后聚焦错位）
+        const probe = await this.probeSelector(actor, action.selector);
+        if (!probe.found || probe.x === undefined || probe.y === undefined) {
+          return this.failed(
+            'type',
+            `面板模式：确认单 ${carried} 已批准，但执行时目标已不可见` +
+              `（selector "${action.selector}" 解析不到可见元素），未执行——请重发该动作重新确认`,
+            carried,
+          );
+        }
+        // 第一步：聚焦（消耗确认单）
+        await this.panelBridge!.execute(actor, {
+          method: 'Input.dispatchMouseEvent',
+          params: { type: 'mousePressed', x: probe.x, y: probe.y, button: 'left', clickCount: 1 },
+          actionId: carried,
+        });
+        // 第二步：插入文本（配对通道，不再签单）
+        await this.panelBridge!.execute(actor, {
+          method: 'Input.insertText',
+          params: { text: action.text },
+          actionId: carried,
+        });
+        return {
+          index: 0,
+          action: 'type',
+          ok: true,
+          panelWebContentsId: null,
+          confirmationId: carried,
+          message:
+            `面板输入已执行（selector "${action.selector}"，` +
+            `${action.text.length} 字符，确认单 ${carried}）`,
+        };
+      }
+      if (state.state === 'rejected') {
+        await this.markApprovalSafe('rejected', carried);
+        return this.failed(
+          'type',
+          `面板模式：该输入已被用户在面板中拒绝（确认单 ${carried}），未执行`,
+          carried,
+        );
+      }
+      return this.failed(
+        'type',
+        `面板模式：输入需用户在桌面端批准（确认单 ${carried} 当前状态 ${state.state}）`,
+        carried,
+      );
+    }
+    // 无单：先只读解析坐标——元素不存在就不签单（用户不看到死卡片）
+    const probe = await this.probeSelector(actor, action.selector);
+    if (!probe.found) {
+      return this.failed(
+        'type',
+        `面板模式：页面上找不到可见元素（selector "${action.selector}"），未签确认单、未执行`,
+      );
+    }
+    // 摘要里给文本预览（截断）：用户批准时需要知道要输入什么；
+    // 面板是本机 UI，展示给用户本人看，不属于凭据外泄面。
+    const textPreview =
+      action.text.length > 40
+        ? `${action.text.slice(0, 40)}…（共 ${action.text.length} 字符）`
+        : action.text;
+    const ticket = await this.panelBridge!.requestAction(actor, {
+      method: 'Input.insertText',
+      summary: { label: '输入文本', selector: action.selector, text: textPreview },
+      sessionId: sessionId ?? null,
+    });
+    return this.failed(
+      'type',
+      `需用户确认后执行（面板输入确认单 ${ticket.actionId}，目标"${probe.text ?? action.selector}"，请在右侧浏览器面板批准后携带该 id 重试）`,
       ticket.actionId,
     );
   }

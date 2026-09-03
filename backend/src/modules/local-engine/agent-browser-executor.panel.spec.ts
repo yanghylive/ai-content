@@ -625,7 +625,139 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(legacy.calls.length).toBe(0);
   });
 
-  it('on + 暂不支持的动作（type）→ 显式失败，绝不偷偷走老路径', async () => {
+  // ── 阶段 7 续：type（输入）动作接通面板桥 ────────────────────────────────
+
+  it('⑦ type 无单 + 元素存在 → 签 insertText 型单（摘要带文本预览、带 sessionId）不执行', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeClickPanel({});
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'type', selector: '#kw', text: 'kaypal 搜索词' },
+      actor: ACTOR,
+      sessionId: 'agent-session-7',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.confirmationId).toBe('ticket-9');
+    expect(out.message).toContain('需用户确认');
+    expect(p.requestAction).toHaveBeenCalledWith(ACTOR, {
+      method: 'Input.insertText',
+      summary: { label: '输入文本', selector: '#kw', text: 'kaypal 搜索词' },
+      sessionId: 'agent-session-7',
+    });
+    expect(p.cdpCalls.filter((c) => c.method !== 'Runtime.evaluate').length).toBe(0);
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('⑦ type 无单 + 长文本 → 摘要截断为 40 字符预览', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const long = 'x'.repeat(120);
+    const p = makeClickPanel({});
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    await exec.execute({
+      action: { action: 'type', selector: '#kw', text: long },
+      actor: ACTOR,
+    });
+    expect(p.requestAction).toHaveBeenCalledWith(
+      ACTOR,
+      expect.objectContaining({
+        summary: expect.objectContaining({
+          text: `${'x'.repeat(40)}…（共 120 字符）`,
+        }),
+      }),
+    );
+  });
+
+  it('⑦ type 无单 + 元素不存在 → 不签单', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeClickPanel({ probe: { found: false } });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'type', selector: '#not-exist', text: 'hi' },
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('找不到可见元素');
+    expect(p.requestAction).not.toHaveBeenCalled();
+    expect(p.cdpCalls.filter((c) => c.method !== 'Runtime.evaluate').length).toBe(0);
+  });
+
+  it('⑦ type 带 approved 单 → markApproved + 聚焦 pressed + insertText 同单', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeClickPanel({ state: 'approved' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'type', selector: '#kw', text: 'hello panel' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(true);
+    expect(out.confirmationId).toBe('ticket-1');
+    expect(p.markApproved).toHaveBeenCalledWith('ticket-1');
+    const mutations = p.cdpCalls.filter((c) => c.method !== 'Runtime.evaluate');
+    expect(mutations.length).toBe(2);
+    // 第一步：聚焦（mousePressed 消耗 insertText 型确认单）
+    expect(mutations[0]).toMatchObject({
+      method: 'Input.dispatchMouseEvent',
+      actionId: 'ticket-1',
+      params: { type: 'mousePressed', x: 100, y: 50, button: 'left', clickCount: 1 },
+    });
+    // 第二步：插入文本（配对通道，同单）
+    expect(mutations[1]).toMatchObject({
+      method: 'Input.insertText',
+      actionId: 'ticket-1',
+      params: { text: 'hello panel' },
+    });
+  });
+
+  it('⑦ type 带 rejected 单 → markRejected 终态收口，mutation 不执行', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeClickPanel({ state: 'rejected' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'type', selector: '#kw', text: 'hi' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('已被用户在面板中拒绝');
+    expect(p.markRejected).toHaveBeenCalledWith('ticket-1');
+    expect(p.cdpCalls.filter((c) => c.method !== 'Runtime.evaluate').length).toBe(0);
+  });
+
+  it('⑦ type 带 approved 单但执行时元素已消失 → 显式失败不盲输', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeClickPanel({ state: 'approved', probe: { found: false } });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'type', selector: '#kw', text: 'hi' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('目标已不可见');
+    expect(p.cdpCalls.filter((c) => c.method !== 'Runtime.evaluate').length).toBe(0);
+  });
+
+  it('on + 暂不支持的动作（press_key）→ 显式失败，绝不偷偷走老路径', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const legacy = makeLegacy();
     const exec = new AgentBrowserExecutor(
@@ -633,12 +765,12 @@ describe('AgentBrowserExecutor 面板模式', () => {
       makePanel({ status: () => ({ available: true, reason: 'ready' }) }),
     );
     const out = await exec.execute({
-      action: { action: 'type', selector: '#kw', text: 'hi' },
+      action: { action: 'press_key', key: 'Enter' },
       actor: ACTOR,
     });
     expect(out.ok).toBe(false);
-    expect(out.message).toContain('暂不支持动作 type');
-    expect(out.message).toContain('仅支持 extract / goto / click');
+    expect(out.message).toContain('暂不支持动作 press_key');
+    expect(out.message).toContain('仅支持 extract / goto / click / type');
     expect(out.message).toContain('未回退');
     expect(legacy.calls.length).toBe(0);
   });

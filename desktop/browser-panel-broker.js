@@ -313,16 +313,16 @@ class BrowserPanelBroker {
         });
         throw new Error(`该动作已被用户拒绝（确认单 ${opts.approvedActionId}）：${method}`);
       }
-      let approved = opts.approvedActionId && this._consumeApproval(opts.approvedActionId, panelId, method, target);
-      // 一次批准 = 一次逻辑点击：确认单已被 mousePressed 消耗时，配对的
-      // mouseReleased 走配对通道（一次性、同坐标、同面板、10s 内）
+      let approved = opts.approvedActionId && this._consumeApproval(opts.approvedActionId, panelId, method, target, params);
+      // 一次批准 = 一次逻辑动作：确认单已被第一步 CDP 消耗时，配对的续作
+      // （click 的 mouseReleased / 输入的 Input.insertText）走配对通道
+      // （一次性、同面板、坐标 ≤4px（带坐标的续作才校验）、10s 内）
       let pairAllowed = false;
-      if (
-        !approved &&
-        opts.approvedActionId &&
-        method === 'Input.dispatchMouseEvent' &&
-        params && params.type === 'mouseReleased'
-      ) {
+      const isPairableFollowUp =
+        (method === 'Input.dispatchMouseEvent' &&
+          params && params.type === 'mouseReleased') ||
+        method === 'Input.insertText';
+      if (!approved && opts.approvedActionId && isPairableFollowUp) {
         pairAllowed = this._consumeClickPair(opts.approvedActionId, panelId, params);
       }
       if (!approved && !pairAllowed && !READONLY_AUTO_APPROVE_MUTATIONS) {
@@ -598,10 +598,20 @@ class BrowserPanelBroker {
     return !!(detail && detail.panelId === panelId && detail.rejected && !detail.consumed);
   }
 
-  _consumeApproval(actionId, panelId, method, target) {
+  _consumeApproval(actionId, panelId, method, target, params) {
     const detail = this._pendingApprovalsDetail && this._pendingApprovalsDetail.get(actionId);
     if (!detail || detail.panelId !== panelId || !detail.approved) return false;
-    if (detail.method !== method) return false;
+    // 一次批准 = 一次逻辑动作：输入型确认单（method=Input.insertText）覆盖
+    // 聚焦点击 + 插入文本两步 CDP——只允许**聚焦半步**（mousePressed）消耗，
+    // mouseReleased 等 dispatchMouseEvent 续作不许借输入单放行（fail-closed）。
+    // 其余 method 仍严格相等。
+    const isFocusHalfStep =
+      method === 'Input.dispatchMouseEvent' &&
+      !!(params && params.type === 'mousePressed');
+    const methodMatches =
+      detail.method === method ||
+      (detail.method === 'Input.insertText' && isFocusHalfStep);
+    if (!methodMatches) return false;
     if (detail.binding.webContentsId !== target.webContentsId) {
       // 页面目标变了，确认单作废（防换页后放行旧动作）
       return false;
@@ -615,15 +625,29 @@ class BrowserPanelBroker {
    * 配对通道：mousePressed 消耗确认单后，配对的 mouseReleased 由此放行一次。
    * fail-closed：先烧单再校验（一次性）、面板不匹配/超时/坐标偏移 >4px 一律拒绝。
    */
+  /**
+   * 配对通道：第一步 CDP 消耗确认单后，配对的续作由此放行一次。
+   * fail-closed：先烧单再校验（一次性）、面板不匹配/超时一律拒绝；
+   * 坐标校验只对**带数值坐标**的续作生效（click 的 mouseReleased 必须带，
+   * 且与登记坐标偏移 ≤4px；输入的 Input.insertText 无坐标，免校验）。
+   */
   _consumeClickPair(actionId, panelId, params) {
     const pair = this._clickPairs && this._clickPairs.get(actionId);
     if (!pair) return false;
     this._clickPairs.delete(actionId);
     if (pair.panelId !== panelId) return false;
     if (pair.expiresAt < this._now()) return false;
-    const dx = Math.abs(Number(params && params.x) - pair.x);
-    const dy = Math.abs(Number(params && params.y) - pair.y);
-    return dx <= 4 && dy <= 4;
+    const px = Number(params && params.x);
+    const py = Number(params && params.y);
+    const hasCoords = Number.isFinite(px) && Number.isFinite(py);
+    // click 的续作（mouseReleased）必须带坐标；不带 = fail-closed 拒绝
+    if (!hasCoords && params && params.type === 'mouseReleased') return false;
+    if (hasCoords) {
+      const dx = Math.abs(px - pair.x);
+      const dy = Math.abs(py - pair.y);
+      if (dx > 4 || dy > 4) return false;
+    }
+    return true;
   }
 
   _authorize(panelId, capabilityToken) {

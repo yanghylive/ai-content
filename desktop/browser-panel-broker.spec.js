@@ -594,6 +594,99 @@ test('⑦ 配对超时：pressed 后超 10s，released 拒绝（超时烧单）'
   );
 });
 
+// ── 阶段 7 续：输入型确认单（Input.insertText）＝ 聚焦 pressed + insertText ──
+
+test('⑦ 输入单：insertText 型确认单可被聚焦 mousePressed 消耗，insertText 走配对放行', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.insertText', { label: '输入文本' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  // 第一步：聚焦（method 组匹配——insertText 单允许 mousePressed 消耗）
+  const pressed = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    PRESSED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  assert.equal(pressed.result.echo, 'Input.dispatchMouseEvent');
+  // 第二步：插入文本（配对通道，免坐标）
+  const inserted = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.insertText',
+    { text: 'hello' }, { approvedActionId: ticket.actionId },
+  );
+  assert.equal(inserted.result.echo, 'Input.insertText');
+});
+
+test('⑦ 输入单：insertText 直接消耗完整单（页面焦点已在目标时无需聚焦）', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.insertText', { label: '输入文本' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  const inserted = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.insertText',
+    { text: 'hello' }, { approvedActionId: ticket.actionId },
+  );
+  assert.equal(inserted.result.echo, 'Input.insertText');
+});
+
+test('⑦ 输入单：配对一次性——聚焦后再来一张 insertText 拒绝', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.insertText', { label: '输入文本' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    PRESSED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.insertText',
+    { text: 'hello' }, { approvedActionId: ticket.actionId },
+  );
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.insertText',
+      { text: 'again' }, { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑦ method 组匹配收紧：insertText 型单不能被 mouseReleased 消耗（click 续作不许借输入单放行）', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.insertText', { label: '输入文本' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  // released 不是 insertText 单的合法消耗者（既不配对也无组匹配）
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+      RELEASED(100, 50), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑦ 收紧：mouseReleased 不带坐标 → fail-closed 拒绝（不能借免坐标通道绕过校验）', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent', { label: '点击' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    PRESSED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+      { type: 'mouseReleased' }, { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of tests) {
