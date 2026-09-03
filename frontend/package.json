@@ -34,6 +34,7 @@
   "dependencies": {
     "@heroui/react": "^2.8.9",
     "@heroui/theme": "^2.4.26",
+    "@icon-park/react": "^1.4.2",
     "@radix-ui/react-avatar": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.16",
     "@radix-ui/react-dropdown-menu": "^2.1.17",

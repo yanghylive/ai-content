@@ -1,8 +1,23 @@
 import React from "react";
+import {
+  Cpu,
+  FileText,
+  Home,
+  Logout,
+  Message,
+  Moon,
+  People,
+  Phone,
+  Search,
+  Sun,
+  User,
+} from "@/components/iconpark";
 
 /**
- * JIUZHANG AI 外壳图标系统（Lucide 风格线性 SVG，与定稿原型 1:1）
- * 统一 1.8px 描边、圆角端点、currentColor 驱动
+ * JIUZHANG AI 外壳图标系统。
+ * 2026-09-03 起：外壳高频图标（SCENES rail / 主题 / 搜索 / 用户 / 登出）改用 IconPark
+ * 线性图标（见 iconpark.tsx 适配层）；PATHS 自绘 Lucide 风格 SVG 保留为
+ * 未映射 name 的兜底（冷门入口铺开前不回退缺图）。
  */
 
 const PATHS = {
@@ -300,6 +315,21 @@ const PATHS = {
 
 export type ShellIconName = keyof typeof PATHS;
 
+/** ShellIcon name → IconPark 组件映射（rail 高频面已切换，其余走自绘 PATHS 兜底） */
+const PARK_ICONS: Partial<Record<ShellIconName, React.ComponentType<{ size?: number; className?: string }>>> = {
+  home: Home,
+  users: People,
+  fileText: FileText,
+  messageSq: Message,
+  cpu: Cpu,
+  phone: Phone,
+  search: Search,
+  user: User,
+  sun: Sun,
+  moon: Moon,
+  logout: Logout,
+};
+
 export function ShellIcon({
   name,
   size = 20,
@@ -311,6 +341,11 @@ export function ShellIcon({
   strokeWidth?: number;
   className?: string;
 }) {
+  const ParkIcon = PARK_ICONS[name];
+  if (ParkIcon) {
+    // IconPark 48 viewBox：lucide 口径 strokeWidth 1.8 → 3.6
+    return <ParkIcon size={size} className={`kx-ic ${className}`.trim()} aria-hidden="true" />;
+  }
   return (
     <svg
       viewBox="0 0 24 24"

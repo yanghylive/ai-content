@@ -18,7 +18,7 @@ import {
   TrendingUp,
   UsersRound,
   Wallet,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { getApiBase } from "@/lib/api/client";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { useCountUp } from "@/lib/hooks/use-count-up";
