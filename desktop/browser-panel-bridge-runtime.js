@@ -31,7 +31,12 @@ function createBrowserBridgeRuntime({ manager, wiring, getUserDataDir, logger })
 
   let bridge = null;
   let startPromise = null;
-  let syncing = false;
+  // 2026-09-04 真机修复：原 `syncing` 布尔守卫会**直接丢弃**并发到达的事件——
+  // hide 后立刻 open（脚本/快速操作）时 'hidden' 的同步还在飞，紧随的 'opened'
+  // 被 skipped → 桥没重启、凭据文件没写回 → 面板开着但 agent 链路全断（health
+  // 读不到 registry → isAlive=false → needs-human）。改为**串行队列**：事件逐个
+  // 按序消化，一个都不丢（hidden 的 close 先完成，opened 的 ensure 再执行）。
+  let syncQueue = Promise.resolve();
 
   function registryDir() {
     try {
@@ -113,14 +118,8 @@ function createBrowserBridgeRuntime({ manager, wiring, getUserDataDir, logger })
     }
   }
 
-  /**
-   * 依据面板会话事件同步桥状态。
-   * @param {{type: string}} event
-   */
-  async function sync(event) {
+  async function _syncNow(event) {
     const type = event && event.type;
-    if (!type || syncing) return { action: 'skipped', type };
-    syncing = true;
     try {
       if (type === 'opened' || type === 'shown') {
         await ensure();
@@ -134,9 +133,24 @@ function createBrowserBridgeRuntime({ manager, wiring, getUserDataDir, logger })
       warn(`[BrowserPanel] 桥生命周期同步失败：${error && error.message}`);
       await close().catch(() => {});
       return { action: 'failed', type, error: error && error.message };
-    } finally {
-      syncing = false;
     }
+  }
+
+  /**
+   * 依据面板会话事件同步桥状态（串行队列，事件不丢）。
+   * @param {{type: string}} event
+   */
+  function sync(event) {
+    const type = event && event.type;
+    if (!type) return Promise.resolve({ action: 'skipped', type });
+    const result = syncQueue.then(() => _syncNow(event));
+    // 队列吞掉失败继续（单事件失败已在 _syncNow 内转为 {action:'failed'}，
+    // 这里兜底防队列断链）
+    syncQueue = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
   }
 
   /** 当前桥信息（仅给主进程内部用；token 绝不经 web/前端通道下发） */

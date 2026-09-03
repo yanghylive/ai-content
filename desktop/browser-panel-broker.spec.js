@@ -79,6 +79,34 @@ test('token 过期拒绝', () => {
   );
 });
 
+test('token 滑动续期：活跃使用不中断（2026-09-04 真机修复）', () => {
+  let now = Date.now();
+  const wcs = new Map();
+  const broker = new BrowserPanelBroker({
+    now: () => now,
+    tokenTtlMs: 100,
+    webContentsResolver: (p) => wcs.get(p) || null,
+  });
+  const created = broker.createPanel({
+    panelId: 'p',
+    sessionId: 's',
+    ownerId: 'o',
+    tenantId: 't',
+  });
+  wcs.set('p', fakeWebContents());
+  // 每次成功授权都滑动续期：相邻使用间隔 < TTL 时授权永不断
+  for (let i = 0; i < 5; i++) {
+    now += 80; // < tokenTtlMs(100)
+    broker.resolveTarget(created.panelId, created.capabilityToken); // 不抛 = 续期成功
+  }
+  // 空闲超过 TTL 仍然过期（安全语义不松）
+  now += 200;
+  assert.throws(
+    () => broker.resolveTarget(created.panelId, created.capabilityToken),
+    /已过期/,
+  );
+});
+
 test('页面目标丢失 → blocked 状态 + 抛错', () => {
   const { broker, wcs, created } = setup();
   wcs.delete('panel-1');

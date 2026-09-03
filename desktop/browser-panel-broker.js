@@ -729,6 +729,11 @@ class BrowserPanelBroker {
       this._emit(panelId, 'blocked', { reason: 'token-expired' });
       throw new Error('capability token 已过期（fail-closed）');
     }
+    // 2026-09-04 滑动续期：每次成功授权延长有效期。真机实证：面板开着超过
+    // tokenTtlMs（默认 15 分钟）后 agent 动作全 403（先"已过期"后"无效"），
+    // 只能重开面板才愈。滑动窗口语义：面板**活跃使用**期间授权不断签；
+    // 空闲超过 TTL 仍过期（安全语义不松，fail-closed 保留）。
+    token.expiresAt = this._now() + this._tokenTtlMs;
     return panel;
   }
 

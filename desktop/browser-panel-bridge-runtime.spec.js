@@ -193,18 +193,37 @@ test('info() 未起桥返回 null；起桥后含 endpoint/token', async () => {
   assert.equal(runtime.info(), null);
 });
 
-test('并发 sync 串行化（同一次 syncing 期间的事件被跳过，不重复起桥）', async () => {
+test('并发 sync 串行化：全部事件按序消化、只起一次桥（2026-09-04 语义修订）', async () => {
   const { dir, runtime } = setup();
   const results = await Promise.all([
     runtime.sync({ type: 'opened' }),
     runtime.sync({ type: 'shown' }),
     runtime.sync({ type: 'opened' }),
   ]);
+  // 旧实现（布尔守卫）会丢弃并发事件；新实现（串行队列）一个不丢，
+  // ensure() 幂等保证只起一次桥（同一 endpoint/token）。
   const started = results.filter((r) => r.action === 'started');
-  const skipped = results.filter((r) => r.action === 'skipped');
-  assert.equal(started.length, 1, '只应起一次桥');
-  assert.equal(skipped.length, 2);
+  assert.equal(started.length, 3, '三个事件都应被消化（不丢弃）');
+  assert.equal(new Set(started.map((r) => r.endpoint)).size, 1, '只应起一次桥');
   assert.ok(fs.existsSync(registryPath(dir)));
+  await runtime.close();
+});
+
+test('hide→open 快速连发：hidden 不吞 opened，桥活着且凭据已写回（2026-09-04 真机竞态回归）', async () => {
+  const { dir, runtime } = setup();
+  await runtime.sync({ type: 'opened' });
+  // 真机复现路径：控制条 hide 后脚本立刻 open——'hidden' 的 close 还在飞时
+  // 'opened' 已入队。旧实现的 syncing 守卫会直接丢掉 'opened'，
+  // 结果 = 桥死 + 凭据文件没写回 + 面板开着但 agent 链路全断。
+  const [, openedResult] = await Promise.all([
+    runtime.sync({ type: 'hidden' }),
+    runtime.sync({ type: 'opened' }),
+  ]);
+  assert.equal(openedResult.action, 'started', 'opened 不应被 hidden 吞掉');
+  assert.ok(fs.existsSync(registryPath(dir)), '凭据文件必须写回');
+  const cred = readRegistry({ userDataDir: dir });
+  const res = await get(new URL(cred.endpoint).port, cred.token);
+  assert.equal(res.status, 200, '新桥应可访问（agent 链路恢复）');
   await runtime.close();
 });
 
