@@ -88,6 +88,11 @@ export interface AgentBrowserSessionDto {
 export interface AgentBrowserSession extends AgentBrowserSessionDto {
   engineKey: string;
   allowDomains: string[];
+  /**
+   * 平台（2026-09-04 阶段 5）：general-web 或注册表平台（xiaohongshu…）。
+   * 登录态查询（GET sessions/:id/login-state）按此字段路由平台判定规则。
+   */
+  platform: string;
   /** §7.4 会话租户（多租户隔离） */
   tenantId?: string;
   /** 循环事件缓冲（Observe-Act-Verify 过程记录，供 events 接口/回放） */
@@ -107,6 +112,12 @@ export interface AgentBrowserSession extends AgentBrowserSessionDto {
 /** 创建一个会话的输入 */
 export interface CreateAgentBrowserSessionInput {
   startUrl?: string;
+  /**
+   * 平台（2026-09-04 阶段 5）：xiaohongshu 等注册表平台——给出时自动并入
+   * 该平台域名白名单（platform-login-rules.PLATFORM_PROFILES），登录态判定
+   * 也按平台规则执行；缺省 general-web（现状行为不变）。
+   */
+  platform?: string;
   /** 允许访问的域名白名单（默认仅 startUrl 的 origin；空=不限制但需显式确认） */
   allowDomains?: string[];
   /** 会话租约时长（ms，默认 30 分钟） */

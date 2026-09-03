@@ -6,6 +6,7 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
+import { getPlatformProfile } from './platform-login-rules';
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -119,12 +120,18 @@ export class AgentBrowserSessionService implements OnModuleInit {
       .split(',')
       .map((d) => d.trim())
       .filter(Boolean);
+    // 2026-09-04（阶段 5）：platform 命中注册表时并入该平台域名（登录/只读迁移，
+    // 小红书先行）；显式 allowDomains 仍完全覆盖（§14.2 语义不变）。
+    const platformProfile = input.platform
+      ? getPlatformProfile(input.platform)
+      : null;
     const allowDomains =
       input.allowDomains && input.allowDomains.length > 0
         ? [...new Set(input.allowDomains)]
         : [
             ...new Set([
               ...(startOrigin ? [startOrigin] : []),
+              ...(platformProfile?.allowDomains ?? []),
               ...globalDomains,
             ]),
           ];
@@ -140,6 +147,7 @@ export class AgentBrowserSessionService implements OnModuleInit {
       lastActivityAt: now,
       stepCount: 0,
       engineKey: '',
+      platform: input.platform ?? 'general-web',
       allowDomains,
       events: [],
       lease: {
