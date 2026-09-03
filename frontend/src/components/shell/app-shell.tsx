@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { ShellIcon } from "./icons";
-import { RailIcon, type RailIconName } from "./rail-icons";
+import { RailIcon, ThemeToggleIcon, type RailIconName } from "./rail-icons";
 import { CommandPalette } from "./command-palette";
 import { SettingsNavPanel } from "./settings-nav-panel";
 import { Ticker, type TickerItem } from "./tickers";
@@ -419,7 +419,7 @@ export function AppShell({
             aria-label={dark ? "切换到浅色模式" : "切换到暗色模式"}
             onClick={toggleTheme}
           >
-            <ShellIcon name={dark ? "sun" : "moon"} size={20} strokeWidth={2} forceLucide />
+            <ThemeToggleIcon dark={dark} size={20} />
           </button>
           {/* Q3：rail「助手」下沉为次级入口（与设置同排），不占业务一级导航。
               2026-09-01 大王决策：悬浮球 AI 入口全面移除（桌面 Electron 悬浮球 +

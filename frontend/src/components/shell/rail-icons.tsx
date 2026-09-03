@@ -152,6 +152,58 @@ function colorize(
   );
 }
 
+/**
+ * Rail 底部主题切换图标（与导航图标同款品牌渐变描边）。
+ * dark=true（当前暗色）显示太阳（点击去亮色），否则显示月亮。
+ */
+export function ThemeToggleIcon({
+  dark,
+  size = 20,
+}: {
+  dark: boolean;
+  size?: number;
+}) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const gradId = `rail-theme-grad-${uid}`;
+
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke={`url(#${gradId})`}
+      strokeWidth={1.9}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <linearGradient
+          id={gradId}
+          x1="3"
+          y1="3"
+          x2="21"
+          y2="21"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="#9254de" />
+          <stop offset="100%" stopColor="#531dab" />
+        </linearGradient>
+      </defs>
+      {dark ? (
+        <g>
+          <circle cx="12" cy="12" r="3.9" />
+          <path d="M12 3.4v1.9M12 18.7v1.9M4.93 4.93l1.34 1.34M17.73 17.73l1.34 1.34M3.4 12h1.9M18.7 12h1.9M4.93 19.07l1.34-1.34M17.73 6.27l1.34-1.34" />
+        </g>
+      ) : (
+        <path d="M20.6 12.9A8.6 8.6 0 1 1 11.1 3.4a6.8 6.8 0 0 0 9.5 9.5Z" />
+      )}
+    </svg>
+  );
+}
+
 export function RailIcon({
   name,
   size = 22,

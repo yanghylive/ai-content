@@ -105,7 +105,7 @@ html.dark {
 .kx-rail-logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #9254de, #531dab); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(114, 46, 209, 0.3); }
 .kx-rail-item { width: 52px; border: none; background: none; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 0; border-radius: 12px; cursor: pointer; color: var(--kx-muted); transition: all 0.18s ease; position: relative; }
 .kx-rail-item:hover { background: var(--kx-paper-soft); color: var(--kx-ink); }
-.kx-rail-item.kx-active { background: linear-gradient(135deg, rgba(114, 46, 209, 0.12), rgba(114, 46, 209, 0.06)); color: var(--kx-accent-ink); }
+.kx-rail-item.kx-active { color: var(--kx-accent-ink); }
 .kx-rail-item.kx-active .kx-rail-indicator { background: linear-gradient(180deg, #9254de, #531dab); box-shadow: 0 0 8px rgba(114, 46, 209, 0.45); }
 /* 选中指示条：真实元素（app-shell 用 framer-motion layoutId 驱动滑动，动效规范 2026-08-29） */
 .kx-rail-indicator { position: absolute; left: -10px; top: calc(50% - 13px); width: 3px; height: 26px; border-radius: 2px; background: var(--kx-accent, var(--kaypal-v3-accent)); pointer-events: none; }
