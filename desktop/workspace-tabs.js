@@ -7,13 +7,15 @@
  *  - kind:
  *      'business' → 加载 3010 业务前端；pinned 的业务标签（「业务工作区」）固定不可关闭。
  *      'octop'    → 加载本机 Octop（默认 127.0.0.1:8088），注入 Authorization Bearer 令牌实现免登录。
+ *      'web'      → 壳内打开的第三方网页（popup/外链转壳内 tab），无 preload、sandbox 加固、不持久化。
+ *  - 新窗口/外链策略（2026-09-03）：一律 deny popup，http(s) 转 'web' 壳内标签，绝不外逃系统浏览器。
  *  - business 标签 session 注入 x-workspace-id（仅 localhost/127.0.0.1:3010|3011），后端据此做
  *    workspace 第 4 维隔离；octop 标签注入 Octop Bearer 令牌。前端代码零改动。
  *  - 标签列表与激活态持久化到 electron-store；octop 标签不持久化（令牌不落盘，重启需重新拉起）。
  *  - 窗口 contentView 下挂：顶部 tab 条（WebContentsView, tab-strip.html）+ 当前激活标签内容视图。
  */
 
-const { WebContentsView, session, shell } = require('electron');
+const { WebContentsView, session } = require('electron');
 const path = require('path');
 const crypto = require('crypto');
 
@@ -236,8 +238,8 @@ class TabManager {
     if (!Array.isArray(saved)) saved = [];
     for (const rec of saved) {
       if (!rec || !rec.id) continue;
-      // 不恢复 octop 标签（令牌不持久化，重启需重新拉起）
-      if (rec.kind === 'octop') continue;
+      // 不恢复 octop 标签（令牌不持久化，重启需重新拉起）；web 外链标签同样不恢复
+      if (rec.kind === 'octop' || rec.kind === 'web') continue;
       this._createTab(
         {
           workspaceId: rec.workspaceId ?? null,
@@ -279,21 +281,26 @@ class TabManager {
   }
 
   _createTab(
-    { workspaceId = null, title = '工作台', kind = 'business', pinned = false, octopUrl = null, octopToken = null },
+    { workspaceId = null, title = '工作台', kind = 'business', pinned = false, octopUrl = null, octopToken = null, startUrl = null },
     forcedId = null
   ) {
     const id = forcedId || genId();
     const view = new WebContentsView({
       webPreferences:
-        kind === 'octop'
-          ? // Octop 标签：不挂业务 preload（第三方 web 内容不给任何特权 IPC 面），sandbox 加固
-            { contextIsolation: true, nodeIntegration: false, sandbox: true, partition: `persist:octop-tab-${id}` }
-          : {
+        kind === 'business'
+          ? {
               preload: path.join(__dirname, 'preload.js'),
               contextIsolation: true,
               nodeIntegration: false,
               sandbox: false,
               partition: `persist:ws-tab-${id}`
+            }
+          : // octop / web 等第三方 web 内容：不挂业务 preload（不给任何特权 IPC 面），sandbox 加固
+            {
+              contextIsolation: true,
+              nodeIntegration: false,
+              sandbox: true,
+              partition: `persist:${kind}-tab-${id}`
             }
     });
 
@@ -313,7 +320,7 @@ class TabManager {
     tab.loadUrl =
       kind === 'octop'
         ? (octopUrl || 'http://127.0.0.1:8088')
-        : (this.frontendServerUrl || 'http://localhost:3010');
+        : (startUrl || this.frontendServerUrl || 'http://localhost:3010');
 
     this.tabs.set(id, tab);
     this.knownWebContents.add(view.webContents);
@@ -324,7 +331,7 @@ class TabManager {
       // 首次加载完成后播种 localStorage.auth_token 并重载（见 _bootstrapOctopAuth 注释）
       if (octopToken) view.webContents.once('did-finish-load', () => this._bootstrapOctopAuth(tab));
       this._installOctop401AutoRenew(tab);
-    } else {
+    } else if (kind === 'business') {
       installWorkspaceHeaderInjection(view.webContents.session, () => tab.workspaceId);
     }
 
@@ -359,10 +366,23 @@ class TabManager {
       }, 500);
     });
 
-    // 外链一律在系统浏览器打开；本壳内不开新 webContents（file:// 等协议同样拒绝）
+    // 2026-09-03 修复外逃 bug：外链/新窗口一律留在壳内（对齐 browser-panel round17「宁 deny 不外逃」）。
+    // popup 一律 deny；http(s) 目标 URL 自动在壳内开一个无特权沙箱 web tab 加载
+    // （不挂业务 preload、独立 partition，Agent/用户管辖不变）；非 http(s)（file:// 等）直接拒绝。
+    // 绝不外逃系统浏览器（openExternal 调用面已归零，由 no-escape 回归测试锁死）。
     view.webContents.setWindowOpenHandler(({ url }) => {
-      if (url.startsWith('http')) {
-        shell.openExternal(url);
+      try {
+        if (url.startsWith('http')) {
+          let host = '网页';
+          try {
+            host = new URL(url).hostname || host;
+          } catch { /* 非 URL 形态，兜底标题 */ }
+          const t = this._createTab({ title: host, kind: 'web', pinned: false, startUrl: url });
+          this.persist();
+          this.switchTo(t.id);
+        }
+      } catch (e) {
+        console.warn('[WorkspaceTabs] 壳内 tab 打开外链失败（deny 兜底）:', e?.message || e);
       }
       return { action: 'deny' };
     });
@@ -674,7 +694,7 @@ class TabManager {
   persist() {
     try {
       const arr = Array.from(this.tabs.values())
-        .filter((t) => t.kind !== 'octop') // octop 标签令牌不持久化
+        .filter((t) => t.kind !== 'octop' && t.kind !== 'web') // octop 标签令牌不持久化；web 外链标签为临时标签
         .map((t) => ({
           id: t.id,
           workspaceId: t.workspaceId,
