@@ -1341,6 +1341,11 @@ describe('复查 2026-08-22 专项（确认消费/终态/中断/门禁）', () =
         data: expect.objectContaining({ status: 'consumed' }),
       }),
     );
+    // 阶段 7 修断链：锁定的确认单 id 必须透传给执行器——否则重试时
+    // executor 看不到已锁定的单，会再签新单（用户批一张废一张，死循环）
+    expect(actionsMock.executeSingle).toHaveBeenCalledWith(
+      expect.objectContaining({ actionId: 'c-1' }),
+    );
     // 已被消费/占用：锁定 count=0 → 不放行（重置 running 后第二次 run）
     updateMany.mockResolvedValue({ count: 0 });
     sessionSvc.updateStatus(s.id, 'running');

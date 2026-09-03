@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T08:23:16.426Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "fixture": "desktop/test-fixtures/browser-panel.html",
+    "scenario": "stage7 click：一次批准 = 一次逻辑点击（单单 + 配对通道）"
+  },
+  "checks": [
+    {
+      "name": "S1 fixture 加载（真实 WebContentsView）",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:53180/browser-panel.html"
+      }
+    },
+    {
+      "name": "S2 执行器同构探测：#inc → 真实坐标",
+      "pass": true,
+      "detail": {
+        "found": true,
+        "x": 24,
+        "y": 123
+      }
+    },
+    {
+      "name": "S3 单单一次点击：pressed(带单)+released(配对) → 计数 +1",
+      "pass": true,
+      "detail": {
+        "before": "0",
+        "after": "1",
+        "x": 24,
+        "y": 123
+      }
+    },
+    {
+      "name": "S4 负向：released 偏移 >4px 拒绝且烧单，计数不变",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "noClickOnReject": true,
+        "burnOk": true,
+        "before": "1",
+        "after": "1"
+      }
+    },
+    {
+      "name": "S5 负向：无批准单直接 released → 拒绝，计数不变",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "before": "1",
+        "after": "1"
+      }
+    },
+    {
+      "name": "S6 负向：配对一次性——第二次 released 拒绝，计数只 +1",
+      "pass": true,
+      "detail": {
+        "secondRejected": true,
+        "before": "1",
+        "mid": "2",
+        "after": "2"
+      }
+    }
+  ]
+}

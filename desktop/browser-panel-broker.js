@@ -151,6 +151,11 @@ class BrowserPanelBroker {
     this._events = new Map();
     /** @type {Map<string, string>} 待审批动作 -> panelId */
     this._pendingApprovals = new Map();
+    // 阶段 7（开发推进）：一次批准 = 一次逻辑点击。mousePressed 消耗确认单后记录
+    // 配对信息，配对的 mouseReleased（同单、同面板、坐标 ≤4px、10s 内）放行一次。
+    // 否则一次点击要弹两张审批卡片（"按下 +1"/"释放 +1"），用户会疯。
+    // fail-closed：配对一次性（用即焚）、坐标不匹配烧单、超时烧单。
+    this._clickPairs = new Map();
     this._resolveWebContents = deps.webContentsResolver || (() => null);
     this._now = deps.now || Date.now;
     this._tokenTtlMs = deps.tokenTtlMs || 15 * 60 * 1000;
@@ -308,8 +313,19 @@ class BrowserPanelBroker {
         });
         throw new Error(`该动作已被用户拒绝（确认单 ${opts.approvedActionId}）：${method}`);
       }
-      const approved = opts.approvedActionId && this._consumeApproval(opts.approvedActionId, panelId, method, target);
-      if (!approved && !READONLY_AUTO_APPROVE_MUTATIONS) {
+      let approved = opts.approvedActionId && this._consumeApproval(opts.approvedActionId, panelId, method, target);
+      // 一次批准 = 一次逻辑点击：确认单已被 mousePressed 消耗时，配对的
+      // mouseReleased 走配对通道（一次性、同坐标、同面板、10s 内）
+      let pairAllowed = false;
+      if (
+        !approved &&
+        opts.approvedActionId &&
+        method === 'Input.dispatchMouseEvent' &&
+        params && params.type === 'mouseReleased'
+      ) {
+        pairAllowed = this._consumeClickPair(opts.approvedActionId, panelId, params);
+      }
+      if (!approved && !pairAllowed && !READONLY_AUTO_APPROVE_MUTATIONS) {
         // 写动作必须先经 requestAction -> approve 拿 actionId；未带/已消耗一律拒绝
         this._emit(panelId, 'blocked', { reason: 'approval-required', method, ...this._redactTarget(target) });
         throw new Error(`动作需要审批（先 requestAction 再携带 approvedActionId）：${method}`);
@@ -322,6 +338,19 @@ class BrowserPanelBroker {
         wc.debugger.attach('1.3');
       }
       const result = await wc.debugger.sendCommand(method, params);
+      // 一次批准 = 一次逻辑点击：mousePressed 执行成功后登记配对（10s 内有效）
+      if (
+        opts.approvedActionId &&
+        method === 'Input.dispatchMouseEvent' &&
+        params && params.type === 'mousePressed'
+      ) {
+        this._clickPairs.set(opts.approvedActionId, {
+          panelId,
+          x: Number(params.x) || 0,
+          y: Number(params.y) || 0,
+          expiresAt: this._now() + 10_000,
+        });
+      }
       const afterWcUrl =
         typeof wc.getURL === 'function' ? wc.getURL() : wc.url;
       this._emit(panelId, `${kind}.completed`, {
@@ -580,6 +609,21 @@ class BrowserPanelBroker {
     this._pendingApprovals.delete(actionId);
     this._pendingApprovalsDetail.delete(actionId);
     return true;
+  }
+
+  /**
+   * 配对通道：mousePressed 消耗确认单后，配对的 mouseReleased 由此放行一次。
+   * fail-closed：先烧单再校验（一次性）、面板不匹配/超时/坐标偏移 >4px 一律拒绝。
+   */
+  _consumeClickPair(actionId, panelId, params) {
+    const pair = this._clickPairs && this._clickPairs.get(actionId);
+    if (!pair) return false;
+    this._clickPairs.delete(actionId);
+    if (pair.panelId !== panelId) return false;
+    if (pair.expiresAt < this._now()) return false;
+    const dx = Math.abs(Number(params && params.x) - pair.x);
+    const dy = Math.abs(Number(params && params.y) - pair.y);
+    return dx <= 4 && dy <= 4;
   }
 
   _authorize(panelId, capabilityToken) {

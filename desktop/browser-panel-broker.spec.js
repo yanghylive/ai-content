@@ -484,6 +484,116 @@ test('确认单状态：换页后旧单不可执行（webContentsId 变了）', 
   );
 });
 
+// ── 阶段 7：一次批准 = 一次逻辑点击（pressed 消耗单，released 走配对通道）──
+// 背景：executor 的 click 全链路一次逻辑点击 = mousePressed + mouseReleased
+// 两次 CDP 调用，但只有一张确认单。released 在单已被 pressed 消耗后，
+// 走配对通道放行一次（同面板、坐标 ≤4px、10s 内、一次性）。
+
+const PRESSED = (x, y) => ({ type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
+const RELEASED = (x, y) => ({ type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
+
+test('⑦ 一次批准覆盖一次点击：pressed 消耗单后 released 走配对放行', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent', { label: '点击' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  const pressed = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    PRESSED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  assert.equal(pressed.result.echo, 'Input.dispatchMouseEvent');
+  // 单已被 pressed 消耗：released 靠配对通道放行（同单同坐标）
+  const released = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    RELEASED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  assert.equal(released.result.echo, 'Input.dispatchMouseEvent');
+});
+
+test('⑦ 无 pressed 直接 released（无批准单、无配对记录）→ 拒绝', async () => {
+  const { broker, created } = setupPanel();
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+      RELEASED(100, 50),
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑦ 配对坐标校验：released 偏移 >4px 拒绝且烧单（同单重试也拒）', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent', { label: '点击' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    PRESSED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  // 偏移 10px > 4px：fail-closed 拒绝
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+      RELEASED(110, 50), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+  // 烧单语义：坐标改回正确位置也放不了行（一次性，先烧再验）
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+      RELEASED(100, 50), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑦ 配对一次性：released 放行一次后，同单再来一次 rejected', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent', { label: '点击' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    PRESSED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    RELEASED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+      RELEASED(100, 50), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑦ 配对超时：pressed 后超 10s，released 拒绝（超时烧单）', async () => {
+  let now = 1_000_000;
+  const { broker, created } = setupPanel({ now: () => now });
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent', { label: '点击' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    PRESSED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  now += 11_000; // 超过 10s 配对有效期
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+      RELEASED(100, 50), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of tests) {

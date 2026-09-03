@@ -377,6 +377,9 @@ export class AgentBrowserLoopService {
             actor,
             // 阶段 6 决策 ②：面板确认单要按会话落库，会话 id 必须透到执行器
             session.id,
+            // 阶段 7 修断链：resolveConfirmation 锁定的确认单必须透给 executor，
+            // 否则重试时 executor 看不到已锁定的单，会再签新单（用户批一张废一张）
+            lockedConfirmationId,
           )
         : {
             index: i,
@@ -690,6 +693,8 @@ export class AgentBrowserLoopService {
     actor?: { ownerId: string; tenantId: string },
     /** 阶段 6 决策 ②：会话 id（面板确认单按会话落库，供 resolveConfirmation 绑定） */
     sessionId?: string,
+    /** 阶段 7：resolveConfirmation 锁定的面板确认单 id（透传 executor，防重复签单死循环） */
+    panelActionId?: string,
   ): Promise<{
     index: number;
     action: string;
@@ -719,6 +724,7 @@ export class AgentBrowserLoopService {
         timeoutMs,
         actor,
         sessionId,
+        actionId: panelActionId,
       });
       lastResult = r;
       if (r.ok) return r;

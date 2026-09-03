@@ -43,6 +43,12 @@ export type AgentBrowserExecuteInput = {
    * （防跨会话复用）。不传 = 孤儿单，永远匹配不上，动作会被闸门拦住（fail-closed）。
    */
   sessionId?: string;
+  /**
+   * 阶段 7：loop 锁定的面板确认单 id（resolveConfirmation → lockedConfirmationId）。
+   * 之前断链：loop 锁了单却从未传给 executor，重试时 executor 会再签新单死循环。
+   * executor 侧优先级：input.actionId（loop 锁定的）> action.actionId（AI 自带）。
+   */
+  actionId?: string;
 };
 
 export type AgentBrowserExecuteResult = {
@@ -83,6 +89,62 @@ export function readAgentPanelMode(
   if (raw !== '') return 'invalid'; // 非法值不猜，也不吃掉文件开关
   if (modeFile === 'on') return 'on';
   return 'off';
+}
+
+/**
+ * 阶段 7：把 selector 解析成页面坐标的只读探测表达式（Runtime.evaluate 执行）。
+ *
+ * 语义（对齐 ai-browser-action 的 click selector 约定）：
+ *  - `text=文本`：先精确匹配后包含匹配，只认**可见元素**（getClientRects 非空）；
+ *    候选限定可交互/文本标签，避免扫全树慢且命中脚本类节点；
+ *  - 其余按 CSS selector 走 document.querySelector；
+ *  - 返回元素外接矩形中心坐标（Input.dispatchMouseEvent 打的就是这个点）。
+ *
+ * 注意：selector 用 JSON.stringify 嵌入（防表达式注入）；只支持主 frame
+ * （跨 iframe 元素探测不到，探测结果 found:false，交底为不支持）。
+ */
+export function buildSelectorProbeExpression(selector: string): string {
+  const selJson = JSON.stringify(String(selector ?? '').trim());
+  return (
+    '(function probeSelector() {' +
+    '  function visible(el) {' +
+    '    if (!el || typeof el.getClientRects !== "function" || el.getClientRects().length === 0) return false;' +
+    '    var style = window.getComputedStyle(el);' +
+    '    return !!style && style.visibility !== "hidden" && style.display !== "none";' +
+    '  }' +
+    '  function center(el) {' +
+    '    var r = el.getBoundingClientRect();' +
+    '    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2),' +
+    '      text: (el.textContent || "").trim().slice(0, 80) };' +
+    '  }' +
+    '  function pick(candidates) {' +
+    '    for (var i = 0; i < candidates.length; i++) {' +
+    '      var el = candidates[i];' +
+    '      if (el && visible(el)) return center(el);' +
+    '    }' +
+    '    return null;' +
+    '  }' +
+    '  var sel = ' + selJson + ';' +
+    '  var hit = null;' +
+    '  if (sel.indexOf("text=") === 0) {' +
+    '    var text = sel.slice(5).trim();' +
+    '    var nodes = Array.prototype.slice.call(document.querySelectorAll(' +
+    '      "a,button,input,select,textarea,label,summary,[role=button],[onclick],h1,h2,h3,h4,span,div,p,li"' +
+    '    ));' +
+    '    var exact = nodes.filter(function (el) { return (el.textContent || "").trim() === text; });' +
+    '    var partial = nodes.filter(function (el) {' +
+    '      if (exact.indexOf(el) !== -1) return false;' +
+    '      var t = (el.textContent || "").trim();' +
+    '      return t.length > 0 && t.indexOf(text) !== -1;' +
+    '    });' +
+    '    hit = pick(exact) || pick(partial);' +
+    '  } else {' +
+    '    try { hit = pick([document.querySelector(sel)]); } catch (e) { hit = null; }' +
+    '  }' +
+    '  if (!hit) return { found: false };' +
+    '  return { found: true, x: hit.x, y: hit.y, text: hit.text };' +
+    '})()'
+  );
 }
 
 @Injectable()
@@ -178,13 +240,18 @@ export class AgentBrowserExecutor {
       }
       // 4) 导航：写动作——签单 → 等桌面端用户批准 → 带单执行
       if (kind === 'goto') {
-        return this.gotoViaPanel(action, actor, input.sessionId);
+        return await this.gotoViaPanel(action, actor, input.sessionId, input.actionId);
       }
-      // 5) 其余动作：面板桥还没开通，明确不支持（不许假装成功，也不许偷偷走老路径）
+      // 5) 点击：写动作——先解析坐标（元素不存在不签单）→ 签单 → 用户批准 →
+      //    带单执行（pressed+released 一次逻辑点击，坐标执行时重新解析）
+      if (kind === 'click') {
+        return await this.clickViaPanel(action, actor, input.sessionId, input.actionId);
+      }
+      // 6) 其余动作：面板桥还没开通，明确不支持（不许假装成功，也不许偷偷走老路径）
       return this.failed(
         kind,
-        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto）；` +
-          `未执行、未回退（阶段 5 按 navigate→click→fill_form→press_key/wait_for/tabs 顺序开通）`,
+        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click）；` +
+          `未执行、未回退（阶段 7 按 navigate→click→type→press_key/wait/tabs 顺序开通）`,
       );
     } catch (error) {
       const code =
@@ -209,8 +276,11 @@ export class AgentBrowserExecutor {
     action: Extract<AiBrowserAction, { action: 'goto' }>,
     actor: PanelBridgeActor,
     sessionId?: string,
+    lockedActionId?: string,
   ): Promise<AgentBrowserExecuteResult> {
-    const carried = (action as { actionId?: string }).actionId;
+    // 阶段 7 修断链：loop 锁定的确认单（lockedActionId）优先——否则重试时
+    // executor 看不到已锁定的单，会再签新单，用户批一张废一张，死循环。
+    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
     if (carried) {
       const state = await this.panelBridge!.actionState(actor, carried);
       if (state.state === 'approved') {
@@ -261,6 +331,140 @@ export class AgentBrowserExecutor {
     return this.failed(
       'goto',
       `需用户确认后执行（面板导航确认单 ${ticket.actionId}，请在右侧浏览器面板批准后携带该 id 重试）`,
+      ticket.actionId,
+    );
+  }
+
+  /** 只读探测：selector → 页面坐标（Runtime.evaluate，readonly 不签单不落库） */
+  private async probeSelector(
+    actor: PanelBridgeActor,
+    selector: string,
+  ): Promise<{ found: boolean; x?: number; y?: number; text?: string }> {
+    const out = await this.panelBridge!.execute(actor, {
+      method: 'Runtime.evaluate',
+      params: {
+        expression: buildSelectorProbeExpression(selector),
+        returnByValue: true,
+      },
+    });
+    // readonly 调用桥会回传 CDP 结果：{ result: { type, value } }
+    const cdp = out.result as
+      | { result?: { value?: { found?: boolean; x?: number; y?: number; text?: string } } }
+      | null
+      | undefined;
+    const value = cdp?.result?.value;
+    if (!value || typeof value !== 'object' || value.found !== true) {
+      return { found: false };
+    }
+    return {
+      found: true,
+      x: typeof value.x === 'number' ? value.x : undefined,
+      y: typeof value.y === 'number' ? value.y : undefined,
+      text: typeof value.text === 'string' ? value.text : undefined,
+    };
+  }
+
+  /**
+   * 面板点击：一次批准 = 一次逻辑点击。
+   *
+   *  - carried + approved → 落库审批态 → 执行时**重新解析坐标**（审批是语义级：
+   *    selector+目标文本；页面可能已变化，坐标取最新防点偏）→ mousePressed（带单）
+   *    → mouseReleased（配对通道放行，同单不同卡）。
+   *  - carried + rejected → 终态收口，不执行。
+   *  - 无单 → **先只读解析坐标**：元素不存在就不签单，用户不看到一张注定废掉的
+   *    死卡片 → 签语义级确认单（summary 带 selector+目标文本，不带坐标）。
+   */
+  private async clickViaPanel(
+    action: Extract<AiBrowserAction, { action: 'click' }>,
+    actor: PanelBridgeActor,
+    sessionId?: string,
+    lockedActionId?: string,
+  ): Promise<AgentBrowserExecuteResult> {
+    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
+    if (carried) {
+      const state = await this.panelBridge!.actionState(actor, carried);
+      if (state.state === 'approved') {
+        await this.markApprovalSafe('approved', carried);
+        // 审批后执行时重新解析坐标（防页面滚动/元素移动后点偏）
+        const probe = await this.probeSelector(actor, action.selector);
+        if (!probe.found || probe.x === undefined || probe.y === undefined) {
+          return this.failed(
+            'click',
+            `面板模式：确认单 ${carried} 已批准，但执行时目标已不可见` +
+              `（selector "${action.selector}" 解析不到可见元素），未执行——请重发该动作重新确认`,
+            carried,
+          );
+        }
+        const pressParams = {
+          type: 'mousePressed' as const,
+          x: probe.x,
+          y: probe.y,
+          button: 'left' as const,
+          clickCount: 1,
+        };
+        const releaseParams = {
+          type: 'mouseReleased' as const,
+          x: probe.x,
+          y: probe.y,
+          button: 'left' as const,
+          clickCount: 1,
+        };
+        await this.panelBridge!.execute(actor, {
+          method: 'Input.dispatchMouseEvent',
+          params: pressParams,
+          actionId: carried,
+        });
+        // mouseReleased 不带审批（单已被 pressed 消耗），走 broker 配对通道
+        await this.panelBridge!.execute(actor, {
+          method: 'Input.dispatchMouseEvent',
+          params: releaseParams,
+          actionId: carried,
+        });
+        return {
+          index: 0,
+          action: 'click',
+          ok: true,
+          panelWebContentsId: null,
+          confirmationId: carried,
+          message:
+            `面板点击已执行（selector "${action.selector}"${probe.text ? `，目标"${probe.text}"` : ''}，` +
+            `坐标 ${probe.x},${probe.y}，确认单 ${carried}）`,
+        };
+      }
+      if (state.state === 'rejected') {
+        await this.markApprovalSafe('rejected', carried);
+        return this.failed(
+          'click',
+          `面板模式：该点击已被用户在面板中拒绝（确认单 ${carried}），未执行`,
+          carried,
+        );
+      }
+      return this.failed(
+        'click',
+        `面板模式：点击需用户在桌面端批准（确认单 ${carried} 当前状态 ${state.state}）`,
+        carried,
+      );
+    }
+    // 无单：先只读解析坐标——元素不存在就不签单（用户不看到死卡片）
+    const probe = await this.probeSelector(actor, action.selector);
+    if (!probe.found) {
+      return this.failed(
+        'click',
+        `面板模式：页面上找不到可见元素（selector "${action.selector}"），未签确认单、未执行`,
+      );
+    }
+    const ticket = await this.panelBridge!.requestAction(actor, {
+      method: 'Input.dispatchMouseEvent',
+      summary: {
+        label: '点击',
+        selector: action.selector,
+        targetText: probe.text ?? null,
+      },
+      sessionId: sessionId ?? null,
+    });
+    return this.failed(
+      'click',
+      `需用户确认后执行（面板点击确认单 ${ticket.actionId}，目标"${probe.text ?? action.selector}"，请在右侧浏览器面板批准后携带该 id 重试）`,
       ticket.actionId,
     );
   }

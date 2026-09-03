@@ -437,7 +437,195 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(legacy.calls.length).toBe(0);
   });
 
-  it('on + 暂不支持的动作（click）→ 显式失败，绝不偷偷走老路径', async () => {
+  // ── 阶段 7：click 动作接通面板桥 ──────────────────────────────────────────
+
+  /** click 桩：execute 按 method 分发（probe 回坐标，mutation 记调用） */
+  function makeClickPanel(opts: {
+    state?: 'pending' | 'approved' | 'rejected';
+    probe?: { found: boolean; x?: number; y?: number; text?: string };
+  }) {
+    const cdpCalls: Array<{
+      method: string;
+      params?: Record<string, unknown>;
+      actionId?: string | null;
+    }> = [];
+    const execute = jest.fn(
+      async (
+        _actor: unknown,
+        input: { method: string; params?: Record<string, unknown>; actionId?: string | null },
+      ) => {
+        cdpCalls.push({ ...input });
+        if (input.method === 'Runtime.evaluate') {
+          return {
+            binding: { webContentsId: 42, url: 'https://kaypal.cn/page' },
+            method: input.method,
+            executed: true,
+            actionId: null,
+            result: {
+              result: {
+                value:
+                  opts.probe ??
+                  { found: true, x: 100, y: 50, text: '提交订单' },
+              },
+            },
+          };
+        }
+        return {
+          binding: { webContentsId: 42, url: 'https://kaypal.cn/page' },
+          method: input.method,
+          executed: true,
+          actionId: input.actionId ?? null,
+          result: null,
+        };
+      },
+    );
+    const requestAction = jest.fn(async () => ({
+      actionId: 'ticket-9',
+      binding: { webContentsId: 42, method: 'Input.dispatchMouseEvent' },
+    }));
+    const markApproved = jest.fn(async () => undefined);
+    const markRejected = jest.fn(async () => undefined);
+    const panel = makePanel({
+      status: () => ({ available: true, reason: 'ready' }),
+      execute,
+      requestAction,
+      markApproved,
+      markRejected,
+      ...(opts.state
+        ? {
+            actionState: async () => ({
+              actionId: 'ticket-1',
+              state: opts.state,
+              panelId: 'panel-1',
+              method: 'Input.dispatchMouseEvent',
+              approvedAt: opts.state === 'approved' ? Date.now() : null,
+            }),
+          }
+        : {}),
+    } as PanelBridgeStub);
+    return { panel, cdpCalls, execute, requestAction, markApproved, markRejected };
+  }
+
+  it('⑦ click 无单 + 元素存在 → 只签单不执行（先 probe，requestAction 带 sessionId + 语义摘要）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeClickPanel({});
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'click', selector: 'text=提交订单' },
+      actor: ACTOR,
+      sessionId: 'agent-session-7',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.confirmationId).toBe('ticket-9');
+    expect(out.message).toContain('需用户确认');
+    // 先只读探测，再签单：mutation 一次都没执行
+    expect(p.cdpCalls.filter((c) => c.method === 'Input.dispatchMouseEvent').length).toBe(0);
+    expect(p.requestAction).toHaveBeenCalledWith(ACTOR, {
+      method: 'Input.dispatchMouseEvent',
+      summary: { label: '点击', selector: 'text=提交订单', targetText: '提交订单' },
+      sessionId: 'agent-session-7',
+    });
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('⑦ click 无单 + 元素不存在 → 不签单（用户不看到死卡片）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeClickPanel({ probe: { found: false } });
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'click', selector: '#not-exist' },
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('找不到可见元素');
+    expect(out.message).toContain('未签确认单');
+    expect(p.requestAction).not.toHaveBeenCalled();
+    expect(p.cdpCalls.filter((c) => c.method === 'Input.dispatchMouseEvent').length).toBe(0);
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('⑦ click 带 approved 单（loop 锁定传入）→ markApproved + pressed/released 同单同坐标', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeClickPanel({ state: 'approved' });
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'click', selector: 'text=提交订单' },
+      actor: ACTOR,
+      // 阶段 7 修断链：确认单 id 从 loop 侧传入（不再依赖 action.actionId）
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(true);
+    expect(out.confirmationId).toBe('ticket-1');
+    expect(p.markApproved).toHaveBeenCalledWith('ticket-1');
+    const mutations = p.cdpCalls.filter(
+      (c) => c.method === 'Input.dispatchMouseEvent',
+    );
+    expect(mutations.length).toBe(2);
+    expect(mutations[0]).toMatchObject({
+      actionId: 'ticket-1',
+      params: { type: 'mousePressed', x: 100, y: 50, button: 'left', clickCount: 1 },
+    });
+    // released 与 pressed 同单（配对通道），同坐标
+    expect(mutations[1]).toMatchObject({
+      actionId: 'ticket-1',
+      params: { type: 'mouseReleased', x: 100, y: 50, button: 'left', clickCount: 1 },
+    });
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('⑦ click 带 rejected 单 → markRejected 终态收口，mutation 一次不执行', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeClickPanel({ state: 'rejected' });
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'click', selector: '#btn' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('已被用户在面板中拒绝');
+    expect(out.message).not.toContain('需用户在桌面端批准');
+    expect(p.markRejected).toHaveBeenCalledWith('ticket-1');
+    expect(p.cdpCalls.filter((c) => c.method === 'Input.dispatchMouseEvent').length).toBe(0);
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('⑦ click 带 approved 单但执行时元素已消失 → 显式失败不盲点', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeClickPanel({ state: 'approved', probe: { found: false } });
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'click', selector: '#btn' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('目标已不可见');
+    expect(p.cdpCalls.filter((c) => c.method === 'Input.dispatchMouseEvent').length).toBe(0);
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('on + 暂不支持的动作（type）→ 显式失败，绝不偷偷走老路径', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const legacy = makeLegacy();
     const exec = new AgentBrowserExecutor(
@@ -445,11 +633,12 @@ describe('AgentBrowserExecutor 面板模式', () => {
       makePanel({ status: () => ({ available: true, reason: 'ready' }) }),
     );
     const out = await exec.execute({
-      action: { action: 'click', selector: '#btn' },
+      action: { action: 'type', selector: '#kw', text: 'hi' },
       actor: ACTOR,
     });
     expect(out.ok).toBe(false);
-    expect(out.message).toContain('暂不支持动作 click');
+    expect(out.message).toContain('暂不支持动作 type');
+    expect(out.message).toContain('仅支持 extract / goto / click');
     expect(out.message).toContain('未回退');
     expect(legacy.calls.length).toBe(0);
   });
