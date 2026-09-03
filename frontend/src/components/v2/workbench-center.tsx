@@ -307,7 +307,7 @@ export function WorkbenchCenter({
           (primaryAction.href ? (
             <Link
               href={primaryAction.href}
-              className="kx-btn kx-btn-primary"
+              className="kx-btn-lg kx-btn-primary"
             >
               {primaryAction.label}
               <ArrowRight className="h-5 w-5" />
@@ -317,7 +317,7 @@ export function WorkbenchCenter({
               type="button"
               disabled={primaryAction.loading}
               onClick={primaryAction.onClick}
-              className="kx-btn kx-btn-primary disabled:opacity-60"
+              className="kx-btn-lg kx-btn-primary disabled:opacity-60"
             >
               {primaryAction.label}
             </button>

@@ -882,7 +882,7 @@ function HomeHeader({
           <button
             type="button"
             onClick={onCreateTask}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 active:scale-[0.97]"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius)] bg-[image:var(--kaypal-v3-gradient-primary)] px-6 text-[15px] font-semibold text-white shadow-sm transition hover:brightness-105 active:scale-[0.97]"
           >
             新建获客任务
             <ArrowRight className="h-4 w-4" />
