@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T17:51:14.389Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "scenario": "阶段5第一站：小红书登录/只读（3011 生产 × 面板桥 login-state）",
+    "backend": "http://127.0.0.1:3011",
+    "realUserData": "/Users/yanghy/Library/Application Support/ai-content-desktop"
+  },
+  "checks": [
+    {
+      "name": "S1 3011 生产登录成功",
+      "pass": true,
+      "detail": {
+        "status": 201,
+        "userId": "cms2ktllp03u9j1wprksvwy8w",
+        "hasCookie": true,
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S2 建会话成功（platform=xiaohongshu，白名单合并佐证=3011 日志行）",
+      "pass": true,
+      "detail": {
+        "status": 201,
+        "sessionId": "672894b4-d4b7-403c-9b2a-05a7ec6541ff",
+        "tenantId": "cmtix3lr3000sgozi0rz3mm6a",
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S3 面板 open（小红书首页）→ 桥 binding 落盘（0600）",
+      "pass": true,
+      "detail": {
+        "endpoint": "http://127.0.0.1:61696",
+        "panelId": "panel-19be3bcd0dfd"
+      }
+    },
+    {
+      "name": "S4 login-state 200（platform=xiaohongshu，state=∅）",
+      "pass": false,
+      "detail": {
+        "status": 400,
+        "data": null,
+        "message": "当前仅面板模式支持登录态查询（面板模式未开启），未查询"
+      }
+    },
+    {
+      "name": "S5 负向① 未注册平台 douyin → 400 不支持登录态查询",
+      "pass": true,
+      "detail": {
+        "status": 400,
+        "message": "会话平台 douyin 不支持登录态查询（仅注册平台支持，如 xiaohongshu）"
+      }
+    },
+    {
+      "name": "S6 负向② general-web 会话 → 400（仅注册平台支持）",
+      "pass": true,
+      "detail": {
+        "status": 400,
+        "message": "会话平台 general-web 不支持登录态查询（仅注册平台支持，如 xiaohongshu）"
+      }
+    },
+    {
+      "name": "S7 close 面板 → binding 清理（磁盘无残留 token）",
+      "pass": true,
+      "detail": {
+        "bindingExists": false
+      }
+    }
+  ]
+}

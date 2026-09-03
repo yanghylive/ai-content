@@ -1,0 +1,80 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T17:53:07.798Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "scenario": "阶段5第一站：小红书登录/只读（3011 生产 × 面板桥 login-state）",
+    "backend": "http://127.0.0.1:3011",
+    "realUserData": "/Users/yanghy/Library/Application Support/ai-content-desktop"
+  },
+  "checks": [
+    {
+      "name": "S1 3011 生产登录成功",
+      "pass": true,
+      "detail": {
+        "status": 201,
+        "userId": "cms2ktllp03u9j1wprksvwy8w",
+        "hasCookie": true,
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S2 建会话成功（platform=xiaohongshu，白名单合并佐证=3011 日志行）",
+      "pass": true,
+      "detail": {
+        "status": 201,
+        "sessionId": "c727816a-2254-4ffe-bbf4-d9c5b460c169",
+        "tenantId": "cmtix3lr3000sgozi0rz3mm6a",
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S3 面板 open（小红书首页）→ 桥 binding 落盘（0600）",
+      "pass": true,
+      "detail": {
+        "endpoint": "http://127.0.0.1:62691",
+        "panelId": "panel-37201db77ff9"
+      }
+    },
+    {
+      "name": "S4 login-state 200（platform=xiaohongshu，state=login_prompt）",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "data": {
+          "ok": true,
+          "platform": "xiaohongshu",
+          "state": "login_prompt",
+          "url": "https://www.xiaohongshu.com/explore",
+          "panelWebContentsId": 5
+        },
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S5 负向① 未注册平台 douyin → 400 不支持登录态查询",
+      "pass": true,
+      "detail": {
+        "status": 400,
+        "message": "会话平台 douyin 不支持登录态查询（仅注册平台支持，如 xiaohongshu）"
+      }
+    },
+    {
+      "name": "S6 负向② general-web 会话 → 400（仅注册平台支持）",
+      "pass": true,
+      "detail": {
+        "status": 400,
+        "message": "会话平台 general-web 不支持登录态查询（仅注册平台支持，如 xiaohongshu）"
+      }
+    },
+    {
+      "name": "S7 close 面板 → binding 清理 + mode 文件恢复原状（磁盘无残留 token）",
+      "pass": true,
+      "detail": {
+        "bindingExists": false,
+        "modeFileExists": false
+      }
+    }
+  ]
+}
