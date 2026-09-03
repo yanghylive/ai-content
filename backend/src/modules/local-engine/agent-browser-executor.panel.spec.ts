@@ -50,14 +50,19 @@ const ACTOR = { ownerId: 'user-a', tenantId: 'tenant-a' };
 
 describe('AgentBrowserExecutor 面板模式', () => {
   const original = process.env.KAYPAL_AGENT_PANEL_MODE;
+  const originalModeFile = process.env.KAYPAL_BROWSER_PANEL_MODE_FILE;
 
   beforeEach(() => {
     delete process.env.KAYPAL_AGENT_PANEL_MODE;
+    // ③ 隔离：开关文件指向不存在的路径，防真机上 desktop 写过 on 导致用例漂移
+    process.env.KAYPAL_BROWSER_PANEL_MODE_FILE = '/nonexistent/browser-panel-mode.json';
   });
 
   afterEach(() => {
     if (original === undefined) delete process.env.KAYPAL_AGENT_PANEL_MODE;
     else process.env.KAYPAL_AGENT_PANEL_MODE = original;
+    if (originalModeFile === undefined) delete process.env.KAYPAL_BROWSER_PANEL_MODE_FILE;
+    else process.env.KAYPAL_BROWSER_PANEL_MODE_FILE = originalModeFile;
   });
 
   it('默认 off：纯透传原执行器（零行为变化）', async () => {
@@ -79,7 +84,36 @@ describe('AgentBrowserExecutor 面板模式', () => {
   it('非法 KAYPAL_AGENT_PANEL_MODE → 显式失败（不猜配置）', () => {
     expect(readAgentPanelMode({ KAYPAL_AGENT_PANEL_MODE: 'ON' })).toBe('on');
     expect(readAgentPanelMode({ KAYPAL_AGENT_PANEL_MODE: 'yes' })).toBe('invalid');
-    expect(readAgentPanelMode({})).toBe('off');
+    // ③：env 未设时会真实读开关文件，这里显式传 null（= 文件不存在/不合规）锁定默认 off
+    expect(readAgentPanelMode({}, null)).toBe('off');
+  });
+
+  // ── 阶段 6 决策 ③：开关文件优先级 ─────────────────────────────────────────
+  it('③ env 未设 + 开关文件 on → on（用户面板按钮生效）', () => {
+    expect(readAgentPanelMode({}, 'on')).toBe('on');
+  });
+
+  it('③ env 显式 off + 开关文件 on → off（env 是管理员一票否决）', () => {
+    expect(readAgentPanelMode({ KAYPAL_AGENT_PANEL_MODE: 'off' }, 'on')).toBe('off');
+  });
+
+  it('③ env 显式 on + 开关文件 off/null → on（env 优先级最高）', () => {
+    expect(readAgentPanelMode({ KAYPAL_AGENT_PANEL_MODE: 'on' }, 'off')).toBe('on');
+    expect(readAgentPanelMode({ KAYPAL_AGENT_PANEL_MODE: 'on' }, null)).toBe('on');
+  });
+
+  it('③ env 空串视为未设置，落到开关文件判定', () => {
+    expect(readAgentPanelMode({ KAYPAL_AGENT_PANEL_MODE: '' }, 'on')).toBe('on');
+    expect(readAgentPanelMode({ KAYPAL_AGENT_PANEL_MODE: '  ' }, null)).toBe('off');
+  });
+
+  it('③ env 非法值 → invalid（不猜，也不吃掉文件开关）', () => {
+    expect(readAgentPanelMode({ KAYPAL_AGENT_PANEL_MODE: 'yes' }, 'on')).toBe('invalid');
+  });
+
+  it('③ 文件 off / null → 默认 off（铁律不变）', () => {
+    expect(readAgentPanelMode({}, 'off')).toBe('off');
+    expect(readAgentPanelMode({}, null)).toBe('off');
   });
 
   it('非法开关 → 动作未执行且提示原因', async () => {
@@ -269,6 +303,137 @@ describe('AgentBrowserExecutor 面板模式', () => {
       params: { url: 'https://kaypal.cn/x' },
       actionId: 'ticket-1',
     });
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  // ── 阶段 6 决策 ②：两套确认机制合并后的新行为 ──────────────────────────
+
+  it('② 签单必须透传 sessionId（否则落出来的是孤儿单，永远匹配不上会话）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const requestAction = jest.fn(async () => ({
+      actionId: 'ticket-1',
+      binding: { webContentsId: 42, method: 'Page.navigate' },
+    }));
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      makePanel({
+        status: () => ({ available: true, reason: 'ready' }),
+        requestAction,
+      } as PanelBridgeStub),
+    );
+    await exec.execute({
+      action: { action: 'goto', url: 'https://kaypal.cn/x' },
+      actor: ACTOR,
+      sessionId: 'agent-session-7',
+    });
+    expect(requestAction).toHaveBeenCalledWith(ACTOR, {
+      method: 'Page.navigate',
+      params: { url: 'https://kaypal.cn/x' },
+      summary: { label: '导航', url: 'https://kaypal.cn/x' },
+      sessionId: 'agent-session-7',
+    });
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('② 不带 sessionId 时签单传 null（不崩、不伪造会话）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const requestAction = jest.fn(async () => ({
+      actionId: 'ticket-1',
+      binding: { webContentsId: 42, method: 'Page.navigate' },
+    }));
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      makePanel({
+        status: () => ({ available: true, reason: 'ready' }),
+        requestAction,
+      } as PanelBridgeStub),
+    );
+    const out = await exec.execute({
+      action: { action: 'goto', url: 'https://kaypal.cn/x' },
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(false);
+    expect(requestAction).toHaveBeenCalledWith(
+      ACTOR,
+      expect.objectContaining({ sessionId: null }),
+    );
+  });
+
+  it('② 用户批准 → 批准那一刻落库（markApproved），不是只在桥内存里', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const markApproved = jest.fn(async () => undefined);
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      makePanel({
+        status: () => ({ available: true, reason: 'ready' }),
+        actionState: async () => ({
+          actionId: 'ticket-1',
+          state: 'approved' as const,
+          panelId: 'panel-1',
+          method: 'Page.navigate',
+          approvedAt: Date.now(),
+        }),
+        execute: async () => ({
+          binding: { webContentsId: 42, url: 'https://kaypal.cn/landed' },
+          method: 'Page.navigate',
+          executed: true,
+          actionId: 'ticket-1',
+          result: null,
+        }),
+        markApproved,
+      } as PanelBridgeStub),
+    );
+    const out = await exec.execute({
+      action: {
+        action: 'goto',
+        url: 'https://kaypal.cn/x',
+        actionId: 'ticket-1',
+      } as never,
+      actor: ACTOR,
+      sessionId: 'agent-session-7',
+    });
+    expect(out.ok).toBe(true);
+    // 审计链的关键一环：桌面点批必须留痕，否则事后查不到"谁批的、什么时候批的"
+    expect(markApproved).toHaveBeenCalledWith('ticket-1');
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('② 用户在面板拒绝 → 不执行、明确报错，且拒绝态收口为终态', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const execute = jest.fn(async () => ({ binding: { webContentsId: 42 } }));
+    const markRejected = jest.fn(async () => undefined);
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      makePanel({
+        status: () => ({ available: true, reason: 'ready' }),
+        actionState: async () => ({
+          actionId: 'ticket-1',
+          state: 'rejected' as const,
+          panelId: 'panel-1',
+          method: 'Page.navigate',
+          approvedAt: null,
+        }),
+        execute,
+        markRejected,
+      } as PanelBridgeStub),
+    );
+    const out = await exec.execute({
+      action: {
+        action: 'goto',
+        url: 'https://kaypal.cn/x',
+        actionId: 'ticket-1',
+      } as never,
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('已被用户在面板中拒绝');
+    // 拒绝 ≠ 需要确认：这是终态，不能再等、不能重试生效
+    expect(out.message).not.toContain('需用户在桌面端批准');
+    expect(execute).not.toHaveBeenCalled();
+    expect(markRejected).toHaveBeenCalledWith('ticket-1');
     expect(legacy.calls.length).toBe(0);
   });
 

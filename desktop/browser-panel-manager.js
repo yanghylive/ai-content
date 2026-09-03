@@ -24,12 +24,21 @@
 
 const path = require('node:path');
 const crypto = require('node:crypto');
+// 阶段 6 决策 ③：面板模式开关（Agent 是否通过右侧面板代操作）
+const { writeMode, readMode, clearMode } = require('./browser-panel-mode-registry');
 
 const PANEL_MIN_WIDTH = 360;
 const PANEL_DEFAULT_WIDTH = 480;
 const PANEL_WIDTH_RATIO_MAX = 0.6;
 const STRIP_HEIGHT = 40;
 const TAB_STRIP_HEIGHT = 38; // 与 workspace-tabs.js 保持一致（顶部通栏高度）
+
+// 阶段 6：审批浮层尺寸（与 browser-approval-overlay.html 的 CSS 保持一致，
+// 否则会出现"卡片被裁掉一块"或"底部一大片空白"）
+const APPROVAL_MARGIN = 8;
+const APPROVAL_MAX_HEIGHT = 220;
+const APPROVAL_HEADER_HEIGHT = 34;
+const APPROVAL_CARD_HEIGHT = 76;
 
 const ALLOWED_NAVIGATE_PROTOCOLS = new Set(['http:', 'https:']);
 
@@ -54,19 +63,31 @@ class BrowserPanelManager {
    *   tabManager?: { rightInset: number, relayout(): void, broadcast(ch:string,...a:any[]):void, sendToBusiness(ch:string,...a:any[]):boolean, isOwnedWebContents(c:any):boolean },
    *   preloadPath?: string,
    *   stripHtmlPath?: string,
+   *   approvalPreloadPath?: string,
+   *   approvalHtmlPath?: string,
    *   logger?: { warn(...a:any[]):void },
+   *   getUserDataDir?: () => string|null,  ③ 开关文件落 userData（Electron app.getPath('userData') 的取法）
    * }} deps
    */
   constructor(deps) {
     this._electron = deps.electron;
     this._store = deps.store || null;
     this._tabManager = deps.tabManager || null;
+    this._getUserDataDir = deps.getUserDataDir || null;
     this._preloadPath = deps.preloadPath || path.join(__dirname, 'browser-control-strip-preload.js');
     this._stripHtmlPath = deps.stripHtmlPath || path.join(__dirname, 'browser-control-strip.html');
+    // 阶段 6：审批浮层（Agent 写动作的用户批准界面）。本地受信，同控制条姿态。
+    this._approvalPreloadPath =
+      deps.approvalPreloadPath || path.join(__dirname, 'browser-approval-overlay-preload.js');
+    this._approvalHtmlPath = deps.approvalHtmlPath || path.join(__dirname, 'browser-approval-overlay.html');
     this._logger = deps.logger || console;
     this.window = null;
     this.stripView = null;
     this.panelView = null;
+    /** 审批浮层视图（本地受信；只在有待批动作时可见） */
+    this.approvalView = null;
+    /** 当前待批动作条数（决定浮层高度与可见性） */
+    this._approvalPendingCount = 0;
     /** @type {null | { panelId:string, sessionId:string, ownerId:string, tenantId:string, accountId?:string, platform:string, partition:string, currentUrl?:string, status:string }} */
     this.session = null;
     this._visible = false;
@@ -126,6 +147,25 @@ class BrowserPanelManager {
       this.stripView.webContents.loadFile(this._stripHtmlPath);
       this.stripView.setVisible(false);
     }
+    if (!this.approvalView) {
+      // 阶段 6：审批浮层。必须 addChildView 在 panelView **之后**——Electron 的
+      // 子视图按加入顺序绘制，先加的在下层。控制条就是先加的，所以它的下拉卡片
+      // 会被面板盖住；审批卡片同理，故单独建视图并在每次重建面板后置顶。
+      this.approvalView = new WebContentsView({
+        webPreferences: {
+          preload: this._approvalPreloadPath,
+          contextIsolation: true,
+          nodeIntegration: false,
+          sandbox: false, // 本地受信（同控制条）：需要 invoke 批准/拒绝
+          partition: 'persist:ai-content-browser-approval',
+          backgroundThrottling: false,
+        },
+      });
+      this._knownWebContents.add(this.approvalView.webContents);
+      this.window.contentView.addChildView(this.approvalView);
+      this.approvalView.webContents.loadFile(this._approvalHtmlPath);
+      this.approvalView.setVisible(false);
+    }
     if (!this.panelView) {
       // 面板 webContents 在首次 open 时按账号 partition 创建（见 _createPanelView）
     }
@@ -169,9 +209,26 @@ class BrowserPanelManager {
     this._panelPartitions.set(view, partition);
     this._knownWebContents.add(view.webContents);
     this.window.contentView.addChildView(view);
+    // 面板是新加的子视图 → 会盖在审批浮层之上，必须把浮层重新置顶
+    this._bringApprovalToFront();
     this._wirePanelEvents(view);
     this.panelView = view;
     view.setVisible(false);
+  }
+
+  /**
+   * 把审批浮层提到最上层（移除后重新加入 = 置顶）。
+   * 面板视图在账号切换时会重建，每次重建都会把浮层压到下面，故需重新置顶。
+   */
+  _bringApprovalToFront() {
+    if (!this.approvalView || this.approvalView.webContents.isDestroyed()) return;
+    if (!this.window || this.window.isDestroyed()) return;
+    try {
+      this.window.contentView.removeChildView(this.approvalView);
+      this.window.contentView.addChildView(this.approvalView);
+    } catch {
+      /* 视图已销毁时忽略 */
+    }
   }
 
   _partitionOf(view) {
@@ -275,6 +332,12 @@ class BrowserPanelManager {
     this._visible = false;
     if (this.panelView) this.panelView.setVisible(false);
     if (this.stripView) this.stripView.setVisible(false);
+    // 阶段 6：面板收起 = 没有可操作的页面，待批卡片必须一起清空并隐藏，
+    // 否则重开面板会看到一批已经过期（页面目标早变了）的陈旧卡片。
+    if (this.approvalView && !this.approvalView.webContents.isDestroyed()) {
+      this.approvalView.setVisible(false);
+    }
+    this._approvalPendingCount = 0;
     if (this.session) this.session.status = 'stopped';
     if (this._tabManager) {
       this._tabManager.rightInset = 0;
@@ -366,6 +429,35 @@ class BrowserPanelManager {
     );
   }
 
+  /** 阶段 6：审批浮层 sender 校验（只有浮层自己能调批准/拒绝，防第三方页面伪造） */
+  isApprovalSender(sender) {
+    return !!(
+      sender &&
+      this.approvalView &&
+      !this.approvalView.webContents.isDestroyed() &&
+      this.approvalView.webContents.id === sender.id
+    );
+  }
+
+  /**
+   * 阶段 6：刷新审批浮层的待批列表。
+   * 由 wiring 的 onPendingChange 回调驱动（Agent 签单 / 用户批准 / 用户拒绝都会触发）。
+   * @param {Array<{actionId:string, method:string, summary:any, createdAt:number, binding:any}>} pending
+   */
+  updateApprovalList(pending) {
+    const list = Array.isArray(pending) ? pending : [];
+    this._approvalPendingCount = list.length;
+    this._sendToApproval('browser-panel:pending-actions', {
+      panelId: this.session ? this.session.panelId : null,
+      actions: list,
+    });
+    // 条数变化会改变浮层高度 → 重新定位；为 0 时顺手隐藏
+    if (this._visible) this.relayout();
+    else if (this.approvalView && !this.approvalView.webContents.isDestroyed()) {
+      this.approvalView.setVisible(false);
+    }
+  }
+
   publicState() {
     return {
       visible: this._visible,
@@ -376,7 +468,58 @@ class BrowserPanelManager {
         : null,
       canGoBack: !!(this.panelView && this.panelView.webContents.canGoBack()),
       canGoForward: !!(this.panelView && this.panelView.webContents.canGoForward()),
+      // ③：面板模式开关当前态（读文件，控制条按钮据此高亮）
+      agentMode: this.getAgentMode(),
     };
+  }
+
+  // ---------- 面板模式开关（阶段 6 决策 ③） ----------
+
+  /** userData 目录取法（取不到 = 开关不可用，读一律 off、写显式报错） */
+  _modeDir() {
+    try {
+      return this._getUserDataDir ? this._getUserDataDir() : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 读当前开关。文件缺失 / 形状非法 / 老化 / desktop 进程已死 → 'off'（默认 off 铁律）。
+   * registry 模块自带 fail-closed 校验，这里只兜一层异常。
+   */
+  getAgentMode() {
+    const dir = this._modeDir();
+    if (!dir) return 'off';
+    try {
+      const mode = readMode({ userDataDir: dir });
+      return mode ? mode.mode : 'off';
+    } catch {
+      return 'off';
+    }
+  }
+
+  /**
+   * 切换开关（0600 文件投递，3011 按需读取，不用重启后端）。
+   * @param {boolean} on
+   * @returns {'on'|'off'} 切换后的态（回读文件为准，不自说自话）
+   */
+  setAgentMode(on) {
+    const dir = this._modeDir();
+    if (!dir) {
+      throw new Error('无法定位 userData 目录，面板模式开关不可用');
+    }
+    if (on) {
+      writeMode({ userDataDir: dir, mode: 'on', pid: process.pid });
+    } else {
+      // 关 = 直接删文件（而非写 'off'）：删掉即回默认 off，不留残留状态
+      clearMode({ userDataDir: dir });
+    }
+    const mode = this.getAgentMode();
+    // stage7 冒烟抓到的真 bug：写完不广播，控制条 onState 拿不到新 agentMode，
+    // 按钮不高亮、且控制条用陈旧 lastState 算下一次 toggle（点两下=开了两次）。
+    this._emitState();
+    return mode;
   }
 
   // ---------- 布局 ----------
@@ -407,6 +550,26 @@ class BrowserPanelManager {
       });
       this.panelView.setVisible(true);
     }
+    if (this.approvalView && !this.approvalView.webContents.isDestroyed()) {
+      // 审批浮层：贴面板底部、左右留白，**只在有待批动作时可见**
+      // （可见性由 updateApprovalList 控制，这里只负责定位）
+      const h = this._approvalHeight();
+      const bottom = contentY + contentH - APPROVAL_MARGIN;
+      this.approvalView.setBounds({
+        x: x + APPROVAL_MARGIN,
+        y: Math.max(contentY + STRIP_HEIGHT, bottom - h),
+        width: Math.max(0, panelW - APPROVAL_MARGIN * 2),
+        height: h,
+      });
+      this.approvalView.setVisible(this._approvalPendingCount > 0);
+    }
+  }
+
+  /** 审批浮层高度：按待批条数算，封顶 220px（超出内部滚动） */
+  _approvalHeight() {
+    const n = this._approvalPendingCount || 0;
+    if (n <= 0) return 0;
+    return Math.min(APPROVAL_MAX_HEIGHT, APPROVAL_HEADER_HEIGHT + n * APPROVAL_CARD_HEIGHT);
   }
 
   // ---------- 事件广播 ----------
@@ -433,6 +596,17 @@ class BrowserPanelManager {
     }
   }
 
+  /** 阶段 6：推给审批浮层（待批列表变更） */
+  _sendToApproval(channel, payload) {
+    if (this.approvalView && !this.approvalView.webContents.isDestroyed()) {
+      try {
+        this.approvalView.webContents.send(channel, payload);
+      } catch {
+        /* 浮层未就绪时忽略 */
+      }
+    }
+  }
+
   // ---------- 销毁 ----------
 
   destroy() {
@@ -448,10 +622,32 @@ class BrowserPanelManager {
       }
     }
     this.stripView = null;
+    // 阶段 6：审批浮层随面板一起销毁（否则残留一个孤儿视图浮在窗口上）
+    if (this.approvalView && !this.approvalView.webContents.isDestroyed()) {
+      try {
+        this._knownWebContents.delete(this.approvalView.webContents);
+        this.window && !this.window.isDestroyed() && this.window.contentView.removeChildView(this.approvalView);
+        this.approvalView.webContents.close();
+      } catch {
+        /* ignore */
+      }
+    }
+    this.approvalView = null;
+    this._approvalPendingCount = 0;
     // 先通知订阅方（wiring 需在此撤销 broker 会话/token），再清空状态
     this._emitSessionEvent('destroyed');
     this.session = null;
     this._visible = false;
+    // ③：面板销毁 = 主动清掉开关文件（registry 注释的"desktop 主动清理"路径；
+    // desktop 进程整个退出时有 pid 探活兜底，这里是不留残留的第一道）
+    const modeDir = this._modeDir();
+    if (modeDir) {
+      try {
+        clearMode({ userDataDir: modeDir });
+      } catch {
+        /* 清理失败不影响销毁流程 */
+      }
+    }
   }
 }
 

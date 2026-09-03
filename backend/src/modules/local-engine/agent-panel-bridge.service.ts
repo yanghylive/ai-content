@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { chmodSync, existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { resolveDesktopUserDataDir } from '../../common/project-paths';
+import { PrismaService } from '../../prisma/prisma.service';
 
 /**
  * AgentPanelBridgeService — 3011 ⇄ desktop 右侧浏览器面板的**上行**通道。
@@ -22,6 +23,58 @@ import { resolveDesktopUserDataDir } from '../../common/project-paths';
  *  - token 只在本服务内存里，不进日志、不进事件、不进证据。
  */
 export const PANEL_BRIDGE_PROTOCOL = 'kaypal-browser-bridge';
+
+/**
+ * 阶段 6 决策 ②：面板确认单落进 AgentConfirmation 表时打的来源标记。
+ * 两个用途：
+ *  1. 审计/排障时能一眼区分"用户在桌面面板批的"和"在后端确认列表批的"；
+ *  2. 组装 session.confirmations 时据此**排除**面板单——它已经在面板上批过了，
+ *     不能再出现在后端的"待你确认"里（否则两个审批入口，违背合并的初衷）。
+ */
+export const PANEL_CONFIRMATION_SOURCE = 'browser-panel';
+
+/** 面板 CDP 方法 → 人话标签（进 confirmationJson.targetLabel，排障可读） */
+export function describePanelMethod(method: string): string {
+  switch (method) {
+    case 'Page.navigate':
+      return '打开网页';
+    case 'Input.dispatchMouseEvent':
+      return '鼠标点击';
+    case 'Input.dispatchKeyEvent':
+      return '键盘输入';
+    case 'Input.insertText':
+      return '输入文字';
+    default:
+      return method;
+  }
+}
+
+/** 是否面板来源的确认单（persist mixin 过滤用；confirmationJson 形状不保证，要防御） */
+export function isPanelConfirmation(confirmationJson: unknown): boolean {
+  if (!confirmationJson || typeof confirmationJson !== 'object') return false;
+  return (confirmationJson as { source?: unknown }).source === PANEL_CONFIRMATION_SOURCE;
+}
+/**
+ * AiBrowserAction.action → 面板 CDP 方法（合并后 loop 用它比对确认单指纹）。
+ * **当前桥只开通了 goto**，其余写动作也给出映射但 executor 会明确拦下
+ * （"暂不支持"）；未列出的动作返回 null = 闸门不放行（fail-closed），
+ * 不给"我猜它大概是哪个方法"留口子。
+ */
+export function panelMethodForAction(action: string): string | null {
+  switch (action) {
+    case 'goto':
+      return 'Page.navigate';
+    case 'click':
+      return 'Input.dispatchMouseEvent';
+    case 'type':
+      return 'Input.insertText';
+    case 'press_key':
+      return 'Input.dispatchKeyEvent';
+    default:
+      return null;
+  }
+}
+
 const REGISTRY_FILE_NAME = 'browser-panel-bridge.json';
 const TOKEN_HEADER = 'x-kaypal-bridge-token';
 const NONCE_HEADER = 'x-kaypal-bridge-nonce';
@@ -78,8 +131,12 @@ export type PanelPendingAction = {
   createdAt?: number;
 };
 
-/** 确认单状态：pending=待用户批准 / approved=已批准待执行 / none=不存在或已消费 */
-export type PanelActionState = 'pending' | 'approved' | 'none';
+/**
+ * 确认单状态（阶段 6 起三态 + 不存在）：
+ *  pending=待用户批准 / approved=已批准待执行 / rejected=用户已拒绝（终态） /
+ *  none=不存在或已消费（执行后桥直接删单，故"已执行"表现为 none）
+ */
+export type PanelActionState = 'pending' | 'approved' | 'rejected' | 'none';
 
 export type PanelActionStateResult = {
   actionId: string;
@@ -87,6 +144,7 @@ export type PanelActionStateResult = {
   panelId: string | null;
   method: string | null;
   approvedAt?: number | null;
+  rejectedAt?: number | null;
   binding?: { webContentsId?: number | null; sessionId?: string | null };
 };
 
@@ -132,6 +190,13 @@ const LOOPBACK_ENDPOINT = /^http:\/\/(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i;
 export class AgentPanelBridgeService {
   private readonly logger = new Logger(AgentPanelBridgeService.name);
   private cache: CachedRegistry | null = null;
+
+  /**
+   * @param prisma 可选注入。**阶段 6 决策 ②**：注入时，面板确认单会落库成
+   *   `AgentConfirmation` 行（用桥的 actionId 当主键，全链路只有一个 id）。
+   *   未注入（老测试 / 未接库的环境）时保持纯内存语义，行为不变。
+   */
+  constructor(@Optional() private readonly prisma?: PrismaService) {}
 
   /** 凭据文件路径；推导不出 userData 目录时返回 null（fail-closed） */
   registryPath(): string | null {
@@ -291,6 +356,8 @@ export class AgentPanelBridgeService {
       method: string;
       params?: Record<string, unknown>;
       summary?: Record<string, unknown>;
+      /** 关联到的 AgentBrowser 会话 id（落库用，便于按会话回查） */
+      sessionId?: string | null;
     },
   ): Promise<PanelActionTicket> {
     this.assertActor(actor);
@@ -311,6 +378,18 @@ export class AgentPanelBridgeService {
     if (!json?.actionId) {
       throw new PanelBridgeError('NO_TICKET', 502, '桥未返回确认单');
     }
+    // 阶段 6 决策 ②：合并两套确认机制 —— 面板确认单落库成 AgentConfirmation 行，
+    // **主键直接用桥的 actionId**，于是桌面审批 UI、桥、后端、证据链四处是同一个
+    // id，不再需要"面板 actionId ↔ 后端 confirmationId"的映射表。
+    await this.persistTicket({
+      id: json.actionId,
+      actor,
+      sessionId: input.sessionId ?? null,
+      method: input.method,
+      params: input.params || {},
+      summary: input.summary || {},
+      webContentsId: json.binding?.webContentsId ?? null,
+    });
     return {
       actionId: json.actionId,
       binding: {
@@ -339,6 +418,9 @@ export class AgentPanelBridgeService {
       throw new PanelBridgeError('METHOD_REQUIRED', 400);
     }
     const credentials = this.requireCredentials();
+    // 落库语义对齐既有 AgentConfirmation 的两阶段锁定：执行前 pending→in_use
+    // （并发只有一方抢到），执行成功才 consumed，失败释放回 pending 可重试。
+    await this.markTicket(input.actionId ?? null, 'in_use');
     const json = await this.call<{
       binding?: Partial<PanelBridgeBinding>;
       method?: string;
@@ -352,6 +434,11 @@ export class AgentPanelBridgeService {
       params: input.params || {},
       actionId: input.actionId ?? null,
     });
+    if (json?.executed === true) {
+      await this.markTicket(input.actionId ?? null, 'consumed');
+    } else {
+      await this.markTicket(input.actionId ?? null, 'pending');
+    }
     return {
       binding: {
         panelId: json?.binding?.panelId ?? credentials.panelId ?? null,
@@ -365,6 +452,149 @@ export class AgentPanelBridgeService {
       actionId: json?.actionId ?? input.actionId ?? null,
       result: json?.result ?? null,
     };
+  }
+
+  // ── 阶段 6 决策 ②：与 AgentConfirmation 合并（落库）──────────────────
+  //
+  // 设计要点：
+  //  1. **零 migration**：AgentConfirmation 现有字段足够（confirmationJson 是
+  //     Json，面板专属信息塞在里面，用 `source:'browser-panel'` 打标）。
+  //  2. **主键 = 桥 actionId**：桌面审批 UI / 桥 / 后端 / 证据链四处同一个 id，
+  //     不需要额外的映射表。
+  //  3. **写库只发生在后端**：desktop 仍然不碰数据库（底座红线），它只持有
+  //     "这一步能不能落在我看的那个页面上"的技术闸门。
+  //  4. **不进既有待批列表**：面板单由用户在桌面面板上点批，不能同时出现在
+  //     后端的"待你确认"列表里（否则两个审批入口，违背"合并成一套"）。
+  //     过滤点在 local-engine.persist.mixin.ts 组装 session.confirmations 处。
+  //  5. prisma 不可用 = 纯内存语义，**不阻断面板链路**（落库是审计旁路）。
+
+  /**
+   * 落库一张面板确认单。prisma 缺失/写失败只记 warn，不影响签单结果。
+   */
+  private async persistTicket(row: {
+    id: string;
+    actor: PanelBridgeActor;
+    sessionId: string | null;
+    method: string;
+    params: Record<string, unknown>;
+    summary: Record<string, unknown>;
+    webContentsId: number | null;
+  }): Promise<void> {
+    if (!this.prisma) return;
+    const now = new Date();
+    const confirmationJson = {
+      id: row.id,
+      source: PANEL_CONFIRMATION_SOURCE,
+      sessionId: row.sessionId,
+      action: row.method,
+      method: row.method,
+      params: row.params,
+      summary: row.summary,
+      webContentsId: row.webContentsId,
+      status: 'pending',
+      riskLevel: 'medium',
+      createdAt: now.toISOString(),
+    };
+    try {
+      await this.prisma.agentConfirmation.upsert({
+        where: { id: row.id },
+        create: {
+          id: row.id,
+          tenantId: row.actor.tenantId,
+          userId: row.actor.ownerId,
+          sessionId: row.sessionId || row.id,
+          action: row.method,
+          status: 'pending',
+          riskLevel: 'medium',
+          target: row.webContentsId === null ? null : String(row.webContentsId),
+          targetLabel: describePanelMethod(row.method),
+          confirmationJson: confirmationJson as unknown as object,
+          createdAt: now,
+        },
+        update: {
+          status: 'pending',
+          confirmationJson: confirmationJson as unknown as object,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `面板确认单落库失败（${row.id}）：${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * 推进确认单状态。与既有 resolveConfirmation 的两阶段锁定同一套语义：
+   * pending（待用户在面板点）→ in_use（执行中）→ consumed（已完成）。
+   * 拒绝时由 markRejected 直接置 consumed（终态，不可翻案）。
+   */
+  private async markTicket(actionId: string | null, status: 'in_use' | 'consumed' | 'pending'): Promise<void> {
+    if (!actionId || !this.prisma) return;
+    try {
+      await this.prisma.agentConfirmation.updateMany({
+        where: { id: actionId },
+        data: { status, decidedAt: status === 'consumed' ? new Date() : undefined },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `面板确认单状态更新失败（${actionId} → ${status}）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+
+  /**
+   * 用户在桌面面板点了「批准」——**两套确认机制合并的接缝**。
+   *
+   * 状态列（`status`）继续沿用既有两阶段锁定语义（pending→in_use→consumed，
+   * 防并发复用），**审批态另写在 `confirmationJson.status`**（approved/rejected）。
+   * 于是 loop 的 resolveConfirmation 认 `json.status === 'approved'` 的面板单放行：
+   * 桌面点批和后端放行看的是**同一张单、同一个 id**，不再是两套。
+   */
+  async markApproved(actionId: string): Promise<void> {
+    await this.patchConfirmationStatus(actionId, 'approved');
+  }
+
+  /** 用户在桌面面板点了「拒绝」：落库行收口为终态（status=consumed + json 标记） */
+  async markRejected(actionId: string): Promise<void> {
+    await this.markTicket(actionId, 'consumed');
+    await this.patchConfirmationStatus(actionId, 'rejected');
+  }
+
+  /** 只改 confirmationJson 里的审批态；prisma 缺失/写失败只记 warn（审计旁路） */
+  private async patchConfirmationStatus(
+    actionId: string,
+    decision: 'approved' | 'rejected',
+  ): Promise<void> {
+    if (!actionId || !this.prisma) return;
+    try {
+      const row = await this.prisma.agentConfirmation.findUnique({
+        where: { id: actionId },
+        select: { confirmationJson: true },
+      });
+      if (!row) return;
+      const prev =
+        row.confirmationJson && typeof row.confirmationJson === 'object'
+          ? (row.confirmationJson as Record<string, unknown>)
+          : {};
+      await this.prisma.agentConfirmation.update({
+        where: { id: actionId },
+        data: {
+          confirmationJson: {
+            ...prev,
+            status: decision,
+            decidedAt: new Date().toISOString(),
+          } as unknown as object,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `面板确认单审批态写入失败（${actionId} → ${decision}）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 
   /** 待批确认单列表（供排障/未来审批 UI 查询；不含 token） */
@@ -492,4 +722,109 @@ export function panelBridgeRegistryExists(): boolean {
   } catch {
     return false;
   }
+}
+
+// ── 阶段 6 决策 ③：面板模式开关投递文件（desktop 写、3011 读）───────────────
+// 为什么用文件而不是 env：与桥凭据文件同一个理由——3011 不一定由 desktop 启动，
+// env 注入覆盖不到"后端已经在外头跑着"的场景。desktop 把
+// { protocol, mode, pid, startedAt } 写进 userData 下的 browser-panel-mode.json
+// （见 desktop/browser-panel-mode-registry.js），3011 按需读取。
+// 优先级：env KAYPAL_AGENT_PANEL_MODE 显式设置 > 本文件 > 默认 off（铁律不变）。
+//
+// 安全边界（与 desktop 读取侧完全对齐，两侧任一侧不合规都按"未开启"处理）：
+//  - protocol 必须是 kaypal-browser-panel-mode；mode 只认 on/off；
+//  - 老化阈值 7 天（文件里没有 token，只是 desktop 崩了没来得及删的兜底）；
+//  - pid 探活：写文件的 desktop 进程已死 → 视为不可用（防残留文件把开关顶开）；
+//  - 文件缺失 / 形状非法 → null（调用方按 off 处理，**不猜、不报错**）。
+
+const PANEL_MODE_FILE_NAME = 'browser-panel-mode.json';
+const PANEL_MODE_PROTOCOL = 'kaypal-browser-panel-mode';
+const PANEL_MODE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const PANEL_MODE_CACHE_TTL_MS = 1000;
+
+type PanelModeFile = {
+  version?: number;
+  protocol?: string;
+  mode?: string;
+  pid?: number;
+  startedAt?: string;
+};
+
+let panelModeCache: { at: number; value: 'on' | 'off' | null } | null = null;
+
+/** pid 存活探测：signal 0 只探活不发信号；ESRCH=已死，EPERM=活着但没权限 */
+function panelModePidAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException)?.code;
+    return code === 'EPERM';
+  }
+}
+
+/** 开关文件路径；env KAYPAL_BROWSER_PANEL_MODE_FILE 可覆盖（测试/多实例） */
+export function panelModeRegistryPath(): string | null {
+  const explicit = process.env.KAYPAL_BROWSER_PANEL_MODE_FILE?.trim();
+  if (explicit) return explicit;
+  const dir = resolveDesktopUserDataDir();
+  if (!dir) return null;
+  return join(dir, PANEL_MODE_FILE_NAME);
+}
+
+/** 供测试：清掉开关文件缓存（desktop 刚写完文件后想立即生效时也用它） */
+export function clearPanelModeRegistryCache(): void {
+  panelModeCache = null;
+}
+
+/**
+ * 读面板模式开关（带 1s 缓存——每个浏览器动作都会调 readAgentPanelMode，
+ * 不能每次都打磁盘）。返回：
+ *  - 'on'  ：文件存在且全链路校验通过、mode=on；
+ *  - 'off' ：文件存在且校验通过、mode=off（desktop 明确写下的关闭态）；
+ *  - null  ：文件缺失 / 形状非法 / 老化 / pid 已死（= 未开启，按 off 处理）。
+ */
+export function readPanelModeRegistry(now = Date.now()): 'on' | 'off' | null {
+  if (panelModeCache && now - panelModeCache.at < PANEL_MODE_CACHE_TTL_MS) {
+    return panelModeCache.value;
+  }
+  const value = readPanelModeRegistryUncached(now);
+  panelModeCache = { at: now, value };
+  return value;
+}
+
+function readPanelModeRegistryUncached(now: number): 'on' | 'off' | null {
+  const filePath = panelModeRegistryPath();
+  if (!filePath) return null;
+  if (!existsSync(filePath)) return null;
+
+  // 存量文件强制收紧权限（同桥凭据文件：历史上有 0644 落盘的旧文件）
+  try {
+    chmodSync(filePath, 0o600);
+  } catch {
+    // Windows 无 POSIX mode
+  }
+
+  let parsed: PanelModeFile;
+  try {
+    parsed = JSON.parse(readFileSync(filePath, 'utf8')) as PanelModeFile;
+  } catch {
+    return null;
+  }
+
+  if (parsed?.protocol !== PANEL_MODE_PROTOCOL) return null;
+  if (parsed.mode !== 'on' && parsed.mode !== 'off') return null;
+
+  const startedAtMs = parsed.startedAt ? Date.parse(parsed.startedAt) : NaN;
+  if (!Number.isFinite(startedAtMs)) return null; // 没有合法时间戳按老化处理（fail-closed）
+  const ageMs = Math.max(0, now - startedAtMs);
+  if (ageMs > PANEL_MODE_MAX_AGE_MS) return null;
+
+  // 文件存在不代表 desktop 还活着：写文件进程已死 → 不可用
+  if (typeof parsed.pid === 'number' && !panelModePidAlive(parsed.pid)) {
+    return null;
+  }
+
+  return parsed.mode;
 }

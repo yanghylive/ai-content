@@ -297,6 +297,17 @@ class BrowserPanelBroker {
     }
     const isMutation = MUTATION_METHODS.has(method);
     if (isMutation) {
+      // 已被用户拒绝的单：明确报"已拒绝"，别混进"需要审批"——否则用户看到一个
+      // 自己已经点过拒绝的动作还在提示"待审批"，会以为 UI 坏了。
+      if (opts.approvedActionId && this._isRejected(opts.approvedActionId, panelId)) {
+        this._emit(panelId, 'blocked', {
+          reason: 'action-rejected',
+          method,
+          actionId: opts.approvedActionId,
+          ...this._redactTarget(target),
+        });
+        throw new Error(`该动作已被用户拒绝（确认单 ${opts.approvedActionId}）：${method}`);
+      }
       const approved = opts.approvedActionId && this._consumeApproval(opts.approvedActionId, panelId, method, target);
       if (!approved && !READONLY_AUTO_APPROVE_MUTATIONS) {
         // 写动作必须先经 requestAction -> approve 拿 actionId；未带/已消耗一律拒绝
@@ -344,6 +355,10 @@ class BrowserPanelBroker {
     this._pendingApprovalsDetail.set(actionId, {
       panelId,
       method,
+      // 2026-09-03 修：summary 必须挂在 detail 顶层——listPendingActions /
+      // actionState / 审批 UI 读的都是 detail.summary。原来只塞进 binding 里，
+      // 导致摘要永远是 null（审批卡片会显示空白，后端也拿不到动作描述）。
+      summary: summary || null,
       binding: { sessionId: session.sessionId, ...target, summary: summary || null },
       createdAt: this._now(),
     });
@@ -371,6 +386,31 @@ class BrowserPanelBroker {
   }
 
   /**
+   * **拒绝**确认单（阶段 6 审批 UI 的"拒绝"按钮）。
+   *
+   * 与批准对称：拒绝人也必须是面板 owner（Agent 无法靠这条路把别人的单搅黄，
+   * 也无法自我批准）。拒绝是**终态**——拒绝后不可再批准、执行闸门直接拦掉。
+   * 没有拒绝能力的话，用户不点的卡片会一直堆在审批浮层里。
+   */
+  rejectAction(actionId, capabilityToken, rejecterToken, context = {}) {
+    const detail = this._pendingApprovalsDetail && this._pendingApprovalsDetail.get(actionId);
+    // 注意：确认单一旦被执行消费即从表里删除（_consumeApproval），所以"已执行"
+    // 在这里表现为"不存在" —— 事后反悔拒绝是不可能的，这正是我们要的语义。
+    if (!detail) throw new Error('确认单不存在或已过期');
+    const panel = this._authorize(detail.panelId, capabilityToken);
+    const rejecter = panel.tokens.get(rejecterToken);
+    if (!rejecter || rejecter.ownerId !== panel.session.ownerId) {
+      this._emit(detail.panelId, 'blocked', { reason: 'rejecter-mismatch', actionId });
+      throw new Error('拒绝人必须是面板所有者');
+    }
+    detail.rejected = true;
+    detail.rejectedAt = this._now();
+    detail.rejectionContext = { ...(context || {}), channel: (context && context.channel) || 'owner-ui' };
+    this._emit(detail.panelId, 'action.rejected', { actionId, method: detail.method });
+    return { actionId, panelId: detail.panelId, rejected: true };
+  }
+
+  /**
    * 待批确认单列表（阶段 4 审批 UI 用）。只暴露描述信息，**不含 token**。
    * @returns {Array<{actionId: string, method: string, summary: object|null, createdAt: number, binding: object}>}
    */
@@ -380,7 +420,8 @@ class BrowserPanelBroker {
     const out = [];
     for (const [actionId, detail] of details.entries()) {
       if (detail.panelId !== panelId) continue;
-      if (detail.approved || detail.consumed) continue;
+      // 已批准 / 已拒绝 / 已消费 都不再属于"待批"
+      if (detail.approved || detail.rejected || detail.consumed) continue;
       out.push({
         actionId,
         method: detail.method,
@@ -405,12 +446,17 @@ class BrowserPanelBroker {
     }
     this._authorize(detail.panelId, capabilityToken);
     const target = this.resolveTarget(detail.panelId, capabilityToken);
+    let state = 'pending';
+    if (detail.consumed) state = 'none';
+    else if (detail.rejected) state = 'rejected';
+    else if (detail.approved) state = 'approved';
     return {
       actionId,
-      state: detail.approved ? 'approved' : 'pending',
+      state,
       panelId: detail.panelId,
       method: detail.method,
       approvedAt: detail.approvedAt ?? null,
+      rejectedAt: detail.rejectedAt ?? null,
       binding: {
         sessionId: target.sessionId,
         webContentsId: target.webContentsId,
@@ -516,6 +562,12 @@ class BrowserPanelBroker {
   }
 
   // ---- 内部 ----
+
+  /** 确认单是否已被用户拒绝（终态，不可翻案） */
+  _isRejected(actionId, panelId) {
+    const detail = this._pendingApprovalsDetail && this._pendingApprovalsDetail.get(actionId);
+    return !!(detail && detail.panelId === panelId && detail.rejected && !detail.consumed);
+  }
 
   _consumeApproval(actionId, panelId, method, target) {
     const detail = this._pendingApprovalsDetail && this._pendingApprovalsDetail.get(actionId);

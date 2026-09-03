@@ -6,6 +6,11 @@ import { AddressInfo } from 'node:net';
 import {
   AgentPanelBridgeService,
   PanelBridgeError,
+  isPanelConfirmation,
+  describePanelMethod,
+  clearPanelModeRegistryCache,
+  panelModeRegistryPath,
+  readPanelModeRegistry,
 } from './agent-panel-bridge.service';
 
 const PROTOCOL = 'kaypal-browser-bridge';
@@ -547,5 +552,273 @@ describe('AgentPanelBridgeService', () => {
     } finally {
       await stub.close();
     }
+  });
+});
+
+/**
+ * 阶段 6 决策 ②：面板确认单与后端 AgentConfirmation **合并成一套**的测试。
+ *
+ * 盯死四条：
+ *  1. 主键 = 桥 actionId（全链路一个 id，不需要映射表）；
+ *  2. 落库是审计旁路——prisma 缺失/写失败都不能阻断面板链路；
+ *  3. 审批态（批准/拒绝）落得下来，事后可查"谁批的、什么时候批的"；
+ *  4. 来源标记可靠（后端待批列表靠它把面板单过滤掉）。
+ */
+describe('AgentPanelBridgeService 与 AgentConfirmation 合并（阶段 6 决策 ②）', () => {
+  const originalFile = process.env.KAYPAL_BROWSER_PANEL_BRIDGE_FILE;
+
+  afterEach(() => {
+    if (originalFile === undefined) delete process.env.KAYPAL_BROWSER_PANEL_BRIDGE_FILE;
+    else process.env.KAYPAL_BROWSER_PANEL_BRIDGE_FILE = originalFile;
+  });
+
+  /** 最小 prisma 桩：只实现面板落库用到的三个方法，并记录调用 */
+  function makePrismaStub(opts: { failOnUpsert?: boolean } = {}) {
+    const rows = new Map<string, Record<string, unknown>>();
+    const calls: Array<{ op: string; args: Record<string, unknown> }> = [];
+    return {
+      rows,
+      calls,
+      agentConfirmation: {
+        upsert: async (args: Record<string, unknown>) => {
+          calls.push({ op: 'upsert', args });
+          if (opts.failOnUpsert) throw new Error('db down');
+          const create = (args.create ?? {}) as Record<string, unknown>;
+          const where = args.where as { id: string };
+          rows.set(where.id, { ...(rows.get(where.id) ?? {}), ...create });
+          return {};
+        },
+        updateMany: async (args: Record<string, unknown>) => {
+          calls.push({ op: 'updateMany', args });
+          const where = args.where as { id: string };
+          const data = args.data as Record<string, unknown>;
+          const prev = rows.get(where.id);
+          if (prev) rows.set(where.id, { ...prev, ...data });
+          return { count: prev ? 1 : 0 };
+        },
+        findUnique: async (args: Record<string, unknown>) => {
+          calls.push({ op: 'findUnique', args });
+          const where = args.where as { id: string };
+          return rows.get(where.id) ?? null;
+        },
+        update: async (args: Record<string, unknown>) => {
+          calls.push({ op: 'update', args });
+          const where = args.where as { id: string };
+          const data = args.data as Record<string, unknown>;
+          const prev = rows.get(where.id) ?? {};
+          const next = { ...prev, ...data };
+          rows.set(where.id, next);
+          return next;
+        },
+      },
+    };
+  }
+
+  /** 起桥 + 写凭据，返回 service 与桩 */
+  async function setup(opts: { failOnUpsert?: boolean; withPrisma?: boolean } = {}) {
+    const stub = await startStubBridge('tok-1');
+    const { file } = writeCredFile({
+      endpoint: `http://127.0.0.1:${stub.port}`,
+      token: 'tok-1',
+      panelId: 'panel-1',
+      sessionId: 'sess-1',
+    });
+    useCredFile(file);
+    const prisma = opts.withPrisma === false ? undefined : makePrismaStub(opts);
+    const svc = new AgentPanelBridgeService(prisma as never);
+    return { stub, svc, prisma: prisma as ReturnType<typeof makePrismaStub> };
+  }
+
+  it('签单落库：主键 = 桥 actionId，带 source/sessionId/method（全链路一个 id）', async () => {
+    const { stub, svc, prisma } = await setup();
+    try {
+      const ticket = await svc.requestAction(ACTOR, {
+        method: 'Page.navigate',
+        params: { url: 'https://kaypal.cn/x' },
+        summary: { label: '导航', url: 'https://kaypal.cn/x' },
+        sessionId: 'agent-session-7',
+      });
+      expect(ticket.actionId).toBe('act-1');
+      const row = prisma.rows.get('act-1');
+      expect(row).toBeTruthy();
+      // 主键就是桥的 actionId —— 桌面审批 UI / 桥 / 后端 / 证据链四处同一个 id
+      expect(row!.id).toBe('act-1');
+      expect(row!.sessionId).toBe('agent-session-7');
+      expect(row!.action).toBe('Page.navigate');
+      expect(row!.targetLabel).toBe('打开网页');
+      const json = row!.confirmationJson as Record<string, unknown>;
+      expect(json.source).toBe('browser-panel');
+      expect(json.sessionId).toBe('agent-session-7');
+      expect(json.status).toBe('pending');
+    } finally {
+      await stub.close();
+    }
+  });
+
+  it('审计旁路：落库抛错不阻断签单（拿不到库也得拿到票号）', async () => {
+    const { stub, svc } = await setup({ failOnUpsert: true });
+    try {
+      const ticket = await svc.requestAction(ACTOR, {
+        method: 'Page.navigate',
+        params: { url: 'https://kaypal.cn/x' },
+        sessionId: 'agent-session-7',
+      });
+      expect(ticket.actionId).toBe('act-1');
+    } finally {
+      await stub.close();
+    }
+  });
+
+  it('审计旁路：prisma 未注入 → 纯内存语义，签单照常成功', async () => {
+    const { stub, svc } = await setup({ withPrisma: false });
+    try {
+      const ticket = await svc.requestAction(ACTOR, {
+        method: 'Page.navigate',
+        params: { url: 'https://kaypal.cn/x' },
+      });
+      expect(ticket.actionId).toBe('act-1');
+      // 没注入 prisma 时 markApproved / markRejected 也不该抛
+      await expect(svc.markApproved('act-1')).resolves.toBeUndefined();
+      await expect(svc.markRejected('act-1')).resolves.toBeUndefined();
+    } finally {
+      await stub.close();
+    }
+  });
+
+  it('用户在面板批准 → 审批态落库（status 列留给两阶段锁定，不动）', async () => {
+    const { stub, svc, prisma } = await setup();
+    try {
+      await svc.requestAction(ACTOR, { method: 'Page.navigate', sessionId: 's-1' });
+      await svc.markApproved('act-1');
+      const row = prisma.rows.get('act-1')!;
+      // 两阶段锁定的 status 列仍是 pending（真正执行时才 in_use → consumed）
+      expect(row.status).toBe('pending');
+      const json = row.confirmationJson as Record<string, unknown>;
+      expect(json.status).toBe('approved');
+      expect(typeof json.decidedAt).toBe('string');
+    } finally {
+      await stub.close();
+    }
+  });
+
+  it('用户在面板拒绝 → 终态收口（status=consumed + json.status=rejected）', async () => {
+    const { stub, svc, prisma } = await setup();
+    try {
+      await svc.requestAction(ACTOR, { method: 'Page.navigate', sessionId: 's-1' });
+      await svc.markRejected('act-1');
+      const row = prisma.rows.get('act-1')!;
+      expect(row.status).toBe('consumed');
+      expect((row.confirmationJson as Record<string, unknown>).status).toBe('rejected');
+    } finally {
+      await stub.close();
+    }
+  });
+
+  it('来源标记判定：面板单认得出，后端单/脏数据不误判', async () => {
+    expect(isPanelConfirmation({ source: 'browser-panel' })).toBe(true);
+    expect(isPanelConfirmation({ source: 'agent-browser' })).toBe(false);
+    expect(isPanelConfirmation({})).toBe(false);
+    expect(isPanelConfirmation(null)).toBe(false);
+    expect(isPanelConfirmation('browser-panel')).toBe(false);
+    expect(isPanelConfirmation(undefined)).toBe(false);
+  });
+
+  it('CDP 方法 → 人话标签（审批卡片/待批列表给人看）', () => {
+    expect(describePanelMethod('Page.navigate')).toBe('打开网页');
+    expect(describePanelMethod('Input.dispatchMouseEvent')).toBe('鼠标点击');
+    expect(describePanelMethod('Input.insertText')).toBe('输入文字');
+    // 未登记的方法原样返回，不假装认识
+    expect(describePanelMethod('Runtime.evaluate')).toBe('Runtime.evaluate');
+  });
+});
+
+// ── 阶段 6 决策 ③：面板模式开关投递文件（desktop 写、3011 读）────────────────
+describe('readPanelModeRegistry（面板模式开关文件）', () => {
+  const MODE_PROTOCOL = 'kaypal-browser-panel-mode';
+  const originalFile = process.env.KAYPAL_BROWSER_PANEL_MODE_FILE;
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'panel-mode-'));
+    process.env.KAYPAL_BROWSER_PANEL_MODE_FILE = join(dir, 'browser-panel-mode.json');
+    clearPanelModeRegistryCache();
+  });
+
+  afterEach(() => {
+    if (originalFile === undefined) delete process.env.KAYPAL_BROWSER_PANEL_MODE_FILE;
+    else process.env.KAYPAL_BROWSER_PANEL_MODE_FILE = originalFile;
+    clearPanelModeRegistryCache();
+  });
+
+  function writeModeFile(payload: unknown): void {
+    writeFileSync(process.env.KAYPAL_BROWSER_PANEL_MODE_FILE!, JSON.stringify(payload));
+  }
+
+  it('合法 on 文件 → 返回 on（路径 env 覆盖生效）', () => {
+    writeModeFile({
+      version: 1,
+      protocol: MODE_PROTOCOL,
+      mode: 'on',
+      pid: process.pid, // 本测试进程活着，探活必过
+      startedAt: new Date().toISOString(),
+    });
+    expect(panelModeRegistryPath()).toBe(process.env.KAYPAL_BROWSER_PANEL_MODE_FILE);
+    expect(readPanelModeRegistry()).toBe('on');
+  });
+
+  it('合法 off 文件 → 返回 off（desktop 明确写下的关闭态）', () => {
+    writeModeFile({ protocol: MODE_PROTOCOL, mode: 'off', pid: process.pid, startedAt: new Date().toISOString() });
+    expect(readPanelModeRegistry()).toBe('off');
+  });
+
+  it('文件缺失 → null（默认 off，不报错）', () => {
+    expect(readPanelModeRegistry()).toBeNull();
+  });
+
+  it('protocol 不对 → null（不认陌生协议的文件）', () => {
+    writeModeFile({ protocol: 'kaypal-browser-bridge', mode: 'on', pid: process.pid, startedAt: new Date().toISOString() });
+    expect(readPanelModeRegistry()).toBeNull();
+  });
+
+  it('mode 非 on/off → null（fail-closed，不猜）', () => {
+    writeModeFile({ protocol: MODE_PROTOCOL, mode: 'yes', pid: process.pid, startedAt: new Date().toISOString() });
+    expect(readPanelModeRegistry()).toBeNull();
+  });
+
+  it('老化超过 7 天 → null（desktop 崩了没来得及删的兜底）', () => {
+    writeModeFile({
+      protocol: MODE_PROTOCOL,
+      mode: 'on',
+      pid: process.pid,
+      startedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+    expect(readPanelModeRegistry()).toBeNull();
+  });
+
+  it('startedAt 缺失/非法 → null（没有时间戳按老化处理）', () => {
+    writeModeFile({ protocol: MODE_PROTOCOL, mode: 'on', pid: process.pid });
+    expect(readPanelModeRegistry()).toBeNull();
+    writeModeFile({ protocol: MODE_PROTOCOL, mode: 'on', pid: process.pid, startedAt: 'not-a-date' });
+    expect(readPanelModeRegistry()).toBeNull();
+  });
+
+  it('pid 已死（pid=0 非法）→ null（防残留文件把开关永久顶开）', () => {
+    writeModeFile({ protocol: MODE_PROTOCOL, mode: 'on', pid: 0, startedAt: new Date().toISOString() });
+    expect(readPanelModeRegistry()).toBeNull();
+  });
+
+  it('JSON 损坏 → null', () => {
+    writeFileSync(process.env.KAYPAL_BROWSER_PANEL_MODE_FILE!, '{oops');
+    expect(readPanelModeRegistry()).toBeNull();
+  });
+
+  it('1s 缓存生效：读到旧值，clear 后立即看到新值', () => {
+    writeModeFile({ protocol: MODE_PROTOCOL, mode: 'on', pid: process.pid, startedAt: new Date().toISOString() });
+    expect(readPanelModeRegistry()).toBe('on');
+    // 不清缓存直接改文件 → TTL 内还是旧值
+    writeModeFile({ protocol: MODE_PROTOCOL, mode: 'off', pid: process.pid, startedAt: new Date().toISOString() });
+    expect(readPanelModeRegistry()).toBe('on');
+    clearPanelModeRegistryCache();
+    expect(readPanelModeRegistry()).toBe('off');
   });
 });

@@ -13,6 +13,9 @@
  *  6) 状态机广播：did-navigate/did-fail-load/render-process-gone → 状态事件。
  */
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 // ---- fake electron ----
 function makeFakeElectron() {
@@ -114,7 +117,7 @@ function makeTabManager() {
   return tabManager;
 }
 
-function setup(width = 1600, height = 900) {
+function setup(width = 1600, height = 900, opts = {}) {
   const electron = makeFakeElectron();
   const tabManager = makeTabManager();
   const window = makeFakeWindow(width, height);
@@ -126,6 +129,10 @@ function setup(width = 1600, height = 900) {
     preloadPath: '/fake/preload.js',
     stripHtmlPath: '/fake/strip.html',
     logger: { warn: () => undefined },
+    // ③：面板模式开关文件落 userData（测试注入临时目录； throwingDir 专测异常取法）
+    getUserDataDir: opts.throwingDir
+      ? () => { throw new Error('no userData in test'); }
+      : (opts.userDataDir ? () => opts.userDataDir : undefined),
   });
   manager.attach(window);
   return { electron, manager, tabManager, window };
@@ -263,6 +270,77 @@ test('resolvePanelTarget：三方绑定（阶段 1 事实源）', () => {
   assert.equal(target.sessionId, manager.session.sessionId);
   assert.equal(target.webContentsId, manager.panelWebContents().id);
   assert.ok(target.url.startsWith('http://127.0.0.1:8080/'));
+});
+
+// ── 阶段 6 决策 ③：面板模式开关（0600 文件投递）─────────────────────────────
+test('③ 默认 off：无 userDataDir / 文件缺失 → agentMode=off（铁律不变）', () => {
+  const { manager } = setup();
+  assert.equal(manager.getAgentMode(), 'off');
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  assert.equal(manager.publicState().agentMode, 'off');
+});
+
+test('③ setAgentMode(true) → 写 0600 文件，回读 on；publicState 同步', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'panel-mode-mgr-'));
+  const { manager } = setup(1600, 900, { userDataDir: dir });
+  const modePath = path.join(dir, 'browser-panel-mode.json');
+  assert.equal(fs.existsSync(modePath), false);
+  const result = manager.setAgentMode(true);
+  assert.equal(result, 'on');
+  assert.equal(manager.getAgentMode(), 'on');
+  assert.equal(manager.publicState().agentMode, 'on');
+  // 0600 权限落盘（POSIX 才有意义，Windows 上 mode 位忽略）
+  if (process.platform !== 'win32') {
+    const stat = fs.statSync(modePath);
+    assert.equal(stat.mode & 0o777, 0o600, `应 0600，实际 ${stat.mode.toString(8)}`);
+  }
+  const payload = JSON.parse(fs.readFileSync(modePath, 'utf8'));
+  assert.equal(payload.protocol, 'kaypal-browser-panel-mode');
+  assert.equal(payload.mode, 'on');
+  assert.equal(payload.pid, process.pid);
+});
+
+test('③ setAgentMode(false) → 文件删除（而非写 off），回读 off', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'panel-mode-mgr-'));
+  const { manager } = setup(1600, 900, { userDataDir: dir });
+  const modePath = path.join(dir, 'browser-panel-mode.json');
+  manager.setAgentMode(true);
+  assert.ok(fs.existsSync(modePath));
+  assert.equal(manager.setAgentMode(false), 'off');
+  assert.equal(fs.existsSync(modePath), false, '关闭 = 删文件，不留残留');
+  assert.equal(manager.getAgentMode(), 'off');
+});
+
+test('③ setAgentMode 必须广播状态（stage7 真机抓的 bug：不广播 → 控制条用陈旧态 toggle）', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'panel-mode-mgr-'));
+  const { manager, tabManager } = setup(1600, 900, { userDataDir: dir });
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  const pushed = [];
+  tabManager.sendToBusiness = (channel, payload) => {
+    if (channel === 'browser-panel:state') pushed.push(payload.agentMode);
+    return true;
+  };
+  manager.setAgentMode(true);
+  manager.setAgentMode(false);
+  // 两次 toggle 各广播一次，且 agentMode 跟着变（控制条按钮靠它高亮/去高亮）
+  assert.deepEqual(pushed, ['on', 'off']);
+});
+
+test('③ destroy() → 主动清掉开关文件（不留残留给下一次会话）', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'panel-mode-mgr-'));
+  const { manager } = setup(1600, 900, { userDataDir: dir });
+  const modePath = path.join(dir, 'browser-panel-mode.json');
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  manager.setAgentMode(true);
+  assert.ok(fs.existsSync(modePath));
+  manager.destroy();
+  assert.equal(fs.existsSync(modePath), false);
+});
+
+test('③ getUserDataDir 抛异常 → 读一律 off，写显式报错（不静默写 cwd）', () => {
+  const { manager } = setup(1600, 900, { throwingDir: true });
+  assert.equal(manager.getAgentMode(), 'off');
+  assert.throws(() => manager.setAgentMode(true), /userData/);
 });
 
 (async () => {

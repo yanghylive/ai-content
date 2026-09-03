@@ -9,6 +9,8 @@ import {
   isDesktopInteractionTask,
 } from './local-engine.utils';
 
+import { isPanelConfirmation } from './agent-panel-bridge.service';
+
 import { ForbiddenException } from '@nestjs/common';
 import { Prisma, type InteractionReplyRule } from '@prisma/client';
 import type { ConfigService } from '@nestjs/config';
@@ -499,8 +501,12 @@ export async function hydrateAgentSessionsFromStore(
     if (session?.id) {
       session.tenantId = row.tenantId;
       session.userId = row.userId;
+      // 阶段 6 决策 ②：过滤掉面板确认单——它由用户在**桌面浏览器面板的审批 UI**
+      // 上点批，不能再出现在后端的"待你确认"列表里。否则同一个动作两个审批入口，
+      // 那就不是合并成一套，而是两套并行。行仍然留在库里（审计/回放可查）。
       const dbConfirmations = confirmationRows
         .filter((c) => c.sessionId === session.id)
+        .filter((c) => !isPanelConfirmation(c.confirmationJson))
         .map(
           (c) =>
             ({
@@ -531,14 +537,18 @@ export async function hydrateAgentConfirmationsFromStore(
     take: Math.max(1, Math.min(limit, 500)),
   });
 
-  rows.forEach((row) => {
-    const confirmation = row.confirmationJson as AgentConfirmation | null;
-    if (confirmation?.id) {
-      confirmation.tenantId = row.tenantId;
-      confirmation.userId = row.userId;
-      this.agentConfirmations.set(confirmation.id, confirmation);
-    }
-  });
+  rows
+    // 阶段 6 决策 ②：面板确认单不进内存待批表——它不该被后端的批准接口批掉
+    // （批准权在桌面审批 UI），进来只会变成第二个审批入口。
+    .filter((row) => !isPanelConfirmation(row.confirmationJson))
+    .forEach((row) => {
+      const confirmation = row.confirmationJson as AgentConfirmation | null;
+      if (confirmation?.id) {
+        confirmation.tenantId = row.tenantId;
+        confirmation.userId = row.userId;
+        this.agentConfirmations.set(confirmation.id, confirmation);
+      }
+    });
 }
 
 export async function loadStoredAgentSession(
@@ -564,6 +574,8 @@ export async function loadStoredAgentSession(
     orderBy: { createdAt: 'desc' },
   });
   const dbConfirmations = confirmationRows
+    // 阶段 6 决策 ②：同 hydrate——面板确认单在桌面面板审批，不进后端待批列表
+    .filter((c) => !isPanelConfirmation(c.confirmationJson))
     .map(
       (c) =>
         ({

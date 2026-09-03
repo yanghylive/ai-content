@@ -8,6 +8,10 @@ import { AgentBrowserSessionService } from './agent-browser-session.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
 import { PlaywrightMcpService } from './playwright-mcp.service';
 import { AgentBrowserExecutor } from './agent-browser-executor.service';
+import {
+  isPanelConfirmation,
+  panelMethodForAction,
+} from './agent-panel-bridge.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { detectPromptInjection } from '../ai-gateway/ai-gateway.service';
 
@@ -41,6 +45,9 @@ export interface AgentBrowserStepEvent {
   // P0-2（审计 2026-08-22）：确认单 id + 真实 selector，供前端精确批准
   confirmationId?: string;
   selector?: string;
+  // 阶段 6 决策 ②：本步的批准权已交给**桌面浏览器面板审批 UI**（不是后端待批列表）。
+  // 证据链要能回答"这一步是谁批的、在哪批的"，所以钉进事件里。
+  panelApproval?: boolean;
 }
 
 /**
@@ -120,6 +127,11 @@ export class AgentBrowserLoopService {
     }
     // §14.2 allowWrite 门禁（P4-1 审计 2026-08-22）：不再按自然语言中文关键词判断
     // （英文指令可绕过），改为循环内按解析后动作类型判断（isWriteAction）。
+
+    // 阶段 6 决策 ②：面板模式——高风险动作的批准权归**桌面浏览器面板审批 UI**，
+    // 后端不再为同一个动作建第二张 AgentConfirmation（否则两个审批入口 = 没合并）。
+    // 每轮循环开始时读一次（开关是 env 驱动，运行期改了下一轮生效）。
+    const panelMode = this.executor ? this.executor.panelMode() : 'off';
 
     const steps: AgentBrowserStepEvent[] = [];
 
@@ -210,6 +222,9 @@ export class AgentBrowserLoopService {
       let blockedConfirmation: { id?: string; selector?: string } | undefined;
       // P2（复查 2026-08-22）：本步锁定成功的确认单 id（动作成功→consumed；失败→释放回 pending）
       let lockedConfirmationId: string | undefined;
+      // 阶段 6 决策 ②：面板模式下"本步的批准权已交给桌面审批 UI"（用于事件文案留痕，
+      // 同时让读代码的人一眼看出这里**故意**没有建后端确认单，不是漏了）
+      let panelApprovalDeferred = false;
       // P1（复查 2026-08-22）：每步执行前检查会话状态——paused/stopped/
       // needs-human 时立即中断循环（否则 pause/stop 只改状态不中断执行）
       const stepStatus = this.sessions.get(sessionId).status;
@@ -275,6 +290,11 @@ export class AgentBrowserLoopService {
 
       // 3.2 执行前策略审计（工具映射 + allowWrite + 高风险确认闸门）
       const tool = this.mapTool(action.action);
+      // 阶段 5：面板模式需要调用方身份做 actor 断言（会话租约里就有，
+      // 拿不到就传空——面板模式会据此 fail-closed，不静默改走无头浏览器）
+      const actor = session.lease?.ownerId
+        ? { ownerId: session.lease.ownerId, tenantId: session.lease.tenantId ?? '' }
+        : undefined;
       let allowed = true;
       let gateMessage: string | undefined;
       // P4-1：allowWrite=false 时写动作按类型阻断（type/click/press_key Enter/tabs new|close）
@@ -305,12 +325,27 @@ export class AgentBrowserLoopService {
           // sessionId/tenantId/userId + fingerprint 一致）才放行；不信任客户端裸确认。
           // P2（复查 2026-08-22）：两阶段——此处仅"锁定"（pending→in_use，原子防并发），
           // 动作成功后才消费（in_use→consumed）；失败释放（in_use→pending）可安全重试。
+          // 阶段 6 决策 ②：面板确认单也走这条（同一张表、同一个 id、同一套锁定）。
           const conf = await this.resolveConfirmation(
             session,
             action,
             confirmationIds,
           );
-          if (!conf.ok) {
+          if (conf.ok) {
+            lockedConfirmationId = conf.confirmationId;
+          } else if (panelMode === 'on') {
+            // ── 阶段 6 决策 ②：面板模式下，没有已批准的单 → 交给桌面面板签 ──
+            // 写动作的批准权归**桌面浏览器面板审批 UI**，技术闸门由面板桥把持
+            // （桥把确认单绑在当前 webContentsId 上，换页旧单作废）。
+            //
+            // 于是此处**不再建第二张 AgentConfirmation**：否则同一个动作两个
+            // 审批入口（桌面一个、后端待批列表一个），那是两套并行而非合并。
+            //
+            // 放行给 executor 不会漏闸门：executor 只在确认单 approved 时才执行，
+            // pending 时只签单并返回 ok:false + confirmationId（桥侧 fail-closed，
+            // 且面板不可用/动作不支持一律 failed 不回退到无头浏览器）。
+            panelApprovalDeferred = true;
+          } else {
             const confirmationId = await this.persistPendingConfirmation(
               session,
               action,
@@ -322,8 +357,6 @@ export class AgentBrowserLoopService {
               selector: 'selector' in action ? action.selector : undefined,
             };
             gateMessage = `需用户确认后执行（高风险动作${confirmationId ? `，确认单 ${confirmationId}` : ''}）`;
-          } else {
-            lockedConfirmationId = conf.confirmationId;
           }
         } else if (!audit.allowed) {
           allowed = false;
@@ -334,11 +367,7 @@ export class AgentBrowserLoopService {
       // 3.3 单动作执行（allowed 才执行；否则记录 blocked）
       // P4-2：maxRetries 接入——可重试错误（导航/提取/按键等执行类失败）重试，
       // 门禁类（策略阻断/需确认/写操作未开启/mock）不重试
-      // 阶段 5：面板模式需要调用方身份做 actor 断言（会话租约里就有，
-      // 拿不到就传空——面板模式会据此 fail-closed，不静默改走无头浏览器）
-      const actor = session.lease?.ownerId
-        ? { ownerId: session.lease.ownerId, tenantId: session.lease.tenantId ?? '' }
-        : undefined;
+      // （actor 已在 3.2 构造，阶段 6 决策 ②：闸门和执行共用同一个身份）
       const r = allowed
         ? await this.executeWithRetry(
             action,
@@ -346,6 +375,8 @@ export class AgentBrowserLoopService {
             cfg.timeoutMs,
             cfg.maxRetries,
             actor,
+            // 阶段 6 决策 ②：面板确认单要按会话落库，会话 id 必须透到执行器
+            session.id,
           )
         : {
             index: i,
@@ -377,6 +408,8 @@ export class AgentBrowserLoopService {
           ? { confirmationId: r.confirmationId }
           : {}),
         ...('selector' in r && r.selector ? { selector: r.selector } : {}),
+        // 阶段 6 决策 ②：留痕——这一步的批准发生在桌面面板审批 UI 上
+        ...(panelApprovalDeferred ? { panelApproval: true } : {}),
       };
       steps.push(stepEvent);
       onStep?.(stepEvent);
@@ -655,6 +688,8 @@ export class AgentBrowserLoopService {
     maxRetries: number,
     /** 阶段 5：调用方身份（面板模式下的 actor 断言需要 ownerId/tenantId） */
     actor?: { ownerId: string; tenantId: string },
+    /** 阶段 6 决策 ②：会话 id（面板确认单按会话落库，供 resolveConfirmation 绑定） */
+    sessionId?: string,
   ): Promise<{
     index: number;
     action: string;
@@ -683,6 +718,7 @@ export class AgentBrowserLoopService {
         accountId,
         timeoutMs,
         actor,
+        sessionId,
       });
       lastResult = r;
       if (r.ok) return r;
@@ -714,6 +750,14 @@ export class AgentBrowserLoopService {
    * 全部匹配才放行。查库不可用时回落精确 confirmedTools（已收紧，缺失关键字段不放行）。
    * P2（复查 2026-08-22）：匹配后原子锁定 pending → in_use（并发只有一方锁定成功），
    * 不直接 consumed——动作成功后才消费（consumeConfirmation），失败释放回 pending 可重试。
+   *
+   * 阶段 6 决策 ②（合并两套确认机制）：**面板确认单也走这里**——
+   * 它落在同一张 AgentConfirmation 表、用同一个 id（桥 actionId）、同一套
+   * pending→in_use→consumed 两阶段锁定。区别只有两点：
+   *  1. 指纹比对用 CDP method（面板单的 action 列存的是 `Page.navigate` 之类，
+   *     而普通单存的是 `goto`）；
+   *  2. 批准态在**桌面面板**上，所以要问桥（见 panelApprovalState），
+   *     后端不替用户点头，也不认"只在数据库里写了个 approved"。
    */
   private async resolveConfirmation(
     session: AgentBrowserSession,
@@ -739,6 +783,8 @@ export class AgentBrowserLoopService {
                 action: string;
                 target?: string | null;
                 content?: string | null;
+                /** 阶段 6 决策 ②：面板单靠 confirmationJson 里的 source 识别 */
+                confirmationJson?: unknown;
               }>
             >;
             updateMany?: (args: {
@@ -752,18 +798,35 @@ export class AgentBrowserLoopService {
       const records = await delegate.findMany({
         where: { id: { in: confirmationIds } },
       });
-      const matched = records.find((rec) => {
-        if (rec.status !== 'pending') return false;
-        if (rec.sessionId !== session.id) return false;
+      // 阶段 6 决策 ②：面板单要问桥（异步），所以从 find 改成 for 循环
+      let matched: (typeof records)[number] | undefined;
+      for (const rec of records) {
+        if (rec.status !== 'pending') continue;
+        if (rec.sessionId !== session.id) continue;
         if (rec.tenantId !== (session.lease?.tenantId ?? rec.tenantId))
-          return false;
-        if (rec.userId !== (session.lease?.ownerId ?? rec.userId)) return false;
-        if (rec.action !== action.action) return false;
-        if ('selector' in action && rec.target !== action.selector)
-          return false;
-        if ('url' in action && rec.content !== action.url) return false;
-        return true;
-      });
+          continue;
+        if (rec.userId !== (session.lease?.ownerId ?? rec.userId)) continue;
+        if (isPanelConfirmation(rec.confirmationJson)) {
+          // 面板单：指纹按 CDP method 比（action 列存的是 Page.navigate 之类）。
+          const expected = panelMethodForAction(action.action);
+          if (!expected) continue;
+          const json = rec.confirmationJson as
+            | { method?: unknown; status?: unknown }
+            | null;
+          if ((json?.method ?? rec.action) !== expected) continue;
+          // 批准态看落库的 json.status——由 executor 在**桥上真的查到 approved**
+          // 之后写入（AgentBrowserExecutor.markApprovalSafe），不是后端自说自话。
+          // 没有这个标记 = 用户还没点批准，闸门不放行，交给 executor 再去问桥
+          // （桥把确认单绑在当前 webContentsId 上，那才是批准的源头）。
+          if (json?.status !== 'approved') continue;
+        } else {
+          if (rec.action !== action.action) continue;
+          if ('selector' in action && rec.target !== action.selector) continue;
+          if ('url' in action && rec.content !== action.url) continue;
+        }
+        matched = rec;
+        break;
+      }
       if (!matched) return { ok: false };
       // P1（复查 2026-08-22）：原子锁定——pending → in_use，并发时 updateMany 匹配
       // 0 条 = 已被其他请求锁定/消费 → 拒绝（同 id 不可并发复用）

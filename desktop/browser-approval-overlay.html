@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>动作审批</title>
+  <style>
+    /* 对齐控制条深色姿态；主色紫 #722ed1 与全平台一致 */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      display: flex; flex-direction: column;
+      background: #1e1f24; color: #d7d9e0;
+      font: 12px/1.45 -apple-system, "PingFang SC", "Segoe UI", sans-serif;
+      border: 1px solid #722ed1; border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      -webkit-user-select: none; user-select: none;
+    }
+    #head {
+      flex: none; height: 34px; display: flex; align-items: center; gap: 6px;
+      padding: 0 10px; background: #23242b; border-radius: 7px 7px 0 0;
+      border-bottom: 1px solid #2c2d34;
+    }
+    #dot { width: 7px; height: 7px; border-radius: 50%; background: #faad14; flex: none; }
+    #title { font-size: 12px; font-weight: 600; color: #eef0f6; }
+    #count {
+      font-size: 11px; color: #8a8d98; margin-left: auto; flex: none;
+      background: #2c2d34; border-radius: 9px; padding: 1px 7px;
+    }
+    #list { flex: 1 1 auto; overflow-y: auto; padding: 6px; }
+    #list::-webkit-scrollbar { width: 6px; }
+    #list::-webkit-scrollbar-thumb { background: #3a3b44; border-radius: 3px; }
+
+    .card {
+      height: 70px; display: flex; align-items: center; gap: 8px;
+      padding: 0 8px; margin-bottom: 6px;
+      background: #26272e; border: 1px solid #33343d; border-radius: 6px;
+    }
+    .card:last-child { margin-bottom: 0; }
+    .card:hover { border-color: #4a4b56; }
+    .info { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+    .what {
+      font-size: 12px; color: #eef0f6; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .where {
+      font-size: 11px; color: #8a8d98; margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ops { flex: none; display: flex; gap: 6px; }
+    button {
+      height: 26px; padding: 0 10px; border: none; border-radius: 6px;
+      font-size: 12px; cursor: pointer; color: #fff; white-space: nowrap;
+    }
+    #ok:hover { background: #9254de; }
+    .ok { background: #722ed1; }
+    .no { background: transparent; color: #aeb1bc; border: 1px solid #3a3b44; }
+    .no:hover { background: #2c2d34; color: #eef0f6; }
+    button:disabled { opacity: 0.45; cursor: default; }
+    .empty { padding: 14px 10px; color: #8a8d98; text-align: center; }
+  </style>
+</head>
+<body>
+  <div id="head">
+    <span id="dot"></span>
+    <span id="title">Agent 请求操作这个页面</span>
+    <span id="count">0</span>
+  </div>
+  <div id="list"></div>
+  <script>
+    // ⚠️ 安全：整个界面只用 textContent 写入，绝不拼 innerHTML。
+    // 卡片里的动作名/网址/摘要全部由 Agent 侧提供（不可信输入），
+    // 拼 HTML 就等于给 Agent 一个往本地受信视图里注入脚本的口子。
+    const api = window.browserApproval;
+    const $ = (id) => document.getElementById(id);
+
+    const METHOD_LABEL = {
+      'Page.navigate': '打开网页',
+      'Input.dispatchMouseEvent': '鼠标点击',
+      'Input.dispatchKeyEvent': '键盘输入',
+      'Input.insertText': '输入文字',
+    };
+
+    function describe(action) {
+      const label = METHOD_LABEL[action.method] || action.method;
+      const s = action.summary || {};
+      const detail =
+        s.label || s.text || s.selector || s.url || s.targetLabel || '';
+      return detail ? label + '：' + detail : label;
+    }
+
+    function where(action) {
+      const url = (action.binding && action.binding.url) || '';
+      const wc = action.binding && action.binding.webContentsId;
+      return wc ? url + '  ·  页面 #' + wc : url;
+    }
+
+    function render(payload) {
+      const actions = (payload && payload.actions) || [];
+      $('count').textContent = String(actions.length);
+      const list = $('list');
+      list.textContent = '';
+      if (!actions.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = '暂无待批准的动作';
+        list.appendChild(empty);
+        return;
+      }
+      actions.forEach((action) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const info = document.createElement('div');
+        info.className = 'info';
+        const what = document.createElement('div');
+        what.className = 'what';
+        what.textContent = describe(action);
+        const whereEl = document.createElement('div');
+        whereEl.className = 'where';
+        whereEl.textContent = where(action);
+        whereEl.title = where(action);
+        info.appendChild(what);
+        info.appendChild(whereEl);
+
+        const ops = document.createElement('div');
+        ops.className = 'ops';
+        const ok = document.createElement('button');
+        ok.className = 'ok';
+        ok.textContent = '批准';
+        ok.title = '允许 Agent 在当前页面执行这个动作';
+        const no = document.createElement('button');
+        no.className = 'no';
+        no.textContent = '拒绝';
+        no.title = '拒绝后该动作不能再执行（Agent 需重新申请）';
+
+        const act = (channel, kind) => {
+          ok.disabled = true;
+          no.disabled = true;
+          api.invoke(channel, action.actionId)
+            .then(() => {
+              // 批准/拒绝后由主进程推送新列表，这里不本地改状态（避免与主进程不一致）
+            })
+            .catch(() => {
+              ok.disabled = false;
+              no.disabled = false;
+            })
+            .finally(() => { void kind; });
+        };
+        ok.addEventListener('click', () => act('browser-panel:approve-action', 'approve'));
+        no.addEventListener('click', () => act('browser-panel:reject-action', 'reject'));
+
+        ops.appendChild(ok);
+        ops.appendChild(no);
+        card.appendChild(info);
+        card.appendChild(ops);
+        list.appendChild(card);
+      });
+    }
+
+    api.onPendingActions(render);
+    // 首帧主动拉一次（防止浮层加载晚于第一次推送，导致界面空白）
+    api.invoke('browser-panel:list-pending-actions').then(render).catch(() => {});
+  </script>
+</body>
+</html>

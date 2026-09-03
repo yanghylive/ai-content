@@ -35,6 +35,10 @@
     #status.ready { color: #52c41a; }
     #status.starting { color: #faad14; }
     #status.needs-human, #status.blocked, #status.error { color: #ff4d4f; }
+    /* ③：AI 代操作开关——开着时主题紫高亮（与主色 #722ed1 对齐） */
+    #agent-mode { width: auto; padding: 0 8px; font-size: 11px; }
+    #agent-mode.on { background: #722ed1; color: #fff; }
+    #agent-mode.on:hover { background: #8a48e0; }
     #resize { flex: none; width: 5px; height: 100%; cursor: ew-resize; background: #34353d; }
     #resize:hover { background: #722ed1; }
   </style>
@@ -46,6 +50,7 @@
   <button id="reload" title="刷新">↻</button>
   <input id="addr" placeholder="输入网址，回车打开" spellcheck="false" />
   <span id="status"></span>
+  <button id="agent-mode" title="AI 代操作：开启后 AI 助手将在你正在看的这个页面上代你操作（每一步写动作仍需你在此面板批准）">AI 代操作</button>
   <button id="hide" title="收起面板">✕</button>
   <script>
     const api = window.browserControl;
@@ -63,6 +68,10 @@
     $('forward').addEventListener('click', () => invoke('browser-panel:forward'));
     $('reload').addEventListener('click', () => invoke('browser-panel:reload'));
     $('hide').addEventListener('click', () => invoke('browser-panel:hide'));
+    // ③：开关切换（回读态由 onState 里的 agentMode 统一刷新，不自说自话）
+    $('agent-mode').addEventListener('click', () => {
+      invoke('browser-panel:toggle-agent-mode', !(lastState && lastState.agentMode === 'on'));
+    });
     $('addr').addEventListener('keydown', (event) => {
       if (event.key !== 'Enter') return;
       const raw = $('addr').value.trim();
@@ -100,6 +109,9 @@
       const s = session ? session.status : '';
       status.textContent = STATUS_LABEL[s] || (s ? s : '');
       status.className = s || '';
+      // ③：AI 代操作开关态（publicState.agentMode 驱动高亮）
+      const agentOn = state.agentMode === 'on';
+      $('agent-mode').classList.toggle('on', agentOn);
     });
   </script>
 </body>

@@ -23,6 +23,8 @@ const DEFAULT_TENANT = 'local-tenant';
  *   manager: import('./browser-panel-manager').BrowserPanelManager,
  *   broker?: BrowserPanelBroker,
  *   brokerDeps?: object,
+ *   allowSelfApprove?: boolean,
+ *   onPendingChange?: (panelId: string, pending: unknown[]) => void,
  * }} deps
  */
 function wireBrowserPanel(deps) {
@@ -33,6 +35,25 @@ function wireBrowserPanel(deps) {
   // 2026-09-03（阶段 3 硬约束 5）：Agent 不得自我批准写动作——批准必须来自
   // 用户通道（面板 owner 经 UI/确认单点批）。仅测试 harness 显式开启。
   const allowSelfApprove = deps.allowSelfApprove === true;
+  /**
+   * 待批列表变更回调（阶段 6 审批 UI 的实时源）。
+   * Agent 签新单 / 用户批准 / 用户拒绝都会触发，主进程据此刷新审批浮层。
+   * 回调抛错绝不能影响签单/批准本身（UI 是旁路，不是业务链路）。
+   */
+  const notifyPendingChange = (panelId) => {
+    if (typeof deps.onPendingChange !== 'function') return;
+    let pending = [];
+    try {
+      pending = handles.has(panelId) ? broker.listPendingActions(panelId, handles.get(panelId).capabilityToken) : [];
+    } catch {
+      pending = [];
+    }
+    try {
+      deps.onPendingChange(panelId, pending);
+    } catch {
+      /* UI 旁路失败不阻断业务 */
+    }
+  };
   const broker =
     deps.broker ||
     new BrowserPanelBroker({
@@ -149,7 +170,9 @@ function wireBrowserPanel(deps) {
     },
     requestActionForAgent(panelId, actor, method, summary) {
       const handle = handleFor(panelId, actor);
-      return broker.requestAction(panelId, handle.capabilityToken, method, summary);
+      const ticket = broker.requestAction(panelId, handle.capabilityToken, method, summary);
+      notifyPendingChange(panelId);
+      return ticket;
     },
     /**
      * **用户（面板所有者）批准通道** —— 阶段 4 审批 UI 的主进程接缝。
@@ -174,7 +197,25 @@ function wireBrowserPanel(deps) {
         channel: 'owner-ui',
         ...context,
       });
+      notifyPendingChange(panelId);
       return { actionId, panelId, approved: true };
+    },
+    /**
+     * **用户（面板所有者）拒绝通道** —— 阶段 6 审批 UI 的"拒绝"按钮。
+     * 与 approveActionAsOwner 对称，同样校验 owner；拒绝是终态，执行闸门直接拦掉。
+     */
+    rejectActionAsOwner(panelId, actionId, context = {}) {
+      const handle = handles.get(panelId);
+      if (!handle) {
+        throw new Error('面板会话未登记（无主可拒）');
+      }
+      if (!actionId) throw new Error('缺少 actionId');
+      broker.rejectAction(actionId, handle.capabilityToken, handle.capabilityToken, {
+        channel: 'owner-ui',
+        ...context,
+      });
+      notifyPendingChange(panelId);
+      return { actionId, panelId, rejected: true };
     },
     /** 确认单状态（pending/approved/none）；查询不消费，消费仍由审批闸门完成 */
     actionStateForAgent(panelId, actor, actionId) {

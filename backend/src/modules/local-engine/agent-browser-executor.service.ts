@@ -7,6 +7,7 @@ import {
   AgentPanelBridgeService,
   PanelBridgeActor,
   PanelBridgeError,
+  readPanelModeRegistry,
 } from './agent-panel-bridge.service';
 
 /**
@@ -36,6 +37,12 @@ export type AgentBrowserExecuteInput = {
   timeoutMs?: number;
   /** 面板模式必填：调用方身份（用于面板 actor 断言，防跨会话/跨租户） */
   actor?: PanelBridgeActor;
+  /**
+   * 阶段 6 决策 ②：所属 AgentBrowser 会话 id。面板确认单落进 AgentConfirmation
+   * 时写进 sessionId —— loop 的 resolveConfirmation 靠它把单绑到会话上
+   * （防跨会话复用）。不传 = 孤儿单，永远匹配不上，动作会被闸门拦住（fail-closed）。
+   */
+  sessionId?: string;
 };
 
 export type AgentBrowserExecuteResult = {
@@ -56,14 +63,26 @@ export type AgentBrowserExecuteResult = {
 
 const PANEL_MODE_ENV = 'KAYPAL_AGENT_PANEL_MODE';
 
-/** 读面板模式开关；非法值返回 'invalid'（调用方显式报错，不猜配置） */
+/**
+ * 读面板模式开关（阶段 6 决策 ③）。两个来源，优先级从高到低：
+ *  1. **env 显式设置**（KAYPAL_AGENT_PANEL_MODE）——运维/开发一锤定音，
+ *     'off' 是管理员一票否决，非法值返回 'invalid'（显式报错，不猜配置）；
+ *  2. **用户级开关文件**（desktop 面板按钮 → userData 下 0600 文件，
+ *     由 readPanelModeRegistry 读取，null=文件缺失/不合规=未开启）；
+ *  3. 默认 off（铁律不变）。
+ *
+ * @param modeFile 测试注入用；生产走默认参数（带 1s 缓存的文件读取）。
+ */
 export function readAgentPanelMode(
   env: NodeJS.ProcessEnv = process.env,
+  modeFile: 'on' | 'off' | null = readPanelModeRegistry(),
 ): AgentPanelMode | 'invalid' {
-  const raw = (env[PANEL_MODE_ENV] ?? 'off').trim().toLowerCase();
-  if (raw === '' || raw === 'off') return 'off';
+  const raw = (env[PANEL_MODE_ENV] ?? '').trim().toLowerCase();
   if (raw === 'on') return 'on';
-  return 'invalid';
+  if (raw === 'off') return 'off';
+  if (raw !== '') return 'invalid'; // 非法值不猜，也不吃掉文件开关
+  if (modeFile === 'on') return 'on';
+  return 'off';
 }
 
 @Injectable()
@@ -159,7 +178,7 @@ export class AgentBrowserExecutor {
       }
       // 4) 导航：写动作——签单 → 等桌面端用户批准 → 带单执行
       if (kind === 'goto') {
-        return this.gotoViaPanel(action, actor);
+        return this.gotoViaPanel(action, actor, input.sessionId);
       }
       // 5) 其余动作：面板桥还没开通，明确不支持（不许假装成功，也不许偷偷走老路径）
       return this.failed(
@@ -179,15 +198,26 @@ export class AgentBrowserExecutor {
     }
   }
 
-  /** 面板导航：批准权在用户手上，后端只认 approved 的确认单 */
+  /**
+   * 面板导航：批准权在用户手上，后端只认 approved 的确认单。
+   *
+   * @param sessionId 所属 AgentBrowser 会话 id——面板确认单落进 AgentConfirmation
+   *   时写进 sessionId 列，loop 的 resolveConfirmation 靠它把单绑到会话上
+   *   （防跨会话复用）。不传 = 孤儿单，永远匹配不上，动作会被闸门拦住。
+   */
   private async gotoViaPanel(
     action: Extract<AiBrowserAction, { action: 'goto' }>,
     actor: PanelBridgeActor,
+    sessionId?: string,
   ): Promise<AgentBrowserExecuteResult> {
     const carried = (action as { actionId?: string }).actionId;
     if (carried) {
       const state = await this.panelBridge!.actionState(actor, carried);
       if (state.state === 'approved') {
+        // 阶段 6 决策 ② 接缝：用户在桌面面板点了「批准」——这一刻必须落到
+        // 确认单行里，否则"谁批的、什么时候批的"只活在 desktop 内存里。
+        // status 列继续留给两阶段锁定，审批态写在 confirmationJson.status。
+        await this.markApprovalSafe('approved', carried);
         const out = await this.panelBridge!.execute(actor, {
           method: 'Page.navigate',
           params: { url: action.url },
@@ -206,6 +236,15 @@ export class AgentBrowserExecutor {
             `确认单 ${carried}）`,
         };
       }
+      if (state.state === 'rejected') {
+        // 拒绝是终态：落库收口（不可翻案），动作不执行
+        await this.markApprovalSafe('rejected', carried);
+        return this.failed(
+          'goto',
+          `面板模式：该导航已被用户在面板中拒绝（确认单 ${carried}），未执行`,
+          carried,
+        );
+      }
       return this.failed(
         'goto',
         `面板模式：导航需用户在桌面端批准（确认单 ${carried} 当前状态 ${state.state}）`,
@@ -217,12 +256,39 @@ export class AgentBrowserExecutor {
       method: 'Page.navigate',
       params: { url: action.url },
       summary: { label: '导航', url: action.url },
+      sessionId: sessionId ?? null,
     });
     return this.failed(
       'goto',
       `需用户确认后执行（面板导航确认单 ${ticket.actionId}，请在右侧浏览器面板批准后携带该 id 重试）`,
       ticket.actionId,
     );
+  }
+
+  /**
+   * 把"用户在桌面点了批准/拒绝"落到确认单行里——**审计旁路**。
+   *
+   * 为什么不能让它阻断执行：这是留痕动作，不是闸门。用户已经点了批准，
+   * 桥也认了（state===approved），此时因为落库失败就拒绝执行 = 拿审计需求
+   * 卡住正常业务，是本末倒置。失败只告警，动作照常执行/照常拒绝。
+   */
+  private async markApprovalSafe(
+    decision: 'approved' | 'rejected',
+    actionId: string,
+  ): Promise<void> {
+    try {
+      if (decision === 'approved') {
+        await this.panelBridge!.markApproved?.(actionId);
+      } else {
+        await this.panelBridge!.markRejected?.(actionId);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `确认单 ${actionId} 审批态（${decision}）落库失败，动作不因此阻断：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 
   private failed(

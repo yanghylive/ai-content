@@ -83,6 +83,14 @@ const browserPanel = new BrowserPanelManager({
   electron: require('electron'),
   store,
   tabManager,
+  // 阶段 6 决策 ③：面板模式开关文件落 userData（与桥凭据同一目录取法）
+  getUserDataDir: () => {
+    try {
+      return app.getPath('userData');
+    } catch {
+      return null;
+    }
+  },
 });
 function getBrowserPanel() {
   return browserPanel;
@@ -91,7 +99,16 @@ function getBrowserPanel() {
 // 阶段 3：Broker × 面板接线——capability token 只存活主进程，Agent 桥（阶段 4）
 // 经 authenticated local IPC 调 getBrowserWiring().*ForAgent(panelId, actor, ...)。
 const { wireBrowserPanel } = require('./browser-broker-wiring');
-const browserWiring = wireBrowserPanel({ manager: browserPanel });
+const browserWiring = wireBrowserPanel({
+  manager: browserPanel,
+  // 阶段 6：待批列表变更 → 实时推给审批浮层（Agent 签单 / 用户批准 / 拒绝都触发）。
+  // 这是 UI 旁路，抛错不影响签单与执行（wiring 内部已 try/catch）。
+  onPendingChange: (panelId, pending) => {
+    const current = browserPanel.session ? browserPanel.session.panelId : null;
+    // 只刷新当前面板的那份，避免串台（多面板场景下把 A 的单推到 B 的浮层上）
+    if (panelId === current) browserPanel.updateApprovalList(pending);
+  },
+});
 function getBrowserWiring() {
   return browserWiring;
 }
@@ -2636,48 +2653,16 @@ function setupIPC() {
   getTabManager().registerIpc(ipcMain);
 
   // 浏览器面板 IPC（工作流阶段 2）
-  //  - 控制条 sender：必须是本地 strip 视图（isStripSender），导航结果由
-  //    strip 视图内 did-navigate 回读为准（防伪造）；
-  //  - 前端 sender：必须是受信业务标签（isTrustedRendererSender + 3010 origin），
-  //    与 workspace-tabs 同等级校验。
-  const panel = getBrowserPanel();
-  ipcMain.handle('browser-panel:open', async (event, input) => {
-    const fromStrip = panel.isStripSender(event.sender);
-    const fromTrusted = typeof isTrustedRendererSender === 'function' && isTrustedRendererSender(event);
-    if (!fromStrip && !fromTrusted) {
-      return { success: false, error: 'untrusted-sender' };
-    }
-    try {
-      const state = panel.open(input || {});
-      return { success: true, state };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  });
-  const stripOnly = (handler) => async (event, ...args) => {
-    if (!panel.isStripSender(event.sender)) {
-      return { success: false, error: 'untrusted-sender' };
-    }
-    try {
-      return { success: true, result: handler(...args) };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  };
-  ipcMain.handle('browser-panel:navigate', stripOnly((url) => panel.navigate(url)));
-  ipcMain.handle('browser-panel:back', stripOnly(() => panel.goBack()));
-  ipcMain.handle('browser-panel:forward', stripOnly(() => panel.goForward()));
-  ipcMain.handle('browser-panel:reload', stripOnly(() => panel.reload()));
-  ipcMain.handle('browser-panel:hide', stripOnly(() => panel.hide()));
-  ipcMain.handle('browser-panel:show', stripOnly(() => panel.show()));
-  ipcMain.handle('browser-panel:set-width', stripOnly((w) => panel.setWidth(w)));
-  ipcMain.handle('browser-panel:state', async (event) => {
-    const fromStrip = panel.isStripSender(event.sender);
-    const fromTrusted = typeof isTrustedRendererSender === 'function' && isTrustedRendererSender(event);
-    if (!fromStrip && !fromTrusted) {
-      return { success: false, error: 'untrusted-sender' };
-    }
-    return { success: true, state: panel.publicState() };
+  // 全部通道的唯一实现在 ./browser-panel-ipc.js —— main.js 与端到端冒烟共用，
+  // 避免"E2E 验副本、生产跑另一份"。三条 sender 门禁详见该模块头注释：
+  //   strip ∨ trusted（开面板/查状态）/ stripOnly（导航类）/ approvalOnly（批准·拒绝）
+  const { registerBrowserPanelIpc } = require('./browser-panel-ipc');
+  registerBrowserPanelIpc({
+    ipcMain,
+    getPanel: getBrowserPanel,
+    getWiring: getBrowserWiring,
+    isTrustedRendererSender:
+      typeof isTrustedRendererSender === 'function' ? isTrustedRendererSender : undefined,
   });
 }
 
