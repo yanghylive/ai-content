@@ -662,7 +662,10 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
           {thread.customerId && (
             <V2StatusChip tone="success">已入 CRM</V2StatusChip>
           )}
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-[var(--kaypal-v3-muted)]">
+              分配即将上线
+            </span>
             <V2GhostButton
               icon={UserCheck}
               disabled

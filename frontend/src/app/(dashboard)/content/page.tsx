@@ -276,10 +276,10 @@ function MobileContentView({
     },
     {
       label: "AI 创作",
-      sub: "生成内容",
+      sub: "写一篇",
       icon: "pen",
       tint: "var(--kaypal-v3-amber)",
-      href: "/content/articles",
+      href: "/content/workspace",
     },
     {
       label: "素材库",

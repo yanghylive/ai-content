@@ -68,8 +68,8 @@ export const MINE_NAV_ENTRIES: MineNavEntry[] = [
   // 桌面「我的」卡片（desktopOrder 保持既有视觉顺序）
   { key: "platforms", title: "平台账号", desc: "抖音、小红书等账号的登录状态", href: "/distribution/accounts", icon: "phone", tint: "kx-t-green", group: "账号与设置", desktopOrder: 1 },
   { key: "matrix", title: "多账号矩阵", desc: "各平台账号 · 多选分发", href: "/accounts-matrix", icon: "database", tint: "kx-t-green", group: "账号与设置", desktopOrder: 2, mobileTint: "var(--kaypal-v3-success)", mobileTop: true },
-  { key: "team", title: "账号与团队", desc: "个人资料、成员权限、版本更新", href: "/capabilities/account", icon: "users", tint: "kx-t-rose", group: "账号与设置", desktopOrder: 3, mobileTint: "var(--kaypal-v3-purple)", mobileTop: true },
-  { key: "settings-account", title: "账号与安全", desc: "个人资料、登录密码", href: "/settings/account", icon: "user", tint: "kx-t-rose", group: "设置", desktopOrder: 2, mobileTint: "var(--kaypal-v3-purple)", mobileGroup: "更多能力" },
+  { key: "team", title: "账号与团队", desc: "账号信息、成员权限、版本更新", href: "/capabilities/account", icon: "users", tint: "kx-t-rose", group: "账号与设置", desktopOrder: 3, mobileTint: "var(--kaypal-v3-purple)", mobileTop: true },
+  { key: "settings-account", title: "账号与安全", desc: "账号资料与密码由 Kaypal 账号中心管理", href: "/settings/account", icon: "user", tint: "kx-t-rose", group: "设置", desktopOrder: 2, mobileTint: "var(--kaypal-v3-purple)", mobileGroup: "更多能力" },
   { key: "settings-ai-service", title: "AI 服务", desc: "默认模型、账号同步与连接检查", href: "/settings/ai-service", icon: "botHead", tint: "kx-t-violet", group: "设置", desktopOrder: 2.5, mobileTint: "var(--kaypal-v3-accent)", mobileGroup: "更多能力" },
   { key: "settings-notifications", title: "通知设置", desc: "什么时候提醒你", href: "/settings/notifications", icon: "bell", tint: "kx-t-blue", group: "设置", desktopOrder: 3, mobileTint: "var(--kaypal-v3-cobalt)", mobileGroup: "更多能力" },
   { key: "settings-appearance", title: "显示设置", desc: "文字大小（本机保存）", href: "/settings/appearance", icon: "sun", tint: "kx-t-amber", group: "设置", desktopOrder: 4, mobileTint: "var(--kaypal-v3-amber)", mobileGroup: "更多能力" },

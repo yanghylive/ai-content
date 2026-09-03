@@ -565,11 +565,11 @@ export function CrmCenter() {
             <button
               type="button"
               className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 py-1.5 text-xs font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={loading || customers.length === 0}
+              disabled={loading || filteredCustomers.length === 0}
               onClick={() => {
                 const rows = [
                   ["姓名/昵称", "公司", "手机号", "微信号", "状态"],
-                  ...customers.map((c) => [
+                  ...filteredCustomers.map((c) => [
                     c.displayName,
                     c.companyName ?? "",
                     c.phone ?? "",
@@ -598,7 +598,7 @@ export function CrmCenter() {
               }}
             >
               <Download className="h-3.5 w-3.5" />
-              导出 CSV
+              导出 CSV（当前 {filteredCustomers.length} 位）
             </button>
           </div>
         </div>

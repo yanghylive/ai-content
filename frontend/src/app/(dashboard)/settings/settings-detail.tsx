@@ -41,42 +41,15 @@ export function SettingsDetail() {
       return 1;
     }
   });
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const message: string | null = null;
+  const error: string | null = null;
 
-  const [profile, setProfile] = useState({ name: "", email: "" });
-  const [passwords, setPasswords] = useState({ current: "", next: "", confirm: "" });
-  const [notifications, setNotifications] = useState({
+  // 账号/密码/事件通知为未就绪或由 Kaypal 账号中心管理；只读展示不提供可提交表单
+  const notifications = {
     taskDone: true,
     taskFailed: true,
     newLead: true,
     dailyReport: false,
-  });
-
-  const flash = (text: string) => {
-    setMessage(text);
-    setTimeout(() => setMessage(null), 3000);
-  };
-
-  const NOT_READY = "保存接口还没开放（后端开发中），已列入需求清单";
-  const handleSaveProfile = () => {
-    flash(NOT_READY);
-  };
-
-  const handleChangePassword = async () => {
-    if (!passwords.current || passwords.next.length < 8) {
-      setError("新密码至少 8 位");
-      return;
-    }
-    if (passwords.next !== passwords.confirm) {
-      setError("两次输入的新密码不一致");
-      return;
-    }
-    flash(NOT_READY);
-  };
-
-  const handleSaveNotifications = () => {
-    flash(NOT_READY);
   };
 
   const notifItems = [
@@ -112,7 +85,7 @@ export function SettingsDetail() {
             <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</div>
           )}
 
-          {/* 个人资料 */}
+          {/* 个人资料（账号信息由 Kaypal 账号中心统一管理） */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
             <div className="mx-section-title" style={{ marginBottom: 12 }}>
               <span className="mx-sec-icon"><User /></span>
@@ -120,34 +93,44 @@ export function SettingsDetail() {
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>昵称</p>
-              <input value={profile.name} onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))} placeholder="你的名字" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
+              <input readOnly placeholder="由 Kaypal 账号中心管理" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-muted)", opacity: 0.8 }} />
             </div>
             <div style={{ marginBottom: 12 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>登录邮箱</p>
-              <input type="email" value={profile.email} onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} placeholder="you@example.com" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
+              <input type="email" readOnly placeholder="由 Kaypal 账号中心管理" style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-muted)", opacity: 0.8 }} />
             </div>
-            <button type="button" className="mx-btn-gold" style={{ width: "100%", fontSize: 12, padding: "10px 0" }} onClick={handleSaveProfile}>保存</button>
+            <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", lineHeight: 1.6, marginBottom: 10 }}>
+              昵称、头像、邮箱与密码统一在 Kaypal 账号中心维护，这里不支持修改。
+            </p>
+            <a
+              href="https://kaypal.cn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mx-btn-gold"
+              style={{ width: "100%", fontSize: 12, padding: "10px 0", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
+            >
+              前往 Kaypal 管理
+            </a>
           </div>
 
-          {/* 修改密码 */}
+          {/* 修改密码（登录密码在 Kaypal 账号中心维护） */}
           <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
             <div className="mx-section-title" style={{ marginBottom: 12 }}>
               <span className="mx-sec-icon"><Lock /></span>
               修改密码
             </div>
-            <div style={{ marginBottom: 12 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>当前密码</p>
-              <input type="password" value={passwords.current} onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>新密码 <span style={{ fontWeight: 400 }}>（至少 8 位）</span></p>
-              <input type="password" value={passwords.next} onChange={(e) => setPasswords((p) => ({ ...p, next: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--kaypal-v3-muted)", marginBottom: 6 }}>再输一遍新密码</p>
-              <input type="password" value={passwords.confirm} onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: 12, fontSize: 13, border: "1px solid var(--kaypal-v3-field-border)", outline: "none", background: "var(--kaypal-v3-field-bg)", color: "var(--kaypal-v3-ink)" }} />
-            </div>
-            <button type="button" className="mx-btn-gold" style={{ width: "100%", fontSize: 12, padding: "10px 0" }} onClick={handleChangePassword}>修改密码</button>
+            <p style={{ fontSize: 12.5, color: "var(--kaypal-v3-soft-ink)", lineHeight: 1.7, marginBottom: 10 }}>
+              登录密码与安全设置统一在 Kaypal 账号中心维护，如需修改请前往：
+            </p>
+            <a
+              href="https://kaypal.cn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mx-btn-gold"
+              style={{ width: "100%", fontSize: 12, padding: "10px 0", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
+            >
+              前往 Kaypal 修改密码
+            </a>
           </div>
 
           {/* 显示设置（PRD 16.3 字体放大，无障碍） */}
@@ -222,14 +205,17 @@ export function SettingsDetail() {
               </button>
             </div>
             {notifItems.map((item) => (
-              <button key={item.key} type="button" role="switch" aria-checked={notifications[item.key]} onClick={() => setNotifications((p) => ({ ...p, [item.key]: !p[item.key] }))} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid rgba(142,165,190,.14)" }}>
-                <span style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)" }}>{item.label}</span>
-                <span style={{ display: "flex", width: 44, height: 24, borderRadius: 999, padding: 2, alignItems: "center", justifyContent: notifications[item.key] ? "flex-end" : "flex-start", background: notifications[item.key] ? "linear-gradient(90deg, var(--kaypal-v3-accent), var(--kaypal-v3-amber))" : "rgba(148,163,184,.35)", transition: "all .2s" }}>
+              <div key={item.key} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid rgba(142,165,190,.14)", opacity: 0.6 }}>
+                <span style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)" }}>
+                  {item.label}
+                  <span style={{ marginLeft: 6, fontSize: 10, color: "var(--kaypal-v3-muted)", border: "1px solid var(--kaypal-v3-border)", borderRadius: 999, padding: "1px 6px" }}>即将上线</span>
+                </span>
+                <span style={{ display: "flex", width: 44, height: 24, borderRadius: 999, padding: 2, alignItems: "center", justifyContent: notifications[item.key] ? "flex-end" : "flex-start", background: "rgba(148,163,184,.35)", transition: "all .2s" }}>
                   <span style={{ width: 20, height: 20, borderRadius: 999, background: "var(--kaypal-v3-paper)", boxShadow: "var(--kaypal-v3-card-shadow)" }} />
                 </span>
-              </button>
+              </div>
             ))}
-            <button type="button" className="mx-btn-gold" style={{ width: "100%", fontSize: 12, padding: "10px 0", marginTop: 10 }} onClick={handleSaveNotifications}>保存</button>
+            <button type="button" className="mx-btn-gold" disabled style={{ width: "100%", fontSize: 12, padding: "10px 0", marginTop: 10, opacity: 0.5 }}>保存</button>
           </div>
 
           {/* 数据管理 */}
@@ -242,8 +228,9 @@ export function SettingsDetail() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>导出全部数据</p>
                 <p style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 2 }}>客户、内容、任务记录打包下载</p>
+                <p style={{ fontSize: 11, color: "var(--kaypal-v3-amber)", marginTop: 4 }}>导出功能暂未开放</p>
               </div>
-              <button type="button" className="mx-btn-gold" onClick={() => flash(NOT_READY)}>导出</button>
+              <button type="button" className="mx-btn-gold" disabled style={{ opacity: 0.5 }}>导出</button>
             </div>
           </div>
 

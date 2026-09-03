@@ -163,7 +163,12 @@ export function ArticleList({
 
         <section className="mx-px" style={{ marginTop: 14, paddingBottom: 28 }}>
           {error && (
-            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>{error}</div>
+            <div style={{ marginBottom: 12, padding: 10, borderRadius: 10, background: "rgba(239,68,68,.09)", fontSize: 12, color: "var(--kaypal-v3-danger)" }}>
+              <span>{error}</span>
+              <button type="button" onClick={() => void fetchArticles()} style={{ marginLeft: 8, fontWeight: 700, color: "var(--kaypal-v3-danger)", background: "none", border: "none", fontSize: 12, textDecoration: "underline" }}>
+                重试
+              </button>
+            </div>
           )}
           <div className="mx-card mx-list-card">
             {loading ? (
@@ -255,8 +260,15 @@ export function ArticleList({
       </section>
 
       {error && (
-        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
+        <div className="flex items-center justify-between gap-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-4">
           <p className="text-sm font-medium text-[var(--kaypal-v3-danger)]">{error}</p>
+          <button
+            type="button"
+            className="shrink-0 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] px-3 py-1.5 text-sm font-medium text-[var(--kaypal-v3-danger)] transition hover:bg-[var(--kaypal-v3-paper)]"
+            onClick={() => void fetchArticles()}
+          >
+            重试
+          </button>
         </div>
       )}
 
