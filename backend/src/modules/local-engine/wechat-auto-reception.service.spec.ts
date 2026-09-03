@@ -208,9 +208,13 @@ describe('WechatAutoReceptionGuardService', () => {
       const input = engine.createTask.mock.calls[0][0] as Record<string, unknown>;
       expect(input.type).toBe('wechat-friend-accept');
       expect(input.sendMode).toBe('auto-send');
-      expect((input.metadata as Record<string, unknown>).skill_id).toBe(
-        'wechat.friend.accept',
-      );
+      const metadata = input.metadata as Record<string, unknown>;
+      expect(metadata.skill_id).toBe('wechat.friend.accept');
+      // 默认策略：备注用申请方昵称、无欢迎语、日限 20（验收清单口径）
+      expect(metadata.wechat_friend_accept_remark_strategy).toBe('request_name');
+      expect(metadata.wechat_friend_accept_welcome_message).toBe('');
+      expect(metadata.wechat_friend_accept_daily_limit).toBe(20);
+      expect(input.targetName).toBe('新的好友申请');
       expect(service.getStatus().autoAcceptPlanId).toBe('fa-plan-1');
     });
 
