@@ -39,6 +39,7 @@ import {
   Close as ParkClose,
   CloseOne as ParkCloseOne,
   CloudStorage as ParkCloudStorage,
+  Comments as ParkComments,
   Code as ParkCode,
   CollectionFiles as ParkCollectionFiles,
   Computer as ParkComputer,
@@ -99,7 +100,9 @@ import {
   MagicWand as ParkMagicWand,
   Mail as ParkMail,
   Message as ParkMessage,
+  MessageOne as ParkMessageOne,
   Monitor as ParkMonitor,
+  MonitorOne as ParkMonitorOne,
   Moon as ParkMoon,
   Music as ParkMusic,
   NewspaperFolding as ParkNewspaperFolding,
@@ -265,9 +268,9 @@ export const CalendarDays = withPark(ParkCalendar);
 export const Camera = withPark(ParkCamera);
 export const ChartLine = withPark(ParkChartLine);
 export const Check = withPark(ParkCheck);
-export const CheckCircle = withPark(ParkCheckCorrect);
-export const CheckCircle2 = withPark(ParkCheckCorrect);
-export const CheckIcon = withPark(ParkCheckCorrect);
+export const CheckCircle = withPark(ParkCheckOne);
+export const CheckCircle2 = withPark(ParkCheckOne);
+export const CheckIcon = withPark(ParkCheckOne);
 export const ChevronDown = withPark(ParkDown);
 export const ChevronLeft = withPark(ParkLeft);
 export const ChevronRight = withPark(ParkRight);
@@ -367,14 +370,14 @@ export const Mail = withPark(ParkMail);
 export const MapPin = withPark(ParkLocal);
 export const MapPinned = withPark(ParkLocal);
 export const MessageCircle = withPark(ParkMessage);
-export const MessageSquare = withPark(ParkMessage);
+export const MessageSquare = withPark(ParkMessageOne);
 export const MessageSquareText = withPark(ParkTextMessage);
-export const MessagesSquare = withPark(ParkMessage);
-export const Monitor = withPark(ParkMonitor);
-export const MonitorCheck = withPark(ParkMonitor);
-export const MonitorCog = withPark(ParkMonitor);
+export const MessagesSquare = withPark(ParkComments);
+export const Monitor = withPark(ParkMonitorOne);
+export const MonitorCheck = withPark(ParkMonitorOne);
+export const MonitorCog = withPark(ParkMonitorOne);
 export const MonitorPlay = withPark(ParkMonitor);
-export const MonitorSmartphone = withPark(ParkMonitor);
+export const MonitorSmartphone = withPark(ParkMonitorOne);
 export const Moon = withPark(ParkMoon);
 export const Music2 = withPark(ParkMusic);
 export const Newspaper = withPark(ParkNewspaperFolding);
