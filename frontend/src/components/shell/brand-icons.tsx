@@ -70,7 +70,16 @@ export type BrandIconName =
   | "sun" // 显示/外观:太阳
   | "phone" // 手机端能力:手机
   | "customer" // 客户管理:三人
-  | "eye"; // 情报监控:眼睛
+  | "eye" // 情报监控:眼睛
+  /* CRM / 客户操作(2026-09 全系统统一扩展) */
+  | "userPlus" // 新增客户:人像+加号
+  | "importTray" // 批量导入:入箱箭头
+  | "followUp" // 待跟进:旗帜
+  | "link" // 数据连接:链环
+  | "mapPin" // 门店管理:定位针
+  | "compare" // 文案对比:左右对照
+  | "wand" // 视频特效:魔棒
+  | "home"; // 首页:房子
 
 type Soft = { el: ReactElement; o: number };
 
@@ -653,6 +662,88 @@ const GLYPHS: Record<BrandIconName, Glyph> = {
       <path key="lid" d="M3 12c2.4-4.3 5.3-6.4 9-6.4s6.6 2.1 9 6.4c-2.4 4.3-5.3 6.4-9 6.4S5.4 16.3 3 12Z" />,
     ],
     cutFill: [<circle key="iris" cx="12" cy="12" r="2.4" />],
+  },
+
+  /* 新增客户:人像 + 右下加号 */
+  userPlus: {
+    main: [
+      <path key="body" d="M4.8 19.2a6.2 6.2 0 0 1 11.8-1.4" />,
+      <circle key="head" cx="10.8" cy="9" r="2.9" />,
+    ],
+    cutFill: [<path key="plus" d="M17.4 13.6v6m-3-3h6" strokeWidth={1.7} />],
+  },
+
+  /* 批量导入:入箱 + 向下箭头 */
+  importTray: {
+    main: [
+      <rect key="tray" x="4.2" y="5.2" width="15.6" height="9.8" rx="2" />,
+      <path key="legs" d="M7.2 19.2 8.9 15h6.2l1.7 4.2Z" />,
+    ],
+    cutLine: [
+      <path key="arr" d="M12 9.4V3.4m0 0-2.6 2.6M12 3.4l2.6 2.6" strokeWidth={1.5} />,
+      <path key="lip" d="M4.2 11h15.6" strokeWidth={1.1} />,
+    ],
+  },
+
+  /* 待跟进:旗帜 */
+  followUp: {
+    main: [
+      <path key="pole" d="M6.4 20.8V4.2" strokeWidth={1.7} />,
+      <path key="flag" d="M6.4 5.2c2.6-1.6 5.2-1.6 7.8 0v5.6c-2.6-1.6-5.2-1.6-7.8 0Z" />,
+    ],
+    cutLine: [<path key="fold" d="M6.4 7.2h7.8" strokeWidth={1.1} />],
+  },
+
+  /* 数据连接:链环 */
+  link: {
+    main: [
+      <path key="l1" d="M9.6 14.4 14.4 9.6" strokeWidth={1.8} />,
+      <path key="a" d="M8 12.6 5.9 14.7a3.8 3.8 0 1 0 5.4 5.4l2.1-2.1" strokeWidth={1.7} />,
+      <path key="b" d="m16 11.4 2.1-2.1a3.8 3.8 0 1 0-5.4-5.4L10.6 6" strokeWidth={1.7} />,
+    ],
+  },
+
+  /* 门店管理:定位针 */
+  mapPin: {
+    main: [
+      <path key="pin" d="M12 21c3.6-3.6 6.6-6.8 6.6-10.4a6.6 6.6 0 1 0-13.2 0C5.4 14.2 8.4 17.4 12 21Z" />,
+    ],
+    cutFill: [<circle key="c" cx="12" cy="10.6" r="2.3" />],
+  },
+
+  /* 文案对比:左右对照行 */
+  compare: {
+    main: [
+      <rect key="l" x="3.6" y="5.4" width="6.8" height="13.2" rx="1.8" />,
+      <rect key="r" x="13.6" y="5.4" width="6.8" height="13.2" rx="1.8" />,
+    ],
+    cutFill: [
+      <rect key="l1" x="5.4" y="8.6" width="3.2" height="1.1" rx="0.55" />,
+      <rect key="l2" x="5.4" y="11.2" width="2.3" height="1.1" rx="0.55" />,
+      <rect key="r1" x="15.4" y="8.6" width="3.2" height="1.1" rx="0.55" />,
+      <rect key="r2" x="15.4" y="11.2" width="2.3" height="1.1" rx="0.55" />,
+    ],
+  },
+
+  /* 视频特效:魔棒 + 星尘 */
+  wand: {
+    main: [
+      <rect key="stick" x="13.6" y="4.2" width="3.4" height="9.6" rx="1.7" transform="rotate(45 15.3 9)" />,
+      <path key="tip" d="M13.6 4.2c.8-.8 1.9-.5 2.3-.1" />,
+    ],
+    cutFill: [
+      <path key="s1" d="m7.6 5.2.9 1.8 1.8.9-1.8.9-.9 1.8-.9-1.8-1.8-.9 1.8-.9Z" />,
+      <path key="s2" d="m17.8 15.2.7 1.3 1.3.7-1.3.7-.7 1.3-.7-1.3-1.3-.7 1.3-.7Z" />,
+    ],
+  },
+
+  /* 首页:房子 */
+  home: {
+    main: [
+      <path key="roof" d="m4.4 11.2 7.6-7 7.6 7" strokeWidth={0} />,
+      <path key="body" d="M6.2 10.4v9.6h11.6v-9.6" />,
+    ],
+    cutFill: [<rect key="door" x="10.8" y="15.4" width="2.4" height="4.6" rx="0.8" />],
   },
 };
 

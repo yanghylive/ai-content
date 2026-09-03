@@ -3,6 +3,7 @@
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ShellIcon } from "./icons";
+import { BrandIcon, type BrandIconName } from "./brand-icons";
 import { MobileTabBar, type MobileTabItem } from "./mobile-tab-bar";
 import "./mobile.css";
 
@@ -16,12 +17,12 @@ import "./mobile.css";
  * 「我的」移入右上角头像入口（不占底部 Tab）。
  * 视觉与交互由统一 MobileTabBar 组件承载（P2 架构沉淀）。
  */
-const MOBILE_TABS: Array<{ key: string; href: string; label: string; icon: Parameters<typeof ShellIcon>[0]["name"] }> = [
-  { key: "today", href: "/today", label: "今天", icon: "home" as const },
-  { key: "content", href: "/content", label: "内容", icon: "fileText" as const },
-  { key: "interaction", href: "/message", label: "互动", icon: "message" as const },
-  { key: "leads", href: "/growth/leads", label: "线索", icon: "target" as const },
-  { key: "customer", href: "/crm", label: "客户", icon: "users" as const },
+const MOBILE_TABS: Array<{ key: string; href: string; label: string; icon: Parameters<typeof ShellIcon>[0]["name"]; brand?: BrandIconName }> = [
+  { key: "today", href: "/today", label: "今天", icon: "home" as const, brand: "home" as const },
+  { key: "content", href: "/content", label: "内容", icon: "fileText" as const, brand: "generate" as const },
+  { key: "interaction", href: "/message", label: "互动", icon: "message" as const, brand: "channels" as const },
+  { key: "leads", href: "/growth/leads", label: "线索", icon: "target" as const, brand: "leads" as const },
+  { key: "customer", href: "/crm", label: "客户", icon: "users" as const, brand: "customer" as const },
 ];
 
 function activeTabOf(pathname: string): string {
@@ -100,7 +101,11 @@ export function MobileShell({
   const items: MobileTabItem[] = MOBILE_TABS.map((tab) => ({
     key: tab.key,
     label: tab.label,
-    icon: <ShellIcon name={tab.icon} size={19} strokeWidth={1.8} />,
+    icon: tab.brand ? (
+      <BrandIcon name={tab.brand} size={19} tone="tint" />
+    ) : (
+      <ShellIcon name={tab.icon} size={19} strokeWidth={1.8} />
+    ),
     badge: badgeOf(tab.key),
   }));
 

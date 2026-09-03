@@ -7,6 +7,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { BrandLogo } from "@/components/brand-logo";
 import { ScenePage } from "@/components/shell/scene-page";
+import { BrandIcon, type BrandIconName } from "@/components/shell/brand-icons";
 import { ShellIcon } from "@/components/shell/icons";
 import { materialsApi } from "@/lib/api/materials";
 import { ContentSources } from "@/components/shell/content-sources";
@@ -251,21 +252,34 @@ const CONTENT_TOOL_ENTRIES: Array<{
   label: string;
   desc: string;
   icon: React.ComponentProps<typeof ShellIcon>["name"];
+  brand?: BrandIconName;
   tint: string;
   href: string;
 }> = [
-  { label: "小红书笔记", desc: "选题自动生成的笔记草稿", icon: "fileText", tint: "#e9405b", href: "/content/xiaohongshu" },
-  { label: "AI 生视频", desc: "文字描述生成短视频", icon: "sparkles", tint: "var(--kaypal-v3-purple)", href: "/content/ai-video-gen" },
-  { label: "图生视频", desc: "上传图片 + 提示词生成视频", icon: "sparkles", tint: "var(--kaypal-v3-purple)", href: "/video-generation" },
-  { label: "商品视频", desc: "带货文案 + 一键成片", icon: "video", tint: "var(--kaypal-v3-amber)", href: "/video/product-cut" },
-  { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target", tint: "var(--kaypal-v3-success)", href: "/poi" },
-  { label: "发布文章", desc: "图文内容发布", icon: "megaphone", tint: "var(--kaypal-v3-purple)", href: "/distribution/publish-article" },
-  { label: "视频生产", desc: "12 条流水线，选题到成片全流程", icon: "video", tint: "var(--kaypal-v3-violet)", href: "/video-workshop" },
-  { label: "视频发布计划", desc: "查看定时发布的视频任务", icon: "history", tint: "var(--kaypal-v3-purple)", href: "/video/release-plans" },
-  { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database", tint: "var(--kaypal-v3-amber)", href: "/knowledge-base" },
-  { label: "视频特效", desc: "换脸与模板化视频效果", icon: "video", tint: "var(--kaypal-v3-purple)", href: "/content/face-swap" },
-  { label: "文案对比", desc: "原文与改写对照", icon: "clipboard", tint: "var(--kaypal-v3-muted)", href: "/copy-compare" },
-  { label: "产物", desc: "生成结果存档", icon: "archive", tint: "#8d6e63", href: "/tasks/evidence" },
+  { label: "小红书笔记", desc: "选题自动生成的笔记草稿", icon: "fileText",
+          brand: "generate", tint: "#e9405b", href: "/content/xiaohongshu" },
+  { label: "AI 生视频", desc: "文字描述生成短视频", icon: "sparkles",
+          brand: "videogen", tint: "var(--kaypal-v3-purple)", href: "/content/ai-video-gen" },
+  { label: "图生视频", desc: "上传图片 + 提示词生成视频", icon: "sparkles",
+          brand: "imagegen", tint: "var(--kaypal-v3-purple)", href: "/video-generation" },
+  { label: "商品视频", desc: "带货文案 + 一键成片", icon: "video",
+          brand: "product", tint: "var(--kaypal-v3-amber)", href: "/video/product-cut" },
+  { label: "门店管理", desc: "门店 POI 与探访统计", icon: "target",
+          brand: "mapPin", tint: "var(--kaypal-v3-success)", href: "/poi" },
+  { label: "发布文章", desc: "图文内容发布", icon: "megaphone",
+          brand: "publish", tint: "var(--kaypal-v3-purple)", href: "/distribution/publish-article" },
+  { label: "视频生产", desc: "12 条流水线，选题到成片全流程", icon: "video",
+          brand: "filmroll", tint: "var(--kaypal-v3-violet)", href: "/video-workshop" },
+  { label: "视频发布计划", desc: "查看定时发布的视频任务", icon: "history",
+          brand: "calendar", tint: "var(--kaypal-v3-purple)", href: "/video/release-plans" },
+  { label: "知识库", desc: "品牌知识与素材沉淀", icon: "database",
+          brand: "knowledge", tint: "var(--kaypal-v3-amber)", href: "/knowledge-base" },
+  { label: "视频特效", desc: "换脸与模板化视频效果", icon: "video",
+          brand: "wand", tint: "var(--kaypal-v3-purple)", href: "/content/face-swap" },
+  { label: "文案对比", desc: "原文与改写对照", icon: "clipboard",
+          brand: "compare", tint: "var(--kaypal-v3-muted)", href: "/copy-compare" },
+  { label: "产物", desc: "生成结果存档", icon: "archive",
+          brand: "archive", tint: "#8d6e63", href: "/tasks/evidence" },
 ];
 
 function MobileContentView({
@@ -279,6 +293,7 @@ function MobileContentView({
     label: string;
     sub: string;
     icon: React.ComponentProps<typeof ShellIcon>["name"];
+  brand?: BrandIconName;
     tint: string;
     href: string;
   }> = [
@@ -286,6 +301,7 @@ function MobileContentView({
       label: "选题",
       sub: "AI 推荐",
       icon: "bulb",
+          brand: "topic",
       tint: "var(--kaypal-v3-accent)",
       href: "/topics",
     },
@@ -293,6 +309,7 @@ function MobileContentView({
       label: "AI 创作",
       sub: "写一篇",
       icon: "pen",
+          brand: "generate",
       tint: "var(--kaypal-v3-amber)",
       href: "/content/workspace",
     },
@@ -300,6 +317,7 @@ function MobileContentView({
       label: "素材库",
       sub: "云端素材",
       icon: "archive",
+          brand: "materials",
       tint: "var(--kaypal-v3-success)",
       href: "/materials",
     },
@@ -307,6 +325,7 @@ function MobileContentView({
       label: "文章反抓",
       sub: "链接提取",
       icon: "download",
+          brand: "extract",
       tint: "var(--kaypal-v3-purple)",
       href: "/distribution/scrape",
     },
@@ -314,6 +333,7 @@ function MobileContentView({
       label: "模板风格",
       sub: "品牌调性",
       icon: "layers",
+          brand: "template",
       tint: "var(--kaypal-v3-cobalt)",
       href: "/templates",
     },
@@ -321,6 +341,7 @@ function MobileContentView({
       label: "视频成片",
       sub: "AI 一键成片",
       icon: "video",
+          brand: "camera",
       tint: "var(--kaypal-v3-success)",
       href: "/video-studio",
     },
@@ -328,6 +349,7 @@ function MobileContentView({
       label: "全部草稿",
       sub: "",
       icon: "fileText",
+          brand: "generate",
       tint: "var(--kaypal-v3-amber)",
       href: "/content/articles",
     },
@@ -406,7 +428,11 @@ function MobileContentView({
                   color: entry.tint,
                 }}
               >
-                <ShellIcon name={entry.icon} size={19} />
+                {entry.brand ? (
+                  <BrandIcon name={entry.brand} size={20} tone="tint" />
+                ) : (
+                  <ShellIcon name={entry.icon} size={19} />
+                )}
               </span>
               <span className="mx-svc-name">{entry.label}</span>
               <span className="mx-svc-sub">{entry.sub}</span>
@@ -451,7 +477,11 @@ function MobileContentView({
                 className="mx-row-ic"
                 style={{ background: `color-mix(in srgb, ${entry.tint} 10%, transparent)`, color: entry.tint }}
               >
-                <ShellIcon name={entry.icon} size={18} />
+                {entry.brand ? (
+                  <BrandIcon name={entry.brand} size={18} tone="tint" />
+                ) : (
+                  <ShellIcon name={entry.icon} size={18} />
+                )}
               </span>
               <div className="mx-row-main">
                 <div className="mx-row-title">{entry.label}</div>

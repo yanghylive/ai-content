@@ -516,6 +516,7 @@ export function CrmCenter() {
         quickActions={[
           {
             key: "new",
+            brand: "userPlus",
             title: "新增客户",
             description: "手动添加一个客户",
             icon: UserRoundPlus,
@@ -523,6 +524,7 @@ export function CrmCenter() {
           },
           {
             key: "import",
+            brand: "importTray",
             title: "批量导入",
             description: "从 Excel 批量导入",
             icon: Upload,
@@ -530,6 +532,7 @@ export function CrmCenter() {
           },
           {
             key: "follow-up",
+            brand: "followUp",
             title: "待跟进",
             description: "需要跟进的客户",
             icon: Search,
