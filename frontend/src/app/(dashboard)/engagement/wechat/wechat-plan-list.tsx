@@ -399,9 +399,11 @@ export function WechatPlanList() {
                           ? ` · 已发 ${summary.completed}`
                           : ""}
                         {summary?.failed ? ` · 失败 ${summary.failed}` : ""}
-                        {task.updatedAt
-                          ? ` · ${new Date(task.updatedAt).toLocaleString("zh-CN")}`
-                          : ""}
+                        {status === "scheduled" && task.planTime
+                          ? ` · 定时 ${new Date(task.planTime).toLocaleString("zh-CN")}`
+                          : task.updatedAt
+                            ? ` · ${new Date(task.updatedAt).toLocaleString("zh-CN")}`
+                            : ""}
                       </p>
                     </div>
 

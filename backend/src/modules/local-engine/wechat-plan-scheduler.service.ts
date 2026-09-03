@@ -96,10 +96,15 @@ export class WechatPlanSchedulerService
     return { dispatched, reconciled };
   }
 
+  /**
+   * env 缺省视为开启（2026-09 方案 3 收尾：定时群发到点自动触发是产品承诺）。
+   * 安全性由 dispatch 内的商用权限强校验兜底（无权限计划只被标记 BLOCKED 需确认，
+   * 不会误发），显式 WECHAT_PLAN_SCHEDULER_ENABLED=false 可整体停用派发。
+   */
   private enabled() {
-    return this.readBoolean(
-      this.config.get<string>('WECHAT_PLAN_SCHEDULER_ENABLED'),
-    );
+    const value = this.config.get<string>('WECHAT_PLAN_SCHEDULER_ENABLED');
+    if (value == null || String(value).trim() === '') return true;
+    return this.readBoolean(value);
   }
 
   private intervalMs() {

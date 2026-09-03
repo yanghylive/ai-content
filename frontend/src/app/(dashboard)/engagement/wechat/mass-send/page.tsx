@@ -62,8 +62,8 @@ export default function MassSendPage() {
         <h1 className="kx-greet">群发计划已创建</h1>
         <p className="text-sm text-[var(--kaypal-v3-muted)]">系统会在本机微信按计划执行发送，可到任务中心查看进度。</p>
         <div className="flex gap-3">
-          <V2PrimaryButton onClick={() => router.push("/engagement/wechat")}>去微信任务中心</V2PrimaryButton>
-          <V2GhostButton onClick={() => setDone(false)}>再建一个</V2GhostButton>
+          <V2PrimaryButton onClick={() => router.push("/engagement/wechat/plans")}>去群发计划</V2PrimaryButton>
+          <V2GhostButton onClick={() => router.push("/engagement/wechat")}>回微信中心</V2GhostButton>
         </div>
       </div>
     );
