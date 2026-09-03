@@ -98,7 +98,6 @@ export const MINE_NAV_ENTRIES: MineNavEntry[] = [
   { key: "growth-workflows", title: "增长工作流", desc: "自动获客流程编排", href: "/growth/workflows", icon: "cpu", mobileTint: "var(--kaypal-v3-purple)", mobileGroup: "客户与增长" },
   { key: "account-health", title: "账号健康", desc: "账号状态与健康度", href: "/growth/account-health", icon: "bulb", mobileTint: "var(--kaypal-v3-amber)", mobileGroup: "客户与增长" },
   { key: "intel-monitors", title: "情报监控", desc: "行业情报实时监控", href: "/intelligence/monitors", icon: "target", mobileTint: "var(--kaypal-v3-purple)", mobileGroup: "系统与情报" },
-  { key: "commercial-readiness", title: "商业就绪", desc: "上线能力自检", href: "/commercial-readiness", icon: "rocket", mobileTint: "#c2410c", mobileGroup: "系统与情报" },
   { key: "compliance", title: "发布前检查", desc: "内容合规校验", href: "/compliance", icon: "checkCircle", mobileTint: "var(--kaypal-v3-success)", mobileGroup: "系统与情报" },
   { key: "trends-radar", title: "趋势雷达", desc: "行业趋势实时雷达", href: "/intelligence/trends", icon: "target", mobileTint: "var(--kaypal-v3-amber)", mobileGroup: "系统与情报" },
   { key: "intel-report-new", title: "情报报告", desc: "情报分析与报告", href: "/intelligence/report-new", icon: "chart", mobileTint: "var(--kaypal-v3-cobalt)", mobileGroup: "系统与情报" },
