@@ -1315,3 +1315,169 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(exec.panelMode()).toBe('off');
   });
 });
+
+// ── 阶段 5 第一站（2026-09-04）：loginStateViaPanel 登录态查询 ────────────────
+describe('AgentBrowserExecutor loginStateViaPanel（面板模式登录态查询）', () => {
+  const original = process.env.KAYPAL_AGENT_PANEL_MODE;
+  const originalModeFile = process.env.KAYPAL_BROWSER_PANEL_MODE_FILE;
+
+  beforeEach(() => {
+    delete process.env.KAYPAL_AGENT_PANEL_MODE;
+    process.env.KAYPAL_BROWSER_PANEL_MODE_FILE = '/nonexistent/browser-panel-mode.json';
+  });
+
+  afterEach(() => {
+    if (original === undefined) delete process.env.KAYPAL_AGENT_PANEL_MODE;
+    else process.env.KAYPAL_AGENT_PANEL_MODE = original;
+    if (originalModeFile === undefined) delete process.env.KAYPAL_BROWSER_PANEL_MODE_FILE;
+    else process.env.KAYPAL_BROWSER_PANEL_MODE_FILE = originalModeFile;
+  });
+
+  /** 登录态快照桩：execute 对 Runtime.evaluate 回传 opts.snapshot（JSON 字符串） */
+  function makeLoginStatePanel(opts: {
+    snapshot?: string;
+    available?: boolean;
+  }) {
+    const execute = jest.fn(
+      async (
+        _actor: unknown,
+        input: { method: string; params?: Record<string, unknown> },
+      ) => ({
+        binding: { webContentsId: 42, url: 'https://www.xiaohongshu.com/explore' },
+        method: input.method,
+        executed: true,
+        actionId: null,
+        result: {
+          result: { type: 'string', value: opts.snapshot ?? '' },
+        },
+      }),
+    );
+    const panel = makePanel({
+      status: () => ({
+        available: opts.available ?? true,
+        reason: opts.available === false ? 'panel-hidden' : 'ready',
+      }),
+      execute,
+    } as PanelBridgeStub);
+    return { panel, execute };
+  }
+
+  it('已登录快照 → logged_in（evaluate 免单只读，表达式含 location.href + innerText）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const { panel, execute } = makeLoginStatePanel({
+      snapshot: JSON.stringify({
+        url: 'https://www.xiaohongshu.com/explore',
+        text: '发布 通知 消息 我 今天去哪玩',
+      }),
+    });
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      panel,
+    );
+    const out = await exec.loginStateViaPanel(ACTOR, 'xiaohongshu');
+    expect(out).toMatchObject({
+      ok: true,
+      platform: 'xiaohongshu',
+      state: 'logged_in',
+      url: 'https://www.xiaohongshu.com/explore',
+      panelWebContentsId: 42,
+    });
+    expect(execute).toHaveBeenCalledTimes(1);
+    const call = execute.mock.calls[0][1] as {
+      method: string;
+      params: { expression: string; returnByValue: boolean };
+    };
+    expect(call.method).toBe('Runtime.evaluate');
+    expect(call.params.expression).toContain('location.href');
+    expect(call.params.expression).toContain('innerText');
+    expect(call.params.returnByValue).toBe(true);
+    // 只读查询不碰原执行器（不静默回退到无头浏览器）
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('扫码登录提示快照 → login_prompt', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const { panel } = makeLoginStatePanel({
+      snapshot: JSON.stringify({
+        url: 'https://www.xiaohongshu.com/explore',
+        text: '扫码登录 验证码登录 未登录用户不可发布',
+      }),
+    });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      panel,
+    );
+    const out = await exec.loginStateViaPanel(ACTOR, 'xiaohongshu');
+    expect(out).toMatchObject({ ok: true, state: 'login_prompt' });
+  });
+
+  it('不在平台域快照 → unknown（不瞎猜）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const { panel } = makeLoginStatePanel({
+      snapshot: JSON.stringify({
+        url: 'https://kaypal.cn/x',
+        text: '发布 通知 消息 我',
+      }),
+    });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      panel,
+    );
+    const out = await exec.loginStateViaPanel(ACTOR, 'xiaohongshu');
+    expect(out).toMatchObject({ ok: true, state: 'unknown' });
+  });
+
+  it('缺身份 → ok:false（不静默回退）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const { panel, execute } = makeLoginStatePanel({});
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      panel,
+    );
+    const out = await exec.loginStateViaPanel(
+      { ownerId: '', tenantId: 'tenant-a' },
+      'xiaohongshu',
+    );
+    expect(out.ok).toBe(false);
+    if (!out.ok) expect(out.reason).toContain('缺少调用方身份');
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('面板模式未开启 → ok:false（明确报仅面板模式支持）', async () => {
+    const { panel, execute } = makeLoginStatePanel({});
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      panel,
+    );
+    const out = await exec.loginStateViaPanel(ACTOR, 'xiaohongshu');
+    expect(out.ok).toBe(false);
+    if (!out.ok) expect(out.reason).toContain('仅面板模式支持登录态查询');
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('面板不可用 → ok:false（不假装查到了）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const { panel, execute } = makeLoginStatePanel({ available: false });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      panel,
+    );
+    const out = await exec.loginStateViaPanel(ACTOR, 'xiaohongshu');
+    expect(out.ok).toBe(false);
+    if (!out.ok) expect(out.reason).toContain('面板不可用');
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('快照返回无效（非 JSON/无 url）→ ok:false（显式报读取失败）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const { panel } = makeLoginStatePanel({ snapshot: 'not-json' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      panel,
+    );
+    const out = await exec.loginStateViaPanel(ACTOR, 'xiaohongshu');
+    expect(out.ok).toBe(false);
+    if (!out.ok) expect(out.reason).toContain('未返回有效 url');
+  });
+});

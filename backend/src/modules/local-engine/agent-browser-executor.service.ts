@@ -10,6 +10,7 @@ import {
   readPanelModeRegistry,
 } from './agent-panel-bridge.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
+import { resolvePlatformLoginState } from './platform-login-rules';
 
 /**
  * §7.4 AgentBrowserExecutor：接入统一执行器路由。
@@ -206,6 +207,40 @@ export function buildTextExtractExpression(selector: string): string {
 export const PANEL_WAIT_MAX_MS = 30_000;
 
 /**
+ * 阶段 5 第一站（2026-09-04）：登录态快照只读表达式（Runtime.evaluate 执行）。
+ *
+ * 返回 `JSON.stringify({url, text})`：url = location.href，text = body.innerText
+ * 截 20000 字符（登录提示词/账号工具栏判定够用，20k 防超大页面拖垮桥回传）。
+ * 只读免单：不点不填不导航，与 extract/probe 同级（READONLY_METHODS 白名单内）。
+ */
+export function buildLoginStateExpression(): string {
+  return (
+    '(function loginStateSnapshot() {' +
+    '  return JSON.stringify({' +
+    '    url: location.href,' +
+    '    text: (document.body ? document.body.innerText : "").slice(0, 20000)' +
+    '  });' +
+    '})()'
+  );
+}
+
+/**
+ * 阶段 5 第一站：登录态查询结果（面板模式专属，controller GET sessions/:id/login-state）。
+ * ok:false 一律带 reason（不静默降级）；state 为启发式三态，仅 UI 引导用，
+ * 不作为任何写动作放行依据（写动作仍走确认单审批链）。
+ */
+export type AgentPanelLoginStateResult =
+  | {
+      ok: true;
+      platform: string;
+      state: 'logged_in' | 'login_prompt' | 'unknown';
+      url: string;
+      panelWebContentsId: number | null;
+    }
+  | { ok: false; reason: string };
+
+
+/**
  * 面板 wait 时长收敛（纯函数，测试可直调）：
  * floor + 非法/负数/0 → 0（立即返回）+ 上限 30s。
  * wait 无 CDP 副作用，无需审批——但大值必须截断，防 AI 传天文数字卡死会话状态机
@@ -266,6 +301,93 @@ export class AgentBrowserExecutor {
       return this.panelBridge.health();
     }
     return this.actions.isEngineAlive(accountId);
+  }
+
+  /**
+   * 阶段 5 第一站（2026-09-04）：平台登录态查询（面板模式专属，小红书先行）。
+   *
+   * 链路：Runtime.evaluate 免单只读快照 {url, text} → resolvePlatformLoginState
+   * 启发式三态（logged_in / login_prompt / unknown）。判定规则收敛在
+   * platform-login-rules 共享模块——与引擎 page 版共用同一份（防双端漂移）。
+   *
+   * 不静默降级三条：面板模式未开启 / 面板不可用 / 快照无效，一律 ok:false
+   * 带 reason，绝不回退到无头引擎查询（登录态错了会误导用户以为已登录）。
+   * 扫码登录本身是**用户人工接管点**：本查询只负责报告状态引导用户去扫码。
+   */
+  async loginStateViaPanel(
+    actor: PanelBridgeActor,
+    platform: string,
+  ): Promise<AgentPanelLoginStateResult> {
+    if (!actor?.ownerId || !actor?.tenantId) {
+      return {
+        ok: false,
+        reason:
+          '面板模式：缺少调用方身份（ownerId/tenantId），登录态未查询（不静默回退到无头浏览器）',
+      };
+    }
+    const mode = this.panelMode();
+    if (mode !== 'on' || !this.panelBridge) {
+      return {
+        ok: false,
+        reason: '当前仅面板模式支持登录态查询（面板模式未开启），未查询',
+      };
+    }
+    const status = this.panelBridge.status();
+    if (!status.available) {
+      return {
+        ok: false,
+        reason: `右侧浏览器面板不可用（${status.reason}），登录态未查询——请先打开右侧浏览器面板`,
+      };
+    }
+    try {
+      const out = await this.panelBridge.execute(actor, {
+        method: 'Runtime.evaluate',
+        params: {
+          expression: buildLoginStateExpression(),
+          returnByValue: true,
+        },
+      });
+      // readonly 调用桥会回传 CDP 结果：{ result: { type, value } }
+      const cdp = out.result as
+        | { result?: { value?: unknown } }
+        | null
+        | undefined;
+      let parsed: { url?: unknown; text?: unknown } | null = null;
+      try {
+        parsed = JSON.parse(
+          String(cdp?.result?.value ?? ''),
+        ) as { url?: unknown; text?: unknown } | null;
+      } catch {
+        parsed = null;
+      }
+      if (!parsed || typeof parsed.url !== 'string' || !parsed.url) {
+        return {
+          ok: false,
+          reason:
+            '面板页面状态读取失败（Runtime.evaluate 未返回有效 url），登录态未查询',
+        };
+      }
+      const state = resolvePlatformLoginState(
+        platform,
+        parsed.url,
+        typeof parsed.text === 'string' ? parsed.text : '',
+      );
+      return {
+        ok: true,
+        platform,
+        state,
+        url: parsed.url,
+        panelWebContentsId: out.binding?.webContentsId ?? null,
+      };
+    } catch (err) {
+      this.logger.warn(
+        `loginStateViaPanel 失败：${err instanceof Error ? err.message : String(err)}`,
+      );
+      return {
+        ok: false,
+        reason: `登录态查询异常（${err instanceof Error ? err.message : String(err)}），未查询`,
+      };
+    }
   }
 
   // ── 面板模式 ────────────────────────────────────────────────────────────
