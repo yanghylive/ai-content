@@ -19,6 +19,7 @@ import {
   Book as ParkBook,
   BookOpen as ParkBookOpen,
   Box as ParkBox,
+  BellRing as ParkBellRing,
   Branch as ParkBranch,
   Briefcase as ParkBriefcase,
   BuildingTwo as ParkBuildingTwo,
@@ -104,12 +105,15 @@ import {
   OrderedList as ParkOrderedList,
   Paint as ParkPaint,
   Paperclip as ParkPaperclip,
+  OpenOne as ParkOpenOne,
   Pause as ParkPause,
   PauseOne as ParkPauseOne,
   Pencil as ParkPencil,
   People as ParkPeople,
   Phone as ParkPhone,
+  Protect as ParkProtect,
   Pic as ParkPic,
+  PictureAlbum as ParkPictureAlbum,
   Pie as ParkPie,
   Pin as ParkPin,
   Play as ParkPlay,
@@ -137,7 +141,6 @@ import {
   SettingTwo as ParkSettingTwo,
   Share as ParkShare,
   Shield as ParkShield,
-  ShieldAdd as ParkShieldAdd,
   Shop as ParkShop,
   ShoppingBag as ParkShoppingBag,
   ShoppingCart as ParkShoppingCart,
@@ -245,7 +248,7 @@ export const BadgeCheck = withPark(ParkCheckCorrect);
 export const Ban = withPark(ParkForbid);
 export const BarChart3 = withPark(ParkChartHistogram);
 export const Bell = withPark(ParkRemind);
-export const BellRing = withPark(ParkRemind);
+export const BellRing = withPark(ParkBellRing);
 export const Blocks = withPark(ParkAppSwitch);
 export const Bolt = withPark(ParkLightning);
 export const BookOpen = withPark(ParkBookOpen);
@@ -296,7 +299,7 @@ export const DatabaseZap = withPark(ParkCylinder);
 export const DollarSign = withPark(ParkDollar);
 export const Download = withPark(ParkDownload);
 export const Edit3 = withPark(ParkEdit);
-export const ExternalLink = withPark(ParkExport);
+export const ExternalLink = withPark(ParkOpenOne);
 export const Eye = withPark(ParkEyes);
 export const File = withPark(ParkFileText);
 export const FileBadge = withPark(ParkFileSuccess);
@@ -335,7 +338,7 @@ export const History = withPark(ParkHistory);
 export const Home = withPark(ParkHome);
 export const Image = withPark(ParkPic);
 export const ImageIcon = withPark(ParkPic);
-export const Images = withPark(ParkPic);
+export const Images = withPark(ParkPictureAlbum);
 export const Inbox = withPark(ParkInbox);
 export const Info = withPark(ParkInfo);
 export const KeyRound = withPark(ParkKey);
@@ -416,8 +419,8 @@ export const Settings = withPark(ParkSetting);
 export const Settings2 = withPark(ParkSettingTwo);
 export const Share2 = withPark(ParkShare);
 export const Shield = withPark(ParkShield);
-export const ShieldAlert = withPark(ParkShieldAdd);
-export const ShieldCheck = withPark(ParkShield);
+export const ShieldAlert = withPark(ParkShield);
+export const ShieldCheck = withPark(ParkProtect);
 export const ShoppingBag = withPark(ParkShoppingBag);
 export const ShoppingCart = withPark(ParkShoppingCart);
 export const Shuffle = withPark(ParkShuffle);
