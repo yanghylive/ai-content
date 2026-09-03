@@ -10,6 +10,18 @@ import {
   type AiChatMessage,
   type AiGatewayEvent,
 } from "@/lib/api/ai-gateway";
+import { ShellIcon } from "@/components/shell/icons";
+import {
+  Bot,
+  Clipboard,
+  Info,
+  Lightbulb,
+  Send,
+  Sparkles,
+  Trash2,
+  Wallet,
+  X,
+} from "@/components/iconpark";
 import { voiceApi } from "@/lib/api/voice";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
@@ -38,6 +50,11 @@ interface ChatItem {
     riskSummary?: string | null;
     hint?: string;
   };
+  /**
+   * 瞬态消息（2026-09-03）：错误/中断类反馈仅当次会话可见，
+   * 不写入 localStorage 历史，避免旧鉴权失败之类的整屏报错被永久留存。
+   */
+  ephemeral?: boolean;
 }
 
 const QUICK_PROMPTS = ["今天有什么热点选题？", "帮我检查一段文案有没有违禁词", "怎么提升内容质量？"];
@@ -78,12 +95,24 @@ export function AiAssistant({
   const [open, setOpen] = useState(embedded);
   // 历史记录延后到 useEffect 加载：若在 useState initializer 里读 localStorage，
   // SSR（[]）与 CSR hydration（历史）不一致会触发 React #418 hydration mismatch。
+  // 过滤瞬态消息（ephemeral）与旧版遗留的整条错误回复（⚠️ 开头），避免污染会话。
   const [items, setItems] = useState<ChatItem[]>([]);
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem("ai_assistant_history");
       const parsed = raw ? (JSON.parse(raw) as ChatItem[]) : [];
-      if (Array.isArray(parsed)) setItems(parsed.slice(-50));
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter(
+          (i) =>
+            !i.ephemeral &&
+            !(
+              i.kind === "assistant" &&
+              typeof i.text === "string" &&
+              i.text.trim().startsWith("⚠️")
+            ),
+        );
+        setItems(cleaned.slice(-50));
+      }
     } catch {
       // 忽略损坏的历史记录
     }
@@ -104,12 +133,17 @@ export function AiAssistant({
   const [quotaExhausted, setQuotaExhausted] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // 单条 hover 定位 + 清空按钮两段式确认（2026-09-03 历史可治理化）
+  const [hoverId, setHoverId] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
-  // 对话历史持久化：过滤掉流式中的半成品，最多保留最近 50 条
+  // 对话历史持久化：过滤流式中的半成品与瞬态消息（错误/中断反馈），最多保留最近 50 条
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const settled = items.filter((i) => !i.streaming).slice(-50);
+      const settled = items
+        .filter((i) => !i.streaming && !i.ephemeral)
+        .slice(-50);
       window.localStorage.setItem(
         "ai_assistant_history",
         JSON.stringify(settled),
@@ -231,6 +265,7 @@ export function AiAssistant({
                         ...item,
                         text: `⚠️ ${toActionableError(event.message, "AI 助手遇到了问题")}`,
                         streaming: false,
+                        ephemeral: true,
                       }
                     : item,
                 ),
@@ -275,7 +310,7 @@ export function AiAssistant({
         setItems((prev) =>
           prev.map((item) =>
             item.id === assistantId
-              ? { ...item, text: `⚠️ ${msg}`, streaming: false }
+              ? { ...item, text: `⚠️ ${msg}`, streaming: false, ephemeral: true }
               : item,
           ),
         );
@@ -287,11 +322,13 @@ export function AiAssistant({
                   ...item,
                   streaming: false,
                   // 空回复兜底：模型未产出任何文本（如对资金类敏感输入的网关空回）
-                  // 时给用户可见反馈，避免「发了消息却无任何回复」的静默失联
+                  // 时给用户可见反馈，避免「发了消息却无任何回复」的静默失联；
+                  // 属失败反馈，标 ephemeral 不入历史。
                   text:
                     item.text.trim() === ""
                       ? "（本次未收到有效回复，请换个说法再试）"
                       : item.text,
+                  ephemeral: item.text.trim() === "" ? true : item.ephemeral,
                 }
               : item,
           ),
@@ -356,6 +393,43 @@ export function AiAssistant({
     if (textInput.trim()) void send(textInput);
   };
 
+  /** 停止生成：中断 SSE 并就地收起流式状态（保留已产出文本） */
+  const handleStop = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setItems((prev) =>
+      prev.map((item) => {
+        if (!item.streaming) return item;
+        const text =
+          item.text.trim() === "" ? "（已停止生成）" : item.text;
+        return { ...item, streaming: false, text };
+      }),
+    );
+    setBusy(false);
+  };
+
+  /** 删除单条消息（hover 操作，不触发整批重排） */
+  const removeItem = (id: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
+    setHoverId((cur) => (cur === id ? null : cur));
+  };
+
+  /** 清空对话：两段式确认（第一次点击进入确认态，3s 后自动复位） */
+  const clearAll = () => {
+    if (!confirmClear) {
+      setConfirmClear(true);
+      window.setTimeout(() => setConfirmClear(false), 3000);
+      return;
+    }
+    setConfirmClear(false);
+    setHoverId(null);
+    handleStop();
+    setError(null);
+    setRebateOffer(null);
+    setQuotaExhausted(false);
+    setItems([]);
+  };
+
   return (
     <>
       {/* 悬浮入口（右下角品牌紫钮）——内嵌模式不渲染 */}
@@ -396,7 +470,7 @@ export function AiAssistant({
               }}
             />
           ) : (
-            "✦"
+            <Sparkles size={20} />
           )}
         </button>
       )}
@@ -434,10 +508,42 @@ export function AiAssistant({
                 AI 助手
               </div>
               <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 11 }}>
-                正在与 AI 对话，内容由 AI 生成，请注意甄别
+                {embedded
+                  ? "与手机 App 同一套 AI 对话 · 内容由 AI 生成，请注意甄别"
+                  : "正在与 AI 对话，内容由 AI 生成，请注意甄别"}
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <button
+                type="button"
+                onClick={clearAll}
+                aria-label={confirmClear ? "再次点击确认清空对话" : "清空对话"}
+                title={confirmClear ? "再次点击确认清空" : "清空对话"}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  height: 32,
+                  padding: "0 10px",
+                  borderRadius: 16,
+                  border: confirmClear
+                    ? "1px solid color-mix(in srgb, var(--kaypal-v3-danger, #ef4444) 45%, transparent)"
+                    : "1px solid var(--kaypal-v3-paper-muted)",
+                  background: confirmClear
+                    ? "var(--kaypal-v3-danger-soft, rgba(239,68,68,.1))"
+                    : "var(--kaypal-v3-paper-soft)",
+                  color: confirmClear
+                    ? "var(--kaypal-v3-danger, #ef4444)"
+                    : "var(--kaypal-v3-muted)",
+                  fontSize: 12,
+                  fontWeight: confirmClear ? 700 : 500,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <Trash2 size={14} />
+                {confirmClear ? "确认清空" : "清空对话"}
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -447,34 +553,38 @@ export function AiAssistant({
                 aria-label="合规中心"
                 title="用户协议 · 隐私 · 投诉"
                 style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   background: "var(--kaypal-v3-paper-soft)",
                   border: "none",
                   color: "var(--kaypal-v3-muted)",
                   width: 32,
                   height: 32,
                   borderRadius: 16,
-                  fontSize: 14,
                   cursor: "pointer",
                 }}
               >
-                ⓘ
+                <Info size={15} />
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
+                aria-label="关闭"
                 style={{
+                  display: embedded ? "none" : "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   background: "var(--kaypal-v3-paper-soft)",
                   border: "none",
                   color: "var(--kaypal-v3-muted)",
                   width: 32,
                   height: 32,
                   borderRadius: 16,
-                  fontSize: 16,
                   cursor: "pointer",
-                  display: embedded ? "none" : undefined,
                 }}
               >
-                ✕
+                <X size={15} />
               </button>
             </div>
           </div>
@@ -501,12 +611,22 @@ export function AiAssistant({
                     marginBottom: 6,
                   }}
                 >
-                  嗨，我是你的 AI 内容运营助手 ✦
+                  嗨，我是你的 AI 内容运营助手
                 </div>
                 <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 13, lineHeight: 1.7 }}>
                   可以直接问我热点选题、检查违禁词，或告诉我你想写什么。
                   <br />
-                  试试按住 🎤 说一句：<b style={{ color: "var(--kaypal-v3-accent)" }}>「帮我写一条行业文案」</b>。
+                  {isMobile ? (
+                    <>
+                      试试按住 <b style={{ color: "var(--kaypal-v3-accent)" }}>🎤</b> 说一句：
+                      <b style={{ color: "var(--kaypal-v3-accent)" }}>「帮我写一条行业文案」</b>。
+                    </>
+                  ) : (
+                    <>
+                      在下方输入框打字，回车发送；也可以点
+                      <b style={{ color: "var(--kaypal-v3-accent)" }}> 🎤 </b>切到语音。
+                    </>
+                  )}
                 </div>
                 <div
                   style={{
@@ -534,7 +654,20 @@ export function AiAssistant({
                       {p}
                     </button>
                   ))}
-                  <div style={{ width: "100%", fontSize: 11, color: "var(--kaypal-v3-amber)", marginTop: 4 }}>💰 省钱返利</div>
+                  <div
+                    style={{
+                      width: "100%",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: 11,
+                      color: "var(--kaypal-v3-amber)",
+                      marginTop: 4,
+                    }}
+                  >
+                    <Wallet size={11} />
+                    省钱返利
+                  </div>
                   {SAVINGS_PROMPTS.map((p) => (
                     <button
                       key={p}
@@ -557,104 +690,155 @@ export function AiAssistant({
               </div>
             )}
 
-            {items.map((item) =>
-              item.kind === "user" ? (
+            {items.map((item) => {
+              const isUser = item.kind === "user";
+              const showRemove = hoverId === item.id && !item.streaming;
+              return (
                 <div
                   key={item.id}
-                  style={{
-                    alignSelf: "flex-end",
-                    maxWidth: "82%",
-                    background: "var(--kaypal-v3-accent)",
-                    color: "#fff",
-                    borderRadius: "16px 16px 4px 16px",
-                    padding: "10px 14px",
-                    fontSize: 14,
-                    lineHeight: 1.6,
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {item.text}
-                </div>
-              ) : item.kind === "tool" && item.draft ? (
-                <DraftCard
-                  key={item.id}
-                  draft={item.draft}
-                  onDone={(msg) =>
-                    setItems((prev) => [
-                      ...prev.map((x) =>
-                        x.id === item.id
-                          ? { ...x, text: msg, draft: undefined }
-                          : x,
-                      ),
-                      {
-                        id: `a-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                        kind: "assistant",
-                        text: msg,
-                      },
-                    ])
+                  onMouseEnter={() => setHoverId(item.id)}
+                  onMouseLeave={() =>
+                    setHoverId((cur) => (cur === item.id ? null : cur))
                   }
-                />
-              ) : item.kind === "tool" ? (
-                <div
-                  key={item.id}
                   style={{
-                    alignSelf: "flex-start",
                     display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    background: "var(--kaypal-v3-accent-soft)",
-                    border: "1px solid var(--kaypal-v3-accent-border)",
-                    color: "var(--kaypal-v3-accent-ink)",
-                    borderRadius: 12,
-                    padding: "8px 12px",
-                    fontSize: 12,
+                    justifyContent: isUser ? "flex-end" : "flex-start",
+                    position: "relative",
+                    minWidth: 0,
                   }}
                 >
-                  <span style={{ fontSize: 14 }}>⚙️</span>
-                  {item.text}
-                  {item.jump && (
-                    <a
-                      href={item.jump.href}
+                  {isUser ? (
+                    <div
                       style={{
-                        color: "var(--kaypal-v3-accent)",
-                        textDecoration: "underline",
-                        textUnderlineOffset: 3,
+                        maxWidth: "82%",
+                        background: "var(--kaypal-v3-accent)",
+                        color: "#fff",
+                        borderRadius: "16px 16px 4px 16px",
+                        padding: "10px 14px",
+                        fontSize: 14,
+                        lineHeight: 1.6,
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
                       }}
                     >
-                      {item.jump.label} →
-                    </a>
+                      {item.text}
+                    </div>
+                  ) : item.kind === "tool" && item.draft ? (
+                    <DraftCard
+                      draft={item.draft}
+                      onDone={(msg) =>
+                        setItems((prev) => [
+                          ...prev.map((x) =>
+                            x.id === item.id
+                              ? { ...x, text: msg, draft: undefined }
+                              : x,
+                          ),
+                          {
+                            id: `a-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                            kind: "assistant",
+                            text: msg,
+                          },
+                        ])
+                      }
+                    />
+                  ) : item.kind === "tool" ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        background: "var(--kaypal-v3-accent-soft)",
+                        border: "1px solid var(--kaypal-v3-accent-border)",
+                        color: "var(--kaypal-v3-accent-ink)",
+                        borderRadius: 12,
+                        padding: "8px 12px",
+                        fontSize: 12,
+                      }}
+                    >
+                      <Bot size={14} />
+                      {item.text}
+                      {item.jump && (
+                        <a
+                          href={item.jump.href}
+                          style={{
+                            color: "var(--kaypal-v3-accent)",
+                            textDecoration: "underline",
+                            textUnderlineOffset: 3,
+                          }}
+                        >
+                          {item.jump.label} →
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        maxWidth: "88%",
+                        background: item.ephemeral
+                          ? "var(--kaypal-v3-danger-soft, rgba(239,68,68,.06))"
+                          : "var(--kaypal-v3-paper)",
+                        border: item.ephemeral
+                          ? "1px solid color-mix(in srgb, var(--kaypal-v3-danger, #ef4444) 32%, transparent)"
+                          : "1px solid var(--kaypal-v3-paper-muted)",
+                        color: item.ephemeral
+                          ? "color-mix(in srgb, var(--kaypal-v3-ink) 88%, var(--kaypal-v3-danger, #ef4444))"
+                          : "var(--kaypal-v3-ink)",
+                        borderRadius: "16px 16px 16px 4px",
+                        padding: "10px 14px",
+                        fontSize: 14,
+                        lineHeight: 1.65,
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm, remarkBreaks]}
+                        components={markdownComponents}
+                      >
+                        {item.text}
+                      </ReactMarkdown>
+                    </div>
+                  )}
+                  {showRemove && (
+                    <button
+                      type="button"
+                      aria-label="删除这条消息"
+                      title="删除这条消息"
+                      onClick={() => removeItem(item.id)}
+                      style={{
+                        position: "absolute",
+                        top: -8,
+                        right: 4,
+                        width: 20,
+                        height: 20,
+                        borderRadius: 10,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "var(--kaypal-v3-paper)",
+                        border: "1px solid var(--kaypal-v3-paper-muted)",
+                        color: "var(--kaypal-v3-muted)",
+                        cursor: "pointer",
+                        boxShadow: "0 1px 4px rgba(30,20,60,.14)",
+                      }}
+                    >
+                      <X size={10} />
+                    </button>
                   )}
                 </div>
-              ) : (
-                <div
-                  key={item.id}
-                  style={{
-                    alignSelf: "flex-start",
-                    maxWidth: "88%",
-                    background: "var(--kaypal-v3-paper)",
-                    border: "1px solid var(--kaypal-v3-paper-muted)",
-                    color: "var(--kaypal-v3-ink)",
-                    borderRadius: "16px 16px 16px 4px",
-                    padding: "10px 14px",
-                    fontSize: 14,
-                    lineHeight: 1.65,
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkBreaks]}
-                    components={markdownComponents}
-                  >
-                    {item.text}
-                  </ReactMarkdown>
-                </div>
-              ),
-            )}
+              );
+            })}
 
             {busy && (
-              <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 12 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  color: "var(--kaypal-v3-muted)",
+                  fontSize: 12,
+                }}
+              >
                 <span
                   style={{
                     display: "inline-block",
@@ -667,6 +851,21 @@ export function AiAssistant({
                   }}
                 />
                 思考中…
+                <button
+                  type="button"
+                  onClick={handleStop}
+                  style={{
+                    border: "1px solid var(--kaypal-v3-paper-muted)",
+                    background: "var(--kaypal-v3-paper-soft)",
+                    color: "var(--kaypal-v3-muted)",
+                    borderRadius: 10,
+                    padding: "3px 10px",
+                    fontSize: 11.5,
+                    cursor: "pointer",
+                  }}
+                >
+                  停止生成
+                </button>
               </div>
             )}
 
@@ -681,13 +880,15 @@ export function AiAssistant({
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 4,
+                  gap: 5,
                   color: "var(--kaypal-v3-amber)",
                   fontSize: 12,
                   textDecoration: "underline",
+                  textUnderlineOffset: 3,
                 }}
               >
-                💡 额度用完？可用返利余额兑换 AI 额度 →
+                <Lightbulb size={13} />
+                额度用完？可用返利余额兑换 AI 额度 →
               </a>
             )}
             {rebateOffer && !busy && (
@@ -722,6 +923,9 @@ export function AiAssistant({
                 }}
                 style={{
                   marginTop: 8,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
                   background: "var(--kaypal-v3-accent)",
                   border: "none",
                   borderRadius: 10,
@@ -732,7 +936,8 @@ export function AiAssistant({
                   cursor: "pointer",
                 }}
               >
-                💰 用返利 ¥{rebateOffer.price}/次 重试
+                <Wallet size={14} />
+                用返利 ¥{rebateOffer.price}/次 重试
                 （余额 ¥{rebateOffer.balance.toFixed(2)}）
               </button>
             )}
@@ -760,20 +965,25 @@ export function AiAssistant({
                     background: "var(--kaypal-v3-paper)",
                     border: "1px solid var(--kaypal-v3-paper-muted)",
                     color: "var(--kaypal-v3-muted)",
-                    fontSize: 17,
                     cursor: "pointer",
                     flexShrink: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  ⌨️
+                  <ShellIcon name="keyboard" size={18} />
                 </button>
                 <button
                   type="button"
+                  onClick={busy ? handleStop : undefined}
                   onMouseDown={(e) => {
+                    if (busy) return;
                     e.preventDefault();
                     toggleVoice();
                   }}
                   onTouchStart={(e) => {
+                    if (busy) return;
                     e.preventDefault();
                     toggleVoice();
                   }}
@@ -782,9 +992,10 @@ export function AiAssistant({
                     padding: "12px 0",
                     borderRadius: 22,
                     border: "none",
-                    background: listening
-                      ? "var(--kaypal-v3-danger, #ef4444)"
-                      : "var(--kaypal-v3-accent)",
+                    background:
+                      busy || listening
+                        ? "var(--kaypal-v3-danger, #ef4444)"
+                        : "var(--kaypal-v3-accent)",
                     color: "#fff",
                     fontSize: 14,
                     fontWeight: 700,
@@ -792,9 +1003,22 @@ export function AiAssistant({
                     userSelect: "none",
                     WebkitUserSelect: "none",
                     touchAction: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 7,
                   }}
                 >
-                  {listening ? "🔴 正在听…（点击停止）" : "🎤 按住说话"}
+                  {busy ? (
+                    "■ 停止生成"
+                  ) : listening ? (
+                    "正在听…（点击停止）"
+                  ) : (
+                    <>
+                      <ShellIcon name="mic" size={16} />
+                      按住说话
+                    </>
+                  )}
                 </button>
               </div>
             ) : (
@@ -810,12 +1034,14 @@ export function AiAssistant({
                     background: "var(--kaypal-v3-paper)",
                     border: "1px solid var(--kaypal-v3-paper-muted)",
                     color: "var(--kaypal-v3-muted)",
-                    fontSize: 17,
                     cursor: "pointer",
                     flexShrink: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  🎤
+                  <ShellIcon name="mic" size={18} />
                 </button>
                 <input
                   value={textInput}
@@ -840,22 +1066,34 @@ export function AiAssistant({
                 />
                 <button
                   type="button"
-                  onClick={handleSendText}
-                  disabled={!textInput.trim() || busy}
+                  onClick={busy ? handleStop : handleSendText}
+                  disabled={!busy && !textInput.trim()}
+                  aria-label={busy ? "停止生成" : "发送"}
+                  title={busy ? "停止生成" : "发送"}
                   style={{
                     width: 44,
                     height: 44,
-                    borderRadius: 22,
+                    borderRadius: busy ? 22 : 22,
                     border: "none",
-                    background: "var(--kaypal-v3-accent)",
+                    background: busy
+                      ? "var(--kaypal-v3-danger, #ef4444)"
+                      : "var(--kaypal-v3-accent)",
                     color: "#fff",
-                    fontSize: 16,
                     cursor: "pointer",
-                    opacity: !textInput.trim() || busy ? 0.5 : 1,
+                    opacity: !busy && !textInput.trim() ? 0.5 : 1,
                     flexShrink: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  发送
+                  {busy ? (
+                    <svg width="13" height="13" viewBox="0 0 12 12" aria-hidden="true">
+                      <rect width="12" height="12" rx="2" fill="currentColor" />
+                    </svg>
+                  ) : (
+                    <Send size={17} />
+                  )}
                 </button>
               </div>
             )}
@@ -963,7 +1201,7 @@ function DraftCard({
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <span style={{ fontSize: 15 }}>📋</span>
+        <Clipboard size={15} />
         <span style={{ fontWeight: 700, fontSize: 13.5 }}>
           {intentLabel[draft.intent || ""] || "任务草稿"}
         </span>

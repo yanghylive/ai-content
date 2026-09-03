@@ -479,6 +479,14 @@ const PATHS = {
     </>
   ),
 
+  /** 文字输入模式: 键盘（2026-09-03 助手对话输入切换） */
+  keyboard: (
+    <>
+      <rect width="20" height="16" x="2" y="4" rx="2" ry="2" />
+      <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M10 14h4" />
+    </>
+  ),
+
 } as const;
 
 export type ShellIconName = keyof typeof PATHS;
