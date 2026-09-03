@@ -52,6 +52,10 @@ import { toast } from "@/lib/toast";
  * - 大面板与内容横幅卡内边距：24 —— kaypal-v3-panel p-6（含 AI 简报 / AI 价值账单 / 增长功能）
  * - 警报区（需要关注/风险，左侧 3px 色条）：16 —— p-4（警示块刻意紧凑）
  * - 统计卡内边距：20 —— p-5（卡内标签→数字 8 = mt-2）
+ * 统计卡(页头读数) vs 增长功能卡(操作入口) 分层(2026-09-03)：
+ *   统计卡 = paper-soft 浅底 + 无边框 + 无 hover —— 只读数、不可点；
+ *   增长功能卡 = paper 白底 + accent 描边 + 渐变图标 + hover 上浮 —— 可点入口。
+ *   勿给统计卡加回 border/纯白底，避免与下方 7 张功能卡同视觉、误导用户点击。
  * - 功能入口主卡内边距：20 —— p-5（44px 色块大图标 + 标题 15 + 描述 14；hover 图标块反色）
  * - 账单指标格内边距：12 —— p-3（末级小格保持紧凑）
  *
@@ -311,14 +315,14 @@ function formatRunTime(iso: string): string {
   return `${md} ${hm}`;
 }
 
-/** 统计卡片骨架（首屏加载） */
+/** 统计卡片骨架（首屏加载）——与统计卡同为无边框 paper-soft 读数牌样式 */
 function StatCardSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
       {Array.from({ length: 5 }).map((_, index) => (
         <div
           key={index}
-          className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-5"
+          className="rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper-soft)] p-5"
         >
           <div className="h-3 w-16 animate-pulse rounded bg-[var(--kaypal-v3-accent-soft)]" />
           <div className="mt-3 h-7 w-20 animate-pulse rounded bg-[var(--kaypal-v3-accent-soft)]" />
@@ -913,7 +917,7 @@ function HomeHeader({
             return (
               <div
                 key={stat.key}
-                className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-5"
+                className="rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper-soft)] p-5"
               >
                 <p className="text-sm text-[var(--kaypal-v3-muted)]">
                   {stat.label}
