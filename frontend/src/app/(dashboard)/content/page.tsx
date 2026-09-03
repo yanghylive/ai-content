@@ -128,7 +128,7 @@ export default function ContentScene() {
           group: "内容创作",
         },
         {
-          icon: "video",
+          icon: "movieCamera",
           tint: "kx-t-violet",
           title: "AI 生视频",
           desc: "文字描述生成短视频，直接入素材库",
@@ -136,7 +136,7 @@ export default function ContentScene() {
           group: "视频与发布",
         },
         {
-          icon: "database",
+          icon: "archive",
           tint: "kx-t-slate",
           title: "素材库",
           desc: "自动采集的内容素材，可直接用",
@@ -153,7 +153,7 @@ export default function ContentScene() {
           group: "素材管理",
         },
         {
-          icon: "database",
+          icon: "collectPic",
           tint: "kx-t-blue",
           title: "全网采集",
           desc: "关键词搜作品、查详情、看账号列表",
@@ -161,7 +161,7 @@ export default function ContentScene() {
           group: "素材管理",
         },
         {
-          icon: "download",
+          icon: "fetchDoc",
           tint: "kx-t-slate",
           title: "文章反抓",
           desc: "输入链接，一键提取文章内容",
@@ -169,7 +169,7 @@ export default function ContentScene() {
           group: "素材管理",
         },
         {
-          icon: "video",
+          icon: "videocam",
           tint: "kx-t-green",
           title: "视频成片",
           desc: "选题 → 脚本 → 成片，多流水线一键成片",
@@ -177,7 +177,7 @@ export default function ContentScene() {
           group: "视频与发布",
         },
         {
-          icon: "video",
+          icon: "filmRoll",
           tint: "kx-t-violet",
           title: "视频生产",
           desc: "12 条流水线，选题到成片全流程",
@@ -185,7 +185,7 @@ export default function ContentScene() {
           group: "视频与发布",
         },
         {
-          icon: "video",
+          icon: "playButton",
           tint: "kx-t-amber",
           title: "商品视频",
           desc: "带货文案 + 一键成片",
@@ -193,7 +193,7 @@ export default function ContentScene() {
           group: "视频与发布",
         },
         {
-          icon: "megaphone",
+          icon: "sendUp",
           tint: "kx-t-green",
           title: "发布",
           desc: "一键发到各平台，发前自动合规检查",
@@ -201,7 +201,7 @@ export default function ContentScene() {
           group: "视频与发布",
         },
         {
-          icon: "history",
+          icon: "calendarPlan",
           tint: "kx-t-violet",
           title: "视频发布计划",
           desc: "查看定时发布的视频任务",

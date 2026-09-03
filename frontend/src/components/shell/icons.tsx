@@ -1,11 +1,19 @@
 import React from "react";
 import {
   Comments as IPComments,
+  Film as IPFilm,
   Headset as IPHeadset,
+  ImportAndExport as IPImportAndExport,
   Inbox as IPInbox,
   MessagesOne as IPMessagesOne,
   Tiktok as IPTiktok,
   UnorderedList as IPUnorderedList,
+  Video as IPVideo,
+  Videocamera as IPVideocamera,
+  PlayOne as IPPlayOne,
+  Calendar as IPCalendar,
+  CollectPicture as IPCollectPicture,
+  SendOne as IPSendOne,
   History as IPHistory,
   Message as IPMessage,
   MessageEmoji as IPMessageEmoji,
@@ -410,6 +418,67 @@ const PATHS = {
     </>
   ),
 
+  /** 视频成片: 摄像机+三角播放(IconPark Videocamera) */
+  videocam: (
+    <>
+      <path d="M22 8.5v7L16 12.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 2 19.5v-15A1.5 1.5 0 0 1 3.5 3h11A1.5 1.5 0 0 1 16 4.5v7l6-4.5v7" />
+    </>
+  ),
+  /** 视频生产流水线: 胶片(IconPark Film) */
+  filmRoll: (
+    <>
+      <rect x="2.5" y="6.5" width="19" height="11" rx="1.5" />
+      <path d="M2.5 10.5h19M2.5 14.5h19" />
+      <circle cx="8" cy="12" r="0.6" />
+      <circle cx="16" cy="12" r="0.6" />
+    </>
+  ),
+  /** 商品视频: 播放钮(IconPark PlayOne) */
+  playButton: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M10 8.8v6.4l5.5-3.2L10 8.8Z" />
+    </>
+  ),
+  /** AI 生视频: 摄影机+星(IconPark Video 保留用,给一个占位避免 keyof) */
+  movieCamera: (
+    <>
+      <path d="m22 8-6 4 6 4V8Z" />
+      <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+    </>
+  ),
+
+  /** 全网采集: 图片收集(IconPark CollectPicture) */
+  collectPic: (
+    <>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4" />
+      <path d="M19 3v6M16 6h6" />
+    </>
+  ),
+  /** 发布: 发送(IconPark SendOne) */
+  sendUp: (
+    <>
+      <path d="M12 19V5" />
+      <path d="m5 12 7-7 7 7" />
+    </>
+  ),
+  /** 视频发布计划: 日历(IconPark Calendar) */
+  calendarPlan: (
+    <>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </>
+  ),
+
+  /** 文章反抓: 抓取/入站(IconPark ImportAndExport) */
+  fetchDoc: (
+    <>
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 21h14" />
+    </>
+  ),
+
 } as const;
 
 export type ShellIconName = keyof typeof PATHS;
@@ -433,6 +502,14 @@ const PARK_ICONS: Partial<Record<ShellIconName, ParkComp>> = {
   inboxTray: IPInbox,
   recordList: IPUnorderedList,
   groupSend: IPMessagesOne,
+  videocam: IPVideocamera,
+  filmRoll: IPFilm,
+  playButton: IPPlayOne,
+  movieCamera: IPVideo,
+  collectPic: IPCollectPicture,
+  sendUp: IPSendOne,
+  calendarPlan: IPCalendar,
+  fetchDoc: IPImportAndExport,
   wechatBubble: IPWechat,
   botHead: IPRobotOne,
   botSq: IPHeadset,
