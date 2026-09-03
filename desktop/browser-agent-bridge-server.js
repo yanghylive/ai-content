@@ -292,6 +292,8 @@ async function startBrowserBridge(deps) {
       const message = error && error.message ? String(error.message) : 'internal';
       // actor/审批/白名单类错误按 403 透出；其余 500。不回显内部堆栈。
       if (/不一致|拒绝|未登记|需要审批|actor|必填|fail-closed|自我批准/i.test(message)) {
+        // 2026-09-04：403 诊断日志（真机排障 POLICY_DENIED 需要具体拒绝原因）
+        logger.warn('[browser-bridge] 403 POLICY_DENIED:', message);
         fail(res, 403, 'POLICY_DENIED');
       } else {
         logger.warn('[browser-bridge] 请求处理失败：', message);

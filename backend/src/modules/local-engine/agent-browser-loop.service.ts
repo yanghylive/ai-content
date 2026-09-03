@@ -11,6 +11,7 @@ import { AgentBrowserExecutor } from './agent-browser-executor.service';
 import {
   isPanelConfirmation,
   panelMethodForAction,
+  PanelBridgeActor,
 } from './agent-panel-bridge.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { detectPromptInjection } from '../ai-gateway/ai-gateway.service';
@@ -315,11 +316,24 @@ export class AgentBrowserLoopService {
         gateMessage = `页面已导航至 ${stepSnapshot.url}，旧快照中的元素引用已失效（origin=${actionOriginUrls[i]}），等待基于当前快照重新决策`;
       }
       if (tool && allowed) {
-        const audit = this.policy.audit(
+        let audit = this.policy.audit(
           tool,
           { url: 'url' in action ? (action.url ?? session.url) : session.url },
           { url: session.url, allowDomains: session.allowDomains },
         );
+        // 2026-09-04 修「批准后死锁」（最后一处）：policy 把 navigate 定为低风险
+        // （confirm:false），loop 闸门对 goto 不生效 → 客户端重试带的
+        // confirmationIds 在 loop 层根本不会被消费（resolveConfirmation 不触达），
+        // executor 每次重试都签新单 → "批一张废一张"。面板模式下导航与
+        // executor 侧闸门对齐：导航一律要求面板确认单（executor.gotoViaPanel
+        // 本来就对每次导航签单/验单，这里只是让 loop 簿记同一步）。
+        if (panelMode === 'on' && tool === 'navigate' && !audit.requiresConfirmation) {
+          audit = {
+            ...audit,
+            requiresConfirmation: true,
+            reason: '面板模式：导航需面板确认单（对齐 executor 闸门）',
+          };
+        }
         if (audit.requiresConfirmation) {
           // P0-2：服务端确认校验——confirmationIds 查 AgentConfirmation 表（绑定
           // sessionId/tenantId/userId + fingerprint 一致）才放行；不信任客户端裸确认。
@@ -330,9 +344,13 @@ export class AgentBrowserLoopService {
             session,
             action,
             confirmationIds,
+            actor,
           );
           if (conf.ok) {
             lockedConfirmationId = conf.confirmationId;
+            // 2026-09-04：锁的是"桥上还没批"的面板单（pending 也放行锁定防签新单）
+            // ——批准权仍在桌面审批 UI，本步终态语义同 defer（等待批准，非真失败）
+            if (conf.viaBridgePending) panelApprovalDeferred = true;
           } else if (panelMode === 'on') {
             // ── 阶段 6 决策 ②：面板模式下，没有已批准的单 → 交给桌面面板签 ──
             // 写动作的批准权归**桌面浏览器面板审批 UI**，技术闸门由面板桥把持
@@ -397,6 +415,21 @@ export class AgentBrowserLoopService {
               ? { selector: blockedConfirmation.selector }
               : {}),
           };
+
+      // 2026-09-04 修「批准后死锁」第三处：policy 把 navigate 定为低风险
+      // （confirm:false），loop 闸门不拦 goto → 确认单由 **executor 自己**在桥上
+      // 签（gotoViaPanel 无单路径）。这类失败步骤同样要按"等待面板批准"留痕，
+      // 否则终态被推成 failed，重试通道被 400 堵死（真机实证）。
+      // 拒绝是用户终态决定，不算待批（消息含"拒绝"）。
+      if (
+        !r.ok &&
+        panelMode === 'on' &&
+        'confirmationId' in r &&
+        r.confirmationId &&
+        !r.message?.includes('拒绝')
+      ) {
+        panelApprovalDeferred = true;
+      }
 
       // 3.4 验证：生成步骤事件
       const stepEvent: AgentBrowserStepEvent = {
@@ -503,6 +536,19 @@ export class AgentBrowserLoopService {
     );
     const okCount = stepResults.filter((s) => s.ok).length;
     const failCount = stepResults.filter((s) => !s.ok).length;
+    // 2026-09-04 修「批准后死锁」第二半：面板待批步骤（panelApproval 标注）
+    // 是"等用户点头"，不是真失败。全部失败且失败步骤全是面板待批时，
+    // 落 partial_success 断点（run 的 sanctioned 重试通道），而不是 failed 终态
+    // ——failed 终态会把"批准后携带该 id 重试"的契约堵死（400 终态不可重跑）。
+    const isPanelDeferredStep = (s: { panelApproval?: boolean }) =>
+      s.panelApproval === true;
+    const deferredFailCount = stepResults.filter(
+      (s) => !s.ok && isPanelDeferredStep(s),
+    ).length;
+    const awaitingPanelApproval =
+      okCount === 0 &&
+      failCount > 0 &&
+      deferredFailCount === failCount;
     let status: NonNullable<AgentBrowserStepEvent['status']> = 'failed';
     if (actions.length === 0) {
       status = 'failed';
@@ -510,16 +556,22 @@ export class AgentBrowserLoopService {
       status = 'success';
     } else if (okCount > 0) {
       status = 'partial_success';
+    } else if (awaitingPanelApproval) {
+      status = 'partial_success';
     }
+    const doneMessage =
+      awaitingPanelApproval && status === 'partial_success'
+        ? `等待面板批准（${deferredFailCount} 个动作已签确认单，请在右侧浏览器面板批准后重试续跑）`
+        : {
+            success: `全部动作成功（${okCount}/${stepResults.length} 步）`,
+            partial_success: `部分成功（${okCount} 成功 / ${failCount} 失败 / ${stepResults.length} 步）`,
+            failed: `全部失败或未执行（${failCount} 失败 / ${stepResults.length} 步）`,
+          }[status];
     const done: AgentBrowserStepEvent = {
       type: 'done',
       ok: status === 'success' || status === 'partial_success',
       status,
-      message: {
-        success: `全部动作成功（${okCount}/${stepResults.length} 步）`,
-        partial_success: `部分成功（${okCount} 成功 / ${failCount} 失败 / ${stepResults.length} 步）`,
-        failed: `全部失败或未执行（${failCount} 失败 / ${stepResults.length} 步）`,
-      }[status],
+      message: doneMessage,
     };
     steps.push(done);
     onStep?.(done);
@@ -769,7 +821,13 @@ export class AgentBrowserLoopService {
     session: AgentBrowserSession,
     action: AiBrowserAction,
     confirmationIds: string[] | undefined,
-  ): Promise<{ ok: boolean; confirmationId?: string }> {
+    actor?: PanelBridgeActor,
+  ): Promise<{
+    ok: boolean;
+    confirmationId?: string;
+    /** 2026-09-04：锁的是桥上仍 pending 的面板单（批准权在桌面，步骤按待批语义留痕） */
+    viaBridgePending?: boolean;
+  }> {
     // P0（复查 2026-08-22）：高风险动作必须服务端确认记录放行——
     // 未传 confirmationIds / 查库失败 / 查不到匹配 / prisma 不可用，一律拒绝，
     // 绝不回退客户端传入的 confirmedTools（客户端可伪造）。
@@ -806,6 +864,7 @@ export class AgentBrowserLoopService {
       });
       // 阶段 6 决策 ②：面板单要问桥（异步），所以从 find 改成 for 循环
       let matched: (typeof records)[number] | undefined;
+      let viaBridgePending = false;
       for (const rec of records) {
         if (rec.status !== 'pending') continue;
         if (rec.sessionId !== session.id) continue;
@@ -820,11 +879,24 @@ export class AgentBrowserLoopService {
             | { method?: unknown; status?: unknown }
             | null;
           if ((json?.method ?? rec.action) !== expected) continue;
-          // 批准态看落库的 json.status——由 executor 在**桥上真的查到 approved**
-          // 之后写入（AgentBrowserExecutor.markApprovalSafe），不是后端自说自话。
-          // 没有这个标记 = 用户还没点批准，闸门不放行，交给 executor 再去问桥
-          // （桥把确认单绑在当前 webContentsId 上，那才是批准的源头）。
-          if (json?.status !== 'approved') continue;
+          // 批准态的源头在**桌面面板桥**（executor 带票执行路径同源同问）。
+          // 2026-09-04 修「批准后死锁」：旧实现只认落库 json.status==='approved'，
+          // 但该标记只有带票执行成功后才写——锁单要求标记、标记要求带票执行，
+          // 用户点了批准也放不了行（真机实证）。现改为问桥（executor.
+          // resolvePanelApproval）：approved → 放行；pending → 也放行锁定，
+          // 由 executor 带票问桥返回"待批准"失败（**不签新单**，防批一张废一张
+          // 的票风暴），循环释放回 pending，用户批准后重试走同一张单；
+          // rejected / none / 桥不可用 → 不放行（fail-closed 不变）。
+          if (json?.status !== 'approved') {
+            const bridgeState = await this.executor?.resolvePanelApproval?.(
+              actor,
+              rec.id,
+            );
+            if (bridgeState !== 'approved' && bridgeState !== 'pending') {
+              continue;
+            }
+            viaBridgePending = bridgeState === 'pending';
+          }
         } else {
           if (rec.action !== action.action) continue;
           if ('selector' in action && rec.target !== action.selector) continue;
@@ -844,7 +916,7 @@ export class AgentBrowserLoopService {
         data: { status: 'in_use', decidedAt: new Date() },
       });
       return res.count === 1
-        ? { ok: true, confirmationId: matched.id }
+        ? { ok: true, confirmationId: matched.id, viaBridgePending }
         : { ok: false };
     } catch (error) {
       this.logger.warn(

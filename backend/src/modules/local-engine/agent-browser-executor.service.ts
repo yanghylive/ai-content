@@ -7,6 +7,7 @@ import {
   AgentPanelBridgeService,
   PanelBridgeActor,
   PanelBridgeError,
+  PanelActionState,
   readPanelModeRegistry,
 } from './agent-panel-bridge.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
@@ -1111,6 +1112,42 @@ export class AgentBrowserExecutor {
           error instanceof Error ? error.message : String(error)
         }`,
       );
+    }
+  }
+
+  /**
+   * 桥上确认单审批态查询 + 审计落库（2026-09-04 修「批准后死锁」）。
+   *
+   * 背景（真机实证）：loop.resolveConfirmation 的面板单分支此前只认
+   * confirmationJson.status === 'approved'，而这个标记只有 executor 带票执行
+   * 成功后才会写（markApprovalSafe）——但带票又以锁单成功为前提，锁单又要求
+   * 标记已写入 → 鸡生蛋死锁：用户在面板点了「批准」，重试依然放不了行。
+   *
+   * 修法（对齐 loop 注释里"批准态在桌面面板上，要问桥"的既定设计）：
+   * 桥是批准的**源头**，本方法直接问桥；approved/rejected 时顺手写审计镜像。
+   * pending / none / 桥不可用一律 fail-closed 返回，不放行。
+   * 安全不变量不变：actor 断言、webContents 绑定、换页作废全在桥侧把守。
+   */
+  async resolvePanelApproval(
+    actor: PanelBridgeActor | undefined,
+    actionId: string,
+  ): Promise<PanelActionState> {
+    if (!actor || !this.panelBridge) return 'none';
+    try {
+      const state = await this.panelBridge.actionState(actor, actionId);
+      if (state.state === 'approved') {
+        await this.markApprovalSafe('approved', actionId);
+      } else if (state.state === 'rejected') {
+        await this.markApprovalSafe('rejected', actionId);
+      }
+      return state.state;
+    } catch (error) {
+      this.logger.warn(
+        `确认单 ${actionId} 桥上审批态查询失败（fail-closed）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return 'none';
     }
   }
 

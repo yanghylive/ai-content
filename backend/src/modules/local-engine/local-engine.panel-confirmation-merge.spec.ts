@@ -215,6 +215,8 @@ async function makeLoop(opts: {
   panelMode: 'off' | 'on';
   confirmationRows?: Array<Record<string, unknown>>;
   executeResult?: Record<string, unknown>;
+  /** 2026-09-04 死锁修复：executor.resolvePanelApproval（问桥）返回值 */
+  bridgeState?: 'approved' | 'rejected' | 'pending' | 'none';
 }) {
   const sessionSvc = new AgentBrowserSessionService(
     makeBrowserMock() as never,
@@ -236,6 +238,9 @@ async function makeLoop(opts: {
   const executor = {
     panelMode: jest.fn().mockReturnValue(opts.panelMode),
     isAlive: jest.fn().mockResolvedValue(true),
+    resolvePanelApproval: jest
+      .fn()
+      .mockResolvedValue(opts.bridgeState ?? 'none'),
     execute: jest.fn().mockResolvedValue(
       opts.executeResult ?? {
         index: 0,
@@ -266,7 +271,7 @@ async function makeLoop(opts: {
     prisma as never,
     executor as never,
   );
-  return { loop, session: s, prisma, executor };
+  return { loop, session: s, sessionSvc, prisma, executor };
 }
 
 /** 造一张面板确认单：默认"已批准 + 绑定当前会话" */
@@ -399,5 +404,170 @@ describe('loop 确认闸门：面板模式下不再建第二张后端单（阶�
     await loop.run(session.id, '打开首页', { confirmationIds: ['act-1'] });
     expect(prisma.agentConfirmation.updateMany).not.toHaveBeenCalled();
     expect(executor.execute).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * 2026-09-04 修「批准后死锁」（真机 GUI 验证实证）：
+ * 旧实现 resolveConfirmation 只认落库 json.status==='approved'，而该标记只有
+ * executor 带票执行成功后才写（markApprovalSafe）——带票以锁单为前提，锁单又要求
+ * 标记已写 → 鸡生蛋死锁：用户在面板点了「批准」，重试依然放不了行；
+ * 且单 goto 全 defer 的会话被推成 failed 终态，run 通道 400「终态不可重跑」。
+ * 修复：面板单批准态问桥（executor.resolvePanelApproval，桥是批准源头）；
+ * pending 也放行锁定（executor 带票返回待批准失败，不签新单）；全 defer 会话
+ * 落 partial_success 断点（sanctioned 重试通道），不再推 failed 终态。
+ */
+describe('面板单批准态问桥 + 待批会话可重试（2026-09-04 死锁修复）', () => {
+  const ORIGINAL_MODE = process.env.AGENT_BROWSER_MODE;
+  beforeAll(() => {
+    process.env.AGENT_BROWSER_MODE = 'dom-agent';
+  });
+  afterAll(() => {
+    if (ORIGINAL_MODE === undefined) delete process.env.AGENT_BROWSER_MODE;
+    else process.env.AGENT_BROWSER_MODE = ORIGINAL_MODE;
+  });
+
+  function pendingPanelRow(sessionId: string) {
+    return panelRow(sessionId, {
+      confirmationJson: {
+        source: PANEL_CONFIRMATION_SOURCE,
+        method: 'Page.navigate',
+        status: 'pending',
+      },
+    });
+  }
+
+  it('D1｜桥上 approved（json.status 仍 pending）→ 问桥放行 + 锁定 + executor 带票执行', async () => {
+    const built = await makeLoop({
+      panelMode: 'on',
+      bridgeState: 'approved',
+      executeResult: {
+        index: 0,
+        action: 'goto',
+        ok: true,
+        url: 'https://kaypal.cn',
+        confirmationId: 'act-1',
+      },
+    });
+    const { loop, session, sessionSvc, prisma, executor } = built;
+    prisma.agentConfirmation.findMany.mockResolvedValue([
+      pendingPanelRow(session.id),
+    ]);
+    await loop.run(session.id, '打开首页', { confirmationIds: ['act-1'] });
+    // 问桥被调用（批准源头）
+    expect(executor.resolvePanelApproval).toHaveBeenCalledWith(
+      expect.objectContaining({ ownerId: 'u1' }),
+      'act-1',
+    );
+    // 两阶段锁定放行：pending → in_use
+    expect(prisma.agentConfirmation.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'act-1', status: 'pending' } }),
+    );
+    // executor 带票执行（lockedConfirmationId 透传）
+    const input = executor.execute.mock.calls[0][0] as Record<string, unknown>;
+    expect(input.actionId).toBe('act-1');
+    // 执行成功 → 会话 succeeded（终态）
+    expect(sessionSvc.get(session.id).status).toBe('succeeded');
+  });
+
+  it('D2｜桥上 pending → 锁定携带（executor 不签新单）→ 失败释放回 pending → 会话 partial_success 等待批准', async () => {
+    const built = await makeLoop({
+      panelMode: 'on',
+      bridgeState: 'pending',
+      executeResult: {
+        index: 0,
+        action: 'goto',
+        ok: false,
+        message:
+          '面板模式：导航需用户在桌面端批准（确认单 act-1 当前状态 pending）',
+        confirmationId: 'act-1',
+      },
+    });
+    const { loop, session, sessionSvc, prisma, executor } = built;
+    prisma.agentConfirmation.findMany.mockResolvedValue([
+      pendingPanelRow(session.id),
+    ]);
+    const events: Array<Record<string, unknown>> = [];
+    await loop.run(session.id, '打开首页', {
+      confirmationIds: ['act-1'],
+      onStep: (e) => events.push(e as unknown as Record<string, unknown>),
+    });
+    // 锁定放行（pending 单也锁——executor 带票问桥，不签新单）
+    expect(prisma.agentConfirmation.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'act-1', status: 'pending' } }),
+    );
+    // executor 带票执行
+    const input = executor.execute.mock.calls[0][0] as Record<string, unknown>;
+    expect(input.actionId).toBe('act-1');
+    // 执行失败 → 释放回 pending（in_use → pending），可安全重试
+    expect(prisma.agentConfirmation.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'act-1', status: 'in_use' },
+        data: expect.objectContaining({ status: 'pending' }),
+      }),
+    );
+    // 会话落 partial_success 断点（非 failed 终态），done 事件明说等待批准
+    const done = events.find((e) => e.type === 'done');
+    expect(done?.status).toBe('partial_success');
+    expect(String(done?.message)).toContain('等待面板批准');
+    expect(sessionSvc.get(session.id).status).toBe('partial_success');
+  });
+
+  it('D3｜桥上 rejected → 不放行、不锁定（拒绝是终态，fail-closed 不变）', async () => {
+    const built = await makeLoop({
+      panelMode: 'on',
+      bridgeState: 'rejected',
+    });
+    const { loop, session, prisma } = built;
+    prisma.agentConfirmation.findMany.mockResolvedValue([
+      pendingPanelRow(session.id),
+    ]);
+    await loop.run(session.id, '打开首页', { confirmationIds: ['act-1'] });
+    expect(prisma.agentConfirmation.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('D4｜端到端两段闭环：第一轮 defer → partial_success；批准后第二轮同单执行成功 → succeeded', async () => {
+    // 第一轮：桥上 pending（用户还没点）
+    let bridgeState: 'approved' | 'pending' = 'pending';
+    const built = await makeLoop({
+      panelMode: 'on',
+      bridgeState: 'pending',
+      executeResult: {
+        index: 0,
+        action: 'goto',
+        ok: false,
+        message:
+          '面板模式：导航需用户在桌面端批准（确认单 act-1 当前状态 pending）',
+        confirmationId: 'act-1',
+      },
+    });
+    const { loop, session, sessionSvc, prisma, executor } = built;
+    prisma.agentConfirmation.findMany.mockResolvedValue([
+      pendingPanelRow(session.id),
+    ]);
+    await loop.run(session.id, '打开首页', { confirmationIds: ['act-1'] });
+    expect(sessionSvc.get(session.id).status).toBe('partial_success');
+
+    // —— 用户在面板点了「批准」——
+    bridgeState = 'approved';
+    executor.resolvePanelApproval.mockResolvedValue(bridgeState);
+    executor.execute.mockResolvedValue({
+      index: 0,
+      action: 'goto',
+      ok: true,
+      url: 'https://kaypal.cn/explore',
+      confirmationId: 'act-1',
+    });
+    // 模拟 controller run 的恢复路径：重置 running 后带同一张单重跑
+    sessionSvc.updateStatus(session.id, 'created');
+    await sessionSvc.acquireEngineSession(session.id);
+    await loop.run(session.id, '打开首页', { confirmationIds: ['act-1'] });
+    // 同一张单（act-1）被消费，不再签新单
+    expect(prisma.agentConfirmation.create).not.toHaveBeenCalled();
+    const lastInput = executor.execute.mock.calls[
+      executor.execute.mock.calls.length - 1
+    ][0] as Record<string, unknown>;
+    expect(lastInput.actionId).toBe('act-1');
+    expect(sessionSvc.get(session.id).status).toBe('succeeded');
   });
 });
