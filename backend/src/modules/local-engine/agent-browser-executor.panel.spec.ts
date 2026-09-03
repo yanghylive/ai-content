@@ -1218,6 +1218,41 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(legacy.calls.length).toBe(0);
   });
 
+  it('⑫ round17：注入 engine 时截图证据落盘（evidenceUrl 填充）；未注入时动作仍成功', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeScreenshotPanel({});
+    const saveEvidencePngBase64 = jest
+      .fn()
+      .mockResolvedValue({ path: '/tmp/evidence/x.png', url: '/api/local-engine/browser/evidence/x.png' });
+    const engine = { saveEvidencePngBase64 } as unknown as never;
+    const execWithEngine = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+      engine,
+    );
+    const out = await execWithEngine.execute({
+      action: { action: 'screenshot', name: '首页快照' },
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(true);
+    expect(out.evidenceUrl).toBe('/api/local-engine/browser/evidence/x.png');
+    expect(saveEvidencePngBase64).toHaveBeenCalledWith(
+      expect.objectContaining({ base64: PNG_BASE64_MIN, sessionKey: 'sess-1' }),
+    );
+    // 未注入 engine（老构造）→ 动作仍成功，evidenceUrl 留空（交底，不炸）
+    const execNoEngine = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out2 = await execNoEngine.execute({
+      action: { action: 'screenshot', name: '首页快照' },
+      actor: ACTOR,
+    });
+    expect(out2.ok).toBe(true);
+    expect(out2.evidenceUrl).toBeUndefined();
+    expect(out2.message).toContain('证据未落盘');
+  });
+
   it('⑫ on + screenshot 无数据返回 → 显式失败（不回退）', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const legacy = makeLegacy();

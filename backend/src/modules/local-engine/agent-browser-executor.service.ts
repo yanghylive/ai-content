@@ -9,6 +9,7 @@ import {
   PanelBridgeError,
   readPanelModeRegistry,
 } from './agent-panel-bridge.service';
+import { LocalBrowserEngine } from './local-browser-engine.service';
 
 /**
  * §7.4 AgentBrowserExecutor：接入统一执行器路由。
@@ -224,6 +225,8 @@ export class AgentBrowserExecutor {
     private readonly actions: AiBrowserActionService,
     /** 可选注入：未注册面板桥时（老测试/未开启面板模式）保持纯透传语义 */
     @Optional() private readonly panelBridge?: AgentPanelBridgeService,
+    /** 可选注入（2026-09-04 round17）：面板截图证据落盘走同一条 evidence 链 */
+    @Optional() private readonly localBrowserEngine?: LocalBrowserEngine,
   ) {}
 
   /** 当前面板模式（对外暴露，供状态接口/排障查询） */
@@ -553,17 +556,32 @@ export class AgentBrowserExecutor {
       );
     }
     const nameNote = action.name ? `（${action.name}）` : '';
+    // round17：证据落盘（同一条 evidence 链）——失败不阻断动作结果（evidenceUrl 留空交底）
+    let evidenceUrl: string | undefined;
+    try {
+      const saved = await this.localBrowserEngine?.saveEvidencePngBase64({
+        label: `panel-screenshot-${action.name ?? 'shot'}`,
+        base64: data,
+        sessionKey: out.binding.sessionId ?? undefined,
+      });
+      evidenceUrl = saved?.url;
+    } catch (error) {
+      this.logger.warn(
+        `面板截图证据落盘失败（动作结果不受影响）：${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
     return {
       index: 0,
       action: 'screenshot',
       ok: true,
       screenshotBase64: data,
+      evidenceUrl,
       url: out.binding.url ?? undefined,
       panelWebContentsId: out.binding.webContentsId,
       panelSessionId: out.binding.sessionId,
       message:
         `面板截图成功${nameNote}（PNG base64 ${data.length} 字符，` +
-        `webContents=${out.binding.webContentsId}）`,
+        `webContents=${out.binding.webContentsId}${evidenceUrl ? '' : '，证据未落盘'}）`,
     };
   }
 

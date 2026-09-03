@@ -18,7 +18,7 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { basename, join } from 'path';
 import { execFileSync, spawn, type ChildProcess } from 'child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs';
 import {
   chromium,
   type BrowserContext,
@@ -1480,6 +1480,27 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     const filename = `${Date.now()}-${input.sessionKey.replace(/[^a-z0-9-]/gi, '_')}.png`;
     const fullPath = join(this.evidenceRoot, filename);
     await session.page.screenshot({ path: fullPath, fullPage: false });
+    return {
+      path: fullPath,
+      url: `/api/local-engine/browser/evidence/${filename}`,
+    };
+  }
+
+  /**
+   * 2026-09-04（round17）：面板模式截图证据落盘。
+   * base64 来自面板桥 CDP（Page.captureScreenshot），没有引擎会话——
+   * 但证据必须进同一条 evidence 链（同一目录、同一 URL 形态），否则
+   * 面板模式的截图证据断链。失败由调用方 catch（不阻断动作结果）。
+   */
+  async saveEvidencePngBase64(input: {
+    label: string;
+    base64: string;
+    sessionKey?: string;
+  }): Promise<{ path: string; url: string }> {
+    const safeLabel = input.label.replace(/[^a-z0-9-]/gi, '_').slice(0, 60);
+    const filename = `${Date.now()}-${safeLabel}-${(input.sessionKey ?? 'panel').replace(/[^a-z0-9-]/gi, '_')}.png`;
+    const fullPath = join(this.evidenceRoot, filename);
+    writeFileSync(fullPath, Buffer.from(input.base64, 'base64'));
     return {
       path: fullPath,
       url: `/api/local-engine/browser/evidence/${filename}`,
