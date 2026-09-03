@@ -1390,12 +1390,12 @@ export function TaskCenterPage() {
             <div className="flex flex-row flex-wrap items-start justify-between gap-3">
               <div className="flex flex-col gap-2">
                 <span className="text-sm text-default-500">
-                  商业增长 · 任务中心
+                  执行中心 · 任务中心
                 </span>
                 <h1 className="text-2xl font-bold kx-greet">任务中心</h1>
-                <span className="text-default-500">
+                <p className="kx-greet-sub text-default-500">
                   自动工作流、正在运行、待确认、失败修复和结果留存在同一个操作台处理。
-                </span>
+                </p>
                 </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <Button
@@ -1595,6 +1595,158 @@ export function TaskCenterPage() {
               </tbody>
             </table>
           </OpsDenseTable>
+      <div className="grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
+        <OpsPanel title="审批后执行流程">
+          {loading ? <SkeletonList rows={3} /> : null}
+          <OpsDenseTable className="mt-3">
+            <table>
+              <thead>
+                <tr>
+                  <th>任务</th>
+                  <th>来源</th>
+                  <th>状态</th>
+                  <th>更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lifecycleSessions.map((session) => (
+                  <tr key={session.id}>
+                    <td>
+                      <div className="max-w-[360px]">
+                        <div className="truncate font-semibold">
+                          {sessionDisplayTitle(session)}
+                        </div>
+                        <WorkflowConfigSummary compact session={session} />
+                        <ExposureConfigSummary compact session={session} />
+                      </div>
+                    </td>
+                    <td>{sourceLabel(session.source)}</td>
+                    <td>
+                      <Chip
+                        color={visibleAgentStatusColor(session)}
+                        size="sm"
+                        variant="flat"
+                      >
+                        {visibleAgentStatusText(session)}
+                      </Chip>
+                    </td>
+                    <td>{formatDateTime(session.updatedAt)}</td>
+                    <td>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          startContent={<Icon icon="solar:radio-linear" />}
+                          variant="flat"
+                          onPress={() => {
+                            void openAgentDrawer(session);
+                          }}
+                        >
+                          状态
+                        </Button>
+                        <Button
+                          as={Link}
+                          href={agentSessionRecordHref(session.id)}
+                          size="sm"
+                          variant="flat"
+                        >
+                          记录
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!loading && lifecycleSessions.length === 0 ? (
+                  <tr>
+                    <td colSpan={5}>当前没有审批后执行流程。</td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </OpsDenseTable>
+        </OpsPanel>
+
+        <OpsPanel title="待处理确认">
+          {loading ? <SkeletonList rows={3} /> : null}
+          <OpsDenseTable className="mt-3">
+            <table>
+              <thead>
+                <tr>
+                  <th>确认任务</th>
+                  <th>风险</th>
+                  <th>来源</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {confirmations.slice(0, 6).map((item) => {
+                  const session = sessionById.get(item.sessionId);
+                  return (
+                    <tr key={item.id}>
+                      <td>
+                        <div className="max-w-[320px]">
+                          <div className="truncate font-semibold">
+                            {confirmationSessionTitle(item)}
+                          </div>
+                          <div className="mt-1 line-clamp-2 text-12 text-default-500">
+                            {commercialDisplayText(
+                              item.description || item.actionLabel,
+                            )}
+                          </div>
+                          <WorkflowConfigSummary compact session={session} />
+                          <ExposureConfigSummary compact session={session} />
+                        </div>
+                      </td>
+                      <td>
+                        <Chip
+                          color={
+                            item.riskLevel === "high" ? "danger" : "warning"
+                          }
+                          size="sm"
+                          variant="flat"
+                        >
+                          {item.riskLevel === "high" ? "高风险" : "中风险"}
+                        </Chip>
+                      </td>
+                      <td>{confirmationSourceLabel(item)}</td>
+                      <td>
+                        <div className="flex flex-wrap gap-2">
+                          {session ? (
+                            <Button
+                              size="sm"
+                              startContent={<Icon icon="solar:radio-linear" />}
+                              variant="flat"
+                              onPress={() => {
+                                void openAgentDrawer(session);
+                              }}
+                            >
+                              状态
+                            </Button>
+                          ) : null}
+                          <Button
+                            as={Link}
+                            href={agentSessionRecordHref(
+                              item.session?.id || item.sessionId,
+                            )}
+                            size="sm"
+                            variant="flat"
+                          >
+                            处理
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!loading && confirmations.length === 0 ? (
+                  <tr>
+                    <td colSpan={4}>当前没有待确认动作。</td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </OpsDenseTable>
+
         </OpsPanel>
       </div>
 
@@ -1980,7 +2132,7 @@ export function TaskCenterPage() {
         <div className="mt-4 border-t border-divider pt-3">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-13 font-semibold text-default-700">
-              最近运行
+              自动工作流 · 最近运行
             </h3>
             <span className="text-tiny text-default-400">
               仅将有结果凭证且已确认的步骤计为完成
@@ -2131,157 +2283,6 @@ export function TaskCenterPage() {
         </div>
       </OpsPanel>
 
-      <div className="grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
-        <OpsPanel title="审批后执行流程">
-          {loading ? <SkeletonList rows={3} /> : null}
-          <OpsDenseTable className="mt-3">
-            <table>
-              <thead>
-                <tr>
-                  <th>任务</th>
-                  <th>来源</th>
-                  <th>状态</th>
-                  <th>更新时间</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lifecycleSessions.map((session) => (
-                  <tr key={session.id}>
-                    <td>
-                      <div className="max-w-[360px]">
-                        <div className="truncate font-semibold">
-                          {sessionDisplayTitle(session)}
-                        </div>
-                        <WorkflowConfigSummary compact session={session} />
-                        <ExposureConfigSummary compact session={session} />
-                      </div>
-                    </td>
-                    <td>{sourceLabel(session.source)}</td>
-                    <td>
-                      <Chip
-                        color={visibleAgentStatusColor(session)}
-                        size="sm"
-                        variant="flat"
-                      >
-                        {visibleAgentStatusText(session)}
-                      </Chip>
-                    </td>
-                    <td>{formatDateTime(session.updatedAt)}</td>
-                    <td>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          startContent={<Icon icon="solar:radio-linear" />}
-                          variant="flat"
-                          onPress={() => {
-                            void openAgentDrawer(session);
-                          }}
-                        >
-                          状态
-                        </Button>
-                        <Button
-                          as={Link}
-                          href={agentSessionRecordHref(session.id)}
-                          size="sm"
-                          variant="flat"
-                        >
-                          记录
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {!loading && lifecycleSessions.length === 0 ? (
-                  <tr>
-                    <td colSpan={5}>当前没有审批后执行流程。</td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </OpsDenseTable>
-        </OpsPanel>
-
-        <OpsPanel title="待处理确认">
-          {loading ? <SkeletonList rows={3} /> : null}
-          <OpsDenseTable className="mt-3">
-            <table>
-              <thead>
-                <tr>
-                  <th>确认任务</th>
-                  <th>风险</th>
-                  <th>来源</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {confirmations.slice(0, 6).map((item) => {
-                  const session = sessionById.get(item.sessionId);
-                  return (
-                    <tr key={item.id}>
-                      <td>
-                        <div className="max-w-[320px]">
-                          <div className="truncate font-semibold">
-                            {confirmationSessionTitle(item)}
-                          </div>
-                          <div className="mt-1 line-clamp-2 text-12 text-default-500">
-                            {commercialDisplayText(
-                              item.description || item.actionLabel,
-                            )}
-                          </div>
-                          <WorkflowConfigSummary compact session={session} />
-                          <ExposureConfigSummary compact session={session} />
-                        </div>
-                      </td>
-                      <td>
-                        <Chip
-                          color={
-                            item.riskLevel === "high" ? "danger" : "warning"
-                          }
-                          size="sm"
-                          variant="flat"
-                        >
-                          {item.riskLevel === "high" ? "高风险" : "中风险"}
-                        </Chip>
-                      </td>
-                      <td>{confirmationSourceLabel(item)}</td>
-                      <td>
-                        <div className="flex flex-wrap gap-2">
-                          {session ? (
-                            <Button
-                              size="sm"
-                              startContent={<Icon icon="solar:radio-linear" />}
-                              variant="flat"
-                              onPress={() => {
-                                void openAgentDrawer(session);
-                              }}
-                            >
-                              状态
-                            </Button>
-                          ) : null}
-                          <Button
-                            as={Link}
-                            href={agentSessionRecordHref(
-                              item.session?.id || item.sessionId,
-                            )}
-                            size="sm"
-                            variant="flat"
-                          >
-                            处理
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {!loading && confirmations.length === 0 ? (
-                  <tr>
-                    <td colSpan={4}>当前没有待确认动作。</td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </OpsDenseTable>
         </OpsPanel>
       </div>
 
@@ -2422,7 +2423,7 @@ export function TaskCenterPage() {
         </OpsDenseTable>
       </OpsPanel>
 
-      <OpsPanel title="最近运行">
+      <OpsPanel title="最近任务">
         {loading ? <SkeletonList rows={3} /> : null}
         <OpsDenseTable className="mt-3">
           <table>
