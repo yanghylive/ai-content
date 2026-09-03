@@ -73,6 +73,8 @@ export class PrismaService
     // 同进白名单——它只被 ensureAccountDatabase 内部 this. 调用，漏登记时
     // proxy 会把它路由到账号库 PrismaClient（无此方法）→ TypeError not a function
     'syncTenantOrgTables',
+    // 2026-09-03：模型路由镜像回补（账号库缺默认文本模型 → AI 服务不可用 兜底）
+    'syncModelRoutingMirror',
     'isSqliteCorrupt',
     'system',
     'switching',
@@ -300,6 +302,10 @@ export class PrismaService
       // resolveTenantId 查空 → growth/overview 等 403。存量库幂等回补。
       await this.syncTenantOrgTables(accountPath);
     }
+    // 2026-09-03：模型路由镜像回补——存量/新建账号库都可能缺系统库
+    // 最新同步的默认文本模型（如 deepseek-v4-flash），登录时统一补齐，
+    // 避免 AI 助手因账号库「电话簿缺页」报 AI 服务暂时不可用。
+    await this.syncModelRoutingMirror(accountPath);
     // 2026-09-01（复核 P1-2）：登记 userId → 账号库路径（请求级路由）
     this.accountPaths.set(userId, accountPath);
     return accountPath;
@@ -566,6 +572,191 @@ export class PrismaService
     if (tenantsToInsert.length > 0 || eligibleMembers.length > 0) {
       this.logger.log(
         `账号库组织关系已回补（tenants ${tenantsToInsert.length} / members ${eligibleMembers.length}）：${accountPath}`,
+      );
+    }
+  }
+
+  /**
+   * 2026-09-03：模型路由镜像回补（账号库「电话簿」对齐系统库最新配置）。
+   *
+   * 事故背景：账号库按「系统库模板 + 清空业务数据」派生后独立演进；而模型路由
+   * 表（ai_platforms/ai_models/default_model_configs）属于全局配置镜像，系统库
+   * 经 Kaypal 模型同步更新（如新增默认文本模型 deepseek-v4-flash）后不会回流到
+   * 存量账号库 → 账号库挑不到文本模型 → AI 助手报「AI 服务暂时不可用」。
+   *
+   * 本方法登录（ensureAccountDatabase）时以系统库为权威源做幂等合并：
+   *  - ai_platforms：按 name 匹配；账号库已存在 → 更新配置；否则插入（沿用系统 id）
+   *  - ai_models：按 (platform_id, model_id) 匹配（platform_id 已映射到账号库平台）；
+   *    已存在 → 更新；否则插入
+   *  - default_model_configs：按 purpose 匹配 → 更新 model_id / 插入
+   * 只增不改删，不动账号库独有平台/模型；不依赖云端鉴权（env/会话 Key 失效也可用）。
+   */
+  private async syncModelRoutingMirror(accountPath: string): Promise<void> {
+    const account = this.getAccountClient(accountPath);
+    const serialize = (value: unknown): string | number | null => {
+      if (value === null || value === undefined) return null;
+      if (typeof value === 'object') {
+        return value instanceof Date ? value.getTime() : JSON.stringify(value);
+      }
+      if (typeof value === 'bigint') return value.toString();
+      return value as string | number;
+    };
+
+    // 1) 平台：按 name 幂等合并，返回 系统平台 id → 账号库平台 id 映射
+    const sysPlatforms = await this.system.$queryRawUnsafe<
+      Array<Record<string, unknown>>
+    >(
+      `SELECT id, name, base_url, api_key, enabled, config, created_at, updated_at FROM ai_platforms`,
+    );
+    const accountPlatforms = await account.$queryRawUnsafe<
+      Array<Record<string, unknown>>
+    >(`SELECT id, name FROM ai_platforms`);
+    const platformIdByName = new Map(
+      accountPlatforms.map((p) => [String(p.name), String(p.id)]),
+    );
+    const platformIdMap = new Map<string, string>();
+    let platformInserted = 0;
+    let platformUpdated = 0;
+    for (const p of sysPlatforms) {
+      const sysId = String(p.id);
+      const existing = platformIdByName.get(String(p.name));
+      if (existing) {
+        await account.$executeRawUnsafe(
+          `UPDATE ai_platforms SET base_url = ?, api_key = ?, enabled = ?, config = ?, updated_at = ? WHERE id = ?`,
+          serialize(p.base_url),
+          serialize(p.api_key),
+          serialize(p.enabled),
+          serialize(p.config),
+          serialize(p.updated_at),
+          existing,
+        );
+        platformIdMap.set(sysId, existing);
+        platformUpdated += 1;
+      } else {
+        await account.$executeRawUnsafe(
+          `INSERT INTO ai_platforms (id, name, base_url, api_key, enabled, config, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          sysId,
+          String(p.name),
+          serialize(p.base_url),
+          serialize(p.api_key),
+          serialize(p.enabled),
+          serialize(p.config),
+          serialize(p.created_at),
+          serialize(p.updated_at),
+        );
+        platformIdByName.set(String(p.name), sysId);
+        platformIdMap.set(sysId, sysId);
+        platformInserted += 1;
+      }
+    }
+
+    // 2) 模型：按 (platform_id, model_id) 幂等合并
+    const sysModels = await this.system.$queryRawUnsafe<
+      Array<Record<string, unknown>>
+    >(
+      `SELECT id, name, model_id, platform_id, enabled, config, created_at, updated_at FROM ai_models`,
+    );
+    const accountModels = await account.$queryRawUnsafe<
+      Array<Record<string, unknown>>
+    >(`SELECT id, platform_id, model_id FROM ai_models`);
+    const modelKeyToId = new Map(
+      accountModels.map((m) => [
+        `${String(m.platform_id)}|${String(m.model_id)}`,
+        String(m.id),
+      ]),
+    );
+    const modelIdMap = new Map<string, string>();
+    let modelInserted = 0;
+    let modelUpdated = 0;
+    for (const m of sysModels) {
+      const sysModelId = String(m.id);
+      const targetPlatformId = platformIdMap.get(String(m.platform_id));
+      if (!targetPlatformId) continue; // 系统平台不在镜像集（理论不发生）
+      const key = `${targetPlatformId}|${String(m.model_id)}`;
+      const existing = modelKeyToId.get(key);
+      if (existing) {
+        await account.$executeRawUnsafe(
+          `UPDATE ai_models SET name = ?, enabled = ?, config = ?, updated_at = ? WHERE id = ?`,
+          serialize(m.name),
+          serialize(m.enabled),
+          serialize(m.config),
+          serialize(m.updated_at),
+          existing,
+        );
+        modelIdMap.set(sysModelId, existing);
+        modelUpdated += 1;
+      } else {
+        await account.$executeRawUnsafe(
+          `INSERT INTO ai_models (id, name, model_id, platform_id, enabled, config, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          sysModelId,
+          serialize(m.name),
+          String(m.model_id),
+          targetPlatformId,
+          serialize(m.enabled),
+          serialize(m.config),
+          serialize(m.created_at),
+          serialize(m.updated_at),
+        );
+        modelKeyToId.set(key, sysModelId);
+        modelIdMap.set(sysModelId, sysModelId);
+        modelInserted += 1;
+      }
+    }
+
+    // 3) 默认文本模型配置：按 purpose 幂等合并（model_id 指向账号库模型）
+    const sysDefaults = await this.system.$queryRawUnsafe<
+      Array<Record<string, unknown>>
+    >(`SELECT id, purpose, model_id FROM default_model_configs`);
+    const accountDefaults = await account.$queryRawUnsafe<
+      Array<Record<string, unknown>>
+    >(`SELECT purpose, id FROM default_model_configs`);
+    const defaultPurposeToId = new Map(
+      accountDefaults.map((d) => [String(d.purpose), String(d.id)]),
+    );
+    let defaultInserted = 0;
+    let defaultUpdated = 0;
+    for (const d of sysDefaults) {
+      const sysDefaultId = String(d.id);
+      const purpose = String(d.purpose);
+      const finalModelId =
+        modelIdMap.get(String(d.model_id)) ?? String(d.model_id);
+      const existing = defaultPurposeToId.get(purpose);
+      if (existing) {
+        await account.$executeRawUnsafe(
+          `UPDATE default_model_configs SET model_id = ?, updated_at = ? WHERE id = ?`,
+          finalModelId,
+          Date.now(),
+          existing,
+        );
+        defaultUpdated += 1;
+      } else {
+        await account.$executeRawUnsafe(
+          `INSERT INTO default_model_configs (id, purpose, model_id, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?)`,
+          sysDefaultId,
+          purpose,
+          finalModelId,
+          Date.now(),
+          Date.now(),
+        );
+        defaultPurposeToId.set(purpose, sysDefaultId);
+        defaultInserted += 1;
+      }
+    }
+
+    if (
+      platformInserted > 0 ||
+      platformUpdated > 0 ||
+      modelInserted > 0 ||
+      modelUpdated > 0 ||
+      defaultInserted > 0 ||
+      defaultUpdated > 0
+    ) {
+      this.logger.log(
+        `账号库模型路由镜像已对齐（平台 +${platformInserted}/~${platformUpdated}，` +
+          `模型 +${modelInserted}/~${modelUpdated}，默认配置 +${defaultInserted}/~${defaultUpdated}）：${accountPath}`,
       );
     }
   }
