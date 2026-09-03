@@ -27,9 +27,31 @@ describe('平台注册表 PLATFORM_PROFILES', () => {
     expect(profile!.allowDomains).toContain('fegine.com');
   });
 
+  it('douyin 档案：登录起点=创作者中心，域名收敛 legacy type3 映射', () => {
+    const profile = getPlatformProfile('douyin');
+    expect(profile).not.toBeNull();
+    expect(profile!.loginUrl).toBe('https://creator.douyin.com/');
+    expect(profile!.allowDomains).toEqual([
+      'douyin.com',
+      'bytedance.com',
+      'iesdouyin.com',
+    ]);
+  });
+
+  it('wechat-channel 档案：登录起点=视频号助手，域名收敛 legacy type2 映射', () => {
+    const profile = getPlatformProfile('wechat-channel');
+    expect(profile).not.toBeNull();
+    expect(profile!.loginUrl).toBe('https://channels.weixin.qq.com/platform');
+    expect(profile!.allowDomains).toEqual([
+      'channels.weixin.qq.com',
+      'weixin.qq.com',
+      'qq.com',
+    ]);
+  });
+
   it('未注册平台 → null（general-web 不进注册表，行为不变）', () => {
     expect(getPlatformProfile('general-web')).toBeNull();
-    expect(getPlatformProfile('douyin')).toBeNull();
+    expect(getPlatformProfile('kuaishou')).toBeNull();
   });
 
   it('PLATFORM_PROFILES 键与 profile.platform 一致（防注册表键名漂移）', () => {
@@ -171,6 +193,112 @@ describe('resolvePlatformLoginState 三态判定', () => {
   it('unknown：非注册平台（general-web 等）', () => {
     expect(
       resolvePlatformLoginState('general-web', 'https://www.xiaohongshu.com/explore', '发布 通知'),
+    ).toBe('unknown');
+  });
+});
+
+describe('resolvePlatformLoginState：douyin 三态', () => {
+  it('logged_in：创作者中心 + 后台特征词', () => {
+    expect(
+      resolvePlatformLoginState(
+        'douyin',
+        'https://creator.douyin.com/',
+        '创作者中心 内容管理 数据中心 粉丝管理',
+      ),
+    ).toBe('logged_in');
+  });
+
+  it('login_prompt：扫码登录提示', () => {
+    expect(
+      resolvePlatformLoginState(
+        'douyin',
+        'https://creator.douyin.com/',
+        '扫码登录 验证码登录',
+      ),
+    ).toBe('login_prompt');
+  });
+
+  it('login_prompt：login 形态 URL', () => {
+    expect(
+      resolvePlatformLoginState('douyin', 'https://creator.douyin.com/login', ''),
+    ).toBe('login_prompt');
+  });
+
+  it('login_prompt：douyin.com 纯浏览无后台特征词（不瞎猜已登录）', () => {
+    expect(
+      resolvePlatformLoginState(
+        'douyin',
+        'https://www.douyin.com/discover',
+        '推荐 热点 直播',
+      ),
+    ).toBe('login_prompt');
+  });
+
+  it('unknown：资源域 bytedance.com 不承载登录态 UI（判定域收窄）', () => {
+    expect(
+      resolvePlatformLoginState(
+        'douyin',
+        'https://sf3-dycdn-tos.pstatp.com/x',
+        '创作者中心 数据中心',
+      ),
+    ).toBe('unknown');
+  });
+
+  it('unknown：非 douyin 域', () => {
+    expect(
+      resolvePlatformLoginState('douyin', 'https://kaypal.cn/x', '创作者中心'),
+    ).toBe('unknown');
+  });
+});
+
+describe('resolvePlatformLoginState：wechat-channel 三态', () => {
+  it('logged_in：视频号助手后台特征词', () => {
+    expect(
+      resolvePlatformLoginState(
+        'wechat-channel',
+        'https://channels.weixin.qq.com/platform',
+        '发表视频 数据中心 内容管理 互动中心',
+      ),
+    ).toBe('logged_in');
+  });
+
+  it('login_prompt：微信扫码提示', () => {
+    expect(
+      resolvePlatformLoginState(
+        'wechat-channel',
+        'https://channels.weixin.qq.com/platform',
+        '微信扫码登录 二维码',
+      ),
+    ).toBe('login_prompt');
+  });
+
+  it('unknown：weixin.qq.com 其他业务页不进判定（防微信系域误报）', () => {
+    expect(
+      resolvePlatformLoginState(
+        'wechat-channel',
+        'https://mail.weixin.qq.com/',
+        '发表视频 数据中心',
+      ),
+    ).toBe('unknown');
+  });
+
+  it('login_prompt：platform 页加载中无特征词（fail-closed 不判已登录）', () => {
+    expect(
+      resolvePlatformLoginState(
+        'wechat-channel',
+        'https://channels.weixin.qq.com/platform',
+        '',
+      ),
+    ).toBe('login_prompt');
+  });
+
+  it('unknown：非 wechat 域', () => {
+    expect(
+      resolvePlatformLoginState(
+        'wechat-channel',
+        'https://kaypal.cn/x',
+        '发表视频 数据中心',
+      ),
     ).toBe('unknown');
   });
 });

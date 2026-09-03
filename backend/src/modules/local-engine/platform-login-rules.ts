@@ -22,9 +22,13 @@ export interface PlatformProfile {
 }
 
 /**
- * 平台注册表（阶段 5 迁移顺序逐个补充：general-web → xiaohongshu → douyin → wechat-channel）。
- * xiaohongshu 域名取自 cdp-browser-profile.service 既有映射（platformType=1 → xiaohongshu.com），
- * xhslink.com 是站内分享短链；fegine.com 是小红书静态资源域。
+ * 平台注册表（阶段 5 迁移：xiaohongshu → douyin → wechat-channel）。
+ * allowDomains 收敛自 cdp-browser-profile.service 的 legacy 域映射
+ * （platformType 1/2/3），登录/只读阶段逐平台启用。
+ * - xiaohongshu：xhslink.com 是站内分享短链；fegine.com 是小红书静态资源域；
+ * - douyin：iesdouyin.com 是分享短链域，bytedance.com 是静态资源域；
+ * - wechat-channel：qq.com 域**宽**（微信系资源共享），只进导航白名单——
+ *   登录态判定域单独收窄到 channels.weixin.qq.com（见 resolveWechatChannelLoginState）。
  */
 export const PLATFORM_PROFILES: Record<string, PlatformProfile> = {
   xiaohongshu: {
@@ -32,6 +36,18 @@ export const PLATFORM_PROFILES: Record<string, PlatformProfile> = {
     displayName: '小红书',
     loginUrl: 'https://www.xiaohongshu.com',
     allowDomains: ['xiaohongshu.com', 'xhslink.com', 'fegine.com'],
+  },
+  douyin: {
+    platform: 'douyin',
+    displayName: '抖音',
+    loginUrl: 'https://creator.douyin.com/',
+    allowDomains: ['douyin.com', 'bytedance.com', 'iesdouyin.com'],
+  },
+  'wechat-channel': {
+    platform: 'wechat-channel',
+    displayName: '视频号',
+    loginUrl: 'https://channels.weixin.qq.com/platform',
+    allowDomains: ['channels.weixin.qq.com', 'weixin.qq.com', 'qq.com'],
   },
 };
 
@@ -85,15 +101,29 @@ export function isXiaohongshuAuthenticatedPage(url: string, text: string): boole
 }
 
 /**
- * 平台登录态三态判定：logged_in / login_prompt / unknown。
- * unknown = 当前不在该平台域名上（无法判定，不瞎猜）。
+ * 平台登录态三态判定（分派式）：logged_in / login_prompt / unknown。
+ * unknown = 当前不在该平台的**登录判定域**上（无法判定，不瞎猜）。
+ * 判定是启发式（URL 形态 + 特征词），仅 UI 引导用；douyin/wechat-channel
+ * 规则先按通用后台特征词落，真机登录后校准（交底）。
  */
 export function resolvePlatformLoginState(
   platform: string,
   url: string,
   text: string,
 ): PlatformLoginState {
-  if (platform !== 'xiaohongshu') return 'unknown';
+  if (platform === 'xiaohongshu') return resolveXiaohongshuLoginState(url, text);
+  if (platform === 'douyin') return resolveDouyinLoginState(url, text);
+  if (platform === 'wechat-channel') {
+    return resolveWechatChannelLoginState(url, text);
+  }
+  return 'unknown';
+}
+
+/** 小红书：判定域=allowDomains 全集（www 网页版 + creator 后台 + 短链域） */
+function resolveXiaohongshuLoginState(
+  url: string,
+  text: string,
+): PlatformLoginState {
   const profile = PLATFORM_PROFILES.xiaohongshu;
   const onPlatform = (profile.allowDomains ?? []).some((domain) =>
     String(url || '').includes(domain),
@@ -103,5 +133,53 @@ export function resolvePlatformLoginState(
   if (hasXiaohongshuLoginPrompt(url, text)) return 'login_prompt';
   // 在平台域上但既无登录提示也无账号工具栏（如纯浏览未登录可见内容）：
   // 以网页版首页是否出现账号工具栏为准——没有工具栏视为未登录（login_prompt）。
+  return 'login_prompt';
+}
+
+/** 抖音创作者后台已登录特征词（creator.douyin.com 工作台） */
+const DOUYIN_BACKEND_KEYWORDS =
+  /创作者中心|内容管理|发布视频|数据中心|互动管理|粉丝管理|作品管理/;
+
+/**
+ * 抖音登录态：判定域收窄 douyin.com（白名单里的 bytedance.com/iesdouyin.com
+ * 是资源/短链域，页面本身不承载登录态 UI，判 unknown 防误报）。
+ */
+export function resolveDouyinLoginState(
+  url: string,
+  text: string,
+): PlatformLoginState {
+  const normalizedText = normalizePageText(text);
+  if (!/douyin\.com/.test(url || '')) return 'unknown';
+  if (isLoginLikeUrl(url)) return 'login_prompt';
+  if (DOUYIN_BACKEND_KEYWORDS.test(normalizedText)) return 'logged_in';
+  if (/扫码登录|验证码登录|二维码|请先登录|未登录/.test(normalizedText)) {
+    return 'login_prompt';
+  }
+  // 在 douyin.com 上但无后台特征词（如 www.douyin.com 纯浏览）：
+  // 以创作者后台特征词为准——没有视为未登录（login_prompt）。
+  return 'login_prompt';
+}
+
+/** 视频号助手已登录特征词（channels.weixin.qq.com/platform 工作台） */
+const WECHAT_CHANNEL_BACKEND_KEYWORDS =
+  /发表视频|发布视频|数据中心|内容管理|互动中心|主页管理|商品橱窗/;
+
+/**
+ * 视频号登录态：判定域**精确**收窄 channels.weixin.qq.com——PROFILE 白名单
+ * 里的 weixin.qq.com/qq.com 是微信系资源共享域（邮箱/文档/其他业务），
+ * 进判定会把别的微信页面误判成视频号登录态。
+ */
+export function resolveWechatChannelLoginState(
+  url: string,
+  text: string,
+): PlatformLoginState {
+  const normalizedText = normalizePageText(text);
+  if (!/channels\.weixin\.qq\.com/.test(url || '')) return 'unknown';
+  if (isLoginLikeUrl(url)) return 'login_prompt';
+  if (WECHAT_CHANNEL_BACKEND_KEYWORDS.test(normalizedText)) return 'logged_in';
+  if (/扫码登录|二维码|微信扫码|请先登录|未登录/.test(normalizedText)) {
+    return 'login_prompt';
+  }
+  // platform 工作台既无后台特征词也无登录提示（加载中/改版）：不瞎猜已登录
   return 'login_prompt';
 }
