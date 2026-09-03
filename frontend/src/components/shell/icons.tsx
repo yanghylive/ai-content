@@ -2,6 +2,7 @@ import React from "react";
 import {
   Comments as IPComments,
   Headset as IPHeadset,
+  Tiktok as IPTiktok,
   History as IPHistory,
   Message as IPMessage,
   MessageEmoji as IPMessageEmoji,
@@ -380,7 +381,7 @@ const PARK_ICONS: Partial<Record<ShellIconName, ParkComp>> = {
   sun: Sun,
   moon: Moon,
   logout: Logout,
-  chat: IPMessageOne,
+  chat: IPTiktok,
   chatRound: IPMessage,
   wechatBubble: IPWechat,
   botHead: IPRobotOne,
