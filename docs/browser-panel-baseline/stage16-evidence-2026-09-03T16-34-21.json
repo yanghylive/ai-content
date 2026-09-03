@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T16:34:21.685Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "scenario": "round16：真实任务全链（3013 dom-agent 循环 × 面板上行桥）",
+    "backend": "http://127.0.0.1:3013",
+    "realUserData": "/Users/yanghy/Library/Application Support/ai-content-desktop"
+  },
+  "checks": [
+    {
+      "name": "S1 3013 登录成功（syncTenantOrgTables P1 修复链）",
+      "pass": true,
+      "detail": {
+        "status": 201,
+        "userId": "cms2ktllp03u9j1wprksvwy8w",
+        "hasCookie": true,
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S2 建会话成功（agent-browser 灰度 dom-agent 生效）",
+      "pass": true,
+      "detail": {
+        "status": 201,
+        "sessionId": "fef8a148-5a48-4a3f-a434-3f9c9cb1a24a",
+        "tenantId": "cmtix3lr3000sgozi0rz3mm6a",
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S3 面板 open → 桥 binding 落盘（0600，browser-panel-bridge.json）",
+      "pass": true,
+      "detail": {
+        "endpoint": "http://127.0.0.1:53302",
+        "panelId": "panel-8b9634fa0a1e"
+      }
+    },
+    {
+      "name": "S4 run 受理并同步完成（202，非 engine_unavailable/legacy 拒绝）",
+      "pass": true,
+      "detail": {
+        "status": 202,
+        "finalStatus": "succeeded",
+        "runMs": 21740,
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S5 终态 succeeded 且 extract 拿到真实标题",
+      "pass": true,
+      "detail": {
+        "finalStatus": "succeeded",
+        "eventTypes": [
+          "snapshot::true",
+          "snapshot::true",
+          "step:extract:true",
+          "snapshot::true",
+          "snapshot::true",
+          "step:screenshot:true",
+          "done::true"
+        ],
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S6 screenshot 事件报字节数且事件流无 base64 泄漏",
+      "pass": true,
+      "detail": {
+        "shotEvent": {
+          "ok": true,
+          "message": ""
+        },
+        "hasBase64": false
+      }
+    },
+    {
+      "name": "S7 close 面板 → binding 清理（fail-closed 磁盘无残留 token）",
+      "pass": true,
+      "detail": {
+        "bindingExists": false
+      }
+    }
+  ]
+}

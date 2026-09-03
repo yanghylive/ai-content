@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T16:10:59.054Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "scenario": "round16：真实任务全链（3013 dom-agent 循环 × 面板上行桥）",
+    "backend": "http://127.0.0.1:3013",
+    "realUserData": "/Users/yanghy/Library/Application Support/ai-content-desktop"
+  },
+  "checks": [
+    {
+      "name": "S1 3013 登录成功（syncTenantOrgTables P1 修复链）",
+      "pass": false,
+      "detail": {
+        "status": 201,
+        "userId": "cms2ktllp03u9j1wprksvwy8w",
+        "hasCookie": true,
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S2 建会话成功（agent-browser 灰度 dom-agent 生效）",
+      "pass": true,
+      "detail": {
+        "status": 201,
+        "sessionId": "726b0df5-f3cb-409a-8d42-0f25908d7e99",
+        "tenantId": "cmtix3lr3000sgozi0rz3mm6a",
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S3 面板 open → 桥 binding 落盘（0600，browser-panel-bridge.json）",
+      "pass": true,
+      "detail": {
+        "endpoint": "http://127.0.0.1:57046",
+        "panelId": "panel-7c6c6793f6ee"
+      }
+    },
+    {
+      "name": "S4 run 受理并同步完成（202，非 engine_unavailable/legacy 拒绝）",
+      "pass": true,
+      "detail": {
+        "status": 202,
+        "finalStatus": "partial_success",
+        "runMs": 31583,
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S5 终态 succeeded 且 extract 拿到真实标题",
+      "pass": false,
+      "detail": {
+        "finalStatus": "partial_success",
+        "eventTypes": [
+          "snapshot::true",
+          "snapshot::true",
+          "step:extract:true",
+          "snapshot::true",
+          "snapshot::true",
+          "step:screenshot:false",
+          "done::true"
+        ],
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S6 screenshot 事件报字节数且事件流无 base64 泄漏",
+      "pass": true,
+      "detail": {
+        "shotEvent": {
+          "ok": false,
+          "message": "面板模式动作 screenshot 失败（TIMEOUT）：面板桥请求失败：/execute（未回退到无头浏览器）"
+        },
+        "hasBase64": false
+      }
+    },
+    {
+      "name": "FATAL 未预期异常",
+      "pass": false,
+      "detail": {
+        "error": "manager.close is not a function",
+        "stack": "TypeError: manager.close is not a function\n    at main (file:///Users/yanghy/Documents/New%20project/ai-content/desktop/scripts/browser-panel-stage16-smoke.mjs:250:13)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)"
+      }
+    }
+  ]
+}

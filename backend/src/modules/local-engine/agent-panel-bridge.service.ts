@@ -88,6 +88,14 @@ const DEFAULT_MAX_AGE_MS = 60 * 60 * 1000;
 /** 文件读缓存（避免每个动作都打一次磁盘） */
 const CACHE_TTL_MS = 1000;
 const REQUEST_TIMEOUT_MS = 3000;
+/**
+ * 2026-09-03（round16 真实任务全链 P1）：大 payload 只读动作超时放宽。
+ * Page.captureScreenshot 回传整页 PNG base64（数百 KB 级），3s 全局超时在
+ * 真机全链（3013 dom-agent 循环 × 面板桥）实测必超时 → 动作失败
+ * （partial_success）。其余小 payload 动作维持 3s 快速失败不变。
+ */
+const EXECUTE_SLOW_TIMEOUT_MS = 10_000;
+const EXECUTE_SLOW_METHODS = new Set<string>(['Page.captureScreenshot']);
 
 export type PanelBridgeActor = { ownerId: string; tenantId: string };
 
@@ -437,7 +445,7 @@ export class AgentPanelBridgeService {
       method: input.method,
       params: input.params || {},
       actionId: input.actionId ?? null,
-    });
+    }, EXECUTE_SLOW_METHODS.has(input.method) ? EXECUTE_SLOW_TIMEOUT_MS : REQUEST_TIMEOUT_MS);
     if (json?.executed === true) {
       await this.markTicket(input.actionId ?? null, 'consumed');
     } else {
@@ -669,6 +677,7 @@ export class AgentPanelBridgeService {
     route: string,
     method: 'GET' | 'POST',
     body?: Record<string, unknown>,
+    timeoutMs: number = REQUEST_TIMEOUT_MS,
   ): Promise<T> {
     const payload = body === undefined ? undefined : JSON.stringify(body);
     const headers: Record<string, string> = {
@@ -686,7 +695,7 @@ export class AgentPanelBridgeService {
         method,
         headers,
         body: payload,
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs),
       });
     } catch (error) {
       const reason = (error as Error)?.name === 'TimeoutError' ? 'TIMEOUT' : 'NETWORK_ERROR';

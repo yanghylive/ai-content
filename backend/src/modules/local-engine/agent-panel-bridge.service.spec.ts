@@ -18,7 +18,10 @@ const TOKEN_HEADER = 'x-kaypal-bridge-token';
 const ACTOR = { ownerId: 'u1', tenantId: 't1' };
 
 /** 起一个符合桥协议的最小桩服务（token + nonce + 时钟偏差 + 三条路由） */
-function startStubBridge(token: string) {
+function startStubBridge(
+  token: string,
+  opts?: { slowScreenshotMs?: number },
+) {
   const seen: Array<{ route: string; method: string; token?: string; body?: any }> =
     [];
   const nonceSeen = new Set<string>();
@@ -83,6 +86,31 @@ function startStubBridge(token: string) {
         });
       }
       if (route === '/execute' && req.method === 'POST') {
+        // round16 P1 防回归：Page.captureScreenshot 是免单只读（真桥直接执行），
+        // 可选慢响应模拟大 payload base64 回传（超时放宽用例）
+        if (body.method === 'Page.captureScreenshot') {
+          const reply = () =>
+            send(200, {
+              success: true,
+              data: {
+                binding: {
+                  panelId: 'panel-1',
+                  sessionId: 'sess-1',
+                  webContentsId: 77,
+                  url: 'https://kaypal.cn/landed',
+                },
+                method: body.method,
+                executed: true,
+                actionId: body.actionId ?? null,
+                result: { screenshotBase64: 'iVBORw0KGgo-stub' },
+              },
+            });
+          if (opts?.slowScreenshotMs) {
+            setTimeout(reply, opts.slowScreenshotMs).unref?.();
+            return;
+          }
+          return reply();
+        }
         // 写动作缺确认单 → 服务端拒绝（桥不自我批准）
         if (!body.actionId) {
           return send(403, { success: false, error: { code: 'POLICY_DENIED' } });
@@ -370,6 +398,34 @@ describe('AgentPanelBridgeService', () => {
     expect(svc2.status().available).toBe(true);
     expect(await svc2.health()).toBe(false);
   });
+
+  it('round16 P1 防回归：Page.captureScreenshot 慢响应（4s>旧3s超时）不超时、免单直执行', async () => {
+    const stub = await startStubBridge('tok-slow', { slowScreenshotMs: 4000 });
+    const { file } = writeCredFile({
+      endpoint: `http://127.0.0.1:${stub.port}`,
+      token: 'tok-slow',
+      panelId: 'panel-1',
+      sessionId: 'sess-1',
+      webContentsId: 77,
+    });
+    useCredFile(file);
+    try {
+      const svc = new AgentPanelBridgeService();
+      // 旧代码 REQUEST_TIMEOUT_MS=3000 必超时（TIMEOUT）；放宽后 10s 内完成
+      const result = await svc.execute(ACTOR, {
+        method: 'Page.captureScreenshot',
+        params: { format: 'png' },
+      });
+      expect(result.executed).toBe(true);
+      expect((result as { result?: { screenshotBase64?: string } }).result?.screenshotBase64).toBe(
+        'iVBORw0KGgo-stub',
+      );
+      // 免单语义：无 actionId 也执行成功（stub 不拒 403 即证明走免单分支）
+      expect(stub.seen.some((s) => s.route === '/execute' && s.body?.actionId === null)).toBe(true);
+    } finally {
+      await stub.close();
+    }
+  }, 15_000);
 
   it('requestAction 只拿确认单（actionId），不执行不自批', async () => {
     const stub = await startStubBridge('tok-1');
