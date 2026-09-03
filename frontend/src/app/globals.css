@@ -582,6 +582,57 @@
 
 
 @layer components {
+  /* ===== Ops 执行中心并入 kaypal-v3 主视觉(2026-09-03) =====
+     仅作用于 .ops-v3 根(任务中心桌面视图),不影响 case-admin 等复用 Ops 的面。
+     把 heroui default 灰蓝色板映射到主系统语义色,圆角 6→12、面板内边距增宽。 */
+  .ops-v3 section[class*="border"],
+  .ops-v3 .ops-form-scope {
+    border-color: var(--kaypal-v3-border) !important;
+    background: var(--kaypal-v3-panel) !important;
+    border-radius: var(--kaypal-v3-radius) !important;
+    box-shadow: none !important;
+  }
+  .ops-v3 [class*="border-b"],
+  .ops-v3 [class*="border-divider"] {
+    border-color: var(--kaypal-v3-border) !important;
+  }
+  .ops-v3 [class*="bg-background"] {
+    background: var(--kaypal-v3-paper) !important;
+  }
+  .ops-v3 [class*="bg-default-50"],
+  .ops-v3 [class*="bg-default-100"],
+  .ops-v3 thead th {
+    background: var(--kaypal-v3-paper-soft) !important;
+  }
+  .ops-v3 [class*="text-foreground"] {
+    color: var(--kaypal-v3-ink) !important;
+  }
+  .ops-v3 [class*="text-default-700"],
+  .ops-v3 [class*="text-default-600"] {
+    color: var(--kaypal-v3-soft-ink) !important;
+  }
+  .ops-v3 [class*="text-default-500"],
+  .ops-v3 [class*="text-default-400"] {
+    color: var(--kaypal-v3-muted) !important;
+  }
+  .ops-v3 section,
+  .ops-v3 [class*="rounded-[6px]"],
+  .ops-v3 [class*="rounded-[12px]"] {
+    border-radius: var(--kaypal-v3-radius) !important;
+  }
+  .ops-v3 [class*="px-3 py-1.5"] {
+    padding: 10px 16px !important;
+  }
+  .ops-v3 [class*="px-3 py-2"] {
+    padding: 12px 16px !important;
+  }
+  .ops-v3 [class*="p-3"] {
+    padding: 16px !important;
+  }
+  .ops-v3 [class*="min-h-10"] {
+    min-height: 44px !important;
+  }
+
   /* Ops 面板内 HeroUI Input/Select/Textarea 豁免(2026-09-03):全站字段主题把 label 外置+
      input-wrapper 单框,与 HeroUI 自身 sm 内衬叠加会出现「双层」感。
      .ops-form-scope 内统一紧凑单层外观:框即输入区、label 悬于框上。 */

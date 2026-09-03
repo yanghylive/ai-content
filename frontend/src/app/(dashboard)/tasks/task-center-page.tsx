@@ -1383,7 +1383,7 @@ export function TaskCenterPage() {
   return (
     /* B0 容器收编（2026-08-23）：/tasks 为场景路由，根统一 kx-view（34px gutter + 880 居中），
        astryx Layout 仅作内部布局组件，页面级边距由 kx-view 供给 */
-    <div className="kx-view">
+    <div className="kx-view ops-v3">
     <div className="min-h-full">
       <div className="p-0">
           <div className="flex flex-col gap-3">
