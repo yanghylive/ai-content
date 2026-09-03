@@ -377,7 +377,7 @@ function ThreadList({
               {item.authorName || item.authorExternalId || "客户"}
             </p>
             {item.unreadCount > 0 && (
-              <span className="shrink-0 rounded-full bg-[var(--kaypal-v3-accent)] px-1.5 text-xs font-semibold text-white">
+              <span className="shrink-0 rounded-full bg-[image:var(--kaypal-v3-gradient-primary)] px-1.5 text-xs font-semibold text-white">
                 {item.unreadCount}
               </span>
             )}

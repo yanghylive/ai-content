@@ -477,7 +477,7 @@ export function IntelligenceCollaborationWorkbench() {
                 {userCanManageReports ? "可交付/归档" : "需上级复核"}
               </span>
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-13 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading}
                 onClick={() => void load()}
                 type="button"
@@ -678,7 +678,7 @@ export function IntelligenceCollaborationWorkbench() {
               <div className="flex flex-wrap gap-2">
                 {selected.type !== "item" ? (
                   <button
-                    className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={
                       Boolean(actionKey) ||
                       (selected.type === "report" &&

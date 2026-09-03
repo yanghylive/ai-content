@@ -606,7 +606,7 @@ export function WechatTaskCenter() {
                   </div>
                   <Link
                     href="/engagement/wechat?module=mass-send"
-                    className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+                    className="rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2 text-sm font-medium text-white transition hover:brightness-105"
                   >
                     详情
                   </Link>

@@ -1384,7 +1384,7 @@
      [class~="bg-primary"] 用精确 token 匹配排除 bg-primary/20 与 data-[...]:bg-primary/20；
      :not([data-slot="button"]) 排除 agent-cockpit-canvas 的按钮（其 Button 带 data-slot="button"） */
   :is(button, a, [role="button"]):not([data-slot="button"])[class~="bg-primary"][class*="text-primary-foreground"] {
-    background: var(--kaypal-v3-accent) !important;
+    background: var(--kaypal-v3-gradient-primary) !important;
     color: #ffffff !important;
   }
 
@@ -1408,7 +1408,7 @@
 
   .dark :is(button, a[role="button"], [role="button"])[class*="bg-primary"],
   .dark :is(button, a[role="button"], [role="button"])[data-color="primary"] {
-    background: var(--kaypal-v3-accent) !important;
+    background: var(--kaypal-v3-gradient-primary) !important;
   }
 
   .dark :is(button, a[role="button"], [role="button"])[class*="bg-danger"],
@@ -1443,7 +1443,7 @@
   }
 
   .dark [data-slot="base"][data-color="primary"][data-variant="solid"] {
-    background: var(--kaypal-v3-accent) !important;
+    background: var(--kaypal-v3-gradient-primary) !important;
     color: #ffffff !important;
   }
 
@@ -1452,7 +1452,7 @@
   }
 
   .dark [class*="bg-primary"][class*="text-primary-foreground"] {
-    background: var(--kaypal-v3-accent) !important;
+    background: var(--kaypal-v3-gradient-primary) !important;
     color: #ffffff !important;
   }
 

@@ -59,7 +59,7 @@ export function RedfoxWorkflowPage({
         </div>
         <div className="flex flex-wrap items-center gap-2 lg:justify-end">
           <Link
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-13 font-semibold text-white"
+            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-13 font-semibold text-white"
             href={primaryHref}
           >
             {primaryAction}

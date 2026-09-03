@@ -803,7 +803,7 @@ export function SearchIntelligenceWorkbench() {
                   value={query}
                 />
                 <button
-                  className="kaypal-v2-primary-btn inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:opacity-60 sm:w-auto"
+                  className="kaypal-v2-primary-btn inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-6 text-base font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-60 sm:w-auto"
                   disabled={searchRun.loading || !query.trim()}
                   onClick={() => void runSearchTask()}
                   type="button"

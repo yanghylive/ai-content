@@ -360,7 +360,7 @@ function LeadDetailClient() {
               type="button"
               disabled={acting || !noteText.trim()}
               onClick={() => void handleAddNote()}
-              className="rounded-lg bg-[var(--kaypal-v3-accent)] px-4 py-1.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+              className="rounded-lg bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-1.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
             >
               保存备注
             </button>
@@ -377,7 +377,7 @@ function LeadDetailClient() {
           type="button"
           disabled={acting || !!lead.crmCustomerId}
           onClick={() => void handleConvert()}
-          className="rounded-lg bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+          className="rounded-lg bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
         >
           {lead.crmCustomerId ? "已转 CRM" : "转 CRM 客户"}
         </button>

@@ -965,7 +965,7 @@ export function ContentOptimizationWorkbench() {
         保存版本
       </button>
       <button
-        className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
+        className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
         onClick={() => void setCurrentAsOfficial()}
         type="button"
       >
@@ -977,7 +977,7 @@ export function ContentOptimizationWorkbench() {
         设为正式稿
       </button>
       <button
-        className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
+        className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
         onClick={() => void sendCurrentToCompliance()}
         type="button"
       >
@@ -1059,7 +1059,7 @@ export function ContentOptimizationWorkbench() {
                 />
               </Link>
               <Link
-                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-13 font-semibold text-white"
+                className="inline-flex h-9 items-center justify-between gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-13 font-semibold text-white"
                 href="/strategies"
               >
                 内容策略
@@ -1302,7 +1302,7 @@ export function ContentOptimizationWorkbench() {
                 AI 候选填写
               </button>
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-13 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isLoading}
                 onClick={() => void runOptimization()}
                 type="button"
@@ -1509,7 +1509,7 @@ function ContentSourcePanel({
             更新列表
           </button>
           <button
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
+            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
             onClick={onApply}
             type="button"
           >
@@ -1786,7 +1786,7 @@ function VersionVault({
                     </button>
                   ) : null}
                   <button
-                    className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
+                    className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
                     onClick={() => onSend(version)}
                     type="button"
                   >
@@ -1860,7 +1860,7 @@ function VersionComparePanel({
             收起
           </button>
           <button
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
+            className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition hover:opacity-90"
             onClick={onRestore}
             type="button"
           >

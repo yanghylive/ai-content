@@ -499,7 +499,7 @@ export function CloserAdviceWorkbench() {
           </p>
           <Link
             href="/apps"
-            className="inline-flex items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+            className="inline-flex items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105"
           >
             去应用市场安装 CRM
             <ArrowRight size={16} />

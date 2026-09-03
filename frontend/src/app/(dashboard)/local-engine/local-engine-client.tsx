@@ -1156,7 +1156,7 @@ function InteractionRouteContent({ route }: { route: InteractionRouteKey }) {
         </p>
         <Link
           href="/engagement"
-          className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+          className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105"
         >
           <Icon icon="solar:widget-linear" />
           返回客户互动
@@ -2561,7 +2561,7 @@ function RunCheckDetailsPanel({
                     <td className="px-3 py-2 align-top">
                       {item.actionHref ? (
                         <Link
-                          className="local-engine-console__service-action inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+                          className="local-engine-console__service-action inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105"
                           href={item.actionHref}
                         >
                           {item.actionLabel || "去处理"}
@@ -2702,7 +2702,7 @@ function RunCheckDetailDrawer({
             <Link
               href={item.actionHref}
               onClick={onClose}
-              className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+              className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105"
             >
               {item.actionLabel || "去处理"}
             </Link>

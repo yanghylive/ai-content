@@ -92,7 +92,7 @@ export function V2EditorShell({
           {onPublish && (
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:opacity-60"
               onClick={onPublish}
               disabled={saveState === "publishing"}
             >

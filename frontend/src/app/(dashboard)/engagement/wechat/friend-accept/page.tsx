@@ -56,7 +56,7 @@ export default function FriendAcceptPage() {
           action={
             <button
               type="button"
-              className="rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+              className="rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105"
               onClick={() => router.push("/engagement/wechat")}
             >
               去消息台

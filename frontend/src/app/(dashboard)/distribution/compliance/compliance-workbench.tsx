@@ -636,7 +636,7 @@ export function ComplianceWorkbench() {
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-13 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading}
                 onClick={() => void runCompliance()}
                 type="button"
@@ -906,7 +906,7 @@ function ComplianceResult({
               />
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <button
-                  className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={reviewDone || reviewing || !versionId}
                   onClick={onManualReview}
                   type="button"
@@ -971,7 +971,7 @@ function ComplianceResult({
           ) : null}
         </div>
         <button
-          className="inline-flex h-8 shrink-0 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-8 shrink-0 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!canPreparePublish || publishing}
           onClick={onCreatePublishReady}
           type="button"
@@ -1171,7 +1171,7 @@ function VersionFollowUpPanel({
           </div>
           <div className="mt-3 flex justify-end">
             <button
-              className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
               disabled={savingFeedback}
               onClick={onSaveFeedback}
               type="button"

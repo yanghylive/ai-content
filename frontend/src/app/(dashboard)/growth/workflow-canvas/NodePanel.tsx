@@ -21,7 +21,7 @@ function onDragStart(event: React.DragEvent, nodeType: GrowthCanvasNodeType) {
 export default function NodePanel() {
   return (
     <div className="flex w-44 flex-col gap-1 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-2 shadow-sm">
-      <div className="rounded bg-[var(--kaypal-v3-accent)] px-2 py-1.5 text-xs font-semibold text-white">
+      <div className="rounded bg-[image:var(--kaypal-v3-gradient-primary)] px-2 py-1.5 text-xs font-semibold text-white">
         拖拽节点到画布
       </div>
       {NODE_TYPES.map((type) => {

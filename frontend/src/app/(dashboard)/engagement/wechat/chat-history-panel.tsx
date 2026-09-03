@@ -79,7 +79,7 @@ export function ChatHistoryPanel({
             {/* 单一主行动 */}
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-6 py-2.5 text-base font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-6 py-2.5 text-base font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-60"
               disabled={syncing}
               onClick={onSync}
             >

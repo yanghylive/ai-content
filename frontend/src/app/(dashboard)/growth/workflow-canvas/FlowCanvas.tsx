@@ -369,7 +369,7 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
           type="button"
           onClick={() => void handleSave()}
           disabled={saving}
-          className="flex items-center gap-1 rounded bg-[var(--kaypal-v3-accent)] px-4 py-1.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+          className="flex items-center gap-1 rounded bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-1.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           保存

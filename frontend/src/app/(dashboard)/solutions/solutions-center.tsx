@@ -322,7 +322,7 @@ export function SolutionsCenter() {
                 {/* 单一主行动 */}
                 <Link
                   href={solution.href}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-3 text-sm font-semibold text-white transition hover:brightness-105"
                 >
                   立即使用
                   <ArrowRight className="h-4 w-4" />

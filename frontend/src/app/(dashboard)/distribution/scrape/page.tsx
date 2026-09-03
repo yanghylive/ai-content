@@ -202,7 +202,7 @@ export default function ScrapeArticlePage() {
         <button
           onClick={handleScrape}
           disabled={loading || !url.trim()}
-          className="px-6 py-2 bg-[var(--kaypal-v3-accent)] text-white rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-[var(--kaypal-v3-accent-ink)]"
+          className="px-6 py-2 bg-[image:var(--kaypal-v3-gradient-primary)] text-white rounded-lg text-sm font-medium disabled:opacity-50 hover:brightness-105"
         >
           {loading ? "提取中..." : "提取内容"}
         </button>
@@ -260,7 +260,7 @@ export default function ScrapeArticlePage() {
           <div className="flex gap-3 pt-2">
             <button
               onClick={handleUseForPublish}
-              className="px-4 py-2 bg-[var(--kaypal-v3-accent)] text-white rounded-lg text-sm font-medium hover:bg-[var(--kaypal-v3-accent-ink)]"
+              className="px-4 py-2 bg-[image:var(--kaypal-v3-gradient-primary)] text-white rounded-lg text-sm font-medium hover:brightness-105"
             >
               用作发布素材
             </button>

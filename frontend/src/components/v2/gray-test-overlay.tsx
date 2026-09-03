@@ -104,7 +104,7 @@ export function GrayTestOverlay({
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                  className="inline-flex items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   返回

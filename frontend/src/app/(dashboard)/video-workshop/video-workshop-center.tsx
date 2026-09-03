@@ -190,7 +190,7 @@ export function VideoWorkshopCenter() {
 
               <Link
                 href={`/video-workshop?template=${template.key}`}
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-105"
               >
                 开始创作
                 <ArrowRight className="h-4 w-4" />
@@ -239,7 +239,7 @@ export function VideoWorkshopCenter() {
                     {task.status === "done" && (
                       <button
                         type="button"
-                        className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+                        className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2 text-sm font-medium text-white transition hover:brightness-105"
                       >
                         <Download className="h-4 w-4" />
                         下载

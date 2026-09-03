@@ -15,7 +15,7 @@ import {
   Sparkles,
   Target,
   XCircle,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   V2Section,
   V2Field,
@@ -209,6 +209,26 @@ const SCENARIO_OPTIONS = [
   },
 ] as const;
 
+// 场景 value → 后端唯一词库（growth-keywords.data.ts）行业名映射。
+// 彻底重构：选中场景后，行业词/意向词/排除词从后端 14 行业词库取，不再各自硬编码。
+// 未映射的场景（如 b2b-leads）保持静态预设关键词。
+const SCENARIO_INDUSTRY_MAP: Record<string, string> = {
+  "home-renovation": "家装",
+  "beauty-makeup": "美业",
+  "edu-training": "教育",
+  "local-life": "本地生活",
+  "ecommerce": "电商零售",
+  "catering": "餐饮",
+  "wechat-business": "微商",
+  "direct-sales": "直销",
+  "fitness": "健身",
+  "maternal-baby": "母婴",
+  "healthcare": "医疗健康",
+  "auto-aftermarket": "汽车后市场",
+  "real-estate": "房产中介",
+  "wedding-photo": "婚庆摄影",
+};
+
 // 自定义行业（用户新增）：结构与系统预置完全一致，本地持久化
 const CUSTOM_SCENARIOS_KEY = "kaypal.v3.customScenarios.v1";
 
@@ -313,6 +333,49 @@ export function AcquisitionRuleForm() {
   }, []);
 
 
+  // 行业词库（彻底重构：从后端 14 行业词库拉取，替代静态关键词，解决关键词单调问题）
+  const [industryKeywords, setIndustryKeywords] = useState<
+    Map<
+      string,
+      {
+        sourceKeywords: string[];
+        demandKeywords: string[];
+        excludeKeywords: string[];
+      }
+    >
+  >(new Map());
+  useEffect(() => {
+    let cancelled = false;
+    growthApi
+      .listWorkflowPlaybooks()
+      .then((list) => {
+        if (cancelled || !Array.isArray(list)) return;
+        const map = new Map<
+          string,
+          {
+            sourceKeywords: string[];
+            demandKeywords: string[];
+            excludeKeywords: string[];
+          }
+        >();
+        for (const item of list) {
+          if (!item?.keywords) continue;
+          map.set(item.industry, {
+            sourceKeywords: item.keywords.sourceKeywords ?? [],
+            demandKeywords: item.keywords.demandKeywords ?? [],
+            excludeKeywords: item.keywords.excludeKeywords ?? [],
+          });
+        }
+        setIndustryKeywords(map);
+      })
+      .catch(() => {
+        // 词库不可用静默忽略，回退静态预设
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // 智能默认值
   const [form, setForm] = useState({
     taskName: "",
@@ -320,6 +383,7 @@ export function AcquisitionRuleForm() {
     platform: "douyin" as GrowthPlatform,
     keywords: "",
     intentKeywords: "",
+    region: "",
     dailyLimit: 20,
     commentTemplate: "你好，看到你关注这个话题，我们正好在做这个，可以聊聊～",
     privateTemplate: "你好，我是{品牌}，看到你对我们这个领域感兴趣，方便加个微信详聊吗？",
@@ -487,6 +551,11 @@ export function AcquisitionRuleForm() {
     .split(/[,，\n]/)
     .map((k) => k.trim())
     .filter(Boolean);
+  // 地域词维度：本地业务填地域后，行业词叠加地域（如「上海 装修」）做本地精准搜索
+  const region = form.region.trim();
+  const sourceInputsWithRegion = region
+    ? keywords.map((k) => `${region} ${k}`)
+    : keywords;
   const autoTaskName =
     form.taskName ||
     (keywords.length > 0
@@ -531,7 +600,7 @@ export function AcquisitionRuleForm() {
         platform: form.platform,
         accountId: selectedAccount.accountId,
         accountName: selectedAccount.accountName,
-        sourceInputs: keywords,
+        sourceInputs: sourceInputsWithRegion,
         includeKeywords:
           intentKeywords.length > 0 ? intentKeywords : keywords,
         excludeKeywords: form.excludeKeywords
@@ -748,6 +817,16 @@ export function AcquisitionRuleForm() {
               style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.6, marginTop: 6 }}
             />
             <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)" }}>系统用这些词去找相关账号/博主</span>
+          </label>
+          <label style={{ display: "block", marginTop: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>地域（可选，本地业务填）</span>
+            <input
+              placeholder="例如：上海、北京（逗号分隔）"
+              value={form.region}
+              onChange={(e) => setForm((p) => ({ ...p, region: e.target.value }))}
+              style={{ ...fieldStyle, marginTop: 6 }}
+            />
+            <span style={{ fontSize: 10, color: "var(--kaypal-v3-muted)" }}>填了会在行业词前叠加地域，搜「上海 装修」这类本地账号；不填则全网搜</span>
           </label>
           <label style={{ display: "block", marginTop: 10 }}>
             <span style={{ fontSize: 12, fontWeight: 600, color: "var(--kaypal-v3-ink)" }}>意向词（找客户）</span>
@@ -1010,16 +1089,31 @@ export function AcquisitionRuleForm() {
                 selected={form.scene === value}
                 badge={isCustom ? "自定义" : undefined}
                 onDelete={isCustom ? () => removeCustomScenario(value) : undefined}
-                onClick={() =>
+                onClick={() => {
+                  const industry = SCENARIO_INDUSTRY_MAP[value];
+                  const kw = industry
+                    ? industryKeywords.get(industry)
+                    : undefined;
                   setForm((p) => ({
                     ...p,
                     scene: value,
                     platform: preset.platform,
-                    keywords: preset.keywords,
+                    keywords:
+                      kw && kw.sourceKeywords.length
+                        ? kw.sourceKeywords.join("，")
+                        : preset.keywords,
+                    intentKeywords:
+                      kw && kw.demandKeywords.length
+                        ? kw.demandKeywords.join("，")
+                        : p.intentKeywords,
+                    excludeKeywords:
+                      kw && kw.excludeKeywords.length
+                        ? kw.excludeKeywords.join("，")
+                        : p.excludeKeywords,
                     commentTemplate: preset.commentTemplate,
                     privateTemplate: preset.privateTemplate,
-                  }))
-                }
+                  }));
+                }}
               />
             );
           })}
@@ -1236,6 +1330,16 @@ export function AcquisitionRuleForm() {
             placeholder="例如：装修, 旧房翻新, 全屋定制"
             value={form.keywords}
             onChange={(e) => setForm((p) => ({ ...p, keywords: e.target.value }))}
+          />
+        </V2Field>
+        <V2Field
+          label="地域（可选，本地业务填）"
+          hint="填了会在行业词前叠加地域，搜「上海 装修」这类本地账号；不填则全网搜"
+        >
+          <V2Input
+            placeholder="例如：上海、北京（逗号分隔）"
+            value={form.region}
+            onChange={(e) => setForm((p) => ({ ...p, region: e.target.value }))}
           />
         </V2Field>
         <V2Field

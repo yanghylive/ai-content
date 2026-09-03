@@ -510,7 +510,7 @@ export function PublishCenter() {
                                       void handleRetry(item);
                                     }
                                   }}
-                                  className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-3 py-2 text-sm font-medium text-white transition hover:bg-[var(--kaypal-v3-accent-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+                                  className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 py-2 text-sm font-medium text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                   {(item.status === "failed" ||
                                     isStaleRunning(item)) && (
@@ -894,7 +894,7 @@ function PublishCalendarTab() {
         </p>
         <Link
           href="/distribution/articles"
-          className="mt-4 inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-4 py-2 text-sm font-medium text-white"
+          className="mt-4 inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2 text-sm font-medium text-white"
         >
           <Plus className="h-4 w-4" /> 新建发布
         </Link>
@@ -911,7 +911,7 @@ function PublishCalendarTab() {
               {fmtDate(day.date)}
             </span>
             {day.date === todayKey && (
-              <span className="rounded-full bg-[var(--kaypal-v3-accent)] px-2 py-0.5 text-xs font-medium text-white">
+              <span className="rounded-full bg-[image:var(--kaypal-v3-gradient-primary)] px-2 py-0.5 text-xs font-medium text-white">
                 今天
               </span>
             )}

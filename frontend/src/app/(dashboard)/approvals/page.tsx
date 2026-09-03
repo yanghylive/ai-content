@@ -138,7 +138,7 @@ export default function ApprovalCenterPage() {
                     type="button"
                     disabled={actingId === rec.id}
                     onClick={() => void handleAct(rec, "approve")}
-                    className="flex items-center gap-1 rounded-lg bg-[var(--kaypal-v3-accent)] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+                    className="flex items-center gap-1 rounded-lg bg-[image:var(--kaypal-v3-gradient-primary)] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
                   >
                     <Check className="h-3.5 w-3.5" /> 批准
                   </button>

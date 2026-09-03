@@ -624,7 +624,7 @@ export function IntelligenceMonitorsWorkbench() {
                 执行到期
               </button>
               <Link
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                 href="/intelligence/search"
               >
                 <Search
@@ -955,7 +955,7 @@ export function IntelligenceMonitorsWorkbench() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {selectedMonitor.status !== "archived" ? (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-3 text-12 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                      className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                       onClick={() => runMonitorNow(selectedMonitor)}
                       type="button"
                     >
@@ -1228,7 +1228,7 @@ export function IntelligenceMonitorsWorkbench() {
               ) : null}
 
               <button
-                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={saving}
                 type="submit"
               >

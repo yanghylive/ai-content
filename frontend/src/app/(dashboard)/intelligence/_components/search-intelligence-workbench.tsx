@@ -791,7 +791,7 @@ export function SearchIntelligenceWorkbench() {
               </label>
               <div className="flex flex-wrap gap-2 lg:justify-end">
                 <button
-                  className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-4 text-13 font-semibold text-white disabled:opacity-60"
+                  className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-13 font-semibold text-white disabled:opacity-60"
                   disabled={searchRun.loading}
                   onClick={() => void runSearchTask()}
                   type="button"
@@ -1283,7 +1283,7 @@ export function SearchIntelligenceWorkbench() {
                       {riskLabel(item.risk)}
                     </span>
                     <Link
-                      className="inline-flex h-7 items-center gap-1.5 rounded-[8px] bg-[var(--kaypal-v3-accent)] px-2.5 text-11 font-semibold text-white"
+                      className="inline-flex h-7 items-center gap-1.5 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-2.5 text-11 font-semibold text-white"
                       href={item.href}
                     >
                       打开
