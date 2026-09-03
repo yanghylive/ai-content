@@ -41,8 +41,9 @@ import { toast } from "@/lib/toast";
  * 今日增长首页 · 版式规范（2026-09-03 体检定稿，改动前先读这里）
  *
  * 页面区块动线（2026-09-03 操作前置定稿，勿乱序）：
- *   页头(统计卡+趋势) → 需要关注 → 增长功能(操作区) → AI 简报 →
- *   转化漏斗 → AI 价值账单 → 最近运行(日志收尾)
+ *   页头(标题+统计) → 需要关注(风险) → 增长功能(操作区) →
+ *   趋势图(自页头区移下让位) → AI 简报 → 转化漏斗 →
+ *   AI 价值账单 → 最近运行(日志收尾)
  *
  * 间距（全为 4 的倍数，与 .kx-view 的 gap-6 体系同节奏）：
  * - 区块之间（含统计卡区与各面板、页头之间）：24 —— .kx-view flex gap-6
@@ -1667,8 +1668,9 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
 }
 
 /**
- * 今日增长视图（T04）：读取 GET /growth/home，展示 stats / funnel / blockers /
- * recentRuns / nextActions；主 CTA 新建获客任务 → /auto-acquisition/create；
+ * 今日增长视图（T04）：读取 GET /growth/home + GET /growth/overview，展示 stats /
+ * funnel / blockers / recentRuns（nextActions 仍为接口契约字段，页面以增长功能
+ * 操作区替代其旧渲染）；主 CTA 新建获客任务 → /auto-acquisition/create；
  * 30s 轮询刷新；null≠0、失败不伪装成功。
  */
 export function TodayCenter() {
@@ -1700,15 +1702,34 @@ export function TodayCenter() {
     async (silent = false) => {
       if (!silent) setLoading(true);
       try {
-        const [homeData, overviewData] = await Promise.all([
+        // P0 复核修复：Promise.allSettled 独立处理两个接口——overview 失败不影响
+        // home 主数据提交渲染；仅两个都失败才整页报错。任一失败静默保留上次成功数据。
+        const [homeResult, overviewResult] = await Promise.allSettled([
           growthApi.getGrowthHome("today"),
           growthApi.overview(),
         ]);
-        setHome(homeData);
-        setOverview(overviewData);
-        announceNewFailedRuns(homeData.recentRuns ?? [], failureSeenRef.current);
-        setError(null);
+        const homeData =
+          homeResult.status === "fulfilled" ? homeResult.value : null;
+        const overviewData =
+          overviewResult.status === "fulfilled" ? overviewResult.value : null;
+        if (homeData) {
+          setHome(homeData);
+          announceNewFailedRuns(homeData.recentRuns ?? [], failureSeenRef.current);
+        }
+        if (overviewData) setOverview(overviewData);
+        if (!homeData && !overviewData) {
+          const reason =
+            homeResult.status === "rejected"
+              ? homeResult.reason
+              : overviewResult.status === "rejected"
+                ? overviewResult.reason
+                : new Error("加载失败");
+          setError(toPublicError(reason, "今日增长数据加载失败，请稍后重试。"));
+        } else {
+          setError(null);
+        }
       } catch (loadError: unknown) {
+        // Promise.allSettled 自身几乎不 reject，此分支兜底同步异常
         setError(toPublicError(loadError, "今日增长数据加载失败，请稍后重试。"));
       } finally {
         setLoading(false);

@@ -142,7 +142,7 @@ const candidates: TrendCandidate[] = [
     nextActions: [
       { label: "加入监控", href: "/intelligence/monitors", icon: BellRing },
       { label: "对标账号", href: "/intelligence/accounts", icon: Gauge },
-      { label: "增长策略", href: "/growth?view=strategies", icon: ArrowRight },
+      { label: "增长策略", href: "/growth/strategies", icon: ArrowRight },
     ],
   },
 ];

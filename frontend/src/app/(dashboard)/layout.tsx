@@ -234,7 +234,7 @@ const toolEntryDefinitions: Record<string, ToolEntryDefinition> = {
     module: "增长获客",
     description: "按投放目标、人设、内容质量和风险筛出可跟进达人。",
     outputs: ["候选达人", "匹配评分", "跟进任务"],
-    resultHref: "/growth?view=acquisition",
+    resultHref: "/growth/acquisition",
     actionLabel: "筛选达人",
   },
   "account-diagnosis": {
@@ -242,7 +242,7 @@ const toolEntryDefinitions: Record<string, ToolEntryDefinition> = {
     module: "增长获客",
     description: "诊断账号定位、内容节奏、互动质量、风险项和改进计划。",
     outputs: ["健康评分", "增长报告", "监控任务"],
-    resultHref: "/growth?view=account-health",
+    resultHref: "/growth/account-health",
     actionLabel: "开始诊断",
   },
   "comment-lead-solution": {

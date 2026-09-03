@@ -1303,7 +1303,7 @@ function getCloserEmptyMeta(label: string) {
     暂无机会推进建议: {
       actions: [
         { href: "/crm", label: "CRM 商机" },
-        { href: "/growth?view=leads", label: "增长线索" },
+        { href: "/growth/leads", label: "增长线索" },
       ],
       description:
         "当前没有可推进的商机。先补充商机阶段、金额、阻塞点和下一步动作。",

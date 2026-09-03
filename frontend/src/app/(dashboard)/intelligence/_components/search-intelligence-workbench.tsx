@@ -205,7 +205,7 @@ const exampleCandidates: SearchCandidate[] = [
         href: "/intelligence/accounts",
         icon: UserRoundSearch,
       },
-      { label: "增长策略", href: "/growth?view=strategies", icon: ArrowRight },
+      { label: "增长策略", href: "/growth/strategies", icon: ArrowRight },
       { label: "加入监控", href: "/intelligence/monitors", icon: BellRing },
     ],
   },

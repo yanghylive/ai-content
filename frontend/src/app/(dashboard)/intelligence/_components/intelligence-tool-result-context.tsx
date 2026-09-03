@@ -166,7 +166,7 @@ const intelligenceToolViews: Record<string, IntelligenceToolView> = {
     nextActions: [
       { label: "保存样本", href: "/content?tool=private-asset-extractor", icon: Database },
       { label: "生成选题", href: "/topics", icon: Lightbulb },
-      { label: "账号健康", href: "/growth?view=account-health&tool=account-diagnosis", icon: TrendingUp },
+      { label: "账号健康", href: "/growth/account-health?tool=account-diagnosis", icon: TrendingUp },
     ],
     guardrails: [
       "只学习结构和用户问题，不搬运封面、画面、正文和评论原句。",

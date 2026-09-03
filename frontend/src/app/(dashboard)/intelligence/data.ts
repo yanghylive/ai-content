@@ -845,7 +845,7 @@ export const intelligencePages: Record<
       {
         label: "加入增长策略",
         detail: "把账号观察变成执行计划",
-        href: "/growth?view=strategies",
+        href: "/growth/strategies",
       },
     ],
     sources: commonSources,

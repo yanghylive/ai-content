@@ -257,9 +257,9 @@ const businessToolViews: Record<string, BusinessToolView> = {
       },
     ],
     nextActions: [
-      { label: "创建获客任务", href: "/growth?view=acquisition&tool=kol-screening", icon: Target },
-      { label: "查看线索池", href: "/growth?view=leads", icon: UsersRound },
-	      { label: "账号健康", href: "/growth?view=account-health&tool=account-diagnosis", icon: HeartPulse },
+      { label: "创建获客任务", href: "/growth/acquisition?tool=kol-screening", icon: Target },
+      { label: "查看线索池", href: "/growth/leads", icon: UsersRound },
+	      { label: "账号健康", href: "/growth/account-health?tool=account-diagnosis", icon: HeartPulse },
     ],
     guardrails: [
       "达人筛选只给候选和理由，不自动私信、不自动外联。",
@@ -290,9 +290,9 @@ const businessToolViews: Record<string, BusinessToolView> = {
       },
     ],
     nextActions: [
-      { label: "自动获客", href: "/growth?view=acquisition&tool=kol-screening", icon: Search },
-	      { label: "增长复盘", href: "/growth?view=reports", icon: FileText },
-	      { label: "增长工作流", href: "/growth?view=workflows", icon: Target },
+      { label: "自动获客", href: "/growth/acquisition?tool=kol-screening", icon: Search },
+	      { label: "增长复盘", href: "/growth/reports", icon: FileText },
+	      { label: "增长工作流", href: "/growth/workflows", icon: Target },
     ],
     guardrails: [
       "账号异常时不建议继续跑高频任务。",
@@ -324,7 +324,7 @@ const businessToolViews: Record<string, BusinessToolView> = {
     ],
     nextActions: [
       { label: "查看回复规则", href: "/engagement/rules", icon: MessageCircle },
-      { label: "查看线索池", href: "/growth?view=leads", icon: UsersRound },
+      { label: "查看线索池", href: "/growth/leads", icon: UsersRound },
       { label: "客户沉淀", href: "/engagement/customers", icon: Database },
     ],
     guardrails: [

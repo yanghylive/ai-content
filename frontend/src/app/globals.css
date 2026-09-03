@@ -1809,9 +1809,7 @@
   .settings-workspace,
   .settings-workspace [data-slot="base"],
   .settings-workspace [data-slot="panel"],
-  .desktop-settings,
-  .growth-page-shell,
-  .growth-page-shell > * {
+  .desktop-settings {
     min-width: 0;
     max-width: 100%;
   }
@@ -1886,26 +1884,6 @@
     border-color: var(--kaypal-v3-border) !important;
     background: var(--kaypal-v3-paper) !important;
     box-shadow: none !important;
-  }
-
-  @media (min-width: 1200px) and (max-width: 1535px) {
-    .growth-page-shell
-      .growth-console
-      [class*="2xl:grid-cols-[minmax(0,1fr)_390px]"] {
-      grid-template-columns: minmax(0, 1fr) minmax(320px, 340px) !important;
-      align-items: start;
-    }
-
-    .growth-page-shell
-      .growth-console
-      [class*="2xl:grid-cols-[minmax(0,1fr)_390px]"]
-      > aside {
-      position: sticky;
-      top: 0;
-      max-height: calc(100dvh - 88px);
-      min-width: 0;
-      overflow-y: auto;
-    }
   }
 
   .local-engine-console {
@@ -2204,8 +2182,7 @@
     .dashboard-shell__viewport main,
     .dashboard-shell__viewport main > *,
     .dashboard-page-shell,
-    .settings-workspace,
-    .growth-page-shell {
+    .settings-workspace {
       width: 100%;
       min-width: 0;
       max-width: 100%;

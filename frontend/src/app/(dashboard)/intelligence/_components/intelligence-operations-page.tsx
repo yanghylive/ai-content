@@ -305,7 +305,7 @@ const operationsConfigs: Record<OperationsKey, OperationsConfig> = {
           {
             label: "派给增长",
             target: "增长策略",
-            href: "/growth?view=strategies",
+            href: "/growth/strategies",
             risk: "low",
           },
         ],
@@ -390,7 +390,7 @@ const operationsConfigs: Record<OperationsKey, OperationsConfig> = {
           {
             label: "转线索池",
             target: "线索池",
-            href: "/growth?view=leads",
+            href: "/growth/leads",
             risk: "medium",
           },
         ],
@@ -439,7 +439,7 @@ const operationsConfigs: Record<OperationsKey, OperationsConfig> = {
         title: "线索判断依据",
         detail: "只做人工判断输入，不直接触达",
         owner: "增长负责人",
-        href: "/growth?view=leads",
+        href: "/growth/leads",
       },
     ],
   },
