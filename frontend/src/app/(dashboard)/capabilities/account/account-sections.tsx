@@ -433,6 +433,18 @@ export function KaypalAccountSections() {
                 从账号同步
               </Button>
             ) : null}
+            {aiModelStatusState === "ready" &&
+            aiModelStatus?.configured ? (
+              <Button
+                as="a"
+                href="/settings/ai-service"
+                size="sm"
+                color="primary"
+                variant="flat"
+              >
+                管理
+              </Button>
+            ) : null}
           </div>
         </CardBody>
       </Card>
