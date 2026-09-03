@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { INTERACTION_CHANNELS } from "@/lib/nav-registry";
 import { ScenePage } from "@/components/shell/scene-page";
 import { ShellIcon } from "@/components/shell/icons";
+import { BrandIcon, type BrandIconName } from "@/components/shell/brand-icons";
 import { localEngineApi, type AgentConfirmation } from "@/lib/api/local-engine";
 import { statsApi } from "@/lib/api/stats";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
@@ -104,6 +105,7 @@ export default function MessageScene() {
         }
         cards={INTERACTION_CHANNELS.filter((ch) => ch.key !== "inbox").map((ch) => ({
           icon: ch.icon,
+          brand: CHANNEL_BRAND[ch.key],
           tint: ch.tint,
           title: ch.title,
           desc: ch.desc,
@@ -121,11 +123,25 @@ export default function MessageScene() {
 /* ================= 移动端视图（<768px，明德 VP 风格） ================= */
 
 /** 移动端渠道：由 INTERACTION_CHANNELS 派生（与桌面 cards 同源，防止双份漂移） */
+/** 消息渠道 key -> 品牌图形(语义集中在渲染层,不动 nav-registry 共用数据) */
+const CHANNEL_BRAND: Record<string, BrandIconName> = {
+  inbox: "inbox",
+  "ai-service": "botHead",
+  "douyin-messages": "douyin",
+  "channel-messages": "channelVideo",
+  wechat: "wechat",
+  "wecom-assistant": "wecom",
+  reply: "replyPen",
+  records: "historyClock",
+  "wechat-plans": "groupSend",
+};
+
 const MOBILE_CHANNELS = INTERACTION_CHANNELS.map((ch) => ({
   label: ch.title,
   sub: ch.sub,
   icon: ch.icon,
   brand: ch.brand,
+  brandIcon: CHANNEL_BRAND[ch.key],
   href: ch.href,
 }));
 
@@ -261,7 +277,11 @@ function MobileMessageView({
                   borderRadius: 999,
                 }}
               >
-                <ShellIcon name={ch.icon} size={19} />
+                {ch.brandIcon ? (
+                  <BrandIcon name={ch.brandIcon} size={22} tone="tint" />
+                ) : (
+                  <ShellIcon name={ch.icon} size={19} />
+                )}
               </span>
               <span className="mx-svc-name">{ch.label}</span>
               <span className="mx-svc-sub" style={{ fontSize: 8.5 }}>{ch.sub.slice(0, 7)}</span>

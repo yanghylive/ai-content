@@ -400,7 +400,7 @@ function MobileMineView({
                 }}
               >
                 {item.brand ? (
-                  <BrandIcon name={item.brand} size={18} />
+                  <BrandIcon name={item.brand} size={18} tone="tint" />
                 ) : (
                   <ShellIcon name={item.icon} size={18} />
                 )}
@@ -435,7 +435,7 @@ function MobileMineView({
               >
                 <span className="mx-row-ic" style={{ background: `color-mix(in srgb, ${item.tint} 12%, transparent)`, color: item.tint }}>
                   {item.brand ? (
-                    <BrandIcon name={item.brand} size={18} />
+                    <BrandIcon name={item.brand} size={18} tone="tint" />
                   ) : (
                     <ShellIcon name={item.icon} size={18} />
                   )}

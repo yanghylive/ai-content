@@ -89,6 +89,7 @@ export default function ContentScene() {
       cards={[
         {
           icon: "clipboard",
+          brand: "topic",
           tint: "kx-t-violet",
           title: "选题",
           desc: "AI 推荐选题，也可自己定",
@@ -97,6 +98,7 @@ export default function ContentScene() {
         },
         {
           icon: "trending",
+          brand: "viral",
           tint: "kx-t-amber",
           title: "爆款拆解",
           desc: "作品链接 → 数据 + AI 拆解套路",
@@ -105,6 +107,7 @@ export default function ContentScene() {
         },
         {
           icon: "fileText",
+          brand: "generate",
           tint: "kx-t-blue",
           title: "内容生成",
           desc: "图文、小红书笔记、视频脚本",
@@ -113,6 +116,7 @@ export default function ContentScene() {
         },
         {
           icon: "layers",
+          brand: "template",
           tint: "kx-t-slate",
           title: "模板与风格",
           desc: "品牌风格、内容模板",
@@ -121,6 +125,7 @@ export default function ContentScene() {
         },
         {
           icon: "sparkles",
+          brand: "imagegen",
           tint: "kx-t-violet",
           title: "AI 生图",
           desc: "文字描述生成图片，直接入素材库",
@@ -129,6 +134,7 @@ export default function ContentScene() {
         },
         {
           icon: "movieCamera",
+          brand: "videogen",
           tint: "kx-t-violet",
           title: "AI 生视频",
           desc: "文字描述生成短视频，直接入素材库",
@@ -147,6 +153,7 @@ export default function ContentScene() {
         },
         {
           icon: "download",
+          brand: "clean",
           tint: "kx-t-blue",
           title: "去水印",
           desc: "抖音/快手/小红书等 9 平台免水印下载",
@@ -155,6 +162,7 @@ export default function ContentScene() {
         },
         {
           icon: "collectPic",
+          brand: "scrape",
           tint: "kx-t-blue",
           title: "全网采集",
           desc: "关键词搜作品、查详情、看账号列表",
@@ -163,6 +171,7 @@ export default function ContentScene() {
         },
         {
           icon: "fetchDoc",
+          brand: "extract",
           tint: "kx-t-slate",
           title: "文章反抓",
           desc: "输入链接，一键提取文章内容",
@@ -171,6 +180,7 @@ export default function ContentScene() {
         },
         {
           icon: "videocam",
+          brand: "camera",
           tint: "kx-t-green",
           title: "视频成片",
           desc: "选题 → 脚本 → 成片，多流水线一键成片",
@@ -179,6 +189,7 @@ export default function ContentScene() {
         },
         {
           icon: "filmRoll",
+          brand: "filmroll",
           tint: "kx-t-violet",
           title: "视频生产",
           desc: "12 条流水线，选题到成片全流程",
@@ -187,6 +198,7 @@ export default function ContentScene() {
         },
         {
           icon: "playButton",
+          brand: "product",
           tint: "kx-t-amber",
           title: "商品视频",
           desc: "带货文案 + 一键成片",
@@ -195,6 +207,7 @@ export default function ContentScene() {
         },
         {
           icon: "sendUp",
+          brand: "publish",
           tint: "kx-t-green",
           title: "发布",
           desc: "一键发到各平台，发前自动合规检查",
@@ -203,6 +216,7 @@ export default function ContentScene() {
         },
         {
           icon: "calendarPlan",
+          brand: "calendar",
           tint: "kx-t-violet",
           title: "视频发布计划",
           desc: "查看定时发布的视频任务",

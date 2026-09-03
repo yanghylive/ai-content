@@ -55,7 +55,7 @@ export function ScenePage({
     >
       {card.brand ? (
         <div className="kx-agg-ico kx-agg-ico-bare" aria-hidden="true">
-          <BrandIcon name={card.brand} size={28} tone="gold" />
+          <BrandIcon name={card.brand} size={32} tone="gold" />
         </div>
       ) : (
         <div className={`kx-agg-ico ${card.tint}`}>
