@@ -292,7 +292,16 @@ ${toneList.map((tone) => `- ${tone}：${toneLabels[tone]}`).join('\n')}`;
         },
         { role: 'user', content: prompt },
       ],
-      { maxTokens: 800, temperature: 0.7, knowledgeMode: 'off' },
+      {
+        maxTokens: 800,
+        temperature: 0.7,
+        knowledgeMode: 'off',
+        // 交互式主动生成：每次都是新的生成意图，传新盐避免同评论
+        // 再次生成被上游计费幂等判定为 409 BILLING_IDEMPOTENCY_REPLAY
+        billingSalt: `reply-suggest:${Date.now()}:${Math.random()
+          .toString(36)
+          .slice(2, 8)}`,
+      },
     );
 
     return this.parseAiSuggestions(raw);

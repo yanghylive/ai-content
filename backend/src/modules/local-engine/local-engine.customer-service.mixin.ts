@@ -1261,6 +1261,11 @@ export async function tryGenerateInteractionReplyWithAi(
           knowledge.scope === 'local'
             ? `${context.accountName || ''}\n${context.targetName || ''}\n${sourceText}`
             : undefined,
+        // 交互式主动生成（模拟/换一批/再次生成同一客户问题）：每次新意图传新盐，
+        // 避免同内容再次生成被上游计费幂等判定为 409 BILLING_IDEMPOTENCY_REPLAY
+        billingSalt: `cs-reply:${Date.now()}:${Math.random()
+          .toString(36)
+          .slice(2, 8)}`,
       },
     );
     return normalizeAiInteractionReply(output);

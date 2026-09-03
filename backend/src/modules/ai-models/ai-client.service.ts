@@ -80,6 +80,13 @@ export type TextGenerationOptions = {
   signal?: AbortSignal;
   /** M6：返利直付凭证（已用返利现金抵扣，跳过云端积分扣费） */
   rebateReceiptId?: string;
+  /**
+   * 计费幂等键附加盐（2026-09 交互式生成 409 修复）。
+   * 缺省行为不变：键 = 场景+用户+模型+内容哈希（同内容重试安全）。
+   * 交互式「主动再次生成」场景（收件箱 AI 回复 / 客服候选）传每次新盐，
+   * 避免同评论再次生成被上游误判为计费重放（BILLING_IDEMPOTENCY_REPLAY）。
+   */
+  billingSalt?: string;
 };
 
 export type ImageTextGenerationOptions = TextGenerationOptions & {
@@ -1403,7 +1410,9 @@ export class AiClientService {
           'text',
           kaypalUserId,
           model.modelId,
-          contextualMessages,
+          options?.billingSalt
+            ? { body: contextualMessages, salt: options.billingSalt }
+            : contextualMessages,
         )
       : '';
 
