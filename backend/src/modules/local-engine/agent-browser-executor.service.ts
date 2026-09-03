@@ -147,6 +147,72 @@ export function buildSelectorProbeExpression(selector: string): string {
   );
 }
 
+/**
+ * 阶段 7 续（第十轮）：selector 定向文本提取表达式（Runtime.evaluate 执行）。
+ *
+ * 对齐旧无头路径语义（locator(selector).first().textContent() → trim → 截 2000）：
+ *  - `text=文本`：与 probe 同构（先精确后包含，可见元素过滤）；
+ *  - 其余按 CSS selector 走 document.querySelector（first 语义）；
+ *  - 命中返回 `{found:true, text}`（textContent trim 后页面内截断 2000 字符），
+ *    未命中 `{found:false}` → executor 显式失败（对齐旧文案"提取失败"）。
+ *
+ * 与旧路径语义差异交底：候选带**可见性过滤**（probe 同构）——完全不可见元素的
+ * 文本提取不到（found:false）；旧 locator 不要求可见。
+ */
+export function buildTextExtractExpression(selector: string): string {
+  const selJson = JSON.stringify(String(selector ?? '').trim());
+  return (
+    '(function extractText() {' +
+    '  function visible(el) {' +
+    '    if (!el || typeof el.getClientRects !== "function" || el.getClientRects().length === 0) return false;' +
+    '    var style = window.getComputedStyle(el);' +
+    '    return !!style && style.visibility !== "hidden" && style.display !== "none";' +
+    '  }' +
+    '  function pick(candidates) {' +
+    '    for (var i = 0; i < candidates.length; i++) {' +
+    '      var el = candidates[i];' +
+    '      if (el && visible(el)) return el;' +
+    '    }' +
+    '    return null;' +
+    '  }' +
+    '  var sel = ' + selJson + ';' +
+    '  var hit = null;' +
+    '  if (sel.indexOf("text=") === 0) {' +
+    '    var text = sel.slice(5).trim();' +
+    '    var nodes = Array.prototype.slice.call(document.querySelectorAll(' +
+    '      "a,button,input,select,textarea,label,summary,[role=button],[onclick],h1,h2,h3,h4,span,div,p,li"' +
+    '    ));' +
+    '    var exact = nodes.filter(function (el) { return (el.textContent || "").trim() === text; });' +
+    '    var partial = nodes.filter(function (el) {' +
+    '      if (exact.indexOf(el) !== -1) return false;' +
+    '      var t = (el.textContent || "").trim();' +
+    '      return t.length > 0 && t.indexOf(text) !== -1;' +
+    '    });' +
+    '    hit = pick(exact) || pick(partial);' +
+    '  } else {' +
+    '    try { hit = pick([document.querySelector(sel)]); } catch (e) { hit = null; }' +
+    '  }' +
+    '  if (!hit) return { found: false };' +
+    '  return { found: true, text: ((hit.textContent || "") + "").trim().slice(0, 2000) };' +
+    '})()'
+  );
+}
+
+/** 面板 wait 上限（对齐旧无头执行层 min(ms, 30_000)） */
+export const PANEL_WAIT_MAX_MS = 30_000;
+
+/**
+ * 面板 wait 时长收敛（纯函数，测试可直调）：
+ * floor + 非法/负数/0 → 0（立即返回）+ 上限 30s。
+ * wait 无 CDP 副作用，无需审批——但大值必须截断，防 AI 传天文数字卡死会话状态机
+ * （等待期间 paused/stopped 不会被响应）。
+ */
+export function clampPanelWaitMs(ms: unknown): number {
+  const n = Math.floor(Number(ms));
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.min(n, PANEL_WAIT_MAX_MS);
+}
+
 @Injectable()
 export class AgentBrowserExecutor {
   private readonly logger = new Logger(AgentBrowserExecutor.name);
@@ -222,21 +288,10 @@ export class AgentBrowserExecutor {
     }
 
     try {
-      // 3) 只读观察：extract → 面板 observe（文本快照，带 webContentsId 证据）
+      // 3) 只读提取：extract → selector 定向文本提取（对齐旧无头语义：
+      //    locator.textContent → trim → 截 2000；readonly 不签单不落库）
       if (kind === 'extract') {
-        const obs = await this.panelBridge!.observe(actor);
-        return {
-          index: 0,
-          action: kind,
-          ok: true,
-          extractText: obs.textSample ?? undefined,
-          url: obs.binding.url ?? undefined,
-          panelWebContentsId: obs.binding.webContentsId,
-          panelSessionId: obs.binding.sessionId,
-          message:
-            `面板观察成功（webContents=${obs.binding.webContentsId}，` +
-            `session=${obs.binding.sessionId}）`,
-        };
+        return await this.extractViaPanel(action, actor);
       }
       // 4) 导航：写动作——签单 → 等桌面端用户批准 → 带单执行
       if (kind === 'goto') {
@@ -257,11 +312,16 @@ export class AgentBrowserExecutor {
       if (kind === 'press_key') {
         return await this.pressKeyViaPanel(action, actor, input.sessionId, input.actionId);
       }
+      // 5.8) 等待：无 CDP 副作用（不动页面、无白名单命令）——免确认单本地等待
+      //      （签"等待 N 毫秒"的审批卡片是骚扰）；身份/面板可用校验仍走前置。
+      if (kind === 'wait') {
+        return await this.waitViaPanel(action);
+      }
       // 6) 其余动作：面板桥还没开通，明确不支持（不许假装成功，也不许偷偷走老路径）
       return this.failed(
         kind,
-        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type / press_key）；` +
-          `未执行、未回退（阶段 7 按 navigate→click→type→press_key→wait/tabs 顺序开通）`,
+        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type / press_key / wait）；` +
+          `未执行、未回退（下一步 tabs——需扩展 CDP 白名单 Target 域 + manager 多 view 绑定，单独一轮做）`,
       );
     } catch (error) {
       const code =
@@ -343,6 +403,81 @@ export class AgentBrowserExecutor {
       `需用户确认后执行（面板导航确认单 ${ticket.actionId}，请在右侧浏览器面板批准后携带该 id 重试）`,
       ticket.actionId,
     );
+  }
+
+  /**
+   * 面板提取（extract）：selector 定向文本提取，对齐旧无头路径语义。
+   *
+   * 旧面板行为（observe textSample 整页快照）已替换——AI 传了 selector 就该拿到
+   * **那个元素**的文本，整页快照会让它把别的页面的内容当成提取结果（假证据）。
+   * 想要整页文本传 'body' 即可。readonly 调用，不签单不落库。
+   * 未命中显式失败（对齐旧文案"提取失败"），不回退无头浏览器。
+   */
+  private async extractViaPanel(
+    action: Extract<AiBrowserAction, { action: 'extract' }>,
+    actor: PanelBridgeActor,
+  ): Promise<AgentBrowserExecuteResult> {
+    const out = await this.panelBridge!.execute(actor, {
+      method: 'Runtime.evaluate',
+      params: {
+        expression: buildTextExtractExpression(action.selector),
+        returnByValue: true,
+      },
+    });
+    // readonly 调用桥会回传 CDP 结果：{ result: { type, value } }
+    const cdp = out.result as
+      | { result?: { value?: { found?: boolean; text?: string } } }
+      | null
+      | undefined;
+    const value = cdp?.result?.value;
+    if (
+      !value ||
+      typeof value !== 'object' ||
+      value.found !== true ||
+      typeof value.text !== 'string'
+    ) {
+      return this.failed(
+        'extract',
+        `面板模式：提取失败：选择器 ${action.selector} 无文本内容（不回退到无头浏览器）`,
+      );
+    }
+    return {
+      index: 0,
+      action: 'extract',
+      ok: true,
+      extractText: value.text,
+      url: out.binding.url ?? undefined,
+      panelWebContentsId: out.binding.webContentsId,
+      panelSessionId: out.binding.sessionId,
+      message:
+        `面板提取成功（selector "${action.selector}"，${value.text.length} 字符，` +
+        `webContents=${out.binding.webContentsId}）`,
+    };
+  }
+
+  /**
+   * 面板等待（wait）：无 CDP 副作用，免确认单本地等待。
+   *
+   * 不签确认单的理由：wait 不碰页面、不进白名单、零副作用——签"等待 N 毫秒"
+   * 的审批卡片是纯骚扰。但身份与面板可用校验仍走 executeViaPanel 前置
+   * （面板关闭时不会假装等待成功），时长经 clampPanelWaitMs 收敛（≤30s）。
+   */
+  private async waitViaPanel(
+    action: Extract<AiBrowserAction, { action: 'wait' }>,
+  ): Promise<AgentBrowserExecuteResult> {
+    const ms = clampPanelWaitMs(action.ms);
+    await new Promise((resolve) => setTimeout(resolve, ms));
+    const raw = Number(action.ms);
+    const clampedNote =
+      Number.isFinite(raw) && raw > ms
+        ? `，原始请求 ${raw}ms 已按上限 ${PANEL_WAIT_MAX_MS}ms 截断`
+        : '';
+    return {
+      index: 0,
+      action: 'wait',
+      ok: true,
+      message: `面板等待完成（${ms}ms${clampedNote}）`,
+    };
   }
 
   /** 只读探测：selector → 页面坐标（Runtime.evaluate，readonly 不签单不落库） */

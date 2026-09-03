@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T09:49:52.360Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "fixture": "desktop/test-fixtures/browser-panel.html",
+    "scenario": "stage7 续：extract 定向提取表达式真机行为（text= 精确>包含/2000 截断/未命中）"
+  },
+  "checks": [
+    {
+      "name": "S1 fixture 加载（真实 WebContentsView）",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:61099/browser-panel.html"
+      }
+    },
+    {
+      "name": "S2 CSS 提取 #title → 页面标题文本",
+      "pass": true,
+      "detail": {
+        "found": true,
+        "text": "browser-panel-p0"
+      }
+    },
+    {
+      "name": "S3 text= 精确匹配 → +1 按钮文本",
+      "pass": true,
+      "detail": {
+        "found": true,
+        "text": "+1"
+      }
+    },
+    {
+      "name": "S4 text= 包含匹配 → h1（textContent 含 browser 但不等于）",
+      "pass": true,
+      "detail": {
+        "found": true,
+        "text": "browser-panel-p0"
+      }
+    },
+    {
+      "name": "S5 未命中 → found:false（executor 据此显式失败）",
+      "pass": true,
+      "detail": {
+        "found": false
+      }
+    },
+    {
+      "name": "S6 长文本截断：3000 字符 → 提取恰好 2000（页面内 slice），fixture 无残渣",
+      "pass": true,
+      "detail": {
+        "length": 2000,
+        "cleaned": true
+      }
+    }
+  ]
+}

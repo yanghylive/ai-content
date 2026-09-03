@@ -3,6 +3,8 @@ import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import {
   AgentBrowserExecutor,
   readAgentPanelMode,
+  clampPanelWaitMs,
+  PANEL_WAIT_MAX_MS,
 } from './agent-browser-executor.service';
 import {
   AgentPanelBridgeService,
@@ -169,36 +171,78 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(legacy.calls.length).toBe(0);
   });
 
-  it('on + extract → 面板 observe，返回同页证据 webContentsId', async () => {
+  it('on + extract → selector 定向文本提取（对齐旧无头语义，带 webContentsId 证据）', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const legacy = makeLegacy();
-    const observe = jest.fn(async () => ({
+    const execute = jest.fn(async () => ({
       binding: {
         panelId: 'panel-1',
         sessionId: 'sess-1',
         webContentsId: 42,
         url: 'https://kaypal.cn/page',
       },
-      title: 'T',
-      textSample: 'hello panel',
+      method: 'Runtime.evaluate',
+      executed: true,
+      actionId: null,
+      result: { result: { value: { found: true, text: '订单金额 ¥199' } } },
     }));
     const exec = new AgentBrowserExecutor(
       legacy as unknown as AiBrowserActionService,
       makePanel({
         status: () => ({ available: true, reason: 'ready' }),
-        observe,
+        execute,
       } as PanelBridgeStub),
     );
     const out = await exec.execute({
-      action: { action: 'extract', selector: 'body' },
+      action: { action: 'extract', selector: 'text=订单金额' },
       actor: ACTOR,
     });
     expect(out.ok).toBe(true);
+    expect(out.extractText).toBe('订单金额 ¥199');
     expect(out.panelWebContentsId).toBe(42);
     expect(out.panelSessionId).toBe('sess-1');
-    expect(out.extractText).toBe('hello panel');
-    expect(out.url).toBe('https://kaypal.cn/page');
-    expect(observe).toHaveBeenCalledWith(ACTOR);
+    expect(execute).toHaveBeenCalledWith(
+      ACTOR,
+      expect.objectContaining({
+        method: 'Runtime.evaluate',
+        params: expect.objectContaining({
+          expression: expect.stringContaining('text=订单金额'),
+        }),
+      }),
+    );
+    // 表达式对齐旧语义：trim + 截 2000（页面内）
+    const expr = (execute.mock.calls[0] as unknown[])[1] as {
+      params: { expression: string };
+    };
+    expect(expr.params.expression).toContain('slice(0, 2000)');
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('on + extract 未命中 → 显式失败（对齐旧文案"提取失败"，不回退）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const execute = jest.fn(async () => ({
+      binding: { webContentsId: 42, url: 'https://kaypal.cn/page' },
+      method: 'Runtime.evaluate',
+      executed: true,
+      actionId: null,
+      result: { result: { value: { found: false } } },
+    }));
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      makePanel({
+        status: () => ({ available: true, reason: 'ready' }),
+        execute,
+      } as PanelBridgeStub),
+    );
+    const out = await exec.execute({
+      action: { action: 'extract', selector: '#not-exist' },
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('提取失败');
+    expect(out.message).toContain('#not-exist');
+    expect(out.message).toContain('不回退');
     expect(legacy.calls.length).toBe(0);
   });
 
@@ -881,7 +925,58 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(p.cdpCalls.filter((c) => c.method === 'Input.dispatchKeyEvent').length).toBe(0);
   });
 
-  it('on + 暂不支持的动作（wait）→ 显式失败，绝不偷偷走老路径', async () => {
+  // ── 阶段 7 续（第十轮）：wait（免审批本地等待）────────────────────────────
+
+  it('⑩ wait 面板模式免单直接执行（无 requestAction、无 CDP 调用），ok 带实际时长', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const execute = jest.fn(async () => ({ binding: { webContentsId: 42 } }));
+    const requestAction = jest.fn(async () => ({ actionId: 'ticket-x' }));
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      makePanel({
+        status: () => ({ available: true, reason: 'ready' }),
+        execute,
+        requestAction,
+      } as PanelBridgeStub),
+    );
+    const out = await exec.execute({
+      action: { action: 'wait', ms: 50 },
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(true);
+    expect(out.message).toContain('面板等待完成（50ms');
+    // 无副作用动作不签单、不碰 CDP
+    expect(requestAction).not.toHaveBeenCalled();
+    expect(execute).not.toHaveBeenCalled();
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('⑩ wait off 模式纯透传原执行器（零行为变化）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'off';
+    const legacy = makeLegacy();
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      makePanel({ status: () => ({ available: true, reason: 'ready' }) }),
+    );
+    const out = await exec.execute({ action: { action: 'wait', ms: 1 }, accountId: 'acc-1' });
+    expect(out.ok).toBe(true);
+    expect(out.message).toBe('legacy-executed');
+    expect(legacy.calls.length).toBe(1);
+  });
+
+  it('⑩ clampPanelWaitMs：floor/非法/负数→0/上限 30s（防天文数字卡死状态机）', () => {
+    expect(PANEL_WAIT_MAX_MS).toBe(30_000);
+    expect(clampPanelWaitMs(1500)).toBe(1500);
+    expect(clampPanelWaitMs(99.9)).toBe(99);
+    expect(clampPanelWaitMs(-5)).toBe(0);
+    expect(clampPanelWaitMs(0)).toBe(0);
+    expect(clampPanelWaitMs('abc')).toBe(0);
+    expect(clampPanelWaitMs(Number.NaN)).toBe(0);
+    expect(clampPanelWaitMs(999_999_999)).toBe(30_000);
+  });
+
+  it('on + 暂不支持的动作（tabs）→ 显式失败，绝不偷偷走老路径', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const legacy = makeLegacy();
     const exec = new AgentBrowserExecutor(
@@ -889,12 +984,12 @@ describe('AgentBrowserExecutor 面板模式', () => {
       makePanel({ status: () => ({ available: true, reason: 'ready' }) }),
     );
     const out = await exec.execute({
-      action: { action: 'wait', ms: 100 },
+      action: { action: 'tabs', operation: 'new' },
       actor: ACTOR,
     });
     expect(out.ok).toBe(false);
-    expect(out.message).toContain('暂不支持动作 wait');
-    expect(out.message).toContain('仅支持 extract / goto / click / type / press_key');
+    expect(out.message).toContain('暂不支持动作 tabs');
+    expect(out.message).toContain('仅支持 extract / goto / click / type / press_key / wait');
     expect(out.message).toContain('未回退');
     expect(legacy.calls.length).toBe(0);
   });
@@ -906,7 +1001,7 @@ describe('AgentBrowserExecutor 面板模式', () => {
       legacy as unknown as AiBrowserActionService,
       makePanel({
         status: () => ({ available: true, reason: 'ready' }),
-        observe: async () => {
+        execute: async () => {
           throw new PanelBridgeError('POLICY_DENIED', 403);
         },
       } as PanelBridgeStub),
