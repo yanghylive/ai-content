@@ -487,6 +487,25 @@ const PATHS = {
     </>
   ),
 
+  /** 今日增长: 仪表盘（Lucide gauge，国际首页概览语义） */
+  gauge: (
+    <>
+      <path d="m12 14 4-4" />
+      <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+    </>
+  ),
+
+  /** 执行中心: 任务清单（Lucide list-checks，国际任务/审批语义） */
+  listChecks: (
+    <>
+      <path d="m3 17 2 2 4-4" />
+      <path d="m3 7 2 2 4-4" />
+      <path d="M13 6h8" />
+      <path d="M13 12h8" />
+      <path d="M13 18h8" />
+    </>
+  ),
+
 } as const;
 
 export type ShellIconName = keyof typeof PATHS;
@@ -531,14 +550,17 @@ export function ShellIcon({
   size = 20,
   strokeWidth = 1.8,
   className = "",
+  forceLucide = false,
 }: {
   name: ShellIconName;
   size?: number;
   strokeWidth?: number;
   className?: string;
+  /** 强制走 24 网格自绘 Lucide 路径（国际化线性口径）；否则优先 IconPark */
+  forceLucide?: boolean;
 }) {
   const ParkIcon = PARK_ICONS[name];
-  if (ParkIcon) {
+  if (ParkIcon && !forceLucide) {
     // IconPark 48 viewBox：lucide 口径 strokeWidth 1.8 → 3.6
     return <ParkIcon size={size} className={`kx-ic ${className}`.trim()} aria-hidden="true" />;
   }

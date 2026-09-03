@@ -31,11 +31,11 @@ const SCENES: Array<{
   label: string;
   icon: ShellIconName;
 }> = [
-  { key: "growth-home", href: "/today", label: "今日增长", icon: "home" },
+  { key: "growth-home", href: "/today", label: "今日增长", icon: "gauge" },
   { key: "customer", href: "/crm", label: "客户管理", icon: "users" },
   { key: "content", href: "/content", label: "内容运营", icon: "fileText" },
   { key: "interaction", href: "/message", label: "互动中心", icon: "messageSq" },
-  { key: "execution", href: "/tasks", label: "执行中心", icon: "cpu" },
+  { key: "execution", href: "/tasks", label: "执行中心", icon: "listChecks" },
   { key: "device", href: "/device-center", label: "设备任务", icon: "phone" },
 ];
 
@@ -402,7 +402,7 @@ export function AppShell({
                     transition={{ type: "tween", duration: 0.18, ease: "easeInOut" }}
                   />
                 ) : null}
-                <ShellIcon name={scene.icon} size={22} />
+                <ShellIcon name={scene.icon} size={22} strokeWidth={2} forceLucide />
                 <span className="kx-rail-lbl">{scene.label}</span>
                 {badge > 0 ? <span className="kx-rail-badge">{badge > 99 ? "99+" : badge}</span> : null}
               </button>
@@ -414,7 +414,7 @@ export function AppShell({
             aria-label={dark ? "切换到浅色模式" : "切换到暗色模式"}
             onClick={toggleTheme}
           >
-            <ShellIcon name={dark ? "sun" : "moon"} />
+            <ShellIcon name={dark ? "sun" : "moon"} size={20} strokeWidth={2} forceLucide />
           </button>
           {/* Q3：rail「助手」下沉为次级入口（与设置同排），不占业务一级导航。
               2026-09-01 大王决策：悬浮球 AI 入口全面移除（桌面 Electron 悬浮球 +
@@ -434,7 +434,7 @@ export function AppShell({
                 transition={{ type: "tween", duration: 0.18, ease: "easeInOut" }}
               />
             ) : null}
-            <ShellIcon name="botHead" size={22} />
+            <ShellIcon name="sparkles" size={22} strokeWidth={2} forceLucide />
             <span className="kx-rail-lbl">助手</span>
           </button>
           <button
@@ -446,7 +446,7 @@ export function AppShell({
             onClick={() => setSettingsOpen((v) => !v)}
           >
             {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
-            <ShellIcon name="user" size={22} />
+            <ShellIcon name="user" size={22} strokeWidth={2} forceLucide />
             <span className="kx-rail-lbl">我的</span>
           </button>
           {/* 头像入口已移除（2026-08-26 导航去重）：原与上方「我的」重复指向 /mine */}
