@@ -44,14 +44,15 @@ const FILTERS: { key: FilterKey; label: string }[] = [
 
 function planStatusOf(
   task: InteractionTask,
-): InteractionGroupBroadcastPlanStatus | "blocked" {
+): InteractionGroupBroadcastPlanStatus | "blocked" | "pending-confirm" {
+  // 等待人工放行 ≠ 用户手动暂停：拆开显示，避免把「待确认」误标为「已暂停」
+  if (task.status === "waiting_for_send_confirmation") return "pending-confirm";
   if (task.planStatus) return task.planStatus;
   if (task.status === "blocked") return "blocked";
   if (task.status === "completed") return "completed";
   if (task.status === "failed") return "failed";
   if (task.status === "paused") return "paused";
   if (task.status === "running" || task.status === "queued") return "sending";
-  if (task.status === "waiting_for_send_confirmation") return "paused";
   return "draft";
 }
 
@@ -62,7 +63,8 @@ const STATUS_DISPLAY: Record<
   draft: { label: "草稿", tone: "muted", icon: Clock },
   scheduled: { label: "已定时", tone: "accent", icon: Clock },
   sending: { label: "发送中", tone: "accent", icon: Loader2 },
-  paused: { label: "待确认", tone: "warning", icon: Pause },
+  paused: { label: "已暂停", tone: "muted", icon: Pause },
+  "pending-confirm": { label: "待确认", tone: "warning", icon: Pause },
   blocked: { label: "未执行", tone: "danger", icon: AlertTriangle },
   completed: { label: "已完成", tone: "success", icon: CheckCircle2 },
   failed: { label: "失败", tone: "danger", icon: XCircle },
@@ -73,7 +75,8 @@ function matchFilter(task: InteractionTask, filter: FilterKey): boolean {
   const s = planStatusOf(task);
   if (filter === "all") return s !== "removed";
   if (filter === "active") return s === "sending" || s === "scheduled" || s === "draft";
-  if (filter === "paused") return s === "paused";
+  if (filter === "paused")
+    return s === "paused" || s === "pending-confirm";
   if (filter === "done") return s === "completed";
   if (filter === "failed") return s === "failed" || s === "blocked";
   return true;
@@ -248,9 +251,14 @@ export function WechatPlanList() {
                           {acting ? "处理中…" : "暂停"}
                         </button>
                       )}
-                      {status === "paused" && (
+                      {status === "pending-confirm" && (
                         <button type="button" className="mx-btn-gold" style={{ flex: 1, padding: "7px 0", fontSize: 11.5 }} disabled={acting} onClick={() => void runAction(task, "resume")}>
-                          {acting ? "处理中…" : "确认并继续"}
+                          {acting ? "处理中…" : "继续发送"}
+                        </button>
+                      )}
+                      {status === "paused" && (
+                        <button type="button" disabled={acting} onClick={() => void runAction(task, "resume")} style={{ flex: 1, padding: "7px 0", borderRadius: 9, background: "rgba(120,148,179,.12)", color: "var(--kaypal-v3-ink)", border: "1px solid rgba(142,165,190,.3)", fontSize: 11.5, fontWeight: 600 }}>
+                          {acting ? "处理中…" : "恢复"}
                         </button>
                       )}
                       {(status === "failed" || status === "blocked") && (
@@ -269,7 +277,7 @@ export function WechatPlanList() {
                             </button>
                           </>
                         ) : (
-                          <button type="button" onClick={() => setConfirmDeleteId(task.id)} style={{ flexShrink: 0, padding: "7px 10px", borderRadius: 9, background: "rgba(220,80,80,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.3)" }}>
+                          <button type="button" aria-label="删除该计划" title="删除计划" onClick={() => setConfirmDeleteId(task.id)} style={{ flexShrink: 0, padding: "7px 10px", borderRadius: 9, background: "rgba(220,80,80,.08)", color: "var(--kaypal-v3-danger)", border: "1px solid rgba(220,80,80,.3)" }}>
                             <Trash2 width={13} height={13} />
                           </button>
                         )
@@ -418,14 +426,23 @@ export function WechatPlanList() {
                           暂停
                         </V2GhostButton>
                       )}
-                      {status === "paused" && (
+                      {status === "pending-confirm" && (
                         <V2PrimaryButton
                           icon={Play}
                           loading={acting}
                           onClick={() => void runAction(task, "resume")}
                         >
-                          确认并继续
+                          继续发送
                         </V2PrimaryButton>
+                      )}
+                      {status === "paused" && (
+                        <V2GhostButton
+                          icon={Play}
+                          loading={acting}
+                          onClick={() => void runAction(task, "resume")}
+                        >
+                          恢复
+                        </V2GhostButton>
                       )}
                       {(status === "failed" || status === "blocked") && (
                         <V2GhostButton
@@ -458,6 +475,8 @@ export function WechatPlanList() {
                           ) : (
                             <button
                               type="button"
+                              aria-label={`删除计划「${title}」`}
+                              title="删除计划"
                               className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)]"
                               onClick={() => setConfirmDeleteId(task.id)}
                             >

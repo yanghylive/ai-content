@@ -48,6 +48,15 @@ type RecentTask = {
   completedAt: string;
 };
 
+function timeGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 6) return "夜深了";
+  if (hour < 12) return "早上好";
+  if (hour < 14) return "中午好";
+  if (hour < 18) return "下午好";
+  return "晚上好";
+}
+
 function isToday(dateStr?: string) {
   if (!dateStr) return false;
   const d = new Date(dateStr);
@@ -250,7 +259,7 @@ export function WechatTaskCenter() {
         <div className="mx-px" style={{ paddingTop: 10, paddingBottom: 28 }}>
           <div className="mx-header">
             <div className="mx-page-title">微信</div>
-            <div className="mx-page-sub">早上好，今天是 {today}</div>
+            <div className="mx-page-sub">{timeGreeting()}，今天是 {today}</div>
           </div>
 
           {/* 助手状态 */}
@@ -261,6 +270,15 @@ export function WechatTaskCenter() {
               {connText}
             </span>
           </div>
+          {assistantConnected === false && (
+            <Link
+              href="/local-engine"
+              className="mx-card mx-btn-gold"
+              style={{ marginTop: 8, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px 0", fontSize: 12.5, fontWeight: 600, textDecoration: "none" }}
+            >
+              去检查设备状态
+            </Link>
+          )}
 
           {/* 统计 */}
           <div className="mx-stat-grid" style={{ marginTop: 10 }}>
@@ -382,7 +400,7 @@ export function WechatTaskCenter() {
               微信
             </h1>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-              👋 早上好，今天是 {today}
+              👋 {timeGreeting()}，今天是 {today}
             </p>
           </div>
           <div
@@ -415,6 +433,25 @@ export function WechatTaskCenter() {
           </div>
         </div>
       </section>
+
+      {assistantConnected === false && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] px-4 py-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
+              微信桌面助手未连接
+            </p>
+            <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+              自动接待与任务发送需要电脑端的本地引擎在运行;请先检查设备状态。
+            </p>
+          </div>
+          <Link
+            href="/local-engine"
+            className="shrink-0 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-amber)] px-3 py-1.5 text-sm font-medium text-[var(--kaypal-v3-amber)] transition hover:bg-[var(--kaypal-v3-paper)]"
+          >
+            去检查设备状态
+          </Link>
+        </div>
+      )}
 
       {/* AI 自动接待（方案 2） */}
       <WechatAutoReceptionCard />

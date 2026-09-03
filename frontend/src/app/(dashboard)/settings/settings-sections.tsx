@@ -23,7 +23,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { useWebPush } from "@/lib/hooks/use-web-push";
 
-const NOT_READY = "保存接口还没开放（后端开发中），已列入需求清单";
+
 
 /** 子页面统一页头（WorkBuddy 双栏：左栏即导航，不再保留返回链接） */
 export function SettingsPageHeader({ title, sub }: { title: string; sub: string }) {
@@ -135,30 +135,16 @@ const NOTIF_ITEMS = [
 ];
 
 export function NotificationsSettingsSection() {
-  const [notifications, setNotifications] = useState({
+  const [notifications] = useState({
     taskDone: true,
     taskFailed: true,
     newLead: true,
     dailyReport: false,
   });
-  const [message, setMessage] = useState<string | null>(null);
   const webPush = useWebPush();
-
-  const flash = (text: string) => {
-    setMessage(text);
-    setTimeout(() => setMessage(null), 3000);
-  };
 
   return (
     <V2Section>
-      {message && (
-        <div
-          className="mb-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-3"
-        >
-          <p className="text-sm font-medium text-[var(--kaypal-v3-success)]">{message}</p>
-        </div>
-      )}
-
       {/* Web Push 推送开关（PRD 16.x：PWA 推送） */}
       <div className="mb-4 flex items-center justify-between gap-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] p-4">
         <div className="min-w-0">
@@ -192,31 +178,40 @@ export function NotificationsSettingsSection() {
 
       <div className="space-y-4">
         {NOTIF_ITEMS.map((item) => (
-          <label key={item.key} className="flex items-center justify-between">
+          <label
+            key={item.key}
+            className="flex items-center justify-between opacity-60"
+            title="即将上线，暂不可配置"
+          >
             <span className="text-sm text-[var(--kaypal-v3-soft-ink)]">
               {item.label}
+              <span className="ml-2 rounded-full border border-[var(--kaypal-v3-border)] px-1.5 py-0.5 text-[10px] text-[var(--kaypal-v3-muted)]">
+                即将上线
+              </span>
             </span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={notifications[item.key]}
-              className={`flex h-6 w-11 items-center rounded-full p-0.5 transition ${
+            <span
+              aria-hidden="true"
+              className={`flex h-6 w-11 items-center rounded-full p-0.5 ${
                 notifications[item.key]
-                  ? "justify-end bg-[var(--kaypal-v3-accent)]"
+                  ? "justify-end bg-[var(--kaypal-v3-border-strong)]"
                   : "justify-start bg-[var(--kaypal-v3-border-strong)]"
               }`}
-              onClick={() =>
-                setNotifications((p) => ({ ...p, [item.key]: !p[item.key] }))
-              }
             >
-              <div className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
-            </button>
+              <span className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
+            </span>
           </label>
         ))}
+        <p className="text-xs text-[var(--kaypal-v3-muted)]">
+          事件通知即将上线;上方「推送通知」已可用,开关实时生效。
+        </p>
       </div>
 
       <div className="mt-6 flex justify-end">
-        <V2PrimaryButton icon={Bell} onClick={() => flash(NOT_READY)}>
+        <V2PrimaryButton
+          icon={Bell}
+          disabled
+          title="事件通知即将上线，暂无法保存"
+        >
           保存
         </V2PrimaryButton>
       </div>
@@ -227,22 +222,8 @@ export function NotificationsSettingsSection() {
 /* ═══════════ 数据管理（导出） ═══════════ */
 
 export function DataSettingsSection() {
-  const [message, setMessage] = useState<string | null>(null);
-
-  const flash = (text: string) => {
-    setMessage(text);
-    setTimeout(() => setMessage(null), 3000);
-  };
-
   return (
     <V2Section>
-      {message && (
-        <div
-          className="mb-4 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] p-3"
-        >
-          <p className="text-sm font-medium text-[var(--kaypal-v3-success)]">{message}</p>
-        </div>
-      )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Database className="h-5 w-5 text-[var(--kaypal-v3-muted)]" />
@@ -255,9 +236,14 @@ export function DataSettingsSection() {
             </p>
           </div>
         </div>
-        <V2GhostButton icon={Download} onClick={() => flash(NOT_READY)}>
-          导出
-        </V2GhostButton>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <V2GhostButton icon={Download} disabled title="导出功能暂未开放">
+            导出
+          </V2GhostButton>
+          <span className="text-xs text-[var(--kaypal-v3-amber)]">
+            导出功能暂未开放
+          </span>
+        </div>
       </div>
     </V2Section>
   );
