@@ -378,6 +378,15 @@ class BrowserPanelManager {
     this._ensureViews();
     this._createPanelView(this.session.partition);
     this._visible = true;
+    // 阶段 5（2026-09-04）：点名「在面板中打开」= 明确使用面板的意图——
+    // agent mode 开关未开时自动补开（写 0600 mode 文件，backend 即时读到 on，
+    // login-state / 面板动作链才通）。用户仍可在控制条手动关；hide 不动 mode 文件
+    // （关面板 ≠ 关授权，登录态引导还要用）。失败不阻断 open，backend 会显式报未开启。
+    try {
+      if (this.getAgentMode() !== 'on') this.setAgentMode(true);
+    } catch (e) {
+      console.warn('[BrowserPanel] 自动补开 agent mode 失败（不阻断 open）:', e?.message || e);
+    }
     this.relayout();
     this.panelView.webContents.loadURL(targetUrl);
     this._emitState();

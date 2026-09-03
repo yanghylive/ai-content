@@ -317,6 +317,8 @@ test('③ setAgentMode(false) → 文件删除（而非写 off），回读 off',
 test('③ setAgentMode 必须广播状态（stage7 真机抓的 bug：不广播 → 控制条用陈旧态 toggle）', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'panel-mode-mgr-'));
   const { manager, tabManager } = setup(1600, 900, { userDataDir: dir });
+  // 2026-09-04 阶段 5：open 现在会自动补开 agent mode（广播一次 on），
+  // 断言只看后两次手动 toggle 的广播（末两位），open 那次不参与
   manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
   const pushed = [];
   tabManager.sendToBusiness = (channel, payload) => {
@@ -326,7 +328,39 @@ test('③ setAgentMode 必须广播状态（stage7 真机抓的 bug：不广播 
   manager.setAgentMode(true);
   manager.setAgentMode(false);
   // 两次 toggle 各广播一次，且 agentMode 跟着变（控制条按钮靠它高亮/去高亮）
-  assert.deepEqual(pushed, ['on', 'off']);
+  assert.deepEqual(pushed.slice(-2), ['on', 'off']);
+});
+
+// ── 阶段 5（2026-09-04）：open 自动补开 agent mode ─────────────────────────
+test('③ 阶段5 open 自动补开 agent mode：mode 文件落盘 on（点「在面板中打开」即授权使用面板）', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'panel-mode-mgr-'));
+  const { manager } = setup(1600, 900, { userDataDir: dir });
+  const modePath = path.join(dir, 'browser-panel-mode.json');
+  assert.equal(fs.existsSync(modePath), false);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  assert.equal(manager.getAgentMode(), 'on');
+  assert.equal(manager.publicState().agentMode, 'on');
+  const payload = JSON.parse(fs.readFileSync(modePath, 'utf8'));
+  assert.equal(payload.protocol, 'kaypal-browser-panel-mode');
+  assert.equal(payload.mode, 'on');
+  assert.equal(payload.pid, process.pid);
+});
+
+test('③ 阶段5 已 on 时 open 不重写文件（pid/startedAt 不被 open 覆盖）', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'panel-mode-mgr-'));
+  const { manager } = setup(1600, 900, { userDataDir: dir });
+  const modePath = path.join(dir, 'browser-panel-mode.json');
+  manager.setAgentMode(true);
+  const before = fs.readFileSync(modePath, 'utf8');
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  assert.equal(fs.readFileSync(modePath, 'utf8'), before, '已 on 时 open 不应重写 mode 文件');
+});
+
+test('③ 阶段5 无 userDataDir 时 open 不炸（自动补开失败被吃掉，面板照常打开）', () => {
+  const { manager } = setup(1600, 900); // 无 userDataDir
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  assert.equal(manager.publicState().visible, true);
+  assert.equal(manager.publicState().agentMode, 'off');
 });
 
 test('③ destroy() → 主动清掉开关文件（不留残留给下一次会话）', () => {
