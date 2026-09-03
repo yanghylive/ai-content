@@ -14,6 +14,8 @@ export type WorkbenchStat = {
   label: string;
   value: string | number;
   tone?: "default" | "success" | "warning" | "danger" | "accent";
+  /** 传入后统计卡变为可点(跳转/联动列表筛选);不传保持纯展示 */
+  onClick?: () => void;
 };
 
 export type WorkbenchAction = {
@@ -152,14 +154,29 @@ export function WorkbenchCenter({
               className="mx-stat-grid"
               style={{ gridTemplateColumns: `repeat(${Math.min(stats.length, 4)}, 1fr)` }}
             >
-              {stats.slice(0, 4).map((stat) => (
-                <div key={stat.label} className="mx-stat-item mx-control">
-                  <div className="mx-stat-num" style={{ fontSize: 20 }}>
-                    <CountUpNumber value={stat.value} />
+              {stats.slice(0, 4).map((stat) =>
+                stat.onClick ? (
+                  <button
+                    key={stat.label}
+                    type="button"
+                    className="mx-stat-item mx-control"
+                    style={{ textAlign: "left", cursor: "pointer" }}
+                    onClick={stat.onClick}
+                  >
+                    <div className="mx-stat-num" style={{ fontSize: 20 }}>
+                      <CountUpNumber value={stat.value} />
+                    </div>
+                    <div className="mx-stat-label">{stat.label}</div>
+                  </button>
+                ) : (
+                  <div key={stat.label} className="mx-stat-item mx-control">
+                    <div className="mx-stat-num" style={{ fontSize: 20 }}>
+                      <CountUpNumber value={stat.value} />
+                    </div>
+                    <div className="mx-stat-label">{stat.label}</div>
                   </div>
-                  <div className="mx-stat-label">{stat.label}</div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           )}
           {statsNote ? (
@@ -306,11 +323,8 @@ export function WorkbenchCenter({
           >
             {stats.map((stat) => {
               const tone = TONE_STYLES[stat.tone || "default"];
-              return (
-                <div
-                  key={stat.label}
-                  className="kaypal-v3-panel p-5"
-                >
+              const inner = (
+                <>
                   <p className="text-sm text-[var(--kaypal-v3-muted)]">
                     {stat.label}
                   </p>
@@ -320,6 +334,25 @@ export function WorkbenchCenter({
                   >
                     {stat.value}
                   </p>
+                </>
+              );
+              const cardCls =
+                "kaypal-v3-panel p-5 text-left transition";
+              return stat.onClick ? (
+                <button
+                  key={stat.label}
+                  type="button"
+                  onClick={stat.onClick}
+                  className={`${cardCls} cursor-pointer hover:border-[var(--kaypal-v3-accent)] hover:shadow-md`}
+                >
+                  {inner}
+                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[var(--kaypal-v3-muted)] transition group-hover:text-[var(--kaypal-v3-accent-ink)]">
+                    查看列表
+                  </span>
+                </button>
+              ) : (
+                <div key={stat.label} className={cardCls}>
+                  {inner}
                 </div>
               );
             })}
