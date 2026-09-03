@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Clock,
   Inbox,
   MessageSquare,
   RefreshCw,
+  Sparkles,
   UserCheck,
 } from "@/components/iconpark";
 import {
@@ -22,6 +23,10 @@ import {
   type InboxItem,
   type InboxView,
 } from "@/lib/api/interaction-inbox";
+import {
+  replyApi,
+  type ReplySuggestionItem,
+} from "@/lib/api/reply";
 import {
   localEngineApi,
   type InteractionTaskType,
@@ -66,6 +71,28 @@ function platformLabel(p: string): string {
 function statusLabel(s: string): string {
   return STATUS_LABEL[s] ?? s;
 }
+
+/* ===== AI 回复建议（方案 1：收件箱内联生成） ===== */
+type ReplyTone = "" | "friendly" | "formal" | "professional";
+
+const REPLY_TONE_OPTIONS: Array<{ key: ReplyTone; label: string }> = [
+  { key: "", label: "全部" },
+  { key: "friendly", label: "亲切" },
+  { key: "formal", label: "正式" },
+  { key: "professional", label: "专业" },
+];
+
+const TONE_LABEL: Record<string, string> = {
+  friendly: "亲切",
+  formal: "正式",
+  professional: "专业",
+};
+
+const TONE_COLOR: Record<string, string> = {
+  friendly: "var(--kaypal-v3-success)",
+  formal: "var(--kaypal-v3-purple)",
+  professional: "var(--kaypal-v3-amber)",
+};
 
 function timeAgo(iso: string | null): string {
   if (!iso) return "";
@@ -394,6 +421,14 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
+  // AI 回复建议：内联生成状态（切换会话即重置）
+  const [tone, setTone] = useState<ReplyTone>("");
+  const [suggestions, setSuggestions] = useState<ReplySuggestionItem[]>([]);
+  const [suggestSource, setSuggestSource] = useState<"" | "ai" | "local">("");
+  const [suggestNotice, setSuggestNotice] = useState<string | null>(null);
+  const [suggestBusy, setSuggestBusy] = useState(false);
+  const [draftAdopted, setDraftAdopted] = useState(false);
+  const suggestReqRef = useRef(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -410,6 +445,75 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // 切换会话：清空建议区/采纳态，并使在途请求失效
+  useEffect(() => {
+    setTone("");
+    setSuggestions([]);
+    setSuggestSource("");
+    setSuggestNotice(null);
+    setSuggestBusy(false);
+    setDraftAdopted(false);
+    suggestReqRef.current += 1;
+  }, [threadKey]);
+
+  /** 生成回复建议：复用 /reply 的建议服务，输入取当前线程最新文本 */
+  const runSuggest = useCallback(
+    async (toneValue: ReplyTone) => {
+      const thread = detail?.thread;
+      const body = (thread?.latestBody ?? "").trim();
+      if (!thread || !body) return;
+      const reqId = ++suggestReqRef.current;
+      setSuggestBusy(true);
+      setSuggestNotice(null);
+      try {
+        const result = await replyApi.suggest({
+          comment: body,
+          tone: toneValue || undefined,
+        });
+        if (reqId !== suggestReqRef.current) return; // 会话已切换，丢弃过期响应
+        if (!result.suggestions || result.suggestions.length === 0) {
+          setSuggestions([]);
+          setSuggestSource("");
+          setSuggestNotice(result.message || "没有生成到合适建议，换个语气试试");
+          return;
+        }
+        setSuggestions(result.suggestions);
+        setSuggestSource(result.source ?? "ai");
+        setSuggestNotice(
+          result.source === "local"
+            ? result.fallbackMessage || "AI 暂不可用，已展示本地规则建议"
+            : null,
+        );
+      } catch (e) {
+        if (reqId !== suggestReqRef.current) return;
+        setSuggestions([]);
+        setSuggestSource("");
+        setSuggestNotice(toActionableError(e, "回复建议生成失败"));
+      } finally {
+        if (reqId === suggestReqRef.current) setSuggestBusy(false);
+      }
+    },
+    [detail],
+  );
+
+  /** 采纳建议：写入回复框并收起建议区（发送始终以回复框内容为准） */
+  const adoptSuggestion = (content: string) => {
+    suggestReqRef.current += 1;
+    setSuggestBusy(false);
+    setSuggestions([]);
+    setSuggestSource("");
+    setSuggestNotice(null);
+    setReplyText(content);
+  };
+
+  /** 采纳已有 AI 草稿 */
+  const adoptDraft = () => {
+    const draft = detail?.thread?.draftText;
+    if (!draft) return;
+    setDraftAdopted(true);
+    setReplyText(draft);
+  };
 
   const handleReply = async () => {
     const thread = detail?.thread;
@@ -429,6 +533,11 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
       });
       await localEngineApi.approveTask(task.id, { replyText: content });
       setReplyText("");
+      setSuggestions([]);
+      setSuggestSource("");
+      setSuggestNotice(null);
+      setDraftAdopted(false);
+      suggestReqRef.current += 1;
       await load();
     } catch (e) {
       setReplyError(toActionableError(e, "回复发送失败，请稍后重试"));
@@ -525,11 +634,20 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
 
       {/* 线索/CRM 关联 + 草稿 + 动作 */}
       <div className="border-t border-[var(--kaypal-v3-border)] px-5 py-3">
-        {thread.draftText && (
+        {thread.draftText && !draftAdopted && (
           <div className="mb-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)] p-3">
-            <p className="text-xs font-medium text-[var(--kaypal-v3-accent-ink)]">
-              回复草稿
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-medium text-[var(--kaypal-v3-accent-ink)]">
+                回复草稿
+              </p>
+              <button
+                type="button"
+                className="shrink-0 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent-border)] px-2 py-0.5 text-xs font-medium text-[var(--kaypal-v3-accent-ink)] transition hover:bg-[var(--kaypal-v3-paper)]"
+                onClick={adoptDraft}
+              >
+                采纳
+              </button>
+            </div>
             <p className="mt-1 text-sm text-[var(--kaypal-v3-ink)]">
               {thread.draftText}
             </p>
@@ -555,6 +673,128 @@ function ThreadDetail({ threadKey }: { threadKey: string }) {
           </div>
         </div>
         <div className="mt-3">
+          {/* 工具行：AI 生成回复 + 语气 */}
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <V2GhostButton
+              icon={Sparkles}
+              loading={suggestBusy}
+              disabled={suggestBusy || sending || !(thread.latestBody ?? "").trim()}
+              title={
+                (thread.latestBody ?? "").trim()
+                  ? undefined
+                  : "这条消息没有可引用的文本"
+              }
+              onClick={() => void runSuggest(tone)}
+              style={{ padding: "5px 12px", fontSize: 12 }}
+            >
+              {suggestBusy ? "AI 生成中…" : "AI 生成回复"}
+            </V2GhostButton>
+            <div className="flex flex-wrap items-center gap-1">
+              {REPLY_TONE_OPTIONS.map((opt) => {
+                const active = tone === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    disabled={suggestBusy}
+                    onClick={() => {
+                      setTone(opt.key);
+                      // 已有建议时切语气 = 按新语气重新生成（整体替换）
+                      if (suggestions.length > 0) void runSuggest(opt.key);
+                    }}
+                    className={`rounded-full border px-2.5 py-1 text-xs transition disabled:opacity-60 ${
+                      active
+                        ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]"
+                        : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-border-strong)]"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 建议区 */}
+          {suggestions.length > 0 && (
+            <div className="mb-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)] p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <p className="shrink-0 text-xs font-medium text-[var(--kaypal-v3-accent-ink)]">
+                    回复建议
+                  </p>
+                  <span
+                    className={`rounded-full px-1.5 text-[10px] font-medium leading-4 ${
+                      suggestSource === "local"
+                        ? "bg-[var(--kaypal-v3-amber-soft)] text-[var(--kaypal-v3-amber)]"
+                        : "bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)]"
+                    }`}
+                  >
+                    {suggestSource === "local" ? "规则建议" : "AI 生成"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  disabled={suggestBusy}
+                  onClick={() => void runSuggest(tone)}
+                  className="shrink-0 rounded-[var(--kaypal-v3-radius-sm)] px-1.5 py-0.5 text-xs text-[var(--kaypal-v3-accent-ink)] transition hover:bg-[var(--kaypal-v3-paper)] disabled:opacity-60"
+                >
+                  换一批
+                </button>
+              </div>
+              {suggestSource === "local" && suggestNotice && (
+                <p className="mt-1.5 text-[11px] text-[var(--kaypal-v3-amber)]">
+                  {suggestNotice}
+                </p>
+              )}
+              <div className="mt-2 flex flex-col gap-1.5">
+                {suggestions.map((s, i) => (
+                  <div
+                    key={`${s.tone}-${i}`}
+                    className="flex items-start gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2.5 py-2"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ background: TONE_COLOR[s.tone] ?? "var(--kaypal-v3-muted)" }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="text-[11px] font-medium"
+                        style={{ color: TONE_COLOR[s.tone] ?? "var(--kaypal-v3-muted)" }}
+                      >
+                        {TONE_LABEL[s.tone] ?? s.tone}
+                      </p>
+                      <p className="mt-0.5 text-xs leading-5 text-[var(--kaypal-v3-ink)]">
+                        {s.content}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent-border)] px-2 py-1 text-xs font-medium text-[var(--kaypal-v3-accent-ink)] transition hover:bg-[var(--kaypal-v3-accent-soft)]"
+                      onClick={() => adoptSuggestion(s.content)}
+                    >
+                      采纳
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 无建议时的行内提示（失败 / 空结果 / 降级） */}
+          {suggestions.length === 0 && suggestNotice && !suggestBusy && (
+            <p
+              className={`mb-2 text-xs ${
+                suggestSource === "local"
+                  ? "text-[var(--kaypal-v3-amber)]"
+                  : "text-[var(--kaypal-v3-muted)]"
+              }`}
+            >
+              {suggestNotice}
+            </p>
+          )}
+
           <V2Textarea
             placeholder="输入回复内容…（将自动发送）"
             value={replyText}
