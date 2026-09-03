@@ -391,6 +391,7 @@ export function AppShell({
                 className={`kx-rail-item${activeScene === scene.key ? " kx-active" : ""}`}
                 aria-label={`${scene.label}（按 ${i + 1}）`}
                 aria-current={activeScene === scene.key ? "page" : undefined}
+                title={`${scene.label} · 快捷键 ${i + 1}`}
                 onClick={() => router.push(scene.href)}
               >
                 {activeScene === scene.key ? (
@@ -422,6 +423,7 @@ export function AppShell({
             className={`kx-rail-item${activeScene === "agent" ? " kx-active" : ""}`}
             aria-label="助手"
             aria-current={activeScene === "agent" ? "page" : undefined}
+            title="助手（AI 对话）"
             onClick={() => router.push("/agent")}
           >
             {activeScene === "agent" ? (
@@ -432,7 +434,7 @@ export function AppShell({
                 transition={{ type: "tween", duration: 0.18, ease: "easeInOut" }}
               />
             ) : null}
-            <ShellIcon name="cpu" size={22} />
+            <ShellIcon name="botHead" size={22} />
             <span className="kx-rail-lbl">助手</span>
           </button>
           <button
@@ -440,6 +442,7 @@ export function AppShell({
             aria-label="我的"
             aria-current={activeScene === "mine" ? "page" : undefined}
             aria-expanded={settingsOpen}
+            title="我的（设置与账号）"
             onClick={() => setSettingsOpen((v) => !v)}
           >
             {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
