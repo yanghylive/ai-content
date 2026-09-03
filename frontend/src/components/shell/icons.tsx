@@ -1,5 +1,17 @@
 import React from "react";
 import {
+  Comments as IPComments,
+  Headset as IPHeadset,
+  History as IPHistory,
+  Message as IPMessage,
+  MessageEmoji as IPMessageEmoji,
+  MessageOne as IPMessageOne,
+  MessageSent as IPMessageSent,
+  RobotOne as IPRobotOne,
+  VolumeNotice as IPVolumeNotice,
+  Wechat as IPWechat,
+} from "@icon-park/react";
+import {
   Cpu,
   FileText,
   Home,
@@ -66,6 +78,45 @@ const PATHS = {
   message: <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />,
   messageSq: (
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  ),
+  chat: (
+    <>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <path d="M8 10h.01M12 10h.01M16 10h.01" />
+    </>
+  ),
+  chatRound: (
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  ),
+  wechatBubble: (
+    <>
+      <path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5v8a2.5 2.5 0 0 1-2.5 2.5H9l-5 4z" />
+      <path d="M8 9.5h.01M12 9.5h.01M16 9.5h.01" />
+    </>
+  ),
+  botHead: (
+    <>
+      <rect width="14" height="10" x="5" y="7" rx="3" />
+      <circle cx="9.5" cy="12" r="0.5" fill="currentColor" />
+      <circle cx="14.5" cy="12" r="0.5" fill="currentColor" />
+      <path d="M12 7V3M8 3h8" />
+    </>
+  ),
+  botSq: (
+    <>
+      <rect width="14" height="10" x="5" y="7" rx="3" />
+      <circle cx="9.5" cy="12" r="0.5" fill="currentColor" />
+      <circle cx="14.5" cy="12" r="0.5" fill="currentColor" />
+      <path d="M12 7V3M8 3h8" />
+      <path d="M2 19a3 3 0 0 0 3-3M22 19a3 3 0 0 1-3-3" />
+    </>
+  ),
+  replySq: (
+    <>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <path d="m9 10 3 3 3-3" />
+      <path d="M12 13V7" />
+    </>
   ),
   mic: (
     <>
@@ -316,11 +367,12 @@ const PATHS = {
 export type ShellIconName = keyof typeof PATHS;
 
 /** ShellIcon name → IconPark 组件映射（rail 高频面已切换，其余走自绘 PATHS 兜底） */
-const PARK_ICONS: Partial<Record<ShellIconName, React.ComponentType<{ size?: number; className?: string }>>> = {
+type ParkComp = React.ComponentType<{ size?: number; className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+const PARK_ICONS: Partial<Record<ShellIconName, ParkComp>> = {
   home: Home,
   users: People,
   fileText: FileText,
-  messageSq: Message,
+  messageSq: IPMessage,
   cpu: Cpu,
   phone: Phone,
   search: Search,
@@ -328,6 +380,14 @@ const PARK_ICONS: Partial<Record<ShellIconName, React.ComponentType<{ size?: num
   sun: Sun,
   moon: Moon,
   logout: Logout,
+  chat: IPMessageOne,
+  chatRound: IPMessage,
+  wechatBubble: IPWechat,
+  botHead: IPRobotOne,
+  botSq: IPHeadset,
+  replySq: IPMessageSent,
+  megaphone: IPVolumeNotice,
+  history: IPHistory,
 };
 
 export function ShellIcon({
