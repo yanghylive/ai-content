@@ -39,7 +39,7 @@ export const routeAliases: Record<string, string> = {
  
 export const routeBreadcrumbs: Record<string, BreadcrumbRoute> = {
   "/agent-workbench": { sectionTitle: "任务中心", title: "任务历史" },
-  "/apps/auto-acquisition": { sectionTitle: "增长获客", title: "自动获客应用", selectedKey: "/growth" },
+  "/apps/auto-acquisition": { sectionTitle: "增长获客", title: "自动获客应用", selectedKey: "/today" },
   "/admin/ai-employee": { sectionTitle: "应用与系统", title: "AI 员工", selectedKey: "/apps" },
   "/admin/commercial-readiness": { sectionTitle: "应用与系统", title: "商用检查", selectedKey: "/capabilities/risk" },
   "/admin/account": { sectionTitle: "设置", title: "账号与设备", selectedKey: "/capabilities/account" },

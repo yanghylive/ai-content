@@ -1,19 +1,10 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useEffect, useState } from "react";
-import { GrowthCenter } from "./growth-center";
-import { GrowthPageShell } from "./growth-page-shell";
-
+/**
+ * 双首页合并（2026-09-03 大王决策）：增长数据首页唯一化，统一入口为 /today。
+ * /growth 控制台（GrowthCenter）及其旧版 ?view= 子页体系已并入今日增长首页，
+ * 各增长子功能仍有独立路由（/growth/leads、/growth/acquisition …），本页仅兜底重定向。
+ */
 export default function GrowthPage() {
-  const [view, setView] = useState<string | null>(null);
-
-  useEffect(() => {
-    setView(new URLSearchParams(window.location.search).get("view"));
-  }, []);
-
-  // 无 view 参数 → v2 增长控制台；带 view → 对应的旧版子页（过渡）
-  if (view === null) {
-    return <GrowthCenter />;
-  }
-  return <GrowthPageShell view={view as never} />;
+  redirect("/today");
 }

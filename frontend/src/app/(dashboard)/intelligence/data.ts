@@ -804,7 +804,7 @@ export const intelligencePages: Record<
     primaryAction: "新增观察账号",
     primaryHref: "/intelligence/accounts",
     secondaryAction: "进入增长",
-    secondaryHref: "/growth",
+    secondaryHref: "/today",
     commandTitle: "找账号",
     commandPlaceholder:
       "输入行业、关键词或账号昵称，例如：本地生活老板 IP、AI 工具号",

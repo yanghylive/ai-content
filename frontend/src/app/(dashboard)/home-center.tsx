@@ -95,10 +95,10 @@ export function HomeCenter() {
         },
         {
           key: "growth",
-          title: "获客进展",
-          description: "今日获客和线索",
+          title: "今日增长",
+          description: "今日获客与线索总览",
           icon: TrendingUp,
-          href: "/growth",
+          href: "/today",
         },
       ]}
       advancedLinks={[

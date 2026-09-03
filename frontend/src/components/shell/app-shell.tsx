@@ -32,7 +32,6 @@ const SCENES: Array<{
   icon: ShellIconName;
 }> = [
   { key: "growth-home", href: "/today", label: "今日增长", icon: "home" },
-  { key: "growth", href: "/growth", label: "获客中心", icon: "target" },
   { key: "customer", href: "/crm", label: "客户管理", icon: "users" },
   { key: "content", href: "/content", label: "内容运营", icon: "fileText" },
   { key: "interaction", href: "/message", label: "互动中心", icon: "messageSq" },
@@ -43,13 +42,14 @@ const SCENES: Array<{
 /** 任意路径 → 所属场景（旧页面也能点亮正确的 rail 图标） */
 export function sceneOfPath(pathname: string): string {
   if (pathname === "/" || pathname.startsWith("/today")) return "growth-home";
-  // 获客中心：growth 全域 + 市场机会/情报（含报告归获客，Q2）
+  // 增长全域（/growth 控制台已并入 /today，2026-09-03 双首页合并）：
+  // growth 子功能 + 市场机会/情报全部归「今日增长」场景点亮同一导航项
   if (
     pathname.startsWith("/growth") ||
     pathname.startsWith("/intelligence") ||
     pathname.startsWith("/effects")
   )
-    return "growth";
+    return "growth-home";
   // 客户管理：CRM 客户/商机/导入/连接器/成交跟进
   if (
     pathname.startsWith("/crm") ||

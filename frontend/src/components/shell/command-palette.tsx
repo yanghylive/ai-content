@@ -16,7 +16,6 @@ type PaletteCommand = {
 const COMMANDS: PaletteCommand[] = [
   { cat: "今日增长", name: "今日增长 · 首页", icon: "home", tint: "kx-t-violet", href: "/today", kw: "today home 首页 待办 增长 增长首页" },
   { cat: "今日增长", name: "AI 助手 · 对话", icon: "messageSq", tint: "kx-t-slate", href: "/agent", kw: "agent ai 助手 对话 聊天" },
-  { cat: "获客中心", name: "获客中心", icon: "target", tint: "kx-t-violet", href: "/growth", kw: "growth 获客 中心 增长总览 工作台" },
   { cat: "获客中心", name: "找客户（新建获客）", icon: "briefcase", tint: "kx-t-slate", href: "/auto-acquisition/create", kw: "leads 获客 找客户 自动获客 新建" },
   { cat: "获客中心", name: "线索池", icon: "users", tint: "kx-t-slate", href: "/growth/leads", kw: "线索 意向 待处理" },
   { cat: "获客中心", name: "获客任务", icon: "cpu", tint: "kx-t-slate", href: "/growth/acquisition", kw: "自动获客 任务 执行" },
@@ -70,7 +69,7 @@ const COMMANDS: PaletteCommand[] = [
 const SCENE_NAME: Record<string, string> = {
   "/today": "今日增长",
   "/agent": "助手",
-  "/growth": "获客中心",
+  "/growth": "今日增长",
   "/growth/leads": "线索",
   "/crm": "客户管理",
   "/content": "内容运营",
@@ -98,7 +97,7 @@ function sceneOf(href: string) {
     base.startsWith("/device-center")
   )
     return "系统设置";
-  if (base.startsWith("/auto-acquisition") || base.startsWith("/growth") || base.startsWith("/intelligence") || base.startsWith("/engagement/comment-acquisition") || base.startsWith("/effects")) return "获客中心";
+  if (base.startsWith("/auto-acquisition") || base.startsWith("/growth") || base.startsWith("/intelligence") || base.startsWith("/engagement/comment-acquisition") || base.startsWith("/effects")) return "今日增长";
   if (base.startsWith("/crm") || base.startsWith("/customer") || base.startsWith("/boss-recruit") || base.startsWith("/wecom-crm")) return "客户管理";
   if (base.startsWith("/content") || base.startsWith("/materials") || base.startsWith("/distribution") || base.startsWith("/viral-analysis") || base.startsWith("/topics") || base.startsWith("/schedules") || base.startsWith("/knowledge-base") || base.startsWith("/styles")) return "内容运营";
   if (base.startsWith("/engagement") || base.startsWith("/message")) return "互动中心";

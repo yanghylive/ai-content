@@ -125,7 +125,7 @@ const scenarioOptions: ScenarioOption[] = [
     key: "growth",
     label: "增长获客",
     detail: "策略、线索、账号",
-    href: "/growth",
+    href: "/today",
     icon: Sparkles,
     monitorType: "growth",
     schedule: "0 10 * * *",

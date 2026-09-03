@@ -173,8 +173,8 @@ export function GrowthAccountHealthPage() {
       )}
 
       <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/growth")}>
-          返回增长控制台
+        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/today")}>
+          返回今日增长
         </V2GhostButton>
         <V2GhostButton icon={ShieldCheck} onClick={() => void fetchAccounts()}>
           重新检查

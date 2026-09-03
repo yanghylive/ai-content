@@ -561,4 +561,12 @@ export function GrowthMobileConsole({ view }: { view: string }) {
   );
 }
 
-export type { GrowthView } from "./growth-console";
+/** GrowthView 枚举已随桌面 GrowthConsole 退役（2026-09-03 双首页合并），收敛为本地联合。 */
+export type GrowthView =
+  | "overview"
+  | "acquisition"
+  | "strategies"
+  | "leads"
+  | "account-health"
+  | "reports"
+  | "workflows";
