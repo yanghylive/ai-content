@@ -24,7 +24,7 @@ import {
   BuildingTwo as ParkBuildingTwo,
   Calendar as ParkCalendar,
   Camera as ParkCamera,
-  Caution as ParkCaution,
+  Attention as ParkAttention,
   ChartHistogram as ParkChartHistogram,
   ChartLine as ParkChartLine,
   Check as ParkCheck,
@@ -124,7 +124,7 @@ import {
   Remind as ParkRemind,
   Right as ParkRight,
   Road as ParkRoad,
-  Robot as ParkRobot,
+  RobotOne as ParkRobotOne,
   Rocket as ParkRocket,
   Round as ParkRound,
   Rss as ParkRss,
@@ -231,7 +231,7 @@ function withPark(Park: React.ComponentType<React.ComponentProps<typeof ParkArro
 /* ---------- 233 个 lucide 同名单导出（线性 outline 主题） ---------- */
 export const Activity = withPark(ParkHeartbeat);
 export const AlertCircle = withPark(ParkInfo);
-export const AlertTriangle = withPark(ParkCaution);
+export const AlertTriangle = withPark(ParkAttention);
 export const AppWindow = withPark(ParkApplicationMenu);
 export const Archive = withPark(ParkFileCabinet);
 export const ArrowDown = withPark(ParkArrowDown);
@@ -250,7 +250,7 @@ export const Blocks = withPark(ParkAppSwitch);
 export const Bolt = withPark(ParkLightning);
 export const BookOpen = withPark(ParkBookOpen);
 export const BookOpenCheck = withPark(ParkBook);
-export const Bot = withPark(ParkRobot);
+export const Bot = withPark(ParkRobotOne);
 export const Braces = withPark(ParkCode);
 export const Briefcase = withPark(ParkBriefcase);
 export const BriefcaseBusiness = withPark(ParkBriefcase);
@@ -438,7 +438,7 @@ export const TimerReset = withPark(ParkTimer);
 export const Trash2 = withPark(ParkDelete);
 export const TrendingDown = withPark(ParkTrendingDown);
 export const TrendingUp = withPark(ParkTrendingUp);
-export const TriangleAlert = withPark(ParkCaution);
+export const TriangleAlert = withPark(ParkAttention);
 export const Upload = withPark(ParkUpload);
 export const UploadCloud = withPark(ParkCloudStorage);
 export const User = withPark(ParkUser);
