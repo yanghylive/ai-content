@@ -15,6 +15,10 @@
  */
 
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import {
+  isXiaohongshuAuthenticatedPage,
+  isXiaohongshuBackendUrl,
+} from './platform-login-rules';
 import { ConfigService } from '@nestjs/config';
 import { basename, join } from 'path';
 import { execFileSync, spawn, type ChildProcess } from 'child_process';
@@ -665,26 +669,13 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   }
 
   private isXiaohongshuBackendUrl(url: string): boolean {
-    return /creator\.xiaohongshu\.com\/new(?:[/?#]|$)/.test(url || '');
+    // 2026-09-04（阶段 5）：规则收敛到 platform-login-rules（面板模式共用，防双端漂移）
+    return isXiaohongshuBackendUrl(url);
   }
 
   private isXiaohongshuAuthenticatedPage(url: string, text: string): boolean {
-    const normalizedText = this.normalizePageText(text);
-    // 网页版（www.xiaohongshu.com，D 阶段验收）：登录用户有 发布/通知/消息/我
-    // 等账号工具栏；未登录出现 登录/注册/扫码。创作者后台独立判定。
-    if (/www\.xiaohongshu\.com/.test(url || '')) {
-      return (
-        !this.hasLoginPrompt('xiaohongshu', url, normalizedText) &&
-        /发布|通知|消息|我/.test(normalizedText) &&
-        !/登录后使用|立即登录/.test(normalizedText)
-      );
-    }
-    if (!this.isXiaohongshuBackendUrl(url)) return false;
-    if (this.isLoginLikeUrl(url)) return false;
-    if (this.hasLoginPrompt('xiaohongshu', url, normalizedText)) return false;
-    return /小红书创作服务平台|创作服务平台|笔记管理|发布笔记|数据中心|账号设置|服务市场|技能中心|蒲公英|素材中心/.test(
-      normalizedText,
-    );
+    // 2026-09-04（阶段 5）：规则收敛到 platform-login-rules（面板模式共用，防双端漂移）
+    return isXiaohongshuAuthenticatedPage(url, text);
   }
 
   private hasLoginPrompt(
