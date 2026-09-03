@@ -244,6 +244,8 @@ export class WechatAutoReceptionGuardService
     this.state.autoAcceptFriend = enabled === true;
     if (!this.state.autoAcceptFriend) {
       this.state.autoAcceptPlanId = null;
+      // 关闭时同步清掉上一次的提示，避免状态卡残留误导文案
+      delete this.lastReasons['auto-accept'];
     }
     await this.persistState();
     return { enabled: this.state.autoAcceptFriend };
