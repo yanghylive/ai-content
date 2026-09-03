@@ -582,6 +582,59 @@
 
 
 @layer components {
+  /* Ops 面板内 HeroUI Input/Select/Textarea 豁免(2026-09-03):全站字段主题把 label 外置+
+     input-wrapper 单框,与 HeroUI 自身 sm 内衬叠加会出现「双层」感。
+     .ops-form-scope 内统一紧凑单层外观:框即输入区、label 悬于框上。 */
+  .ops-form-scope [data-slot="input-wrapper"]:has([data-slot="input"]):not(
+      .\!bg-transparent
+    ) {
+    border: 1px solid var(--kaypal-v3-field-border) !important;
+    background: var(--kaypal-v3-paper) !important;
+    box-shadow: none !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    border-radius: 6px !important;
+    margin-top: 16px !important;
+    overflow: visible !important;
+    align-items: center !important;
+  }
+  .ops-form-scope [data-slot="input-wrapper"] > [data-slot="label"],
+  .ops-form-scope [data-slot="trigger"] > [data-slot="label"] {
+    top: -16px !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+    color: var(--kaypal-v3-soft-ink) !important;
+    font-weight: 600 !important;
+  }
+  .ops-form-scope [data-slot="input-wrapper"] > [data-slot="inner-wrapper"],
+  .ops-form-scope [data-slot="trigger"] > [data-slot="inner-wrapper"] {
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    align-items: center !important;
+  }
+  .ops-form-scope input[data-slot="input"],
+  .ops-form-scope textarea[data-slot="input"] {
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+  }
+  .ops-form-scope [data-slot="input-wrapper"]:hover,
+  .ops-form-scope [data-slot="input-wrapper"]:focus-within {
+    border-color: var(--kaypal-v3-accent) !important;
+    box-shadow: none !important;
+    background: var(--kaypal-v3-paper) !important;
+  }
+  .ops-form-scope textarea[data-slot="input"] {
+    padding-top: 8px !important;
+    line-height: 20px !important;
+  }
+  .ops-form-scope textarea[data-slot="input-wrapper"] {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
   select[tabindex="-1"][title=""] {
     position: absolute !important;
     width: 1px !important;
