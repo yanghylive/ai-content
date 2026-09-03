@@ -343,6 +343,109 @@ test('③ getUserDataDir 抛异常 → 读一律 off，写显式报错（不静�
   assert.throws(() => manager.setAgentMode(true), /userData/);
 });
 
+// ── 阶段 7 round11：tabs 主进程台账（panelView 恒 = active tab 视图）────────
+
+test('⑪ tabs new：台账 +1、active 指向新 view、panelView 换绑、新 tab 同 partition', () => {
+  const { manager, window } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  const firstWcId = manager.panelView.webContents.id;
+  const snap = manager.tabsOperation('new');
+  assert.equal(snap.tabs, 2);
+  assert.equal(snap.activeIndex, 1);
+  assert.equal(snap.url, 'about:blank'); // 新 tab = 空白页（对齐旧无头 newPage）
+  assert.notEqual(manager.panelView.webContents.id, firstWcId);
+  assert.equal(manager._panelTabs[0].view.webContents.id, firstWcId);
+  assert.equal(
+    manager._panelTabs[1].view.webPreferences.partition,
+    manager._panelTabs[0].view.webPreferences.partition,
+  );
+  // 会话 URL 跟 active 走（不许残留旧 tab 的 URL——自相矛盾证据）
+  assert.equal(manager.session.currentUrl, 'about:blank');
+  // 层级：active tab 在子视图列表、审批浮层置顶
+  assert.ok(window.children.includes(manager.panelView));
+});
+
+test('⑪ tabs switch：合法切换换绑 panelView + webContentsId 变；越界显式失败', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  manager.tabsOperation('new');
+  const secondWcId = manager.panelView.webContents.id;
+  const snap = manager.tabsOperation('switch', 0);
+  assert.equal(snap.activeIndex, 0);
+  assert.equal(manager.panelView.webContents.id, manager._panelTabs[0].view.webContents.id);
+  assert.notEqual(manager.panelView.webContents.id, secondWcId);
+  assert.equal(manager.publicState().tabActiveIndex, 0);
+  // 越界：显式失败（对齐 fail-closed，不静默 fallback pages[0]——与旧无头的差异交底）
+  assert.throws(() => manager.tabsOperation('switch', 5), /不存在/);
+  assert.throws(() => manager.tabsOperation('switch', -1), /不存在/);
+});
+
+test('⑪ tabs close：关后台 tab 修正 active 下标；关 active 落到相邻；最后一个不可关', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  const t0 = manager.panelView;
+  manager.tabsOperation('new'); // active=1
+  manager.tabsOperation('new'); // active=2，台账 3
+  // 关后台 tab 0：panelView 不变（仍是 active=2 的视图），active 下标左移
+  const activeBefore = manager.panelView.webContents.id;
+  const snap = manager.tabsOperation('close', 0);
+  assert.equal(snap.tabs, 2);
+  assert.equal(snap.activeIndex, 1);
+  assert.equal(manager.panelView.webContents.id, activeBefore);
+  assert.equal(t0.webContents._destroyed, true, '被关 tab 的 webContents 应被 close');
+  // 关 active（index=1）→ 落到相邻 0
+  const snap2 = manager.tabsOperation('close', 1);
+  assert.equal(snap2.activeIndex, 0);
+  assert.equal(manager._panelTabs.length, 1);
+  // 最后一个不可关（对齐旧无头 pages[0] 保护的动机：面板永远保留一个页面）
+  assert.throws(() => manager.tabsOperation('close', 0), /最后一个/);
+});
+
+test('⑪ tabs close 缺省 index = 关当前 active', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  const firstWcId = manager.panelView.webContents.id;
+  manager.tabsOperation('new'); // active=1（新 tab）
+  manager.tabsOperation('close'); // 缺省 → 关 active（新 tab）
+  assert.equal(manager._panelTabs.length, 1);
+  assert.equal(manager.panelView.webContents.id, firstWcId);
+});
+
+test('⑪ tabs 未打开面板 → 显式失败；未知 operation → 显式失败', () => {
+  const { manager } = setup(1600, 900);
+  assert.throws(() => manager.tabsOperation('new'), /未打开/);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  assert.throws(() => manager.tabsOperation('explode'), /未知/);
+});
+
+test('⑪ 后台 tab 的导航事件不得污染会话 currentUrl/status（多 tab 事件隔离）', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  manager.tabsOperation('new'); // active=1（新 tab）
+  const activeWc = manager.panelView.webContents;
+  const bgWc = manager._panelTabs[0].view.webContents;
+  // 后台 tab 触发导航：session 不动
+  bgWc.emit('did-navigate', null, 'http://evil.example/backdoor');
+  assert.notEqual(manager.session.currentUrl, 'http://evil.example/backdoor');
+  // active tab 触发导航：session 跟随
+  activeWc.emit('did-navigate', null, 'http://127.0.0.1:8080/active-page');
+  assert.equal(manager.session.currentUrl, 'http://127.0.0.1:8080/active-page');
+  assert.equal(manager.session.status, 'ready');
+});
+
+test('⑪ 换账号 → 台账全清（不留幽灵 view）；destroy 同样清台账', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  manager.tabsOperation('new');
+  assert.equal(manager._panelTabs.length, 2);
+  manager.open({ url: 'http://127.0.0.1:8080/y', ownerId: 'u2', tenantId: 't1' });
+  assert.equal(manager._panelTabs.length, 1, '账号切换 = 换登录态世界，台账重建为单 tab');
+  assert.equal(manager._activeTabIndex, 0);
+  manager.destroy();
+  assert.equal(manager._panelTabs.length, 0);
+  assert.equal(manager.panelView, null);
+});
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of tests) {

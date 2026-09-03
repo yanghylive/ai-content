@@ -84,6 +84,12 @@ class BrowserPanelManager {
     this.window = null;
     this.stripView = null;
     this.panelView = null;
+    // 阶段 7（round11）tabs：面板 tab 台账。panelView 恒等于 active tab 的视图
+    // （既有 resolvePanelTarget/panelWebContents/navigate 等方法因此零改动自动
+    // 作用于当前 tab）；台账项为 { view }，下标即 AiBrowserAction tabs.index。
+    /** @type {Array<{view: any}>} */
+    this._panelTabs = [];
+    this._activeTabIndex = 0;
     /** 审批浮层视图（本地受信；只在有待批动作时可见） */
     this.approvalView = null;
     /** 当前待批动作条数（决定浮层高度与可见性） */
@@ -189,13 +195,12 @@ class BrowserPanelManager {
     return Math.max(PANEL_MIN_WIDTH, Math.min(Math.floor(width), maxWidth));
   }
 
-  _createPanelView(partition) {
+  /**
+   * 创建一个面板 tab 视图（阶段 7 tabs 抽取：tab[0] 与 tabs.new 共用）。
+   * 只创建与接线，不动台账/panelView——调用方负责登记台账与置 active。
+   */
+  _spawnTabView(partition) {
     const { WebContentsView } = this._electron;
-    if (this.panelView && !this.panelView.webContents.isDestroyed()) {
-      // 账号/分区变了才重建视图；同分区复用保持登录态
-      if (this._partitionOf(this.panelView) === partition) return;
-      this._disposePanelView();
-    }
     const view = new WebContentsView({
       webPreferences: {
         contextIsolation: true,
@@ -212,8 +217,20 @@ class BrowserPanelManager {
     // 面板是新加的子视图 → 会盖在审批浮层之上，必须把浮层重新置顶
     this._bringApprovalToFront();
     this._wirePanelEvents(view);
-    this.panelView = view;
     view.setVisible(false);
+    return view;
+  }
+
+  _createPanelView(partition) {
+    if (this.panelView && !this.panelView.webContents.isDestroyed()) {
+      // 账号/分区变了才重建视图；同分区复用保持登录态
+      if (this._partitionOf(this.panelView) === partition) return;
+      this._disposePanelView();
+    }
+    const view = this._spawnTabView(partition);
+    this._panelTabs = [{ view }];
+    this._activeTabIndex = 0;
+    this.panelView = view;
   }
 
   /**
@@ -235,17 +252,27 @@ class BrowserPanelManager {
     return (this._panelPartitions && this._panelPartitions.get(view)) || null;
   }
 
+  /** 销毁全部面板 tab 视图（阶段 7 tabs：账号切换/destroy 必须清台账，不留幽灵 view） */
   _disposePanelView() {
-    if (!this.panelView) return;
-    try {
-      if (!this.panelView.webContents.isDestroyed()) {
-        this._knownWebContents.delete(this.panelView.webContents);
-        this.window.contentView.removeChildView(this.panelView);
-        this.panelView.webContents.close();
+    const views =
+      this._panelTabs && this._panelTabs.length
+        ? this._panelTabs.map((t) => t.view)
+        : this.panelView
+          ? [this.panelView]
+          : [];
+    for (const view of views) {
+      try {
+        if (!view.webContents.isDestroyed()) {
+          this._knownWebContents.delete(view.webContents);
+          this.window.contentView.removeChildView(view);
+          view.webContents.close();
+        }
+      } catch (error) {
+        this._logger.warn('[browser-panel] 面板视图销毁异常：', error && error.message);
       }
-    } catch (error) {
-      this._logger.warn('[browser-panel] 面板视图销毁异常：', error && error.message);
     }
+    this._panelTabs = [];
+    this._activeTabIndex = 0;
     this.panelView = null;
   }
 
@@ -253,6 +280,9 @@ class BrowserPanelManager {
     const wc = view.webContents;
     const push = (patch) => {
       if (!this.session) return;
+      // 阶段 7（round11）tabs：只有 active tab 的事件才更新会话状态——后台
+      // tab 的导航/加载不得污染 currentUrl/status（switch 后自然跟踪新 active）。
+      if (this.panelView && wc.id !== this.panelView.webContents.id) return;
       Object.assign(this.session, patch);
       this._emitState();
     };
@@ -330,7 +360,10 @@ class BrowserPanelManager {
   /** 面板关闭 = 隐藏视图，保留会话与登录态（文档 §3.1） */
   hide() {
     this._visible = false;
-    if (this.panelView) this.panelView.setVisible(false);
+    // 阶段 7 tabs：隐藏全部 tab 视图（不能只藏 active，否则后台 tab 残影）
+    for (const tab of this._panelTabs) {
+      if (tab.view && !tab.view.webContents.isDestroyed()) tab.view.setVisible(false);
+    }
     if (this.stripView) this.stripView.setVisible(false);
     // 阶段 6：面板收起 = 没有可操作的页面，待批卡片必须一起清空并隐藏，
     // 否则重开面板会看到一批已经过期（页面目标早变了）的陈旧卡片。
@@ -382,6 +415,113 @@ class BrowserPanelManager {
 
   reload() {
     if (this.panelView) this.panelView.webContents.reload();
+  }
+
+  // ---------- 面板 tabs（阶段 7 round11：AiBrowserAction tabs 桥接） ----------
+
+  /**
+   * tabs 动作主进程实现（Broker 的 Panel.tabs 伪 method 经 wiring 回调到这里）。
+   *
+   * 语义对齐旧无头路径（ai-browser-action.service.ts case 'tabs'）+ 两点收紧：
+   *  - new：新 tab = 空白页并置为 active（对齐 newPage()+bringToFront）；
+   *  - switch：index 越界**显式失败**（旧无头 fallback pages[0] 是静默降级，
+   *    面板模式 fail-closed）；
+   *  - close：index 缺省 = 关当前 active；越界显式失败；**最后一个 tab 不可关**
+   *    （对齐旧无头 pages[0] 保护的动机——面板永远保留一个页面；差异交底：
+   *    多 tab 时面板允许关最早开的 tab[0]，旧无头不允许）。
+   *
+   * @returns {{tabs:number, activeIndex:number, url:string|null}} 台账快照
+   * @throws 面板未打开 / 未知 operation / index 越界 / 关最后一个
+   */
+  tabsOperation(operation, index) {
+    if (!this.session || !this.panelView || this.panelView.webContents.isDestroyed()) {
+      throw new Error('浏览器面板未打开，tab 操作不可用');
+    }
+    const partition = this._partitionOf(this.panelView);
+    if (operation === 'new') {
+      const view = this._spawnTabView(partition);
+      // 立即加载 about:blank（对齐旧无头 newPage 的初始 URL）：新 view 不加载时
+      // getURL() 返回空串，broker resolveTarget 会回落到陈旧的 session.currentUrl
+      // （其他 tab 的 URL）——binding 直接撒谎。加载后 getURL()='about:blank' 自洽。
+      view.webContents.loadURL('about:blank');
+      this._panelTabs.push({ view });
+      this._setActiveTab(this._panelTabs.length - 1);
+      return this._tabSnapshot();
+    }
+    if (operation === 'switch') {
+      const i = Number(index);
+      if (!Number.isInteger(i) || i < 0 || i >= this._panelTabs.length) {
+        throw new Error(
+          `切换目标标签页不存在：index=${String(index)}（当前共 ${this._panelTabs.length} 个）`,
+        );
+      }
+      this._setActiveTab(i);
+      return this._tabSnapshot();
+    }
+    if (operation === 'close') {
+      const n = this._panelTabs.length;
+      if (n <= 1) throw new Error('不能关闭最后一个标签页（面板至少保留一个页面）');
+      const i = index == null ? this._activeTabIndex : Number(index);
+      if (!Number.isInteger(i) || i < 0 || i >= n) {
+        throw new Error(`关闭目标标签页不存在：index=${String(index)}（当前共 ${n} 个）`);
+      }
+      const closed = this._panelTabs[i];
+      this._panelTabs.splice(i, 1);
+      try {
+        this._knownWebContents.delete(closed.view.webContents);
+        this.window.contentView.removeChildView(closed.view);
+        closed.view.webContents.close();
+      } catch (error) {
+        this._logger.warn('[browser-panel] 标签页关闭异常：', error && error.message);
+      }
+      if (closed.view === this.panelView) {
+        // 关的是 active：active 落到相邻 tab（优先原位，末端则前移）
+        this._setActiveTab(Math.min(i, this._panelTabs.length - 1));
+      } else {
+        // 关的是后台 tab：panelView 不变，仅修正 active 下标
+        this._activeTabIndex = this._panelTabs.findIndex((t) => t.view === this.panelView);
+        this._emitState();
+      }
+      return this._tabSnapshot();
+    }
+    throw new Error(`未知的标签页操作：${String(operation)}`);
+  }
+
+  /** 置第 i 个 tab 为 active：切 panelView 引用 + 视图层级 + 会话 URL 同步 */
+  _setActiveTab(i) {
+    const prev = this.panelView;
+    this._activeTabIndex = i;
+    this.panelView = this._panelTabs[i].view;
+    if (prev && prev !== this.panelView && !prev.webContents.isDestroyed()) {
+      prev.setVisible(false);
+    }
+    // 层级：active tab 提到业务子视图顶端，审批浮层最后重新置顶
+    try {
+      this.window.contentView.removeChildView(this.panelView);
+      this.window.contentView.addChildView(this.panelView);
+    } catch {
+      /* 视图已销毁时忽略 */
+    }
+    this._bringApprovalToFront();
+    // 会话 URL 必须跟 active tab 走：新开/切到未加载的 tab 时 getURL() 为空，
+    // 回退 about:blank（否则 resolvePanelTarget 的 url 是旧 tab 的——自相矛盾证据）
+    if (this.session) {
+      this.session.currentUrl =
+        this.panelView.webContents.getURL() || 'about:blank';
+    }
+    this.relayout();
+    this._emitState();
+  }
+
+  _tabSnapshot() {
+    return {
+      tabs: this._panelTabs.length,
+      activeIndex: this._activeTabIndex,
+      url:
+        this.panelView && !this.panelView.webContents.isDestroyed()
+          ? this.panelView.webContents.getURL() || 'about:blank'
+          : null,
+    };
   }
 
   setWidth(width) {
@@ -468,6 +608,9 @@ class BrowserPanelManager {
         : null,
       canGoBack: !!(this.panelView && this.panelView.webContents.canGoBack()),
       canGoForward: !!(this.panelView && this.panelView.webContents.canGoForward()),
+      // 阶段 7 tabs：台账规模与 active 下标（冒烟/排障断言用；控制条 tab 条 UI 本轮未做）
+      tabCount: this._panelTabs.length,
+      tabActiveIndex: this._activeTabIndex,
       // ③：面板模式开关当前态（读文件，控制条按钮据此高亮）
       agentMode: this.getAgentMode(),
     };

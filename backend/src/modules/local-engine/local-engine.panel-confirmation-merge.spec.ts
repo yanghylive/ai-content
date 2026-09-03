@@ -175,13 +175,14 @@ describe('panelMethodForAction：只认已开通的写动作，其余 null', () 
     expect(panelMethodForAction('click')).toBe('Input.dispatchMouseEvent');
     expect(panelMethodForAction('type')).toBe('Input.insertText');
     expect(panelMethodForAction('press_key')).toBe('Input.dispatchKeyEvent');
+    // 阶段 7 round11：tabs 开通——主进程伪 method（非 CDP 命令）
+    expect(panelMethodForAction('tabs')).toBe('Panel.tabs');
   });
 
   it('只读 / 未开通 / 未知动作 → null（确认单指纹对不上 → 拒绝，不猜）', () => {
     expect(panelMethodForAction('extract')).toBeNull();
     expect(panelMethodForAction('screenshot')).toBeNull();
     expect(panelMethodForAction('wait')).toBeNull();
-    expect(panelMethodForAction('tabs')).toBeNull();
     expect(panelMethodForAction('不存在的动作')).toBeNull();
   });
 });

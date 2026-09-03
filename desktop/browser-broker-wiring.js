@@ -58,8 +58,11 @@ function wireBrowserPanel(deps) {
     deps.broker ||
     new BrowserPanelBroker({
       ...deps.brokerDeps,
-      // 视图事实源唯一：manager 当前面板 webContents
+      // 视图事实源唯一：manager 当前面板 webContents（多 tab 下 = active tab）
       webContentsResolver: () => manager.panelWebContents(),
+      // 阶段 7 round11：tabs 主进程实现——broker 的 Panel.tabs 伪 method 经此
+      // 回调 manager 原生台账（new/switch/close），审批闸门在 broker 侧先行。
+      tabsHandler: (operation, index) => manager.tabsOperation(operation, index),
     });
 
   /** @type {Map<string, {capabilityToken: string, ownerId: string, tenantId: string, signature: string}>} */

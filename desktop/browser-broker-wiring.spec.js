@@ -82,6 +82,45 @@ function setupHarness() {
   return { manager, wiring };
 }
 
+// ── 阶段 7 round11：tabsHandler 接线（Panel.tabs → manager.tabsOperation）──
+
+test('⑪ wiring 注入 tabsHandler：Panel.tabs 经 broker 闸门透传 manager.tabsOperation（含参数）', async () => {
+  const manager = makeFakeManager();
+  const tabCalls = [];
+  manager.tabsOperation = (operation, index) => {
+    tabCalls.push({ operation, index });
+    return { tabs: 2, activeIndex: 1, url: 'about:blank' };
+  };
+  const wiring = wireBrowserPanel({ manager });
+  const session = manager.openAs({ ownerId: 'user-a', tenantId: 'tenant-a' });
+  const actor = { ownerId: 'user-a', tenantId: 'tenant-a' };
+  const { actionId } = wiring.requestActionForAgent(
+    session.panelId, actor, 'Panel.tabs',
+    { label: '标签页操作', operation: 'new' },
+  );
+  wiring.approveActionAsOwner(session.panelId, actionId);
+  const out = await wiring.sendCDPForAgent(
+    session.panelId, actor, 'Panel.tabs',
+    { operation: 'new', index: undefined },
+    { approvedActionId: actionId },
+  );
+  assert.deepEqual(tabCalls, [{ operation: 'new', index: undefined }]);
+  assert.equal(out.result.tabs, 2, '台账快照经 result 回传（server 放行特例的 broker 层语义）');
+});
+
+test('⑪ wiring 后 Panel.tabs 无单仍被 broker 闸门拒绝（mutation 白名单生效）', async () => {
+  const manager = makeFakeManager();
+  const wiring = wireBrowserPanel({ manager });
+  const session = manager.openAs({ ownerId: 'user-a', tenantId: 'tenant-a' });
+  const actor = { ownerId: 'user-a', tenantId: 'tenant-a' };
+  await assert.rejects(
+    () => wiring.sendCDPForAgent(
+      session.panelId, actor, 'Panel.tabs', { operation: 'new' }, {},
+    ),
+    /需要审批/,
+  );
+});
+
 test('1) 跨 owner 拒绝：B 无法读/控制 A 的面板', async () => {
   const { manager, wiring } = setupHarness();
   const session = manager.openAs({

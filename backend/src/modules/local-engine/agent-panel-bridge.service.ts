@@ -70,6 +70,10 @@ export function panelMethodForAction(action: string): string | null {
       return 'Input.insertText';
     case 'press_key':
       return 'Input.dispatchKeyEvent';
+    // 阶段 7 round11：tabs 走主进程伪 method（broker 的 tabsHandler → manager
+    // 原生 tab 台账，不经 CDP debugger）；loop 闸门按此指纹比对确认单。
+    case 'tabs':
+      return 'Panel.tabs';
     default:
       return null;
   }

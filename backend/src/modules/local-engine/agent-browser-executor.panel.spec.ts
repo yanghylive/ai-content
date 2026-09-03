@@ -976,7 +976,152 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(clampPanelWaitMs(999_999_999)).toBe(30_000);
   });
 
-  it('on + 暂不支持的动作（tabs）→ 显式失败，绝不偷偷走老路径', async () => {
+  // ── 阶段 7 续（第十一轮）：tabs（主进程伪 method Panel.tabs）────────────────
+
+  function makeTabsPanel(opts: {
+    state?: 'pending' | 'approved' | 'rejected';
+    snapshot?: { tabs: number; activeIndex: number; url: string | null };
+  }) {
+    const cdpCalls: Array<{
+      method: string;
+      params?: Record<string, unknown>;
+      actionId?: string | null;
+    }> = [];
+    const execute = jest.fn(
+      async (
+        _actor: unknown,
+        input: { method: string; params?: Record<string, unknown>; actionId?: string | null },
+      ) => {
+        cdpCalls.push({ ...input });
+        return {
+          binding: { webContentsId: 77, url: 'about:blank' },
+          method: input.method,
+          executed: true,
+          actionId: input.actionId ?? null,
+          // Panel.tabs 的 result = manager tab 台账快照（server 放行特例）
+          result: opts.snapshot ?? { tabs: 2, activeIndex: 1, url: 'about:blank' },
+        };
+      },
+    );
+    const requestAction = jest.fn(async () => ({
+      actionId: 'ticket-tabs',
+      binding: { webContentsId: 77, method: 'Panel.tabs' },
+    }));
+    const markApproved = jest.fn(async () => undefined);
+    const markRejected = jest.fn(async () => undefined);
+    const panel = makePanel({
+      status: () => ({ available: true, reason: 'ready' }),
+      execute,
+      requestAction,
+      markApproved,
+      markRejected,
+      ...(opts.state
+        ? {
+            actionState: async () => ({
+              actionId: 'ticket-1',
+              state: opts.state,
+              panelId: 'panel-1',
+              method: 'Panel.tabs',
+              approvedAt: opts.state === 'approved' ? Date.now() : null,
+            }),
+          }
+        : {}),
+    });
+    return { panel, execute, requestAction, markApproved, markRejected, cdpCalls };
+  }
+
+  it('⑪ tabs 无单 → 签语义级单（Panel.tabs 指纹 + operation/index 摘要），mutation 不执行', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeTabsPanel({});
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'tabs', operation: 'switch', index: 2 },
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('需用户确认后执行');
+    expect(out.message).toContain('面板标签页确认单 ticket-tabs');
+    expect(p.requestAction).toHaveBeenCalledWith(
+      ACTOR,
+      expect.objectContaining({
+        method: 'Panel.tabs',
+        summary: { label: '标签页操作', operation: 'switch', index: 2 },
+      }),
+    );
+    expect(p.cdpCalls.length).toBe(0);
+  });
+
+  it('⑪ tabs 带 approved 单 → Panel.tabs 全链执行（消耗单 + 台账快照进 message + binding 取新 active）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeTabsPanel({
+      state: 'approved',
+      snapshot: { tabs: 2, activeIndex: 0, url: 'https://kaypal.cn/a' },
+    });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'tabs', operation: 'switch', index: 0 },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(true);
+    expect(p.markApproved).toHaveBeenCalledWith('ticket-1');
+    expect(p.cdpCalls).toHaveLength(1);
+    expect(p.cdpCalls[0]).toMatchObject({
+      method: 'Panel.tabs',
+      actionId: 'ticket-1',
+      params: { operation: 'switch', index: 0 },
+    });
+    expect(out.message).toContain('面板标签页操作已执行（switch');
+    expect(out.message).toContain('共 2 个，active=0');
+    expect(out.message).toContain('确认单 ticket-1');
+    // binding = 执行后重新解析的 active tab（switch 后 webContentsId 变化）
+    expect(out.panelWebContentsId).toBe(77);
+  });
+
+  it('⑪ tabs 带 rejected 单 → markRejected 终态收口，mutation 不执行', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeTabsPanel({ state: 'rejected' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'tabs', operation: 'close', index: 1 },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('已被用户在面板中拒绝');
+    expect(out.message).not.toContain('需用户在桌面端批准');
+    expect(p.markRejected).toHaveBeenCalledWith('ticket-1');
+    expect(p.cdpCalls.length).toBe(0);
+  });
+
+  it('⑪ tabs 带 pending 单 → 停在需用户批准，不执行', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeTabsPanel({ state: 'pending' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'tabs', operation: 'new' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('需用户在桌面端批准');
+    expect(out.message).toContain('当前状态 pending');
+    expect(p.cdpCalls.length).toBe(0);
+  });
+
+  it('on + 暂不支持的动作（screenshot）→ 显式失败，绝不偷偷走老路径', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const legacy = makeLegacy();
     const exec = new AgentBrowserExecutor(
@@ -984,12 +1129,14 @@ describe('AgentBrowserExecutor 面板模式', () => {
       makePanel({ status: () => ({ available: true, reason: 'ready' }) }),
     );
     const out = await exec.execute({
-      action: { action: 'tabs', operation: 'new' },
+      action: { action: 'screenshot' },
       actor: ACTOR,
     });
     expect(out.ok).toBe(false);
-    expect(out.message).toContain('暂不支持动作 tabs');
-    expect(out.message).toContain('仅支持 extract / goto / click / type / press_key / wait');
+    expect(out.message).toContain('暂不支持动作 screenshot');
+    expect(out.message).toContain(
+      '仅支持 extract / goto / click / type / press_key / wait / tabs',
+    );
     expect(out.message).toContain('未回退');
     expect(legacy.calls.length).toBe(0);
   });

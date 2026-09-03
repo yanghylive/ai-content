@@ -812,6 +812,123 @@ test('⑧ 收紧：insertText / mouseReleased 不能借按键配对放行（无�
   );
 });
 
+// ── 阶段 7 round11：Panel.tabs（主进程伪 method，不走 CDP debugger）────────
+
+function setupTabs(tabsHandler) {
+  const wcs = new Map();
+  const broker = new BrowserPanelBroker({
+    webContentsResolver: (panelId) => wcs.get(panelId) || null,
+    ...(tabsHandler ? { tabsHandler } : {}),
+  });
+  const created = broker.createPanel({
+    panelId: 'panel-1',
+    sessionId: 'sess-1',
+    ownerId: 'user-a',
+    tenantId: 'tenant-a',
+    platform: 'general-web',
+  });
+  wcs.set('panel-1', fakeWebContents());
+  return { broker, wcs, created };
+}
+
+test('⑪ Panel.tabs 无单拒（mutation 闸门）', async () => {
+  const { broker, created } = setupTabs(() => ({ tabs: 2, activeIndex: 1, url: 'about:blank' }));
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Panel.tabs',
+      { operation: 'new' },
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑪ Panel.tabs approved → handler 调用参数对 + binding 取切后 active（fresh target）', async () => {
+  const calls = [];
+  const { broker, created, wcs } = setupTabs((operation, index) => {
+    calls.push({ operation, index });
+    // switch 后 manager 的 active tab 变了：模拟 resolver 拿到新 webContents
+    wcs.set('panel-1', fakeWebContents({ id: 202, url: 'http://127.0.0.1:9/tab-b' }));
+    return { tabs: 2, activeIndex: index, url: 'http://127.0.0.1:9/tab-b' };
+  });
+  const { actionId } = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Panel.tabs',
+    { label: '标签页操作', operation: 'switch', index: 1 },
+  );
+  broker.approveAction(actionId, created.capabilityToken, created.capabilityToken);
+  const done = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Panel.tabs',
+    { operation: 'switch', index: 1 }, { approvedActionId: actionId },
+  );
+  assert.deepEqual(calls, [{ operation: 'switch', index: 1 }]);
+  assert.equal(done.result.tabs, 2);
+  // binding 必须是执行后重新解析的 target（webContentsId/url = 新 active）
+  assert.equal(done.target.webContentsId, 202);
+  assert.equal(done.target.url, 'http://127.0.0.1:9/tab-b');
+  // 确认单一次性：重放拒绝
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Panel.tabs',
+      { operation: 'switch', index: 0 }, { approvedActionId: actionId },
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑪ Panel.tabs 非法 operation 拒（new/switch/close 之外）', async () => {
+  const { broker, created } = setupTabs(() => ({ tabs: 9, activeIndex: 0, url: null }));
+  const { actionId } = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Panel.tabs', { label: 'x' },
+  );
+  broker.approveAction(actionId, created.capabilityToken, created.capabilityToken);
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Panel.tabs',
+      { operation: 'explode' }, { approvedActionId: actionId },
+    ),
+    /operation 必须是 new\/switch\/close/,
+  );
+});
+
+test('⑪ Panel.tabs handler 未注入 → fail-closed 拒绝（不静默 no-op）', async () => {
+  const { broker, created } = setupTabs(null);
+  const { actionId } = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Panel.tabs', { label: 'x' },
+  );
+  broker.approveAction(actionId, created.capabilityToken, created.capabilityToken);
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Panel.tabs',
+      { operation: 'new' }, { approvedActionId: actionId },
+    ),
+    /未接线/,
+  );
+});
+
+test('⑪ Panel.tabs handler 抛错（越界/关最后一个）→ 动作失败透传（单已耗，语义与 CDP 失败一致）', async () => {
+  const { broker, created } = setupTabs((operation) => {
+    throw new Error('不能关闭最后一个标签页（面板至少保留一个页面）');
+  });
+  const { actionId } = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Panel.tabs', { label: 'x' },
+  );
+  broker.approveAction(actionId, created.capabilityToken, created.capabilityToken);
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Panel.tabs',
+      { operation: 'close', index: 0 }, { approvedActionId: actionId },
+    ),
+    /不能关闭最后一个标签页/,
+  );
+  // 单已耗：同单重试也拒（需重新签单——如实交底的语义）
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Panel.tabs',
+      { operation: 'close', index: 0 }, { approvedActionId: actionId },
+    ),
+    /需要审批/,
+  );
+});
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of tests) {

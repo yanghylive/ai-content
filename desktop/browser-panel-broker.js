@@ -30,6 +30,10 @@ const CDP_WHITELIST = new Set([
   // 2026-09-03（阶段 5）：导航——走 CDP 而非 wc.loadURL，保证"用户看到的
   // 那一次导航"与 Agent 触发的是同一条命令，且受同一审批闸门与事件流约束。
   'Page.navigate',
+  // 2026-09-03（阶段 7 round11）tabs：主进程伪 method——不走 CDP debugger，
+  // 经 tabsHandler 回调 manager.tabsOperation（台账原生多 tab 管理）。归入
+  // MUTATION（new/switch/close 都改变用户看到的页面），审批闸门与事件流全复用。
+  'Panel.tabs',
 ]);
 
 const READONLY_METHODS = new Set([
@@ -78,6 +82,8 @@ const MUTATION_METHODS = new Set([
   'Input.dispatchKeyEvent',
   'Input.insertText',
   'Page.navigate',
+  // 阶段 7 round11：tabs 三种 operation 都改变用户所见的页面 → 一律按写动作审批
+  'Panel.tabs',
 ]);
 
 /**
@@ -142,6 +148,7 @@ class BrowserPanelBroker {
    *   webContentsResolver?: (panelId: string) => { id: number, url: string, debugger: { attach: Function, isAttached: Function, sendCommand: Function, detach: Function }, on: Function, setWindowOpenHandler: Function } | null,
    *   now?: () => number,
    *   tokenTtlMs?: number,
+   *   tabsHandler?: (operation: string, index: number|undefined) => { tabs: number, activeIndex: number, url: string|null },
    * }} [deps]
    */
   constructor(deps = {}) {
@@ -162,6 +169,9 @@ class BrowserPanelBroker {
     this._tokenTtlMs = deps.tokenTtlMs || 15 * 60 * 1000;
     /** 导航 origin 允许表（空白＝全部需确认单） */
     this._allowedOrigins = normalizeOrigins(deps.allowedOrigins);
+    // 阶段 7 round11：tabs 主进程实现回调（wiring 注入 manager.tabsOperation）。
+    // 未注入 = Panel.tabs fail-closed 拒绝（不静默降级为 no-op）。
+    this._tabsHandler = typeof deps.tabsHandler === 'function' ? deps.tabsHandler : null;
   }
 
   /** 当前导航 origin 允许表（只读副本，供上层展示/测试） */
@@ -337,6 +347,34 @@ class BrowserPanelBroker {
     const kind = isMutation ? 'action' : 'observe';
     this._emit(panelId, `${kind}.started`, { method, ...this._redactTarget(target) });
     try {
+      // 阶段 7 round11：tabs 主进程伪 method——不走 CDP debugger（broker 的
+      // debugger 是 target 级 session，Target.createTarget 等 browser 级命令
+      // 根本发不出去），改经 wiring 注入的 tabsHandler 回调 manager 原生台账。
+      // 审批单已在上方 mutation 闸门消耗（语义与 CDP 命令一致：单已耗、动作
+      // 失败 = Agent 收到错误，重试需重新签单）。
+      if (method === 'Panel.tabs') {
+        const operation = params && params.operation;
+        if (operation !== 'new' && operation !== 'switch' && operation !== 'close') {
+          throw new Error(
+            `Panel.tabs 参数非法：operation 必须是 new/switch/close，收到 ${String(operation)}`,
+          );
+        }
+        if (!this._tabsHandler) {
+          throw new Error('面板 tab 操作未接线（tabsHandler 未注入，fail-closed）');
+        }
+        const index = params && params.index != null ? Number(params.index) : undefined;
+        const outcome = await this._tabsHandler(operation, index);
+        // switch/new 后 active tab 已变：binding 必须重新解析——webContentsId/url
+        // 拿当前 active 的（旧 target 是切前的，直接回传会制造自相矛盾证据）。
+        const freshTarget = this.resolveTarget(panelId, capabilityToken);
+        const afterUrl = freshTarget ? freshTarget.url : target.url;
+        this._emit(panelId, `${kind}.completed`, {
+          method,
+          ...this._redactTarget(freshTarget || target),
+          afterUrl: redactUrlForEvidence(afterUrl),
+        });
+        return { result: outcome, target: freshTarget || target };
+      }
       if (!wc.debugger.isAttached()) {
         wc.debugger.attach('1.3');
       }

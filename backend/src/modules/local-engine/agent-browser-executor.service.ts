@@ -317,11 +317,17 @@ export class AgentBrowserExecutor {
       if (kind === 'wait') {
         return await this.waitViaPanel(action);
       }
+      // 5.85) 标签页：写动作——签单 → 用户批准 → 带单执行（主进程伪 method
+      //       Panel.tabs，manager 原生 tab 台账；switch 也签单：切换会改变用户
+      //       所见的页面，知情卡片合理）
+      if (kind === 'tabs') {
+        return await this.tabsViaPanel(action, actor, input.sessionId, input.actionId);
+      }
       // 6) 其余动作：面板桥还没开通，明确不支持（不许假装成功，也不许偷偷走老路径）
       return this.failed(
         kind,
-        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type / press_key / wait）；` +
-          `未执行、未回退（下一步 tabs——需扩展 CDP 白名单 Target 域 + manager 多 view 绑定，单独一轮做）`,
+        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type / press_key / wait / tabs）；` +
+          `未执行、未回退（下一步 screenshot——真机截图走 Page.captureScreenshot 白名单）`,
       );
     } catch (error) {
       const code =
@@ -788,6 +794,88 @@ export class AgentBrowserExecutor {
     return this.failed(
       'press_key',
       `需用户确认后执行（面板按键确认单 ${ticket.actionId}，key "${action.key}"，请在右侧浏览器面板批准后携带该 id 重试）`,
+      ticket.actionId,
+    );
+  }
+
+  /**
+   * 面板标签页（tabs）：一次批准 = 一次标签页操作。
+   *
+   * 语义对齐 `panelMethodForAction('tabs') = 'Panel.tabs'`（loop 闸门按这个
+   * method 比对确认单指纹）。Panel.tabs 是**主进程伪 method**——desktop 侧
+   * broker 的 CDP 通道是 webContents.debugger（target 级 session），
+   * Target.createTarget/closeTarget 等 browser 级命令发不出去，因此 tabs 走
+   * broker 的 tabsHandler 回调 manager 原生 tab 台账（new/switch/close），
+   * 审批闸门/事件流与 CDP 写动作完全同构。
+   *
+   * new/switch/close 三种都签单：switch 也改变用户所见的页面（页面突然切走
+   * 该让用户知情），不算 wait 那类骚扰卡。
+   *
+   * ⚠️ 语义差异交底：switch 越界显式失败（旧无头 fallback pages[0] 是静默
+   * 降级）；close 缺省关当前 active、最后一个 tab 不可关（多 tab 时允许关
+   * 最早开的 tab[0]，旧无头 pages[0] 永不可关——保护动机相同、语义更一致）。
+   */
+  private async tabsViaPanel(
+    action: Extract<AiBrowserAction, { action: 'tabs' }>,
+    actor: PanelBridgeActor,
+    sessionId?: string,
+    lockedActionId?: string,
+  ): Promise<AgentBrowserExecuteResult> {
+    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
+    const summary: Record<string, unknown> = { label: '标签页操作', operation: action.operation };
+    if (action.index != null) summary.index = action.index;
+    if (carried) {
+      const state = await this.panelBridge!.actionState(actor, carried);
+      if (state.state === 'approved') {
+        await this.markApprovalSafe('approved', carried);
+        const out = await this.panelBridge!.execute(actor, {
+          method: 'Panel.tabs',
+          params: { operation: action.operation, index: action.index },
+          actionId: carried,
+        });
+        // desktop 侧回传 tab 台账快照 {tabs, activeIndex, url}（Panel.tabs 是
+        // server result 过滤的放行特例）；取不到时退化为不含台账数的 message
+        const snap = (out.result ?? null) as
+          | { tabs?: number; activeIndex?: number; url?: string | null }
+          | null;
+        const snapNote =
+          snap && typeof snap === 'object'
+            ? `（共 ${snap.tabs ?? '?'} 个，active=${snap.activeIndex ?? '?'}${snap.url ? `，${snap.url}` : ''}）`
+            : '';
+        return {
+          index: 0,
+          action: 'tabs',
+          ok: true,
+          url: out.binding.url ?? undefined,
+          panelWebContentsId: out.binding.webContentsId,
+          panelSessionId: out.binding.sessionId,
+          confirmationId: carried,
+          message: `面板标签页操作已执行（${action.operation}${snapNote}，确认单 ${carried}）`,
+        };
+      }
+      if (state.state === 'rejected') {
+        await this.markApprovalSafe('rejected', carried);
+        return this.failed(
+          'tabs',
+          `面板模式：该标签页操作已被用户在面板中拒绝（确认单 ${carried}），未执行`,
+          carried,
+        );
+      }
+      return this.failed(
+        'tabs',
+        `面板模式：标签页操作需用户在桌面端批准（确认单 ${carried} 当前状态 ${state.state}）`,
+        carried,
+      );
+    }
+    // 没有确认单 → 先签一张语义级单（无 selector，无需探测）
+    const ticket = await this.panelBridge!.requestAction(actor, {
+      method: 'Panel.tabs',
+      summary,
+      sessionId: sessionId ?? null,
+    });
+    return this.failed(
+      'tabs',
+      `需用户确认后执行（面板标签页确认单 ${ticket.actionId}，operation "${action.operation}"，请在右侧浏览器面板批准后携带该 id 重试）`,
       ticket.actionId,
     );
   }

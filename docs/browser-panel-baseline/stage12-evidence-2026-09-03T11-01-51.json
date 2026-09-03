@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T11:01:51.817Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "scenario": "stage7 续：tabs 全链真机（Panel.tabs 审批闸门 + manager 台账 + 同页控制多 tab）"
+  },
+  "checks": [
+    {
+      "name": "S1 面板 open fixture A（真实 manager）",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:50184/page-a",
+        "status": "ready"
+      }
+    },
+    {
+      "name": "S2 Panel.tabs 无单 → 拒（mutation 闸门）",
+      "pass": true,
+      "detail": {
+        "error": "动作需要审批（先 requestAction 再携带 approvedActionId）：Panel.tabs"
+      }
+    },
+    {
+      "name": "S3 tabs new → 台账 2、active=1、panelView 换绑新 tab（空白页）",
+      "pass": true,
+      "detail": {
+        "snap": {
+          "tabs": 2,
+          "activeIndex": 1,
+          "url": "about:blank"
+        },
+        "panelWcId": 6,
+        "firstWcId": 5,
+        "currentUrl": "about:blank"
+      }
+    },
+    {
+      "name": "S4 新 tab goto B → active URL=B 且 evaluate #title=page-b-title（Agent 读的==用户看的）",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:50184/page-b",
+        "title": "page-b-title",
+        "bindingUrl": "about:blank"
+      }
+    },
+    {
+      "name": "S5 tabs switch 0 → active URL=A 且 evaluate #title=page-a-title（同页控制跨 tab 成立）",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:50184/page-a",
+        "title": "page-a-title"
+      }
+    },
+    {
+      "name": "S6 tabs close 1 → 台账 1、active 保持 tab0",
+      "pass": true,
+      "detail": {
+        "snap": {
+          "tabs": 1,
+          "activeIndex": 0,
+          "url": "http://127.0.0.1:50184/page-a"
+        },
+        "tabs": 1
+      }
+    },
+    {
+      "name": "S7 close 最后一个 → 抛错透传（单已耗）+ 同单重试拒（一次性）",
+      "pass": true,
+      "detail": {
+        "firstError": "不能关闭最后一个标签页（面板至少保留一个页面）",
+        "replayBlocked": true
+      }
+    },
+    {
+      "name": "S8 台账一致性：publicState tabCount=1 / tabActiveIndex=0 / currentUrl=A",
+      "pass": true,
+      "detail": {
+        "tabCount": 1,
+        "tabActiveIndex": 0,
+        "currentUrl": "http://127.0.0.1:50184/page-a"
+      }
+    }
+  ]
+}

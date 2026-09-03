@@ -205,7 +205,13 @@ async function startBrowserBridge(deps) {
         actionId: actionId ?? null,
         // 写动作只回执（+ 脱敏后的落地 URL），不回传原始 CDP 结果：
         // 避免把页面内容/凭据带回后端进程，写动作的证据走桌面端自有证据链。
-        result: MUTATION_METHODS.has(method) ? null : (out.result ?? null),
+        // 例外（阶段 7 round11）：Panel.tabs 的 result 是 tab 台账快照
+        // {tabs, activeIndex, url}——面板 UI 结构信息，非页面内容/凭据，
+        // 后端组装动作 message（"已切到第 N 个/共 M 个"）需要它。
+        result:
+          MUTATION_METHODS.has(method) && method !== 'Panel.tabs'
+            ? null
+            : (out.result ?? null),
       };
     },
     /** 待批确认单列表（供桌面端审批 UI / 排障查询；不含 token） */
