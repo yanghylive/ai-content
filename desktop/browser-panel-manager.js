@@ -309,9 +309,28 @@ class BrowserPanelManager {
       if (this.panelView && wc.id !== this.panelView.webContents.id) return;
       this._emitState();
     });
-    // 新窗口一律 deny 并回报（阶段 1 P0 已验证可观测；策略后续走确认外开）
+    // round17（对齐文档 3.1 第一选项）：新窗口进受控 tab——原 popup 一律 deny，
+    // 目标 URL 在面板内自动开新 tab 加载（受控：同 partition、Agent 审批链与
+    // 用户关闭权同等管辖，不外逃系统浏览器）。文档的「经明确确认后外开」
+    // 未实现前**不提供外开路径**（宁 deny 不外逃）。异常兜底回 popup-blocked。
     wc.setWindowOpenHandler((details) => {
-      this._sendToPanelOwner('browser-panel:popup-blocked', { url: details.url });
+      const url = details.url || '';
+      try {
+        const snapshot = this.tabsOperation('new');
+        const activeView = this.panelView;
+        if (!activeView || activeView.webContents.isDestroyed()) {
+          throw new Error('新 tab 视图不可用');
+        }
+        activeView.webContents.loadURL(url);
+        this._sendToPanelOwner('browser-panel:popup-opened-in-tab', {
+          url,
+          tabs: snapshot.tabs,
+          activeIndex: snapshot.activeIndex,
+        });
+      } catch (error) {
+        this._logger.warn('[browser-panel] popup 转受控 tab 失败：', error && error.message);
+        this._sendToPanelOwner('browser-panel:popup-blocked', { url, error: error && error.message });
+      }
       return { action: 'deny' };
     });
   }

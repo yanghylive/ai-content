@@ -242,7 +242,7 @@ test('状态机广播：导航成功→ready；主框架失败→error；渲染�
   assert.ok(received.includes('blocked'));
 });
 
-test('新 tab 一律拦截并回报（popup-blocked）', () => {
+test('新 tab 一律拦截并转受控 tab（round17：deny + popup-opened-in-tab，不外逃）', () => {
   const { manager, tabManager } = setup();
   const events = [];
   tabManager.sendToBusiness = (channel, payload) => {
@@ -252,7 +252,9 @@ test('新 tab 一律拦截并回报（popup-blocked）', () => {
   manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
   const handler = manager.panelWebContents()._openHandler;
   assert.equal(handler({ url: 'https://evil/x' }).action, 'deny');
-  assert.ok(events.some(([c]) => c === 'browser-panel:popup-blocked'));
+  // round17 语义升级：不再只 deny+回报 blocked，而是 deny 原窗口 + 面板内受控 tab 打开
+  assert.ok(events.some(([c]) => c === 'browser-panel:popup-opened-in-tab'));
+  assert.ok(!events.some(([c]) => c === 'browser-panel:popup-blocked'), '正常路径无 blocked 回报');
 });
 
 test('isStripSender：只认控制条视图', () => {
@@ -517,6 +519,44 @@ test('⑮ page-title-updated：active 刷新 tabList；后台不广播（active-
   activeWc.emit('page-title-updated', null, '前台标题');
   assert.equal(emits, emitsBefore + 1, 'active 标题变化触发广播');
   assert.equal(manager.publicState().tabList[1].title, '前台标题');
+});
+
+// ===== ⑯ popup 转受控 tab（round17）：deny 原 popup + 面板内自动开 tab =====
+test('⑯ windowOpenHandler：popup URL 转 panels 内受控新 tab（deny + loadURL + 事件回报）', () => {
+  const { manager, tabManager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/a', ownerId: 'u1', tenantId: 't1' });
+  const sent = [];
+  tabManager.sendToBusiness = (channel, payload) => { sent.push({ channel, payload }); return true; };
+  const wc = manager.panelView.webContents;
+  assert.equal(typeof wc._openHandler, 'function', 'handler 已注册');
+  const decision = wc._openHandler({ url: 'http://127.0.0.1:8080/popup-target' });
+  assert.deepEqual(decision, { action: 'deny' }, '原 popup 一律 deny');
+  // 新 tab 已创建并成为 active，目标 URL 已加载进受控 tab
+  assert.equal(manager._panelTabs.length, 2);
+  assert.equal(manager.panelView.webContents.getURL(), 'http://127.0.0.1:8080/popup-target');
+  // fake loadURL 不触发事件链——模拟真实导航完成事件后 session.currentUrl 跟进
+  manager.panelView.webContents.emit('did-navigate', null, 'http://127.0.0.1:8080/popup-target');
+  assert.equal(manager.session.currentUrl, 'http://127.0.0.1:8080/popup-target');
+  const evt = sent.find((s) => s.channel === 'browser-panel:popup-opened-in-tab');
+  assert.ok(evt, '回报 popup-opened-in-tab');
+  assert.equal(evt.payload.url, 'http://127.0.0.1:8080/popup-target');
+  assert.equal(evt.payload.tabs, 2);
+});
+
+test('⑯ windowOpenHandler：转 tab 异常 → 兜底 popup-blocked 回报且仍 deny（不外逃）', () => {
+  const { manager, tabManager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/a', ownerId: 'u1', tenantId: 't1' });
+  const sent = [];
+  tabManager.sendToBusiness = (channel, payload) => { sent.push({ channel, payload }); return true; };
+  const orig = manager.tabsOperation.bind(manager);
+  manager.tabsOperation = () => { throw new Error('boom'); };
+  const wc = manager.panelView.webContents;
+  const decision = wc._openHandler({ url: 'http://127.0.0.1:8080/popup-x' });
+  assert.deepEqual(decision, { action: 'deny' });
+  const evt = sent.find((s) => s.channel === 'browser-panel:popup-blocked');
+  assert.ok(evt, '兜底回报 popup-blocked');
+  assert.equal(evt.payload.error, 'boom');
+  manager.tabsOperation = orig;
 });
 
 (async () => {
