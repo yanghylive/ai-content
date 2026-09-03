@@ -102,7 +102,7 @@ export default function MessageScene() {
               }
             : undefined
         }
-        cards={INTERACTION_CHANNELS.map((ch) => ({
+        cards={INTERACTION_CHANNELS.filter((ch) => ch.key !== "inbox").map((ch) => ({
           icon: ch.icon,
           tint: ch.tint,
           title: ch.title,
