@@ -141,7 +141,7 @@ export default function EffectsPage() {
         </div>
         <Link
           href="/intelligence/reports"
-          className="kx-btn-primary shrink-0"
+          className="kx-btn kx-btn-primary shrink-0"
           style={{ fontSize: 13, padding: "8px 16px", textDecoration: "none" }}
         >
           报告中心
@@ -382,7 +382,7 @@ export default function EffectsPage() {
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
             <button
               type="button"
-              className="kx-btn-primary"
+              className="kx-btn kx-btn-primary"
               style={{ fontSize: 12, padding: "9px 16px", borderRadius: 999, border: "none", cursor: "pointer" }}
               onClick={() => router.push("/content")}
             >
@@ -390,7 +390,7 @@ export default function EffectsPage() {
             </button>
             <button
               type="button"
-              className="kx-btn-primary"
+              className="kx-btn kx-btn-primary"
               style={{
                 fontSize: 12, padding: "9px 16px", borderRadius: 999, cursor: "pointer",
                 background: "var(--kaypal-v3-paper-soft)", backgroundImage: "none",

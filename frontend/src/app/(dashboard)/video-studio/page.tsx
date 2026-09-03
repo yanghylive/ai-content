@@ -54,7 +54,7 @@ export default function VideoStudioPage() {
               href={siteUrl}
               target="_blank"
               rel="noreferrer"
-              className="kx-btn-primary"
+              className="kx-btn kx-btn-primary"
               style={{
                 display: "flex",
                 alignItems: "center",

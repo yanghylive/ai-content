@@ -307,7 +307,7 @@ export function WorkbenchCenter({
           (primaryAction.href ? (
             <Link
               href={primaryAction.href}
-              className="kx-btn-primary inline-flex items-center gap-2 px-6 py-3 text-base font-semibold"
+              className="kx-btn kx-btn-primary"
             >
               {primaryAction.label}
               <ArrowRight className="h-5 w-5" />
@@ -317,7 +317,7 @@ export function WorkbenchCenter({
               type="button"
               disabled={primaryAction.loading}
               onClick={primaryAction.onClick}
-              className="kx-btn-primary inline-flex items-center gap-2 px-6 py-3 text-base font-semibold disabled:opacity-60"
+              className="kx-btn kx-btn-primary disabled:opacity-60"
             >
               {primaryAction.label}
             </button>
