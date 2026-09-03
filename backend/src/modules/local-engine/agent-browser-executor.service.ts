@@ -681,9 +681,10 @@ export class AgentBrowserExecutor {
    *     （broker _consumeApproval 的 method 组匹配放行）；
    *  2. Input.insertText——走 broker 配对通道放行（一次性，免坐标）。
    *
-   * ⚠️ 语义差异交底：CDP insertText 是"拟真键入"（React onChange 等事件链
-   * 完整），**不清空输入框已有内容**（追加式）；旧无头路径是 Playwright
-   * fill()（清空后设值）。需要清空时上层应显式发清空动作（后续轮次议）。
+   * ⚠️ 语义（2026-09-04 round17 起替换式）：聚焦后先清空输入框
+   *   （Runtime.evaluate + execCommand selectAll/delete，免单通道但隶属
+   *   确认单语义），再 Input.insertText——对齐引擎模式 Playwright fill()
+   *   的"清空后设值"，消除追加式语义漂移。
    */
   private async typeViaPanel(
     action: Extract<AiBrowserAction, { action: 'type' }>,
@@ -711,6 +712,21 @@ export class AgentBrowserExecutor {
           method: 'Input.dispatchMouseEvent',
           params: { type: 'mousePressed', x: probe.x, y: probe.y, button: 'left', clickCount: 1 },
           actionId: carried,
+        });
+        // 第 1.5 步（2026-09-04 round17，对齐文档 fill_form 替换式语义）：
+        //   清空输入框——旧实现是追加式（insertText 不清空），与引擎模式
+        //   Playwright fill()（清空后设值）语义漂移。聚焦后 execCommand
+        //   selectAll+delete 拟真清空（触发 input/onChange 事件链）；仅对
+        //   输入类元素生效，非输入元素跳过（保持原行为）。
+        //   交底：Runtime.evaluate 走免单 readonly 通道，但此调用逻辑上
+        //   隶属于已批准的 type 确认单语义（清空是"输入"的一部分）。
+        await this.panelBridge!.execute(actor, {
+          method: 'Runtime.evaluate',
+          params: {
+            expression:
+              "(() => { const el = document.activeElement; if (!el || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA' && !el.isContentEditable)) return false; el.focus(); document.execCommand('selectAll', false, null); document.execCommand('delete', false, null); return true; })()",
+            returnByValue: true,
+          },
         });
         // 第二步：插入文本（配对通道，不再签单）
         await this.panelBridge!.execute(actor, {

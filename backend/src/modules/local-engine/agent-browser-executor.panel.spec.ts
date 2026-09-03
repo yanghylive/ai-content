@@ -770,6 +770,31 @@ describe('AgentBrowserExecutor 面板模式', () => {
     });
   });
 
+  it('⑦ round17 防回归：type 聚焦后先清空（Runtime.evaluate execCommand delete）再 insertText，顺序正确', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeClickPanel({ state: 'approved' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'type', selector: '#kw', text: 'hello panel' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(true);
+    // 批准后先 probe 重解析（Runtime.evaluate）→ 聚焦 pressed → 清空 evaluate → insertText
+    const methods = p.cdpCalls.map((c) => c.method);
+    expect(methods[methods.length - 3]).toBe('Input.dispatchMouseEvent');
+    expect(methods[methods.length - 2]).toBe('Runtime.evaluate');
+    expect(methods[methods.length - 1]).toBe('Input.insertText');
+    // 清空表达式必须包含 execCommand selectAll+delete（拟真清空，触发 onChange）
+    const evaluateCalls = p.cdpCalls.filter((c) => c.method === 'Runtime.evaluate');
+    const clearExpr = String(evaluateCalls[evaluateCalls.length - 1]?.params?.expression ?? '');
+    expect(clearExpr).toContain("execCommand('selectAll'");
+    expect(clearExpr).toContain("execCommand('delete'");
+  });
+
   it('⑦ type 带 rejected 单 → markRejected 终态收口，mutation 不执行', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const p = makeClickPanel({ state: 'rejected' });
