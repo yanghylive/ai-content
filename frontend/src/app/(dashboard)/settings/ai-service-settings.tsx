@@ -19,6 +19,11 @@ import {
   type KaypalModelSyncStatus,
 } from "@/lib/api/settings";
 import { SkeletonList } from "@/components/skeleton";
+import {
+  isModelListUnavailable,
+  isSessionAuthIssue,
+  describeSyncError,
+} from "@/lib/kaypal-sync-error";
 
 const emptyDefaults: DefaultModels = {
   articleCreation: "",
@@ -53,11 +58,6 @@ const defaultServiceFields: Array<{
     description: "整理采集内容时使用",
   },
 ];
-
-function isAuthorizationIssue(value: unknown) {
-  const message = value instanceof Error ? value.message : String(value || "");
-  return /未登录|unauthorized|授权|过期|失效|401/i.test(message);
-}
 
 function getStatusMessage(status: KaypalModelSyncStatus | null) {
   if (!status) return "正在读取账号中的 AI 服务状态。";
@@ -124,11 +124,7 @@ export function AiServiceSettings({
       setSyncError("");
     } catch (error) {
       setSyncStatus(null);
-      setSyncError(
-        isAuthorizationIssue(error)
-          ? "账号授权已失效，请重新登录后再同步。"
-          : toPublicError(error, "AI 服务状态暂时无法读取，请重新加载。"),
-      );
+      setSyncError(describeSyncError(error));
     } finally {
       setStatusLoading(false);
     }
@@ -152,14 +148,12 @@ export function AiServiceSettings({
       });
       await loadConfiguration();
     } catch (error) {
-      const description = isAuthorizationIssue(error)
-        ? "账号授权已失效，请重新登录后再同步。"
-        : toPublicError(error, "AI 服务未同步，请重试。");
+      const description = describeSyncError(error);
       setSyncError(description);
       addToast({
         title: "AI 服务同步失败",
         description,
-        color: "danger",
+        color: isModelListUnavailable(error) ? "warning" : "danger",
       });
     } finally {
       setSyncing(false);
@@ -243,7 +237,14 @@ export function AiServiceSettings({
     );
   }
 
-  const authorizationFailed = isAuthorizationIssue(syncError);
+  const sessionAuthFailed = isSessionAuthIssue(syncError);
+  const listUnavailable = isModelListUnavailable(syncError);
+  const statusTone: "success" | "danger" | "warning" = syncStatus
+    ?.configured
+    ? "success"
+    : sessionAuthFailed
+      ? "danger"
+      : "warning";
 
   return (
     <div className="grid gap-5">
@@ -255,13 +256,7 @@ export function AiServiceSettings({
                 账号 AI 服务
               </h3>
               <Chip
-                color={
-                  syncStatus?.configured
-                    ? "success"
-                    : syncError
-                      ? "danger"
-                      : "warning"
-                }
+                color={statusTone}
                 size="sm"
                 variant="flat"
               >
@@ -274,12 +269,25 @@ export function AiServiceSettings({
                       : "待同步"}
               </Chip>
             </div>
-            <p className="mt-1 text-small text-default-600">
+            <p
+              className={`mt-1 text-small ${
+                sessionAuthFailed
+                  ? "font-medium text-danger-600"
+                  : listUnavailable
+                    ? "text-warning-700"
+                    : "text-default-600"
+              }`}
+            >
               {syncError || getStatusMessage(syncStatus)}
             </p>
+            {listUnavailable && syncStatus?.configured ? (
+              <p className="mt-0.5 text-tiny text-default-500">
+                当前默认 AI 服务（{syncStatus.defaultModel || "已同步"}）仍可用，无需处理即可继续生产。
+              </p>
+            ) : null}
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
-            {(authorizationFailed || !syncStatus) && syncError ? (
+            {sessionAuthFailed ? (
               <Button
                 as="a"
                 href="/login?reauth=1&next=%2Fsettings%3Ftab%3Dai"
@@ -287,6 +295,15 @@ export function AiServiceSettings({
                 variant="flat"
               >
                 重新登录
+              </Button>
+            ) : null}
+            {listUnavailable && !sessionAuthFailed ? (
+              <Button
+                as="a"
+                href="/login?reauth=1&next=%2Fsettings%3Ftab%3Dai"
+                variant="flat"
+              >
+                重新登录后重试
               </Button>
             ) : null}
             <Button

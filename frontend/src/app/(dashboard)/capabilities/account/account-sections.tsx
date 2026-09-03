@@ -13,6 +13,11 @@ import {
 } from "@/lib/api/auth";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
+import { settingsApi, type KaypalModelSyncStatus } from "@/lib/api/settings";
+import {
+  describeSyncError,
+  isSessionAuthIssue,
+} from "@/lib/kaypal-sync-error";
 import { SkeletonList } from "@/components/skeleton";
 
 function formatCredits(value?: number | null) {
@@ -167,6 +172,50 @@ export function KaypalAccountSections() {
   const [unlinkError, setUnlinkError] = React.useState<string | null>(null);
   const unlinkModal = useDisclosure();
 
+  // 默认 AI 服务就绪状态（只读；与「设置 → AI 服务」同一数据源）
+  const [aiModelStatus, setAiModelStatus] =
+    React.useState<KaypalModelSyncStatus | null>(null);
+  const [aiModelStatusState, setAiModelStatusState] = React.useState<
+    "loading" | "ready" | "unavailable"
+  >("loading");
+  const [aiSyncing, setAiSyncing] = React.useState(false);
+  const [aiSyncError, setAiSyncError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let alive = true;
+    settingsApi
+      .getKaypalModelStatus()
+      .then((status) => {
+        if (!alive) return;
+        setAiModelStatus(status);
+        setAiSyncError(null);
+        setAiModelStatusState("ready");
+      })
+      .catch(() => {
+        if (!alive) return;
+        setAiModelStatus(null);
+        setAiModelStatusState("unavailable");
+      });
+    return () => {
+      alive = false;
+    };
+  }, [reloadKey]);
+
+  /** 手动从 Kaypal 同步默认 AI 服务（仅当本地未配置/用户主动触发） */
+  const handleAiSync = React.useCallback(async () => {
+    setAiSyncing(true);
+    setAiSyncError(null);
+    try {
+      const result = await settingsApi.syncKaypalModel();
+      setAiModelStatus(result);
+      setAiModelStatusState("ready");
+    } catch (error) {
+      setAiSyncError(describeSyncError(error));
+    } finally {
+      setAiSyncing(false);
+    }
+  }, []);
+
   React.useEffect(() => {
     let alive = true;
     setLoading(true);
@@ -307,6 +356,83 @@ export function KaypalAccountSections() {
             >
               断开连接
             </Button>
+          </div>
+        </CardBody>
+      </Card>
+      {/* AI 服务就绪状态（2026-09-03）：本地默认 AI 服务可用性 + 内联同步 */}
+      <Card className="border-small border-divider bg-background shadow-sm">
+        <CardBody className="flex flex-wrap items-center justify-between gap-2 py-2">
+          <div className="flex flex-wrap items-center gap-2 text-tiny">
+            <Chip
+              size="sm"
+              variant="flat"
+              color={
+                aiModelStatusState === "loading"
+                  ? "default"
+                  : aiModelStatusState === "unavailable"
+                    ? "warning"
+                    : aiModelStatus?.configured
+                      ? "success"
+                      : "warning"
+              }
+            >
+              {aiModelStatusState === "loading"
+                ? "AI 服务检查中"
+                : aiModelStatusState === "unavailable"
+                  ? "AI 服务状态读取失败"
+                  : aiModelStatus?.configured
+                    ? "AI 服务已就绪"
+                    : aiSyncError
+                      ? "AI 服务同步未完成"
+                      : "AI 服务待同步"}
+            </Chip>
+            <span
+              className={
+                aiSyncError ? "text-warning-700" : "text-default-600"
+              }
+            >
+              {aiModelStatusState === "loading"
+                ? "正在读取默认 AI 服务…"
+                : aiModelStatusState === "unavailable"
+                  ? "无法读取 AI 服务状态，请稍后重试。"
+                  : aiModelStatus?.configured
+                    ? `当前默认服务：${aiModelStatus.defaultModel || "已同步"}，可直接用于内容生产。`
+                    : aiSyncError ||
+                      "尚未同步默认 AI 服务，可点击右侧按钮从 Kaypal 同步。"}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {isSessionAuthIssue(aiSyncError) ? (
+              <Button
+                as="a"
+                href="/login?reauth=1&next=%2Fcapabilities%2Faccount"
+                size="sm"
+                variant="flat"
+              >
+                重新登录
+              </Button>
+            ) : null}
+            {aiModelStatusState === "unavailable" ? (
+              <Button
+                size="sm"
+                variant="flat"
+                onPress={() => setReloadKey((k) => k + 1)}
+              >
+                重试
+              </Button>
+            ) : null}
+            {aiModelStatusState === "ready" &&
+            !aiModelStatus?.configured ? (
+              <Button
+                size="sm"
+                color="primary"
+                variant="flat"
+                isLoading={aiSyncing}
+                onPress={() => void handleAiSync()}
+              >
+                从账号同步
+              </Button>
+            ) : null}
           </div>
         </CardBody>
       </Card>
