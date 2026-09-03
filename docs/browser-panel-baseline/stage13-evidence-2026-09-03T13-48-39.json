@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T13:48:39.903Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "scenario": "stage7 续：screenshot 全链真机（免单 readonly + PNG 校验 + fresh binding + 事件流无数据）"
+  },
+  "checks": [
+    {
+      "name": "S1 面板 open fixture A（真实 manager）",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:63354/page-a",
+        "status": "ready"
+      }
+    },
+    {
+      "name": "S2 screenshot 无单直接执行 → 成功（readonly 免单通道，同 extract）",
+      "pass": true,
+      "detail": {
+        "dataLen": 20364
+      }
+    },
+    {
+      "name": "S3 PNG 魔数校验（base64 以 iVBORw0KGgo 开头）",
+      "pass": true,
+      "detail": {
+        "head": "iVBORw0KGgoAAAAN"
+      }
+    },
+    {
+      "name": "S4 截图尺寸合理（base64 > 5000 字符，1600x900 面板不可能小图）",
+      "pass": true,
+      "detail": {
+        "len": 20364
+      }
+    },
+    {
+      "name": "S5 goto B 后再截图 → 成功且 binding.url 含 page-b（fresh binding）",
+      "pass": true,
+      "detail": {
+        "targetUrl": "http://127.0.0.1:63354/page-b",
+        "dataLen": 20364
+      }
+    },
+    {
+      "name": "S6 连续两张截图均成功 + tabCount 保持 1（readonly 无台账副作用）",
+      "pass": true,
+      "detail": {
+        "len1": 20364,
+        "len2": 20364,
+        "tabs": 1
+      }
+    },
+    {
+      "name": "S7 事件流不含 base64 数据（readonly completed 只带 method+target）",
+      "pass": true,
+      "detail": {
+        "eventCount": 14,
+        "serializedLen": 2776
+      }
+    },
+    {
+      "name": "S8 面板销毁后截图 → 显式抛错（fail-closed，不回退）",
+      "pass": true,
+      "detail": {
+        "destroyed": true
+      }
+    }
+  ]
+}

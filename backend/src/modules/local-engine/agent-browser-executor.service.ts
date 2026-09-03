@@ -58,6 +58,9 @@ export type AgentBrowserExecuteResult = {
   message?: string;
   evidenceUrl?: string;
   extractText?: string;
+  /** 阶段 7 round12：面板截图（Page.captureScreenshot）的 PNG base64。
+   *  readonly 观察类免单（同 extract）；message/日志只报字节数不携带数据。 */
+  screenshotBase64?: string;
   /** P1（复查 2026-08-22）：动作执行后的真实页面 URL（导航回写用） */
   url?: string;
   /** 面板模式：待用户批准的面板确认单 id（与 AgentConfirmation 是两套，见交底） */
@@ -323,11 +326,19 @@ export class AgentBrowserExecutor {
       if (kind === 'tabs') {
         return await this.tabsViaPanel(action, actor, input.sessionId, input.actionId);
       }
+      // 5.9) 截图：readonly 观察类——免确认单直接执行（Page.captureScreenshot
+      //      已在 desktop 白名单 READONLY_METHODS）。免单理由同 extract/wait：
+      //      loop 观察循环高频截图，弹审批卡是纯骚扰；不改变页面、无写副作用。
+      //      交底差异：截图是全页视觉（可能含用户没点名的内容），敏感度高于
+      //      定向 extract——base64 只进 result 专用字段，message/日志不携带。
+      if (kind === 'screenshot') {
+        return await this.screenshotViaPanel(action, actor);
+      }
       // 6) 其余动作：面板桥还没开通，明确不支持（不许假装成功，也不许偷偷走老路径）
       return this.failed(
         kind,
-        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type / press_key / wait / tabs）；` +
-          `未执行、未回退（下一步 screenshot——真机截图走 Page.captureScreenshot 白名单）`,
+        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type / press_key / wait / tabs / screenshot）；` +
+          `未执行、未回退（阶段 7 八个动作已全部接通，出现本提示说明解析层产出了未登记的动作类型）`,
       );
     } catch (error) {
       const code =
@@ -512,6 +523,47 @@ export class AgentBrowserExecutor {
       x: typeof value.x === 'number' ? value.x : undefined,
       y: typeof value.y === 'number' ? value.y : undefined,
       text: typeof value.text === 'string' ? value.text : undefined,
+    };
+  }
+
+  /**
+   * 面板截图（screenshot）：readonly 观察类，免确认单（同 extract/probe）。
+   *
+   * 真机截图走 `Page.captureScreenshot`（desktop 白名单 READONLY_METHODS，
+   * broker/server 零改动）。免单理由：不改变页面、无写副作用；loop 观察循环
+   * 高频截图，弹审批卡是纯骚扰（wait 免单同理）。
+   * 交底差异：截图是全页视觉，可能捕获用户没点名的内容（侧边聊天、自动填充），
+   * 敏感度高于定向 extract——PNG base64 只进 result.screenshotBase64 专用字段，
+   * message/日志/事件只报字节数，不携带数据。
+   */
+  private async screenshotViaPanel(
+    action: Extract<AiBrowserAction, { action: 'screenshot' }>,
+    actor: PanelBridgeActor,
+  ): Promise<AgentBrowserExecuteResult> {
+    const out = await this.panelBridge!.execute(actor, {
+      method: 'Page.captureScreenshot',
+      params: { format: 'png' },
+    });
+    // readonly 调用桥会回传 CDP 结果：{ data: <png base64> }
+    const data = (out.result as { data?: unknown } | null | undefined)?.data;
+    if (typeof data !== 'string' || data.length === 0) {
+      return this.failed(
+        'screenshot',
+        '面板模式：截图失败：desktop 未返回图像数据（不回退到无头浏览器）',
+      );
+    }
+    const nameNote = action.name ? `（${action.name}）` : '';
+    return {
+      index: 0,
+      action: 'screenshot',
+      ok: true,
+      screenshotBase64: data,
+      url: out.binding.url ?? undefined,
+      panelWebContentsId: out.binding.webContentsId,
+      panelSessionId: out.binding.sessionId,
+      message:
+        `面板截图成功${nameNote}（PNG base64 ${data.length} 字符，` +
+        `webContents=${out.binding.webContentsId}）`,
     };
   }
 

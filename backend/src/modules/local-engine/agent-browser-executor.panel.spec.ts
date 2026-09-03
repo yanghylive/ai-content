@@ -50,6 +50,10 @@ function makePanel(stub: PanelBridgeStub) {
 
 const ACTOR = { ownerId: 'user-a', tenantId: 'tenant-a' };
 
+/** 最小 PNG base64（1x1 透明像素，iVBORw0KGgo 是 PNG 魔数开头） */
+const PNG_BASE64_MIN =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+
 describe('AgentBrowserExecutor 面板模式', () => {
   const original = process.env.KAYPAL_AGENT_PANEL_MODE;
   const originalModeFile = process.env.KAYPAL_BROWSER_PANEL_MODE_FILE;
@@ -1121,7 +1125,7 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(p.cdpCalls.length).toBe(0);
   });
 
-  it('on + 暂不支持的动作（screenshot）→ 显式失败，绝不偷偷走老路径', async () => {
+  it('on + 未登记的动作类型 → 显式失败，绝不偷偷走老路径', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const legacy = makeLegacy();
     const exec = new AgentBrowserExecutor(
@@ -1129,15 +1133,78 @@ describe('AgentBrowserExecutor 面板模式', () => {
       makePanel({ status: () => ({ available: true, reason: 'ready' }) }),
     );
     const out = await exec.execute({
-      action: { action: 'screenshot' },
+      action: { action: 'record_video' } as never,
       actor: ACTOR,
     });
     expect(out.ok).toBe(false);
-    expect(out.message).toContain('暂不支持动作 screenshot');
+    expect(out.message).toContain('暂不支持动作 record_video');
     expect(out.message).toContain(
-      '仅支持 extract / goto / click / type / press_key / wait / tabs',
+      '仅支持 extract / goto / click / type / press_key / wait / tabs / screenshot',
     );
     expect(out.message).toContain('未回退');
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  // ===== ⑫ screenshot（round12）：readonly 观察类免单，Page.captureScreenshot =====
+  function makeScreenshotPanel(opts: {
+    data?: string;
+    execute?: PanelBridgeStub['execute'];
+  }) {
+    const cdpCalls: { method: string; params: unknown; actionId?: string }[] = [];
+    const execute =
+      opts.execute ??
+      (async (_actor: unknown, input: { method: string; params: unknown; actionId?: string }) => {
+        cdpCalls.push({ method: input.method, params: input.params, actionId: input.actionId });
+        return {
+          binding: { panelId: 'panel-1', sessionId: 'sess-1', webContentsId: 42, url: 'https://kaypal.cn/page' },
+          method: input.method,
+          executed: true,
+          actionId: input.actionId ?? null,
+          result: { data: opts.data ?? PNG_BASE64_MIN },
+        };
+      });
+    return { panel: makePanel({ status: () => ({ available: true, reason: 'ready' }), execute } as PanelBridgeStub), cdpCalls };
+  }
+
+  it('⑫ on + screenshot → 免单直接执行（无 requestAction，Page.captureScreenshot png）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeScreenshotPanel({});
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'screenshot', name: '首页快照' },
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(true);
+    expect(out.screenshotBase64).toBe(PNG_BASE64_MIN);
+    // message 只报字节数，绝不携带 base64 数据
+    expect(out.message).toContain('PNG base64');
+    expect(out.message).not.toContain(PNG_BASE64_MIN);
+    expect(out.message).toContain('首页快照');
+    expect(out.panelWebContentsId).toBe(42);
+    expect(p.cdpCalls.length).toBe(1);
+    expect(p.cdpCalls[0].method).toBe('Page.captureScreenshot');
+    expect(p.cdpCalls[0].params).toEqual({ format: 'png' });
+    // 免单：不带 actionId（readonly 通道）
+    expect(p.cdpCalls[0].actionId).toBeUndefined();
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('⑫ on + screenshot 无数据返回 → 显式失败（不回退）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeScreenshotPanel({ data: '' });
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({ action: { action: 'screenshot' }, actor: ACTOR });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('截图失败');
+    expect(out.message).toContain('未返回图像数据');
     expect(legacy.calls.length).toBe(0);
   });
 
