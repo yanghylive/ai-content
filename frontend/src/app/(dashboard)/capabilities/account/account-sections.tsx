@@ -20,10 +20,13 @@ import {
 } from "@/lib/kaypal-sync-error";
 import { SkeletonList } from "@/components/skeleton";
 import {
+  Logout,
   RefreshCcw,
+  UserRoundCheck,
   UserRoundPlus,
 } from "@/components/iconpark";
 import {
+  V2DangerButton,
   V2GhostButton,
   V2PrimaryButton,
   V2StatusChip,
@@ -368,42 +371,47 @@ export function KaypalAccountSections() {
             "尚未同步默认 AI 服务，可点击右侧按钮从 Kaypal 同步。";
   return (
     <div className="grid gap-4">
-      <Card className="border-small border-divider bg-content1 shadow-sm">
-        <CardBody className="flex flex-wrap items-center justify-between gap-2 py-2">
-          <div className="flex flex-wrap items-center gap-2 text-tiny text-default-600">
-            <Chip size="sm" color="success" variant="flat">
-              Kaypal 已连接
-            </Chip>
-            {profile?.email ? (
-              <span className="break-all">账号：{profile.email}</span>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-2">
-            {unlinkError ? (
-              <span className="text-tiny text-danger">{unlinkError}</span>
-            ) : null}
-            <Button
-              as="a"
-              href="/login?reauth=1&next=%2Fcapabilities%2Faccount"
-              size="sm"
-              variant="flat"
-            >
-              重新连接
-            </Button>
-            <Button
-              size="sm"
-              variant="flat"
-              color="danger"
-              onPress={() => {
-                setUnlinkError(null);
-                unlinkModal.onOpen();
-              }}
-            >
-              断开连接
-            </Button>
-          </div>
-        </CardBody>
-      </Card>
+      {/* 账号连接状态（2026-09-03 V2 化）：Kaypal 账号连接信息 + 重连/断开 */}
+      <section className="kaypal-v3-panel flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+          <V2StatusChip tone="success">
+            <UserRoundCheck className="h-3.5 w-3.5" />
+            Kaypal 已连接
+          </V2StatusChip>
+          {profile?.email ? (
+            <span className="break-all text-sm text-[var(--kaypal-v3-soft-ink)]">
+              账号：{profile.email}
+            </span>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {unlinkError ? (
+            <span className="text-sm text-[var(--kaypal-v3-danger)]">
+              {unlinkError}
+            </span>
+          ) : null}
+          <V2GhostButton
+            onClick={() => {
+              window.location.assign(
+                "/login?reauth=1&next=%2Fcapabilities%2Faccount",
+              );
+            }}
+          >
+            重新连接
+          </V2GhostButton>
+          <V2DangerButton
+            icon={Logout}
+            loading={unlinking}
+            disabled={unlinking}
+            onClick={() => {
+              setUnlinkError(null);
+              unlinkModal.onOpen();
+            }}
+          >
+            {unlinking ? "断开中…" : "断开连接"}
+          </V2DangerButton>
+        </div>
+      </section>
       {/* AI 服务就绪状态（2026-09-03）：本地默认 AI 服务可用性 + 内联同步 */}
       <section className="kaypal-v3-panel flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
         <div className="flex min-w-0 flex-wrap items-center gap-2.5">
