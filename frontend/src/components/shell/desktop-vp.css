@@ -403,9 +403,9 @@
   .kx-btn-primary,
   .kx-chat-send,
   .kx-btn-sm-primary {
-    background: var(--kx-accent);
+    background: var(--kaypal-v3-gradient-primary, var(--kx-gold));
     color: #fff;
-    box-shadow: 0 1px 3px rgba(114, 46, 209, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    box-shadow: 0 1px 3px rgba(193, 129, 31, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   }
   /* 暗色：--kx-accent 提亮为亮紫（#b885f7），白字对比度不足 → 恢复加深后的主渐变 */
   html.dark .kx-btn-primary,
