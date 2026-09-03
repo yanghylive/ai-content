@@ -4,17 +4,16 @@ import { Children, cloneElement, isValidElement, useId } from "react";
 import type { ReactElement } from "react";
 
 /**
- * Rail 品牌图标（2026-09 定制 v4 · 方案 A 图形 · 去底色块）
+ * Rail 品牌图标（2026-09 v5 · 方案 A · 金渐变点亮 / 增强细节 / 去背景块）
  *
- * 迭代结论（综合多轮反馈 + 协调性审计）：
- * - 保留方案 A 的印章图形（数据柱 / 文档+笔 / 气泡+三点 / 任务块+勾 /
- *   平板+屏内容 / 星芒 / 人像），图形细节在方案对照时已被认可；
- * - 去掉图标下层的渐变方块章（激活与未激活都不画背景方块），
- *   只保留图形本身 —— 解决"背景色块不好看"；
- * - 激活态：图形主体填品牌渐变 #9254de → #531dab（与 logo / 指示条同款），
- *   图形内部细节（文字行、点、勾）反白，观感与印章一致但无方底；
- * - 未激活态：主体 currentColor 灰，细节半透明灰叠出层次；
- * - "当前选中"由 rail 左侧指示条 + 淡紫 pill 表达，图标不再叠整块紫色。
+ * 结论（经预览对照选定）：
+ * - 图形为"增加细节层次"增强版：趋势连线、领口 V、双层文字行、已读勾、
+ *   进度条、屏幕内容行、伴星中心点等第二层细节；
+ * - 无任何背景色块（激活/未激活都不画容器）；
+ * - 激活态：主体填品牌金渐变 #f0b45c → #c9811f（与桌面「磨砂紫金」
+ *   rail 金语言同族），内部细节反白；
+ * - 未激活态：主体 currentColor 灰，细节半透明灰叠层次；
+ * - 选中状态由左侧金色指示条 + 金色文字承担，图标点亮为金。
  */
 
 export type RailIconName =
@@ -27,117 +26,141 @@ export type RailIconName =
   | "assistant"
   | "mine";
 
-type Layer = {
-  /** 主体图形：激活 = 品牌渐变 / 未激活 = currentColor 灰 */
+type Soft = { el: ReactElement; o: number };
+
+type Glyph = {
+  /** 主体图形：激活 = 金渐变 / 未激活 = currentColor */
   main: ReactElement[];
-  /** 次要图形：同主体填充但降透明度（如并排第二人、伴星） */
-  soft?: ReactElement[];
-  /** 图形内部填充型细节（如文档文字行、气泡三点）：激活反白 */
-  cutFill?: ReactElement[];
-  /** 图形内部描边型细节（如执行勾、笔尖）：激活反白 */
-  cutStroke?: ReactElement[];
+  /** 内部细节：激活反白 / 未激活半透明灰 */
+  cut: ReactElement[];
+  /** 次要元素：叠加在主体后，带固定透明度 */
+  soft?: Soft[];
 };
 
-const GLYPHS: Record<RailIconName, Layer> = {
-  /* 今日增长：三根渐次抬升的数据柱 */
+const GLYPHS: Record<RailIconName, Glyph> = {
+  /* 今日增长：三根渐次抬升的柱 + 上升趋势线 + 端点 */
   growth: {
     main: [
-      <rect key="b1" x="6.3" y="12.2" width="2.6" height="5.6" rx="1.3" />,
-      <rect key="b2" x="10.7" y="9" width="2.6" height="8.8" rx="1.3" />,
-      <rect key="b3" x="15.1" y="6.4" width="2.6" height="11.4" rx="1.3" />,
+      <rect key="b1" x="5.9" y="13.4" width="2.4" height="4.6" rx="1.2" />,
+      <rect key="b2" x="9.7" y="10.2" width="2.4" height="7.8" rx="1.2" />,
+      <rect key="b3" x="13.5" y="7" width="2.4" height="11" rx="1.2" />,
+    ],
+    cut: [
+      <path
+        key="trend"
+        d="M6.7 12.2 10.5 9.4 14.3 6.8"
+        strokeWidth="1.1"
+      />,
+      <circle key="dot" cx="17" cy="6.1" r="1.1" />,
     ],
   },
 
-  /* 客户管理：人像 + 右后方第二人 */
+  /* 客户管理：主客 + 右后方第二人 + 领口 V */
   customer: {
     main: [
-      <path key="body" d="M5.2 20a6.8 6.8 0 0 1 13.6 0Z" />,
-      <circle key="head" cx="12" cy="8.2" r="3.15" />,
+      <path key="body" d="M5.4 19.6a6.2 6.2 0 0 1 12.4 0Z" />,
+      <circle key="head" cx="11.6" cy="9.4" r="3" />,
     ],
-    soft: [<circle key="second" cx="16.4" cy="6.9" r="2" />],
+    soft: [
+      { o: 0.5, el: <circle key="second" cx="16.2" cy="7.9" r="1.8" /> },
+    ],
+    cut: [
+      <path
+        key="collar"
+        d="M9.6 14.6 11.3 17.2 13 14.6"
+        strokeWidth="1.2"
+      />,
+    ],
   },
 
   /* 内容运营：文档 + 文字行 + 探出笔尖 */
   content: {
     main: [
-      <rect key="doc" x="6.6" y="5.8" width="10.8" height="12.6" rx="1.9" />,
+      <rect key="doc" x="6.8" y="5.2" width="10.4" height="13.6" rx="2" />,
     ],
-    cutFill: [
-      <rect key="l1" x="8.9" y="8.7" width="4.8" height="1.35" rx="0.67" />,
-      <rect key="l2" x="8.9" y="11.1" width="3.4" height="1.35" rx="0.67" />,
-    ],
-    cutStroke: [
-      <path
-        key="pen"
-        d="M11.6 17.7 16.2 13.1"
-        strokeWidth="2.1"
-        strokeLinecap="round"
-      />,
+    cut: [
+      <rect key="l1" x="9.1" y="8.4" width="5.4" height="1.3" rx="0.65" />,
+      <rect key="l2" x="9.1" y="11.1" width="3.8" height="1.3" rx="0.65" />,
+      <path key="pen" d="M12.4 17.4 16.6 13.2" strokeWidth="1.6" />,
     ],
   },
 
-  /* 互动中心：对话气泡 + 内部三点 */
+  /* 互动中心：气泡 + 三点 + 已读勾 */
   interaction: {
     main: [
-      <g key="bubble" transform="translate(1.2 2.1) scale(0.9)">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </g>,
-    ],
-    cutFill: [
-      <circle key="d1" cx="9.6" cy="12.4" r="0.95" />,
-      <circle key="d2" cx="12" cy="12.4" r="0.95" />,
-      <circle key="d3" cx="14.4" cy="12.4" r="0.95" />,
-    ],
-  },
-
-  /* 执行中心：任务块 + 完成勾 */
-  execution: {
-    main: [
-      <rect key="box" x="5.4" y="5.4" width="13.2" height="13.2" rx="4.2" />,
-    ],
-    cutStroke: [
       <path
-        key="check"
-        d="m9.6 12.3 2.5 2.5 4.6-4.8"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        key="bubble"
+        d="M19.6 11.9a7.6 7.6 0 0 1-7.6 7.6 8 8 0 0 1-3.4-.74L4.8 19.8l1.1-3.7a7.6 7.6 0 1 1 13.7-4.2Z"
       />,
     ],
+    cut: [
+      <circle key="d1" cx="9.3" cy="12.1" r="1.05" />,
+      <circle key="d2" cx="12" cy="12.1" r="1.05" />,
+      <circle key="d3" cx="14.7" cy="12.1" r="1.05" />,
+      <path key="read" d="M10.2 16.6c.6.8 1.3.9 1.9 1.5" strokeWidth="1.1" />,
+    ],
   },
 
-  /* 设备任务：平板 + 屏幕内容条 + 底部按钮点 */
+  /* 执行中心：任务卡 + 进度条 + 完成勾 */
+  execution: {
+    main: [
+      <path
+        key="card"
+        d="M6.5 4.8h11a1.7 1.7 0 0 1 1.7 1.7v11a1.7 1.7 0 0 1-1.7 1.7h-11a1.7 1.7 0 0 1-1.7-1.7v-11a1.7 1.7 0 0 1 1.7-1.7Z"
+      />,
+    ],
+    cut: [
+      <rect key="bar" x="7.8" y="8.6" width="6.4" height="1.1" rx="0.55" />,
+      <path key="check" d="m9.6 14.2 2.1 2 3.4-3.7" strokeWidth="1.6" />,
+    ],
+  },
+
+  /* 设备任务：平板 + 摄像头 + 屏幕内容行 */
   device: {
     main: [
-      <rect key="pad" x="6.5" y="5.4" width="11" height="13.2" rx="2.7" />,
+      <path
+        key="pad"
+        d="M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
+      />,
     ],
-    cutFill: [
-      <rect key="bar" x="9.7" y="8" width="4.6" height="1.2" rx="0.6" />,
-      <circle key="dot" cx="12" cy="16.2" r="1" />,
+    cut: [
+      <circle key="cam" cx="12" cy="7.3" r="0.8" />,
+      <rect key="r1" x="8.6" y="10.2" width="6.8" height="1.15" rx="0.57" />,
+      <rect key="r2" x="8.6" y="12.6" width="5.2" height="1.15" rx="0.57" />,
+      <rect key="r3" x="8.6" y="15" width="3.6" height="1.15" rx="0.57" />,
     ],
   },
 
-  /* 助手：四角主星 + 右上伴星 */
+  /* 助手：四角星 + 右上伴星 + 中心点 */
   assistant: {
     main: [
       <path
         key="star"
-        d="M12 5.8l1.8 4.4 4.4 1.8-4.4 1.8-1.8 4.4-1.8-4.4-4.4-1.8 4.4-1.8Z"
+        d="M12 5.4l1.9 4.7 4.7 1.9-4.7 1.9-1.9 4.7-1.9-4.7-4.7-1.9 4.7-1.9Z"
       />,
     ],
     soft: [
-      <path
-        key="spark"
-        d="m17.9 4.4.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6Z"
-      />,
+      {
+        o: 0.6,
+        el: (
+          <path
+            key="spark"
+            d="m17.6 3.6.55 1.5 1.5.55-1.5.55-.55 1.5-.55-1.5-1.5-.55 1.5-.55Z"
+          />
+        ),
+      },
     ],
+    cut: [<circle key="core" cx="12" cy="12" r="1" />],
   },
 
-  /* 我的：人像 */
+  /* 我的：人像 + 领口 V */
   mine: {
     main: [
-      <path key="body" d="M5.2 20a6.8 6.8 0 0 1 13.6 0Z" />,
-      <circle key="head" cx="12" cy="8.2" r="3.15" />,
+      <path key="body" d="M5.6 19.6a6.4 6.4 0 0 1 12.8 0Z" />,
+      <circle key="head" cx="12" cy="9.6" r="3.2" />,
+    ],
+    cut: [
+      <path key="collar" d="M9.7 15.4 11.4 18 13.1 15.4" strokeWidth="1.2" />,
     ],
   },
 };
@@ -152,8 +175,64 @@ function colorize(
   );
 }
 
+export function RailIcon({
+  name,
+  size = 22,
+  active = false,
+}: {
+  name: RailIconName;
+  size?: number;
+  active?: boolean;
+}) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const gradId = `rail-grad-${uid}`;
+  const grad = `url(#${gradId})`;
+  const g = GLYPHS[name];
+
+  /* 主体：激活 = 金渐变；未激活 = currentColor 灰 */
+  const solid = active ? grad : "currentColor";
+  /* 内部细节：激活反白；未激活半透明灰叠层次 */
+  const detail = active ? "#ffffff" : "currentColor";
+  const detailOpacity = active ? 1 : 0.32;
+
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <linearGradient
+          id={gradId}
+          x1="3"
+          y1="3"
+          x2="21"
+          y2="21"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="#f0b45c" />
+          <stop offset="100%" stopColor="#c9811f" />
+        </linearGradient>
+      </defs>
+
+      {colorize(g.main, { fill: solid })}
+      {g.soft
+        ? g.soft.map((s) =>
+            cloneElement(s.el as ReactElement<{ fill?: string; opacity?: number }>, {
+              fill: solid,
+              opacity: active ? s.o : 0.32,
+            }),
+          )
+        : null}
+      {colorize(g.cut, { fill: detail, stroke: detail, opacity: detailOpacity })}
+    </svg>
+  );
+}
+
 /**
- * Rail 底部主题切换图标（与导航图标同款品牌渐变描边）。
+ * Rail 底部主题切换图标（金渐变描边，与方案 A 金点亮同族）。
  * dark=true（当前暗色）显示太阳（点击去亮色），否则显示月亮。
  */
 export function ThemeToggleIcon({
@@ -188,8 +267,8 @@ export function ThemeToggleIcon({
           y2="21"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor="#9254de" />
-          <stop offset="100%" stopColor="#531dab" />
+          <stop offset="0%" stopColor="#f0b45c" />
+          <stop offset="100%" stopColor="#c9811f" />
         </linearGradient>
       </defs>
       {dark ? (
@@ -200,66 +279,6 @@ export function ThemeToggleIcon({
       ) : (
         <path d="M20.6 12.9A8.6 8.6 0 1 1 11.1 3.4a6.8 6.8 0 0 0 9.5 9.5Z" />
       )}
-    </svg>
-  );
-}
-
-export function RailIcon({
-  name,
-  size = 22,
-  active = false,
-}: {
-  name: RailIconName;
-  size?: number;
-  active?: boolean;
-}) {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const gradId = `rail-grad-${uid}`;
-  const grad = `url(#${gradId})`;
-  const g = GLYPHS[name];
-
-  /* 主体：激活 = 品牌渐变；未激活 = currentColor 灰 */
-  const mainFill = active ? grad : "currentColor";
-  /* 内部细节：激活反白叠在渐变上；未激活半透明灰叠层次 */
-  const detailFill = active ? "#ffffff" : "currentColor";
-  const detailOpacity = active ? 1 : 0.5;
-
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      aria-hidden="true"
-      focusable="false"
-    >
-      <defs>
-        <linearGradient
-          id={gradId}
-          x1="3"
-          y1="3"
-          x2="21"
-          y2="21"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop offset="0%" stopColor="#9254de" />
-          <stop offset="100%" stopColor="#531dab" />
-        </linearGradient>
-      </defs>
-
-      {colorize(g.main, { fill: mainFill })}
-      {g.soft
-        ? colorize(g.soft, { fill: mainFill, opacity: active ? 0.8 : 0.45 })
-        : null}
-      {g.cutFill
-        ? colorize(g.cutFill, { fill: detailFill, opacity: detailOpacity })
-        : null}
-      {g.cutStroke
-        ? colorize(g.cutStroke, {
-            fill: "none",
-            stroke: detailFill,
-            opacity: detailOpacity,
-          })
-        : null}
     </svg>
   );
 }

@@ -215,11 +215,11 @@
   .kx-rail-item { color: rgba(240, 235, 250, 0.72); }
   .kx-rail-item:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
   .kx-rail-item.kx-active {
-    background: linear-gradient(135deg, rgba(227, 154, 62, 0.26), rgba(227, 154, 62, 0.08));
-    color: var(--kaypal-v3-accent);
+    color: var(--kx-gold);
   }
   .kx-rail-item .kx-rail-indicator {
-    background: var(--kaypal-v3-accent);
+    background: var(--kx-gold);
+    box-shadow: 0 0 8px rgba(227, 154, 62, 0.45);
   }
   .kx-rail-badge {
     background: var(--kaypal-v3-accent);

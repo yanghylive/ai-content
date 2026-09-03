@@ -297,6 +297,7 @@ export function AppShell({
   const badges = useBadges(pathname);
   const noticeItems = useNotificationItems();
   const activeScene = sceneOfPath(pathname || "/today");
+  const mineActive = activeScene === "mine" || settingsOpen;
 
   // 路由变化自动关闭设置面板
   React.useEffect(() => {
@@ -405,7 +406,7 @@ export function AppShell({
                 ) : null}
                 <RailIcon
                   name={scene.railName}
-                  size={22}
+                  size={24}
                   active={activeScene === scene.key}
                 />
                 <span className="kx-rail-lbl">{scene.label}</span>
@@ -439,19 +440,19 @@ export function AppShell({
                 transition={{ type: "tween", duration: 0.18, ease: "easeInOut" }}
               />
             ) : null}
-            <RailIcon name="assistant" size={22} active={activeScene === "agent"} />
+            <RailIcon name="assistant" size={24} active={activeScene === "agent"} />
             <span className="kx-rail-lbl">助手</span>
           </button>
           <button
-            className={`kx-rail-item${activeScene === "mine" ? " kx-active" : ""}`}
+            className={`kx-rail-item${mineActive ? " kx-active" : ""}`}
             aria-label="我的"
             aria-current={activeScene === "mine" ? "page" : undefined}
             aria-expanded={settingsOpen}
             title="我的（设置与账号）"
             onClick={() => setSettingsOpen((v) => !v)}
           >
-            {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
-            <RailIcon name="mine" size={22} active={activeScene === "mine"} />
+            {mineActive ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
+            <RailIcon name="mine" size={24} active={mineActive} />
             <span className="kx-rail-lbl">我的</span>
           </button>
           {/* 头像入口已移除（2026-08-26 导航去重）：原与上方「我的」重复指向 /mine */}
