@@ -1,13 +1,17 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   Req,
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { AiGatewayService } from './ai-gateway.service';
+import {
+  AiGatewayService,
+  getCapabilityCenter,
+} from './ai-gateway.service';
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -21,6 +25,14 @@ interface ChatMessage {
 @Controller('ai-gateway')
 export class AiGatewayController {
   constructor(private readonly aiGateway: AiGatewayService) {}
+
+  /** 能力中心只读清单：与 TOOLS 白名单动态核对后返回（供前端能力中心面板） */
+  @Get('capabilities')
+  listCapabilities(@Req() request: Request) {
+    const authUser = (request as Request & { authUser?: unknown }).authUser;
+    if (!authUser) throw new UnauthorizedException('请先登录');
+    return getCapabilityCenter();
+  }
 
   @Post('chat')
   async chat(
