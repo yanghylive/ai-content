@@ -11,16 +11,23 @@
     --bg-gradient-from: rgba(255, 255, 255, 0);
     --bg-gradient-to: rgba(255, 255, 255, 0);
     --kaypal-v3-canvas: oklch(0.976 0.01 300.8);
+    --kaypal-v3-bg: oklch(0.976 0.01 300.8);
     --kaypal-v3-paper: oklch(1 0 162.0);
     --kaypal-v3-panel-bg: oklch(1 0 162.0);
+    --kaypal-v3-panel: oklch(1 0 162.0);
+    --kaypal-v3-surface: oklch(1 0 162.0);
+    --kaypal-v3-surface-2: oklch(0.948 0.014 302.2);
+    --kaypal-v3-surface-hover: oklch(0.948 0.014 302.2);
     --kaypal-v3-paper-soft: oklch(0.948 0.014 302.2);
     --kaypal-v3-paper-muted: oklch(0.929 0.022 299.8);
     --kaypal-v3-table-head: oklch(0.963 0.014 302.2);
     --kaypal-v3-ink: oklch(0.276 0.045 297.9);
     --kaypal-v3-soft-ink: oklch(0.409 0.056 298.2);
     --kaypal-v3-muted: oklch(0.629 0.052 297.1);
+    --kaypal-v3-muted-soft: oklch(0.955 0.01 300.0);
     --kaypal-v3-border: oklch(0.92 0.022 299.8);
     --kaypal-v3-border-strong: oklch(0.846 0.042 299.0);
+    --kaypal-v3-hover: oklch(0.494 0.268 296.1 / 0.05);
     --kaypal-v3-field-bg: oklch(1 0 162.0);
     --kaypal-v3-field-border: oklch(0.92 0.022 299.8);
     --kaypal-v3-field-border-hover: oklch(0.769 0.06 296.6);
@@ -33,6 +40,7 @@
       0 0 0 4px var(--kaypal-v3-field-focus-ring),
       inset 0 1px 0 rgba(15, 23, 42, 0.03);
     --kaypal-v3-accent: oklch(0.494 0.268 296.1);
+    --kaypal-v3-primary: oklch(0.494 0.268 296.1);
     --kaypal-v3-accent-soft: oklch(0.966 0.027 309.8);
     --kaypal-v3-accent-border: oklch(0.807 0.132 306.1);
     --kaypal-v3-accent-tint: oklch(0.692 0.192 303.9);
@@ -41,11 +49,18 @@
     --kaypal-v3-blue-soft: oklch(0.946 0.029 267.0);
     --kaypal-v3-amber: oklch(0.613 0.164 69.1);
     --kaypal-v3-amber-soft: oklch(0.963 0.031 84.8);
+    --kaypal-v3-warning: oklch(0.613 0.164 69.1);
+    --kaypal-v3-warning-ink: oklch(0.47 0.12 60);
+    --kaypal-v3-warning-soft: oklch(0.963 0.031 84.8);
     --kaypal-v3-orange: oklch(0.745 0.196 69.2);
     --kaypal-v3-orange-soft: oklch(0.963 0.031 84.8);
     --kaypal-v3-danger: oklch(0.577 0.215 29.6);
+    --kaypal-v3-danger-ink: oklch(0.46 0.19 27);
+    --kaypal-v3-danger-border: oklch(0.87 0.1 27);
     --kaypal-v3-danger-soft: oklch(0.952 0.021 18.7);
     --kaypal-v3-success: oklch(0.627 0.208 143.4);
+    --kaypal-v3-success-ink: oklch(0.46 0.16 147);
+    --kaypal-v3-success-border: oklch(0.85 0.12 148);
     --kaypal-v3-success-soft: oklch(0.963 0.022 154.8);
     --kaypal-v3-brand: oklch(0.494 0.268 296.1);
     --kaypal-v3-brand-solid: oklch(0.494 0.268 296.1);
@@ -70,6 +85,7 @@
     --kaypal-v3-dur-short: 180ms;
     --kaypal-v3-radius: 12px;
     --kaypal-v3-radius-sm: 10px;
+    --kaypal-v3-radius-md: 14px;
     --kaypal-v3-radius-xs: 6px;
     --kaypal-v3-font-serif: var(--kaypal-v3-font-nav);
     --kaypal-v3-font-nav:
@@ -77,6 +93,8 @@
       "Segoe UI", sans-serif;
     --kaypal-v3-font-mono:
       "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    /* display 大数字字号（统计卡主数值等关键数字用） */
+    --kaypal-v3-font-display: 32px;
     /* agent-cockpit（tailwind colors 映射源）：2026-08-23 唯一品牌主题定稿，
        与 --kx-accent 品牌紫 #722ed1 同源，杜绝 VP 皮肤下第三套变量逃逸 */
     --agent-cockpit-background: 258 30% 97%;
@@ -145,16 +163,23 @@
     --bg-gradient-from: rgba(120, 40, 200, 0.15);
     --bg-gradient-to: rgba(0, 0, 0, 0);
     --kaypal-v3-canvas: oklch(0.187 0.015 300.2);
+    --kaypal-v3-bg: oklch(0.187 0.015 300.2);
     --kaypal-v3-paper: oklch(0.221 0.024 298.6);
     --kaypal-v3-panel-bg: oklch(0.221 0.024 298.6);
+    --kaypal-v3-panel: oklch(0.221 0.024 298.6);
+    --kaypal-v3-surface: oklch(0.221 0.024 298.6);
+    --kaypal-v3-surface-2: oklch(0.226 0.024 298.6);
+    --kaypal-v3-surface-hover: oklch(0.283 0.032 298.0);
     --kaypal-v3-paper-soft: oklch(0.226 0.024 298.6);
     --kaypal-v3-paper-muted: oklch(0.283 0.032 298.0);
     --kaypal-v3-table-head: oklch(0.226 0.024 298.6);
     --kaypal-v3-ink: oklch(0.94 0.019 298.6);
     --kaypal-v3-soft-ink: oklch(0.829 0.039 298.3);
     --kaypal-v3-muted: oklch(0.606 0.053 297.0);
+    --kaypal-v3-muted-soft: oklch(0.283 0.032 298.0);
     --kaypal-v3-border: oklch(0.283 0.032 298.0);
     --kaypal-v3-border-strong: oklch(0.366 0.051 297.9);
+    --kaypal-v3-hover: oklch(0.584 0.239 300.7 / 0.1);
     --kaypal-v3-field-bg: oklch(0.221 0.024 298.6);
     --kaypal-v3-field-border: oklch(0.366 0.051 297.9);
     --kaypal-v3-field-border-hover: oklch(0.463 0.056 295.3);
@@ -167,6 +192,7 @@
       0 0 0 4px var(--kaypal-v3-field-focus-ring),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
     --kaypal-v3-accent: oklch(0.584 0.239 300.7);
+    --kaypal-v3-primary: oklch(0.584 0.239 300.7);
     --kaypal-v3-accent-soft: oklch(0.494 0.268 296.1 / 0.18);
     --kaypal-v3-accent-ink: oklch(0.807 0.132 306.1);
     --kaypal-v3-accent-border: oklch(0.332 0.101 296.1);
@@ -177,9 +203,16 @@
     --kaypal-v3-blue-soft: oklch(0.652 0.185 268.5 / 0.16);
     --kaypal-v3-amber: oklch(0.827 0.134 86.0);
     --kaypal-v3-amber-soft: oklch(0.757 0.17 82.2 / 0.14);
+    --kaypal-v3-warning: oklch(0.827 0.134 86.0);
+    --kaypal-v3-warning-ink: oklch(0.87 0.12 82);
+    --kaypal-v3-warning-soft: oklch(0.757 0.17 82.2 / 0.14);
     --kaypal-v3-danger: oklch(0.711 0.166 23.8);
+    --kaypal-v3-danger-ink: oklch(0.86 0.13 16);
+    --kaypal-v3-danger-border: oklch(0.711 0.166 23.8 / 0.55);
     --kaypal-v3-danger-soft: oklch(0.663 0.18 12.2 / 0.14);
     --kaypal-v3-success: oklch(0.801 0.217 146.0);
+    --kaypal-v3-success-ink: oklch(0.86 0.12 152);
+    --kaypal-v3-success-border: oklch(0.801 0.217 146.0 / 0.5);
     --kaypal-v3-success-soft: oklch(0.713 0.167 154.5 / 0.14);
     --kaypal-v3-brand: oklch(0.713 0.2 302.4);
     --kaypal-v3-brand-solid: oklch(0.494 0.268 296.1);

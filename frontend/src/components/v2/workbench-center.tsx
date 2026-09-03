@@ -343,7 +343,7 @@ export function WorkbenchCenter({
         <section>
           <div className="mb-4">
             <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
-              ⚡ 快捷操作
+              快捷操作
             </h2>
           </div>
 
@@ -411,7 +411,7 @@ export function WorkbenchCenter({
         <section>
           <div className="mb-4">
             <h2 className="text-base font-semibold text-[var(--kaypal-v3-ink)]">
-              ⚙️ 全部功能
+              全部功能
             </h2>
           </div>
 

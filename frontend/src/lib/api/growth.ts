@@ -374,6 +374,17 @@ export interface GrowthHomeNextAction {
     href: string;
 }
 
+export interface GrowthHomeTrendSeries {
+    date: string;
+    value: number;
+}
+
+export interface GrowthHomeTrends {
+    newLeads: GrowthHomeTrendSeries[];
+    highIntent: GrowthHomeTrendSeries[];
+    crmCaptured: GrowthHomeTrendSeries[];
+}
+
 export interface GrowthHomeResponse {
     /** ISO 8601，前端显示数据时间 */
     generatedAt: string;
@@ -382,6 +393,7 @@ export interface GrowthHomeResponse {
     blockers: GrowthHomeBlocker[];
     recentRuns: GrowthAcquisitionRun[];
     nextActions: GrowthHomeNextAction[];
+    trends?: GrowthHomeTrends | null;
 }
 
 export interface GrowthReports {
@@ -636,6 +648,17 @@ overview: () => api.get<GrowthOverview>("/growth/overview"),
                 stepCount: number;
                 riskNotes: string[];
             }>;
+            keywords: {
+                industry: string;
+                aliases: string[];
+                sourceKeywords: string[];
+                demandKeywords: string[];
+                excludeKeywords: string[];
+                /** 意向词同义词簇（行业预设返回，供词库调优展示） */
+                demandSynonymGroups?: string[][] | null;
+                /** 本地行业标记（到店/上门，可叠加地域词搜索） */
+                isLocal?: boolean | null;
+            } | null;
         }>>("/growth/workflow-playbooks"),
     updateWorkflow: (
         id: string,
