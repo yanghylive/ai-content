@@ -89,6 +89,7 @@ export function CrmImportCenter() {
         quickActions={[
           {
             key: "upload-excel",
+            brand: "sheetUp",
             title: "上传 Excel",
             description: "支持 .xlsx / .csv 文件",
             icon: FileSpreadsheet,
@@ -96,6 +97,7 @@ export function CrmImportCenter() {
           },
           {
             key: "download-template",
+            brand: "downloadTray",
             title: "下载模板",
             description: "按模板格式整理数据",
             icon: Download,
@@ -103,6 +105,7 @@ export function CrmImportCenter() {
           },
           {
             key: "paste",
+            brand: "clipboard",
             title: "直接粘贴",
             description: "粘贴表格数据快速导入",
             icon: Upload,
@@ -110,7 +113,7 @@ export function CrmImportCenter() {
           },
         ]}
         advancedLinks={[
-          { key: "customers", title: "客户列表", icon: Users, href: "/crm" },
+          { key: "customers", title: "客户列表", brand: "customer", icon: Users, href: "/crm" },
         ]}
       />
 

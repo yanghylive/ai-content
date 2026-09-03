@@ -83,7 +83,11 @@ export type BrandIconName =
   | "phoneOk" // 平台账号:手机+对勾
   | "avatarGrid" // 多账号矩阵:头像矩阵
   | "member" // 账号与团队:成员
-  | "textAa"; // 显示设置:文字Aa
+  | "textAa" // 显示设置:文字Aa
+  | "sheetUp" // 上传Excel:表格+上箭头
+  | "downloadTray" // 下载模板:入盘箭头
+  | "clipboard" // 直接粘贴:剪贴板
+  | "squarePlus"; // 新建:方块+加号
 
 type Soft = { el: ReactElement; o: number };
 
@@ -797,6 +801,51 @@ const GLYPHS: Record<BrandIconName, Glyph> = {
     cutFill: [
       <path key="lower" d="M15.2 13.4a1.35 1.35 0 1 0 0 2.7 1.35 1.35 0 0 0 0-2.7Z" />,
       <path key="tail" d="M16.5 16.6v-1.9" strokeWidth={1.1} />,
+    ],
+  },
+
+  /* 上传 Excel:表格页 + 上箭头 */
+  sheetUp: {
+    main: [
+      <rect key="tbl" x="5.6" y="5.6" width="12.8" height="12.8" rx="1.9" />,
+    ],
+    cutLine: [
+      <path key="hl" d="M5.6 10.4h12.8M10.9 5.6v12.8M16.2 5.6v12.8M8 5.6v12.8M13.5 5.6v12.8" strokeWidth={0.9} />,
+      <path key="up" d="M18.6 4.4V1.6m0 0-1.7 1.7M18.6 1.6l1.7 1.7" strokeWidth={1.4} />,
+    ],
+  },
+
+  /* 下载模板:入盘 + 下箭头 */
+  downloadTray: {
+    main: [
+      <rect key="tray" x="4.4" y="5.6" width="15.2" height="9" rx="2" />,
+      <path key="legs" d="M7 19 8.6 15h6.8l1.6 4Z" />,
+    ],
+    cutLine: [
+      <path key="arr" d="M12 3.6v5.4m0 0-2.2-2.2M12 9l2.2-2.2" strokeWidth={1.4} />,
+      <path key="lip" d="M4.4 11h15.2" strokeWidth={1} />,
+    ],
+  },
+
+  /* 直接粘贴:剪贴板 + 行 */
+  clipboard: {
+    main: [
+      <rect key="board" x="5.4" y="5.2" width="13.2" height="14.6" rx="2" />,
+      <rect key="clip" x="8.9" y="3.6" width="6.2" height="3.2" rx="1.1" />,
+    ],
+    cutLine: [
+      <path key="r1" d="M8.4 10.6h7.2" strokeWidth={1.1} />,
+      <path key="r2" d="M8.4 13.6h5" strokeWidth={1.1} />,
+    ],
+  },
+
+  /* 新建:圆角方块 + 加号 */
+  squarePlus: {
+    main: [
+      <rect key="sq" x="4.8" y="4.8" width="14.4" height="14.4" rx="2.4" />,
+    ],
+    cutLine: [
+      <path key="plus" d="M12 8v8M8 12h8" strokeWidth={1.6} />,
     ],
   },
 };

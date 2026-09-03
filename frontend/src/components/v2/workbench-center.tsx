@@ -35,7 +35,9 @@ export type WorkbenchAction = {
 export type WorkbenchLink = {
   key: string;
   title: string;
-  icon: LucideIcon;
+  /** 品牌图形优先;有 brand 时不渲染 icon */
+  brand?: BrandIconName;
+  icon?: LucideIcon;
   href: string;
 };
 
@@ -266,7 +268,11 @@ export function WorkbenchCenter({
                     style={{ textDecoration: "none" }}
                   >
                     <span className="mx-row-ic" style={{ background: "var(--kaypal-v3-accent-soft)", color: "var(--kaypal-v3-accent)" }}>
-                      <link.icon size={18} strokeWidth={1.8} />
+                      {link.brand ? (
+                        <BrandIcon name={link.brand} size={18} tone="tint" />
+                      ) : link.icon ? (
+                        <link.icon size={18} strokeWidth={1.8} />
+                      ) : null}
                     </span>
                     <div className="mx-row-main">
                       <div className="mx-row-title">{link.title}</div>
@@ -476,7 +482,11 @@ export function WorkbenchCenter({
                   href={link.href}
                   className="kaypal-v3-surface group flex items-center gap-3 p-4 transition hover:border-[var(--kaypal-v3-accent)] hover:bg-[var(--kaypal-v3-accent-soft)]"
                 >
-                  <LinkIcon className="h-5 w-5 text-[var(--kaypal-v3-muted)] transition group-hover:text-[var(--kaypal-v3-accent)]" />
+                  {link.brand ? (
+                    <BrandIcon name={link.brand} size={20} tone="tint" />
+                  ) : LinkIcon ? (
+                    <LinkIcon className="h-5 w-5 text-[var(--kaypal-v3-muted)] transition group-hover:text-[var(--kaypal-v3-accent)]" />
+                  ) : null}
                   <span className="text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition group-hover:text-[var(--kaypal-v3-accent-ink)]">
                     {link.title}
                   </span>

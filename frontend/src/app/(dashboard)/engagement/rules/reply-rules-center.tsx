@@ -36,6 +36,7 @@ export function ReplyRulesCenter() {
       quickActions={[
         {
           key: "config",
+          brand: "settings",
           title: "规则配置",
           description: "设置自动回复的规则和话术",
           icon: Settings2,
@@ -43,6 +44,7 @@ export function ReplyRulesCenter() {
         },
         {
           key: "pending",
+          brand: "replyPen",
           title: "待确认回复",
           description: "AI 写好等你确认的回复",
           icon: MessageSquareText,
@@ -51,6 +53,7 @@ export function ReplyRulesCenter() {
         },
         {
           key: "risk",
+          brand: "shield",
           title: "风险审核",
           description: "高风险操作审核",
           icon: ShieldCheck,
@@ -58,8 +61,8 @@ export function ReplyRulesCenter() {
         },
       ]}
       advancedLinks={[
-        { key: "insights", title: "评论线索", icon: MessageSquareText, href: "/engagement/comment-insights" },
-        { key: "new", title: "新建规则", icon: Plus, href: "/engagement" },
+        { key: "insights", title: "评论线索", brand: "topic", icon: MessageSquareText, href: "/engagement/comment-insights" },
+        { key: "new", title: "新建规则", brand: "squarePlus", icon: Plus, href: "/engagement" },
       ]}
     />
   );
