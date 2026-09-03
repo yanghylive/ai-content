@@ -871,7 +871,7 @@ function HomeHeader({
           <button
             type="button"
             onClick={handleManualRefresh}
-            className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-accent-ink)]"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-accent-ink)]"
           >
             <RefreshCw
               className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
@@ -882,7 +882,7 @@ function HomeHeader({
           <button
             type="button"
             onClick={onCreateTask}
-            className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-accent)] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--kaypal-v3-accent-ink)]"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 active:scale-[0.97]"
           >
             新建获客任务
             <ArrowRight className="h-4 w-4" />
