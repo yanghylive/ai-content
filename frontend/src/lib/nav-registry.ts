@@ -77,7 +77,7 @@ export const MINE_NAV_ENTRIES: MineNavEntry[] = [
   { key: "settings-desktop", title: "桌面设置", desc: "本机应用选项", href: "/settings/desktop", icon: "cpu", tint: "kx-t-slate", group: "设置", desktopOrder: 6, mobileTint: "var(--kaypal-v3-muted)", mobileGroup: "更多能力" },
   { key: "settings-data", title: "数据管理", desc: "导出和备份你的数据", href: "/settings/data", icon: "download", tint: "kx-t-cyan", group: "设置", desktopOrder: 7, mobileTint: "var(--kaypal-v3-cobalt)", mobileGroup: "更多能力" },
   { key: "settings-legal", title: "合规中心", desc: "协议、隐私、AI 说明", href: "/settings/legal", icon: "fileText", tint: "kx-t-slate", group: "设置", desktopOrder: 8, mobileTint: "var(--kaypal-v3-muted)", mobileGroup: "更多能力" },
-  { key: "memory", title: "记忆设置", desc: "长期记忆、画像与偏好", href: "/settings/memory", icon: "layers", tint: "kx-t-blue", group: "账号与设置", desktopOrder: 5, mobileTint: "var(--kaypal-v3-cobalt)", mobileGroup: "更多能力" },
+  { key: "memory", title: "我的记忆", desc: "长期记忆、画像与偏好", href: "/settings/memory", icon: "layers", tint: "kx-t-blue", group: "账号与设置", desktopOrder: 5, mobileTint: "var(--kaypal-v3-cobalt)", mobileGroup: "更多能力" },
   { key: "costs", title: "数据用量", desc: "数据服务用量与调用明细", href: "/intelligence/costs", icon: "file", tint: "kx-t-cyan", group: "系统与服务", desktopOrder: 14, mobileTint: "#a9671f", mobileGroup: "系统与情报" },
   { key: "local-service", title: "电脑本机服务", desc: "电脑端引擎、微信桌面、运行检查", href: "/local-engine", icon: "cpu", tint: "kx-t-amber", group: "系统与服务", desktopOrder: 7 },
   { key: "evidence", title: "任务证据", desc: "执行证据与留痕", href: "/tasks/evidence", icon: "checkCircle", tint: "kx-t-green", group: "系统与服务", desktopOrder: 10, mobileTint: "var(--kaypal-v3-success)", mobileGroup: "更多能力" },

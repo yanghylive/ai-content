@@ -42,7 +42,7 @@ export const routeBreadcrumbs: Record<string, BreadcrumbRoute> = {
   "/apps/auto-acquisition": { sectionTitle: "增长获客", title: "自动获客应用", selectedKey: "/today" },
   "/admin/ai-employee": { sectionTitle: "应用与系统", title: "AI 员工", selectedKey: "/apps" },
   "/admin/commercial-readiness": { sectionTitle: "应用与系统", title: "商用检查", selectedKey: "/capabilities/risk" },
-  "/admin/account": { sectionTitle: "设置", title: "账号与设备", selectedKey: "/capabilities/account" },
+  "/admin/account": { sectionTitle: "设置", title: "账号与团队", selectedKey: "/capabilities/account" },
   "/admin/tools": { sectionTitle: "设置", title: "电脑本机服务", selectedKey: "/local-engine" },
   "/admin/plugins": { sectionTitle: "设置", title: "模型与工具", selectedKey: "/capabilities/models" },
   "/admin/memory": { sectionTitle: "任务中心", title: "结果留存", selectedKey: "/tasks/evidence" },
