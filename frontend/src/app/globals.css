@@ -2495,8 +2495,8 @@
   font-size: 14px;
   font-weight: 600;
   color: #fff;
-  background: var(--kaypal-v3-accent);
-  border: 1px solid var(--kaypal-v3-accent);
+  background: var(--kaypal-v3-gradient-primary);
+  border: none;
   cursor: pointer;
   transition: filter 0.15s ease, transform 0.1s ease;
 }

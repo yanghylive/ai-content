@@ -162,9 +162,9 @@
   min-height: 34px;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--kx-accent);
+  border: none;
   border-radius: 9px;
-  background: var(--kx-accent);
+  background: var(--kaypal-v3-gradient-primary);
   color: #fff;
   cursor: pointer;
   font-family: inherit;

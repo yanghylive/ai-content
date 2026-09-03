@@ -450,9 +450,10 @@ html.dark {
     color: var(--kx-muted);
   }
   .mx-btn-gold {
-    background: var(--kaypal-v3-accent);
+    background: var(--kaypal-v3-gradient-primary);
     color: #fff;
-    box-shadow: var(--kaypal-v3-card-shadow);
+    border: none;
+    box-shadow: 0 1px 3px rgba(193, 129, 31, 0.22), 0 3px 12px -3px rgba(193, 129, 31, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.16);
   }
   .mx-px {
     width: 100%;
