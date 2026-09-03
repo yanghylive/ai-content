@@ -79,7 +79,11 @@ export type BrandIconName =
   | "mapPin" // 门店管理:定位针
   | "compare" // 文案对比:左右对照
   | "wand" // 视频特效:魔棒
-  | "home"; // 首页:房子
+  | "home" // 首页:房子
+  | "phoneOk" // 平台账号:手机+对勾
+  | "avatarGrid" // 多账号矩阵:头像矩阵
+  | "member" // 账号与团队:成员
+  | "textAa"; // 显示设置:文字Aa
 
 type Soft = { el: ReactElement; o: number };
 
@@ -745,6 +749,56 @@ const GLYPHS: Record<BrandIconName, Glyph> = {
     ],
     cutFill: [<rect key="door" x="10.8" y="15.4" width="2.4" height="4.6" rx="0.8" />],
   },
+
+  /* 平台账号:手机 + 屏内对勾 */
+  phoneOk: {
+    main: [
+      <rect key="phone" x="7.2" y="3.6" width="9.6" height="16.8" rx="2.4" />,
+    ],
+    cutFill: [
+      <rect key="sp" x="9.6" y="5.4" width="4.8" height="0.9" rx="0.45" />,
+      <path key="dot" d="m10.6 13.4 1.5 1.5 2.9-3" strokeWidth={1.5} />,
+    ],
+  },
+
+  /* 多账号矩阵:4 头像小圆阵列 */
+  avatarGrid: {
+    main: [
+      <circle key="a1" cx="8" cy="8.4" r="2.3" />,
+      <path key="s1" d="M4.9 15.4a3.1 3.1 0 0 1 6.2 0" />,
+      <circle key="a2" cx="16.3" cy="8.4" r="2.3" />,
+      <path key="s2" d="M13.2 15.4a3.1 3.1 0 0 1 6.2 0" />,
+      <circle key="a3" cx="12" cy="16.6" r="1.6" />,
+    ],
+  },
+
+  /* 账号与团队:多人(正面人 + 侧后两人) */
+  member: {
+    main: [
+      <circle key="m1" cx="12" cy="10" r="2.7" />,
+      <path key="m1b" d="M7.4 18.6a4.6 4.6 0 0 1 9.2 0" />,
+      <circle key="m2" cx="5" cy="9.4" r="1.8" />,
+      <circle key="m3" cx="19" cy="9.4" r="1.8" />,
+    ],
+    soft: [
+      { o: 0.45, el: <path key="s2" d="M2.6 18.6a2.8 2.8 0 0 1 4.6-2.2" /> },
+      { o: 0.45, el: <path key="s3" d="M21.4 18.6a2.8 2.8 0 0 0-4.6-2.2" /> },
+    ],
+  },
+
+  /* 显示设置:文字 Aa(圆角文字卡 + 反白 A/a) */
+  textAa: {
+    main: [
+      <rect key="card" x="4.6" y="5.2" width="14.8" height="13.6" rx="2.4" />,
+    ],
+    cutLine: [
+      <path key="cap" d="m9.2 16.2 2.2-5.6h1l2.2 5.6M9.8 13.8h4.2" strokeWidth={1.4} />,
+    ],
+    cutFill: [
+      <path key="lower" d="M15.2 13.4a1.35 1.35 0 1 0 0 2.7 1.35 1.35 0 0 0 0-2.7Z" />,
+      <path key="tail" d="M16.5 16.6v-1.9" strokeWidth={1.1} />,
+    ],
+  },
 };
 
 export type BrandIconTone = "idle" | "gold" | "tint";
@@ -834,14 +888,14 @@ export function BrandIcon({
 /** 「我的」设置/菜单行 -> 品牌图形(2026-09 全行统一:桌面设置面板与移动端菜单同步) */
 export const MINE_BRAND: Record<string, BrandIconName> = {
   /* 账号与设置 */
-  platforms: "accounts",
-  matrix: "accounts",
-  team: "team",
+  platforms: "phoneOk",
+  matrix: "avatarGrid",
+  team: "member",
   memory: "knowledge",
   "settings-account": "user",
   "settings-ai-service": "botHead",
   "settings-notifications": "notifications",
-  "settings-appearance": "sun",
+  "settings-appearance": "textAa",
   "settings-integrations": "database",
   "settings-desktop": "desktop",
   "settings-data": "database",
