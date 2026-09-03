@@ -65,6 +65,7 @@ import { LocalBridgeModule } from './modules/local-bridge/local-bridge.module';
 import { PushNotificationsModule } from './modules/push-notifications/push-notifications.module';
 import { MultimodalModule } from './modules/multimodal/multimodal.module';
 import { MobileExecutorModule } from './modules/mobile-executor/mobile-executor.module';
+import { CapabilityDirectoryModule } from './modules/capability-directory/capability-directory.module';
 import { DashscopeModule } from './modules/dashscope/dashscope.module';
 import { CaseShowcaseModule } from './modules/case-showcase/case-showcase.module';
 import { BroadcastModule } from './modules/broadcast/broadcast.module';
@@ -115,6 +116,7 @@ import { BroadcastModule } from './modules/broadcast/broadcast.module';
     VideoFaceSwapModule,
     VideoGenerationModule,
     AiEmployeeModule,
+    CapabilityDirectoryModule,
     GrowthModule,
     RedfoxModule,
     KnowledgeModule,
