@@ -15,9 +15,7 @@ export default function Page() {
         title="AI 服务"
         sub="默认模型、账号同步与连接检查"
       />
-      <div className="kaypal-v3-panel p-6">
-        <AiServiceSettings />
-      </div>
+      <AiServiceSettings />
     </div>
   );
 }

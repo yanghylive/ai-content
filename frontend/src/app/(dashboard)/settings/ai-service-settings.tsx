@@ -1,14 +1,22 @@
 "use client";
 
 import React from "react";
+import { addToast } from "@heroui/react";
 import {
-  Button,
-  Chip,
-  Select,
-  SelectItem,
-  addToast,
-} from "@heroui/react";
-import { Icon } from "@/components/lucide-icon-compat";
+  RefreshCcw,
+  Save,
+  Sparkles,
+  UserRoundPlus,
+} from "@/components/iconpark";
+import {
+  V2EmptyState,
+  V2Field,
+  V2GhostButton,
+  V2PrimaryButton,
+  V2Section,
+  V2Select,
+  V2StatusChip,
+} from "@/components/v2/ui-kit";
 import { commercialDisplayText } from "@/lib/commercial-display-text";
 import { toPublicError } from "@/lib/public-error";
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning";
@@ -37,27 +45,35 @@ const defaultServiceFields: Array<{
   label: string;
   description: string;
 }> = [
-  {
-    key: "articleCreation",
-    label: "文章创作",
-    description: "生成文章、改写和润色时使用",
-  },
-  {
-    key: "topicSelection",
-    label: "选题推荐",
-    description: "分析素材并生成选题时使用",
-  },
-  {
-    key: "imageCreation",
-    label: "图片创作",
-    description: "生成配图时使用",
-  },
-  {
-    key: "xCollection",
-    label: "采集分析",
-    description: "整理采集内容时使用",
-  },
+  { key: "articleCreation", label: "文章创作", description: "生成文章、改写和润色时使用" },
+  { key: "topicSelection", label: "选题推荐", description: "分析素材并生成选题时使用" },
+  { key: "imageCreation", label: "图片创作", description: "生成配图时使用" },
+  { key: "xCollection", label: "采集分析", description: "整理采集内容时使用" },
 ];
+
+type ModelCapability = "text" | "image" | "vision";
+
+/** 与后端 model-capability.util 对齐的轻量归类：视觉/文生图/其它(文本) */
+function modelCapability(model: { modelId?: string | null; name?: string | null }): ModelCapability {
+  const s = `${model.modelId ?? ""} ${model.name ?? ""}`.toLowerCase();
+  if (/(qwen-vl|vision|图像理解|vl-max|视觉)/i.test(s)) return "vision";
+  if (/(image|img|图片|绘画|画图|flux|dall|stable[\s_-]?diffusion|文生图|t2i)/i.test(s)) return "image";
+  return "text";
+}
+
+function modelOptionLabel(model: AIModel, cap: ModelCapability) {
+  const tag = cap === "vision" ? "视觉" : cap === "image" ? "图片" : "文本";
+  const base = model.name || model.modelId;
+  return `${base}（${tag}）`;
+}
+
+/** 各用途应使用的模型能力 */
+const PURPOSE_CAPABILITY: Record<keyof DefaultModels, ModelCapability> = {
+  articleCreation: "text",
+  topicSelection: "text",
+  xCollection: "text",
+  imageCreation: "image",
+};
 
 function getStatusMessage(status: KaypalModelSyncStatus | null) {
   if (!status) return "正在读取账号中的 AI 服务状态。";
@@ -86,6 +102,20 @@ export function AiServiceSettings({
   const [testing, setTesting] = React.useState(false);
   const [loadError, setLoadError] = React.useState("");
   const [syncError, setSyncError] = React.useState("");
+
+  /** 模型按能力索引（展示/过滤用，不重复遍历） */
+  const byCapability = React.useMemo(() => {
+    const groups: Record<ModelCapability, AIModel[]> = {
+      text: [],
+      image: [],
+      vision: [],
+    };
+    for (const m of models) groups[modelCapability(m)].push(m);
+    return groups;
+  }, [models]);
+  const textModels = byCapability.text;
+  const imageModels = byCapability.image;
+  const visionModels = byCapability.vision;
   const defaultsAreDirty =
     !loading && JSON.stringify(defaults) !== JSON.stringify(savedDefaults);
 
@@ -230,185 +260,209 @@ export function AiServiceSettings({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center gap-2 py-12">
-        <SkeletonList rows={3} />
-        <span className="text-small text-default-500">正在读取 AI 服务...</span>
+      <div className="flex items-center justify-center gap-3 py-14">
+        <SkeletonList rows={4} />
+        <span className="text-sm text-[var(--kaypal-v3-muted)]">
+          正在读取 AI 服务…
+        </span>
       </div>
     );
   }
 
   const sessionAuthFailed = isSessionAuthIssue(syncError);
   const listUnavailable = isModelListUnavailable(syncError);
-  const statusTone: "success" | "danger" | "warning" = syncStatus
-    ?.configured
-    ? "success"
-    : sessionAuthFailed
-      ? "danger"
-      : "warning";
+  const statusLabel = statusLoading
+    ? "检查中"
+    : syncStatus?.configured
+      ? "已同步"
+      : sessionAuthFailed
+        ? "登录失效"
+        : listUnavailable
+          ? "列表受限"
+          : syncError
+            ? "需处理"
+            : "待同步";
+  const statusTone: "success" | "danger" | "warning" | "muted" = statusLoading
+    ? "muted"
+    : syncStatus?.configured
+      ? "success"
+      : sessionAuthFailed
+        ? "danger"
+        : "warning";
+  const statusText = syncError || getStatusMessage(syncStatus);
 
   return (
     <div className="grid gap-5">
-      <section className="rounded-[8px] border-small border-divider bg-default-50 p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      {/* 账号 AI 服务：从 Kaypal 同步的默认模型状态 */}
+      <V2Section
+        title="账号 AI 服务"
+        description="默认服务来自你的 Kaypal 账号，可在下方手动同步"
+        action={<V2StatusChip tone={statusTone}>{statusLabel}</V2StatusChip>}
+      >
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-medium font-bold text-default-900">
-                账号 AI 服务
-              </h3>
-              <Chip
-                color={statusTone}
-                size="sm"
-                variant="flat"
-              >
-                {statusLoading
-                  ? "检查中"
-                  : syncStatus?.configured
-                    ? "已同步"
-                    : syncError
-                      ? "需处理"
-                      : "待同步"}
-              </Chip>
-            </div>
             <p
-              className={`mt-1 text-small ${
+              className={`text-sm ${
                 sessionAuthFailed
-                  ? "font-medium text-danger-600"
+                  ? "font-medium text-[var(--kaypal-v3-danger)]"
                   : listUnavailable
-                    ? "text-warning-700"
-                    : "text-default-600"
+                    ? "text-[var(--kaypal-v3-amber)]"
+                    : "text-[var(--kaypal-v3-soft-ink)]"
               }`}
             >
-              {syncError || getStatusMessage(syncStatus)}
+              {statusText}
             </p>
             {listUnavailable && syncStatus?.configured ? (
-              <p className="mt-0.5 text-tiny text-default-500">
-                当前默认 AI 服务（{syncStatus.defaultModel || "已同步"}）仍可用，无需处理即可继续生产。
+              <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
+                当前默认 AI 服务（{syncStatus.defaultModel || "已同步"}）仍可用，
+                无需处理即可继续生产。
               </p>
             ) : null}
           </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
             {sessionAuthFailed ? (
-              <Button
-                as="a"
-                href="/login?reauth=1&next=%2Fsettings%3Ftab%3Dai"
-                startContent={<Icon icon="solar:user-check-linear" />}
-                variant="flat"
+              <V2PrimaryButton
+                icon={UserRoundPlus}
+                onClick={() => {
+                  window.location.assign(
+                    "/login?reauth=1&next=%2Fsettings%2Fai-service",
+                  );
+                }}
               >
                 重新登录
-              </Button>
+              </V2PrimaryButton>
             ) : null}
-            {listUnavailable && !sessionAuthFailed ? (
-              <Button
-                as="a"
-                href="/login?reauth=1&next=%2Fsettings%3Ftab%3Dai"
-                variant="flat"
+            {!sessionAuthFailed && !statusLoading ? (
+              <V2GhostButton
+                icon={RefreshCcw}
+                loading={syncing}
+                disabled={syncing}
+                onClick={handleSync}
               >
-                重新登录后重试
-              </Button>
+                {syncing
+                  ? "同步中…"
+                  : syncStatus?.configured
+                    ? "重新同步"
+                    : "从账号同步"}
+              </V2GhostButton>
             ) : null}
-            <Button
-              color="primary"
-              isDisabled={statusLoading}
-              isLoading={syncing}
-              startContent={
-                syncing ? null : <Icon icon="solar:refresh-linear" />
-              }
-              variant="flat"
-              onPress={handleSync}
-            >
-              从账号同步
-            </Button>
           </div>
         </div>
-      </section>
+      </V2Section>
 
-      <section className="grid gap-4">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h3 className="text-medium font-bold text-default-900">
-              默认 AI 服务
-            </h3>
-            <p className="mt-1 text-small text-default-500">
-              为不同工作选择默认服务。
-            </p>
+      {/* 默认 AI 服务：按用途选择文本/图片模型 */}
+      <V2Section
+        title="默认 AI 服务"
+        description="为不同工作选择默认服务"
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <V2StatusChip tone="accent">
+              文本服务 {textModels.length}
+            </V2StatusChip>
+            {(imageModels.length > 0 || visionModels.length > 0) && (
+              <V2StatusChip tone="muted">
+                图片/视觉 {imageModels.length + visionModels.length}
+              </V2StatusChip>
+            )}
           </div>
-          <Chip color={models.length ? "success" : "warning"} variant="flat">
-            可用服务 {models.length}
-          </Chip>
-        </div>
-
+        }
+      >
         {loadError ? (
-          <div className="flex flex-col gap-3 rounded-[8px] border-small border-danger-200 bg-danger-50 p-3 text-small text-danger-700 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-5 flex flex-col gap-3 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] p-3 text-sm text-[var(--kaypal-v3-danger)] sm:flex-row sm:items-center sm:justify-between">
             <span>{loadError}</span>
-            <Button
-              className="shrink-0"
-              color="danger"
-              size="sm"
-              variant="flat"
-              onPress={() => void loadConfiguration()}
+            <V2GhostButton
+              icon={RefreshCcw}
+              onClick={() => void loadConfiguration()}
             >
               重新加载
-            </Button>
+            </V2GhostButton>
           </div>
         ) : null}
 
         {models.length ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {defaultServiceFields.map((field) => (
-              <Select
-                key={field.key}
-                description={field.description}
-                label={field.label}
-                labelPlacement="outside"
-                placeholder="选择 AI 服务"
-                selectedKeys={defaults[field.key] ? [defaults[field.key]] : []}
-                onSelectionChange={(keys) => {
-                  const value = String(Array.from(keys)[0] || "");
-                  setDefaults((current) => ({
-                    ...current,
-                    [field.key]: value,
-                  }));
-                }}
-              >
-                {models.map((model) => (
-                  <SelectItem key={model.id} textValue={model.name}>
-                    {model.name}
-                  </SelectItem>
-                ))}
-              </Select>
-            ))}
+          <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
+            {defaultServiceFields.map((field) => {
+              const need = PURPOSE_CAPABILITY[field.key];
+              const options =
+                need === "text"
+                  ? textModels
+                  : need === "image"
+                    ? imageModels
+                    : visionModels;
+              const noOptions = options.length === 0;
+              const value = defaults[field.key] || "";
+              const hint = noOptions
+                ? `${
+                    need === "image"
+                      ? "当前暂无可用图片生成模型（视觉模型用于图像理解，不能直接生图）"
+                      : `当前暂无可用${need === "vision" ? "视觉模型" : "文本模型"}`
+                  }`
+                : field.description;
+              return (
+                <V2Field key={field.key} label={field.label} hint={hint}>
+                  <V2Select
+                    aria-label={field.label}
+                    value={value}
+                    disabled={noOptions}
+                    onChange={(e) => {
+                      setDefaults((current) => ({
+                        ...current,
+                        [field.key]: e.target.value,
+                      }));
+                    }}
+                  >
+                    <option value="">
+                      {noOptions ? "暂无可用的服务" : "选择 AI 服务"}
+                    </option>
+                    {options.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {modelOptionLabel(m, modelCapability(m))}
+                      </option>
+                    ))}
+                  </V2Select>
+                </V2Field>
+              );
+            })}
           </div>
         ) : (
-          <div className="rounded-[8px] border-small border-warning-200 bg-warning-50 p-4">
-            <p className="text-small font-semibold text-warning-800">
-              暂无可用 AI 服务
-            </p>
-            <p className="mt-1 text-small text-warning-700">
-              请先重新登录账号并点击“从账号同步”。
-            </p>
-          </div>
+          <V2EmptyState
+            icon={Sparkles}
+            title="暂无可用 AI 服务"
+            description="请先重新登录账号，并从账号同步可用的默认模型。"
+            action={
+              <V2PrimaryButton
+                icon={RefreshCcw}
+                loading={syncing}
+                disabled={syncing}
+                onClick={handleSync}
+              >
+                {syncing ? "同步中…" : "从账号同步"}
+              </V2PrimaryButton>
+            }
+          />
         )}
 
-        <div className="flex flex-wrap justify-end gap-2 border-t border-divider pt-4">
-          <Button
-            isDisabled={!defaults.articleCreation}
-            isLoading={testing}
-            startContent={testing ? null : <Icon icon="solar:bolt-linear" />}
-            variant="flat"
-            onPress={handleTest}
-          >
-            检查连接
-          </Button>
-          <Button
-            color="primary"
-            isDisabled={!models.length}
-            isLoading={saving}
-            onPress={handleSave}
-          >
-            保存设置
-          </Button>
-        </div>
-      </section>
+        {models.length ? (
+          <div className="mt-6 flex flex-wrap items-center justify-end gap-3 border-t border-[var(--kaypal-v3-border)] pt-5">
+            <V2GhostButton
+              icon={RefreshCcw}
+              disabled={!defaults.articleCreation}
+              loading={testing}
+              onClick={handleTest}
+            >
+              {testing ? "检查中…" : "检查连接"}
+            </V2GhostButton>
+            <V2PrimaryButton
+              icon={Save}
+              disabled={!models.length}
+              loading={saving}
+              onClick={handleSave}
+            >
+              {saving ? "保存中…" : "保存设置"}
+            </V2PrimaryButton>
+          </div>
+        ) : null}
+      </V2Section>
     </div>
   );
 }
