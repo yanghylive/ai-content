@@ -5,7 +5,7 @@ import {
   Metric,
 } from "@/lib/agent-cockpit-canvas/types";
 import { Button } from "@/components/agent-cockpit-canvas/ui/button";
-import { Plus } from "lucide-react";
+import { Plus } from "@/components/iconpark";
 
 interface PinnedMetricsProps {
   state: AgentState;

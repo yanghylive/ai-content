@@ -23,7 +23,7 @@ import {
   Save,
   Sparkles,
   X,
-} from "lucide-react";
+} from "@/components/iconpark";
 import Link from "next/link";
 import { ApiError } from "@/lib/api/client";
 import {

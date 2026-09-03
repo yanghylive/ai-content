@@ -1,4 +1,4 @@
-import { FlaskConical } from "lucide-react";
+import { FlaskConical } from "@/components/iconpark";
 
 /**
  * 灰度测试标注横幅（2026-08-20 大王指令）：

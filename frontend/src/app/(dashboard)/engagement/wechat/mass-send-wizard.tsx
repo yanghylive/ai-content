@@ -12,7 +12,7 @@ import {
   Sparkles,
   Users,
   Zap,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 type MassSendStep = "recipients" | "content" | "schedule";
 type RecipientsType = "all" | "manual";

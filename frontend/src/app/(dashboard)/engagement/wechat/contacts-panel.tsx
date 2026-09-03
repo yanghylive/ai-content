@@ -9,7 +9,7 @@ import {
   Search,
   Trash2,
   Users,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type Contact = {

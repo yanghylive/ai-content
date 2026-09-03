@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
+import { RefreshCw } from "@/components/iconpark";
 import { useLocalBridge } from "@/lib/local-bridge/use-local-bridge";
 
 const STATUS_COPY = {

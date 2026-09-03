@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FileQuestion, Upload, UsersRound } from "lucide-react";
+import { FileQuestion, Upload, UsersRound } from "@/components/iconpark";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { CustomerDetailClient } from "../customers/[id]/customer-detail-client";
 import { SkeletonList } from "@/components/skeleton";

@@ -9,7 +9,7 @@ import {
   ShieldAlert,
   Upload,
   UserRoundPlus,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 type ContactAddStep = "targets" | "message";

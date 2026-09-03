@@ -8,7 +8,7 @@ import {
   Loader2,
   Search,
   SlidersHorizontal,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   getTaxonomies,
   listCases,

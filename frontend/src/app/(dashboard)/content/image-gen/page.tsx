@@ -10,7 +10,7 @@ import {
   Sparkles,
   Wand2,
   XCircle,
-} from "lucide-react";
+} from "@/components/iconpark";
 import toast from "@/lib/toast";
 import { getApiBase } from "@/lib/api/client";
 import {

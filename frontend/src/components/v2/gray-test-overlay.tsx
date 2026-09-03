@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FlaskConical, X } from "lucide-react";
+import { ArrowLeft, FlaskConical, X } from "@/components/iconpark";
 
 /**
  * 灰度测试遮罩（2026-08-20 大王指令）：

@@ -25,7 +25,7 @@ import {
   Save,
   ShieldAlert,
   Trash2,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { WorkflowSteps } from "./workflow-steps";
 import { canEnterWorkspaceStep } from "./content-workspace-state";
 import {

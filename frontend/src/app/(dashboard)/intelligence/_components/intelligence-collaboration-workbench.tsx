@@ -13,7 +13,7 @@ import {
   UserCheck,
   UsersRound,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { authApi, type AuthUser } from "@/lib/api/auth";
 import {
   intelligenceApi,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Monitor, ArrowLeft, Info } from "lucide-react";
+import { Monitor, ArrowLeft, Info } from "@/components/iconpark";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 /**

@@ -4,7 +4,7 @@ import { SkeletonList, SkeletonRow } from "@/components/skeleton";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FileText, Send } from "lucide-react";
+import { ArrowLeft, FileText, Send } from "@/components/iconpark";
 import {
   V2Section,
   V2StatusChip,

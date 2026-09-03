@@ -11,7 +11,7 @@ import {
   Sparkles,
   Target,
   TrendingUp,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 type MarketingStep = "audience" | "actions";
 type MarketingMode = "random" | "targeted";

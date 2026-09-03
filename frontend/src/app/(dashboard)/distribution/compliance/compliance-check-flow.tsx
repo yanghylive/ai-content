@@ -8,7 +8,7 @@ import {
   CheckCircle2,
   ShieldCheck,
   XCircle,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   V2Section,
   V2StatusChip,

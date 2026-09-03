@@ -14,7 +14,7 @@ import {
   Loader2,
   RefreshCw,
   ShieldCheck,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { api } from "@/lib/api/client";
 import {
   clearComplianceHandoff,

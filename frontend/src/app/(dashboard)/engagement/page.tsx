@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bot, Inbox } from "lucide-react";
+import { Bot, Inbox } from "@/components/iconpark";
 import { CustomerServiceConfig } from "../workbench/customer-service-config";
 import { UnifiedInbox } from "./unified-inbox";
 

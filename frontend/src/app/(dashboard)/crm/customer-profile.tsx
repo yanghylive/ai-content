@@ -13,7 +13,7 @@ import {
   User,
   UserRound,
   Building2,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   V2Section,
   V2StatusChip,

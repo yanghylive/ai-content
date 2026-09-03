@@ -22,7 +22,7 @@ import {
   UserRound,
   UserRoundPlus,
   Users,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { V2StatusChip } from "@/components/v2/ui-kit";

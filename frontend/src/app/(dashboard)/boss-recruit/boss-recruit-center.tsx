@@ -20,7 +20,7 @@ import {
   RefreshCw,
   Upload,
   UserRound,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import {

@@ -8,7 +8,7 @@ import {
   MonitorCog,
   RefreshCw,
   UploadCloud,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { SkeletonList } from "@/components/skeleton";
 
 type DesktopConfigBridge = {

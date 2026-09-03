@@ -1,11 +1,11 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "@/components/iconpark";
 import {
   ClipboardList,
   FilePenLine,
   ListTree,
   PanelsTopLeft,
   ShieldCheck,
-} from "lucide-react";
+} from "@/components/iconpark";
 import type {
   ContentWorkspaceBrief,
   ContentWorkspaceOutline,

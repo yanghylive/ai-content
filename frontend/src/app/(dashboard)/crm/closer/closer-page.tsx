@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, Target } from "lucide-react";
+import { Bot, Target } from "@/components/iconpark";
 import { CrmCloserCenter } from "./crm-closer-center";
 import { CloserAdviceWorkbench } from "./closer-advice-workbench";
 

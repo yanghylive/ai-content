@@ -2,7 +2,7 @@
 
 import { Suspense, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/components/iconpark";
 
 function HybridRouteInner({
   legacy,

@@ -22,7 +22,7 @@ import {
   ShieldAlert,
   Sparkles,
   Target,
-} from "lucide-react";
+} from "@/components/iconpark";
 import toast from "@/lib/toast";
 import { FailureActionPanel } from "../../components/failure-action-panel";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";

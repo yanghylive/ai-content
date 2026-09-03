@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, type LucideIcon } from "lucide-react";
+import { ArrowRight, CheckCircle2, type LucideIcon } from "@/components/iconpark";
 
 type WorkflowMetric = {
   label: string;

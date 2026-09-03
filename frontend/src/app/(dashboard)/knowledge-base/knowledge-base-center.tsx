@@ -11,7 +11,7 @@ import {
   RefreshCw,
   Search,
   Trash2,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   V2EmptyState,
   V2GhostButton,

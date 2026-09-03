@@ -25,7 +25,7 @@ import {
   Settings,
   Trash2,
   UsersRound,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { MobilePageShell } from "@/components/mobile-page-shell";
 import { useIsMobile } from "@/lib/hooks/use-media-query";

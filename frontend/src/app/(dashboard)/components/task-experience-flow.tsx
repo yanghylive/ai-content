@@ -14,7 +14,7 @@ import {
   ShieldCheck,
   TriangleAlert,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 export type TaskExperienceStepStatus =
   | "pending"

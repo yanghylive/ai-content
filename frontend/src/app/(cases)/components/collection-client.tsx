@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Layers } from "lucide-react";
+import { Layers } from "@/components/iconpark";
 import { getCollection, type CollectionDto } from "@/lib/api/case-showcase";
 import { trackCaseEvent } from "@/lib/analytics/case-events";
 import { CaseCard } from "./case-card";

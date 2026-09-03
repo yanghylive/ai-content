@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Home, SearchX } from "lucide-react";
+import { ArrowLeft, Home, SearchX } from "@/components/iconpark";
 import {
   V2EmptyState,
   V2GhostButton,

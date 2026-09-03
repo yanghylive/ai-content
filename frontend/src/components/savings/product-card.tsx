@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { BellRing, Heart, ShoppingBag } from "lucide-react";
+import { BellRing, Heart, ShoppingBag } from "@/components/iconpark";
 import type { OfferView } from "@/lib/api/savings";
 
 const PLATFORM_LABEL: Record<string, string> = {

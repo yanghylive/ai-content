@@ -1,4 +1,4 @@
-import { FileBadge, Link2, Scale, ShieldCheck } from "lucide-react";
+import { FileBadge, Link2, Scale, ShieldCheck } from "@/components/iconpark";
 import type {
   CaseDetailDto,
   PublicAttributionDto,

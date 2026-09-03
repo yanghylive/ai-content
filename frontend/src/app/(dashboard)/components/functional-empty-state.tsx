@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button, Card, CardBody } from "@heroui/react";
-import { FilePlus2, Lightbulb, type LucideIcon } from "lucide-react";
+import { FilePlus2, Lightbulb, type LucideIcon } from "@/components/iconpark";
 import { commercialPrimaryText } from "@/lib/commercial-display-text";
 
 type EmptyStateAction = {

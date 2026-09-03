@@ -9,7 +9,7 @@ import {
   RotateCcw,
   Upload,
   Users,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import {
   listCrmImportBatches,

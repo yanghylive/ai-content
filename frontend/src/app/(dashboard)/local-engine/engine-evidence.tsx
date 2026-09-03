@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Image as ImageIcon, RefreshCcw, XCircle } from "lucide-react";
+import { ArrowLeft, Image as ImageIcon, RefreshCcw, XCircle } from "@/components/iconpark";
 import {
   V2Section,
   V2StatusChip,

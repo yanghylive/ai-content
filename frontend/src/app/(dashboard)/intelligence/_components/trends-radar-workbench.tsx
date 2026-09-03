@@ -16,7 +16,7 @@ import {
   ShieldAlert,
   Sparkles,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";
 import { publicIntelligenceText } from "./display-text";

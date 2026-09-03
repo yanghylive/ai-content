@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@heroui/react";
-import { Home, RefreshCw, TriangleAlert } from "lucide-react";
+import { Home, RefreshCw, TriangleAlert } from "@/components/iconpark";
 
 /**
  * 全局错误边界（Next.js 约定 app/error.tsx）：

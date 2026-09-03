@@ -6,7 +6,7 @@ import {
   DrawerContent,
   DrawerHeader,
 } from "@heroui/react";
-import { Library } from "lucide-react";
+import { Library } from "@/components/iconpark";
 import type { ReactNode } from "react";
 import { V2GhostButton } from "@/components/v2/ui-kit";
 

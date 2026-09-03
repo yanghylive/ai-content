@@ -10,7 +10,7 @@ import {
   Download,
   RotateCcw,
   XCircle,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { commercialPrimaryText } from "@/lib/commercial-display-text";
 
 type ResultSummaryAction = {

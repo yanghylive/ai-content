@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Lock, PlayCircle, ShieldCheck } from "lucide-react";
+import { Lock, PlayCircle, ShieldCheck } from "@/components/iconpark";
 import { api, ApiError } from "@/lib/api/client";
 import { toActionableError, toPublicError } from "@/lib/public-error";
 import {

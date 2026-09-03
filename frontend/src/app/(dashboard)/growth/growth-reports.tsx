@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, TrendingUp, MessageSquareText } from "lucide-react";
+import { ArrowLeft, TrendingUp, MessageSquareText } from "@/components/iconpark";
 import {
   V2Section,
   V2StatusChip,

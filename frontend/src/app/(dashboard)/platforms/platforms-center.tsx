@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Share2 } from "lucide-react";
+import { Share2 } from "@/components/iconpark";
 import { ResourceCenter, type ResourceItem } from "@/components/v2/resource-center";
 import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { publishingApi, type PublishAccount } from "@/lib/api/publishing";

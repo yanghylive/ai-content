@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, ImageIcon, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageIcon, X } from "@/components/iconpark";
 import type { PublicMediaDto } from "@/lib/api/case-showcase";
 import { trackCaseEvent } from "@/lib/analytics/case-events";
 

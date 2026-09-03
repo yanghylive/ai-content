@@ -18,7 +18,7 @@ import {
   DollarSign,
   Users,
   Pencil,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { useState } from "react";
 
 type RenderFunctionStatus = "complete" | "inProgress" | "executing" | string;

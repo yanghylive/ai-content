@@ -15,7 +15,7 @@ import {
   Download,
   ExternalLink,
   UserRound,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   V2Section,
   V2PrimaryButton,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, MapPin, Clock, ShieldAlert } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, ShieldAlert } from "@/components/iconpark";
 
 /**
  * 能力路线图说明页（2026-08-10 商用优化批次 2 P1-7）。

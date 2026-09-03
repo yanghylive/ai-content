@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Sparkles } from "@/components/iconpark";
 import { useSearchParams } from "next/navigation";
 import { growthApi, type GrowthLead, type LeadScoreHistoryDto, type LeadAttributionDto } from "@/lib/api/growth";
 import { api } from "@/lib/api/client";

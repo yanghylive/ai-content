@@ -11,7 +11,7 @@ import {
   Settings2,
   Trash2,
   XCircle,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { Spinner } from "@heroui/react";
 import {
   getWecomAssistantState,

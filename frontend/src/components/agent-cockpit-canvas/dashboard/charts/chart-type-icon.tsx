@@ -3,7 +3,7 @@ import {
   ChartLine,
   PieChart as PieChartIcon,
   LayoutDashboard,
-} from "lucide-react";
+} from "@/components/iconpark";
 import type { ChartSpec } from "@/lib/agent-cockpit-canvas/types";
 
 export function ChartTypeIcon({ spec }: { spec: ChartSpec }) {

@@ -12,7 +12,7 @@ import {
   Sparkles,
   X,
   Zap,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 type MomentsStep = "content" | "media" | "schedule" | "confirm";
 

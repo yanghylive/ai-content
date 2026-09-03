@@ -22,7 +22,7 @@ import {
   UsersRound,
   XCircle,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   intelligenceApi,
   type IntelligenceDispatchRecordAction,

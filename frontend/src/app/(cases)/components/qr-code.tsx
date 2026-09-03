@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toDataURL, toString } from "qrcode";
-import { Download, ExternalLink, QrCode, ShieldAlert } from "lucide-react";
+import { Download, ExternalLink, QrCode, ShieldAlert } from "@/components/iconpark";
 import { trackCaseEvent } from "@/lib/analytics/case-events";
 
 /**

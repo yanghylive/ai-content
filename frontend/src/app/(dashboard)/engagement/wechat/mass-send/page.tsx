@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "@/components/iconpark";
 import { MassSendWizard } from "../mass-send-wizard";
 import { localEngineApi, type CreateInteractionTaskInput } from "@/lib/api/local-engine";
 import { toPublicError } from "@/lib/public-error";

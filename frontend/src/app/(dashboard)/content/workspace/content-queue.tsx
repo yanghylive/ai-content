@@ -2,7 +2,7 @@
 
 import { Button, Chip, Input, ScrollShadow, Tab, Tabs } from "@heroui/react";
 import { useMemo } from "react";
-import { FilePlus2, Search, X } from "lucide-react";
+import { FilePlus2, Search, X } from "@/components/iconpark";
 import {
   WORKSPACE_STEPS,
   buildReviewChecks,

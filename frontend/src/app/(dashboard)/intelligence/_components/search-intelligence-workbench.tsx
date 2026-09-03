@@ -15,7 +15,7 @@ import {
   Sparkles,
   UserRoundSearch,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   intelligenceApi,
   type IntelligenceItem,

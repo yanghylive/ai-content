@@ -24,7 +24,7 @@ import {
   Trash2,
   Users,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import Link from "next/link";
 import { useAgentSState } from "@/lib/ops-workbench/hooks";
 import {

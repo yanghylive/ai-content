@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Inbox, RotateCcw, SearchX } from "lucide-react";
+import { AlertTriangle, Inbox, RotateCcw, SearchX } from "@/components/iconpark";
 import { CaseCardSkeleton } from "./case-card";
 
 /**

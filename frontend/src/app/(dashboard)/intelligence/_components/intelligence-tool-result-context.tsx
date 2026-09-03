@@ -15,7 +15,7 @@ import {
   Target,
   TrendingUp,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 type IntelligenceToolView = {
   eyebrow: string;

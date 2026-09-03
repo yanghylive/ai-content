@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   TriangleAlert,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { type TaskExperienceStep } from "./task-experience-flow";
 
 type FunctionalPageAction = {

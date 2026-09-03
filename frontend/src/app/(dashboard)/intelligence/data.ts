@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "@/components/iconpark";
 import {
   BellRing,
   Blocks,
@@ -16,7 +16,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   UsersRound,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 export type IntelligencePageKey =
   | "overview"

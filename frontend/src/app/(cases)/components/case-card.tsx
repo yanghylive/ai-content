@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import Link from "next/link";
-import { ArrowRight, Briefcase, Layers } from "lucide-react";
+import { ArrowRight, Briefcase, Layers } from "@/components/iconpark";
 import type { CaseSummaryDto } from "@/lib/api/case-showcase";
 import { trackCaseEvent } from "@/lib/analytics/case-events";
 import { ProvenanceBadge } from "./provenance-badge";

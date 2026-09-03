@@ -11,7 +11,7 @@ import {
   Sparkles,
   UserPlus,
   XCircle,
-} from "lucide-react";
+} from "@/components/iconpark";
 import toast from "@/lib/toast";
 import {
   listLeads,

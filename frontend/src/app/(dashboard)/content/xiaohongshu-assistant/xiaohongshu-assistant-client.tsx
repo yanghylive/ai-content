@@ -27,7 +27,7 @@ import {
   ShieldCheck,
   Sparkles,
   WandSparkles,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   agentWakerApi,
   type AgentWakerRun,

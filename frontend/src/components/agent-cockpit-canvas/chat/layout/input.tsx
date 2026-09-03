@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Textarea } from "@/components/agent-cockpit-canvas/ui/textarea";
 import { Button } from "@/components/agent-cockpit-canvas/ui/button";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Square } from "@/components/iconpark";
 
 export type SidebarInputProps = {
   inProgress?: boolean;

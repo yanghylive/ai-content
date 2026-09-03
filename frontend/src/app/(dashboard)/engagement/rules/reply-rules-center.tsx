@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { MessageSquareText, Plus, Settings2, ShieldCheck } from "lucide-react";
+import { MessageSquareText, Plus, Settings2, ShieldCheck } from "@/components/iconpark";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 import { localEngineApi } from "@/lib/api/local-engine";
 

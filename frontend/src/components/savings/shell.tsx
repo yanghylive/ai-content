@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Home, Package, TrendingUp, User, Wallet } from "lucide-react";
+import { Home, Package, TrendingUp, User, Wallet } from "@/components/iconpark";
 import {
   savingsApi,
   type CreditBalance,

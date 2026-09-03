@@ -6,7 +6,7 @@ import {
   FilePenLine,
   Files,
   RefreshCw,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   WORKSPACE_INTENTS,
   buildWorkspaceIntentHref,

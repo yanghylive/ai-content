@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, MonitorPlay, RefreshCcw } from "lucide-react";
+import { ArrowLeft, MonitorPlay, RefreshCcw } from "@/components/iconpark";
 import {
   V2Section,
   V2StatusChip,

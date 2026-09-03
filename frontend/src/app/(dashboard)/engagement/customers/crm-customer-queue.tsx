@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Button, Chip } from "@heroui/react";
-import { ArrowRight, RefreshCw, UsersRound } from "lucide-react";
+import { ArrowRight, RefreshCw, UsersRound } from "@/components/iconpark";
 import { listCrmCustomers, type CrmCustomer } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 import { SkeletonList } from "@/components/skeleton";

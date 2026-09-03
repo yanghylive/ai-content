@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock } from "@/components/iconpark";
 import { ResourceCenter, type ResourceItem } from "@/components/v2/resource-center";
 import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { schedulesApi, type ScheduleConfig } from "@/lib/api/schedules";

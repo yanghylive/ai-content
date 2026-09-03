@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ExternalLink, Route } from "lucide-react";
+import { ExternalLink, Route } from "@/components/iconpark";
 import {
   getCrmCustomerAttribution,
   type CrmCustomerAttribution,

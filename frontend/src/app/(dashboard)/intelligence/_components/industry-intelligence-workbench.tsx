@@ -21,7 +21,7 @@ import {
   Target,
   UsersRound,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   intelligenceApi,
   type DispatchIntelligenceItemInput,

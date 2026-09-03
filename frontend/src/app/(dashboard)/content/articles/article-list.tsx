@@ -15,7 +15,7 @@ import {
   PenLine,
   Sparkles,
   Trash2,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   V2Section,
   V2StatusChip,

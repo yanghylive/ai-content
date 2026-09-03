@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/agent-cockpit-canvas/ui/card";
 import { Button } from "@/components/agent-cockpit-canvas/ui/button";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil } from "@/components/iconpark";
 import type {
   Chart,
   ChartSpec,

@@ -16,7 +16,7 @@ import {
   UserRoundSearch,
   X,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   intelligenceApi,
   type IntelligenceItem,

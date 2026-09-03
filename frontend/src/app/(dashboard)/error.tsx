@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@heroui/react";
-import { Home, RefreshCw, TriangleAlert } from "lucide-react";
+import { Home, RefreshCw, TriangleAlert } from "@/components/iconpark";
 
 export default function DashboardError({
   error,

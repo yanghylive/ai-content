@@ -3,7 +3,7 @@
 import {
   ArrowRight,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/lib/hooks/use-media-query";

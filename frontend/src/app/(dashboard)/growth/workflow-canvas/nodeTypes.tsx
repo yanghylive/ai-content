@@ -2,7 +2,7 @@ import type { NodeTypes } from "reactflow";
 import type { ComponentType } from "react";
 import type { NodeProps } from "reactflow";
 import BaseNodeWrapper from "./nodes/BaseNodeWrapper";
-import { Bot, FileText, Send, Target, MessageSquare, Users, BarChart3 } from "lucide-react";
+import { Bot, FileText, Send, Target, MessageSquare, Users, BarChart3 } from "@/components/iconpark";
 
 /**
  * ai-content 增长工作流画布节点类型

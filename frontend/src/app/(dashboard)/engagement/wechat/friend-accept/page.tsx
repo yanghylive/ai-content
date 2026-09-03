@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserPlus } from "lucide-react";
+import { UserPlus } from "@/components/iconpark";
 import { FriendAcceptPanel } from "../../wechat/friend-accept-panel";
 import { submitFriendAcceptTask } from "@/lib/v2/wechat-wizard-submit";
 import { toPublicError } from "@/lib/public-error";

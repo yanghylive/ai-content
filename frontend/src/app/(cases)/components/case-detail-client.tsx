@@ -11,7 +11,7 @@ import {
   Lightbulb,
   ShieldCheck,
   Sparkles,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   getCase,
   getTaxonomies,

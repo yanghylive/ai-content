@@ -29,7 +29,7 @@ import {
   XCircle,
   Zap,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import Link from "next/link";
 import {
   autoUploadApi,

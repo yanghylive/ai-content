@@ -8,7 +8,7 @@ import {
   MessageCircle,
   Save,
   Trash2,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   V2Section,
   V2Field,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Loader2, Plus, UserRoundPlus, X } from "lucide-react";
+import { Loader2, Plus, UserRoundPlus, X } from "@/components/iconpark";
 import { createCrmCustomer, type CreateCrmCustomerInput } from "@/lib/api/crm";
 import { toPublicError } from "@/lib/public-error";
 

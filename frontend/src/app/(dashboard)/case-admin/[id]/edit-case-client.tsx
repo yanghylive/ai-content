@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Textarea, addToast } from "@heroui/react";
-import { Check, X, RotateCcw } from "lucide-react";
+import { Check, X, RotateCcw } from "@/components/iconpark";
 import { caseAdminApi, type AdminCase } from "@/lib/api/case-admin";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { OpsDesktopPage, OpsPanel, OpsStatusPill } from "../../components/desktop-ops-ui";

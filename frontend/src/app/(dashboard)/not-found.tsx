@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@heroui/react";
-import { ArrowLeft, SearchX } from "lucide-react";
+import { ArrowLeft, SearchX } from "@/components/iconpark";
 
 export default function DashboardNotFound() {
   return (

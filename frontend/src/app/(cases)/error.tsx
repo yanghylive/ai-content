@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@heroui/react";
-import { RefreshCw, TriangleAlert } from "lucide-react";
+import { RefreshCw, TriangleAlert } from "@/components/iconpark";
 
 export default function CasesError({
   error,

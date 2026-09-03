@@ -16,7 +16,7 @@ import {
   Sparkles,
   UsersRound,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   intelligenceApi,
   type IntelligenceDispatchRecord,

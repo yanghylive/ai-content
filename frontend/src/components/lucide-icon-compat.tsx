@@ -74,7 +74,7 @@ import {
   Wrench,
   XCircle,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 type CompatIconProps = Omit<React.ComponentProps<LucideIcon>, "ref"> & {
   icon: string;

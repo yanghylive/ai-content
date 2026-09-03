@@ -6,7 +6,7 @@ import {
   CheckCircle2,
   UserRoundCheck,
   Users,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 type FriendApplication = {
   id: string;

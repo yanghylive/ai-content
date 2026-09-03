@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, RefreshCcw, ScrollText } from "lucide-react";
+import { ArrowLeft, RefreshCcw, ScrollText } from "@/components/iconpark";
 import {
   V2Section,
   V2GhostButton,

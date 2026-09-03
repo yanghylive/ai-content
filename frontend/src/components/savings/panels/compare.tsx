@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Chip, Input, addToast } from "@heroui/react";
-import { BellRing, Clock, Search, ShoppingCart, TrendingUp } from "lucide-react";
+import { BellRing, Clock, Search, ShoppingCart, TrendingUp } from "@/components/iconpark";
 import {
   Area,
   AreaChart,

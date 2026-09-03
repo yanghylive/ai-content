@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Chip, cn } from "@heroui/react";
-import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight } from "@/components/iconpark";
 
 export type TrendCardProps = {
   title: string;

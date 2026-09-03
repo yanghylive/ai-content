@@ -1,4 +1,4 @@
-import { CalendarDays, Layers, MonitorSmartphone } from "lucide-react";
+import { CalendarDays, Layers, MonitorSmartphone } from "@/components/iconpark";
 import type { CaseDetailDto } from "@/lib/api/case-showcase";
 import { ProvenanceBadge } from "./provenance-badge";
 

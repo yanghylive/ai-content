@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Cpu } from "lucide-react";
+import { Cpu } from "@/components/iconpark";
 import { ResourceCenter, type ResourceItem } from "@/components/v2/resource-center";
 import { LoadErrorBanner, useLoadError } from "@/components/load-error-banner";
 import { settingsApi, type AIModel } from "@/lib/api/settings";

@@ -5,7 +5,7 @@ import {
   CardContent,
 } from "@/components/agent-cockpit-canvas/ui/card";
 import { Button } from "@/components/agent-cockpit-canvas/ui/button";
-import { Plus } from "lucide-react";
+import { Plus } from "@/components/iconpark";
 import {
   ChartSpec,
   Chart,

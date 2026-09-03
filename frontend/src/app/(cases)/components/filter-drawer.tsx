@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { RotateCcw, X } from "lucide-react";
+import { RotateCcw, X } from "@/components/iconpark";
 import type { TaxonomyResult } from "@/lib/api/case-showcase";
 import type { ActiveFilters } from "./case-filters";
 import { hasActiveFilters } from "./case-filters";

@@ -13,7 +13,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Save, RotateCcw, ArrowLeft, Loader2, Workflow, Play, Settings2 } from "lucide-react";
+import { Save, RotateCcw, ArrowLeft, Loader2, Workflow, Play, Settings2 } from "@/components/iconpark";
 import NodePanel from "./NodePanel";
 import { FLOW_NODE_TYPES, NODE_TYPE_META, type GrowthCanvasNode, type GrowthCanvasEdge, type GrowthCanvasNodeType } from "./nodeTypes";
 import { growthApi, type GrowthWorkflow } from "@/lib/api/growth";

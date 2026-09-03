@@ -7,7 +7,7 @@ import { statusGroup } from "@/lib/publish-status";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, RefreshCcw, Send, Trash2 } from "lucide-react";
+import { ArrowLeft, RefreshCcw, Send, Trash2 } from "@/components/iconpark";
 import {
   V2Section,
   V2StatusChip,

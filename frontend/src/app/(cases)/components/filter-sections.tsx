@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check } from "@/components/iconpark";
 import type { TaxonomyResult } from "@/lib/api/case-showcase";
 import type { ActiveFilters } from "./case-filters";
 

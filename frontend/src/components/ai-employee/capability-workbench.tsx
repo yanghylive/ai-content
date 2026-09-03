@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ArrowRight, CheckCircle2, RefreshCw, ShieldCheck, Sparkles, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, RefreshCw, ShieldCheck, Sparkles, XCircle } from "@/components/iconpark";
 import { Button, Card, CardBody, Chip } from "@heroui/react";
 import toast from "@/lib/toast";
 import { aiEmployeeApi, type AiEmployeeCapability, type AiEmployeeCapabilitiesSnapshot } from "@/lib/api/ai-employee";

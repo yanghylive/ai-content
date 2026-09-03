@@ -12,7 +12,7 @@ import {
   Sparkles,
   Target,
   TrendingUp,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { Chip, Modal, ModalBody, ModalContent } from "@heroui/react";
 import { intelligencePages, intelligenceNavItems } from "../data";
 import { useIsMobile } from "@/lib/hooks/use-media-query";

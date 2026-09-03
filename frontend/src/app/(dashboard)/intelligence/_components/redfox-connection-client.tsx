@@ -20,7 +20,7 @@ import {
   ShieldCheck,
   WifiOff,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   redfoxApi,
   type RedfoxCallLog,

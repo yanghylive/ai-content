@@ -20,7 +20,7 @@ import {
   SlidersHorizontal,
   TimerReset,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   intelligenceApi,
   type CreateIntelligenceMonitorInput,

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
-import { Copy, ExternalLink, Loader2, ShieldCheck, ShoppingBag } from "lucide-react";
+import { Copy, ExternalLink, Loader2, ShieldCheck, ShoppingBag } from "@/components/iconpark";
 import { savingsApi, type OfferView } from "@/lib/api/savings";
 import { toActionableError } from "@/lib/public-error";
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button, Input, addToast } from "@heroui/react";
-import { CreditCard, History, ReceiptText, ShieldCheck, Wallet } from "lucide-react";
+import { CreditCard, History, ReceiptText, ShieldCheck, Wallet } from "@/components/iconpark";
 import { savingsApi, type CreditBalance, type RebateBalance } from "@/lib/api/savings";
 import { toActionableError } from "@/lib/public-error";
 

@@ -7,7 +7,7 @@ import {
   QrCode,
   ShieldAlert,
   Video,
-} from "lucide-react";
+} from "@/components/iconpark";
 import type { PublicDemoEndpointDto } from "@/lib/api/case-showcase";
 import { trackCaseEvent } from "@/lib/analytics/case-events";
 import { ShortLinkQrCode } from "./qr-code";

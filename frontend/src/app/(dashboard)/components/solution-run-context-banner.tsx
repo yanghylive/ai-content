@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Button, Chip, Progress } from "@heroui/react";
-import { ArrowRight, RefreshCw, Route } from "lucide-react";
+import { ArrowRight, RefreshCw, Route } from "@/components/iconpark";
 import {
   getSolutionRun,
   type SolutionRunRecord} from "@/lib/api/solutions";

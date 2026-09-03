@@ -3,7 +3,7 @@
 import { useConfirm } from "@/hooks/use-confirm";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save } from "@/components/iconpark";
 import {
   V2Section,
   V2Field,
@@ -16,7 +16,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { stylesApi, type Style } from "@/lib/api/styles";
 import { toPublicError } from "@/lib/public-error";
-import { FileText, Image as ImageIcon, LayoutTemplate, BookOpen } from "lucide-react";
+import { FileText, Image as ImageIcon, LayoutTemplate, BookOpen } from "@/components/iconpark";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { SkeletonList } from "@/components/skeleton";
 

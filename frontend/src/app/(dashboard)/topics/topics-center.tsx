@@ -8,7 +8,7 @@ import { BrandLogo } from "@/components/brand-logo";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Lightbulb, RefreshCcw, Send, Trash2, Wand2, XCircle } from "lucide-react";
+import { FileText, Lightbulb, RefreshCcw, Send, Trash2, Wand2, XCircle } from "@/components/iconpark";
 import { ResourceCenter, type ResourceItem } from "@/components/v2/resource-center";
 import { topicsApi, type Topic, type TopicDiscoveryResult } from "@/lib/api/topics";
 import { articlesApi } from "@/lib/api/articles";

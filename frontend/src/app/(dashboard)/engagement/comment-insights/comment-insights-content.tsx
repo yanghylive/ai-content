@@ -7,7 +7,7 @@ import {
   Loader2,
   Play,
   Sparkles,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   commentInsightsApi,
   type CommentAnalyzeResult,

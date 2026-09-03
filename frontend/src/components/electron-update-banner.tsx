@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button, Card, CardBody, Progress, Chip } from "@heroui/react";
-import { CheckCircle2, Download, Sparkles, X } from "lucide-react";
+import { CheckCircle2, Download, Sparkles, X } from "@/components/iconpark";
 import toast from "@/lib/toast";
 import { toActionableError } from "@/lib/public-error";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { ShieldCheck, Check, X, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Check, X, AlertTriangle } from "@/components/iconpark";
 import { approvalApi, type ApprovalRecord } from "@/lib/api/approval";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { SkeletonList } from "@/components/skeleton";

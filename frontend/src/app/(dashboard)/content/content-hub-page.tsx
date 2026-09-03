@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Sparkles,
   WandSparkles,
-  type LucideIcon} from "lucide-react";
+  type LucideIcon} from "@/components/iconpark";
 import { Button, Card, CardBody } from "@heroui/react";
 import { BusinessToolResultContext } from "../components/business-tool-result-context";
 import { materialsApi, type Material, type MaterialCollectStatus, type MaterialStats } from "@/lib/api/materials";

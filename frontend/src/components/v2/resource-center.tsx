@@ -9,7 +9,7 @@ import {
   Search,
   Star,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 import { SkeletonList } from "@/components/skeleton";
 

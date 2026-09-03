@@ -8,7 +8,7 @@ import {
   RefreshCcw,
   Search,
   Users,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 type ChatSession = {
   id: string;

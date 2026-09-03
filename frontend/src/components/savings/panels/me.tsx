@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Input, addToast } from "@heroui/react";
-import { BellRing, Copy, Gift, Heart, Landmark, Share2, Store, User } from "lucide-react";
+import { BellRing, Copy, Gift, Heart, Landmark, Share2, Store, User } from "@/components/iconpark";
 import { savingsApi, type OfferView, type PriceWatch } from "@/lib/api/savings";
 import { ProductCard } from "../product-card";
 import { BuyModal } from "../buy-modal";

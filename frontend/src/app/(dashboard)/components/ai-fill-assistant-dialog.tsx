@@ -10,7 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
-import { Bot, CheckCircle2 } from "lucide-react";
+import { Bot, CheckCircle2 } from "@/components/iconpark";
 
 export type AiFillCandidate = {
   id: string;

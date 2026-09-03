@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, ShoppingCart, Download, Rocket } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ShoppingCart, Download, Rocket } from "@/components/iconpark";
 import {
   V2Section,
   V2PrimaryButton,

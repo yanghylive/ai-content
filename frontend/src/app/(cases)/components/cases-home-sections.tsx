@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Mail, Sparkles } from "lucide-react";
+import { ArrowRight, Mail, Sparkles } from "@/components/iconpark";
 import {
   getTaxonomies,
   listCases,

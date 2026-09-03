@@ -1,6 +1,6 @@
 "use client";
 
-import { Rss } from "lucide-react";
+import { Rss } from "@/components/iconpark";
 import { SkeletonRow } from "@/components/skeleton";
 
 import React from "react";

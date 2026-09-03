@@ -14,7 +14,7 @@ import {
   Smartphone,
   XCircle,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import Link from "next/link";
 import { videoWorkshopApi } from "@/lib/api/video-workshop";
 

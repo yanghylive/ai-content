@@ -8,7 +8,7 @@ import {
   History,
   MessageSquareText,
   Search,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { WorkbenchCenter } from "@/components/v2/workbench-center";
 
 export function DouyinMessagesCenter() {

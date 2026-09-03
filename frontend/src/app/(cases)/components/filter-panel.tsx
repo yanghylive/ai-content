@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw, SlidersHorizontal } from "lucide-react";
+import { RotateCcw, SlidersHorizontal } from "@/components/iconpark";
 import type { TaxonomyResult } from "@/lib/api/case-showcase";
 import type { ActiveFilters } from "./case-filters";
 import { hasActiveFilters } from "./case-filters";

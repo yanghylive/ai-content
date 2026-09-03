@@ -16,7 +16,7 @@ import {
   Target,
   TrendingUp,
   Users,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   growthApi,
   type GrowthAccountHealth,

@@ -7,7 +7,7 @@ import {
   Lock,
   Mail,
   Send,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   submitInquiry,
   type ContactType,

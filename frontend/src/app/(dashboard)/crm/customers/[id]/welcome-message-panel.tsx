@@ -23,7 +23,7 @@ import {
   MessageSquareText,
   Plus,
   Send,
-} from "lucide-react";
+} from "@/components/iconpark";
 import toast from "@/lib/toast";
 import {
   archiveCrmWelcomeMessageTemplate,

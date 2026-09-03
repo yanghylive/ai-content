@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/components/iconpark";
 
 /**
  * 全站唯一返回按钮（B4 2026-08-23 升级：样式接 kx token，告别 inline style）。

@@ -2,7 +2,7 @@ import {
   Clock3,
   Database,
   Filter,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { type IntelligencePageConfig } from "../data";
 
 type IntelligencePageShellProps = {

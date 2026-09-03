@@ -4,7 +4,7 @@ import { SkeletonList, SkeletonRow } from "@/components/skeleton";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plug, RefreshCcw } from "lucide-react";
+import { Plug, RefreshCcw } from "@/components/iconpark";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 import {

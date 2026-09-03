@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button, Tooltip, cn } from "@heroui/react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "@/components/iconpark";
 import { useTheme } from "next-themes";
 
 interface ThemeToggleProps {

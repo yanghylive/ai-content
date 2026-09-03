@@ -19,7 +19,7 @@ import {
   UsersRound,
   WandSparkles,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 type BusinessToolView = {
   eyebrow: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardBody, Chip } from "@heroui/react";
-import { BadgeCheck, CheckCircle2, RefreshCw, ShieldCheck } from "lucide-react";
+import { BadgeCheck, CheckCircle2, RefreshCw, ShieldCheck } from "@/components/iconpark";
 import type { ReactNode } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 

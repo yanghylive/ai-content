@@ -3,7 +3,7 @@
 import React from "react";
 import { Button, Chip } from "@heroui/react";
 import toast from "@/lib/toast";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink } from "@/components/iconpark";
 import {
   clearGeoBridgeContext,
   loadGeoBridgeContext,

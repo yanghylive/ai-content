@@ -18,7 +18,7 @@ import {
   Target,
   UsersRound,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 
 type OperationsKey =
   "inbox" | "reports" | "leads" | "risks" | "rules" | "collaboration";

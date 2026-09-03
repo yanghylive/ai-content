@@ -22,7 +22,7 @@ import {
   Sparkles,
   UsersRound,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { intelligenceApi } from "@/lib/api/intelligence";
 import { redfoxApi, type RedfoxSkill } from "@/lib/api/redfox";
 import { FunctionalEmptyState } from "../../components/functional-empty-state";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { ChevronDown, type LucideIcon } from "lucide-react";
+import { ChevronDown, type LucideIcon } from "@/components/iconpark";
 
 /**
  * JIUZHANG AI v2 UI 基础件库

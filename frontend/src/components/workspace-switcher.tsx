@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button, Chip, Input } from "@heroui/react";
-import { Layers, Plus, ExternalLink } from "lucide-react";
+import { Layers, Plus, ExternalLink } from "@/components/iconpark";
 import toast from "@/lib/toast";
 import { workspaceApi, type Workspace } from "@/lib/api/workspace";
 import { useOctopLaunch } from "@/hooks/use-octop-launch";

@@ -11,7 +11,7 @@ import {
   Upload,
   UserRound,
   Wand2,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   V2Section,
   V2PrimaryButton,

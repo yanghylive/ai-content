@@ -8,7 +8,7 @@ import {
   FilePlus2,
   Loader2,
   Save,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { V2BackButton } from "@/components/v2/v2-back-button";
 import { V2GhostButton, V2PrimaryButton } from "@/components/v2/ui-kit";
 import type { SaveState } from "./workspace-types";

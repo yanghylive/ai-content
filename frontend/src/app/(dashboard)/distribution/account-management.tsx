@@ -14,7 +14,7 @@ import {
   Trash2,
   UserCheck,
   X,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { autoUploadApi, type AutoUploadAccount } from "@/lib/api/auto-upload";
 import {
   V2Section,

@@ -34,7 +34,7 @@ import {
   Square,
   User,
   X,
-} from "lucide-react";
+} from "@/components/iconpark";
 import {
   localEngineApi,
   type AgentSConversationAttachment,

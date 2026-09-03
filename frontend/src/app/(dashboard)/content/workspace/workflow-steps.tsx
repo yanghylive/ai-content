@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check } from "@/components/iconpark";
 import { WORKSPACE_STEPS, type WorkspaceStepId } from "./workspace-types";
 
 type WorkflowStepsProps = {

@@ -7,7 +7,7 @@ import {
   MessageSquareText,
   TrendingUp,
   UserRound,
-} from "lucide-react";
+} from "@/components/iconpark";
 import { WorkbenchCenter, type WorkbenchStat } from "@/components/v2/workbench-center";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
