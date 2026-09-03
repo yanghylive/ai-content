@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   Bell,
   ChevronRight,
+  Cpu,
   Database,
   Lock,
   MonitorCog,
@@ -259,6 +260,23 @@ export function SettingsDetail() {
               </div>
               <button type="button" className="mx-btn-gold" onClick={() => router.push("/settings/integrations")}>去配置</button>
             </div>
+          </div>
+
+          {/* AI 服务（2026-09-03 恢复入口：默认模型/账号同步/连接检查） */}
+          <div className="mx-card" style={{ padding: 16, marginBottom: 14 }}>
+            <div className="mx-section-title" style={{ marginBottom: 12 }}>
+              <span className="mx-sec-icon"><Cpu /></span>
+              AI 服务
+            </div>
+            <button
+              type="button"
+              className="mx-control"
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid rgba(142,165,190,.14)" }}
+              onClick={() => router.push("/settings/ai-service")}
+            >
+              <span style={{ fontSize: 13, color: "var(--kaypal-v3-soft-ink)" }}>默认模型 · 从账号同步 · 连接检查</span>
+              <span style={{ fontSize: 13, color: "rgba(148,163,184,.7)" }}>›</span>
+            </button>
           </div>
 
           {/* 桌面设置（本机应用专属） */}
