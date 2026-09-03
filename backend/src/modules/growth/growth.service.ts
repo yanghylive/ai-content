@@ -10,8 +10,24 @@ import {
 } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+
+/** D4 复核修复：keyword-stats 文件结构（v2，按 scope 隔离） */
+interface GrowthKeywordStatsFile {
+  version: number;
+  updatedAt: string | null;
+  scopes: Record<
+    string,
+    {
+      updatedAt: string | null;
+      industries: Record<
+        string,
+        Record<string, { hits: number; lastSeenAt: string }>
+      >;
+    }
+  >;
+}
+import { dirname, join } from 'node:path';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { resolveProjectDataPath } from '../../common/project-paths';
@@ -20,6 +36,11 @@ import {
   industryPlaybook,
   listWorkflowPlaybooks,
 } from './growth-playbooks.data';
+import {
+  industryKeywordPreset,
+  expandDemandKeywordsWithSynonyms,
+  resolveIndustryBySourceKeywords,
+} from './growth-keywords.data';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import {
   AiEmployeeService,
@@ -61,6 +82,7 @@ import {
   type GrowthHomeBlocker,
   type GrowthHomeResponse,
   type GrowthHomeStats,
+  type GrowthHomeTrends,
   type GrowthBenchmarkAccountIntakePreview,
   type GrowthIntelligenceEvidence,
   type GrowthLeadConfirmationDraft,
@@ -154,6 +176,8 @@ type AiEmployeeFollowUpExecution = Awaited<
 export class GrowthService implements OnModuleInit {
   private readonly logger = new Logger(GrowthService.name);
   private schedulerRunning = false;
+  /** D4 复核修复：keyword-stats 写入串行链（进程内互斥，防并发读改写互相覆盖） */
+  private keywordStatsWriteChain: Promise<void> = Promise.resolve();
   private workflowDaemonRunning = false;
   private dbMigrated = false;
   private storeSnapshotWrite: Promise<void> = Promise.resolve();
@@ -232,8 +256,12 @@ export class GrowthService implements OnModuleInit {
     }
   }
 
-  async getOverview(userId: string): Promise<GrowthOverview> {
-    const store = await this.loadStore();
+  async getOverview(
+    userId: string,
+    storeInput?: GrowthStore,
+    options?: { recentRunsLimit?: number },
+  ): Promise<GrowthOverview> {
+    const store = storeInput ?? (await this.loadStore());
     const scope = await this.growthScope(userId);
     const today = this.dateKey();
     const userLeads = store.leads.filter((item) =>
@@ -284,7 +312,7 @@ export class GrowthService implements OnModuleInit {
         converted: userLeads.filter((item) => item.status === 'converted')
           .length,
       },
-      recentRuns: userRuns.slice(0, 8),
+      recentRuns: userRuns.slice(0, options?.recentRunsLimit ?? 8),
       hotStrategies: store.strategies
         .filter((item) => this.inGrowthScope(item, scope))
         .slice(0, 6),
@@ -303,11 +331,18 @@ export class GrowthService implements OnModuleInit {
     _options: { range?: 'today' | '30d' } = {},
   ): Promise<GrowthHomeResponse> {
     const generatedAt = new Date().toISOString();
-    const overview = await this.getGrowthOverviewSafely(userId);
+    // 首页每次刷新只 loadStore 一次，overview / trends / 最近运行共用同一份快照，
+    // 避免同一请求内 3 次全量读取 leads/runs（30s 轮询会放大开销）。
+    const store = await this.loadStore();
+    const overview = await this.getGrowthOverviewSafely(userId, store, {
+      recentRunsLimit: 16,
+    });
     const stats = await this.buildGrowthHomeStats(overview, userId);
     const funnel = await this.buildGrowthHomeFunnel(overview, userId);
     const blockers = await this.buildGrowthHomeBlockers(userId);
-    const recentRuns = overview?.recentRuns?.slice(0, 8) ?? [];
+    const trends = await this.buildGrowthHomeTrends(store, userId);
+    // 最近运行给更多条（16），前端折叠连续同类失败后有足够覆盖，不再被 8 条截断
+    const recentRuns = overview?.recentRuns?.slice(0, 16) ?? [];
     const nextActions: GrowthHomeResponse['nextActions'] = [
       {
         code: 'create-task',
@@ -329,18 +364,95 @@ export class GrowthService implements OnModuleInit {
       blockers,
       recentRuns,
       nextActions,
+      trends,
     };
   }
 
   /** overview 隔离：getOverview 抛错时返回 undefined（stats/funnel.recentRuns 相关字段走 null） */
-  private async getGrowthOverviewSafely(userId: string) {
+  private async getGrowthOverviewSafely(
+    userId: string,
+    store?: GrowthStore,
+    options?: { recentRunsLimit?: number },
+  ) {
     try {
-      return await this.getOverview(userId);
+      return await this.getOverview(userId, store, options);
     } catch (error) {
       this.logger.warn(
         `getGrowthHome overview 不可用：${error instanceof Error ? error.message : String(error)}`,
       );
       return undefined;
+    }
+  }
+
+  /**
+   * 指标卡 7 日趋势（近 7 天含今日，升序）。只对「日增量」型指标做序列：
+   *  - newLeads：lead.createdAt 当日（对齐 stats.newLeads / overview.todayLeadCount）
+   *  - highIntent：lead.createdAt 当日且 score>=75 且非 blocked（纯日增量趋势）
+   *  - crmCaptured：lead.crmCustomerId 非空且 lead.updatedAt 当日（对齐 stats.crmCaptured）
+   * 存量型指标（待触达 / 商机金额）没有可回溯的日快照历史，不硬造序列。
+   * 底层不可用 → null（前端不画 sparkline），不抛错。
+   */
+  private async buildGrowthHomeTrends(
+    store: GrowthStore,
+    userId: string,
+  ): Promise<GrowthHomeTrends | null> {
+    try {
+      const scope = await this.growthScope(userId);
+      const leads = store.leads.filter((item) =>
+        this.inGrowthScope(item, scope),
+      );
+      const DAY_MS = 24 * 60 * 60 * 1000;
+      const rows: Array<{
+        date: string;
+        newLeads: number;
+        highIntent: number;
+        crmCaptured: number;
+      }> = [];
+      for (let i = 6; i >= 0; i -= 1) {
+        rows.push({
+          date: this.dateKey(new Date(Date.now() - i * DAY_MS)),
+          newLeads: 0,
+          highIntent: 0,
+          crmCaptured: 0,
+        });
+      }
+      const byDate = new Map(rows.map((row) => [row.date, row]));
+      for (const lead of leads) {
+        const createdDate = this.dateKey(new Date(lead.createdAt));
+        const createdRow = byDate.get(createdDate);
+        if (createdRow) {
+          createdRow.newLeads += 1;
+          if ((lead.score ?? 0) >= 75 && lead.status !== 'blocked') {
+            createdRow.highIntent += 1;
+          }
+        }
+        if (lead.crmCustomerId && lead.updatedAt) {
+          const crmDate = this.dateKey(new Date(lead.updatedAt));
+          const crmRow = byDate.get(crmDate);
+          if (crmRow) crmRow.crmCaptured += 1;
+        }
+      }
+      return {
+        newLeads: rows.map((row) => ({
+          date: row.date,
+          value: row.newLeads,
+        })),
+        highIntent: rows.map((row) => ({
+          date: row.date,
+          value: row.highIntent,
+        })),
+        crmCaptured: rows.map((row) => ({
+          date: row.date,
+          value: row.crmCaptured,
+        })),
+      };
+    } catch (error) {
+      this.logger.warn(
+        `getGrowthHome trends 不可用：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return null;
     }
   }
 
@@ -1897,8 +2009,14 @@ export class GrowthService implements OnModuleInit {
           dailyLimit: normalizedConfig.dailyLimit,
           maxTargets: remaining,
           maxActionsPerTarget: normalizedConfig.perTargetLimit,
-          includeKeywords: normalizedConfig.includeKeywords,
+          // 彻底重构：意向词展开同义词簇（报价→价位/收费/多少钱都能命中）；
+          // 排除词用行业词库默认排除词兜底（任务未配时仍能过滤招聘/招商/加盟）。
+          includeKeywords: expandDemandKeywordsWithSynonyms(
+            normalizedConfig.includeKeywords,
+          ),
           blacklistKeywords: [
+            ...(resolveIndustryBySourceKeywords(normalizedConfig.sourceInputs)
+              ?.excludeKeywords ?? []),
             ...normalizedConfig.excludeKeywords,
             ...normalizedConfig.blacklistNicknames,
           ],
@@ -1943,6 +2061,9 @@ export class GrowthService implements OnModuleInit {
         ),
       );
       this.applyExecutionToLeads(leads, execution);
+      // 数据反馈闭环：命中意向词统计。D4 复核修复：执行接口响应前等待落盘；
+      // 方法内部自含 try/catch，统计失败不阻塞主流程。
+      await this.recordKeywordFeedback(normalizedConfig, leads);
       const successCount =
         execution.summary?.successCount ??
         execution.results?.filter((item) => item.ok).length ??
@@ -1990,6 +2111,154 @@ export class GrowthService implements OnModuleInit {
     }
   }
 
+  /**
+   * 数据反馈闭环：统计本次执行中每个意向词（含同义词簇）命中了几条线索，
+   * 按行业分组累计持久化到 growth-keyword-stats.json，供后续调优词库。
+   *
+   * D4 复核修复：
+   *  - scope 隔离：文件内按 tenantId || userId 分段，读取端按当前登录 scope 取数；
+   *  - 串行化写入（进程内互斥）+ 临时文件 rename 原子替换，防并发读改写互相覆盖与半写；
+   *  - 调用方 await 落盘后才返回（不再 fire-and-forget 提前返回）；
+   *  - 统计失败仍不阻塞主流程（内部 try/catch 兜底）。
+   */
+  private async recordKeywordFeedback(
+    config: GrowthAcquisitionConfig,
+    leads: GrowthLead[],
+  ) {
+    if (!leads.length) return;
+    try {
+      const preset = resolveIndustryBySourceKeywords(config.sourceInputs);
+      const industry = preset?.industry ?? '通用';
+      const keywords = expandDemandKeywordsWithSynonyms(config.includeKeywords);
+      const hits: Record<string, number> = {};
+      for (const lead of leads) {
+        const text = `${lead.sourceText || ''} ${lead.nickname || ''}`;
+        for (const kw of keywords) {
+          if (text.includes(kw)) hits[kw] = (hits[kw] || 0) + 1;
+        }
+      }
+      if (!Object.keys(hits).length) return;
+      const scopeKey = config.tenantId || config.userId || 'legacy';
+      await this.enqueueKeywordStatsWrite((stats) => {
+        const scopeBlock = stats.scopes[scopeKey] || {
+          updatedAt: null,
+          industries: {},
+        };
+        const industryStats = scopeBlock.industries[industry] || {};
+        for (const [kw, count] of Object.entries(hits)) {
+          const cur = industryStats[kw] || { hits: 0, lastSeenAt: '' };
+          industryStats[kw] = {
+            hits: cur.hits + count,
+            lastSeenAt: new Date().toISOString(),
+          };
+        }
+        scopeBlock.industries[industry] = industryStats;
+        scopeBlock.updatedAt = new Date().toISOString();
+        stats.scopes[scopeKey] = scopeBlock;
+        stats.updatedAt = scopeBlock.updatedAt;
+      });
+    } catch (error) {
+      // 统计失败不阻塞主流程，但服务端留痕便于排查
+      this.logger.warn(
+        `keyword 命中统计写入失败（scope=${config.tenantId || config.userId || 'legacy'}）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+
+  /** D4：keyword-stats 串行写 + 临时文件 rename 原子替换（写失败不影响后续排队） */
+  private enqueueKeywordStatsWrite(
+    mutate: (stats: GrowthKeywordStatsFile) => void,
+  ): Promise<void> {
+    const run = async () => {
+      const statsPath = resolveProjectDataPath(
+        'growth',
+        'growth-keyword-stats.json',
+      );
+      // 首次写入（全新数据目录）需先建 growth 目录，避免 ENOENT
+      await mkdir(dirname(statsPath), { recursive: true });
+      const stats = this.normalizeKeywordStatsFile(
+        await readFile(statsPath, 'utf8').catch(() => ''),
+      );
+      mutate(stats);
+      const tmpPath = `${statsPath}.${process.pid}.${Date.now()}.tmp`;
+      await writeFile(tmpPath, JSON.stringify(stats, null, 2), {
+        encoding: 'utf8',
+        mode: 0o600,
+      });
+      await rename(tmpPath, statsPath);
+    };
+    // 串行链用 catch 隔离防污染，但把本次结果回传给调用方（落盘失败要让调用方感知，
+    // 不能静默吞掉——D4 复核：请求等待落盘需能发现写失败）
+    const next = this.keywordStatsWriteChain.then(run);
+    this.keywordStatsWriteChain = next.catch(() => {
+      /* 单次写失败不阻塞后续排队写入 */
+    });
+    return next;
+  }
+
+  /** D4：文件结构兜底（旧全局平铺格式自动归入 legacy 段，不丢既有数据） */
+  private normalizeKeywordStatsFile(raw: string): GrowthKeywordStatsFile {
+    const empty: GrowthKeywordStatsFile = {
+      version: 2,
+      updatedAt: null,
+      scopes: {},
+    };
+    if (!raw.trim()) return empty;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return empty;
+    }
+    if (!parsed || typeof parsed !== 'object') return empty;
+    const record = parsed as Record<string, unknown>;
+    const stats: GrowthKeywordStatsFile = empty;
+    if (typeof record.updatedAt === 'string') {
+      stats.updatedAt = record.updatedAt;
+    }
+    if (record.scopes && typeof record.scopes === 'object') {
+      stats.scopes = record.scopes as GrowthKeywordStatsFile['scopes'];
+      return stats;
+    }
+    if (record.industries && typeof record.industries === 'object') {
+      stats.scopes.legacy = {
+        updatedAt: stats.updatedAt,
+        industries: record.industries as GrowthKeywordStatsFile['scopes'][string]['industries'],
+      };
+    }
+    return stats;
+  }
+
+  /** 查询命中意向词统计（数据反馈闭环；D4：按当前登录 scope 隔离返回） */
+  async keywordStats(userId: string) {
+    const empty = {
+      updatedAt: null,
+      industries: {},
+      message: '暂无命中统计，执行获客任务后会自动记录。',
+    };
+    try {
+      const statsPath = resolveProjectDataPath(
+        'growth',
+        'growth-keyword-stats.json',
+      );
+      const raw = await readFile(statsPath, 'utf8');
+      const stats = this.normalizeKeywordStatsFile(raw);
+      const tenantId = await this.resolveGrowthTenantId(userId);
+      const scopeKey = tenantId || userId || 'legacy';
+      const block = stats.scopes[scopeKey];
+      if (!block) return empty;
+      return {
+        updatedAt: block.updatedAt,
+        industries: block.industries,
+        scope: scopeKey,
+      };
+    } catch {
+      return empty;
+    }
+  }
+
   async preflightConfig(userId: string, id: string) {
     const store = await this.loadStore();
     const scope = await this.growthScope(userId);
@@ -1997,7 +2266,7 @@ export class GrowthService implements OnModuleInit {
       this.sameGrowthRecord(item, scope, id),
     );
     if (!config) throw new NotFoundException('获客任务不存在');
-    const accounts = await this.listAccountHealth(userId);
+    const accounts = await this.listAccountHealth(userId, { force: false });
     const plan = this.buildSchedulePlan([config], accounts);
     const account = accounts.find(
       (item) =>
@@ -2728,7 +2997,10 @@ export class GrowthService implements OnModuleInit {
     return { ok: true, lead: merged, mergedCount: duplicates.length };
   }
 
-  async listAccountHealth(userId: string) {
+  async listAccountHealth(
+    userId: string,
+    options: { force?: boolean } = {},
+  ) {
     // T2-9：30s 内重复请求直接用缓存，避免每次触发 force 真实校验（实测 2.6s）
     const cacheKey = `user:${userId}`;
     const cached = this.accountHealthCache.get(cacheKey);
@@ -2745,6 +3017,18 @@ export class GrowthService implements OnModuleInit {
     const persisted = store.accountHealth.filter((item) =>
       this.inGrowthScope(item, scope),
     );
+    // preflight 等只读预检场景不需要逐账号 headless 探活：直接返回持久化
+    // 账号健康快照，避免单个账号 12s 探活超时把整个预检拖垮（前端 10s 超时）。
+    if (options.force === false) {
+      const snapshot = persisted.length
+        ? persisted
+        : await this.ensureAccountHealth(userId, store, scope);
+      this.accountHealthCache.set(cacheKey, {
+        data: snapshot,
+        at: Date.now(),
+      });
+      return snapshot;
+    }
     try {
       const [accounts, health] = await Promise.all([
         this.autoUploadService.listAccounts({
@@ -3645,9 +3929,16 @@ export class GrowthService implements OnModuleInit {
     return workflow;
   }
 
-  /** 行业方案库：14 行业 × 场景 Playbook 清单（前端方案库渲染） */
+  /** 行业方案库：14 行业 × 场景 Playbook 清单（前端方案库渲染），
+   *  每个行业附带关键词三元组（行业词/意向词/排除词），来自唯一词库。 */
   listWorkflowPlaybooks() {
-    return Promise.resolve(listWorkflowPlaybooks());
+    const playbooks = listWorkflowPlaybooks();
+    return Promise.resolve(
+      playbooks.map((item) => ({
+        ...item,
+        keywords: industryKeywordPreset(item.industry) ?? null,
+      })),
+    );
   }
 
   async updateWorkflow(userId: string, id: string, input: QueryInput) {
@@ -5313,20 +5604,52 @@ export class GrowthService implements OnModuleInit {
           sessionRunId,
         );
 
-        // 第一段：行业词搜账号
-        const accountKeyword = config.sourceInputs[0] ?? config.taskName ?? '';
-        const accountResult = await driver.execute(sessionRef.current, {
-          name: 'discover-account-search',
-          action: 'discover-account-search',
-          input: { keyword: accountKeyword, limit: 10, userId: config.userId },
-        });
-        if (accountResult.status !== 'success' || !accountResult.items?.length) {
-          const failReason = accountResult.reasonCode ?? 'parse_failed';
+        // 第一段：多个行业词轮询搜账号（扩大账号池，不再只搜第一个词）。
+        // 单个词搜不到不阻断，继续下一个行业词；账号按外部 ID 去重合并。
+        const searchKeywords = (config.sourceInputs ?? []).filter(Boolean);
+        const accountKeywordList =
+          searchKeywords.length > 0 ? searchKeywords : [config.taskName ?? ''];
+        const searchedAccountIds: string[] = [];
+        const searchedIdSet = new Set<string>();
+        for (const accountKeyword of accountKeywordList) {
+          if (searchedAccountIds.length >= 30) break;
+          // C2 复核修复：单词级 try/catch——单个行业词搜索抛错（网络抖动/页面结构变化）
+          // 只跳过该词继续下一词，不能中断整轮多词轮询；账号忙（ConflictException）保持传播。
+          try {
+            const accountResult = await driver.execute(sessionRef.current, {
+              name: 'discover-account-search',
+              action: 'discover-account-search',
+              input: { keyword: accountKeyword, limit: 10, userId: config.userId },
+            });
+            if (accountResult.status !== 'success' || !accountResult.items?.length) {
+              continue;
+            }
+            const ids = accountResult.items
+              .map((item) => item.externalUserId || item.externalContentId)
+              .filter((value): value is string => Boolean(value));
+            for (const id of ids) {
+              if (searchedIdSet.has(id)) continue;
+              searchedIdSet.add(id);
+              searchedAccountIds.push(id);
+            }
+          } catch (keywordError) {
+            if (keywordError instanceof ConflictException) throw keywordError;
+            this.logger.warn(
+              `[两段式发现] 行业词「${accountKeyword}」搜索异常，跳过并继续下一词：${
+                keywordError instanceof Error
+                  ? keywordError.message
+                  : String(keywordError)
+              }`,
+            );
+          }
+        }
+        if (!searchedAccountIds.length) {
+          const failReason = 'parse_failed';
           await this.appendDriverStep(recordId, owner, {
             stepName: 'discover-account-search',
             status: 'failed',
             reasonCode: failReason,
-            message: accountResult.message || '行业词搜账号未解析到结果',
+            message: '全部行业词搜账号均未解析到结果',
           });
           await this.finalizeDriverRecord(recordId, owner, {
             status: 'failed',
@@ -5342,19 +5665,16 @@ export class GrowthService implements OnModuleInit {
               reasonCode: failReason,
               fallbackAllowed: true,
               message:
-                accountResult.message ||
-                `两段式发现：行业词搜账号未解析到结果，已回退本地适配器（执行 ${recordId}）`,
+                `两段式发现：${accountKeywordList.length} 个行业词均未搜到账号，已回退本地适配器（执行 ${recordId}）`,
             },
           };
         }
-        const accountIds = accountResult.items
-          .map((item) => item.externalUserId || item.externalContentId)
-          .filter((value): value is string => Boolean(value));
+        const accountIds = searchedAccountIds;
         await this.appendDriverStep(recordId, owner, {
           stepName: 'discover-account-search',
           status: 'success',
           reasonCode: 'ok',
-          message: `行业词「${accountKeyword}」搜到 ${accountIds.length} 个账号`,
+          message: `${accountKeywordList.length} 个行业词共搜到 ${accountIds.length} 个账号`,
         });
 
         // 第二段 + 第三段：读账号作品 → 读评论
@@ -10059,25 +10379,34 @@ export class GrowthService implements OnModuleInit {
   }
 
   private defaultIndustryTemplate(industry: string, scenario: string) {
-    const keywordMap: Record<string, string[]> = {
-      装修: ['装修', '旧房翻新', '全屋定制', '设计师', '本地装修'],
-      餐饮: ['开店', '加盟', '探店', '外卖', '选址'],
-      教育: ['补课', '升学', '考研', '职业培训'],
-      美业: ['皮肤管理', '医美', '美甲', '祛痘'],
-    };
-    const sourceKeywords = keywordMap[industry] || [
+    // 彻底重构：单一词库来源——读 growth-keywords.data.ts 的 14 行业关键词，
+    // 替代原先 4 行业硬编码 keywordMap。未命中（自定义行业）回退通用词，不抛错。
+    const preset = industryKeywordPreset(industry);
+    const sourceKeywords = preset?.sourceKeywords ?? [
       '本地服务',
       '客户需求',
       '求推荐',
       '多少钱',
+    ];
+    const demandKeywords = preset?.demandKeywords ?? [
+      '求推荐',
+      '多少钱',
+      '哪里靠谱',
+      '有没有人做过',
+    ];
+    const excludeKeywords = preset?.excludeKeywords ?? [
+      '招聘',
+      '教程',
+      '同行',
+      '广告',
     ];
     return {
       industry,
       scenario,
       name: `${industry}${scenario}策略`,
       sourceKeywords,
-      demandKeywords: ['求推荐', '多少钱', '哪里靠谱', '有没有人做过'],
-      excludeKeywords: ['招聘', '教程', '同行', '广告'],
+      demandKeywords,
+      excludeKeywords,
       blacklistNicknames: ['官方旗舰店', '招商中心'],
       commentTemplates: [
         '我这边刚好整理过这类问题，可以给你一个参考。',

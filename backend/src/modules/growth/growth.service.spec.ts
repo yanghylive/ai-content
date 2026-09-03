@@ -1,5 +1,8 @@
 import { GrowthService } from './growth.service';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 function makeService(
   prisma: Record<string, unknown> = {},
@@ -3740,5 +3743,154 @@ describe('GrowthService §6.1 取消执行', () => {
     svc.sameGrowthRecord = () => true;
     svc.logger = { warn: jest.fn(), log: jest.fn() };
     await expect(svc.cancelRun('u-1', 'run-2')).rejects.toThrow('只有运行中或排队中');
+  });
+});
+
+/**
+ * C2/D4 复核修复测试（2026-09-03 codex 结论）：
+ * C2 = 多行业词轮询搜账号时，单个词抛错不能中断整轮；
+ * D4 = keyword-stats 写入串行化 + 原子替换 + scope 隔离 + 等待落盘。
+ */
+describe('GrowthService C2/D4 复核修复（2026-09-03）', () => {
+  let stateRoot: string;
+  const originalRoot = process.env.KAYPAL_RUNTIME_STATE_ROOT;
+
+  beforeAll(() => {
+    stateRoot = mkdtempSync(join(tmpdir(), 'growth-stats-'));
+    process.env.KAYPAL_RUNTIME_STATE_ROOT = stateRoot;
+  });
+
+  afterAll(() => {
+    if (originalRoot === undefined) delete process.env.KAYPAL_RUNTIME_STATE_ROOT;
+    else process.env.KAYPAL_RUNTIME_STATE_ROOT = originalRoot;
+    rmSync(stateRoot, { recursive: true, force: true });
+  });
+
+  beforeEach(() => {
+    rmSync(stateRoot, { recursive: true, force: true });
+    mkdirSync(join(stateRoot, 'growth'), { recursive: true });
+  });
+
+  function makeDouyinDriver(execute: jest.Mock) {
+    return {
+      displayName: 'douyin-driver',
+      driverVersion: '1',
+      capabilities: jest.fn().mockResolvedValue({
+        platform: 'douyin',
+        runtimeReady: true,
+        actions: [
+          { action: 'discover-account-search', supported: true },
+          { action: 'discover-account-works', supported: true },
+          { action: 'read-comments', supported: true },
+        ],
+      }),
+      openSession: jest.fn().mockResolvedValue({
+        sessionId: 's-dy',
+        platform: 'douyin',
+      }),
+      closeSession: jest.fn().mockResolvedValue(undefined),
+      execute,
+    } as any;
+  }
+
+  it('C2：第一个行业词搜索抛错 → 不中断，继续第二个词并成功', async () => {
+    const execute = jest.fn().mockImplementation(async (_session: any, req: any) => {
+      if (req.action === 'discover-account-search') {
+        // 第一词抛异常，第二词成功返回账号
+        if (req.input.keyword === '装修') throw new Error('word1 boom: network glitch');
+        return { status: 'success', items: [{ externalUserId: 'acct-1' }, { externalUserId: 'acct-2' }] };
+      }
+      if (req.action === 'discover-account-works') {
+        return { status: 'success', items: [{ url: 'https://v.douyin.com/w1' }] };
+      }
+      if (req.action === 'read-comments') {
+        return {
+          status: 'success',
+          items: [
+            {
+              authorName: '意向客户',
+              text: '我家装修大概多少钱',
+              externalUserId: 'u9',
+              profileUrl: 'https://v.douyin.com/user/9',
+            },
+          ],
+        };
+      }
+      return { status: 'success', items: [] };
+    });
+    const driver = makeDouyinDriver(execute);
+    const registry = { get: jest.fn().mockReturnValue(driver) } as any;
+    const rpaStore = {
+      createWithLock: jest.fn().mockResolvedValue({ id: 'r1' }),
+      appendStep: jest.fn().mockResolvedValue({}),
+      finalize: jest.fn().mockResolvedValue({}),
+    } as any;
+    const service = makeService(
+      {}, {}, {}, {}, {},
+      undefined, undefined, undefined, undefined,
+      rpaStore, registry,
+    );
+    let store = makeStore({ configs: [] });
+    service.loadStore = jest.fn(async () => store);
+    service.saveStore = jest.fn(async (next: any) => { store = next; });
+
+    const config = makeConfig({ sourceInputs: ['装修', '设计'], tenantId: undefined });
+    const result = await service.fetchCandidatesWithAiEmployee(config, 20);
+
+    const searchCalls = execute.mock.calls.filter(
+      ([, req]: any[]) => req && req.action === 'discover-account-search',
+    );
+    // 关键断言：两个行业词都执行了（第一词抛错未中断轮询）
+    expect(searchCalls).toHaveLength(2);
+    expect(result.ok).toBe(true);
+    expect(result.candidates?.length).toBeGreaterThan(0);
+  });
+
+  it('D4：写入等待落盘 + readback 一致（scope=userId）', async () => {
+    const service = makeService({});
+    const config = makeConfig({
+      sourceInputs: ['装修'],
+      includeKeywords: ['多少钱'],
+      tenantId: undefined,
+    });
+    const lead = { id: 'l1', sourceText: '我家装修多少钱', nickname: '客户A' };
+    await (service as any).recordKeywordFeedback(config, [lead]);
+    const stats = await service.keywordStats('user-1');
+    // 行业键由词库解析（sourceInputs → 命中的 preset.industry），不写死行业名；
+    // 只要「多少钱」在解析出的行业下累计了命中即代表写入并读回成功。
+    const totalHits = Object.values(stats.industries as Record<string, any>)
+      .reduce((sum, byKw) => sum + ((byKw?.['多少钱']?.hits as number) || 0), 0);
+    expect(totalHits).toBeGreaterThanOrEqual(1);
+    expect(stats.scope).toBe('user-1');
+  });
+
+  it('D4：并发两次写入不互相覆盖（串行链 read-modify-write 安全）', async () => {
+    const service = makeService({});
+    const cfg = () =>
+      makeConfig({ sourceInputs: ['装修'], includeKeywords: ['多少钱'], tenantId: undefined });
+    const lead = (id: string, text: string) => ({ id, sourceText: text, nickname: 'x' });
+    // 两轮并发写，每轮 +1 → 期望最终累计 2（若互相覆盖只会是 1）
+    await Promise.all([
+      (service as any).recordKeywordFeedback(cfg(), [lead('a', '报价多少钱')]),
+      (service as any).recordKeywordFeedback(cfg(), [lead('b', '你们收费多少钱')]),
+    ]);
+    const stats = await service.keywordStats('user-1');
+    const totalHits = Object.values(stats.industries as Record<string, any>)
+      .reduce((sum, byKw) => sum + ((byKw?.['多少钱']?.hits as number) || 0), 0);
+    expect(totalHits).toBe(2);
+  });
+
+  it('D4：scope 隔离——user-2 读不到 user-1 的统计', async () => {
+    const service = makeService({});
+    const config = makeConfig({
+      sourceInputs: ['装修'],
+      includeKeywords: ['多少钱'],
+      tenantId: undefined,
+    });
+    await (service as any).recordKeywordFeedback(config, [
+      { id: 'l1', sourceText: '多少钱', nickname: 'A' },
+    ]);
+    const other = await service.keywordStats('user-2');
+    expect(other.industries).toEqual({});
   });
 });

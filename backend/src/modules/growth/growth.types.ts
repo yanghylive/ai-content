@@ -631,6 +631,22 @@ export interface GrowthHomeNextAction {
   href: string;
 }
 
+/** 单指标近 N 日序列（date=UTC 日期 YYYY-MM-DD，与 dateKey 口径一致，升序=旧→新） */
+export interface GrowthHomeTrendSeries {
+  date: string;
+  value: number;
+}
+
+/** 首页指标卡趋势：只覆盖「日增量」型指标（存量型指标如待触达/商机金额无日历史，缺省） */
+export interface GrowthHomeTrends {
+  /** 每日新增线索（对齐 stats.newLeads 口径：lead.createdAt 当日） */
+  newLeads: GrowthHomeTrendSeries[];
+  /** 每日新增高意向线索（score>=75 且非 blocked，lead.createdAt 当日）——纯趋势，非存量 */
+  highIntent: GrowthHomeTrendSeries[];
+  /** 每日进 CRM（lead.crmCustomerId 非空，lead.updatedAt 当日）——对齐 stats.crmCaptured */
+  crmCaptured: GrowthHomeTrendSeries[];
+}
+
 export interface GrowthHomeResponse {
   /** ISO 8601，前端显示数据时间；聚合接口整体可用时始终返回 */
   generatedAt: string;
@@ -639,6 +655,8 @@ export interface GrowthHomeResponse {
   blockers: GrowthHomeBlocker[];
   recentRuns: GrowthAcquisitionRun[];
   nextActions: GrowthHomeNextAction[];
+  /** 指标卡 7 日趋势（存量指标缺省；底层不可用为 null，前端不画 sparkline） */
+  trends?: GrowthHomeTrends | null;
 }
 
 export interface GrowthSixStageFunnel {

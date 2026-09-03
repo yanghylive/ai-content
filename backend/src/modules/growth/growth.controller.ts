@@ -251,6 +251,12 @@ export class GrowthController {
     return this.growthService.deleteStrategy(this.getUserId(request), id);
   }
 
+  /** 命中意向词统计（数据反馈闭环；D4：按当前登录用户的租户 scope 隔离返回） */
+  @Get('keyword-stats')
+  keywordStats(@Req() request: AuthenticatedRequest) {
+    return this.growthService.keywordStats(this.getUserId(request));
+  }
+
   @Get('acquisition/configs')
   listConfigs(
     @Req() request: AuthenticatedRequest,
