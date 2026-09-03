@@ -1,0 +1,168 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T09:32:57.417Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "userDataDir": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/bp-e2e-userdata-x1U6Yl"
+  },
+  "checks": [
+    {
+      "name": "P1 面板打开 → 凭据文件落盘且权限 0600",
+      "pass": true,
+      "detail": {
+        "exists": true,
+        "mode": "600"
+      }
+    },
+    {
+      "name": "P2 子进程（3011）跨进程读到凭据并连通 /health",
+      "pass": true,
+      "detail": {
+        "ok": true,
+        "health": {
+          "protocol": "kaypal-browser-bridge",
+          "version": 1,
+          "ok": true
+        },
+        "stderr": ""
+      }
+    },
+    {
+      "name": "P3 observe 的 webContentsId == 面板真实 webContents.id（同页核心）",
+      "pass": true,
+      "detail": {
+        "observedWcId": 5,
+        "realWcId": 5,
+        "registryWcId": 5
+      }
+    },
+    {
+      "name": "P4 observe 内容 == 面板真实渲染内容",
+      "pass": true,
+      "detail": {
+        "title": "BrowserPanel P0 Fixture",
+        "textSampleHead": "browser-panel-p0\n0\n+1 \n-\n-"
+      }
+    },
+    {
+      "name": "P5 凭据脱敏：SECRET-E2E-123 不出网，敏感 query 变 ***",
+      "pass": true,
+      "detail": {
+        "leaked": false,
+        "redacted": true
+      }
+    },
+    {
+      "name": "P6 子进程只拿得到确认单（actionId），拿不到执行权",
+      "pass": true,
+      "detail": {
+        "actionId": "7c540b51c73888a37ae79f3f",
+        "binding": {
+          "panelId": "panel-18a18ea21a0a",
+          "sessionId": "sess-4c102d069c15245f",
+          "webContentsId": 5,
+          "url": "http://127.0.0.1:54696/browser-panel.html?token=SECRET-E2E-123&keep=1"
+        }
+      }
+    },
+    {
+      "name": "P6b Agent 尝试自我批准 → 被拒（硬约束 5）",
+      "pass": true,
+      "detail": {
+        "threw": true,
+        "message": "批准必须由用户通道发起（阶段 4 接审批 UI）；Agent 不得自我批准（fail-closed）"
+      }
+    },
+    {
+      "name": "P7 未批准的 Page.navigate → 被审批闸门拒绝",
+      "pass": true,
+      "detail": {
+        "threw": true,
+        "message": "动作需要审批（先 requestAction 再携带 approvedActionId）：Page.navigate"
+      }
+    },
+    {
+      "name": "P8 真实导航闭环：签单→用户批准→CDP 执行→observe 回读到新页面",
+      "pass": true,
+      "detail": {
+        "targetUrl": "http://127.0.0.1:54696/nav-target.html",
+        "afterUrl": "http://127.0.0.1:54696/nav-target.html",
+        "afterWcId": 5,
+        "realWcId": 5,
+        "markerFound": true,
+        "pendingCountBeforeApprove": 2,
+        "textSampleHead": "E2E 导航目标\n\nNAV-TARGET-OK"
+      }
+    },
+    {
+      "name": "P9 后端视角写动作闭环：签单(pending 拒执行)→用户批准→带单执行→回读到新页面",
+      "pass": true,
+      "detail": {
+        "pending": {
+          "ticketId": "68dcedafd2c9af582d8838a1",
+          "state": "pending",
+          "pendingExecuteBlocked": true,
+          "pendingExecuteError": "POLICY_DENIED"
+        },
+        "executed": {
+          "ok": true,
+          "executed": true,
+          "webContentsId": 5,
+          "afterUrl": "http://127.0.0.1:54696/nav-target-2.html",
+          "markerFound": true
+        }
+      }
+    },
+    {
+      "name": "P10 面板隐藏 → 凭据文件删除 + 桥关闭（子进程再调必然失败）",
+      "pass": true,
+      "detail": {
+        "fileGone": true,
+        "agentOk": false,
+        "agentError": {
+          "code": "NO_CREDENTIALS",
+          "message": "读不到桥凭据（面板未开或凭据不合规）"
+        },
+        "endpointBefore": "http://127.0.0.1:54697"
+      }
+    }
+  ],
+  "binding": {
+    "registry": {
+      "endpoint": "http://127.0.0.1:54697",
+      "panelId": "panel-18a18ea21a0a",
+      "sessionId": "sess-4c102d069c15245f",
+      "webContentsId": 5
+    },
+    "realWebContentsId": 5
+  },
+  "navigation": {
+    "targetUrl": "http://127.0.0.1:54696/nav-target.html",
+    "afterUrl": "http://127.0.0.1:54696/nav-target.html",
+    "afterWcId": 5,
+    "realWcId": 5,
+    "markerFound": true,
+    "pendingCountBeforeApprove": 2,
+    "textSampleHead": "E2E 导航目标\n\nNAV-TARGET-OK"
+  },
+  "backendNavigation": {
+    "pending": {
+      "ticketId": "68dcedafd2c9af582d8838a1",
+      "state": "pending",
+      "pendingExecuteBlocked": true,
+      "pendingExecuteError": "POLICY_DENIED"
+    },
+    "executed": {
+      "ok": true,
+      "executed": true,
+      "webContentsId": 5,
+      "afterUrl": "http://127.0.0.1:54696/nav-target-2.html",
+      "markerFound": true
+    }
+  },
+  "summary": {
+    "passed": 11,
+    "failed": 0
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T09:33:08.747Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "fixture": "desktop/test-fixtures/browser-panel.html",
+    "scenario": "stage7 续：press_key 按键——一次批准 = keyDown + keyUp（单单 + 配对）"
+  },
+  "checks": [
+    {
+      "name": "S1 fixture 加载（真实 WebContentsView）",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:54848/browser-panel.html"
+      }
+    },
+    {
+      "name": "S2 聚焦 #field（readonly evaluate）",
+      "pass": true,
+      "detail": {
+        "activeElement": "field"
+      }
+    },
+    {
+      "name": "S3 单单一次按键：keyDown(带单)+keyUp(配对) → 页面 keydown 监听收到 Enter",
+      "pass": true,
+      "detail": {
+        "before": "-",
+        "after": "enter:agent-s10"
+      }
+    },
+    {
+      "name": "S4 可打印字符拟真键入：keyDown 补 text → 值追加且 input 事件触发",
+      "pass": true,
+      "detail": {
+        "before": "agent-s10",
+        "after": "agent-s10x",
+        "userops": "input:agent-s10x"
+      }
+    },
+    {
+      "name": "S5 负向：无批准单直接 keyDown → 拒绝，页面无变化",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "keylog": "enter:agent-s10"
+      }
+    },
+    {
+      "name": "S6 负向：配对一次性 + 键位不匹配拒 + 烧单后同单正确键位也拒",
+      "pass": true,
+      "detail": {
+        "secondRejected": true,
+        "mismatchRejected": true,
+        "burnedRejected": true
+      }
+    }
+  ]
+}

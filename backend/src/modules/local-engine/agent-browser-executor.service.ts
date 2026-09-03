@@ -252,11 +252,16 @@ export class AgentBrowserExecutor {
       if (kind === 'type') {
         return await this.typeViaPanel(action, actor, input.sessionId, input.actionId);
       }
+      // 5.75) 按键：写动作——签单 → 用户批准 → 带单执行（keyDown 消耗单 +
+      //       keyUp 配对放行，一次逻辑按键）
+      if (kind === 'press_key') {
+        return await this.pressKeyViaPanel(action, actor, input.sessionId, input.actionId);
+      }
       // 6) 其余动作：面板桥还没开通，明确不支持（不许假装成功，也不许偷偷走老路径）
       return this.failed(
         kind,
-        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type）；` +
-          `未执行、未回退（阶段 7 按 navigate→click→type→press_key/wait/tabs 顺序开通）`,
+        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type / press_key）；` +
+          `未执行、未回退（阶段 7 按 navigate→click→type→press_key→wait/tabs 顺序开通）`,
       );
     } catch (error) {
       const code =
@@ -567,6 +572,87 @@ export class AgentBrowserExecutor {
     return this.failed(
       'type',
       `需用户确认后执行（面板输入确认单 ${ticket.actionId}，目标"${probe.text ?? action.selector}"，请在右侧浏览器面板批准后携带该 id 重试）`,
+      ticket.actionId,
+    );
+  }
+
+  /**
+   * 面板按键（press_key）：一次批准 = 一次逻辑按键。
+   *
+   * 语义对齐 `panelMethodForAction('press_key') = 'Input.dispatchKeyEvent'`
+   * （loop 闸门按这个 method 比对确认单指纹），确认单覆盖两步 CDP：
+   *  1. keyDown——消耗 dispatchKeyEvent 型确认单（method 严格相等）；
+   *  2. keyUp——走 broker 配对通道放行（一次性、同面板、键位一致、10s 内）。
+   *
+   * press_key 无 selector，无单时不探测直接签语义级单（label + key）。
+   *
+   * ⚠️ 语义差异交底：CDP dispatchKeyEvent 需要显式 text 才会触发文本插入——
+   * 可打印单字符补 text（对齐 Playwright keyboard.press 的拟真语义）；
+   * 组合键/功能键只派发 keydown/keyup 事件链。windowsVirtualKeyCode 未合成
+   * （个别依赖 keyCode 的页面逻辑可能收不到，后续轮次按需补 keymap）。
+   */
+  private async pressKeyViaPanel(
+    action: Extract<AiBrowserAction, { action: 'press_key' }>,
+    actor: PanelBridgeActor,
+    sessionId?: string,
+    lockedActionId?: string,
+  ): Promise<AgentBrowserExecuteResult> {
+    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
+    const keyParams = (type: 'keyDown' | 'keyUp'): Record<string, unknown> => {
+      const params: Record<string, unknown> = { type, key: action.key };
+      if (type === 'keyDown' && action.key.length === 1) {
+        params.text = action.key; // 可打印单字符：补 text 才有真实文本插入
+      }
+      return params;
+    };
+    if (carried) {
+      const state = await this.panelBridge!.actionState(actor, carried);
+      if (state.state === 'approved') {
+        await this.markApprovalSafe('approved', carried);
+        // 第一步：keyDown（消耗确认单）
+        await this.panelBridge!.execute(actor, {
+          method: 'Input.dispatchKeyEvent',
+          params: keyParams('keyDown'),
+          actionId: carried,
+        });
+        // 第二步：keyUp（配对通道，不再签单）
+        await this.panelBridge!.execute(actor, {
+          method: 'Input.dispatchKeyEvent',
+          params: keyParams('keyUp'),
+          actionId: carried,
+        });
+        return {
+          index: 0,
+          action: 'press_key',
+          ok: true,
+          panelWebContentsId: null,
+          confirmationId: carried,
+          message: `面板按键已执行（key "${action.key}"，确认单 ${carried}）`,
+        };
+      }
+      if (state.state === 'rejected') {
+        await this.markApprovalSafe('rejected', carried);
+        return this.failed(
+          'press_key',
+          `面板模式：该按键已被用户在面板中拒绝（确认单 ${carried}），未执行`,
+          carried,
+        );
+      }
+      return this.failed(
+        'press_key',
+        `面板模式：按键需用户在桌面端批准（确认单 ${carried} 当前状态 ${state.state}）`,
+        carried,
+      );
+    }
+    // 没有确认单 → 先签一张语义级单（无 selector，无需探测）
+    const ticket = await this.panelBridge!.requestAction(actor, {
+      method: 'Input.dispatchKeyEvent',
+      summary: { label: '按下按键', key: action.key },
+      sessionId: sessionId ?? null,
+    });
+    return this.failed(
+      'press_key',
+      `需用户确认后执行（面板按键确认单 ${ticket.actionId}，key "${action.key}"，请在右侧浏览器面板批准后携带该 id 重试）`,
       ticket.actionId,
     );
   }

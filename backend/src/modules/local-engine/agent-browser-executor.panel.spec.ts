@@ -757,7 +757,131 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(p.cdpCalls.filter((c) => c.method !== 'Runtime.evaluate').length).toBe(0);
   });
 
-  it('on + 暂不支持的动作（press_key）→ 显式失败，绝不偷偷走老路径', async () => {
+  // ── 阶段 7 续（第九轮）：press_key（按键）动作接通面板桥 ──────────────────
+
+  it('⑧ press_key 无单 → 签 dispatchKeyEvent 型单（摘要带 key、带 sessionId）不执行', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeClickPanel({});
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'press_key', key: 'Enter' },
+      actor: ACTOR,
+      sessionId: 'agent-session-7',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.confirmationId).toBe('ticket-9');
+    expect(out.message).toContain('需用户确认');
+    expect(p.requestAction).toHaveBeenCalledWith(ACTOR, {
+      method: 'Input.dispatchKeyEvent',
+      summary: { label: '按下按键', key: 'Enter' },
+      sessionId: 'agent-session-7',
+    });
+    expect(p.cdpCalls.filter((c) => c.method !== 'Runtime.evaluate').length).toBe(0);
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('⑧ press_key 带 approved 单 → markApproved + keyDown/keyUp 同单同键位（功能键不合成 text）', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeClickPanel({ state: 'approved' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'press_key', key: 'Enter' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(true);
+    expect(out.confirmationId).toBe('ticket-1');
+    expect(p.markApproved).toHaveBeenCalledWith('ticket-1');
+    const mutations = p.cdpCalls.filter(
+      (c) => c.method === 'Input.dispatchKeyEvent',
+    );
+    expect(mutations.length).toBe(2);
+    // 第一步：keyDown（消耗确认单）
+    expect(mutations[0]).toMatchObject({
+      actionId: 'ticket-1',
+      params: { type: 'keyDown', key: 'Enter' },
+    });
+    expect(mutations[0].params).not.toHaveProperty('text');
+    // 第二步：keyUp（配对通道，同单）
+    expect(mutations[1]).toMatchObject({
+      actionId: 'ticket-1',
+      params: { type: 'keyUp', key: 'Enter' },
+    });
+    expect(mutations[1].params).not.toHaveProperty('text');
+  });
+
+  it('⑧ press_key 可打印单字符 → keyDown 补 text（拟真键入语义），keyUp 不带', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeClickPanel({ state: 'approved' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'press_key', key: 'x' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(true);
+    const mutations = p.cdpCalls.filter(
+      (c) => c.method === 'Input.dispatchKeyEvent',
+    );
+    expect(mutations[0]).toMatchObject({
+      actionId: 'ticket-1',
+      params: { type: 'keyDown', key: 'x', text: 'x' },
+    });
+    expect(mutations[1]).toMatchObject({
+      actionId: 'ticket-1',
+      params: { type: 'keyUp', key: 'x' },
+    });
+    expect(mutations[1].params).not.toHaveProperty('text');
+  });
+
+  it('⑧ press_key 带 rejected 单 → markRejected 终态收口，mutation 不执行', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeClickPanel({ state: 'rejected' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'press_key', key: 'Enter' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('已被用户在面板中拒绝');
+    expect(out.message).not.toContain('需用户在桌面端批准');
+    expect(p.markRejected).toHaveBeenCalledWith('ticket-1');
+    expect(p.cdpCalls.filter((c) => c.method === 'Input.dispatchKeyEvent').length).toBe(0);
+  });
+
+  it('⑧ press_key 带 pending 单 → 停在需用户批准，不执行', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const p = makeClickPanel({ state: 'pending' });
+    const exec = new AgentBrowserExecutor(
+      makeLegacy() as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'press_key', key: 'Enter' },
+      actor: ACTOR,
+      actionId: 'ticket-1',
+    });
+    expect(out.ok).toBe(false);
+    expect(out.message).toContain('需用户在桌面端批准');
+    expect(out.message).toContain('当前状态 pending');
+    expect(p.cdpCalls.filter((c) => c.method === 'Input.dispatchKeyEvent').length).toBe(0);
+  });
+
+  it('on + 暂不支持的动作（wait）→ 显式失败，绝不偷偷走老路径', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const legacy = makeLegacy();
     const exec = new AgentBrowserExecutor(
@@ -765,12 +889,12 @@ describe('AgentBrowserExecutor 面板模式', () => {
       makePanel({ status: () => ({ available: true, reason: 'ready' }) }),
     );
     const out = await exec.execute({
-      action: { action: 'press_key', key: 'Enter' },
+      action: { action: 'wait', ms: 100 },
       actor: ACTOR,
     });
     expect(out.ok).toBe(false);
-    expect(out.message).toContain('暂不支持动作 press_key');
-    expect(out.message).toContain('仅支持 extract / goto / click / type');
+    expect(out.message).toContain('暂不支持动作 wait');
+    expect(out.message).toContain('仅支持 extract / goto / click / type / press_key');
     expect(out.message).toContain('未回退');
     expect(legacy.calls.length).toBe(0);
   });

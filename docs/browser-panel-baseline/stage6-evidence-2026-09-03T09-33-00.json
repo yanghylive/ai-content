@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T09:33:00.625Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64"
+  },
+  "checks": [
+    {
+      "name": "A1 面板打开 → 审批浮层已创建、初始不可见（无待批不打扰）",
+      "pass": true,
+      "detail": {
+        "created": true,
+        "overlayReady": true,
+        "pending": 0
+      }
+    },
+    {
+      "name": "A2 Agent 签写动作 → 审批浮层弹出且卡片显示摘要",
+      "pass": true,
+      "detail": {
+        "pending": 1,
+        "cardText": "打开网页：打开官网",
+        "visible": true
+      }
+    },
+    {
+      "name": "A3 真实点击「批准」→ 确认单变 approved（走真实 IPC，非直接调函数）",
+      "pass": true,
+      "detail": {
+        "click": {
+          "clicked": true,
+          "text": "批准"
+        },
+        "state": "approved"
+      }
+    },
+    {
+      "name": "A4 批准后待批清零、浮层收起",
+      "pass": true,
+      "detail": {
+        "pending": 0
+      }
+    },
+    {
+      "name": "A5 批准后动作真的在面板上执行（同页，webContentsId 不变）",
+      "pass": true,
+      "detail": {
+        "markerFound": true,
+        "afterUrl": "http://127.0.0.1:54752/nav-target.html",
+        "afterWcId": 5,
+        "realWcId": 5
+      }
+    },
+    {
+      "name": "A6 真实点击「拒绝」→ 动作被闸门拦掉，且报错明确说\"已拒绝\"",
+      "pass": true,
+      "detail": {
+        "cardsCount": 1,
+        "clickReject": {
+          "clicked": true,
+          "text": "拒绝"
+        },
+        "rejectedError": "该动作已被用户拒绝（确认单 731df60ecf22e038e149509b）：Input.dispatchMouseEvent"
+      }
+    },
+    {
+      "name": "A7 安全性：Agent 摘要里的 HTML/脚本只当纯文本渲染，不执行",
+      "pass": true,
+      "detail": {
+        "xss": false,
+        "imgCount": 0,
+        "text": "输入文字：<img src=x onerror=\"window.__XSS=1\">点我"
+      }
+    },
+    {
+      "name": "A8 非浮层 sender（面板第三方页面/控制条）不得调批准·拒绝",
+      "pass": true,
+      "detail": {
+        "panel": false,
+        "strip": false,
+        "spoof": {
+          "skipped": true
+        }
+      }
+    },
+    {
+      "name": "A9 面板收起 → 待批清零、浮层隐藏（不留陈旧卡片）",
+      "pass": true,
+      "detail": {
+        "beforeHide": 1,
+        "afterHide": 0
+      }
+    }
+  ],
+  "binding": {
+    "panelId": "panel-054234d3aba6",
+    "realWebContentsId": 5
+  },
+  "approvalCard": {
+    "actionId": "1530d36c424933ff86397585",
+    "cardText": "打开网页：打开官网"
+  },
+  "afterApprove": {
+    "click": {
+      "clicked": true,
+      "text": "批准"
+    },
+    "state": "approved"
+  },
+  "approvedNavigation": {
+    "afterUrl": "http://127.0.0.1:54752/nav-target.html",
+    "afterWcId": 5,
+    "realWcId": 5,
+    "markerFound": true
+  },
+  "rejection": {
+    "actionId": "731df60ecf22e038e149509b",
+    "rejectedError": "该动作已被用户拒绝（确认单 731df60ecf22e038e149509b）：Input.dispatchMouseEvent"
+  },
+  "xss": {
+    "xss": false,
+    "imgCount": 0,
+    "text": "输入文字：<img src=x onerror=\"window.__XSS=1\">点我"
+  },
+  "summary": {
+    "passed": 9,
+    "failed": 0
+  }
+}

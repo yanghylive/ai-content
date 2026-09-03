@@ -687,6 +687,131 @@ test('⑦ 收紧：mouseReleased 不带坐标 → fail-closed 拒绝（不能借
   );
 });
 
+// ── 阶段 7 续（第九轮）：按键型确认单（Input.dispatchKeyEvent）＝ keyDown + keyUp ──
+
+const KEY_DOWN = (key) => ({ type: 'keyDown', key });
+const KEY_UP = (key) => ({ type: 'keyUp', key });
+
+test('⑧ 按键单：keyDown 消耗确认单，keyUp 走配对放行（一次逻辑按键）', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    { label: '按下按键', key: 'Enter' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  // 第一步：keyDown（method 严格相等，直接消耗单）
+  const down = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    KEY_DOWN('Enter'), { approvedActionId: ticket.actionId },
+  );
+  assert.equal(down.result.echo, 'Input.dispatchKeyEvent');
+  // 第二步：keyUp（配对通道，免签单）
+  const up = await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    KEY_UP('Enter'), { approvedActionId: ticket.actionId },
+  );
+  assert.equal(up.result.echo, 'Input.dispatchKeyEvent');
+});
+
+test('⑧ 按键配对一次性：第二次 keyUp 拒绝', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    { label: '按下按键', key: 'Enter' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    KEY_DOWN('Enter'), { approvedActionId: ticket.actionId },
+  );
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    KEY_UP('Enter'), { approvedActionId: ticket.actionId },
+  );
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+      KEY_UP('Enter'), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑧ 按键配对键位校验：keyUp 键位不匹配 → 拒绝且烧单（同单正确键位重试也拒）', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    { label: '按下按键', key: 'Enter' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    KEY_DOWN('Enter'), { approvedActionId: ticket.actionId },
+  );
+  // 键位不一致：fail-closed（先烧单再校验，重试也救不回来）
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+      KEY_UP('Tab'), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+      KEY_UP('Enter'), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑧ 收紧：keyUp 不能借鼠标配对放行（mousePressed 登记的配对不认按键续作）', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent', { label: '点击' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+    PRESSED(100, 50), { approvedActionId: ticket.actionId },
+  );
+  // 鼠标配对还挂着，但 keyUp 不是它的合法续作（各通道互不串门）
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+      KEY_UP('Enter'), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
+test('⑧ 收紧：insertText / mouseReleased 不能借按键配对放行（无键位字段天然不匹配）', async () => {
+  const { broker, created } = setupPanel();
+  const ticket = broker.requestAction(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    { label: '按下按键', key: 'Enter' },
+  );
+  broker.approveAction(ticket.actionId, created.capabilityToken, created.capabilityToken);
+  await broker.sendCDP(
+    created.panelId, created.capabilityToken, 'Input.dispatchKeyEvent',
+    KEY_DOWN('Enter'), { approvedActionId: ticket.actionId },
+  );
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.insertText',
+      { text: 'borrow' }, { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+  await assert.rejects(
+    () => broker.sendCDP(
+      created.panelId, created.capabilityToken, 'Input.dispatchMouseEvent',
+      RELEASED(100, 50), { approvedActionId: ticket.actionId },
+    ),
+    /需要审批/,
+  );
+});
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of tests) {

@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T09:33:05.948Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "userDataDir": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage7-mode-Eddd5J"
+  },
+  "checks": [
+    {
+      "name": "B1 默认 off：无开关文件 → agentMode=off，文件不存在",
+      "pass": true,
+      "detail": {
+        "agentMode": "off",
+        "exists": false
+      }
+    },
+    {
+      "name": "B2 真实点击「AI 代操作」→ 0600 文件写入 + agentMode=on + 按钮紫色高亮",
+      "pass": true,
+      "detail": {
+        "click": {
+          "clicked": true,
+          "highlighted": false
+        },
+        "filePayload": {
+          "version": 1,
+          "protocol": "kaypal-browser-panel-mode",
+          "mode": "on",
+          "pid": 28892,
+          "startedAt": "2026-09-03T09:33:06.125Z"
+        },
+        "permOk": true,
+        "agentMode": "on",
+        "highlightedOn": true
+      }
+    },
+    {
+      "name": "B3 文件形状与 backend 校验规则逐字段匹配（protocol/mode/pid 活/未老化）",
+      "pass": true,
+      "detail": {
+        "backendView": {
+          "mode": "on",
+          "pid": 28892,
+          "startedAt": "2026-09-03T09:33:06.125Z",
+          "filePath": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage7-mode-Eddd5J/browser-panel-mode.json",
+          "ageMs": 404
+        }
+      }
+    },
+    {
+      "name": "B3b protocol 字段 = kaypal-browser-panel-mode（backend 硬编码认这个）",
+      "pass": true,
+      "detail": {
+        "protocol": "kaypal-browser-panel-mode"
+      }
+    },
+    {
+      "name": "B4 再点一下 → 文件删除（而非写 off）+ agentMode=off + 高亮消失",
+      "pass": true,
+      "detail": {
+        "click": {
+          "clicked": true,
+          "highlighted": true
+        },
+        "exists": false,
+        "agentMode": "off",
+        "highlightedOff": true
+      }
+    },
+    {
+      "name": "B5 preload 白名单：未登记通道被拒（toggle 通道在 B2 已实测放行）",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "message": "channel not allowed: browser-panel:evil-channel"
+      }
+    },
+    {
+      "name": "B6 destroy() → 主动清掉开关文件（不留残留）",
+      "pass": true,
+      "detail": {
+        "existsBeforeDestroy": true,
+        "existsAfter": false
+      }
+    }
+  ],
+  "afterOn": {
+    "filePayload": {
+      "version": 1,
+      "protocol": "kaypal-browser-panel-mode",
+      "mode": "on",
+      "pid": 28892,
+      "startedAt": "2026-09-03T09:33:06.125Z"
+    },
+    "agentMode": "on"
+  },
+  "whitelist": {
+    "rejected": true,
+    "message": "channel not allowed: browser-panel:evil-channel"
+  },
+  "summary": {
+    "passed": 7,
+    "failed": 0
+  }
+}

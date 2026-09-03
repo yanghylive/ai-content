@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T09:33:08.110Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "fixture": "desktop/test-fixtures/browser-panel.html",
+    "scenario": "stage7 续：type 输入——一次批准 = 聚焦 + insertText（单单 + 配对）"
+  },
+  "checks": [
+    {
+      "name": "S1 fixture 加载（真实 WebContentsView）",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:54836/browser-panel.html"
+      }
+    },
+    {
+      "name": "S2 同构探测：#field → 真实坐标",
+      "pass": true,
+      "detail": {
+        "found": true,
+        "x": 118,
+        "y": 123
+      }
+    },
+    {
+      "name": "S3 单单一次输入：聚焦(带单)+insertText(配对) → 值正确且 input 事件触发",
+      "pass": true,
+      "detail": {
+        "before": "",
+        "after": "agent-typed-s9",
+        "userops": "input:agent-typed-s9"
+      }
+    },
+    {
+      "name": "S4 负向：无批准单直接 insertText → 拒绝，值不变",
+      "pass": true,
+      "detail": {
+        "rejected": true,
+        "before": "agent-typed-s9",
+        "after": "agent-typed-s9"
+      }
+    },
+    {
+      "name": "S5 负向：配对一次性——第二次 insertText 拒绝，值只追加一次",
+      "pass": true,
+      "detail": {
+        "secondRejected": true,
+        "before": "agent-typed-s9",
+        "mid": "agent-typedagent-typed-s9-s9",
+        "after": "agent-typedagent-typed-s9-s9"
+      }
+    },
+    {
+      "name": "S6 负向：insertText 型单被 mouseReleased 消耗 → 拒绝（只许聚焦半步消耗）",
+      "pass": true,
+      "detail": {
+        "rejected": true
+      }
+    }
+  ]
+}

@@ -151,10 +151,11 @@ class BrowserPanelBroker {
     this._events = new Map();
     /** @type {Map<string, string>} 待审批动作 -> panelId */
     this._pendingApprovals = new Map();
-    // 阶段 7（开发推进）：一次批准 = 一次逻辑点击。mousePressed 消耗确认单后记录
-    // 配对信息，配对的 mouseReleased（同单、同面板、坐标 ≤4px、10s 内）放行一次。
-    // 否则一次点击要弹两张审批卡片（"按下 +1"/"释放 +1"），用户会疯。
-    // fail-closed：配对一次性（用即焚）、坐标不匹配烧单、超时烧单。
+    // 阶段 7（开发推进）：一次批准 = 一次逻辑动作。第一步 CDP（mousePressed /
+    // keyDown）消耗确认单后记录配对信息，配对的续作（mouseReleased / keyUp /
+    // insertText）放行一次——同面板、坐标 ≤4px（鼠标）/ 键位一致（按键）、
+    // 10s 内、一次性。否则一次点击/按键要弹两张审批卡片，用户会疯。
+    // fail-closed：配对一次性（用即焚）、不匹配烧单、超时烧单。
     this._clickPairs = new Map();
     this._resolveWebContents = deps.webContentsResolver || (() => null);
     this._now = deps.now || Date.now;
@@ -315,13 +316,15 @@ class BrowserPanelBroker {
       }
       let approved = opts.approvedActionId && this._consumeApproval(opts.approvedActionId, panelId, method, target, params);
       // 一次批准 = 一次逻辑动作：确认单已被第一步 CDP 消耗时，配对的续作
-      // （click 的 mouseReleased / 输入的 Input.insertText）走配对通道
-      // （一次性、同面板、坐标 ≤4px（带坐标的续作才校验）、10s 内）
+      // （click 的 mouseReleased / 输入的 Input.insertText / 按键的 keyUp）
+      // 走配对通道（一次性、同面板、坐标 ≤4px / 键位一致、10s 内）
       let pairAllowed = false;
       const isPairableFollowUp =
         (method === 'Input.dispatchMouseEvent' &&
           params && params.type === 'mouseReleased') ||
-        method === 'Input.insertText';
+        method === 'Input.insertText' ||
+        (method === 'Input.dispatchKeyEvent' &&
+          params && params.type === 'keyUp');
       if (!approved && opts.approvedActionId && isPairableFollowUp) {
         pairAllowed = this._consumeClickPair(opts.approvedActionId, panelId, params);
       }
@@ -348,6 +351,21 @@ class BrowserPanelBroker {
           panelId,
           x: Number(params.x) || 0,
           y: Number(params.y) || 0,
+          expiresAt: this._now() + 10_000,
+        });
+      }
+      // 一次批准 = 一次逻辑按键：keyDown 执行成功后登记配对（10s 内有效）。
+      // 键位必须是非空字符串才登记——空键位不给配对（fail-closed）。
+      if (
+        opts.approvedActionId &&
+        method === 'Input.dispatchKeyEvent' &&
+        params && params.type === 'keyDown' &&
+        typeof params.key === 'string' && params.key.length > 0
+      ) {
+        this._clickPairs.set(opts.approvedActionId, {
+          panelId,
+          kind: 'key',
+          key: params.key,
           expiresAt: this._now() + 10_000,
         });
       }
@@ -630,6 +648,9 @@ class BrowserPanelBroker {
    * fail-closed：先烧单再校验（一次性）、面板不匹配/超时一律拒绝；
    * 坐标校验只对**带数值坐标**的续作生效（click 的 mouseReleased 必须带，
    * 且与登记坐标偏移 ≤4px；输入的 Input.insertText 无坐标，免校验）。
+   * 按键配对（kind='key'）：只认 keyUp 续作，且键位必须与 keyDown 一致——
+   * insertText / mouseReleased 没有 key 字段天然不匹配；反向 keyUp 也不许
+   * 借鼠标/输入配对放行（各自通道互不串门，fail-closed）。
    */
   _consumeClickPair(actionId, panelId, params) {
     const pair = this._clickPairs && this._clickPairs.get(actionId);
@@ -637,6 +658,13 @@ class BrowserPanelBroker {
     this._clickPairs.delete(actionId);
     if (pair.panelId !== panelId) return false;
     if (pair.expiresAt < this._now()) return false;
+    const type = params && params.type;
+    if (type === 'keyUp') {
+      // 按键续作：只认按键配对 + 键位一致
+      return pair.kind === 'key' && params.key === pair.key;
+    }
+    // 鼠标/输入续作不许借按键配对放行
+    if (pair.kind === 'key') return false;
     const px = Number(params && params.x);
     const py = Number(params && params.y);
     const hasCoords = Number.isFinite(px) && Number.isFinite(py);
