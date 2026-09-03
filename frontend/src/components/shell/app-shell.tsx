@@ -5,7 +5,8 @@ import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
-import { ShellIcon, type ShellIconName } from "./icons";
+import { ShellIcon } from "./icons";
+import { RailIcon, type RailIconName } from "./rail-icons";
 import { CommandPalette } from "./command-palette";
 import { SettingsNavPanel } from "./settings-nav-panel";
 import { Ticker, type TickerItem } from "./tickers";
@@ -29,14 +30,14 @@ const SCENES: Array<{
   key: string;
   href: string;
   label: string;
-  icon: ShellIconName;
+  railName: RailIconName;
 }> = [
-  { key: "growth-home", href: "/today", label: "今日增长", icon: "gauge" },
-  { key: "customer", href: "/crm", label: "客户管理", icon: "users" },
-  { key: "content", href: "/content", label: "内容运营", icon: "fileText" },
-  { key: "interaction", href: "/message", label: "互动中心", icon: "messageSq" },
-  { key: "execution", href: "/tasks", label: "执行中心", icon: "listChecks" },
-  { key: "device", href: "/device-center", label: "设备任务", icon: "phone" },
+  { key: "growth-home", href: "/today", label: "今日增长", railName: "growth" },
+  { key: "customer", href: "/crm", label: "客户管理", railName: "customer" },
+  { key: "content", href: "/content", label: "内容运营", railName: "content" },
+  { key: "interaction", href: "/message", label: "互动中心", railName: "interaction" },
+  { key: "execution", href: "/tasks", label: "执行中心", railName: "execution" },
+  { key: "device", href: "/device-center", label: "设备任务", railName: "device" },
 ];
 
 /** 任意路径 → 所属场景（旧页面也能点亮正确的 rail 图标） */
@@ -402,7 +403,11 @@ export function AppShell({
                     transition={{ type: "tween", duration: 0.18, ease: "easeInOut" }}
                   />
                 ) : null}
-                <ShellIcon name={scene.icon} size={22} strokeWidth={2} forceLucide />
+                <RailIcon
+                  name={scene.railName}
+                  size={22}
+                  active={activeScene === scene.key}
+                />
                 <span className="kx-rail-lbl">{scene.label}</span>
                 {badge > 0 ? <span className="kx-rail-badge">{badge > 99 ? "99+" : badge}</span> : null}
               </button>
@@ -434,7 +439,7 @@ export function AppShell({
                 transition={{ type: "tween", duration: 0.18, ease: "easeInOut" }}
               />
             ) : null}
-            <ShellIcon name="sparkles" size={22} strokeWidth={2} forceLucide />
+            <RailIcon name="assistant" size={22} active={activeScene === "agent"} />
             <span className="kx-rail-lbl">助手</span>
           </button>
           <button
@@ -446,7 +451,7 @@ export function AppShell({
             onClick={() => setSettingsOpen((v) => !v)}
           >
             {activeScene === "mine" ? <span className="kx-rail-indicator" aria-hidden="true" /> : null}
-            <ShellIcon name="user" size={22} strokeWidth={2} forceLucide />
+            <RailIcon name="mine" size={22} active={activeScene === "mine"} />
             <span className="kx-rail-lbl">我的</span>
           </button>
           {/* 头像入口已移除（2026-08-26 导航去重）：原与上方「我的」重复指向 /mine */}
