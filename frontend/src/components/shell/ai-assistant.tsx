@@ -15,6 +15,7 @@ import {
   Bot,
   Clipboard,
   Info,
+  Layers,
   Lightbulb,
   Send,
   Sparkles,
@@ -58,6 +59,59 @@ interface ChatItem {
 }
 
 const QUICK_PROMPTS = ["今天有什么热点选题？", "帮我检查一段文案有没有违禁词", "怎么提升内容质量？"];
+
+/**
+ * 能力中心清单（2026-09-03）。
+ * 注意：与 backend ai-gateway.service.ts 的 TOOLS 白名单逐条对应，手工维护。
+ * 改动后端工具时必须同步此表；否则入口展示与真实能力会漂移。
+ */
+type Capability = {
+  key: string;
+  name: string;
+  desc: string;
+  example: string;
+};
+type CapabilityGroup = { title: string; items: Capability[] };
+const CAPABILITY_GROUPS: CapabilityGroup[] = [
+  {
+    title: "内容创作与运营",
+    items: [
+      { key: "topic_hot", name: "热点选题", desc: "拉今日全网热榜（抖音/头条/知乎，含热度），帮你定选题", example: "今天有什么热点选题？" },
+      { key: "compliance_check", name: "违禁词体检", desc: "发布前检查平台违禁词，返回风险词与替换建议", example: "帮我检查这段文案有没有违禁词" },
+      { key: "knowledge_search", name: "品牌知识检索", desc: "从你的品牌知识库取真实资料（产品/门店/话术），创作不编造", example: "查一下我们品牌资料里怎么写产品卖点" },
+      { key: "content_generate", name: "内容文案生成", desc: "按平台风格写文案（公众号/小红书/抖音等）", example: "帮我写一篇小红书种草文" },
+      { key: "image_generate", name: "AI 生成配图", desc: "根据描述生成配图/封面", example: "给这篇内容配一张封面图" },
+      { key: "video_download", name: "视频素材下载", desc: "分享链接去水印下载（抖音/快手/B站/YouTube 等主流平台）", example: "下载这个抖音视频素材" },
+      { key: "material_save", name: "保存素材库", desc: "把生成的内容存入素材库", example: "把这篇文案存到素材库" },
+      { key: "schedule_publish", name: "定时发布", desc: "排期发布到平台（高风险写操作，需你确认）", example: "今晚 8 点发布到公众号" },
+    ],
+  },
+  {
+    title: "省钱返利",
+    items: [
+      { key: "parse_product", name: "商品解析", desc: "解析商品链接/口令 → 价格、优惠券、预计返利与净成本", example: "看看这个链接能省多少" },
+      { key: "compare_offers", name: "多平台比价", desc: "关键词跨平台比价（淘宝/京东/拼多多）", example: "帮我比价这款空气炸锅" },
+      { key: "create_price_watch", name: "降价/返利监控", desc: "低于目标价或返利达标时提醒你", example: "这款洗发水降到 39 以下提醒我" },
+      { key: "get_rebate_balance", name: "返利与额度查询", desc: "查返利余额明细与 AI 额度", example: "我还有多少返利？" },
+      { key: "query_cps_orders", name: "订单返利查询", desc: "查我的订单与返利结算状态", example: "我的订单返利到账了吗" },
+      { key: "convert_rebate_to_credit", name: "返利兑 AI 额度", desc: "返利余额兑换 AI 额度（需确认后执行）", example: "把返利余额换成 AI 额度" },
+      { key: "withdraw_rebate", name: "返利提现", desc: "提现到支付宝/微信（需确认后执行）", example: "我要提现 50 块" },
+      { key: "recommend_restock", name: "门店补货建议", desc: "根据采购清单给补货建议", example: "店里抽纸快没了，列个补货清单" },
+    ],
+  },
+  {
+    title: "获客与增长",
+    items: [
+      { key: "growth_playbooks", name: "获客方案库", desc: "美业/餐饮/教育等行业获客打法清单", example: "餐饮行业怎么做获客？" },
+      { key: "workflow_create", name: "创建获客工作流", desc: "按行业+场景创建获客流水线", example: "给我开一条美业获客流水线" },
+      { key: "workflow_list", name: "工作流列表", desc: "查看我的获客工作流与进度", example: "我的工作流跑到哪了" },
+      { key: "workflow_action", name: "工作流操作", desc: "启动 / 暂停 / 确认当前步骤继续", example: "启动这条工作流" },
+      { key: "acquisition_config_list", name: "获客任务列表", desc: "查看评论/私信获客任务配置", example: "我有哪些获客任务" },
+      { key: "lead_list", name: "线索查询", desc: "查线索并按状态筛选（新线索/已触达/高意向）", example: "有哪些高意向线索" },
+      { key: "task_draft", name: "任务草稿", desc: "把获客/触达/复盘意图转成草稿，你确认后才执行", example: "帮我找抖音装修客户" },
+    ],
+  },
+];
 
 /** 省钱返利快捷场景（M6 顺手省钱：找货/盯价/资产/支付） */
 const SAVINGS_PROMPTS = [
@@ -136,6 +190,9 @@ export function AiAssistant({
   // 单条 hover 定位 + 清空按钮两段式确认（2026-09-03 历史可治理化）
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  // 能力中心入口（2026-09-03）：弹出面板展示能力清单
+  const [capabilitiesOpen, setCapabilitiesOpen] = useState(false);
+  const textInputRef = useRef<HTMLInputElement>(null);
 
   // 对话历史持久化：过滤流式中的半成品与瞬态消息（错误/中断反馈），最多保留最近 50 条
   useEffect(() => {
@@ -408,6 +465,26 @@ export function AiAssistant({
     setBusy(false);
   };
 
+  /** Esc 关闭能力中心 */
+  useEffect(() => {
+    if (!capabilitiesOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setCapabilitiesOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [capabilitiesOpen]);
+
+  /** 「试试」：关闭面板、切文字输入、填入示例并聚焦 */
+  const tryCapability = (example: string) => {
+    setCapabilitiesOpen(false);
+    setInputMode("text");
+    setTextInput(example);
+    requestAnimationFrame(() => {
+      textInputRef.current?.focus();
+    });
+  };
+
   /** 删除单条消息（hover 操作，不触发整批重排） */
   const removeItem = (id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
@@ -514,6 +591,30 @@ export function AiAssistant({
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <button
+                type="button"
+                onClick={() => setCapabilitiesOpen(true)}
+                aria-label="能力中心"
+                title="查看 AI 助手支持的能力清单"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  height: 32,
+                  padding: "0 10px",
+                  borderRadius: 16,
+                  border: "1px solid var(--kaypal-v3-accent-border)",
+                  background: "var(--kaypal-v3-accent-soft)",
+                  color: "var(--kaypal-v3-accent-ink)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <Layers size={14} />
+                能力中心
+              </button>
               <button
                 type="button"
                 onClick={clearAll}
@@ -1044,6 +1145,7 @@ export function AiAssistant({
                   <ShellIcon name="mic" size={18} />
                 </button>
                 <input
+                  ref={textInputRef}
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -1097,6 +1199,187 @@ export function AiAssistant({
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 能力中心弹出层（fixed 盖全屏，避免被对话卡片 overflow 裁剪） */}
+      {capabilitiesOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="AI 助手能力中心"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setCapabilitiesOpen(false);
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 80,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(22, 16, 40, 0.42)",
+            padding: "24px 12px",
+          }}
+        >
+          <div
+            style={{
+              width: "min(680px, 100%)",
+              maxHeight: "min(78vh, 720px)",
+              display: "flex",
+              flexDirection: "column",
+              background: "var(--kaypal-v3-paper)",
+              border: "1px solid var(--kaypal-v3-paper-muted)",
+              borderRadius: 16,
+              boxShadow: "0 18px 60px rgba(24, 16, 50, 0.28)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "14px 18px",
+                borderBottom: "1px solid var(--kaypal-v3-paper-muted)",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "var(--kaypal-v3-accent-soft)",
+                  color: "var(--kaypal-v3-accent-ink)",
+                }}
+              >
+                <Layers size={15} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ color: "var(--kaypal-v3-ink)", fontSize: 14, fontWeight: 700 }}>
+                  AI 助手能力中心
+                </div>
+                <div style={{ color: "var(--kaypal-v3-muted)", fontSize: 11 }}>
+                  共 23 项能力 · 点「试试」把示例填进输入框，回车即可发起
+                </div>
+              </div>
+              <div style={{ flex: 1 }} />
+              <button
+                type="button"
+                aria-label="关闭能力中心"
+                onClick={() => setCapabilitiesOpen(false)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 30,
+                  height: 30,
+                  borderRadius: 15,
+                  background: "var(--kaypal-v3-paper-soft)",
+                  border: "none",
+                  color: "var(--kaypal-v3-muted)",
+                  cursor: "pointer",
+                }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <div
+              style={{
+                overflowY: "auto",
+                padding: "6px 18px 16px",
+              }}
+            >
+              {CAPABILITY_GROUPS.map((group) => (
+                <div key={group.title} style={{ marginTop: 12 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 4,
+                    }}
+                  >
+                    <span style={{ color: "var(--kaypal-v3-accent)", fontSize: 12.5, fontWeight: 700 }}>
+                      {group.title}
+                    </span>
+                    <span
+                      style={{
+                        color: "var(--kaypal-v3-muted)",
+                        fontSize: 10.5,
+                        padding: "1px 7px",
+                        borderRadius: 999,
+                        background: "var(--kaypal-v3-paper-soft)",
+                      }}
+                    >
+                      {group.items.length} 项
+                    </span>
+                  </div>
+                  {group.items.map((cap) => (
+                    <div
+                      key={cap.key}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "8px 2px",
+                        borderBottom: "1px solid var(--kaypal-v3-paper-muted)",
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: "var(--kaypal-v3-ink)", fontSize: 12.5, fontWeight: 600 }}>
+                          {cap.name}
+                        </div>
+                        <div
+                          style={{
+                            color: "var(--kaypal-v3-muted)",
+                            fontSize: 11.5,
+                            lineHeight: 1.5,
+                            marginTop: 1,
+                          }}
+                        >
+                          {cap.desc}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => tryCapability(cap.example)}
+                        style={{
+                          flexShrink: 0,
+                          border: "1px solid var(--kaypal-v3-accent-border)",
+                          background: "var(--kaypal-v3-accent-soft)",
+                          color: "var(--kaypal-v3-accent-ink)",
+                          borderRadius: 9,
+                          padding: "4px 11px",
+                          fontSize: 11.5,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                      >
+                        试试
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ))}
+              <div
+                style={{
+                  marginTop: 12,
+                  color: "var(--kaypal-v3-muted)",
+                  fontSize: 10.5,
+                  lineHeight: 1.6,
+                }}
+              >
+                说明：定时发布、返利兑换/提现等高风险写操作会先生成确认卡，你确认后才真正执行；
+                内容生成类请配合「品牌知识检索」使用真实资料，避免编造。
+              </div>
+            </div>
           </div>
         </div>
       )}
