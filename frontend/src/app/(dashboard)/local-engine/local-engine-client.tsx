@@ -14,6 +14,7 @@ import {
 } from "@/components/v2/ui-kit";
 import { addToast } from "@heroui/react";
 import { Icon } from "@/components/lucide-icon-compat";
+import { PlatformLoginCard } from "./browser/platform-login-card";
 import {
   buildLocalEngineRiskConfirmation,
   localEngineApi,
@@ -4518,30 +4519,8 @@ function McpStatusCard() {
       setTestRunning(false);
     }
   };
-  const onOpenLogin = async (loginUrl: string, platformLabel: string) => {
-    setTestRunning(true);
-    try {
-      const r = await localEngineApi.mcpCallTool("browser_navigate", {
-        url: loginUrl,
-      });
-      const text = r.result?.content?.[0]?.text ?? r.error?.message ?? "";
-      addToast({
-        title: `${platformLabel} 登录页已打开`,
-        description:
-          "在浏览器里扫码或输入账号登录，登录态会自动保存。下次打开平台会继续沿用。" +
-          (text ? ` 当前页: ${String(text).slice(0, 80)}` : ""),
-        color: "success",
-      });
-    } catch (e: unknown) {
-      addToast({
-        title: "打开登录页失败",
-        description: shortToastDescription(e),
-        color: "danger",
-      });
-    } finally {
-      setTestRunning(false);
-    }
-  };
+  // 2026-09-04 阶段 5：平台登录入口已迁到 PlatformLoginCard（内置面板会话 +
+  // login-state 扫码引导），旧 browser_navigate 版 onOpenLogin 随调用点移除。
   const online = !!status?.playwright?.online;
   return (
     <section className="rounded-[8px] border-small border-divider bg-default-50 p-4">
@@ -4602,32 +4581,25 @@ function McpStatusCard() {
       <div className="mt-3 flex flex-col gap-2">
         <p className="text-tiny text-default-500">
           <strong className="text-default-700">保持登录状态</strong>：
-          先在浏览器里登录账号，登录态会自动保存。之后系统打开平台时会带着已登录账号。
+          在右侧内置面板里打开平台登录页，扫码登录后登录态保存在面板会话里，
+          之后平台操作带着已登录账号（系统填 80%，你只扫码）。
         </p>
-        <div className="flex flex-wrap gap-2">
-          <V2GhostButton
-           
-           
-            disabled={!online || testRunning}
-            onClick={() =>
-              onOpenLogin("https://creator.douyin.com/", "抖音创作者中心")
-            }
-          >
-            打开抖音登录页
-          </V2GhostButton>
-          <V2GhostButton
-           
-           
-            disabled={!online || testRunning}
-            onClick={() =>
-              onOpenLogin(
-                "https://channels.weixin.qq.com/platform",
-                "视频号助手",
-              )
-            }
-          >
-            打开视频号登录页
-          </V2GhostButton>
+        <div className="grid gap-2 md:grid-cols-3">
+          <PlatformLoginCard
+            platform="xiaohongshu"
+            label="小红书"
+            loginUrl="https://www.xiaohongshu.com"
+          />
+          <PlatformLoginCard
+            platform="douyin"
+            label="抖音创作者中心"
+            loginUrl="https://creator.douyin.com/"
+          />
+          <PlatformLoginCard
+            platform="wechat-channel"
+            label="视频号助手"
+            loginUrl="https://channels.weixin.qq.com/platform"
+          />
         </div>
       </div>
       {tools.length > 0 ? (
