@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T14:14:50.082Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "backendDist": "fresh",
+    "scenario": "round14：3011 跨进程真实 userData（desktop writeMode → backend dist readPanelModeRegistry，HOME 隔离）"
+  },
+  "checks": [
+    {
+      "name": "S1 bug 实锤：打包版 CFBundleName ≠ ai-content-desktop（修复前 userData 断链依据）",
+      "pass": true,
+      "detail": {
+        "bundleName": "JIUZHANG AI 内容创作平台",
+        "plistExists": true
+      }
+    },
+    {
+      "name": "S2 user-data-path 纯函数 spec 全绿（win 平移回归 + mac 打包固定/迁移分支）",
+      "pass": true,
+      "detail": {
+        "tail": "USER-DATA-PATH SPEC PASSED (11)"
+      }
+    },
+    {
+      "name": "S3 真实链 on：setAgentMode(true) → backend dist(HOME 推导) 读到 on 且文件 0600",
+      "pass": true,
+      "detail": {
+        "ret": "on",
+        "read": {
+          "mode": "on",
+          "dir": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop",
+          "file": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop/browser-panel-mode.json",
+          "perm": "600"
+        }
+      }
+    },
+    {
+      "name": "S4 setAgentMode(false)（clearMode 删文件）→ backend 读到 null（默认 off）",
+      "pass": true,
+      "detail": {
+        "ret": "off",
+        "read": {
+          "mode": null,
+          "dir": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop",
+          "file": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop/browser-panel-mode.json",
+          "perm": null
+        }
+      }
+    },
+    {
+      "name": "S5 写文件进程 pid 已死 → backend 读 null（fail-closed 跨进程探活）",
+      "pass": true,
+      "detail": {
+        "read": {
+          "mode": null,
+          "dir": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop",
+          "file": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop/browser-panel-mode.json",
+          "perm": "600"
+        }
+      }
+    },
+    {
+      "name": "S6 startedAt 老化 8 天 → backend 读 null（超 7 天阈值）",
+      "pass": true,
+      "detail": {
+        "read": {
+          "mode": null,
+          "dir": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop",
+          "file": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop/browser-panel-mode.json",
+          "perm": "600"
+        }
+      }
+    },
+    {
+      "name": "S7 存量 0644 → backend 读后收紧 0600 且读到 on",
+      "pass": true,
+      "detail": {
+        "read": {
+          "mode": "on",
+          "dir": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop",
+          "file": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop/browser-panel-mode.json",
+          "perm": "600"
+        },
+        "permAfter": "600"
+      }
+    },
+    {
+      "name": "S8 1s 缓存窗口：改文件后立即读=旧值(on)，clear 缓存后=新值(off)",
+      "pass": true,
+      "detail": {
+        "before": "on",
+        "during": "on",
+        "after": "off"
+      }
+    },
+    {
+      "name": "S9 目录对称性：backend resolveDesktopUserDataDir == desktop app.getPath(userData)",
+      "pass": true,
+      "detail": {
+        "backend": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop",
+        "desktop": "/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/stage14-home-Wv6bI1/Library/Application Support/ai-content-desktop"
+      }
+    },
+    {
+      "name": "S10 附带：面板 open 无回归（真实 manager + fixture）",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:56478/page-a"
+      }
+    }
+  ]
+}

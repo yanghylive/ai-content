@@ -11,39 +11,43 @@ const CloudAPI = require('./cloud-api');
 const { EMPTY_SQLITE_DATABASE_BASE64 } = require('./sqlite-empty-template');
 const { CREDENTIAL_MASTER_KEY_ENV, ensureCredentialMasterKey } = require('./credential-key-store');
 const { buildError: buildLocalBridgeError, createNonceCache, requestBackend: requestLocalBridgeBackend, shouldUseE2EUserData, validateRequest: validateLocalBridgeRequest } = require('./local-bridge');
+const { resolveStableUserDataDir } = require('./user-data-path');
 const { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy: destroyUpdater, downloadUpdate, skipUpdate, getSkippedVersion, getUpdateFeedInfo } = require('./auto-updater');
 
 // 修复 macOS PATH 问题
 fixPath();
 
-function inferWindowsPackagedUserDataDir() {
-  if (process.platform !== 'win32' || !app.isPackaged) {
-    return null;
-  }
-
-  const execPath = (process.execPath || '').replace(/\//g, '\\');
-  const marker = '\\AppData\\Local\\Programs\\';
-  const markerIndex = execPath.toLowerCase().indexOf(marker.toLowerCase());
-  if (markerIndex <= 0) {
-    return null;
-  }
-
-  const userProfile = execPath.slice(0, markerIndex);
-  if (!/^[a-z]:\\users\\[^\\]+$/i.test(userProfile)) {
-    return null;
-  }
-
-  return path.join(userProfile, 'AppData', 'Roaming', 'ai-content-desktop');
-}
-
 function configureStableUserDataPath() {
-  const windowsUserDataDir = inferWindowsPackagedUserDataDir();
-  if (!windowsUserDataDir) {
+  // round14（stage14 实锤）：打包版 userData 默认落 productName 目录（macOS =
+  // `~/Library/Application Support/JIUZHANG AI 内容创作平台/`，Info.plist
+  // CFBundleName），而 3011 跨进程推导硬编码 ai-content-desktop → 面板模式
+  // 开关/面板桥凭据两条链在生产 macOS 全断。win+mac 打包版统一固定，
+  // macOS 老用户数据一次性 rename 迁移。dev 版 name 本就一致，不受影响。
+  const resolved = resolveStableUserDataDir({
+    platform: process.platform,
+    isPackaged: app.isPackaged,
+    appName: app.getName(),
+    execPath: process.execPath,
+    appData: app.getPath('appData'),
+  });
+  if (!resolved) {
     return;
   }
 
-  fs.mkdirSync(windowsUserDataDir, { recursive: true });
-  app.setPath('userData', windowsUserDataDir);
+  const { dir, migrateFrom } = resolved;
+  if (migrateFrom) {
+    try {
+      if (!fs.existsSync(dir) && fs.existsSync(migrateFrom)) {
+        fs.renameSync(migrateFrom, dir);
+        console.error('[user-data] 一次性迁移 userData：', migrateFrom, '→', dir);
+      }
+    } catch (error) {
+      // 迁移失败不阻塞启动：老数据保留原地（不丢），只是本次不迁
+      console.error('[user-data] userData 迁移失败（老数据保留原地）：', error?.message || error);
+    }
+  }
+  fs.mkdirSync(dir, { recursive: true });
+  app.setPath('userData', dir);
 }
 
 configureStableUserDataPath();
