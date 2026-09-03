@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "at": "2026-09-03T19:51:14.456Z",
+    "backend": "http://127.0.0.1:3011"
+  },
+  "checks": [
+    {
+      "name": "① login-state = logged_in（登录态从 partition 恢复）",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "state": "logged_in",
+        "url": "https://www.xiaohongshu.com/explore"
+      }
+    },
+    {
+      "name": "② run 受理并同步完成（202，终态非 needs-human/error）",
+      "pass": false,
+      "detail": {
+        "status": 400,
+        "runMs": 9971,
+        "message": "无法解析指令步骤：无法解析指令步骤：用 extract 动作提取第一篇笔记的标题：selector 用 CSS 选择器 a[href*=\"/note/\"]（命中第一个笔记链接"
+      }
+    },
+    {
+      "name": "③ 终态 succeeded 且 extract 提取到非空真实文本（>10 字符）",
+      "pass": false,
+      "detail": {
+        "extract": null
+      }
+    },
+    {
+      "name": "④ screenshot 事件成功且证据已落盘（evidenceUrl）",
+      "pass": false,
+      "detail": {
+        "shot": null
+      }
+    },
+    {
+      "name": "⑤ 清理：binding/mode 无残留",
+      "pass": true,
+      "detail": {
+        "bindingExists": false
+      }
+    }
+  ]
+}

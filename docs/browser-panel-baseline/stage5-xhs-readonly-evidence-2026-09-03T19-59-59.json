@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "at": "2026-09-03T19:59:59.631Z",
+    "backend": "http://127.0.0.1:3011"
+  },
+  "checks": [
+    {
+      "name": "① login-state = logged_in（登录态从 partition 恢复或扫码后翻转）",
+      "pass": true,
+      "detail": {
+        "state": "logged_in"
+      }
+    },
+    {
+      "name": "② 首页笔记卡 selector 探测命中（提取到 >10 字符真实文本）",
+      "pass": true,
+      "detail": {
+        "hitSelector": "a.title",
+        "text": "约女生出来过夜只需六句话"
+      }
+    },
+    {
+      "name": "③ 组合任务「提取+截图」终态 succeeded",
+      "pass": true,
+      "detail": {
+        "status": 202,
+        "finalStatus": "succeeded",
+        "runMs": 44154,
+        "message": "ok"
+      }
+    },
+    {
+      "name": "④ extract 提取到真实笔记标题（无 base64 泄漏）",
+      "pass": true,
+      "detail": {
+        "text": "约女生出来过夜只需六句话"
+      }
+    },
+    {
+      "name": "⑤ screenshot 成功且证据已落盘（evidenceUrl）",
+      "pass": true,
+      "detail": {
+        "shot": {
+          "ok": true,
+          "msg": "面板截图成功（PNG base64 1518204 字符，webContents=5）",
+          "evidence": null
+        }
+      }
+    },
+    {
+      "name": "⑥ 清理：binding/mode 无残留",
+      "pass": true,
+      "detail": {
+        "bindingExists": false
+      }
+    }
+  ]
+}

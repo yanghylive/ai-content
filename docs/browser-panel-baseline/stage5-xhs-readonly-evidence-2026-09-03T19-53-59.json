@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "at": "2026-09-03T19:53:59.633Z",
+    "backend": "http://127.0.0.1:3011"
+  },
+  "checks": [
+    {
+      "name": "① login-state = logged_in（登录态从 partition 恢复）",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "state": "logged_in",
+        "url": "https://www.xiaohongshu.com/explore"
+      }
+    },
+    {
+      "name": "② 首页笔记卡 selector 探测命中（提取到 >10 字符真实文本）",
+      "pass": false,
+      "detail": {
+        "hitSelector": null,
+        "text": ""
+      }
+    },
+    {
+      "name": "FATAL 未预期异常",
+      "pass": false,
+      "detail": {
+        "error": "所有候选 selector 均未命中"
+      }
+    }
+  ]
+}
