@@ -529,3 +529,72 @@ describe('PrismaService 当前账号库事务（复核 R2）', () => {
     });
   });
 });
+
+/**
+ * 2026-09-03 P1 防回归：TARGET_ONLY 白名单完整性护栏。
+ * 事故：syncTenantOrgTables 加进 ensureAccountDatabase 时漏登白名单 →
+ * proxy 把它路由到账号库 PrismaClient（无此方法）→ 登录 500
+ * "this.syncTenantOrgTables is not a function"。
+ * 护栏不变量：控制面方法（ensureAccountDatabase 等）内部 `this.xxx(` 引用的
+ * 方法/属性必须全部登记 TARGET_ONLY，否则经 proxy 路由串库/炸方法。
+ * 静态扫源码实现——不依赖 client provider，加新方法自动被覆盖。
+ */
+describe('PrismaService TARGET_ONLY 白名单完整性护栏（2026-09-03 P1）', () => {
+  it('控制面方法内部 this.* 调用必须全部在 TARGET_ONLY 白名单', () => {
+    const { readFileSync: readSrc } = require('node:fs') as typeof import('node:fs');
+    const src = readSrc(join(__dirname, 'prisma.service.ts'), 'utf8');
+
+    // 1. 提取白名单成员
+    const wlMatch = src.match(/TARGET_ONLY = new Set<string>\(\[([\s\S]*?)\]\)/);
+    expect(wlMatch).toBeTruthy();
+    const whitelist = new Set(
+      (wlMatch![1].match(/'([^']+)'/g) ?? []).map((s) => s.slice(1, -1)),
+    );
+    expect(whitelist.size).toBeGreaterThan(10);
+
+    // 2. 提取每个控制面方法体（方法名 → 到下一个 `    async ` / `    xxx(` 顶层成员为止）
+    const controlPlane = [
+      'ensureAccountDatabase',
+      'healAccountDatabaseIfCorrupt',
+      'clearAccountBusinessTables',
+      'copySqliteDatabaseWithSidecars',
+      'syncTenantOrgTables',
+      'switchDatabase',
+    ];
+    // 类成员起始：2 空格缩进（prettier），可带修饰符；方法体内的 if/for 是 4+ 空格不会误匹配
+    const memberStart = /^  (?:private |readonly |static |async |get |set )*[A-Za-z_$][\w$]*\s*[(=]/gm;
+    const members: Array<{ name: string; start: number }> = [];
+    for (const m of src.matchAll(memberStart)) {
+      const raw = m[0].trim();
+      const name =
+        raw.replace(/^(private\s+|readonly\s+|static\s+|async\s+|get\s+|set\s+)+/, '').split(/[\s(=]/)[0] ?? '';
+      members.push({ name, start: m.index });
+    }
+    members.sort((a, b) => a.start - b.start);
+
+    // PrismaClient 基类自带成员（$ 前缀 + 少数白名单外合法访问）不要求登记
+    const baseAllowed = (prop: string) =>
+      prop.startsWith('$') ||
+      ['constructor', 'if', 'for', 'while', 'return', 'catch'].includes(prop);
+
+    for (const ctrl of controlPlane) {
+      const idx = members.findIndex((m) => m.name === ctrl);
+      expect(idx).toBeGreaterThanOrEqual(0);
+      const end = idx + 1 < members.length ? members[idx + 1].start : src.length;
+      const body = src.slice(members[idx].start, end);
+      for (const call of body.matchAll(/this\.([A-Za-z_$][\w$]*)/g)) {
+        const prop = call[1];
+        if (baseAllowed(prop)) continue;
+        expect({
+          method: ctrl,
+          thisProp: prop,
+          inWhitelist: whitelist.has(prop),
+        }).toEqual({
+          method: ctrl,
+          thisProp: prop,
+          inWhitelist: true,
+        });
+      }
+    }
+  });
+});

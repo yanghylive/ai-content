@@ -69,6 +69,10 @@ export class PrismaService
     'clearAccountBusinessTables',
     'copySqliteDatabaseWithSidecars',
     'healAccountDatabaseIfCorrupt',
+    // 2026-09-03（P1 修复）：syncTenantOrgTables 必须与 ensureAccountDatabase
+    // 同进白名单——它只被 ensureAccountDatabase 内部 this. 调用，漏登记时
+    // proxy 会把它路由到账号库 PrismaClient（无此方法）→ TypeError not a function
+    'syncTenantOrgTables',
     'isSqliteCorrupt',
     'system',
     'switching',
