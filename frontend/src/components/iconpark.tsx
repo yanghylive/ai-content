@@ -22,6 +22,7 @@ import {
   BellRing as ParkBellRing,
   Branch as ParkBranch,
   Briefcase as ParkBriefcase,
+  Brightness as ParkBrightness,
   BuildingTwo as ParkBuildingTwo,
   Calendar as ParkCalendar,
   Camera as ParkCamera,
@@ -33,6 +34,7 @@ import {
   CheckOne as ParkCheckOne,
   Checkbox as ParkCheckbox,
   Checklist as ParkChecklist,
+  Caution as ParkCaution,
   Clipboard as ParkClipboard,
   Close as ParkClose,
   CloseOne as ParkCloseOne,
@@ -234,7 +236,7 @@ function withPark(Park: React.ComponentType<React.ComponentProps<typeof ParkArro
 /* ---------- 233 个 lucide 同名单导出（线性 outline 主题） ---------- */
 export const Activity = withPark(ParkHeartbeat);
 export const AlertCircle = withPark(ParkInfo);
-export const AlertTriangle = withPark(ParkAttention);
+export const AlertTriangle = withPark(ParkCaution);
 export const AppWindow = withPark(ParkApplicationMenu);
 export const Archive = withPark(ParkFileCabinet);
 export const ArrowDown = withPark(ParkArrowDown);
@@ -419,7 +421,7 @@ export const Settings = withPark(ParkSetting);
 export const Settings2 = withPark(ParkSettingTwo);
 export const Share2 = withPark(ParkShare);
 export const Shield = withPark(ParkShield);
-export const ShieldAlert = withPark(ParkShield);
+export const ShieldAlert = withPark(ParkAttention);
 export const ShieldCheck = withPark(ParkProtect);
 export const ShoppingBag = withPark(ParkShoppingBag);
 export const ShoppingCart = withPark(ParkShoppingCart);
@@ -427,8 +429,8 @@ export const Shuffle = withPark(ParkShuffle);
 export const SkipForward = withPark(ParkNext);
 export const SlidersHorizontal = withPark(ParkAdjustment);
 export const Smartphone = withPark(ParkIphone);
-export const Sparkle = withPark(ParkMagic);
-export const Sparkles = withPark(ParkMagic);
+export const Sparkle = withPark(ParkBrightness);
+export const Sparkles = withPark(ParkBrightness);
 export const Square = withPark(ParkSquare);
 export const SquareCheck = withPark(ParkCheckbox);
 export const Star = withPark(ParkStar);
@@ -441,7 +443,7 @@ export const TimerReset = withPark(ParkTimer);
 export const Trash2 = withPark(ParkDelete);
 export const TrendingDown = withPark(ParkTrendingDown);
 export const TrendingUp = withPark(ParkTrendingUp);
-export const TriangleAlert = withPark(ParkAttention);
+export const TriangleAlert = withPark(ParkCaution);
 export const Upload = withPark(ParkUpload);
 export const UploadCloud = withPark(ParkCloudStorage);
 export const User = withPark(ParkUser);
