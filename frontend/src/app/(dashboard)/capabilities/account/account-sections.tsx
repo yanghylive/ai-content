@@ -2,7 +2,7 @@
 
 import React from "react";
 import {
-  Button, Card, CardBody, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure,
+  Button, Card, CardBody, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure,
 } from "@heroui/react";
 import {
   kaypalApi,
@@ -20,10 +20,14 @@ import {
 } from "@/lib/kaypal-sync-error";
 import { SkeletonList } from "@/components/skeleton";
 import {
+  Clock,
   Logout,
+  Monitor,
   RefreshCcw,
+  ShieldCheck,
   UserRoundCheck,
   UserRoundPlus,
+  Wallet,
 } from "@/components/iconpark";
 import {
   V2DangerButton,
@@ -340,18 +344,18 @@ export function KaypalAccountSections() {
     }
   };
 
-  const planColor = (
+  const planTone = (
     plan: string,
-  ): "default" | "primary" | "secondary" | "success" | "warning" | "danger" => {
+  ): "success" | "warning" | "danger" | "accent" | "muted" => {
     const normalizedPlan = plan.toUpperCase();
     if (
       normalizedPlan === "PRO" ||
       normalizedPlan === "ENTERPRISE" ||
       normalizedPlan === "ADVANCED"
     )
-      return "primary";
-    if (normalizedPlan === "FREE") return "default";
-    return "secondary";
+      return "accent";
+    if (normalizedPlan === "FREE") return "muted";
+    return "muted";
   };
   const syncedPlan =
     profile?.subscriptionPlan || subscription?.plan || getBillingPlan(billing);
@@ -467,186 +471,168 @@ export function KaypalAccountSections() {
         </div>
       </section>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="border-small border-divider bg-background shadow-sm">
-          <CardBody>
-            <p className="text-small font-semibold text-default-800">
-              套餐与权限
-            </p>
-            {profile ? (
-              <div className="mt-3 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-tiny text-default-500">套餐</span>
-                  <Chip
-                    color={planColor(syncedPlan ?? "")}
-                    size="sm"
-                    variant="flat"
-                  >
-                    {formatPlan(syncedPlan)}
-                  </Chip>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-tiny text-default-500">使用权限</span>
-                  <span className="text-small text-default-700">
-                    {profile.platformRoleName || formatAccountRole(profile.role)}
-                  </span>
-                </div>
-                {profile.permissions && profile.permissions.length > 0 ? (
-                  <p className="pt-1 text-tiny text-default-500">
-                    已同步 {profile.permissions.length} 项账号权限
-                  </p>
-                ) : null}
-              </div>
-            ) : (
-              <p className="mt-2 text-small text-default-400">
-                无法获取账号信息
-              </p>
-            )}
-          </CardBody>
-        </Card>
-        <Card className="border-small border-divider bg-background shadow-sm">
-          <CardBody>
-            <p className="text-small font-semibold text-default-800">
-              积分余额
-            </p>
+        {/* 套餐与权限 */}
+        <section className="kaypal-v3-panel p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+            <ShieldCheck className="h-4 w-4 text-[var(--kaypal-v3-accent-ink)]" />
+            套餐与权限
+          </div>
+          {profile ? (
             <div className="mt-3 space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-2xl font-semibold text-default-900">
-                  {formatCredits(billing?.balance?.balance)}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--kaypal-v3-muted)]">套餐</span>
+                <V2StatusChip tone={planTone(syncedPlan ?? "")}>
+                  {formatPlan(syncedPlan)}
+                </V2StatusChip>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--kaypal-v3-muted)]">使用权限</span>
+                <span className="text-sm text-[var(--kaypal-v3-soft-ink)]">
+                  {profile.platformRoleName || formatAccountRole(profile.role)}
                 </span>
-                <Chip
-                  color={
-                    billing?.balance?.balance != null ? "success" : "default"
-                  }
-                  size="sm"
-                  variant="flat"
-                >
-                  {billing?.balance?.balance != null ? "已更新" : "读取中"}
-                </Chip>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  color="primary"
-                  variant="flat"
-                  onPress={() => {
-                    // 2026-09-01：不用 noopener/noreferrer 第三参（规范下 window.open
-                    // 恒返回 null）；_blank 默认隐式 noopener，手动剥离 opener 保持语义。
-                    const popup = window.open(
-                      "https://kaypal.cn/zh-CN/dashboard/billing/topup",
-                      "_blank",
-                    );
-                    if (popup) popup.opener = null;
-                  }}
-                >
-                  充值积分
-                </Button>
-                <Button
-                  size="sm"
-                  variant="bordered"
-                  className="border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-soft-ink)] hover:bg-[var(--kaypal-v3-paper-soft)]"
-                  onPress={() => setReloadKey((k) => k + 1)}
-                >
-                  刷新余额
-                </Button>
-              </div>
-              {billing?.balance?.message ? (
-                <p className="text-tiny text-default-500">
-                  {commercialDisplayText(
-                    billing.balance.message,
-                    "余额已从当前账号更新。",
-                  )}
+              {profile.permissions && profile.permissions.length > 0 ? (
+                <p className="pt-1 text-xs text-[var(--kaypal-v3-muted)]">
+                  已同步 {profile.permissions.length} 项账号权限
                 </p>
-              ) : (
-                <p className="text-tiny text-default-500">
-                  余额来自当前 JIUZHANG AI 账号
-                </p>
-              )}
+              ) : null}
             </div>
-          </CardBody>
-        </Card>
-        <Card className="border-small border-divider bg-background shadow-sm">
-          <CardBody>
-            <p className="text-small font-semibold text-default-800">
-              订阅状态
+          ) : (
+            <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">
+              无法获取账号信息
             </p>
-            {subscription ? (
-              <div className="mt-3 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-tiny text-default-500">计划</span>
-                  <Chip
-                    color={planColor(subscription.plan)}
-                    size="sm"
-                    variant="flat"
-                  >
-                    {formatPlan(subscription.plan)}
-                  </Chip>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-tiny text-default-500">到期时间</span>
-                  <span className="text-small text-default-700">
-                    {subscription.periodEnd
-                      ? new Date(subscription.periodEnd).toLocaleDateString()
-                      : "-"}
-                  </span>
-                </div>
-                {subscription.expired ? (
-                  <div className="mt-2 rounded-[8px] border-small border-danger-200 bg-danger-50 px-3 py-2">
-                    <p className="text-small text-danger-600 font-semibold">
-                      套餐已过期，请续费
-                    </p>
-                  </div>
-                ) : null}
-              </div>
+          )}
+        </section>
+
+        {/* 积分余额 */}
+        <section className="kaypal-v3-panel p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+            <Wallet className="h-4 w-4 text-[var(--kaypal-v3-accent-ink)]" />
+            积分余额
+          </div>
+          <div className="mt-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-2xl font-bold text-[var(--kaypal-v3-ink)]">
+                {formatCredits(billing?.balance?.balance)}
+              </span>
+              <V2StatusChip
+                tone={billing?.balance?.balance != null ? "success" : "muted"}
+              >
+                {billing?.balance?.balance != null ? "已更新" : "读取中"}
+              </V2StatusChip>
+            </div>
+            <div className="flex gap-2">
+              <V2PrimaryButton
+                onClick={() => {
+                  // 2026-09-01：不用 noopener/noreferrer 第三参（规范下 window.open
+                  // 恒返回 null）；_blank 默认隐式 noopener，手动剥离 opener 保持语义。
+                  const popup = window.open(
+                    "https://kaypal.cn/zh-CN/dashboard/billing/topup",
+                    "_blank",
+                  );
+                  if (popup) popup.opener = null;
+                }}
+              >
+                充值积分
+              </V2PrimaryButton>
+              <V2GhostButton
+                icon={RefreshCcw}
+                onClick={() => setReloadKey((k) => k + 1)}
+              >
+                刷新余额
+              </V2GhostButton>
+            </div>
+            {billing?.balance?.message ? (
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                {commercialDisplayText(
+                  billing.balance.message,
+                  "余额已从当前账号更新。",
+                )}
+              </p>
             ) : (
-              <p className="mt-2 text-small text-default-400">
-                无法获取订阅信息
+              <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                余额来自当前 JIUZHANG AI 账号
               </p>
             )}
-          </CardBody>
-        </Card>
-        <Card className="border-small border-divider bg-background shadow-sm">
-          <CardBody>
-            <p className="text-small font-semibold text-default-800">
-              设备列表
-            </p>
-            {devices && devices.length > 0 ? (
-              <div className="mt-3 space-y-2">
-                {devices.map((device) => (
-                  <div
-                    key={device.id}
-                    className="min-w-0 rounded-small border-small border-divider bg-default-50 p-2"
-                  >
-                    <div className="flex min-w-0 items-center justify-between gap-2">
-                      <span className="min-w-0 truncate text-small font-medium text-default-800">
-                        {device.name}
-                      </span>
-                      <Chip
-                        color={
-                          device.status === "online" ? "success" : "default"
-                        }
-                        size="sm"
-                        variant="flat"
-                      >
-                        {formatDeviceStatus(device.status)}
-                      </Chip>
-                    </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-tiny text-default-500">
-                      <span>{formatDevicePlatform(device.platform)}</span>
-                      <span>
-                        最后在线：
-                        {device.lastSeenAt
-                          ? new Date(device.lastSeenAt).toLocaleString()
-                          : "-"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+          </div>
+        </section>
+
+        {/* 订阅状态 */}
+        <section className="kaypal-v3-panel p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+            <Clock className="h-4 w-4 text-[var(--kaypal-v3-accent-ink)]" />
+            订阅状态
+          </div>
+          {subscription ? (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--kaypal-v3-muted)]">计划</span>
+                <V2StatusChip tone={planTone(subscription.plan)}>
+                  {formatPlan(subscription.plan)}
+                </V2StatusChip>
               </div>
-            ) : (
-              <p className="mt-2 text-small text-default-400">暂无绑定设备</p>
-            )}
-          </CardBody>
-        </Card>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--kaypal-v3-muted)]">到期时间</span>
+                <span className="text-sm text-[var(--kaypal-v3-soft-ink)]">
+                  {subscription.periodEnd
+                    ? new Date(subscription.periodEnd).toLocaleDateString()
+                    : "-"}
+                </span>
+              </div>
+              {subscription.expired ? (
+                <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)] px-3 py-2">
+                  <p className="text-sm font-semibold text-[var(--kaypal-v3-danger)]">
+                    套餐已过期，请续费
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">
+              无法获取订阅信息
+            </p>
+          )}
+        </section>
+
+        {/* 设备列表 */}
+        <section className="kaypal-v3-panel p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--kaypal-v3-ink)]">
+            <Monitor className="h-4 w-4 text-[var(--kaypal-v3-accent-ink)]" />
+            设备列表
+          </div>
+          {devices && devices.length > 0 ? (
+            <div className="mt-3 space-y-2">
+              {devices.map((device) => (
+                <div
+                  key={device.id}
+                  className="min-w-0 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-muted)] p-2"
+                >
+                  <div className="flex min-w-0 items-center justify-between gap-2">
+                    <span className="min-w-0 truncate text-sm font-medium text-[var(--kaypal-v3-ink)]">
+                      {device.name}
+                    </span>
+                    <V2StatusChip
+                      tone={device.status === "online" ? "success" : "muted"}
+                    >
+                      {formatDeviceStatus(device.status)}
+                    </V2StatusChip>
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--kaypal-v3-muted)]">
+                    <span>{formatDevicePlatform(device.platform)}</span>
+                    <span>
+                      最后在线：
+                      {device.lastSeenAt
+                        ? new Date(device.lastSeenAt).toLocaleString()
+                        : "-"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">暂无绑定设备</p>
+          )}
+        </section>
       </div>
       <Modal
         isOpen={unlinkModal.isOpen}
