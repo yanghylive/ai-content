@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T18:07:02.695Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "scenario": "阶段5统一冒烟：xiaohongshu + douyin + wechat-channel（3011 生产 × 面板桥 login-state）",
+    "backend": "http://127.0.0.1:3011",
+    "realUserData": "/Users/yanghy/Library/Application Support/ai-content-desktop",
+    "sessions": {
+      "xiaohongshu": "db245f32-6109-4d66-8dee-fe25892ec768",
+      "douyin": "66c64268-df4c-4439-b4e5-de2a294eb171",
+      "wechat-channel": "994fad46-502d-4433-91ad-08c913d4f375"
+    }
+  },
+  "checks": [
+    {
+      "name": "S1 3011 生产登录成功",
+      "pass": true,
+      "detail": {
+        "status": 201,
+        "userId": "cms2ktllp03u9j1wprksvwy8w",
+        "hasCookie": true,
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S2 面板 open（真实 owner/tenant）→ 桥 binding 落盘（0600）",
+      "pass": true,
+      "detail": {
+        "endpoint": "http://127.0.0.1:52847",
+        "panelId": "panel-82c5041f2838"
+      }
+    },
+    {
+      "name": "S xiaohongshu login-state（status=200，state=login_prompt）",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "data": {
+          "ok": true,
+          "platform": "xiaohongshu",
+          "state": "login_prompt",
+          "url": "https://www.xiaohongshu.com/explore",
+          "panelWebContentsId": 5
+        },
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S douyin login-state（status=200，state=unknown）",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "data": {
+          "ok": true,
+          "platform": "douyin",
+          "state": "unknown",
+          "url": "https://www.xiaohongshu.com/explore",
+          "panelWebContentsId": 5
+        },
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S wechat-channel login-state（status=200，state=unknown）",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "data": {
+          "ok": true,
+          "platform": "wechat-channel",
+          "state": "unknown",
+          "url": "https://www.xiaohongshu.com/explore",
+          "panelWebContentsId": 5
+        },
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S6 负向① 未注册平台 kuaishou → 400 不支持登录态查询",
+      "pass": true,
+      "detail": {
+        "status": 400,
+        "message": "会话平台 kuaishou 不支持登录态查询（仅注册平台支持，如 xiaohongshu）"
+      }
+    },
+    {
+      "name": "S7 负向② general-web 会话 → 400（仅注册平台支持）",
+      "pass": true,
+      "detail": {
+        "status": 400,
+        "message": "会话平台 general-web 不支持登录态查询（仅注册平台支持，如 xiaohongshu）"
+      }
+    },
+    {
+      "name": "S8 close 面板 → binding 清理 + mode 文件恢复原状（磁盘无残留 token）",
+      "pass": true,
+      "detail": {
+        "bindingExists": false,
+        "modeFileExists": false
+      }
+    }
+  ]
+}

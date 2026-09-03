@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "runAt": "2026-09-03T18:05:37.993Z",
+    "electron": "32.3.3",
+    "node": "20.18.1",
+    "platform": "darwin-arm64",
+    "scenario": "阶段5统一冒烟：xiaohongshu + douyin + wechat-channel（3011 生产 × 面板桥 login-state）",
+    "backend": "http://127.0.0.1:3011",
+    "realUserData": "/Users/yanghy/Library/Application Support/ai-content-desktop",
+    "sessions": {
+      "xiaohongshu": "15a73793-e4db-4b93-a7d9-22961df19927",
+      "douyin": "5ccf13d6-a681-4792-bde6-629277252f04",
+      "wechat-channel": "6cc05d22-da13-4b01-802c-90950644de86"
+    }
+  },
+  "checks": [
+    {
+      "name": "S1 3011 生产登录成功",
+      "pass": true,
+      "detail": {
+        "status": 201,
+        "userId": "cms2ktllp03u9j1wprksvwy8w",
+        "hasCookie": true,
+        "message": "ok"
+      }
+    },
+    {
+      "name": "S2 面板 open（xiaohongshu 首页）→ 桥 binding 落盘（0600）",
+      "pass": true,
+      "detail": {
+        "endpoint": "http://127.0.0.1:52180",
+        "panelId": "panel-b66cb25a6ff0"
+      }
+    },
+    {
+      "name": "S xiaohongshu login-state（status=400，state=∅）",
+      "pass": false,
+      "detail": {
+        "status": 400,
+        "data": null,
+        "message": "登录态查询异常（面板桥拒绝：POLICY_DENIED），未查询"
+      }
+    },
+    {
+      "name": "S douyin login-state（status=400，state=∅）",
+      "pass": false,
+      "detail": {
+        "status": 400,
+        "data": null,
+        "message": "登录态查询异常（面板桥拒绝：POLICY_DENIED），未查询"
+      }
+    },
+    {
+      "name": "S wechat-channel login-state（status=400，state=∅）",
+      "pass": false,
+      "detail": {
+        "status": 400,
+        "data": null,
+        "message": "登录态查询异常（面板桥拒绝：POLICY_DENIED），未查询"
+      }
+    },
+    {
+      "name": "S6 负向① 未注册平台 kuaishou → 400 不支持登录态查询",
+      "pass": true,
+      "detail": {
+        "status": 400,
+        "message": "会话平台 kuaishou 不支持登录态查询（仅注册平台支持，如 xiaohongshu）"
+      }
+    },
+    {
+      "name": "S7 负向② general-web 会话 → 400（仅注册平台支持）",
+      "pass": true,
+      "detail": {
+        "status": 400,
+        "message": "会话平台 general-web 不支持登录态查询（仅注册平台支持，如 xiaohongshu）"
+      }
+    },
+    {
+      "name": "S8 close 面板 → binding 清理 + mode 文件恢复原状（磁盘无残留 token）",
+      "pass": true,
+      "detail": {
+        "bindingExists": false,
+        "modeFileExists": false
+      }
+    }
+  ]
+}

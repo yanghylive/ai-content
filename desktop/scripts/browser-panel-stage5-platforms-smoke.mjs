@@ -184,8 +184,24 @@ async function main() {
       { status: login.status, userId, hasCookie: !!cookie, message: login.json?.message },
     );
 
-    // ---- S2 open 面板（先落 xiaohongshu 首页）→ 桥 binding 落盘 ----
-    manager.open({ url: PLATFORM_CASES[0].loginUrl, ownerId: userId, tenantId: undefined });
+    // ---- S2 建首个会话拿真实 tenantId → open 面板（桥 actor 断言要与
+    //      binding 的 owner/tenant 一致，tenant 传 undefined 会被 POLICY_DENIED）----
+    const first = await api('/local-engine/agent-browser/sessions', {
+      method: 'POST',
+      cookie,
+      body: { platform: 'xiaohongshu', startUrl: PLATFORM_CASES[0].loginUrl },
+    });
+    const firstSessionId = first.json?.data?.id;
+    const tenantId = first.json?.data?.lease?.tenantId;
+    if (first.status !== 201 || !firstSessionId || !tenantId) {
+      record('S2 建首会话成功（拿 tenantId 供面板 actor 断言）', false, {
+        status: first.status,
+        message: first.json?.message,
+      });
+      return;
+    }
+    evidence.meta.sessions['xiaohongshu'] = firstSessionId;
+    manager.open({ url: PLATFORM_CASES[0].loginUrl, ownerId: userId, tenantId });
     await sleep(4000);
     let binding = null;
     for (let i = 0; i < 20; i++) {
@@ -196,30 +212,34 @@ async function main() {
       binding = JSON.parse(fs.readFileSync(bindingPath, 'utf8'));
     } catch {}
     record(
-      'S2 面板 open（xiaohongshu 首页）→ 桥 binding 落盘（0600）',
+      'S2 面板 open（真实 owner/tenant）→ 桥 binding 落盘（0600）',
       !!binding?.endpoint && String(binding.endpoint).startsWith('http://127.0.0.1:'),
       { endpoint: binding?.endpoint, panelId: binding?.panelId },
     );
 
-    // ---- S3~S5 三平台逐一：建会话 → login-state（建会话间导航用面板 goto 太重，
-    //      面板 active 页固定 xiaohongshu；douyin/wechat-channel 的 login-state
-    //      快照取的是面板当前页 → 预期 unknown 或按当前页判定，三态合法即算通过；
-    //      平台判定规则的确定性由 platform-login-rules.spec 31 例锁定）----
+    // ---- S3~S5 三平台逐一 login-state（xiaohongshu 会话已建；douyin/
+    //      wechat-channel 补建。面板 active 页固定 xiaohongshu 首页，
+    //      douyin/wechat-channel 快照取当前页 → 预期 unknown（不在判定域），
+    //      三态合法即通过；平台判定规则的确定性由 platform-login-rules.spec
+    //      31 例锁定。扫码后 logged_in 全链复验属人工接管环节，另行验证）----
     for (const c of PLATFORM_CASES) {
-      const created = await api('/local-engine/agent-browser/sessions', {
-        method: 'POST',
-        cookie,
-        body: { platform: c.platform, startUrl: c.loginUrl },
-      });
-      const sessionId = created.json?.data?.id;
-      evidence.meta.sessions[c.platform] = sessionId;
-      if (created.status !== 201 || !sessionId) {
-        record(
-          `S ${c.platform} 建会话成功`,
-          false,
-          { status: created.status, message: created.json?.message },
-        );
-        continue;
+      let sessionId = evidence.meta.sessions[c.platform];
+      if (!sessionId) {
+        const created = await api('/local-engine/agent-browser/sessions', {
+          method: 'POST',
+          cookie,
+          body: { platform: c.platform, startUrl: c.loginUrl },
+        });
+        sessionId = created.json?.data?.id;
+        evidence.meta.sessions[c.platform] = sessionId;
+        if (created.status !== 201 || !sessionId) {
+          record(
+            `S ${c.platform} 建会话成功`,
+            false,
+            { status: created.status, message: created.json?.message },
+          );
+          continue;
+        }
       }
       const ls = await api(`/local-engine/agent-browser/sessions/${sessionId}/login-state`, { cookie });
       const state = ls.json?.data?.state;
