@@ -12,11 +12,14 @@ import { AgentBrowserSessionService } from './agent-browser-session.service';
 import {
   BadRequestException,
   ForbiddenException,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { AgentBrowserPolicyService } from './agent-browser-policy.service';
 import { AgentBrowserLoopService } from './agent-browser-loop.service';
+import { AgentBrowserExecutor } from './agent-browser-executor.service';
+import { getPlatformProfile } from './platform-login-rules';
 import type { CreateAgentBrowserSessionInput } from './agent-browser.types';
 
 type AuthRequest = Request & { authUser?: { id: string } };
@@ -33,6 +36,8 @@ export class AgentBrowserController {
     private readonly policy: AgentBrowserPolicyService,
     private readonly loop: AgentBrowserLoopService,
     private readonly authRequestContext?: AuthRequestContextService,
+    /** 阶段 5（2026-09-04）：登录态查询走面板执行链（Optional 兼容老测试构造） */
+    @Optional() private readonly executor?: AgentBrowserExecutor,
   ) {}
 
   private getUserId(request: AuthRequest): string {
@@ -80,6 +85,41 @@ export class AgentBrowserController {
     const tenantId = await this.resolveTenantId();
     this.sessions.assertOwner(id, this.getUserId(request), tenantId);
     return this.sessions.toPublicDto(this.sessions.get(id));
+  }
+
+  /**
+   * 阶段 5 第一站（2026-09-04）：会话平台登录态查询（小红书先行）。
+   *
+   * 只读免单：面板 Runtime.evaluate 只读快照 + 启发式三态判定
+   * （logged_in / login_prompt / unknown），仅用于「登录/只读」阶段 UI 引导
+   * （提示用户扫码接管），不作为任何写动作放行依据（写动作仍走确认单审批链）。
+   * 失败显式 400 带 reason——不静默降级，绝不回退到无头引擎查询。
+   */
+  @Get('sessions/:id/login-state')
+  async loginState(@Req() request: AuthRequest, @Param('id') id: string) {
+    const tenantId = await this.resolveTenantId();
+    this.sessions.assertOwner(id, this.getUserId(request), tenantId);
+    const session = this.sessions.get(id);
+    if (!getPlatformProfile(session.platform)) {
+      throw new BadRequestException(
+        `会话平台 ${session.platform} 不支持登录态查询（仅注册平台支持，如 xiaohongshu）`,
+      );
+    }
+    if (!this.executor) {
+      throw new BadRequestException('执行器未注入，登录态查询不可用');
+    }
+    // actor 同 loop 3.2 构造规则：租约身份就是面板桥断言身份（防跨会话/跨租户）
+    const result = await this.executor.loginStateViaPanel(
+      {
+        ownerId: session.lease?.ownerId ?? '',
+        tenantId: session.lease?.tenantId ?? tenantId,
+      },
+      session.platform,
+    );
+    if (!result.ok) {
+      throw new BadRequestException(result.reason);
+    }
+    return result;
   }
 
   /** 运行：进入 Observe-Act-Verify 循环（P4-B 实现执行体） */
