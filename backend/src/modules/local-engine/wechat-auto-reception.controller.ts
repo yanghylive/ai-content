@@ -35,4 +35,12 @@ export class WechatAutoReceptionController {
     await this.refreshActor();
     return this.guard.setEnabled(input?.enabled === true);
   }
+
+  /** 阶段 3：自动通过好友开关（写动作；仅 Windows + native runtime 真正直发） */
+  @RequirePlans('STANDARD', 'PRO', 'ADVANCED', 'FLAGSHIP')
+  @Post('auto-accept/enabled')
+  async setAutoAccept(@Body() input: { enabled?: boolean }) {
+    await this.refreshActor();
+    return this.guard.setAutoAcceptFriend(input?.enabled === true);
+  }
 }

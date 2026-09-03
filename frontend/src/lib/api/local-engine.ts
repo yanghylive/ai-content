@@ -937,6 +937,9 @@ export interface WechatAutoReceptionStatus {
   watermarkCount: number;
   reasons: Record<string, string>;
   bots: WechatAutoReceptionBotSummary[];
+  autoAcceptFriend: boolean;
+  autoAcceptPlanId: string | null;
+  autoAcceptRuntimeHint: string | null;
 }
 
 export interface WechatContactsResult {
@@ -1834,6 +1837,12 @@ export const localEngineApi = {
   setWechatAutoReceptionEnabled(enabled: boolean) {
     return api.post<{ enabled: boolean }>(
       "/local-engine/wechat/auto-reception/enabled",
+      { enabled },
+    );
+  },
+  setWechatAutoAcceptFriendEnabled(enabled: boolean) {
+    return api.post<{ enabled: boolean }>(
+      "/local-engine/wechat/auto-reception/auto-accept/enabled",
       { enabled },
     );
   },

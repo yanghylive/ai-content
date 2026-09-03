@@ -47,6 +47,10 @@ type ReceptionState = {
   pausedReason?: string;
   /** 最近一次由 HTTP 请求刷新到的本机用户（controller 层提供，避免依赖库表猜测） */
   actor?: { tenantId?: string; userId?: string } | null;
+  /** 阶段 3：自动通过好友开关（默认关；仅 Windows + native runtime 才能真正直发） */
+  autoAcceptFriend?: boolean;
+  /** 最近一次为自动通过创建的 friend-accept 计划 id（供状态卡展示） */
+  autoAcceptPlanId?: string | null;
 };
 
 type WechatHistoryCacheShape = {
@@ -82,6 +86,9 @@ type GuardStatus = {
     enabled: boolean;
     contactScope?: string;
   }>;
+  autoAcceptFriend: boolean;
+  autoAcceptPlanId: string | null;
+  autoAcceptRuntimeHint: string | null;
 };
 
 type EngineReplyBot = {
@@ -117,6 +124,8 @@ export class WechatAutoReceptionGuardService
     perSessionReason: {},
     todayCreated: 0,
     todayDate: new Date().toISOString().slice(0, 10),
+    autoAcceptFriend: false,
+    autoAcceptPlanId: null,
   };
 
   constructor(
@@ -206,13 +215,38 @@ export class WechatAutoReceptionGuardService
       watermarkCount: Object.keys(this.state.watermark).length,
       reasons: this.lastReasons,
       bots: this.lastBots,
+      autoAcceptFriend: this.state.autoAcceptFriend === true,
+      autoAcceptPlanId: this.state.autoAcceptPlanId ?? null,
+      autoAcceptRuntimeHint: this.autoAcceptRuntimeHint(),
     };
+  }
+
+  /** 平台判断独立成方法：仅 Windows + native runtime 才允许自动通过好友 */
+  private isWindowsHost(): boolean {
+    return process.platform === 'win32';
+  }
+
+  private autoAcceptRuntimeHint(): string | null {
+    if (this.state.autoAcceptFriend !== true) return null;
+    if (this.isWindowsHost()) {
+      return 'Windows 环境：开启后由 native runtime 在桌面微信执行自动通过（需先在确认页完成一次商用授权）。';
+    }
+    return '当前系统不是 Windows：自动通过好友需要 Windows 桌面微信 + native runtime，未创建任何计划。';
   }
 
   async setEnabled(enabled: boolean): Promise<{ enabled: boolean }> {
     this.state.enabled = enabled;
     await this.persistState();
     return { enabled };
+  }
+
+  async setAutoAcceptFriend(enabled: boolean): Promise<{ enabled: boolean }> {
+    this.state.autoAcceptFriend = enabled === true;
+    if (!this.state.autoAcceptFriend) {
+      this.state.autoAcceptPlanId = null;
+    }
+    await this.persistState();
+    return { enabled: this.state.autoAcceptFriend };
   }
 
   /* ---------------- 主循环 ---------------- */
@@ -322,6 +356,10 @@ export class WechatAutoReceptionGuardService
   }
 
   private async processTick(userId: string) {
+    // 阶段 3：自动通过好友（独立于客服机器人；仅 win32 建计划，否则只提示）
+    if (this.state.autoAcceptFriend === true) {
+      await this.ensureFriendAcceptPlan(userId);
+    }
     const bots = await this.listEligibleBots();
     this.lastBots = bots.map((bot) => ({
       id: bot.id,
@@ -417,6 +455,89 @@ export class WechatAutoReceptionGuardService
     this.createdTasks += created;
     this.state.todayCreated += created;
     await this.persistState();
+  }
+
+  /* ---------------- 阶段 3：自动通过好友计划 ---------------- */
+
+  /**
+   * 确保存在一条「自动通过好友」计划（幂等）：
+   * - 仅 win32 且开启开关时创建；其余平台只提示不建计划（绝不误操作）；
+   * - 已存在非终态 friend-accept 计划（QUEUED/RUNNING/PAUSED/BLOCKED）则不重复创建，
+   *   若该计划处于 BLOCKED（通常因未完成商用授权），提示用户去确认页处理；
+   * - 计划采用未来 planTime，交由既有 wechat-plan-scheduler 到点派发 Agent-S/native；
+   *   真实直发仍受 native 运行时 + 账号保护 + 商用授权三重强制（见交互稿红线）。
+   */
+  private async ensureFriendAcceptPlan(userId: string) {
+    if (!this.isWindowsHost()) {
+      this.lastReasons['auto-accept'] =
+        '当前系统不是 Windows，自动通过好友需要 Windows 桌面微信 + native runtime；未创建计划。';
+      this.skipped += 1;
+      return;
+    }
+    try {
+      const recent = await this.prisma.interactionTask.findFirst({
+        where: { userId, taskType: 'WECHAT_FRIEND_ACCEPT' },
+        orderBy: { updatedAt: 'desc' },
+        select: { id: true, status: true, stage: true },
+      });
+      if (recent) {
+        this.state.autoAcceptPlanId = recent.id;
+        if (['QUEUED', 'RUNNING', 'PAUSED'].includes(recent.status || '')) {
+          this.lastReasons['auto-accept'] =
+            '已存在自动通过好友计划，等待 Windows 端到点执行。';
+        } else if (recent.status === 'BLOCKED') {
+          this.lastReasons['auto-accept'] =
+            '自动通过好友计划需要先在确认页完成一次商用授权后再继续。';
+        }
+        await this.persistState();
+        return;
+      }
+      // 无历史计划 → 新建：下一次调度 tick 即触发（仅 Windows）
+      const accountName =
+        (await this.resolveWechatAccountName(userId)) || '本机微信';
+      const plan = await this.createFriendAcceptPlan(accountName);
+      this.state.autoAcceptPlanId = plan?.id || null;
+      this.lastReasons['auto-accept'] =
+        '已创建自动通过好友计划，Windows 端到点执行；首次需先在确认页完成商用授权。';
+      this.lastDetectedAt = new Date().toISOString();
+      await this.persistState();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastReasons['auto-accept'] = `自动通过好友计划创建失败：${message}`;
+      this.skipped += 1;
+      this.logger.warn(`ensureFriendAcceptPlan failed: ${message}`);
+    }
+  }
+
+  /** 建一条稍后触发的 friend-accept 计划任务（交由计划调度器派发） */
+  private async createFriendAcceptPlan(
+    accountName: string,
+  ): Promise<{ id: string } | null> {
+    const host = this.engine as unknown as {
+      createTask(input: Record<string, unknown>): Promise<{ id: string }>;
+    };
+    const fireAt = new Date(
+      Date.now() + this.intervalMs() + 3_000,
+    ).toISOString();
+    const created = await host.createTask({
+      type: 'wechat-friend-accept',
+      planName: '自动通过好友',
+      planTime: fireAt,
+      sendMode: 'auto-send',
+      accountName,
+      targetName: '新的好友申请',
+      sourceText: '自动通过好友（守护定期扫描并处理微信好友申请）。',
+      batchTargets: [{ targetName: '新的好友申请', status: 'queued' }],
+      metadata: {
+        skill_id: 'wechat.friend.accept',
+        source: 'wechat-auto-reception',
+        auto_reception: true,
+        wechat_friend_accept_remark_strategy: 'request_name',
+        wechat_friend_accept_welcome_message: '',
+        wechat_friend_accept_daily_limit: 20,
+      },
+    });
+    return created && created.id ? created : null;
   }
 
   /* ---------------- 客服机器人与账号解析 ---------------- */
@@ -630,6 +751,8 @@ export class WechatAutoReceptionGuardService
           rawActor && rawActor.userId
             ? { tenantId: rawActor.tenantId, userId: rawActor.userId }
             : this.state.actor,
+        autoAcceptFriend: parsed.autoAcceptFriend === true,
+        autoAcceptPlanId: parsed.autoAcceptPlanId ?? null,
       };
       const today = new Date().toISOString().slice(0, 10);
       if (this.state.todayDate !== today) {

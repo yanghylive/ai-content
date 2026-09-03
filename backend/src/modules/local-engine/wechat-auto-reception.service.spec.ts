@@ -39,6 +39,7 @@ function makeService(overrides: {
     syncWechatChatHistory: jest.fn().mockResolvedValue({ ok: true }),
     listReplyBots: jest.fn().mockResolvedValue([]),
     createCustomerServiceReplyTask: jest.fn(),
+    createTask: jest.fn().mockResolvedValue({ id: 'fa-plan-1' }),
   };
   const service = new WechatAutoReceptionGuardService(
     config as never,
@@ -165,6 +166,72 @@ describe('WechatAutoReceptionGuardService', () => {
       const status = service.getStatus();
       expect(status.skipped).toBeGreaterThan(0);
       expect(status.reasons.general).toContain('没有启用的客服机器人');
+    });
+  });
+
+  describe('autoAcceptFriend（阶段 3）', () => {
+    it('开关状态可设置并回读', async () => {
+      const { service } = makeService();
+      await service.setAutoAcceptFriend(true);
+      expect(service.getStatus().autoAcceptFriend).toBe(true);
+      await service.setAutoAcceptFriend(false);
+      expect(service.getStatus().autoAcceptFriend).toBe(false);
+    });
+
+    it('非 win32：开启后不创建任何计划并如实提示', async () => {
+      const { service, engine } = makeService();
+      const anySvc = service as unknown as { isWindowsHost: () => boolean };
+      anySvc.isWindowsHost = () => false;
+      await service.setAutoAcceptFriend(true);
+      const anyService = service as unknown as {
+        ensureFriendAcceptPlan(userId: string): Promise<void>;
+      };
+      await anyService.ensureFriendAcceptPlan('u1');
+      expect(engine.createTask).not.toHaveBeenCalled();
+      expect(service.getStatus().autoAcceptRuntimeHint).toContain('不是 Windows');
+    });
+
+    it('win32 且无历史计划：创建一条 auto-send 计划', async () => {
+      const { service, engine } = makeService();
+      const anySvc = service as unknown as { isWindowsHost: () => boolean };
+      anySvc.isWindowsHost = () => true;
+      // 无历史计划：覆盖 prisma findFirst -> null
+      const prismaAccess = (
+        service as unknown as { prisma: { interactionTask: { findFirst: jest.Mock } } }
+      ).prisma;
+      prismaAccess.interactionTask.findFirst.mockResolvedValue(null);
+      const anyService = service as unknown as {
+        ensureFriendAcceptPlan(userId: string): Promise<void>;
+      };
+      await anyService.ensureFriendAcceptPlan('u1');
+      expect(engine.createTask).toHaveBeenCalledTimes(1);
+      const input = engine.createTask.mock.calls[0][0] as Record<string, unknown>;
+      expect(input.type).toBe('wechat-friend-accept');
+      expect(input.sendMode).toBe('auto-send');
+      expect((input.metadata as Record<string, unknown>).skill_id).toBe(
+        'wechat.friend.accept',
+      );
+      expect(service.getStatus().autoAcceptPlanId).toBe('fa-plan-1');
+    });
+
+    it('win32 且已有活跃计划：幂等不重复创建', async () => {
+      const { service, engine } = makeService();
+      const anySvc = service as unknown as { isWindowsHost: () => boolean };
+      anySvc.isWindowsHost = () => true;
+      const prismaAccess = (
+        service as unknown as { prisma: { interactionTask: { findFirst: jest.Mock } } }
+      ).prisma;
+      prismaAccess.interactionTask.findFirst.mockResolvedValue({
+        id: 'fa-1',
+        status: 'QUEUED',
+        stage: 'scheduled-wait',
+      });
+      const anyService = service as unknown as {
+        ensureFriendAcceptPlan(userId: string): Promise<void>;
+      };
+      await anyService.ensureFriendAcceptPlan('u1');
+      expect(engine.createTask).not.toHaveBeenCalled();
+      expect(service.getStatus().autoAcceptPlanId).toBe('fa-1');
     });
   });
 });

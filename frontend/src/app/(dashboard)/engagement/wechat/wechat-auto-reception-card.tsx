@@ -47,6 +47,19 @@ export function WechatAutoReceptionCard({ compact = false }: { compact?: boolean
     }
   };
 
+  const toggleAutoAccept = async () => {
+    const next = !status?.autoAcceptFriend;
+    setToggling(true);
+    try {
+      await localEngineApi.setWechatAutoAcceptFriendEnabled(next);
+      await load();
+    } catch (e) {
+      setError(toActionableError(e, "自动通过好友开关切换失败"));
+    } finally {
+      setToggling(false);
+    }
+  };
+
   if (error && !status) {
     return (
       <div className="kaypal-v3-panel p-4">
@@ -141,6 +154,36 @@ export function WechatAutoReceptionCard({ compact = false }: { compact?: boolean
           {status.pausedReason}
         </p>
       ) : null}
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">
+            自动通过好友
+          </p>
+          <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+            {status?.autoAcceptFriend
+              ? status.autoAcceptRuntimeHint ||
+                (status.autoAcceptPlanId
+                  ? "已创建自动通过计划，等待 Windows 端到点执行"
+                  : "Windows 端到点执行")
+              : "开启后定期处理微信好友申请（需 Windows 桌面微信 + native runtime）"}
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={Boolean(status?.autoAcceptFriend)}
+          disabled={toggling || paused}
+          className={`flex h-6 w-11 items-center rounded-full p-0.5 transition disabled:opacity-50 ${
+            status?.autoAcceptFriend
+              ? "justify-end bg-[var(--kaypal-v3-accent)]"
+              : "justify-start bg-[var(--kaypal-v3-border-strong)]"
+          }`}
+          onClick={() => void toggleAutoAccept()}
+        >
+          <span className="h-5 w-5 rounded-full bg-[var(--kaypal-v3-paper)] shadow" />
+        </button>
+      </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div>
