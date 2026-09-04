@@ -11,6 +11,9 @@ const INVOKE_CHANNELS = new Set([
   'browser-panel:reload',
   'browser-panel:hide',
   'browser-panel:set-width',
+  // 分区沟槽（复用本 preload）：拖拽调宽会话
+  'browser-panel:begin-resize',
+  'browser-panel:end-resize',
   // ③：面板模式开关（Agent 是否通过面板代操作）
   'browser-panel:toggle-agent-mode',
   // round15：用户手动切/关 tab（控制条 tab 条）

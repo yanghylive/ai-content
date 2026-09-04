@@ -92,8 +92,11 @@ function registerBrowserPanelIpc(deps) {
   ipcMain.handle('browser-panel:reload', stripOnly(() => getPanel().reload()));
   ipcMain.handle('browser-panel:hide', stripOnly(() => getPanel().hide()));
   ipcMain.handle('browser-panel:show', stripOnly(() => getPanel().show()));
-  // 调宽是布局动作、非导航：控制条与受信前端（3010 dock 全高把手）同权。
-  ipcMain.handle('browser-panel:set-width', stripOrTrusted((w) => ({ result: getPanel().setWidth(w) })));
+  ipcMain.handle('browser-panel:set-width', stripOnly((w) => getPanel().setWidth(w)));
+  // 拖拽调宽会话：沟槽 pointerdown 开始 / pointerup 结束。视图只有 10px 宽，
+  // 光标一出视图就断流，所以拖拽由主进程轮询系统光标驱动（见 manager.beginResize）。
+  ipcMain.handle('browser-panel:begin-resize', stripOnly(() => getPanel().beginResize()));
+  ipcMain.handle('browser-panel:end-resize', stripOnly(() => getPanel().endResize()));
 
   // 阶段 6 决策 ③：面板模式开关（只有控制条按钮能切；写/删 userData 下的 0600 文件）
   ipcMain.handle(
@@ -148,6 +151,8 @@ function registerBrowserPanelIpc(deps) {
       'browser-panel:hide',
       'browser-panel:show',
       'browser-panel:set-width',
+      'browser-panel:begin-resize',
+      'browser-panel:end-resize',
       'browser-panel:toggle-agent-mode',
       'browser-panel:switch-tab',
       'browser-panel:close-tab',

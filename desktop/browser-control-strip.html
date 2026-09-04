@@ -84,31 +84,12 @@
     #agent-mode { width: auto; padding: 0 10px; font-size: 11px; font-weight: 600; }
     #agent-mode.on { background: var(--accent); color: #fff; }
     #agent-mode.on:hover { background: var(--accent); filter: brightness(1.08); }
-    /* 调宽把手: 12px 热区 + 居中可见胶囊(VS Code sash 语义), 双击复位默认宽 */
-    #resize {
-      flex: none; width: 12px; align-self: stretch; cursor: ew-resize;
-      position: relative; background: transparent;
-      transition: background .12s;
-    }
-    #resize::before {
-      content: ''; position: absolute; left: 50%; top: 50%;
-      width: 3px; height: 26px; margin: -13px 0 0 -1.5px;
-      border-radius: 2px; background: rgba(31,35,41,.22);
-      transition: background .12s, width .12s;
-    }
-    @media (prefers-color-scheme: dark) {
-      #resize::before { background: rgba(255,255,255,.28); }
-    }
-    #resize:hover { background: rgba(114,46,209,.08); }
-    #resize:hover::before, #resize.dragging::before { background: var(--accent); width: 4px; }
-    #resize.dragging { background: rgba(114,46,209,.12); }
 
   </style>
 </head>
 <body>
   <div id="tabbar"></div>
   <div id="toolbar">
-    <div id="resize" title="拖拽调整面板宽度（双击恢复默认）"></div>
     <button id="back" title="后退"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <button id="forward" title="前进"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
     <button id="reload" title="刷新"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
@@ -198,26 +179,6 @@
         bar.appendChild(el);
       });
     }
-
-    // 左缘拖拽调宽（面板在右，向左拖变宽）
-    let dragStartX = null;
-    let dragStartWidth = null;
-    $('resize').addEventListener('pointerdown', (event) => {
-      dragStartX = event.clientX;
-      dragStartWidth = lastState?.panelWidth || 480;
-      $('resize').setPointerCapture(event.pointerId);
-      $('resize').classList.add('dragging');
-    });
-    $('resize').addEventListener('pointermove', (event) => {
-      if (dragStartX == null) return;
-      const next = dragStartWidth + (dragStartX - event.clientX);
-      invoke('browser-panel:set-width', next);
-    });
-    const endDrag = () => { dragStartX = null; $('resize').classList.remove('dragging'); };
-    $('resize').addEventListener('pointerup', endDrag);
-    $('resize').addEventListener('pointercancel', endDrag);
-    // 双击把手: 恢复默认宽度(480 与主进程默认一致)
-    $('resize').addEventListener('dblclick', () => invoke('browser-panel:set-width', 480));
 
     let lastState = null;
     api.onState((state) => {

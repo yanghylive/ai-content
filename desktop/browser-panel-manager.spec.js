@@ -13,6 +13,7 @@
  *  6) 状态机广播：did-navigate/did-fail-load/render-process-gone → 状态事件。
  */
 const assert = require('node:assert/strict');
+const { PANEL_GUTTER } = require('./browser-panel-manager');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -74,7 +75,15 @@ function makeFakeElectron() {
     setVisible(v) { this._visible = v; }
     setBounds(b) { this._bounds = b; }
   }
-  return { WebContentsView, FakeWebContents, idSeq: () => idSeq };
+  // 拖拽调宽靠系统光标轮询驱动（见 manager.beginResize），fake 提供可控光标
+  const cursor = { x: 0, y: 0 };
+  return {
+    WebContentsView,
+    FakeWebContents,
+    idSeq: () => idSeq,
+    screen: { getCursorScreenPoint: () => ({ x: cursor.x, y: cursor.y }) },
+    setCursor: (x, y) => { cursor.x = x; cursor.y = y; },
+  };
 }
 
 function makeFakeWindow(width = 1600, height = 900) {
@@ -89,7 +98,7 @@ function makeFakeWindow(width = 1600, height = 900) {
         if (i >= 0) children.splice(i, 1);
       },
     },
-    getContentBounds: () => ({ width: fakeWindow.width, height: fakeWindow.height }),
+    getContentBounds: () => ({ x: 0, y: 0, width: fakeWindow.width, height: fakeWindow.height }),
     on: () => undefined,
     isDestroyed: () => false,
     children,
@@ -122,7 +131,7 @@ function setup(width = 1600, height = 900, opts = {}) {
   const electron = makeFakeElectron();
   const tabManager = makeTabManager();
   const window = makeFakeWindow(width, height);
-  const { BrowserPanelManager } = require('./browser-panel-manager');
+  const { BrowserPanelManager, PANEL_GUTTER } = require('./browser-panel-manager');
   const manager = new BrowserPanelManager({
     electron,
     store: { get: () => undefined, set: () => undefined },
@@ -158,6 +167,57 @@ test('sanitizePanelUserAgent：去 Electron/app 标识，保留标准 Chrome 形
   assert.ok(sanitizePanelUserAgent(undefined).includes('Chrome/'), 'undefined 兜底');
 });
 
+test('分区沟槽：全高贴面板左缘，宽度=10，命中 strip 门禁（面板页不命中）', () => {
+  const { manager, window } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  const { width, height } = window.getContentBounds();
+  const gutter = manager.gutterView;
+  assert.ok(gutter, 'attach 后应建出沟槽视图');
+  assert.equal(gutter._bounds.width, PANEL_GUTTER);
+  assert.equal(gutter._bounds.x, width - 480 - PANEL_GUTTER, '紧贴面板左缘');
+  assert.equal(gutter._bounds.y, 38, '从 tab 条之下开始');
+  assert.equal(gutter._bounds.height, height - 38, '全高（不止控制条那一行）');
+  assert.equal(gutter._visible, true);
+  assert.equal(manager.isStripSender(gutter.webContents), true, '沟槽=本地受信 chrome');
+  assert.equal(manager.isStripSender(manager.panelView.webContents), false, '第三方面板页不命中');
+  manager.hide();
+  assert.equal(gutter._visible, false, '收起面板时沟槽一起隐藏');
+});
+
+test('拖拽调宽：主进程跟随系统光标，按下不跳宽，松手才落盘', () => {
+  const saved = [];
+  const { electron, manager } = setup(1600, 900);
+  manager._store = { get: () => undefined, set: (k, v) => saved.push([k, v]) };
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  // 光标落在沟槽中间（面板左缘 1120，沟槽 1110~1120）
+  electron.setCursor(1115, 400);
+  assert.equal(manager.beginResize(), true);
+  assert.equal(manager.width(), 480, '按下瞬间宽度不得跳变');
+  // 往左拖 100px → 面板变宽 100
+  electron.setCursor(1015, 400);
+  manager._pollResize();
+  assert.equal(manager.width(), 580);
+  assert.equal(manager.panelView._bounds.x, 1600 - 580);
+  assert.equal(saved.length, 0, '拖拽中不逐帧写 store（electron-store 同步落盘）');
+  // 往右拖回、越过下限也被夹住
+  electron.setCursor(1560, 400);
+  manager._pollResize();
+  assert.equal(manager.width(), 360, '窄面板下限 360');
+  assert.equal(manager.endResize(), true);
+  assert.deepEqual(saved, [['browserPanelWidth', 360]], '松手一次性持久化');
+  assert.equal(manager.endResize(), false, '重复结束幂等');
+  assert.equal(manager._resizeTimer, null);
+  manager.destroy();
+});
+
+test('拖拽调宽：无系统光标能力时静默放弃，不炸会话', () => {
+  const { electron, manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  electron.screen = undefined;
+  assert.equal(manager.beginResize(), false);
+  assert.equal(manager.width(), 480);
+});
+
 test('默认宽度 480，窄面板下限 360，上限 60%', () => {
   const { manager } = setup(1600, 900);
   manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
@@ -180,10 +240,10 @@ test('布局：面板占右列，控制条在业务区之上，rightInset 通知
   assert.equal(strip._bounds.height, 40);
   assert.equal(panel._bounds.y, 38 + 40); // tab 条 + 控制条之下
   assert.equal(panel._bounds.height, height - 38 - 40);
-  assert.equal(tabManager.rightInset, 480);
+  assert.equal(tabManager.rightInset, 480 + PANEL_GUTTER, '业务区还要多让出一条沟');
   // 业务视图（模拟）不侵入面板区域
   const biz = tabManager.businessBoundsFor(width, height);
-  assert.equal(biz.x + biz.width, width - 480);
+  assert.equal(biz.x + biz.width, width - 480 - PANEL_GUTTER);
 });
 
 test('窗口缩小时面板宽度自动重新夹取（60% 上限，不挤压主内容）', () => {
@@ -194,7 +254,7 @@ test('窗口缩小时面板宽度自动重新夹取（60% 上限，不挤压主�
   window.width = 1000; // 窗口收窄 → 60% 上限 600，relayout 自动夹取
   manager.relayout();
   assert.equal(manager.width(), 600);
-  assert.equal(tabManager.rightInset, 600);
+  assert.equal(tabManager.rightInset, 600 + PANEL_GUTTER);
   assert.equal(manager.panelView._bounds.width, 600);
 });
 

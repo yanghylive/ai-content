@@ -16,8 +16,10 @@
   #stripFrame { flex: 0 0 40px; height: 40px; width: 100%; border: 0; display: block; }
   #stage { flex: 1; min-height: 0; display: flex; position: relative; }
   #appFrame { flex: 1; min-width: 0; border: 0; display: block; background: #fbfaff; }
-  /* 右侧浏览器面板(mock, 真实是 WebContentsView) */
-  #panel { width: 460px; flex: 0 0 460px; border-left: 1px solid rgba(31,35,41,.12); display: flex; flex-direction: column; background: #fff; }
+  /* 分区沟槽：真实组件 browser-panel-gutter.html（业务区与面板之间的背景色空隙） */
+  #gutterFrame { flex: 0 0 10px; width: 10px; height: 100%; border: 0; display: block; }
+  /* 右侧浏览器面板(mock, 真实是 WebContentsView)。左缘边线由沟槽画，卡片不再自绘 */
+  #panel { width: 460px; flex: 0 0 460px; display: flex; flex-direction: column; background: #fff; }
   #panel .strip { flex: 0 0 34px; border: 0; }
   #panelBody { flex: 1; min-height: 0; position: relative; background: #0f0f12; overflow: hidden; }
   #panelBody .fakepage { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #6b6f7a; }
@@ -26,7 +28,7 @@
   #panelBody .fakepage span { font-size: 11px; }
   #ovFrame { position: absolute; right: 14px; bottom: 14px; width: 340px; height: 216px; border: 0; filter: drop-shadow(0 10px 28px rgba(0,0,0,.35)); }
   /* dock 入口(新版 SVG 图标示意) */
-  #dock { position: absolute; right: 476px; bottom: 20px; display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #e5e6eb; background: #fff; color: #1f2329; font-size: 12px; box-shadow: 0 4px 12px rgba(31,35,41,.12); }
+  #dock { position: absolute; right: 486px; bottom: 20px; display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #e5e6eb; background: #fff; color: #1f2329; font-size: 12px; box-shadow: 0 4px 12px rgba(31,35,41,.12); }
   #dock svg { width: 15px; height: 15px; color: #722ed1; }
   #dock .st { width: 8px; height: 8px; border-radius: 50%; background: #34a853; }
   #tag { position: absolute; left: 14px; top: 10px; font-size: 11px; color: #8f959e; background: rgba(255,255,255,.85); border: 1px solid rgba(31,35,41,.08); border-radius: 6px; padding: 3px 8px; }
@@ -37,7 +39,8 @@
   <iframe id="stripFrame" class="strip" src="/tab-strip.html"></iframe>
   <div id="stage">
     <iframe id="appFrame" src="/today"></iframe>
-    <div id="tag">内置浏览器面板（右侧 dock 入口呼出）</div>
+    <div id="tag">内置浏览器面板 · 左侧竖条 = 分区沟槽（拖动调宽，双击回 480）</div>
+    <iframe id="gutterFrame" src="/browser-panel-gutter.html"></iframe>
     <div id="panel">
       <iframe class="strip" src="/browser-control-strip.html" style="width:100%;height:62px;border:0;flex:none"></iframe>
       <div id="panelBody">

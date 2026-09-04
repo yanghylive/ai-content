@@ -48,7 +48,6 @@ interface ElectronAPI {
       platform?: string;
     }) => Promise<{ success: boolean; state?: BrowserPanelState; error?: string }>;
     getState: () => Promise<{ success: boolean; state?: BrowserPanelState; error?: string }>;
-    setWidth: (width: number) => Promise<{ success: boolean; result?: number; error?: string }>;
     onState: (callback: (state: BrowserPanelState) => void) => string;
     removeOnState: (key: string) => void;
   };

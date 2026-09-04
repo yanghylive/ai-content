@@ -110,7 +110,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   browserPanel: {
     open: (input) => ipcRenderer.invoke('browser-panel:open', input),
     getState: () => ipcRenderer.invoke('browser-panel:state'),
-    setWidth: (width) => ipcRenderer.invoke('browser-panel:set-width', width),
     onState: (callback) => addManagedListener('browser-panel:state', callback),
     removeOnState: (key) => removeManagedListener(key)
   },

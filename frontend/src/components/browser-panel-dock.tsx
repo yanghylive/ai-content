@@ -18,108 +18,6 @@ const STATUS_LABEL: Record<string, string> = {
   error: "出错",
 };
 
-/**
- * 面板左缘全高调宽把手（sash）：面板打开时业务区右缘 = 面板左边界，
- * 把手贴视口右缘、全高可见——分隔线本身就是拖拽位，不用去 40px 控制条里找小把手。
- * 拖拽走 rAF 节流发 browser-panel:set-width；双击恢复默认 480。
- */
-function PanelResizeSash({
-  setWidth,
-  panelWidth,
-}: {
-  setWidth: (width: number) => Promise<unknown>;
-  panelWidth: number;
-}) {
-  const [active, setActive] = useState(false);
-  const draggingRef = useRef(false);
-  const totalRef = useRef(0);
-  const rafRef = useRef<number | null>(null);
-  const pendingRef = useRef<number | null>(null);
-
-  const flush = useCallback(() => {
-    rafRef.current = null;
-    const next = pendingRef.current;
-    pendingRef.current = null;
-    if (next != null) void setWidth(next);
-  }, [setWidth]);
-
-  const endDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    draggingRef.current = false;
-    setActive(false);
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      /* 指针已释放 */
-    }
-    if (rafRef.current != null) {
-      window.cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    flush();
-  };
-
-  return (
-    <div
-      role="separator"
-      aria-orientation="vertical"
-      title="拖拽调整浏览器面板宽度（双击恢复默认）"
-      style={{
-        position: "fixed",
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: 10,
-        zIndex: 60,
-        cursor: "ew-resize",
-        touchAction: "none",
-        background: active ? "rgba(114,46,209,.08)" : "transparent",
-        borderLeft: `1px solid ${active ? "rgba(114,46,209,.35)" : "var(--kaypal-v3-border, #e5e6eb)"}`,
-        transition: "background .12s ease, border-color .12s ease",
-      }}
-      onMouseEnter={() => {
-        if (!draggingRef.current) setActive(true);
-      }}
-      onMouseLeave={() => {
-        if (!draggingRef.current) setActive(false);
-      }}
-      onPointerDown={(event) => {
-        event.currentTarget.setPointerCapture(event.pointerId);
-        draggingRef.current = true;
-        totalRef.current = window.innerWidth + panelWidth;
-        setActive(true);
-      }}
-      onPointerMove={(event) => {
-        if (!draggingRef.current) return;
-        pendingRef.current = Math.round(totalRef.current - event.clientX);
-        if (rafRef.current == null) {
-          rafRef.current = window.requestAnimationFrame(flush);
-        }
-      }}
-      onPointerUp={endDrag}
-      onPointerCancel={(event) => endDrag(event)}
-      onDoubleClick={() => void setWidth(480)}
-    >
-      <span
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          width: active ? 4 : 3,
-          height: 26,
-          transform: "translate(-50%, -50%)",
-          borderRadius: 2,
-          background: active
-            ? "var(--kaypal-v3-primary, #722ed1)"
-            : "var(--kaypal-v3-muted, #8a8d98)",
-          opacity: active ? 1 : 0.75,
-          transition: "background .12s ease, width .12s ease",
-          pointerEvents: "none",
-        }}
-      />
-    </div>
-  );
-}
-
 export function BrowserPanelDock() {
   const api =
     typeof window !== "undefined" ? window.electronAPI?.browserPanel : undefined;
@@ -173,20 +71,7 @@ export function BrowserPanelDock() {
           ? "var(--kaypal-v3-warning, #faad14)"
           : "var(--kaypal-v3-muted, #8a8d98)";
 
-  const canResize = !!(
-    state?.visible &&
-    state.panelWidth > 0 &&
-    typeof api.setWidth === "function"
-  );
-
   return (
-    <>
-      {canResize ? (
-        <PanelResizeSash
-          setWidth={(width) => api.setWidth(width)}
-          panelWidth={state.panelWidth}
-        />
-      ) : null}
     <div
       style={{
         position: "fixed",
@@ -322,6 +207,5 @@ export function BrowserPanelDock() {
         ) : null}
       </button>
     </div>
-    </>
   );
 }

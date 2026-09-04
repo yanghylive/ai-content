@@ -8,6 +8,8 @@
  *   ├────────────────────────┼───────────────┤
  *   │ 业务标签 WebContentsView │ 面板 webContents │
  *   └────────────────────────┴───────────────┘
+ *   面板与业务区之间留 PANEL_GUTTER(10px) 背景沟（browser-panel-gutter.html 视图）：
+ *   分区靠"空隙 + 面板 1px 卡片边 + 落在沟里的投影"读出来，沟本身即全高调宽热区。
  *   - 面板打开时业务内容宽度 = window.width - panelWidth（rightInset 注入 TabManager）；
  *   - 控制条是本地受信视图（browser-control-strip.html + preload），面板 webContents
  *     是第三方 web 内容——无 preload、sandbox:true、contextIsolation:true，
@@ -31,6 +33,13 @@ const PANEL_MIN_WIDTH = 360;
 const PANEL_DEFAULT_WIDTH = 480;
 const PANEL_WIDTH_RATIO_MAX = 0.6;
 const STRIP_HEIGHT = 40;
+// TraeWork 分区语义：业务区与面板之间留一条背景色沟（而非分割线），
+// 边界靠"两块卡片之间的空隙 + 卡片 1px 边 + 落在沟里的投影"读出来。
+const PANEL_GUTTER = 10;
+/** 拖拽会话看门狗：光标静止超过该时长 = 判定已松手（松手点常在别的视图上） */
+const RESIZE_IDLE_MS = 1200;
+/** 拖拽轮询间隔（ms）——主进程跟随系统光标，不受视图边界断流影响 */
+const RESIZE_POLL_MS = 16;
 /** round15：tab 条行高（多 tab 时控制条两行；单 tab 不显示，零干扰） */
 const TABBAR_HEIGHT = 26;
 const TAB_STRIP_HEIGHT = 38; // 与 workspace-tabs.js 保持一致（顶部通栏高度）
@@ -100,10 +109,19 @@ class BrowserPanelManager {
     this._approvalPreloadPath =
       deps.approvalPreloadPath || path.join(__dirname, 'browser-approval-overlay-preload.js');
     this._approvalHtmlPath = deps.approvalHtmlPath || path.join(__dirname, 'browser-approval-overlay.html');
+    // 分区沟槽（本地受信，复用控制条 preload：只需要 set-width / begin / end 三个通道）
+    this._gutterHtmlPath = deps.gutterHtmlPath || path.join(__dirname, 'browser-panel-gutter.html');
     this._logger = deps.logger || console;
     this.window = null;
     this.stripView = null;
+    /** 分区沟槽视图（面板左缘全高，拖拽热区 + 卡片边线） */
+    this.gutterView = null;
     this.panelView = null;
+    /** 拖拽调宽会话（主进程轮询系统光标驱动） */
+    this._resizeTimer = null;
+    this._resizeLastX = null;
+    this._resizeLastMove = 0;
+    this._resizeGrabOffset = 0;
     // 阶段 7（round11）tabs：面板 tab 台账。panelView 恒等于 active tab 的视图
     // （既有 resolvePanelTarget/panelWebContents/navigate 等方法因此零改动自动
     // 作用于当前 tab）；台账项为 { view }，下标即 AiBrowserAction tabs.index。
@@ -208,6 +226,23 @@ class BrowserPanelManager {
       this.window.contentView.addChildView(this.stripView);
       this.stripView.webContents.loadFile(this._stripHtmlPath);
       this.stripView.setVisible(false);
+    }
+    if (!this.gutterView) {
+      // 分区沟槽：本地受信视图（与控制条同一 preload 姿态），全高贴面板左缘。
+      this.gutterView = new WebContentsView({
+        webPreferences: {
+          preload: this._preloadPath,
+          contextIsolation: true,
+          nodeIntegration: false,
+          sandbox: false,
+          partition: 'persist:ai-content-browser-gutter',
+          backgroundThrottling: false,
+        },
+      });
+      this._knownWebContents.add(this.gutterView.webContents);
+      this.window.contentView.addChildView(this.gutterView);
+      this.gutterView.webContents.loadFile(this._gutterHtmlPath);
+      this.gutterView.setVisible(false);
     }
     if (!this.approvalView) {
       // 阶段 6：审批浮层。必须 addChildView 在 panelView **之后**——Electron 的
@@ -466,6 +501,8 @@ class BrowserPanelManager {
       if (tab.view && !tab.view.webContents.isDestroyed()) tab.view.setVisible(false);
     }
     if (this.stripView) this.stripView.setVisible(false);
+    this.endResize();
+    if (this.gutterView && !this.gutterView.webContents.isDestroyed()) this.gutterView.setVisible(false);
     // 阶段 6：面板收起 = 没有可操作的页面，待批卡片必须一起清空并隐藏，
     // 否则重开面板会看到一批已经过期（页面目标早变了）的陈旧卡片。
     if (this.approvalView && !this.approvalView.webContents.isDestroyed()) {
@@ -662,6 +699,7 @@ class BrowserPanelManager {
   }
 
   setWidth(width) {
+    this.endResize();
     const next = this._clampWidth(Number(width));
     if (this._store && typeof this._store.set === 'function') {
       this._store.set('browserPanelWidth', next);
@@ -698,12 +736,78 @@ class BrowserPanelManager {
   }
 
   isStripSender(sender) {
+    // "strip" = 本地受信 chrome 视图（控制条 / 分区沟槽），第三方面板页永不命中。
     return !!(
       sender &&
-      this.stripView &&
-      !this.stripView.webContents.isDestroyed() &&
-      this.stripView.webContents.id === sender.id
+      ((this.stripView && !this.stripView.webContents.isDestroyed() && this.stripView.webContents.id === sender.id) ||
+        (this.gutterView && !this.gutterView.webContents.isDestroyed() && this.gutterView.webContents.id === sender.id))
     );
+  }
+
+  /**
+   * 拖拽调宽会话开始（沟槽 pointerdown 触发）。
+   * 为什么不在渲染层算 delta：沟槽只有 10px 宽，光标一移出视图就收不到
+   * pointermove（Electron 子视图各自吃鼠标事件），拖到一半就断。改成主进程
+   * 轮询系统光标（原生分割条做法），全程跟手。
+   */
+  beginResize() {
+    if (this._destroyed || !this._visible || this._resizeTimer) return false;
+    const localX = this._cursorLocalX();
+    if (localX == null) return false;
+    // 按下点与面板左缘的相对偏移：拖拽全程保持，避免"一按下去就跳 10px"
+    this._resizeGrabOffset = localX - (this.window.getContentBounds().width - this.width());
+    this._resizeLastX = localX;
+    this._resizeLastMove = Date.now();
+    this._resizeTimer = setInterval(() => this._pollResize(), RESIZE_POLL_MS);
+    return true;
+  }
+
+  /** 系统光标 → 窗口内容坐标（取不到返回 null，调用方据此放弃会话） */
+  _cursorLocalX() {
+    try {
+      const cursor = this._electron.screen.getCursorScreenPoint();
+      const bounds = this.window.getContentBounds();
+      return cursor.x - (bounds.x || 0);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  _pollResize() {
+    const localX = this._cursorLocalX();
+    if (localX == null) {
+      this.endResize();
+      return;
+    }
+    const bounds = this.window.getContentBounds();
+    if (this._resizeLastX != null && Math.abs(localX - this._resizeLastX) > 1) {
+      this._resizeLastMove = Date.now();
+    }
+    this._resizeLastX = localX;
+    const next = this._clampWidth(bounds.width - (localX - (this._resizeGrabOffset || 0)));
+    if (next !== this._currentWidth) {
+      this._currentWidth = next;
+      this.relayout();
+      this._emitState();
+    }
+    if (Date.now() - this._resizeLastMove > RESIZE_IDLE_MS) this.endResize();
+  }
+
+  /** 会话结束：electron-store 是同步落盘，拖拽中不逐帧写，松手一次性持久化 */
+  endResize() {
+    if (!this._resizeTimer) return false;
+    clearInterval(this._resizeTimer);
+    this._resizeTimer = null;
+    this._resizeLastX = null;
+    this._resizeGrabOffset = 0;
+    if (this._store && typeof this._store.set === 'function' && this._currentWidth != null) {
+      try {
+        this._store.set('browserPanelWidth', this._currentWidth);
+      } catch {
+        /* 持久化失败不影响本次会话宽度 */
+      }
+    }
+    return true;
   }
 
   /** 阶段 6：审批浮层 sender 校验（只有浮层自己能调批准/拒绝，防第三方页面伪造） */
@@ -821,11 +925,17 @@ class BrowserPanelManager {
     const contentY = TAB_STRIP_HEIGHT;
     const contentH = Math.max(0, height - TAB_STRIP_HEIGHT);
     const stripH = this._stripHeight();
+    const x = Math.max(0, width - panelW);
+    const gutter = Math.min(PANEL_GUTTER, x);
     if (this._tabManager) {
-      this._tabManager.rightInset = panelW;
+      // 业务区多让出 gutter 像素，沟槽才有背景色可露（否则两视图贴边=一条线）
+      this._tabManager.rightInset = panelW + gutter;
       this._tabManager.relayout();
     }
-    const x = Math.max(0, width - panelW);
+    if (this.gutterView && !this.gutterView.webContents.isDestroyed()) {
+      this.gutterView.setBounds({ x: x - gutter, y: contentY, width: gutter, height: contentH });
+      this.gutterView.setVisible(gutter > 0);
+    }
     if (this.stripView && !this.stripView.webContents.isDestroyed()) {
       this.stripView.setBounds({ x, y: contentY, width: panelW, height: stripH });
       this.stripView.setVisible(true);
@@ -900,6 +1010,17 @@ class BrowserPanelManager {
 
   destroy() {
     this._destroyed = true;
+    this.endResize();
+    if (this.gutterView && !this.gutterView.webContents.isDestroyed()) {
+      try {
+        this._knownWebContents.delete(this.gutterView.webContents);
+        this.window && !this.window.isDestroyed() && this.window.contentView.removeChildView(this.gutterView);
+        this.gutterView.webContents.close();
+      } catch {
+        /* ignore */
+      }
+    }
+    this.gutterView = null;
     this._disposePanelView();
     if (this.stripView && !this.stripView.webContents.isDestroyed()) {
       try {
@@ -946,5 +1067,6 @@ module.exports = {
   sanitizePanelUserAgent,
   PANEL_MIN_WIDTH,
   PANEL_DEFAULT_WIDTH,
+  PANEL_GUTTER,
   STRIP_HEIGHT,
 };

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>面板分区沟槽</title>
+<style>
+  /*
+   * browser-panel-gutter.html — 业务区与内置浏览器面板之间的分区沟槽。
+   * 视觉语义取自 TraeWork Design 的分区：不画分割线，而是让两块卡片之间
+   * 露出一条背景色的"沟"——边界由 1px 卡片边 + 落在沟里的投影读出来，
+   * 沟本身就是拖拽热区（居中胶囊是握柄提示）。
+   */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --channel: #e3e5e9;
+    --card-edge: rgba(31, 35, 41, .13);
+    --shade: rgba(31, 35, 41, .10);
+    --grip: rgba(31, 35, 41, .30);
+    --accent: #722ed1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --channel: #131417;
+      --card-edge: rgba(255, 255, 255, .16);
+      --shade: rgba(0, 0, 0, .55);
+      --grip: rgba(255, 255, 255, .34);
+    }
+  }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--channel);
+    cursor: ew-resize;
+    touch-action: none;
+    position: relative;
+    transition: background .12s ease;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* 面板卡片投影落在沟里：越靠面板越深 */
+  body::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--shade));
+  }
+  /* 面板左缘 1px 边线（卡片轮廓） */
+  body::after {
+    content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 1px;
+    background: var(--card-edge);
+  }
+  #grip {
+    position: absolute; left: 50%; top: 50%;
+    width: 3px; height: 30px; border-radius: 2px;
+    transform: translate(-50%, -50%);
+    background: var(--grip);
+    pointer-events: none;
+    transition: background .12s ease, height .12s ease, width .12s ease;
+  }
+  body:hover, body.active { background: rgba(114, 46, 209, .14); }
+  body:hover #grip, body.active #grip {
+    background: var(--accent); width: 4px; height: 46px;
+  }
+</style>
+</head>
+<body title="拖拽调整浏览器面板宽度（双击恢复默认）">
+  <div id="grip"></div>
+  <script>
+    // 浏览器预览垫片：非 Electron 环境静默降级（Electron 内不执行）
+    if (!window.browserControl) {
+      window.browserControl = {
+        invoke: (channel, ...args) => { console.log('[preview mock invoke]', channel, ...args); return Promise.resolve({ success: true }); },
+        onState: () => () => undefined,
+      };
+    }
+    const api = window.browserControl;
+    const invoke = (channel, ...args) => {
+      try { return Promise.resolve(api.invoke(channel, ...args)); } catch (e) { return Promise.resolve(null); }
+    };
+    const body = document.body;
+    let active = false;
+
+    const stop = () => {
+      if (!active) return;
+      active = false;
+      body.classList.remove('active');
+      invoke('browser-panel:end-resize');
+    };
+
+    body.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      active = true;
+      body.classList.add('active');
+      try { body.setPointerCapture(event.pointerId); } catch (e) { /* 预览环境 */ }
+      invoke('browser-panel:begin-resize');
+    });
+    // 松手点可能落在面板/业务视图上（本视图收不到 pointerup）：
+    // 光标回到沟槽且按键已释放 = 补发结束信号（主进程另有静止看门狗兜底）。
+    body.addEventListener('pointermove', (event) => { if (active && event.buttons === 0) stop(); });
+    body.addEventListener('pointerup', stop);
+    body.addEventListener('pointercancel', stop);
+    body.addEventListener('dblclick', () => invoke('browser-panel:set-width', 480));
+  </script>
+</body>
+</html>
