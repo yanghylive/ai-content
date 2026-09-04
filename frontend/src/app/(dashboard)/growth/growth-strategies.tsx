@@ -127,18 +127,21 @@ export function GrowthStrategies() {
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
 
-  // 关键词建议（C 类 C-a）
+  // 关键词建议（C 类 C-a/C-b）
   const [suggestTarget, setSuggestTarget] = useState<GrowthStrategyTemplate | null>(null);
   const [suggestions, setSuggestions] = useState<KeywordSuggestions | null>(null);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [suggestError, setSuggestError] = useState<string | null>(null);
+  // 是否用 AI 语义归纳（C-b），默认规则版（C-a）
+  const [suggestUseLLM, setSuggestUseLLM] = useState(false);
   // 勾选采纳的词（按类别存 Set）
   const [pickedSource, setPickedSource] = useState<Set<string>>(new Set());
   const [pickedDemand, setPickedDemand] = useState<Set<string>>(new Set());
   const [pickedExclude, setPickedExclude] = useState<Set<string>>(new Set());
   const [applyingSuggest, setApplyingSuggest] = useState(false);
 
-  const openSuggest = async (strategy: GrowthStrategyTemplate) => {
+  const openSuggest = async (strategy: GrowthStrategyTemplate, useLLM?: boolean) => {
+    const mode = useLLM ?? suggestUseLLM;
     setSuggestTarget(strategy);
     setSuggestions(null);
     setSuggestError(null);
@@ -149,6 +152,7 @@ export function GrowthStrategies() {
     try {
       const data = await growthApi.keywordSuggestions({
         industry: strategy.industry || undefined,
+        mode: mode ? "llm" : "rule",
       });
       setSuggestions(data);
     } catch (err: unknown) {
@@ -534,6 +538,22 @@ export function GrowthStrategies() {
             <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
               根据「{suggestTarget.name}」的真实线索行为，反推下一轮该搜什么词。勾选采纳后追加进策略。
             </p>
+
+            {/* AI 归纳开关：C-b（LLM 语义归纳造新词）vs C-a（词库命中统计） */}
+            <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-ink)]">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-[var(--kaypal-v3-primary)]"
+                checked={suggestUseLLM}
+                disabled={suggestLoading}
+                onChange={(e) => {
+                  const next = e.target.checked;
+                  setSuggestUseLLM(next);
+                  if (suggestTarget) void openSuggest(suggestTarget, next);
+                }}
+              />
+              <span>AI 语义归纳（自动发现词库里没有的新词，更智能但更慢）</span>
+            </label>
 
             {suggestLoading ? (
               <div className="mt-6 flex items-center justify-center gap-2 py-8 text-sm text-[var(--kaypal-v3-muted)]">

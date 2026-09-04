@@ -605,8 +605,8 @@ overview: () => api.get<GrowthOverview>("/growth/overview"),
             `/growth/strategies/${id}/apply`,
             body,
         ),
-    /** 关键词智能建议（C 类 C-a）：从线索行为反推搜索词 */
-    keywordSuggestions: (body: { platform?: string; industry?: string; windowDays?: number; minLeadCount?: number } = {}) =>
+    /** 关键词智能建议（C 类）：mode=rule（C-a 词库命中，默认）/ llm（C-b 语义归纳造新词） */
+    keywordSuggestions: (body: { platform?: string; industry?: string; windowDays?: number; minLeadCount?: number; mode?: "rule" | "llm" } = {}) =>
         api.post<KeywordSuggestions>("/leads/keyword-suggestions", body),
     /** 采纳关键词建议（C 类 S-C4）：追加合并人工勾选的建议词 */
     applyKeywordSuggestions: (id: string, body: { sourceKeywords?: string[]; demandKeywords?: string[]; excludeKeywords?: string[] }) =>
