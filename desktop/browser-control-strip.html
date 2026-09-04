@@ -101,10 +101,54 @@
     }
     #quickrow .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--card); }
     #quickrow .chip .k { font: 10px ui-monospace, Menlo, monospace; opacity: .55; }
+    /* ---- 面板活动条（TraeWork「控制台日志」语义） ---- */
+    #activityrow {
+      display: none; flex: none; height: 30px; align-items: center; gap: 8px;
+      padding: 0 10px; background: var(--card);
+      border-top: 1px solid var(--border); font-size: 11px; color: var(--text-dim);
+      cursor: pointer; overflow: hidden;
+    }
+    #activityrow.show { display: flex; }
+    #activityrow .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+    #activityrow .at { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #activityrow .at b { color: var(--text); font-weight: 600; }
+    #activityrow .ts { flex: none; font: 10px ui-monospace, Menlo, monospace; color: var(--text-faint); }
+    #activityrow .n { flex: none; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px;
+      background: var(--press); color: var(--text); font-size: 10px; display: inline-flex; align-items: center; justify-content: center; }
+    #activityrow .clr { flex: none; color: var(--text-faint); padding: 2px 5px; border-radius: 4px; }
+    #activityrow .clr:hover { background: var(--hover); color: var(--text); }
+    #activityfull {
+      display: none; flex: none; max-height: 168px; overflow-y: auto;
+      background: var(--card); border-top: 1px solid var(--border);
+      padding: 4px 10px 8px; font-size: 11px; color: var(--text-dim);
+    }
+    #activityfull.show { display: block; }
+    #activityfull .line { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+    #activityfull .line .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+    #activityfull .line .t { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #activityfull .line .ts { margin-left: auto; flex: none; font: 10px ui-monospace, Menlo, monospace; color: var(--text-faint); }
+    .fav { flex: none; width: 13px; height: 13px; border-radius: 3.5px; color: #fff;
+      font-size: 8.5px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;
+      background: #8f959e; }
+    /* 站点品牌色（与 tab-strip 同一映射表） */
+    .fav.douyin { background: #161823; } .fav.xiaohongshu { background: #ff2442; }
+    .fav.weixin { background: #07c160; } .fav.channels { background: #07c160; }
+    .fav.baidu { background: #2932e1; } .fav.bilibili { background: #fb7299; }
+    .fav.taobao { background: #ff5000; } .fav.jd { background: #e1251b; }
+    .fav.zhihu { background: #0084ff; } .fav.github { background: #24292f; }
+    .fav.generic { background: #b9bec6; color: #fff; }
   </style>
 </head>
 <body>
   <div id="tabbar"></div>
+  <div id="activityrow" title="最近活动（点击展开全部）">
+    <span class="dot" style="background:var(--text-faint)"></span>
+    <span class="at"></span>
+    <span class="ts"></span>
+    <span class="n"></span>
+    <span class="clr">清除</span>
+  </div>
+  <div id="activityfull"></div>
   <div id="quickrow">
     <span class="lbl">快捷打开</span>
     <button type="button" class="chip" data-url="https://www.douyin.com">抖音</button>
@@ -136,6 +180,10 @@
               { title: '抖音 · 装修视频评论区', url: 'https://www.douyin.com/video/7498231' },
               { title: '小红书 · 搜索结果', url: 'https://www.xiaohongshu.com/search' },
             ],
+            activity: [
+              { t: Date.now() - 4000, type: 'approve', text: '批准：Agent 点击「回复」' },
+              { t: Date.now() - 16000, type: 'nav', text: '打开 https://www.douyin.com/video/7498231' },
+            ],
           });
         },
       };
@@ -150,6 +198,69 @@
     function invoke(channel, ...args) {
       api.invoke(channel, ...args).catch(() => { /* 状态由 onState 统一刷新 */ });
     }
+
+    /* ---- 站点 favicon（内置品牌映射：host → {key, letter}，未知走首字母灰色块） ---- */
+    const FAVS = [
+      [/douyin\.com/, 'douyin', '抖'], [/xiaohongshu/, 'xiaohongshu', '红'],
+      [/channels\.weixin/, 'channels', '视'], [/weixin\.qq/, 'weixin', '微'],
+      [/mp\.weixin/, 'weixin', '微'], [/baidu\.com/, 'baidu', '百'],
+      [/bilibili/, 'bilibili', 'B'], [/taobao/, 'taobao', '淘'],
+      [/jd\.com/, 'jd', '京'], [/zhihu/, 'zhihu', '知'],
+      [/github/, 'github', 'G'],
+    ];
+    function favFor(url) {
+      try {
+        const host = new URL(url).hostname;
+        for (const [re, key, letter] of FAVS) if (re.test(host)) return `<span class="fav ${key}">${letter}</span>`;
+        const l = (host.split('.')[1] || host.replace(/^www\./, '')[0] || '网').toUpperCase().slice(0, 1) || '网';
+        return `<span class="fav generic">${l}</span>`;
+      } catch (e) { return ''; }
+    }
+    const ACT_DOT = { open: 'var(--accent)', nav: 'var(--accent)', tab: 'var(--text-faint)', approve: 'var(--ok)', reject: 'var(--danger)', hide: 'var(--text-faint)', show: 'var(--ok)' };
+    function fmtTime(t) {
+      const d = new Date(t), p = (n) => String(n).padStart(2, '0');
+      return `${p(d.getHours())}:${p(d.getMinutes())}`;
+    }
+    let activityOpen = false;
+    function renderActivity(list) {
+      const row = $('activityrow');
+      const full = $('activityfull');
+      const has = Array.isArray(list) && list.length > 0;
+      row.classList.toggle('show', has);
+      full.classList.toggle('show', has && activityOpen);
+      if (!has) { full.innerHTML = ''; return; }
+      const head = list[0];
+      const dotEl = row.querySelector('.dot');
+      dotEl.style.background = ACT_DOT[head.type] || 'var(--text-faint)';
+      row.querySelector('.at').innerHTML = head.text;
+      row.querySelector('.ts').textContent = fmtTime(head.t);
+      row.querySelector('.n').textContent = list.length;
+      full.innerHTML = '';
+      for (const it of list.slice(0, 8)) {
+        const div = document.createElement('div');
+        div.className = 'line';
+        div.innerHTML = `<span class="dot" style="background:${ACT_DOT[it.type] || 'var(--text-faint)'}"></span>`;
+        const t = document.createElement('span');
+        t.className = 't';
+        t.textContent = it.text;
+        div.appendChild(t);
+        const ts = document.createElement('span');
+        ts.className = 'ts';
+        ts.textContent = fmtTime(it.t);
+        div.appendChild(ts);
+        full.appendChild(div);
+      }
+    }
+    $('activityrow').addEventListener('click', (e) => {
+      if (e.target.classList.contains('clr')) return;
+      activityOpen = !activityOpen;
+      renderActivity(lastActivity || []);
+    });
+    $('activityrow').querySelector('.clr').addEventListener('click', (e) => {
+      e.stopPropagation();
+      invoke('browser-panel:clear-activity');
+    });
+    let lastActivity = [];
 
     $('back').addEventListener('click', () => invoke('browser-panel:back'));
     $('forward').addEventListener('click', () => invoke('browser-panel:forward'));
@@ -195,6 +306,7 @@
         const el = document.createElement('div');
         el.className = 'tab' + (i === state.tabActiveIndex ? ' active' : '');
         el.title = tab.url || '';
+        el.insertAdjacentHTML('afterbegin', favFor(tab.url || ''));
         const label = document.createElement('span');
         label.className = 't';
         label.textContent = tab.title || tab.url || '空白页';
@@ -234,6 +346,10 @@
       $('agent-mode').classList.toggle('on', agentOn);
       // round15：tab 条（tabList/tabActiveIndex 驱动，多 tab 才出现）
       renderTabbar(state);
+      // 面板活动条（publicState.activity 驱动）
+      lastActivity = Array.isArray(state.activity) ? state.activity : [];
+      if (activityOpen) renderActivity(lastActivity);
+      else renderActivity(lastActivity);
     });
   </script>
 </body>

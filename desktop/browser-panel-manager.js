@@ -45,6 +45,12 @@ const TABBAR_HEIGHT = 26;
 // 地址栏聚焦时的快捷跳转行（TraeWork 地址行语义：聚焦即出建议）。
 // 控制条是独立视图，下拉会被视图边界裁掉——所以聚焦时把视图加高一行。
 const STRIP_EXPAND_HEIGHT = 30;
+// Agent 活动条行高：面板有活动记录时常驻在控制条底部（TraeWork「控制台日志」语义）
+const ACTIVITY_ROW_HEIGHT = 30;
+/** 活动日志容量：内存环形，够回看即可 */
+const ACTIVITY_CAP = 30;
+/** publicState 下发的活动条数（最新在前） */
+const ACTIVITY_EXPOSE = 15;
 const TAB_STRIP_HEIGHT = 38; // 与 workspace-tabs.js 保持一致（顶部通栏高度）
 
 // 阶段 6：审批浮层尺寸（与 browser-approval-overlay.html 的 CSS 保持一致，
@@ -147,6 +153,8 @@ class BrowserPanelManager {
     this._stateListeners = new Set();
     /** 控制条快捷跳转行是否展开（参与 _stripHeight） */
     this._stripExpanded = false;
+    /** Agent/面板活动日志（时间戳记录，供控制条底部活动条回看） */
+    this._activityLog = [];
   }
 
   /** 顶部标签条订阅面板状态广播（返回取消函数） */
@@ -514,6 +522,7 @@ class BrowserPanelManager {
     this.panelView.webContents.loadURL(targetUrl);
     this._emitState();
     this._emitSessionEvent(accountSwitched ? 'account-switched' : 'opened');
+    this.recordActivity('open', '打开浏览器面板', true);
     return this.publicState();
   }
 
@@ -540,6 +549,7 @@ class BrowserPanelManager {
     }
     this._emitState();
     this._emitSessionEvent('hidden');
+    this.recordActivity('hide', '收起浏览器面板', true);
     return this.publicState();
   }
 
@@ -551,6 +561,7 @@ class BrowserPanelManager {
     if (this.session.status === 'stopped') this.session.status = 'ready';
     this._emitState();
     this._emitSessionEvent('shown');
+    this.recordActivity('show', '恢复浏览器面板', true);
     return this.publicState();
   }
 
@@ -560,23 +571,29 @@ class BrowserPanelManager {
     this.session.status = 'starting';
     this._emitState();
     this.panelView.webContents.loadURL(targetUrl);
+    this.recordActivity('nav', `打开 ${targetUrl}`, true);
     return targetUrl;
   }
 
   goBack() {
     if (this.panelView && this.panelView.webContents.canGoBack()) {
       this.panelView.webContents.goBack();
+      this.recordActivity('nav', '后退', true);
     }
   }
 
   goForward() {
     if (this.panelView && this.panelView.webContents.canGoForward()) {
       this.panelView.webContents.goForward();
+      this.recordActivity('nav', '前进', true);
     }
   }
 
   reload() {
-    if (this.panelView) this.panelView.webContents.reload();
+    if (this.panelView) {
+      this.panelView.webContents.reload();
+      this.recordActivity('nav', '刷新', true);
+    }
   }
 
   // ---------- 面板 tabs（阶段 7 round11：AiBrowserAction tabs 桥接） ----------
@@ -708,6 +725,7 @@ class BrowserPanelManager {
    */
   switchTabByUser(index) {
     try {
+      this.recordActivity('tab', `切换标签页 ${Number(index) + 1}`, true);
       return { ok: true, snapshot: this.tabsOperation('switch', index) };
     } catch (error) {
       return { ok: false, error: error?.message || String(error) };
@@ -716,6 +734,7 @@ class BrowserPanelManager {
 
   closeTabByUser(index) {
     try {
+      this.recordActivity('tab', '关闭标签页', true);
       return { ok: true, snapshot: this.tabsOperation('close', index) };
     } catch (error) {
       return { ok: false, error: error?.message || String(error) };
@@ -881,6 +900,8 @@ class BrowserPanelManager {
       tabList: this._tabList(),
       // ③：面板模式开关当前态（读文件，控制条按钮据此高亮）
       agentMode: this.getAgentMode(),
+      // 面板/Agent 活动日志（最新在前，控制条底部活动条消费）
+      activity: this._activityLog.slice(-ACTIVITY_EXPOSE).reverse(),
     };
   }
 
@@ -938,7 +959,32 @@ class BrowserPanelManager {
   /** 控制条总高：多 tab 时加 tab 条行（round15；单 tab 零干扰不变高） */
   _stripHeight() {
     const base = this._panelTabs.length > 1 ? STRIP_HEIGHT + TABBAR_HEIGHT : STRIP_HEIGHT;
-    return base + (this._stripExpanded ? STRIP_EXPAND_HEIGHT : 0);
+    const extra = (this._stripExpanded ? STRIP_EXPAND_HEIGHT : 0) + (this._activityLog.length ? ACTIVITY_ROW_HEIGHT : 0);
+    return base + extra;
+  }
+
+  /**
+   * 记录一条面板活动（打开/导航/批准/拒绝…），控制条底部活动条与顶部标签条
+   * 都经 publicState.activity 消费。环形上限 ACTIVITY_CAP；有记录时控制条
+   * 视图加高一行（ACTIVITY_ROW_HEIGHT），清空后复原。
+   */
+  /**
+   * @param {boolean} [silent] 内部操作（open/hide/nav/tab…）本来就要广播状态，
+   *   传 true 只 push + 重排视图高度，不再次广播避免重复推送。
+   */
+  recordActivity(type, text, silent) {
+    const entry = { t: Date.now(), type, text: String(text || '').slice(0, 120) };
+    this._activityLog.push(entry);
+    if (this._activityLog.length > ACTIVITY_CAP) this._activityLog.shift();
+    if (this._visible) this.relayout();
+    if (!silent) this._emitState();
+  }
+
+  clearActivity() {
+    if (!this._activityLog.length) return;
+    this._activityLog = [];
+    if (this._visible) this.relayout();
+    this._emitState();
   }
 
   relayout() {

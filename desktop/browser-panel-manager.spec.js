@@ -238,13 +238,40 @@ test('状态订阅：onStateChange 收到广播，逐个解绑互不影响', () 
   const offA = manager.onStateChange((st) => gotA.push(st.visible));
   const offB = manager.onStateChange((st) => gotB.push(st.panelWidth));
   manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
-  assert.deepEqual(gotA, [true]);
+  assert.deepEqual(gotA, [true], 'open 只广播一次（内部记录为 silent）');
   assert.deepEqual(gotB, [480]);
   offA();
   manager.hide();
   assert.equal(gotA.length, 1, '取消订阅后不再收到');
   assert.deepEqual(gotB, [480, 0]); // hide 广播：panelWidth 归 0 已到 B
   offB();
+});
+
+test('活动流：record 追加/环形封顶/静默与广播语义/clear 清空', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/a', ownerId: 'u1', tenantId: 't1' });
+  let acts = manager.publicState().activity;
+  assert.equal(acts.length, 1, 'open 已记录一条');
+  assert.equal(acts[0].type, 'open');
+  // 非静默：广播一次；静默：只入库不发广播
+  let emits = 0;
+  const orig = manager._emitState.bind(manager);
+  manager._emitState = () => { emits += 1; };
+  manager.recordActivity('approve', '批准：Agent 点击「回复」');
+  assert.equal(emits, 1, '非静默记录触发广播');
+  manager.recordActivity('reject', '拒绝：Agent 输入', true);
+  assert.equal(emits, 1, '静默记录不触发广播');
+  manager._emitState = orig;
+  acts = manager.publicState().activity;
+  assert.deepEqual(acts.map(a => a.type), ['reject', 'approve', 'open'], '最新在前');
+  // 封顶
+  for (let i = 0; i < 40; i++) manager.recordActivity('nav', '打开 x' + i);
+  assert.ok(manager._activityLog.length <= 30, '环形容量 30');
+  assert.equal(manager.publicState().activity.length, 15, 'publicState 最多下发 15 条');
+  manager.clearActivity();
+  assert.equal(manager.publicState().activity.length, 0, '清除后为空');
+  manager.relayout();
+  assert.equal(manager.stripView._bounds.height, 40, '清除后活动行收起');
 });
 
 test('默认宽度 480，窄面板下限 360，上限 60%', () => {
@@ -266,8 +293,10 @@ test('布局：面板占右列，控制条在业务区之上，rightInset 通知
   assert.equal(panel._bounds.width, 480);
   assert.equal(panel._bounds.x, width - 480);
   assert.equal(strip._bounds.x, width - 480);
-  assert.equal(strip._bounds.height, 40);
-  assert.equal(panel._bounds.y, 38 + 40); // tab 条 + 控制条之下
+  assert.equal(strip._bounds.height, 70, 'open 记录了一条活动 → 控制条含活动行');
+  assert.equal(panel._bounds.y, 38 + 70);
+  manager.clearActivity();
+  assert.equal(strip._bounds.height, 40, '清空活动后控制条复原一行'); // tab 条 + 控制条之下
   assert.equal(panel._bounds.height, height - 38 - 40);
   assert.equal(tabManager.rightInset, 480 + PANEL_GUTTER, '业务区还要多让出一条沟');
   // 业务视图（模拟）不侵入面板区域
@@ -632,13 +661,15 @@ test('⑮ strip 动态高度：单 tab 40px、多 tab 66px（tab 条只在多 ta
   const { manager } = setup(1600, 900);
   manager.open({ url: 'http://127.0.0.1:8080/a', ownerId: 'u1', tenantId: 't1' });
   manager.show();
-  assert.equal(manager.stripView._bounds.height, 40, '单 tab：控制条一行不变');
-  assert.equal(manager.panelView._bounds.y, 38 + 40);
+  assert.equal(manager.stripView._bounds.height, 70, '单 tab + 活动行（open 记录）');
+  assert.equal(manager.panelView._bounds.y, 38 + 70);
   manager.tabsOperation('new');
-  assert.equal(manager.stripView._bounds.height, 66, '多 tab：tab 条行出现');
-  assert.equal(manager.panelView._bounds.y, 38 + 66, '面板页随之下移');
+  assert.equal(manager.stripView._bounds.height, 96, '多 tab：tab 条行 + 活动行');
+  assert.equal(manager.panelView._bounds.y, 38 + 96, '面板页随之下移');
   manager.tabsOperation('close', 1);
-  assert.equal(manager.stripView._bounds.height, 40, '回到单 tab：tab 条消失');
+  assert.equal(manager.stripView._bounds.height, 70, '回到单 tab：tab 条消失、活动行仍在');
+  manager.clearActivity();
+  assert.equal(manager.stripView._bounds.height, 40, '清空活动后复原');
 });
 
 test('⑮ page-title-updated：active 刷新 tabList；后台不广播（active-only 隔离）', () => {

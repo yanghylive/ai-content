@@ -12,6 +12,7 @@ const INVOKE_CHANNELS = new Set([
   'browser-panel:hide',
   'browser-panel:set-width',
   'browser-panel:expand-strip',
+  'browser-panel:clear-activity',
   // 分区沟槽（复用本 preload）：拖拽调宽会话
   'browser-panel:begin-resize',
   'browser-panel:end-resize',

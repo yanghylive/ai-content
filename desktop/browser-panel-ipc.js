@@ -95,6 +95,8 @@ function registerBrowserPanelIpc(deps) {
   ipcMain.handle('browser-panel:set-width', stripOnly((w) => getPanel().setWidth(w)));
   // 地址栏聚焦时的快捷跳转行（控制条/沟槽视图展开自己的高度）
   ipcMain.handle('browser-panel:expand-strip', stripOnly((on) => getPanel().setStripExpanded(on)));
+  // 活动条「清除」：清空面板活动日志（控制条 stripOnly）
+  ipcMain.handle('browser-panel:clear-activity', stripOnly(() => { getPanel().clearActivity(); return true; }));
   // 拖拽调宽会话：沟槽 pointerdown 开始 / pointerup 结束。视图只有 10px 宽，
   // 光标一出视图就断流，所以拖拽由主进程轮询系统光标驱动（见 manager.beginResize）。
   ipcMain.handle('browser-panel:begin-resize', stripOnly(() => getPanel().beginResize()));
@@ -130,7 +132,9 @@ function registerBrowserPanelIpc(deps) {
     approvalOnly((actionId) => {
       const panelId = currentPanelId();
       if (!panelId) throw new Error('面板未打开，无可批准的动作');
-      return getWiring().approveActionAsOwner(panelId, actionId, { via: 'approval-overlay' });
+      const result = getWiring().approveActionAsOwner(panelId, actionId, { via: 'approval-overlay' });
+      getPanel().recordActivity('approve', `批准面板操作 a-${String(actionId).slice(0, 8)}`);
+      return result;
     }),
   );
   ipcMain.handle(
@@ -138,7 +142,9 @@ function registerBrowserPanelIpc(deps) {
     approvalOnly((actionId) => {
       const panelId = currentPanelId();
       if (!panelId) throw new Error('面板未打开，无可拒绝的动作');
-      return getWiring().rejectActionAsOwner(panelId, actionId, { via: 'approval-overlay' });
+      const result = getWiring().rejectActionAsOwner(panelId, actionId, { via: 'approval-overlay' });
+      getPanel().recordActivity('reject', `拒绝面板操作 a-${String(actionId).slice(0, 8)}`);
+      return result;
     }),
   );
 
@@ -154,6 +160,7 @@ function registerBrowserPanelIpc(deps) {
       'browser-panel:show',
       'browser-panel:set-width',
       'browser-panel:expand-strip',
+      'browser-panel:clear-activity',
       'browser-panel:begin-resize',
       'browser-panel:end-resize',
       'browser-panel:toggle-agent-mode',
