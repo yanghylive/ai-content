@@ -6,6 +6,8 @@ import {
   ArrowRight,
   BellRing,
   CheckCircle2,
+  ChevronRight,
+  Sparkles,
   Trash2,
   UserRound,
   UsersRound,
@@ -330,10 +332,9 @@ export function LeadsPool() {
       )}
 
       {info && (
-        <div className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)] p-4">
-          <p className="text-sm font-medium text-[var(--kaypal-v3-accent-ink)]">
-            🧠 {info}
-          </p>
+        <div className="flex items-start gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)] px-4 py-3">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--kaypal-v3-accent)]" />
+          <p className="text-sm font-medium text-[var(--kaypal-v3-accent-ink)]">{info}</p>
         </div>
       )}
 
@@ -374,7 +375,7 @@ export function LeadsPool() {
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {FILTERS.map(({ key, label }) => (
           <button
             key={key}
@@ -423,8 +424,11 @@ export function LeadsPool() {
                 (lead.status === "qualified" || lead.status === "replied") &&
                 !lead.crmCustomerId;
               return (
-                <div key={lead.id} className="flex items-center justify-between p-5">
-                  <div className="flex items-center gap-4">
+                <div
+                  key={lead.id}
+                  className="group flex items-center justify-between gap-4 p-5 transition-colors hover:bg-[var(--kaypal-v3-hover)]"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-4">
                     <input
                       type="checkbox"
                       className="h-4 w-4 shrink-0 accent-[var(--kaypal-v3-accent)]"
@@ -437,19 +441,19 @@ export function LeadsPool() {
                     <div>
                       <button
                         type="button"
-                        className="flex items-center gap-2 text-left"
+                        className="flex w-full min-w-0 items-center gap-1.5 text-left"
                         onClick={() => router.push(`/growth/leads/detail?leadId=${lead.id}`)}
                       >
-                        <p className="font-medium text-[var(--kaypal-v3-ink)] hover:text-[var(--kaypal-v3-accent)]">
+                        <span className="truncate font-medium text-[var(--kaypal-v3-ink)] transition-colors group-hover:text-[var(--kaypal-v3-accent)]">
                           {lead.nickname || "未知用户"}
-                        </p>
-                        <span className="text-11 text-[var(--kaypal-v3-muted)]">详情 →</span>
+                        </span>
+                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[var(--kaypal-v3-muted)] opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" aria-hidden="true" />
                       </button>
-                      <span className="flex items-center gap-2">
+                      <span className="flex flex-wrap items-center gap-2">
                         <V2StatusChip tone={status.tone}>{status.label}</V2StatusChip>
                         {lead.score > 0 && (
                           <span
-                            className="text-xs font-medium text-[var(--kaypal-v3-amber)]"
+                            className="text-xs font-semibold text-[var(--kaypal-v3-accent-ink)]"
                             title={
                               lead.scoreReasons?.length
                                 ? `评分依据：${lead.scoreReasons.join("；")}`
@@ -466,7 +470,7 @@ export function LeadsPool() {
                             e.stopPropagation();
                             void handleRescore(lead);
                           }}
-                          className="rounded-full border border-[var(--kaypal-v3-border)] px-2 py-0.5 text-11 text-[var(--kaypal-v3-muted)] transition hover:border-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-accent)] disabled:opacity-50"
+                          className="rounded-full border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-0.5 text-11 text-[var(--kaypal-v3-muted)] transition hover:border-[var(--kaypal-v3-accent-border)] hover:bg-[var(--kaypal-v3-accent-soft)] hover:text-[var(--kaypal-v3-accent-ink)] disabled:opacity-50"
                           title="让 AI 基于最新信号重新评一次分，验证判断是否可靠"
                         >
                           {rescoringId === lead.id ? "重评中…" : "AI 重评"}
@@ -522,7 +526,7 @@ export function LeadsPool() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     {lead.crmCustomerId ? (
                       <V2StatusChip tone="success">
                         <CheckCircle2 className="h-3.5 w-3.5" />
@@ -530,6 +534,7 @@ export function LeadsPool() {
                       </V2StatusChip>
                     ) : canConvert ? (
                       <V2PrimaryButton
+                        size="sm"
                         icon={CheckCircle2}
                         loading={actingId === lead.id}
                         onClick={() => void handleConvert(lead)}
@@ -540,7 +545,8 @@ export function LeadsPool() {
                     <button
                       type="button"
                       title="删除线索"
-                      className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)] disabled:opacity-50"
+                      aria-label="删除线索"
+                      className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] opacity-60 transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)] disabled:opacity-50 group-hover:opacity-100"
                       disabled={actingId === lead.id}
                       onClick={() => void handleDeleteOne(lead)}
                     >

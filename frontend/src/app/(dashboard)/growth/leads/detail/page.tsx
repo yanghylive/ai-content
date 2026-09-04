@@ -337,7 +337,7 @@ function LeadDetailClient() {
 
       {/* 待核对提示行 */}
       {lead.status === "blocked" && (
-        <div className="flex items-start gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-amber)]/40 bg-[var(--kaypal-v3-amber)]/10 px-4 py-3 text-sm text-[var(--kaypal-v3-amber)]">
+        <div className="flex items-start gap-2 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] px-4 py-3 text-sm text-[var(--kaypal-v3-warning-ink)]">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
             <span className="font-semibold">待人工核对：</span>
@@ -439,7 +439,7 @@ function LeadDetailClient() {
       </section>
 
       {/* 下一步建议 */}
-      <section className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-accent-border)]/40 bg-[var(--kaypal-v3-accent-soft)] p-5">
+      <section className="rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)] p-5">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-[var(--kaypal-v3-accent)]" />
           <h2 className="text-sm font-semibold text-[var(--kaypal-v3-ink)]">下一步建议</h2>
@@ -694,9 +694,9 @@ function LeadDetailClient() {
         <div
           className={`rounded-[var(--kaypal-v3-radius-sm)] border px-4 py-3 text-sm ${
             msgTone === "success"
-              ? "border-[var(--kaypal-v3-success)]/40 bg-[var(--kaypal-v3-success-soft)] text-[var(--kaypal-v3-success)]"
+              ? "border-[var(--kaypal-v3-success-border)] bg-[var(--kaypal-v3-success-soft)] text-[var(--kaypal-v3-success-ink)]"
               : msgTone === "danger"
-                ? "border-[var(--kaypal-v3-danger)]/40 bg-[var(--kaypal-v3-danger-soft)] text-[var(--kaypal-v3-danger)]"
+                ? "border-[var(--kaypal-v3-danger-border)] bg-[var(--kaypal-v3-danger-soft)] text-[var(--kaypal-v3-danger-ink)]"
                 : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-surface-2)] text-[var(--kaypal-v3-soft-ink)]"
           }`}
         >
