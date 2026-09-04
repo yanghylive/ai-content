@@ -8,7 +8,7 @@
  *   ├────────────────────────┼───────────────┤
  *   │ 业务标签 WebContentsView │ 面板 webContents │
  *   └────────────────────────┴───────────────┘
- *   面板与业务区之间留 PANEL_GUTTER(10px) 背景沟（browser-panel-gutter.html 视图）：
+ *   面板与业务区之间留 PANEL_GUTTER(12px) 背景沟（browser-panel-gutter.html 视图）：
  *   分区靠"空隙 + 面板 1px 卡片边 + 落在沟里的投影"读出来，沟本身即全高调宽热区。
  *   - 面板打开时业务内容宽度 = window.width - panelWidth（rightInset 注入 TabManager）；
  *   - 控制条是本地受信视图（browser-control-strip.html + preload），面板 webContents
@@ -35,7 +35,7 @@ const PANEL_WIDTH_RATIO_MAX = 0.6;
 const STRIP_HEIGHT = 40;
 // TraeWork 分区语义：业务区与面板之间留一条背景色沟（而非分割线），
 // 边界靠"两块卡片之间的空隙 + 卡片 1px 边 + 落在沟里的投影"读出来。
-const PANEL_GUTTER = 10;
+const PANEL_GUTTER = 12;
 /** 拖拽会话看门狗：光标静止超过该时长 = 判定已松手（松手点常在别的视图上） */
 const RESIZE_IDLE_MS = 1200;
 /** 拖拽轮询间隔（ms）——主进程跟随系统光标，不受视图边界断流影响 */

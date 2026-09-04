@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color-scheme: light; }
+  body { font: 13px/1.5 -apple-system, "PingFang SC", system-ui, sans-serif; background: #f2f3f5; color: #1f2329; padding: 22px 20px 26px; max-width: 1360px; }
+  @media (max-width: 520px) { body { padding: 14px 12px 18px; font-size: 12.5px; } h1 { font-size: 16px; } .scene { height: 190px; } }
+  h1 { font-size: 20px; font-weight: 600; letter-spacing: -.2px; }
+  .sub { color: #646a73; font-size: 12.5px; margin: 4px 0 22px; }
+  h2 { font-size: 13px; font-weight: 600; color: #1f2329; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+  .tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+  .tag.bad { background: #fff1f0; color: #cf1322; border: 1px solid #ffccc7; }
+  .tag.good { background: #f9f0ff; color: #722ed1; border: 1px solid #efdbff; }
+  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 22px; margin-bottom: 22px; }
+  .col { flex: 1; min-width: 0; }
+  .shot { border-radius: 10px; overflow: hidden; border: 1px solid rgba(31,35,41,.10); box-shadow: 0 4px 16px rgba(31,35,41,.07); background: #fff; }
+  .cap { font-size: 11.5px; color: #646a73; margin-top: 7px; }
+  .cap b { color: #1f2329; font-weight: 600; }
+  /* 场景：业务区 | 分区 | 浏览器面板 */
+  .scene { display: flex; height: 210px; }
+  .biz { flex: 1 1 54%; min-width: 0; background: #f2f3f5; padding: 12px; }
+  .biz .t { font-size: 12px; font-weight: 600; color: #8f959e; margin-bottom: 8px; }
+  .biz .c { background: #fff; border: 1px solid rgba(31,35,41,.08); border-radius: 8px; height: 40px; margin-bottom: 8px; }
+  .panel { flex: 1 1 46%; min-width: 130px; background: #fff; display: flex; flex-direction: column; }
+  .panel .body { flex: 1; background: #fff; padding: 10px; }
+  .panel .body .v { width: 100%; height: 74px; border-radius: 6px; background: linear-gradient(135deg,#eef0f4,#e3e6ec); margin-bottom: 8px; }
+  .panel .body .ln { height: 8px; border-radius: 4px; background: #eceef2; margin-bottom: 6px; }
+  .panel .body .ln.s { width: 62%; }
+  iframe.g { border: 0; height: 100%; width: 12px; flex: none; display: block; }
+  iframe.g.wide { width: 10px; }
+  /* 之前：4px 同色细线 */
+  .oldline { width: 4px; flex: none; background: #e5e6eb; }
+  /* 放大细节 */
+  .zoom { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; background: #fff; border: 1px solid rgba(31,35,41,.10); border-radius: 10px; padding: 18px 20px; }
+  .zoom .lane { display: flex; height: 150px; align-items: stretch; }
+  .zoom .lane .l { width: 96px; background: #f2f3f5; border-radius: 6px 0 0 6px; }
+  .zoom .lane .r { width: 96px; background: #fff; border-radius: 0 6px 6px 0; }
+  .zoom iframe { border: 0; height: 150px; width: 12px; flex: none; }
+  .zoom .sc { position: relative; }
+  .zoom .lbl { font-size: 11.5px; color: #646a73; flex: 1; min-width: 240px; }
+  .zoom .lbl b { display: block; color: #1f2329; font-size: 12.5px; margin-bottom: 4px; }
+  .arrow { color: #722ed1; font-size: 12px; font-weight: 600; }
+</style>
+</head>
+<body>
+  <h1>内置浏览器面板 · 分区怎么让用户看出来</h1>
+  <div class="sub">下面两块浏览器面板的截图都是<b>真实组件</b>渲染的（不是画的示意图）：左列是改之前，右列是改之后。</div>
+
+  <div class="row">
+    <div class="col">
+      <h2><span class="tag bad">改之前</span>分区靠一条 4px 细线，和控制条同色</h2>
+      <div class="shot"><div class="scene">
+        <div class="biz"><div class="t">今日增长</div><div class="c"></div><div class="c"></div><div class="c"></div></div>
+        <div class="oldline"></div>
+        <div class="panel"><div class="body"><div class="v"></div><div class="ln"></div><div class="ln s"></div></div></div>
+      </div></div>
+      <div class="cap">业务区和面板<b>贴在一起</b>，中间那条线既没有宽度也没有握柄 —— 用户找不到"这里能拖"。</div>
+    </div>
+
+    <div class="col">
+      <h2><span class="tag good">改之后</span>业务区与面板之间留一条背景色的沟，沟就是拖拽位</h2>
+      <div class="shot"><div class="scene">
+        <div class="biz"><div class="t">今日增长</div><div class="c"></div><div class="c"></div><div class="c"></div></div>
+        <iframe class="g" src="/browser-panel-gutter.html"></iframe>
+        <div class="panel"><div class="body"><div class="v"></div><div class="ln"></div><div class="ln s"></div></div></div>
+      </div></div>
+      <div class="cap">12px 沟<b>贯穿整个面板高度</b>（不再只在顶部 40px 那一行），沟里居中一个胶囊握柄，面板左缘有 1px 卡片边 + 落进沟里的投影。</div>
+    </div>
+  </div>
+
+  <h2><span class="tag good">悬停 / 拖拽时</span>整条沟变主色，握柄变粗</h2>
+  <div class="shot" style="margin-bottom:22px"><div class="scene" style="height:150px">
+    <div class="biz"><div class="t">今日增长</div><div class="c"></div><div class="c"></div></div>
+    <iframe class="g" src="/browser-panel-gutter.html?hover=1" id="hv"></iframe>
+    <div class="panel"><div class="body"><div class="v"></div><div class="ln"></div><div class="ln s"></div></div></div>
+  </div></div>
+
+  <h2>放大看这条沟（15 倍）</h2>
+  <div class="zoom">
+    <div class="lane">
+      <div class="l"></div>
+      <iframe src="/browser-panel-gutter.html" style="height:150px"></iframe>
+      <div class="r"></div>
+    </div>
+    <div class="lbl">
+      <b>12px 宽的沟，从上到下都是热区</b>
+      ① 沟的底色比业务区深一档 → 读作"空隙"，不是一条线<br>
+      ② 沟里居中的胶囊 = 握柄，常态浅灰可见，暗示"拖我"<br>
+      ③ 面板左缘 1px 边线 + 向左落进沟里的投影 → 面板读作一张浮在业务区之上的卡片<br>
+      <span class="arrow">光标进入沟里 → 整条变紫 + 握柄变粗变长；双击 → 回到默认 480px</span>
+    </div>
+  </div>
+  <script>
+    // 让第三张图的沟槽停在 hover 态（真实组件的 :hover 无法被脚本触发，这里补一个类）
+    fetch('/browser-panel-gutter.html').then(r => r.text()).then(t => {
+      const f = document.getElementById('hv');
+      f.srcdoc = t.replace('</head>', '<style>body{background:rgba(114,46,209,.14)}#grip{background:#722ed1!important;width:4px!important;height:46px!important}</style></head>');
+    });
+  </script>
+</body>
+</html>
