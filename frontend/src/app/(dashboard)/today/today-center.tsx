@@ -1635,7 +1635,7 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
           增长功能
         </h2>
         <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-          去处理线索、任务与账号，点卡片直接进入
+          去创建获客任务、处理线索与账号，点卡片直接进入
         </p>
       </div>
 
