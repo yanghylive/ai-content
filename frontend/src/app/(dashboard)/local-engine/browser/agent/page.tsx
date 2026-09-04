@@ -68,6 +68,11 @@ export default function AgentBrowserPage() {
   const [activeId, setActiveId] = useState<string>("");
   const [startUrl, setStartUrl] = useState("https://example.com");
   const [instruction, setInstruction] = useState("");
+  // 触达审计：本次运行关联的线索 id（签的面板确认单挂到该线索「触达历史」）；
+  // 支持 ?leadId= 深链预填（线索详情页「AI 代操作」入口跳转用）
+  const [runLeadId, setRunLeadId] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get("leadId") ?? ""; } catch { return ""; }
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   // 确认闸门（P0-2/P0-3 审计修复）：待确认动作（含确认单 id + 真实 selector）
@@ -136,6 +141,7 @@ export default function AgentBrowserPage() {
                 confirmedTools: [],
                 // P0-2：服务端确认——传确认单 id，后端查库校验（防伪造）
                 confirmationIds: extra?.confirmationIds ?? confirmedIds,
+                leadId: runLeadId.trim() || null,
               })
             : JSON.stringify({}),
       });
@@ -426,8 +432,25 @@ export default function AgentBrowserPage() {
                 boxSizing: "border-box",
               }}
             />
+            <input
+              value={runLeadId}
+              onChange={(e) => setRunLeadId(e.target.value)}
+              placeholder="关联线索 ID（可选，如 lead-1788495284452-2c4509）"
+              style={{
+                width: "100%",
+                marginTop: 8,
+                padding: "8px 12px",
+                borderRadius: 8,
+                border: "1px solid rgba(148,163,184,.35)",
+                background: "transparent",
+                color: "inherit",
+                fontSize: 12,
+                boxSizing: "border-box",
+              }}
+            />
             <div style={{ fontSize: 11, color: "var(--kaypal-v3-muted)", marginTop: 6 }}>
               选中会话后点「运行」执行一轮 Observe-Act-Verify；指令通过 AI 解析为浏览器动作（navigate/click/fill）。
+              填了关联线索 ID 时，本次签发的面板确认单会记入该线索的「触达历史」。
             </div>
           </div>
           <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(148,163,184,.2)", fontSize: 13, fontWeight: 700 }}>
