@@ -142,6 +142,22 @@ function setup(width = 1600, height = 900, opts = {}) {
 const tests = [];
 const test = (name, fn) => tests.push([name, fn]);
 
+test('sanitizePanelUserAgent：去 Electron/app 标识，保留标准 Chrome 形态（2026-09-04）', () => {
+  const { sanitizePanelUserAgent } = require('./browser-panel-manager');
+  const electronUA =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) ' +
+    'ai-content-desktop/1.1.115 Chrome/128.0.6613.186 Electron/32.3.3 Safari/537.36';
+  const cleaned = sanitizePanelUserAgent(electronUA);
+  assert.ok(!cleaned.includes('Electron/'), '不得残留 Electron 标识');
+  assert.ok(!cleaned.includes('ai-content-desktop'), '不得残留 app 标识');
+  assert.ok(cleaned.includes('Chrome/128.0.6613.186'), 'Chrome 版本号从原 UA 提取');
+  assert.ok(cleaned.endsWith('Safari/537.36'), '标准 Chrome UA 收尾');
+  assert.ok(cleaned.startsWith('Mozilla/5.0 (Macintosh'), 'macOS 平台段');
+  // 输入异常兜底：空/畸形输入不抛，给保守默认
+  assert.ok(sanitizePanelUserAgent('').includes('Chrome/'), '空 UA 兜底');
+  assert.ok(sanitizePanelUserAgent(undefined).includes('Chrome/'), 'undefined 兜底');
+});
+
 test('默认宽度 480，窄面板下限 360，上限 60%', () => {
   const { manager } = setup(1600, 900);
   manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });

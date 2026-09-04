@@ -38,6 +38,24 @@ const TAB_STRIP_HEIGHT = 38; // 与 workspace-tabs.js 保持一致（顶部通�
 // 阶段 6：审批浮层尺寸（与 browser-approval-overlay.html 的 CSS 保持一致，
 // 否则会出现"卡片被裁掉一块"或"底部一大片空白"）
 const APPROVAL_MARGIN = 8;
+
+/**
+ * 2026-09-04：面板 UA 清洗——去掉 Electron 默认 UA 里的 `appName/version` 与
+ * `Electron/x.y.z` 两段，保留标准 Chrome 形态。
+ * 真机实证：微信视频号对 Electron UA 风控（空壳渲染白屏）；Chrome 版本号从
+ * 运行时 UA 提取（升级自适应，不硬编码）；平台段按 OS 生成（win 打包对齐）。
+ * @param {string} ua 原始（Electron 默认）UA
+ * @returns {string} 清洗后的标准 Chrome UA
+ */
+function sanitizePanelUserAgent(ua) {
+  const raw = String(ua || '');
+  const chrome = (raw.match(/Chrome\/[\d.]+/) || [])[0] || 'Chrome/128.0.0.0';
+  const platform =
+    process.platform === 'win32'
+      ? 'Windows NT 10.0; Win64; x64'
+      : 'Macintosh; Intel Mac OS X 10_15_7';
+  return `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) ${chrome} Safari/537.36`;
+}
 const APPROVAL_MAX_HEIGHT = 220;
 const APPROVAL_HEADER_HEIGHT = 34;
 const APPROVAL_CARD_HEIGHT = 76;
@@ -212,6 +230,16 @@ class BrowserPanelManager {
         backgroundThrottling: false,
       },
     });
+    // 2026-09-04（真机实证）：Electron 默认 UA 带 `appName/version`（ai-content-desktop/
+    // x.y.z）+ `Electron/32.x` 两段，微信视频号（channels.weixin.qq.com）风控识别后
+    // **空壳渲染**（HTML 193KB 在、视觉全白、innerText 为空）；抖音/小红书宽容未暴露。
+    // 面板是用户登录/操作第三方平台的面——UA 清洗为标准 Chrome 形态（版本号从运行时
+    // 提取，不硬编码；平台段按 OS 生成）。只动面板 webContents，主窗/3010 不受影响。
+    try {
+      view.webContents.setUserAgent(sanitizePanelUserAgent(view.webContents.getUserAgent()));
+    } catch (e) {
+      this._logger.warn('[browser-panel] UA 清洗失败（保留默认 UA）：', e && e.message);
+    }
     this._panelPartitions = this._panelPartitions || new WeakMap();
     this._panelPartitions.set(view, partition);
     this._knownWebContents.add(view.webContents);
@@ -879,6 +907,7 @@ class BrowserPanelManager {
 module.exports = {
   BrowserPanelManager,
   normalizePanelUrl,
+  sanitizePanelUserAgent,
   PANEL_MIN_WIDTH,
   PANEL_DEFAULT_WIDTH,
   STRIP_HEIGHT,
