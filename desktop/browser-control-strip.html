@@ -90,17 +90,20 @@
       display: none; flex: none; height: 30px; align-items: center; gap: 6px;
       padding: 3px 10px 5px; background: var(--card);
       border-top: 1px solid var(--border);
+      overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
     }
+    #quickrow::-webkit-scrollbar { display: none; }
     #quickrow.show { display: flex; }
-    #quickrow .lbl { font-size: 11px; color: var(--text-faint); flex: none; }
+    #quickrow .lbl { font-size: 11px; color: var(--text-faint); flex: none; white-space: nowrap; }
     #quickrow .chip {
-      flex: none; height: 22px; padding: 0 10px; border: 1px solid var(--border);
+      /* 全局 button{width:28px} 会把 chip 压扁成竖排字——恢复内容宽 + 禁换行 */
+      flex: 0 0 auto; width: auto; height: 22px; padding: 0 10px;
+      border: 1px solid var(--border);
       border-radius: 11px; background: var(--bg); color: var(--text-dim);
       font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
-      transition: all .12s;
+      transition: all .12s; white-space: nowrap;
     }
     #quickrow .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--card); }
-    #quickrow .chip .k { font: 10px ui-monospace, Menlo, monospace; opacity: .55; }
     /* ---- 加载进度线（页面加载的可视反馈） ---- */
     body { position: relative; }
     #prog { position: absolute; left: 0; right: 0; top: 0; height: 2px; pointer-events: none; opacity: 0; transition: opacity .18s; z-index: 5; }
@@ -179,7 +182,7 @@
     <button type="button" class="chip" data-url="https://www.xiaohongshu.com">小红书</button>
     <button type="button" class="chip" data-url="https://mp.weixin.qq.com">公众号</button>
     <button type="button" class="chip" data-url="https://channels.weixin.qq.com">视频号</button>
-    <button type="button" class="chip" data-url="https://www.baidu.com">百度<span class="k">⌥A</span></button>
+    <button type="button" class="chip" data-url="https://www.baidu.com">百度</button>
   </div>
   <div id="toolbar">
     <button id="back" title="后退"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
