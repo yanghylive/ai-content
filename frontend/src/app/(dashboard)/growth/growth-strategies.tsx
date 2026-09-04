@@ -25,6 +25,8 @@ import {
   type GrowthStrategyTemplate,
   type GrowthPlatform,
   type GrowthAcquisitionMode,
+  type KeywordSuggestions,
+  type KeywordSuggestion,
 } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
 import { SkeletonList } from "@/components/skeleton";
@@ -54,6 +56,55 @@ const MODE_OPTIONS = [
   { value: "manual-import", label: "手动导入", desc: "导入已有名单" },
 ] as const;
 
+/** 关键词建议分组（勾选采纳） */
+function SuggestionGroup(props: {
+  title: string;
+  items: KeywordSuggestion[];
+  picked: Set<string>;
+  onToggle: (word: string) => void;
+  tone?: "default" | "danger";
+}) {
+  const { title, items, picked, onToggle, tone } = props;
+  if (items.length === 0) {
+    return (
+      <div>
+        <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">{title}</p>
+        <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">暂无建议</p>
+      </div>
+    );
+  }
+  const toneClass =
+    tone === "danger"
+      ? "border-[var(--kaypal-v3-danger)] bg-[var(--kaypal-v3-danger-soft)]"
+      : "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent-soft)]";
+  return (
+    <div>
+      <p className="text-sm font-medium text-[var(--kaypal-v3-ink)]">{title}</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {items.map((s) => {
+          const active = picked.has(s.keyword);
+          return (
+            <button
+              key={s.keyword}
+              type="button"
+              className={`rounded-full border px-3 py-1 text-sm transition ${
+                active
+                  ? toneClass
+                  : "border-[var(--kaypal-v3-border)] text-[var(--kaypal-v3-muted)] hover:border-[var(--kaypal-v3-border-strong)]"
+              }`}
+              onClick={() => onToggle(s.keyword)}
+              title={`命中 ${s.evidenceCount} 条线索`}
+            >
+              {s.keyword}
+              <span className="ml-1 text-xs opacity-70">×{s.evidenceCount}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function GrowthStrategies() {
   const router = useRouter();
   const [strategies, setStrategies] = useState<GrowthStrategyTemplate[]>([]);
@@ -75,6 +126,68 @@ export function GrowthStrategies() {
   const [genScenario, setGenScenario] = useState("");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
+
+  // 关键词建议（C 类 C-a）
+  const [suggestTarget, setSuggestTarget] = useState<GrowthStrategyTemplate | null>(null);
+  const [suggestions, setSuggestions] = useState<KeywordSuggestions | null>(null);
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  // 勾选采纳的词（按类别存 Set）
+  const [pickedSource, setPickedSource] = useState<Set<string>>(new Set());
+  const [pickedDemand, setPickedDemand] = useState<Set<string>>(new Set());
+  const [pickedExclude, setPickedExclude] = useState<Set<string>>(new Set());
+  const [applyingSuggest, setApplyingSuggest] = useState(false);
+
+  const openSuggest = async (strategy: GrowthStrategyTemplate) => {
+    setSuggestTarget(strategy);
+    setSuggestions(null);
+    setSuggestError(null);
+    setPickedSource(new Set());
+    setPickedDemand(new Set());
+    setPickedExclude(new Set());
+    setSuggestLoading(true);
+    try {
+      const data = await growthApi.keywordSuggestions({
+        industry: strategy.industry || undefined,
+      });
+      setSuggestions(data);
+    } catch (err: unknown) {
+      setSuggestError(toPublicError(err, "生成关键词建议失败"));
+    } finally {
+      setSuggestLoading(false);
+    }
+  };
+
+  const togglePick = (
+    setter: React.Dispatch<React.SetStateAction<Set<string>>>,
+    word: string,
+  ) => {
+    setter((prev) => {
+      const next = new Set(prev);
+      if (next.has(word)) next.delete(word);
+      else next.add(word);
+      return next;
+    });
+  };
+
+  const handleApplySuggest = async () => {
+    if (!suggestTarget) return;
+    setApplyingSuggest(true);
+    setSuggestError(null);
+    try {
+      await growthApi.applyKeywordSuggestions(suggestTarget.id, {
+        sourceKeywords: Array.from(pickedSource),
+        demandKeywords: Array.from(pickedDemand),
+        excludeKeywords: Array.from(pickedExclude),
+      });
+      setSuggestTarget(null);
+      await fetchStrategies();
+    } catch (err: unknown) {
+      setSuggestError(toPublicError(err, "采纳失败，请稍后重试"));
+    } finally {
+      setApplyingSuggest(false);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!genIndustry.trim()) {
@@ -233,7 +346,13 @@ export function GrowthStrategies() {
                 </p>
               </div>
 
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex justify-end gap-2">
+                <V2GhostButton
+                  icon={Sparkles}
+                  onClick={() => openSuggest(strategy)}
+                >
+                  关键词建议
+                </V2GhostButton>
                 <V2PrimaryButton
                   icon={Rocket}
                   disabled={appliedId === strategy.id}
@@ -390,6 +509,83 @@ export function GrowthStrategies() {
                 onClick={handleApply}
               >
                 {applying ? "正在创建..." : "确认创建获客任务"}
+              </V2PrimaryButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 关键词建议弹窗（C 类 C-a） */}
+      {suggestTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-[var(--kaypal-v3-radius)] bg-[var(--kaypal-v3-paper)] p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-[var(--kaypal-v3-ink)]">
+                关键词建议
+              </h3>
+              <button
+                type="button"
+                className="rounded-full p-1 text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-paper-soft)]"
+                onClick={() => setSuggestTarget(null)}
+              >
+                <XCircle className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
+              根据「{suggestTarget.name}」的真实线索行为，反推下一轮该搜什么词。勾选采纳后追加进策略。
+            </p>
+
+            {suggestLoading ? (
+              <div className="mt-6 flex items-center justify-center gap-2 py-8 text-sm text-[var(--kaypal-v3-muted)]">
+                <Loader2 className="h-4 w-4 animate-spin" /> 正在分析线索行为...
+              </div>
+            ) : suggestions ? (
+              suggestions.analyzedLeadCount === 0 ? (
+                <p className="mt-6 rounded-[var(--kaypal-v3-radius-sm)] bg-[var(--kaypal-v3-paper-soft)] p-4 text-sm text-[var(--kaypal-v3-muted)]">
+                  近 30 天没有可分析的线索（样本不足或没有回复互动）。先去跑几轮获客任务，积累真实线索后再来生成建议。
+                </p>
+              ) : (
+                <div className="mt-5 space-y-5">
+                  <p className="text-xs text-[var(--kaypal-v3-muted)]">
+                    分析 {suggestions.analyzedLeadCount} 条线索 · 真客户 {suggestions.positiveLeadCount} 条 · 负反馈 {suggestions.negativeLeadCount} 条
+                  </p>
+
+                  <SuggestionGroup
+                    title="找客户关键词（搜账号用）"
+                    items={suggestions.sourceKeywords}
+                    picked={pickedSource}
+                    onToggle={(w) => togglePick(setPickedSource, w)}
+                  />
+                  <SuggestionGroup
+                    title="意向关键词（识别真客户用）"
+                    items={suggestions.demandKeywords}
+                    picked={pickedDemand}
+                    onToggle={(w) => togglePick(setPickedDemand, w)}
+                  />
+                  <SuggestionGroup
+                    title="排除关键词（负反馈高频词）"
+                    items={suggestions.excludeKeywords}
+                    picked={pickedExclude}
+                    onToggle={(w) => togglePick(setPickedExclude, w)}
+                    tone="danger"
+                  />
+                </div>
+              )
+            ) : null}
+
+            {suggestError && (
+              <p className="mt-4 text-sm text-[var(--kaypal-v3-danger)]">{suggestError}</p>
+            )}
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <V2GhostButton onClick={() => setSuggestTarget(null)}>关闭</V2GhostButton>
+              <V2PrimaryButton
+                icon={applyingSuggest ? Loader2 : Sparkles}
+                loading={applyingSuggest}
+                disabled={suggestLoading || !suggestions || suggestions.analyzedLeadCount === 0}
+                onClick={handleApplySuggest}
+              >
+                {applyingSuggest ? "正在采纳..." : "采纳勾选的词"}
               </V2PrimaryButton>
             </div>
           </div>

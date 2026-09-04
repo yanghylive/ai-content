@@ -54,6 +54,24 @@ export interface GrowthStrategyTemplate {
     };
 }
 
+/** 单条关键词建议（C 类 C-a，带证据归因） */
+export interface KeywordSuggestion {
+    keyword: string;
+    evidenceCount: number;
+    source: "positive" | "negative";
+}
+
+/** 关键词建议结果（POST /leads/keyword-suggestions 契约） */
+export interface KeywordSuggestions {
+    generatedAt: string;
+    analyzedLeadCount: number;
+    positiveLeadCount: number;
+    negativeLeadCount: number;
+    sourceKeywords: KeywordSuggestion[];
+    demandKeywords: KeywordSuggestion[];
+    excludeKeywords: KeywordSuggestion[];
+}
+
 export interface GrowthAcquisitionConfig {
     id: string;
     mode: GrowthAcquisitionMode;
@@ -587,6 +605,12 @@ overview: () => api.get<GrowthOverview>("/growth/overview"),
             `/growth/strategies/${id}/apply`,
             body,
         ),
+    /** 关键词智能建议（C 类 C-a）：从线索行为反推搜索词 */
+    keywordSuggestions: (body: { platform?: string; industry?: string; windowDays?: number; minLeadCount?: number } = {}) =>
+        api.post<KeywordSuggestions>("/leads/keyword-suggestions", body),
+    /** 采纳关键词建议（C 类 S-C4）：追加合并人工勾选的建议词 */
+    applyKeywordSuggestions: (id: string, body: { sourceKeywords?: string[]; demandKeywords?: string[]; excludeKeywords?: string[] }) =>
+        api.post<GrowthStrategyTemplate>(`/growth/strategies/${id}/keyword-suggestions/apply`, body),
     listConfigs: (mode?: GrowthAcquisitionMode) =>
         api.get<GrowthAcquisitionConfig[]>(`/growth/acquisition/configs${mode ? `?mode=${mode}` : ""}`),
     createConfig: (body: Partial<GrowthAcquisitionConfig> & { riskConfirmation?: AutoUploadRiskConfirmationInput }) =>
