@@ -791,7 +791,7 @@ export function SearchIntelligenceWorkbench() {
               </label>
               <div className="flex flex-wrap gap-2 lg:justify-end">
                 <button
-                  className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-13 font-semibold text-white disabled:opacity-60"
+                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 text-[15px] font-semibold text-white disabled:opacity-60"
                   disabled={searchRun.loading}
                   onClick={() => void runSearchTask()}
                   type="button"

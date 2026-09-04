@@ -467,7 +467,7 @@ export function ViralAnalysisWorkbench() {
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <Link
-                className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-13 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                className="inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-[10px] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 text-[15px] font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                 href="/intelligence/search"
               >
                 <Search

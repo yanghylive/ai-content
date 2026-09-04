@@ -477,7 +477,7 @@ export function IntelligenceCollaborationWorkbench() {
                 {userCanManageReports ? "可交付/归档" : "需上级复核"}
               </span>
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-13 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 text-[15px] font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading}
                 onClick={() => void load()}
                 type="button"
