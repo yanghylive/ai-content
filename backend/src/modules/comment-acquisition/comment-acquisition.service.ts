@@ -86,7 +86,7 @@ export class CommentAcquisitionService {
     limit?: number;
     autoReply?: boolean;
     minLeadScore?: number;
-    /** 关键词搜索模式（快手/小红书）：keyword → 搜账号 → 读作品 → 读评论（拿 contentUrl） */
+    /** 关键词搜索模式（快手/小红书）：keyword → 搜内容（拿 contentUrl）→ 读评论 */
     keyword?: string;
   }): Promise<{
     scanned: number;
@@ -121,9 +121,9 @@ export class CommentAcquisitionService {
     const circuit = this.circuitBreaker.getStatus(circuitKey);
 
     // 1. 读取评论：统一走互动适配器契约（registry.read），消除三平台分支。
-    //    关键词搜索模式（快手/小红书，keyword 非空）：先走 runner 三段式发现
-    //    （搜账号 → 读作品拿 contentUrl → 读评论），拿带 contentUrl 的评论，
-    //    喂给后续评分/回复链路（回复时 adapter.send 传 contentUrl 定位评论区）。
+    //    关键词搜索模式（快手/小红书，keyword 非空）：走 runner 两段式发现
+    //    （搜内容拿 contentUrl → 读评论，对齐 growth 已验证的 discover-keyword 链路），
+    //    拿带 contentUrl 的评论，喂给后续评分/回复链路（回复时 adapter.send 传 contentUrl 定位评论区）。
     const keywordMode = Boolean(input.keyword?.trim());
     const adapter = this.interactionRegistry.get(input.platform);
     if (!adapter.read) {

@@ -153,9 +153,7 @@ describe('CommentAcquisitionService', () => {
   };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
   const discoveryRunnerMock = {
-    searchAccounts: jest.fn(),
     searchByKeyword: jest.fn(),
-    listAccountWorks: jest.fn(),
     readComments: jest.fn(),
   };
   const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
@@ -589,9 +587,7 @@ describe('CommentAcquisitionService 风控断路器', () => {
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
   const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
   const discoveryRunnerMock = {
-    searchAccounts: jest.fn(),
     searchByKeyword: jest.fn(),
-    listAccountWorks: jest.fn(),
     readComments: jest.fn(),
   };
   const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
@@ -718,9 +714,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
   };
   const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
   const discoveryRunnerMock = {
-    searchAccounts: jest.fn(),
     searchByKeyword: jest.fn(),
-    listAccountWorks: jest.fn(),
     readComments: jest.fn(),
   };
   const replyEngineMock = {
@@ -840,9 +834,7 @@ describe('CommentAcquisitionService 私信获客', () => {
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
   const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
   const discoveryRunnerMock = {
-    searchAccounts: jest.fn(),
     searchByKeyword: jest.fn(),
-    listAccountWorks: jest.fn(),
     readComments: jest.fn(),
   };
   const replyEngineMock = {
