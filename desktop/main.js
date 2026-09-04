@@ -915,7 +915,9 @@ function createWindow() {
     height,
     minWidth: 1200,
     minHeight: 700,
-    title: 'JIUZHANG AI 内容创作平台',
+    // 壳顶端窗口标题：品牌语（数据目录/tray/错误弹窗仍用 productName，
+    // 不动——改了会漂用户数据路径）
+    title: '万象有章，智能有方——九章智能科技',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

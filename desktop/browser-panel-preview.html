@@ -17,7 +17,7 @@
   #stage { flex: 1; min-height: 0; display: flex; position: relative; }
   #appFrame { flex: 1; min-width: 0; border: 0; display: block; background: #fbfaff; }
   /* 分区沟槽：真实组件 browser-panel-gutter.html（业务区与面板之间的背景色空隙） */
-  #gutterFrame { flex: 0 0 10px; width: 10px; height: 100%; border: 0; display: block; }
+  #gutterFrame { flex: 0 0 12px; width: 12px; height: 100%; border: 0; display: block; }
   /* 右侧浏览器面板(mock, 真实是 WebContentsView)。左缘边线由沟槽画，卡片不再自绘 */
   #panel { width: 460px; flex: 0 0 460px; display: flex; flex-direction: column; background: #fff; }
   #panel .strip { flex: 0 0 34px; border: 0; }
@@ -35,7 +35,7 @@
 </style>
 </head>
 <body>
-  <div id="fakeTitlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
+  <div id="fakeTitlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">万象有章，智能有方——九章智能科技</div></div>
   <iframe id="stripFrame" class="strip" src="/tab-strip.html"></iframe>
   <div id="stage">
     <iframe id="appFrame" src="/today"></iframe>
