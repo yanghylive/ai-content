@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>桌面壳 × TraeWork Design 对齐方案</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color-scheme: light; }
+  body { font: 13px/1.6 -apple-system, "PingFang SC", system-ui, sans-serif; background: #f2f3f5; color: #1f2329; padding: 26px 24px 40px; max-width: 1280px; }
+  h1 { font-size: 20px; font-weight: 650; letter-spacing: -.2px; }
+  .lead { color: #646a73; font-size: 12.5px; margin: 5px 0 26px; }
+  section { margin-bottom: 30px; }
+  .sec-h { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .sec-h .no { font-size: 11px; font-weight: 700; color: #722ed1; background: #f9f0ff; border: 1px solid #efdbff; border-radius: 5px; padding: 1px 6px; }
+  .sec-h h2 { font-size: 14.5px; font-weight: 650; }
+  .sec-h .pri { font-size: 10.5px; font-weight: 700; border-radius: 4px; padding: 1px 5px; }
+  .pri.p0 { background: #fff1f0; color: #cf1322; border: 1px solid #ffccc7; }
+  .pri.p1 { background: #fff7e6; color: #d46b08; border: 1px solid #ffe7ba; }
+  .pri.p2 { background: #f2f3f5; color: #646a73; border: 1px solid #e5e6eb; }
+  .sec-d { color: #646a73; font-size: 12px; margin-bottom: 10px; }
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 14px; }
+  .pane { background: #fff; border: 1px solid rgba(31,35,41,.09); border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(31,35,41,.05); }
+  .pane .lab { font-size: 11px; font-weight: 650; padding: 7px 12px; border-bottom: 1px solid rgba(31,35,41,.06); display: flex; gap: 6px; align-items: center; }
+  .pane .lab .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .lab.now { color: #8f959e; } .lab.now .dot { background: #c9cdd4; }
+  .lab.next { color: #722ed1; } .lab.next .dot { background: #722ed1; }
+  .pane .bd { padding: 14px; background: #fafbfc; }
+  .cap { font-size: 11.5px; color: #646a73; padding: 8px 12px 10px; border-top: 1px solid rgba(31,35,41,.06); background: #fff; }
+  .cap b { color: #1f2329; }
+  .k { font: 11px ui-monospace, Menlo, monospace; background: #f2f3f5; border: 1px solid #e5e6eb; border-radius: 4px; padding: 0 5px; color: #1f2329; }
+  .strip { display: flex; align-items: center; gap: 6px; height: 38px; background: #f2f3f5; border: 1px solid rgba(31,35,41,.08); border-radius: 8px; padding: 0 8px; position: relative; }
+  .brand { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg,#722ed1,#9254de); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: none; }
+  .tab { display: flex; align-items: center; gap: 6px; height: 27px; padding: 0 10px; border-radius: 7px; font-size: 12px; color: #646a73; background: transparent; flex: none; }
+  .tab.active { background: #fff; color: #1f2329; font-weight: 600; box-shadow: 0 1px 3px rgba(31,35,41,.10); border: 1px solid rgba(31,35,41,.05); }
+  .tab .d { width: 6px; height: 6px; border-radius: 50%; background: #722ed1; flex: none; }
+  .tab .fav { width: 15px; height: 15px; border-radius: 4px; color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: none; }
+  .fav.dy { background: #161823; } .fav.ghs { background: #07c160; }
+  .tab .x { color: #c9cdd4; font-size: 11px; }
+  .sb { width: 24px; height: 24px; border-radius: 6px; border: none; background: transparent; color: #646a73; font-size: 14px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .sb.on { background: #f9f0ff; color: #722ed1; }
+  .spacer { flex: 1; }
+  .menu { position: absolute; top: 34px; left: 150px; width: 236px; background: #fff; border: 1px solid rgba(31,35,41,.10); border-radius: 9px; box-shadow: 0 10px 28px rgba(31,35,41,.16); padding: 5px; z-index: 3; }
+  .mi { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 9px; border-radius: 6px; font-size: 12.5px; color: #1f2329; }
+  .mi.hl { background: #f9f0ff; color: #722ed1; font-weight: 600; }
+  .mi .ic { width: 15px; text-align: center; color: #8f959e; font-size: 12px; }
+  .mi.hl .ic { color: #722ed1; }
+  .mi .sc { margin-left: auto; font: 10.5px ui-monospace, Menlo, monospace; color: #8f959e; }
+  .mi.hl .sc { color: #9254de; }
+  .sep { height: 1px; background: rgba(31,35,41,.07); margin: 4px 6px; }
+  .mi .ck { margin-left: auto; width: 14px; height: 14px; border-radius: 4px; background: #722ed1; color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+  .corner { position: relative; height: 150px; background: linear-gradient(180deg,#fdf6ff,#f2f3f5); border-radius: 8px; overflow: hidden; }
+  .corner .pg { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: flex-end; padding: 12px; gap: 10px; }
+  .ball { display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; border-radius: 17px; background: #fff; border: 1px solid #e5e6eb; color: #1f2329; font-size: 12px; font-weight: 500; box-shadow: 0 4px 12px rgba(31,35,41,.12); }
+  .ball .st { width: 7px; height: 7px; border-radius: 50%; background: #52c41a; }
+  .ball.mini { width: 36px; height: 36px; padding: 0; border-radius: 50%; justify-content: center; }
+  .ball svg { width: 15px; height: 15px; color: #722ed1; }
+  .aibtn { width: 40px; height: 40px; border-radius: 50%; background: #f5484a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 6px 14px rgba(245,72,74,.35); }
+  .stack { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  .hint { position: absolute; left: 12px; top: 10px; font-size: 11px; color: #8f959e; background: rgba(255,255,255,.9); border: 1px dashed #dcdfe6; border-radius: 6px; padding: 3px 8px; }
+  .addr { background: #fff; border: 1px solid rgba(31,35,41,.08); border-radius: 8px; overflow: visible; position: relative; }
+  .addr .row1 { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 10px; }
+  .nav { width: 24px; height: 24px; border-radius: 6px; color: #8f959e; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+  .nav.dis { color: #dcdfe6; }
+  .url { flex: 1; height: 26px; border-radius: 13px; border: 1.5px solid #722ed1; background: #fff; box-shadow: 0 0 0 3px rgba(114,46,209,.12); display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: #1f2329; gap: 6px; }
+  .url .cur { width: 1px; height: 13px; background: #722ed1; }
+  .ai { font-size: 11px; font-weight: 650; color: #722ed1; background: #f9f0ff; border: 1px solid #efdbff; border-radius: 6px; padding: 2px 8px; }
+  .x2 { color: #c9cdd4; font-size: 13px; }
+  .prog { height: 2px; background: #f0f0f0; }
+  .prog i { display: block; width: 55%; height: 100%; background: linear-gradient(90deg,#722ed1,#b37feb); }
+  .sug { margin: 6px 8px 8px; background: #fff; border: 1px solid rgba(31,35,41,.10); border-radius: 9px; box-shadow: 0 10px 24px rgba(31,35,41,.12); padding: 4px; }
+  .si { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; font-size: 12px; color: #1f2329; }
+  .si:first-child { background: #f9f0ff; }
+  .si .ic { color: #8f959e; font-size: 11px; width: 14px; text-align: center; }
+  .si .u { margin-left: auto; color: #8f959e; font-size: 10.5px; }
+  .chips { display: flex; gap: 6px; padding: 0 8px 8px; flex-wrap: wrap; }
+  .chip { font-size: 11px; color: #646a73; background: #f2f3f5; border: 1px solid #e5e6eb; border-radius: 12px; padding: 2px 9px; }
+  .chip.hot { color: #722ed1; background: #f9f0ff; border-color: #efdbff; }
+  .cons { background: #fff; border: 1px solid rgba(31,35,41,.08); border-radius: 8px; overflow: hidden; }
+  .cons .hd { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; border-bottom: 1px solid rgba(31,35,41,.06); font-size: 11.5px; font-weight: 600; color: #41474f; }
+  .cons .n { background: #f2f3f5; border-radius: 8px; padding: 0 6px; font-size: 10.5px; color: #646a73; }
+  .cons .cl { margin-left: auto; color: #8f959e; font-size: 11px; }
+  .li { display: flex; align-items: center; gap: 8px; padding: 5px 10px; font-size: 11.5px; color: #646a73; }
+  .li .t { font: 10.5px ui-monospace, Menlo, monospace; color: #c9cdd4; }
+  .li .d { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .d.ok { background: #52c41a; } .d.wait { background: #faad14; } .d.nav { background: #722ed1; }
+  .li b { color: #1f2329; font-weight: 600; }
+  .li .go { margin-left: auto; color: #722ed1; font-size: 11px; }
+  .strip.dark { background: #17181c; border-color: rgba(255,255,255,.08); }
+  .strip.dark .tab { color: #9aa0ad; }
+  .strip.dark .tab.active { background: #26272c; color: #f2f3f5; border-color: rgba(255,255,255,.10); box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  .strip.dark .sb { color: #9aa0ad; }
+  .strip.dark .brand { box-shadow: 0 0 0 1px rgba(255,255,255,.12); }
+  table.plan { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid rgba(31,35,41,.09); border-radius: 10px; overflow: hidden; font-size: 12px; }
+  table.plan th, table.plan td { text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(31,35,41,.06); }
+  table.plan th { background: #fafbfc; color: #646a73; font-size: 11px; font-weight: 650; }
+  table.plan tr:last-child td { border-bottom: none; }
+  table.plan td b { font-weight: 650; }
+</style>
+</head>
+<body>
+  <h1>桌面壳 × TraeWork Design 对齐方案</h1>
+  <div class="lead">左列 = 现在的样子，右列 = 建议的样子。所有 mock 按真实组件的尺寸与配色绘制，选定哪条就能直接落地哪条。</div>
+
+  <section>
+    <div class="sec-h"><span class="no">01</span><h2>调出机制：浏览器进「＋」菜单，快捷键常驻</h2><span class="pri p0">P0</span></div>
+    <div class="sec-d">TraeWork 把浏览器当成顶部标签条里的一等公民。我们保留"按需展开"原则不变，但把「＋」做成浏览器式新建菜单，并给面板一个全局快捷键。</div>
+    <div class="pair">
+      <div class="pane">
+        <div class="lab now"><span class="dot"></span>现状 — ＋ 直接新建业务标签，浏览器只能靠右下角悬浮球</div>
+        <div class="bd">
+          <div class="strip">
+            <div class="brand">玖</div>
+            <div class="tab active"><span class="d"></span>业务工作区</div>
+            <div class="tab"><span class="d" style="background:#faad14"></span>今日增长</div>
+            <button class="sb">＋</button>
+            <div class="spacer"></div>
+            <button class="sb">⋯</button>
+          </div>
+        </div>
+        <div class="cap">想开浏览器面板，得先注意到右下角悬浮球 → 点开 → 输网址，<b>三步</b>。</div>
+      </div>
+      <div class="pane">
+        <div class="lab next"><span class="dot"></span>建议 — ＋ 弹浏览器式菜单，一步直达</div>
+        <div class="bd">
+          <div class="strip">
+            <div class="brand">玖</div>
+            <div class="tab active"><span class="d"></span>业务工作区</div>
+            <div class="tab"><span class="d" style="background:#faad14"></span>今日增长</div>
+            <button class="sb on">＋</button>
+            <div class="menu">
+              <div class="mi"><span class="ic">▢</span>新建业务标签<span class="sc">⌘T</span></div>
+              <div class="mi hl"><span class="ic">◍</span>在浏览器面板打开当前页<span class="sc">⌘⇧B</span></div>
+              <div class="mi"><span class="ic">⌾</span>新建浏览器标签<span class="sc">⌘L</span></div>
+              <div class="sep"></div>
+              <div class="mi"><span class="ic">◈</span>打开 Octop</div>
+              <div class="mi"><span class="ic">⚲</span>顶部浏览器开关<span class="ck">✓</span></div>
+            </div>
+            <div class="spacer"></div>
+            <button class="sb">⋯</button>
+          </div>
+        </div>
+        <div class="cap">菜单语义与 Chrome 的「＋」一致；<span class="k">⌘⇧B</span> 全局开合面板；「顶部浏览器开关」= 用户选择常驻才常驻（延续你定的按需原则）。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="no">02</span><h2>按钮位置：面板开关上顶栏，悬浮球收进动作栈</h2><span class="pri p1">P1</span></div>
+    <div class="sec-d">TraeWork 的窗口级动作都排在标签条右端（＋、全屏、分栏）。面板开关也应该在那里有一个常驻位；右下角悬浮球降级为新手引导，用完即隐。</div>
+    <div class="pair">
+      <div class="pane">
+        <div class="lab now"><span class="dot"></span>现状 — 顶栏右端是空的，右下角悬浮球与 AI 按钮打架</div>
+        <div class="bd">
+          <div class="strip">
+            <div class="brand">玖</div>
+            <div class="tab active"><span class="d"></span>业务工作区</div>
+            <div class="tab"><span class="d" style="background:#faad14"></span>获客任务</div>
+            <button class="sb">＋</button>
+            <div class="spacer"></div>
+            <button class="sb">⋯</button>
+          </div>
+          <div class="corner" style="margin-top:10px">
+            <div class="hint">业务页右下角</div>
+            <div class="pg">
+              <div class="ball">◍ 浏览器面板 <span class="st"></span></div>
+              <div class="aibtn">🔍</div>
+            </div>
+          </div>
+        </div>
+        <div class="cap">两个胶囊/圆钮并排悬在内容上，<b>互相抢位</b>，也遮挡页面右下角内容。</div>
+      </div>
+      <div class="pane">
+        <div class="lab next"><span class="dot"></span>建议 — 顶栏 globe 开关（带状态点），悬浮球收成一列小圆钮</div>
+        <div class="bd">
+          <div class="strip">
+            <div class="brand">玖</div>
+            <div class="tab active"><span class="d"></span>业务工作区</div>
+            <div class="tab"><span class="d" style="background:#faad14"></span>获客任务</div>
+            <button class="sb">＋</button>
+            <div class="spacer"></div>
+            <button class="sb on">◍<span style="width:5px;height:5px;border-radius:50%;background:#52c41a;margin-top:12px;margin-left:-3px"></span></button>
+            <button class="sb">⋯</button>
+          </div>
+          <div class="corner" style="margin-top:10px">
+            <div class="hint">首次使用出现，用过一次后收起</div>
+            <div class="pg">
+              <div class="stack">
+                <div class="ball mini">◍</div>
+                <div class="aibtn" style="width:36px;height:36px;font-size:14px">🔍</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cap">globe 常驻顶栏右端 = 一眼找到；状态点绿=就绪/琥珀=待接管。悬浮球缩成 36px 圆钮与 AI 按钮<b>竖排成栈</b>，不再横抢位。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="no">03</span><h2>地址栏体验：建议下拉 + 快捷站点 + 加载进度线</h2><span class="pri p0">P0</span></div>
+    <div class="sec-d">对照 TraeWork 浏览器标签的地址行：聚焦即出建议，操作有反馈。我们的控制条目前只有一个裸输入框。</div>
+    <div class="pair">
+      <div class="pane">
+        <div class="lab now"><span class="dot"></span>现状 — 纯输入框，无建议、无进度反馈</div>
+        <div class="bd">
+          <div class="addr">
+            <div class="row1">
+              <span class="nav">‹</span><span class="nav dis">›</span><span class="nav">⟳</span>
+              <div class="url" style="border-color:#e5e6eb;box-shadow:none;color:#8f959e">输入网址，回车打开</div>
+              <span class="ai">就绪</span><span class="ai" style="color:#1f2329;background:#f2f3f5;border-color:#e5e6eb">AI 代操作</span><span class="x2">✕</span>
+            </div>
+          </div>
+        </div>
+        <div class="cap">页面加载时没有任何进度指示；换站点全靠手打完整域名。</div>
+      </div>
+      <div class="pane">
+        <div class="lab next"><span class="dot"></span>建议 — 聚焦出建议，空态给快捷站点，顶部一条进度线</div>
+        <div class="bd">
+          <div class="addr">
+            <div class="row1">
+              <span class="nav">‹</span><span class="nav dis">›</span><span class="nav">⟳</span>
+              <div class="url">douyin<span class="cur"></span></div>
+              <span class="ai">就绪</span><span class="ai" style="color:#1f2329;background:#f2f3f5;border-color:#e5e6eb">AI 代操作</span><span class="x2">✕</span>
+            </div>
+            <div class="prog"><i></i></div>
+            <div class="sug">
+              <div class="si"><span class="fav dy" style="width:14px;height:14px;border-radius:3px;font-size:8px">抖</span>抖音 · 装修视频评论区<span class="u">继续上次浏览</span></div>
+              <div class="si"><span class="ic">🔍</span>搜索「douyin」</div>
+              <div class="si"><span class="ic">↺</span>www.douyin.com/comment<span class="u">历史</span></div>
+            </div>
+            <div class="chips">
+              <span class="chip hot">抖音</span><span class="chip hot">小红书</span><span class="chip">公众号</span><span class="chip">视频号</span><span class="chip">常用 ▾</span>
+            </div>
+          </div>
+        </div>
+        <div class="cap">建议项 = 最近访问 + 历史 + 搜索；快捷站点用<b>你们业务的平台</b>（抖音/小红书/公众号/视频号）而不是通用导航站。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="no">04</span><h2>面板底部活动条：把「控制台日志」搬进浏览器面板</h2><span class="pri p1">P1</span></div>
+    <div class="sec-d">TraeWork 底部那条「控制台日志 · 清除」是它信任感的关键来源——Agent 干了什么随时可查。AI 代操作同样需要。</div>
+    <div class="pair">
+      <div class="pane">
+        <div class="lab now"><span class="dot"></span>现状 — Agent 动作只出现在审批浮层里，批完即消失</div>
+        <div class="bd">
+          <div class="cons" style="height:132px;display:flex;align-items:center;justify-content:center;color:#c9cdd4;font-size:12px;border-style:dashed">
+            （面板底部：什么都没有）
+          </div>
+        </div>
+        <div class="cap">批过的动作、跳过的页面、失败的步骤——事后<b>无处回看</b>。</div>
+      </div>
+      <div class="pane">
+        <div class="lab next"><span class="dot"></span>建议 — 30px 活动条，事件流 + 计数 + 一键清除，点击展开全量</div>
+        <div class="bd">
+          <div class="cons">
+            <div class="hd">▸ 面板活动 <span class="n">5</span><span class="cl">清除</span></div>
+            <div class="li"><span class="t">20:24</span><span class="d nav"></span>打开 <b>douyin.com/video/7498…</b></div>
+            <div class="li"><span class="t">20:25</span><span class="d ok"></span>Agent 点击「回复」· <b>已批准</b><span class="go">查看</span></div>
+            <div class="li"><span class="t">20:26</span><span class="d wait"></span>Agent 输入文字 · <b>等你批准</b><span class="go">去处理</span></div>
+          </div>
+        </div>
+        <div class="cap">默认收起为一行（高度 30px 不打扰），有待办时琥珀点 + 计数；与审批浮层共享同一事件源。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="no">05</span><h2>整体视觉：favicon、图标语言、可选深色壳</h2><span class="pri p2">P2</span></div>
+    <div class="pair">
+      <div class="pane">
+        <div class="lab next"><span class="dot"></span>标签带真 favicon（TraeWork 同款信息密度）</div>
+        <div class="bd">
+          <div class="strip">
+            <div class="brand">玖</div>
+            <div class="tab active"><span class="fav dy">抖</span>装修视频评论区<span class="x">✕</span></div>
+            <div class="tab"><span class="fav ghs">公</span>公众号草稿</div>
+            <button class="sb">＋</button>
+            <div class="spacer"></div>
+            <button class="sb on">◍</button><button class="sb">⋯</button>
+          </div>
+        </div>
+        <div class="cap">业务标签保留彩色类型点，浏览器标签换真 favicon——两类标签<b>一眼可分</b>（延续现有圆点语义，不推翻）。</div>
+      </div>
+      <div class="pane">
+        <div class="lab next"><span class="dot"></span>深色壳作为可选项（跟随系统自动 / 手动切换）</div>
+        <div class="bd">
+          <div class="strip dark">
+            <div class="brand">玖</div>
+            <div class="tab active"><span class="d"></span>业务工作区</div>
+            <div class="tab"><span class="d" style="background:#faad14"></span>今日增长</div>
+            <button class="sb">＋</button>
+            <div class="spacer"></div>
+            <button class="sb">◍</button><button class="sb">⋯</button>
+          </div>
+        </div>
+        <div class="cap">控制条/审批浮层已支持 <span class="k">prefers-color-scheme</span>；顶栏补同一套深色 token 即成套。</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>建议落地顺序</h2></div>
+    <table class="plan">
+      <tr><th style="width:64px">优先级</th><th style="width:250px">内容</th><th>为什么先做</th></tr>
+      <tr><td><b>P0</b></td><td>01 ＋菜单浏览器化 + <span class="k">⌘⇧B</span>；03 地址栏建议/快捷站点/进度线</td><td>直接解决"浏览器不好调出、控制条太素"，改动集中在 tab-strip 与 strip 两个 HTML，风险小。</td></tr>
+      <tr><td><b>P1</b></td><td>02 顶栏 globe 开关 + 悬浮球收纳成栈；04 面板活动条</td><td>需要 preload/IPC 加一条面板开合通道和事件流通道，主进程小改。</td></tr>
+      <tr><td><b>P2</b></td><td>05 favicon、深色壳成套、按工作区记忆面板状态</td><td>锦上添花，可随后续迭代顺带做。</td></tr>
+    </table>
+  </section>
+</body>
+</html>
