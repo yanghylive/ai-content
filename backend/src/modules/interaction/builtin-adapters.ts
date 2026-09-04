@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
 import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
+import { DiscoveryBrowserRunner } from '../discovery/discovery-browser-runner';
 import {
   InteractionAdapter,
   InteractionCapability,
@@ -245,22 +246,55 @@ export class KuaishouInteractionAdapter implements InteractionAdapter {
     platform: 'kuaishou',
     displayName: '快手',
     supportedTasks: ['comment-reply'],
-    supportsReadback: false,
-    adapterVersion: '0.1.0',
+    supportsReadback: true,
+    adapterVersion: '1.0.0',
   };
 
-  read(input: InteractionReadInput): Promise<InteractionReadResult> {
-    // 快手评论获客待接入：cp.kuaishou.com 评论管理页的 URL + 读评论 selector
-    // 需真实快手账号实测校准（发现层 RPA 已就绪，此处是读自己账号评论）
-    throw new Error(
-      `快手评论获客待接入：账号 ${input.accountId} 需 cp.kuaishou.com 实测校准读评论 selector`,
-    );
+  constructor(private readonly runner: DiscoveryBrowserRunner) {}
+
+  async read(input: InteractionReadInput): Promise<InteractionReadResult> {
+    // 快手评论获客：走 DiscoveryBrowserRunner.readComments（关键词搜索模式发现层产出 contentUrl）。
+    // 无 contentUrl 时如实失败（runner 内部会抛 parse_failed），不再 throw 假「待接入」。
+    const items = await this.runner.readComments({
+      platform: 'kuaishou',
+      accountId: input.accountId,
+      contentUrl: input.contentUrl ?? '',
+      keyword: input.keyword,
+      limit: input.limit ?? 50,
+    });
+    return {
+      items: items
+        .map((d) => {
+          const ev = d.interactionEvents?.[0];
+          return {
+            text: String(ev?.text ?? '').trim(),
+            authorName: d.identityHint?.nickname,
+            authorId: ev?.authorExternalId ?? d.identityHint?.externalUserId,
+            ref: ev?.externalEventId,
+            videoUrl: ev?.sourceUrl ?? d.sourceContent?.url,
+          } as InteractionItem;
+        })
+        .filter((c) => c.text.length > 0),
+      url: items[0]?.sourceContent?.url,
+      title: items[0]?.sourceContent?.title,
+      readAt: new Date().toISOString(),
+    };
   }
 
-  send(input: InteractionSendInput): Promise<InteractionSendResult> {
-    throw new Error(
-      `快手回复执行待接入：账号 ${input.accountId} 需 cp.kuaishou.com 实测校准回复 selector`,
-    );
+  async send(input: InteractionSendInput): Promise<InteractionSendResult> {
+    const result = await this.runner.replyComment({
+      platform: 'kuaishou',
+      accountId: input.accountId,
+      contentUrl: input.contentUrl ?? '',
+      keyword: input.keyword,
+      targetText: input.targetText,
+      replyText: input.replyText,
+    });
+    return {
+      status: result.sent ? 'sent' : 'failed',
+      message: result.message,
+      evidenceUrl: result.evidenceUrl,
+    };
   }
 }
 

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
+import { DiscoveryModule } from '../discovery/discovery.module';
 import {
   DouyinInteractionAdapter,
   InteractionAdapterRegistrar,
@@ -24,7 +25,7 @@ import { InteractionInboxController } from './interaction-inbox.controller';
  * AutoUploadService 由 @Global AutoUploadModule 提供，无需在此 import。
  */
 @Module({
-  imports: [LocalEngineModule],
+  imports: [LocalEngineModule, DiscoveryModule],
   controllers: [InteractionInboxController],
   providers: [
     InteractionAdapterRegistry,

@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
 import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
+import { DiscoveryBrowserRunner } from '../discovery/discovery-browser-runner';
 import {
   DouyinInteractionAdapter,
   InteractionAdapterRegistrar,
@@ -16,6 +17,7 @@ describe('内置互动适配器', () => {
 
   const executorMock = { dispatch: jest.fn() };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const runnerMock = { readComments: jest.fn(), replyComment: jest.fn() };
   const autoUploadMock = {
     readDouyinComments: jest.fn(),
     readDouyinMessages: jest.fn(),
@@ -31,6 +33,7 @@ describe('内置互动适配器', () => {
         { provide: AutoUploadService, useValue: autoUploadMock },
         { provide: PlatformInteractionExecutor, useValue: executorMock },
         { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
+        { provide: DiscoveryBrowserRunner, useValue: runnerMock },
         DouyinInteractionAdapter,
         WechatChannelInteractionAdapter,
         XiaohongshuInteractionAdapter,
@@ -162,5 +165,88 @@ describe('内置互动适配器', () => {
       executorMock as unknown as PlatformInteractionExecutor,
     );
     expect(() => registry.register(dup)).toThrow(/重复注册/);
+  });
+
+  it('快手 read 委托 runner.readComments，映射为 InteractionItem', async () => {
+    runnerMock.readComments.mockResolvedValue([
+      {
+        platform: 'kuaishou',
+        accountId: '9',
+        sourceContent: {
+          externalContentId: 'vid-1',
+          url: 'https://kuaishou.com/v/1',
+          contentType: 'video',
+          title: '快手作品',
+          rawHash: 'h1',
+        },
+        interactionEvents: [
+          {
+            externalEventId: 'evt-1',
+            type: 'comment',
+            authorExternalId: 'author-1',
+            text: '怎么买？',
+            sourceUrl: 'https://kuaishou.com/v/1',
+            occurredAt: '2026-09-05T00:00:00Z',
+          },
+        ],
+        identityHint: { nickname: '买家甲', externalUserId: 'author-1' },
+      },
+    ]);
+    const adapter = registry.get('kuaishou');
+    const result = await adapter.read?.({
+      platform: 'kuaishou',
+      taskType: 'comment-reply',
+      accountId: 9,
+      contentUrl: 'https://kuaishou.com/v/1',
+      keyword: '副业',
+    });
+    expect(runnerMock.readComments).toHaveBeenCalledTimes(1);
+    expect(runnerMock.readComments.mock.calls[0][0]).toMatchObject({
+      platform: 'kuaishou',
+      contentUrl: 'https://kuaishou.com/v/1',
+      keyword: '副业',
+    });
+    expect(result?.items).toEqual([
+      {
+        text: '怎么买？',
+        authorName: '买家甲',
+        authorId: 'author-1',
+        ref: 'evt-1',
+        videoUrl: 'https://kuaishou.com/v/1',
+      },
+    ]);
+    expect(result?.title).toBe('快手作品');
+  });
+
+  it('快手 send 委托 runner.replyComment，sent=true 映射为 sent + 证据透传', async () => {
+    runnerMock.replyComment.mockResolvedValue({
+      ok: true,
+      sent: true,
+      message: '评论回复已发送',
+      evidenceUrl: 'http://127.0.0.1:3011/evidence/ks.png',
+    });
+    const adapter = registry.get('kuaishou');
+    const result = await adapter.send?.({
+      platform: 'kuaishou',
+      taskType: 'comment-reply',
+      accountId: 9,
+      targetText: '怎么买？',
+      contentUrl: 'https://kuaishou.com/v/1',
+      keyword: '副业',
+      replyText: '私信你',
+    });
+    expect(runnerMock.replyComment).toHaveBeenCalledTimes(1);
+    expect(runnerMock.replyComment.mock.calls[0][0]).toMatchObject({
+      platform: 'kuaishou',
+      contentUrl: 'https://kuaishou.com/v/1',
+      targetText: '怎么买？',
+      replyText: '私信你',
+    });
+    expect(result?.status).toBe('sent');
+    expect(result?.evidenceUrl).toBe('http://127.0.0.1:3011/evidence/ks.png');
+  });
+
+  it('快手 supportsReadback 已从 false 提升为 true（接 runner 后真实支持）', () => {
+    expect(registry.getCapability('kuaishou')?.supportsReadback).toBe(true);
   });
 });
