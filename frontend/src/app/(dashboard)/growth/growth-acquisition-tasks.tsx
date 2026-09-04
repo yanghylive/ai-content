@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -33,9 +33,10 @@ import {
   type GrowthAcquisitionConfig,
   type GrowthAcquisitionRun,
   type GrowthRiskMode,
+  type GrowthRunLiveEvent,
 } from "@/lib/api/growth";
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
-import { api } from "@/lib/api/client";
+import { api, ApiError } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 import { runFailureLabel } from "@/lib/growth-failure";
 import { SkeletonList } from "@/components/skeleton";
@@ -56,6 +57,53 @@ const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning"
   disabled: { label: "已停用", tone: "muted" },
   running: { label: "执行中", tone: "warning" },
 };
+
+const RISK_MODE_LABELS: Record<string, string> = {
+  "confirm-first": "逐条确认",
+  "draft-only": "只存草稿",
+  auto: "自动发送",
+};
+
+function pad2(n: number) {
+  return n < 10 ? "0" + n : String(n);
+}
+
+function fmtRunClock(iso?: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const hh = pad2(d.getHours());
+  const mm = pad2(d.getMinutes());
+  const now = new Date();
+  const sameDay =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+  return sameDay ? "今天 " + hh + ":" + mm : (d.getMonth() + 1) + "/" + d.getDate() + " " + hh + ":" + mm;
+}
+
+function fmtRunDuration(startIso?: string, endIso?: string): string | null {
+  if (!startIso) return null;
+  const start = new Date(startIso).getTime();
+  const end = endIso ? new Date(endIso).getTime() : Date.now();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  const sec = Math.max(0, Math.round((end - start) / 1000));
+  if (sec < 60) return sec + "s";
+  const m = Math.floor(sec / 60);
+  const rest = sec % 60;
+  return m + "分" + (rest > 0 ? rest + "s" : "");
+}
+
+const GROWTH_LIVE_CSS = `
+@keyframes growthlive-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.growthlive-row { animation: growthlive-in 0.22s ease-out; }
+@keyframes growthlive-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.growthlive-live-dot { animation: growthlive-pulse 1.4s ease-in-out infinite; }
+@keyframes growthlive-scanmove { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
+.growthlive-scanline { background: linear-gradient(90deg, transparent, rgba(240, 180, 41, 0.9), transparent); animation: growthlive-scanmove 2.4s linear infinite; }
+@keyframes growthlive-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.growthlive-shimmer-line { height: 12px; border-radius: 4px; background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: growthlive-shimmer 1.4s linear infinite; }
+`;
 
 const RISK_OPTIONS = [
   { value: "confirm-first", label: "每条先给我确认（推荐）" },
@@ -122,6 +170,107 @@ export function GrowthAcquisitionTasks() {
   useEffect(() => {
     void fetchConfigs();
   }, [fetchConfigs]);
+
+  // ===== 2026-09-04 实时遥测:「正在干什么」面板(需在 fetchConfigs 之后定义) =====
+  type LivePanel = {
+    events: GrowthRunLiveEvent[];
+    after: number;
+    done: boolean;
+    running: boolean;
+  };
+  const [pinnedLive, setPinnedLive] = useState<string | null>(null);
+  const [livePanels, setLivePanels] = useState<Record<string, LivePanel>>({});
+  const liveBoxRef = useRef<HTMLDivElement | null>(null);
+
+  const ensureLivePanel = useCallback((configId: string) => {
+    setLivePanels((prev) =>
+      prev[configId]
+        ? prev
+        : {
+            ...prev,
+            [configId]: { events: [], after: 0, done: false, running: true },
+          },
+    );
+  }, []);
+
+  // 手动确认执行后立即进入 live 状态(不等 execute 响应)
+  const armLiveFor = useCallback(
+    (configId: string) => {
+      ensureLivePanel(configId);
+      setPinnedLive(configId);
+      setRunsFor(configId);
+    },
+    [ensureLivePanel, setPinnedLive, setRunsFor],
+  );
+
+  const pollLive = useCallback(
+    async (configId: string) => {
+      const panel = livePanels[configId];
+      if (!panel || panel.done) return;
+      try {
+        const res = await growthApi.fetchRunLive(configId, panel.after);
+        setLivePanels((prev) => {
+          const cur = prev[configId];
+          if (!cur || cur.done) return prev;
+          return {
+            ...prev,
+            [configId]: {
+              events: [...cur.events, ...res.events],
+              after: res.after,
+              done: res.done,
+              running: res.running,
+            },
+          };
+        });
+        if (res.done) {
+          // 收口:拉最新 run 列表,展示最终记录
+          void fetchConfigs();
+        }
+      } catch (err) {
+        // 404 = 当前没有在飞执行(守卫跳过/已清除)→ 收面板并刷新列表
+        if (err instanceof ApiError && err.status === 404) {
+          setLivePanels((prev) => ({
+            ...prev,
+            [configId]: {
+              events: prev[configId]?.events ?? [],
+              after: prev[configId]?.after ?? 0,
+              done: true,
+              running: false,
+            },
+          }));
+          void fetchConfigs();
+        }
+      }
+    },
+    [livePanels, fetchConfigs],
+  );
+
+  // 轮询调度:对所有 running&&!done 的面板每 1.5s 拉一次增量
+  useEffect(() => {
+    const ids = Object.entries(livePanels)
+      .filter(([, p]) => !p.done && p.running)
+      .map(([id]) => id);
+    if (ids.length === 0) return;
+    const timers = ids.map((id) => setTimeout(() => void pollLive(id), 1500));
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, [livePanels, pollLive]);
+
+  // 新事件自动滚到底部
+  useEffect(() => {
+    const box = liveBoxRef.current;
+    if (box) box.scrollTop = box.scrollHeight;
+  }, [livePanels]);
+
+  // 列表带 live(调度/后台执行中)→ 自动展开该卡遥测面板
+  useEffect(() => {
+    for (const c of configs) {
+      if (c.live?.running) {
+        ensureLivePanel(c.id);
+        if (runsFor !== c.id) setRunsFor(c.id);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [configs]);
 
   const handleToggle = async (config: GrowthAcquisitionConfig) => {
     setActingId(config.id);
@@ -246,16 +395,22 @@ export function GrowthAcquisitionTasks() {
       if (!approval?.confirmationId) {
         throw new Error("后端未返回确认编号，请稍后重试");
       }
+      armLiveFor(executeTarget.id);
       await growthApi.executeConfig(
         executeTarget.id,
         buildRiskConfirmation("batch-touch", "high", approval.confirmationId),
       );
       setExecuteTarget(null);
-      flash("执行已开始，结果稍后在线索池和执行记录里看");
+      flash("执行已开始，正在滚动实时进度");
+      void fetchConfigs();
     } catch (err: unknown) {
-      // 网关 502/503/504 由 api client 按业务域翻译成「采集引擎不可用」等文案
-      const rawMessage = toActionableError(err, "");
-      setError(rawMessage || toPublicError(err, "执行失败，请稍后重试"));
+      const asApi = err instanceof ApiError ? err : null;
+      if (asApi && asApi.status >= 500) {
+        // 网关 5xx:任务实际已在后台执行,后端继续跑;以遥测面板为准,不打断用户
+      } else {
+        const rawMessage = toActionableError(err, "");
+        setError(rawMessage || toPublicError(err, "执行失败，请稍后重试"));
+      }
     } finally {
       setExecuting(false);
     }
@@ -282,6 +437,7 @@ export function GrowthAcquisitionTasks() {
 
   return (
     <div className="flex flex-col gap-6">
+      <style>{GROWTH_LIVE_CSS}</style>
       <div className="kx-page-head">
         <div>
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">获客任务</h1>
@@ -327,141 +483,255 @@ export function GrowthAcquisitionTasks() {
           />
         ) : (
           <div className="divide-y divide-[var(--kaypal-v3-border)]">
-            {configs.map((config) => {
+                        {configs.map((config) => {
               const status = STATUS_LABELS[config.status] || STATUS_LABELS.disabled;
               const runsOpen = runsFor === config.id;
+              const livePanel = livePanels[config.id];
+              const liveRunning = Boolean(
+                (livePanel && livePanel.running && !livePanel.done) ||
+                  config.live?.running ||
+                  (pinnedLive === config.id && !livePanel?.done),
+              );
+              const panelEvents = livePanel?.events ?? [];
+              const stageText = panelEvents.length
+                ? panelEvents[panelEvents.length - 1].text
+                : (config.live?.stage ?? "");
+              const platformLabel = PLATFORM_LABELS[config.platform] || config.platform;
+              const riskLabel = RISK_MODE_LABELS[config.riskMode] || config.riskMode;
+              const keywords = (config.sourceInputs || []).slice(0, 3).join("、");
+              const liveTone =
+                (lvl: string) =>
+                  lvl === "ok" ? "text-emerald-300"
+                    : lvl === "warn" ? "text-amber-300"
+                      : lvl === "err" ? "text-rose-300"
+                        : "text-slate-300";
+              const liveMark = (lvl: string) =>
+                lvl === "ok" ? "✓" : lvl === "warn" ? "!" : lvl === "err" ? "✕" : "▸";
+              const runChip = (st: string) => {
+                if (st === "success") return <V2StatusChip tone="success">完成</V2StatusChip>;
+                if (st === "failed") return <V2StatusChip tone="danger">失败</V2StatusChip>;
+                if (st === "partial") return <V2StatusChip tone="warning">部分完成</V2StatusChip>;
+                if (st === "skipped") return <V2StatusChip tone="muted">已跳过</V2StatusChip>;
+                return <V2StatusChip tone="accent">{st}</V2StatusChip>;
+              };
+              const dotColor = (st: string) =>
+                st === "success" ? "bg-[var(--kaypal-v3-success)]"
+                  : st === "failed" ? "bg-[var(--kaypal-v3-danger)]"
+                    : st === "partial" || st === "skipped" ? "bg-[var(--kaypal-v3-amber)]"
+                      : "bg-[var(--kaypal-v3-accent)]";
               return (
-                <div key={config.id}>
-                  <div className="flex items-center justify-between p-5">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-[var(--kaypal-v3-ink)]">
-                          {config.taskName}
-                        </h3>
-                        <V2StatusChip tone={status.tone}>{status.label}</V2StatusChip>
-                      </div>
-                      <p className="mt-1 text-sm text-[var(--kaypal-v3-muted)]">
-                        {PLATFORM_LABELS[config.platform] || config.platform}
-                        {config.sourceInputs?.length ? ` · 关键词：${config.sourceInputs.slice(0, 3).join("、")}` : ""}
-                        {config.dailyLimit ? ` · 每日上限 ${config.dailyLimit}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        title="执行记录"
-                        className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-                        onClick={() => void toggleRuns(config)}
-                      >
-                        {runsOpen ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <History className="h-4 w-4" />
+                <div key={config.id} className="relative overflow-hidden">
+                  {liveRunning && (
+                    <span
+                      aria-hidden="true"
+                      className="growthlive-scanline pointer-events-none absolute inset-x-0 top-0 z-10 block h-[2px]"
+                    />
+                  )}
+                  <div className="px-5 pb-3 pt-4 transition-colors hover:bg-[var(--kaypal-v3-paper-soft)]/50">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                          <h3 className="max-w-full truncate text-[15px] font-semibold text-[var(--kaypal-v3-ink)]">
+                            {config.taskName}
+                          </h3>
+                          {liveRunning ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] px-2.5 py-0.5 text-xs font-medium text-[var(--kaypal-v3-amber)]">
+                              <span aria-hidden="true" className="growthlive-live-dot h-1.5 w-1.5 rounded-full bg-current" />
+                              执行中
+                            </span>
+                          ) : (
+                            <V2StatusChip tone={status.tone}>{status.label}</V2StatusChip>
+                          )}
+                          <span className="inline-flex items-center rounded-full border border-[var(--kaypal-v3-border)] px-2 py-0.5 text-[11px] font-medium text-[var(--kaypal-v3-muted)]">
+                            {platformLabel} · {riskLabel}
+                          </span>
+                        </div>
+                        <p className="mt-1.5 truncate text-[13px] text-[var(--kaypal-v3-muted)]">
+                          {keywords ? <>关键词 {keywords}</> : null}
+                          <span className="mx-1.5 opacity-40">|</span>
+                          每日上限 {config.dailyLimit}
+                          <span className="mx-1.5 opacity-40">|</span>
+                          今日触达 {config.exposureCount ?? 0}
+                        </p>
+                        {liveRunning && stageText && (
+                          <p className="mt-1.5 flex items-center gap-1.5 overflow-hidden text-[12px] font-medium text-[var(--kaypal-v3-warning-ink)]">
+                            <span aria-hidden="true" className="growthlive-live-dot inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
+                            <span className="truncate">{stageText}</span>
+                          </p>
                         )}
-                      </button>
-                      <button
-                        type="button"
-                        title="立即执行"
-                        className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-accent-soft)] hover:text-[var(--kaypal-v3-accent-ink)]"
-                        onClick={() => setExecuteTarget(config)}
-                      >
-                        <Rocket className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title="编辑"
-                        className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-                        onClick={() => openEdit(config)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title="删除"
-                        className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)]"
-                        onClick={() => setDeleteTarget(config)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <V2GhostButton
-                        icon={config.status === "enabled" ? Pause : Play}
-                        loading={actingId === config.id}
-                        onClick={() => void handleToggle(config)}
-                      >
-                        {config.status === "enabled" ? "暂停" : "启用"}
-                      </V2GhostButton>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        <button
+                          type="button"
+                          title="执行记录"
+                          className={"rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-muted)] hover:text-[var(--kaypal-v3-ink)]" + (runsOpen ? " bg-[var(--kaypal-v3-paper-muted)] text-[var(--kaypal-v3-ink)]" : "")}
+                          onClick={() => void toggleRuns(config)}
+                        >
+                          {runsOpen ? <ChevronDown className="h-4 w-4" /> : <History className="h-4 w-4" />}
+                        </button>
+                        <button
+                          type="button"
+                          title={liveRunning ? "正在执行中" : "立即执行"}
+                          disabled={liveRunning}
+                          className={
+                            "rounded-[var(--kaypal-v3-radius-sm)] p-2 transition disabled:cursor-not-allowed " +
+                            (liveRunning
+                              ? "text-[var(--kaypal-v3-warning-ink)]"
+                              : "text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-accent-soft)] hover:text-[var(--kaypal-v3-accent-ink)]")
+                          }
+                          onClick={() => setExecuteTarget(config)}
+                        >
+                          <Rocket className={"h-4 w-4" + (liveRunning ? " growthlive-live-dot" : "")} />
+                        </button>
+                        <button
+                          type="button"
+                          title="编辑"
+                          className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-muted)] hover:text-[var(--kaypal-v3-ink)]"
+                          onClick={() => openEdit(config)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          title="删除"
+                          className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)]"
+                          onClick={() => setDeleteTarget(config)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                        <V2GhostButton
+                          size="sm"
+                          className="ml-1"
+                          icon={config.status === "enabled" ? Pause : Play}
+                          loading={actingId === config.id}
+                          onClick={() => void handleToggle(config)}
+                        >
+                          {config.status === "enabled" ? "暂停" : "启用"}
+                        </V2GhostButton>
+                      </div>
                     </div>
                   </div>
 
-                  {/* 执行记录展开 */}
                   {runsOpen && (
-                    <div className="border-t border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-5 py-4">
-                      {runsLoading ? (
-                        <div className="py-4 text-center">
-                          <SkeletonList rows={5} />
-                        </div>
-                      ) : runs.length === 0 ? (
-                        <p className="py-2 text-sm text-[var(--kaypal-v3-muted)]">
-                          还没有执行记录
-                        </p>
-                      ) : (
-                        <div className="space-y-2">
-                          {runs.slice(0, 10).map((run) => (
-                          <Fragment key={run.id}>
-                            <div
-                              className="flex items-center justify-between text-sm"
-                            >
-                              <span className="text-[var(--kaypal-v3-soft-ink)]">
-                                {run.startedAt
-                                  ? new Date(run.startedAt).toLocaleString("zh-CN")
-                                  : ""}
-                              </span>
-                              <span className="text-[var(--kaypal-v3-muted)]">
-                                候选 {run.candidateCount ?? "-"} · 触达 {run.contactedCount ?? "-"} · 进 CRM {run.crmCapturedCount ?? "-"}
-                              </span>
-                              <V2StatusChip
-                                tone={
-                                  run.status === "success"
-                                    ? "success"
-                                    : run.status === "failed"
-                                      ? "danger"
-                                      : "accent"
-                                }
-                              >
-                                {run.status === "success"
-                                  ? "完成"
-                                  : run.status === "failed"
-                                    ? "失败"
-                                    : run.status === "partial"
-                                      ? "部分完成"
-                                      : run.status}
-                              </V2StatusChip>
-                              {/* 2026-09-01 大王决策：失败原因人话标签（ unknown→"原因待查明"等，
-                                  后端 code 对齐 growth.types.ts:65-80，未收录原样展示不吞） */}
-                              {runFailureLabel(run.failureReason) && (
-                                <span className="text-xs font-medium text-[var(--kaypal-v3-warning-ink)]">
-                                  {runFailureLabel(run.failureReason)}
+                    <div className="border-t border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-5 pb-4 pt-3">
+                      {liveRunning ? (
+                        <>
+                          <div className="relative mt-1 overflow-hidden rounded-xl border border-[var(--kaypal-v3-border)] bg-[#0c1322] shadow-inner">
+                            <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
+                              <div className="flex items-center gap-2.5">
+                                <span className="flex items-center gap-1" aria-hidden="true">
+                                  <i className="h-2 w-2 rounded-full bg-rose-400/80" />
+                                  <i className="h-2 w-2 rounded-full bg-amber-300/80" />
+                                  <i className="h-2 w-2 rounded-full bg-emerald-400/80" />
                                 </span>
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                  实时执行日志
+                                </span>
+                              </div>
+                              <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-300">
+                                <span aria-hidden="true" className="growthlive-live-dot h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                LIVE
+                              </span>
+                            </div>
+                            <div ref={liveBoxRef} className="max-h-[300px] overflow-y-auto px-4 py-3 font-mono text-[12px] leading-6">
+                              {panelEvents.length === 0 && (
+                                <div className="space-y-2 py-1">
+                                  <div className="growthlive-shimmer-line" />
+                                  <div className="growthlive-shimmer-line w-3/5" />
+                                </div>
+                              )}
+                              {panelEvents.map((ev, i) => (
+                                <div key={i} className={"growthlive-row flex gap-2 " + liveTone(ev.level)}>
+                                  <span className="shrink-0 opacity-70">{liveMark(ev.level)}</span>
+                                  <span className="min-w-0 break-words">{ev.text}</span>
+                                </div>
+                              ))}
+                              {liveRunning && panelEvents.length > 0 && (
+                                <div className="flex items-center gap-2 pt-2 text-[12px] text-slate-400">
+                                  <span aria-hidden="true" className="h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-slate-300" />
+                                  引擎运行中…
+                                </div>
                               )}
                             </div>
-                            {/* P1-2：回退来源如实展示（RPA 失败→回退旧链路时不让用户误以为 RPA 成功） */}
-                            {run.fallback &&
-                              run.fallback.attempted &&
-                              run.fallback.source === "legacy-adapter" && (
-                                <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
-                                  ⚠ RPA 执行失败（{run.fallback.reasonCode ?? "未知原因"}），已回退本地适配器
-                                </p>
-                              )}
-                            {/* 2026-08-31 复盘：失败原因必须给用户看（此前只显示"失败"徽章，
-                                run.message 里的风控/验证码指引完全没露出，用户无从对症处理） */}
-                            {run.message && run.status !== "success" && (
-                              <p className="mt-1 text-xs text-[var(--kaypal-v3-muted)]">
-                                {run.message}
-                              </p>
-                            )}
-                          </Fragment>
-                          ))}
-                        </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {runsLoading ? (
+                            <div className="py-2">
+                              <SkeletonList rows={3} />
+                            </div>
+                          ) : runs.length === 0 ? (
+                            <p className="py-2 text-sm text-[var(--kaypal-v3-muted)]">
+                              还没有执行记录，点「立即执行」启动一次任务。
+                            </p>
+                          ) : (
+                            <div className="mt-1">
+                              {runs.slice(0, 10).map((run, idx) => {
+                                const dur = fmtRunDuration(run.startedAt, run.endedAt);
+                                return (
+                                  <div key={run.id} className="relative flex gap-3 pb-4 pl-0.5 last:pb-0">
+                                    <div className="relative flex w-3 shrink-0 flex-col items-center" aria-hidden="true">
+                                      <span className={"mt-1 h-2 w-2 rounded-full ring-4 ring-[var(--kaypal-v3-paper-muted)] " + dotColor(run.status)} />
+                                      {idx < Math.min(runs.length, 10) - 1 && (
+                                        <span className="absolute bottom-0 top-4 w-px bg-[var(--kaypal-v3-border)]" />
+                                      )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                                        <span className="text-[13px] font-medium text-[var(--kaypal-v3-soft-ink)]">
+                                          {fmtRunClock(run.startedAt)}
+                                          {dur ? (
+                                            <span className="ml-2 text-xs font-normal text-[var(--kaypal-v3-muted)]">
+                                              用时 {dur}
+                                            </span>
+                                          ) : null}
+                                        </span>
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                          {runChip(run.status)}
+                                          {runFailureLabel(run.failureReason) && run.status !== "success" && (
+                                            <span className="inline-flex items-center rounded-full border border-[var(--kaypal-v3-amber)] bg-[var(--kaypal-v3-amber-soft)] px-2 py-0.5 text-xs font-medium text-[var(--kaypal-v3-amber)]">
+                                              {runFailureLabel(run.failureReason)}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="mt-1.5 grid max-w-md grid-cols-3 gap-1.5">
+                                        <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-1 text-[11px] text-[var(--kaypal-v3-muted)]">
+                                          候选 <b className="text-[13px] text-[var(--kaypal-v3-ink)]">{run.candidateCount ?? "-"}</b>
+                                        </span>
+                                        <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-1 text-[11px] text-[var(--kaypal-v3-muted)]">
+                                          触达 <b className="text-[13px] text-[var(--kaypal-v3-ink)]">{run.contactedCount ?? "-"}</b>
+                                        </span>
+                                        <span className="rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-2 py-1 text-[11px] text-[var(--kaypal-v3-muted)]">
+                                          进 CRM <b className="text-[13px] text-[var(--kaypal-v3-ink)]">{run.crmCapturedCount ?? "-"}</b>
+                                        </span>
+                                      </div>
+                                      {run.message && (
+                                        <p className={
+                                          "mt-1.5 text-xs leading-5 " +
+                                          (run.status === "failed"
+                                            ? "text-[var(--kaypal-v3-danger)]"
+                                            : run.status === "partial" || run.status === "skipped"
+                                              ? "text-[var(--kaypal-v3-soft-ink)]"
+                                              : "text-[var(--kaypal-v3-muted)]")
+                                        }>
+                                          {run.message}
+                                        </p>
+                                      )}
+                                      {run.fallback?.attempted && run.fallback.source === "legacy-adapter" && (
+                                        <p className="mt-0.5 text-xs text-[var(--kaypal-v3-muted)]">
+                                          ⚠ RPA 执行失败（{run.fallback.reasonCode ?? "未知原因"}），已回退本地适配器
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   )}

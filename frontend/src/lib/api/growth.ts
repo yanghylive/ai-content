@@ -78,6 +78,31 @@ export interface GrowthAcquisitionConfig {
     lastRunAt?: string;
     createdAt: string;
     updatedAt: string;
+    /** 2026-09-04 实时遥测:该任务是否正在真实执行(有则自动开「正在干什么」面板) */
+    live?: GrowthConfigLiveMeta;
+}
+
+/** 执行实时事件(与后端 growth.types GrowthRunLiveEvent 对齐) */
+export interface GrowthRunLiveEvent {
+    t: string;
+    level: "info" | "ok" | "warn" | "err";
+    text: string;
+}
+
+export interface GrowthConfigLiveMeta {
+    running: true;
+    startedAt: string;
+    /** 最近一条执行事件文本 */
+    stage: string;
+}
+
+export interface GrowthRunLiveResponse {
+    running: boolean;
+    done: boolean;
+    startedAt: string;
+    doneAt: string | null;
+    after: number;
+    events: GrowthRunLiveEvent[];
 }
 
 export interface GrowthLead {
@@ -595,6 +620,8 @@ overview: () => api.get<GrowthOverview>("/growth/overview"),
         }>("/growth/acquisition/schedule/run", { limit, riskConfirmation }),
     listRuns: (configId?: string) =>
         api.get<GrowthAcquisitionRun[]>(`/growth/acquisition/runs${configId ? `?configId=${configId}` : ""}`),
+    fetchRunLive: (configId: string, after = 0) =>
+        api.get<GrowthRunLiveResponse>(`/growth/acquisition/runs/live/${configId}?after=${after}`),
     listLeads: (params: { q?: string; status?: string; platform?: string } = {}) => {
         const search = new URLSearchParams();
         Object.entries(params).forEach(([key, value]) => {

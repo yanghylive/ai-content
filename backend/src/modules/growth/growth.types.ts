@@ -353,6 +353,21 @@ export interface GrowthAcquisitionRun {
   endedAt?: string;
 }
 
+/** 执行实时事件（2026-09-04「正在干什么」遥测流）。进程内事件，不落盘；执行结束短暂保留供轮询收尾。 */
+export interface GrowthRunLiveEvent {
+  t: string; // ISO 时间
+  level: 'info' | 'ok' | 'warn' | 'err';
+  text: string;
+}
+
+/** listConfigs 附带字段：该配置当前是否正在真实执行（前端据此开遥测面板） */
+export interface GrowthConfigLiveMeta {
+  running: true;
+  startedAt: string;
+  /** 最近一条执行事件文本 */
+  stage: string;
+}
+
 export interface GrowthSchedulePlan {
   generatedAt: string;
   readyCount: number;

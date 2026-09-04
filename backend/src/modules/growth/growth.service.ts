@@ -105,6 +105,8 @@ import {
   type GrowthWorkflowStatus,
   type GrowthWorkflow,
   type RedfoxBenchmarkAccountInput,
+  type GrowthRunLiveEvent,
+  type GrowthConfigLiveMeta,
 } from './growth.types';
 
 type QueryInput = Record<string, unknown>;
@@ -172,6 +174,17 @@ type AiEmployeeFollowUpExecution = Awaited<
   ReturnType<AiEmployeeService['executeDouyinFollowUp']>
 >;
 
+/** 单个配置的在飞执行事件缓冲（key: `userId:configId`，只保留最近一次执行） */
+interface GrowthLiveEntry {
+  userId: string;
+  configId: string;
+  startedAt: string;
+  running: boolean;
+  done: boolean;
+  doneAt?: string;
+  events: GrowthRunLiveEvent[];
+}
+
 @Injectable()
 export class GrowthService implements OnModuleInit {
   private readonly logger = new Logger(GrowthService.name);
@@ -196,6 +209,10 @@ export class GrowthService implements OnModuleInit {
   >();
   private static readonly ACQUISITION_THROTTLE_MS = 60_000;
 
+  /** 2026-09-04 实时遥测：config 在飞执行的阶段事件（进程内缓冲，不落盘；done 后短暂保留） */
+  private readonly liveRuns = new Map<string, GrowthLiveEntry>();
+  private static readonly LIVE_RETENTION_MS = 90_000;
+
   constructor(
     private readonly aiEmployeeService: AiEmployeeService,
     private readonly autoUploadService: AutoUploadService,
@@ -212,6 +229,88 @@ export class GrowthService implements OnModuleInit {
     @Optional() private readonly rpaDriverRegistry?: RpaDriverRegistry,
     @Optional() private readonly leadScoreService?: LeadScoreService,
   ) {}
+
+  /* ========== 实时执行遥测 helpers（2026-09-04） ========== */
+  private liveKey(userId: string, configId: string) {
+    return `${userId}:${configId}`;
+  }
+
+  private beginLive(userId: string, config: GrowthAcquisitionConfig) {
+    const key = this.liveKey(userId, config.id);
+    this.liveRuns.set(key, {
+      userId,
+      configId: config.id,
+      startedAt: new Date().toISOString(),
+      running: true,
+      done: false,
+      events: [],
+    });
+  }
+
+  private logLive(
+    userId: string,
+    configId: string,
+    level: GrowthRunLiveEvent['level'],
+    text: string,
+  ) {
+    const entry = this.liveRuns.get(this.liveKey(userId, configId));
+    if (!entry) return;
+    entry.events.push({
+      t: new Date().toISOString(),
+      level,
+      text: text.length > 220 ? text.slice(0, 220) : text,
+    });
+  }
+
+  private finishLive(
+    userId: string,
+    configId: string,
+    status: string,
+    message: string,
+  ) {
+    const entry = this.liveRuns.get(this.liveKey(userId, configId));
+    if (!entry) return;
+    if (!entry.done) {
+      entry.done = true;
+      entry.running = false;
+      entry.doneAt = new Date().toISOString();
+    }
+    const brief = (message || '').slice(0, 160);
+    const level: GrowthRunLiveEvent['level'] =
+      status === 'success' || status === 'partial' ? 'ok' : status === 'failed' ? 'err' : 'warn';
+    this.logLive(
+      userId,
+      configId,
+      level,
+      brief ? `执行结束（${status}）：${brief}` : `执行结束（${status}）`,
+    );
+  }
+
+  /** 实时遥测读取（增量；done 后保留窗口内仍可读，用于前端收尾刷新） */
+  async getRunLive(userId: string, configId: string, after = 0) {
+    const key = this.liveKey(userId, configId);
+    const entry = this.liveRuns.get(key);
+    const nowMs = Date.now();
+    if (
+      entry?.done &&
+      entry.doneAt &&
+      nowMs - Date.parse(entry.doneAt) > GrowthService.LIVE_RETENTION_MS
+    ) {
+      this.liveRuns.delete(key);
+      throw new NotFoundException('该任务当前没有执行过程');
+    }
+    if (!entry) throw new NotFoundException('该任务当前没有执行过程');
+    const idx = Math.max(0, after);
+    const events = entry.events.slice(idx);
+    return {
+      running: entry.running,
+      done: entry.done,
+      startedAt: entry.startedAt,
+      doneAt: entry.doneAt ?? null,
+      after: after + events.length,
+      events,
+    };
+  }
 
   async onModuleInit() {
     await this.migrateLocalStoreToDatabase();
@@ -1413,10 +1512,31 @@ export class GrowthService implements OnModuleInit {
     const mode = this.text(query.mode);
     const store = await this.loadStore();
     const scope = await this.growthScope(userId);
-    return store.configs.filter(
-      (item) =>
-        this.inGrowthScope(item, scope) && (!mode || item.mode === mode),
-    );
+    return store.configs
+      .filter(
+        (item) =>
+          this.inGrowthScope(item, scope) && (!mode || item.mode === mode),
+      )
+      .map((item) => {
+        // 2026-09-04：在飞执行附加遥测元信息，前端据此开「正在干什么」面板
+        const live = this.liveRuns.get(this.liveKey(userId, item.id));
+        if (live?.running) {
+          const withLive: GrowthAcquisitionConfig & {
+            live?: GrowthConfigLiveMeta;
+          } = {
+            ...item,
+            live: {
+              running: true,
+              startedAt: live.startedAt,
+              stage: live.events.length
+                ? live.events[live.events.length - 1].text
+                : '',
+            },
+          };
+          return withLive;
+        }
+        return item;
+      });
   }
 
   async getConfig(userId: string, id: string) {
@@ -1844,6 +1964,20 @@ export class GrowthService implements OnModuleInit {
     // 复核#4-6：driver 成功路径的状态机记录 id（try 内赋值，catch 分支共用，防并发串单）
     let driverRpaRecordId: string | null = null;
     try {
+      // 2026-09-04 实时遥测：同一任务在飞时拒绝重入（防手动/调度双跑触发平台风控）
+      if (this.liveRuns.get(this.liveKey(userId, normalizedConfig.id))?.running) {
+        return this.createRunResult(normalizedConfig, {
+          trigger,
+          status: 'skipped',
+          failureReason: 'throttled',
+          message: '该任务上一条执行仍在进行中，已跳过本次执行。',
+          candidateCount: 0,
+          selectedCount: 0,
+          contactedCount: 0,
+        });
+      }
+      this.beginLive(userId, normalizedConfig);
+      this.logLive(userId, normalizedConfig.id, 'info', '启动执行，正在调度采集引擎…');
       // T2-4 防平台风控：真实执行前记录本次执行时间（供下次节流判断）
       this.acquisitionThrottle.set(throttleKey, { lastRunAt: Date.now() });
       const candidateResponse = await this.fetchCandidatesWithAiEmployee(
@@ -1853,6 +1987,15 @@ export class GrowthService implements OnModuleInit {
       const candidates = Array.isArray(candidateResponse.candidates)
         ? candidateResponse.candidates
         : [];
+      // 2026-09-04：引擎扫描阶段结论
+      this.logLive(
+        userId,
+        normalizedConfig.id,
+        candidateResponse.ok === false ? 'err' : 'ok',
+        candidateResponse.ok === false
+          ? `采集引擎返回异常：${candidateResponse.message || '未知原因'}`
+          : `采集引擎扫描完成，发现 ${candidates.length} 条候选`,
+      );
       // 复核#4-6：driver 成功路径的状态机记录 id 参数透传（防并发串单）
       driverRpaRecordId = candidateResponse.rpaRecordId ?? null;
       const candidateEvidenceUrls = this.evidenceUrls(
@@ -1879,6 +2022,7 @@ export class GrowthService implements OnModuleInit {
       }
 
       if (normalizedConfig.mode === 'search-account') {
+        this.logLive(userId, normalizedConfig.id, 'info', '账号定向模式：留存候选账号线索…');
         const accountCandidates = candidates.slice(0, remaining);
         const leads = accountCandidates.map((candidate, index) =>
           this.createLeadFromCandidate(
@@ -1912,6 +2056,7 @@ export class GrowthService implements OnModuleInit {
       // D 阶段修正（大王纠错）：获客线索 = 评论区表达需求的用户（对齐抖音"读评论找客户"）。
       // 发现层返回的是内容（笔记/视频），必须读评论拿用户；评论不可达 → 如实失败，不把内容当客户。
       if (!this.platformTouchReady(normalizedConfig.platform)) {
+        this.logLive(userId, normalizedConfig.id, 'info', '当前平台未接入自动触达，读取评论生成线索…');
         // P1 复核：读评论关闭失败经 closeState 回传 → run 标注需人工核对（不静默）
         const commentCloseState: { failed: boolean } = { failed: false };
         const commentLeads = await this.fetchCommentUsersAsLeads(
@@ -1994,6 +2139,7 @@ export class GrowthService implements OnModuleInit {
         });
       }
 
+      this.logLive(userId, normalizedConfig.id, 'info', `AI 正在分析 ${candidates.length} 条候选的意向与话术…`);
       // planDouyinFollowUp 同步实现，但测试里 mock 为 async；用 Promise.resolve 包一层统一 await
       const followUpPlan = await Promise.resolve(
         this.aiEmployeeService.planDouyinFollowUp({
@@ -2023,6 +2169,7 @@ export class GrowthService implements OnModuleInit {
         }),
       );
       if (!followUpPlan.targets.length) {
+        this.logLive(userId, normalizedConfig.id, 'warn', '没有候选达到跟进条件，本次跳过触达');
         return this.createRunResult(normalizedConfig, {
           trigger,
           status: 'skipped',
@@ -2038,10 +2185,24 @@ export class GrowthService implements OnModuleInit {
         });
       }
 
+      this.logLive(
+        userId,
+        normalizedConfig.id,
+        'info',
+        `准备触达 ${followUpPlan.targets.length} 个目标，正在执行…`,
+      );
       const execution = await this.executePlatformFollowUp(
         normalizedConfig,
         followUpPlan.targets,
         remaining,
+      );
+      this.logLive(
+        userId,
+        normalizedConfig.id,
+        execution.status === 'failed' ? 'err' : 'ok',
+        execution.status === 'failed'
+          ? `触达未全部成功：${(execution.message || '').slice(0, 120)}`
+          : `触达完成：成功 ${execution.summary?.successCount ?? 0} 条`,
       );
       const executionEvidenceUrls = Array.from(
         new Set([
@@ -2091,6 +2252,12 @@ export class GrowthService implements OnModuleInit {
       // P1 复核：账号忙（并发执行同一账号被 createWithLock 拦截）→ 透传给 controller 转 409，
       // 与主 RPA 控制器统一语义；不转 failed run（否则并发仍会绕过锁各建一条记录）。
       if (error instanceof ConflictException) {
+        this.finishLive(
+          userId,
+          normalizedConfig.id,
+          'failed',
+          '账号忙碌或已被并发执行占用，任务未开始。',
+        );
         throw error;
       }
       return this.createRunResult(normalizedConfig, {
@@ -4657,6 +4824,7 @@ export class GrowthService implements OnModuleInit {
       },
       { scope, collections: ['configs', 'runs', 'leads'] },
     );
+    this.finishLive(config.userId, config.id, run.status, run.message);
     return { config: updatedConfig, run, leads };
   }
 

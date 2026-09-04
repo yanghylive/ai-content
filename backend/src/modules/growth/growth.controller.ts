@@ -388,6 +388,19 @@ export class GrowthController {
     return this.growthService.listRuns(this.getUserId(request), query || {});
   }
 
+  @Get('acquisition/runs/live/:configId')
+  getRunLive(
+    @Req() request: AuthenticatedRequest,
+    @Param('configId') configId: string,
+    @Query('after') after?: string,
+  ) {
+    return this.growthService.getRunLive(
+      this.getUserId(request),
+      configId,
+      Number(after) || 0,
+    );
+  }
+
   @Get('acquisition/runs/:id')
   getRun(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
     return this.growthService.getRun(this.getUserId(request), id);

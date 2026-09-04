@@ -593,6 +593,119 @@ describe('GrowthService commercial acquisition execution', () => {
     });
   });
 
+  it('executes with live telemetry events（2026-09-04「正在干什么」遥测流）', async () => {
+    const candidate = {
+      text: '想了解本地装修报价',
+      targetName: '装修意向客户',
+      sourceUrl: 'https://www.douyin.com/video/live-telemetry',
+      videoUrl: 'https://www.douyin.com/video/live-telemetry',
+      score: 90,
+    };
+    const followUpTarget = {
+      ...candidate,
+      index: 0,
+      sourceText: candidate.text,
+      commentReplyText: '可以先交流一下你的户型和预算。',
+      commentTaskEnabled: true,
+      messageTaskEnabled: false,
+    };
+    const aiEmployee = {
+      findDouyinHotVideoLeads: jest.fn().mockResolvedValue({
+        ok: true,
+        status: 'success',
+        message: '读取到 1 条候选',
+        candidates: [candidate],
+        evidence: [],
+      }),
+      planDouyinFollowUp: jest.fn().mockResolvedValue({
+        targets: [followUpTarget],
+        skipped: [],
+        summary: {
+          totalCandidates: 1,
+          selectedCount: 1,
+          skippedCount: 0,
+          commentTaskCount: 1,
+          messageTaskCount: 0,
+        },
+      }),
+      executeDouyinFollowUp: jest.fn().mockResolvedValue({
+        ok: true,
+        status: 'success',
+        message: '确认后执行完成',
+        summary: {
+          totalTargets: 1,
+          attemptedCount: 1,
+          successCount: 1,
+          failedCount: 0,
+          sendMode: 'auto-send',
+        },
+        results: [
+          {
+            index: 0,
+            targetName: candidate.targetName,
+            targetText: candidate.text,
+            replyText: followUpTarget.commentReplyText,
+            ok: true,
+            status: 'success',
+            message: '发送成功且回读一致',
+            evidence: [],
+          },
+        ],
+      }),
+    };
+    const service = makeService({}, aiEmployee);
+    let store = makeStore({
+      configs: [makeConfig({ riskMode: 'confirm-first' })],
+      accountHealth: [makeAccountHealth()],
+    });
+    service.loadStore = jest.fn(async () => store);
+    service.saveStore = jest.fn(async (next: any) => {
+      store = next;
+    });
+    service.resolveGrowthTenantId = jest.fn().mockResolvedValue('tenant-1');
+    service.requireGrowthMutationScope = jest.fn().mockResolvedValue({
+      userId: 'user-1',
+      tenantId: 'tenant-1',
+      role: 'admin',
+      permissions: [],
+      legacy: false,
+    });
+
+    await withGrowthExecutionEnv('true', async () => {
+      const executed = await service.executeConfig('user-1', 'config-commercial', {
+        confirmedExecution: true,
+      });
+      expect(executed.run.status).toBe('success');
+
+      // 1) 收口后可读取事件流: 各阶段事件齐全
+      const live = await service.getRunLive('user-1', 'config-commercial', 0);
+      expect(live.done).toBe(true);
+      expect(live.running).toBe(false);
+      const allText = live.events.map((e) => e.text).join('\n');
+      expect(allText).toContain('启动执行');
+      expect(allText).toContain('采集引擎扫描完成，发现 1 条候选');
+      expect(allText).toContain('AI 正在分析 1 条候选');
+      expect(allText).toContain('准备触达 1 个目标');
+      expect(allText).toContain('执行结束（success）');
+
+      // 2) 增量语义: after=已读数量时不再返回旧事件
+      const again = await service.getRunLive('user-1', 'config-commercial', live.after);
+      expect(again.events).toHaveLength(0);
+
+      // 3) 在飞守卫: 同一 config 仍在 running 时重入被跳过
+      const config = store.configs[0];
+      (service as unknown as {
+        beginLive: (userId: string, c: unknown) => void;
+      }).beginLive('user-1', config);
+      const guarded = await service.executeConfig('user-1', 'config-commercial', {
+        confirmedExecution: true,
+      });
+      expect(guarded.run.status).toBe('skipped');
+      expect(guarded.run.failureReason).toBe('throttled');
+      expect(aiEmployee.findDouyinHotVideoLeads).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('routes search-account exposure through the account search collector without messaging candidates', async () => {
     const aiEmployee = {
       findDouyinLeadsByKeyword: jest.fn().mockResolvedValue({
