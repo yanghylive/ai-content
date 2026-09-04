@@ -762,21 +762,22 @@ const SECTION_TITLE_TEXT = {
   letterSpacing: "-0.3px",
 } as const;
 
-/** 顶部：标题 + 数据时间 + 刷新 + 主 CTA + 5 张统计卡（null≠0） */
+/**
+ * 顶部：标题 + 数据时间 + 刷新 + 5 张统计卡（null≠0）。
+ * 2026-09-04: 移除主 CTA「新建获客任务」,创建入口统一收敛到「增长功能 → 获客任务」卡。
+ */
 function HomeHeader({
   home,
   loading,
   error,
   onRefresh,
   onAutoRefresh,
-  onCreateTask,
 }: {
   home: GrowthHomeResponse | null;
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
   onAutoRefresh: () => void;
-  onCreateTask: () => void;
 }) {
   // 倒计时反馈：每秒递减，到 0 触发静默刷新并重置（让用户感知自动刷新在“活”）
   const [countdown, setCountdown] = useState(HOME_POLL_SECONDS);
@@ -878,14 +879,6 @@ function HomeHeader({
               aria-hidden="true"
             />
             {loading ? "刷新中" : "刷新"}
-          </button>
-          <button
-            type="button"
-            onClick={onCreateTask}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-[var(--kaypal-v3-radius)] bg-[image:var(--kaypal-v3-gradient-primary)] px-6 text-[15px] font-semibold text-white shadow-sm transition hover:brightness-105 active:scale-[0.97]"
-          >
-            新建获客任务
-            <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -1779,10 +1772,6 @@ export function TodayCenter() {
     trackGrowthHomeViewed("today", home.blockers.length);
   }, [home]);
 
-  const handleCreateTask = useCallback(() => {
-    void router.push("/auto-acquisition/create");
-  }, [router]);
-
   // 运行行点击：跳该任务（带 run 高亮由获客任务页自行接管，这里仅定位到任务）
   const handleOpenRun = useCallback(
     (run: GrowthAcquisitionRun) => {
@@ -1803,15 +1792,15 @@ export function TodayCenter() {
         error={error}
         onRefresh={() => void loadHome()}
         onAutoRefresh={handleAutoRefresh}
-        onCreateTask={handleCreateTask}
       />
       {home ? (
         <>
-          {/* 操作区最大化上提（2026-09-03）：页头(标题+统计) → 风险 → 增长功能 →
-              趋势图(从页头区移下让位) → AI 简报 → 漏斗 → 价值账单 → 最近运行。
-              增长功能是本页核心操作，紧随统计与告警之后，第二屏内即可触达。 */}
-          <BlockerCards blockers={home.blockers} />
+          {/* 操作区最大化上提（2026-09-03，2026-09-04 再前置）：
+              页头(标题+统计) → 增长功能(7 卡操作矩阵) → 风险 →
+              趋势图 → AI 简报 → 漏斗 → 价值账单 → 最近运行。
+              增长功能是本页核心操作,直接紧随统计,首屏即可完成跳转动作。 */}
           <GrowthHubLinks overview={overview} />
+          <BlockerCards blockers={home.blockers} />
           <MainTrendChart trends={home.trends} />
           {overview ? <AiDailyBriefCard overview={overview} /> : null}
           <FunnelSection funnel={home.funnel} loading={loading && !home} />
