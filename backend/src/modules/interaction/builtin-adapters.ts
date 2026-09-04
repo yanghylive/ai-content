@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
-import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
 import { DiscoveryBrowserRunner } from '../discovery/discovery-browser-runner';
 import {
   InteractionAdapter,
@@ -17,9 +16,9 @@ import { InteractionAdapterRegistry } from './interaction-adapter.registry';
 /**
  * 内置互动适配器（一期落地）。
  *
- * 把现有两套执行器包装成统一 InteractionAdapter 契约：
+ * 把现有执行器包装成统一 InteractionAdapter 契约：
  *  - 抖音/视频号 → PlatformInteractionExecutor.dispatch / AutoUploadService.read*
- *  - 小红书     → XiaohongshuInteractionExecutor.readComments / replyComment
+ *  - 小红书/快手 → DiscoveryBrowserRunner.readComments / replyComment（关键词搜索模式真实现）
  *
  * 上层 comment-acquisition 通过 InteractionAdapterRegistry 按平台查询、
  * 按能力调用，不再写 `platform === 'xiaohongshu' ? ... : ...` 平台分支。
@@ -27,11 +26,6 @@ import { InteractionAdapterRegistry } from './interaction-adapter.registry';
 
 /** 统一 dispatch 返回的 status 到 InteractionSendResult.status */
 function mapDispatchStatus(status?: string): InteractionSendResult['status'] {
-  return status === 'sent' ? 'sent' : 'failed';
-}
-
-/** 统一小红书 replyComment 返回的 status */
-function mapXhsStatus(status?: string): InteractionSendResult['status'] {
   return status === 'sent' ? 'sent' : 'failed';
 }
 
@@ -191,50 +185,49 @@ export class XiaohongshuInteractionAdapter implements InteractionAdapter {
     adapterVersion: '1.0.0',
   };
 
-  constructor(
-    private readonly xhsInteraction: XiaohongshuInteractionExecutor,
-  ) {}
+  constructor(private readonly runner: DiscoveryBrowserRunner) {}
 
   async read(input: InteractionReadInput): Promise<InteractionReadResult> {
-    const result = await this.xhsInteraction.readComments({
+    // 小红书评论获客：走 DiscoveryBrowserRunner.readComments（关键词搜索模式）。
+    // 详情页必须从搜索页真实点击进入（直开 404），故 keyword 必需，contentUrl 来自发现层产出。
+    const items = await this.runner.readComments({
+      platform: 'xiaohongshu',
       accountId: input.accountId,
+      contentUrl: input.contentUrl ?? '',
+      keyword: input.keyword,
       limit: input.limit ?? 50,
     });
-    const list = result.comments || [];
     return {
-      items: list
-        .map((c) => {
-          const raw = c as {
-            content?: unknown;
-            text?: unknown;
-            index?: number;
-          };
-          const text = String(
-            typeof raw.text === 'string' && raw.text
-              ? raw.text
-              : typeof raw.content === 'string'
-                ? raw.content
-                : '',
-          ).trim();
-          return { text, ref: String(raw.index ?? '') };
+      items: items
+        .map((d) => {
+          const ev = d.interactionEvents?.[0];
+          return {
+            text: String(ev?.text ?? '').trim(),
+            authorName: d.identityHint?.nickname,
+            authorId: ev?.authorExternalId ?? d.identityHint?.externalUserId,
+            ref: ev?.externalEventId,
+            videoUrl: ev?.sourceUrl ?? d.sourceContent?.url,
+          } as InteractionItem;
         })
         .filter((c) => c.text.length > 0),
-      url: result.url || undefined,
+      url: items[0]?.sourceContent?.url,
+      title: items[0]?.sourceContent?.title,
       readAt: new Date().toISOString(),
     };
   }
 
   async send(input: InteractionSendInput): Promise<InteractionSendResult> {
-    const result = await this.xhsInteraction.replyComment({
+    const result = await this.runner.replyComment({
+      platform: 'xiaohongshu',
       accountId: input.accountId,
-      commentIndex: Number(input.commentRef ?? 0),
-      content: input.replyText,
+      contentUrl: input.contentUrl ?? '',
+      keyword: input.keyword,
+      targetText: input.targetText,
+      replyText: input.replyText,
     });
     return {
-      status: mapXhsStatus(result.status),
+      status: result.sent ? 'sent' : 'failed',
       message: result.message,
-      // 发送成功回读 + 截图证据：非空才让上层 dispatchReply 证据门禁通过
-      readbackText: result.readbackText,
       evidenceUrl: result.evidenceUrl,
     };
   }

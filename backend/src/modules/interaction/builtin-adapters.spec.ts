@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
-import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
 import { DiscoveryBrowserRunner } from '../discovery/discovery-browser-runner';
 import {
   DouyinInteractionAdapter,
@@ -16,7 +15,6 @@ describe('内置互动适配器', () => {
   let registry: InteractionAdapterRegistry;
 
   const executorMock = { dispatch: jest.fn() };
-  const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
   const runnerMock = { readComments: jest.fn(), replyComment: jest.fn() };
   const autoUploadMock = {
     readDouyinComments: jest.fn(),
@@ -32,7 +30,6 @@ describe('内置互动适配器', () => {
         InteractionAdapterRegistry,
         { provide: AutoUploadService, useValue: autoUploadMock },
         { provide: PlatformInteractionExecutor, useValue: executorMock },
-        { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
         { provide: DiscoveryBrowserRunner, useValue: runnerMock },
         DouyinInteractionAdapter,
         WechatChannelInteractionAdapter,
@@ -105,30 +102,11 @@ describe('内置互动适配器', () => {
     expect(result?.readbackText).toBe('{"reply":"私信我"}');
   });
 
-  it('小红书 send 委托 replyComment，commentRef 映射为 commentIndex', async () => {
-    xhsMock.replyComment.mockResolvedValue({ status: 'sent', message: 'ok' });
-    const adapter = registry.get('xiaohongshu');
-    const result = await adapter.send?.({
-      platform: 'xiaohongshu',
-      taskType: 'comment-reply',
-      accountId: 3,
-      targetText: '多少钱',
-      commentRef: '2',
-      replyText: '私信你',
-    });
-    expect(xhsMock.replyComment).toHaveBeenCalledTimes(1);
-    expect(xhsMock.replyComment.mock.calls[0][0]).toMatchObject({
-      commentIndex: 2,
-      content: '私信你',
-    });
-    expect(result?.status).toBe('sent');
-  });
-
-  it('小红书 send 透传回读文本与截图证据（不再假成功，P0-1 修复）', async () => {
-    xhsMock.replyComment.mockResolvedValue({
-      status: 'sent',
+  it('小红书 send 委托 runner.replyComment，透传 contentUrl/keyword/targetText', async () => {
+    runnerMock.replyComment.mockResolvedValue({
+      ok: true,
+      sent: true,
       message: '评论回复已发送',
-      readbackText: '私信你',
       evidenceUrl: 'http://127.0.0.1:3011/evidence/xhs.png',
     });
     const adapter = registry.get('xiaohongshu');
@@ -137,12 +115,70 @@ describe('内置互动适配器', () => {
       taskType: 'comment-reply',
       accountId: 3,
       targetText: '多少钱',
-      commentRef: '0',
+      contentUrl: 'https://xiaohongshu.com/note/abc',
+      keyword: '美甲',
+      replyText: '私信你',
+    });
+    expect(runnerMock.replyComment).toHaveBeenCalledTimes(1);
+    expect(runnerMock.replyComment.mock.calls[0][0]).toMatchObject({
+      platform: 'xiaohongshu',
+      contentUrl: 'https://xiaohongshu.com/note/abc',
+      keyword: '美甲',
+      targetText: '多少钱',
       replyText: '私信你',
     });
     expect(result?.status).toBe('sent');
-    expect(result?.readbackText).toBe('私信你');
     expect(result?.evidenceUrl).toBe('http://127.0.0.1:3011/evidence/xhs.png');
+  });
+
+  it('小红书 read 委托 runner.readComments，映射为 InteractionItem（不再走通知中心）', async () => {
+    runnerMock.readComments.mockResolvedValue([
+      {
+        platform: 'xiaohongshu',
+        accountId: '3',
+        sourceContent: {
+          externalContentId: 'note-1',
+          url: 'https://xiaohongshu.com/note/abc',
+          contentType: 'note',
+          title: '美甲笔记',
+          rawHash: 'h1',
+        },
+        interactionEvents: [
+          {
+            externalEventId: 'evt-9',
+            type: 'comment',
+            authorExternalId: 'author-9',
+            text: '多少钱？',
+            sourceUrl: 'https://xiaohongshu.com/note/abc',
+            occurredAt: '2026-09-05T00:00:00Z',
+          },
+        ],
+        identityHint: { nickname: '顾客乙', externalUserId: 'author-9' },
+      },
+    ]);
+    const adapter = registry.get('xiaohongshu');
+    const result = await adapter.read?.({
+      platform: 'xiaohongshu',
+      taskType: 'comment-reply',
+      accountId: 3,
+      contentUrl: 'https://xiaohongshu.com/note/abc',
+      keyword: '美甲',
+    });
+    expect(runnerMock.readComments).toHaveBeenCalledTimes(1);
+    expect(runnerMock.readComments.mock.calls[0][0]).toMatchObject({
+      platform: 'xiaohongshu',
+      contentUrl: 'https://xiaohongshu.com/note/abc',
+      keyword: '美甲',
+    });
+    expect(result?.items).toEqual([
+      {
+        text: '多少钱？',
+        authorName: '顾客乙',
+        authorId: 'author-9',
+        ref: 'evt-9',
+        videoUrl: 'https://xiaohongshu.com/note/abc',
+      },
+    ]);
   });
 
   it('抖音 read 按 taskType 分派评论/私信读取，统一为 InteractionItem', async () => {

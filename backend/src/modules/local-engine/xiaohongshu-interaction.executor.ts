@@ -33,6 +33,13 @@ export interface XhsReadResult {
 const XHS_NOTIFICATION_URL = 'https://www.xiaohongshu.com/notification';
 
 @Injectable()
+/**
+ * @deprecated 小红书互动已切换到 DiscoveryBrowserRunner 的「关键词搜索」真实现
+ * （interaction/builtin-adapters.ts 的 XiaohongshuInteractionAdapter 已改为注入
+ * DiscoveryBrowserRunner）。本 executor 的通知中心（/notification）读评论模式是旧数据源，
+ * 拿不到内容详情页 contentUrl，无法满足 runner 的 readComments/replyComment 契约。
+ * 保留仅供历史兼容，确认无回归后物理删除（连带 local-engine.module 的 provider/export 与 spec）。
+ */
 export class XiaohongshuInteractionExecutor {
   private readonly logger = new Logger(XiaohongshuInteractionExecutor.name);
 
