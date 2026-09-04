@@ -40,6 +40,14 @@ export class AgentBrowserController {
     @Optional() private readonly executor?: AgentBrowserExecutor,
   ) {}
 
+  /**
+   * 2026-09-04：run 改立即返回 202 后的**进程内在飞守卫**。
+   * 原同步 await 时代靠「status==='running' 拒重」；改后台执行后 status 翻转
+   * 有窗口期（created→running 异步），双击/快速重试可能双双放行。此守卫补缝。
+   * 惰性初始化：兼容裸原型构造（无 constructor）的测试用法。
+   */
+  private inFlightRuns?: Set<string>;
+
   private getUserId(request: AuthRequest): string {
     // P0-1（审计 2026-08-22）：AuthGuard 写入 request.authUser，读 request.user 恒空
     // 回落 local-user 导致用户级隔离失效。无身份直接 401，禁止回落。
@@ -179,28 +187,39 @@ export class AgentBrowserController {
       : body.instruction;
     // 1. 懒创建引擎会话 + 置 running
     this.sessions.updateStatus(id, 'created');
+    // 2026-09-04 消除代理 502 误报：run 改**立即返回 202**，执行移入后台
+    // （此前同步 await loop.run，>10s 的任务被 3010 Next 代理 502，后端其实
+    // 继续执行完——客户端误以为失败）。前端本就以轮询会话状态为准，语义不变。
     // P1（复查 2026-08-22）：解析/观察/执行器抛异常时必须 markError——
     // 否则会话长期停留 running（脏会话），前端无法恢复
-    try {
-      await this.sessions.acquireEngineSession(id);
-      // 2. 若有指令则跑一轮 Observe-Act-Verify（confirmationIds/confirmedTools 放行需确认动作）
-      if (instruction?.trim()) {
-        await this.loop.run(id, instruction, {
-          confirmedTools: body.confirmedTools ?? [],
-          confirmationIds: body.confirmationIds,
-          ...(resumeFrom ? { resumeFrom } : {}),
-        });
-        // 终态由 loop 设置（success→succeeded / partial_success / failed）；
-        // 不再对 !ok 误 markError（否则正常失败也被标成 error）
-      }
-    } catch (error) {
-      // P1：任何异常 → 标记 error 终态（不留脏 running），再抛回给前端
-      this.sessions.markError(
-        id,
-        error instanceof Error ? error.message : String(error),
-      );
-      throw error;
+    if (!this.inFlightRuns) this.inFlightRuns = new Set<string>();
+    if (this.inFlightRuns.has(id)) {
+      throw new BadRequestException('任务执行中，请等待完成或先停止再重试');
     }
+    this.inFlightRuns.add(id);
+    void (async () => {
+      try {
+        await this.sessions.acquireEngineSession(id);
+        // 2. 若有指令则跑一轮 Observe-Act-Verify（confirmationIds/confirmedTools 放行需确认动作）
+        if (instruction?.trim()) {
+          await this.loop.run(id, instruction, {
+            confirmedTools: body.confirmedTools ?? [],
+            confirmationIds: body.confirmationIds,
+            ...(resumeFrom ? { resumeFrom } : {}),
+          });
+          // 终态由 loop 设置（success→succeeded / partial_success / failed）；
+          // 不再对 !ok 误 markError（否则正常失败也被标成 error）
+        }
+      } catch (error) {
+        // P1：任何异常 → 标记 error 终态（不留脏 running），不再抛回已返回的响应
+        this.sessions.markError(
+          id,
+          error instanceof Error ? error.message : String(error),
+        );
+      } finally {
+        this.inFlightRuns?.delete(id);
+      }
+    })();
     return this.sessions.toPublicDto(this.sessions.get(id));
   }
 

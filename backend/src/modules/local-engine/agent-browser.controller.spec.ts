@@ -133,3 +133,79 @@ describe('AgentBrowserController loginState（平台登录态查询）', () => {
     ).rejects.toThrow('仅面板模式支持登录态查询');
   });
 });
+
+// ── 2026-09-04：run 立即返回 202（消除 >10s 代理 502 误报）+ 在飞守卫 ──────────
+describe('AgentBrowserController run 立即返回（2026-09-04）', () => {
+  function makeRunController(opts: { loopRun?: () => Promise<void> } = {}) {
+    const sessions = {
+      prisma: {} as unknown,
+      get: jest.fn().mockReturnValue({ id: 's1', status: 'created' }),
+      assertOwner: jest.fn(),
+      updateStatus: jest.fn(),
+      acquireEngineSession: jest.fn().mockResolvedValue(undefined),
+      markError: jest.fn(),
+      toPublicDto: jest.fn((s: unknown) => s),
+    };
+    let releaseLoopRun: (() => void) | null = null;
+    const loopRunGate = new Promise<void>((resolve) => {
+      releaseLoopRun = resolve;
+    });
+    const loop = {
+      run: jest.fn(
+        opts.loopRun ??
+          (async () => {
+            await loopRunGate;
+          }),
+      ),
+    };
+    const authCtx = { resolveTenantId: jest.fn().mockResolvedValue('tenant-1') };
+    const ctrl = new AgentBrowserController(
+      sessions as never,
+      {} as never,
+      loop as never,
+      authCtx as never,
+      undefined,
+    );
+    const callRun = (body: Record<string, unknown> = {}) =>
+      (ctrl as never as {
+        run: (
+          req: unknown,
+          id: string,
+          body: Record<string, unknown>,
+        ) => Promise<unknown>;
+      }).run({ authUser: { id: 'user-a' } }, 's1', body);
+    return { ctrl, sessions, loop, callRun, releaseLoopRun: releaseLoopRun! };
+  }
+
+  it('run 不等 loop 完成：loop 挂起时 run 也能立即 resolve（返回会话 DTO）', async () => {
+    const { callRun, loop } = makeRunController();
+    const dto = await callRun({ instruction: '打开 https://example.com' });
+    expect(dto).toEqual({ id: 's1', status: 'created' });
+    expect(loop.run).toHaveBeenCalledWith('s1', '打开 https://example.com', {
+      confirmedTools: [],
+      confirmationIds: undefined,
+    });
+    // 不留悬挂句柄
+    await new Promise((r) => setImmediate(r));
+  });
+
+  it('在飞守卫：首次 run 未完成时再次 run → 400（防双击竞态补缝）', async () => {
+    const { callRun } = makeRunController();
+    await callRun({ instruction: 'x' });
+    // sessions.get 仍返回 created（异步还没翻转 running），原「running 拒重」拦不住
+    await expect(callRun({ instruction: 'x' })).rejects.toThrow(BadRequestException);
+  });
+
+  it('后台异常 → markError 落 error 终态（不抛回已返回的 202 响应）', async () => {
+    const { sessions, loop, callRun } = makeRunController({
+      loopRun: async () => {
+        throw new Error('解析爆炸');
+      },
+    });
+    await callRun({ instruction: 'x' }); // 202 正常返回
+    await new Promise((r) => setImmediate(r));
+    await new Promise((r) => setImmediate(r));
+    expect(sessions.markError).toHaveBeenCalledWith('s1', '解析爆炸');
+    expect(loop.run).toHaveBeenCalled();
+  });
+});
