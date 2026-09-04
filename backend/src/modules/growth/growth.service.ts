@@ -63,6 +63,7 @@ import { RpaDriverRegistry } from '../rpa/rpa-driver-registry.service';
 import type { RpaDriver } from '../rpa/rpa-driver.interface';
 import type { RpaSession } from '../rpa/rpa.types';
 import type { RpaReasonCode, RpaStepResult } from '../rpa/rpa.types';
+import { AccountTouchQuotaService } from '../account-touch-quota/account-touch-quota.service';
 import {
   type ExecutorReasonCode,
   type ExecutorTask,
@@ -228,6 +229,7 @@ export class GrowthService implements OnModuleInit {
     @Optional() private readonly rpaExecutionStore?: RpaExecutionStore,
     @Optional() private readonly rpaDriverRegistry?: RpaDriverRegistry,
     @Optional() private readonly leadScoreService?: LeadScoreService,
+    @Optional() private readonly accountTouchQuota?: AccountTouchQuotaService,
   ) {}
 
   /* ========== 实时执行遥测 helpers（2026-09-04） ========== */
@@ -1931,6 +1933,46 @@ export class GrowthService implements OnModuleInit {
       });
     }
 
+    // S-Q4 账号维度统一触达配额：把账号级日触达剩余额度并入本次执行预算。
+    // 同号多任务穿透的洞在此堵上——任务级 dailyLimit 只当执行预算，账号级才是硬上限。
+    // 解析/查询失败不阻断主流程（降级为仅任务级 dailyLimit，账号级配额是增强非硬依赖）。
+    let accountStableId: string | null = null;
+    let accountRemaining = remaining;
+    try {
+      if (this.accountTouchQuota) {
+        accountStableId = await this.accountTouchQuota.resolveStableId(
+          normalizedConfig.accountId,
+          { userId, tenantId: normalizedConfig.tenantId ?? null },
+          normalizedConfig.platform,
+        );
+        const usage = await this.accountTouchQuota.getTodayUsage(
+          userId,
+          normalizedConfig.platform,
+          accountStableId,
+        );
+        if (usage) {
+          accountRemaining = Math.max(0, usage.dailyLimit - usage.touchCount);
+        }
+      }
+    } catch (err) {
+      this.logger.warn(
+        `[growth] 账号级配额解析失败，降级为任务级 dailyLimit：${(err as Error)?.message}`,
+      );
+      accountRemaining = remaining;
+    }
+    const effectiveRemaining = Math.min(remaining, accountRemaining);
+    if (effectiveRemaining <= 0) {
+      return this.createRunResult(normalizedConfig, {
+        trigger,
+        status: 'skipped',
+        message: '当天账号触达次数已达到上限',
+        failureReason: 'daily_limit_reached',
+        candidateCount: 0,
+        selectedCount: 0,
+        contactedCount: 0,
+      });
+    }
+
     // T2-4 防平台风控：同账号执行节流（防连跑触发平台反爬）+ 人类化随机延迟
     const throttleKey = `${normalizedConfig.platform}:${normalizedConfig.accountId}`;
     const throttle = this.acquisitionThrottle.get(throttleKey);
@@ -2206,7 +2248,7 @@ export class GrowthService implements OnModuleInit {
           commentTemplates: normalizedConfig.commentTemplates,
           messageTemplates: normalizedConfig.privateMessageTemplates,
           dailyLimit: normalizedConfig.dailyLimit,
-          maxTargets: remaining,
+          maxTargets: effectiveRemaining,
           maxActionsPerTarget: normalizedConfig.perTargetLimit,
           // 彻底重构：意向词展开同义词簇（报价→价位/收费/多少钱都能命中）；
           // 排除词用行业词库默认排除词兜底（任务未配时仍能过滤招聘/招商/加盟）。
@@ -2247,7 +2289,7 @@ export class GrowthService implements OnModuleInit {
       const execution = await this.executePlatformFollowUp(
         normalizedConfig,
         followUpPlan.targets,
-        remaining,
+        effectiveRemaining,
       );
       this.logLive(
         userId,
@@ -2282,6 +2324,22 @@ export class GrowthService implements OnModuleInit {
         execution.summary?.successCount ??
         execution.results?.filter((item) => item.ok).length ??
         0;
+      // S-Q4 账号级配额入账：触达完成后，把实际成功触达数原子扣进账号日计数器。
+      // 扣减失败（额度不足/解析异常）不阻断主流程，仅记日志——任务级 dailyLimit 仍兜底。
+      if (accountStableId && successCount > 0 && this.accountTouchQuota) {
+        try {
+          await this.accountTouchQuota.tryConsumeN(
+            userId,
+            normalizedConfig.platform,
+            accountStableId,
+            successCount,
+          );
+        } catch (err) {
+          this.logger.warn(
+            `[growth] 账号级配额入账失败：${(err as Error)?.message}`,
+          );
+        }
+      }
       const failureReason =
         execution.status === 'failed'
           ? this.mapReasonCode(

@@ -113,6 +113,46 @@ export class AccountTouchQuotaService {
     return false;
   }
 
+  /**
+   * 一次性扣减 n 次触达额度（原子、防超限）。用于 growth 触达完成后
+   * 把「实际成功触达数」批量入账（逐 target 扣太碎，且触达是批量执行）。
+   *
+   * 语义：只有当 `touch_count + n <= daily_limit` 时才整体扣减；
+   * 否则退回 0，返回本次实际可扣减的剩余额度（调用方据此决定是否重算）。
+   *
+   * @returns 实际成功入账的数量（0 表示额度不足以扣 n 条，或 n<=0）。
+   */
+  async tryConsumeN(
+    userId: string,
+    platform: string,
+    accountId: string,
+    n: number,
+    dailyLimit = 20,
+  ): Promise<number> {
+    if (n <= 0) return 0;
+    const touchDate = this.today();
+    // 确保当天桶存在
+    await this.prisma.$executeRaw`
+      INSERT INTO "account_touch_quotas"
+        ("id", "user_id", "platform", "account_id", "daily_limit", "touch_date", "touch_count", "created_at", "updated_at")
+      VALUES
+        (${this.newId()}, ${userId}, ${platform}, ${accountId}, ${dailyLimit}, ${touchDate}, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      ON CONFLICT ("user_id", "platform", "account_id", "touch_date") DO NOTHING
+    `;
+    // 条件批量自增：touch_count + n <= daily_limit 才整体 +n。
+    const consumed = await this.prisma.$executeRaw`
+      UPDATE "account_touch_quotas"
+      SET "touch_count" = "touch_count" + ${n},
+          "updated_at" = CURRENT_TIMESTAMP
+      WHERE "user_id" = ${userId}
+        AND "platform" = ${platform}
+        AND "account_id" = ${accountId}
+        AND "touch_date" = ${touchDate}
+        AND "touch_count" + ${n} <= "daily_limit"
+    `;
+    return consumed === 1 ? n : 0;
+  }
+
   /** 查询某账号当天的触达进度（供前端/日志展示） */
   async getTodayUsage(
     userId: string,

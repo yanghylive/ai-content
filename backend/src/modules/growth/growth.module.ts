@@ -14,6 +14,7 @@ import { QualificationService } from '../lead-intelligence/qualification.service
 import { AttributionEventStore } from '../attribution/attribution-event.store';
 import { RpaModule } from '../rpa/rpa.module';
 import { MemoryModule } from '../memory/memory.module';
+import { AccountTouchQuotaModule } from '../account-touch-quota/account-touch-quota.module';
 import { GrowthController } from './growth.controller';
 import { GrowthService } from './growth.service';
 import { GrowthLeadBridgeService } from './growth-lead-bridge.service';
@@ -30,6 +31,7 @@ import { GrowthLeadBridgeService } from './growth-lead-bridge.service';
     ActivationModule,
     LeadsModule,
     RpaModule,
+    AccountTouchQuotaModule,
   ],
   controllers: [GrowthController],
   providers: [

@@ -47,6 +47,30 @@ describe('AccountTouchQuotaService', () => {
     });
   });
 
+  describe('tryConsumeN', () => {
+    it('批量扣减 n 条：INSERT 桶 + 条件自增 affectedRows===1 → 返回 n', async () => {
+      prisma.$executeRaw
+        .mockResolvedValueOnce(0) // INSERT
+        .mockResolvedValueOnce(1); // UPDATE 影响 1 行
+      const got = await service.tryConsumeN('u1', 'douyin', 'stable-id', 5, 20);
+      expect(got).toBe(5);
+    });
+
+    it('n <= 0 直接返回 0，不触库', async () => {
+      const got = await service.tryConsumeN('u1', 'douyin', 'stable-id', 0, 20);
+      expect(got).toBe(0);
+      expect(prisma.$executeRaw).not.toHaveBeenCalled();
+    });
+
+    it('额度不足以扣 n 条时返回 0', async () => {
+      prisma.$executeRaw
+        .mockResolvedValueOnce(0)
+        .mockResolvedValueOnce(0); // UPDATE 影响 0 行 = touch_count + n 超限
+      const got = await service.tryConsumeN('u1', 'douyin', 'stable-id', 100, 20);
+      expect(got).toBe(0);
+    });
+  });
+
   describe('resolveStableId', () => {
     it('stableId 精确匹配返回 publishAccount.id', async () => {
       prisma.publishAccount.findFirst.mockResolvedValue({

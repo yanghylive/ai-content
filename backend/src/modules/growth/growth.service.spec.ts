@@ -16,6 +16,8 @@ function makeService(
   leadConvertService?: Record<string, unknown>,
   rpaExecutionStore?: Record<string, unknown>,
   rpaDriverRegistry?: Record<string, unknown>,
+  leadScoreService?: Record<string, unknown>,
+  accountTouchQuota?: Record<string, unknown>,
 ) {
   return new GrowthService(
     aiEmployee as any,
@@ -30,6 +32,8 @@ function makeService(
     leadConvertService as any,
     rpaExecutionStore as any,
     rpaDriverRegistry as any,
+    leadScoreService as any,
+    accountTouchQuota as any,
   ) as any;
 }
 
@@ -589,6 +593,169 @@ describe('GrowthService commercial acquisition execution', () => {
           autoSend: true,
           targets: [followUpTarget],
         }),
+      );
+    });
+  });
+
+  it('S-Q4 账号级配额用尽时 executeConfig 直接 skip（不触达）', async () => {
+    const aiEmployee = {
+      findDouyinHotVideoLeads: jest.fn(),
+      planDouyinFollowUp: jest.fn(),
+      executeDouyinFollowUp: jest.fn(),
+    };
+    const accountTouchQuota = {
+      resolveStableId: jest.fn().mockResolvedValue('local-engine-xxx-douyin-1-douyin'),
+      getTodayUsage: jest.fn().mockResolvedValue({ dailyLimit: 20, touchCount: 20, touchDate: '2026-09-05' }),
+      tryConsumeN: jest.fn().mockResolvedValue(0),
+    };
+    const service = makeService(
+      {},
+      aiEmployee,
+      {},
+      {},
+      {},
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      accountTouchQuota,
+    );
+    let store = makeStore({
+      configs: [makeConfig()],
+      accountHealth: [makeAccountHealth()],
+    });
+    service.loadStore = jest.fn(async () => store);
+    service.saveStore = jest.fn(async (next: any) => {
+      store = next;
+    });
+    service.resolveGrowthTenantId = jest.fn().mockResolvedValue('tenant-1');
+    service.requireGrowthMutationScope = jest.fn().mockResolvedValue({
+      userId: 'user-1',
+      tenantId: 'tenant-1',
+      role: 'admin',
+      permissions: [],
+      legacy: false,
+    });
+
+    await withGrowthExecutionEnv('true', async () => {
+      const result = await service.executeConfig('user-1', 'config-commercial');
+      expect(result.run.status).toBe('skipped');
+      expect(result.run.failureReason).toBe('daily_limit_reached');
+      expect(aiEmployee.executeDouyinFollowUp).not.toHaveBeenCalled();
+    });
+  });
+
+  it('S-Q4 账号级额度充足 → 触达成功后 tryConsumeN 入账实际成功数', async () => {
+    const candidate = {
+      text: '想了解本地装修报价',
+      targetName: '装修意向客户',
+      sourceUrl: 'https://www.douyin.com/video/quota-ok',
+      videoUrl: 'https://www.douyin.com/video/quota-ok',
+      score: 90,
+    };
+    const followUpTarget = {
+      ...candidate,
+      index: 0,
+      sourceText: candidate.text,
+      commentReplyText: '可以先交流一下你的户型和预算。',
+      commentTaskEnabled: true,
+      messageTaskEnabled: false,
+    };
+    const aiEmployee = {
+      findDouyinHotVideoLeads: jest.fn().mockResolvedValue({
+        ok: true,
+        status: 'success',
+        message: '读取到 1 条候选',
+        candidates: [candidate],
+        evidence: [],
+      }),
+      planDouyinFollowUp: jest.fn().mockResolvedValue({
+        targets: [followUpTarget],
+        skipped: [],
+        summary: {
+          totalCandidates: 1,
+          selectedCount: 1,
+          skippedCount: 0,
+          commentTaskCount: 1,
+          messageTaskCount: 0,
+        },
+      }),
+      executeDouyinFollowUp: jest.fn().mockResolvedValue({
+        ok: true,
+        status: 'success',
+        message: '确认后执行完成',
+        summary: {
+          totalTargets: 1,
+          attemptedCount: 1,
+          successCount: 1,
+          failedCount: 0,
+          sendMode: 'auto-send',
+        },
+        results: [
+          {
+            index: 0,
+            targetName: candidate.targetName,
+            targetText: candidate.text,
+            replyText: followUpTarget.commentReplyText,
+            ok: true,
+            status: 'success',
+            message: '发送成功且回读一致',
+            evidence: [],
+          },
+        ],
+      }),
+    };
+    const accountTouchQuota = {
+      resolveStableId: jest.fn().mockResolvedValue('local-engine-xxx-douyin-1-douyin'),
+      getTodayUsage: jest.fn().mockResolvedValue({ dailyLimit: 20, touchCount: 0, touchDate: '2026-09-05' }),
+      tryConsumeN: jest.fn().mockResolvedValue(1),
+    };
+    const service = makeService(
+      {},
+      aiEmployee,
+      {},
+      {},
+      {},
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      accountTouchQuota,
+    );
+    let store = makeStore({
+      configs: [makeConfig({ riskMode: 'confirm-first' })],
+      accountHealth: [makeAccountHealth()],
+    });
+    service.loadStore = jest.fn(async () => store);
+    service.saveStore = jest.fn(async (next: any) => {
+      store = next;
+    });
+    service.resolveGrowthTenantId = jest.fn().mockResolvedValue('tenant-1');
+    service.requireGrowthMutationScope = jest.fn().mockResolvedValue({
+      userId: 'user-1',
+      tenantId: 'tenant-1',
+      role: 'admin',
+      permissions: [],
+      legacy: false,
+    });
+
+    await withGrowthExecutionEnv('true', async () => {
+      const result = await service.executeConfig('user-1', 'config-commercial', {
+        confirmedExecution: true,
+      });
+      expect(result.run.status).toBe('success');
+      // 触达成功后按实际成功数（1）入账账号级配额
+      expect(accountTouchQuota.tryConsumeN).toHaveBeenCalledWith(
+        'user-1',
+        'douyin',
+        'local-engine-xxx-douyin-1-douyin',
+        1,
       );
     });
   });
