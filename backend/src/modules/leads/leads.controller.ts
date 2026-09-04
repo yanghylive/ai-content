@@ -62,7 +62,7 @@ export class LeadsController {
   @Post('keyword-suggestions')
   @ApiOperation({
     summary:
-      '关键词智能建议（C-a 规则版）：从线索行为反推搜索词，产出 source/demand/exclude 三类建议 + 证据归因，供人工采纳写回策略',
+      '关键词智能建议：rule（C-a 词库命中统计，默认）/ llm（C-b 语义归纳造新词，失败回落 rule）。产出 source/demand/exclude 三类建议 + 证据归因，供人工采纳写回策略',
   })
   async keywordSuggestions(
     @Body()
@@ -71,6 +71,8 @@ export class LeadsController {
       industry?: string;
       windowDays?: number;
       minLeadCount?: number;
+      /** 生成模式：rule（规则版，默认）| llm（LLM 语义归纳） */
+      mode?: 'rule' | 'llm';
     },
   ) {
     const context = this.authRequestContext.get();
@@ -79,13 +81,19 @@ export class LeadsController {
       throw new UnauthorizedException('请先登录后生成关键词建议');
     }
     const tenantId = await this.authRequestContext.resolveTenantId(this.prisma);
-    return this.keywordIntelligence.suggestKeywords({
+
+    const base = {
       userId,
       tenantId,
       platform: body?.platform,
       industry: body?.industry,
       windowDays: body?.windowDays,
       minLeadCount: body?.minLeadCount,
-    });
+    };
+
+    if (body?.mode === 'llm') {
+      return this.keywordIntelligence.suggestKeywordsWithLLM(base);
+    }
+    return this.keywordIntelligence.suggestKeywords(base);
   }
 }

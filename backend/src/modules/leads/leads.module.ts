@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AiModelsModule } from '../ai-models/ai-models.module';
 import { LeadRepository } from './lead.repository';
 import { LeadAttributionService } from './lead-attribution.service';
 import { AttributionLinkService } from './attribution-link.service';
@@ -17,6 +18,7 @@ import { KeywordIntelligenceService } from '../lead-intelligence/keyword-intelli
  * 注：LeadEventBus 事件流已废弃（业务动作在 leadRepository/convert 同步落地，不走事件消费者）。
  */
 @Module({
+  imports: [AiModelsModule],
   controllers: [LeadsController],
   providers: [
     LeadRepository,
