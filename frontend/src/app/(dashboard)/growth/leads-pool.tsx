@@ -35,7 +35,7 @@ const STATUS_LABELS: Record<GrowthLeadStatus, { label: string; tone: "success" |
   qualified: { label: "高意向", tone: "accent" },
   converted: { label: "已成交", tone: "success" },
   ignored: { label: "已忽略", tone: "muted" },
-  blocked: { label: "已屏蔽", tone: "danger" },
+  blocked: { label: "待核对", tone: "warning" },
 };
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -63,7 +63,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "qualified", label: "高意向" },
   { key: "converted", label: "已成交" },
   { key: "ignored", label: "已忽略" },
-  { key: "blocked", label: "已屏蔽" },
+  { key: "blocked", label: "待核对" },
 ];
 
 /** T4-4：把"命中：xxx"机械拼接转成 AI 自然语言评分理由 */
@@ -89,6 +89,16 @@ function naturalizeScoreReason(lead: {
   if (hasIndustry) signals.push("行业匹配度高");
   if (signals.length === 0) signals.push("对相关内容表现出兴趣");
   return `这位用户${comment}${signals.join("，")}，是值得跟进的意向线索。`;
+}
+
+/** blocked=留人工池待核对：把系统写入的状态备注转成一行说明（无备注时由调用方兜底文案） */
+function blockedReasonNote(lead: Pick<GrowthLead, "notes">): string | null {
+  const notes = lead.notes ?? [];
+  const last = [...notes]
+    .reverse()
+    .map((n) => n.text.trim())
+    .find((t) => t.length > 0);
+  return last ?? null;
 }
 
 export function LeadsPool() {
@@ -499,6 +509,15 @@ export function LeadsPool() {
                       {lead.sourceText && (
                         <p className="mt-1 line-clamp-1 text-xs text-[var(--kaypal-v3-muted)]">
                           "{lead.sourceText}"
+                        </p>
+                      )}
+                      {lead.status === "blocked" && (
+                        <p className="mt-1.5 flex items-start gap-1 text-xs leading-relaxed text-[var(--kaypal-v3-amber)]">
+                          <span className="shrink-0 font-medium">待核对：</span>
+                          <span className="line-clamp-2">
+                            {blockedReasonNote(lead) ??
+                              "触达已成功，但线索缺少可归因身份（用户 ID / 主页链接），请人工补录后转客户。"}
+                          </span>
                         </p>
                       )}
                     </div>
