@@ -1,7 +1,8 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import {
   ArrowLeft,
   ChevronDown,
@@ -74,6 +75,8 @@ function fmtRunClock(iso?: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
+  const delta = Date.now() - d.getTime();
+  if (delta >= 0 && delta < 60_000) return "刚刚";
   const hh = pad2(d.getHours());
   const mm = pad2(d.getMinutes());
   const now = new Date();
@@ -105,10 +108,14 @@ const GROWTH_LIVE_CSS = `
 .growthlive-scanline { background: linear-gradient(90deg, transparent, rgba(240, 180, 41, 0.9), transparent); animation: growthlive-scanmove 2.4s linear infinite; }
 @keyframes growthlive-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 .growthlive-shimmer-line { height: 12px; border-radius: 4px; background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: growthlive-shimmer 1.4s linear infinite; }
+/* tooltip: portal 渲染到 body 顶层, fixed 定位, 不被卡片 overflow-hidden 裁剪 */
 .growth-tip-wrap { position: relative; display: inline-flex; }
-.growth-tip-pop { position: absolute; left: 50%; top: calc(100% + 9px); z-index: 60; transform: translateX(-50%) translateY(-3px); white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .14s ease, transform .14s ease; border-radius: 8px; background: color-mix(in srgb, var(--kaypal-v3-ink) 92%, transparent); color: var(--kaypal-v3-paper); padding: 5px 9px; font-size: 12px; font-weight: 500; letter-spacing: .01em; box-shadow: 0 6px 18px rgba(10,15,25,.22); border: 1px solid rgba(255,255,255,.08); }
+@keyframes growth-tip-in { from { opacity: 0; transform: translateX(-50%) translateY(-4px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes growth-tip-in-up { from { opacity: 0; transform: translateX(-50%) translateY(calc(-100% + 4px)); } to { opacity: 1; transform: translateX(-50%) translateY(-100%); } }
+.growth-tip-pop { position: fixed; z-index: 9999; transform: translateX(-50%); white-space: nowrap; pointer-events: none; border-radius: 8px; background: color-mix(in srgb, var(--kaypal-v3-ink) 92%, transparent); color: var(--kaypal-v3-paper); padding: 5px 9px; font-size: 12px; font-weight: 500; letter-spacing: .01em; box-shadow: 0 6px 18px rgba(10,15,25,.28); border: 1px solid rgba(255,255,255,.08); animation: growth-tip-in .16s ease-out; }
 .growth-tip-pop::before { content: ""; position: absolute; left: 50%; top: -4px; transform: translateX(-50%) rotate(45deg); width: 7px; height: 7px; background: inherit; border-left: 1px solid rgba(255,255,255,.08); border-top: 1px solid rgba(255,255,255,.08); }
-.growth-tip-wrap:hover .growth-tip-pop { opacity: 1; transform: translateX(-50%) translateY(0); }
+.growth-tip-pop.is-up { animation-name: growth-tip-in-up; transform: translateX(-50%) translateY(-100%); }
+.growth-tip-pop.is-up::before { top: auto; bottom: -4px; border-left: 0; border-top: 0; border-right: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); }
 .growth-tip-sub { display: block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; font-weight: 400; opacity: .72; }
 `;
 
@@ -117,6 +124,99 @@ const RISK_OPTIONS = [
   { value: "draft-only", label: "只存草稿，我自己发" },
   { value: "auto", label: "自动发送（高风险）" },
 ] as const;
+
+// tooltip 弹层: portal 到 body 顶层渲染, 贴近视口边缘时自动往回收
+function GrowthTipBubble({
+  place,
+  children,
+}: {
+  place: { top: number; left: number; up: boolean };
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [nudge, setNudge] = useState(0);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof window === "undefined") return;
+    const r = el.getBoundingClientRect();
+    const margin = 8;
+    let shift = 0;
+    if (r.right > window.innerWidth - margin) shift = window.innerWidth - margin - r.right;
+    if (r.left + shift < margin) shift = margin - r.left;
+    setNudge((prev) => (Math.abs(prev - shift) > 0.5 ? shift : prev));
+  }, [place]);
+
+  return createPortal(
+    <span
+      ref={ref}
+      role="tooltip"
+      className={"growth-tip-pop" + (place.up ? " is-up" : "")}
+      style={{ top: place.top, left: place.left + nudge }}
+    >
+      {children}
+    </span>,
+    document.body,
+  );
+}
+
+// 图标按钮 tooltip: 包裹层监听 hover/focus; 禁用按钮配合 pointer-events-none 也能触发。
+// 原 title 属性保留作无障碍兜底。
+function GrowthTip({
+  label,
+  sub,
+  wrapClassName,
+  children,
+}: {
+  label: string;
+  sub?: string;
+  wrapClassName?: string;
+  children: ReactNode;
+}) {
+  const wrapRef = useRef<HTMLSpanElement>(null);
+  const [place, setPlace] = useState<{ top: number; left: number; up: boolean } | null>(null);
+
+  const show = useCallback(() => {
+    const el = wrapRef.current;
+    if (!el || typeof window === "undefined") return;
+    const r = el.getBoundingClientRect();
+    // 下方空间不足且上方放得下时, 翻转到按钮上方
+    const up = r.bottom + 72 > window.innerHeight && r.top > 72;
+    setPlace({ top: up ? r.top - 9 : r.bottom + 9, left: r.left + r.width / 2, up });
+  }, []);
+  const hide = useCallback(() => setPlace(null), []);
+
+  // 滚动 / 窗口尺寸变化时收起, 避免浮层停在过期位置
+  useEffect(() => {
+    if (!place) return;
+    const hideNow = () => setPlace(null);
+    window.addEventListener("scroll", hideNow, true);
+    window.addEventListener("resize", hideNow);
+    return () => {
+      window.removeEventListener("scroll", hideNow, true);
+      window.removeEventListener("resize", hideNow);
+    };
+  }, [place]);
+
+  return (
+    <span
+      ref={wrapRef}
+      className={"growth-tip-wrap" + (wrapClassName ? " " + wrapClassName : "")}
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onFocus={show}
+      onBlur={hide}
+    >
+      {children}
+      {place ? (
+        <GrowthTipBubble place={place}>
+          {label}
+          {sub ? <span className="growth-tip-sub">{sub}</span> : null}
+        </GrowthTipBubble>
+      ) : null}
+    </span>
+  );
+}
 
 export function GrowthAcquisitionTasks() {
   const router = useRouter();
@@ -184,10 +284,13 @@ export function GrowthAcquisitionTasks() {
     after: number;
     done: boolean;
     running: boolean;
+    startedAt: number;
   };
   const [pinnedLive, setPinnedLive] = useState<string | null>(null);
   const [livePanels, setLivePanels] = useState<Record<string, LivePanel>>({});
   const liveBoxRef = useRef<HTMLDivElement | null>(null);
+  // 执行收口后自增,驱动历史执行记录重新拉取
+  const [runsEpoch, setRunsEpoch] = useState(0);
 
   const ensureLivePanel = useCallback((configId: string) => {
     setLivePanels((prev) =>
@@ -195,10 +298,62 @@ export function GrowthAcquisitionTasks() {
         ? prev
         : {
             ...prev,
-            [configId]: { events: [], after: 0, done: false, running: true },
+            [configId]: {
+              events: [],
+              after: 0,
+              done: false,
+              running: true,
+              startedAt: Date.now(),
+            },
           },
     );
   }, []);
+
+  // 本地补一条事件(同文本去重),保证面板不会长时间空白
+  const pushLiveEvent = useCallback(
+    (configId: string, level: GrowthRunLiveEvent["level"], text: string) => {
+      const cut = text.length > 220 ? text.slice(0, 220) + "…" : text;
+      setLivePanels((prev) => {
+        const cur: LivePanel =
+          prev[configId] ??
+          { events: [], after: 0, done: false, running: true, startedAt: Date.now() };
+        if (cur.events.some((e) => e.text === cut)) return prev;
+        return {
+          ...prev,
+          [configId]: {
+            ...cur,
+            events: [...cur.events, { t: new Date().toISOString(), level, text: cut }],
+          },
+        };
+      });
+    },
+    [],
+  );
+
+  // 用 execute 接口返回的 run 兜底:点了执行一定有结果摘要
+  const sealLivePanel = useCallback(
+    (configId: string, run?: GrowthAcquisitionRun | null) => {
+      if (run) {
+        const zh: Record<string, string> = {
+          success: "完成",
+          failed: "失败",
+          partial: "部分完成",
+          skipped: "已跳过",
+        };
+        const tail = run.message
+          ? run.message
+          : "候选 " + (run.candidateCount ?? 0) + " / 触达 " + (run.contactedCount ?? 0);
+        pushLiveEvent(
+          configId,
+          run.status === "failed" ? "err" : run.status === "success" ? "ok" : "warn",
+          "本次执行" + (zh[run.status] ?? run.status) + "：" + tail,
+        );
+      }
+      setRunsEpoch((n) => n + 1);
+      void fetchConfigs();
+    },
+    [pushLiveEvent, fetchConfigs],
+  );
 
   // 手动确认执行后立即进入 live 状态(不等 execute 响应)
   const armLiveFor = useCallback(
@@ -222,6 +377,7 @@ export function GrowthAcquisitionTasks() {
           return {
             ...prev,
             [configId]: {
+              ...cur,
               events: [...cur.events, ...res.events],
               after: res.after,
               done: res.done,
@@ -231,20 +387,23 @@ export function GrowthAcquisitionTasks() {
         });
         if (res.done) {
           // 收口:拉最新 run 列表,展示最终记录
+          setRunsEpoch((n) => n + 1);
           void fetchConfigs();
         }
       } catch (err) {
-        // 404 = 当前没有在飞执行(守卫跳过/已清除)→ 收面板并刷新列表
+        // 404 = 该任务当前没有执行会话(秒级跳过 / 超出保留窗)
         if (err instanceof ApiError && err.status === 404) {
-          setLivePanels((prev) => ({
-            ...prev,
-            [configId]: {
-              events: prev[configId]?.events ?? [],
-              after: prev[configId]?.after ?? 0,
-              done: true,
-              running: false,
-            },
-          }));
+          setLivePanels((prev) => {
+            const cur = prev[configId];
+            if (!cur || cur.done) return prev;
+            // 宽限期:面板刚建、后端 beginLive 可能还没落,先别收,继续轮询
+            // 注意必须返回新对象引用,否则 React 不重渲染 -> 轮询永久停摆
+            if (cur.events.length === 0 && Date.now() - cur.startedAt < 12_000) {
+              return { ...prev, [configId]: { ...cur } };
+            }
+            return { ...prev, [configId]: { ...cur, done: true, running: false } };
+          });
+          setRunsEpoch((n) => n + 1);
           void fetchConfigs();
         }
       }
@@ -258,7 +417,7 @@ export function GrowthAcquisitionTasks() {
       .filter(([, p]) => !p.done && p.running)
       .map(([id]) => id);
     if (ids.length === 0) return;
-    const timers = ids.map((id) => setTimeout(() => void pollLive(id), 1500));
+    const timers = ids.map((id) => setTimeout(() => void pollLive(id), 900));
     return () => timers.forEach((t) => clearTimeout(t));
   }, [livePanels, pollLive]);
 
@@ -402,18 +561,22 @@ export function GrowthAcquisitionTasks() {
       if (!approval?.confirmationId) {
         throw new Error("后端未返回确认编号，请稍后重试");
       }
-      armLiveFor(executeTarget.id);
-      await growthApi.executeConfig(
-        executeTarget.id,
+      const execTargetId = executeTarget.id;
+      armLiveFor(execTargetId);
+      pushLiveEvent(execTargetId, "info", "已提交执行，正在启动引擎…");
+      const res = await growthApi.executeConfig(
+        execTargetId,
         buildRiskConfirmation("batch-touch", "high", approval.confirmationId),
       );
       setExecuteTarget(null);
       flash("执行已开始，正在滚动实时进度");
-      void fetchConfigs();
+      sealLivePanel(execTargetId, res?.run);
     } catch (err: unknown) {
       const asApi = err instanceof ApiError ? err : null;
-      if (asApi && asApi.status >= 500) {
-        // 网关 5xx:任务实际已在后台执行,后端继续跑;以遥测面板为准,不打断用户
+      if (asApi && (asApi.status >= 500 || asApi.code === "TIMEOUT")) {
+        // 网关 5xx / 请求超时:任务其实已在后台跑,不打红条,以遥测面板为准
+        setExecuteTarget(null);
+        flash("引擎仍在后台执行，进度会继续实时更新");
       } else {
         const rawMessage = toActionableError(err, "");
         setError(rawMessage || toPublicError(err, "执行失败，请稍后重试"));
@@ -423,24 +586,34 @@ export function GrowthAcquisitionTasks() {
     }
   };
 
-  /* 执行记录 */
-  const toggleRuns = async (config: GrowthAcquisitionConfig) => {
-    if (runsFor === config.id) {
-      setRunsFor(null);
+  /* 执行记录:展开 / 收起 */
+  const toggleRuns = (config: GrowthAcquisitionConfig) => {
+    setRunsFor((prev) => (prev === config.id ? null : config.id));
+  };
+
+  // 展开、或执行收口(runsEpoch 变化)时统一加载,避免「有面板却显示无记录」
+  useEffect(() => {
+    if (!runsFor) {
       setRuns([]);
       return;
     }
-    setRunsFor(config.id);
+    let cancelled = false;
     setRunsLoading(true);
-    try {
-      const data = await growthApi.listRuns(config.id);
-      setRuns(Array.isArray(data) ? data : []);
-    } catch {
-      setRuns([]);
-    } finally {
-      setRunsLoading(false);
-    }
-  };
+    growthApi
+      .listRuns(runsFor)
+      .then((data) => {
+        if (!cancelled) setRuns(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setRuns([]);
+      })
+      .finally(() => {
+        if (!cancelled) setRunsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [runsFor, runsEpoch]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -500,6 +673,9 @@ export function GrowthAcquisitionTasks() {
                   (pinnedLive === config.id && !livePanel?.done),
               );
               const panelEvents = livePanel?.events ?? [];
+              // 实时日志与历史记录共存:结束后面板保留本次事件,下面接最近执行记录
+              const showLivePanel =
+                Boolean(livePanel) && (liveRunning || panelEvents.length > 0);
               const stageText = panelEvents.length
                 ? panelEvents[panelEvents.length - 1].text
                 : (config.live?.stage ?? "");
@@ -574,7 +750,7 @@ export function GrowthAcquisitionTasks() {
                       </div>
 
                       <div className="flex shrink-0 items-center gap-0.5">
-                        <span className="growth-tip-wrap">
+                        <GrowthTip label="执行记录" sub="查看每次执行的过程与结果">
                           <button
                             type="button"
                             title="查看每次执行的过程与结果"
@@ -583,9 +759,12 @@ export function GrowthAcquisitionTasks() {
                           >
                             {runsOpen ? <ChevronDown className="h-4 w-4" /> : <History className="h-4 w-4" />}
                           </button>
-                          <span className="growth-tip-pop" role="tooltip">执行记录<span className="growth-tip-sub">查看每次执行的过程与结果</span></span>
-                        </span>
-                        <span className="growth-tip-wrap">
+                        </GrowthTip>
+                        <GrowthTip
+                          label={liveRunning ? "正在执行中" : "立即执行"}
+                          sub={liveRunning ? "引擎正在跑，执行完成后会自动出现在记录里" : "马上启动一次采集，实时看进度"}
+                          wrapClassName={liveRunning ? "cursor-not-allowed" : undefined}
+                        >
                           <button
                             type="button"
                             title={liveRunning ? "正在执行中" : "立即执行，马上开始找客户"}
@@ -593,16 +772,15 @@ export function GrowthAcquisitionTasks() {
                             className={
                               "rounded-[var(--kaypal-v3-radius-sm)] p-2 transition disabled:cursor-not-allowed " +
                               (liveRunning
-                                ? "text-[var(--kaypal-v3-warning-ink)]"
+                                ? "pointer-events-none text-[var(--kaypal-v3-warning-ink)]"
                                 : "text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-accent-soft)] hover:text-[var(--kaypal-v3-accent-ink)]")
                             }
                             onClick={() => setExecuteTarget(config)}
                           >
                             <Rocket className={"h-4 w-4" + (liveRunning ? " growthlive-live-dot" : "")} />
                           </button>
-                          <span className="growth-tip-pop" role="tooltip">{liveRunning ? "正在执行中" : "立即执行"}<span className="growth-tip-sub">{liveRunning ? "引擎正在跑，执行完成后会自动出现在记录里" : "马上启动一次采集，实时看进度"}</span></span>
-                        </span>
-                        <span className="growth-tip-wrap">
+                        </GrowthTip>
+                        <GrowthTip label="编辑" sub="改关键词、话术与发送方式">
                           <button
                             type="button"
                             title="编辑关键词、话术与风控设置"
@@ -611,9 +789,8 @@ export function GrowthAcquisitionTasks() {
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
-                          <span className="growth-tip-pop" role="tooltip">编辑<span className="growth-tip-sub">改关键词、话术与发送方式</span></span>
-                        </span>
-                        <span className="growth-tip-wrap">
+                        </GrowthTip>
+                        <GrowthTip label="删除" sub="删除后不再自动执行，历史记录保留">
                           <button
                             type="button"
                             title="删除这个任务，执行记录会保留"
@@ -622,8 +799,7 @@ export function GrowthAcquisitionTasks() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
-                          <span className="growth-tip-pop" role="tooltip">删除<span className="growth-tip-sub">删除后不再自动执行，历史记录保留</span></span>
-                        </span>
+                        </GrowthTip>
                         <V2GhostButton
                           size="sm"
                           className="ml-1"
@@ -639,9 +815,8 @@ export function GrowthAcquisitionTasks() {
 
                   {runsOpen && (
                     <div className="border-t border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper-soft)] px-5 pb-4 pt-3">
-                      {liveRunning ? (
-                        <>
-                          <div className="relative mt-1 overflow-hidden rounded-xl border border-[var(--kaypal-v3-border)] bg-[#0c1322] shadow-inner">
+                      {showLivePanel && (
+                        <div className="relative mt-1 overflow-hidden rounded-xl border border-[var(--kaypal-v3-border)] bg-[#0c1322] shadow-inner">
                             <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
                               <div className="flex items-center gap-2.5">
                                 <span className="flex items-center gap-1" aria-hidden="true">
@@ -653,13 +828,23 @@ export function GrowthAcquisitionTasks() {
                                   实时执行日志
                                 </span>
                               </div>
-                              <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-300">
-                                <span aria-hidden="true" className="growthlive-live-dot h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                                LIVE
+                              <span
+                                className={
+                                  "flex items-center gap-1.5 text-[11px] font-medium " +
+                                  (liveRunning ? "text-emerald-300" : "text-slate-400")
+                                }
+                              >
+                                {liveRunning ? (
+                                  <span
+                                    aria-hidden="true"
+                                    className="growthlive-live-dot h-1.5 w-1.5 rounded-full bg-emerald-400"
+                                  />
+                                ) : null}
+                                {liveRunning ? "LIVE" : "本次执行已结束"}
                               </span>
                             </div>
                             <div ref={liveBoxRef} className="max-h-[300px] overflow-y-auto px-4 py-3 font-mono text-[12px] leading-6">
-                              {panelEvents.length === 0 && (
+                              {panelEvents.length === 0 && liveRunning && (
                                 <div className="space-y-2 py-1">
                                   <div className="growthlive-shimmer-line" />
                                   <div className="growthlive-shimmer-line w-3/5" />
@@ -679,10 +864,19 @@ export function GrowthAcquisitionTasks() {
                               )}
                             </div>
                           </div>
-                        </>
-                      ) : (
-                        <>
-                          {runsLoading ? (
+                      )}
+
+                      <div
+                        className={
+                          showLivePanel
+                            ? "mt-4 border-t border-dashed border-[var(--kaypal-v3-border)] pt-3"
+                            : "mt-1"
+                        }
+                      >
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--kaypal-v3-muted)]">
+                          最近执行记录
+                        </p>
+                        {runsLoading ? (
                             <div className="py-2">
                               <SkeletonList rows={3} />
                             </div>
@@ -755,8 +949,7 @@ export function GrowthAcquisitionTasks() {
                               })}
                             </div>
                           )}
-                        </>
-                      )}
+                      </div>
                     </div>
                   )}
                 </div>
