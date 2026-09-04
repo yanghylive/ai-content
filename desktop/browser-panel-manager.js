@@ -29,7 +29,14 @@ const crypto = require('node:crypto');
 // 阶段 6 决策 ③：面板模式开关（Agent 是否通过右侧面板代操作）
 const { writeMode, readMode, clearMode } = require('./browser-panel-mode-registry');
 
-const PANEL_MIN_WIDTH = 360;
+// 面板最小宽：不再是固定 360，而是「手机视口比例」动态值（见 _phoneMinWidth）——
+// 往左滑到最窄时，面板页面区正好是一块手机屏（iPhone 15 Pro 393×852）。
+// 此常量退居两层用途：比例异常时的兜底下限 + 记忆宽度合法性校验。
+const PANEL_MIN_WIDTH = 320;
+/** 手机视口比例（宽/高）：iPhone 15 Pro 逻辑视口 393×852 */
+const PHONE_VIEWPORT_RATIO = 393 / 852;
+/** 动态手机宽上限：再高也不把业务区挤过头（小窗时比例让位于可用宽） */
+const PANEL_PHONE_WIDTH_MAX = 560;
 const PANEL_DEFAULT_WIDTH = 480;
 const PANEL_WIDTH_RATIO_MAX = 0.6;
 const STRIP_HEIGHT = 40;
@@ -409,12 +416,34 @@ class BrowserPanelManager {
     }
   }
 
+  /**
+   * 最窄 = 手机比例宽：面板页面区高 ≈ 窗口内容高 − 顶部通栏 − 控制条基准高，
+   * 乘 393:852 即得「这块屏是手机」的像素宽。窗口越高，滑到最窄越宽——
+   * 与真手机竖屏比例始终一致，而不是固定 360 在高屏上显得过窄。
+   */
+  _phoneMinWidth() {
+    let bounds = { width: 0, height: 0 };
+    try {
+      // 与 _clampWidth 同一取值面：attach 后即可用；取不到回 {0,0} 走兜底
+      if (this.window && typeof this.window.getContentBounds === 'function') {
+        bounds = this.window.getContentBounds() || bounds;
+      }
+    } catch (e) { /* 窗口销毁竞态：回落兜底 */ }
+    // 页面区高 = relayout 真实几何：窗口高 − 顶部通栏 − 控制条当前行高
+    //（tab 条/活动条占位一并扣除——地址栏聚焦展开是临时态，不锁存进宽度）
+    const pageH = Math.max(0, (bounds.height || 0) - TAB_STRIP_HEIGHT - this._stripHeight());
+    const ideal = Math.round(pageH * PHONE_VIEWPORT_RATIO);
+    if (!Number.isFinite(ideal) || ideal <= 0) return PANEL_MIN_WIDTH;
+    const avail = Math.max(0, Math.floor((bounds.width || 0) * PANEL_WIDTH_RATIO_MAX) - PANEL_GUTTER);
+    return Math.max(PANEL_MIN_WIDTH, Math.min(ideal, PANEL_PHONE_WIDTH_MAX, avail));
+  }
+
   _clampWidth(width) {
     const bounds = this.window && this.window.getContentBounds
       ? this.window.getContentBounds()
       : { width: PANEL_DEFAULT_WIDTH / PANEL_WIDTH_RATIO_MAX };
     const maxWidth = Math.floor(bounds.width * PANEL_WIDTH_RATIO_MAX);
-    return Math.max(PANEL_MIN_WIDTH, Math.min(Math.floor(width), maxWidth));
+    return Math.max(this._phoneMinWidth(), Math.min(Math.floor(width), maxWidth));
   }
 
   /**
@@ -1020,11 +1049,11 @@ class BrowserPanelManager {
     }, PANEL_ANIM_STEP_MS);
   }
 
-  /** 拖拽磁吸：raw 距半宽/最大/最小宽 ≤RESIZE_SNAP_PX 时吸附 */
+  /** 拖拽磁吸：raw 距半宽/最大/手机比例最窄 ≤RESIZE_SNAP_PX 时吸附 */
   _snapWidth(raw, windowWidth) {
     const half = Math.floor(windowWidth * 0.5);
     const max = Math.floor(windowWidth * PANEL_WIDTH_RATIO_MAX);
-    for (const c of [half, max, PANEL_MIN_WIDTH]) {
+    for (const c of [half, max, this._phoneMinWidth()]) {
       if (Math.abs(raw - c) <= RESIZE_SNAP_PX) return c;
     }
     return raw;
@@ -1401,6 +1430,8 @@ module.exports = {
   normalizePanelUrl,
   sanitizePanelUserAgent,
   PANEL_MIN_WIDTH,
+  PANEL_PHONE_WIDTH_MAX,
+  PHONE_VIEWPORT_RATIO,
   PANEL_DEFAULT_WIDTH,
   PANEL_GUTTER,
   STRIP_HEIGHT,

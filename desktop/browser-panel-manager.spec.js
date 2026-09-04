@@ -250,9 +250,10 @@ test('拖拽调宽：主进程跟随系统光标，按下不跳宽，松手才�
   // 往右拖回、越过下限也被夹住
   electron.setCursor(1560, 400);
   manager._pollResize();
-  assert.equal(manager.width(), 360, '窄面板下限 360');
+  // open 记录了一条活动 → 控制条含活动行（页面区高 900-38-70）→ 手机比例下限 365
+  assert.equal(manager.width(), 365, '窄面板下限=手机比例宽（页面区高×393/852）');
   assert.equal(manager.endResize(), true);
-  assert.deepEqual(saved, [['browserPanelWidth', 360]], '松手一次性持久化');
+  assert.deepEqual(saved, [['browserPanelWidth', 365]], '松手一次性持久化');
   assert.equal(manager.endResize(), false, '重复结束幂等');
   assert.equal(manager._resizeTimer, null);
   manager.destroy();
@@ -412,23 +413,51 @@ test('拖拽磁吸：±14px 内吸附半宽/最大宽/最小宽，区间外不�
   electron.setCursor(650, 400); // raw=950 → 距 60% 上限 960 差 10 → 吸
   manager._pollResize();
   assert.equal(manager.width(), 960);
-  electron.setCursor(1234, 400); // raw=366 → 距最小 360 差 6 → 吸
+  electron.setCursor(1221, 400); // raw=379 → 距手机比例下限 365 差 14 → 吸
   manager._pollResize();
-  assert.equal(manager.width(), 360);
+  assert.equal(manager.width(), 365);
   electron.setCursor(995, 400); // raw=605 → 离所有吸附点都远 → 不吸
   manager._pollResize();
   assert.equal(manager.width(), 605);
   manager.endResize();
 });
 
-test('默认宽度 480，窄面板下限 360，上限 60%', () => {
+test('默认宽度 480，窄面板下限=手机比例宽，上限 60%', () => {
   const { manager } = setup(1600, 900);
   manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
   assert.equal(manager.width(), 480);
   manager.setWidth(200);
-  assert.equal(manager.width(), 360); // 最小
+  assert.equal(manager.width(), 365); // 最小 = 手机比例（页面区高×393/852）
+  manager.clearActivity(); // 无活动行：页面区更高 → 最窄更宽
+  manager.setWidth(200);
+  assert.equal(manager.width(), Math.round((900 - 38 - 40) * (393 / 852))); // = 379
   manager.setWidth(10_000);
   assert.equal(manager.width(), 960); // 1600 * 0.6
+});
+
+test('最窄=手机视口比例：页面区宽高比恒为 393:852（跨窗口尺寸/小窗回落）', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  manager.setWidth(100); // 往死了压也压不到比例以下
+  const min900 = manager.width();
+  assert.equal(min900, Math.round((900 - 38 - 70) * (393 / 852))); // open 活动行在
+  const pageH = manager.panelView._bounds.height;
+  assert.ok(Math.abs(min900 / pageH - 393 / 852) < 0.02, '面板页面区宽高比≈手机比例');
+  // 高窗：最窄更宽，比例不变（受 60% 上限−沟槽的可用宽夹取）
+  manager.window.getContentBounds = () => ({ x: 0, y: 0, width: 1600, height: 1200 });
+  manager.setWidth(100);
+  const min1200 = manager.width();
+  assert.ok(min1200 > min900, '窗口越高手机形态越宽');
+  assert.equal(min1200, Math.min(Math.round((1200 - 38 - 70) * (393 / 852)), Math.floor(1600 * 0.6) - 12, 560));
+  // 矮窗：比例算出来低于绝对兜底 320 → 回落 320（可用性优先）
+  manager.window.getContentBounds = () => ({ x: 0, y: 0, width: 1600, height: 700 });
+  manager.setWidth(100);
+  assert.equal(manager.width(), 320);
+  // 活动行占位参与计算：清空后页面区更高 → 最窄按比例变宽
+  manager.window.getContentBounds = () => ({ x: 0, y: 0, width: 1600, height: 900 });
+  manager.clearActivity();
+  manager.setWidth(100);
+  assert.equal(manager.width(), Math.round((900 - 38 - 40) * (393 / 852)));
 });
 
 test('布局：面板占右列，控制条在业务区之上，rightInset 通知 TabManager', () => {
