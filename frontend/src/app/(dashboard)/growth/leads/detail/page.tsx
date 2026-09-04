@@ -9,7 +9,7 @@ import {
   Sparkles,
   UserRound,
 } from "@/components/iconpark";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   growthApi,
   type GrowthLead,
@@ -115,6 +115,7 @@ export default function LeadDetailPage() {
 }
 
 function LeadDetailClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const leadId = searchParams.get("leadId") ?? "";
 
@@ -510,6 +511,16 @@ function LeadDetailClient() {
         )}
 
         <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-[var(--kaypal-v3-border)] pt-4">
+          <V2GhostButton
+            icon={Sparkles}
+            onClick={() =>
+              router.push(
+                `/local-engine/browser/agent?leadId=${encodeURIComponent(lead.id)}`,
+              )
+            }
+          >
+            AI 代操作
+          </V2GhostButton>
           <V2DangerButton
             loading={acting}
             disabled={!lead.sourceText}
@@ -710,7 +721,7 @@ function LeadDetailClient() {
           <p className="rounded-lg bg-[var(--kaypal-v3-surface-2)] p-3 text-xs text-[var(--kaypal-v3-muted)]">
             {touchHistory && !touchHistory.available
               ? touchHistory.message ?? "触达历史暂不可用"
-              : "暂无 AI 代操作记录。AI 在浏览器面板替你执行的每一步（点击/输入/导航）都会在这里留痕，包含你的批准与拒绝决定"}
+              : "暂无 AI 代操作记录。点上方「AI 代操作」发起任务后，AI 在浏览器面板替你执行的每一步（点击/输入/导航）都会在这里留痕，包含你的批准与拒绝决定"}
           </p>
         ) : (
           <ol className="space-y-2">
