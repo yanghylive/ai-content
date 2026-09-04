@@ -1426,6 +1426,56 @@ export class GrowthService implements OnModuleInit {
     return this.withStrategyDiagnostics(updated);
   }
 
+  /**
+   * 采纳关键词建议（C 类 S-C4 写回链路）：把人工勾选采纳的建议词「追加合并」进策略关键词，
+   * 去重后写回。不覆盖现有词——忽略的建议词不动，采纳的词追加到末尾。
+   * 半自动：由前端展示建议 + 人工勾选，再调本方法写回，不做全自动覆盖。
+   */
+  async applyKeywordSuggestions(
+    userId: string,
+    id: string,
+    input: {
+      sourceKeywords?: string[];
+      demandKeywords?: string[];
+      excludeKeywords?: string[];
+    },
+  ) {
+    const membership = await this.requireGrowthMutationScope(userId);
+    const store = await this.loadStore();
+    const scope: GrowthScope = membership;
+    const existing = store.strategies.find((item) =>
+      this.sameGrowthRecord(item, scope, id),
+    );
+    if (!existing) throw new NotFoundException('获客策略不存在');
+
+    const updated: GrowthStrategyTemplate = {
+      ...existing,
+      sourceKeywords: this.uniqueList([
+        ...existing.sourceKeywords,
+        ...this.list(input.sourceKeywords),
+      ]),
+      demandKeywords: this.uniqueList([
+        ...existing.demandKeywords,
+        ...this.list(input.demandKeywords),
+      ]),
+      excludeKeywords: this.uniqueList([
+        ...existing.excludeKeywords,
+        ...this.list(input.excludeKeywords),
+      ]),
+      updatedAt: new Date().toISOString(),
+    };
+    await this.saveStore(
+      {
+        ...store,
+        strategies: store.strategies.map((item) =>
+          this.sameGrowthRecord(item, scope, id) ? updated : item,
+        ),
+      },
+      { scope, collections: ['strategies'] },
+    );
+    return this.withStrategyDiagnostics(updated);
+  }
+
   async deleteStrategy(userId: string, id: string) {
     const membership = await this.requireGrowthMutationScope(userId);
     const store = await this.loadStore();

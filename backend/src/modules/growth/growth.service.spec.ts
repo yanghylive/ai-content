@@ -4008,3 +4008,86 @@ describe('GrowthService C2/D4 复核修复（2026-09-03）', () => {
     expect(other.industries).toEqual({});
   });
 });
+
+describe('GrowthService applyKeywordSuggestions（C 类 S-C4 写回）', () => {
+  const { GrowthService } = require('./growth.service');
+
+  function makeStrategy(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 'strategy-1',
+      userId: 'u-1',
+      tenantId: 't-1',
+      industry: '美业',
+      scenario: '评论获客',
+      name: '美业评论获客策略',
+      sourceKeywords: ['美甲'],
+      demandKeywords: ['多少钱'],
+      excludeKeywords: ['招聘'],
+      blacklistNicknames: [],
+      commentTemplates: [],
+      privateMessageTemplates: [],
+      defaultDailyLimit: 20,
+      defaultRiskMode: 'confirm-first',
+      scoringRules: [],
+      updatedAt: new Date().toISOString(),
+      ...overrides,
+    } as any;
+  }
+
+  it('采纳建议词：追加合并去重，不覆盖现有词', async () => {
+    const svc = Object.create(GrowthService.prototype) as any;
+    svc.requireGrowthMutationScope = jest.fn().mockResolvedValue({});
+    svc.loadStore = jest.fn().mockResolvedValue({
+      strategies: [makeStrategy()],
+    });
+    svc.sameGrowthRecord = (item: { id: string }, _scope: unknown, id: string) =>
+      item.id === id;
+    let savedStore: any;
+    svc.saveStore = jest.fn(async (next: any) => {
+      savedStore = next;
+    });
+    svc.withStrategyDiagnostics = jest.fn((s: any) => s);
+
+    await svc.applyKeywordSuggestions('u-1', 'strategy-1', {
+      sourceKeywords: ['皮肤管理', '美甲'], // 「美甲」与现有重复，应去重
+      demandKeywords: ['穿戴甲'],
+      excludeKeywords: ['招商'],
+    });
+
+    const updated = savedStore.strategies[0];
+    expect(updated.sourceKeywords).toEqual(['美甲', '皮肤管理']);
+    expect(updated.demandKeywords).toEqual(['多少钱', '穿戴甲']);
+    expect(updated.excludeKeywords).toEqual(['招聘', '招商']);
+  });
+
+  it('策略不存在抛 NotFoundException', async () => {
+    const svc = Object.create(GrowthService.prototype) as any;
+    svc.requireGrowthMutationScope = jest.fn().mockResolvedValue({});
+    svc.loadStore = jest.fn().mockResolvedValue({ strategies: [] });
+    svc.sameGrowthRecord = () => false;
+    await expect(
+      svc.applyKeywordSuggestions('u-1', 'missing', {}),
+    ).rejects.toThrow('获客策略不存在');
+  });
+
+  it('空建议：三个字段都传空则原样保留', async () => {
+    const svc = Object.create(GrowthService.prototype) as any;
+    svc.requireGrowthMutationScope = jest.fn().mockResolvedValue({});
+    svc.loadStore = jest.fn().mockResolvedValue({
+      strategies: [makeStrategy()],
+    });
+    svc.sameGrowthRecord = (item: { id: string }, _scope: unknown, id: string) =>
+      item.id === id;
+    let savedStore: any;
+    svc.saveStore = jest.fn(async (next: any) => {
+      savedStore = next;
+    });
+    svc.withStrategyDiagnostics = jest.fn((s: any) => s);
+
+    await svc.applyKeywordSuggestions('u-1', 'strategy-1', {});
+    const updated = savedStore.strategies[0];
+    expect(updated.sourceKeywords).toEqual(['美甲']);
+    expect(updated.demandKeywords).toEqual(['多少钱']);
+    expect(updated.excludeKeywords).toEqual(['招聘']);
+  });
+});

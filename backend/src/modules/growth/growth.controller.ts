@@ -243,6 +243,25 @@ export class GrowthController {
     );
   }
 
+  /** 采纳关键词建议（C 类 S-C4）：追加合并人工勾选的建议词到策略关键词 */
+  @Post('strategies/:id/keyword-suggestions/apply')
+  applyKeywordSuggestions(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body()
+    body: {
+      sourceKeywords?: string[];
+      demandKeywords?: string[];
+      excludeKeywords?: string[];
+    },
+  ) {
+    return this.growthService.applyKeywordSuggestions(
+      this.getUserId(request),
+      id,
+      body || {},
+    );
+  }
+
   @Delete('strategies/:id')
   deleteStrategy(
     @Req() request: AuthenticatedRequest,
