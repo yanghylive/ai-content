@@ -63,16 +63,30 @@
   .brand {
     display: flex; align-items: center; gap: 8px;
     font-weight: 700; font-size: 13px; letter-spacing: .2px;
-    padding-right: 10px; margin-right: 2px;
+    padding-right: 9px; margin-right: 2px;
     border-right: 1px solid var(--border);
     white-space: nowrap; color: var(--text);
+    flex: none; /* 品牌区不参与压缩：要缩的是字标自身（见下方 max-width 递降） */
   }
-  /* 品牌字标与系统页面底部左下角同款：jiuzhang-wordmark（图形+JIUZHANG AI 一体），
-     浅色用黑字版、深色用白字版（沿用 DashboardFooter 的双 img 换色方案）。
-     assets/brand/ 目录已随打包白名单（assets 通配）带上。 */
+  /* 品牌字标沿用系统页面底部左下角同一方案：jiuzhang-wordmark，
+     浅色用黑字版、深色用白字版（DashboardFooter 的双 img 换色）。
+     assets/brand/ 目录已随打包白名单带上。
+
+     缩放定标（关键）：原图 1830×165 = 11:1 的超宽横条，而顶栏只有 38px 高。
+     照搬 footer 的 24px 或随手给 18px，都会让字标横向吃掉 200px+（占顶栏 15%，
+     挤压 tab 区）。这里按顶栏尺度重定：
+       · 光学高 14px ≈ 相邻 13px 字号的视觉重量（顶栏 38px 的 ~37%）；
+       · width:auto + object-fit:contain + max-width 三重约束——任何情况下只
+         等比收缩、绝不拉伸变形（11:1 比例恒定）；
+       · 窄窗（≤1280px，窗口最小宽 1200）再降一档到 12px，把横向让给 tab。
+     原图 1830px 宽远超 2x/3x 屏所需，缩到 155px 仍锐利。 */
   .brand img {
-    height: 18px; width: auto; display: block;
+    display: block; height: 14px; width: auto;
+    max-width: 158px; object-fit: contain; object-position: left center;
     -webkit-user-drag: none; user-select: none;
+  }
+  @media (max-width: 1280px) {
+    .brand img { height: 12px; max-width: 136px; }
   }
   .brand img.wb-light { display: block; }
   .brand img.wb-dark { display: none; }
