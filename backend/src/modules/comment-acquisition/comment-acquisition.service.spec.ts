@@ -6,6 +6,7 @@ import { AuthRequestContextService } from '../../common/auth-request-context.ser
 import { AutoUploadService } from '../auto-upload/auto-upload.service';
 import { PlatformInteractionExecutor } from '../local-engine/platform-interaction-executor.service';
 import { XiaohongshuInteractionExecutor } from '../local-engine/xiaohongshu-interaction.executor';
+import { DiscoveryBrowserRunner } from '../discovery/discovery-browser-runner';
 import { LeadRepository } from '../leads/lead.repository';
 import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
 import { InteractionEventStore } from '../interaction/interaction-event.store';
@@ -150,6 +151,11 @@ describe('CommentAcquisitionService', () => {
     dispatch: jest.fn(),
   };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const discoveryRunnerMock = {
+    searchAccounts: jest.fn(),
+    listAccountWorks: jest.fn(),
+    readComments: jest.fn(),
+  };
   const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
@@ -188,6 +194,7 @@ describe('CommentAcquisitionService', () => {
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
+        { provide: DiscoveryBrowserRunner, useValue: discoveryRunnerMock },
         { provide: InteractionEventStore, useValue: interactionEventStoreMock },
       ],
     }).compile();
@@ -285,6 +292,100 @@ describe('CommentAcquisitionService', () => {
       expect(result.leads).toBe(1);
       expect(result.replies).toBe(0);
       expect(executorMock.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('快手关键词搜索模式走 runner 三段式发现（搜账号→读作品→读评论）', async () => {
+      // 1. searchAccounts 返回一个账号
+      discoveryRunnerMock.searchAccounts.mockResolvedValue([
+        {
+          platform: 'kuaishou',
+          accountId: '9',
+          identityHint: { externalUserId: 'target-1', nickname: '目标账号' },
+          sourceContent: {
+            externalContentId: 'target-1',
+            url: 'https://kuaishou.com/u/target-1',
+            contentType: 'account',
+            rawHash: 'h0',
+          },
+        },
+      ]);
+      // 2. listAccountWorks 返回一个作品
+      discoveryRunnerMock.listAccountWorks.mockResolvedValue([
+        {
+          platform: 'kuaishou',
+          accountId: '9',
+          sourceContent: {
+            externalContentId: 'work-1',
+            url: 'https://kuaishou.com/v/1',
+            contentType: 'video',
+            title: '副业项目',
+            rawHash: 'h1',
+          },
+        },
+      ]);
+      // 3. readComments 返回一条评论
+      discoveryRunnerMock.readComments.mockResolvedValue([
+        {
+          platform: 'kuaishou',
+          accountId: '9',
+          sourceContent: {
+            externalContentId: 'work-1',
+            url: 'https://kuaishou.com/v/1',
+            contentType: 'video',
+            title: '副业项目',
+            rawHash: 'h1',
+          },
+          interactionEvents: [
+            {
+              externalEventId: 'evt-1',
+              type: 'comment',
+              authorExternalId: 'author-1',
+              text: '怎么加入？',
+              occurredAt: '2026-09-05T00:00:00Z',
+            },
+          ],
+          identityHint: { nickname: '买家甲', externalUserId: 'author-1' },
+        },
+      ]);
+      replyEngineMock.scoreLeadPotential.mockReturnValue({
+        score: 60,
+        signals: ['强意向'],
+      });
+      replyEngineMock.generateReply.mockResolvedValue({
+        replyText: '私信我发你',
+        personaId: 'x',
+        personaName: 'x',
+        retries: 0,
+      });
+
+      const result = await service.scanAccount({
+        platform: 'kuaishou',
+        accountId: 9,
+        keyword: '副业',
+        autoReply: false,
+      });
+
+      expect(discoveryRunnerMock.searchAccounts).toHaveBeenCalledWith(
+        expect.objectContaining({ platform: 'kuaishou', keyword: '副业' }),
+      );
+      expect(discoveryRunnerMock.listAccountWorks).toHaveBeenCalledWith(
+        expect.objectContaining({ platform: 'kuaishou', targetId: 'target-1' }),
+      );
+      expect(discoveryRunnerMock.readComments).toHaveBeenCalledWith(
+        expect.objectContaining({
+          platform: 'kuaishou',
+          contentUrl: 'https://kuaishou.com/v/1',
+          keyword: '副业',
+        }),
+      );
+      expect(result.leads).toBe(1);
+      expect(leadRepositoryMock.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          platform: 'kuaishou',
+          sourceUrl: 'https://kuaishou.com/v/1',
+          sourceText: '怎么加入？',
+        }),
+      );
     });
   });
 
@@ -457,6 +558,11 @@ describe('CommentAcquisitionService 风控断路器', () => {
   };
   const executorMock = { dispatch: jest.fn() };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const discoveryRunnerMock = {
+    searchAccounts: jest.fn(),
+    listAccountWorks: jest.fn(),
+    readComments: jest.fn(),
+  };
   const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
@@ -484,6 +590,7 @@ describe('CommentAcquisitionService 风控断路器', () => {
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
+        { provide: DiscoveryBrowserRunner, useValue: discoveryRunnerMock },
         {
           provide: InteractionEventStore,
           useValue: {
@@ -577,6 +684,11 @@ describe('CommentAcquisitionService 小红书获客', () => {
     readComments: jest.fn(),
     replyComment: jest.fn(),
   };
+  const discoveryRunnerMock = {
+    searchAccounts: jest.fn(),
+    listAccountWorks: jest.fn(),
+    readComments: jest.fn(),
+  };
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
@@ -604,6 +716,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
+        { provide: DiscoveryBrowserRunner, useValue: discoveryRunnerMock },
         {
           provide: InteractionEventStore,
           useValue: {
@@ -690,6 +803,11 @@ describe('CommentAcquisitionService 私信获客', () => {
   };
   const executorMock = { dispatch: jest.fn() };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const discoveryRunnerMock = {
+    searchAccounts: jest.fn(),
+    listAccountWorks: jest.fn(),
+    readComments: jest.fn(),
+  };
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
@@ -717,6 +835,7 @@ describe('CommentAcquisitionService 私信获客', () => {
         { provide: ReplyEngineService, useValue: replyEngineMock },
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
+        { provide: DiscoveryBrowserRunner, useValue: discoveryRunnerMock },
         {
           provide: InteractionEventStore,
           useValue: {

@@ -13,8 +13,13 @@ import { ReplyEngineService } from './reply-engine.service';
 import { CircuitBreaker } from './circuit-breaker';
 import { LeadRepository } from '../leads/lead.repository';
 import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
-import type { InteractionSendResult } from '../interaction/interaction-adapter.interface';
+import type {
+  InteractionItem,
+  InteractionReadResult,
+  InteractionSendResult,
+} from '../interaction/interaction-adapter.interface';
 import { InteractionEventStore } from '../interaction/interaction-event.store';
+import { DiscoveryBrowserRunner } from '../discovery/discovery-browser-runner';
 
 /**
  * CommentAcquisitionService —— 评论获客闭环
@@ -67,6 +72,7 @@ export class CommentAcquisitionService {
     private readonly leadRepository: LeadRepository,
     private readonly interactionRegistry: InteractionAdapterRegistry,
     private readonly interactionEventStore: InteractionEventStore,
+    private readonly discoveryRunner: DiscoveryBrowserRunner,
   ) {}
 
   /**
@@ -78,6 +84,8 @@ export class CommentAcquisitionService {
     limit?: number;
     autoReply?: boolean;
     minLeadScore?: number;
+    /** 关键词搜索模式（快手/小红书）：keyword → 搜账号 → 读作品 → 读评论（拿 contentUrl） */
+    keyword?: string;
   }): Promise<{
     scanned: number;
     leads: number;
@@ -110,17 +118,37 @@ export class CommentAcquisitionService {
     const circuitKey = `${input.platform}:${input.accountId}`;
     const circuit = this.circuitBreaker.getStatus(circuitKey);
 
-    // 1. 读取评论：统一走互动适配器契约（registry.read），消除三平台分支
+    // 1. 读取评论：统一走互动适配器契约（registry.read），消除三平台分支。
+    //    关键词搜索模式（快手/小红书，keyword 非空）：先走 runner 三段式发现
+    //    （搜账号 → 读作品拿 contentUrl → 读评论），拿带 contentUrl 的评论，
+    //    喂给后续评分/回复链路（回复时 adapter.send 传 contentUrl 定位评论区）。
+    const keywordMode = Boolean(input.keyword?.trim());
     const adapter = this.interactionRegistry.get(input.platform);
     if (!adapter.read) {
       throw new Error(`平台 ${input.platform} 的互动适配器不支持读取评论`);
     }
-    const readResult = await adapter.read({
-      platform: input.platform,
-      taskType: 'comment-reply',
-      accountId: normalizedAccount.numericId ?? input.accountId,
-      limit: input.limit ?? 50,
-    });
+    let readResult: InteractionReadResult;
+    let keywordContentUrls: string[] = [];
+    if (
+      keywordMode &&
+      (input.platform === 'kuaishou' || input.platform === 'xiaohongshu')
+    ) {
+      readResult = await this.discoverByKeyword(
+        input,
+        normalizedAccount.numericId ?? input.accountId,
+      );
+      // 记录每条评论的来源详情页 URL（供 dispatchReply 透传 contentUrl）
+      keywordContentUrls = (readResult.items ?? []).map(
+        (it) => it.videoUrl ?? '',
+      );
+    } else {
+      readResult = await adapter.read({
+        platform: input.platform,
+        taskType: 'comment-reply',
+        accountId: normalizedAccount.numericId ?? input.accountId,
+        limit: input.limit ?? 50,
+      });
+    }
 
     const comments = (readResult.items ?? [])
       .map((item, i) => ({
@@ -129,6 +157,8 @@ export class CommentAcquisitionService {
         // 小红书通知条目序号（回复定位用）；其他平台无此概念
         commentIndex:
           input.platform === 'xiaohongshu' ? Number(item.ref ?? i) : undefined,
+        // 关键词搜索模式的来源详情页 URL（快手/小红书回复定位评论区用）
+        contentUrl: item.videoUrl ?? keywordContentUrls[i] ?? undefined,
       }))
       .filter((c) => c.text.length > 0);
     const sourceAttribution = await this.resolveCommentSourceAttribution(
@@ -262,6 +292,8 @@ export class CommentAcquisitionService {
             replyText,
             sourceTitle: readResult.title,
             commentIndex: comment.commentIndex,
+            contentUrl: comment.contentUrl,
+            keyword: input.keyword?.trim() || undefined,
           });
           if (sent) {
             replies += 1;
@@ -290,6 +322,89 @@ export class CommentAcquisitionService {
       retryAfterSeconds: circuit.retryAfterSeconds,
       items,
     };
+  }
+
+  /**
+   * 关键词搜索发现（快手/小红书）：keyword → 搜账号 → 读作品拿 contentUrl → 读评论。
+   * 复用 DiscoveryBrowserRunner 三段式（searchAccounts → listAccountWorks → readComments），
+   * 把带 contentUrl 的评论统一映射为 InteractionReadResult，供 scanAccount 后续评分/回复链路消费。
+   */
+  private async discoverByKeyword(
+    input: { platform: AcquisitionPlatform; accountId: number | string; limit?: number; keyword?: string },
+    accountId: string | number | undefined,
+  ): Promise<InteractionReadResult> {
+    const platform = input.platform as 'kuaishou' | 'xiaohongshu';
+    const keyword = (input.keyword ?? '').trim();
+    if (!keyword) {
+      throw new Error('关键词搜索模式需要非空 keyword');
+    }
+    // 1. 搜账号（关键词 → 账号列表）
+    const accounts = await this.discoveryRunner.searchAccounts({
+      platform,
+      accountId: accountId ?? input.accountId,
+      keyword,
+      limit: 3,
+    });
+    if (accounts.length === 0) {
+      return { items: [], readAt: new Date().toISOString() };
+    }
+    // 2. 逐个账号读作品拿 contentUrl（取第一个能读到作品的账号，避免全量扫）
+    const items: InteractionItem[] = [];
+    let title: string | undefined;
+    let url: string | undefined;
+    for (const account of accounts.slice(0, 3)) {
+      const targetId =
+        account.identityHint?.externalUserId ??
+        account.sourceContent?.externalContentId ??
+        '';
+      if (!targetId) continue;
+      try {
+        const works = await this.discoveryRunner.listAccountWorks({
+          platform,
+          accountId: accountId ?? input.accountId,
+          targetId,
+          limit: 3,
+        });
+        for (const work of works) {
+          const contentUrl = work.sourceContent?.url ?? '';
+          if (!contentUrl) continue;
+          try {
+            const comments = await this.discoveryRunner.readComments({
+              platform,
+              accountId: accountId ?? input.accountId,
+              contentUrl,
+              keyword,
+              limit: input.limit ?? 50,
+            });
+            for (const c of comments) {
+              const ev = c.interactionEvents?.[0];
+              const text = String(ev?.text ?? '').trim();
+              if (!text) continue;
+              items.push({
+                text,
+                authorName: c.identityHint?.nickname,
+                authorId: ev?.authorExternalId ?? c.identityHint?.externalUserId,
+                ref: ev?.externalEventId,
+                videoUrl: contentUrl,
+                videoTitle: c.sourceContent?.title,
+              });
+              if (!title) title = c.sourceContent?.title;
+              if (!url) url = contentUrl;
+            }
+            // 拿到评论即停（避免对同一账号多个作品重复读评论）
+            if (items.length > 0) break;
+          } catch {
+            // 单个内容读评论失败不阻断整体，继续下一个作品
+            continue;
+          }
+        }
+      } catch {
+        // 读作品失败继续下一个账号
+        continue;
+      }
+      if (items.length > 0) break;
+    }
+    return { items, title, url, readAt: new Date().toISOString() };
   }
 
   /**
@@ -497,6 +612,10 @@ export class CommentAcquisitionService {
       sourceTitle?: string;
       /** 小红书通知条目序号（xiaohongshu 平台回复定位用；缺省时从 lead 行 comment_ref 读） */
       commentIndex?: number;
+      /** 内容详情页 URL（关键词搜索模式，快手/小红书回复定位评论区） */
+      contentUrl?: string;
+      /** 搜索关键词（小红书从搜索页点击进详情页必需） */
+      keyword?: string;
     },
     scope?: { tenantId: string | null; userId: string },
     circuitKey?: string,
@@ -575,6 +694,8 @@ export class CommentAcquisitionService {
           sourceText: input.commentText,
           videoTitle: input.sourceTitle,
           commentRef: xhsIndex !== undefined ? String(xhsIndex) : undefined,
+          contentUrl: input.contentUrl,
+          keyword: input.keyword,
           replyText,
         })) ?? {
           status: 'failed' as const,

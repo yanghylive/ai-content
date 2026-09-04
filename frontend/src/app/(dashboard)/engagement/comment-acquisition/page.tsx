@@ -47,6 +47,7 @@ const PLATFORM_LABEL: Record<string, string> = {
   douyin: "抖音",
   "wechat-channel": "视频号",
   xiaohongshu: "小红书",
+  kuaishou: "快手",
 };
 
 function platformLabel(p: string): string {
@@ -66,6 +67,7 @@ export default function CommentAcquisitionPage() {
   const [scanMode, setScanMode] = useState<"comment" | "dm">("comment");
   const [platform, setPlatform] = useState<AcquisitionPlatform>("douyin");
   const [accountId, setAccountId] = useState("");
+  const [keyword, setKeyword] = useState("");
   const [autoReply, setAutoReply] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [leads, setLeads] = useState<AcquisitionLead[]>([]);
@@ -102,8 +104,12 @@ export default function CommentAcquisitionPage() {
   }, [refreshLeads]);
 
   const handleScan = async () => {
-    if (!accountId.trim()) {
-      toast.error("请先填写账号 ID");
+    const isKeywordPlatform =
+      scanMode === "comment" &&
+      (platform === "kuaishou" || platform === "xiaohongshu");
+    const usingKeyword = isKeywordPlatform && keyword.trim().length > 0;
+    if (!accountId.trim() && !usingKeyword) {
+      toast.error("请填写账号 ID，或选择快手/小红书并填写关键词");
       return;
     }
     // 报告 5.4 P1：扫描后自动回复会直接造成外部动作，必须二次确认
@@ -130,6 +136,7 @@ export default function CommentAcquisitionPage() {
               accountId: accountId.trim(),
               autoReply,
               limit: 50,
+              keyword: usingKeyword ? keyword.trim() : undefined,
             });
       setLastScan(res);
       toast.success(
@@ -223,17 +230,33 @@ export default function CommentAcquisitionPage() {
               <option value="douyin">抖音</option>
               <option value="wechat-channel">视频号</option>
               {scanMode === "comment" && (
-                <option value="xiaohongshu">小红书（通知中心评论）</option>
+                <>
+                  <option value="xiaohongshu">小红书</option>
+                  <option value="kuaishou">快手</option>
+                </>
               )}
             </V2Select>
           </V2Field>
-          <V2Field label="账号 ID" hint="平台账号列表里的账号 ID">
+          <V2Field label="账号 ID" hint="平台账号列表里的账号 ID（关键词模式可留空）">
             <V2Input
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
               placeholder="如 3（平台账号）"
             />
           </V2Field>
+          {scanMode === "comment" &&
+            (platform === "kuaishou" || platform === "xiaohongshu") && (
+              <V2Field
+                label="关键词"
+                hint="按关键词搜账号 → 读作品 → 读评论（快手/小红书）"
+              >
+                <V2Input
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  placeholder="如 副业 / 美甲 / 装修"
+                />
+              </V2Field>
+            )}
           <V2Field label="自动回复">
             <div className="flex h-10 items-center gap-2">
               <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--kaypal-v3-soft-ink)]">

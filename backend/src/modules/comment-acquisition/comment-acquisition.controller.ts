@@ -25,6 +25,7 @@ export class CommentAcquisitionController {
       limit?: number;
       autoReply?: boolean;
       minLeadScore?: number;
+      keyword?: string;
     },
   ) {
     return this.commentAcquisitionService.scanAccount(dto);

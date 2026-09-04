@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AiModelsModule } from '../ai-models/ai-models.module';
 import { AutoUploadModule } from '../auto-upload/auto-upload.module';
+import { DiscoveryModule } from '../discovery/discovery.module';
 import { InteractionModule } from '../interaction/interaction.module';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { LeadsModule } from '../leads/leads.module';
@@ -13,6 +14,7 @@ import { InteractionRuleService } from './interaction-rule.service';
   imports: [
     AiModelsModule,
     AutoUploadModule,
+    DiscoveryModule,
     InteractionModule,
     LocalEngineModule,
     LeadsModule,

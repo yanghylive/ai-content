@@ -2,7 +2,11 @@ import { api } from "./client";
 
 // ---- 评论获客（comment-acquisition）----
 
-export type AcquisitionPlatform = "douyin" | "wechat-channel" | "xiaohongshu";
+export type AcquisitionPlatform =
+  | "douyin"
+  | "wechat-channel"
+  | "xiaohongshu"
+  | "kuaishou";
 export type LeadStatus =
   | "pending"
   | "approved"
@@ -52,6 +56,7 @@ export function scanAccount(input: {
   limit?: number;
   autoReply?: boolean;
   minLeadScore?: number;
+  keyword?: string;
 }) {
   return api.post<ScanResult>("/comment-acquisition/scan", input);
 }
