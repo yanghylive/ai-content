@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toPublicError } from "@/lib/public-error";
+import { JiumeierStateCard, type JiumeierState } from "@/components/jiumeier-state-card";
 
 /** P4 Agent Browser 驾驶台（文档 §7.4）：会话生命周期 + Observe-Act-Verify 事件回放 */
 
@@ -208,8 +209,46 @@ export default function AgentBrowserPage() {
     }
   };
 
+  // 运行中自动轮询（2.5s）：run 是 202 后台执行，不轮询则会话状态/事件流
+  // 停留在点击瞬间——九妹儿状态卡与事件回放都看不到真实生命周期推进。
+  // 只在存在 running 会话时轮询，全部落定自动停止（不空转）。
+  const anyRunning = sessions.some((s) => s.status === "running");
+  useEffect(() => {
+    if (!anyRunning) return;
+    const timer = setInterval(() => {
+      void refresh();
+      if (activeId) {
+        void jfetch<EventDto[]>(`${B}/sessions/${activeId}/events`)
+          .then(setEvents)
+          .catch(() => { /* 轮询失败下轮自愈 */ });
+      }
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [anyRunning, activeId, refresh]);
+
+  // 九妹儿状态推导（纯前端映射真实状态机，组件无自有状态）：
+  // 待确认单/needs-human/error → 聆听；running 按最新事件分 思考(observe)/执行(step)；其余 → 待机
+  const jmAwaiting = (msg?: string) =>
+    /等待面板批准|需用户确认|请在右侧浏览器面板/.test(msg || "");
+  const jmState: JiumeierState = (() => {
+    if (pendingConfirmations.length > 0) return "listen";
+    const s = sessions.find((x) => x.id === activeId);
+    if (!s) return "idle";
+    if (s.status === "error") return "listen";
+    const last = [...events].reverse().find((e) => e.type !== "done");
+    if (s.status === "running") {
+      // 运行中但最新事件是"等你批准"（面板 defer/高风险确认）→ 聆听优先于思考/执行
+      if (last && jmAwaiting(last.message)) return "listen";
+      if (!last || last.type === "snapshot") return "think";
+      return "run";
+    }
+    // 终态但停在等批准上（如 partial_success + defer 尾事件）→ 仍是"聆听"
+    if (last && jmAwaiting(last.message)) return "listen";
+    return "idle";
+  })();
+
   return (
-    <div style={{ padding: "18px 24px", maxWidth: 1080 }}>
+    <div style={{ padding: "18px 24px", maxWidth: 1420 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
         <span style={{ fontSize: 18, fontWeight: 800 }}>🤖 Agent Browser</span>
         <span style={{ fontSize: 12, color: "var(--kaypal-v3-muted)" }}>
@@ -344,7 +383,7 @@ export default function AgentBrowserPage() {
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) 300px", gap: 16, alignItems: "start" }}>
         {/* 会话列表 */}
         <div
           style={{
@@ -477,6 +516,9 @@ export default function AgentBrowserPage() {
             ))}
           </div>
         </div>
+
+        {/* 九妹儿状态卡：会话状态+事件流的人肉状态灯 */}
+        <JiumeierStateCard state={jmState} />
       </div>
     </div>
   );
