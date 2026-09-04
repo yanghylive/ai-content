@@ -87,15 +87,40 @@ export class ApiError extends Error {
   }
 }
 
+/** API 路径前缀 → 业务标签（网关错误时给用户说人话，如「采集引擎不可用」）。 */
+const GATEWAY_BUSINESS_RULES: Array<{ match: RegExp; label: string }> = [
+  { match: /^\/growth\//, label: "采集引擎" },
+  { match: /^\/comment-acquisition/, label: "采集引擎" },
+  { match: /^\/ai-employee\/auto-acquisition/, label: "采集引擎" },
+  { match: /^\/auto-upload/, label: "发布服务" },
+  { match: /^\/publishing/, label: "发布服务" },
+  { match: /^\/local-engine/, label: "本地引擎" },
+  { match: /^\/compliance/, label: "合规检查" },
+  { match: /^\/video/, label: "视频服务" },
+  { match: /^\/api\/ai\//, label: "AI 生成服务" },
+  { match: /^\/redfox/, label: "情报服务" },
+  { match: /^\/intelligence/, label: "情报服务" },
+];
+
 /**
  * 面向用户的兜底错误文案（解释 + 操作指引）。
- * 后端 body 有 message 时优先透出（static-server 代理错误已是可读中文）；
- * 只有 502/503/504 无实体网关错误、或后端没给 message 时才走这里的映射。
+ * - 网关错误（502/503/504）按 API 路径推断业务域 → 「{引擎/服务}不可用」的人话，
+ *   不出现网关/超时这类技术词（2026-09-04 大王定调）。
+ * - 后端 body 有 message 时优先透出（业务校验文案本就是写给用户看的）；
+ * - 其余无实体的兜底走状态码映射。
  */
 export function userFacingErrorMessage(
   status: number,
   rawMessage = "",
+  apiPath = "",
 ): string {
+  // 1) 网关错误：先按业务域说人话（覆盖 static-server 的通用中文说明，避免半技术措辞）
+  if (status === 502 || status === 503 || status === 504) {
+    const rule = GATEWAY_BUSINESS_RULES.find((r) => r.match.test(apiPath));
+    if (rule) {
+      return `${rule.label}不可用，本次操作可能未完成，不会自动继续。请稍后重试；若多次出现，请先确认${rule.label}运行正常。`;
+    }
+  }
   const clean = (rawMessage || "").trim();
   if (clean && clean.length <= 200) {
     return clean;
@@ -261,6 +286,7 @@ class ApiClient {
         userFacingErrorMessage(
           raw.status,
           typeof body?.message === "string" ? body.message : "",
+          path,
         ),
         raw.status,
         "HTTP_ERROR",

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { api, ApiError } from "./client";
+import { api, ApiError, userFacingErrorMessage } from "./client";
 
 describe("ApiClient 超时与中止（P1-2 Local Engine 健康检查依赖的底层）", () => {
   const fetchMock = vi.fn();
@@ -120,5 +120,39 @@ describe("ApiClient 响应解析", () => {
       new Response("<html>Internal Server Error</html>", { status: 500 }),
     );
     await expect(api.get("/x")).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe("userFacingErrorMessage 网关错误业务域文案（2026-09-04 大王定调）", () => {
+  it("/growth 网关错误 → 采集引擎不可用", () => {
+    const msg = userFacingErrorMessage(502, "", "/growth/acquisition/configs/x/execute");
+    expect(msg).toContain("采集引擎不可用");
+    expect(msg).not.toContain("502");
+  });
+
+  it("/auto-upload 网关错误 → 发布服务不可用", () => {
+    const msg = userFacingErrorMessage(504, "", "/auto-upload/accounts/publish");
+    expect(msg).toContain("发布服务不可用");
+  });
+
+  it("/local-engine 网关错误 → 本地引擎不可用", () => {
+    const msg = userFacingErrorMessage(503, "", "/local-engine/health");
+    expect(msg).toContain("本地引擎不可用");
+  });
+
+  it("/compliance、/video、/api/ai 映射业务标签", () => {
+    expect(userFacingErrorMessage(502, "", "/compliance/check")).toContain("合规检查不可用");
+    expect(userFacingErrorMessage(504, "", "/video-generation/tasks")).toContain("视频服务不可用");
+    expect(userFacingErrorMessage(502, "", "/api/ai/image")).toContain("AI 生成服务不可用");
+  });
+
+  it("未收录路径的网关错误走通用中文解释", () => {
+    const msg = userFacingErrorMessage(502, "", "/crm/customers");
+    expect(msg).toContain("服务暂时不可用");
+  });
+
+  it("非网关错误优先透出后端 message", () => {
+    const msg = userFacingErrorMessage(400, "客户名称不能为空", "/crm/customers");
+    expect(msg).toBe("客户名称不能为空");
   });
 });
