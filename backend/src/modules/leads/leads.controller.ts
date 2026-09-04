@@ -9,6 +9,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthRequestContextService } from '../../common/auth-request-context.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LeadConvertService } from './lead-convert.service';
+import { KeywordIntelligenceService } from '../lead-intelligence/keyword-intelligence.service';
 
 /**
  * 统一线索端点（报告 6.3 节 P0：原子转客户）。
@@ -21,6 +22,7 @@ export class LeadsController {
     private readonly convertService: LeadConvertService,
     private readonly authRequestContext: AuthRequestContextService,
     private readonly prisma: PrismaService,
+    private readonly keywordIntelligence: KeywordIntelligenceService,
   ) {}
 
   @Post(':leadId/convert')
@@ -54,6 +56,36 @@ export class LeadsController {
       opportunity: body?.opportunity ? body.opportunity : undefined,
       task: body?.task ? (body.task as never) : undefined,
       note: body?.note ? (body.note as never) : undefined,
+    });
+  }
+
+  @Post('keyword-suggestions')
+  @ApiOperation({
+    summary:
+      '关键词智能建议（C-a 规则版）：从线索行为反推搜索词，产出 source/demand/exclude 三类建议 + 证据归因，供人工采纳写回策略',
+  })
+  async keywordSuggestions(
+    @Body()
+    body: {
+      platform?: string;
+      industry?: string;
+      windowDays?: number;
+      minLeadCount?: number;
+    },
+  ) {
+    const context = this.authRequestContext.get();
+    const userId = context?.user?.id?.trim() || '';
+    if (!userId) {
+      throw new UnauthorizedException('请先登录后生成关键词建议');
+    }
+    const tenantId = await this.authRequestContext.resolveTenantId(this.prisma);
+    return this.keywordIntelligence.suggestKeywords({
+      userId,
+      tenantId,
+      platform: body?.platform,
+      industry: body?.industry,
+      windowDays: body?.windowDays,
+      minLeadCount: body?.minLeadCount,
     });
   }
 }

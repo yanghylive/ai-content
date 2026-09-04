@@ -7,6 +7,7 @@ import { LeadsController } from './leads.controller';
 import { IdentityResolverService } from '../lead-intelligence/identity-resolver.service';
 import { LeadScoreService } from '../lead-intelligence/lead-score.service';
 import { LeadSignalStore } from '../lead-intelligence/lead-signal.store';
+import { KeywordIntelligenceService } from '../lead-intelligence/keyword-intelligence.service';
 
 /**
  * 统一线索模块（一期）。
@@ -25,12 +26,14 @@ import { LeadSignalStore } from '../lead-intelligence/lead-signal.store';
     IdentityResolverService,
     LeadScoreService,
     LeadSignalStore,
+    KeywordIntelligenceService,
   ],
   exports: [
     LeadRepository,
     LeadAttributionService,
     AttributionLinkService,
     LeadConvertService,
+    KeywordIntelligenceService,
   ],
 })
 export class LeadsModule {}
