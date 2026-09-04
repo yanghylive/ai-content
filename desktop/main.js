@@ -2669,6 +2669,10 @@ function setupIPC() {
       typeof isTrustedRendererSender === 'function' ? isTrustedRendererSender : undefined,
   });
 
+  // 业务标签切换 → 面板宽度按工作区记忆重读
+  try {
+    getTabManager().onActiveChange(() => { try { getBrowserPanel().recalcWidthForContext(); } catch { /* 面板未开 */ } });
+  } catch { /* tabManager 尚未就绪 */ }
   // —— TraeWork 对齐：浏览器面板入口上顶栏（悬浮球 dock 已退役） ——
   // 面板状态 → 顶部标签条（chip 与宽度预设按钮据此渲染）
   getBrowserPanel().onStateChange((state) => {

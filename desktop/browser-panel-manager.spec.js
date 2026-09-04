@@ -110,6 +110,9 @@ function makeTabManager() {
   const relayouts = [];
   const tabManager = {
     rightInset: 0,
+    tabs: new Map(),
+    activeId: null,
+    _onActiveChange: null,
     relayouts,
     relayout() {
       relayouts.push(tabManager.rightInset);
@@ -123,6 +126,7 @@ function makeTabManager() {
       width: windowWidth - tabManager.rightInset,
       height: windowHeight - 38,
     }),
+    onActiveChange: (cb) => { tabManager._onActiveChange = cb; },
   };
   return tabManager;
 }
@@ -277,6 +281,33 @@ test('活动流：record 追加/环形封顶/静默与广播语义/clear 清空'
   assert.equal(manager.publicState().activity.length, 0, '清除后为空');
   manager.relayout();
   assert.equal(manager.stripView._bounds.height, 40, '清除后活动行收起');
+});
+
+test('宽度记忆：全局默认 / 按工作区持久化 / 切换重读', () => {
+  const saved = [];
+  const mem = new Map();
+  const { manager, tabManager } = setup(1600, 900);
+  manager._store = { get: (k) => mem.get(k), set: (k, v) => { saved.push([k, v]); mem.set(k, v); } };
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  // 模拟 main.js 接线：active 变化 → 重读宽度
+  tabManager.onActiveChange(() => { try { manager.recalcWidthForContext(); } catch (e) {} });
+  manager.setWidth(600);
+  assert.equal(manager.publicState().panelWidth, 600);
+  assert.ok(saved.some(x => x[0] === 'browserPanelWidth' && x[1] === 600), '无工作区落全局键');
+  const wsTab = { id: 'biz-ws', kind: 'business', workspaceId: 'ws-8f3c21', view: { webContents: { isDestroyed: () => false, id: 1 } } };
+  tabManager.tabs.set('biz-ws', wsTab);
+  tabManager.activeId = 'biz-ws';
+  tabManager._onActiveChange('biz-ws');
+  assert.equal(manager.width(), 600, '按工作区 scope 无值回落全局');
+  manager.setWidth(520);
+  assert.ok(saved.some(x => x[0] === 'browserPanelWidth.ws-8f3c21' && x[1] === 520), '写按工作区 scoped 键');
+  saved.length = 0;
+  tabManager.activeId = 'other';
+  tabManager._onActiveChange('other');
+  assert.equal(manager.width(), 600, '切到无记忆 tab 回落全局 600');
+  tabManager.activeId = 'biz-ws';
+  tabManager._onActiveChange('biz-ws');
+  assert.equal(manager.width(), 520, '切回记忆工作区恢复 520');
 });
 
 test('默认宽度 480，窄面板下限 360，上限 60%', () => {

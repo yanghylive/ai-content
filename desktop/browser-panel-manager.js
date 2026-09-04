@@ -311,13 +311,35 @@ class BrowserPanelManager {
   }
 
   _panelWidth() {
-    const saved = this._store && typeof this._store.get === 'function'
-      ? this._store.get('browserPanelWidth')
-      : undefined;
-    const base = Number.isFinite(saved) && saved >= PANEL_MIN_WIDTH
-      ? saved
-      : PANEL_DEFAULT_WIDTH;
-    return this._clampWidth(base);
+    if (!this._store || typeof this._store.get !== 'function') return PANEL_DEFAULT_WIDTH;
+    // 有工作区 scope 时优先读 scoped 键，无值回落全局键；都没有用默认宽
+    const scope = this._activeBusinessId();
+    const scoped = scope ? this._store.get(`browserPanelWidth.${scope}`) : undefined;
+    const global = this._store.get('browserPanelWidth');
+    const base = Number.isFinite(scoped) && scoped >= PANEL_MIN_WIDTH ? scoped : global;
+    return this._clampWidth(Number.isFinite(base) && base >= PANEL_MIN_WIDTH ? base : PANEL_DEFAULT_WIDTH);
+  }
+
+  /** 当前业务标签 ID（宽度按工作区记忆的 scope；无标签时空 = 全局默认键） */
+  _activeBusinessId() {
+    try {
+      const tm = this._tabManager;
+      if (!tm) return '';
+      const tab = tm.tabs && tm.tabs.get(tm.activeId);
+      return tab && tab.kind !== 'octop' && tab.workspaceId ? tab.workspaceId : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  _saveWidth() {
+    if (!this._store || typeof this._store.set !== 'function' || this._currentWidth == null) return;
+    const scope = this._activeBusinessId();
+    try {
+      this._store.set(scope ? `browserPanelWidth.${scope}` : 'browserPanelWidth', this._currentWidth);
+    } catch (e) {
+      /* 持久化失败不影响本次会话宽度 */
+    }
   }
 
   _clampWidth(width) {
@@ -754,10 +776,8 @@ class BrowserPanelManager {
   setWidth(width) {
     this.endResize();
     const next = this._clampWidth(Number(width));
-    if (this._store && typeof this._store.set === 'function') {
-      this._store.set('browserPanelWidth', next);
-    }
     this._currentWidth = next;
+    this._saveWidth();
     this.relayout();
     this._emitState();
     return next;
@@ -766,6 +786,21 @@ class BrowserPanelManager {
   width() {
     if (this._currentWidth == null) this._currentWidth = this._panelWidth();
     return this._currentWidth;
+  }
+
+  /**
+   * 业务标签切换后由外部调用（main.js 订阅 tabManager.onActiveChange）：
+   * 按新工作区 scope 重读记忆宽度并重排。无持久化差异时数值不变、不抖动。
+   */
+  recalcWidthForContext() {
+    if (this._destroyed) return;
+    const next = this._panelWidth();
+    if (next !== this._currentWidth) {
+      this._currentWidth = next;
+      if (this._visible) this.relayout();
+      this._emitState();
+    }
+    return next;
   }
 
   /** 同页控制三方绑定事实源（阶段 1 Broker 接线点） */
@@ -853,13 +888,7 @@ class BrowserPanelManager {
     this._resizeTimer = null;
     this._resizeLastX = null;
     this._resizeGrabOffset = 0;
-    if (this._store && typeof this._store.set === 'function' && this._currentWidth != null) {
-      try {
-        this._store.set('browserPanelWidth', this._currentWidth);
-      } catch {
-        /* 持久化失败不影响本次会话宽度 */
-      }
-    }
+    this._saveWidth();
     return true;
   }
 

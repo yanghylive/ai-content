@@ -134,6 +134,8 @@ class TabManager {
     this.tabStrip = null;
     this.tabs = new Map(); // id -> { id, workspaceId, title, kind, pinned, view, ready, octopUrl, octopToken, loadUrl }
     this.activeId = null;
+    /** 业务标签切换回调（面板宽度按工作区记忆需要它：切换时重读宽度） */
+    this._onActiveChange = null;
     this.frontendServerUrl = null;
     this.knownWebContents = new Set(); // 我们持有的所有 webContents（标签视图 + tab 条）
     // 2026-09-03（浏览器面板阶段 2）：右侧面板占用宽度（BrowserPanelManager 维护），
@@ -421,7 +423,13 @@ class TabManager {
     this.store.set(STORE_KEY_ACTIVE, id);
     this.relayout();
     this._pushStripState();
+    if (typeof this._onActiveChange === 'function') this._onActiveChange(id);
     return true;
+  }
+
+  /** 业务标签切换/新建/关闭后的回调（面板据此按键值重读记忆宽度） */
+  onActiveChange(cb) {
+    this._onActiveChange = typeof cb === 'function' ? cb : null;
   }
 
   // 切到 pinned 业务标签（「业务工作区」）；无则第一个业务标签。
