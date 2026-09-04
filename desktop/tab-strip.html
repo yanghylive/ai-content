@@ -67,12 +67,18 @@
     border-right: 1px solid var(--border);
     white-space: nowrap; color: var(--text);
   }
-  .brand .mark {
-    width: 20px; height: 20px; border-radius: 5px;
-    background: linear-gradient(135deg, #9254de, #5b21b6);
-    color: #fff; font-size: 11px; font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 1px 3px rgba(114, 46, 209, 0.4);
+  /* 品牌字标与系统页面底部左下角同款：jiuzhang-wordmark（图形+JIUZHANG AI 一体），
+     浅色用黑字版、深色用白字版（沿用 DashboardFooter 的双 img 换色方案）。
+     assets/brand/ 目录已随打包白名单（assets 通配）带上。 */
+  .brand img {
+    height: 18px; width: auto; display: block;
+    -webkit-user-drag: none; user-select: none;
+  }
+  .brand img.wb-light { display: block; }
+  .brand img.wb-dark { display: none; }
+  @media (prefers-color-scheme: dark) {
+    .brand img.wb-light { display: none; }
+    .brand img.wb-dark { display: block; }
   }
   .pill {
     flex: 0 0 auto;
@@ -202,7 +208,10 @@
 </head>
 <body>
   <div id="strip">
-    <span class="brand"><span class="mark">玖</span>JIUZHANG AI</span>
+    <span class="brand" title="JIUZHANG AI">
+      <img class="wb-light" src="assets/brand/jiuzhang-wordmark-black.webp" alt="JIUZHANG AI" />
+      <img class="wb-dark" src="assets/brand/jiuzhang-wordmark-white.webp" alt="JIUZHANG AI" />
+    </span>
     <div class="pill hidden" id="octopPill" title="打开 Octop 高级模式">Octop 高级模式</div>
     <div class="tabs" id="tabs"></div>
     <button class="iconbtn" id="add" type="button" title="新建标签" aria-label="新建标签">
