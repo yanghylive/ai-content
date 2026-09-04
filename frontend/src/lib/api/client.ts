@@ -87,6 +87,32 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * 面向用户的兜底错误文案（解释 + 操作指引）。
+ * 后端 body 有 message 时优先透出（static-server 代理错误已是可读中文）；
+ * 只有 502/503/504 无实体网关错误、或后端没给 message 时才走这里的映射。
+ */
+export function userFacingErrorMessage(
+  status: number,
+  rawMessage = "",
+): string {
+  const clean = (rawMessage || "").trim();
+  if (clean && clean.length <= 200) {
+    return clean;
+  }
+  switch (status) {
+    case 502:
+      return "服务暂时不可用（网关错误）。若刚提交了任务，它可能仍在后台执行，请稍后到任务列表确认结果，避免重复提交。";
+    case 503:
+      return "服务暂不可用，请稍后重试。";
+    case 504:
+      return "服务响应超时。任务可能仍在后台执行，请稍后查看任务列表确认结果，避免重复提交。";
+    default:
+      if (status >= 500) return "服务内部错误，请稍后重试。";
+      return clean || `请求失败（${status}），请稍后重试。`;
+  }
+}
+
 /** 默认请求超时（毫秒）。传 timeoutMs: 0 可显式禁用超时。 */
 export const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
 
@@ -232,9 +258,10 @@ class ApiClient {
         }
       }
       throw new ApiError(
-        typeof body?.message === "string" && body.message
-          ? body.message
-          : `请求失败: ${raw.status}`,
+        userFacingErrorMessage(
+          raw.status,
+          typeof body?.message === "string" ? body.message : "",
+        ),
         raw.status,
         "HTTP_ERROR",
         typeof body?.code === "string" ? body.code : null,

@@ -5,7 +5,9 @@ const PERMISSION_ERROR_PATTERN =
 const NETWORK_ERROR_PATTERN =
   /(?:network error|network request failed|failed to fetch|fetch failed|connection refused|econnrefused|enotfound|网络(?:连接)?(?:异常|错误|不可用)|账号服务不可用|线上地址可访问)/i;
 const TIMEOUT_ERROR_PATTERN =
-  /(?:timeout|timed out|etimedout|请求超时|连接超时)/i;
+  /(?:timeout|timed out|etimedout|请求超时|连接超时|后端处理超时|服务响应超时)/i;
+const GATEWAY_ERROR_PATTERN =
+  /(?:\b50[2-4]\b|bad gateway|gateway timeout|service unavailable|后端代理失败|后端响应中断|无法连接后端|服务暂不可用|服务暂时不可用|请求失败（?5|502|503|504)/i;
 const QUOTA_ERROR_PATTERN =
   /(?:quota|rate limit|too many requests|\b429\b|用量不足|额度不足|积分不足|超出.*限制)/i;
 
@@ -35,7 +37,10 @@ export function toPublicError(
     return "当前可用额度不足，请检查账号用量后再试。";
   }
   if (TIMEOUT_ERROR_PATTERN.test(message)) {
-    return "等待响应超时，请稍后重试。";
+    return "服务响应超时。任务可能仍在后台执行，请稍后到任务列表确认结果，避免重复提交。";
+  }
+  if (GATEWAY_ERROR_PATTERN.test(message)) {
+    return "服务暂时不可用，请稍后重试。若刚提交了任务，它可能仍在后台执行，可稍后查看任务列表确认结果。";
   }
   if (NETWORK_ERROR_PATTERN.test(message)) {
     return "网络连接不稳定，请检查网络后重试。";

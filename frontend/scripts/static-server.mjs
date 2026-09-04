@@ -136,6 +136,32 @@ function endWithError(res, statusCode, message) {
   res.end(message);
 }
 
+/**
+ * 代理层错误统一以 JSON 返回（与后端 TransformInterceptor 结构对齐），
+ * 前端 api client 能解析出 message/code，而不是收到 text/plain 后兜底成
+ * 「请求失败: 502」。code 供前端按场景给操作指引。
+ */
+function endWithProxyError(res, statusCode, code, message) {
+  if (res.headersSent) {
+    res.destroy();
+    return;
+  }
+  res.writeHead(statusCode, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+  });
+  res.end(
+    JSON.stringify({
+      success: false,
+      code,
+      message,
+      status: statusCode,
+      retryable: true,
+      timestamp: new Date().toISOString(),
+    }),
+  );
+}
+
 function streamFile(res, file, statusCode, headers = {}) {
   try {
     fs.accessSync(file, fs.constants.R_OK);
@@ -159,18 +185,22 @@ http.createServer(async (req, res) => {
   // 二维码/扫码识别期间无输出字节 → 10s 后被服务端掐断 → 前端转轮询 →
   // 用户已完成平台登录却显示失败。SSE 请求跳过超时（关闭/上游断开自然结束）。
   const isSseRequest = /text\/event-stream/i.test(req.headers.accept || "");
-  if (!isSseRequest) {
-    res.setTimeout(REQUEST_TIMEOUT_MS, () => {
-      console.error(`[static-server] request timeout: ${req.method} ${req.url}`);
-      endWithError(res, 504, "请求超时");
-    });
-  }
   const urlPath = (req.url || "/").split("?")[0];
   /* /api 以及旧版 /auth 入口代理到后端。后端实际统一挂在 /api 下。短链 /r/:code 走 exclude 无 api 前缀，同样反代。 */
   const isApiRequest = urlPath === "/api" || urlPath.startsWith("/api/");
   const isLegacyAuthRequest = urlPath === "/auth" || urlPath.startsWith("/auth/");
   const isShortLinkRequest = urlPath === "/r" || urlPath.startsWith("/r/");
-  if (isApiRequest || isLegacyAuthRequest || isShortLinkRequest) {
+  const isProxyRoute = isApiRequest || isLegacyAuthRequest || isShortLinkRequest;
+  // 代理路由的超时由 proxyReq.setTimeout 精确管理(区分上游超时/连接失败,
+  // 后端慢处理时给用户明确提示而不是静默掐断);res 级兜底只用于静态文件,
+  // 避免 res 空闲超时与代理超时双重触发产生文本/JSON 竞态。
+  if (!isSseRequest && !isProxyRoute) {
+    res.setTimeout(REQUEST_TIMEOUT_MS, () => {
+      console.error(`[static-server] request timeout: ${req.method} ${req.url}`);
+      endWithError(res, 504, "请求超时");
+    });
+  }
+  if (isProxyRoute) {
     const target = API_BASE + (isLegacyAuthRequest ? "/api" : "") + req.url;
     // 2026-09-01（审计 #14）：按目标协议选 http/https client——
     // 原实现恒用 http.request，API_BASE=https 时抛 "Protocol https not supported"。
@@ -187,7 +217,7 @@ http.createServer(async (req, res) => {
         (proxyRes) => {
           proxyRes.once("error", (error) => {
             console.error(`[static-server] upstream read failed: ${error?.message || error}`);
-            endWithError(res, 502, "后端响应读取失败");
+            endWithProxyError(res, 502, "UPSTREAM_READ_FAILED", "后端响应中断，请稍后重试");
           });
           res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
           proxyRes.pipe(res);
@@ -195,7 +225,7 @@ http.createServer(async (req, res) => {
       );
     } catch (error) {
       console.error(`[static-server] proxy setup failed: ${error?.message || error}`);
-      endWithError(res, 502, "后端代理失败");
+      endWithProxyError(res, 502, "UPSTREAM_CONNECT_FAILED", "无法连接后端服务，请确认本地服务已启动后重试");
       return;
     }
     // 2026-09-02（登录 SSE 断线根因修复）：EventSource 请求（Accept:
@@ -206,11 +236,24 @@ http.createServer(async (req, res) => {
     // 原 10s 超时（响应快，超时=上游卡死）。
     const isSse = /text\/event-stream/i.test(req.headers.accept || "");
     proxyReq.setTimeout(isSse ? 0 : REQUEST_TIMEOUT_MS, () => {
+      console.error(`[static-server] upstream timeout: ${req.method} ${req.url}`);
+      // 2026-09-04: 后端处理超过 10s(如运行类动作)语义应为 504 而非 502。
+      // 任务可能仍在后台执行,先响应给用户明确提示,避免前端兜底成"请求失败: 502"。
+      endWithProxyError(
+        res,
+        504,
+        "UPSTREAM_TIMEOUT",
+        "后端处理超时（超过 10 秒未响应）。任务可能仍在后台执行，请稍后查看任务列表确认结果",
+      );
       proxyReq.destroy(new Error("upstream request timeout"));
     });
     proxyReq.on("error", (e) => {
-      console.error(`[static-server] upstream request failed: ${e?.message || e}`);
-      endWithError(res, 502, "后端代理失败");
+      const msg = e?.message || String(e);
+      console.error(`[static-server] upstream request failed: ${msg}`);
+      // destroy 已触发过 timeout 分支时 headersSent=true,响应已完整发出,不额外动作
+      if (!res.headersSent) {
+        endWithProxyError(res, 502, "UPSTREAM_UNAVAILABLE", "后端服务暂不可用，请稍后重试");
+      }
     });
     req.on("aborted", () => proxyReq.destroy());
     req.pipe(proxyReq);
