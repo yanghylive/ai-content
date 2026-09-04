@@ -5,6 +5,7 @@ import { DiscoveryModule } from '../discovery/discovery.module';
 import { InteractionModule } from '../interaction/interaction.module';
 import { LocalEngineModule } from '../local-engine/local-engine.module';
 import { LeadsModule } from '../leads/leads.module';
+import { AccountTouchQuotaModule } from '../account-touch-quota/account-touch-quota.module';
 import { CommentAcquisitionController } from './comment-acquisition.controller';
 import { CommentAcquisitionService } from './comment-acquisition.service';
 import { ReplyEngineService } from './reply-engine.service';
@@ -18,6 +19,7 @@ import { InteractionRuleService } from './interaction-rule.service';
     InteractionModule,
     LocalEngineModule,
     LeadsModule,
+    AccountTouchQuotaModule,
   ],
   controllers: [CommentAcquisitionController],
   providers: [

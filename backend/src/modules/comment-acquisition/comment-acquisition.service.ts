@@ -20,6 +20,7 @@ import type {
 } from '../interaction/interaction-adapter.interface';
 import { InteractionEventStore } from '../interaction/interaction-event.store';
 import { DiscoveryBrowserRunner } from '../discovery/discovery-browser-runner';
+import { AccountTouchQuotaService } from '../account-touch-quota/account-touch-quota.service';
 
 /**
  * CommentAcquisitionService —— 评论获客闭环
@@ -73,6 +74,7 @@ export class CommentAcquisitionService {
     private readonly interactionRegistry: InteractionAdapterRegistry,
     private readonly interactionEventStore: InteractionEventStore,
     private readonly discoveryRunner: DiscoveryBrowserRunner,
+    private readonly accountTouchQuota: AccountTouchQuotaService,
   ) {}
 
   /**
@@ -621,7 +623,7 @@ export class CommentAcquisitionService {
     circuitKey?: string,
   ): Promise<boolean> {
     const resolvedScope = scope ?? (await this.resolveScope());
-    await this.assertAccountOwnership(
+    const stableId = await this.assertAccountOwnership(
       input.accountId,
       resolvedScope,
       input.platform,
@@ -679,6 +681,24 @@ export class CommentAcquisitionService {
         await this.leadRepository.updateReplyStatus(leadId, {
           userId: resolvedScope.userId,
           status: 'not_integrated',
+          lastError: msg,
+        });
+        return false;
+      }
+
+      // 账号维度日触达配额：扣减成功才允许真实发送；扣减失败（今日额度用尽）
+      // 直接拦截，不再调用 adapter.send，避免私信/评论链路无限触达突破平台风控阈值。
+      const consumed = await this.accountTouchQuota.tryConsume(
+        resolvedScope.userId,
+        input.platform,
+        stableId,
+      );
+      if (!consumed) {
+        const msg = '今日账号触达额度已用尽';
+        this.logger.warn(`[comment-acquisition] ${input.platform}:${stableId} ${msg}`);
+        await this.leadRepository.updateReplyStatus(leadId, {
+          userId: resolvedScope.userId,
+          status: 'failed',
           lastError: msg,
         });
         return false;
@@ -873,7 +893,7 @@ export class CommentAcquisitionService {
     accountId: number | string,
     scope: { tenantId: string | null; userId: string },
     platform?: string,
-  ): Promise<void> {
+  ): Promise<string> {
     const id = String(accountId);
     // 兼容两种账号 ID 形式：
     // 1. stableId 精确匹配（publish_accounts 主键，如 local-engine-xxx-6-douyin）
@@ -894,6 +914,8 @@ export class CommentAcquisitionService {
     if (!account) {
       throw new NotFoundException('发布账号不存在或无权操作');
     }
+    // 返回 stableId（publish_accounts 主键），供账号维度配额计数器作 key。
+    return account.id;
   }
 
   /**

@@ -10,6 +10,7 @@ import { DiscoveryBrowserRunner } from '../discovery/discovery-browser-runner';
 import { LeadRepository } from '../leads/lead.repository';
 import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
 import { InteractionEventStore } from '../interaction/interaction-event.store';
+import { AccountTouchQuotaService } from '../account-touch-quota/account-touch-quota.service';
 
 /**
  * 构造互动适配器注册表 mock：get(platform).send 委托回 executorMock.dispatch
@@ -180,6 +181,7 @@ describe('CommentAcquisitionService', () => {
     })),
     ingest: jest.fn().mockResolvedValue({ event: { id: 'event-comment-1' } }),
   };
+  const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -195,6 +197,7 @@ describe('CommentAcquisitionService', () => {
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
         { provide: DiscoveryBrowserRunner, useValue: discoveryRunnerMock },
+        { provide: AccountTouchQuotaService, useValue: quotaMock },
         { provide: InteractionEventStore, useValue: interactionEventStoreMock },
       ],
     }).compile();
@@ -409,6 +412,48 @@ describe('CommentAcquisitionService', () => {
       expect(leadRepositoryMock.updateReplyStatus).toHaveBeenCalled();
     });
 
+    it('账号今日触达额度用尽时拦截，不调用平台发送（S-Q3 配额）', async () => {
+      quotaMock.tryConsume.mockResolvedValueOnce(false);
+      executorMock.dispatch.mockResolvedValue({ status: 'sent', readbackText: '私信你' });
+
+      const ok = await service.dispatchReply(
+        'lead-1',
+        {
+          platform: 'douyin',
+          accountId: 1,
+          commentText: '怎么买',
+          replyText: '私信你',
+        },
+        { tenantId: null, userId: 'u1' },
+      );
+      expect(ok).toBe(false);
+      // 关键：额度用尽时不得触发平台发送
+      expect(executorMock.dispatch).not.toHaveBeenCalled();
+      // 落 failed 状态，带配额用尽文案
+      expect(leadRepositoryMock.updateReplyStatus).toHaveBeenCalledWith(
+        'lead-1',
+        expect.objectContaining({ status: 'failed' }),
+      );
+    });
+
+    it('配额充足时正常扣减并发送', async () => {
+      quotaMock.tryConsume.mockResolvedValueOnce(true);
+      executorMock.dispatch.mockResolvedValue({ status: 'sent', readbackText: '私信你' });
+
+      const ok = await service.dispatchReply(
+        'lead-1',
+        {
+          platform: 'douyin',
+          accountId: 1,
+          commentText: '怎么买',
+          replyText: '私信你',
+        },
+        { tenantId: null, userId: 'u1' },
+      );
+      expect(ok).toBe(true);
+      expect(quotaMock.tryConsume).toHaveBeenCalled();
+    });
+
     it('发送失败标记 failed 并返回 false', async () => {
       executorMock.dispatch.mockResolvedValue({
         status: 'send_failed',
@@ -558,6 +603,7 @@ describe('CommentAcquisitionService 风控断路器', () => {
   };
   const executorMock = { dispatch: jest.fn() };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
   const discoveryRunnerMock = {
     searchAccounts: jest.fn(),
     listAccountWorks: jest.fn(),
@@ -591,6 +637,7 @@ describe('CommentAcquisitionService 风控断路器', () => {
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
         { provide: DiscoveryBrowserRunner, useValue: discoveryRunnerMock },
+        { provide: AccountTouchQuotaService, useValue: quotaMock },
         {
           provide: InteractionEventStore,
           useValue: {
@@ -684,6 +731,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
     readComments: jest.fn(),
     replyComment: jest.fn(),
   };
+  const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
   const discoveryRunnerMock = {
     searchAccounts: jest.fn(),
     listAccountWorks: jest.fn(),
@@ -717,6 +765,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
         { provide: DiscoveryBrowserRunner, useValue: discoveryRunnerMock },
+        { provide: AccountTouchQuotaService, useValue: quotaMock },
         {
           provide: InteractionEventStore,
           useValue: {
@@ -803,6 +852,7 @@ describe('CommentAcquisitionService 私信获客', () => {
   };
   const executorMock = { dispatch: jest.fn() };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
   const discoveryRunnerMock = {
     searchAccounts: jest.fn(),
     listAccountWorks: jest.fn(),
@@ -836,6 +886,7 @@ describe('CommentAcquisitionService 私信获客', () => {
         { provide: LeadRepository, useValue: leadRepositoryMock },
         { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
         { provide: DiscoveryBrowserRunner, useValue: discoveryRunnerMock },
+        { provide: AccountTouchQuotaService, useValue: quotaMock },
         {
           provide: InteractionEventStore,
           useValue: {
