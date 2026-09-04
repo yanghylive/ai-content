@@ -185,6 +185,9 @@ class BrowserPanelManager {
    */
   setStripExpanded(on, height) {
     const next = !!on;
+    // 面板收起时拒绝展开请求（视图本来就藏着一行空白，还会泄漏到下次打开）；
+    // 收起请求照常放行（复位状态）
+    if (next && !this._visible) return this._stripHeight();
     if (on) {
       const h = Math.max(30, Math.min(160, Math.floor(Number(height) || STRIP_EXPAND_HEIGHT)));
       this._stripExpandH = h;
@@ -588,6 +591,7 @@ class BrowserPanelManager {
 
   _hideNow() {
     this._visible = false;
+    this._stripExpanded = false;
     // 阶段 7 tabs：隐藏全部 tab 视图（不能只藏 active，否则后台 tab 残影）
     for (const tab of this._panelTabs) {
       if (tab.view && !tab.view.webContents.isDestroyed()) tab.view.setVisible(false);

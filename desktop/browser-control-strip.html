@@ -407,8 +407,11 @@
       const url = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw) ? raw : `https://${raw}`;
       quick(url);
     });
-    // 建议行点击不能先触发 blur（否则下拉先收起又收不到点击）
-    $('sugbox').addEventListener('pointerdown', (e) => { e.preventDefault(); });
+    // 建议行/快捷行点击不能先触发 blur（否则行先收起，mouseup 时 click
+    // 根本不发——真机实证：慢点的 mousedown 200ms 后行已 COLLAPSED）
+    const keepFocus = (e) => { if (!e.target.closest('input')) e.preventDefault(); };
+    $('sugbox').addEventListener('pointerdown', keepFocus);
+    $('quickrow').addEventListener('pointerdown', keepFocus);
 
     // round15：tab 条（用户手动切/关；面板只暴露自己的页面，无第三方 IPC 特权）
     function renderTabbar(state) {
