@@ -2668,6 +2668,72 @@ function setupIPC() {
     isTrustedRendererSender:
       typeof isTrustedRendererSender === 'function' ? isTrustedRendererSender : undefined,
   });
+
+  // —— TraeWork 对齐：浏览器面板入口上顶栏（悬浮球 dock 已退役） ——
+  // 面板状态 → 顶部标签条（chip 与宽度预设按钮据此渲染）
+  getBrowserPanel().onStateChange((state) => {
+    try {
+      const strip = getTabManager().tabStrip;
+      if (strip && !strip.webContents.isDestroyed()) {
+        strip.webContents.send('browser-panel:state', state);
+      }
+    } catch { /* 标签条尚未创建 */ }
+  });
+  const isFromTabStrip = (event) => {
+    try {
+      const strip = getTabManager().tabStrip;
+      return !!(strip && !strip.webContents.isDestroyed() && strip.webContents.id === event.sender.id);
+    } catch {
+      return false;
+    }
+  };
+  const currentBusinessUrl = () => {
+    try {
+      const tm = getTabManager();
+      const tab = tm.tabs.get(tm.activeId);
+      const wc = tab && tab.view && !tab.view.webContents.isDestroyed() ? tab.view.webContents : null;
+      return (wc && wc.getURL()) || '';
+    } catch {
+      return '';
+    }
+  };
+  ipcMain.on('tab-strip:browser-show', (e) => {
+    if (!isFromTabStrip(e)) return;
+    const p = getBrowserPanel();
+    if (p.publicState().visible) return;
+    if (!p.show()) {
+      const url = currentBusinessUrl();
+      if (url) { try { p.open({ url }); } catch { /* 非 http(s) 页忽略 */ } }
+    }
+  });
+  ipcMain.on('tab-strip:browser-hide', (e) => {
+    if (isFromTabStrip(e)) getBrowserPanel().hide();
+  });
+  ipcMain.on('tab-strip:browser-open-current', (e) => {
+    if (!isFromTabStrip(e)) return;
+    const url = currentBusinessUrl();
+    if (!url) return;
+    try { getBrowserPanel().open({ url }); } catch { /* 非 http(s) 页忽略 */ }
+  });
+  ipcMain.on('tab-strip:browser-new-tab', (e) => {
+    if (!isFromTabStrip(e)) return;
+    const p = getBrowserPanel();
+    if (p.session) {
+      try { p.tabsOperation('new'); } catch { /* 视图不可用时退回 show */ }
+      if (!p.publicState().visible) p.show();
+    } else {
+      const url = currentBusinessUrl() || 'https://www.douyin.com';
+      try { p.open({ url }); } catch { /* ignore */ }
+    }
+  });
+  ipcMain.on('tab-strip:browser-width', (e, mode) => {
+    if (!isFromTabStrip(e)) return;
+    const p = getBrowserPanel();
+    if (!p.publicState().visible || !p.window || p.window.isDestroyed()) return;
+    const { width } = p.window.getContentBounds();
+    const target = mode === 'max' ? Math.floor(width * 0.6) : mode === 'half' ? Math.floor(width * 0.5) : 480;
+    p.setWidth(target);
+  });
 }
 
 // 单实例锁：Windows/macOS 下用户再次点击任务栏/Dock 图标时，系统会启动

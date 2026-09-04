@@ -10,14 +10,20 @@ const SEND_CHANNELS = new Set([
   'tab-strip:rename',
   'tab-strip:set-workspace',
   'tab-strip:switch-business',
-  'tab-strip:request-octop'
+  'tab-strip:request-octop',
+  // TraeWork 对齐：浏览器面板入口上顶栏（chip/＋菜单/宽度预设），悬浮球退役
+  'tab-strip:browser-show',
+  'tab-strip:browser-hide',
+  'tab-strip:browser-open-current',
+  'tab-strip:browser-new-tab',
+  'tab-strip:browser-width'
 ]);
 
 // 可 invoke 的请求通道（tab 条 → main，仅只读 list）
 const INVOKE_CHANNELS = new Set(['workspace-tabs:list']);
 
 // 可订阅的推送通道（main → tab 条）
-const ON_CHANNELS = new Set(['tab-strip:state']);
+const ON_CHANNELS = new Set(['tab-strip:state', 'browser-panel:state']);
 
 contextBridge.exposeInMainWorld('tabStrip', {
   // 发送一次性事件给主进程

@@ -19,7 +19,6 @@ import {
   type KaypalSubscription,
 } from "@/lib/api/auth";
 import { ElectronUpdateBanner } from "@/components/electron-update-banner";
-import { BrowserPanelDock } from "@/components/browser-panel-dock";
 import { SolutionRunContextBanner } from "./components/solution-run-context-banner";
 import {
   approveSolutionManualTask,
@@ -1019,7 +1018,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         <>
           <DashboardFooter appVersion={DESKTOP_APP_VERSION} />
           <ElectronUpdateBanner />
-          <BrowserPanelDock />
         </>
       }
       user={{

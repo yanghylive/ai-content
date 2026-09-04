@@ -42,6 +42,9 @@ const RESIZE_IDLE_MS = 1200;
 const RESIZE_POLL_MS = 16;
 /** round15：tab 条行高（多 tab 时控制条两行；单 tab 不显示，零干扰） */
 const TABBAR_HEIGHT = 26;
+// 地址栏聚焦时的快捷跳转行（TraeWork 地址行语义：聚焦即出建议）。
+// 控制条是独立视图，下拉会被视图边界裁掉——所以聚焦时把视图加高一行。
+const STRIP_EXPAND_HEIGHT = 30;
 const TAB_STRIP_HEIGHT = 38; // 与 workspace-tabs.js 保持一致（顶部通栏高度）
 
 // 阶段 6：审批浮层尺寸（与 browser-approval-overlay.html 的 CSS 保持一致，
@@ -140,6 +143,27 @@ class BrowserPanelManager {
     // 2026-09-03（阶段 3）：会话变更钩子——Broker 接线订阅（open/rebuild/
     // hide/show/close 时同步 Agent 侧会话与 capability token）。
     this._sessionListeners = new Set();
+    /** 面板状态订阅（顶部标签条 chip 用；_emitState 时同步回调） */
+    this._stateListeners = new Set();
+    /** 控制条快捷跳转行是否展开（参与 _stripHeight） */
+    this._stripExpanded = false;
+  }
+
+  /** 顶部标签条订阅面板状态广播（返回取消函数） */
+  onStateChange(cb) {
+    if (typeof cb !== 'function') return () => undefined;
+    this._stateListeners.add(cb);
+    return () => this._stateListeners.delete(cb);
+  }
+
+  /** 地址栏聚焦→控制条加高一行的快捷跳转行；失焦收起 */
+  setStripExpanded(on) {
+    const next = !!on;
+    if (this._stripExpanded === next) return this._stripHeight();
+    this._stripExpanded = next;
+    this.relayout();
+    this._emitState();
+    return this._stripHeight();
   }
 
   /**
@@ -913,7 +937,8 @@ class BrowserPanelManager {
 
   /** 控制条总高：多 tab 时加 tab 条行（round15；单 tab 零干扰不变高） */
   _stripHeight() {
-    return this._panelTabs.length > 1 ? STRIP_HEIGHT + TABBAR_HEIGHT : STRIP_HEIGHT;
+    const base = this._panelTabs.length > 1 ? STRIP_HEIGHT + TABBAR_HEIGHT : STRIP_HEIGHT;
+    return base + (this._stripExpanded ? STRIP_EXPAND_HEIGHT : 0);
   }
 
   relayout() {
@@ -977,6 +1002,10 @@ class BrowserPanelManager {
     const state = this.publicState();
     this._sendToPanelOwner('browser-panel:state', state);
     this._sendToStrip('browser-panel:state', state);
+    // 顶部标签条（浏览器 chip / 宽度预设按钮）订阅同一状态流
+    for (const cb of this._stateListeners) {
+      try { cb(state); } catch { /* 单个订阅方异常互不影响 */ }
+    }
   }
 
   _sendToPanelOwner(channel, payload) {

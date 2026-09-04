@@ -218,6 +218,35 @@ test('拖拽调宽：无系统光标能力时静默放弃，不炸会话', () =>
   assert.equal(manager.width(), 480);
 });
 
+test('扩展行：地址栏聚焦时控制条视图加高 30px，失焦复原（TraeWork 地址行语义）', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  const h1 = manager._stripHeight();
+  const h2 = manager.setStripExpanded(true);
+  assert.equal(manager._stripExpanded, true);
+  assert.equal(h2, h1 + 30, '控制条视图加高一行');
+  assert.equal(manager.setStripExpanded(true), h1 + 30, '重复调用幂等');
+  manager.setStripExpanded(false);
+  assert.equal(manager._stripHeight(), h1, '失焦复原');
+  manager.hide();
+  assert.equal(manager._stripExpanded, false, '收起面板归零');
+});
+
+test('状态订阅：onStateChange 收到广播，逐个解绑互不影响', () => {
+  const { manager } = setup(1600, 900);
+  const gotA = [], gotB = [];
+  const offA = manager.onStateChange((st) => gotA.push(st.visible));
+  const offB = manager.onStateChange((st) => gotB.push(st.panelWidth));
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  assert.deepEqual(gotA, [true]);
+  assert.deepEqual(gotB, [480]);
+  offA();
+  manager.hide();
+  assert.equal(gotA.length, 1, '取消订阅后不再收到');
+  assert.deepEqual(gotB, [480, 0]); // hide 广播：panelWidth 归 0 已到 B
+  offB();
+});
+
 test('默认宽度 480，窄面板下限 360，上限 60%', () => {
   const { manager } = setup(1600, 900);
   manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });

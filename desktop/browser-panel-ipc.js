@@ -93,6 +93,8 @@ function registerBrowserPanelIpc(deps) {
   ipcMain.handle('browser-panel:hide', stripOnly(() => getPanel().hide()));
   ipcMain.handle('browser-panel:show', stripOnly(() => getPanel().show()));
   ipcMain.handle('browser-panel:set-width', stripOnly((w) => getPanel().setWidth(w)));
+  // 地址栏聚焦时的快捷跳转行（控制条/沟槽视图展开自己的高度）
+  ipcMain.handle('browser-panel:expand-strip', stripOnly((on) => getPanel().setStripExpanded(on)));
   // 拖拽调宽会话：沟槽 pointerdown 开始 / pointerup 结束。视图只有 10px 宽，
   // 光标一出视图就断流，所以拖拽由主进程轮询系统光标驱动（见 manager.beginResize）。
   ipcMain.handle('browser-panel:begin-resize', stripOnly(() => getPanel().beginResize()));
@@ -151,6 +153,7 @@ function registerBrowserPanelIpc(deps) {
       'browser-panel:hide',
       'browser-panel:show',
       'browser-panel:set-width',
+      'browser-panel:expand-strip',
       'browser-panel:begin-resize',
       'browser-panel:end-resize',
       'browser-panel:toggle-agent-mode',
