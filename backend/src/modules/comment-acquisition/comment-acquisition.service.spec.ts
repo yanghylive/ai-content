@@ -686,6 +686,7 @@ describe('CommentAcquisitionService 私信获客', () => {
   const autoUploadMock = {
     readDouyinMessages: jest.fn(),
     readWechatChannelMessages: jest.fn(),
+    listAccounts: jest.fn(),
   };
   const executorMock = { dispatch: jest.fn() };
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
@@ -769,5 +770,17 @@ describe('CommentAcquisitionService 私信获客', () => {
     expect(result.leads).toBe(1);
     expect(result.replies).toBe(1); // 低风险自动外发成功
     expect(executorMock.dispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('私信扫描 platform 漏传且账号推断失败时显式报错（S4-7）', async () => {
+    autoUploadMock.listAccounts.mockResolvedValue([]);
+
+    await expect(
+      service.scanDm({
+        platform: undefined as unknown as 'douyin',
+        accountId: 999,
+      }),
+    ).rejects.toThrow('无法推断私信平台');
+    expect(executorMock.dispatch).not.toHaveBeenCalled();
   });
 });

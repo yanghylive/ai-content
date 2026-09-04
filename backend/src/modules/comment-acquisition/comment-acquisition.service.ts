@@ -320,19 +320,26 @@ export class CommentAcquisitionService {
     const scope = await this.resolveScope();
     // 归一化账号 ID（同 scanAccount：兼容数字 id 与 stableId）
     const normalizedAccount = this.normalizeAccountId(input.accountId);
-    // 平台兜底：未传 platform 时按账号 type 推断（2=视频号、其余=抖音），
-    // 避免前端漏传导致误走视频号分支报「视频号账号未登录」。
-    let platform: 'douyin' | 'wechat-channel' =
+    // 平台归一：DTO 类型虽约束 douyin/wechat-channel，但 @Body() 运行时可能漏传
+    // undefined，此处按账号 type 推断（2=视频号、其余=抖音）。
+    // 推断失败时显式报错，不再静默兜底成抖音（S4-7：避免掩盖真实错误）。
+    let platform: 'douyin' | 'wechat-channel' | undefined =
       input.platform === 'douyin'
         ? 'douyin'
         : input.platform === 'wechat-channel'
           ? 'wechat-channel'
-          : (undefined as unknown as 'douyin');
+          : undefined;
     if (!platform) {
       const accounts = await this.autoUpload.listAccounts({
         ids: [normalizedAccount.numericId ?? Number(input.accountId)],
       });
-      platform = accounts?.[0]?.type === 2 ? 'wechat-channel' : 'douyin';
+      const inferred = accounts?.[0]?.type === 2 ? 'wechat-channel' : 'douyin';
+      if (!accounts || accounts.length === 0) {
+        throw new NotFoundException(
+          `无法推断私信平台：账号 ${input.accountId} 无对应账号记录，请显式传入 platform（douyin/wechat-channel）`,
+        );
+      }
+      platform = inferred;
     }
     // P1 复核（全面审查）：scanDm 真实发私信前必须账号归属校验——
     // 对齐 scanAccount，防凭他人 accountId 读私信并对他人账号自动回复
