@@ -305,6 +305,15 @@
     syncOctopPill();
   });
 
+  /* 标签条视图只有 38px 高，弹层越界会被裁掉（用户视角=点了没反应）。
+     开合弹层时把需要的视图总高上报主进程临时加高（同控制条快捷行思路）。 */
+  function announcePopup() {
+    let bottom = 38;
+    for (const el of [addMenuEl, menuEl, ctxEl, popEl]) {
+      if (el.classList.contains('open')) bottom = Math.max(bottom, Math.ceil(el.getBoundingClientRect().bottom) + 6);
+    }
+    window.tabStrip.send('tab-strip:popup', Math.min(bottom, 340));
+  }
   function hideAll() {
     addMenuEl.classList.remove('open');
     menuEl.classList.remove('open');
@@ -312,6 +321,7 @@
     popEl.classList.remove('open');
     addBtn.classList.remove('open');
     moreBtn.classList.remove('open');
+    announcePopup();
   }
   document.addEventListener('mousedown', (e) => {
     if (e.target.closest('.menu') || e.target.closest('.pop') || e.target.closest('#add') || e.target.closest('#more') || e.target.closest('.ws')) return;
@@ -451,6 +461,7 @@
     menuEl.classList.remove('open');
     popEl.classList.remove('open');
     ctxEl.classList.add('open');
+    announcePopup();
   }
   ctxEl.addEventListener('click', (e) => {
     const act = e.target.getAttribute('data-act');
@@ -476,6 +487,7 @@
     ctxEl.classList.remove('open');
     menuEl.classList.remove('open');
     popEl.classList.add('open');
+    announcePopup();
     popInput.focus();
     popInput.select();
   }
@@ -503,6 +515,7 @@
     addMenuEl.style.top = (r.bottom + 6) + 'px';
     addMenuEl.classList.toggle('open', willOpen);
     addBtn.classList.toggle('open', willOpen);
+    announcePopup();
   });
   addMenuEl.addEventListener('click', (e) => {
     const act = e.target.getAttribute('data-act');
@@ -525,6 +538,7 @@
     const willOpen = !menuEl.classList.contains('open');
     menuEl.classList.toggle('open', willOpen);
     moreBtn.classList.toggle('open', willOpen);
+    announcePopup();
   });
   menuEl.addEventListener('click', (e) => {
     const act = e.target.getAttribute('data-act');

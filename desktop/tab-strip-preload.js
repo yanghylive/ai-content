@@ -16,7 +16,9 @@ const SEND_CHANNELS = new Set([
   'tab-strip:browser-hide',
   'tab-strip:browser-open-current',
   'tab-strip:browser-new-tab',
-  'tab-strip:browser-width'
+  'tab-strip:browser-width',
+  // 菜单/气泡展开时上报所需视图高度（38px 标签条视图会裁掉越界弹层）
+  'tab-strip:popup'
 ]);
 
 // 可 invoke 的请求通道（tab 条 → main，仅只读 list）

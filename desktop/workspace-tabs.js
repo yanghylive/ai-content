@@ -682,7 +682,8 @@ class TabManager {
     const w = Math.max(0, width);
     const h = Math.max(0, height);
     // tab 条：顶部通栏
-    this.tabStrip.setBounds({ x: 0, y: 0, width: w, height: TAB_STRIP_HEIGHT });
+    // 弹层展开期临时加高（tab-strip.html announcePopup 上报）；置顶防被业务/面板视图盖住
+    this.tabStrip.setBounds({ x: 0, y: 0, width: w, height: Math.max(TAB_STRIP_HEIGHT, this._popupHeight || 0) });
     // 内容：tab 条下方铺满。
     // 2026-09-03（浏览器面板阶段 2）：右侧面板打开时业务区让出 rightInset 宽度，
     // 避免 WebContentsView 重叠遮挡 3010 主内容（面板自身负责 rightInset 区域）。
@@ -786,6 +787,19 @@ class TabManager {
     ipcMain.on('tab-strip:request-octop', (e) => {
       if (!this._isTabStripSender(e.sender)) return;
       this.sendToBusiness('octop:request-launch');
+    });
+    // 标签条弹层（＋菜单/⋯菜单/右键/绑定气泡）高度上报：38px 视图装不下越界弹层，
+    // 加高视图并把标签条提到最上层（收起时归位 38px）。
+    ipcMain.on('tab-strip:popup', (e, height) => {
+      if (!this._isTabStripSender(e.sender)) return;
+      const h = Math.max(0, Math.min(Number(height) || 0, 340));
+      if (h === (this._popupHeight || 0)) return;
+      this._popupHeight = h;
+      if (!this.window || this.window.isDestroyed() || !this.tabStrip) return;
+      try {
+        this.relayout();
+        if (h > 38) this.window.contentView.addChildView(this.tabStrip); // 重添加 = 移到最上层
+      } catch { /* 视图竞态：下一帧 relayout 自愈 */ }
     });
 
     // workspace-tabs:* 只信业务前端来源（octop 标签无 preload 调不到；tab 条仅放行只读 list）
