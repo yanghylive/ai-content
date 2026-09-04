@@ -30,11 +30,15 @@ const crypto = require('node:crypto');
 const { writeMode, readMode, clearMode } = require('./browser-panel-mode-registry');
 
 // 面板最小宽：不再是固定 360，而是「手机视口比例」动态值（见 _phoneMinWidth）——
-// 往左滑到最窄时，面板页面区正好是一块手机屏（iPhone 15 Pro 393×852）。
+// 往左滑到最窄时，面板页面区正好是一块主流手机屏。
 // 此常量退居两层用途：比例异常时的兜底下限 + 记忆宽度合法性校验。
 const PANEL_MIN_WIDTH = 320;
-/** 手机视口比例（宽/高）：iPhone 15 Pro 逻辑视口 393×852 */
-const PHONE_VIEWPORT_RATIO = 393 / 852;
+/**
+ * 手机视口比例（宽/高）= 20:9——当下主流全面屏标准：小米/华为/三星旗舰
+ * （1080×2400、1440×3200）、Pixel 412×915 都是这个比例；比 iPhone 的
+ * 19.5:9（393×852）更窄长，观感更接近"真手机"。
+ */
+const PHONE_VIEWPORT_RATIO = 9 / 20;
 /** 动态手机宽上限：再高也不把业务区挤过头（小窗时比例让位于可用宽） */
 const PANEL_PHONE_WIDTH_MAX = 560;
 const PANEL_DEFAULT_WIDTH = 480;
@@ -439,7 +443,7 @@ class BrowserPanelManager {
 
   /**
    * 最窄 = 手机比例宽：面板页面区高 ≈ 窗口内容高 − 顶部通栏 − 控制条基准高，
-   * 乘 393:852 即得「这块屏是手机」的像素宽。窗口越高，滑到最窄越宽——
+   * 乘 20:9 即得「这块屏是主流手机」的像素宽。窗口越高，滑到最窄越宽——
    * 与真手机竖屏比例始终一致，而不是固定 360 在高屏上显得过窄。
    */
   _phoneMinWidth() {
