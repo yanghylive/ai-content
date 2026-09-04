@@ -153,6 +153,8 @@ class BrowserPanelManager {
     this._stateListeners = new Set();
     /** 控制条快捷跳转行是否展开（参与 _stripHeight） */
     this._stripExpanded = false;
+    /** 展开部分当前高度（快捷行 30 / 建议下拉按需加高） */
+    this._stripExpandH = STRIP_EXPAND_HEIGHT;
     /** Agent/面板活动日志（时间戳记录，供控制条底部活动条回看） */
     this._activityLog = [];
   }
@@ -164,9 +166,17 @@ class BrowserPanelManager {
     return () => this._stateListeners.delete(cb);
   }
 
-  /** 地址栏聚焦→控制条加高一行的快捷跳转行；失焦收起 */
-  setStripExpanded(on) {
+  /**
+   * 地址栏聚焦→控制条加高，露出快捷跳转行/建议下拉；失焦收起。
+   * @param {number} [height] 展开区需要的像素高（快捷行 30；建议下拉按需
+   *   30 + 建议条数*24）。视图只有此高度，内容区溢出会被裁掉，故高度要量准。
+   */
+  setStripExpanded(on, height) {
     const next = !!on;
+    if (on) {
+      const h = Math.max(30, Math.min(160, Math.floor(Number(height) || STRIP_EXPAND_HEIGHT)));
+      this._stripExpandH = h;
+    }
     if (this._stripExpanded === next) return this._stripHeight();
     this._stripExpanded = next;
     this.relayout();
@@ -959,7 +969,7 @@ class BrowserPanelManager {
   /** 控制条总高：多 tab 时加 tab 条行（round15；单 tab 零干扰不变高） */
   _stripHeight() {
     const base = this._panelTabs.length > 1 ? STRIP_HEIGHT + TABBAR_HEIGHT : STRIP_HEIGHT;
-    const extra = (this._stripExpanded ? STRIP_EXPAND_HEIGHT : 0) + (this._activityLog.length ? ACTIVITY_ROW_HEIGHT : 0);
+    const extra = (this._stripExpanded ? this._stripExpandH : 0) + (this._activityLog.length ? ACTIVITY_ROW_HEIGHT : 0);
     return base + extra;
   }
 

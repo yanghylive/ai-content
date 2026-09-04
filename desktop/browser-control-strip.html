@@ -101,6 +101,28 @@
     }
     #quickrow .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--card); }
     #quickrow .chip .k { font: 10px ui-monospace, Menlo, monospace; opacity: .55; }
+    /* ---- 加载进度线（页面加载的可视反馈） ---- */
+    body { position: relative; }
+    #prog { position: absolute; left: 0; right: 0; top: 0; height: 2px; pointer-events: none; opacity: 0; transition: opacity .18s; z-index: 5; }
+    #prog i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #722ed1, #b37feb); }
+    #prog.on { opacity: 1; }
+    #prog.on i { animation: progflow 2.2s ease-in-out infinite; }
+    #prog.done { opacity: 1; }
+    #prog.done i { width: 100%; transition: width .22s ease; animation: none; }
+    @keyframes progflow { 0% { width: 5%; margin-left: 0; } 55% { width: 68%; } 100% { width: 78%; margin-left: 32%; opacity: .92; } }
+    /* ---- 建议下拉（最近访问过滤 + 搜索兜底；与快捷行同处展开区） ---- */
+    #sugbox { display: none; flex: none; background: var(--card); border-top: 1px solid var(--border); padding: 2px 6px 6px; }
+    #sugbox.show { display: block; }
+    #sugbox .sug {
+      display: flex; align-items: center; gap: 7px; height: 24px; padding: 0 8px;
+      border: none; background: transparent; color: var(--text); font-size: 11.5px;
+      cursor: pointer; width: 100%; text-align: left; border-radius: 6px;
+    }
+    #sugbox .sug:hover { background: var(--hover); }
+    #sugbox .sug .u { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+    #sugbox .sug .host { flex: none; color: var(--text-faint); font-size: 10.5px; }
+    #sugbox .sug.search { color: var(--accent); }
+    #sugbox .sug.search .u { color: var(--accent); }
     /* ---- 面板活动条（TraeWork「控制台日志」语义） ---- */
     #activityrow {
       display: none; flex: none; height: 30px; align-items: center; gap: 8px;
@@ -140,6 +162,7 @@
   </style>
 </head>
 <body>
+  <div id="prog"><i></i></div>
   <div id="tabbar"></div>
   <div id="activityrow" title="最近活动（点击展开全部）">
     <span class="dot" style="background:var(--text-faint)"></span>
@@ -149,6 +172,7 @@
     <span class="clr">清除</span>
   </div>
   <div id="activityfull"></div>
+  <div id="sugbox"></div>
   <div id="quickrow">
     <span class="lbl">快捷打开</span>
     <button type="button" class="chip" data-url="https://www.douyin.com">抖音</button>
@@ -174,7 +198,7 @@
         onState: (cb) => {
           cb({
             canGoBack: true, canGoForward: false,
-            session: { currentUrl: 'https://www.douyin.com/video/7498231...', status: 'ready' },
+            session: { currentUrl: 'https://www.douyin.com/video/7498231...', status: 'starting' },
             agentMode: 'off', hasSession: true, panelWidth: 480, tabActiveIndex: 0,
             tabList: [
               { title: '抖音 · 装修视频评论区', url: 'https://www.douyin.com/video/7498231' },
@@ -277,19 +301,101 @@
     });
     $('addr').addEventListener('focus', () => {
       $('quickrow').classList.add('show');
-      $('addr').select();
+      $('sugbox').classList.add('show');
+      renderSug();
+      updateExpand();
+      setTimeout(() => $('addr').select(), 0);
     });
     $('addr').addEventListener('blur', () => {
-      setTimeout(() => $('quickrow').classList.remove('show'), 120);
+      setTimeout(() => { $('sugbox').classList.remove('show'); $('quickrow').classList.remove('show'); invoke('browser-panel:expand-strip', false); }, 140);
     });
+
+    /* ---- 加载进度线（session.status 驱动） ---- */
+    const prog = $('prog');
+    let lastStatus = '';
+    function setProg(status) {
+      if (status === lastStatus) return;
+      lastStatus = status;
+      if (status === 'starting') {
+        prog.classList.remove('done');
+        prog.classList.add('on');
+      } else if (status === 'ready' || status === 'error' || status === 'blocked' || status === 'needs-human') {
+        prog.classList.remove('on');
+        prog.classList.add('done');
+        setTimeout(() => { prog.classList.remove('done', 'on'); }, 420);
+      } else {
+        prog.classList.remove('on', 'done');
+      }
+    }
+
+    /* ---- 最近访问建议（从活动流 nav 记录推导） + 搜索兜底 ---- */
+    let recentUrls = [];
+    function collectRecents(state) {
+      const out = [];
+      for (const a of state.activity || []) {
+        if (a.type === 'nav' && a.text.startsWith('打开 ')) {
+          const url = a.text.slice(3);
+          try {
+            const host = new URL(url).hostname;
+            if (!out.some((u) => new URL(u).hostname === host)) out.push(url);
+          } catch (e) { /* 跳过非法 URL */ }
+        }
+      }
+      recentUrls = out.slice(0, 6);
+    }
+    function renderSug() {
+      const box = $('sugbox');
+      const q = $('addr').value.trim();
+      box.innerHTML = '';
+      const lower = q.toLowerCase();
+      if (!q) { return; }
+      const matched = recentUrls.filter((u) => u.toLowerCase().includes(lower)).slice(0, 4);
+      if (!matched.length) {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'sug search';
+        row.innerHTML = '<span class="u">搜索「' + q.replace(/[<>&"]/g, '') + '」</span><span class="host">百度</span>';
+        row.onclick = () => quick('https://www.baidu.com/s?wd=' + encodeURIComponent(q));
+        box.appendChild(row);
+      } else {
+        for (const url of matched) {
+          const row = document.createElement('button');
+          row.type = 'button';
+          row.className = 'sug';
+          row.insertAdjacentHTML('afterbegin', favFor(url));
+          const u = document.createElement('span');
+          u.className = 'u';
+          u.textContent = url;
+          row.appendChild(u);
+          try { const h = document.createElement('span'); h.className = 'host'; h.textContent = new URL(url).hostname; row.appendChild(h); } catch (e) {}
+          row.onclick = () => { $('addr').value = url; quick(url); };
+          box.appendChild(row);
+        }
+      }
+    }
+    function updateExpand() {
+      const sugH = $('sugbox').scrollHeight || 0;
+      const need = 32 + sugH; // 快捷行 30 + 建议区（含上下边距）
+      invoke('browser-panel:expand-strip', true, Math.min(160, need));
+    }
+    function collapseExpand() {
+      $('sugbox').classList.remove('show');
+      $('quickrow').classList.remove('show');
+      invoke('browser-panel:expand-strip', false);
+    }
+    $('addr').addEventListener('input', () => { renderSug(); updateExpand(); });
     $('addr').addEventListener('keydown', (event) => {
       if (event.key !== 'Enter') return;
       const raw = $('addr').value.trim();
       if (!raw) return;
+      renderSug();
+      const first = $('sugbox').querySelector('.sug');
+      if (first && first.onclick) { first.onclick(); return; }
       const url = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw) ? raw : `https://${raw}`;
-      invoke('browser-panel:navigate', url);
-      $('addr').blur();
+      quick(url);
     });
+    // 建议行点击不能先触发 blur（否则下拉先收起又收不到点击）
+    $('sugbox').addEventListener('pointerdown', (e) => { e.preventDefault(); });
 
     // round15：tab 条（用户手动切/关；面板只暴露自己的页面，无第三方 IPC 特权）
     function renderTabbar(state) {
@@ -348,8 +454,10 @@
       renderTabbar(state);
       // 面板活动条（publicState.activity 驱动）
       lastActivity = Array.isArray(state.activity) ? state.activity : [];
-      if (activityOpen) renderActivity(lastActivity);
-      else renderActivity(lastActivity);
+      renderActivity(lastActivity);
+      collectRecents(state);
+      setProg(s);
+      if (document.activeElement === $('addr')) renderSug();
     });
   </script>
 </body>

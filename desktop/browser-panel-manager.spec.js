@@ -226,6 +226,11 @@ test('扩展行：地址栏聚焦时控制条视图加高 30px，失焦复原（
   assert.equal(manager._stripExpanded, true);
   assert.equal(h2, h1 + 30, '控制条视图加高一行');
   assert.equal(manager.setStripExpanded(true), h1 + 30, '重复调用幂等');
+  // 建议下拉按需加高（快捷行 30 + 建议条数*24），上限 160
+  const hBig = manager.setStripExpanded(true, 102);
+  assert.equal(hBig, h1 + 102, '定制高度生效');
+  assert.equal(manager.setStripExpanded(true, 999), h1 + 160, '高度上限 160');
+  assert.equal(manager.setStripExpanded(true, 10), h1 + 30, '高度下限 30');
   manager.setStripExpanded(false);
   assert.equal(manager._stripHeight(), h1, '失焦复原');
   manager.hide();

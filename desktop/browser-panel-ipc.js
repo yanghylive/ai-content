@@ -94,7 +94,7 @@ function registerBrowserPanelIpc(deps) {
   ipcMain.handle('browser-panel:show', stripOnly(() => getPanel().show()));
   ipcMain.handle('browser-panel:set-width', stripOnly((w) => getPanel().setWidth(w)));
   // 地址栏聚焦时的快捷跳转行（控制条/沟槽视图展开自己的高度）
-  ipcMain.handle('browser-panel:expand-strip', stripOnly((on) => getPanel().setStripExpanded(on)));
+  ipcMain.handle('browser-panel:expand-strip', stripOnly((on, height) => getPanel().setStripExpanded(on, height)));
   // 活动条「清除」：清空面板活动日志（控制条 stripOnly）
   ipcMain.handle('browser-panel:clear-activity', stripOnly(() => { getPanel().clearActivity(); return true; }));
   // 拖拽调宽会话：沟槽 pointerdown 开始 / pointerup 结束。视图只有 10px 宽，
