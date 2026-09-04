@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>桌面壳标签栏 · 按需展开原型</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font: 14px/1.5 -apple-system, "PingFang SC", system-ui, sans-serif; background: #e9e4f2; color: #332941; padding: 34px 26px 70px; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .lead { color: #6f6580; margin-bottom: 24px; max-width: 860px; }
+  .caption { font-size: 13px; font-weight: 700; color: #6f6580; margin: 30px 0 10px; letter-spacing: .4px; }
+  .caption b { color: #722ed1; }
+  .win { border-radius: 10px; overflow: visible; box-shadow: 0 18px 50px -12px rgba(51,41,65,.35); background: #fff; max-width: 1180px; position: relative; }
+  .titlebar { height: 36px; display: flex; align-items: center; background: linear-gradient(180deg,#eae4f3,#e2dbef); border-bottom: 1px solid rgba(114,46,209,.14); position: relative; border-radius: 10px 10px 0 0; }
+  .lights { display: flex; gap: 8px; padding-left: 14px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; }
+  .lights i:nth-child(1){ background:#ff5f57 } .lights i:nth-child(2){ background:#febc2e } .lights i:nth-child(3){ background:#28c840 }
+  .titlebar .tt { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; font-size: 13px; color: #4d4160; pointer-events: none; }
+  .strip { display:flex; align-items:center; gap:6px; height:38px; padding:0 10px; background:#f4f1fa; border-bottom:1px solid rgba(114,46,209,.16); white-space:nowrap; overflow:hidden; }
+  .brand { color:#722ed1; font-weight:800; letter-spacing:.5px; padding-right:10px; border-right:1px solid rgba(114,46,209,.16); margin-right:4px; }
+  .pill { padding:4px 10px; border:1px solid rgba(217,143,43,.45); border-radius:7px; color:#d98f2b; font-size:13px; cursor:pointer; background:transparent; }
+  .pill:hover { background:rgba(217,143,43,.1); }
+  .tabs { display:flex; align-items:center; gap:4px; flex:1; }
+  .tab { display:flex; align-items:center; gap:6px; padding:5px 8px 5px 10px; border:1px solid transparent; border-radius:8px; color:#332941; font-size:13px; cursor:pointer; background:transparent; }
+  .tab:hover { background:rgba(114,46,209,.06); }
+  .tab.active { background:#fff; border-color:rgba(114,46,209,.16); box-shadow:0 1px 3px rgba(51,41,65,.1); }
+  .tab.active .t { color:#722ed1; font-weight:600; }
+  .ws { font-size:10px; color:#d98f2b; background:rgba(217,143,43,.1); border:1px solid rgba(217,143,43,.3); padding:1px 5px; border-radius:4px; cursor:pointer; }
+  .ws:hover { background:rgba(217,143,43,.22); }
+  .x { width:16px; height:16px; line-height:14px; text-align:center; border-radius:4px; color:#8b8496; font-size:13px; }
+  .x:hover { background:#e5484d; color:#fff; }
+  .add { width:26px; height:26px; line-height:24px; text-align:center; border:1px dashed rgba(114,46,209,.16); border-radius:8px; color:#9254de; font-weight:700; cursor:pointer; flex:0 0 auto; }
+  .add:hover { background:rgba(114,46,209,.06); border-color:#9254de; }
+  .menu { position:absolute; z-index:60; min-width:198px; background:#fff; border:1px solid rgba(114,46,209,.16); border-radius:10px; box-shadow:0 10px 30px rgba(51,41,65,.22); padding:5px; }
+  .menu button { display:block; width:100%; text-align:left; background:none; border:none; border-radius:7px; padding:7px 10px; font-size:12.5px; color:#332941; cursor:pointer; font-family:inherit; }
+  .menu button:hover { background:rgba(114,46,209,.06); }
+  .menu hr { border:none; border-top:1px solid rgba(114,46,209,.16); margin:4px 6px; }
+  .menu .chk { display:flex; align-items:center; gap:7px; padding:6px 10px; font-size:12.5px; color:#8b8496; border-radius:7px; cursor:pointer; }
+  .pop { position:absolute; z-index:60; width:252px; background:#fff; border:1px solid rgba(114,46,209,.16); border-radius:10px; box-shadow:0 10px 30px rgba(51,41,65,.22); padding:10px; }
+  .pop input { width:100%; background:#f4f1fa; border:1px solid rgba(114,46,209,.16); border-radius:6px; padding:5px 8px; font-size:12px; color:#332941; }
+  .popbtns { display:flex; gap:6px; margin-top:8px; justify-content:flex-end; }
+  .popbtns button { border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer; border:1px solid rgba(114,46,209,.16); background:transparent; color:#8b8496; font-family:inherit; }
+  .popbtns button.primary { background:#722ed1; border-color:#722ed1; color:#fff; }
+  .content { display:flex; background:#fbfaff; height:220px; border-radius:0 0 10px 10px; overflow:hidden; }
+  .rail { width:56px; background:#221a2e; display:flex; flex-direction:column; align-items:center; padding:10px 0; gap:12px; }
+  .rail .logo { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#9254de,#531dab); }
+  .rail i { width:20px; height:20px; border-radius:6px; background:rgba(255,255,255,.14); }
+  .rail i.on { background:#e39a3e; }
+  .page { flex:1; padding:16px 22px; }
+  .page h2 { font-size:17px; } .page .sub { color:#8b8496; font-size:12px; }
+  .hint { font-size:12px; color:#6f6580; margin-top:8px; max-width:860px; }
+  .dark .strip, .strip.dark { background:#1d1726; border-bottom-color:rgba(146,84,222,.35); color:#ece6f5; }
+  .strip.dark .brand { color:#b18af0; border-right-color:rgba(146,84,222,.35); }
+  .strip.dark .tab { color:#ece6f5; }
+  .strip.dark .tab:hover { background:rgba(146,84,222,.12); }
+  .strip.dark .tab.active { background:#322743; border-color:rgba(146,84,222,.35); box-shadow:0 1px 3px rgba(0,0,0,.4); }
+  .strip.dark .tab.active .t { color:#c9a6f5; }
+  .strip.dark .add { border-color:rgba(146,84,222,.35); color:#c9a6f5; }
+</style>
+</head>
+<body>
+  <h1>桌面壳标签栏 · 浏览器式按需展开</h1>
+  <p class="lead">规则：常驻只有「品牌 + 标签 + ＋」。Octop 入口、工作区绑定都不占位——用时才出现；想常驻 Octop，在菜单里勾一下即可。以下 6 个状态都已在真实壳中实现。</p>
+
+  <div class="caption">① 默认态（干净：品牌 + 标签 + ＋）</div>
+  <div class="win">
+    <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
+    <div class="strip">
+      <span class="brand">JIUZHANG</span>
+      <div class="tabs">
+        <div class="tab active"><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
+        <div class="tab"><span class="t">获客任务 · 抖音装修</span><span class="x">×</span></div>
+        <div class="tab"><span class="t">内容运营</span><span class="x">×</span></div>
+      </div>
+      <div class="add">+</div>
+    </div>
+    <div class="content"><div class="rail"><div class="logo"></div><i class="on"></i><i></i><i></i><i></i></div><div class="page"><h2>今日增长</h2><div class="sub">真实应用内容（此处示意）</div></div></div>
+  </div>
+
+  <div class="caption">② 点 <b>＋</b>：新建标签 / 打开 Octop / 选择是否常驻</div>
+  <div class="win" style="margin-bottom:120px">
+    <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
+    <div class="strip">
+      <span class="brand">JIUZHANG</span>
+      <div class="tabs">
+        <div class="tab active"><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
+      </div>
+      <div class="add" style="background:rgba(114,46,209,.06);border-color:#9254de">+</div>
+    </div>
+    <div class="menu" style="right:10px; top:74px;">
+      <button>新建工作区标签</button>
+      <button>打开 Octop 高级模式</button>
+      <hr />
+      <div class="chk"><input type="checkbox" /> Octop 入口常驻标签栏</div>
+    </div>
+  </div>
+
+  <div class="caption">③ 右键标签：重命名 / 绑定工作区 / 关闭（固定标签无关闭）</div>
+  <div class="win" style="margin-bottom:150px">
+    <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
+    <div class="strip">
+      <span class="brand">JIUZHANG</span>
+      <div class="tabs">
+        <div class="tab active"><span class="t">业务工作区</span></div>
+        <div class="tab" style="background:rgba(114,46,209,.06)"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
+      </div>
+      <div class="add">+</div>
+    </div>
+    <div class="menu" style="left:150px; top:78px;">
+      <button>重命名标签</button>
+      <button>绑定工作区…</button>
+      <button style="color:#e5484d">关闭标签</button>
+    </div>
+  </div>
+
+  <div class="caption">④ 点标签上的 <b>WS 徽章</b>：绑定气泡就地弹出（也可解绑）</div>
+  <div class="win" style="margin-bottom:140px">
+    <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
+    <div class="strip">
+      <span class="brand">JIUZHANG</span>
+      <div class="tabs">
+        <div class="tab active"><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="t">今日增长</span><span class="ws" style="background:rgba(217,143,43,.22)">WS:ws-8f3</span><span class="x">×</span></div>
+      </div>
+      <div class="add">+</div>
+    </div>
+    <div class="pop" style="left:180px; top:76px;">
+      <input value="ws-8f3c21" />
+      <div class="popbtns"><button>解绑</button><button class="primary">绑定</button></div>
+    </div>
+  </div>
+
+  <div class="caption">⑤ 勾选常驻后：Octop 入口出现在品牌右侧（用户主动选择）</div>
+  <div class="win">
+    <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
+    <div class="strip">
+      <span class="brand">JIUZHANG</span>
+      <div class="pill">Octop 高级模式</div>
+      <div class="tabs">
+        <div class="tab active"><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
+      </div>
+      <div class="add">+</div>
+    </div>
+  </div>
+
+  <div class="caption">⑥ 深色模式（系统深色时自动适配）</div>
+  <div class="win">
+    <div class="strip dark" style="border-radius:10px 10px 0 0;">
+      <span class="brand">JIUZHANG</span>
+      <div class="tabs">
+        <div class="tab active"><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
+        <div class="tab"><span class="t">Octop 高级模式</span><span class="x">×</span></div>
+      </div>
+      <div class="add">+</div>
+    </div>
+  </div>
+
+  <p class="hint">真实实现：desktop/tab-strip.html（已同步上线以上全部交互：＋菜单、右键菜单、WS 绑定气泡、Octop 常驻开关用 localStorage 持久化；IPC 通道未动，桌面应用重开窗口即生效）。实时预览：http://127.0.0.1:8924/tab-strip.html</p>
+</body>
+</html>

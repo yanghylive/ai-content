@@ -7,15 +7,32 @@
 <style>
   :root {
     --purple: #722ed1;
-    --purple-soft: #8b5cf6;
-    --gold: #e39a3e;
-    --bg: #1a1422;
-    --bg-soft: #241a30;
-    --tab-bg: #2a2036;
-    --tab-active: #3a2b4d;
-    --text: #e8e2f0;
-    --text-dim: #9a8fb0;
+    --purple-soft: #9254de;
+    --gold: #d98f2b;
+    --bg: #f4f1fa;
+    --bg-soft: #ece7f6;
+    --tab-bg: rgba(255, 255, 255, 0.6);
+    --tab-active: #ffffff;
+    --text: #332941;
+    --text-dim: #8b8496;
     --danger: #e5484d;
+    --border: rgba(114, 46, 209, 0.16);
+    --hover: rgba(114, 46, 209, 0.06);
+    --shadow: 0 1px 3px rgba(51, 41, 65, 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1d1726;
+      --bg-soft: #241d2f;
+      --tab-bg: rgba(255, 255, 255, 0.05);
+      --tab-active: #322743;
+      --text: #ece6f5;
+      --text-dim: #b3a6c9;
+      --gold: #e39a3e;
+      --border: rgba(146, 84, 222, 0.35);
+      --hover: rgba(146, 84, 222, 0.12);
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -35,105 +52,207 @@
     gap: 6px;
     width: 100%;
     height: 38px;
-    padding: 0 8px;
-    background: linear-gradient(90deg, var(--bg) 0%, var(--bg-soft) 100%);
-    border-bottom: 1px solid rgba(114,46,209,0.4);
+    padding: 0 10px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
   }
   .brand {
-    color: var(--gold);
-    font-weight: 700;
+    color: var(--purple);
+    font-weight: 800;
     letter-spacing: .5px;
-    padding-right: 8px;
-    border-right: 1px solid rgba(227,154,62,0.25);
+    padding-right: 10px;
+    border-right: 1px solid var(--border);
     margin-right: 4px;
     white-space: nowrap;
   }
-  .tabs { display: flex; align-items: center; gap: 6px; flex: 1; overflow-x: auto; scrollbar-width: thin; }
-  .tabs::-webkit-scrollbar { height: 4px; }
+  .hidden { display: none; }
+  .pill {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid rgba(217, 143, 43, 0.45);
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    color: var(--gold);
+    transition: background .12s;
+  }
+  .pill:hover { background: rgba(217, 143, 43, 0.1); }
+  .tabs { display: flex; align-items: center; gap: 4px; flex: 1; overflow-x: auto; scrollbar-width: thin; }
+  .tabs::-webkit-scrollbar { height: 3px; }
   .tabs::-webkit-scrollbar-thumb { background: var(--purple-soft); border-radius: 2px; }
   .tab {
     display: flex; align-items: center; gap: 6px;
     max-width: 220px;
     padding: 5px 8px 5px 10px;
-    background: var(--tab-bg);
+    background: transparent;
     border: 1px solid transparent;
-    border-radius: 7px;
+    border-radius: 8px;
+    color: var(--text);
     cursor: pointer;
     white-space: nowrap;
-    transition: background .12s, border-color .12s;
+    transition: background .12s, border-color .12s, box-shadow .12s;
   }
-  .tab:hover { background: var(--tab-active); }
-  .tab.active { background: var(--tab-active); border-color: var(--purple); box-shadow: 0 0 0 1px rgba(114,46,209,0.5) inset; }
+  .tab:hover { background: var(--hover); }
+  .tab.active { background: var(--tab-active); border-color: var(--border); box-shadow: var(--shadow); }
+  .tab.active .title { color: var(--purple); font-weight: 600; }
   .tab .title { overflow: hidden; text-overflow: ellipsis; }
   .tab .ws {
     font-size: 10px; color: var(--gold);
-    background: rgba(227,154,62,0.12);
+    background: rgba(217, 143, 43, 0.1);
     padding: 1px 5px; border-radius: 4px;
-    border: 1px solid rgba(227,154,62,0.3);
+    border: 1px solid rgba(217, 143, 43, 0.3);
+    cursor: pointer;
   }
+  .tab .ws:hover { background: rgba(217, 143, 43, 0.22); }
   .tab .close {
     width: 16px; height: 16px; line-height: 14px; text-align: center;
     border-radius: 4px; color: var(--text-dim); font-size: 13px;
   }
   .tab .close:hover { background: var(--danger); color: #fff; }
+  .tab.octop.active .title { color: var(--gold); }
   .add {
     flex: 0 0 auto;
     width: 26px; height: 26px; line-height: 24px; text-align: center;
-    background: var(--tab-bg); color: var(--gold);
-    border: 1px dashed rgba(227,154,62,0.5); border-radius: 7px;
+    background: transparent; color: var(--purple-soft);
+    border: 1px dashed var(--border); border-radius: 8px;
     cursor: pointer; font-size: 16px; font-weight: 700;
+    transition: background .12s, border-color .12s;
   }
-  .add:hover { background: var(--tab-active); }
-  .wsbox {
-    flex: 0 0 auto; display: flex; align-items: center; gap: 4px;
-    padding-left: 8px; border-left: 1px solid rgba(114,46,209,0.3);
+  .add:hover { background: var(--hover); border-color: var(--purple-soft); }
+  .menu {
+    position: fixed; z-index: 50; min-width: 198px;
+    background: var(--tab-active);
+    border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(51, 41, 65, 0.22);
+    padding: 5px; display: none;
   }
-  .wsbox input {
-    width: 150px; background: var(--bg-soft); color: var(--text);
-    border: 1px solid rgba(114,46,209,0.4); border-radius: 6px;
-    padding: 4px 8px; font-size: 12px; outline: none;
+  .menu.open { display: block; }
+  .menu button {
+    display: block; width: 100%; text-align: left;
+    background: none; border: none; border-radius: 7px;
+    padding: 7px 10px; font-size: 12.5px; color: var(--text);
+    cursor: pointer; font-family: inherit;
   }
-  .wsbox input:focus { border-color: var(--purple); }
-  .wsbox button {
-    background: var(--purple); color: #fff; border: none; border-radius: 6px;
-    padding: 4px 8px; cursor: pointer; font-size: 12px;
+  .menu button:hover { background: var(--hover); }
+  .menu hr { border: none; border-top: 1px solid var(--border); margin: 4px 6px; }
+  .menu .chk {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 10px; font-size: 12.5px; color: var(--text-dim);
+    cursor: pointer; border-radius: 7px;
   }
-  .wsbox button:hover { background: var(--purple-soft); }
-  .pill {
-    flex: 0 0 auto;
-    padding: 4px 10px;
-    background: var(--tab-bg);
-    border: 1px solid rgba(114,46,209,0.5);
-    border-radius: 7px;
-    cursor: pointer;
-    white-space: nowrap;
-    color: var(--text);
+  .menu .chk:hover { background: var(--hover); }
+  .pop {
+    position: fixed; z-index: 50; width: 252px;
+    background: var(--tab-active);
+    border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(51, 41, 65, 0.22);
+    padding: 10px; display: none;
   }
-  .pill:hover { background: var(--tab-active); }
-  .pill.octop { border-color: rgba(227,154,62,0.6); color: var(--gold); }
-  .pill.octop:hover { background: rgba(227,154,62,0.12); }
-  .tab.octop { border-color: rgba(227,154,62,0.4); }
-  .tab.octop.active { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(227,154,62,0.5) inset; }
+  .pop.open { display: block; }
+  .pop input {
+    width: 100%; background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 8px; font-size: 12px; outline: none; font-family: inherit;
+  }
+  .pop input:focus { border-color: var(--purple-soft); }
+  .popbtns { display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end; }
+  .popbtns button {
+    border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+    border: 1px solid var(--border); background: transparent; color: var(--text-dim);
+    font-family: inherit;
+  }
+  .popbtns button:hover { background: var(--hover); }
+  .popbtns button.primary { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .popbtns button.primary:hover { background: var(--purple-soft); }
 </style>
 </head>
 <body>
   <div id="strip">
     <span class="brand">JIUZHANG</span>
-    <div class="pill" id="businessPill" title="切换到业务工作区">业务工作区</div>
-    <div class="pill octop" id="octopPill" title="打开 Octop 高级模式">＋ Octop 高级模式</div>
+    <div class="pill hidden" id="octopPill" title="打开 Octop 高级模式">Octop 高级模式</div>
     <div class="tabs" id="tabs"></div>
-    <div class="add" id="add" title="新建标签">+</div>
-    <div class="wsbox">
-      <input id="wsInput" type="text" placeholder="绑定工作区 ID（激活标签）" />
-      <button id="wsBind">绑定</button>
+    <div class="add" id="add" title="新建标签 / Octop">+</div>
+  </div>
+
+  <div class="menu" id="menu">
+    <button type="button" data-act="new">新建工作区标签</button>
+    <button type="button" data-act="octop">打开 Octop 高级模式</button>
+    <hr />
+    <label class="chk"><input type="checkbox" id="pinOctop" />Octop 入口常驻标签栏</label>
+  </div>
+
+  <div class="menu" id="ctx">
+    <button type="button" data-act="rename">重命名标签</button>
+    <button type="button" data-act="bind">绑定工作区…</button>
+    <button type="button" data-act="close">关闭标签</button>
+  </div>
+
+  <div class="pop" id="wspop">
+    <input id="wsPopInput" type="text" placeholder="输入工作区 ID，留空解除绑定" />
+    <div class="popbtns">
+      <button type="button" id="wsUnbind">解绑</button>
+      <button type="button" id="wsBind" class="primary">绑定</button>
     </div>
   </div>
 
 <script>
-  const tabsEl = document.getElementById('tabs');
-  const wsInput = document.getElementById('wsInput');
-  const state = { activeId: null, tabs: [] };
+  // 浏览器预览垫片：非 Electron 环境（无 preload 注入的 window.tabStrip）时，
+  // 用 mock 标签数据渲染同一份壳，供所见即所得调样式；Electron 内此分支不执行。
+  if (!window.tabStrip) {
+    const MOCK_TABS = [
+      { id: 'biz', title: '业务工作区', pinned: true, active: true, kind: 'business' },
+      { id: 'ws1', title: '今日增长', kind: 'business', workspaceId: 'ws-8f3c21' },
+      { id: 'ws2', title: '获客任务 · 抖音装修', kind: 'business' },
+      { id: 'ws3', title: '内容运营', kind: 'business' },
+      { id: 'oct1', title: 'Octop 高级模式', kind: 'octop' },
+    ];
+    window.tabStrip = {
+      send: (channel, ...args) => console.log('[preview mock send]', channel, ...args),
+      on: () => {},
+      invoke: (name) =>
+        name === 'workspace-tabs:list' ? Promise.resolve(MOCK_TABS) : Promise.resolve([]),
+    };
+  }
 
+  const tabsEl = document.getElementById('tabs');
+  const menuEl = document.getElementById('menu');
+  const ctxEl = document.getElementById('ctx');
+  const popEl = document.getElementById('wspop');
+  const popInput = document.getElementById('wsPopInput');
+  const octopPill = document.getElementById('octopPill');
+  const pinChk = document.getElementById('pinOctop');
+  const state = { activeId: null, tabs: [] };
+  let popTabId = null;
+  let ctxTarget = null;
+
+  /* ---------- Octop 入口：默认收起，用户勾选后常驻（localStorage 持久化） ---------- */
+  function isOctopPinned() {
+    try { return localStorage.getItem('octopPinned') === '1'; } catch (e) { return false; }
+  }
+  function syncOctopPill() {
+    const p = isOctopPinned();
+    octopPill.classList.toggle('hidden', !p);
+    pinChk.checked = p;
+  }
+  octopPill.addEventListener('click', () => { hideAll(); window.tabStrip.send('tab-strip:request-octop'); });
+  pinChk.addEventListener('change', () => {
+    try { localStorage.setItem('octopPinned', pinChk.checked ? '1' : '0'); } catch (e) {}
+    syncOctopPill();
+  });
+
+  function hideAll() {
+    menuEl.classList.remove('open');
+    ctxEl.classList.remove('open');
+    popEl.classList.remove('open');
+  }
+  document.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.menu') || e.target.closest('.pop') || e.target.closest('#add') || e.target.closest('.ws')) return;
+    hideAll();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideAll(); });
+
+  /* ---------- 渲染 ---------- */
   function render() {
     tabsEl.innerHTML = '';
     for (const t of state.tabs) {
@@ -147,7 +266,8 @@
         const ws = document.createElement('span');
         ws.className = 'ws';
         ws.textContent = 'WS:' + t.workspaceId.slice(0, 6);
-        ws.title = t.workspaceId;
+        ws.title = t.workspaceId + '（点击修改绑定）';
+        ws.addEventListener('click', (e) => { e.stopPropagation(); openBind(t, ws); });
         el.appendChild(ws);
       }
       // 固定标签（业务工作区）不可关闭，不渲染关闭按钮
@@ -158,61 +278,117 @@
         close.onclick = (e) => { e.stopPropagation(); window.tabStrip.send('tab-strip:close', t.id); };
         el.appendChild(close);
       }
-      el.onclick = () => window.tabStrip.send('tab-strip:switch', t.id);
-      // 双击进入内联改名（Electron 不支持 window.prompt，改用输入框；Enter 提交 / Esc 取消 / 失焦提交）
-      el.ondblclick = (e) => {
-        if (el.querySelector('input.rename')) return;
-        e.stopPropagation();
-        const prev = t.title || '工作台';
-        title.style.display = 'none';
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'rename';
-        input.value = prev;
-        input.style.cssText = 'width:110px;background:var(--bg-soft);color:var(--text);border:1px solid var(--purple);border-radius:4px;padding:1px 4px;font-size:12px;outline:none;';
-        el.insertBefore(input, title);
-        input.focus();
-        input.select();
-        let done = false;
-        const commit = (save) => {
-          if (done) return;
-          done = true;
-          const name = input.value.trim();
-          input.remove();
-          title.style.display = '';
-          if (save && name && name !== prev) {
-            window.tabStrip.send('tab-strip:rename', t.id, name);
-          }
-        };
-        input.addEventListener('keydown', (ev) => {
-          ev.stopPropagation();
-          if (ev.key === 'Enter') commit(true);
-          else if (ev.key === 'Escape') commit(false);
-        });
-        input.addEventListener('blur', () => commit(true));
-        input.addEventListener('click', (ev) => ev.stopPropagation());
-      };
+      el.addEventListener('click', () => window.tabStrip.send('tab-strip:switch', t.id));
+      el.addEventListener('dblclick', (e) => { e.preventDefault(); startRename(el, t, title); });
+      el.addEventListener('contextmenu', (e) => { e.preventDefault(); openCtx(t, e.clientX, e.clientY, el, title); });
       tabsEl.appendChild(el);
     }
   }
+
+  /* ---------- 双击/右键改名（Enter 提交 / Esc 取消 / 失焦提交） ---------- */
+  function startRename(el, t, title) {
+    if (el.querySelector('input.rename')) return;
+    const prev = t.title || '工作台';
+    title.style.display = 'none';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'rename';
+    input.value = prev;
+    input.style.cssText = 'width:110px;background:var(--bg);color:var(--text);border:1px solid var(--purple);border-radius:4px;padding:1px 4px;font-size:12px;outline:none;';
+    el.insertBefore(input, title);
+    input.focus();
+    input.select();
+    let done = false;
+    const commit = (save) => {
+      if (done) return;
+      done = true;
+      const name = input.value.trim();
+      input.remove();
+      title.style.display = '';
+      if (save && name && name !== prev) {
+        window.tabStrip.send('tab-strip:rename', t.id, name);
+      }
+    };
+    input.addEventListener('keydown', (ev) => {
+      ev.stopPropagation();
+      if (ev.key === 'Enter') commit(true);
+      else if (ev.key === 'Escape') commit(false);
+    });
+    input.addEventListener('blur', () => commit(true));
+    input.addEventListener('click', (ev) => ev.stopPropagation());
+  }
+
+  /* ---------- 标签右键菜单 ---------- */
+  function openCtx(t, x, y, el, title) {
+    ctxTarget = { t, el, title };
+    ctxEl.querySelector('[data-act="close"]').style.display = t.pinned ? 'none' : '';
+    ctxEl.style.left = Math.min(x, window.innerWidth - 210) + 'px';
+    ctxEl.style.top = (y + 4) + 'px';
+    menuEl.classList.remove('open');
+    popEl.classList.remove('open');
+    ctxEl.classList.add('open');
+  }
+  ctxEl.addEventListener('click', (e) => {
+    const act = e.target.getAttribute('data-act');
+    if (!act || !ctxTarget) return;
+    hideAll();
+    if (act === 'rename') startRename(ctxTarget.el, ctxTarget.t, ctxTarget.title);
+    if (act === 'bind') openBind(ctxTarget.t, null);
+    if (act === 'close') window.tabStrip.send('tab-strip:close', ctxTarget.t.id);
+  });
+
+  /* ---------- 工作区绑定气泡（点 WS 徽章 / 右键菜单打开） ---------- */
+  function openBind(t, anchor) {
+    popTabId = t.id;
+    popInput.value = t.workspaceId || '';
+    if (anchor) {
+      const r = anchor.getBoundingClientRect();
+      popEl.style.left = Math.min(r.left, window.innerWidth - 270) + 'px';
+      popEl.style.top = (r.bottom + 6) + 'px';
+    } else {
+      popEl.style.left = Math.max(8, window.innerWidth - 270) + 'px';
+      popEl.style.top = '42px';
+    }
+    ctxEl.classList.remove('open');
+    menuEl.classList.remove('open');
+    popEl.classList.add('open');
+    popInput.focus();
+    popInput.select();
+  }
+  function commitBind(value) {
+    if (popTabId) window.tabStrip.send('tab-strip:set-workspace', popTabId, value);
+    hideAll();
+  }
+  document.getElementById('wsBind').addEventListener('click', () => commitBind(popInput.value.trim() || null));
+  document.getElementById('wsUnbind').addEventListener('click', () => commitBind(null));
+  popInput.addEventListener('keydown', (e) => {
+    e.stopPropagation();
+    if (e.key === 'Enter') commitBind(popInput.value.trim() || null);
+    if (e.key === 'Escape') hideAll();
+  });
+
+  /* ---------- ＋ 新建菜单（浏览器式：用时才出现） ---------- */
+  document.getElementById('add').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const r = e.currentTarget.getBoundingClientRect();
+    menuEl.style.left = Math.min(r.left, window.innerWidth - 210) + 'px';
+    menuEl.style.top = (r.bottom + 6) + 'px';
+    ctxEl.classList.remove('open');
+    popEl.classList.remove('open');
+    menuEl.classList.toggle('open');
+  });
+  menuEl.addEventListener('click', (e) => {
+    const act = e.target.getAttribute('data-act');
+    if (!act) return;
+    hideAll();
+    if (act === 'new') window.tabStrip.send('tab-strip:new');
+    if (act === 'octop') window.tabStrip.send('tab-strip:request-octop');
+  });
 
   window.tabStrip.on('tab-strip:state', (s) => {
     state.activeId = s.activeId;
     state.tabs = s.tabs || [];
     render();
-    const active = state.tabs.find((t) => t.id === state.activeId);
-    wsInput.value = active && active.workspaceId ? active.workspaceId : '';
-  });
-
-  document.getElementById('add').onclick = () => window.tabStrip.send('tab-strip:new');
-  document.getElementById('businessPill').onclick = () => window.tabStrip.send('tab-strip:switch-business');
-  document.getElementById('octopPill').onclick = () => window.tabStrip.send('tab-strip:request-octop');
-  document.getElementById('wsBind').onclick = () => {
-    const v = wsInput.value.trim();
-    if (state.activeId) window.tabStrip.send('tab-strip:set-workspace', state.activeId, v || null);
-  };
-  wsInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') document.getElementById('wsBind').click();
   });
 
   // 初始拉取一次状态
@@ -223,6 +399,7 @@
       render();
     }
   }).catch(() => {});
+  syncOctopPill();
 </script>
 </body>
 </html>
