@@ -460,6 +460,31 @@ test('最窄=手机视口比例：页面区宽高比恒为 393:852（跨窗口�
   assert.equal(manager.width(), Math.round((900 - 38 - 40) * (393 / 852)));
 });
 
+test('快捷打开联动：面板导航到平台站 → 广播 platform-focus 给业务视图；非平台站不发', () => {
+  const { manager, tabManager } = setup(1600, 900);
+  const sent = [];
+  const focus = () => sent.filter((s) => s.channel === 'browser-panel:platform-focus');
+  tabManager.sendToBusiness = (channel, payload) => { sent.push({ channel, payload }); return true; };
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  manager.navigate('https://www.xiaohongshu.com');
+  assert.equal(focus().length, 1);
+  assert.equal(focus()[0].payload.platform, 'xiaohongshu');
+  assert.equal(focus()[0].payload.url, 'https://www.xiaohongshu.com/', 'url 为归一化后的导航地址');
+  manager.navigate('https://www.douyin.com/jingxuan');
+  assert.equal(focus()[1].payload.platform, 'douyin');
+  manager.navigate('https://channels.weixin.qq.com');
+  assert.equal(focus()[2].payload.platform, 'wechat-channel');
+  // 无对应获客页的站点不联动（公众号/百度/杂站）
+  manager.navigate('https://mp.weixin.qq.com');
+  manager.navigate('https://www.baidu.com');
+  assert.equal(focus().length, 3, '非平台站不得广播');
+  // 纯函数边界：非法 URL / 子域误伤防护
+  const { matchPanelPlatform } = require('./browser-panel-manager');
+  assert.equal(matchPanelPlatform('not-a-url'), null);
+  assert.equal(matchPanelPlatform('https://fake-xiaohongshu.com.evil.cn/'), null);
+  assert.equal(matchPanelPlatform('https://www.kuaishou.com'), 'kuaishou');
+});
+
 test('布局：面板占右列，控制条在业务区之上，rightInset 通知 TabManager', () => {
   const { manager, tabManager, window } = setup(1600, 900);
   manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });

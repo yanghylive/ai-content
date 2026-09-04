@@ -50,6 +50,27 @@ const RESIZE_POLL_MS = 16;
 /** 面板开合动画：时长/步进（WebContentsView 没有 CSS 过渡，主进程逐帧 setBounds 补间） */
 const PANEL_ANIM_MS = 150;
 const PANEL_ANIM_STEP_MS = 16;
+// 面板平台识别（快捷打开/地址栏**手动**导航时）：命中即广播
+// browser-panel:platform-focus 给左侧业务视图，系统功能页跟着切到该平台的
+// 获客工作台（TraeWork 式"看哪干哪"）。只挂 manager.navigate——AI 执行走
+// broker.sendCDP 不经过这里，Agent 自动导航不会劫持用户左侧页面。
+// 公众号/百度无对应获客页 → 不在表内 = 不联动（不硬凑跳转）。
+const PANEL_PLATFORM_HOSTS = [
+  [/douyin\.com$/i, 'douyin'],
+  [/(^|\.)xiaohongshu\.com$/i, 'xiaohongshu'],
+  [/^channels\.weixin\.qq\.com$/i, 'wechat-channel'],
+  [/(^|\.)kuaishou\.com$/i, 'kuaishou'],
+];
+function matchPanelPlatform(rawUrl) {
+  try {
+    const host = new URL(String(rawUrl)).hostname;
+    for (const [re, platform] of PANEL_PLATFORM_HOSTS) {
+      if (re.test(host)) return platform;
+    }
+  } catch (e) { /* 非法 URL 不参与联动 */ }
+  return null;
+}
+
 /** 拖拽磁吸：距半宽/最大/最小宽该像素内自动吸附（呼应顶栏宽度预设） */
 const RESIZE_SNAP_PX = 14;
 /** round15：tab 条行高（多 tab 时控制条两行；单 tab 不显示，零干扰） */
@@ -718,6 +739,22 @@ class BrowserPanelManager {
     this._emitState();
     this.panelView.webContents.loadURL(targetUrl);
     this.recordActivity('nav', `打开 ${targetUrl}`, true);
+    // 左侧联动：面板打开的是哪个平台，业务页就切到该平台的获客工作台
+    const focus = matchPanelPlatform(targetUrl);
+    if (
+      focus &&
+      this._tabManager &&
+      typeof this._tabManager.sendToBusiness === 'function'
+    ) {
+      try {
+        this._tabManager.sendToBusiness('browser-panel:platform-focus', {
+          platform: focus,
+          url: targetUrl,
+        });
+      } catch (e) {
+        /* 业务视图未就绪：联动是锦上添花，不阻断导航 */
+      }
+    }
     return targetUrl;
   }
 
@@ -1428,6 +1465,7 @@ class BrowserPanelManager {
 module.exports = {
   BrowserPanelManager,
   normalizePanelUrl,
+  matchPanelPlatform,
   sanitizePanelUserAgent,
   PANEL_MIN_WIDTH,
   PANEL_PHONE_WIDTH_MAX,

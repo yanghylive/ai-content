@@ -62,10 +62,31 @@ const STATUS_COLOR: Record<LeadStatus, string> = {
   failed: "bg-red-100 text-red-700",
 };
 
+/** URL ?platform= 白名单（与 AcquisitionPlatform 联合类型对齐；脏值回落默认） */
+const PANEL_PLATFORMS: string[] = ["douyin", "wechat-channel", "xiaohongshu", "kuaishou"];
+
 export default function CommentAcquisitionPage() {
   const { confirm, modal } = useConfirm();
   const [scanMode, setScanMode] = useState<"comment" | "dm">("comment");
-  const [platform, setPlatform] = useState<AcquisitionPlatform>("douyin");
+  const [platform, setPlatform] = useState<AcquisitionPlatform>(() => {
+    // 初始平台跟随 URL（面板快捷打开联动跳转带 ?platform=）
+    try {
+      const p = new URLSearchParams(window.location.search).get("platform");
+      if (p && PANEL_PLATFORMS.includes(p)) return p as AcquisitionPlatform;
+    } catch {
+      /* SSR/异常环境回落默认 */
+    }
+    return "douyin";
+  });
+  // 面板联动：已停在本页时点别的平台 chip → 桥组件广播事件直接切平台
+  useEffect(() => {
+    const onPanel = (e: Event) => {
+      const p = (e as CustomEvent<{ platform?: string }>).detail?.platform;
+      if (p && PANEL_PLATFORMS.includes(p)) setPlatform(p as AcquisitionPlatform);
+    };
+    window.addEventListener("kaypal:panel-platform", onPanel);
+    return () => window.removeEventListener("kaypal:panel-platform", onPanel);
+  }, []);
   const [accountId, setAccountId] = useState("");
   const [keyword, setKeyword] = useState("");
   const [autoReply, setAutoReply] = useState(false);

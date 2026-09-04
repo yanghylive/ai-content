@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { OctopLaunchBridge } from "@/components/octop-launch-bridge";
+import { PanelPlatformBridge } from "@/components/panel-platform-bridge";
 
 export const metadata: Metadata = {
   title: "JIUZHANG AI",
@@ -38,6 +39,7 @@ export default function RootLayout({
           {children}
           {/* Octop 拉起桥（全局）：登录页/任意页面都能响应桌面 tab 条的 octop:request-launch（审计 #6） */}
           <OctopLaunchBridge />
+          <PanelPlatformBridge />
         </Providers>
         {/* 字体放大（PRD 16.3 无障碍）：挂载即应用本机设置 */}
         <script
