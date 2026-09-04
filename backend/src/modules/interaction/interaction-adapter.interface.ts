@@ -34,6 +34,10 @@ export interface InteractionReadInput {
   taskType: InteractionTaskType;
   accountId: number | string;
   limit?: number;
+  /** 内容详情页 URL（关键词搜索模式发现层产出，供 runner.readComments 定位评论区） */
+  contentUrl?: string;
+  /** 搜索关键词（小红书从搜索页点击进详情页必需，B 类发现层改造引入） */
+  keyword?: string;
 }
 
 /** 读到的互动条目（统一形状） */
@@ -72,6 +76,10 @@ export interface InteractionSendInput {
   /** 平台定位序号（小红书 commentRef 等） */
   commentRef?: string;
   replyText: string;
+  /** 内容详情页 URL（runner.replyComment 定位评论回复所需） */
+  contentUrl?: string;
+  /** 搜索关键词（小红书从搜索页点击进详情页必需） */
+  keyword?: string;
 }
 
 /** 发送结果（统一 status 枚举） */
