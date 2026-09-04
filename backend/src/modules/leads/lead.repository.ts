@@ -59,7 +59,7 @@ export class LeadRepository {
     @Optional() private readonly leadScore?: LeadScoreService,
   ) {}
 
-  /** 统一去重键：有平台用户 ID 优先（最强），无则昵称 + 文本前缀兜底 */
+  /** 统一去重键：有平台用户 ID 优先（最强），无则昵称 + 完整文本 sha256 兜底 */
   static dedupeKeyOf(input: {
     platform: string;
     externalUserId?: string | null;
@@ -68,7 +68,11 @@ export class LeadRepository {
   }): string {
     const identity = input.externalUserId
       ? `uid:${input.externalUserId}`
-      : `nick:${input.nickname ?? ''}|${(input.sourceText ?? '').slice(0, 40)}`;
+      : `nick:${input.nickname ?? ''}|${crypto
+          .createHash('sha256')
+          .update(input.sourceText ?? '')
+          .digest('hex')
+          .slice(0, 24)}`;
     return `lead:${crypto
       .createHash('sha256')
       .update(`${input.platform}:${identity}`)

@@ -140,3 +140,50 @@ describe('LeadRepository.upsert 新线索自动增强', () => {
     expect(result.created).toBe(true);
   });
 });
+
+describe('LeadRepository.dedupeKeyOf（去重键）', () => {
+  it('有 externalUserId 时以 UID 为准（最强身份）', () => {
+    const a = LeadRepository.dedupeKeyOf({
+      platform: 'douyin',
+      externalUserId: 'uid-123',
+      nickname: '张三',
+      sourceText: '多少钱',
+    });
+    const b = LeadRepository.dedupeKeyOf({
+      platform: 'douyin',
+      externalUserId: 'uid-123',
+      nickname: '不同昵称',
+      sourceText: '完全不同',
+    });
+    expect(a).toBe(b); // 同 UID 必同键
+  });
+
+  it('无 UID 时，前 40 字相同但后文不同的评论不再错并（P1-3 修复）', () => {
+    const prefix = '这是一段很长的评论'.repeat(5); // 前 40 字完全相同
+    const a = LeadRepository.dedupeKeyOf({
+      platform: 'douyin',
+      nickname: '用户A',
+      sourceText: prefix + '结尾A',
+    });
+    const b = LeadRepository.dedupeKeyOf({
+      platform: 'douyin',
+      nickname: '用户A',
+      sourceText: prefix + '结尾B完全不同',
+    });
+    expect(a).not.toBe(b); // 完整文本 sha256 不同 → 不合并
+  });
+
+  it('无 UID 且文本完全相同 → 同键（仍能正确去重）', () => {
+    const a = LeadRepository.dedupeKeyOf({
+      platform: 'douyin',
+      nickname: '用户A',
+      sourceText: '怎么买？',
+    });
+    const b = LeadRepository.dedupeKeyOf({
+      platform: 'douyin',
+      nickname: '用户A',
+      sourceText: '怎么买？',
+    });
+    expect(a).toBe(b);
+  });
+});
