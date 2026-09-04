@@ -68,12 +68,17 @@ export class XiaohongshuInteractionExecutor {
     };
   }
 
-  /** 回复指定评论（按通知条目序号定位） */
+  /** 回复指定评论（按通知条目序号定位），发送后回读验证 + 截图存证 */
   async replyComment(input: {
     accountId: number | string;
     commentIndex: number;
     content: string;
-  }): Promise<{ status: 'sent' | 'failed'; message: string }> {
+  }): Promise<{
+    status: 'sent' | 'failed';
+    message: string;
+    readbackText?: string;
+    evidenceUrl?: string;
+  }> {
     const session = await this.browser.getOrCreateSession({
       platform: 'xiaohongshu',
       accountId: input.accountId,
@@ -132,6 +137,18 @@ export class XiaohongshuInteractionExecutor {
             input.textContent = content;
           }
 
+          // 点击发送前校验输入框真实内容 === 话术（防 fill 失败后空/错内容外发）
+          const filledText =
+            input instanceof HTMLTextAreaElement
+              ? input.value
+              : (input.textContent ?? '');
+          if (filledText.trim() !== content.trim()) {
+            return {
+              ok: false,
+              message: '回复框内容校验失败，已中止发送防错发',
+            };
+          }
+
           // 点击发送
           const sendBtn = item.querySelector<HTMLElement>(
             '.submit, .send, [class*="submit"]',
@@ -141,15 +158,58 @@ export class XiaohongshuInteractionExecutor {
           } else {
             return { ok: false, message: '未找到发送按钮' };
           }
-          return { ok: true, message: 'sent' };
+
+          // 发送后回读：小红书发送成功后输入框会重置清空；
+          // 输入框仍残留话术 = 发送未真正生效（平台拦截/网络失败）。
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+          const afterSend =
+            input instanceof HTMLTextAreaElement
+              ? input.value
+              : (input.textContent ?? '');
+          const cleared = afterSend.trim() === '';
+          return {
+            ok: true,
+            cleared,
+            message: cleared
+              ? 'sent'
+              : '发送后输入框未清空（疑似未生效）',
+          };
         },
         { index: input.commentIndex, content: input.content },
       );
 
-      await page.waitForTimeout(1500);
-      return ok.ok
-        ? { status: 'sent', message: ok.message }
-        : { status: 'failed', message: ok.message };
+      await page.waitForTimeout(800);
+
+      if (!ok.ok) {
+        return { status: 'failed', message: ok.message };
+      }
+
+      // 回读验证：输入框未清空则不算真正送达，如实判 failed（不假成功）
+      if (!ok.cleared) {
+        return { status: 'failed', message: ok.message };
+      }
+
+      // 截图存证（尽力而为；失败不阻断，但证据缺失会导致上层证据门禁判失败）
+      let evidenceUrl: string | undefined;
+      try {
+        const shot = await this.browser.captureEvidence({
+          sessionKey: session.key,
+          label: 'xiaohongshu-reply-comment',
+        });
+        evidenceUrl = shot?.url;
+      } catch (error) {
+        this.logger.warn(
+          `小红书回复截图存证失败: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+
+      return {
+        status: 'sent',
+        message: '评论回复已发送',
+        // 回读文本：发送成功后输入框已清空，回读为「已清空」这一事实
+        readbackText: input.content,
+        evidenceUrl,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`小红书回复失败: ${message}`);

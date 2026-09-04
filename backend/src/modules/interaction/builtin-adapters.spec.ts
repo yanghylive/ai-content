@@ -121,6 +121,27 @@ describe('内置互动适配器', () => {
     expect(result?.status).toBe('sent');
   });
 
+  it('小红书 send 透传回读文本与截图证据（不再假成功，P0-1 修复）', async () => {
+    xhsMock.replyComment.mockResolvedValue({
+      status: 'sent',
+      message: '评论回复已发送',
+      readbackText: '私信你',
+      evidenceUrl: 'http://127.0.0.1:3011/evidence/xhs.png',
+    });
+    const adapter = registry.get('xiaohongshu');
+    const result = await adapter.send?.({
+      platform: 'xiaohongshu',
+      taskType: 'comment-reply',
+      accountId: 3,
+      targetText: '多少钱',
+      commentRef: '0',
+      replyText: '私信你',
+    });
+    expect(result?.status).toBe('sent');
+    expect(result?.readbackText).toBe('私信你');
+    expect(result?.evidenceUrl).toBe('http://127.0.0.1:3011/evidence/xhs.png');
+  });
+
   it('抖音 read 按 taskType 分派评论/私信读取，统一为 InteractionItem', async () => {
     autoUploadMock.readDouyinComments.mockResolvedValue({
       comments: [{ text: ' 怎么买？ ' }, { text: '' }],

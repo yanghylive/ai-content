@@ -229,7 +229,13 @@ export class XiaohongshuInteractionAdapter implements InteractionAdapter {
       commentIndex: Number(input.commentRef ?? 0),
       content: input.replyText,
     });
-    return { status: mapXhsStatus(result.status), message: result.message };
+    return {
+      status: mapXhsStatus(result.status),
+      message: result.message,
+      // 发送成功回读 + 截图证据：非空才让上层 dispatchReply 证据门禁通过
+      readbackText: result.readbackText,
+      evidenceUrl: result.evidenceUrl,
+    };
   }
 }
 

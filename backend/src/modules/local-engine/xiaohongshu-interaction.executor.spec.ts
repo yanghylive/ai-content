@@ -5,6 +5,7 @@ import { LocalBrowserEngine } from './local-browser-engine.service';
 describe('XiaohongshuInteractionExecutor', () => {
   const browserMock = {
     getOrCreateSession: jest.fn(),
+    captureEvidence: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -83,11 +84,19 @@ describe('XiaohongshuInteractionExecutor', () => {
     );
   });
 
-  it('replyComment 成功返回 sent', async () => {
+  it('replyComment 成功返回 sent（含回读文本 + 截图证据，P0-1 修复）', async () => {
     const page = makePage('https://www.xiaohongshu.com/notification');
     browserMock.getOrCreateSession.mockResolvedValue({ key: 'k', page });
     const mocked = page as never as { evaluate: jest.Mock };
-    mocked.evaluate.mockResolvedValue({ ok: true, message: 'sent' });
+    mocked.evaluate.mockResolvedValue({
+      ok: true,
+      cleared: true,
+      message: 'sent',
+    });
+    browserMock.captureEvidence.mockResolvedValue({
+      path: '/tmp/xhs.png',
+      url: '/api/local-engine/browser/evidence/xhs.png',
+    });
 
     const executor = new XiaohongshuInteractionExecutor(browserMock as never);
     const result = await executor.replyComment({
@@ -97,11 +106,36 @@ describe('XiaohongshuInteractionExecutor', () => {
     });
 
     expect(result.status).toBe('sent');
+    expect(result.readbackText).toBe('私信你啦～');
+    expect(result.evidenceUrl).toBe(
+      '/api/local-engine/browser/evidence/xhs.png',
+    );
     // evaluate 收到 index 和 content
     expect(mocked.evaluate.mock.calls[0][1]).toEqual({
       index: 2,
       content: '私信你啦～',
     });
+  });
+
+  it('replyComment 发送后输入框未清空 → 判 failed（不假成功）', async () => {
+    const page = makePage('https://www.xiaohongshu.com/notification');
+    browserMock.getOrCreateSession.mockResolvedValue({ key: 'k', page });
+    const mocked = page as never as { evaluate: jest.Mock };
+    mocked.evaluate.mockResolvedValue({
+      ok: true,
+      cleared: false,
+      message: '发送后输入框未清空（疑似未生效）',
+    });
+
+    const executor = new XiaohongshuInteractionExecutor(browserMock as never);
+    const result = await executor.replyComment({
+      accountId: 1,
+      commentIndex: 2,
+      content: '私信你啦～',
+    });
+
+    expect(result.status).toBe('failed');
+    expect(result.message).toContain('未清空');
   });
 
   it('replyComment 失败返回 failed', async () => {
