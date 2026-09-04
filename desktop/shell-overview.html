@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>shell overview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg:#f2f3f5; --card:#fff; --ink:#1f2329; --dim:#646a73; --faint:#8f959e; --line:rgba(31,35,41,.09); --accent:#722ed1; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#17181a; --card:#23242a; --ink:#f2f3f5; --dim:#bbbfc4; --faint:#8f959e; --line:rgba(255,255,255,.10); --accent:#a171f0; }
+  }
+  html, body { height: 100%; }
+  body { background: var(--bg); font: 13px/1 -apple-system,"PingFang SC",system-ui,sans-serif; display: flex; flex-direction: column; overflow: hidden; }
+  #topbar { flex: 0 0 40px; height: 40px; border: 0; width: 100%; display: block; }
+  #stage { flex: 1; min-height: 0; display: flex; }
+  #biz { flex: 1; min-width: 0; padding: 18px 20px; overflow: hidden; }
+  #biz h2 { color: var(--ink); font-size: 18px; font-weight: 650; margin-bottom: 4px; }
+  #biz .sub { color: var(--dim); font-size: 12px; margin-bottom: 16px; }
+  #biz .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  #biz .c { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  #biz .c .k { color: var(--faint); font-size: 11.5px; margin-bottom: 6px; }
+  #biz .c .v { color: var(--ink); font-size: 22px; font-weight: 650; }
+  #biz .c .spark { height: 20px; margin-top: 8px; }
+  #gutter { flex: 0 0 12px; width: 12px; height: 100%; border: 0; }
+  #panel { flex: 0 0 420px; display: flex; flex-direction: column; background: var(--card); }
+  #strip { flex: 0 0 70px; height: 70px; width: 100%; border: 0; }
+  #pbody { flex: 1; min-height: 0; position: relative; background: var(--bg); overflow: hidden; }
+  #pbody .ph { position: absolute; inset: 16px; border-radius: 10px; background: linear-gradient(135deg, rgba(114,46,209,.10), rgba(114,46,209,.03)); border: 1px solid var(--line); }
+  #pbody .cap { position: absolute; left: 24px; top: 24px; color: var(--dim); font-size: 12px; }
+  #ov { position: absolute; right: 12px; bottom: 12px; width: 340px; height: 172px; border: 0; filter: drop-shadow(0 10px 26px rgba(0,0,0,.28)); }
+</style>
+</head>
+<body>
+  <iframe id="topbar" src="/tab-strip.html"></iframe>
+  <div id="stage">
+    <div id="biz">
+      <h2>今日增长</h2>
+      <div class="sub">数据更新于 09/04 22:45 · 29 秒后自动刷新</div>
+      <div class="grid">
+        <div class="c"><div class="k">今日新线索</div><div class="v">11</div><svg class="spark" viewBox="0 0 120 20" preserveAspectRatio="none"><polyline points="0,16 24,13 48,14 72,7 96,9 120,2" fill="none" stroke="#722ed1" stroke-width="2"/></svg></div>
+        <div class="c"><div class="k">高意向线索</div><div class="v">0</div><svg class="spark" viewBox="0 0 120 20" preserveAspectRatio="none"><line x1="0" y1="14" x2="120" y2="14" stroke="#c9cdd4" stroke-width="2"/></svg></div>
+        <div class="c"><div class="k">待触达</div><div class="v">0</div><svg class="spark" viewBox="0 0 120 20" preserveAspectRatio="none"><line x1="0" y1="14" x2="120" y2="14" stroke="#c9cdd4" stroke-width="2"/></svg></div>
+        <div class="c"><div class="k">今日进 CRM</div><div class="v">0</div><svg class="spark" viewBox="0 0 120 20" preserveAspectRatio="none"><line x1="0" y1="14" x2="120" y2="14" stroke="#c9cdd4" stroke-width="2"/></svg></div>
+      </div>
+    </div>
+    <iframe id="gutter" src="/browser-panel-gutter.html"></iframe>
+    <div id="panel">
+      <iframe id="strip" src="/browser-control-strip.html"></iframe>
+      <div id="pbody">
+        <div class="ph"></div>
+        <div class="cap">抖音 · 装修视频评论区（面板内真实渲染目标网页）</div>
+        <iframe id="ov" src="/browser-approval-overlay.html"></iframe>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
