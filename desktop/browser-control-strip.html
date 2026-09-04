@@ -80,6 +80,14 @@
     #status.ready { color: var(--ok); }
     #status.starting { color: var(--warn); }
     #status.needs-human, #status.blocked, #status.error { color: var(--danger); }
+    /* 加载失败/被阻断：状态文字旁给一键重试（全局 button 宽 28px 要显式覆盖） */
+    #retry {
+      display: none; flex: none; width: auto; height: 20px; padding: 0 8px;
+      border: 1px solid var(--danger); border-radius: 6px; background: transparent;
+      color: var(--danger); font-size: 11px; font-weight: 600;
+    }
+    #retry.show { display: inline-flex; }
+    #retry:hover { background: var(--danger); color: #fff; }
     /* ③：AI 代操作开关——开着主色实底，平时幽灵 */
     #agent-mode { width: auto; padding: 0 10px; font-size: 11px; font-weight: 600; }
     #agent-mode.on { background: var(--accent); color: #fff; }
@@ -190,6 +198,7 @@
     <button id="reload" title="刷新"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
     <input id="addr" placeholder="输入网址，回车打开" spellcheck="false" />
     <span id="status"></span>
+    <button id="retry" title="重新加载当前页面">重试</button>
     <button id="agent-mode" title="AI 代操作：开启后 AI 助手将在你正在看的这个页面上代你操作（每一步写动作仍需你在此面板批准）">AI 代操作</button>
     <button id="hide" title="收起面板"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
@@ -292,6 +301,7 @@
     $('back').addEventListener('click', () => invoke('browser-panel:back'));
     $('forward').addEventListener('click', () => invoke('browser-panel:forward'));
     $('reload').addEventListener('click', () => invoke('browser-panel:reload'));
+    $('retry').addEventListener('click', () => invoke('browser-panel:reload'));
     $('hide').addEventListener('click', () => invoke('browser-panel:hide'));
     // ③：开关切换（回读态由 onState 里的 agentMode 统一刷新，不自说自话）
     $('agent-mode').addEventListener('click', () => {
@@ -450,6 +460,8 @@
       const s = session ? session.status : '';
       status.textContent = STATUS_LABEL[s] || (s ? s : '');
       status.className = s || '';
+      // 出错/被阻断 → 露出重试按钮（点了没反应最烦人，给个出口）
+      $('retry').classList.toggle('show', s === 'error' || s === 'blocked');
       // ③：AI 代操作开关态（publicState.agentMode 驱动高亮）
       const agentOn = state.agentMode === 'on';
       $('agent-mode').classList.toggle('on', agentOn);

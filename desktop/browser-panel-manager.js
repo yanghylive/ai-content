@@ -40,6 +40,11 @@ const PANEL_GUTTER = 12;
 const RESIZE_IDLE_MS = 1200;
 /** 拖拽轮询间隔（ms）——主进程跟随系统光标，不受视图边界断流影响 */
 const RESIZE_POLL_MS = 16;
+/** 面板开合动画：时长/步进（WebContentsView 没有 CSS 过渡，主进程逐帧 setBounds 补间） */
+const PANEL_ANIM_MS = 150;
+const PANEL_ANIM_STEP_MS = 16;
+/** 拖拽磁吸：距半宽/最大/最小宽该像素内自动吸附（呼应顶栏宽度预设） */
+const RESIZE_SNAP_PX = 14;
 /** round15：tab 条行高（多 tab 时控制条两行；单 tab 不显示，零干扰） */
 const TABBAR_HEIGHT = 26;
 // 地址栏聚焦时的快捷跳转行（TraeWork 地址行语义：聚焦即出建议）。
@@ -131,6 +136,11 @@ class BrowserPanelManager {
     this._resizeLastX = null;
     this._resizeLastMove = 0;
     this._resizeGrabOffset = 0;
+    /** 开合动画（deps.animatePanels=false 可关，spec 同步断言用） */
+    this._animate = deps.animatePanels !== false;
+    this._animTimer = null;
+    /** 动画期渲染宽（null = 无动画，relayout 用逻辑宽）；逻辑宽 _currentWidth 不受动画影响 */
+    this._animWidth = null;
     // 阶段 7（round11）tabs：面板 tab 台账。panelView 恒等于 active tab 的视图
     // （既有 resolvePanelTarget/panelWebContents/navigate 等方法因此零改动自动
     // 作用于当前 tab）；台账项为 { view }，下标即 AiBrowserAction tabs.index。
@@ -556,7 +566,9 @@ class BrowserPanelManager {
     } catch (e) {
       console.warn('[BrowserPanel] 自动补开 agent mode 失败（不阻断 open）:', e?.message || e);
     }
+    if (this._animate) this._animWidth = 0;
     this.relayout();
+    this._animateWidthTo(this._currentWidth);
     this.panelView.webContents.loadURL(targetUrl);
     this._emitState();
     this._emitSessionEvent(accountSwitched ? 'account-switched' : 'opened');
@@ -564,8 +576,17 @@ class BrowserPanelManager {
     return this.publicState();
   }
 
-  /** 面板关闭 = 隐藏视图，保留会话与登录态（文档 §3.1） */
+  /** 面板关闭 = 隐藏视图，保留会话与登录态（文档 §3.1）。带动画时先收拢再拆 */
   hide() {
+    if (!this._visible) return this.publicState();
+    if (!this._animate) return this._hideNow();
+    // 收起动画：渲染宽补间到 0 才 setVisible(false)——业务区跟着补间回弹，
+    // 而不是"视图瞬间消失 + rightInset 一步置 0"的硬切
+    this._animateWidthTo(0, () => this._hideNow());
+    return this.publicState();
+  }
+
+  _hideNow() {
     this._visible = false;
     // 阶段 7 tabs：隐藏全部 tab 视图（不能只藏 active，否则后台 tab 残影）
     for (const tab of this._panelTabs) {
@@ -595,7 +616,9 @@ class BrowserPanelManager {
   show() {
     if (!this.session || !this.panelView) return null;
     this._visible = true;
+    if (this._animate) this._animWidth = 0;
     this.relayout();
+    this._animateWidthTo(this._currentWidth);
     if (this.session.status === 'stopped') this.session.status = 'ready';
     this._emitState();
     this._emitSessionEvent('shown');
@@ -878,7 +901,8 @@ class BrowserPanelManager {
       this._resizeLastMove = Date.now();
     }
     this._resizeLastX = localX;
-    const next = this._clampWidth(bounds.width - (localX - (this._resizeGrabOffset || 0)));
+    const raw = bounds.width - (localX - (this._resizeGrabOffset || 0));
+    const next = this._clampWidth(this._snapWidth(raw, bounds.width));
     if (next !== this._currentWidth) {
       this._currentWidth = next;
       this.relayout();
@@ -896,6 +920,58 @@ class BrowserPanelManager {
     this._resizeGrabOffset = 0;
     this._saveWidth();
     return true;
+  }
+
+  _cancelAnim() {
+    if (this._animTimer) {
+      clearInterval(this._animTimer);
+      this._animTimer = null;
+    }
+  }
+
+  /**
+   * 渲染宽补间（easeOutCubic）。只动 _animWidth（relayout 的显示宽度），
+   * 逻辑宽 _currentWidth/持久化/宽度记忆都不受影响；done 在收尾帧后执行。
+   * 重复调用互斥（新动画顶掉旧的及其 done——hide 动画中途 open 不会误拆视图）。
+   */
+  _animateWidthTo(to, done) {
+    this._cancelAnim();
+    const from = this._animWidth != null ? this._animWidth : this._currentWidth;
+    if (!this._animate || from === to || this._destroyed) {
+      this._animWidth = null;
+      if (this._visible) this.relayout();
+      if (done) done();
+      return;
+    }
+    const start = Date.now();
+    this._animWidth = from;
+    this._animTimer = setInterval(() => {
+      if (this._destroyed || !this.window || this.window.isDestroyed()) {
+        this._cancelAnim();
+        return;
+      }
+      const t = Math.min(1, (Date.now() - start) / PANEL_ANIM_MS);
+      const eased = 1 - Math.pow(1 - t, 3);
+      this._animWidth = Math.round(from + (to - from) * eased);
+      if (this._visible) this.relayout();
+      if (t >= 1) {
+        clearInterval(this._animTimer);
+        this._animTimer = null;
+        if (this._visible) this.relayout();
+        if (done) done();
+        this._animWidth = null;
+      }
+    }, PANEL_ANIM_STEP_MS);
+  }
+
+  /** 拖拽磁吸：raw 距半宽/最大/最小宽 ≤RESIZE_SNAP_PX 时吸附 */
+  _snapWidth(raw, windowWidth) {
+    const half = Math.floor(windowWidth * 0.5);
+    const max = Math.floor(windowWidth * PANEL_WIDTH_RATIO_MAX);
+    for (const c of [half, max, PANEL_MIN_WIDTH]) {
+      if (Math.abs(raw - c) <= RESIZE_SNAP_PX) return c;
+    }
+    return raw;
   }
 
   /** 阶段 6：审批浮层 sender 校验（只有浮层自己能调批准/拒绝，防第三方页面伪造） */
@@ -1105,7 +1181,10 @@ class BrowserPanelManager {
     const { width, height } = this.window.getContentBounds();
     // 窗口收窄/重建时重新夹取面板宽度（上限 60%），保证不遮挡 3010 主内容
     this._currentWidth = this._clampWidth(this.width());
-    const panelW = this._currentWidth;
+    // 动画期用补间渲染宽（不夹最小值——滑入起点就是 0）；静止期 = 逻辑宽
+    const panelW = this._animWidth != null
+      ? Math.max(0, Math.min(Math.floor(this._animWidth), this._currentWidth))
+      : this._currentWidth;
     const contentY = TAB_STRIP_HEIGHT;
     const contentH = Math.max(0, height - TAB_STRIP_HEIGHT);
     const stripH = this._stripHeight();
@@ -1205,6 +1284,7 @@ class BrowserPanelManager {
   destroy() {
     this._destroyed = true;
     this.endResize();
+    this._cancelAnim();
     if (this.gutterView && !this.gutterView.webContents.isDestroyed()) {
       try {
         this._knownWebContents.delete(this.gutterView.webContents);

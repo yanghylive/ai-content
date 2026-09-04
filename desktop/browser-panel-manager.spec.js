@@ -140,6 +140,8 @@ function setup(width = 1600, height = 900, opts = {}) {
     electron,
     store: { get: () => undefined, set: () => undefined },
     tabManager,
+    // 默认关动画（既有断言都是同步读 _bounds）；动画专测 opts.animate:true 开启
+    animatePanels: opts.animate === true,
     preloadPath: '/fake/preload.js',
     stripHtmlPath: '/fake/strip.html',
     logger: { warn: () => undefined },
@@ -329,6 +331,52 @@ test('审批高亮：updateApprovalList 驱动 selector 记录与清除（导航
   assert.equal(manager._highlightSelector, null, '无目标动作 → 清除');
   await manager.updateApprovalList([]);
   assert.equal(manager._highlightSelector, null, '空列表保持清除');
+});
+
+test('开合动画：open 从 0 展到目标宽，hide 收拢后才真正拆视图', async () => {
+  const { manager } = setup(1600, 900, { animate: true });
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  assert.equal(manager.width(), 480, '逻辑宽立即到位（记忆/广播不受动画影响）');
+  assert.equal(manager.panelView._bounds.width, 0, '第 0 帧渲染宽 0（滑入起点）');
+  await new Promise((r) => setTimeout(r, 450));
+  assert.equal(manager.panelView._bounds.width, 480, '动画结束渲染宽=目标');
+  manager.hide();
+  assert.equal(manager.publicState().visible, true, '收拢动画期间仍算可见（延后拆视图）');
+  await new Promise((r) => setTimeout(r, 450));
+  assert.equal(manager.publicState().visible, false, '动画收拢后才真正隐藏');
+  assert.equal(manager.gutterView._visible, false, '沟槽随收起隐藏');
+});
+
+test('收起动画中途重开：新动画顶掉旧 done，不会误拆视图', async () => {
+  const { manager } = setup(1600, 900, { animate: true });
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  await new Promise((r) => setTimeout(r, 450));
+  manager.hide();
+  await new Promise((r) => setTimeout(r, 60));
+  manager.show();
+  await new Promise((r) => setTimeout(r, 450));
+  assert.equal(manager.publicState().visible, true, 'hide 动画未完成即 show → 面板保留');
+  assert.equal(manager.panelView._bounds.width, 480);
+});
+
+test('拖拽磁吸：±14px 内吸附半宽/最大宽/最小宽，区间外不吸', () => {
+  const { electron, manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  electron.setCursor(1120, 400); // 面板左缘（1600-480）→ grabOffset=0
+  assert.equal(manager.beginResize(), true);
+  electron.setCursor(807, 400); // raw=793 → 距半宽 800 差 7 → 吸
+  manager._pollResize();
+  assert.equal(manager.width(), 800);
+  electron.setCursor(650, 400); // raw=950 → 距 60% 上限 960 差 10 → 吸
+  manager._pollResize();
+  assert.equal(manager.width(), 960);
+  electron.setCursor(1234, 400); // raw=366 → 距最小 360 差 6 → 吸
+  manager._pollResize();
+  assert.equal(manager.width(), 360);
+  electron.setCursor(995, 400); // raw=605 → 离所有吸附点都远 → 不吸
+  manager._pollResize();
+  assert.equal(manager.width(), 605);
+  manager.endResize();
 });
 
 test('默认宽度 480，窄面板下限 360，上限 60%', () => {
