@@ -99,7 +99,7 @@ async function main() {
     await new Promise((r) => setTimeout(r, 1500));
     wsStrip.close();
   }
-  await evaluate(ws, `window.electronAPI.browserPanel.open({ startUrl: 'https://example.com' })`);
+  await evaluate(ws, `window.electronAPI.browserPanel.open({ url: 'https://example.com' })`);
   console.log('[面板] 重开完成（新令牌已落盘）');
   await new Promise((r) => setTimeout(r, 2500));
 
