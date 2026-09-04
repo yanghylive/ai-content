@@ -145,6 +145,42 @@ class BrowserPanelManager {
     }
   }
 
+  /**
+   * 判断给定 webContents（或其 id）是否属于面板体系（面板/控制条/审批浮层）。
+   *
+   * 2026-09-04（微信登录卡死修复）：main.js 全局 will-navigate 导航守卫此前
+   * 对所有 webContents 生效，面板视图内任何跨域导航（微信 oauth 从
+   * open.weixin.qq.com 跳回 channels 域 callback、用户点平台页外链）都被
+   * preventDefault → ERR_ABORTED，表现为扫码确认后永远卡「登录中...」。
+   * 面板视图的产品语义就是浏览第三方平台，导航自由是预期行为；该守卫本意
+   * 是保护主窗/3010 内容。故守卫经此方法对面板体系 webContents 豁免。
+   *
+   * @param {Electron.WebContents | number} webContentsOrId webContents 实例或 id
+   * @returns {boolean} 是否属于面板体系
+   */
+  ownsWebContents(webContentsOrId) {
+    if (this._destroyed) return false;
+    let id = null;
+    if (typeof webContentsOrId === 'number') {
+      id = webContentsOrId;
+    } else if (webContentsOrId && typeof webContentsOrId === 'object') {
+      // 真实 Electron webContents 走 getId()；测试 fake/鸭子类型实例兜底读 .id
+      if (typeof webContentsOrId.getId === 'function') id = webContentsOrId.getId();
+      else if (typeof webContentsOrId.id === 'number') id = webContentsOrId.id;
+    }
+    if (id === null || id === undefined) return false;
+    for (const wc of this._knownWebContents) {
+      try {
+        if (wc.isDestroyed()) continue;
+        const wcId = typeof wc.getId === 'function' ? wc.getId() : wc.id;
+        if (wcId === id) return true;
+      } catch {
+        /* 已销毁的 webContents 跳过 */
+      }
+    }
+    return false;
+  }
+
   // ---------- 生命周期 ----------
 
   attach(window) {

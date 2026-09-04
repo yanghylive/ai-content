@@ -2796,8 +2796,19 @@ app.on('window-all-closed', () => {
 });
 
 // 安全：禁止导航到外部 URL
+// 2026-09-04（微信登录卡死修复）：面板体系 webContents（浏览器面板/控制条/审批浮层）
+// 豁免——面板的产品语义就是浏览第三方平台，跨域导航（微信 oauth 从 open.weixin.qq.com
+// 跳回 channels 域 callback、用户点平台页外链）是预期行为；此前被全局拦截导致
+// 扫码确认后永远卡「登录中...」（ERR_ABORTED）。主窗/3010 内容仍受白名单保护。
 app.on('web-contents-created', (event, contents) => {
   contents.on('will-navigate', (event, navigationUrl) => {
+    try {
+      if (browserPanel && browserPanel.ownsWebContents(contents)) {
+        return; // 面板体系导航自由
+      }
+    } catch {
+      /* 归属判断异常则继续走白名单 */
+    }
     const parsedUrl = new URL(navigationUrl);
     const allowedOrigins = new Set([
       'http://localhost:3010',

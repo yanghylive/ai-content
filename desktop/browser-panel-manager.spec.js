@@ -609,6 +609,29 @@ test('⑯ windowOpenHandler：转 tab 异常 → 兜底 popup-blocked 回报且�
   manager.tabsOperation = orig;
 });
 
+// ===== ⑰ 导航守卫豁免（2026-09-04 微信登录卡死修复）：ownsWebContents 归属判断 =====
+test('⑰ ownsWebContents：面板/控制条/审批视图命中，外部 webContents 与异常输入不命中', () => {
+  const { manager, electron } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/a', ownerId: 'u1', tenantId: 't1' });
+  // 面板视图与控制条、审批浮层均应命中（面板 open 时三视图齐备）
+  assert.equal(manager.ownsWebContents(manager.panelView.webContents), true, '面板视图命中');
+  assert.equal(manager.ownsWebContents(manager.stripView.webContents), true, '控制条视图命中');
+  assert.equal(manager.ownsWebContents(manager.approvalView.webContents), true, '审批浮层视图命中');
+  // 用 id 数字同样命中（main.js 守卫传实例，兼容 id 形态）
+  assert.equal(manager.ownsWebContents(manager.panelView.webContents.id), true, '按 id 命中');
+  // 外部 webContents（如主窗/3010 业务视图）不命中——守卫白名单继续保护
+  const outsider = new electron.FakeWebContents('persist:outsider');
+  assert.equal(manager.ownsWebContents(outsider), false, '外部 webContents 不命中');
+  assert.equal(manager.ownsWebContents(outsider.id), false, '外部 id 不命中');
+  // 异常/退化输入不抛
+  assert.equal(manager.ownsWebContents(null), false, 'null 不命中');
+  assert.equal(manager.ownsWebContents(undefined), false, 'undefined 不命中');
+  assert.equal(manager.ownsWebContents({}), false, '无 getId 的对象不命中');
+  // 销毁后一律 false（守卫侧异常路径安全）
+  manager._destroyed = true;
+  assert.equal(manager.ownsWebContents(manager.panelView.webContents), false, '销毁后不命中');
+});
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of tests) {
