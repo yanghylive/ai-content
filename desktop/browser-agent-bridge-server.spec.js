@@ -216,6 +216,46 @@ test('observe 跨 owner → 403 POLICY_DENIED', async () => {
   });
 });
 
+test('403 拒绝原因细分：token 过期 → TOKEN_EXPIRED + reason 透出（2026-09-04）', async () => {
+  await withBridge(async (bridge, wiring) => {
+    wiring.resolveTargetForAgent = () => {
+      throw new Error('capability token 已过期（fail-closed）');
+    };
+    const { status, json } = await request(bridge.port, bridge.token, '/observe', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+    });
+    assert.equal(status, 403);
+    assert.equal(json.error.code, 'TOKEN_EXPIRED');
+    assert.ok(json.error.reason, 'reason 应透出（安全 message，不含堆栈）');
+    assert.ok(/已过期/.test(json.error.reason));
+  });
+});
+
+test('403 拒绝原因细分：token 无效 → TOKEN_INVALID；面板不存在 → PANEL_NOT_FOUND', async () => {
+  await withBridge(async (bridge, wiring) => {
+    wiring.resolveTargetForAgent = () => {
+      throw new Error('capability token 无效（fail-closed）');
+    };
+    const r1 = await request(bridge.port, bridge.token, '/observe', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+    });
+    assert.equal(r1.status, 403);
+    assert.equal(r1.json.error.code, 'TOKEN_INVALID');
+
+    wiring.resolveTargetForAgent = () => {
+      throw new Error('面板不存在');
+    };
+    const r2 = await request(bridge.port, bridge.token, '/observe', {
+      panelId: 'panel-x',
+      actor: ACTOR_A,
+    });
+    assert.equal(r2.status, 403);
+    assert.equal(r2.json.error.code, 'PANEL_NOT_FOUND');
+  });
+});
+
 test('缺 actor → 400', async () => {
   await withBridge(async (bridge) => {
     const { status, json } = await request(bridge.port, bridge.token, '/observe', {

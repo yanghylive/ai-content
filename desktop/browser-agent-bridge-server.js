@@ -236,8 +236,11 @@ async function startBrowserBridge(deps) {
     },
   };
 
-  function fail(res, status, code) {
+  function fail(res, status, code, reason) {
     const payload = { success: false, error: { code, protocol: PROTOCOL, version: VERSION } };
+    // 2026-09-04：403 附带安全 reason（原始拒绝 message，不含堆栈），
+    // 3011 侧透传给动作失败消息，前端能看到「授权过期请重开面板」而非裸 code。
+    if (reason) payload.error.reason = String(reason).slice(0, 200);
     res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify(payload));
   }
@@ -291,10 +294,15 @@ async function startBrowserBridge(deps) {
     } catch (error) {
       const message = error && error.message ? String(error.message) : 'internal';
       // actor/审批/白名单类错误按 403 透出；其余 500。不回显内部堆栈。
-      if (/不一致|拒绝|未登记|需要审批|actor|必填|fail-closed|自我批准/i.test(message)) {
-        // 2026-09-04：403 诊断日志（真机排障 POLICY_DENIED 需要具体拒绝原因）
-        logger.warn('[browser-bridge] 403 POLICY_DENIED:', message);
-        fail(res, 403, 'POLICY_DENIED');
+      if (/不一致|拒绝|未登记|需要审批|actor|必填|fail-closed|自我批准|不存在/i.test(message)) {
+        // 2026-09-04：拒绝原因细分 code + 附 reason（真机排障/前端友好提示需要）。
+        // 细分只做保守映射，映射不到的统一 POLICY_DENIED。
+        let code = 'POLICY_DENIED';
+        if (/token\s*已过期/i.test(message)) code = 'TOKEN_EXPIRED';
+        else if (/token\s*无效/i.test(message)) code = 'TOKEN_INVALID';
+        else if (/面板不存在/i.test(message)) code = 'PANEL_NOT_FOUND';
+        logger.warn('[browser-bridge] 403', code + ':', message);
+        fail(res, 403, code, message);
       } else {
         logger.warn('[browser-bridge] 请求处理失败：', message);
         fail(res, 500, 'INTERNAL_ERROR');
