@@ -35,7 +35,7 @@ import {
   type GrowthRiskMode,
 } from "@/lib/api/growth";
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
-import { api } from "@/lib/api/client";
+import { api, ApiError } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 import { runFailureLabel } from "@/lib/growth-failure";
 import { SkeletonList } from "@/components/skeleton";
@@ -253,8 +253,19 @@ export function GrowthAcquisitionTasks() {
       setExecuteTarget(null);
       flash("执行已开始，结果稍后在线索池和执行记录里看");
     } catch (err: unknown) {
-      const rawMessage = toActionableError(err, "");
-      setError(rawMessage || toPublicError(err, "执行失败，请稍后重试"));
+      // 执行链路卡在调采集引擎:网关 502/503/504 直说「采集引擎不可用」,
+      // 不把网关/超时这类术语甩给用户(2026-09-04 大王定调)。
+      if (
+        err instanceof ApiError &&
+        (err.status === 502 || err.status === 503 || err.status === 504)
+      ) {
+        setError(
+          "采集引擎不可用，本次任务未开始执行。请稍后重试；若多次出现，请先确认采集引擎运行正常。",
+        );
+      } else {
+        const rawMessage = toActionableError(err, "");
+        setError(rawMessage || toPublicError(err, "执行失败，请稍后重试"));
+      }
     } finally {
       setExecuting(false);
     }
