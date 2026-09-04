@@ -4125,6 +4125,29 @@ model PlatformAccount {
 }
 
 // =============================================================================
+// AccountTouchQuota（3010 自动获客「账号维度统一触达配额」）
+// 账号日触达计数器：growth 与 comment-acquisition 共用，同号累计扣减、扣完即停。
+// accountId 锚定 PublishAccount.id（stableId），跨天按 touchDate 切桶。
+// 原子扣减用原生 SQL：UPDATE ... SET touch_count = touch_count + 1
+//   WHERE ... AND touch_count < daily_limit，affectedRows === 1 才算扣成功。
+// =============================================================================
+model AccountTouchQuota {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  platform   String
+  accountId  String   @map("account_id") // PublishAccount.id（stableId）
+  dailyLimit Int      @default(20) @map("daily_limit")
+  touchDate  String   @map("touch_date") // YYYY-MM-DD
+  touchCount Int      @default(0) @map("touch_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, platform, accountId, touchDate])
+  @@index([userId, platform, accountId])
+  @@map("account_touch_quotas")
+}
+
+// =============================================================================
 // Workspace（4.4 多工作区标签壳 · step1-1）
 // 一个 user 可在同一 tenant 下拥有多个 workspace（=一个 Electron 标签页）；
 // 每个 workspace 独立绑 agent + settings，agent-gateway 以 workspaceId 作为
