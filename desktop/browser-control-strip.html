@@ -178,6 +178,7 @@
     .fav.baidu { background: #2932e1; } .fav.bilibili { background: #fb7299; }
     .fav.taobao { background: #ff5000; } .fav.jd { background: #e1251b; }
     .fav.zhihu { background: #0084ff; } .fav.github { background: #24292f; }
+    .fav.kuaishou { background: #ff4906; }
     .fav.generic { background: #b9bec6; color: #fff; }
   </style>
 </head>
@@ -193,13 +194,14 @@
   </div>
   <div id="activityfull"></div>
   <div id="sugbox"></div>
+  <!-- 只放系统有获客功能的平台（评论获客四平台）：点了面板开站 + 左侧联动到该平台获客页。
+       公众号/百度没有对应系统功能页，从快捷行退役——搜索兜底仍在地址栏建议下拉里。 -->
   <div id="quickrow">
     <span class="lbl">快捷打开</span>
-    <button type="button" class="chip" data-url="https://www.douyin.com">抖音</button>
-    <button type="button" class="chip" data-url="https://www.xiaohongshu.com">小红书</button>
-    <button type="button" class="chip" data-url="https://mp.weixin.qq.com">公众号</button>
-    <button type="button" class="chip" data-url="https://channels.weixin.qq.com">视频号</button>
-    <button type="button" class="chip" data-url="https://www.baidu.com">百度</button>
+    <button type="button" class="chip" data-url="https://www.douyin.com" title="打开抖音，左侧同步切到抖音评论获客">抖音</button>
+    <button type="button" class="chip" data-url="https://www.xiaohongshu.com" title="打开小红书，左侧同步切到小红书评论获客">小红书</button>
+    <button type="button" class="chip" data-url="https://channels.weixin.qq.com" title="打开视频号，左侧同步切到视频号评论获客">视频号</button>
+    <button type="button" class="chip" data-url="https://www.kuaishou.com" title="打开快手，左侧同步切到快手评论获客">快手</button>
   </div>
   <div id="toolbar">
     <button id="back" title="后退"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -252,7 +254,7 @@
       [/mp\.weixin/, 'weixin', '微'], [/baidu\.com/, 'baidu', '百'],
       [/bilibili/, 'bilibili', 'B'], [/taobao/, 'taobao', '淘'],
       [/jd\.com/, 'jd', '京'], [/zhihu/, 'zhihu', '知'],
-      [/github/, 'github', 'G'],
+      [/github/, 'github', 'G'], [/kuaishou/, 'kuaishou', '快'],
     ];
     function favFor(url) {
       try {
