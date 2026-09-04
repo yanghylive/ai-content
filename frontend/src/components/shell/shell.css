@@ -288,6 +288,68 @@ html.dark {
 .kx-palette-foot { border-top: 1px solid var(--kx-border); padding: 10px 16px; display: flex; gap: 16px; font-size: 12px; color: var(--kx-muted); }
 .kx-palette-empty { padding: 30px; text-align: center; color: var(--kx-muted); font-size: 14px; }
 
+/* ---------- 统一「返回上一层」入口（2026-09-04 重做） ----------
+   全站唯一形态：圆形图标 chip + 文字胶囊，置于页头标题上方（面包屑位）。
+   hover：整枚胶囊染主色浅底 + 图标 chip 转主色实底，箭头左移 2px。
+   负左边距让图标圆的左边缘与 h1 文字左边缘对齐。
+   页面禁止再自写 ArrowLeft + router.push 拼装返回，一律用 V2BackButton。 */
+.kx-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 2px 0 10px -5px;
+  padding: 4px 12px 4px 4px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--kaypal-v3-muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+.kx-back-chip {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--kaypal-v3-paper-soft);
+  color: var(--kaypal-v3-soft-ink);
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+.kx-back:hover {
+  color: var(--kaypal-v3-accent-ink);
+  background: var(--kaypal-v3-accent-soft);
+  border-color: var(--kaypal-v3-accent-border);
+}
+.kx-back:hover .kx-back-chip {
+  background: var(--kaypal-v3-accent);
+  color: var(--kaypal-v3-paper);
+  transform: translateX(-2px);
+}
+/* 行内变体：返回入口与标题同处一行（面板头部 / 画布工具栏 / 页底操作栏），
+   取消页头专用的上/左/下间距与负边距，其余交互一致。 */
+.kx-back--inline { margin: 0; }
+.kx-back:active { transform: scale(0.97); }
+.kx-back:focus-visible {
+  outline: 2px solid var(--kaypal-v3-accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kx-back,
+  .kx-back-chip { transition: none; }
+  .kx-back:hover .kx-back-chip { transform: none; }
+}
+
 /* ---------- 统一页头（2026-08-23 全站页头规范）----------
    唯一形态：无卡片、标题独立大字（h1 kx-greet 26/800）+ 副标题 + 右侧操作区。
    禁止页头嵌卡/小字标题/div 伪标题。 */
@@ -421,8 +483,11 @@ html.dark {
  * 移动端 mx-header 仍由 mobile.css 保留；桌面不再出现深色卡片页头。
  * ============================================================ */
 @media (min-width: 768px) {
-  /* WorkBuddy 化（2026-09-01）：左侧 rail 已承担导航，桌面端隐藏遗留返回按钮 */
-  .v2-back-btn, .kx-back-to-parent { display: none; }
+  /* 返回入口（2026-09-04 重做，替代 09-01 的一刀切隐藏）：
+     V2BackButton 传了 to/onClick = 页面显式声明了父级 → 子页，桌面端显示；
+     裸 <V2BackButton /> 无父级 = 左侧 rail 顶级页 → 继续隐藏，避免导航噪声。
+     .kx-back-to-parent 是旧「页底返回」遗留类，已被页头 .kx-back 取代，保持隐藏。 */
+  .v2-back-btn:not(.v2-back-btn--show), .kx-back-to-parent { display: none; }
   .mx-header {
     padding: 6px 0 10px;
     background: transparent;

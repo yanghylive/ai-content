@@ -1,9 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   CheckCircle2,
   ShieldCheck,
   Smartphone,
@@ -16,6 +14,7 @@ import {
   V2GhostButton,
   V2EmptyState,
 } from "@/components/v2/ui-kit";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import { growthApi, type GrowthAccountHealth } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
 import { SkeletonList } from "@/components/skeleton";
@@ -42,7 +41,6 @@ const RISK_LABELS: Record<string, { label: string; tone: "success" | "warning" |
 };
 
 export function GrowthAccountHealthPage() {
-  const router = useRouter();
   const [accounts, setAccounts] = useState<GrowthAccountHealth[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +74,7 @@ export function GrowthAccountHealthPage() {
     <div className="flex flex-col gap-6">
       <div className="kx-page-head">
         <div>
+          <V2BackButton to="/today" label="返回今日增长" />
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">账号健康</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">获客用的各平台账号状态</p>
         </div>
@@ -172,10 +171,7 @@ export function GrowthAccountHealthPage() {
         </div>
       )}
 
-      <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/today")}>
-          返回今日增长
-        </V2GhostButton>
+      <section className="flex items-center justify-end">
         <V2GhostButton icon={ShieldCheck} onClick={() => void fetchAccounts()}>
           重新检查
         </V2GhostButton>

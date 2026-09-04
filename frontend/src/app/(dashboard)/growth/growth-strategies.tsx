@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   ClipboardList,
   Loader2,
   Rocket,
@@ -20,6 +19,7 @@ import {
   V2PrimaryButton,
   V2EmptyState,
 } from "@/components/v2/ui-kit";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import {
   growthApi,
   type GrowthStrategyTemplate,
@@ -152,6 +152,7 @@ export function GrowthStrategies() {
     <div className="flex flex-col gap-6">
       <div className="kx-page-head">
         <div>
+          <V2BackButton to="/today" label="返回今日增长" />
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">获客策略</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">按行业预置的获客打法，选一个直接用</p>
         </div>
@@ -245,12 +246,6 @@ export function GrowthStrategies() {
           ))}
         </div>
       )}
-
-      <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/today")}>
-          返回今日增长
-        </V2GhostButton>
-      </section>
 
       {/* AI 生成策略弹窗 */}
       {generateOpen && (

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { ArrowLeft, MapPin, Clock, ShieldAlert } from "@/components/iconpark";
+import { MapPin, Clock, ShieldAlert } from "@/components/iconpark";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 /**
  * 能力路线图说明页（2026-08-10 商用优化批次 2 P1-7）。
@@ -29,7 +29,6 @@ export function FeatureRoadmap({
   workaround: string;
   backHref?: string;
 }) {
-  const router = useRouter();
 
   const rows: Array<{ icon: typeof MapPin; label: string; value: string }> = [
     { icon: MapPin, label: "当前状态", value: status },
@@ -55,25 +54,7 @@ export function FeatureRoadmap({
             color: "var(--kaypal-v3-muted)",
           }}
         >
-          <button
-            type="button"
-            onClick={() => router.push(backHref)}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              padding: "6px 10px",
-              borderRadius: 8,
-              background: "none",
-              border: "none",
-              color: "var(--kaypal-v3-muted)",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            <ArrowLeft size={15} />
-            返回
-          </button>
+          <V2BackButton to={backHref} label="返回" inline />
         </div>
 
         <div

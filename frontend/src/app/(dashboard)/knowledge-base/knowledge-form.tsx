@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import { ArrowLeft, FileUp, Save, Sparkles } from "@/components/iconpark";
 import {
   V2Section,
@@ -9,7 +10,6 @@ import {
   V2Input,
   V2Textarea,
   V2PrimaryButton,
-  V2GhostButton,
   V2Disclosure,
 } from "@/components/v2/ui-kit";
 import { kaypalApi } from "@/lib/api/auth";
@@ -203,13 +203,7 @@ export function KnowledgeForm() {
     <div className="flex flex-col gap-6">
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/knowledge-base")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
+          <V2BackButton to="/knowledge-base" label="返回" inline />
           <div>
             <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               新增知识
@@ -309,10 +303,7 @@ export function KnowledgeForm() {
         </V2Disclosure>
       </V2Section>
 
-      <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/knowledge-base")}>
-          返回
-        </V2GhostButton>
+      <section className="flex items-center justify-end">
         <V2PrimaryButton
           icon={Save}
           loading={saving}

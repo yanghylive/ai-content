@@ -2,9 +2,7 @@
 import dynamic from "next/dynamic";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   Pause,
   PenLine,
   Play,
@@ -21,6 +19,7 @@ import {
   V2EmptyState,
   V2DangerButton,
 } from "@/components/v2/ui-kit";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import { growthApi, type GrowthWorkflow } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
 import { SkeletonList } from "@/components/skeleton";
@@ -55,7 +54,6 @@ interface IndustryPlaybooks {
 }
 
 export function GrowthWorkflowsPage() {
-  const router = useRouter();
   const [workflows, setWorkflows] = useState<GrowthWorkflow[]>([]);
   const [playbooks, setPlaybooks] = useState<IndustryPlaybooks[]>([]);
   const [activeIndustry, setActiveIndustry] = useState<string>("");
@@ -172,6 +170,7 @@ export function GrowthWorkflowsPage() {
       <>
       <div className="kx-page-head">
         <div>
+          <V2BackButton to="/today" label="返回今日增长" />
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">增长工作流 · 行业方案库</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">按行业选场景，一键创建带行业话术、平台组合与合规风控的获客流水线</p>
         </div>
@@ -329,12 +328,6 @@ export function GrowthWorkflowsPage() {
           </div>
         )}
       </V2Section>
-
-      <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/today")}>
-          返回今日增长
-        </V2GhostButton>
-      </section>
 
       {/* 删除确认弹窗 */}
       {deleteTarget && (

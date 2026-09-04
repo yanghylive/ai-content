@@ -1,20 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, TrendingUp, MessageSquareText } from "@/components/iconpark";
+import { TrendingUp, MessageSquareText } from "@/components/iconpark";
 import {
   V2Section,
   V2StatusChip,
   V2GhostButton,
 } from "@/components/v2/ui-kit";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import { growthApi, type GrowthReports } from "@/lib/api/growth";
 import { statsApi, type StatsSnapshot } from "@/lib/api/stats";
 import { toPublicError } from "@/lib/public-error";
 import { SkeletonList } from "@/components/skeleton";
 
 export function GrowthReportsPage() {
-  const router = useRouter();
   const [reports, setReports] = useState<GrowthReports | null>(null);
   const [stats, setStats] = useState<StatsSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,6 +62,7 @@ export function GrowthReportsPage() {
     <div className="flex flex-col gap-6">
       <div className="kx-page-head">
         <div>
+          <V2BackButton to="/today" label="返回今日增长" />
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">增长复盘</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">看看哪些打法有效、哪些话术转化高</p>
         </div>
@@ -308,10 +308,7 @@ export function GrowthReportsPage() {
         <AttributionReportSection attribution={reports.attribution} />
       )}
 
-      <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/today")}>
-          返回今日增长
-        </V2GhostButton>
+      <section className="flex items-center justify-end">
         <V2GhostButton icon={TrendingUp} onClick={() => void fetchReports()}>
           刷新
         </V2GhostButton>

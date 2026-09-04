@@ -27,6 +27,7 @@ import {
   V2Select,
   V2Textarea,
 } from "@/components/v2/ui-kit";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import {
   RPA_PLATFORM_LABELS,
   RPA_STATUS_META,
@@ -172,6 +173,7 @@ export function RpaWorkbenchPage() {
       {/* 统一页头 */}
       <div className="kx-page-head">
         <div>
+          <V2BackButton to="/today" label="返回今日增长" />
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">统一 RPA 工作台</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">
             六平台浏览器自动化执行记录与人工接管（状态机逐步留痕）

@@ -13,7 +13,8 @@ import ReactFlow, {
   ReactFlowProvider,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Save, RotateCcw, ArrowLeft, Loader2, Workflow, Play, Settings2 } from "@/components/iconpark";
+import { Save, RotateCcw, Loader2, Workflow, Play, Settings2 } from "@/components/iconpark";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import NodePanel from "./NodePanel";
 import { FLOW_NODE_TYPES, NODE_TYPE_META, type GrowthCanvasNode, type GrowthCanvasEdge, type GrowthCanvasNodeType } from "./nodeTypes";
 import { growthApi, type GrowthWorkflow } from "@/lib/api/growth";
@@ -345,13 +346,7 @@ function FlowCanvasInner({ workflow, onBack, onSaved }: FlowCanvasProps) {
     <div className="flex h-[calc(100vh-220px)] min-h-[480px] flex-col gap-3">
       {/* 工具栏 */}
       <div className="flex flex-wrap items-center gap-3 rounded-[var(--kaypal-v3-radius)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center gap-1 rounded px-2 py-1.5 text-sm text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-        >
-          <ArrowLeft className="h-4 w-4" /> 返回列表
-        </button>
+        <V2BackButton onClick={onBack} label="返回列表" inline />
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}

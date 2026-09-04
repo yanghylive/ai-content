@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   ArrowRight,
   BellRing,
   CheckCircle2,
@@ -22,6 +21,7 @@ import {
   V2EmptyState,
   V2PrimaryButton,
 } from "@/components/v2/ui-kit";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import { useConfirm } from "@/hooks/use-confirm";
 import { growthApi, type GrowthLead, type GrowthLeadStatus } from "@/lib/api/growth";
 import { toPublicError } from "@/lib/public-error";
@@ -302,6 +302,7 @@ export function LeadsPool() {
     <div className="flex flex-col gap-6">
       <div className="kx-page-head">
         <div>
+          <V2BackButton to="/today" label="返回今日增长" />
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">线索池</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">系统抓到的潜在客户，高意向的转成 CRM 客户重点跟进</p>
           <p className="mt-1 text-12 text-[var(--kaypal-v3-muted)]">评分在抓取时由 AI 自动给出；你可以通过「转为客户 / 忽略」人工复核评分</p>
@@ -565,12 +566,6 @@ export function LeadsPool() {
           </div>
         </section>
       )}
-
-      <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/today")}>
-          返回今日增长
-        </V2GhostButton>
-      </section>
 
       {/* 手动补充线索弹窗 */}
       {addOpen && (

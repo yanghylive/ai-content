@@ -2,7 +2,7 @@
 
 import { Suspense, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft } from "@/components/iconpark";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 
 function HybridRouteInner({
   legacy,
@@ -32,14 +32,7 @@ function HybridRouteInner({
   return (
     <div className="kx-legacy-switch">
       <div className="kx-legacy-switch-bar">
-        <button
-          type="button"
-          className="kx-legacy-switch-back"
-          onClick={() => router.push(pathname)}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          返回
-        </button>
+        <V2BackButton onClick={() => router.push(pathname)} label="返回" inline />
       </div>
       <div className="kx-legacy-content">{legacy}</div>
     </div>

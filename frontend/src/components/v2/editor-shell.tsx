@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Save, Send } from "@/components/iconpark";
+import { Loader2, Save, Send } from "@/components/iconpark";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import { V2StatusChip } from "@/components/v2/ui-kit";
 
 /**
@@ -31,7 +31,6 @@ export function V2EditorShell({
   publishLabel?: string;
   children: ReactNode;
 }) {
-  const router = useRouter();
   const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   const handleSave = () => {
@@ -55,13 +54,7 @@ export function V2EditorShell({
       {/* 统一顶部栏 */}
       <div className="kaypal-v3-panel flex items-center justify-between px-5 py-3">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push(backHref)}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
+          <V2BackButton to={backHref} label="返回" inline />
           <div>
             <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               {title}

@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import { ArrowLeft, CalendarClock, Save } from "@/components/iconpark";
 import {
   V2Section,
   V2PrimaryButton,
-  V2GhostButton,
   V2OptionCard,
   V2StatusChip,
 } from "@/components/v2/ui-kit";
@@ -214,13 +214,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
     <div className="flex flex-col gap-6">
       <section className="kaypal-v3-panel p-6">
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-soft)] hover:text-[var(--kaypal-v3-ink)]"
-            onClick={() => router.push("/schedules")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
+          <V2BackButton to="/schedules" label="返回" inline />
           <div className="flex-1">
             <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">
               {taskInfo.label}
@@ -295,10 +289,7 @@ export function ScheduleForm({ taskType }: { taskType?: string }) {
       </div>
 
       {/* 底部操作栏 — 单一主行动 */}
-      <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/schedules")}>
-          返回
-        </V2GhostButton>
+      <section className="flex items-center justify-end">
         <V2PrimaryButton icon={Save} loading={saving} onClick={handleSubmit}>
           {saving ? "正在保存..." : "保存设置"}
         </V2PrimaryButton>

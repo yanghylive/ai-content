@@ -4,7 +4,6 @@ import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, ty
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
-  ArrowLeft,
   ChevronDown,
   History,
   Pause,
@@ -29,6 +28,7 @@ import {
   V2PrimaryButton,
   V2DangerButton,
 } from "@/components/v2/ui-kit";
+import { V2BackButton } from "@/components/v2/v2-back-button";
 import {
   growthApi,
   type GrowthAcquisitionConfig,
@@ -620,6 +620,7 @@ export function GrowthAcquisitionTasks() {
       <style>{GROWTH_LIVE_CSS}</style>
       <div className="kx-page-head">
         <div>
+          <V2BackButton to="/today" label="返回今日增长" />
           <h1 className="kx-greet text-[var(--kaypal-v3-ink)]">获客任务</h1>
           <p className="kx-greet-sub mt-1 text-[var(--kaypal-v3-muted)]">自动帮你找客户的任务，随时启停和编辑</p>
         </div>
@@ -958,12 +959,6 @@ export function GrowthAcquisitionTasks() {
           </div>
         )}
       </V2Section>
-
-      <section className="flex items-center justify-between">
-        <V2GhostButton icon={ArrowLeft} className="kx-back-to-parent" onClick={() => router.push("/today")}>
-          返回今日增长
-        </V2GhostButton>
-      </section>
 
       {/* 编辑弹窗 */}
       {editTarget && (
