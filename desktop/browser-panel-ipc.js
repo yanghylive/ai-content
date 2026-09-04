@@ -97,6 +97,8 @@ function registerBrowserPanelIpc(deps) {
   ipcMain.handle('browser-panel:expand-strip', stripOnly((on, height) => getPanel().setStripExpanded(on, height)));
   // 活动条「清除」：清空面板活动日志（控制条 stripOnly）
   ipcMain.handle('browser-panel:clear-activity', stripOnly(() => { getPanel().clearActivity(); return true; }));
+  // 活动日志展开全部：控制条上报展开高度，主进程给视图加高（否则展开区被裁）
+  ipcMain.handle('browser-panel:expand-activity', stripOnly((on, height) => getPanel().setActivityExpanded(on, height)));
   // 拖拽调宽会话：沟槽 pointerdown 开始 / pointerup 结束。视图只有 10px 宽，
   // 光标一出视图就断流，所以拖拽由主进程轮询系统光标驱动（见 manager.beginResize）。
   ipcMain.handle('browser-panel:begin-resize', stripOnly(() => getPanel().beginResize()));
@@ -166,6 +168,7 @@ function registerBrowserPanelIpc(deps) {
       'browser-panel:set-width',
       'browser-panel:expand-strip',
       'browser-panel:clear-activity',
+      'browser-panel:expand-activity',
       'browser-panel:begin-resize',
       'browser-panel:end-resize',
       'browser-panel:toggle-agent-mode',

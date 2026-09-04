@@ -157,6 +157,9 @@
     #activityrow .ts { flex: none; font: 10px ui-monospace, Menlo, monospace; color: var(--text-faint); }
     #activityrow .n { flex: none; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 8px;
       background: var(--press); color: var(--text); font-size: 10px; display: inline-flex; align-items: center; justify-content: center; }
+    #activityrow .car { flex: none; color: var(--text-faint); font-size: 10px; transition: transform .12s; }
+    #activityrow.open .car { transform: rotate(180deg); }
+    #activityrow:hover { background: var(--hover); }
     #activityrow .clr { flex: none; color: var(--text-faint); padding: 2px 5px; border-radius: 4px; }
     #activityrow .clr:hover { background: var(--hover); color: var(--text); }
     #activityfull {
@@ -185,11 +188,12 @@
 <body>
   <div id="prog"><i></i></div>
   <div id="tabbar"></div>
-  <div id="activityrow" title="最近活动（点击展开全部）">
+  <div id="activityrow" title="最近活动 · 点击展开全部列表">
     <span class="dot" style="background:var(--text-faint)"></span>
     <span class="at"></span>
     <span class="ts"></span>
     <span class="n"></span>
+    <span class="car">▾</span>
     <span class="clr">清除</span>
   </div>
   <div id="activityfull"></div>
@@ -274,7 +278,10 @@
       const row = $('activityrow');
       const full = $('activityfull');
       const has = Array.isArray(list) && list.length > 0;
+      // 日志清空后展开态自动失效（否则视图留一截空白）
+      if (!has) activityOpen = false;
       row.classList.toggle('show', has);
+      row.classList.toggle('open', has && activityOpen);
       full.classList.toggle('show', has && activityOpen);
       if (!has) { full.innerHTML = ''; return; }
       const head = list[0];
@@ -303,6 +310,9 @@
       if (e.target.classList.contains('clr')) return;
       activityOpen = !activityOpen;
       renderActivity(lastActivity || []);
+      // 展开区必须让主进程给视图加高，否则被控制条视图边界裁掉（点了没反应）
+      const h = activityOpen ? Math.min(170, ($('activityfull').scrollHeight || 60) + 12) : 0;
+      invoke('browser-panel:expand-activity', activityOpen, h);
     });
     $('activityrow').querySelector('.clr').addEventListener('click', (e) => {
       e.stopPropagation();

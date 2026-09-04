@@ -159,6 +159,41 @@ const test = (name, fn) => tests.push([name, fn]);
 
 // ---- TraeWork 控制权模型（默认系统控制，手动接管/交还） ----
 
+// ---- 活动日志展开全部（视图必须按上报高度加高，否则被裁=点了没反应） ----
+
+test('活动展开：setActivityExpanded 给控制条视图加高，收起/清空自动复位', () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });
+  const collapsedH = manager.stripView._bounds.height;
+  // 展开：视图加高（open 记录了一条活动 → 有活动行可展开）
+  assert.equal(manager.setActivityExpanded(true, 120), collapsedH + 120);
+  assert.equal(manager.stripView._bounds.height, collapsedH + 120, '视图必须加高，否则展开区被裁');
+  assert.equal(manager.panelView._bounds.y, 38 + collapsedH + 120, '页面区随之下移');
+  // 重复展开只更新高度不重复加
+  manager.setActivityExpanded(true, 60);
+  assert.equal(manager.stripView._bounds.height, collapsedH + 60);
+  // 收起复原
+  manager.setActivityExpanded(false);
+  assert.equal(manager.stripView._bounds.height, collapsedH);
+  // 高度夹取：超上限按 170
+  manager.setActivityExpanded(true, 9999);
+  assert.equal(manager.stripView._bounds.height, collapsedH + 170, '封顶 170（超出内部滚动）');
+  manager.setActivityExpanded(false);
+  // 日志清空 → 展开态失效（不留一截空白视图）
+  manager.setActivityExpanded(true, 100);
+  manager.clearActivity();
+  assert.equal(manager._activityExpanded, false, '清空日志必须收起');
+  assert.equal(manager.stripView._bounds.height, 40, '活动行本身也消失');
+  // 面板收起时拒绝展开请求（收起态视图本就藏着，不得因展开请求再长高）
+  manager.recordActivity('nav', '打开 https://a.com', true);
+  manager.hide();
+  const hiddenH = manager._stripHeight();
+  const h = manager.setActivityExpanded(true, 100);
+  assert.equal(manager._activityExpanded, false, '收起态不得展开');
+  assert.equal(h, hiddenH, '收起态请求展开不改变高度');
+  manager.destroy();
+});
+
 test('控制权：默认系统控制（system），publicState 下发 control 字段', () => {
   const { manager } = setup(1600, 900);
   assert.equal(manager.getControl(), 'system');

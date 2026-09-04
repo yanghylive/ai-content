@@ -13,6 +13,8 @@ const INVOKE_CHANNELS = new Set([
   'browser-panel:set-width',
   'browser-panel:expand-strip',
   'browser-panel:clear-activity',
+  // 活动日志展开全部（视图按上报高度加高）
+  'browser-panel:expand-activity',
   // 分区沟槽（复用本 preload）：拖拽调宽会话
   'browser-panel:begin-resize',
   'browser-panel:end-resize',

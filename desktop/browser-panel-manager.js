@@ -84,6 +84,8 @@ const TABBAR_HEIGHT = 26;
 const STRIP_EXPAND_HEIGHT = 30;
 // Agent 活动条行高：面板有活动记录时常驻在控制条底部（TraeWork「控制台日志」语义）
 const ACTIVITY_ROW_HEIGHT = 30;
+/** 活动日志「展开全部」区高度上限（控制条视图按此加高，超出内部滚动） */
+const ACTIVITY_FULL_MAX_HEIGHT = 170;
 /** 活动日志容量：内存环形，够回看即可 */
 const ACTIVITY_CAP = 30;
 /** publicState 下发的活动条数（最新在前） */
@@ -199,6 +201,10 @@ class BrowserPanelManager {
     this._stripExpandH = STRIP_EXPAND_HEIGHT;
     /** Agent/面板活动日志（时间戳记录，供控制条底部活动条回看） */
     this._activityLog = [];
+    /** 活动日志是否展开为完整列表（参与 _stripHeight，与快捷行展开互不冲突） */
+    this._activityExpanded = false;
+    /** 展开区当前实际高度（由控制条上报，夹取到 ACTIVITY_FULL_MAX_HEIGHT） */
+    this._activityExpandH = 0;
     /** 当前待批高亮的目标 selector（审批浮层"批准前看到点哪里"；导航后重注入） */
     this._highlightSelector = null;
     // ---- TraeWork 控制权模型 ----
@@ -272,14 +278,18 @@ class BrowserPanelManager {
     // 面板收起时拒绝展开请求（视图本来就藏着一行空白，还会泄漏到下次打开）；
     // 收起请求照常放行（复位状态）
     if (next && !this._visible) return this._stripHeight();
+    let h = this._stripExpandH;
     if (on) {
-      const h = Math.max(30, Math.min(160, Math.floor(Number(height) || STRIP_EXPAND_HEIGHT)));
-      this._stripExpandH = h;
+      h = Math.max(30, Math.min(160, Math.floor(Number(height) || STRIP_EXPAND_HEIGHT)));
     }
-    if (this._stripExpanded === next) return this._stripHeight();
+    // 只改高度也要重排（建议下拉从 1 行长到 4 行时视图必须跟着长）
+    const changed = next !== this._stripExpanded || h !== this._stripExpandH;
     this._stripExpanded = next;
-    this.relayout();
-    this._emitState();
+    this._stripExpandH = h;
+    if (changed) {
+      this.relayout();
+      this._emitState();
+    }
     return this._stripHeight();
   }
 
@@ -698,6 +708,7 @@ class BrowserPanelManager {
   _hideNow() {
     this._visible = false;
     this._stripExpanded = false;
+    this._activityExpanded = false;
     // 阶段 7 tabs：隐藏全部 tab 视图（不能只藏 active，否则后台 tab 残影）
     for (const tab of this._panelTabs) {
       if (tab.view && !tab.view.webContents.isDestroyed()) tab.view.setVisible(false);
@@ -1279,7 +1290,10 @@ class BrowserPanelManager {
   /** 控制条总高：多 tab 时加 tab 条行（round15；单 tab 零干扰不变高） */
   _stripHeight() {
     const base = this._panelTabs.length > 1 ? STRIP_HEIGHT + TABBAR_HEIGHT : STRIP_HEIGHT;
-    const extra = (this._stripExpanded ? this._stripExpandH : 0) + (this._activityLog.length ? ACTIVITY_ROW_HEIGHT : 0);
+    const extra =
+      (this._stripExpanded ? this._stripExpandH : 0) +
+      (this._activityLog.length ? ACTIVITY_ROW_HEIGHT : 0) +
+      (this._activityExpanded ? this._activityExpandH : 0);
     return base + extra;
   }
 
@@ -1303,8 +1317,35 @@ class BrowserPanelManager {
   clearActivity() {
     if (!this._activityLog.length) return;
     this._activityLog = [];
+    this._activityExpanded = false;
+    this._activityExpandH = 0;
     if (this._visible) this.relayout();
     this._emitState();
+  }
+
+  /**
+   * 活动日志「展开全部」：控制条是独立 WebContentsView，展开区超出视图高度
+   * 会被直接裁掉（真机实证：点了活动行毫无反应）。所以展开态必须由控制条
+   * 上报高度、主进程据此给视图加高——与地址栏快捷行展开同一套机制。
+   * @param {boolean} on
+   * @param {number} [height] 展开区需要的高度（条数*行高，封顶 170）
+   */
+  setActivityExpanded(on, height) {
+    const next = !!on && this._activityLog.length > 0;
+    if (next && !this._visible) return this._stripHeight();
+    let h = this._activityExpandH;
+    if (next) {
+      h = Math.max(30, Math.min(ACTIVITY_FULL_MAX_HEIGHT, Math.floor(Number(height) || 60)));
+    }
+    // 只改高度也要重排：列表从 1 条变 8 条时视图必须跟着长（早退=展开区被裁）
+    const changed = next !== this._activityExpanded || h !== this._activityExpandH;
+    this._activityExpanded = next;
+    this._activityExpandH = h;
+    if (changed) {
+      this.relayout();
+      this._emitState();
+    }
+    return this._stripHeight();
   }
 
   relayout() {
