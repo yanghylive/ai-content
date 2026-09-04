@@ -2544,7 +2544,12 @@ export class GrowthService implements OnModuleInit {
       this.sameGrowthRecord(item, scope, id),
     );
     if (!config) throw new NotFoundException('获客任务不存在');
-    const accounts = await this.listAccountHealth(userId, { force: false });
+    // preflight 是「执行前最后一道检查」，必须反映账号真实在线/风险状态，
+    // 不能只看可能为空/过期的持久化快照。真实探活实测 ~2.6s（非 12s，12s 是
+    // checkAccountHealth 单账号 headless 探活的耗时，preflight 不触发）。
+    // 此前 force:false 改动（c74d4c0a）导致首次 preflight 无快照时误判
+    // 「未找到可验证的执行账号」，回退为真实探活。
+    const accounts = await this.listAccountHealth(userId);
     const plan = this.buildSchedulePlan([config], accounts);
     const account = accounts.find(
       (item) =>
@@ -7105,7 +7110,20 @@ export class GrowthService implements OnModuleInit {
       this.inGrowthScope(item, scope),
     );
     if (existing.length) return existing;
+    // 兜底快照除默认平台账号外，还必须为「任务绑定的账号」生成健康快照，
+    // 否则首次 preflight（尚未真实探活、无持久化快照）时，任务绑定的
+    // accountId 匹配不到 → 误判「未找到可验证的执行账号」。
+    // 复用 missingTaskAccountHealthRows：把任务绑定但未探活到的账号标记为
+    // needs-human（提示去发布中心授权登录），而非凭空消失。
+    const taskRows = this.missingTaskAccountHealthRows(
+      userId,
+      scope.tenantId,
+      store.configs,
+      new Set<string>(),
+      existing,
+    );
     const defaults: GrowthAccountHealth[] = [
+      ...taskRows,
       this.buildAccountHealth(
         userId,
         'douyin',
