@@ -502,10 +502,12 @@ export class CommentAcquisitionService {
     const lead = await this.assertReplyLead(leadId, input, resolvedScope);
     // 防止调用方篡改回复内容：已审核线索的回复只能使用当前落库版本。
     const replyText = input.replyText.trim();
-    if (
-      !replyText ||
-      (lead.latestReply && lead.latestReply.trim() !== replyText)
-    ) {
+    const approvedReply = (lead.latestReply ?? '').trim();
+    if (!approvedReply) {
+      // 线索未生成回复草稿（latestReply 为空）时，禁止发送任意内容（防篡改空文本绕过）
+      throw new UnauthorizedException('该线索未生成回复草稿，无法发送');
+    }
+    if (!replyText || approvedReply !== replyText) {
       throw new UnauthorizedException('回复内容与已审核线索不一致');
     }
     const key = circuitKey ?? `${input.platform}:${input.accountId}`;

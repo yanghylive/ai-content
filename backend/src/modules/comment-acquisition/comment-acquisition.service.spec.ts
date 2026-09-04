@@ -338,6 +338,29 @@ describe('CommentAcquisitionService', () => {
       expect(executorMock.dispatch).not.toHaveBeenCalled();
     });
 
+    it('线索未生成回复草稿（latestReply 空）时拒绝发送任意内容（P2-2 防篡改）', async () => {
+      prismaMock.lead.findFirst.mockResolvedValueOnce({
+        status: 'approved',
+        latestReply: null,
+        commentRef: null,
+        sourceText: '怎么买',
+      });
+
+      await expect(
+        service.dispatchReply(
+          'lead-no-draft',
+          {
+            platform: 'douyin',
+            accountId: 1,
+            commentText: '怎么买',
+            replyText: '随便发点什么',
+          },
+          { tenantId: null, userId: 'u1' },
+        ),
+      ).rejects.toThrow('未生成回复草稿');
+      expect(executorMock.dispatch).not.toHaveBeenCalled();
+    });
+
     it('无回读或截图证据的 sent 不能标记 replied', async () => {
       executorMock.dispatch.mockResolvedValue({ status: 'sent' });
 
