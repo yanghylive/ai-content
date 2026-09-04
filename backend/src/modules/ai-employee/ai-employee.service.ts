@@ -3353,6 +3353,11 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
           commentMode: candidate.commentMode,
           index: candidate.index,
           profileUrl: candidate.profileUrl,
+          externalUserId: candidate.externalUserId,
+          externalEventId: candidate.externalEventId,
+          externalContentId: candidate.externalContentId,
+          rawHash: candidate.rawHash,
+          authorName: candidate.authorName,
           commentTime: candidate.commentTime,
           videoTitle: candidate.videoTitle,
           videoUrl: candidate.videoUrl,
@@ -4404,6 +4409,11 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
             index: this.readNonNegativeInteger(item?.index),
             targetName: safeText(item?.targetName || ''),
             profileUrl: safeText(item?.profileUrl || ''),
+            externalUserId: safeText(item?.externalUserId || ''),
+            externalEventId: safeText(item?.externalEventId || ''),
+            externalContentId: safeText(item?.externalContentId || ''),
+            rawHash: safeText(item?.rawHash || ''),
+            authorName: safeText(item?.authorName || ''),
             commentTime: safeText(item?.commentTime || ''),
             videoTitle: safeText(item?.videoTitle || ''),
             videoUrl: safeText(item?.videoUrl || ''),
@@ -4542,6 +4552,13 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
           : index,
         targetName: this.readOptionalText(item?.targetName),
         profileUrl: this.readOptionalText(item?.profileUrl),
+        // P1-4/P1-9 复核：身份/事件/指纹字段必须随候选贯穿（RPA→Lead→CRM 归因链），
+        // 白名单 map 漏一个字段就等于在链路中段静默吞掉。
+        externalUserId: this.readOptionalText(item?.externalUserId),
+        externalEventId: this.readOptionalText(item?.externalEventId),
+        externalContentId: this.readOptionalText(item?.externalContentId),
+        rawHash: this.readOptionalText(item?.rawHash),
+        authorName: this.readOptionalText(item?.authorName),
         commentTime: this.readOptionalText(item?.commentTime),
         videoTitle: this.readOptionalText(item?.videoTitle),
         videoUrl: this.readOptionalText(item?.videoUrl),
@@ -4655,6 +4672,9 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
     },
   ) {
     const text = candidate.text.trim();
+    // 通用高意向词只保留「跨行业通用」的购买意向信号；
+    // 「报名」「加盟」等行业特有词下放到行业词库 demandKeywords，
+    // 避免对家装/餐饮等非招商行业误伤（客户问「加盟费」≠ 找装修）。
     const highIntentKeywords = [
       '价格',
       '多少钱',
@@ -4666,8 +4686,6 @@ export class AiEmployeeService implements OnModuleInit, OnModuleDestroy {
       '需要',
       '了解',
       '咨询',
-      '报名',
-      '加盟',
       '电话',
       '微信',
       '地址',

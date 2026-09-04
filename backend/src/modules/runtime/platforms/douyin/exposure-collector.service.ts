@@ -39,6 +39,8 @@ export type DouyinExposureCandidate = {
     | 'retention-contact';
   targetName?: string;
   profileUrl?: string;
+  /** 评论者外部 ID（抖音 sec_uid，来自行内作者链接）；CRM 资格/去重依赖 */
+  externalUserId?: string;
   commentTime?: string;
   videoTitle?: string;
   videoUrl?: string;
@@ -1244,7 +1246,11 @@ export class DouyinExposureCollector {
       .evaluate(
         () => document.body?.innerText || document.body?.textContent || '',
       )
-      .then((t) => String(t || '').replace(/\s+/g, ' ').trim())
+      .then((t) =>
+        String(t || '')
+          .replace(/\s+/g, ' ')
+          .trim(),
+      )
       .catch(() => '');
     return content.length > inner.length ? content : inner;
   }
@@ -1582,6 +1588,8 @@ export class DouyinExposureCollector {
       commentTime: string;
       y: number;
       authorTagged: boolean;
+      profileUrl: string;
+      externalUserId: string;
     };
     const rows: DomCommentRow[] = await page
       .evaluate((limit) => {
@@ -1621,12 +1629,38 @@ export class DouyinExposureCollector {
           .map((node) => {
             const rect = node.getBoundingClientRect();
             const text = normalize(node.innerText || node.textContent);
+            // 评论行作者链接 a[href*="/user/{sec_uid}"] 是评论者唯一可归因外部身份。
+            // 不随正文一起带出，下游 Lead 就永远缺 externalUserId/profileUrl，
+            // CRM 资格门禁(isCrmCaptureEligible)必然不过 → 全部滞留人工池。
+            let profileUrl = '';
+            let externalUserId = '';
+            const authorHref = normalize(
+              node.querySelector('a[href*="/user/"]')?.getAttribute('href') ||
+                '',
+            );
+            if (authorHref) {
+              try {
+                const u = new URL(authorHref, location.origin);
+                if (/douyin\.com$/i.test(u.hostname)) {
+                  const seg = u.pathname.split('/').filter(Boolean).pop() || '';
+                  // sec_uid 为长串（≥8）；/user/ 之外的短段视为导航噪声不采信
+                  if (seg.length >= 8) {
+                    profileUrl = u.origin + u.pathname;
+                    externalUserId = seg;
+                  }
+                }
+              } catch {
+                /* href 解析失败：按无身份处理，不伪造 */
+              }
+            }
             return {
               text,
               x: rect.x,
               y: rect.y,
               width: rect.width,
               height: rect.height,
+              profileUrl,
+              externalUserId,
             };
           })
           .filter(
@@ -1651,6 +1685,8 @@ export class DouyinExposureCollector {
               commentTime,
               y: item.y,
               authorTagged,
+              profileUrl: item.profileUrl,
+              externalUserId: item.externalUserId,
             };
           })
           .filter((item): item is DomCommentRow =>
@@ -1687,6 +1723,8 @@ export class DouyinExposureCollector {
         index,
         kind: 'comment' as const,
         targetName: item.targetName,
+        profileUrl: item.profileUrl || undefined,
+        externalUserId: item.externalUserId || undefined,
         commentTime: item.commentTime,
         videoTitle: input.videoTitle,
         videoUrl: input.videoUrl || input.sourceUrl,
@@ -2766,7 +2804,9 @@ export class DouyinExposureCollector {
     }
     if (!visionModelId) {
       this.logger.warn(
-        '[视觉兜底] 无可用视觉模型：ai_models 缺少任一启用的 ' + VISION_MODEL_ALIASES.join(' / ') + ' 记录（懒创建需 KAYPAL_AI_PROXY_BASE_URL + KAYPAL_AI_PROXY_API_KEY）',
+        '[视觉兜底] 无可用视觉模型：ai_models 缺少任一启用的 ' +
+          VISION_MODEL_ALIASES.join(' / ') +
+          ' 记录（懒创建需 KAYPAL_AI_PROXY_BASE_URL + KAYPAL_AI_PROXY_API_KEY）',
       );
       return null;
     }

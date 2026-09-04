@@ -803,6 +803,48 @@ describe('AiEmployeeService', () => {
     expect(plan.skipped.map((item) => item.text)).toContain('哈哈');
   });
 
+  // 2026-09-04 断点修复回归：normalizeFollowUpCandidates/targets 两处白名单 map
+  // 曾静默剥掉 externalUserId/externalEventId/rawHash，导致 Lead 永远缺可归因身份、
+  // 全部滞留人工池（blocked）。身份字段必须原样透传到 targets。
+  it('planDouyinFollowUp carries commenter identity (externalUserId/externalEventId/rawHash) into targets', () => {
+    const service = new AiEmployeeService(makeRuntimeMock(), makeLocalEngineMock());
+    const plan = service.planDouyinFollowUp({
+      sourceLabel: '抖音',
+      sourceText: '装修',
+      accountName: '测试抖音',
+      privateMessage: '可以发你资料。',
+      commentTemplates: ['模板：{comment}'],
+      messageTemplates: [],
+      dailyLimit: 5,
+      maxTargets: 5,
+      candidates: [
+        {
+          text: '想了解报价多少钱，怎么联系',
+          sourceUrl: 'https://www.douyin.com/video/7001',
+          targetName: '装修客户A',
+          profileUrl: 'https://www.douyin.com/user/MS4wLjABAAAAxxxxxxxx',
+          externalUserId: 'MS4wLjABAAAAxxxxxxxx',
+          externalEventId: '7501234567890',
+          externalContentId: '7001',
+          rawHash: 'sha256:abc',
+          authorName: '装修客户A',
+          commentTime: '今天',
+          kind: 'comment',
+          index: 0,
+        },
+      ],
+    });
+
+    expect(plan.targets).toHaveLength(1);
+    expect(plan.targets[0]).toMatchObject({
+      externalUserId: 'MS4wLjABAAAAxxxxxxxx',
+      externalEventId: '7501234567890',
+      externalContentId: '7001',
+      rawHash: 'sha256:abc',
+      profileUrl: 'https://www.douyin.com/user/MS4wLjABAAAAxxxxxxxx',
+    });
+  });
+
   it('rotates Douyin public-comment follow-up targets across videos', async () => {
     const service = new AiEmployeeService(
       makeRuntimeMock(),
