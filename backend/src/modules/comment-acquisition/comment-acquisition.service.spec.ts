@@ -25,6 +25,13 @@ function makeRegistryMock(
 ) {
   return {
     get: (platform: string) => ({
+      capability: {
+        platform,
+        displayName: platform,
+        supportedTasks: ['comment-reply', 'direct-message-reply'],
+        supportsReadback: true,
+        adapterVersion: 'mock',
+      },
       read: async (input: {
         platform: string;
         taskType: string;
@@ -82,6 +89,10 @@ function makeRegistryMock(
               content: input.replyText,
             }) ?? { status: 'failed', message: '未实现' }
           );
+        }
+        if (platform === 'kuaishou') {
+          // 模拟快手 adapter 尚未接 RPA 实现：send 抛「待接入」错误
+          throw new Error('快手回复执行待接入：账号需 cp.kuaishou.com 实测校准回复 selector');
         }
         return executorMock.dispatch({
           platform,
@@ -382,6 +393,32 @@ describe('CommentAcquisitionService', () => {
           status: 'failed',
           lastError: '平台未提供发送回读或截图证据',
         }),
+      );
+    });
+
+    it('快手未接入（send 抛「待接入」）落 not_integrated，不记熔断（S2-3 能力门）', async () => {
+      prismaMock.lead.findFirst.mockResolvedValueOnce({
+        status: 'approved',
+        latestReply: '私信你',
+        commentRef: null,
+        sourceText: '怎么买',
+      });
+
+      const ok = await service.dispatchReply(
+        'lead-ks',
+        {
+          platform: 'kuaishou',
+          accountId: 1,
+          commentText: '怎么买',
+          replyText: '私信你',
+        },
+        { tenantId: null, userId: 'u1' },
+      );
+
+      expect(ok).toBe(false);
+      expect(leadRepositoryMock.updateReplyStatus).toHaveBeenLastCalledWith(
+        'lead-ks',
+        expect.objectContaining({ status: 'not_integrated' }),
       );
     });
   });

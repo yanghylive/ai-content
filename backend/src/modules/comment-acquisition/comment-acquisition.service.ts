@@ -13,6 +13,7 @@ import { ReplyEngineService } from './reply-engine.service';
 import { CircuitBreaker } from './circuit-breaker';
 import { LeadRepository } from '../leads/lead.repository';
 import { InteractionAdapterRegistry } from '../interaction/interaction-adapter.registry';
+import type { InteractionSendResult } from '../interaction/interaction-adapter.interface';
 import { InteractionEventStore } from '../interaction/interaction-event.store';
 
 /**
@@ -30,7 +31,7 @@ import { InteractionEventStore } from '../interaction/interaction-event.store';
 export type AcquisitionPlatform =
   'douyin' | 'wechat-channel' | 'xiaohongshu' | 'kuaishou';
 export type LeadStatus =
-  'pending' | 'approved' | 'replied' | 'skipped' | 'failed';
+  'pending' | 'approved' | 'replied' | 'skipped' | 'failed' | 'not_integrated';
 
 export interface AcquisitionLeadRow {
   id: string;
@@ -537,21 +538,59 @@ export class CommentAcquisitionService {
       // 2026-08-20 修复：私信线索（sourceType='dm'）必须走 direct-message-reply，
       // 此前硬编码 comment-reply 导致私信回复被发到评论区路径。
       const adapter = this.interactionRegistry.get(input.platform);
-      const result = (await adapter.send?.({
-        platform: input.platform,
-        taskType:
-          lead.sourceType === 'dm' ? 'direct-message-reply' : 'comment-reply',
-        accountId: input.accountId,
-        targetText: input.commentText,
-        sourceText: input.commentText,
-        videoTitle: input.sourceTitle,
-        commentRef: xhsIndex !== undefined ? String(xhsIndex) : undefined,
-        replyText,
-      })) ?? {
-        status: 'failed' as const,
-        message: '该平台未实现回复能力',
-        evidenceUrl: undefined,
-      };
+      const taskType =
+        lead.sourceType === 'dm' ? 'direct-message-reply' : 'comment-reply';
+
+      // 能力门（S2-3）：发送前预检真实能力，未接入/不支持时明确拦截，
+      // 不把「平台未接入」误判为「发送失败」去污染熔断统计。
+      const capability = adapter.capability;
+      if (
+        capability &&
+        !capability.supportedTasks.includes(taskType)
+      ) {
+        const msg = `平台 ${input.platform} 不支持互动类型 ${taskType}`;
+        this.logger.warn(`[comment-acquisition] ${msg}`);
+        await this.leadRepository.updateReplyStatus(leadId, {
+          userId: resolvedScope.userId,
+          status: 'not_integrated',
+          lastError: msg,
+        });
+        return false;
+      }
+
+      let result: InteractionSendResult;
+      try {
+        result = (await adapter.send?.({
+          platform: input.platform,
+          taskType,
+          accountId: input.accountId,
+          targetText: input.commentText,
+          sourceText: input.commentText,
+          videoTitle: input.sourceTitle,
+          commentRef: xhsIndex !== undefined ? String(xhsIndex) : undefined,
+          replyText,
+        })) ?? {
+          status: 'failed' as const,
+          message: '该平台未实现回复能力',
+          evidenceUrl: undefined,
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        // 平台真实能力未接入（如快手 adapter 尚未接 RPA 实现）时，不算发送失败，
+        // 不记熔断，lead 落 not_integrated，避免把「能力缺失」误判成「平台失败」。
+        if (/待接入|未实现|未接入|not\s*implemented|not\s*integrated/i.test(message)) {
+          this.logger.warn(
+            `[comment-acquisition] ${input.platform} 回复能力未接入: ${message}`,
+          );
+          await this.leadRepository.updateReplyStatus(leadId, {
+            userId: resolvedScope.userId,
+            status: 'not_integrated',
+            lastError: message,
+          });
+          return false;
+        }
+        throw error;
+      }
 
       // sent 只是适配器声明动作完成；没有回读文本或截图证据时不得形成
       // replied，避免平台实际失败却被记录为假成功。
