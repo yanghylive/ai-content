@@ -262,6 +262,21 @@ describe('resolvePlatformLoginState：wechat-channel 三态', () => {
     ).toBe('logged_in');
   });
 
+  it('logged_in：工作台首页真实 innerText（2026-09-04 真机校准，菜单折叠场景）', () => {
+    // 真机取证：首页 observe 前 2000 字符里没有「内容管理/数据中心」等
+    // 折叠菜单词，只有顶栏+首页卡片特异词——修复前误判 login_prompt。
+    const realHomeText =
+      '视频号 · 助手 145 杨宏宇大神 申请认证 视频号ID: sphDFNT58iFTRqZ 视频137 关注者3956 ' +
+      '作品优化建议 8月11日 昨日数据 净增关注 0 新增播放 6 新增评论 0';
+    expect(
+      resolvePlatformLoginState(
+        'wechat-channel',
+        'https://channels.weixin.qq.com/platform/',
+        realHomeText,
+      ),
+    ).toBe('logged_in');
+  });
+
   it('login_prompt：微信扫码提示', () => {
     expect(
       resolvePlatformLoginState(

@@ -160,9 +160,16 @@ export function resolveDouyinLoginState(
   return 'login_prompt';
 }
 
-/** 视频号助手已登录特征词（channels.weixin.qq.com/platform 工作台） */
+/**
+ * 视频号助手已登录特征词（channels.weixin.qq.com/platform 工作台）。
+ * 2026-09-04 真机校准：工作台首页左侧导航折叠，innerText（observe 前 2000 字符）
+ * 只有顶栏+首页卡片——「内容管理/数据中心」等菜单词不可见，已登录被判
+ * login_prompt。补首页特异特征词：视频号ID:/昨日数据/净增关注/作品优化建议/
+ * 申请认证（登录页 login.html 绝无这些字样；login.html URL 也先判 login_prompt，
+ * 双重隔离不会误报）。
+ */
 const WECHAT_CHANNEL_BACKEND_KEYWORDS =
-  /发表视频|发布视频|数据中心|内容管理|互动中心|主页管理|商品橱窗/;
+  /发表视频|发布视频|数据中心|内容管理|互动中心|主页管理|商品橱窗|视频号ID:|昨日数据|净增关注|作品优化建议|申请认证/;
 
 /**
  * 视频号登录态：判定域**精确**收窄 channels.weixin.qq.com——PROFILE 白名单
