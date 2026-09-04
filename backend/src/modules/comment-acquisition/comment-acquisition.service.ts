@@ -151,7 +151,7 @@ export class CommentAcquisitionService {
     }> = [];
 
     let leads = 0;
-    const replies = 0;
+    let replies = 0;
 
     for (const comment of comments) {
       // 2. 潜客评分
@@ -224,20 +224,50 @@ export class CommentAcquisitionService {
       });
       const leadId = lead.id;
 
-      // 6. 自动回复（可选；熔断中则跳过发送，标记 pending 待人工）
+      // 6. 自动回复：低风险自动真实外发（留审批痕迹），高风险进人工审核
       let status = 'pending';
-      // 扫描阶段只允许生成待审核线索；真实外发必须由 approved Lead 经过
-      // dispatchReply 的后端门禁触发。autoReply 仅保留兼容参数，不得绕过审批。
       if (autoReply && replyText) {
-        if (circuit.open) {
+        const highRisk = this.replyEngine.isHighRisk(comment);
+        if (highRisk) {
+          status = 'pending';
+          this.logger.log(
+            `[comment-acquisition] lead=${leadId} 命中高风险词，进人工审核（不自动发送）`,
+          );
+        } else if (circuit.open) {
           this.logger.warn(
             `[comment-acquisition] ${platformName} 账号 ${input.accountId} 触发风控熔断，跳过自动回复（${circuit.retryAfterSeconds}s 后重试）`,
           );
           status = 'pending';
         } else {
-          this.logger.log(
-            `[comment-acquisition] lead=${leadId} 已生成回复，等待人工审核后发送`,
-          );
+          // 低风险自动审批留痕（autoApprovedAt 写入 notes，审计可复验）
+          await this.prisma.lead.updateMany({
+            where: {
+              id: leadId,
+              userId: scope.userId,
+              ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+            },
+            data: {
+              status: 'approved',
+              notes: {
+                autoApprovedAt: new Date().toISOString(),
+                source: 'auto-reply',
+              },
+            },
+          });
+          const sent = await this.dispatchReply(leadId, {
+            platform: input.platform,
+            accountId: input.accountId,
+            commentText: comment.text,
+            replyText,
+            sourceTitle: readResult.title,
+            commentIndex: comment.commentIndex,
+          });
+          if (sent) {
+            replies += 1;
+            status = 'replied';
+          } else {
+            status = 'failed';
+          }
         }
       }
 
@@ -343,7 +373,7 @@ export class CommentAcquisitionService {
     }> = [];
 
     let leads = 0;
-    const replies = 0;
+    let replies = 0;
 
     for (const message of messages) {
       const { score, signals } = this.replyEngine.scoreLeadPotential(message);
@@ -385,14 +415,43 @@ export class CommentAcquisitionService {
       const leadId = lead.id;
 
       let status = 'pending';
-      // 私信扫描同样不得因 autoReply 参数绕过人工审批。
+      // 私信自动回复：低风险自动真实外发（留审批痕迹），高风险进人工审核
       if (autoReply && replyText) {
-        if (circuit.open) {
+        const highRisk = this.replyEngine.isHighRisk(message);
+        if (highRisk) {
+          status = 'pending';
+          this.logger.log(
+            `[comment-acquisition] lead=${leadId} 私信命中高风险词，进人工审核（不自动发送）`,
+          );
+        } else if (circuit.open) {
           status = 'pending';
         } else {
-          this.logger.log(
-            `[comment-acquisition] lead=${leadId} 已生成私信回复，等待人工审核后发送`,
-          );
+          await this.prisma.lead.updateMany({
+            where: {
+              id: leadId,
+              userId: scope.userId,
+              ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+            },
+            data: {
+              status: 'approved',
+              notes: {
+                autoApprovedAt: new Date().toISOString(),
+                source: 'auto-reply',
+              },
+            },
+          });
+          const sent = await this.dispatchReply(leadId, {
+            platform: input.platform,
+            accountId: input.accountId,
+            commentText: message.text,
+            replyText,
+          });
+          if (sent) {
+            replies += 1;
+            status = 'replied';
+          } else {
+            status = 'failed';
+          }
         }
       }
 

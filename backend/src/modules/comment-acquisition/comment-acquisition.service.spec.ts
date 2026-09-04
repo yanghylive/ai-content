@@ -143,6 +143,7 @@ describe('CommentAcquisitionService', () => {
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
+    isHighRisk: jest.fn().mockReturnValue(false),
   };
   const leadRepositoryMock = {
     upsert: jest.fn().mockResolvedValue({
@@ -183,7 +184,7 @@ describe('CommentAcquisitionService', () => {
   });
 
   describe('scanAccount', () => {
-    it('读取评论 → 评分 → 生成待审核回复，不因 autoReply 参数直接外发', async () => {
+    it('低风险 autoReply 真实外发并计数 replies（P0-3 修复：伪自动→真自动）', async () => {
       autoUploadMock.readDouyinComments.mockResolvedValue({
         accountId: 1,
         title: '测试视频',
@@ -205,7 +206,28 @@ describe('CommentAcquisitionService', () => {
         personaName: 'casual 朋友',
         retries: 0,
       });
-      executorMock.dispatch.mockResolvedValue({ status: 'sent' });
+      replyEngineMock.isHighRisk.mockReturnValue(false);
+      executorMock.dispatch.mockResolvedValue({
+        status: 'sent',
+        readbackText: '私信我发你详情～',
+      });
+      // dispatchReply 的 assertReplyLead 需要 lead.status=approved + sourceText 匹配
+      // 两条 lead 依次返回各自 sourceText；用 Once 避免污染后续 dispatchReply 独立测试
+      prismaMock.lead.findFirst
+        .mockResolvedValueOnce({
+          status: 'approved',
+          latestReply: '私信我发你详情～',
+          commentRef: null,
+          sourceText: '这个多少钱？怎么买？',
+          sourceType: 'comment',
+        })
+        .mockResolvedValueOnce({
+          status: 'approved',
+          latestReply: '私信我发你详情～',
+          commentRef: null,
+          sourceText: '请问怎么报名？',
+          sourceType: 'comment',
+        });
 
       const result = await service.scanAccount({
         platform: 'douyin',
@@ -215,8 +237,8 @@ describe('CommentAcquisitionService', () => {
 
       expect(result.scanned).toBe(3);
       expect(result.leads).toBe(2);
-      expect(result.replies).toBe(0);
-      expect(executorMock.dispatch).not.toHaveBeenCalled();
+      expect(result.replies).toBe(2); // 两条 lead 均低风险，自动外发成功
+      expect(executorMock.dispatch).toHaveBeenCalledTimes(2);
       expect(interactionEventStoreMock.ingest).toHaveBeenCalledTimes(2);
       expect(leadRepositoryMock.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -379,6 +401,7 @@ describe('CommentAcquisitionService 风控断路器', () => {
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
+    isHighRisk: jest.fn().mockReturnValue(false),
   };
   const leadRepositoryMock = {
     upsert: jest.fn().mockResolvedValue({
@@ -497,6 +520,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
+    isHighRisk: jest.fn().mockReturnValue(false),
   };
   const leadRepositoryMock = {
     upsert: jest.fn().mockResolvedValue({
@@ -532,14 +556,11 @@ describe('CommentAcquisitionService 小红书获客', () => {
     service = moduleRef.get(CommentAcquisitionService);
   });
 
-  it('小红书扫描只生成待审核回复，不直接调用 replyComment', async () => {
+  it('小红书低风险 autoReply 真实调用 replyComment 外发（P0-3 修复）', async () => {
     xhsMock.readComments.mockResolvedValue({
       accountId: 3,
       title: '小红书笔记',
-      comments: [
-        { content: '这个怎么买呀？', index: 0 },
-        { content: '多少钱', index: 1 },
-      ],
+      comments: [{ content: '这个怎么买呀？', index: 0 }],
     });
     replyEngineMock.scoreLeadPotential.mockReturnValue({
       score: 60,
@@ -551,7 +572,20 @@ describe('CommentAcquisitionService 小红书获客', () => {
       personaName: 'x',
       retries: 0,
     });
-    xhsMock.replyComment.mockResolvedValue({ status: 'sent', message: 'sent' });
+    replyEngineMock.isHighRisk.mockReturnValue(false);
+    xhsMock.replyComment.mockResolvedValue({
+      status: 'sent',
+      message: '评论回复已发送',
+      readbackText: '私信我发你详情～',
+      evidenceUrl: '/api/local-engine/browser/evidence/xhs.png',
+    });
+    prismaMock.lead.findFirst.mockResolvedValue({
+      status: 'approved',
+      latestReply: '私信我发你详情～',
+      commentRef: '0',
+      sourceText: '这个怎么买呀？',
+      sourceType: 'comment',
+    });
 
     const result = await service.scanAccount({
       platform: 'xiaohongshu',
@@ -560,10 +594,9 @@ describe('CommentAcquisitionService 小红书获客', () => {
     });
 
     expect(xhsMock.readComments).toHaveBeenCalled();
-    expect(result.leads).toBe(2);
-    expect(result.replies).toBe(0);
-    expect(xhsMock.replyComment).not.toHaveBeenCalled();
-    // 不走通用 dispatch
+    expect(result.leads).toBe(1);
+    expect(result.replies).toBe(1); // 低风险自动外发成功
+    expect(xhsMock.replyComment).toHaveBeenCalledTimes(1);
     expect(executorMock.dispatch).not.toHaveBeenCalled();
   });
 });
@@ -599,6 +632,7 @@ describe('CommentAcquisitionService 私信获客', () => {
   const replyEngineMock = {
     scoreLeadPotential: jest.fn(),
     generateReply: jest.fn(),
+    isHighRisk: jest.fn().mockReturnValue(false),
   };
   const leadRepositoryMock = {
     upsert: jest.fn().mockResolvedValue({
@@ -634,7 +668,7 @@ describe('CommentAcquisitionService 私信获客', () => {
     service = moduleRef.get(CommentAcquisitionService);
   });
 
-  it('私信扫描生成待审核回复，不直接 dispatch direct-message-reply', async () => {
+  it('私信低风险 autoReply 真实 dispatch direct-message-reply（P0-3 修复）', async () => {
     autoUploadMock.readDouyinMessages.mockResolvedValue({
       accountId: 1,
       title: '抖音私信',
@@ -652,7 +686,18 @@ describe('CommentAcquisitionService 私信获客', () => {
       personaName: 'x',
       retries: 0,
     });
-    executorMock.dispatch.mockResolvedValue({ status: 'sent' });
+    replyEngineMock.isHighRisk.mockReturnValue(false);
+    executorMock.dispatch.mockResolvedValue({
+      status: 'sent',
+      readbackText: '私信你详细报价',
+    });
+    prismaMock.lead.findFirst.mockResolvedValue({
+      status: 'approved',
+      latestReply: '私信你详细报价',
+      commentRef: null,
+      sourceText: '你们的产品怎么收费？',
+      sourceType: 'dm',
+    });
 
     const result = await service.scanDm({
       platform: 'douyin',
@@ -662,7 +707,7 @@ describe('CommentAcquisitionService 私信获客', () => {
 
     expect(result.scanned).toBe(2);
     expect(result.leads).toBe(1);
-    expect(result.replies).toBe(0);
-    expect(executorMock.dispatch).not.toHaveBeenCalled();
+    expect(result.replies).toBe(1); // 低风险自动外发成功
+    expect(executorMock.dispatch).toHaveBeenCalledTimes(1);
   });
 });

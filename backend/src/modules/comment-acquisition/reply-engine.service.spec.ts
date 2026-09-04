@@ -164,5 +164,14 @@ describe('ReplyEngineService', () => {
       expect(service.shouldReply({ text: '怎么报名？' })).toBe(true);
       expect(service.shouldReply({ text: '哈哈' })).toBe(false);
     });
+
+    it('isHighRisk 高风险评论判定（自动回复拦截用）', () => {
+      expect(service.isHighRisk({ text: '这是骗子，大家别上当' })).toBe(true);
+      expect(service.isHighRisk({ text: '我要退款，太坑了' })).toBe(true);
+      expect(service.isHighRisk({ text: '垃圾产品，差评' })).toBe(true);
+      expect(service.isHighRisk({ text: '我要举报你们' })).toBe(true);
+      expect(service.isHighRisk({ text: '这个多少钱？怎么买？' })).toBe(false);
+      expect(service.isHighRisk({ text: '学会了，太棒了' })).toBe(false);
+    });
   });
 });

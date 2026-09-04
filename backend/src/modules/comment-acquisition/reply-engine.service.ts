@@ -286,6 +286,17 @@ export class ReplyEngineService {
     return this.scoreLeadPotential(comment).score >= threshold;
   }
 
+  /**
+   * 高风险评论判定（自动回复用）：命中负面/争议/投诉/退款/举报等词，
+   * 一律进人工审核，不做自动外发（对齐 AGENTS.md「审批仅用于高风险/不确定」）。
+   */
+  isHighRisk(comment: CommentInput): boolean {
+    const text = (comment.text || '').toLowerCase();
+    return /骗子|骗人|坑|垃圾|没用|差评|太贵|退款|投诉|举报|曝光|维权|投诉电话|12315|虚假|诈骗|假货|上当|受骗|退货|退钱/.test(
+      text,
+    );
+  }
+
   private buildPrompt(
     comment: CommentInput,
     options: ReplyEngineOptions,
