@@ -1809,6 +1809,22 @@ export class GrowthService implements OnModuleInit {
         normalizedConfig.accountId,
       ),
     );
+    // 2026-09-04 实时遥测：从条件检查起就建立「正在干什么」会话——
+    // 账号未登录/风控/节流/引擎不可用等任何结局都会出现在实时面板，点执行必有反馈。
+    const liveKey = this.liveKey(userId, normalizedConfig.id);
+    if (this.liveRuns.get(liveKey)?.running) {
+      return this.createRunResult(normalizedConfig, {
+        trigger,
+        status: 'skipped',
+        failureReason: 'throttled',
+        message: '该任务上一条执行仍在进行中，已跳过本次执行。',
+        candidateCount: 0,
+        selectedCount: 0,
+        contactedCount: 0,
+      });
+    }
+    this.beginLive(userId, normalizedConfig);
+    this.logLive(userId, normalizedConfig.id, 'info', '收到执行请求，正在检查账号与执行条件…');
     const executionEnabled = process.env.GROWTH_EXECUTION_ENABLED === 'true';
     if (!accountHealth) {
       return this.createRunResult(normalizedConfig, {
@@ -1964,20 +1980,7 @@ export class GrowthService implements OnModuleInit {
     // 复核#4-6：driver 成功路径的状态机记录 id（try 内赋值，catch 分支共用，防并发串单）
     let driverRpaRecordId: string | null = null;
     try {
-      // 2026-09-04 实时遥测：同一任务在飞时拒绝重入（防手动/调度双跑触发平台风控）
-      if (this.liveRuns.get(this.liveKey(userId, normalizedConfig.id))?.running) {
-        return this.createRunResult(normalizedConfig, {
-          trigger,
-          status: 'skipped',
-          failureReason: 'throttled',
-          message: '该任务上一条执行仍在进行中，已跳过本次执行。',
-          candidateCount: 0,
-          selectedCount: 0,
-          contactedCount: 0,
-        });
-      }
-      this.beginLive(userId, normalizedConfig);
-      this.logLive(userId, normalizedConfig.id, 'info', '启动执行，正在调度采集引擎…');
+      this.logLive(userId, normalizedConfig.id, 'info', '采集引擎已就绪，开始扫描目标内容…');
       // T2-4 防平台风控：真实执行前记录本次执行时间（供下次节流判断）
       this.acquisitionThrottle.set(throttleKey, { lastRunAt: Date.now() });
       const candidateResponse = await this.fetchCandidatesWithAiEmployee(

@@ -682,7 +682,8 @@ describe('GrowthService commercial acquisition execution', () => {
       expect(live.done).toBe(true);
       expect(live.running).toBe(false);
       const allText = live.events.map((e) => e.text).join('\n');
-      expect(allText).toContain('启动执行');
+      expect(allText).toContain('收到执行请求');
+      expect(allText).toContain('采集引擎已就绪');
       expect(allText).toContain('采集引擎扫描完成，发现 1 条候选');
       expect(allText).toContain('AI 正在分析 1 条候选');
       expect(allText).toContain('准备触达 1 个目标');

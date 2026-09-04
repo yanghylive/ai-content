@@ -53,7 +53,9 @@ const PLATFORM_LABELS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, { label: string; tone: "success" | "warning" | "muted" }> = {
-  enabled: { label: "运行中", tone: "success" },
+  // 语义修正(2026-09-04):enabled=已开启调度(待机),不是引擎正在跑;
+  // 真正的「执行中」由下方 liveRunning 分支显示(amber 呼吸灯)。
+  enabled: { label: "已启用", tone: "muted" },
   disabled: { label: "已停用", tone: "muted" },
   running: { label: "执行中", tone: "warning" },
 };
@@ -558,12 +560,17 @@ export function GrowthAcquisitionTasks() {
                           <span className="mx-1.5 opacity-40">|</span>
                           今日触达 {config.exposureCount ?? 0}
                         </p>
-                        {liveRunning && stageText && (
+                        {liveRunning && stageText ? (
                           <p className="mt-1.5 flex items-center gap-1.5 overflow-hidden text-[12px] font-medium text-[var(--kaypal-v3-warning-ink)]">
                             <span aria-hidden="true" className="growthlive-live-dot inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
                             <span className="truncate">{stageText}</span>
                           </p>
-                        )}
+                        ) : config.status === "enabled" ? (
+                          <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[var(--kaypal-v3-muted)]">
+                            <span aria-hidden="true" className="inline-block h-1 w-1 rounded-full bg-[var(--kaypal-v3-muted)]" />
+                            已开启自动调度，空闲待命中 · 点 ⚡ 立即执行可实时查看采集过程
+                          </p>
+                        ) : null}
                       </div>
 
                       <div className="flex shrink-0 items-center gap-0.5">
