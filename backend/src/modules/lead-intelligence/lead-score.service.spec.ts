@@ -38,6 +38,14 @@ describe('LeadScoreRules', () => {
     expect(SIGNAL_RULES['risk.opt_out'].score).toBe(30);
   });
 
+  it('risk.negative_feedback 是负反馈扣分（12），永不过期', () => {
+    expect(SIGNAL_RULES['risk.negative_feedback']).toEqual({
+      score: 12,
+      decayHours: null,
+      dimension: 'risk',
+    });
+  });
+
   it('时间衰减：过期信号不计入（intent 168h 外过期）', () => {
     const old = new Date(Date.now() - 200 * 3600_000); // 200h 前
     const recent = new Date(Date.now() - 10 * 3600_000); // 10h 前
@@ -85,6 +93,18 @@ describe('LeadScoreService', () => {
     const types = out.map((s) => s.type);
     expect(types).toContain('intent.price');
     expect(types).toContain('intent.question');
+  });
+
+  it('generateSignals：负反馈文本命中 risk.negative_feedback', async () => {
+    const prisma = makePrisma();
+    const svc = makeService(prisma);
+    const out = await svc.generateSignals({
+      ...base,
+      platform: 'douyin',
+      events: [{ id: 'ev-1', channel: 'comment', body: '又是广告，拉黑了', occurredAt: new Date() }],
+    });
+    const types = out.map((s) => s.type);
+    expect(types).toContain('risk.negative_feedback');
   });
 
   it('score：信号 → 四分数正确（intent.price 10 + engagement.reply 3）', async () => {

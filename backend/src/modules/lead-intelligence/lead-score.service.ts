@@ -135,6 +135,24 @@ const KEYWORDS: Record<string, { type: string; keywords: string[] }> = {
       '扫码',
     ],
   },
+  // 负反馈（对方拉黑/取关/别刷/举报等）→ risk.negative_feedback 信号。
+  // 既是风险扣分，也是 C 类关键词 AI 生成的负反馈输入（这类词要排除、别当意向词）。
+  negativeFeedback: {
+    type: 'risk.negative_feedback',
+    keywords: [
+      '拉黑',
+      '取关',
+      '别刷',
+      '烦不烦',
+      '又是广告',
+      '别发了',
+      '举报',
+      '屏蔽',
+      '太吵',
+      '别再推',
+      '讨厌',
+    ],
+  },
 };
 
 /** 简单归一化：小写 + 去空白 */
@@ -181,6 +199,7 @@ const SIGNAL_TYPE_LABELS: Record<string, string> = {
   'intent.question': '疑问咨询',
   'intent.timeline': '近期需求',
   'risk.spam': '疑似垃圾',
+  'risk.negative_feedback': '负反馈',
 };
 
 /** 从线索文本提取命中的中文标签（供新线索自动打标签） */

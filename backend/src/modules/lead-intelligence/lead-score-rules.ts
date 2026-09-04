@@ -62,6 +62,9 @@ export const SIGNAL_RULES: Record<string, SignalRule> = {
   'risk.spam': { score: 15, decayHours: null, dimension: 'risk' },
   'risk.duplicate': { score: 10, decayHours: null, dimension: 'risk' },
   'risk.opt_out': { score: 30, decayHours: null, dimension: 'risk' },
+  // 负反馈（对方拉黑/取关/别刷/举报等）：轻于 opt_out 的负向信号，
+  // 既用于风险扣分，也作为 C 类关键词 AI 生成的负反馈输入（排除这类词）。
+  'risk.negative_feedback': { score: 12, decayHours: null, dimension: 'risk' },
 };
 
 /**
