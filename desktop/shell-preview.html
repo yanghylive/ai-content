@@ -5,22 +5,23 @@
 <title>Desktop Shell Preview</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; background: #f4f1fa; }
+  html { color-scheme: light; }
+  html, body { height: 100%; overflow: hidden; background: #f2f3f5; }
   body { display: flex; flex-direction: column; font: 13px/1 -apple-system, "PingFang SC", system-ui, sans-serif; }
   /* 模拟 macOS 原生标题栏（真实窗口由系统绘制，这里只为预览整体比例） */
   #fakeTitlebar {
     height: 38px; flex: 0 0 38px; display: flex; align-items: center;
-    background: linear-gradient(180deg, #eae4f3, #e2dbef);
-    border-bottom: 1px solid rgba(114,46,209,.14); position: relative;
+    background: linear-gradient(180deg, #eceef0, #e3e5e8);
+    border-bottom: 1px solid rgba(31,35,41,.08); position: relative;
   }
   #fakeTitlebar .lights { display: flex; gap: 8px; padding-left: 14px; }
   #fakeTitlebar .lights i { width: 12px; height: 12px; border-radius: 50%; display: block; }
   #fakeTitlebar .lights i:nth-child(1){ background:#ff5f57 }
   #fakeTitlebar .lights i:nth-child(2){ background:#febc2e }
   #fakeTitlebar .lights i:nth-child(3){ background:#28c840 }
-  #fakeTitlebar .tt { position: absolute; left: 0; right: 0; text-align: center; color: #4d4160; font-weight: 600; pointer-events: none; }
-  #stripFrame { flex: 0 0 38px; width: 100%; border: 0; display: block; }
-  #contentFrame { flex: 1; width: 100%; border: 0; display: block; background: #f6f3fb; }
+  #fakeTitlebar .tt { position: absolute; left: 0; right: 0; text-align: center; color: #41474f; font-weight: 600; pointer-events: none; }
+  #stripFrame { flex: 0 0 40px; height: 40px; width: 100%; border: 0; display: block; }
+  #contentFrame { flex: 1; min-height: 0; width: 100%; border: 0; display: block; background: #f6f3fb; }
 </style>
 </head>
 <body>

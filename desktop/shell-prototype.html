@@ -3,163 +3,186 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>桌面壳标签栏 · 按需展开原型</title>
+<title>桌面壳标签栏 · 大厂质感原型</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font: 14px/1.5 -apple-system, "PingFang SC", system-ui, sans-serif; background: #e9e4f2; color: #332941; padding: 34px 26px 70px; }
+  body { font: 14px/1.5 -apple-system, "PingFang SC", system-ui, sans-serif; background: #e8eaed; color: #1f2329; padding: 34px 26px 70px; }
   h1 { font-size: 22px; margin-bottom: 4px; }
-  .lead { color: #6f6580; margin-bottom: 24px; max-width: 860px; }
-  .caption { font-size: 13px; font-weight: 700; color: #6f6580; margin: 30px 0 10px; letter-spacing: .4px; }
+  .lead { color: #646a73; margin-bottom: 24px; max-width: 900px; }
+  .caption { font-size: 13px; font-weight: 700; color: #646a73; margin: 30px 0 10px; letter-spacing: .4px; }
   .caption b { color: #722ed1; }
-  .win { border-radius: 10px; overflow: visible; box-shadow: 0 18px 50px -12px rgba(51,41,65,.35); background: #fff; max-width: 1180px; position: relative; }
-  .titlebar { height: 36px; display: flex; align-items: center; background: linear-gradient(180deg,#eae4f3,#e2dbef); border-bottom: 1px solid rgba(114,46,209,.14); position: relative; border-radius: 10px 10px 0 0; }
-  .lights { display: flex; gap: 8px; padding-left: 14px; }
-  .lights i { width: 12px; height: 12px; border-radius: 50%; }
+  .win { border-radius: 10px; overflow: visible; box-shadow: 0 18px 50px -12px rgba(31,35,41,.4); background:#fff; max-width:1180px; position:relative; }
+  .titlebar { height:36px; display:flex; align-items:center; background:linear-gradient(180deg,#eceef0,#e3e5e8); border-bottom:1px solid rgba(31,35,41,.08); position:relative; border-radius:10px 10px 0 0; }
+  .lights { display:flex; gap:8px; padding-left:14px; }
+  .lights i { width:12px; height:12px; border-radius:50%; }
   .lights i:nth-child(1){ background:#ff5f57 } .lights i:nth-child(2){ background:#febc2e } .lights i:nth-child(3){ background:#28c840 }
-  .titlebar .tt { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; font-size: 13px; color: #4d4160; pointer-events: none; }
-  .strip { display:flex; align-items:center; gap:6px; height:38px; padding:0 10px; background:#f4f1fa; border-bottom:1px solid rgba(114,46,209,.16); white-space:nowrap; overflow:hidden; }
-  .brand { color:#722ed1; font-weight:800; letter-spacing:.5px; padding-right:10px; border-right:1px solid rgba(114,46,209,.16); margin-right:4px; }
-  .pill { padding:4px 10px; border:1px solid rgba(217,143,43,.45); border-radius:7px; color:#d98f2b; font-size:13px; cursor:pointer; background:transparent; }
-  .pill:hover { background:rgba(217,143,43,.1); }
-  .tabs { display:flex; align-items:center; gap:4px; flex:1; }
-  .tab { display:flex; align-items:center; gap:6px; padding:5px 8px 5px 10px; border:1px solid transparent; border-radius:8px; color:#332941; font-size:13px; cursor:pointer; background:transparent; }
-  .tab:hover { background:rgba(114,46,209,.06); }
-  .tab.active { background:#fff; border-color:rgba(114,46,209,.16); box-shadow:0 1px 3px rgba(51,41,65,.1); }
-  .tab.active .t { color:#722ed1; font-weight:600; }
-  .ws { font-size:10px; color:#d98f2b; background:rgba(217,143,43,.1); border:1px solid rgba(217,143,43,.3); padding:1px 5px; border-radius:4px; cursor:pointer; }
-  .ws:hover { background:rgba(217,143,43,.22); }
-  .x { width:16px; height:16px; line-height:14px; text-align:center; border-radius:4px; color:#8b8496; font-size:13px; }
-  .x:hover { background:#e5484d; color:#fff; }
-  .add { width:26px; height:26px; line-height:24px; text-align:center; border:1px dashed rgba(114,46,209,.16); border-radius:8px; color:#9254de; font-weight:700; cursor:pointer; flex:0 0 auto; }
-  .add:hover { background:rgba(114,46,209,.06); border-color:#9254de; }
-  .menu { position:absolute; z-index:60; min-width:198px; background:#fff; border:1px solid rgba(114,46,209,.16); border-radius:10px; box-shadow:0 10px 30px rgba(51,41,65,.22); padding:5px; }
-  .menu button { display:block; width:100%; text-align:left; background:none; border:none; border-radius:7px; padding:7px 10px; font-size:12.5px; color:#332941; cursor:pointer; font-family:inherit; }
-  .menu button:hover { background:rgba(114,46,209,.06); }
-  .menu hr { border:none; border-top:1px solid rgba(114,46,209,.16); margin:4px 6px; }
-  .menu .chk { display:flex; align-items:center; gap:7px; padding:6px 10px; font-size:12.5px; color:#8b8496; border-radius:7px; cursor:pointer; }
-  .pop { position:absolute; z-index:60; width:252px; background:#fff; border:1px solid rgba(114,46,209,.16); border-radius:10px; box-shadow:0 10px 30px rgba(51,41,65,.22); padding:10px; }
-  .pop input { width:100%; background:#f4f1fa; border:1px solid rgba(114,46,209,.16); border-radius:6px; padding:5px 8px; font-size:12px; color:#332941; }
-  .popbtns { display:flex; gap:6px; margin-top:8px; justify-content:flex-end; }
-  .popbtns button { border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer; border:1px solid rgba(114,46,209,.16); background:transparent; color:#8b8496; font-family:inherit; }
+  .titlebar .tt { position:absolute; left:0; right:0; text-align:center; font-weight:600; font-size:13px; color:#41474f; pointer-events:none; }
+  .strip { display:flex; align-items:center; gap:8px; height:40px; padding:0 10px; background:#f2f3f5; border-bottom:1px solid rgba(31,35,41,.09); white-space:nowrap; overflow:hidden; }
+  .brand { display:flex; align-items:center; gap:8px; font-weight:700; font-size:13px; padding-right:10px; margin-right:2px; border-right:1px solid rgba(31,35,41,.09); color:#1f2329; }
+  .brand .mark { width:20px; height:20px; border-radius:5px; background:linear-gradient(135deg,#9254de,#5b21b6); color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(114,46,209,.4); }
+  .pill { padding:4px 10px; border-radius:6px; color:#b06e10; font-weight:600; font-size:13px; cursor:pointer; }
+  .pill:hover { background:rgba(217,143,43,.12); }
+  .tabs { display:flex; align-items:center; gap:2px; flex:1; }
+  .tab { display:flex; align-items:center; gap:7px; height:28px; padding:0 8px 0 10px; border-radius:7px; color:#646a73; font-size:13px; cursor:pointer; }
+  .tab:hover { background:rgba(31,35,41,.06); color:#1f2329; }
+  .tab.active { background:#fff; color:#1f2329; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  .tab.active .t { font-weight:600; }
+  .dot { width:7px; height:7px; border-radius:50%; background:#722ed1; flex:0 0 auto; }
+  .tab.octop .dot { background:#b06e10; }
+  .ws { font-size:10px; color:#b06e10; background:rgba(217,143,43,.12); padding:1px 5px; border-radius:4px; cursor:pointer; }
+  .ws:hover { filter:brightness(1.08); }
+  .x { width:16px; height:16px; line-height:15px; text-align:center; border-radius:4px; color:#8f959e; font-size:13px; opacity:0; }
+  .tab:hover .x, .tab.active .x { opacity:1; }
+  .x:hover { background:rgba(31,35,41,.1); color:#1f2329; }
+  .x.red { background:#f54a45; color:#fff; opacity:1; }
+  .iconbtn { width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:7px; color:#646a73; cursor:pointer; flex:0 0 auto; }
+  .iconbtn:hover { background:rgba(31,35,41,.06); color:#1f2329; }
+  .iconbtn svg { width:16px; height:16px; }
+  .menu { position:absolute; z-index:60; min-width:216px; background:#fff; border:1px solid rgba(31,35,41,.09); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.14),0 2px 6px rgba(0,0,0,.06); padding:4px; }
+  .menu button { display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%; text-align:left; background:none; border:none; border-radius:6px; padding:7px 9px; font-size:13px; color:#1f2329; cursor:pointer; font-family:inherit; }
+  .menu button:hover { background:rgba(31,35,41,.06); }
+  .menu button.danger { color:#f54a45; }
+  .menu .kbd { font-size:11px; color:#8f959e; }
+  .menu hr { border:none; border-top:1px solid rgba(31,35,41,.09); margin:4px 6px; }
+  .menu .chk { display:flex; align-items:center; gap:8px; padding:7px 9px; font-size:13px; border-radius:6px; cursor:pointer; }
+  .menu .chk input { accent-color:#722ed1; }
+  .pop { position:absolute; z-index:60; width:264px; background:#fff; border:1px solid rgba(31,35,41,.09); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.14); padding:12px; }
+  .pop .lbl { font-size:12px; color:#646a73; margin-bottom:6px; }
+  .pop input { width:100%; background:#f2f3f5; border:1px solid rgba(31,35,41,.09); border-radius:6px; padding:6px 9px; font-size:12px; color:#1f2329; }
+  .popbtns { display:flex; gap:6px; margin-top:10px; justify-content:flex-end; }
+  .popbtns button { border-radius:6px; padding:5px 12px; font-size:12px; cursor:pointer; border:1px solid rgba(31,35,41,.09); background:transparent; color:#646a73; font-family:inherit; }
   .popbtns button.primary { background:#722ed1; border-color:#722ed1; color:#fff; }
-  .content { display:flex; background:#fbfaff; height:220px; border-radius:0 0 10px 10px; overflow:hidden; }
-  .rail { width:56px; background:#221a2e; display:flex; flex-direction:column; align-items:center; padding:10px 0; gap:12px; }
-  .rail .logo { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#9254de,#531dab); }
+  .content { display:flex; background:#fbfbfc; height:210px; border-radius:0 0 10px 10px; overflow:hidden; }
+  .rail { width:56px; background:#202124; display:flex; flex-direction:column; align-items:center; padding:10px 0; gap:12px; }
+  .rail .logo { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#9254de,#5b21b6); }
   .rail i { width:20px; height:20px; border-radius:6px; background:rgba(255,255,255,.14); }
   .rail i.on { background:#e39a3e; }
   .page { flex:1; padding:16px 22px; }
-  .page h2 { font-size:17px; } .page .sub { color:#8b8496; font-size:12px; }
-  .hint { font-size:12px; color:#6f6580; margin-top:8px; max-width:860px; }
-  .dark .strip, .strip.dark { background:#1d1726; border-bottom-color:rgba(146,84,222,.35); color:#ece6f5; }
-  .strip.dark .brand { color:#b18af0; border-right-color:rgba(146,84,222,.35); }
-  .strip.dark .tab { color:#ece6f5; }
-  .strip.dark .tab:hover { background:rgba(146,84,222,.12); }
-  .strip.dark .tab.active { background:#322743; border-color:rgba(146,84,222,.35); box-shadow:0 1px 3px rgba(0,0,0,.4); }
-  .strip.dark .tab.active .t { color:#c9a6f5; }
-  .strip.dark .add { border-color:rgba(146,84,222,.35); color:#c9a6f5; }
+  .page h2 { font-size:17px; } .page .sub { color:#8f959e; font-size:12px; }
+  .hint { font-size:12px; color:#646a73; margin-top:10px; max-width:900px; }
+  /* 深色 */
+  .strip.dark { background:#17181a; border-bottom-color:rgba(255,255,255,.1); }
+  .strip.dark .brand { color:#f2f3f5; border-right-color:rgba(255,255,255,.1); }
+  .strip.dark .tab { color:#bbbfc4; }
+  .strip.dark .tab:hover { background:rgba(255,255,255,.08); color:#f2f3f5; }
+  .strip.dark .tab.active { background:#23242a; color:#f2f3f5; box-shadow:0 1px 2px rgba(0,0,0,.5); }
+  .strip.dark .dot { background:#a171f0; }
+  .strip.dark .tab.octop .dot { background:#e0a44a; }
+  .strip.dark .ws { color:#e0a44a; background:rgba(224,164,74,.16); }
+  .strip.dark .iconbtn { color:#bbbfc4; }
+  .strip.dark .iconbtn:hover { background:rgba(255,255,255,.08); color:#f2f3f5; }
+  .strip.dark .pill { color:#e0a44a; }
 </style>
 </head>
 <body>
-  <h1>桌面壳标签栏 · 浏览器式按需展开</h1>
-  <p class="lead">规则：常驻只有「品牌 + 标签 + ＋」。Octop 入口、工作区绑定都不占位——用时才出现；想常驻 Octop，在菜单里勾一下即可。以下 6 个状态都已在真实壳中实现。</p>
+  <h1>桌面壳标签栏 · 大厂质感版</h1>
+  <p class="lead">对齐飞书/Chrome 桌面端语言：中性灰底、白卡激活标签（轻投影）、品牌 logo 方块、标签前置类型圆点（紫=业务 / 金=Octop）、关闭钮悬停才出现、＋直接新建、⋯ 收所有低频操作。6 个状态均已在真实壳实现。</p>
 
-  <div class="caption">① 默认态（干净：品牌 + 标签 + ＋）</div>
+  <div class="caption">① 默认态（干净，信息密度让位给标签）</div>
   <div class="win">
     <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
     <div class="strip">
-      <span class="brand">JIUZHANG</span>
+      <span class="brand"><span class="mark">玖</span>JIUZHANG AI</span>
       <div class="tabs">
-        <div class="tab active"><span class="t">业务工作区</span></div>
-        <div class="tab"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
-        <div class="tab"><span class="t">获客任务 · 抖音装修</span><span class="x">×</span></div>
-        <div class="tab"><span class="t">内容运营</span><span class="x">×</span></div>
+        <div class="tab active"><span class="dot"></span><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="dot"></span><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
+        <div class="tab"><span class="dot"></span><span class="t">获客任务 · 抖音装修</span><span class="x">×</span></div>
+        <div class="tab"><span class="dot"></span><span class="t">内容运营</span><span class="x">×</span></div>
       </div>
-      <div class="add">+</div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></div>
     </div>
     <div class="content"><div class="rail"><div class="logo"></div><i class="on"></i><i></i><i></i><i></i></div><div class="page"><h2>今日增长</h2><div class="sub">真实应用内容（此处示意）</div></div></div>
   </div>
 
-  <div class="caption">② 点 <b>＋</b>：新建标签 / 打开 Octop / 选择是否常驻</div>
-  <div class="win" style="margin-bottom:120px">
+  <div class="caption">② 点 <b>⋯</b>：低频操作全部收这里（含 Octop 常驻开关）</div>
+  <div class="win" style="margin-bottom:150px">
     <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
     <div class="strip">
-      <span class="brand">JIUZHANG</span>
+      <span class="brand"><span class="mark">玖</span>JIUZHANG AI</span>
       <div class="tabs">
-        <div class="tab active"><span class="t">业务工作区</span></div>
-        <div class="tab"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
+        <div class="tab active"><span class="dot"></span><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="dot"></span><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
       </div>
-      <div class="add" style="background:rgba(114,46,209,.06);border-color:#9254de">+</div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div class="iconbtn" style="background:rgba(31,35,41,.1);color:#1f2329"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></div>
     </div>
-    <div class="menu" style="right:10px; top:74px;">
-      <button>新建工作区标签</button>
+    <div class="menu" style="right:10px; top:80px;">
+      <button>新建工作区标签<span class="kbd">⌘T</span></button>
       <button>打开 Octop 高级模式</button>
       <hr />
-      <div class="chk"><input type="checkbox" /> Octop 入口常驻标签栏</div>
+      <label class="chk"><input type="checkbox" /> Octop 入口常驻标签栏</label>
     </div>
   </div>
 
   <div class="caption">③ 右键标签：重命名 / 绑定工作区 / 关闭（固定标签无关闭）</div>
-  <div class="win" style="margin-bottom:150px">
+  <div class="win" style="margin-bottom:170px">
     <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
     <div class="strip">
-      <span class="brand">JIUZHANG</span>
+      <span class="brand"><span class="mark">玖</span>JIUZHANG AI</span>
       <div class="tabs">
-        <div class="tab active"><span class="t">业务工作区</span></div>
-        <div class="tab" style="background:rgba(114,46,209,.06)"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
+        <div class="tab active"><span class="dot"></span><span class="t">业务工作区</span></div>
+        <div class="tab" style="background:rgba(31,35,41,.06);color:#1f2329"><span class="dot"></span><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x" style="opacity:1">×</span></div>
       </div>
-      <div class="add">+</div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></div>
     </div>
-    <div class="menu" style="left:150px; top:78px;">
+    <div class="menu" style="left:170px; top:84px;">
       <button>重命名标签</button>
       <button>绑定工作区…</button>
-      <button style="color:#e5484d">关闭标签</button>
+      <button class="danger">关闭标签</button>
     </div>
   </div>
 
-  <div class="caption">④ 点标签上的 <b>WS 徽章</b>：绑定气泡就地弹出（也可解绑）</div>
-  <div class="win" style="margin-bottom:140px">
+  <div class="caption">④ 点 <b>WS 徽章</b>：绑定气泡就地弹出（带说明文案，可解绑）</div>
+  <div class="win" style="margin-bottom:160px">
     <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
     <div class="strip">
-      <span class="brand">JIUZHANG</span>
+      <span class="brand"><span class="mark">玖</span>JIUZHANG AI</span>
       <div class="tabs">
-        <div class="tab active"><span class="t">业务工作区</span></div>
-        <div class="tab"><span class="t">今日增长</span><span class="ws" style="background:rgba(217,143,43,.22)">WS:ws-8f3</span><span class="x">×</span></div>
+        <div class="tab active"><span class="dot"></span><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="dot"></span><span class="t">今日增长</span><span class="ws" style="filter:brightness(1.08)">WS:ws-8f3</span><span class="x" style="opacity:1">×</span></div>
       </div>
-      <div class="add">+</div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></div>
     </div>
-    <div class="pop" style="left:180px; top:76px;">
+    <div class="pop" style="left:200px; top:82px;">
+      <div class="lbl">绑定工作区 ID（请求将携带 x-workspace-id 做数据隔离）</div>
       <input value="ws-8f3c21" />
       <div class="popbtns"><button>解绑</button><button class="primary">绑定</button></div>
     </div>
   </div>
 
-  <div class="caption">⑤ 勾选常驻后：Octop 入口出现在品牌右侧（用户主动选择）</div>
+  <div class="caption">⑤ 勾选常驻后：Octop 入口以幽灵按钮出现在品牌右侧</div>
   <div class="win">
     <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
     <div class="strip">
-      <span class="brand">JIUZHANG</span>
+      <span class="brand"><span class="mark">玖</span>JIUZHANG AI</span>
       <div class="pill">Octop 高级模式</div>
       <div class="tabs">
-        <div class="tab active"><span class="t">业务工作区</span></div>
-        <div class="tab"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
+        <div class="tab active"><span class="dot"></span><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="dot"></span><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
       </div>
-      <div class="add">+</div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></div>
     </div>
   </div>
 
-  <div class="caption">⑥ 深色模式（系统深色时自动适配）</div>
-  <div class="win">
+  <div class="caption">⑥ 深色模式（系统深色自动适配）</div>
+  <div class="win" style="overflow:hidden">
     <div class="strip dark" style="border-radius:10px 10px 0 0;">
-      <span class="brand">JIUZHANG</span>
+      <span class="brand"><span class="mark">玖</span>JIUZHANG AI</span>
       <div class="tabs">
-        <div class="tab active"><span class="t">业务工作区</span></div>
-        <div class="tab"><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x">×</span></div>
-        <div class="tab"><span class="t">Octop 高级模式</span><span class="x">×</span></div>
+        <div class="tab active"><span class="dot"></span><span class="t">业务工作区</span></div>
+        <div class="tab"><span class="dot"></span><span class="t">今日增长</span><span class="ws">WS:ws-8f3</span><span class="x" style="opacity:1">×</span></div>
+        <div class="tab octop"><span class="dot"></span><span class="t">Octop 高级模式</span><span class="x">×</span></div>
       </div>
-      <div class="add">+</div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></div>
     </div>
+    <div style="height:120px;background:#17181a"></div>
   </div>
 
-  <p class="hint">真实实现：desktop/tab-strip.html（已同步上线以上全部交互：＋菜单、右键菜单、WS 绑定气泡、Octop 常驻开关用 localStorage 持久化；IPC 通道未动，桌面应用重开窗口即生效）。实时预览：http://127.0.0.1:8924/tab-strip.html</p>
+  <p class="hint">真实实现：desktop/tab-strip.html（IPC 通道未动，桌面应用重开窗口即生效）。同源预览：http://localhost:3010/shell-preview.html（新壳 + 真实内容）· 本页：http://localhost:3010/shell-prototype.html</p>
 </body>
 </html>

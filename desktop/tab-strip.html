@@ -6,32 +6,36 @@
 <title>workspace tabs</title>
 <style>
   :root {
-    --purple: #722ed1;
-    --purple-soft: #9254de;
-    --gold: #d98f2b;
-    --bg: #f4f1fa;
-    --bg-soft: #ece7f6;
-    --tab-bg: rgba(255, 255, 255, 0.6);
-    --tab-active: #ffffff;
-    --text: #332941;
-    --text-dim: #8b8496;
-    --danger: #e5484d;
-    --border: rgba(114, 46, 209, 0.16);
-    --hover: rgba(114, 46, 209, 0.06);
-    --shadow: 0 1px 3px rgba(51, 41, 65, 0.1);
+    --bg: #f2f3f5;
+    --card: #ffffff;
+    --text: #1f2329;
+    --text-dim: #646a73;
+    --text-faint: #8f959e;
+    --border: rgba(31, 35, 41, 0.09);
+    --hover: rgba(31, 35, 41, 0.06);
+    --press: rgba(31, 35, 41, 0.1);
+    --accent: #722ed1;
+    --gold: #b06e10;
+    --gold-soft: rgba(217, 143, 43, 0.12);
+    --danger: #f54a45;
+    --shadow-tab: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.06);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1d1726;
-      --bg-soft: #241d2f;
-      --tab-bg: rgba(255, 255, 255, 0.05);
-      --tab-active: #322743;
-      --text: #ece6f5;
-      --text-dim: #b3a6c9;
-      --gold: #e39a3e;
-      --border: rgba(146, 84, 222, 0.35);
-      --hover: rgba(146, 84, 222, 0.12);
-      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      --bg: #17181a;
+      --card: #23242a;
+      --text: #f2f3f5;
+      --text-dim: #bbbfc4;
+      --text-faint: #8f959e;
+      --border: rgba(255, 255, 255, 0.1);
+      --hover: rgba(255, 255, 255, 0.08);
+      --press: rgba(255, 255, 255, 0.13);
+      --accent: #a171f0;
+      --gold: #e0a44a;
+      --gold-soft: rgba(224, 164, 74, 0.16);
+      --shadow-tab: 0 1px 2px rgba(0, 0, 0, 0.5);
+      --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.35);
     }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,134 +53,154 @@
   #strip {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     width: 100%;
-    height: 38px;
+    height: 40px;
     padding: 0 10px;
     background: var(--bg);
     border-bottom: 1px solid var(--border);
   }
   .brand {
-    color: var(--purple);
-    font-weight: 800;
-    letter-spacing: .5px;
-    padding-right: 10px;
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 700; font-size: 13px; letter-spacing: .2px;
+    padding-right: 10px; margin-right: 2px;
     border-right: 1px solid var(--border);
-    margin-right: 4px;
-    white-space: nowrap;
+    white-space: nowrap; color: var(--text);
   }
-  .hidden { display: none; }
+  .brand .mark {
+    width: 20px; height: 20px; border-radius: 5px;
+    background: linear-gradient(135deg, #9254de, #5b21b6);
+    color: #fff; font-size: 11px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 3px rgba(114, 46, 209, 0.4);
+  }
   .pill {
     flex: 0 0 auto;
     padding: 4px 10px;
     background: transparent;
-    border: 1px solid rgba(217, 143, 43, 0.45);
-    border-radius: 7px;
-    cursor: pointer;
-    white-space: nowrap;
-    color: var(--gold);
+    border: none; border-radius: 6px;
+    color: var(--gold); font-weight: 600;
+    cursor: pointer; white-space: nowrap;
     transition: background .12s;
   }
-  .pill:hover { background: rgba(217, 143, 43, 0.1); }
-  .tabs { display: flex; align-items: center; gap: 4px; flex: 1; overflow-x: auto; scrollbar-width: thin; }
-  .tabs::-webkit-scrollbar { height: 3px; }
-  .tabs::-webkit-scrollbar-thumb { background: var(--purple-soft); border-radius: 2px; }
-  .tab {
-    display: flex; align-items: center; gap: 6px;
-    max-width: 220px;
-    padding: 5px 8px 5px 10px;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    color: var(--text);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background .12s, border-color .12s, box-shadow .12s;
+  .pill:hover { background: var(--gold-soft); }
+  .hidden { display: none; }
+  .tabs {
+    display: flex; align-items: center; gap: 2px;
+    flex: 1; min-width: 0;
+    overflow-x: auto; scrollbar-width: none;
   }
-  .tab:hover { background: var(--hover); }
-  .tab.active { background: var(--tab-active); border-color: var(--border); box-shadow: var(--shadow); }
-  .tab.active .title { color: var(--purple); font-weight: 600; }
-  .tab .title { overflow: hidden; text-overflow: ellipsis; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    display: flex; align-items: center; gap: 7px;
+    height: 28px; max-width: 200px;
+    padding: 0 8px 0 10px;
+    background: transparent;
+    border: none; border-radius: 7px;
+    color: var(--text-dim);
+    cursor: pointer; white-space: nowrap;
+    transition: background .12s, color .12s, box-shadow .12s;
+  }
+  .tab:hover { background: var(--hover); color: var(--text); }
+  .tab.active { background: var(--card); color: var(--text); box-shadow: var(--shadow-tab); }
+  .tab .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
+  .tab.octop .dot { background: var(--gold); }
+  .tab.web .dot { background: var(--text-faint); }
+  .tab .title { overflow: hidden; text-overflow: ellipsis; font-weight: 450; }
+  .tab.active .title { font-weight: 600; }
   .tab .ws {
     font-size: 10px; color: var(--gold);
-    background: rgba(217, 143, 43, 0.1);
+    background: var(--gold-soft);
     padding: 1px 5px; border-radius: 4px;
-    border: 1px solid rgba(217, 143, 43, 0.3);
-    cursor: pointer;
+    cursor: pointer; flex: 0 0 auto;
   }
-  .tab .ws:hover { background: rgba(217, 143, 43, 0.22); }
+  .tab .ws:hover { filter: brightness(1.08); }
   .tab .close {
-    width: 16px; height: 16px; line-height: 14px; text-align: center;
-    border-radius: 4px; color: var(--text-dim); font-size: 13px;
+    width: 16px; height: 16px; line-height: 15px; text-align: center;
+    border-radius: 4px; color: var(--text-faint); font-size: 13px;
+    flex: 0 0 auto; opacity: 0; transition: opacity .12s, background .12s, color .12s;
   }
-  .tab .close:hover { background: var(--danger); color: #fff; }
-  .tab.octop.active .title { color: var(--gold); }
-  .add {
+  .tab:hover .close, .tab.active .close { opacity: 1; }
+  .tab .close:hover { background: var(--press); color: var(--text); }
+  .iconbtn {
     flex: 0 0 auto;
-    width: 26px; height: 26px; line-height: 24px; text-align: center;
-    background: transparent; color: var(--purple-soft);
-    border: 1px dashed var(--border); border-radius: 8px;
-    cursor: pointer; font-size: 16px; font-weight: 700;
-    transition: background .12s, border-color .12s;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none; border-radius: 7px;
+    color: var(--text-dim); cursor: pointer;
+    transition: background .12s, color .12s;
   }
-  .add:hover { background: var(--hover); border-color: var(--purple-soft); }
+  .iconbtn:hover { background: var(--hover); color: var(--text); }
+  .iconbtn:active { background: var(--press); }
+  .iconbtn.open { background: var(--press); color: var(--text); }
+  .iconbtn svg { width: 16px; height: 16px; }
   .menu {
-    position: fixed; z-index: 50; min-width: 198px;
-    background: var(--tab-active);
-    border: 1px solid var(--border); border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(51, 41, 65, 0.22);
-    padding: 5px; display: none;
+    position: fixed; z-index: 50; min-width: 216px;
+    background: var(--card);
+    border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: var(--shadow-pop);
+    padding: 4px; display: none;
   }
   .menu.open { display: block; }
   .menu button {
-    display: block; width: 100%; text-align: left;
-    background: none; border: none; border-radius: 7px;
-    padding: 7px 10px; font-size: 12.5px; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    width: 100%; text-align: left;
+    background: none; border: none; border-radius: 6px;
+    padding: 7px 9px; font-size: 13px; color: var(--text);
     cursor: pointer; font-family: inherit;
   }
   .menu button:hover { background: var(--hover); }
+  .menu button.danger { color: var(--danger); }
+  .menu .kbd { font-size: 11px; color: var(--text-faint); }
   .menu hr { border: none; border-top: 1px solid var(--border); margin: 4px 6px; }
   .menu .chk {
-    display: flex; align-items: center; gap: 7px;
-    padding: 6px 10px; font-size: 12.5px; color: var(--text-dim);
-    cursor: pointer; border-radius: 7px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 9px; font-size: 13px; color: var(--text);
+    cursor: pointer; border-radius: 6px;
   }
   .menu .chk:hover { background: var(--hover); }
+  .menu .chk input { accent-color: var(--accent); width: 14px; height: 14px; }
   .pop {
-    position: fixed; z-index: 50; width: 252px;
-    background: var(--tab-active);
-    border: 1px solid var(--border); border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(51, 41, 65, 0.22);
-    padding: 10px; display: none;
+    position: fixed; z-index: 50; width: 264px;
+    background: var(--card);
+    border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: var(--shadow-pop);
+    padding: 12px; display: none;
   }
   .pop.open { display: block; }
+  .pop .lbl { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; }
   .pop input {
     width: 100%; background: var(--bg); color: var(--text);
     border: 1px solid var(--border); border-radius: 6px;
-    padding: 5px 8px; font-size: 12px; outline: none; font-family: inherit;
+    padding: 6px 9px; font-size: 12px; outline: none; font-family: inherit;
   }
-  .pop input:focus { border-color: var(--purple-soft); }
-  .popbtns { display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end; }
+  .pop input:focus { border-color: var(--accent); }
+  .popbtns { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-end; }
   .popbtns button {
-    border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+    border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer;
     border: 1px solid var(--border); background: transparent; color: var(--text-dim);
-    font-family: inherit;
+    font-family: inherit; transition: background .12s;
   }
   .popbtns button:hover { background: var(--hover); }
-  .popbtns button.primary { background: var(--purple); border-color: var(--purple); color: #fff; }
-  .popbtns button.primary:hover { background: var(--purple-soft); }
+  .popbtns button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .popbtns button.primary:hover { filter: brightness(1.08); }
 </style>
 </head>
 <body>
   <div id="strip">
-    <span class="brand">JIUZHANG</span>
+    <span class="brand"><span class="mark">玖</span>JIUZHANG AI</span>
     <div class="pill hidden" id="octopPill" title="打开 Octop 高级模式">Octop 高级模式</div>
     <div class="tabs" id="tabs"></div>
-    <div class="add" id="add" title="新建标签 / Octop">+</div>
+    <button class="iconbtn" id="add" type="button" title="新建标签" aria-label="新建标签">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="iconbtn" id="more" type="button" title="更多" aria-label="更多">
+      <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+    </button>
   </div>
 
   <div class="menu" id="menu">
-    <button type="button" data-act="new">新建工作区标签</button>
+    <button type="button" data-act="new">新建工作区标签<span class="kbd">⌘T</span></button>
     <button type="button" data-act="octop">打开 Octop 高级模式</button>
     <hr />
     <label class="chk"><input type="checkbox" id="pinOctop" />Octop 入口常驻标签栏</label>
@@ -185,10 +209,11 @@
   <div class="menu" id="ctx">
     <button type="button" data-act="rename">重命名标签</button>
     <button type="button" data-act="bind">绑定工作区…</button>
-    <button type="button" data-act="close">关闭标签</button>
+    <button type="button" data-act="close" class="danger">关闭标签</button>
   </div>
 
   <div class="pop" id="wspop">
+    <div class="lbl">绑定工作区 ID（请求将携带 x-workspace-id 做数据隔离）</div>
     <input id="wsPopInput" type="text" placeholder="输入工作区 ID，留空解除绑定" />
     <div class="popbtns">
       <button type="button" id="wsUnbind">解绑</button>
@@ -222,6 +247,8 @@
   const popInput = document.getElementById('wsPopInput');
   const octopPill = document.getElementById('octopPill');
   const pinChk = document.getElementById('pinOctop');
+  const addBtn = document.getElementById('add');
+  const moreBtn = document.getElementById('more');
   const state = { activeId: null, tabs: [] };
   let popTabId = null;
   let ctxTarget = null;
@@ -245,9 +272,11 @@
     menuEl.classList.remove('open');
     ctxEl.classList.remove('open');
     popEl.classList.remove('open');
+    addBtn.classList.remove('open');
+    moreBtn.classList.remove('open');
   }
   document.addEventListener('mousedown', (e) => {
-    if (e.target.closest('.menu') || e.target.closest('.pop') || e.target.closest('#add') || e.target.closest('.ws')) return;
+    if (e.target.closest('.menu') || e.target.closest('.pop') || e.target.closest('#add') || e.target.closest('#more') || e.target.closest('.ws')) return;
     hideAll();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideAll(); });
@@ -257,7 +286,14 @@
     tabsEl.innerHTML = '';
     for (const t of state.tabs) {
       const el = document.createElement('div');
-      el.className = 'tab' + (t.id === state.activeId ? ' active' : '') + (t.kind === 'octop' ? ' octop' : '');
+      const cls = ['tab'];
+      if (t.id === state.activeId) cls.push('active');
+      if (t.kind === 'octop') cls.push('octop');
+      if (t.kind === 'web') cls.push('web');
+      el.className = cls.join(' ');
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      el.appendChild(dot);
       const title = document.createElement('span');
       title.className = 'title';
       title.textContent = t.title || '工作台';
@@ -294,7 +330,7 @@
     input.type = 'text';
     input.className = 'rename';
     input.value = prev;
-    input.style.cssText = 'width:110px;background:var(--bg);color:var(--text);border:1px solid var(--purple);border-radius:4px;padding:1px 4px;font-size:12px;outline:none;';
+    input.style.cssText = 'width:110px;background:var(--bg);color:var(--text);border:1px solid var(--accent);border-radius:4px;padding:1px 4px;font-size:12px;outline:none;';
     el.insertBefore(input, title);
     input.focus();
     input.select();
@@ -322,7 +358,7 @@
   function openCtx(t, x, y, el, title) {
     ctxTarget = { t, el, title };
     ctxEl.querySelector('[data-act="close"]').style.display = t.pinned ? 'none' : '';
-    ctxEl.style.left = Math.min(x, window.innerWidth - 210) + 'px';
+    ctxEl.style.left = Math.min(x, window.innerWidth - 230) + 'px';
     ctxEl.style.top = (y + 4) + 'px';
     menuEl.classList.remove('open');
     popEl.classList.remove('open');
@@ -343,11 +379,11 @@
     popInput.value = t.workspaceId || '';
     if (anchor) {
       const r = anchor.getBoundingClientRect();
-      popEl.style.left = Math.min(r.left, window.innerWidth - 270) + 'px';
+      popEl.style.left = Math.min(r.left, window.innerWidth - 280) + 'px';
       popEl.style.top = (r.bottom + 6) + 'px';
     } else {
-      popEl.style.left = Math.max(8, window.innerWidth - 270) + 'px';
-      popEl.style.top = '42px';
+      popEl.style.left = Math.max(8, window.innerWidth - 280) + 'px';
+      popEl.style.top = '44px';
     }
     ctxEl.classList.remove('open');
     menuEl.classList.remove('open');
@@ -367,15 +403,22 @@
     if (e.key === 'Escape') hideAll();
   });
 
-  /* ---------- ＋ 新建菜单（浏览器式：用时才出现） ---------- */
-  document.getElementById('add').addEventListener('click', (e) => {
+  /* ---------- ＋ 直接新建（浏览器语义）；⋯ 溢出菜单 ---------- */
+  addBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    const r = e.currentTarget.getBoundingClientRect();
-    menuEl.style.left = Math.min(r.left, window.innerWidth - 210) + 'px';
+    hideAll();
+    window.tabStrip.send('tab-strip:new');
+  });
+  moreBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const r = moreBtn.getBoundingClientRect();
+    menuEl.style.left = Math.max(8, r.right - 220) + 'px';
     menuEl.style.top = (r.bottom + 6) + 'px';
     ctxEl.classList.remove('open');
     popEl.classList.remove('open');
-    menuEl.classList.toggle('open');
+    const willOpen = !menuEl.classList.contains('open');
+    menuEl.classList.toggle('open', willOpen);
+    moreBtn.classList.toggle('open', willOpen);
   });
   menuEl.addEventListener('click', (e) => {
     const act = e.target.getAttribute('data-act');
