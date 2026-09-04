@@ -115,6 +115,16 @@ function startStubBridge(
         if (!body.actionId) {
           return send(403, { success: false, error: { code: 'POLICY_DENIED' } });
         }
+        // 2026-09-04：403 细分 reason 透传用例（token 过期 → TOKEN_EXPIRED + reason）
+        if (body.actionId === 'expired-1') {
+          return send(403, {
+            success: false,
+            error: {
+              code: 'TOKEN_EXPIRED',
+              reason: 'capability token 已过期（fail-closed）',
+            },
+          });
+        }
         return send(200, {
           success: true,
           data: {
@@ -542,6 +552,26 @@ describe('AgentPanelBridgeService', () => {
       await expect(
         svc.execute(ACTOR, { method: 'Page.navigate', params: {} }),
       ).rejects.toMatchObject({ code: 'POLICY_DENIED', status: 403 });
+    } finally {
+      await stub.close();
+    }
+  });
+
+  it('execute：403 细分 reason 透传 → 失败消息含原因与重开面板提示（2026-09-04）', async () => {
+    const stub = await startStubBridge('tok-1');
+    const { file } = writeCredFile({
+      endpoint: `http://127.0.0.1:${stub.port}`,
+      token: 'tok-1',
+    });
+    useCredFile(file);
+    try {
+      const svc = new AgentPanelBridgeService();
+      const err = await svc
+        .execute(ACTOR, { method: 'Page.navigate', params: {}, actionId: 'expired-1' })
+        .catch((e: unknown) => e as PanelBridgeError);
+      expect((err as PanelBridgeError).code).toBe('TOKEN_EXPIRED');
+      expect(String((err as PanelBridgeError).message)).toContain('capability token 已过期');
+      expect(String((err as PanelBridgeError).message)).toContain('重新打开浏览器面板');
     } finally {
       await stub.close();
     }

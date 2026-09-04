@@ -172,6 +172,16 @@ export class PanelBridgeError extends Error {
   }
 }
 
+/**
+ * 2026-09-04：桥拒绝 code → 面向用户的修复提示（拼进动作失败消息）。
+ * 只收保守白名单；未知 code 不加提示（不瞎猜）。
+ */
+const PANEL_REJECT_HINTS: Record<string, string> = {
+  TOKEN_EXPIRED: '面板授权已过期，请在应用内重新打开浏览器面板后重试',
+  TOKEN_INVALID: '面板授权无效，请在应用内重新打开浏览器面板后重试',
+  PANEL_NOT_FOUND: '浏览器面板未打开，请先在应用内打开面板后重试',
+};
+
 type RegistryFile = {
   version?: number;
   protocol?: string;
@@ -702,13 +712,14 @@ export class AgentPanelBridgeService {
       throw new PanelBridgeError(reason, 0, `面板桥请求失败：${route}`);
     }
 
-    let json: { success?: boolean; data?: T; error?: { code?: string } } | null = null;
+    let json: { success?: boolean; data?: T; error?: { code?: string; reason?: string } } | null =
+      null;
     try {
       // 显式类型断言，避免 `as typeof json` 的循环引用把 json 收窄为 never
       json = (await response.json()) as {
         success?: boolean;
         data?: T;
-        error?: { code?: string };
+        error?: { code?: string; reason?: string };
       } | null;
     } catch {
       json = null;
@@ -718,7 +729,11 @@ export class AgentPanelBridgeService {
       return json.data;
     }
     const code = json?.error?.code || 'UNKNOWN';
-    throw new PanelBridgeError(code, response.status, `面板桥拒绝：${code}`);
+    // 2026-09-04：403 拒绝原因透传（desktop 桥附带安全 reason）+ 面向用户的修复提示。
+    // 真机实证：token 过期/无效时用户只看到裸 POLICY_DENIED，不知道要重开面板。
+    const reason = json?.error?.reason ? `（${json.error.reason}）` : '';
+    const hint = PANEL_REJECT_HINTS[code] ? `，${PANEL_REJECT_HINTS[code]}` : '';
+    throw new PanelBridgeError(code, response.status, `面板桥拒绝：${code}${reason}${hint}`);
   }
 }
 
