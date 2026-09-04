@@ -108,7 +108,7 @@ export function LoadingGuard({
         <button
           type="button"
           onClick={onRetry}
-          className="rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2 text-sm font-semibold text-white transition duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
+          className="inline-flex items-center justify-center h-11 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-sm font-semibold text-white transition duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
         >
           重试
         </button>
@@ -123,7 +123,7 @@ export function LoadingGuard({
         <button
           type="button"
           onClick={onRetry}
-          className="rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2 text-sm font-semibold text-white transition duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
+          className="inline-flex items-center justify-center h-11 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-sm font-semibold text-white transition duration-150 ease-out hover:opacity-90 active:scale-[0.97]"
         >
           重试
         </button>

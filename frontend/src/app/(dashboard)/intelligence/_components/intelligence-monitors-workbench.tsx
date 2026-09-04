@@ -955,7 +955,7 @@ export function IntelligenceMonitorsWorkbench() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {selectedMonitor.status !== "archived" ? (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
+                      className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)] active:translate-y-0"
                       onClick={() => runMonitorNow(selectedMonitor)}
                       type="button"
                     >

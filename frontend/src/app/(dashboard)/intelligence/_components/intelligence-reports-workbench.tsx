@@ -746,7 +746,7 @@ export function IntelligenceReportsWorkbench() {
                 </h2>
               </div>
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={saving}
                 onClick={() => void generateDraft()}
                 type="button"
@@ -977,7 +977,7 @@ export function IntelligenceReportsWorkbench() {
                         <FileText aria-hidden="true" className="h-3.5 w-3.5" />
                       </button>
                       <button
-                        className="inline-flex h-8 items-center gap-1.5 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-12 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex h-11 items-center gap-1.5 rounded-[8px] bg-[image:var(--kaypal-v3-gradient-primary)] px-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
                         disabled={Boolean(actionKey)}
                         onClick={() =>
                           void runReportAction(item, primaryAction)

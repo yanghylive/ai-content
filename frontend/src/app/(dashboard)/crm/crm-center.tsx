@@ -681,7 +681,7 @@ export function CrmCenter() {
             <div className="mt-6 flex items-center justify-center gap-3">
               <button
                 type="button"
-                className="rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105"
+                className="inline-flex items-center justify-center h-11 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 text-sm font-semibold text-white transition hover:brightness-105"
                 onClick={() => setShowCreateModal(true)}
               >
                 <span className="inline-flex items-center gap-1.5">

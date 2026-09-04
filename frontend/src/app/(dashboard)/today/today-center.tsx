@@ -348,7 +348,7 @@ function ErrorPanel({
       <button
         type="button"
         onClick={onRetry}
-        className="mt-4 inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
+        className="mt-4 inline-flex h-11 items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-4 text-sm font-semibold text-white transition hover:brightness-105"
       >
         <RefreshCw className="h-4 w-4" />
         重试

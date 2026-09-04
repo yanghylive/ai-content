@@ -179,7 +179,7 @@ export function ContactsPanel({
           {/* 单一主行动 */}
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-60"
+            className="inline-flex h-12 items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-6 text-base font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-60"
             disabled={syncing || syncDisabled}
             onClick={onSync}
           >

@@ -192,7 +192,7 @@ export function ResourceCenter({
           {onCreate && (
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:brightness-105"
+              className="inline-flex h-12 items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-6 text-base font-semibold text-white shadow-sm transition hover:brightness-105"
               onClick={onCreate}
             >
               <Plus className="h-5 w-5" />
@@ -235,7 +235,7 @@ export function ResourceCenter({
           {onCreate && (
             <button
               type="button"
-              className="mt-6 inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:brightness-105"
+              className="mt-6 inline-flex h-12 items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-8 text-base font-semibold text-white shadow-sm transition hover:brightness-105"
               onClick={onCreate}
             >
               <Plus className="h-5 w-5" />

@@ -565,7 +565,7 @@ export function ContactAddWizard({
           {currentStep === "message" ? (
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-60"
+              className="inline-flex h-12 items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-8 text-base font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-60"
               disabled={submitting || !canGoNext}
               onClick={handleSubmit}
             >
@@ -575,7 +575,7 @@ export function ContactAddWizard({
           ) : (
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-60"
+              className="inline-flex h-12 items-center gap-2 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-8 text-base font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-60"
               disabled={!canGoNext}
               onClick={() => setCurrentStep("message")}
             >
