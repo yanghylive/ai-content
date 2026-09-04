@@ -690,7 +690,7 @@ export function CrmCenter() {
               </button>
               <button
                 type="button"
-                className="rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2.5 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex items-center justify-center rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] h-11 px-4 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 onClick={() => router.push("/crm-import")}
               >
                 批量导入
@@ -777,7 +777,7 @@ export function CrmCenter() {
             </p>
             <button
               type="button"
-              className="mt-5 rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 py-2 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-accent)]"
+              className="mt-5 inline-flex items-center justify-center rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] h-10 px-4 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-accent)]"
               onClick={() => {
                 setActiveFilter(null);
                 setQuery("");

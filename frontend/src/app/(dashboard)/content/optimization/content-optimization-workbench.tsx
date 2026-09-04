@@ -957,7 +957,7 @@ export function ContentOptimizationWorkbench() {
   const resultActions = (
     <>
       <button
-        className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+        className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
         onClick={() => void saveCurrentVersion()}
         type="button"
       >
@@ -1290,7 +1290,7 @@ export function ContentOptimizationWorkbench() {
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 onClick={() => setAiFillOpen(true)}
                 type="button"
               >
@@ -1323,7 +1323,7 @@ export function ContentOptimizationWorkbench() {
                 {isLoading ? "处理中" : "开始优化"}
               </button>
               <button
-                className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                 onClick={resetResult}
                 type="button"
               >
@@ -1497,7 +1497,7 @@ function ContentSourcePanel({
         </p>
         <div className="flex shrink-0 flex-wrap gap-2">
           <button
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+            className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
             onClick={onRefresh}
             type="button"
           >
@@ -1739,7 +1739,7 @@ function VersionVault({
 
                 <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                   <button
-                    className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)] disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={diffLoadingId === version.id}
                     onClick={() => onCompare(version)}
                     type="button"
@@ -1760,7 +1760,7 @@ function VersionVault({
                     对比
                   </button>
                   <button
-                    className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                    className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                     onClick={() => onRestore(version)}
                     type="button"
                   >
@@ -1773,7 +1773,7 @@ function VersionVault({
                   </button>
                   {!version.isOfficial ? (
                     <button
-                      className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+                      className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
                       onClick={() => onOfficial(version)}
                       type="button"
                     >
@@ -1853,7 +1853,7 @@ function VersionComparePanel({
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+            className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
             onClick={onClose}
             type="button"
           >
@@ -1967,16 +1967,23 @@ function ResultShell({
   );
 }
 
+const COPY_H: Record<"sm" | "md", string> = {
+  sm: "h-8 px-3 text-12",
+  md: "h-11 px-3 text-sm",
+};
+
 function CopyButton({
   label,
   onClick,
+  size = "sm",
 }: {
   label: string;
   onClick: () => void;
+  size?: "sm" | "md";
 }) {
   return (
     <button
-      className="inline-flex h-8 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
+      className={`inline-flex items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] ${COPY_H[size]} font-semibold text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]`}
       onClick={onClick}
       type="button"
     >
@@ -2001,6 +2008,7 @@ function TitleResultView({
         <>
           <CopyButton
             label="复制候选"
+            size="md"
             onClick={() =>
               onCopy(result.rewriteCandidates.join("\n"), "候选标题")
             }
@@ -2088,6 +2096,7 @@ function RewriteResultView({
         <>
           <CopyButton
             label="复制正文"
+            size="md"
             onClick={() => onCopy(result.rewrittenContent, "改写正文")}
           />
           {extraActions}
@@ -2160,7 +2169,7 @@ function XhsResultView({
     <ResultShell
       actions={
         <>
-          <CopyButton label="复制笔记" onClick={() => onCopy(note, "笔记")} />
+          <CopyButton label="复制笔记" size="md" onClick={() => onCopy(note, "笔记")} />
           {extraActions}
         </>
       }

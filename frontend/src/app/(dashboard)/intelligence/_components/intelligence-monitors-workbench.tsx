@@ -969,7 +969,7 @@ export function IntelligenceMonitorsWorkbench() {
                   ) : null}
                   {selectedMonitor.status === "active" ? (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-amber)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                      className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-amber)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                       onClick={() =>
                         updateMonitorStatus(selectedMonitor, "paused")
                       }
@@ -984,7 +984,7 @@ export function IntelligenceMonitorsWorkbench() {
                     </button>
                   ) : selectedMonitor.status !== "archived" ? (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                      className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-success)] bg-[var(--kaypal-v3-success-soft)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                       onClick={() =>
                         updateMonitorStatus(selectedMonitor, "active")
                       }
@@ -1000,7 +1000,7 @@ export function IntelligenceMonitorsWorkbench() {
                   ) : null}
                   {selectedMonitor.status !== "archived" ? (
                     <button
-                      className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
+                      className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] px-3 text-12 font-semibold text-[var(--kaypal-v3-soft-ink)] hover:border-[var(--kaypal-v3-danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kaypal-v3-accent)]"
                       onClick={() => archiveMonitor(selectedMonitor)}
                       type="button"
                     >
