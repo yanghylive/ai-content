@@ -1498,6 +1498,17 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
     /** 主枢纽：与今日数据直接相关，渲染为更大一号的 hero 卡 */
     featured?: boolean;
   }> = [
+    // 2026-09-04: 「获客任务」是本页第一动线（创建/执行任务），排到矩阵首位；
+    // featured 组在前且组内按本数组顺序渲染，故它同时是整块矩阵的第一张卡。
+    {
+      key: "acquisition",
+      brand: "acquisition",
+      title: "获客任务",
+      description: "创建与查看自动找客户的任务",
+      icon: Target,
+      href: "/growth/acquisition",
+      featured: true,
+    },
     {
       key: "leads",
       brand: "leads",
@@ -1510,15 +1521,6 @@ function GrowthHubLinks({ overview }: { overview: GrowthOverview | null }) {
         (overview?.todayLeadCount ?? 0) > 0
           ? String(overview?.todayLeadCount)
           : undefined,
-    },
-    {
-      key: "acquisition",
-      brand: "acquisition",
-      title: "获客任务",
-      description: "创建与查看自动找客户的任务",
-      icon: Target,
-      href: "/growth/acquisition",
-      featured: true,
     },
     {
       key: "strategies",
