@@ -327,9 +327,16 @@ export class CommentAcquisitionService {
   }
 
   /**
-   * 关键词搜索发现（快手/小红书）：keyword → 搜账号 → 读作品拿 contentUrl → 读评论。
-   * 复用 DiscoveryBrowserRunner 三段式（searchAccounts → listAccountWorks → readComments），
-   * 把带 contentUrl 的评论统一映射为 InteractionReadResult，供 scanAccount 后续评分/回复链路消费。
+   * 关键词搜索发现（快手/小红书）：keyword → 搜内容（拿 contentUrl）→ 读评论。
+   * 复用 DiscoveryBrowserRunner 两段式（searchByKeyword → readComments）。
+   *
+   * 为什么是两段式而非「搜账号→作品→评论」三段式（2026-09-05 真机验证坐实）：
+   * runner.searchAccounts（关键词→账号）只有抖音实现，快手/小红书 behavior 均未实现
+   * （platform-behaviors.ts：DouyinBehavior 有 searchAccounts，KuaishouBehavior/XhsBehavior 没有），
+   * 小红书连 listAccountWorks 也抛「暂未实现」。三段式对快手/小红书第一段就撞
+   * 「平台不支持账号搜索」。
+   * 而 searchByKeyword（关键词→内容）是快手/小红书都已实现的真实链路（behavior.discover），
+   * 返回的内容自带 url，可直接喂 readComments 读评论。改走两段式，与平台真实能力对齐。
    */
   private async discoverByKeyword(
     input: { platform: AcquisitionPlatform; accountId: number | string; limit?: number; keyword?: string },
@@ -340,71 +347,52 @@ export class CommentAcquisitionService {
     if (!keyword) {
       throw new Error('关键词搜索模式需要非空 keyword');
     }
-    // 1. 搜账号（关键词 → 账号列表）
-    const accounts = await this.discoveryRunner.searchAccounts({
+    // 1. 搜内容（关键词 → 内容列表，每个带 url）
+    const contents = await this.discoveryRunner.searchByKeyword({
       platform,
       accountId: accountId ?? input.accountId,
       keyword,
       limit: 3,
     });
-    if (accounts.length === 0) {
+    if (contents.length === 0) {
       return { items: [], readAt: new Date().toISOString() };
     }
-    // 2. 逐个账号读作品拿 contentUrl（取第一个能读到作品的账号，避免全量扫）
+    // 2. 逐个内容读评论（取第一个能读到评论的内容，避免全量扫）
     const items: InteractionItem[] = [];
     let title: string | undefined;
     let url: string | undefined;
-    for (const account of accounts.slice(0, 3)) {
-      const targetId =
-        account.identityHint?.externalUserId ??
-        account.sourceContent?.externalContentId ??
-        '';
-      if (!targetId) continue;
+    for (const content of contents.slice(0, 3)) {
+      const contentUrl = content.sourceContent?.url ?? '';
+      if (!contentUrl) continue;
       try {
-        const works = await this.discoveryRunner.listAccountWorks({
+        const comments = await this.discoveryRunner.readComments({
           platform,
           accountId: accountId ?? input.accountId,
-          targetId,
-          limit: 3,
+          contentUrl,
+          keyword,
+          limit: input.limit ?? 50,
         });
-        for (const work of works) {
-          const contentUrl = work.sourceContent?.url ?? '';
-          if (!contentUrl) continue;
-          try {
-            const comments = await this.discoveryRunner.readComments({
-              platform,
-              accountId: accountId ?? input.accountId,
-              contentUrl,
-              keyword,
-              limit: input.limit ?? 50,
-            });
-            for (const c of comments) {
-              const ev = c.interactionEvents?.[0];
-              const text = String(ev?.text ?? '').trim();
-              if (!text) continue;
-              items.push({
-                text,
-                authorName: c.identityHint?.nickname,
-                authorId: ev?.authorExternalId ?? c.identityHint?.externalUserId,
-                ref: ev?.externalEventId,
-                videoUrl: contentUrl,
-                videoTitle: c.sourceContent?.title,
-              });
-              if (!title) title = c.sourceContent?.title;
-              if (!url) url = contentUrl;
-            }
-            // 拿到评论即停（避免对同一账号多个作品重复读评论）
-            if (items.length > 0) break;
-          } catch {
-            // 单个内容读评论失败不阻断整体，继续下一个作品
-            continue;
-          }
+        for (const c of comments) {
+          const ev = c.interactionEvents?.[0];
+          const text = String(ev?.text ?? '').trim();
+          if (!text) continue;
+          items.push({
+            text,
+            authorName: c.identityHint?.nickname,
+            authorId: ev?.authorExternalId ?? c.identityHint?.externalUserId,
+            ref: ev?.externalEventId,
+            videoUrl: contentUrl,
+            videoTitle: c.sourceContent?.title,
+          });
+          if (!title) title = c.sourceContent?.title;
+          if (!url) url = contentUrl;
         }
+        // 拿到评论即停（避免对多个内容重复读评论）
+        if (items.length > 0) break;
       } catch {
-        // 读作品失败继续下一个账号
+        // 单个内容读评论失败不阻断整体，继续下一个内容
         continue;
       }
-      if (items.length > 0) break;
     }
     return { items, title, url, readAt: new Date().toISOString() };
   }

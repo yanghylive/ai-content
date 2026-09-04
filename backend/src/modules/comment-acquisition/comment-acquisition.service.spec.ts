@@ -154,6 +154,7 @@ describe('CommentAcquisitionService', () => {
   const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
   const discoveryRunnerMock = {
     searchAccounts: jest.fn(),
+    searchByKeyword: jest.fn(),
     listAccountWorks: jest.fn(),
     readComments: jest.fn(),
   };
@@ -297,23 +298,9 @@ describe('CommentAcquisitionService', () => {
       expect(executorMock.dispatch).not.toHaveBeenCalled();
     });
 
-    it('快手关键词搜索模式走 runner 三段式发现（搜账号→读作品→读评论）', async () => {
-      // 1. searchAccounts 返回一个账号
-      discoveryRunnerMock.searchAccounts.mockResolvedValue([
-        {
-          platform: 'kuaishou',
-          accountId: '9',
-          identityHint: { externalUserId: 'target-1', nickname: '目标账号' },
-          sourceContent: {
-            externalContentId: 'target-1',
-            url: 'https://kuaishou.com/u/target-1',
-            contentType: 'account',
-            rawHash: 'h0',
-          },
-        },
-      ]);
-      // 2. listAccountWorks 返回一个作品
-      discoveryRunnerMock.listAccountWorks.mockResolvedValue([
+    it('快手关键词搜索模式走 runner 两段式发现（搜内容→读评论）', async () => {
+      // 1. searchByKeyword 返回一个内容（带 url）
+      discoveryRunnerMock.searchByKeyword.mockResolvedValue([
         {
           platform: 'kuaishou',
           accountId: '9',
@@ -326,7 +313,7 @@ describe('CommentAcquisitionService', () => {
           },
         },
       ]);
-      // 3. readComments 返回一条评论
+      // 2. readComments 返回一条评论
       discoveryRunnerMock.readComments.mockResolvedValue([
         {
           platform: 'kuaishou',
@@ -368,11 +355,8 @@ describe('CommentAcquisitionService', () => {
         autoReply: false,
       });
 
-      expect(discoveryRunnerMock.searchAccounts).toHaveBeenCalledWith(
+      expect(discoveryRunnerMock.searchByKeyword).toHaveBeenCalledWith(
         expect.objectContaining({ platform: 'kuaishou', keyword: '副业' }),
-      );
-      expect(discoveryRunnerMock.listAccountWorks).toHaveBeenCalledWith(
-        expect.objectContaining({ platform: 'kuaishou', targetId: 'target-1' }),
       );
       expect(discoveryRunnerMock.readComments).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -606,6 +590,7 @@ describe('CommentAcquisitionService 风控断路器', () => {
   const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
   const discoveryRunnerMock = {
     searchAccounts: jest.fn(),
+    searchByKeyword: jest.fn(),
     listAccountWorks: jest.fn(),
     readComments: jest.fn(),
   };
@@ -734,6 +719,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
   const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
   const discoveryRunnerMock = {
     searchAccounts: jest.fn(),
+    searchByKeyword: jest.fn(),
     listAccountWorks: jest.fn(),
     readComments: jest.fn(),
   };
@@ -855,6 +841,7 @@ describe('CommentAcquisitionService 私信获客', () => {
   const quotaMock = { tryConsume: jest.fn().mockResolvedValue(true) };
   const discoveryRunnerMock = {
     searchAccounts: jest.fn(),
+    searchByKeyword: jest.fn(),
     listAccountWorks: jest.fn(),
     readComments: jest.fn(),
   };
