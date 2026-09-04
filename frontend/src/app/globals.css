@@ -428,15 +428,10 @@
   width: auto;
   color: #fff;
 }
-.login-preview-header img { width: 48px !important; height: 48px; object-fit: cover; border-radius: 14px; box-shadow: 0 12px 35px rgba(104,44,190,.38); }
-.login-preview-header .preview-brand { gap: 14px !important; }
-.login-preview-header .preview-brand > div:first-child { position: relative; }
-.login-preview-header > div:first-child > span { color: rgba(255,255,255,.48) !important; font-size: 10px !important; letter-spacing: .18em; }
-.login-preview-header > div:first-child:after { content: none; }
+/* 登录页左上品牌区已删（壳顶栏有字标）：只保留右侧安全徽章的定位与
+   header 占高；原 preview-brand/wordmark/header img 一族规则随 DOM 移除。 */
+.login-preview-header { min-height: 48px; }
 .login-preview-header > div:last-child { position: absolute; right: 19px; color: #b787fa; }
-.preview-wordmark { color: #fff !important; font-size: 21px !important; letter-spacing: .15em; }
-.preview-wordmark span { color: #a864ff; }
-.preview-brand-sub { color: rgba(255,255,255,.48) !important; font-size: 10px !important; letter-spacing: .18em; }
 .preview-kicker { color: #b787fa !important; font-size: 11px !important; letter-spacing: .24em; }
 .preview-kicker:before { content: ""; display: inline-block; width: 32px; height: 1px; margin: 0 12px 3px 0; background: #9e62ef; }
 .login-preview-hero-copy em { color: #a86cf2; font-style: normal; }

@@ -642,19 +642,10 @@ function LoginPageContent() {
     <div className="login-preview min-h-screen w-full p-0">
       <div className="login-preview-center flex w-full items-center justify-center">
         <div className="login-preview-stack flex flex-col gap-6 max-w-[1184px] min-h-[100dvh] py-4 px-6 w-full">
-          <header className="login-preview-header flex flex-row justify-between items-center">
-            <div className="preview-brand flex flex-row items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element -- Static export cannot use next/image optimization. */}
-              <img fetchPriority="high"
-                alt="JIUZHANG AI"
-                className="h-7 w-auto shrink-0"
-                src="/brand/jiuzhang-ai-icon.webp"
-              />
-              <div className="flex flex-col gap-0">
-                <span className="preview-wordmark text-sm font-bold">JIUZHANG <span>AI</span></span>
-                <span className="preview-brand-sub text-small text-default-500">智能内容增长与客户运营系统</span>
-              </div>
-            </div>
+          {/* 左上品牌区已移除（2026-09-05）：桌面壳顶栏已有 JIUZHANG AI 字标，
+              登录页再放 icon+文字就是重复曝光；header 保留只为撑住布局高度，
+              右侧「企业级安全登录」徽章照常。 */}
+          <header className="login-preview-header flex flex-row justify-end items-center">
             <div className="hidden sm:flex flex-row items-center gap-2">
               <ShieldCheck
                 aria-hidden="true"
