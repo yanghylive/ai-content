@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>内置浏览器 · 整体预览</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color-scheme: light; }
+  html, body { height: 100%; overflow: hidden; background: #f2f3f5; }
+  body { display: flex; flex-direction: column; font: 13px/1 -apple-system, "PingFang SC", system-ui, sans-serif; }
+  #fakeTitlebar { height: 36px; flex: 0 0 36px; display: flex; align-items: center; background: linear-gradient(180deg,#eceef0,#e3e5e8); border-bottom: 1px solid rgba(31,35,41,.08); position: relative; }
+  #fakeTitlebar .lights { display: flex; gap: 8px; padding-left: 14px; }
+  #fakeTitlebar .lights i { width: 12px; height: 12px; border-radius: 50%; }
+  #fakeTitlebar .lights i:nth-child(1){ background:#ff5f57 } #fakeTitlebar .lights i:nth-child(2){ background:#febc2e } #fakeTitlebar .lights i:nth-child(3){ background:#28c840 }
+  #fakeTitlebar .tt { position: absolute; left: 0; right: 0; text-align: center; color: #41474f; font-weight: 600; pointer-events: none; }
+  #stripFrame { flex: 0 0 40px; height: 40px; width: 100%; border: 0; display: block; }
+  #stage { flex: 1; min-height: 0; display: flex; position: relative; }
+  #appFrame { flex: 1; min-width: 0; border: 0; display: block; background: #fbfaff; }
+  /* 右侧浏览器面板(mock, 真实是 WebContentsView) */
+  #panel { width: 460px; flex: 0 0 460px; border-left: 1px solid rgba(31,35,41,.12); display: flex; flex-direction: column; background: #fff; }
+  #panel .strip { flex: 0 0 34px; border: 0; }
+  #panelBody { flex: 1; min-height: 0; position: relative; background: #0f0f12; overflow: hidden; }
+  #panelBody .fakepage { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #6b6f7a; }
+  #panelBody .fakepage .ph { width: 120px; height: 80px; border-radius: 10px; background: #1d1e24; border: 1px solid #2a2c34; }
+  #panelBody .fakepage b { color: #9aa0ad; font-size: 13px; }
+  #panelBody .fakepage span { font-size: 11px; }
+  #ovFrame { position: absolute; right: 14px; bottom: 14px; width: 340px; height: 216px; border: 0; filter: drop-shadow(0 10px 28px rgba(0,0,0,.35)); }
+  /* dock 入口(新版 SVG 图标示意) */
+  #dock { position: absolute; right: 476px; bottom: 20px; display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #e5e6eb; background: #fff; color: #1f2329; font-size: 12px; box-shadow: 0 4px 12px rgba(31,35,41,.12); }
+  #dock svg { width: 15px; height: 15px; color: #722ed1; }
+  #dock .st { width: 8px; height: 8px; border-radius: 50%; background: #34a853; }
+  #tag { position: absolute; left: 14px; top: 10px; font-size: 11px; color: #8f959e; background: rgba(255,255,255,.85); border: 1px solid rgba(31,35,41,.08); border-radius: 6px; padding: 3px 8px; }
+</style>
+</head>
+<body>
+  <div id="fakeTitlebar"><div class="lights"><i></i><i></i><i></i></div><div class="tt">JIUZHANG AI 内容创作平台</div></div>
+  <iframe id="stripFrame" class="strip" src="/tab-strip.html"></iframe>
+  <div id="stage">
+    <iframe id="appFrame" src="/today"></iframe>
+    <div id="tag">内置浏览器面板（右侧 dock 入口呼出）</div>
+    <div id="panel">
+      <iframe class="strip" src="/browser-control-strip.html" style="width:100%;height:62px;border:0;flex:none"></iframe>
+      <div id="panelBody">
+        <div class="fakepage"><div class="ph"></div><b>抖音 · 装修视频评论区</b><span>面板内真实渲染目标网页（此处为示意底）</span></div>
+        <iframe id="ovFrame" src="/browser-approval-overlay.html"></iframe>
+      </div>
+    </div>
+    <div id="dock">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/></svg>
+      浏览器面板 <span class="st"></span>
+    </div>
+  </div>
+</body>
+</html>

@@ -172,11 +172,26 @@ export function BrowserPanelDock() {
           background: "var(--kaypal-v3-card, #ffffff)",
           color: "var(--kaypal-v3-ink, #1d2129)",
           fontSize: 12,
+          fontWeight: 500,
           cursor: "pointer",
-          boxShadow: "0 4px 12px rgba(0,0,0,.10)",
+          boxShadow: "0 4px 12px rgba(31,35,41,.10)",
+          transition: "box-shadow .15s ease, border-color .15s ease",
         }}
       >
-        <span aria-hidden>🌐</span>
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--kaypal-v3-accent, #722ed1)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          aria-hidden
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3.5 9h17M3.5 15h17" />
+          <path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18" />
+        </svg>
         <span>浏览器面板</span>
         {status ? (
           <span

@@ -4,59 +4,72 @@
   <meta charset="UTF-8" />
   <title>动作审批</title>
   <style>
-    /* 对齐控制条深色姿态；主色紫 #722ed1 与全平台一致 */
+    /* 大厂质感: 浅色卡片(同控制条 token), 深色自动适配 */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; }
+    :root {
+      --bg: #ffffff; --soft: #f7f8fa; --text: #1f2329; --text-dim: #646a73;
+      --text-faint: #8f959e; --border: rgba(31,35,41,.09); --hover: rgba(31,35,41,.06);
+      --accent: #722ed1; --warn: #e6a23c;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #23242a; --soft: #2a2b32; --text: #f2f3f5; --text-dim: #bbbfc4; --text-faint: #8f959e; --border: rgba(255,255,255,.10); --hover: rgba(255,255,255,.08); --accent: #a171f0; }
+    }
     body {
       display: flex; flex-direction: column;
-      background: #1e1f24; color: #d7d9e0;
+      background: var(--bg); color: var(--text);
       font: 12px/1.45 -apple-system, "PingFang SC", "Segoe UI", sans-serif;
-      border: 1px solid #722ed1; border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--border); border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(31,35,41,.16), 0 2px 6px rgba(31,35,41,.08);
       -webkit-user-select: none; user-select: none;
+      overflow: hidden;
     }
     #head {
-      flex: none; height: 34px; display: flex; align-items: center; gap: 6px;
-      padding: 0 10px; background: #23242b; border-radius: 7px 7px 0 0;
-      border-bottom: 1px solid #2c2d34;
+      flex: none; height: 36px; display: flex; align-items: center; gap: 7px;
+      padding: 0 12px; background: var(--bg);
+      border-bottom: 1px solid var(--border);
     }
-    #dot { width: 7px; height: 7px; border-radius: 50%; background: #faad14; flex: none; }
-    #title { font-size: 12px; font-weight: 600; color: #eef0f6; }
+    #dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); flex: none; box-shadow: 0 0 0 3px rgba(230,162,60,.15); }
+    #title { font-size: 12.5px; font-weight: 600; color: var(--text); }
     #count {
-      font-size: 11px; color: #8a8d98; margin-left: auto; flex: none;
-      background: #2c2d34; border-radius: 9px; padding: 1px 7px;
+      font-size: 11px; color: var(--text-dim); margin-left: auto; flex: none;
+      background: var(--soft); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1px 8px; font-weight: 600;
     }
-    #list { flex: 1 1 auto; overflow-y: auto; padding: 6px; }
+    #list { flex: 1 1 auto; overflow-y: auto; padding: 8px; }
     #list::-webkit-scrollbar { width: 6px; }
-    #list::-webkit-scrollbar-thumb { background: #3a3b44; border-radius: 3px; }
+    #list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
     .card {
-      height: 70px; display: flex; align-items: center; gap: 8px;
-      padding: 0 8px; margin-bottom: 6px;
-      background: #26272e; border: 1px solid #33343d; border-radius: 6px;
+      min-height: 64px; display: flex; align-items: center; gap: 8px;
+      padding: 8px; margin-bottom: 6px;
+      background: var(--soft); border: 1px solid var(--border); border-radius: 8px;
+      transition: border-color .12s;
     }
     .card:last-child { margin-bottom: 0; }
-    .card:hover { border-color: #4a4b56; }
+    .card:hover { border-color: var(--text-faint); }
     .info { flex: 1 1 auto; min-width: 0; overflow: hidden; }
     .what {
-      font-size: 12px; color: #eef0f6; font-weight: 600;
+      font-size: 12px; color: var(--text); font-weight: 600;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .where {
-      font-size: 11px; color: #8a8d98; margin-top: 2px;
+      font-size: 11px; color: var(--text-faint); margin-top: 3px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .ops { flex: none; display: flex; gap: 6px; }
     button {
-      height: 26px; padding: 0 10px; border: none; border-radius: 6px;
-      font-size: 12px; cursor: pointer; color: #fff; white-space: nowrap;
+      height: 26px; padding: 0 12px; border-radius: 6px;
+      font-size: 12px; cursor: pointer; white-space: nowrap;
+      font-family: inherit; transition: filter .12s, background .12s;
     }
-    #ok:hover { background: #9254de; }
-    .ok { background: #722ed1; }
-    .no { background: transparent; color: #aeb1bc; border: 1px solid #3a3b44; }
-    .no:hover { background: #2c2d34; color: #eef0f6; }
+    .ok { background: var(--accent); color: #fff; border: none; font-weight: 600; }
+    .ok:hover { filter: brightness(1.08); }
+    .no { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .no:hover { background: var(--hover); color: var(--text); }
     button:disabled { opacity: 0.45; cursor: default; }
-    .empty { padding: 14px 10px; color: #8a8d98; text-align: center; }
+    .empty { padding: 14px 10px; color: var(--text-faint); text-align: center; }
+
   </style>
 </head>
 <body>
@@ -67,6 +80,21 @@
   </div>
   <div id="list"></div>
   <script>
+    // 浏览器预览垫片：非 Electron 环境 mock 两条待批准动作（Electron 内不执行）
+    if (!window.browserApproval) {
+      const MOCK_PENDING = { actions: [
+          { actionId: 'a1', method: 'Input.dispatchMouseEvent', summary: { label: '点击「回复」按钮' }, binding: { url: 'https://www.douyin.com/video/7498231', webContentsId: 7 } },
+          { actionId: 'a2', method: 'Input.insertText', summary: { text: '你好，看到你关注装修，我们正好在做这个…' }, binding: { url: 'https://www.douyin.com/video/7498231', webContentsId: 7 } },
+        ] };
+      window.browserApproval = {
+        invoke: (channel, id) => {
+          console.log('[preview mock invoke]', channel, id);
+          if (channel === 'browser-panel:list-pending-actions') return Promise.resolve(MOCK_PENDING);
+          return Promise.resolve({ success: true });
+        },
+        onPendingActions: (cb) => cb(MOCK_PENDING),
+      };
+    }
     // ⚠️ 安全：整个界面只用 textContent 写入，绝不拼 innerHTML。
     // 卡片里的动作名/网址/摘要全部由 Agent 侧提供（不可信输入），
     // 拼 HTML 就等于给 Agent 一个往本地受信视图里注入脚本的口子。
