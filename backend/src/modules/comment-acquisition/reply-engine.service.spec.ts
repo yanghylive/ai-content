@@ -173,5 +173,15 @@ describe('ReplyEngineService', () => {
       expect(service.isHighRisk({ text: '这个多少钱？怎么买？' })).toBe(false);
       expect(service.isHighRisk({ text: '学会了，太棒了' })).toBe(false);
     });
+
+    it('S3-4 口径统一：高风险词（退款/投诉）判高风险但不扣意向分', () => {
+      // 「退款」属高风险专属词：isHighRisk 命中，但评分不减分
+      expect(service.isHighRisk({ text: '我要退款' })).toBe(true);
+      const { score, signals } = service.scoreLeadPotential({
+        text: '我要退款',
+      });
+      expect(score).toBe(0);
+      expect(signals.some((s) => s.includes('负面'))).toBe(false);
+    });
   });
 });

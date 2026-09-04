@@ -27,6 +27,48 @@ export interface CommentInput {
   userName?: string;
 }
 
+/**
+ * 负面词清单（统一口径，S3-4）：
+ * 评分减分与高风险判定共用同一份清单，避免两套硬编码漂移导致
+ * 「评分不减分但被判高风险」的口径不一致。
+ */
+export const NEGATIVE_WORDS = [
+  '骗子',
+  '骗人',
+  '坑',
+  '垃圾',
+  '没用',
+  '差评',
+  '太贵',
+] as const;
+
+/**
+ * 高风险专属词（S3-4）：投诉/退款/举报/维权等风险信号，
+ * 只用于 isHighRisk（进人工审核），不用于评分减分——
+ * 「退款/投诉」是风险信号，不必然是负面评价，不应扣意向分。
+ */
+export const HIGH_RISK_WORDS = [
+  '退款',
+  '投诉',
+  '举报',
+  '曝光',
+  '维权',
+  '投诉电话',
+  '12315',
+  '虚假',
+  '诈骗',
+  '假货',
+  '上当',
+  '受骗',
+  '退货',
+  '退钱',
+] as const;
+
+const NEGATIVE_RE = new RegExp(NEGATIVE_WORDS.join('|'));
+const HIGH_RISK_RE = new RegExp(
+  [...NEGATIVE_WORDS, ...HIGH_RISK_WORDS].join('|'),
+);
+
 export interface ContentContext {
   title?: string;
   summary?: string;
@@ -272,8 +314,8 @@ export class ReplyEngineService {
       score += 5;
       signals.push('有内容');
     }
-    // 负面词减分
-    if (/骗子|骗人|坑|垃圾|没用|差评|太贵/.test(text)) {
+    // 负面词减分（统一 NEGATIVE_WORDS 清单）
+    if (NEGATIVE_RE.test(text)) {
       score -= 25;
       signals.push('负面');
     }
@@ -292,9 +334,7 @@ export class ReplyEngineService {
    */
   isHighRisk(comment: CommentInput): boolean {
     const text = (comment.text || '').toLowerCase();
-    return /骗子|骗人|坑|垃圾|没用|差评|太贵|退款|投诉|举报|曝光|维权|投诉电话|12315|虚假|诈骗|假货|上当|受骗|退货|退钱/.test(
-      text,
-    );
+    return HIGH_RISK_RE.test(text);
   }
 
   private buildPrompt(
