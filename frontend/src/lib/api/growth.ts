@@ -731,7 +731,7 @@ export interface LeadTouchHistoryDto {
         detail: string;
         /** pending 待批 / approved 已批待执行 / in_use 执行中 / consumed 已完成 / rejected 已拒 */
         status: string;
-        decision: "approved" | "rejected" | null;
+        decision: "approved" | "rejected" | "expired" | null;
         createdAt: string;
         decidedAt: string | null;
     }>;

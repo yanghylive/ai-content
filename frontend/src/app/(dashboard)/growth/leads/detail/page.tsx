@@ -729,7 +729,9 @@ function LeadDetailClient() {
               const tone =
                 t.status === "rejected" || t.decision === "rejected"
                   ? { chip: "danger", label: "已拒绝" }
-                  : t.status === "pending"
+                  : t.decision === "expired"
+                    ? { chip: "muted", label: "已失效（面板重启作废）" }
+                    : t.status === "pending"
                     ? { chip: "warning", label: "待你批准" }
                     : t.status === "consumed"
                       ? { chip: "success", label: "已执行" }

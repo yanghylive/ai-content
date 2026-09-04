@@ -389,6 +389,13 @@ export class AgentPanelBridgeService {
       throw new PanelBridgeError('METHOD_REQUIRED', 400);
     }
     const credentials = this.requireCredentials();
+    // 审计对账（演示 2026-09-05 暴露的缺口）：桌面用户拒绝过的单过不了
+    // resolveConfirmation 闸门，markApprovalSafe('rejected') 永远轮不到它——
+    // 决定不落库，触达历史卡死 pending，重试还签新单（票堆积）。签新单前
+    // 先问桥把该用户所有未决面板单收口：rejected→已拒绝、none→已失效。
+    // 范围按用户而非会话：面板只有一个（桥是单实例事实源），换会话重跑的
+    // 跨会话孤儿单同样要收口，否则永远挂在触达历史里"待你批准"。
+    await this.reconcilePendingTickets(actor);
     const json = await this.call<{
       actionId?: string;
       binding?: { webContentsId?: number; method?: string };
@@ -588,6 +595,66 @@ export class AgentPanelBridgeService {
   async markRejected(actionId: string): Promise<void> {
     await this.markTicket(actionId, 'consumed');
     await this.patchConfirmationStatus(actionId, 'rejected');
+  }
+
+  /** 桌面桥已无此单（面板重启/会话销毁）：收口为 expired，触达历史显示「已失效」 */
+  async markExpired(actionId: string): Promise<void> {
+    await this.markTicket(actionId, 'consumed');
+    if (!this.prisma) return;
+    try {
+      const row = await this.prisma.agentConfirmation.findUnique({
+        where: { id: actionId },
+        select: { confirmationJson: true },
+      });
+      if (!row) return;
+      const prev =
+        row.confirmationJson && typeof row.confirmationJson === 'object'
+          ? (row.confirmationJson as Record<string, unknown>)
+          : {};
+      if (prev.status) return; // 已有决定不覆盖
+      await this.prisma.agentConfirmation.update({
+        where: { id: actionId },
+        data: {
+          confirmationJson: { ...prev, status: 'expired', decidedAt: new Date().toISOString() } as unknown as object,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(`面板确认单失效收口失败（${actionId}）：${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * 签新单前对账：该会话在库的未决面板单逐张问桥的真实状态，把终态收口进库。
+   * - rejected → markRejected（用户点过拒绝，决定此前无法回写）
+   * - none     → markExpired（桌面重启票蒸发，孤儿单收口，防触达历史永远"待你批准"）
+   * - approved/pending → 不动（重试带票执行 / 浮层继续等批）
+   * 桥不可达 = 整体放弃对账（不阻断签新单，审计旁路语义与落库一致）。
+   */
+  private async reconcilePendingTickets(actor: PanelBridgeActor): Promise<void> {
+    if (!this.prisma || !actor?.ownerId) return;
+    let rows: Array<{ id: string; confirmationJson: unknown }>;
+    try {
+      rows = await this.prisma.agentConfirmation.findMany({
+        where: { userId: actor.ownerId, status: 'pending' },
+        select: { id: true, confirmationJson: true },
+        take: 20,
+      });
+    } catch {
+      return;
+    }
+    for (const row of rows) {
+      if (!isPanelConfirmation(row.confirmationJson)) continue;
+      const json = (row.confirmationJson || {}) as Record<string, unknown>;
+      if (json.status === 'approved' || json.status === 'rejected' || json.status === 'expired') continue;
+      let state: string | null = null;
+      try {
+        state = (await this.actionState(actor, row.id)).state;
+      } catch {
+        return; // 桥不可达：放弃本轮对账
+      }
+      if (state === 'rejected') await this.markRejected(row.id);
+      else if (state === 'none') await this.markExpired(row.id);
+    }
   }
 
   /** 只改 confirmationJson 里的审批态；prisma 缺失/写失败只记 warn（审计旁路） */

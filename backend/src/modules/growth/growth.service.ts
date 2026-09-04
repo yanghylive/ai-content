@@ -11015,7 +11015,10 @@ export class GrowthService implements OnModuleInit {
         json = typeof raw === 'string' ? JSON.parse(raw) : ((raw as Record<string, unknown>) || {});
       } catch { /* 脏数据跳过解析 */ }
       const summary = (json.summary || {}) as Record<string, unknown>;
-      const decision = json.status === 'approved' || json.status === 'rejected' ? json.status : null;
+      const decision =
+        json.status === 'approved' || json.status === 'rejected' || json.status === 'expired'
+          ? (json.status as 'approved' | 'rejected' | 'expired')
+          : null;
       return {
         id: String(r.id),
         sessionId: r.sessionId ? String(r.sessionId) : null,

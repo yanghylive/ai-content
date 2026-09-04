@@ -20,7 +20,7 @@ const ACTOR = { ownerId: 'u1', tenantId: 't1' };
 /** 起一个符合桥协议的最小桩服务（token + nonce + 时钟偏差 + 三条路由） */
 function startStubBridge(
   token: string,
-  opts?: { slowScreenshotMs?: number },
+  opts?: { slowScreenshotMs?: number; actionStates?: Record<string, string> },
 ) {
   const seen: Array<{ route: string; method: string; token?: string; body?: any }> =
     [];
@@ -146,11 +146,12 @@ function startStubBridge(
           return send(403, { success: false, error: { code: 'POLICY_DENIED' } });
         }
         const state =
-          body.actionId === 'approved-1'
+          opts?.actionStates?.[String(body.actionId)] ??
+          (body.actionId === 'approved-1'
             ? 'approved'
             : body.actionId === 'act-1'
               ? 'pending'
-              : 'none';
+              : 'none');
         return send(200, {
           success: true,
           data: {
@@ -687,6 +688,16 @@ describe('AgentPanelBridgeService 与 AgentConfirmation 合并（阶段 6 决策
           const where = args.where as { id: string };
           return rows.get(where.id) ?? null;
         },
+        findMany: async (args: Record<string, unknown>) => {
+          calls.push({ op: 'findMany', args });
+          const where = args.where as { userId?: string; sessionId?: string; status: string };
+          return Array.from(rows.values()).filter(
+            (r) =>
+              r.status === where.status &&
+              (where.userId === undefined || r.userId === where.userId) &&
+              (where.sessionId === undefined || r.sessionId === where.sessionId),
+          );
+        },
         update: async (args: Record<string, unknown>) => {
           calls.push({ op: 'update', args });
           const where = args.where as { id: string };
@@ -701,8 +712,8 @@ describe('AgentPanelBridgeService 与 AgentConfirmation 合并（阶段 6 决策
   }
 
   /** 起桥 + 写凭据，返回 service 与桩 */
-  async function setup(opts: { failOnUpsert?: boolean; withPrisma?: boolean } = {}) {
-    const stub = await startStubBridge('tok-1');
+  async function setup(opts: { failOnUpsert?: boolean; withPrisma?: boolean; actionStates?: Record<string, string> } = {}) {
+    const stub = await startStubBridge('tok-1', { actionStates: opts.actionStates });
     const { file } = writeCredFile({
       endpoint: `http://127.0.0.1:${stub.port}`,
       token: 'tok-1',
@@ -739,6 +750,35 @@ describe('AgentPanelBridgeService 与 AgentConfirmation 合并（阶段 6 决策
       expect(json.status).toBe('pending');
       // 触达审计：leadId 随签单落进 confirmationJson（线索详情按它反查触达历史）
       expect(json.leadId).toBe('lead-1788495284452-2c4509');
+    } finally {
+      await stub.close();
+    }
+  });
+
+  it('签单对账：桌面已拒绝/已失效的旧面板单在签新单前收口落库（演示暴露的缺口）', async () => {
+    const { stub, svc, prisma } = await setup({ actionStates: { 'old-rej': 'rejected', 'old-gone': 'none', 'old-wait': 'pending' } });
+    try {
+      // 预置三张该会话的未决面板单
+      for (const id of ['old-rej', 'old-gone', 'old-wait']) {
+        await svc.requestAction(ACTOR, { method: 'Page.navigate', params: { url: 'https://kaypal.cn/x' }, sessionId: 'agent-session-7' });
+        // 手工改主键不可行（stub 恒返回 act-1）→ 直接种桩行
+        prisma!.rows.set(id, {
+          id, sessionId: 'agent-session-7', userId: ACTOR.ownerId, status: 'pending', action: 'Page.navigate',
+          confirmationJson: { id, source: 'browser-panel', sessionId: 'agent-session-7', method: 'Page.navigate', status: null },
+        });
+      }
+      // 清掉 requestAction 第一次种的 act-1，避免干扰
+      prisma!.rows.delete('act-1');
+      // 再签一张新单 → 触发对账
+      await svc.requestAction(ACTOR, { method: 'Page.navigate', params: { url: 'https://kaypal.cn/y' }, sessionId: 'agent-session-7' });
+      const rej = prisma!.rows.get('old-rej')!;
+      expect(rej.status).toBe('consumed');
+      expect((rej.confirmationJson as Record<string, unknown>).status).toBe('rejected');
+      const gone = prisma!.rows.get('old-gone')!;
+      expect(gone.status).toBe('consumed');
+      expect((gone.confirmationJson as Record<string, unknown>).status).toBe('expired');
+      const wait = prisma!.rows.get('old-wait')!;
+      expect(wait.status).toBe('pending', '桥仍 pending 的单不动');
     } finally {
       await stub.close();
     }
