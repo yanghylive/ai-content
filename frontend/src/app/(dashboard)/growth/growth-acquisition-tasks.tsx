@@ -103,6 +103,11 @@ const GROWTH_LIVE_CSS = `
 .growthlive-scanline { background: linear-gradient(90deg, transparent, rgba(240, 180, 41, 0.9), transparent); animation: growthlive-scanmove 2.4s linear infinite; }
 @keyframes growthlive-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 .growthlive-shimmer-line { height: 12px; border-radius: 4px; background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: growthlive-shimmer 1.4s linear infinite; }
+.growth-tip-wrap { position: relative; display: inline-flex; }
+.growth-tip-pop { position: absolute; left: 50%; top: calc(100% + 9px); z-index: 60; transform: translateX(-50%) translateY(-3px); white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .14s ease, transform .14s ease; border-radius: 8px; background: color-mix(in srgb, var(--kaypal-v3-ink) 92%, transparent); color: var(--kaypal-v3-paper); padding: 5px 9px; font-size: 12px; font-weight: 500; letter-spacing: .01em; box-shadow: 0 6px 18px rgba(10,15,25,.22); border: 1px solid rgba(255,255,255,.08); }
+.growth-tip-pop::before { content: ""; position: absolute; left: 50%; top: -4px; transform: translateX(-50%) rotate(45deg); width: 7px; height: 7px; background: inherit; border-left: 1px solid rgba(255,255,255,.08); border-top: 1px solid rgba(255,255,255,.08); }
+.growth-tip-wrap:hover .growth-tip-pop { opacity: 1; transform: translateX(-50%) translateY(0); }
+.growth-tip-sub { display: block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; font-size: 11px; font-weight: 400; opacity: .72; }
 `;
 
 const RISK_OPTIONS = [
@@ -562,44 +567,56 @@ export function GrowthAcquisitionTasks() {
                       </div>
 
                       <div className="flex shrink-0 items-center gap-0.5">
-                        <button
-                          type="button"
-                          title="执行记录"
-                          className={"rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-muted)] hover:text-[var(--kaypal-v3-ink)]" + (runsOpen ? " bg-[var(--kaypal-v3-paper-muted)] text-[var(--kaypal-v3-ink)]" : "")}
-                          onClick={() => void toggleRuns(config)}
-                        >
-                          {runsOpen ? <ChevronDown className="h-4 w-4" /> : <History className="h-4 w-4" />}
-                        </button>
-                        <button
-                          type="button"
-                          title={liveRunning ? "正在执行中" : "立即执行"}
-                          disabled={liveRunning}
-                          className={
-                            "rounded-[var(--kaypal-v3-radius-sm)] p-2 transition disabled:cursor-not-allowed " +
-                            (liveRunning
-                              ? "text-[var(--kaypal-v3-warning-ink)]"
-                              : "text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-accent-soft)] hover:text-[var(--kaypal-v3-accent-ink)]")
-                          }
-                          onClick={() => setExecuteTarget(config)}
-                        >
-                          <Rocket className={"h-4 w-4" + (liveRunning ? " growthlive-live-dot" : "")} />
-                        </button>
-                        <button
-                          type="button"
-                          title="编辑"
-                          className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-muted)] hover:text-[var(--kaypal-v3-ink)]"
-                          onClick={() => openEdit(config)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          title="删除"
-                          className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)]"
-                          onClick={() => setDeleteTarget(config)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <span className="growth-tip-wrap">
+                          <button
+                            type="button"
+                            title="查看每次执行的过程与结果"
+                            className={"rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-muted)] hover:text-[var(--kaypal-v3-ink)]" + (runsOpen ? " bg-[var(--kaypal-v3-paper-muted)] text-[var(--kaypal-v3-ink)]" : "")}
+                            onClick={() => void toggleRuns(config)}
+                          >
+                            {runsOpen ? <ChevronDown className="h-4 w-4" /> : <History className="h-4 w-4" />}
+                          </button>
+                          <span className="growth-tip-pop" role="tooltip">执行记录<span className="growth-tip-sub">查看每次执行的过程与结果</span></span>
+                        </span>
+                        <span className="growth-tip-wrap">
+                          <button
+                            type="button"
+                            title={liveRunning ? "正在执行中" : "立即执行，马上开始找客户"}
+                            disabled={liveRunning}
+                            className={
+                              "rounded-[var(--kaypal-v3-radius-sm)] p-2 transition disabled:cursor-not-allowed " +
+                              (liveRunning
+                                ? "text-[var(--kaypal-v3-warning-ink)]"
+                                : "text-[var(--kaypal-v3-muted)] hover:bg-[var(--kaypal-v3-accent-soft)] hover:text-[var(--kaypal-v3-accent-ink)]")
+                            }
+                            onClick={() => setExecuteTarget(config)}
+                          >
+                            <Rocket className={"h-4 w-4" + (liveRunning ? " growthlive-live-dot" : "")} />
+                          </button>
+                          <span className="growth-tip-pop" role="tooltip">{liveRunning ? "正在执行中" : "立即执行"}<span className="growth-tip-sub">{liveRunning ? "引擎正在跑，执行完成后会自动出现在记录里" : "马上启动一次采集，实时看进度"}</span></span>
+                        </span>
+                        <span className="growth-tip-wrap">
+                          <button
+                            type="button"
+                            title="编辑关键词、话术与风控设置"
+                            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-paper-muted)] hover:text-[var(--kaypal-v3-ink)]"
+                            onClick={() => openEdit(config)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <span className="growth-tip-pop" role="tooltip">编辑<span className="growth-tip-sub">改关键词、话术与发送方式</span></span>
+                        </span>
+                        <span className="growth-tip-wrap">
+                          <button
+                            type="button"
+                            title="删除这个任务，执行记录会保留"
+                            className="rounded-[var(--kaypal-v3-radius-sm)] p-2 text-[var(--kaypal-v3-muted)] transition hover:bg-[var(--kaypal-v3-danger-soft)] hover:text-[var(--kaypal-v3-danger)]"
+                            onClick={() => setDeleteTarget(config)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                          <span className="growth-tip-pop" role="tooltip">删除<span className="growth-tip-sub">删除后不再自动执行，历史记录保留</span></span>
+                        </span>
                         <V2GhostButton
                           size="sm"
                           className="ml-1"
