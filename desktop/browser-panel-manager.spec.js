@@ -310,6 +310,27 @@ test('宽度记忆：全局默认 / 按工作区持久化 / 切换重读', () =>
   assert.equal(manager.width(), 520, '切回记忆工作区恢复 520');
 });
 
+test('审批高亮：updateApprovalList 驱动 selector 记录与清除（导航重注入钩子）', async () => {
+  const { manager } = setup(1600, 900);
+  manager.open({ url: 'http://127.0.0.1:8080/a', ownerId: 'u1', tenantId: 't1' });
+  let injected = [];
+  const wc = manager.panelView.webContents;
+  wc.debugger.sendCommand = async (method, params) => { injected.push([method, params && params.expression ? 'expr' : params]); return {}; };
+  await manager.updateApprovalList([
+    { actionId: 'a1', method: 'Input.dispatchMouseEvent', summary: { label: '点击', selector: '#reply-btn' }, createdAt: 1, binding: {} },
+  ]);
+  assert.equal(manager._highlightSelector, '#reply-btn', '有待批带 selector → 记录并注入');
+  assert.equal(injected[0][0], 'Runtime.evaluate');
+  assert.ok(injected[0][1] === 'expr' && injected[0][0] === 'Runtime.evaluate');
+  // 导航类（无 selector）→ 清除
+  await manager.updateApprovalList([
+    { actionId: 'a2', method: 'Page.navigate', summary: { label: '导航', url: 'https://x.test' }, createdAt: 2, binding: {} },
+  ]);
+  assert.equal(manager._highlightSelector, null, '无目标动作 → 清除');
+  await manager.updateApprovalList([]);
+  assert.equal(manager._highlightSelector, null, '空列表保持清除');
+});
+
 test('默认宽度 480，窄面板下限 360，上限 60%', () => {
   const { manager } = setup(1600, 900);
   manager.open({ url: 'http://127.0.0.1:8080/x', ownerId: 'u1', tenantId: 't1' });

@@ -142,6 +142,8 @@ export class AgentBrowserController {
       confirmedTools?: Array<{ action: string; target?: string; url?: string }>;
       // P0-2：服务端确认——批准时传确认单 id，后端查库校验（不信任裸 confirmedTools）
       confirmationIds?: string[];
+      /** 触达审计：获客跟进执行时传本任务归属线索，会话内签单挂到该线索 */
+      leadId?: string;
     } = {},
   ) {
     const tenantId = await this.resolveTenantId();
@@ -205,6 +207,7 @@ export class AgentBrowserController {
           await this.loop.run(id, instruction, {
             confirmedTools: body.confirmedTools ?? [],
             confirmationIds: body.confirmationIds,
+            leadId: body.leadId ?? null,
             ...(resumeFrom ? { resumeFrom } : {}),
           });
           // 终态由 loop 设置（success→succeeded / partial_success / failed）；

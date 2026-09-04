@@ -91,6 +91,8 @@ export class AgentBrowserLoopService {
       onStep?: (event: AgentBrowserStepEvent) => void;
       confirmedTools?: Array<{ action: string; target?: string; url?: string }>;
       confirmationIds?: string[];
+      /** 触达审计：获客跟进执行时传入——本会话签的面板确认单都挂到这条线索 */
+      leadId?: string | null;
       /** P1（复查 2026-08-22）：resume 续跑——从断点动作序列继续，不再从头解析 */
       resumeFrom?: {
         stepIndex: number;
@@ -118,6 +120,7 @@ export class AgentBrowserLoopService {
     // P1（复查 2026-08-22）：持久化任务上下文——pause/resume 后从断点续跑
     // （resume 端点读取 pendingInstruction/pendingActions 继续，不再丢失任务）
     session.pendingInstruction = instruction;
+    if (options.leadId) session.leadId = options.leadId;
 
     // §14.2 feature flag：mode 门禁（legacy=继续现有执行器；dom-agent=本循环灰度）
     const cfg = this.readAgentBrowserConfig();
@@ -398,6 +401,8 @@ export class AgentBrowserLoopService {
             // 阶段 7 修断链：resolveConfirmation 锁定的确认单必须透给 executor，
             // 否则重试时 executor 看不到已锁定的单，会再签新单（用户批一张废一张）
             lockedConfirmationId,
+            // 触达审计：会话归属线索透给 executor（签单落库 leadId）
+            session.leadId ?? null,
           )
         : {
             index: i,
@@ -747,6 +752,8 @@ export class AgentBrowserLoopService {
     sessionId?: string,
     /** 阶段 7：resolveConfirmation 锁定的面板确认单 id（透传 executor，防重复签单死循环） */
     panelActionId?: string,
+    /** 触达审计：动作归属线索（透传 executor 签单） */
+    leadId?: string | null,
   ): Promise<{
     index: number;
     action: string;
@@ -777,7 +784,8 @@ export class AgentBrowserLoopService {
         actor,
         sessionId,
         actionId: panelActionId,
-      });
+        leadId: leadId ?? null,
+      } as Parameters<typeof exec.execute>[0]);
       lastResult = r;
       if (r.ok) return r;
       // 门禁类失败不重试（策略阻断/需确认/写操作未开启/mock 阻断）

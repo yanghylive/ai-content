@@ -47,6 +47,12 @@ export type AgentBrowserExecuteInput = {
    */
   sessionId?: string;
   /**
+   * 触达审计：本步动作归属的线索 id（获客跟进执行时透传）。面板确认单落库时
+   * 写进 confirmationJson.leadId —— 线索详情页「触达历史」按它反查。不传 = 通用
+   * agent 任务动作（与具体客户无关），只进会话审计不进线索时间线。
+   */
+  leadId?: string | null;
+  /**
    * 阶段 7：loop 锁定的面板确认单 id（resolveConfirmation → lockedConfirmationId）。
    * 之前断链：loop 锁了单却从未传给 executor，重试时 executor 会再签新单死循环。
    * executor 侧优先级：input.actionId（loop 锁定的）> action.actionId（AI 自带）。
@@ -424,22 +430,22 @@ export class AgentBrowserExecutor {
       }
       // 4) 导航：写动作——签单 → 等桌面端用户批准 → 带单执行
       if (kind === 'goto') {
-        return await this.gotoViaPanel(action, actor, input.sessionId, input.actionId);
+        return await this.gotoViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
       }
       // 5) 点击：写动作——先解析坐标（元素不存在不签单）→ 签单 → 用户批准 →
       //    带单执行（pressed+released 一次逻辑点击，坐标执行时重新解析）
       if (kind === 'click') {
-        return await this.clickViaPanel(action, actor, input.sessionId, input.actionId);
+        return await this.clickViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
       }
       // 5.5) 输入：写动作——先解析坐标（元素不存在不签单）→ 签单 → 用户批准 →
       //      带单执行（聚焦 pressed 消耗 insertText 单 + insertText 配对放行）
       if (kind === 'type') {
-        return await this.typeViaPanel(action, actor, input.sessionId, input.actionId);
+        return await this.typeViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
       }
       // 5.75) 按键：写动作——签单 → 用户批准 → 带单执行（keyDown 消耗单 +
       //       keyUp 配对放行，一次逻辑按键）
       if (kind === 'press_key') {
-        return await this.pressKeyViaPanel(action, actor, input.sessionId, input.actionId);
+        return await this.pressKeyViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
       }
       // 5.8) 等待：无 CDP 副作用（不动页面、无白名单命令）——免确认单本地等待
       //      （签"等待 N 毫秒"的审批卡片是骚扰）；身份/面板可用校验仍走前置。
@@ -450,7 +456,7 @@ export class AgentBrowserExecutor {
       //       Panel.tabs，manager 原生 tab 台账；switch 也签单：切换会改变用户
       //       所见的页面，知情卡片合理）
       if (kind === 'tabs') {
-        return await this.tabsViaPanel(action, actor, input.sessionId, input.actionId);
+        return await this.tabsViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
       }
       // 5.9) 截图：readonly 观察类——免确认单直接执行（Page.captureScreenshot
       //      已在 desktop 白名单 READONLY_METHODS）。免单理由同 extract/wait：
@@ -490,6 +496,8 @@ export class AgentBrowserExecutor {
     actor: PanelBridgeActor,
     sessionId?: string,
     lockedActionId?: string,
+    /** 触达审计：动作归属线索（签单落库 confirmationJson.leadId，线索详情反查） */
+    leadId?: string | null,
   ): Promise<AgentBrowserExecuteResult> {
     // 阶段 7 修断链：loop 锁定的确认单（lockedActionId）优先——否则重试时
     // executor 看不到已锁定的单，会再签新单，用户批一张废一张，死循环。
@@ -540,6 +548,7 @@ export class AgentBrowserExecutor {
       params: { url: action.url },
       summary: { label: '导航', url: action.url },
       sessionId: sessionId ?? null,
+      leadId: leadId ?? null,
     });
     return this.failed(
       'goto',
@@ -723,6 +732,8 @@ export class AgentBrowserExecutor {
     actor: PanelBridgeActor,
     sessionId?: string,
     lockedActionId?: string,
+    /** 触达审计：动作归属线索（签单落库 confirmationJson.leadId，线索详情反查） */
+    leadId?: string | null,
   ): Promise<AgentBrowserExecuteResult> {
     const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
     if (carried) {
@@ -805,6 +816,7 @@ export class AgentBrowserExecutor {
         targetText: probe.text ?? null,
       },
       sessionId: sessionId ?? null,
+      leadId: leadId ?? null,
     });
     return this.failed(
       'click',
@@ -832,6 +844,8 @@ export class AgentBrowserExecutor {
     actor: PanelBridgeActor,
     sessionId?: string,
     lockedActionId?: string,
+    /** 触达审计：动作归属线索（签单落库 confirmationJson.leadId，线索详情反查） */
+    leadId?: string | null,
   ): Promise<AgentBrowserExecuteResult> {
     const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
     if (carried) {
@@ -918,6 +932,7 @@ export class AgentBrowserExecutor {
       method: 'Input.insertText',
       summary: { label: '输入文本', selector: action.selector, text: textPreview },
       sessionId: sessionId ?? null,
+      leadId: leadId ?? null,
     });
     return this.failed(
       'type',
@@ -946,6 +961,8 @@ export class AgentBrowserExecutor {
     actor: PanelBridgeActor,
     sessionId?: string,
     lockedActionId?: string,
+    /** 触达审计：动作归属线索（签单落库 confirmationJson.leadId，线索详情反查） */
+    leadId?: string | null,
   ): Promise<AgentBrowserExecuteResult> {
     const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
     const keyParams = (type: 'keyDown' | 'keyUp'): Record<string, unknown> => {
@@ -999,6 +1016,7 @@ export class AgentBrowserExecutor {
       method: 'Input.dispatchKeyEvent',
       summary: { label: '按下按键', key: action.key },
       sessionId: sessionId ?? null,
+      leadId: leadId ?? null,
     });
     return this.failed(
       'press_key',
@@ -1029,6 +1047,8 @@ export class AgentBrowserExecutor {
     actor: PanelBridgeActor,
     sessionId?: string,
     lockedActionId?: string,
+    /** 触达审计：动作归属线索（签单落库 confirmationJson.leadId，线索详情反查） */
+    leadId?: string | null,
   ): Promise<AgentBrowserExecuteResult> {
     const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
     const summary: Record<string, unknown> = { label: '标签页操作', operation: action.operation };
@@ -1081,6 +1101,7 @@ export class AgentBrowserExecutor {
       method: 'Panel.tabs',
       summary,
       sessionId: sessionId ?? null,
+      leadId: leadId ?? null,
     });
     return this.failed(
       'tabs',

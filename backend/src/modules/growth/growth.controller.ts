@@ -467,6 +467,14 @@ export class GrowthController {
     return this.growthService.getLeadAttribution(this.getUserId(request), id);
   }
 
+  @Get('leads/:id/touch-history')
+  getLeadTouchHistory(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.growthService.getLeadTouchHistory(this.getUserId(request), id);
+  }
+
   @Delete('leads/:id')
   deleteLead(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
     return this.growthService.deleteLead(this.getUserId(request), id);

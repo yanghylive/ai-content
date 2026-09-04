@@ -380,6 +380,7 @@ describe('AgentBrowserExecutor 面板模式', () => {
       params: { url: 'https://kaypal.cn/x' },
       summary: { label: '导航', url: 'https://kaypal.cn/x' },
       sessionId: 'agent-session-7',
+      leadId: null,
     });
     expect(legacy.calls.length).toBe(0);
   });
@@ -576,6 +577,7 @@ describe('AgentBrowserExecutor 面板模式', () => {
       method: 'Input.dispatchMouseEvent',
       summary: { label: '点击', selector: 'text=提交订单', targetText: '提交订单' },
       sessionId: 'agent-session-7',
+      leadId: null,
     });
     expect(legacy.calls.length).toBe(0);
   });
@@ -695,6 +697,7 @@ describe('AgentBrowserExecutor 面板模式', () => {
       method: 'Input.insertText',
       summary: { label: '输入文本', selector: '#kw', text: 'kaypal 搜索词' },
       sessionId: 'agent-session-7',
+      leadId: null,
     });
     expect(p.cdpCalls.filter((c) => c.method !== 'Runtime.evaluate').length).toBe(0);
     expect(legacy.calls.length).toBe(0);
@@ -852,6 +855,7 @@ describe('AgentBrowserExecutor 面板模式', () => {
       method: 'Input.dispatchKeyEvent',
       summary: { label: '按下按键', key: 'Enter' },
       sessionId: 'agent-session-7',
+      leadId: null,
     });
     expect(p.cdpCalls.filter((c) => c.method !== 'Runtime.evaluate').length).toBe(0);
     expect(legacy.calls.length).toBe(0);

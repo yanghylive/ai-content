@@ -380,6 +380,8 @@ export class AgentPanelBridgeService {
       summary?: Record<string, unknown>;
       /** 关联到的 AgentBrowser 会话 id（落库用，便于按会话回查） */
       sessionId?: string | null;
+      /** 触达审计：动作归属线索 id（线索详情页「触达历史」反查键） */
+      leadId?: string | null;
     },
   ): Promise<PanelActionTicket> {
     this.assertActor(actor);
@@ -407,6 +409,7 @@ export class AgentPanelBridgeService {
       id: json.actionId,
       actor,
       sessionId: input.sessionId ?? null,
+      leadId: input.leadId ?? null,
       method: input.method,
       params: input.params || {},
       summary: input.summary || {},
@@ -497,6 +500,7 @@ export class AgentPanelBridgeService {
     id: string;
     actor: PanelBridgeActor;
     sessionId: string | null;
+    leadId?: string | null;
     method: string;
     params: Record<string, unknown>;
     summary: Record<string, unknown>;
@@ -508,6 +512,8 @@ export class AgentPanelBridgeService {
       id: row.id,
       source: PANEL_CONFIRMATION_SOURCE,
       sessionId: row.sessionId,
+      // 触达审计：获客跟进动作归属的线索（无 = 通用任务动作，不进线索时间线）
+      leadId: row.leadId ?? null,
       action: row.method,
       method: row.method,
       params: row.params,

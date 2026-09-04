@@ -654,6 +654,9 @@ overview: () => api.get<GrowthOverview>("/growth/overview"),
         }>(`/growth/leads/${id}/rescore`),
     getLeadAttribution: (id: string) =>
         api.get<LeadAttributionDto>(`/growth/leads/${id}/attribution`),
+    // AI 代操作触达历史（面板确认单时间线：签单→审批→执行）
+    getLeadTouchHistory: (id: string) =>
+        api.get<LeadTouchHistoryDto>(`/growth/leads/${id}/touch-history`),
     listAccountHealth: () => api.get<GrowthAccountHealth[]>("/growth/account-health"),
     checkAccountHealth: (platform: GrowthPlatform, accountId: string) =>
         api.post<GrowthAccountHealth>(`/growth/account-health/${platform}/${accountId}/check`),
@@ -715,6 +718,23 @@ export interface LeadScoreSnapshotDto {
   evidenceIds: string[];
   modelVersion: string;
   ruleVersion: string;
+}
+
+export interface LeadTouchHistoryDto {
+    available: boolean;
+    message?: string;
+    items: Array<{
+        id: string;
+        sessionId: string | null;
+        method: string;
+        label: string;
+        detail: string;
+        /** pending 待批 / approved 已批待执行 / in_use 执行中 / consumed 已完成 / rejected 已拒 */
+        status: string;
+        decision: "approved" | "rejected" | null;
+        createdAt: string;
+        decidedAt: string | null;
+    }>;
 }
 
 export interface LeadScoreHistoryDto {

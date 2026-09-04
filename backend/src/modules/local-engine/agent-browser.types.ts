@@ -99,6 +99,8 @@ export interface AgentBrowserSession extends AgentBrowserSessionDto {
   events: AgentBrowserEvent[];
   // P1（复查 2026-08-22）：暂停/中断时的任务上下文——resume 后从断点续跑
   // （不再丢失 instruction / 剩余动作），恢复后再次 run 不会被重复执行保护拒绝
+  /** 触达审计：本会话动作归属的线索 id（获客跟进 run 时传入，签单落库透传） */
+  leadId?: string | null;
   pendingInstruction?: string;
   pendingActions?: import('./ai-browser-action.service').AiBrowserAction[];
   pendingStepIndex?: number;

@@ -723,6 +723,7 @@ describe('AgentPanelBridgeService 与 AgentConfirmation 合并（阶段 6 决策
         params: { url: 'https://kaypal.cn/x' },
         summary: { label: '导航', url: 'https://kaypal.cn/x' },
         sessionId: 'agent-session-7',
+        leadId: 'lead-1788495284452-2c4509',
       });
       expect(ticket.actionId).toBe('act-1');
       const row = prisma.rows.get('act-1');
@@ -736,6 +737,8 @@ describe('AgentPanelBridgeService 与 AgentConfirmation 合并（阶段 6 决策
       expect(json.source).toBe('browser-panel');
       expect(json.sessionId).toBe('agent-session-7');
       expect(json.status).toBe('pending');
+      // 触达审计：leadId 随签单落进 confirmationJson（线索详情按它反查触达历史）
+      expect(json.leadId).toBe('lead-1788495284452-2c4509');
     } finally {
       await stub.close();
     }
