@@ -687,7 +687,10 @@ class TabManager {
     // 内容：tab 条下方铺满。
     // 2026-09-03（浏览器面板阶段 2）：右侧面板打开时业务区让出 rightInset 宽度，
     // 避免 WebContentsView 重叠遮挡 3010 主内容（面板自身负责 rightInset 区域）。
-    const inset = Math.max(0, Math.min(this.rightInset || 0, Math.floor(w * 0.6)));
+    // 上限只保底"业务区不被完全挤没"（120px）；不再按 60% 二次夹取——
+    // 那会把面板让出的沟槽 12px 划回业务视图，业务视图盖住沟槽（拖不回面板）。
+    // 面板自身在 BrowserPanelManager._clampWidth 已有 60% 上限。
+    const inset = Math.max(0, Math.min(this.rightInset || 0, Math.max(0, w - 120)));
     const contentY = TAB_STRIP_HEIGHT;
     const contentW = Math.max(0, w - inset);
     const contentH = Math.max(0, h - TAB_STRIP_HEIGHT);

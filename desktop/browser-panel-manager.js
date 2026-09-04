@@ -1119,6 +1119,12 @@ class BrowserPanelManager {
     if (this.gutterView && !this.gutterView.webContents.isDestroyed()) {
       this.gutterView.setBounds({ x: x - gutter, y: contentY, width: gutter, height: contentH });
       this.gutterView.setVisible(gutter > 0);
+      // 置顶：业务视图在 switchTo 时被重新 addChildView 到最上层，会盖住
+      // 与其右缘重叠的沟槽（面板越宽重叠越必然）——沟槽被盖 = 拖不回面板。
+      // Electron 对已存在子视图重复 addChildView 即移到最上层，幂等。
+      try {
+        this.window.contentView.addChildView(this.gutterView);
+      } catch { /* 视图竞态：下次 relayout 自愈 */ }
     }
     if (this.stripView && !this.stripView.webContents.isDestroyed()) {
       this.stripView.setBounds({ x, y: contentY, width: panelW, height: stripH });
