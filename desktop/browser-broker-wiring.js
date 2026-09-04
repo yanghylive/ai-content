@@ -86,10 +86,17 @@ function wireBrowserPanel(deps) {
     } catch {
       /* 会话可能已随 broker 实例销毁 */
     }
+    // token 已被 broker 过期删除时 destroyPanel 恒 no-op（panel.tokens 里查无
+    // 此 token）→ dropPanel 兜底清残留（正常路径 panel 已删，幂等 no-op）。
+    try {
+      broker.dropPanel(panelId);
+    } catch {
+      /* broker 实例可能已销毁 */
+    }
     handles.delete(panelId);
   }
 
-  function reconcile() {
+  function reconcile({ forceTokenRefresh = false } = {}) {
     if (disposed) return;
     const session = manager.session;
     if (!session) {
@@ -99,7 +106,7 @@ function wireBrowserPanel(deps) {
     }
     const signature = sessionSignature(session);
     const existing = handles.get(session.panelId);
-    if (existing && existing.signature === signature) {
+    if (existing && existing.signature === signature && !forceTokenRefresh) {
       return; // 同面板同归属：token 保持（面板 hide/show 不重置登录态）
     }
     // 新面板 / 账号切换 / 会话换绑：撤销旧 token，重建 Broker 会话
@@ -126,12 +133,21 @@ function wireBrowserPanel(deps) {
 
   // 2026-09-03（阶段 3）：manager.destroy() 先发 destroyed 事件后置空会话
   //（订阅方需在会话还在时撤销），因此 destroyed 必须显式全撤，不能走 reconcile。
+  // 2026-09-04（阶段 5 只读校准 E2E 抓获）：opened/shown = 用户明确要用面板，
+  // **强制重铸 capability token**。否则面板闲置超 TTL 后 token 已被 broker
+  // 过期删除（_authorize fail-closed），而 open 复用会话 signature 不变 →
+  // reconcile「token 保持」早退 → 永远 TOKEN_INVALID（错误提示说「重新打开
+  // 浏览器面板后重试」，重开却愈不了——承诺与实现脱节）。重铸只发生在主进程
+  // 内存（token 不出本模块），不松安全语义；登录态在 partition，不受影响。
   const unsubscribe = manager.onSessionEvent((event) => {
     if (event && event.type === 'destroyed') {
       for (const panelId of [...handles.keys()]) revokeHandle(panelId);
       return;
     }
-    reconcile();
+    const type = event && event.type;
+    reconcile({
+      forceTokenRefresh: type === 'opened' || type === 'shown',
+    });
   });
 
   function handleFor(panelId, actor) {
@@ -143,6 +159,55 @@ function wireBrowserPanel(deps) {
     broker.assertActor(panelId, handle.capabilityToken, actor);
     return handle;
   }
+
+  /**
+   * owner 批准的无提示实现：broker.approveAction + owner token 双写。
+   * 用户点批（approveActionAsOwner）和系统控制自动批准共用这段，
+   * 审计语义一致（channel 都是 owner-ui，via 字段区分来源）。
+   */
+  function approveOwnerSide(panelId, actionId, context) {
+    const handle = handles.get(panelId);
+    if (!handle) {
+      throw new Error('面板会话未登记（无主可批）');
+    }
+    if (!actionId) throw new Error('缺少 actionId');
+    broker.approveAction(actionId, handle.capabilityToken, handle.capabilityToken, {
+      channel: 'owner-ui',
+      ...(context || {}),
+    });
+  }
+
+  // TraeWork 控制权模型 · 交还放行：control 切回 'system' 时批量批准排队单。
+  // 接管期间 AI 签的单保持 pending（AI 走现有 defer 路径自然暂停）；用户点
+  // 「交还」= 把决定权还给系统，队里的单逐张经 owner 通道批准，loop 的下一次
+  // 重试经 actionState=approved 正常执行（executor 带票路径，审计照常落库）。
+  const unsubscribeControl =
+    typeof manager.onControlChange === 'function'
+      ? manager.onControlChange((control) => {
+          if (control !== 'system') return;
+          let released = 0;
+          for (const [panelId, handle] of [...handles.entries()]) {
+            let pending = [];
+            try {
+              pending = broker.listPendingActions(panelId, handle.capabilityToken);
+            } catch {
+              continue;
+            }
+            for (const item of pending) {
+              try {
+                approveOwnerSide(panelId, item.actionId, { via: 'auto-release-control' });
+                released += 1;
+              } catch {
+                /* 单可能已被消费/收口，跳过（对账路径兜底） */
+              }
+            }
+            notifyPendingChange(panelId);
+          }
+          if (released > 0 && typeof manager.recordActivity === 'function') {
+            manager.recordActivity('control', '已放行 ' + released + ' 个排队操作', true);
+          }
+        })
+      : null;
 
   return {
     broker,
@@ -174,8 +239,21 @@ function wireBrowserPanel(deps) {
     requestActionForAgent(panelId, actor, method, summary) {
       const handle = handleFor(panelId, actor);
       const ticket = broker.requestAction(panelId, handle.capabilityToken, method, summary);
+      // TraeWork 控制权模型：系统控制（默认）→ 新单立即经 owner 通道自动批准，
+      // 响应带 autoApproved，executor 据此直接执行（不再"每步弹卡等你点批"）。
+      // 用户接管（control='user'）时保持 pending 排队，审批浮层回归逐条确认。
+      // fail-safe：自动批准抛错 → 维持人工审批路径，绝不升权。
+      let autoApproved = false;
+      if (typeof manager.getControl === 'function' && manager.getControl() === 'system') {
+        try {
+          approveOwnerSide(panelId, ticket.actionId, { via: 'auto-system-control' });
+          autoApproved = true;
+        } catch {
+          autoApproved = false;
+        }
+      }
       notifyPendingChange(panelId);
-      return ticket;
+      return Object.assign({}, ticket, { autoApproved });
     },
     /**
      * **用户（面板所有者）批准通道** —— 阶段 4 审批 UI 的主进程接缝。
@@ -191,15 +269,7 @@ function wireBrowserPanel(deps) {
      * @param {{reason?: string}} [context] 审计留痕用（谁点批、为什么）
      */
     approveActionAsOwner(panelId, actionId, context = {}) {
-      const handle = handles.get(panelId);
-      if (!handle) {
-        throw new Error('面板会话未登记（无主可批）');
-      }
-      if (!actionId) throw new Error('缺少 actionId');
-      broker.approveAction(actionId, handle.capabilityToken, handle.capabilityToken, {
-        channel: 'owner-ui',
-        ...context,
-      });
+      approveOwnerSide(panelId, actionId, context);
       notifyPendingChange(panelId);
       return { actionId, panelId, approved: true };
     },
@@ -259,6 +329,7 @@ function wireBrowserPanel(deps) {
     dispose() {
       disposed = true;
       unsubscribe();
+      if (unsubscribeControl) unsubscribeControl();
       for (const panelId of [...handles.keys()]) revokeHandle(panelId);
     },
   };

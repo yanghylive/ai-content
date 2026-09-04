@@ -108,6 +108,11 @@ function registerBrowserPanelIpc(deps) {
     stripOnly((on) => getPanel().setAgentMode(!!on)),
   );
 
+  // TraeWork 控制权模型：接管（AI 暂停、新单排队）/ 交还（恢复系统控制、放行排队单）。
+  // 与 agent-mode 同级 stripOnly——只有本地控制条按钮能替用户交权，前端不可伪造。
+  ipcMain.handle('browser-panel:take-control', stripOnly(() => getPanel().takeControl()));
+  ipcMain.handle('browser-panel:release-control', stripOnly(() => getPanel().releaseControl()));
+
   // round15：用户手动切/关 tab（只有控制条 tab 条能发；用户自家操作不走 Agent
   // 审批闸门，与后退/刷新同权；manager 侧错误转 {ok:false} 不抛）
   ipcMain.handle(
@@ -164,6 +169,8 @@ function registerBrowserPanelIpc(deps) {
       'browser-panel:begin-resize',
       'browser-panel:end-resize',
       'browser-panel:toggle-agent-mode',
+      'browser-panel:take-control',
+      'browser-panel:release-control',
       'browser-panel:switch-tab',
       'browser-panel:close-tab',
       'browser-panel:list-pending-actions',

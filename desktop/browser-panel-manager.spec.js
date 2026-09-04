@@ -157,6 +157,48 @@ function setup(width = 1600, height = 900, opts = {}) {
 const tests = [];
 const test = (name, fn) => tests.push([name, fn]);
 
+// ---- TraeWork 控制权模型（默认系统控制，手动接管/交还） ----
+
+test('控制权：默认系统控制（system），publicState 下发 control 字段', () => {
+  const { manager } = setup(1600, 900);
+  assert.equal(manager.getControl(), 'system');
+  assert.equal(manager.publicState().control, 'system');
+});
+
+test('控制权：接管→user（订阅/活动/幂等），交还→system 复原', () => {
+  const { manager } = setup(1600, 900);
+  const seen = [];
+  manager.onControlChange((c) => seen.push(c));
+  manager.takeControl();
+  assert.equal(manager.getControl(), 'user');
+  assert.equal(manager.publicState().control, 'user');
+  assert.deepEqual(seen, ['user']);
+  const last = manager._activityLog[manager._activityLog.length - 1];
+  assert.equal(last.type, 'control', '接管要留活动痕迹');
+  manager.takeControl(); // 重复接管幂等：不再触发变更
+  assert.deepEqual(seen, ['user']);
+  manager.releaseControl();
+  assert.equal(manager.getControl(), 'system');
+  assert.deepEqual(seen, ['user', 'system']);
+  manager.releaseControl(); // 重复交还幂等
+  assert.deepEqual(seen, ['user', 'system']);
+});
+
+test('控制权：切换时重推浮层待批列表且带最新 control（接管横幅数据源）', () => {
+  const { manager } = setup(1600, 900);
+  const sends = [];
+  manager._sendToApproval = (channel, payload) => sends.push({ channel, payload });
+  manager.updateApprovalList([
+    { actionId: 'x1', method: 'Page.navigate', summary: {}, binding: {} },
+  ]);
+  assert.equal(sends[0].payload.control, 'system');
+  manager.takeControl();
+  const last = sends[sends.length - 1];
+  assert.equal(last.channel, 'browser-panel:pending-actions');
+  assert.equal(last.payload.control, 'user');
+  assert.equal(last.payload.actions.length, 1, '排队卡片内容不丢');
+});
+
 test('sanitizePanelUserAgent：去 Electron/app 标识，保留标准 Chrome 形态（2026-09-04）', () => {
   const { sanitizePanelUserAgent } = require('./browser-panel-manager');
   const electronUA =

@@ -169,6 +169,13 @@ class BrowserPanelManager {
     this._activityLog = [];
     /** 当前待批高亮的目标 selector（审批浮层"批准前看到点哪里"；导航后重注入） */
     this._highlightSelector = null;
+    // ---- TraeWork 控制权模型 ----
+    /** 控制权归属：'system'=AI 直接执行（默认）；'user'=用户接管（新签单排队） */
+    this._control = 'system';
+    /** 控制权变更订阅（wiring 据此在交还时批量放行排队单） */
+    this._controlListeners = new Set();
+    /** 最近一次下发给审批浮层的待批列表（控制权切换时重推，浮层横幅跟随） */
+    this._lastApprovalPending = [];
   }
 
   /** 顶部标签条订阅面板状态广播（返回取消函数） */
@@ -176,6 +183,51 @@ class BrowserPanelManager {
     if (typeof cb !== 'function') return () => undefined;
     this._stateListeners.add(cb);
     return () => this._stateListeners.delete(cb);
+  }
+
+  // ---------- 控制权模型（TraeWork：默认系统控制，用户可随时接管） ----------
+
+  /** 当前控制权归属（'system' | 'user'；非法值一律回落 'system'） */
+  getControl() {
+    return this._control === 'user' ? 'user' : 'system';
+  }
+
+  /** 订阅控制权变更（返回取消函数）；wiring 用它在交还时批量放行排队单 */
+  onControlChange(cb) {
+    if (typeof cb !== 'function') return () => undefined;
+    this._controlListeners.add(cb);
+    return () => this._controlListeners.delete(cb);
+  }
+
+  /** 接管：control='user'，AI 新签单保持排队（浮层可见可逐条处理），用户手动操作页面 */
+  takeControl() {
+    if (this._control === 'user') return this.publicState();
+    this._control = 'user';
+    this.recordActivity('control', '你已接管页面，AI 代操作暂停', true);
+    this._emitControlChange();
+    return this.publicState();
+  }
+
+  /** 交还：control='system'，排队中的待批单由 wiring 订阅批量放行，AI 继续代操作 */
+  releaseControl() {
+    if (this._control === 'system') return this.publicState();
+    this._control = 'system';
+    this.recordActivity('control', '已交还 AI，继续代操作', true);
+    this._emitControlChange();
+    return this.publicState();
+  }
+
+  _emitControlChange() {
+    for (const cb of this._controlListeners) {
+      try {
+        cb(this._control);
+      } catch {
+        /* 单个订阅方异常不拖垮控制权切换 */
+      }
+    }
+    this._emitState();
+    // 浮层横幅跟随 control 态：重推最近的待批列表（幂等，高亮重注入可接受）
+    this.updateApprovalList(this._lastApprovalPending);
   }
 
   /**
@@ -996,9 +1048,12 @@ class BrowserPanelManager {
   updateApprovalList(pending) {
     const list = Array.isArray(pending) ? pending : [];
     this._approvalPendingCount = list.length;
+    this._lastApprovalPending = list;
     this._sendToApproval('browser-panel:pending-actions', {
       panelId: this.session ? this.session.panelId : null,
       actions: list,
+      // 接管横幅：用户接管时浮层要说明这些卡在排队、交还后自动执行
+      control: this.getControl(),
     });
     // 条数变化会改变浮层高度 → 重新定位；为 0 时顺手隐藏
     if (this._visible) this.relayout();
@@ -1093,6 +1148,8 @@ class BrowserPanelManager {
       tabList: this._tabList(),
       // ③：面板模式开关当前态（读文件，控制条按钮据此高亮）
       agentMode: this.getAgentMode(),
+      // TraeWork 控制权模型：'system'（默认，AI 直接执行）| 'user'（用户接管）
+      control: this.getControl(),
       // 面板/Agent 活动日志（最新在前，控制条底部活动条消费）
       activity: this._activityLog.slice(-ACTIVITY_EXPOSE).reverse(),
     };

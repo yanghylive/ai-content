@@ -20,7 +20,12 @@ const ACTOR = { ownerId: 'u1', tenantId: 't1' };
 /** 起一个符合桥协议的最小桩服务（token + nonce + 时钟偏差 + 三条路由） */
 function startStubBridge(
   token: string,
-  opts?: { slowScreenshotMs?: number; actionStates?: Record<string, string> },
+  opts?: {
+    slowScreenshotMs?: number;
+    actionStates?: Record<string, string>;
+    /** TraeWork 控制权：模拟桌面侧系统控制自动批准的桥响应 */
+    autoApprovedRequest?: boolean;
+  },
 ) {
   const seen: Array<{ route: string; method: string; token?: string; body?: any }> =
     [];
@@ -82,6 +87,7 @@ function startStubBridge(
           data: {
             actionId: 'act-1',
             binding: { webContentsId: 77, method: body.method },
+            ...(opts?.autoApprovedRequest ? { autoApproved: true } : {}),
           },
         });
       }
@@ -458,6 +464,29 @@ describe('AgentPanelBridgeService', () => {
       // 桩服务没有 /execute 路由，说明本服务确实只签单不执行
       expect(stub.seen.some((s) => s.route === '/action-request')).toBe(true);
       expect(stub.seen.some((s) => s.route === '/execute')).toBe(false);
+      // 桥未带 autoApproved（模拟接管态/老桥）→ 缺省 false，走人工审批路径
+      expect(ticket.autoApproved).toBe(false);
+    } finally {
+      await stub.close();
+    }
+  });
+
+  it('TraeWork 控制权：requestAction 透传桥的 autoApproved（系统控制签单即批）', async () => {
+    const stub = await startStubBridge('tok-1', { autoApprovedRequest: true });
+    const { file } = writeCredFile({
+      endpoint: `http://127.0.0.1:${stub.port}`,
+      token: 'tok-1',
+    });
+    useCredFile(file);
+    try {
+      const svc = new AgentPanelBridgeService();
+      const ticket = await svc.requestAction(ACTOR, {
+        method: 'Page.navigate',
+        params: { url: 'https://kaypal.cn' },
+        summary: { label: '打开发布页' },
+      });
+      expect(ticket.actionId).toBe('act-1');
+      expect(ticket.autoApproved).toBe(true);
     } finally {
       await stub.close();
     }

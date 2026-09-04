@@ -20,6 +20,10 @@ const { BrowserPanelBroker, redactUrlForEvidence } = require('./browser-panel-br
 function makeFakeManager() {
   let idSeq = 500;
   const listeners = new Set();
+  // TraeWork 控制权基线：存量用例语义 = 人工审批（等价用户接管中），
+  // 系统控制的自动批准/交还放行由新增专项用例覆盖。
+  let control = 'user';
+  const controlListeners = new Set();
   const manager = {
     session: null,
     _wc: null,
@@ -29,6 +33,17 @@ function makeFakeManager() {
     onSessionEvent(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);
+    },
+    getControl() {
+      return control;
+    },
+    onControlChange(fn) {
+      controlListeners.add(fn);
+      return () => controlListeners.delete(fn);
+    },
+    setControl(next) {
+      control = next;
+      for (const fn of controlListeners) fn(next);
     },
     _fire(type) {
       for (const fn of listeners) fn({ type, manager });
@@ -58,6 +73,20 @@ function makeFakeManager() {
       this._fire('opened');
       return this.session;
     },
+    // 模拟真实 manager.open() 复用语义：同 owner 重开 → panelId/sessionId 保持
+    // 不变，仅更新归属字段/URL（browser-panel-manager.js open() 的会话复用分支）。
+    reopenAs(session) {
+      this.session = {
+        ...this.session,
+        ...session,
+        status: 'starting',
+        panelId: this.session.panelId,
+        sessionId: this.session.sessionId,
+        partition: this.session.partition,
+      };
+      this._fire('opened');
+      return this.session;
+    },
     switchAccountAs(session) {
       this.openAs(session); // 简化：等价重建
     },
@@ -81,6 +110,56 @@ function setupHarness() {
   const wiring = wireBrowserPanel({ manager });
   return { manager, wiring };
 }
+
+// ---- TraeWork 控制权模型：签单即系统控制自动批准；交还批量放行 ----
+
+test('控制权·系统控制：签单即经 owner 通道自动批准，响应带 autoApproved=true', () => {
+  const { manager, wiring } = setupHarness();
+  const session = manager.openAs(ACTOR_A);
+  manager.setControl('system');
+  const ticket = wiring.requestActionForAgent(
+    session.panelId, ACTOR_A, 'Page.navigate', { label: '导航' },
+  );
+  assert.equal(ticket.autoApproved, true);
+  assert.equal(
+    wiring.actionStateForAgent(session.panelId, ACTOR_A, ticket.actionId).state,
+    'approved',
+  );
+});
+
+test('控制权·接管态：签单保持排队（autoApproved=false），人工审批语义不变', () => {
+  const { manager, wiring } = setupHarness();
+  const session = manager.openAs(ACTOR_A);
+  const ticket = wiring.requestActionForAgent(
+    session.panelId, ACTOR_A, 'Page.navigate', { label: '导航' },
+  );
+  assert.equal(ticket.autoApproved, false);
+  assert.equal(
+    wiring.actionStateForAgent(session.panelId, ACTOR_A, ticket.actionId).state,
+    'pending',
+  );
+});
+
+test('控制权·交还：user→system 批量放行排队单，队列清空', () => {
+  const { manager, wiring } = setupHarness();
+  const session = manager.openAs(ACTOR_A);
+  const t1 = wiring.requestActionForAgent(session.panelId, ACTOR_A, 'Page.navigate', { label: '导航1' });
+  const t2 = wiring.requestActionForAgent(session.panelId, ACTOR_A, 'Input.insertText', { label: '输入' });
+  assert.equal(wiring.listPendingActions(session.panelId).length, 2);
+  manager.setControl('system'); // 交还
+  assert.equal(wiring.actionStateForAgent(session.panelId, ACTOR_A, t1.actionId).state, 'approved');
+  assert.equal(wiring.actionStateForAgent(session.panelId, ACTOR_A, t2.actionId).state, 'approved');
+  assert.equal(wiring.listPendingActions(session.panelId).length, 0);
+});
+
+test('控制权·fail-safe：老宿主无 getControl → 一律人工审批（不自动批准）', () => {
+  const manager = makeFakeManager();
+  delete manager.getControl;
+  const wiring = wireBrowserPanel({ manager });
+  const session = manager.openAs(ACTOR_A);
+  const ticket = wiring.requestActionForAgent(session.panelId, ACTOR_A, 'Page.navigate', {});
+  assert.equal(ticket.autoApproved, false);
+});
 
 // ── 阶段 7 round11：tabsHandler 接线（Panel.tabs → manager.tabsOperation）──
 
@@ -241,6 +320,64 @@ test('5b) manager destroy 事件 → wiring 自动撤销', () => {
   });
   manager.destroyAll();
   assert.equal(wiring.hasHandle(session.panelId), false);
+});
+
+// ⑫ 阶段 5 只读校准真机抓获（2026-09-04）：面板闲置超 TTL → token 被 broker
+// 过期删除 → open 复用会话（signature 不变）reconcile 早退 → 永远 TOKEN_INVALID。
+// 修复：opened/shown 事件强制重铸 token；broker.dropPanel 清 destroyPanel 的
+// token 死亡态残留。
+test('⑫a 闲置 token 过期后，同 signature reopen 强制重铸恢复', () => {
+  const manager = makeFakeManager();
+  let now = Date.now();
+  const wiring = wireBrowserPanel({
+    manager,
+    brokerDeps: { now: () => now, tokenTtlMs: 1000 },
+  });
+  const session = manager.openAs({
+    ownerId: 'user-a',
+    tenantId: 'tenant-a',
+    currentUrl: 'http://127.0.0.1:80/x',
+  });
+  assert.ok(wiring.resolveTargetForAgent(session.panelId, ACTOR_A));
+  now += 2000; // 闲置超 TTL：首次「已过期」（token 随即被删），之后「无效」
+  assert.throws(
+    () => wiring.resolveTargetForAgent(session.panelId, ACTOR_A),
+    /过期/,
+  );
+  assert.throws(
+    () => wiring.resolveTargetForAgent(session.panelId, ACTOR_A),
+    /无效/,
+  );
+  // 用户重新 open（同 owner/tenant，panelId/sessionId 不变 → signature 相同）
+  const reopened = manager.reopenAs({
+    ownerId: 'user-a',
+    tenantId: 'tenant-a',
+    currentUrl: 'http://127.0.0.1:80/x',
+  });
+  assert.equal(reopened.panelId, session.panelId, '预置条件：复用会话 signature 不变');
+  // 修复后：重开即重铸，立即恢复（修复前这里永远 TOKEN_INVALID）
+  assert.ok(wiring.resolveTargetForAgent(session.panelId, ACTOR_A));
+});
+
+test('⑫b shown 事件同样触发重铸（面板从隐藏恢复可见）', () => {
+  const manager = makeFakeManager();
+  let now = Date.now();
+  const wiring = wireBrowserPanel({
+    manager,
+    brokerDeps: { now: () => now, tokenTtlMs: 1000 },
+  });
+  const session = manager.openAs({
+    ownerId: 'user-a',
+    tenantId: 'tenant-a',
+    currentUrl: 'http://127.0.0.1:80/x',
+  });
+  now += 2000;
+  assert.throws(
+    () => wiring.resolveTargetForAgent(session.panelId, ACTOR_A),
+    /过期|无效/,
+  );
+  manager._fire('shown');
+  assert.ok(wiring.resolveTargetForAgent(session.panelId, ACTOR_A));
 });
 
 test('6) 证据流 URL 脱敏：凭据类 query 不进事件', async () => {

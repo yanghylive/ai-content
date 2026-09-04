@@ -125,6 +125,12 @@ export type PanelObserveResult = {
 export type PanelActionTicket = {
   actionId: string;
   binding: { webContentsId: number | null; method: string };
+  /**
+   * TraeWork 控制权模型：系统控制（默认）下桌面侧已用 owner 通道自动批准这张
+   * 单——executor 拿到 true 就直接执行，不再返回"待批准"回执让用户点批重试。
+   * 用户接管（control='user'）时桥回 false/缺省，走既有人工审批排队路径。
+   */
+  autoApproved?: boolean;
 };
 
 export type PanelExecuteResult = {
@@ -399,6 +405,7 @@ export class AgentPanelBridgeService {
     const json = await this.call<{
       actionId?: string;
       binding?: { webContentsId?: number; method?: string };
+      autoApproved?: boolean;
     }>(credentials, '/action-request', 'POST', {
       panelId: credentials.panelId,
       actor,
@@ -428,6 +435,8 @@ export class AgentPanelBridgeService {
         webContentsId: json.binding?.webContentsId ?? null,
         method: json.binding?.method ?? input.method,
       },
+      // 系统控制自动批准标记透传（缺省 false：老桥不带此字段 = 维持人工审批）
+      autoApproved: json.autoApproved === true,
     };
   }
 

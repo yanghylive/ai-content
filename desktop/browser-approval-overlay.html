@@ -69,6 +69,14 @@
     .no:hover { background: var(--hover); color: var(--text); }
     button:disabled { opacity: 0.45; cursor: default; }
     .empty { padding: 14px 10px; color: var(--text-faint); text-align: center; }
+    /* TraeWork 控制权：接管中浮层变"排队队列"——横幅解释这些卡的去处 */
+    #banner {
+      display: none; flex: none; padding: 6px 12px 7px; font-size: 11.5px; line-height: 1.4;
+      background: rgba(230,162,60,.10); color: #a15c07;
+      border-bottom: 1px solid var(--border);
+    }
+    #banner.show { display: block; }
+    @media (prefers-color-scheme: dark) { #banner { color: #e6b566; background: rgba(230,162,60,.14); } }
 
   </style>
 </head>
@@ -78,6 +86,7 @@
     <span id="title">Agent 请求操作这个页面</span>
     <span id="count">0</span>
   </div>
+  <div id="banner"></div>
   <div id="list"></div>
   <script>
     // 浏览器预览垫片：非 Electron 环境 mock 两条待批准动作（Electron 内不执行）
@@ -85,7 +94,7 @@
       const MOCK_PENDING = { actions: [
           { actionId: 'a1', method: 'Input.dispatchMouseEvent', summary: { label: '点击「回复」按钮' }, binding: { url: 'https://www.douyin.com/video/7498231', webContentsId: 7 } },
           { actionId: 'a2', method: 'Input.insertText', summary: { text: '你好，看到你关注装修，我们正好在做这个…' }, binding: { url: 'https://www.douyin.com/video/7498231', webContentsId: 7 } },
-        ] };
+      ], control: 'user' };
       window.browserApproval = {
         invoke: (channel, id) => {
           console.log('[preview mock invoke]', channel, id);
@@ -125,6 +134,11 @@
     function render(payload) {
       const actions = (payload && payload.actions) || [];
       $('count').textContent = String(actions.length);
+      // 接管横幅（TraeWork）：control='user' 时这些卡是"排队等交还"，不是"必须逐条点批"
+      const b = $('banner');
+      const userCtrl = payload && payload.control === 'user';
+      b.classList.toggle('show', !!userCtrl);
+      if (userCtrl) b.textContent = '你已接管页面，AI 暂停中——这些操作在排队，点控制条「交还」后自动执行；也可现在逐条批准/拒绝。';
       const list = $('list');
       list.textContent = '';
       if (!actions.length) {

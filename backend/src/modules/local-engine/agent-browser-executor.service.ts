@@ -550,6 +550,11 @@ export class AgentBrowserExecutor {
       sessionId: sessionId ?? null,
       leadId: leadId ?? null,
     });
+    if (ticket.autoApproved) {
+      // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
+      // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
+      return this.gotoViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+    }
     return this.failed(
       'goto',
       `需用户确认后执行（面板导航确认单 ${ticket.actionId}，请在右侧浏览器面板批准后携带该 id 重试）`,
@@ -818,6 +823,11 @@ export class AgentBrowserExecutor {
       sessionId: sessionId ?? null,
       leadId: leadId ?? null,
     });
+    if (ticket.autoApproved) {
+      // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
+      // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
+      return this.clickViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+    }
     return this.failed(
       'click',
       `需用户确认后执行（面板点击确认单 ${ticket.actionId}，目标"${probe.text ?? action.selector}"，请在右侧浏览器面板批准后携带该 id 重试）`,
@@ -934,6 +944,11 @@ export class AgentBrowserExecutor {
       sessionId: sessionId ?? null,
       leadId: leadId ?? null,
     });
+    if (ticket.autoApproved) {
+      // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
+      // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
+      return this.typeViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+    }
     return this.failed(
       'type',
       `需用户确认后执行（面板输入确认单 ${ticket.actionId}，目标"${probe.text ?? action.selector}"，请在右侧浏览器面板批准后携带该 id 重试）`,
@@ -1018,6 +1033,11 @@ export class AgentBrowserExecutor {
       sessionId: sessionId ?? null,
       leadId: leadId ?? null,
     });
+    if (ticket.autoApproved) {
+      // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
+      // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
+      return this.pressKeyViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+    }
     return this.failed(
       'press_key',
       `需用户确认后执行（面板按键确认单 ${ticket.actionId}，key "${action.key}"，请在右侧浏览器面板批准后携带该 id 重试）`,
@@ -1103,6 +1123,11 @@ export class AgentBrowserExecutor {
       sessionId: sessionId ?? null,
       leadId: leadId ?? null,
     });
+    if (ticket.autoApproved) {
+      // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
+      // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
+      return this.tabsViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+    }
     return this.failed(
       'tabs',
       `需用户确认后执行（面板标签页确认单 ${ticket.actionId}，operation "${action.operation}"，请在右侧浏览器面板批准后携带该 id 重试）`,

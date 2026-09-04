@@ -92,6 +92,15 @@
     #agent-mode { width: auto; padding: 0 10px; font-size: 11px; font-weight: 600; }
     #agent-mode.on { background: var(--accent); color: #fff; }
     #agent-mode.on:hover { background: var(--accent); filter: brightness(1.08); }
+    /* TraeWork 控制权：AI 代操作开启才露面。系统控制=幽灵「接管」；接管中=主色「交还」 */
+    #control-btn {
+      display: none; width: auto; height: 28px; padding: 0 10px; font-size: 11px;
+      font-weight: 600; border: 1px solid var(--border); color: var(--text-dim);
+    }
+    #control-btn.show { display: inline-flex; }
+    #control-btn:hover { border-color: var(--accent); color: var(--accent); }
+    #control-btn.user { background: var(--accent); border-color: var(--accent); color: #fff; }
+    #control-btn.user:hover { background: var(--accent); color: #fff; filter: brightness(1.08); }
     /* TraeWork 对齐：地址栏聚焦时控制器视图加高 30px，露出快捷跳转行
        （控制条是独立视图，下拉会被视图边界裁掉，故用"视图加高"实现） */
     #quickrow {
@@ -199,7 +208,8 @@
     <input id="addr" placeholder="输入网址，回车打开" spellcheck="false" />
     <span id="status"></span>
     <button id="retry" title="重新加载当前页面">重试</button>
-    <button id="agent-mode" title="AI 代操作：开启后 AI 助手将在你正在看的这个页面上代你操作（每一步写动作仍需你在此面板批准）">AI 代操作</button>
+    <button id="control-btn" title="系统控制中：AI 直接代操作；需要手动处理时点这里接管（暂停 AI）">接管</button>
+    <button id="agent-mode" title="AI 代操作：开启后 AI 默认直接在本页面代你操作（系统控制）；随时点「接管」手动接手">AI 代操作</button>
     <button id="hide" title="收起面板"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
   <script>
@@ -211,7 +221,7 @@
           cb({
             canGoBack: true, canGoForward: false,
             session: { currentUrl: 'https://www.douyin.com/video/7498231...', status: 'starting' },
-            agentMode: 'off', hasSession: true, panelWidth: 480, tabActiveIndex: 0,
+            agentMode: 'on', control: 'system', hasSession: true, panelWidth: 480, tabActiveIndex: 0,
             tabList: [
               { title: '抖音 · 装修视频评论区', url: 'https://www.douyin.com/video/7498231' },
               { title: '小红书 · 搜索结果', url: 'https://www.xiaohongshu.com/search' },
@@ -252,7 +262,7 @@
         return `<span class="fav generic">${l}</span>`;
       } catch (e) { return ''; }
     }
-    const ACT_DOT = { open: 'var(--accent)', nav: 'var(--accent)', tab: 'var(--text-faint)', approve: 'var(--ok)', reject: 'var(--danger)', hide: 'var(--text-faint)', show: 'var(--ok)' };
+    const ACT_DOT = { open: 'var(--accent)', nav: 'var(--accent)', tab: 'var(--text-faint)', approve: 'var(--ok)', reject: 'var(--danger)', hide: 'var(--text-faint)', show: 'var(--ok)', control: 'var(--warn)' };
     function fmtTime(t) {
       const d = new Date(t), p = (n) => String(n).padStart(2, '0');
       return `${p(d.getHours())}:${p(d.getMinutes())}`;
@@ -306,6 +316,12 @@
     // ③：开关切换（回读态由 onState 里的 agentMode 统一刷新，不自说自话）
     $('agent-mode').addEventListener('click', () => {
       invoke('browser-panel:toggle-agent-mode', !(lastState && lastState.agentMode === 'on'));
+    });
+    // 控制权（TraeWork 模型）：接管=AI 暂停、新操作排队；交还=恢复系统控制、放行排队单
+    $('control-btn').addEventListener('click', () => {
+      invoke(lastState && lastState.control === 'user'
+        ? 'browser-panel:release-control'
+        : 'browser-panel:take-control');
     });
     const quick = (url) => { invoke('browser-panel:navigate', url); $('addr').blur(); };
     $('quickrow').addEventListener('click', (e) => {
@@ -468,6 +484,15 @@
       // ③：AI 代操作开关态（publicState.agentMode 驱动高亮）
       const agentOn = state.agentMode === 'on';
       $('agent-mode').classList.toggle('on', agentOn);
+      // 控制权按钮：AI 代操作开着才露面；文案/配色跟随 control 态
+      const ctrlBtn = $('control-btn');
+      const userCtrl = state.control === 'user';
+      ctrlBtn.classList.toggle('show', agentOn);
+      ctrlBtn.classList.toggle('user', userCtrl);
+      ctrlBtn.textContent = userCtrl ? '交还' : '接管';
+      ctrlBtn.title = userCtrl
+        ? '你已接管：AI 代操作已暂停，新操作在浮层排队；点「交还」放行并继续'
+        : '系统控制中：AI 直接代操作页面；需要手动处理时点这里接管（暂停 AI）';
       // round15：tab 条（tabList/tabActiveIndex 驱动，多 tab 才出现）
       renderTabbar(state);
       // 面板活动条（publicState.activity 驱动）

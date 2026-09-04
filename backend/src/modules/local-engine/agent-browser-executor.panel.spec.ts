@@ -274,6 +274,44 @@ describe('AgentBrowserExecutor 面板模式', () => {
     expect(legacy.calls.length).toBe(0);
   });
 
+  it('TraeWork 控制权：goto 签单即系统控制（autoApproved）→ 直接执行，不停"需用户确认"', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const requestAction = jest.fn(async () => ({
+      actionId: 'ticket-auto',
+      binding: { webContentsId: 42, method: 'Page.navigate' },
+      autoApproved: true,
+    }));
+    const execute = jest.fn(async () => ({
+      binding: { webContentsId: 42, url: 'https://kaypal.cn/x', sessionId: 'sess-1' },
+    }));
+    const markApproved = jest.fn(async () => undefined);
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      makePanel({
+        status: () => ({ available: true, reason: 'ready' }),
+        requestAction,
+        execute,
+        markApproved,
+        actionState: async () => ({
+          actionId: 'ticket-auto',
+          state: 'approved' as const,
+          panelId: 'panel-1',
+          method: 'Page.navigate',
+          approvedAt: Date.now(),
+        }),
+      } as PanelBridgeStub),
+    );
+    const out = await exec.execute({
+      action: { action: 'goto', url: 'https://kaypal.cn/x' },
+      actor: ACTOR,
+    });
+    expect(out.ok).toBe(true);
+    expect(out.message).toContain('面板导航已执行');
+    expect(markApproved).toHaveBeenCalledWith('ticket-auto');
+    expect(legacy.calls.length).toBe(0);
+  });
+
   it('on + goto 带 pending 确认单 → 拒绝执行（后端不能替用户点头）', async () => {
     process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
     const legacy = makeLegacy();
@@ -579,6 +617,33 @@ describe('AgentBrowserExecutor 面板模式', () => {
       sessionId: 'agent-session-7',
       leadId: null,
     });
+    expect(legacy.calls.length).toBe(0);
+  });
+
+  it('TraeWork 控制权：click 签单即系统控制（autoApproved）→ probe→签单→一次逻辑点击全链完成', async () => {
+    process.env.KAYPAL_AGENT_PANEL_MODE = 'on';
+    const legacy = makeLegacy();
+    const p = makeClickPanel({ state: 'approved' });
+    p.requestAction.mockResolvedValue({
+      actionId: 'ticket-9',
+      binding: { webContentsId: 42, method: 'Input.dispatchMouseEvent' },
+      autoApproved: true,
+    } as never);
+    const exec = new AgentBrowserExecutor(
+      legacy as unknown as AiBrowserActionService,
+      p.panel,
+    );
+    const out = await exec.execute({
+      action: { action: 'click', selector: 'text=提交订单' },
+      actor: ACTOR,
+      sessionId: 'agent-session-7',
+    });
+    expect(out.ok).toBe(true);
+    expect(out.confirmationId).toBe('ticket-9');
+    expect(p.markApproved).toHaveBeenCalledWith('ticket-9');
+    expect(
+      p.cdpCalls.filter((c) => c.method === 'Input.dispatchMouseEvent').length,
+    ).toBe(2);
     expect(legacy.calls.length).toBe(0);
   });
 

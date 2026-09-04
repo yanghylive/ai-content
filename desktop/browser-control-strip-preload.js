@@ -18,6 +18,9 @@ const INVOKE_CHANNELS = new Set([
   'browser-panel:end-resize',
   // ③：面板模式开关（Agent 是否通过面板代操作）
   'browser-panel:toggle-agent-mode',
+  // TraeWork 控制权模型：接管 / 交还
+  'browser-panel:take-control',
+  'browser-panel:release-control',
   // round15：用户手动切/关 tab（控制条 tab 条）
   'browser-panel:switch-tab',
   'browser-panel:close-tab',
