@@ -35,6 +35,10 @@ function main() {
     process.exit(1);
   }
 
+  run('Regenerate app icons from brand source', 'python3', ['scripts/regenerate-icons.py'], {
+    cwd: desktopRoot,
+  });
+
   run('Build frontend static export', 'npm', ['run', 'build'], {
     cwd: frontendRoot,
     env: {

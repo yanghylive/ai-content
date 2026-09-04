@@ -29,7 +29,9 @@
       "main.js",
       "assets/icon.icns",
       "assets/icon.ico",
-      "assets/icon.png"
+      "assets/icon.png",
+      "assets/brand-source/logo-black-bg.png",
+      "assets/brand-source/logo-transparent.png"
     ],
     "forbiddenPaths": [
       "agent-s-executor",
