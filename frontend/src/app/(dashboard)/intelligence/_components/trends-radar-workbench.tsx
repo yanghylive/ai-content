@@ -323,7 +323,7 @@ export function TrendsRadarWorkbench() {
                   刷新热点能力
                 </button>
                 <Link
-                  className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)]"
+                  className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-5 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)]"
                   href="/topics"
                 >
                   打开选题库

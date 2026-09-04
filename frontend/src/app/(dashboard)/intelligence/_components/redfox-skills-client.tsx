@@ -533,7 +533,7 @@ export function RedfoxSkillsClient() {
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-5 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={loading}
                 onClick={() => void load()}
                 type="button"
@@ -581,7 +581,7 @@ export function RedfoxSkillsClient() {
               />
             </div>
             <button
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-4 text-13 font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] px-5 text-sm font-semibold text-[var(--kaypal-v3-soft-ink)] transition-colors hover:border-[var(--kaypal-v3-border-strong)] hover:text-[var(--kaypal-v3-ink)]"
               onClick={search}
               type="button"
             >
