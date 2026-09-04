@@ -662,10 +662,14 @@ function LoginPageContent() {
           >
             {/* P2-18：hero 营销区紧凑化——缩小间距/字号/图标，首屏占用从约 1/3 降下来 */}
             <section className="login-preview-hero order-last md:order-first flex flex-col gap-3 max-w-[640px]">
+              {/* 融入式场景（F1 月夜山水）：九妹儿=hero 背景本身而非贴纸，
+                  文字坐左侧暗部留白；veil 渐变保对比度（CSS 内定义） */}
+              <div className="login-preview-hero-scene" aria-hidden="true" />
               <div className="login-preview-hero-copy flex flex-col gap-2">
                 <span className="preview-kicker text-small font-bold text-default-500">INTELLIGENT GROWTH SYSTEM</span>
                 <h1 className="text-3xl font-bold text-balance">让内容成为<br /><em>持续增长的系统。</em></h1>
                 <p className="text-lg text-default-500 text-pretty">从发现市场机会，到内容生产、触达用户与沉淀客户，九章智能把每一步连接为可执行、可追踪、可复用的完整流程。</p>
+                <span className="preview-credit">JIU MEIER · 九妹儿 · 你的增长搭档</span>
               </div>
 
               <div
@@ -775,7 +779,7 @@ function LoginPageContent() {
                           <div className="sso-hero flex flex-col gap-3">
                             <div className="sso-head flex flex-row items-center gap-3">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img alt="" src="/brand/jiuzhang-ai-icon.webp" width={512} height={512} />
+                              <img alt="" src="/brand/jiumeier-face.webp" width={400} height={400} />
                               <div className="flex flex-col gap-0"><span className="text-sm font-bold">使用 JIUZHANG AI 账号</span><span className="text-small text-default-500">登录一次，全端可用</span></div>
                             </div>
                             <p className="text-sm">用你的 JIUZHANG AI 账号一键登录，登录后即可直接开始工作。</p>
