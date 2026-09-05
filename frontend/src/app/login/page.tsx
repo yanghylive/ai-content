@@ -737,7 +737,7 @@ function LoginPageContent() {
                     </div>
                     <div className="flex flex-col gap-1">
                       <span className="preview-login-kicker text-small text-default-500">WELCOME TO JIUZHANG AI</span>
-                      <h2 className="text-xl font-semibold">{phase === "waiting" ? "请在 JIUZHANG AI 页面确认" : forceReauth ? "重新登录账号" : "进入九章智能"}</h2>
+                      <h2 className="text-xl font-semibold">{phase === "waiting" ? "请在 JIUZHANG AI 页面确认" : forceReauth ? "重新登录账号" : "进入九章智慧员工系统"}</h2>
                       <p className="text-small text-default-500">
                         {phase === "waiting"
                           ? "确认后会自动进入当前工作台。"
