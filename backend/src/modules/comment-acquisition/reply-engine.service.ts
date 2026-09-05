@@ -392,18 +392,29 @@ export class ReplyEngineService {
     if (!model) {
       throw new Error('未配置可用的 AI 模型，请在「AI 模型设置」中同步');
     }
-    const messages = [
+    // 2026-09-06 复核：重复评论 → 相同 prompt → 上游渠道按请求体判重 409
+    // BILLING_IDEMPOTENCY_REPLAY（网关预留 created+released 证明网关层通过）。
+    // 修复：409 时把 salt 注入 user message（改变上游可见请求体）+ 换
+    // billingSalt（改变网关键），双通道去重。最多重试 2 次。
+    const baseMessages = [
       {
         role: 'system' as const,
         content: '你负责为内容作者生成评论回复，输出必须符合要求的风格。',
       },
       { role: 'user' as const, content: prompt },
     ];
-    // 2026-09-06 复核：409 BILLING_IDEMPOTENCY_REPLAY = 网关幂等键（内容哈希）
-    // 与近期请求冲突（如超时重试同键被拒）。billingSalt 参与键哈希——
-    // 换随机 salt 即换新键，标准解法。最多重试 2 次。
-    let salt: string | undefined;
     for (let attempt = 0; attempt < 3; attempt += 1) {
+      const salt =
+        attempt === 0
+          ? undefined
+          : `retry-${attempt}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const messages = salt
+        ? baseMessages.map((m, i) =>
+            i === baseMessages.length - 1
+              ? { ...m, content: `${m.content}\n\n（多样性提示：这是第 ${attempt + 1} 次为同一条评论生成回复，请换一种表达方式，不要与之前版本雷同。）[${salt}]` }
+              : m,
+          )
+        : baseMessages;
       try {
         return await this.aiClient.generate(
           model.id,
@@ -414,9 +425,8 @@ export class ReplyEngineService {
         const message = error instanceof Error ? error.message : String(error);
         const isReplay = /BILLING_IDEMPOTENCY_REPLAY/i.test(message);
         if (!isReplay || attempt >= 2) throw error;
-        salt = `retry-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         this.logger.warn(
-          `ReplyEngine 命中 409 计费幂等冲突，换 salt 重试 ${attempt + 1}/2`,
+          `ReplyEngine 命中 409 幂等冲突，注入 salt 重试 ${attempt + 1}/2`,
         );
       }
     }
