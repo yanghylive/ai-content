@@ -1,0 +1,182 @@
+# ✅ L1 release-guards 25 项守卫（node:test）
+# commit: e7c97de6
+# exit: 0
+# duration_ms: 617
+# command: cd '/Users/yanghy/Documents/New project/ai-content/desktop' && node --test scripts/release-guards.test.js
+# 完整命令输出（未截断）：
+
+TAP version 13
+# (node:42483) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: NSIS avoids blocking PowerShell preflight and keeps post-install warnings non-blocking
+ok 1 - NSIS avoids blocking PowerShell preflight and keeps post-install warnings non-blocking
+  ---
+  duration_ms: 1.609417
+  type: 'test'
+  ...
+# Subtest: desktop runtime does not carry the shared Octop default credential
+ok 2 - desktop runtime does not carry the shared Octop default credential
+  ---
+  duration_ms: 1.014833
+  type: 'test'
+  ...
+# Subtest: desktop privileged IPC and SQLite startup recovery stay fail-closed
+ok 3 - desktop privileged IPC and SQLite startup recovery stay fail-closed
+  ---
+  duration_ms: 0.963375
+  type: 'test'
+  ...
+# Subtest: Windows evidence policy defaults to Win10 and supports an explicit expanded matrix
+ok 4 - Windows evidence policy defaults to Win10 and supports an explicit expanded matrix
+  ---
+  duration_ms: 2.068208
+  type: 'test'
+  ...
+# Subtest: tagged builds always use commercial release rules
+ok 5 - tagged builds always use commercial release rules
+  ---
+  duration_ms: 0.454292
+  type: 'test'
+  ...
+# Subtest: commercial release config accepts only production endpoints
+ok 6 - commercial release config accepts only production endpoints
+  ---
+  duration_ms: 0.113625
+  type: 'test'
+  ...
+# Subtest: testing release config accepts explicit Kaypal testing endpoints without weakening commercial rules
+ok 7 - testing release config accepts explicit Kaypal testing endpoints without weakening commercial rules
+  ---
+  duration_ms: 0.118708
+  type: 'test'
+  ...
+# Subtest: desktop package does not reference a seed database
+ok 8 - desktop package does not reference a seed database
+  ---
+  duration_ms: 0.242833
+  type: 'test'
+  ...
+# Subtest: packaged resources reject every SQLite database file
+ok 9 - packaged resources reject every SQLite database file
+  ---
+  duration_ms: 0.293
+  type: 'test'
+  ...
+# Subtest: seed inspection detects packaged user/session/account records
+ok 10 - seed inspection detects packaged user/session/account records
+  ---
+  duration_ms: 4.1335
+  type: 'test'
+  ...
+# Subtest: current Prisma schemas and recent tenant migrations are release assets
+ok 11 - current Prisma schemas and recent tenant migrations are release assets
+  ---
+  duration_ms: 0.222167
+  type: 'test'
+  ...
+# Subtest: article publishing ownership migration is a mandatory release asset
+ok 12 - article publishing ownership migration is a mandatory release asset
+  ---
+  duration_ms: 0.054625
+  type: 'test'
+  ...
+# Subtest: media tool preparation rejects a Darwin binary for a Windows target
+ok 13 - media tool preparation rejects a Darwin binary for a Windows target
+  ---
+  duration_ms: 0.706833
+  type: 'test'
+  ...
+# Subtest: media tool preparation rejects embedded nonfree builds across targets
+ok 14 - media tool preparation rejects embedded nonfree builds across targets
+  ---
+  duration_ms: 0.49375
+  type: 'test'
+  ...
+# Subtest: media release guard validates format, hashes, licenses and source notice
+ok 15 - media release guard validates format, hashes, licenses and source notice
+  ---
+  duration_ms: 2.473333
+  type: 'test'
+  ...
+# Subtest: Windows evidence binding extracts only explicit app version and installer SHA-256
+ok 16 - Windows evidence binding extracts only explicit app version and installer SHA-256
+  ---
+  duration_ms: 0.488584
+  type: 'test'
+  ...
+# Subtest: Windows architecture evidence treats the native OS as authoritative
+ok 17 - Windows architecture evidence treats the native OS as authoritative
+  ---
+  duration_ms: 1.766375
+  type: 'test'
+  ...
+# Subtest: Windows native architecture detection rejects process-only and non-Windows claims
+ok 18 - Windows native architecture detection rejects process-only and non-Windows claims
+  ---
+  duration_ms: 4.006833
+  type: 'test'
+  ...
+# Subtest: Win10 x64 evidence matrix rejects ARM64 hosts even with an x64 process
+ok 19 - Win10 x64 evidence matrix rejects ARM64 hosts even with an x64 process
+  ---
+  duration_ms: 1.337917
+  type: 'test'
+  ...
+# Subtest: Windows evidence binding rejects missing, stale, foreign and conflicting evidence
+ok 20 - Windows evidence binding rejects missing, stale, foreign and conflicting evidence
+  ---
+  duration_ms: 0.978292
+  type: 'test'
+  ...
+# Subtest: release identity hashes the installer named by latest.yml
+ok 21 - release identity hashes the installer named by latest.yml
+  ---
+  duration_ms: 1.235625
+  type: 'test'
+  ...
+# Subtest: semantic Windows evidence cannot pass with an old release binding
+ok 22 - semantic Windows evidence cannot pass with an old release binding
+  ---
+  duration_ms: 1.821583
+  type: 'test'
+  ...
+# Subtest: contact evidence requires release binding on the bundle and both sync results
+ok 23 - contact evidence requires release binding on the bundle and both sync results
+  ---
+  duration_ms: 2.58825
+  type: 'test'
+  ...
+# Subtest: all six native command records must bind to the current installer
+ok 24 - all six native command records must bind to the current installer
+  ---
+  duration_ms: 7.960375
+  type: 'test'
+  ...
+# Subtest: Windows acceptance binding resolves and hashes the installer named by latest.yml
+ok 25 - Windows acceptance binding resolves and hashes the installer named by latest.yml
+  ---
+  duration_ms: 1.849792
+  type: 'test'
+  ...
+# Subtest: contacts simulator binds release identity but cannot unlock the Windows gate
+ok 26 - contacts simulator binds release identity but cannot unlock the Windows gate
+  ---
+  duration_ms: 115.682875
+  type: 'test'
+  ...
+# Subtest: native simulator binds all six command records but cannot unlock the Windows gate
+ok 27 - native simulator binds all six command records but cannot unlock the Windows gate
+  ---
+  duration_ms: 332.398292
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 561.505666
+

@@ -1,0 +1,13 @@
+# ✅ L2 desktop 商业资产（check-commercial-assets）
+# commit: 27a5525d
+# exit: 0
+# duration_ms: 284
+# command: cd '/Users/yanghy/Documents/New project/ai-content/desktop' && npm run check:commercial-assets
+# 完整命令输出（未截断）：
+
+
+> ai-content-desktop@1.1.115 check:commercial-assets
+> node scripts/check-commercial-assets.js
+
+Desktop commercial assets check passed.
+

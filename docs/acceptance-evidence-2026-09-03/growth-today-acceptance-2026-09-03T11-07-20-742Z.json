@@ -1,0 +1,63 @@
+{
+  "name": "growth-today runtime acceptance (复核五点闭环)",
+  "startedAt": "2026-09-03T11:07:04.207Z",
+  "finishedAt": "2026-09-03T11:07:20.742Z",
+  "frontendUrl": "http://127.0.0.1:3010",
+  "backendApiBase": "http://127.0.0.1:3011/api",
+  "commit": "fe43988828b8f2ec690efb688904dc37f5fd31d6",
+  "database": "/Users/yanghy/Library/Application Support/ai-content-desktop/kaypal-ai.sqlite",
+  "session": {
+    "id": "acc_growth_today_4451abb7bf01802d",
+    "cleanedUp": true
+  },
+  "results": [
+    {
+      "id": "T1",
+      "name": "/growth 终态重定向 /today",
+      "pass": true,
+      "detail": "200 http://127.0.0.1:3010/growth -> http://127.0.0.1:3010/today"
+    },
+    {
+      "id": "T2a",
+      "name": "亮色 /today 核心区块可见",
+      "pass": true,
+      "detail": "{\"hub\":true,\"funnel\":true,\"recent\":true}"
+    },
+    {
+      "id": "T2b",
+      "name": "亮色 1440 无横向溢出",
+      "pass": true,
+      "detail": "scrollWidth=1440 clientWidth=1440"
+    },
+    {
+      "id": "T2c",
+      "name": "主题钮切换暗色生效",
+      "pass": true,
+      "detail": "clicked=true dark=true bg rgba(0, 0, 0, 0) -> rgba(0, 0, 0, 0)"
+    },
+    {
+      "id": "T2d",
+      "name": "暗色 1440 无横向溢出",
+      "pass": true,
+      "detail": "scrollWidth=1440 clientWidth=1440"
+    },
+    {
+      "id": "T3",
+      "name": "375px 移动视口无横向溢出",
+      "pass": true,
+      "detail": "scrollWidth=375 clientWidth=375"
+    },
+    {
+      "id": "T4",
+      "name": "overview 500 → home 主数据仍渲染且无整页错误",
+      "pass": true,
+      "detail": "{\"hub\":true,\"funnel\":true,\"recent\":true,\"brief\":false,\"bill\":false,\"fullError\":false}"
+    },
+    {
+      "id": "T5",
+      "name": "无未解释 console error / 请求失败",
+      "pass": true,
+      "detail": "clean"
+    }
+  ]
+}

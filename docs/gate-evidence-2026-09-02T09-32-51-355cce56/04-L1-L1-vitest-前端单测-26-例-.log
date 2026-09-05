@@ -1,0 +1,17 @@
+# ✅ L1 vitest 前端单测（26 例）
+# commit: 355cce56
+# exit: 0
+# duration_ms: 2555
+# command: cd '/Users/yanghy/Documents/New project/ai-content/frontend' && npx vitest run --silent
+# 完整命令输出（未截断）：
+
+
+ RUN  v4.1.10 /Users/yanghy/Documents/New project/ai-content/frontend
+
+
+ Test Files  8 passed (8)
+      Tests  52 passed (52)
+   Start at  17:34:00
+   Duration  1.63s (transform 401ms, setup 1.89s, import 667ms, tests 268ms, environment 7.42s)
+
+

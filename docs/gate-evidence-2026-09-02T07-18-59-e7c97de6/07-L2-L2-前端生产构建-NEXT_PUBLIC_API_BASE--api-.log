@@ -1,0 +1,255 @@
+# ✅ L2 前端生产构建（NEXT_PUBLIC_API_BASE=/api）
+# commit: e7c97de6
+# exit: 0
+# duration_ms: 12894
+# command: cd '/Users/yanghy/Documents/New project/ai-content/frontend' && echo 'NEXT_PUBLIC_API_BASE=/api' > .env.local && ./node_modules/.bin/next build
+# 完整命令输出（未截断）：
+
+▲ Next.js 16.3.1 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 15ms
+- Experiments (use with caution):
+  · optimizePackageImports
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.9s
+  Running TypeScript ...
+  Finished TypeScript in 2.2s ...
+  Collecting page data using 17 workers ...
+  Generating static pages using 17 workers (0/222) ...
+  Generating static pages using 17 workers (55/222) 
+  Generating static pages using 17 workers (110/222) 
+  Generating static pages using 17 workers (166/222) 
+✓ Generating static pages using 17 workers (222/222) in 564ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /accounts-matrix
+├ ○ /admin
+├ ○ /admin/account
+├ ○ /admin/ai-employee
+├ ○ /admin/commercial-readiness
+├ ○ /admin/connectors
+├ ○ /admin/executor
+├ ○ /admin/local-engine
+├ ○ /admin/memory
+├ ○ /admin/models
+├ ○ /admin/plugins
+├ ○ /admin/redfox
+├ ○ /admin/redfox-skills
+├ ○ /admin/risk
+├ ○ /admin/sandbox
+├ ○ /admin/savings
+├ ○ /admin/settings
+├ ○ /admin/tools
+├ ○ /admin/users
+├ ○ /agent
+├ ○ /agent-cockpit-canvas
+├ ○ /agent-workbench
+├ ○ /apple-icon.png
+├ ○ /approvals
+├ ○ /apps
+├ ○ /apps/ai-employee
+├ ○ /apps/auto-acquisition
+├ ○ /apps/detail
+├ ○ /artifacts
+├ ○ /auto-acquisition/create
+├ ○ /boss-recruit
+├ ○ /broadcast
+├ ○ /capabilities
+├ ○ /capabilities/account
+├ ○ /capabilities/executor
+├ ○ /capabilities/memory
+├ ○ /capabilities/models
+├ ○ /capabilities/models/edit
+├ ○ /capabilities/models/new
+├ ○ /capabilities/plugins
+├ ○ /capabilities/risk
+├ ○ /capabilities/sandbox
+├ ○ /capabilities/tools
+├ ○ /capabilities/users
+├ ○ /case-admin
+├   /case-admin/[id]
+│ └ ● /case-admin/placeholder
+├ ○ /case-admin/new
+├ ○ /cases
+├   /cases/[slug]
+│ └ ● /cases/case-placeholder
+├   /collections/[slug]
+│ └ ● /collections/collection-placeholder
+├ ○ /commercial-readiness
+├ ○ /compliance
+├ ○ /compliance-check
+├ ○ /content
+├ ○ /content/ai-image-gen
+├ ○ /content/ai-video-gen
+├ ○ /content/articles
+├ ○ /content/collection-center
+├ ○ /content/face-swap
+├ ○ /content/image-gen
+├ ○ /content/optimization
+├ ○ /content/wechat-official-assistant
+├ ○ /content/workspace
+├ ○ /content/xiaohongshu
+├ ○ /content/xiaohongshu-assistant
+├ ○ /copy-compare
+├ ○ /crm
+├ ○ /crm-closer
+├ ○ /crm-connectors
+├ ○ /crm-import
+├ ○ /crm-import/flow
+├ ○ /crm/closer
+├ ○ /crm/connectors
+├ ○ /crm/customer
+├ ○ /crm/import
+├ ○ /customer
+├ ○ /demo-request
+├ ○ /demo/video-studio
+├ ○ /demo/wechat-personal
+├ ○ /dev-clear-browser-cache
+├ ○ /device-center
+├ ○ /distribution
+├ ○ /distribution/accounts
+├ ○ /distribution/articles
+├ ○ /distribution/compliance
+├ ○ /distribution/logs
+├ ○ /distribution/publish-article
+├ ○ /distribution/publish-video
+├ ○ /distribution/scrape
+├ ○ /distribution/tasks
+├ ○ /effects
+├ ○ /engagement
+├ ○ /engagement/channel-messages
+├ ○ /engagement/comment-acquisition
+├ ○ /engagement/comment-insights
+├ ○ /engagement/customer-service
+├ ○ /engagement/customers
+├ ○ /engagement/douyin-comments
+├ ○ /engagement/douyin-messages
+├ ○ /engagement/records
+├ ○ /engagement/rules
+├ ○ /engagement/wechat
+├ ○ /engagement/wechat-channel-comments
+├ ○ /engagement/wechat-groups
+├ ○ /engagement/wechat-moments
+├ ○ /engagement/wechat-moments/detail
+├ ○ /engagement/wechat/chat-history
+├ ○ /engagement/wechat/contact-add
+├ ○ /engagement/wechat/contacts
+├ ○ /engagement/wechat/friend-accept
+├ ○ /engagement/wechat/mass-send
+├ ○ /engagement/wechat/moments-publish
+├ ○ /engagement/wechat/plans
+├ ○ /engagement/wecom-assistant
+├ ○ /face-swap
+├ ○ /growth
+├ ○ /growth/account-health
+├ ○ /growth/acquisition
+├ ○ /growth/leads
+├ ○ /growth/leads/detail
+├ ○ /growth/reports
+├ ○ /growth/rpa-workbench
+├ ○ /growth/strategies
+├ ○ /growth/workflows
+├ ○ /intelligence
+├ ○ /intelligence/accounts
+├ ○ /intelligence/collaboration
+├ ○ /intelligence/costs
+├ ○ /intelligence/inbox
+├ ○ /intelligence/inbox-processing
+├ ○ /intelligence/industries
+├ ○ /intelligence/leads
+├ ○ /intelligence/monitor-new
+├ ○ /intelligence/monitors
+├ ○ /intelligence/redfox
+├ ○ /intelligence/report-new
+├ ○ /intelligence/reports
+├ ○ /intelligence/risks
+├ ○ /intelligence/rules
+├ ○ /intelligence/search
+├ ○ /intelligence/skills
+├ ○ /intelligence/trends
+├ ○ /intelligence/viral
+├ ○ /knowledge
+├ ○ /knowledge-base
+├ ○ /knowledge-base/new
+├ ○ /local-engine
+├ ○ /local-engine/ai-action
+├ ○ /local-engine/browser
+├ ○ /local-engine/browser/agent
+├ ○ /local-engine/desktop
+├ ○ /local-engine/evidence
+├ ○ /local-engine/files
+├ ○ /local-engine/logs
+├ ○ /local-engine/permissions
+├ ○ /local-engine/remote
+├ ○ /local-engine/run
+├ ○ /local-engine/tasks
+├ ○ /local-engine/workbench
+├ ○ /login
+├ ○ /mai-ui
+├ ○ /materials
+├ ○ /message
+├ ○ /mine
+├ ○ /mobile-capabilities
+├ ○ /platforms
+├ ○ /platforms/edit
+├ ○ /platforms/new
+├ ○ /poi
+├ ○ /release-notes
+├ ○ /reply
+├ ○ /risk-confirm
+├ ○ /savings
+├ ○ /savings/orders
+├ ○ /savings/wallet
+├ ○ /schedules
+├ ○ /schedules/edit
+├ ○ /seedance-video
+├ ○ /settings
+├ ○ /settings/account
+├ ○ /settings/appearance
+├ ○ /settings/data
+├ ○ /settings/desktop
+├ ○ /settings/integrations
+├ ○ /settings/legal
+├ ○ /settings/memory
+├ ○ /settings/notifications
+├ ○ /solutions
+├ ○ /solutions/configure
+├ ○ /solutions/run
+├ ○ /strategies
+├ ○ /strategies/edit
+├ ○ /strategies/new
+├ ○ /styles
+├ ○ /styles/edit
+├ ○ /styles/new
+├ ○ /task-evidence
+├ ○ /tasks
+├ ○ /tasks/confirmations
+├ ○ /tasks/evidence
+├ ○ /tasks/records
+├ ○ /tasks/runs
+├ ○ /templates
+├ ○ /templates/edit
+├ ○ /templates/new
+├ ○ /today
+├ ○ /topics
+├ ○ /topics/new
+├ ○ /video-download
+├ ○ /video-generation
+├ ○ /video-studio
+├ ○ /video-workshop
+├ ○ /video/product-cut
+├ ○ /video/release-plans
+├ ○ /viral-analysis
+├ ○ /war-room
+├ ○ /wecom-assistant
+└ ○ /wecom-crm
+
+
+○  (Static)  prerendered as static content
+●  (SSG)     prerendered as static HTML (uses generateStaticParams)
+
+

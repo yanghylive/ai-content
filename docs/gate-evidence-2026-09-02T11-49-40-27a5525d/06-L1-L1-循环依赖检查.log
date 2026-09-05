@@ -1,0 +1,15 @@
+# ✅ L1 循环依赖检查
+# commit: 27a5525d
+# exit: 0
+# duration_ms: 3513
+# command: cd '/Users/yanghy/Documents/New project/ai-content/backend' && npm run circular:check
+# 完整命令输出（未截断）：
+
+
+> ai-content-backend@0.0.1 circular:check
+> madge --circular --extensions ts --ts-config tsconfig.json src
+
+Processed 896 files (3.2s) 
+
+
+

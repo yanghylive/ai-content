@@ -1,0 +1,397 @@
+# ✅ L1 jest 后端单测（207+ 例）
+# commit: e464ea2d
+# exit: 0
+# duration_ms: 52229
+# command: cd '/Users/yanghy/Documents/New project/ai-content/backend' && ./node_modules/.bin/prisma generate && npm test -- --runInBand --silent
+# 完整命令输出（未截断）：
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 438ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+
+> ai-content-backend@0.0.1 test
+> jest --runInBand --silent
+
+[Nest] 88526  - 09/02/2026, 6:18:36 PM    WARN [GrowthService] RPA 状态机记录创建失败（kuaishou）：this.rpaExecutionStore.createWithLock is not a function
+[Nest] 88526  - 09/02/2026, 6:18:36 PM    WARN [GrowthService] 增长获客 RPA 执行留痕失败（run=run-rpa-1）：db down
+[Nest] 88526  - 09/02/2026, 6:18:36 PM    WARN [GrowthService] RPA 状态机记录创建失败（kuaishou）：db down
+[Nest] 88526  - 09/02/2026, 6:18:36 PM    WARN [GrowthService] [tryFetchCandidatesWithRpaDriver] 会话关闭失败 platform=kuaishou account=douyin-1：browser process gone
+[Nest] 88526  - 09/02/2026, 6:18:36 PM     LOG [GrowthService] 本次获客走 driver 真实状态机（record=rpa-state-9），跳过合成 RPA 记录（run=run-x）
+[Nest] 88526  - 09/02/2026, 6:18:36 PM    WARN [GrowthService] [executeFollowUpViaDriver] 会话关闭失败 platform=kuaishou account=douyin-1：close session timeout
+[Nest] 88526  - 09/02/2026, 6:18:38 PM     LOG [GrowthService] [fetchCommentUsersAsLeads] kuaishou 读评论成功 url=https://www.kuaishou.com/short-video/1 items=2
+[Nest] 88526  - 09/02/2026, 6:18:38 PM    WARN [GrowthService] [fetchCommentUsersAsLeads] 会话关闭失败 platform=kuaishou account=douyin-1：close session timeout
+[Nest] 88526  - 09/02/2026, 6:18:38 PM    WARN [GrowthService] 增长线索桥接统一侧分段失败（lead=lead-1）：interaction_event,scoring
+[Nest] 88526  - 09/02/2026, 6:18:40 PM     LOG [GrowthService] [fetchCommentUsersAsLeads] kuaishou 读评论成功 url=https://www.kuaishou.com/short-video/v1 items=1
+[Nest] 88526  - 09/02/2026, 6:18:42 PM     LOG [GrowthService] [fetchCommentUsersAsLeads] kuaishou 读评论成功 url=https://www.kuaishou.com/short-video/v1 items=2
+[Nest] 88526  - 09/02/2026, 6:18:44 PM     LOG [GrowthService] [fetchCommentUsersAsLeads] kuaishou 读评论成功 url=https://www.kuaishou.com/short-video/v2 items=2
+[Nest] 88526  - 09/02/2026, 6:18:44 PM     LOG [GrowthService] 本次获客走 driver 真实状态机（record=driver-record-1），跳过合成 RPA 记录（run=run-2）
+[Nest] 88526  - 09/02/2026, 6:18:44 PM    WARN [GrowthService] getGrowthHome overview 不可用：store down
+[Nest] 88526  - 09/02/2026, 6:18:44 PM    WARN [GrowthService] getGrowthHome open opportunity amount 不可用：db down
+[Nest] 88526  - 09/02/2026, 6:18:44 PM    WARN [GrowthService] getGrowthHome crmCustomer count 不可用：db down
+[Nest] 88526  - 09/02/2026, 6:18:44 PM    WARN [GrowthService] getGrowthHome crmOpportunity count 不可用：db down
+[Nest] 88526  - 09/02/2026, 6:18:44 PM    WARN [GrowthService] getGrowthHome won opportunity count 不可用：db down
+[Nest] 88526  - 09/02/2026, 6:18:44 PM    WARN [GrowthService] getGrowthHome commercial readiness 不可用：readiness down
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 da785320-4e26-4cbf-8503-d758549980e4 域名白名单=example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 92a6e46f-e31d-4f1c-924d-62a909e90183 域名白名单=b.com,c.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 55a804a3-6688-4470-9f1e-2eba9c0f57b4 域名白名单=example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 55a804a3-6688-4470-9f1e-2eba9c0f57b4 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 bfaf542c-29c1-4d75-9bf1-5e90e29de978 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 34dab3bd-4085-43dc-8909-e41571a4bc06 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 63110a8a-e246-4c64-aaa0-e6ab9482e588 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 63110a8a-e246-4c64-aaa0-e6ab9482e588 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 ad745fff-416f-40ce-ae38-aca7408e0c05 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 10da6779-ee7f-4488-9a41-9cfa14139cc4 域名白名单=example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 10da6779-ee7f-4488-9a41-9cfa14139cc4 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserLoopService] AgentBrowser 10da6779-ee7f-4488-9a41-9cfa14139cc4 完成：1 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 5bd7abeb-6e47-4f9d-8e1a-b3e8aa594ce0 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 5bd7abeb-6e47-4f9d-8e1a-b3e8aa594ce0 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserLoopService] AgentBrowser 5bd7abeb-6e47-4f9d-8e1a-b3e8aa594ce0 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 dd875287-22b7-4fcf-8077-cb5bd870f389 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 4a92a0d5-06ff-4722-ba63-68b7d11ec161 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 f9283987-6377-4319-a93a-db1e91a4a0bd 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 80c05df1-210c-4418-b3e9-baa53aa3a3fd 域名白名单=example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 80c05df1-210c-4418-b3e9-baa53aa3a3fd 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserLoopService] AgentBrowser 80c05df1-210c-4418-b3e9-baa53aa3a3fd 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 53b74369-186f-437c-9684-2b08d1d37f58 域名白名单=example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 53b74369-186f-437c-9684-2b08d1d37f58 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 9085cb6f-d514-4c46-bc1e-4d54028024d2 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 9085cb6f-d514-4c46-bc1e-4d54028024d2 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 8f2500e0-e321-40c2-b187-42dce85f24f4 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 8f2500e0-e321-40c2-b187-42dce85f24f4 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserLoopService] AgentBrowser 8f2500e0-e321-40c2-b187-42dce85f24f4 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 11653a2b-a536-4333-9363-f80771590046 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 11653a2b-a536-4333-9363-f80771590046 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 b57fdae7-5f97-48f0-a297-927df12bbc6b 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 7cd3d3ad-ac25-4d52-add0-d1773f9c35fb 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 077440a5-5e7c-4c9c-958c-9431f30a104e 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 063b081b-d5b6-424e-bef6-738df703cf20 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 a23e6709-0deb-4fa9-ba9b-c497ccc10e23 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 a23e6709-0deb-4fa9-ba9b-c497ccc10e23 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserLoopService] AgentBrowser a23e6709-0deb-4fa9-ba9b-c497ccc10e23 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 2f0c0bd8-c426-457c-bb70-7242b9592bd6 域名白名单=example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 2f0c0bd8-c426-457c-bb70-7242b9592bd6 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserLoopService] AgentBrowser 2f0c0bd8-c426-457c-bb70-7242b9592bd6 完成：2 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 26d14807-cc47-4a62-88c0-0d44bc0e93f6 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 1c178fdc-23ab-41d0-89f5-0a447b994a08 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 1c178fdc-23ab-41d0-89f5-0a447b994a08 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserLoopService] AgentBrowser 1c178fdc-23ab-41d0-89f5-0a447b994a08 完成：1 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 09a75176-4f17-4dfa-8069-428a428812d3 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 09a75176-4f17-4dfa-8069-428a428812d3 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserLoopService] AgentBrowser 09a75176-4f17-4dfa-8069-428a428812d3 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 fce684c3-af96-4712-be41-5f35e874e2a3 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 fce684c3-af96-4712-be41-5f35e874e2a3 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserLoopService] AgentBrowser fce684c3-af96-4712-be41-5f35e874e2a3 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 16cd5e44-29c1-49a7-90e1-0efe07997495 域名白名单=a.com,b.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 16cd5e44-29c1-49a7-90e1-0efe07997495 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:49 PM    WARN [AgentBrowserLoopService] AgentBrowser 动作 goto 第 1 次失败，重试：navigation_failed
+[Nest] 88526  - 09/02/2026, 6:18:50 PM    WARN [AgentBrowserLoopService] AgentBrowser 动作 goto 第 2 次失败，重试：navigation_failed
+[Nest] 88526  - 09/02/2026, 6:18:50 PM     LOG [AgentBrowserLoopService] AgentBrowser 16cd5e44-29c1-49a7-90e1-0efe07997495 完成：2 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:50 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 32b76df9-1927-455c-b0cf-66421472983a 域名白名单=a.com
+[Nest] 88526  - 09/02/2026, 6:18:50 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 32b76df9-1927-455c-b0cf-66421472983a 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:50 PM    WARN [AgentBrowserLoopService] AgentBrowser 动作 goto 第 1 次失败，重试：navigation_failed
+[Nest] 88526  - 09/02/2026, 6:18:50 PM    WARN [AgentBrowserLoopService] AgentBrowser 动作 goto 第 2 次失败，重试：navigation_failed
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserLoopService] AgentBrowser 32b76df9-1927-455c-b0cf-66421472983a 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 9bd9ecfe-c4b1-4dca-849d-eff5a8ef3a23 域名白名单=a.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 9bd9ecfe-c4b1-4dca-849d-eff5a8ef3a23 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 8551f4a1-ea6f-457f-bc98-6fd357c96d24 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 a47b9bfb-494a-4160-b4f6-7522d9cf2912 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 a47b9bfb-494a-4160-b4f6-7522d9cf2912 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 a47b9bfb-494a-4160-b4f6-7522d9cf2912 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 d8608cf5-c040-41c9-82ac-b8ec9972c4b0 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 44e8a064-0037-4dce-a020-b89bb67f8e9b 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] Agent Browser 会话已从磁盘恢复 5 个（paused/needs-human/partial_success 保留可恢复，其余置 stopped）
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 s-paused 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 ee8f4117-16bd-407f-b4b7-af34e74c2bc8 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 ee8f4117-16bd-407f-b4b7-af34e74c2bc8 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 0985e159-eeb6-4e7e-b83b-165e3aa99eae 域名白名单=a.com,b.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 0985e159-eeb6-4e7e-b83b-165e3aa99eae 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserLoopService] AgentBrowser 0985e159-eeb6-4e7e-b83b-165e3aa99eae 导航至 https://b.com，基于新快照重新决策（1 个新动作）
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserLoopService] AgentBrowser 0985e159-eeb6-4e7e-b83b-165e3aa99eae 完成：2 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 d1eb4473-b38a-4b55-a0b8-176c0a0b3a36 域名白名单=a.com,b.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 d1eb4473-b38a-4b55-a0b8-176c0a0b3a36 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserLoopService] AgentBrowser d1eb4473-b38a-4b55-a0b8-176c0a0b3a36 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 62558453-de6b-4a67-816d-63d7796c8686 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 62558453-de6b-4a67-816d-63d7796c8686 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 a6953bcf-b1f1-4944-918f-10cf3edf80cb 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 a6953bcf-b1f1-4944-918f-10cf3edf80cb 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserLoopService] AgentBrowser a6953bcf-b1f1-4944-918f-10cf3edf80cb 完成：1 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserLoopService] AgentBrowser a6953bcf-b1f1-4944-918f-10cf3edf80cb 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 fa44b4ef-9970-4b85-b7e9-1d93ca52418e 域名白名单=(未配置,导航需确认)
+[Nest] 88526  - 09/02/2026, 6:18:51 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 fa44b4ef-9970-4b85-b7e9-1d93ca52418e 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:51 PM    WARN [AgentBrowserLoopService] AgentBrowser 动作 click 第 1 次失败，重试：元素不可点击
+[Nest] 88526  - 09/02/2026, 6:18:51 PM    WARN [AgentBrowserLoopService] AgentBrowser 动作 click 第 2 次失败，重试：元素不可点击
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser fa44b4ef-9970-4b85-b7e9-1d93ca52418e 完成：1 个动作，0 成功
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 8bf414ea-a689-4a50-8d72-16f73467ff86 域名白名单=a.com,b.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 8bf414ea-a689-4a50-8d72-16f73467ff86 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser 8bf414ea-a689-4a50-8d72-16f73467ff86 完成：1 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 19054e7d-3f4e-4352-9b47-03f477683ad3 域名白名单=a.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 19054e7d-3f4e-4352-9b47-03f477683ad3 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser 19054e7d-3f4e-4352-9b47-03f477683ad3 完成：2 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 5f3339c3-016e-46c9-9168-6723b73cd66f 域名白名单=a.com,b.com,c.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 5f3339c3-016e-46c9-9168-6723b73cd66f 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM    WARN [AgentBrowserLoopService] AgentBrowser 动作 goto 第 1 次失败，重试：导航失败
+[Nest] 88526  - 09/02/2026, 6:18:52 PM    WARN [AgentBrowserLoopService] AgentBrowser 动作 goto 第 2 次失败，重试：导航失败
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser 5f3339c3-016e-46c9-9168-6723b73cd66f 完成：3 个动作，2 成功
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 c28d44e0-32ac-4190-b62b-7f31717cedf0 域名白名单=a.com,b.com,c.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 c28d44e0-32ac-4190-b62b-7f31717cedf0 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser c28d44e0-32ac-4190-b62b-7f31717cedf0 resume：从动作 1/3 续跑（已成功 2 个，跳过不重放）
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser c28d44e0-32ac-4190-b62b-7f31717cedf0 完成：3 个动作，2 成功
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 464b732a-dc5f-4d31-b93c-32923af2c5e9 域名白名单=a.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 464b732a-dc5f-4d31-b93c-32923af2c5e9 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser 464b732a-dc5f-4d31-b93c-32923af2c5e9 完成：1 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 83b80a4d-50a6-45fd-8cdc-9cafca2c8101 域名白名单=a.com,b.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 83b80a4d-50a6-45fd-8cdc-9cafca2c8101 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser 83b80a4d-50a6-45fd-8cdc-9cafca2c8101 resume：从动作 1/2 续跑（已成功 0 个，跳过不重放）
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser 83b80a4d-50a6-45fd-8cdc-9cafca2c8101 完成：2 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 c1e32e13-fbc7-4a12-b25a-95bc8c790ceb 域名白名单=a.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 c1e32e13-fbc7-4a12-b25a-95bc8c790ceb 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserLoopService] AgentBrowser c1e32e13-fbc7-4a12-b25a-95bc8c790ceb 完成：1 个动作，1 成功
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话创建 8523a809-fcb1-421c-8ea9-3395b7b1ff5d 域名白名单=a.com
+[Nest] 88526  - 09/02/2026, 6:18:52 PM     LOG [AgentBrowserSessionService] AgentBrowser 会话 8523a809-fcb1-421c-8ea9-3395b7b1ff5d 引擎就绪 general-web-abc 当前页 https://example.com
+[Nest] 88526  - 09/02/2026, 6:18:53 PM    WARN [AutoUploadClient] 登录页 goto 失败: target=https://creator.xiaohongshu.com/login, landed=about:blank, attempt=0, error=page.goto: net::ERR_CONNECTION_CLOSED
+[Nest] 88526  - 09/02/2026, 6:18:53 PM     LOG [AutoUploadClient] 登录页 goto 成功: target=https://creator.xiaohongshu.com/login, landed=about:blank, attempt=1
+[Nest] 88526  - 09/02/2026, 6:18:53 PM    WARN [AutoUploadClient] 登录页 goto 后仍不在目标域（current=about:blank, target=https://creator.xiaohongshu.com/login），启用 JS 导航兜底
+[Nest] 88526  - 09/02/2026, 6:18:53 PM    WARN [AutoUploadClient] JS 导航兜底失败: page.evaluate is not a function
+[Nest] 88526  - 09/02/2026, 6:18:53 PM     LOG [AutoUploadClient] JS 导航兜底后 URL: about:blank
+[Nest] 88526  - 09/02/2026, 6:18:55 PM     LOG [AutoUploadClient] 已从桌面 runtime 库恢复 1 个发布账号
+[Nest] 88526  - 09/02/2026, 6:18:56 PM     LOG [AutoUploadClient] 已从桌面 runtime 库恢复 1 个发布账号
+[Nest] 88526  - 09/02/2026, 6:18:56 PM    WARN [AutoUploadClient] validate: 浏览器验证超时，保持原状态 wechat-channel:4
+[Nest] 88526  - 09/02/2026, 6:18:56 PM    WARN [AutoUploadClient] validate: 会话状态 unknown 非明确失效，保持原状态 douyin:1
+[Nest] 88526  - 09/02/2026, 6:18:56 PM    WARN [AutoUploadClient] publishBatch 平台执行失败（短路，继续其他平台）: platform=视频号 browser crash
+[Nest] 88526  - 09/02/2026, 6:18:59 PM    WARN [ArticlesService] HTML 初稿疑似截断，尝试基于同一轮上下文续写补全。原因：HTML 结尾缺少闭合标签，疑似被截断
+[Nest] 88526  - 09/02/2026, 6:18:59 PM     LOG [ArticlesService] HTML 截断内容已通过续写补全恢复完整
+[Nest] 88526  - 09/02/2026, 6:18:59 PM    WARN [ArticlesService] HTML 初稿疑似截断，尝试基于同一轮上下文续写补全。原因：HTML 结尾缺少闭合标签，疑似被截断
+[Nest] 88526  - 09/02/2026, 6:18:59 PM    WARN [ArticlesService] HTML 续写补全后仍未通过校验：HTML 结尾缺少闭合标签，疑似被截断
+[Nest] 88526  - 09/02/2026, 6:18:59 PM    WARN [ArticlesService] HTML 文章生成第 1 次校验未通过：HTML 结尾缺少闭合标签，疑似被截断
+[Nest] 88526  - 09/02/2026, 6:18:59 PM     LOG [ArticlesService] 选题「OpenClaw 龙虾爆火」嗅探到 1 处图片插图，准备启动混合配图管线...
+[Nest] 88526  - 09/02/2026, 6:18:59 PM     LOG [ArticlesService] 选题「OpenClaw 龙虾爆火」开始独立生成 AI 封面图...
+[Nest] 88526  - 09/02/2026, 6:18:59 PM     LOG [ArticlesService] 选题「OpenClaw 龙虾爆火」独立封面生成成功
+[Nest] 88526  - 09/02/2026, 6:18:59 PM    WARN [ArticlesService] 小红书 JSON 解析失败，尝试容错提取: Unexpected token '标', "标题：商业验收卡片
+"... is not valid JSON
+[Nest] 88526  - 09/02/2026, 6:18:59 PM    WARN [ArticlesService] 小红书 JSON 容错提取失败，已启用兜底卡片骨架
+[Nest] 88526  - 09/02/2026, 6:19:03 PM    WARN [AiEmployeeService] AI employee auto acquisition scheduler is configured but not armed. Set GROWTH_EXECUTION_ENABLED=true and GROWTH_SCHEDULER_REAL_DAEMON_ALLOWED=true to allow unattended real execution.
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mtjy1qru_eec60f, amount=30
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mtjy1qru_eec60f, amount=17
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mtjy1qs4_01be95, amount=30
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mtjy1qs4_01be95, amount=17
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mtjy1qs8_6697ad, amount=30
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mtjy1qs8_6697ad, amount=17
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mtjy1qsc_a3c7aa, amount=30
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mtjy1qsc_a3c7aa, amount=17
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mtjy1qsh_e2be60, amount=30
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mtjy1qsh_e2be60, amount=17
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing reserved: record=aar_mtjy1qsm_f1a008, amount=30
+[Nest] 88526  - 09/02/2026, 6:19:03 PM     LOG [AiEmployeeService] Auto acquisition cloud billing charged: record=aar_mtjy1qsm_f1a008, amount=17
+[Nest] 88526  - 09/02/2026, 6:19:03 PM    WARN [AiAssistantService] follow_up 幂等跳过：草稿 d1 已存在跟进任务，不重复创建
+[Nest] 88526  - 09/02/2026, 6:19:04 PM     LOG [MaterialsService] 已执行 1 个本地采集任务（成功 1，失败 0）
+[Nest] 88526  - 09/02/2026, 6:19:04 PM     LOG [MaterialsService] 已执行 1 个本地采集任务（成功 1，失败 0）
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat-moments-publish session=moments-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Running wechat-moments-publish skill: target=朋友圈明细 1 mode=approval
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat-contact-add session=contact-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat-moments-marketing session=marketing-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat-contact-add session=contact-limit-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.group.broadcast session=group-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Running wechat-auto-reply group skill: target=客户A mode=auto-send
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Running wechat-auto-reply group skill: target=客户B mode=auto-send
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.group.broadcast session=personalized-group-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Running wechat-auto-reply group skill: target=客户甲 mode=auto-send
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Running wechat-auto-reply group skill: target=客户乙 mode=auto-send
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.group.broadcast session=commercial-guard-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.group.broadcast session=native-group-broadcast
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.friend.accept session=native-friend-accept
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.session.auto_reply session=customer-no-reply
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.group.broadcast session=group-account-mismatch
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S local SkillHub route accepted: skill=wechat.group.broadcast session=group-account-unreadable
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Running wechat-auto-reply group skill: target=客户A mode=auto-send
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S RedFox SkillHub route accepted: skill=missing-trending-hub-test session=redfox-blocked-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S RedFox SkillHub route accepted: skill=unit-test-redfox-skill session=redfox-install-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [AgentSService] Agent-S RedFox SkillHub route accepted: skill=trending-hub session=redfox-run-session
+[Nest] 88526  - 09/02/2026, 6:19:05 PM    WARN [LocalBrowserEngine] 会话 wechat-channel-4 CDP 连接不兼容，改用 Playwright persistent context：browserType.connectOverCDP: Protocol error (Browser.setDownloadBehavior): Browser context management is not supported.
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [LocalBrowserEngine] 会话 wechat-channel-4 已有更新的持久 Chrome cookie store，跳过旧 storageState 注入
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [LocalBrowserEngine] 会话 wechat-channel-4 加载登录 cookies: 1
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [LocalBrowserEngine] 启动持久浏览器会话 douyin-4: profile=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/local-browser-engine-I2HueX/profiles/douyin-4, visible=true
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [LocalBrowserEngine] 启动持久浏览器会话 wechat-channel-4: profile=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/local-browser-engine-RgAxLU/profiles/wechat-channel-4, visible=true
+[Nest] 88526  - 09/02/2026, 6:19:05 PM     LOG [LocalBrowserEngine] 启动持久浏览器会话 wechat-channel-4: profile=/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/local-browser-engine-SqMctR/profiles/wechat-channel-4, visible=true
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=orch-1 platform=wechat-desktop type=wechat-reply-draft
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=task-1 platform=wechat-desktop type=wechat-reply-draft
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=publish-1 platform=douyin type=platform-publish-image-text
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=face-swap-1 platform=mixed type=video-face-swap
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=face-swap-no-price platform=mixed type=video-face-swap
+[Nest] 88526  - 09/02/2026, 6:19:06 PM    WARN [RuntimeOrchestrator] Runtime billing reserve blocked task=face-swap-no-price type=video-face-swap: 视频换脸缺少服务端计费金额，已拒绝真实执行。
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=task-1 platform=douyin type=platform-publish-video
+[Nest] 88526  - 09/02/2026, 6:19:06 PM    WARN [RuntimeOrchestrator] Runtime billing reserve blocked task=task-1 type=platform-publish-video: 真实执行扣积分需要当前账号接通 Kaypal 云端授权，或后端配置 KAYPAL_API_KEY/KAYPAL_AI_PROXY_API_KEY 后再执行。
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=contact-add-1 platform=wechat-desktop type=wechat-contact-add
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=contact-add-1 platform=wechat-desktop type=wechat-contact-add
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=publish-server-key-1 platform=douyin type=platform-publish-image-text
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=publish-fallback-1 platform=douyin type=platform-publish-video
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=publish-refresh-fallback-1 platform=douyin type=platform-publish-image-text
+[Nest] 88526  - 09/02/2026, 6:19:06 PM    WARN [RuntimeOrchestrator] Runtime billing desktop token refresh failed, falling back to server billing key: refresh_token 无效或已过期
+[Nest] 88526  - 09/02/2026, 6:19:06 PM    WARN [RuntimeOrchestrator] Runtime billing desktop token refresh failed, falling back to server billing key: refresh_token 无效或已过期
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=task-1 platform=wechat-desktop type=wechat-reply-draft
+[Nest] 88526  - 09/02/2026, 6:19:06 PM   DEBUG [RuntimeOrchestrator] RuntimeOrchestrator.execute: task=task-1 platform=wechat-desktop type=wechat-reply-draft
+[Nest] 88526  - 09/02/2026, 6:19:07 PM    WARN [McpController] [mcp-auth] 拒绝请求：token 不匹配 (remote=192.168.1.10)
+[Nest] 88526  - 09/02/2026, 6:19:07 PM    WARN [McpController] [mcp-auth] 拒绝请求：token 不匹配 (remote=192.168.1.10)
+[Nest] 88526  - 09/02/2026, 6:19:07 PM    WARN [McpController] [mcp-auth] 拒绝请求：KAYPAL_MCP_TOKEN 未配置 (remote=192.168.1.10)
+[Nest] 88526  - 09/02/2026, 6:19:07 PM    WARN [McpController] [mcp-auth] 拒绝请求：过渡期旧 token 已过期 (remote=192.168.1.10)
+[Nest] 88526  - 09/02/2026, 6:19:07 PM    WARN [McpController] [mcp-rate] 限流触发 (remote=10.0.0.5, count=301/60000ms)
+[Nest] 88526  - 09/02/2026, 6:19:07 PM    WARN [McpController] [mcp-cap] 只读 token 尝试调用敏感工具 browser_click，已拒绝
+[Nest] 88526  - 09/02/2026, 6:19:07 PM    WARN [McpController] [mcp-auth] 拒绝请求：token 不匹配 (remote=192.168.1.10)
+[Nest] 88526  - 09/02/2026, 6:19:07 PM    WARN [RedfoxClientService] RedFox GET /story/web/api/doc/platforms failed: REDFOX_API_KEY_REQUIRED 情报数据服务尚未配置，请到「设置」添加数据源后使用。
+[Nest] 88526  - 09/02/2026, 6:19:09 PM    WARN [RedfoxClientService] RedFox GET /story/web/api/doc/platforms failed: REDFOX_API_KEY_REQUIRED 情报数据服务尚未配置，请到「设置」添加数据源后使用。
+[Nest] 88526  - 09/02/2026, 6:19:09 PM    WARN [RedfoxClientService] RedFox POST /story/api/dyData/searchArticle succeeded but billing failed: 积分余额不足，请充值或调整任务消耗后再试。
+[Nest] 88526  - 09/02/2026, 6:19:09 PM    WARN [RedfoxClientService] RedFox POST /story/api/dyData/searchArticle failed: INSUFFICIENT_CREDITS 积分余额不足，请充值或调整任务消耗后再试。
+[Nest] 88526  - 09/02/2026, 6:19:09 PM    WARN [DouyinExposureCollector] 视觉兜底跳过：AiClientService 未注入
+[Nest] 88526  - 09/02/2026, 6:19:09 PM    WARN [DouyinExposureCollector] 视觉兜底跳过：AiClientService 未注入
+[Nest] 88526  - 09/02/2026, 6:19:09 PM    WARN [DouyinExposureCollector] 视觉兜底跳过：AiClientService 未注入
+[Nest] 88526  - 09/02/2026, 6:19:09 PM    WARN [DouyinExposureCollector] 视觉兜底跳过：AiClientService 未注入
+[Nest] 88526  - 09/02/2026, 6:19:09 PM    WARN [DouyinExposureCollector] 视觉兜底跳过：AiClientService 未注入
+[Nest] 88526  - 09/02/2026, 6:19:09 PM    WARN [VoiceService] KAYPAL voice ASR billing failed: Kaypal 地址非法，仅允许 kaypal.cn 及其子域，实际: kaypal.cn.evil.com
+[Nest] 88526  - 09/02/2026, 6:19:10 PM     LOG [VideoService] productCut: 扫地机器人 segments=5
+[Nest] 88526  - 09/02/2026, 6:19:10 PM     LOG [VideoService] generate: pipeline=x prompt=p...
+[Nest] 88526  - 09/02/2026, 6:19:10 PM    WARN [VideoService] StudioCore 不可达，回退 kaypal 云端视频通道：connect ECONNREFUSED
+[Nest] 88526  - 09/02/2026, 6:19:10 PM     LOG [VideoService] generate: pipeline=x prompt=p...
+[Nest] 88526  - 09/02/2026, 6:19:10 PM     LOG [VideoService] generate: pipeline=x prompt=p...
+[Nest] 88526  - 09/02/2026, 6:19:10 PM     LOG [VideoService] productCut: 养生壶 segments=2
+[Nest] 88526  - 09/02/2026, 6:19:10 PM    WARN [BrowserControlService] listCdpSessions failed for douyin/1: cdp query failed
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [DurablePublishWorker] Claimed durable task #42 (db=runtime-1).
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [DurablePublishWorker] Claimed durable task #42 (db=runtime-1).
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [DurablePublishWorker] Claimed durable task #42 (db=runtime-1).
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [PlatformInteractionExecutor] local-browser dispatch douyin/comment-reply account=1 action=send url=https://www.douyin.com/video/123
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [PlatformInteractionExecutor] local-browser dispatch douyin/comment-reply account=1 action=send url=https://creator.douyin.com/creator-micro/interactive/comment
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [PlatformInteractionExecutor] local-browser dispatch douyin/comment-reply account=1 action=send url=https://www.douyin.com/video/123
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [PlatformInteractionExecutor] [trace][douyin-reply] target={"status":"target_found","replyRect":{"x":214,"y":966,"width":44,"height":20},"rootRect":{"x":217,"y":884,"width":917,"height":106}}
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [PlatformInteractionExecutor] [trace][douyin-reply] replyOpened={"opened":false,"method":"mouse"}
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [PlatformInteractionExecutor] [trace][douyin-reply] editor={"status":"editor_found","rect":{"x":217,"y":1000,"width":600,"height":44}}
+[Nest] 88526  - 09/02/2026, 6:19:11 PM     LOG [PlatformInteractionExecutor] [trace][douyin-reply] sendButton={"status":"send_button_ready","message":"回复已输入，发送按钮可点击。","rect":{"x":860,"y":1006,"width":52,"height":28}}
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [TaskQueueProcessor] [queue] picked up 1 queued task(s)
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [TaskQueueProcessor] dispatch task=task-1 type=douyin-comment-reply accountId=undefined sendMode=auto-send
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [TaskQueueProcessor] dispatch done task=task-1 ok=true message=
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [TaskQueueProcessor] TaskQueueProcessor started (tick=60000ms, mock=false, processExisting=false)
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [TaskQueueProcessor] TaskQueueProcessor started (tick=60000ms, mock=false, processExisting=false)
+[Nest] 88526  - 09/02/2026, 6:19:12 PM    WARN [ExecutorRouter] No executor for task test-task-1 (douyin-comment-reply/douyin); reasons: local-runtime: P1 骨架阶段
+[Nest] 88526  - 09/02/2026, 6:19:12 PM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/wechat-desktop) to executor agent-s
+[Nest] 88526  - 09/02/2026, 6:19:12 PM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/douyin) to executor local-runtime
+[Nest] 88526  - 09/02/2026, 6:19:12 PM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/mixed) to executor agent-s
+[Nest] 88526  - 09/02/2026, 6:19:12 PM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/douyin) to executor local-runtime
+[Nest] 88526  - 09/02/2026, 6:19:12 PM   DEBUG [ExecutorRouter] Routing task test-task-1 (douyin-comment-reply/wechat-desktop) to executor agent-s
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [SchedulesService] CronJob for collect_materials added and started with expression 0 * * * *
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [SchedulesService] CronJob for collect_materials stopped and removed
+[Nest] 88526  - 09/02/2026, 6:19:12 PM    WARN [SchedulesService] Schedule startup initialization skipped: Timed out fetching a new connection from the connection pool
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [SchedulesService] CronJob for collect_materials added and started with expression 0 * * * *
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [SchedulesService] CronJob for collect_materials stopped and removed
+[Nest] 88526  - 09/02/2026, 6:19:12 PM     LOG [SchedulesService] Executing automated article generation batch...
+[Nest] 88526  - 09/02/2026, 6:19:12 PM    WARN [SchedulesService] 定时文章任务已生成 2 篇草稿；旧无人值守发布入口已停用，未向任何平台提交。请在发布中心完成服务端一次性确认后发布。
+[Nest] 88526  - 09/02/2026, 6:19:13 PM    WARN [RpaController] 回复评论会话关闭失败：close session timeout（platform=kuaishou, account=ks-1）
+[Nest] 88526  - 09/02/2026, 6:19:13 PM    WARN [RpaController] [openDriverSession] kuaishou/ks-1 preflight 阻断：account_busy（reason=）
+[Nest] 88526  - 09/02/2026, 6:19:13 PM    WARN [RpaController] [openDriverSession] kuaishou/ks-1 preflight 阻断：browser_not_ready（reason=）
+[Nest] 88526  - 09/02/2026, 6:19:13 PM    WARN [RpaController] [openDriverSession] kuaishou/ks-1 preflight 阻断：page_not_interactive（reason=）
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [LocalRuntimeEngineClient] Local interaction engine health check failed: browser profile locked
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [LocalRuntimeEngineClient] Local interaction engine health check failed: browser profile locked
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [LocalRuntimeEngineClient] postJson(/interaction/douyin/comments/send) 已废弃 — platform service 应直接用 LocalBrowserEngine
+[Nest] 88526  - 09/02/2026, 6:19:14 PM     LOG [WechatPayService] 微信支付成功：wx-2 充值 334 积分（金额 1000 分）
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [WechatPayService] 微信回调缺少可验资源（apiV3Key=false ciphertext=false），拒绝充值 wx-3
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [WechatPayService] 微信回调金额不符：订单 1000 vs 回调 999，拒绝 wx-4
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [TopicMiningService] 选题种子分析云端模型不可用，改用本地规则：云端扣积分失败: Unauthorized
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [TopicMiningService] 智能挖题云端模型不可用，改用本地规则：云端扣积分失败: Unauthorized
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [TopicMiningService] 选题种子分析云端模型不可用，改用本地规则：AI 服务暂时不可用：402 INSUFFICIENT_CREDITS
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [TopicMiningService] 智能挖题云端模型不可用，改用本地规则：AI 服务暂时不可用：402 INSUFFICIENT_CREDITS
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [TopicMiningService] 选题种子分析云端模型不可用，改用本地规则：Kaypal 模型台服务端授权未放行，请确认 test.kaypal.cn 已部署 billing/AI proxy 服务端 key 配置。
+[Nest] 88526  - 09/02/2026, 6:19:14 PM    WARN [TopicMiningService] 智能挖题云端模型不可用，改用本地规则：Kaypal 模型台服务端授权未放行，请确认 test.kaypal.cn 已部署 billing/AI proxy 服务端 key 配置。
+[Nest] 88526  - 09/02/2026, 6:19:14 PM   DEBUG [AiClientService] Kaypal 代理模型由服务器扣积分: text_generation, model=qwen3.6-plus
+[Nest] 88526  - 09/02/2026, 6:19:14 PM     LOG [AiClientService] 调用 AI 模型: Abortable model (abortable-model)
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [OutboxRelayService] domain outbox 无消费者，事件 e1（lead.created）保留 published（后续同 type 不再告警）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [OutboxRelayService] domain outbox 无消费者，事件 e1（lead.created）保留 published（后续同 type 不再告警）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [OutboxRelayService] CRM outbox 补偿：补写 1 条缺失的 convert_crm 事件
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Imported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-uRtSLw/legacy-auto-upload/cookiesFile/wechat-account.json
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Imported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-Bmg5bl/legacy-auto-upload/cookiesFile/mixed.json
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Imported legacy browser profile for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-zDAOap/legacy-auto-upload/browser-profiles/interaction/wechat-channel/4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-zDAOap/profiles/wechat-channel-4
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Imported legacy browser profile for douyin-4: /private/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-7UZ0HJ/backend/data/browser-profiles/douyin-4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-7UZ0HJ/profiles/douyin-4
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Imported legacy account cookies for douyin-4: /private/var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-yY78mi/backend/data/cookiesFile/douyin-account.json
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Imported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-IetFEU/legacy-auto-upload/cookiesFile/wechat-account.json
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Created profile directory: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-jIwUSH/profiles/wechat-channel-4
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Imported legacy browser profile for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-jIwUSH/legacy-auto-upload/browser-profiles/interaction/wechat-channel/4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-jIwUSH/profiles/wechat-channel-4
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Created profile directory: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-os8FmH/profiles/wechat-channel-4
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Imported legacy browser profile for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-os8FmH/legacy-auto-upload/browser-profiles/interaction/wechat-channel/4 -> /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-os8FmH/profiles/wechat-channel-4
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [CdpBrowserProfileService] Imported legacy account cookies for wechat-channel-4: /var/folders/81/p0xp75ss6gb4cq9plyx6q7hh0000gn/T/kaypal-profile-os8FmH/legacy-auto-upload/cookiesFile/wechat-account.json
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [MaiUiService] MAI-UI 规划成功: 1 个候选动作（cmsvis0001visionkaypalvl）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [MaiUiService] MAI-UI 视觉模型缺失且缺少 KAYPAL_AI_PROXY_BASE_URL/API_KEY（无法懒创建，保持 404）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [MaiUiService] MAI-UI 视觉模型缺失且缺少 KAYPAL_AI_PROXY_BASE_URL/API_KEY（无法懒创建，保持 404）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [MaiUiService] MAI-UI 视觉模型已懒创建（kaypal-vision @ https://kaypal.cn/api/ai）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [MaiUiService] MAI-UI 规划成功: 1 个候选动作（kaypal-vision）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [MaiUiService] MAI-UI 剔除 1 个非法动作：未知动作类型：evaluate_js
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [MaiUiService] MAI-UI 规划成功: 2 个候选动作（kaypal-vision）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [MaiUiService] MAI-UI 剔除 1 个非法动作：bounds 超出截图范围（500×740）：[10, 10, 9999, 9999]
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [MaiUiService] MAI-UI 规划成功: 1 个候选动作（kaypal-vision）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [MaiUiService] MAI-UI 剔除 1 个非法动作：动作数 25 超过上限 20，仅取前 20 个
+[Nest] 88526  - 09/02/2026, 6:19:15 PM     LOG [MaiUiService] MAI-UI 规划成功: 20 个候选动作（kaypal-vision）
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [WechatPlanSchedulerService] Wechat plan wechat-plan-1 has no tenant scope; skipped.
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [ShortLinkService] 短链 abc123 目标非法（协议/主机校验未通过），拒绝跳转
+[Nest] 88526  - 09/02/2026, 6:19:15 PM    WARN [ShortLinkService] 短链 abc123 openCount 自增失败（不影响跳转）：db unavailable
+[Nest] 88526  - 09/02/2026, 6:19:16 PM     LOG [LinkHealthCheckService] 链接健康检查完成：checked=2, changed=1
+[Nest] 88526  - 09/02/2026, 6:19:16 PM     LOG [LinkHealthCheckService] 链接健康检查完成：checked=1, changed=1
+[Nest] 88526  - 09/02/2026, 6:19:16 PM     LOG [LinkHealthCheckService] 链接健康检查完成：checked=1, changed=1
+[Nest] 88526  - 09/02/2026, 6:19:16 PM     LOG [LinkHealthCheckService] 链接健康检查完成：checked=1, changed=1
+[Nest] 88526  - 09/02/2026, 6:19:16 PM     LOG [LinkHealthCheckService] 链接健康检查完成：checked=1, changed=1
+[Nest] 88526  - 09/02/2026, 6:19:17 PM    WARN [EntitlementsService] entitlement snapshot 写入失败: db down
+[Nest] 88526  - 09/02/2026, 6:19:17 PM     LOG [CaseEventsService] {"name":"case_open","props":{"case_id":"case_1"},"receivedAt":"2026-09-02T10:19:17.164Z"}
+[Nest] 88526  - 09/02/2026, 6:19:17 PM     LOG [ArticleScraperService] Scraping article from: https://example.com/article/123
+[Nest] 88526  - 09/02/2026, 6:19:17 PM     LOG [ArticleScraperService] Scraping article from: https://example.com/missing
+[Nest] 88526  - 09/02/2026, 6:19:17 PM    WARN [KaypalModelSyncService] Kaypal admin model status unavailable, falling back to chat models: Kaypal 模型台状态读取失败：Forbidden
+[Nest] 88526  - 09/02/2026, 6:19:17 PM    WARN [KaypalModelSyncService] Kaypal admin model status unavailable, falling back to chat models: Kaypal 模型台状态读取失败：Forbidden
+[Nest] 88526  - 09/02/2026, 6:19:17 PM    WARN [KaypalModelSyncService] Kaypal chat model list unavailable: Kaypal 普通模型列表读取失败：Unauthorized
+[Nest] 88526  - 09/02/2026, 6:19:17 PM    WARN [KaypalModelSyncService] Kaypal model list unavailable; using configured fallback model.
+[Nest] 88526  - 09/02/2026, 6:19:17 PM    WARN [GrowthLeadBridgeService] 桥接 InteractionEvent 失败（lead=lead-1）：db down
+[Nest] 88526  - 09/02/2026, 6:19:17 PM    WARN [GrowthLeadBridgeService] 接入统一评分失败（lead=lead-1）：score fail
+[Nest] 88526  - 09/02/2026, 6:19:17 PM   DEBUG [CloudApiService] Generating reply for douyin comment
+[Nest] 88526  - 09/02/2026, 6:19:17 PM   DEBUG [CloudApiService] Generating reply for douyin comment
+[Nest] 88526  - 09/02/2026, 6:19:17 PM   DEBUG [CloudApiService] Generating reply for douyin comment
+[Nest] 88526  - 09/02/2026, 6:19:18 PM     LOG [CaseAdminService] [cache-invalidate] showcase case case-1 status changed, public cache should be invalidated
+[Nest] 88526  - 09/02/2026, 6:19:18 PM     LOG [CaseAdminService] [cache-invalidate] showcase case case-1 status changed, public cache should be invalidated
+[Nest] 88526  - 09/02/2026, 6:19:19 PM    WARN [VoiceTtsService] KAYPAL TTS failed: upstream down
+[Nest] 88526  - 09/02/2026, 6:19:19 PM    WARN [VoiceAsrService] KAYPAL ASR failed: bad key
+[Nest] 88526  - 09/02/2026, 6:19:19 PM    WARN [ContentAssetVersioningService] 资产版本记录失败: table missing
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-0
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-1
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-2
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-3
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-4
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-5
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-6
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-7
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-8
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-9
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-10
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-11
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-12
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-13
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-14
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-15
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-16
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-17
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-18
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: err-19
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 错误上报超出单 IP 限流，已丢弃
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: fresh-ip
+[Nest] 88526  - 09/02/2026, 6:19:20 PM   DEBUG [ErrorReportController] 前端错误已代理上报: forwarded
+[Nest] 88526  - 09/02/2026, 6:19:21 PM     LOG [StudioCoreProxyService] postGenerate: http://studio-core.test:8610/api/projects pipeline=promo
+[Nest] 88526  - 09/02/2026, 6:19:21 PM     LOG [StudioCoreProxyService] postGenerate: http://studio-core.test:8610/api/projects pipeline=promo
+[Nest] 88526  - 09/02/2026, 6:19:21 PM    WARN [RemoteImagePreprocessor] Image download error for https://nonexistent.example.invalid/image.jpg: network down
+[Nest] 88526  - 09/02/2026, 6:19:21 PM    WARN [RemoteImagePreprocessor] Image download error for https://example.com/image.jpg: network down
+[Nest] 88526  - 09/02/2026, 6:19:21 PM   DEBUG [ActivationService] activation 记录跳过: first_lead (user-1)
+[Nest] 88526  - 03/11/2026, 6:00:00 PM    WARN [TopicsService] 检测到选题「stale-scored-topic」在 generating 状态停留超过 30 分钟，已自动回收为 completed
+[Nest] 88526  - 03/11/2026, 6:00:00 PM    WARN [TopicsService] 检测到选题「stale-article-topic」在 generating 状态停留超过 30 分钟，已自动回收为 completed / published
+

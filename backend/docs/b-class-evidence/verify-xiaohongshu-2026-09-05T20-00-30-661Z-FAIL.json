@@ -1,0 +1,138 @@
+{
+  "commitSha": "1237c5a25dc9534dd1617df04bc6e6a2129f22c4",
+  "bundleHash": "7f419d56ccc9e65f0a556f9ef021c211f13bb05fa0b4ca2df7994bf2b8013f58",
+  "worktreeDirty": true,
+  "worktreeDirtyFiles": [
+    "workbuddy/memory/2026-09-05.md",
+    ".workbuddy/memory/2026-09-03.md",
+    ".workbuddy/memory/2026-09-04.md",
+    ".workbuddy/memory/MEMORY.md",
+    ".workbuddy/memory/automations/",
+    "backend/.kuaishou-comments.png",
+    "backend/.kuaishou-home.png",
+    "backend/docs/b-class-evidence/verify-xiaohongshu-2026-09-05T19-39-59-804Z-FAIL.json",
+    "backend/docs/b-class-evidence/verify-xiaohongshu-2026-09-05T19-42-00-314Z-FAIL.json",
+    "backend/patch-audit.py",
+    "backend/patch-reconcile-spec.py",
+    "backend/patch-reconcile.py",
+    "backend/patch-touch-fe.py",
+    "backend/patch-touch-query.py",
+    "backend/scripts/diag-kuaishou-search.mjs",
+    "backend/scripts/run-b-class-verify.sh",
+    "desktop/assets/brand/jiuzhang-wordmark-black.png",
+    "desktop/assets/brand/jiuzhang-wordmark-white.png",
+    "desktop/patch-activity.py",
+    "desktop/patch-anim-snap-retry.py",
+    "desktop/patch-chip-race.py",
+    "desktop/patch-gutter-contrast.py",
+    "desktop/patch-gutter-z.py",
+    "desktop/patch-highlight.py",
+    "desktop/patch-popup-clip.py",
+    "desktop/patch-prog-suggest.py",
+    "desktop/patch-strip-addr.py",
+    "desktop/patch-touch-detail.py",
+    "desktop/patch-traework-align.py",
+    "desktop/patch-traework-align2.py",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\344\\277\\256\\345\\244\\215\\346\\226\\271\\346\\241\\210-20260905.md\"",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\344\\277\\256\\345\\244\\215\\346\\226\\271\\346\\241\\210-v2-\\344\\270\\215\\351\\231\\215\\347\\272\\247-20260905.md\"",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\345\\205\\263\\351\\224\\256\\350\\257\\215AI\\347\\224\\237\\346\\210\\220\\346\\226\\271\\346\\241\\210-C\\347\\261\\273-20260905.md\"",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\351\\200\\273\\350\\276\\221\\346\\240\\270\\346\\237\\245\\346\\212\\245\\345\\221\\212-20260904.md\"",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\351\\227\\256\\351\\242\\230\\345\\205\\250\\351\\207\\217\\345\\256\\241\\350\\256\\241\\346\\212\\245\\345\\221\\212-20260905.md\"",
+    "docs/acceptance-evidence-2026-09-02/",
+    "docs/acceptance-evidence-2026-09-03/",
+    "docs/acceptance-evidence-2026-09-04/",
+    "docs/gate-evidence-2026-09-02T07-18-59-e7c97de6/",
+    "docs/gate-evidence-2026-09-02T09-32-51-355cce56/",
+    "docs/gate-evidence-2026-09-02T10-18-24-e464ea2d/",
+    "docs/gate-evidence-2026-09-02T11-49-40-27a5525d/",
+    "scripts/oss-error-report-scan.cjs",
+    "\"\\346\\241\\214\\351\\235\\242\\345\\243\\263\\345\\206\\205\\347\\275\\256\\346\\265\\217\\350\\247\\210\\345\\231\\250-\\346\\200\\273\\350\\247\\210.png\"",
+    "\"\\346\\241\\214\\351\\235\\242\\345\\243\\263\\345\\257\\271\\351\\275\\220TraeWork\\346\\226\\271\\346\\241\\210.png\"",
+    "\"\\346\\265\\217\\350\\247\\210\\345\\231\\250\\351\\235\\242\\346\\235\\277\\345\\210\\206\\345\\214\\272-\\345\\257\\271\\346\\257\\224.png\"",
+    "\"\\346\\265\\217\\350\\247\\210\\345\\231\\250\\351\\235\\242\\346\\235\\277\\345\\210\\206\\345\\214\\272-\\346\\224\\276\\345\\244\\247.png\""
+  ],
+  "base": "http://127.0.0.1:3015",
+  "platform": "xiaohongshu",
+  "accountId": "7",
+  "keyword": "穿搭",
+  "autoReply": false,
+  "minLeadScore": 999,
+  "requestedAt": "2026-09-05T20:00:15.356Z",
+  "portStatus": {
+    "backend_3011": {
+      "url": "http://127.0.0.1:3011/",
+      "httpStatus": 404,
+      "ok": false,
+      "ms": 7
+    },
+    "desktop_3010": {
+      "url": "http://127.0.0.1:3010/",
+      "httpStatus": 200,
+      "ok": true,
+      "ms": 10
+    },
+    "backend_3013": {
+      "url": "http://127.0.0.1:3015/",
+      "httpStatus": 404,
+      "ok": false,
+      "ms": 28
+    }
+  },
+  "httpStatus": 500,
+  "body": {
+    "success": false,
+    "data": null,
+    "message": "服务器内部错误",
+    "timestamp": "2026-09-05T20:00:30.658Z",
+    "path": "/api/comment-acquisition/scan",
+    "requestId": "b94adce5-1d8e-42a3-8406-0279c6261808",
+    "traceId": "b94adce5-1d8e-42a3-8406-0279c6261808",
+    "retryable": false
+  },
+  "assertions": {
+    "http2xx": false,
+    "scannedPositive": false,
+    "notFallback": true,
+    "readOnlyNoSideEffect": false,
+    "snapshotNoSideEffect": true
+  },
+  "injected": {
+    "session": "wbverify_ff30f0a5-23a",
+    "account": "local-engine-9ab472474cc21dd4-verify1788638415356-7-xiaohongshu"
+  },
+  "cleanup": {
+    "session": "deleted",
+    "account": "deleted-and-verified"
+  },
+  "snapshot": {
+    "leads": {
+      "before": 93,
+      "after": 93
+    },
+    "interaction_events": {
+      "before": 0,
+      "after": 0
+    },
+    "comment_acquisition_leads": {
+      "before": 0,
+      "after": 0
+    },
+    "lead_signals": {
+      "before": 0,
+      "after": 0
+    },
+    "lead_score_snapshots": {
+      "before": 0,
+      "after": 0
+    },
+    "acquisition_quotas": {
+      "before": 0,
+      "after": 0
+    },
+    "comment_insights": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "verdict": "FAIL"
+}
