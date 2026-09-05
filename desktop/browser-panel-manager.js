@@ -589,6 +589,9 @@ class BrowserPanelManager {
       push({ status: 'ready' });
       // 页面换了，高亮标记随之消失——还有待批动作时重注入
       if (this._highlightSelector) this._applyPendingHighlight();
+      // 2026-09-05 复核 P0-1（页面级账号绑定）：跨文档导航会重置 JS 全局，
+      // 每次加载完成后重注入绑定标记，引擎据此精确核对「这个 page 属于哪个账号」。
+      this._injectPanelBindingMarker();
     });
     wc.on('did-fail-load', (_e, code, description, _url, isMainFrame) => {
       if (isMainFrame) {
@@ -634,6 +637,38 @@ class BrowserPanelManager {
   }
 
   // ---------- 会话操作（受信 IPC 入口，main.js 校验来源后调用） ----------
+
+  /**
+   * 2026-09-05 复核 P0-1（页面级账号绑定）：把「面板当前归属」写进页面全局
+   * （__kaypalPanelBinding），作为 engine 取页时的**页面级事实源**——
+   * 台账核验（panel-state）与取页之间存在竞态窗口（A/B 并发切换时 A 可能
+   * 核验通过后拿到 B 的 page），页面自带绑定标记后，任何 page 归属错位都会
+   * 被 engine evaluate 校验拦下（mismatch → 拒收 → 兜底 spawn），不再可能
+   * 「核验 A、登记 B」。注入失败静默（页面可能正在导航，did-finish-load 会补）。
+   */
+  _injectPanelBindingMarker() {
+    const view = this.panelView;
+    if (!view || !view.webContents || view.webContents.isDestroyed() || !this.session) {
+      return;
+    }
+    const marker = {
+      panelId: this.session.panelId,
+      sessionId: this.session.sessionId,
+      accountId:
+        this.session.accountId != null ? String(this.session.accountId) : null,
+      partition: this.session.partition,
+      injectedAt: new Date().toISOString(),
+    };
+    try {
+      view.webContents
+        .executeJavaScript(
+          `window.__kaypalPanelBinding = ${JSON.stringify(marker)};`,
+        )
+        .catch(() => {});
+    } catch {
+      /* 渲染进程不可用时不阻断 open，did-finish-load/下次 open 会补 */
+    }
+  }
 
   /** 打开（或恢复）浏览器面板并导航到 url */
   open(input) {
@@ -689,6 +724,9 @@ class BrowserPanelManager {
     this.relayout();
     this._animateWidthTo(this._currentWidth);
     this.panelView.webContents.loadURL(targetUrl);
+    // 2026-09-05 复核 P0-1（页面级账号绑定）：open 后立即注入（复用已加载页面
+    // 时无新导航，did-finish-load 不会再触发）；新导航由 did-finish-load 重注入。
+    this._injectPanelBindingMarker();
     this._emitState();
     this._emitSessionEvent(accountSwitched ? 'account-switched' : 'opened');
     this.recordActivity('open', '打开浏览器面板', true);

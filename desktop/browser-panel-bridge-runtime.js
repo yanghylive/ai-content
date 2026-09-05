@@ -121,14 +121,19 @@ function createBrowserBridgeRuntime({ manager, wiring, getUserDataDir, logger })
   async function _syncNow(event) {
     const type = event && event.type;
     try {
+      // 2026-09-05 复核修正（语义变更，如实交底）：桥与 App 同生命周期——
+      // hidden/destroyed/account-switched 不再关桥删凭据。原语义「面板不可见
+      // = agent 链路收口」会把引擎逼回「兜底 spawn 外部窗口」（大王持续报的
+      // 弹窗问题根因之一）；现在引擎经 panel-open（token+nonce+域名白名单
+      // 把守）可随时把面板重新展开，任务执行时面板对用户可见，可见性反而
+      // 更强。before-quit 仍走 close() 统一收口，磁盘不留 token。
+      await ensure();
+      const wrote = writeCredentials();
       if (type === 'opened' || type === 'shown') {
-        await ensure();
-        const wrote = writeCredentials();
         log(`[BrowserPanel] 桥就绪 ${bridge ? bridge.endpoint : '-'}（凭据文件写入${wrote ? '成功' : '失败'}）`);
         return { action: 'started', type, endpoint: bridge ? bridge.endpoint : null, wrote };
       }
-      await close();
-      return { action: 'stopped', type };
+      return { action: 'kept', type, wrote };
     } catch (error) {
       warn(`[BrowserPanel] 桥生命周期同步失败：${error && error.message}`);
       await close().catch(() => {});

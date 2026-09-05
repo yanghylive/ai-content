@@ -95,6 +95,25 @@ function makeFakeManager() {
       this.session = null;
       this._wc = null;
     },
+    // 2026-09-05 panel-open：引擎打开面板入口（真实 manager.open 的最小面）
+    open(input) {
+      return this.openAs({
+        ownerId: input.ownerId,
+        tenantId: input.tenantId,
+        accountId: input.accountId,
+        platform: input.platform,
+        currentUrl: input.url,
+      });
+    },
+    // panel-state：会话事实读取（真实 publicState 的最小面）
+    publicState() {
+      return {
+        visible: true,
+        session: this.session
+          ? { ...this.session, webContentsId: this._wc ? this._wc.id : null }
+          : null,
+      };
+    },
   };
   return manager;
 }
@@ -465,6 +484,109 @@ test('wiring 未登记面板拒绝（Agent 只能访问已打开面板）', () =
     () => wiring.resolveTargetForAgent('panel-ghost', ACTOR_A),
     /未登记/,
   );
+});
+
+// ---- 2026-09-05 引擎「内置面板优先」：openPanelForAgent ----
+// 2026-09-05 复核 P1：panel 路由与 /execute 同强度——actor 必须精确匹配引擎身份
+
+const ENGINE_ACTOR = { ownerId: 'local-engine', tenantId: 'local-tenant' };
+
+test('panel-open：白名单平台域放行，返回 partition/panelId 映射', () => {
+  const { manager, wiring } = setupHarness();
+  const out = wiring.openPanelForAgent({
+    actor: ENGINE_ACTOR,
+    url: 'https://creator.douyin.com/creator-micro/home',
+    accountId: '7',
+    platform: 'douyin',
+  });
+  assert.ok(out.panelId, 'panelId 应存在');
+  assert.equal(out.accountId, '7');
+  assert.equal(out.partition, 'persist:kaypal-browser-local-desktop-7');
+  assert.equal(out.url.includes('creator.douyin.com'), true);
+  // 固定引擎身份：不借调用方 actor 的 ownerId 开面板
+  assert.equal(manager.session.ownerId, 'local-desktop');
+});
+
+test('panel-open：子域放行 + 非白名单域名拒绝（防通用导航器滥用）', () => {
+  const { wiring } = setupHarness();
+  const sub = wiring.openPanelForAgent({
+    actor: ENGINE_ACTOR,
+    url: 'https://channels.weixin.qq.com/platform/home',
+    accountId: '9',
+    platform: 'wechat-channel',
+  });
+  assert.equal(sub.partition, 'persist:kaypal-browser-local-desktop-9');
+  assert.throws(
+    () =>
+      wiring.openPanelForAgent({
+        actor: ENGINE_ACTOR,
+        url: 'https://evil.example.com/phish',
+        accountId: '1',
+        platform: 'douyin',
+      }),
+    /仅允许已知平台域名/,
+  );
+  assert.throws(
+    () => wiring.openPanelForAgent({ actor: ENGINE_ACTOR, url: 'not-a-url' }),
+    /url|域名/,
+  );
+  assert.throws(
+    () => wiring.openPanelForAgent({ actor: ENGINE_ACTOR }),
+    /url 必填/,
+  );
+});
+
+test('panel-open/panel-state：actor 非 local-engine 身份 fail-closed（2026-09-05 复核 P1）', () => {
+  const { wiring } = setupHarness();
+  const wrongActor = { ownerId: 'someone-else', tenantId: 'local-tenant' };
+  assert.throws(
+    () =>
+      wiring.openPanelForAgent({
+        actor: wrongActor,
+        url: 'https://creator.douyin.com/creator-micro/home',
+        accountId: '7',
+        platform: 'douyin',
+      }),
+    /身份不一致/,
+  );
+  assert.throws(
+    () =>
+      wiring.openPanelForAgent({
+        actor: { ownerId: 'local-engine', tenantId: 'other-tenant' },
+        url: 'https://creator.douyin.com/creator-micro/home',
+      }),
+    /身份不一致/,
+  );
+  assert.throws(
+    () => wiring.openPanelForAgent({ url: 'https://creator.douyin.com/x' }),
+    /身份不一致/,
+  );
+  assert.throws(() => wiring.panelStateForAgent(wrongActor), /身份不一致/);
+  assert.throws(() => wiring.panelStateForAgent(), /身份不一致/);
+});
+
+// ---- 2026-09-05 复核 P0-1（账号强绑定）：panelStateForAgent ----
+
+test('panel-state：有会话返回台账 accountId/partition（脱敏），无会话返回 hasSession=false', () => {
+  const { manager, wiring } = setupHarness();
+  const empty = wiring.panelStateForAgent(ENGINE_ACTOR);
+  assert.equal(empty.hasSession, false);
+  assert.equal(empty.accountId, null);
+
+  manager.openAs({
+    ownerId: 'local-desktop',
+    tenantId: 'local-tenant',
+    accountId: '7',
+    platform: 'douyin',
+  });
+  const state = wiring.panelStateForAgent(ENGINE_ACTOR);
+  assert.equal(state.hasSession, true);
+  assert.equal(state.accountId, '7');
+  assert.equal(state.partition, 'persist:kaypal-browser-local-desktop-7');
+  assert.equal(state.platform, 'douyin');
+  // sessionId 不是 URL，不走 URL 脱敏（2026-09-05 修复误标 [unparseable-url]）
+  assert.ok(state.sessionId && state.sessionId !== '[unparseable-url]');
+  assert.ok('visible' in state && 'status' in state);
 });
 
 (async () => {

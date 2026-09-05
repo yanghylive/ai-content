@@ -164,6 +164,27 @@ async function startBrowserBridge(deps) {
       ok: true,
     }),
     'POST /observe': (body) => handleObserve(body),
+    /**
+     * 2026-09-05 复核 P0-1：面板当前会话事实（脱敏，只读）。
+     * 引擎在复用任何面板 page 前必须经此核验 accountId——
+     * partition 归属以 manager 台账为唯一事实源，禁止按平台/URL 猜。
+     */
+    'POST /panel-state': (body) => wiring.panelStateForAgent(body.actor),
+    /**
+     * 2026-09-05（引擎「内置面板优先」）：打开面板并加载平台 URL。
+     * 只开面板不碰页面内容；URL 域名白名单在 wiring.openPanelForAgent 把守，
+     * actor 引擎身份断言也在 wiring 层（与 /execute 同强度）。
+     * 打开后 3011 用 playwright connectOverCDP（按 partition 找 context）驱动。
+     */
+    'POST /panel-open': (body) => {
+      const { url, accountId, platform, actor } = body;
+      return wiring.openPanelForAgent({
+        url,
+        accountId,
+        platform,
+        actor,
+      });
+    },
     'POST /action-request': (body) => {
       const { panelId, actor, method, summary } = body;
       // 服务端拒绝自我批准：只签发确认单，批准权在用户通道（阶段 4b）
@@ -294,7 +315,7 @@ async function startBrowserBridge(deps) {
     } catch (error) {
       const message = error && error.message ? String(error.message) : 'internal';
       // actor/审批/白名单类错误按 403 透出；其余 500。不回显内部堆栈。
-      if (/不一致|拒绝|未登记|需要审批|actor|必填|fail-closed|自我批准|不存在/i.test(message)) {
+      if (/不一致|拒绝|未登记|需要审批|actor|必填|fail-closed|自我批准|不存在|仅允许|白名单/i.test(message)) {
         // 2026-09-04：拒绝原因细分 code + 附 reason（真机排障/前端友好提示需要）。
         // 细分只做保守映射，映射不到的统一 POLICY_DENIED。
         let code = 'POLICY_DENIED';

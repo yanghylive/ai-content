@@ -93,6 +93,29 @@ function makeFakeWiring() {
     listEventsForAgent() {
       return [];
     },
+    // 2026-09-05 panel-open：引擎打开面板端点的转发目标
+    openPanelForAgent(input) {
+      if (!input || !input.url) throw new Error('panel-open: url 必填');
+      let host = null;
+      try {
+        host = new URL(input.url).host;
+      } catch {
+        host = null;
+      }
+      const allowed =
+        host &&
+        ['douyin.com', 'weixin.qq.com', 'xiaohongshu.com'].some(
+          (h) => host === h || host.endsWith('.' + h),
+        );
+      if (!allowed) throw new Error(`panel-open 仅允许已知平台域名（命中: ${String(host)}）`);
+      return {
+        panelId: 'panel-x',
+        accountId: input.accountId ?? null,
+        platform: input.platform ?? null,
+        partition: `persist:kaypal-browser-local-desktop-${input.accountId ?? ''}`,
+        url: input.url,
+      };
+    },
   };
 }
 
@@ -428,6 +451,110 @@ test('close 后端口释放 + 后续调用不可达（before-quit 收尾语义�
   assert.equal(refused, true, 'close() 后端口必须释放，旧 token 不再可用');
   // 重复 close 幂等
   await bridge.close();
+});
+
+// ---- 2026-09-05 引擎「内置面板优先」：POST /panel-open ----
+
+test('panel-open：放行白名单域并转发 wiring，返回 partition 映射', async () => {
+  let received = null;
+  const wiring = makeFakeWiring();
+  const original = wiring.openPanelForAgent;
+  wiring.openPanelForAgent = (input) => {
+    received = input;
+    return original.call(wiring, input);
+  };
+  const bridge = await startBrowserBridge({ wiring, logger: { warn: () => {}, error: () => {} } });
+  try {
+    const res = await request(bridge.port, bridge.token, '/panel-open', {
+      actor: { ownerId: 'local-engine', tenantId: 'local-tenant' },
+      url: 'https://creator.douyin.com/creator-micro/home',
+      accountId: '7',
+      platform: 'douyin',
+    });
+    assert.equal(res.status, 200);
+    assert.equal(res.json.success, true);
+    assert.equal(res.json.data.partition, 'persist:kaypal-browser-local-desktop-7');
+    assert.equal(received.accountId, '7');
+    assert.equal(received.platform, 'douyin');
+  } finally {
+    await bridge.close();
+  }
+});
+
+test('panel-open：非白名单域 403 + 缺 actor 400（fail-closed）', async () => {
+  const wiring = makeFakeWiring();
+  const bridge = await startBrowserBridge({ wiring, logger: { warn: () => {}, error: () => {} } });
+  try {
+    const bad = await request(bridge.port, bridge.token, '/panel-open', {
+      actor: { ownerId: 'local-engine', tenantId: 'local-tenant' },
+      url: 'https://evil.example.com/x',
+      accountId: '1',
+      platform: 'douyin',
+    });
+    assert.equal(bad.status, 403, '白名单外域名必须 403');
+    const noActor = await request(bridge.port, bridge.token, '/panel-open', {
+      url: 'https://creator.douyin.com/creator-micro/home',
+    });
+    assert.equal(noActor.status, 400, '缺 actor 必须 400');
+  } finally {
+    await bridge.close();
+  }
+});
+
+// 2026-09-05 复核 P1：panel 路由 actor 归属校验（与 /execute 同强度）
+test('panel-state：引擎 actor 200 / 非 local-engine 身份 403（fail-closed）', async () => {
+  const wiring = makeFakeWiring();
+  wiring.panelStateForAgent = (actor) => {
+    if (
+      !actor ||
+      actor.ownerId !== 'local-engine' ||
+      actor.tenantId !== 'local-tenant'
+    ) {
+      throw new Error('面板路由 actor 身份不一致（仅允许 local-engine 引擎身份，fail-closed）');
+    }
+    return { hasSession: false, accountId: null, partition: null };
+  };
+  const bridge = await startBrowserBridge({ wiring, logger: { warn: () => {}, error: () => {} } });
+  try {
+    const ok = await request(bridge.port, bridge.token, '/panel-state', {
+      actor: { ownerId: 'local-engine', tenantId: 'local-tenant' },
+    });
+    assert.equal(ok.status, 200);
+    assert.equal(ok.json.data.hasSession, false);
+    const wrong = await request(bridge.port, bridge.token, '/panel-state', {
+      actor: { ownerId: 'someone-else', tenantId: 'local-tenant' },
+    });
+    assert.equal(wrong.status, 403, '非引擎身份必须 403');
+    assert.equal(wrong.json.error.code, 'POLICY_DENIED');
+  } finally {
+    await bridge.close();
+  }
+});
+
+test('panel-open：actor 身份不一致透传为 403（wiring 断言生效）', async () => {
+  const wiring = makeFakeWiring();
+  wiring.openPanelForAgent = (input) => {
+    if (
+      !input ||
+      !input.actor ||
+      input.actor.ownerId !== 'local-engine' ||
+      input.actor.tenantId !== 'local-tenant'
+    ) {
+      throw new Error('面板路由 actor 身份不一致（仅允许 local-engine 引擎身份，fail-closed）');
+    }
+    return { panelId: 'p1', accountId: input.accountId, partition: null };
+  };
+  const bridge = await startBrowserBridge({ wiring, logger: { warn: () => {}, error: () => {} } });
+  try {
+    const wrong = await request(bridge.port, bridge.token, '/panel-open', {
+      actor: { ownerId: 'local-engine', tenantId: 'other-tenant' },
+      url: 'https://creator.douyin.com/creator-micro/home',
+    });
+    assert.equal(wrong.status, 403, 'actor 身份不一致必须 403');
+    assert.equal(wrong.json.error.code, 'POLICY_DENIED');
+  } finally {
+    await bridge.close();
+  }
 });
 
 (async () => {

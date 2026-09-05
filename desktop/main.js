@@ -935,6 +935,13 @@ function createWindow() {
 
   mainWindow = new BrowserWindow(windowOptions);
   mainWindow.setMenuBarVisibility(false);
+  // 2026-09-05（真机实证）：窗壳自身 webContents 完全空白时，该 target 在 CDP
+  // （remote-debugging-port）下不响应任何命令——playwright connectOverCDP /
+  // playwright-mcp --cdp-endpoint 的 auto-attach 初始化会被它卡死超时
+  // （同一时刻其余 5 个 view target 均 4ms 内响应，唯独空白窗壳挂死）。
+  // 显式加载 about:blank 强制 renderer 进程启动，UI 仍由工作区 tab 视图承载，
+  // 主窗口行为不变；这是「引擎经 CDP 驱动内置面板」链路的前置条件。
+  mainWindow.webContents.loadURL('about:blank').catch(() => {});
 
   // 多工作区标签壳（方案 A）：前端加载进各标签 WebContentsView，窗口自身
   // webContents 保持空白；TabManager 在 contentView 下挂 tab 条 + 内容视图，
@@ -2805,6 +2812,18 @@ app.whenReady().then(async () => {
 
   // 创建窗口
   createWindow();
+
+  // 2026-09-05（引擎「内置面板优先」）：App 启动即起桥并写凭据文件——
+  // 3011 引擎的 panel-open 需先读到桥凭据才能触达 desktop；此前桥只在面板
+  // opened/shown 后才可用，形成"面板没开过 → 引擎永远请求不到开面板"的死锁。
+  // 桥 token/nonce/域名白名单安全边界不变；面板 hidden/closed 的收口语义不变
+  // （sync 仍按会话事件关桥，下次引擎 panel-open 时 ensure 会重新拉起）。
+  browserBridgeRuntime
+    .ensure()
+    .then(() => {
+      browserBridgeRuntime.writeCredentials();
+    })
+    .catch((e) => console.warn('[BrowserPanel] App 启动起桥失败:', e && e.message));
 
   // 创建系统托盘
   createTray();

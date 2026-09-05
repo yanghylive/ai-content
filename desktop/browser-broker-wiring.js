@@ -13,10 +13,50 @@
  *    跨 owner/跨租户 fail-closed 并留痕。
  */
 
-const { BrowserPanelBroker } = require('./browser-panel-broker');
+const { BrowserPanelBroker, redactUrlForEvidence } = require('./browser-panel-broker');
 
 const DEFAULT_OWNER = 'local-desktop';
 const DEFAULT_TENANT = 'local-tenant';
+
+/**
+ * 引擎（3011 local-engine）的固定 agent 身份（2026-09-05 复核 P1）：
+ * panel-state / panel-open 与 /execute 的 handleFor(panelId, actor) 同一强度——
+ * actor 必须精确匹配此身份才可访问面板路由，跨 owner/跨租户 fail-closed。
+ * 引擎侧（agent-panel-bridge.service.ts）发送的 actor 与此对齐。
+ */
+const ENGINE_AGENT_ACTOR = Object.freeze({
+  ownerId: 'local-engine',
+  tenantId: 'local-tenant',
+});
+
+function assertEngineAgentActor(actor) {
+  if (
+    !actor ||
+    typeof actor !== 'object' ||
+    actor.ownerId !== ENGINE_AGENT_ACTOR.ownerId ||
+    actor.tenantId !== ENGINE_AGENT_ACTOR.tenantId
+  ) {
+    throw new Error(
+      '面板路由 actor 身份不一致（仅允许 local-engine 引擎身份，fail-closed）',
+    );
+  }
+}
+
+/**
+ * panel-open 允许的域名白名单（2026-09-05 阶段 P1：引擎「内置面板优先」通道）。
+ * 3011 引擎请求打开面板时，URL 必须命中已知平台域——防止桥被当成通用
+ * 导航器（代理任意浏览）。子域自动放行（endsWith '.' + host）。
+ */
+const PANEL_OPEN_ALLOWED_HOSTS = [
+  'douyin.com',
+  'weixin.qq.com',
+  'xiaohongshu.com',
+  'kuaishou.com',
+  'bilibili.com',
+  'weibo.com',
+  'zhihu.com',
+  'toutiao.com',
+];
 
 /**
  * @param {{
@@ -222,6 +262,36 @@ function wireBrowserPanel(deps) {
     hasHandle(panelId) {
       return handles.has(panelId);
     },
+    /**
+     * 2026-09-05 复核 P0-1（账号强绑定）：面板当前会话事实（脱敏）。
+     * 引擎复用/请求面板前必须先核对本口径的 accountId——
+     * partition 归属以 manager 会话台账为唯一事实源，禁止按平台/URL 猜。
+     */
+    panelStateForAgent(actor) {
+      // 2026-09-05 复核 P1：与 /execute 同强度——先断言引擎身份，再读台账。
+      assertEngineAgentActor(actor);
+      if (typeof manager.publicState !== 'function') {
+        throw new Error('panel-state: manager.publicState 不可用');
+      }
+      const state = manager.publicState();
+      const session = state && state.session;
+      if (!session) {
+        return { hasSession: false, accountId: null, partition: null };
+      }
+      return {
+        hasSession: true,
+        panelId: session.panelId || null,
+        // sessionId 不是 URL，不走 URL 脱敏（误标 [unparseable-url] 反而丢证据信息）；
+        // URL 敏感信息（query token 等）只对 currentUrl 脱敏。
+        sessionId: String(session.sessionId || '') || null,
+        accountId: session.accountId != null ? String(session.accountId) : null,
+        platform: session.platform || null,
+        partition: session.partition || null,
+        url: redactUrlForEvidence(String(session.currentUrl || '')),
+        visible: state.visible === true,
+        status: session.status || null,
+      };
+    },
     /** 三方绑定事实源（阶段 1 P0 延续）：agent 带 actor 访问 */
     resolveTargetForAgent(panelId, actor) {
       const handle = handleFor(panelId, actor);
@@ -254,6 +324,59 @@ function wireBrowserPanel(deps) {
       }
       notifyPendingChange(panelId);
       return Object.assign({}, ticket, { autoApproved });
+    },
+    /**
+     * 2026-09-05（引擎「内置面板优先」通道）：3011 引擎经本方法请求打开面板，
+     * 替代"spawn 独立可见 Chromium（被当成外部浏览器）"的兜底路径。
+     * 边界：
+     *  - 只开面板 + 加载 URL（经 manager.open 的 normalizePanelUrl 校验），
+     *    不读取/返回任何页面内容；页面后续操作仍走 broker CDP 闸门 / 引擎
+     *    connectOverCDP（按 partition 找 context）；
+     *  - URL 域名白名单（PANEL_OPEN_ALLOWED_HOSTS），防通用导航器滥用；
+     *  - actor 必须精确匹配引擎身份（assertEngineAgentActor，与 /execute 同强度，
+     *    2026-09-05 复核 P1）；面板 owner 仍固定 local-desktop 引擎身份，
+     *    不借用户身份开面板。
+     */
+    openPanelForAgent(input) {
+      const { url, accountId, platform, actor } = input || {};
+      assertEngineAgentActor(actor);
+      if (!url || typeof url !== 'string') {
+        throw new Error('panel-open: url 必填');
+      }
+      let host = null;
+      try {
+        host = new URL(url).host;
+      } catch {
+        host = null;
+      }
+      const allowed =
+        host &&
+        PANEL_OPEN_ALLOWED_HOSTS.some(
+          (h) => host === h || host.endsWith('.' + h),
+        );
+      if (!allowed) {
+        throw new Error(`panel-open 仅允许已知平台域名（命中: ${String(host)}）`);
+      }
+      if (typeof manager.open !== 'function') {
+        throw new Error('panel-open: manager.open 不可用');
+      }
+      const state = manager.open({
+        url,
+        ownerId: DEFAULT_OWNER,
+        tenantId: DEFAULT_TENANT,
+        accountId,
+        platform,
+      });
+      // 真实 manager.open 返回 publicState（session 挂在 .session）；
+      // 测试假实现可能直接返回 session 形态——两者都兼容。
+      const sess = (state && state.session) || state || null;
+      return {
+        panelId: (sess && sess.panelId) || null,
+        accountId: (sess && sess.accountId) ?? accountId ?? null,
+        platform: (sess && sess.platform) ?? platform ?? null,
+        partition: (sess && sess.partition) || null,
+        url: (sess && sess.currentUrl) || url,
+      };
     },
     /**
      * **用户（面板所有者）批准通道** —— 阶段 4 审批 UI 的主进程接缝。

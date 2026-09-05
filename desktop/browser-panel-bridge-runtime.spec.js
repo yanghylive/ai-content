@@ -123,31 +123,34 @@ test('opened → 起桥 + 写 0600 凭据文件（含 endpoint/panelId/webConten
   await runtime.close();
 });
 
-test('hidden → 关桥 + 删凭据文件（磁盘不留残留 token）', async () => {
+test('hidden → 桥保留 + 凭据保留（2026-09-05 语义变更：引擎可 panelOpen 重新展开面板）', async () => {
   const { dir, runtime } = setup();
   await runtime.sync({ type: 'opened' });
   const cred = readRegistry({ userDataDir: dir });
   const port = new URL(cred.endpoint).port;
 
   const result = await runtime.sync({ type: 'hidden' });
-  assert.equal(result.action, 'stopped');
-  assert.equal(fs.existsSync(registryPath(dir)), false, '凭据文件必须被删除');
-  assert.equal(readRegistry({ userDataDir: dir }), null);
+  assert.equal(result.action, 'kept');
+  assert.ok(fs.existsSync(registryPath(dir)), '凭据文件保留（引擎核验账号归属需要）');
+  assert.ok(readRegistry({ userDataDir: dir }), '凭据可读');
 
-  await assert.rejects(() => get(port, cred.token), /ECONNREFUSED/, '端口应已释放');
+  const res = await get(port, cred.token);
+  assert.equal(res.status, 200, '桥仍可访问（App 生命周期内常驻）');
+  await runtime.close();
 });
 
-test('destroyed / account-switched 同样关桥并删文件', async () => {
+test('destroyed / account-switched → 凭据刷新（不删），桥保留', async () => {
   for (const type of ['destroyed', 'account-switched']) {
     const { dir, runtime } = setup();
     await runtime.sync({ type: 'opened' });
     await runtime.sync({ type });
-    assert.equal(fs.existsSync(registryPath(dir)), false, type);
-    assert.equal(runtime.info(), null, type);
+    assert.ok(fs.existsSync(registryPath(dir)), type);
+    assert.ok(runtime.info(), type);
+    await runtime.close();
   }
 });
 
-test('隐藏后重新可见 → 换新端口 + 新 token（旧凭据自然失效）', async () => {
+test('hidden 后 shown → 桥复用（token/端口不变，凭据刷新）', async () => {
   const { dir, runtime } = setup();
   await runtime.sync({ type: 'opened' });
   const first = readRegistry({ userDataDir: dir });
@@ -155,14 +158,8 @@ test('隐藏后重新可见 → 换新端口 + 新 token（旧凭据自然失效
   await runtime.sync({ type: 'shown' });
   const second = readRegistry({ userDataDir: dir });
 
-  assert.notEqual(second.token, first.token, 'token 必须轮换');
-  assert.notEqual(second.endpoint, first.endpoint, '端口必须换');
-
-  // 旧 endpoint 已关闭
-  await assert.rejects(
-    () => get(new URL(first.endpoint).port, first.token),
-    /ECONNREFUSED/,
-  );
+  assert.equal(second.token, first.token, '桥复用 → token 不变');
+  assert.equal(second.endpoint, first.endpoint, '桥复用 → 端口不变');
   await runtime.close();
 });
 
