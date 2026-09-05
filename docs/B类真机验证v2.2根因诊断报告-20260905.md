@@ -157,24 +157,29 @@ verify-kuaishou-2026-09-05T07-55-40-517Z-FAIL.json  (v2.2 commit，3014 端口�
 
 ## 八、事故交底：pkill 误杀 3013
 
-**事故**：本节提到「起独立 3014 后端」时用 `pkill -f "dist-bundle-sqlite/index.js"` 关闭 3014——这个模式匹配**误杀了 3013 ai-content 主后端**（PID 24342）。
+**事故**：本节提到「起独立 3014 后端」时用 `pkill -f "dist-bundle-sqlite/index.js"` 关闭 3014——这个模式匹配**误杀了 3013 ai-content B 类验证端口的 dist-bundle-sqlite 副本**（PID 24342）。
 
 **根因**：
-- 3013 是 launchd 托管服务（plist `com.jiuzhang.ai-content-backend.plist`），但 plist 用 `npm run start:backend` 起 nest 默认 bundle，**与我验证时手动起的 `dist-bundle-sqlite/index.js` 是不同进程**——plist 不能自动恢复
-- plist 没设 KeepAlive，仅 RunAtLoad=true，所以 `launchctl start` 拉起的是 nest bundle 不是 dist-bundle
-- pkill -f 按命令行匹配，没限定端口，把所有 dist-bundle-sqlite 进程都杀了
+- **3013 不是 launchd plist 管的端口**——plist `com.jiuzhang.ai-content-backend.plist` 实际管的是 3011（看 plist `StandardOutPath=backend-3011.log`、脚本 `backend-launchd.sh`）
+- 但 launchctl list 显示 ai-content-backend PID=-15（plist 拉的进程**早就崩了**，3011 端口一直靠另一份 dist-bundle-sqlite 副本 PID 36169 曲线救国）
+- 我之前误以为 3013 是 plist 管的 ai-content 主后端——**完全错**，3013 是 B 类验证时手动起的副本
+- pkill -f 模式匹配 dist-bundle-sqlite/index.js 杀了 3013，但**没杀** 3011 的副本（路径 `~/.workbuddy/ai-content-backend/...`，pkill 模式没匹配到）
 
 **止血**（已执行）：
 1. 从 ps eww 拿到 3013 之前的完整环境（PORT=3013/KAYPAL_DESKTOP_DATABASE_MODE=sqlite/SQLITE_DATABASE_URL/DATABASE_URL/KAYPAL_DESKTOP_USER_DATA_DIR）
 2. nohup + dist-bundle-sqlite 手动重启 → PID 37145，端口 3013 已恢复（HTTP 404 = nest 正常响应）
 3. 重启后跑 verify 脚本：HTTP 500 + FAIL，符合预期（风控不变），但 3013 业务功能已恢复
 
-**影响窗口**：约 4 分钟（pkill 16:01:34 → 3013 16:05 拉起）。如果你的桌面端在此期间正在跑且用到 3013 功能，**有约 4 分钟不可用窗口**。
+**影响窗口**：约 4 分钟（pkill 16:01:34 → 3013 16:05 拉起）。3013 是 B 类验证端口，被杀只影响本次验证，**不影响桌面端用户**（用户用的是 3010/3011）。
+
+**事故扩大的隐藏根因**：之前我以为 3013 是 plist 管的 ai-content 主后端——这个**误判来自「PID 24342 PPID=1」**：orphan 进程 + 监听 ai-content 业务端口，让人以为是 launchd 管的。实际上 plist 管的 3011 一直 PID=-15 异常状态。
 
 **教训**：
-- **不能用 `pkill -f <pattern>` 关闭自己起的 dev 后端**——必须按 PID 或端口范围精准匹配
+- **不能用 `pkill -f <pattern>` 关闭自己起的 dev 后端**——必须按 PID 或端口精准匹配
 - 自定义后端启动必须明确用 `lsof -i:<port> | awk '{print $2}'` 拿 PID 再 kill
-- `pkill -f` 在 sandbox 里也容易误杀（即便没权限，模式匹配仍生效）
+- pkill -f 模式匹配在 sandbox 里也会生效（即便没权限）
+- **PPID=1 不等于 launchd 托管**——orphan 进程（PPID=1）可能只是父进程已退，要看 ps eww 完整 env 才能判定
+- **plist 的 PID 列=-15 意味着服务异常**（即使 KeepAlive=true），需手动重启
 
 ---
 
@@ -198,7 +203,8 @@ verify-kuaishou-2026-09-05T07-55-40-517Z-FAIL.json  (v2.2 commit，3014 端口�
 
 - `f48198ca` 验证脚本 v2.2
 - `651f1c20` 诊断报告 + 诊断脚本
-- 3013 重启：手动 nohup 起新进程，PID 37145（plist 不能自动恢复，是 launchd 配置缺陷，建议补 KeepAlive=true 或改 plist 命令与实际一致）
+- 3013 重启：手动 nohup 起新进程，PID 37145（plist 不能自动恢复，因为 3013 本来就不是 plist 管的端口）
+- **额外发现**：plist `com.jiuzhang.ai-content-backend` 实际管的是 3011 端口，但 `launchctl list` 显示其 PID=-15（服务异常），3011 端口是靠独立 dist-bundle-sqlite 副本曲线救国（PID 36169，路径 `~/.workbuddy/ai-content-backend/`）。这是 ai-content 项目持续存在的 launchd 配置缺陷，建议单独起一项修复（不属于 B 类范围）。
 
 ---
 
