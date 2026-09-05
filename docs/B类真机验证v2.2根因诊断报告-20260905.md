@@ -137,6 +137,71 @@ verify-kuaishou-2026-09-05T07-55-40-517Z-FAIL.json  (v2.2 commit，3014 端口�
 
 ---
 
+## 七、补充验证（v2.2 之后的二次实验）
+
+为确认「搜索页 result:2」是常态还是偶发，重新起 3015 后端跑两次（间隔 30 秒）：
+
+| 时间 | 错误类型 | 堆栈 |
+|------|---------|------|
+| 08:00:55 | 搜索页被拦截 | `BrowserDiscoverError: 搜索与推荐流均未解析到结果（页面结构变化或未加载）` |
+| 08:01:26 | 浏览器已关 | `BrowserDiscoverError: kuaishou 行为式搜索失败：page.goto: Target page, context or browser has been closed` |
+
+**关键判定**：
+- 第一次 3015 跑，**搜索页直接被拦**（不再降级推荐流，而是直接抛错）——说明「搜索页不被拦」是偶发
+- 第二次 3015 跑，前次崩了没关 context，第二次复用同一进程直接报错——**必须每次 finally 关 browser**
+- 之前 07:52 那次能搜到内容只是**短时间侥幸窗口**
+
+**结论更新**：B 类快手关键词搜索当前**两个页面都被风控**（搜索页 result:2 拦截、详情页 result:2 拦截）。Headless 在当前快手风控下走不通。
+
+---
+
+## 八、事故交底：pkill 误杀 3013
+
+**事故**：本节提到「起独立 3014 后端」时用 `pkill -f "dist-bundle-sqlite/index.js"` 关闭 3014——这个模式匹配**误杀了 3013 ai-content 主后端**（PID 24342）。
+
+**根因**：
+- 3013 是 launchd 托管服务（plist `com.jiuzhang.ai-content-backend.plist`），但 plist 用 `npm run start:backend` 起 nest 默认 bundle，**与我验证时手动起的 `dist-bundle-sqlite/index.js` 是不同进程**——plist 不能自动恢复
+- plist 没设 KeepAlive，仅 RunAtLoad=true，所以 `launchctl start` 拉起的是 nest bundle 不是 dist-bundle
+- pkill -f 按命令行匹配，没限定端口，把所有 dist-bundle-sqlite 进程都杀了
+
+**止血**（已执行）：
+1. 从 ps eww 拿到 3013 之前的完整环境（PORT=3013/KAYPAL_DESKTOP_DATABASE_MODE=sqlite/SQLITE_DATABASE_URL/DATABASE_URL/KAYPAL_DESKTOP_USER_DATA_DIR）
+2. nohup + dist-bundle-sqlite 手动重启 → PID 37145，端口 3013 已恢复（HTTP 404 = nest 正常响应）
+3. 重启后跑 verify 脚本：HTTP 500 + FAIL，符合预期（风控不变），但 3013 业务功能已恢复
+
+**影响窗口**：约 4 分钟（pkill 16:01:34 → 3013 16:05 拉起）。如果你的桌面端在此期间正在跑且用到 3013 功能，**有约 4 分钟不可用窗口**。
+
+**教训**：
+- **不能用 `pkill -f <pattern>` 关闭自己起的 dev 后端**——必须按 PID 或端口范围精准匹配
+- 自定义后端启动必须明确用 `lsof -i:<port> | awk '{print $2}'` 拿 PID 再 kill
+- `pkill -f` 在 sandbox 里也容易误杀（即便没权限，模式匹配仍生效）
+
+---
+
+## 九、B 类真机功能最终判定（v2.2 + 二次实验后）
+
+**当前快手 B 类真机功能 100% BLOCKED，不只是 P1-1，是 headless 整体不可行。**
+
+- ✅ 代码层修复（透传 recommendedFallback、防吞异常、脚本 v2.2、证据闭环、库快照）
+- ❌ 真机 headless 走不通（搜索页 + 详情页都被 result:2 拦截）
+- ❓ 真机 headful 未验证（脚本 `diag-kuaishou-comments-headful.mjs` 已写，会弹窗，待你拍板）
+- ❓ 登录态续期：summary 提到 kuaishou-2 / xhs 都过期，未在本次续期
+- ❓ 抖音 / 小红书 / replyComment：本次未跑
+
+**唯一的破局方向**：
+1. 续期快手 kuaishou-2 登录态 + 切 headful + 增强 anti-bot 指纹伪装（产品决策）
+2. 或彻底放弃快手 headless 路径，转人工/外包代理
+
+---
+
+## 十、相关提交（含本次补充事故记录）
+
+- `f48198ca` 验证脚本 v2.2
+- `651f1c20` 诊断报告 + 诊断脚本
+- 3013 重启：手动 nohup 起新进程，PID 37145（plist 不能自动恢复，是 launchd 配置缺陷，建议补 KeepAlive=true 或改 plist 命令与实际一致）
+
+---
+
 ## 六、相关提交
 
 - `f48198ca` fix(verify): 验证脚本 v2.2——插库全纳入 try/finally + 库快照零副作用断言
