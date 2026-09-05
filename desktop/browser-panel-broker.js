@@ -252,6 +252,24 @@ class BrowserPanelBroker {
   }
 
   /**
+   * wiring 专用 teardown（2026-09-04 阶段 5 只读校准 E2E 抓获）：
+   * token 过期即被 _authorize 从 panel.tokens 删除，此后 destroyPanel(token)
+   * 恒 no-op —— 旧 panel 永久残留 broker，createPanel(同 panelId) 抛
+   * 「panelId 已存在」，重铸链路死锁。本方法只给主进程内的 wiring 用
+   * （broker 实例不出 wiring 模块，token 本就由它代持），幂等清干净。
+   */
+  dropPanel(panelId) {
+    const panel = this._panels.get(panelId);
+    if (!panel) return;
+    this._panels.delete(panelId);
+    this._events.delete(panelId);
+    for (const [actionId, owner] of this._pendingApprovals.entries()) {
+      if (owner === panelId) this._pendingApprovals.delete(actionId);
+    }
+    this._emit(panelId, 'panel.destroyed', {});
+  }
+
+  /**
    * 鉴权 + 目标解析：返回 panelId/sessionId/webContentsId 三方绑定。
    * 这一步是"同页控制"的事实源：任何动作前必须拿到同一 webContentsId。
    * 兼容 Electron webContents（getURL()）与测试替身（.url 字段）。
