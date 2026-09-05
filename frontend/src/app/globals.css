@@ -487,10 +487,30 @@
 .preview-main-button { position: relative; overflow: hidden; }
 .preview-main-button:after { content: ""; position: absolute; top: -20%; bottom: -20%; left: -60%; width: 42%; background: linear-gradient(105deg, transparent, rgba(255,255,255,.38), transparent); transform: skewX(-18deg); animation: ctaSheen 6s ease-in-out infinite; pointer-events: none; }
 @keyframes ctaSheen { 0%, 72% { left: -60%; } 92%, 100% { left: 130%; } }
+/* ---- 左区增强：极光 / 水面月影 / 标题流光 / kicker 呼吸线 / 特性浮动 / 网格视差 ---- */
+.scene-aurora { position: absolute; z-index: 3; left: -14%; top: 4%; width: 68%; height: 48%; background: radial-gradient(58% 52% at 32% 42%, rgba(124,58,237,.22), transparent 70%), radial-gradient(48% 44% at 72% 28%, rgba(56,189,248,.11), transparent 72%); filter: blur(30px); animation: auroraBreath 9s ease-in-out infinite; }
+/* 柔和呼吸：位置纹丝不动，只随时间明暗 + 极轻膨胀（scale ≤1.06 且 origin 居中，
+   视觉上等同"光团在慢慢吸气"），比横漂更安静、不抢文字注意力 */
+@keyframes auroraBreath { 0%,100% { opacity: .45; transform: scale(1); } 50% { opacity: .85; transform: scale(1.05); } }
+.scene-water { position: absolute; z-index: 3; left: 4%; right: 0; bottom: 0; height: 20%; background: linear-gradient(0deg, rgba(168,100,255,.12), transparent 68%), repeating-linear-gradient(0deg, rgba(255,255,255,.055) 0 2px, transparent 2px 8px); mask-image: linear-gradient(0deg, #000, transparent 92%); animation: waterShimmer 5.5s ease-in-out infinite; }
+@keyframes waterShimmer { 0%,100% { opacity: .45; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+.login-preview-hero-copy h1 em { background: linear-gradient(100deg, #8b5cf6 0%, #c4a2ff 28%, #f3eaff 46%, #a86cf2 60%, #8b5cf6 100%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: titleSheen 7s linear infinite; }
+@keyframes titleSheen { to { background-position: -220% 0; } }
+.preview-kicker:before { animation: kickerLine 4.2s ease-in-out infinite; }
+@keyframes kickerLine { 0%,100% { width: 32px; opacity: .65; } 50% { width: 54px; opacity: 1; } }
+.login-preview-features > div { animation: featureFloat 5.2s ease-in-out infinite; }
+.login-preview-features > div:nth-child(2) { animation-delay: .85s; }
+.login-preview-features > div:nth-child(3) { animation-delay: 1.7s; }
+@keyframes featureFloat { 0%,100% { transform: none; } 50% { transform: translateY(-6px); } }
+.login-preview-hero:before { animation: gridShift 26s linear infinite alternate; }
+@keyframes gridShift { from { background-position: 0 0, 0 0; } to { background-position: 44px 22px, 44px 22px; } }
+.preview-credit:before { animation: creditPulse 5s ease-in-out infinite; }
+@keyframes creditPulse { 0%,100% { width: 22px; opacity: .35; } 50% { width: 36px; opacity: .95; } }
 @media (prefers-reduced-motion: reduce) {
-  .login-preview-hero-scene, .scene-glow, .scene-stars, .scene-stars:after, .scene-shoot, .login-preview-hero-copy > *, .login-preview-features, .preview-main-button:after { animation: none; }
+  .login-preview-hero-scene, .scene-glow, .scene-stars, .scene-stars:after, .scene-shoot, .scene-aurora, .scene-water, .login-preview-hero-copy > *, .login-preview-hero-copy h1 em, .preview-kicker:before, .login-preview-features > div, .login-preview-hero:before, .preview-credit:before, .preview-main-button:after { animation: none; }
   .scene-shoot { opacity: 0; }
   .login-preview-hero-copy > *, .login-preview-features { opacity: 1; transform: none; }
+  .login-preview-hero-copy h1 em { -webkit-text-fill-color: #a86cf2; }
 }
 .login-preview-hero-copy { max-width: 620px !important; position: relative; z-index: 2; }
 .login-preview-hero-copy > div:first-child { gap: 0 !important; }
