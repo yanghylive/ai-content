@@ -29,6 +29,7 @@ import type { Frame, Page } from 'playwright';
 import { PlaywrightMcpService } from './playwright-mcp.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
 import { AgentPanelBridgeService } from './agent-panel-bridge.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { safeText } from '../../common/text.utils';
 
 /** 浏览器 window 上挂载的抖音 IM 抓包缓存（页面注入脚本写入） */
@@ -169,8 +170,11 @@ export class PlatformInteractionExecutor {
     private readonly mcp: PlaywrightMcpService,
     private readonly browser: LocalBrowserEngine,
     // 2026-09-05 复核 P0-2：获客/互动 dispatch 写链的审批闸门（面板桥）。
-    // 未注入 = 纯兜底环境（无 desktop 面板），闸门旁路并如实留痕。
+    // 未注入 = 纯兜底环境（无 desktop 面板），闸门 fail-closed 拒绝。
     @Optional() private readonly panelBridge?: AgentPanelBridgeService,
+    // 2026-09-05 复核 P2：闸门拒绝/调试旁路的长效审计落 AgentConfirmation
+    // （经闸路径的审计由面板单状态机覆盖，无需重复落）。
+    @Optional() private readonly prisma?: PrismaService,
   ) {}
 
   listSessions() {
@@ -279,6 +283,54 @@ export class PlatformInteractionExecutor {
   }
 
   /**
+   * 2026-09-05 复核 P2：闸门拒绝/调试旁路的**长效审计**——落 AgentConfirmation
+   * 行（status=rejected / 调试旁路=approved+note 打标），confirmationJson.source
+   * ='interaction-gate' 便于反查。经闸自动批路径不重复落（面板单状态机已是审计）。
+   * best-effort：prisma 缺失/写失败只 warn，不影响业务返回。
+   */
+  private async persistGateAudit(
+    gate: 'gate-unavailable' | 'bypassed-no-bridge' | 'bypassed-bridge-error',
+    input: PlatformDispatchInput,
+    sessionKey: string,
+  ): Promise<void> {
+    if (!this.prisma) return;
+    const now = new Date();
+    const id = `gate-${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`;
+    try {
+      await this.prisma.agentConfirmation.create({
+        data: {
+          id,
+          sessionId: sessionKey || id,
+          action: 'Interaction.dispatch',
+          status: gate === 'gate-unavailable' ? 'rejected' : 'approved',
+          riskLevel: 'medium',
+          targetLabel: `${input.platform}/${input.taskType}/${input.action}`,
+          note:
+            gate === 'gate-unavailable'
+              ? '审批闸门不可用，fail-closed 拒绝执行外部写操作'
+              : '调试开关 INTERACTION_GATE_BYPASS=1 显式旁路（留痕）',
+          confirmationJson: {
+            source: 'interaction-gate',
+            gate,
+            platform: input.platform,
+            taskType: input.taskType,
+            dispatchAction: input.action,
+            accountId: String(input.accountId),
+            replyTextPreview: String(input.replyText || '').slice(0, 120),
+            decidedAt: now.toISOString(),
+          } as unknown as object,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `闸门审计落库失败（${gate}）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+
+  /**
    * 2026-09-05 复核 P0-2：dispatch 写链审批闸门。
    * 此前 dispatchWithLocalBrowser 拿到 engine page 后直接 goto/DOM/发送，
    * 绕开了 AgentBrowserExecutor 的 actionId/Broker 审批链——本方法补上：
@@ -303,6 +355,7 @@ export class PlatformInteractionExecutor {
         this.logger.warn(
           `审批闸门不可用，fail-closed 拒绝写操作（无面板桥）：${input.platform}/${input.taskType}/${input.action} account=${input.accountId}`,
         );
+        await this.persistGateAudit('gate-unavailable', input, sessionKey);
         return {
           pass: false,
           gate: 'gate-unavailable',
@@ -315,6 +368,7 @@ export class PlatformInteractionExecutor {
       this.logger.warn(
         `审批闸门旁路（调试开关 INTERACTION_GATE_BYPASS=1，无面板桥）：${input.platform}/${input.taskType}/${input.action} account=${input.accountId}`,
       );
+      await this.persistGateAudit('bypassed-no-bridge', input, sessionKey);
       return { pass: true, actionId: null, gate: 'bypassed-no-bridge' };
     }
     let ticket: Awaited<
@@ -347,6 +401,7 @@ export class PlatformInteractionExecutor {
             error instanceof Error ? error.message : String(error)
           }`,
         );
+        await this.persistGateAudit('gate-unavailable', input, sessionKey);
         return {
           pass: false,
           gate: 'gate-unavailable',
@@ -362,6 +417,7 @@ export class PlatformInteractionExecutor {
           error instanceof Error ? error.message : String(error)
         }`,
       );
+      await this.persistGateAudit('bypassed-bridge-error', input, sessionKey);
       return { pass: true, actionId: null, gate: 'bypassed-bridge-error' };
     }
     if (!ticket.autoApproved) {
@@ -382,25 +438,16 @@ export class PlatformInteractionExecutor {
         ? this.resolveDouyinPublicVideoUrl(input) ||
           PLATFORM_URLS[input.platform][input.taskType]
         : PLATFORM_URLS[input.platform][input.taskType];
-    const session = await this.browser.getOrCreateSession({
-      platform: input.platform,
-      accountId: input.accountId,
-    });
-    let page = session.page;
-    this.logger.log(
-      `local-browser dispatch ${input.platform}/${input.taskType} account=${input.accountId} action=${input.action} url=${targetUrl}`,
-    );
-
-    // 2026-09-05 复核 P0-2：写链先过审批闸门（登录态检查等只读步骤前的
-    // goto 属于业务 dispatch 的一部分，统一由本单覆盖）。
-    const gate = await this.ensureDispatchWriteGate(input, session.key);
+    // 2026-09-05 复核 P0-2 + P2：写链**先过审批闸门再创建会话**——
+    // fail-closed 拒绝时不产生浏览器会话（无谓资源/弹窗）；sessionKey 用
+    // engine 约定的 `${platform}-${accountId}` 预期键（审计回查用）。
+    const expectedSessionKey = `${input.platform}-${String(input.accountId)}`;
+    const gate = await this.ensureDispatchWriteGate(input, expectedSessionKey);
     if (!gate.pass) {
       return {
         status: 'failed',
         message: gate.message,
         nextAction: gate.nextAction,
-        profileDir: session.profileDir,
-        visibleWindow: session.visibleWindow,
         runtimeMode: 'persistent-cdp-browser',
         approvalGate: gate.gate,
         approvalActionId: null,
@@ -413,6 +460,14 @@ export class PlatformInteractionExecutor {
         ?.markInteractionTicket(approvalActionId, 'in_use')
         .catch(() => undefined);
     }
+    const session = await this.browser.getOrCreateSession({
+      platform: input.platform,
+      accountId: input.accountId,
+    });
+    let page = session.page;
+    this.logger.log(
+      `local-browser dispatch ${input.platform}/${input.taskType} account=${input.accountId} action=${input.action} url=${targetUrl}`,
+    );
 
     try {
       const preserveCurrentPage =

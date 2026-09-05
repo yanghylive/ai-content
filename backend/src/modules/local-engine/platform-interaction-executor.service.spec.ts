@@ -1112,9 +1112,14 @@ describe('PlatformInteractionExecutor', () => {
   it('P0-2 闸门 fail-closed：无面板桥（默认）→ 拒绝执行外部写操作，gate-unavailable 留审计', async () => {
     delete process.env.INTERACTION_GATE_BYPASS;
     const page = makeDispatchPage();
+    const prisma = {
+      agentConfirmation: { create: jest.fn().mockResolvedValue({}) },
+    };
     const executor = new PlatformInteractionExecutor(
       {} as any,
       makeDispatchBrowser(page) as any,
+      undefined,
+      prisma as any,
     );
 
     const result = await executor.dispatch(DISPATCH_INPUT);
@@ -1124,6 +1129,14 @@ describe('PlatformInteractionExecutor', () => {
     expect(result.message).toContain('fail-closed');
     expect(page.goto).not.toHaveBeenCalled();
     expect(page.evaluate).not.toHaveBeenCalled();
+    // 会话创建发生在闸门之后：拒绝时不产生浏览器会话
+    expect((executor as any).browser.getOrCreateSession).not.toHaveBeenCalled();
+    // P2：拒绝路径落长期审计（AgentConfirmation，status=rejected）
+    expect(prisma.agentConfirmation.create).toHaveBeenCalledTimes(1);
+    const row = (prisma.agentConfirmation.create as jest.Mock).mock.calls[0][0];
+    expect(row.data.status).toBe('rejected');
+    expect(row.data.confirmationJson.source).toBe('interaction-gate');
+    expect(row.data.confirmationJson.gate).toBe('gate-unavailable');
   });
 
   it('P0-2 闸门 fail-closed：面板桥请求异常（默认）→ 拒绝执行，不签单不回写', async () => {
