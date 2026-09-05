@@ -5,7 +5,7 @@
  *  - 每个标签 = 一个独立 WebContentsView，使用独立持久 partition（persist:ws-tab-<uuid> /
  *    octop-tab-<uuid>），因此每个标签拥有独立的 cookie / localStorage / 登录态，天然隔离。
  *  - kind:
- *      'business' → 加载 3010 业务前端；pinned 的业务标签（「业务工作区」）固定不可关闭。
+ *      'business' → 加载 3010 业务前端；pinned 的业务标签（「AI 智慧员工平台」）固定不可关闭。
  *      'octop'    → 加载本机 Octop（默认 127.0.0.1:8088），注入 Authorization Bearer 令牌实现免登录。
  *      'web'      → 壳内打开的第三方网页（popup/外链转壳内 tab），无 preload、sandbox 加固、不持久化。
  *  - 新窗口/外链策略（2026-09-03）：一律 deny popup，http(s) 转 'web' 壳内标签，绝不外逃系统浏览器。
@@ -245,7 +245,10 @@ class TabManager {
       this._createTab(
         {
           workspaceId: rec.workspaceId ?? null,
-          title: rec.title || '工作台',
+          // 存量迁移：持久化里的旧平台名「业务工作区」→ 新定位「AI 智慧员工平台」
+          title: (rec.pinned && (rec.title || '') === '业务工作区')
+            ? 'AI 智慧员工平台'
+            : (rec.title || '工作台'),
           kind: rec.kind || 'business',
           pinned: !!rec.pinned
         },
@@ -258,7 +261,8 @@ class TabManager {
     }
   }
 
-  // 保证存在一个 pinned 业务标签（「业务工作区」）。无则创建一个。
+  // 保证存在一个 pinned 业务标签（「AI 智慧员工平台」）。无则创建一个。
+  // 平台重定位（2026-09-05）：旧标题「业务工作区」在恢复时一并迁移。
   _ensurePrimaryBusinessTab() {
     let hasPrimary = false;
     for (const t of this.tabs.values()) {
@@ -270,7 +274,7 @@ class TabManager {
     if (!hasPrimary) {
       const tab = this._createTab({
         workspaceId: null,
-        title: '业务工作区',
+        title: 'AI 智慧员工平台',
         kind: 'business',
         pinned: true
       });
@@ -432,7 +436,7 @@ class TabManager {
     this._onActiveChange = typeof cb === 'function' ? cb : null;
   }
 
-  // 切到 pinned 业务标签（「业务工作区」）；无则第一个业务标签。
+  // 切到 pinned 业务标签（「AI 智慧员工平台」）；无则第一个业务标签。
   switchToBusiness() {
     for (const t of this.tabs.values()) {
       if (t.kind === 'business' && t.pinned) return this.switchTo(t.id);

@@ -665,13 +665,13 @@ function LoginPageContent() {
               {/* 融入式场景（F1 月夜山水）：九妹儿=hero 背景本身而非贴纸，
                   文字坐左侧暗部留白；veil 渐变保对比度（CSS 内定义） */}
               <div className="login-preview-hero-scene" aria-hidden="true">
-                <span className="scene-glow" /><span className="scene-stars" /><span className="scene-shoot scene-shoot-one" /><span className="scene-shoot scene-shoot-two" />
+                <span className="scene-aurora" /><span className="scene-water" /><span className="scene-glow" /><span className="scene-stars" /><span className="scene-shoot scene-shoot-one" /><span className="scene-shoot scene-shoot-two" />
               </div>
               <div className="login-preview-hero-copy flex flex-col gap-2">
-                <span className="preview-kicker text-small font-bold text-default-500">INTELLIGENT GROWTH SYSTEM</span>
-                <h1 className="text-3xl font-bold text-balance">让内容成为<br /><em>持续增长的系统。</em></h1>
-                <p className="text-lg text-default-500 text-pretty">从发现市场机会，到内容生产、触达用户与沉淀客户，九章智能把每一步连接为可执行、可追踪、可复用的完整流程。</p>
-                <span className="preview-credit">JIU MEIER · 九妹儿 · 你的增长搭档</span>
+                <span className="preview-kicker text-small font-bold text-default-500">AI 智慧员工平台 · DIGITAL WORKFORCE</span>
+                <h1 className="text-3xl font-bold text-balance">不是工具，<br /><em>是会成长的智慧员工。</em></h1>
+                <p className="text-lg text-default-500 text-pretty">九妹儿带队的 AI 员工团队，替你盯机会、写内容、发出去、聊客户——每一份工作可执行、可追踪、可复用，也会越干越懂你的生意。</p>
+                <span className="preview-credit">JIU MEIER · 九妹儿 · 智慧员工团队主管</span>
               </div>
 
               <div
@@ -679,9 +679,9 @@ function LoginPageContent() {
                 style={{ gridTemplateColumns: "repeat(auto-fit, minmax(148px, 1fr))" }}
               >
                 {[
-                  { label: "发现机会", value: "情报 · 趋势 · 选题", icon: LayoutDashboard },
-                  { label: "智能创作", value: "文字 · 图片 · 视频", icon: KeyRound },
-                  { label: "沉淀客户", value: "线索 · 微信 · CRM", icon: MapPinned },
+                  { label: "员工会找", value: "情报 · 趋势 · 选题", icon: LayoutDashboard },
+                  { label: "员工会写", value: "文字 · 图片 · 视频", icon: KeyRound },
+                  { label: "员工会聊", value: "线索 · 微信 · CRM", icon: MapPinned },
                 ].map((item) => (
                   <div
                     key={item.label}
