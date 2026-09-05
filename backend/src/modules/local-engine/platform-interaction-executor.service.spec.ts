@@ -92,7 +92,12 @@ describe('PlatformInteractionExecutor', () => {
         visibleWindow: true,
       }),
     };
-    const executor = new PlatformInteractionExecutor({} as any, browser as any);
+    const executor = new PlatformInteractionExecutor(
+      {} as any,
+      browser as any,
+      // 2026-09-05 fail-closed 后存量 dispatch 行为测试须经闸门：自动批准 mock 桥
+      makeBridge() as any,
+    );
 
     await executor.dispatch({
       platform: 'douyin',
@@ -153,7 +158,12 @@ describe('PlatformInteractionExecutor', () => {
         visibleWindow: true,
       }),
     };
-    const executor = new PlatformInteractionExecutor({} as any, browser as any);
+    const executor = new PlatformInteractionExecutor(
+      {} as any,
+      browser as any,
+      // 2026-09-05 fail-closed 后存量 dispatch 行为测试须经闸门：自动批准 mock 桥
+      makeBridge() as any,
+    );
 
     await executor.dispatch({
       platform: 'douyin',
@@ -276,7 +286,12 @@ describe('PlatformInteractionExecutor', () => {
         url: '/evidence/douyin-public-comment.png',
       }),
     };
-    const executor = new PlatformInteractionExecutor({} as any, browser as any);
+    const executor = new PlatformInteractionExecutor(
+      {} as any,
+      browser as any,
+      // 2026-09-05 fail-closed 后存量 dispatch 行为测试须经闸门：自动批准 mock 桥
+      makeBridge() as any,
+    );
 
     const result = await executor.dispatch({
       platform: 'douyin',
@@ -1094,7 +1109,8 @@ describe('PlatformInteractionExecutor', () => {
     expect(bridge.markInteractionTicket).not.toHaveBeenCalled();
   });
 
-  it('P0-2 闸门：无面板桥（纯兜底环境）→ 显式旁路留痕 approvalGate=bypassed-no-bridge', async () => {
+  it('P0-2 闸门 fail-closed：无面板桥（默认）→ 拒绝执行外部写操作，gate-unavailable 留审计', async () => {
+    delete process.env.INTERACTION_GATE_BYPASS;
     const page = makeDispatchPage();
     const executor = new PlatformInteractionExecutor(
       {} as any,
@@ -1103,7 +1119,70 @@ describe('PlatformInteractionExecutor', () => {
 
     const result = await executor.dispatch(DISPATCH_INPUT);
 
-    expect(result.approvalGate).toBe('bypassed-no-bridge');
-    expect(result.approvalActionId).toBeNull();
+    expect(result.status).toBe('failed');
+    expect(result.approvalGate).toBe('gate-unavailable');
+    expect(result.message).toContain('fail-closed');
+    expect(page.goto).not.toHaveBeenCalled();
+    expect(page.evaluate).not.toHaveBeenCalled();
+  });
+
+  it('P0-2 闸门 fail-closed：面板桥请求异常（默认）→ 拒绝执行，不签单不回写', async () => {
+    delete process.env.INTERACTION_GATE_BYPASS;
+    const page = makeDispatchPage();
+    const bridge = makeBridge({
+      requestAction: jest.fn().mockRejectedValue(new Error('PANEL_UNAVAILABLE')),
+    });
+    const executor = new PlatformInteractionExecutor(
+      {} as any,
+      makeDispatchBrowser(page) as any,
+      bridge as any,
+    );
+
+    const result = await executor.dispatch(DISPATCH_INPUT);
+
+    expect(result.status).toBe('failed');
+    expect(result.approvalGate).toBe('gate-unavailable');
+    expect(result.message).toContain('fail-closed');
+    expect(bridge.markInteractionTicket).not.toHaveBeenCalled();
+    expect(page.goto).not.toHaveBeenCalled();
+  });
+
+  it('P0-2 闸门调试旁路：INTERACTION_GATE_BYPASS=1 显式开启 → 无桥/桥异常均放行且 approvalGate 留痕', async () => {
+    process.env.INTERACTION_GATE_BYPASS = '1';
+    try {
+      // 直接验证闸门判定本身（不走完整 dispatch DOM 流——旁路测试不测业务链）
+      const noBridgeExecutor = new PlatformInteractionExecutor(
+        {} as any,
+        {} as any,
+      );
+      const bypassed = await (noBridgeExecutor as any).ensureDispatchWriteGate(
+        DISPATCH_INPUT,
+        'sess-1',
+      );
+      expect(bypassed).toEqual({
+        pass: true,
+        actionId: null,
+        gate: 'bypassed-no-bridge',
+      });
+
+      const bridge = makeBridge({
+        requestAction: jest
+          .fn()
+          .mockRejectedValue(new Error('PANEL_UNAVAILABLE')),
+      });
+      const errBypassed = await (new PlatformInteractionExecutor(
+        {} as any,
+        {} as any,
+        bridge as any,
+      ) as any).ensureDispatchWriteGate(DISPATCH_INPUT, 'sess-1');
+      expect(errBypassed).toEqual({
+        pass: true,
+        actionId: null,
+        gate: 'bypassed-bridge-error',
+      });
+      expect(bridge.requestAction).toHaveBeenCalledTimes(1);
+    } finally {
+      delete process.env.INTERACTION_GATE_BYPASS;
+    }
   });
 });

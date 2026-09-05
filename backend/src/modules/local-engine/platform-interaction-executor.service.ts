@@ -96,8 +96,12 @@ export type PlatformDispatchResult = {
   profileDir?: string;
   visibleWindow?: boolean;
   runtimeMode?: 'persistent-cdp-browser';
-  /** 2026-09-05 复核 P0-2：审批闸门留痕（panel-auto=经闸自动批；bypassed-no-bridge=无桥兜底旁路） */
-  approvalGate?: 'panel-auto' | 'bypassed-no-bridge' | 'bypassed-bridge-error';
+  /** 2026-09-05 复核 P0-2：审批闸门留痕（panel-auto=经闸自动批；bypassed-*=调试开关显式旁路；gate-unavailable=fail-closed 拒绝） */
+  approvalGate?:
+    | 'panel-auto'
+    | 'bypassed-no-bridge'
+    | 'bypassed-bridge-error'
+    | 'gate-unavailable';
   approvalActionId?: string | null;
 };
 
@@ -269,13 +273,22 @@ export class PlatformInteractionExecutor {
     return this.dispatchWithLocalBrowser(input);
   }
 
+  /** 2026-09-05 大王拍板：生产 fail-closed——仅本地调试可显式开启旁路（动态读，测试可切换） */
+  private get debugBypassEnabled(): boolean {
+    return process.env.INTERACTION_GATE_BYPASS === '1';
+  }
+
   /**
    * 2026-09-05 复核 P0-2：dispatch 写链审批闸门。
    * 此前 dispatchWithLocalBrowser 拿到 engine page 后直接 goto/DOM/发送，
    * 绕开了 AgentBrowserExecutor 的 actionId/Broker 审批链——本方法补上：
    * 桥可用 → requestAction 签单（system 控制=自动批；用户接管=挂单返回
-   * needs-approval 语义），单据状态由执行器回写（in_use→consumed/pending）；
-   * 桥未注入（纯兜底环境，无 desktop 面板）→ 显式旁路留痕 approvalGate。
+   * needs-approval 语义），单据状态由执行器回写（in_use→consumed/pending）。
+   *
+   * **fail-closed（2026-09-05 大王拍板）**：无面板桥或桥请求异常 → 拒绝执行
+   * 外部写操作（发布/评论/草稿），gate='gate-unavailable' 落结果留审计；
+   * 仅当显式设置 INTERACTION_GATE_BYPASS=1（本地调试专用，默认关闭）才旁路，
+   * 旁路同样 approvalGate 留痕。
    * 一条 dispatch = 一个业务写动作 = 一张确认单（summary 携带完整业务上下文）。
    */
   private async ensureDispatchWriteGate(
@@ -283,11 +296,24 @@ export class PlatformInteractionExecutor {
     sessionKey: string,
   ): Promise<
     | { pass: true; actionId: string | null; gate: 'panel-auto' | 'bypassed-no-bridge' | 'bypassed-bridge-error' }
-    | { pass: false; message: string; nextAction: string }
+    | { pass: false; message: string; nextAction: string; gate?: 'gate-unavailable' }
   > {
     if (!this.panelBridge) {
+      if (!this.debugBypassEnabled) {
+        this.logger.warn(
+          `审批闸门不可用，fail-closed 拒绝写操作（无面板桥）：${input.platform}/${input.taskType}/${input.action} account=${input.accountId}`,
+        );
+        return {
+          pass: false,
+          gate: 'gate-unavailable',
+          message:
+            '审批闸门不可用（无面板桥），已按 fail-closed 拒绝执行外部写操作（评论/私信/草稿）。',
+          nextAction:
+            '启动桌面应用（提供面板审批通道）后重试；纯本地调试确需旁路时显式设置 INTERACTION_GATE_BYPASS=1（旁路会留审计痕迹）。',
+        };
+      }
       this.logger.warn(
-        `审批闸门旁路（无面板桥/纯兜底环境）：${input.platform}/${input.taskType}/${input.action} account=${input.accountId}`,
+        `审批闸门旁路（调试开关 INTERACTION_GATE_BYPASS=1，无面板桥）：${input.platform}/${input.taskType}/${input.action} account=${input.accountId}`,
       );
       return { pass: true, actionId: null, gate: 'bypassed-no-bridge' };
     }
@@ -314,10 +340,25 @@ export class PlatformInteractionExecutor {
         },
       );
     } catch (error) {
-      // 桥不可用（desktop 未运行/凭据老化）= 无审批通道可用。fail-open 放行
-      // 兜底执行（外部浏览器链路必须保持可用），但如实留痕。
+      if (!this.debugBypassEnabled) {
+        // 桥请求异常（desktop 未运行/凭据老化）= 审批通道不可用 → fail-closed
+        this.logger.warn(
+          `审批闸门请求异常，fail-closed 拒绝写操作：${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        return {
+          pass: false,
+          gate: 'gate-unavailable',
+          message:
+            '审批闸门不可用（面板桥请求异常），已按 fail-closed 拒绝执行外部写操作（评论/私信/草稿）。',
+          nextAction:
+            '确认桌面应用运行、桥凭据有效后重试；纯本地调试确需旁路时显式设置 INTERACTION_GATE_BYPASS=1（旁路会留审计痕迹）。',
+        };
+      }
+      // 调试开关显式开启才旁路（如实留痕）
       this.logger.warn(
-        `审批闸门旁路（面板桥不可用）：${
+        `审批闸门旁路（调试开关 INTERACTION_GATE_BYPASS=1，面板桥请求异常）：${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -361,6 +402,7 @@ export class PlatformInteractionExecutor {
         profileDir: session.profileDir,
         visibleWindow: session.visibleWindow,
         runtimeMode: 'persistent-cdp-browser',
+        approvalGate: gate.gate,
         approvalActionId: null,
       };
     }
