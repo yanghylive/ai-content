@@ -42,7 +42,17 @@ const BASE = process.env.VERIFY_BASE || 'http://127.0.0.1:3013';
 const USER_ID = 'cms2ktllp03u9j1wprksvwy8w'; // 本机登录用户
 const TENANT_ID = 'cmtix3lr3000sgozi0rz3mm6a'; // 现有抖音 publish_accounts 记录用的 tenant
 // 只读验证：评分门槛拉满，零线索入库、零 AI 生成（见头部 3）
-const MIN_LEAD_SCORE = Number(process.env.VERIFY_MIN_LEAD_SCORE ?? 999);
+// 2026-09-05 复核 P1：禁止把门槛覆盖到 <101——低于 101 会进入 AI 生成、
+// 互动事件写入和线索 upsert 路径（comment-acquisition.service 的评分分支），
+// “只读”验证就不再只读。要跑写库路径请用专门的写库验证脚本，不要改这里。
+const _rawMinLeadScore = Number(process.env.VERIFY_MIN_LEAD_SCORE ?? 999);
+if (process.env.VERIFY_MIN_LEAD_SCORE !== undefined && _rawMinLeadScore < 101) {
+  console.error(
+    `❌ VERIFY_MIN_LEAD_SCORE=${_rawMinLeadScore} 低于 101 会放开 AI 生成/写库路径，与只读验证冲突，拒绝执行。`,
+  );
+  process.exit(2);
+}
+const MIN_LEAD_SCORE = Number.isFinite(_rawMinLeadScore) ? _rawMinLeadScore : 999;
 
 // ---- 参数化 SQL（node:sqlite 原生绑定，彻底无字符串拼接注入面）----
 const mainDb = new DatabaseSync(DB);
@@ -272,7 +282,11 @@ try {
     try {
       run(mainDb, `DELETE FROM user_sessions WHERE id=?;`, [sid]);
       evidence.cleanup.session = 'deleted';
-    } catch (e) { evidence.cleanup.session = 'error: ' + e.message; }
+    } catch (e) {
+      // 2026-09-05 复核 P1：清理失败必须硬失败——静默成功会留下生产库脏数据
+      evidence.cleanup.session = 'error: ' + e.message;
+      exitCode = 1;
+    }
   } else {
     evidence.cleanup.session = 'not-injected(no-cleanup-needed)';
   }
@@ -291,7 +305,11 @@ try {
         evidence.cleanup.account = 'sentinel-mismatch-kept(请人工检查)';
         exitCode = 1;
       }
-    } catch (e) { evidence.cleanup.account = 'error: ' + e.message; }
+    } catch (e) {
+      // 同上：清理失败硬失败
+      evidence.cleanup.account = 'error: ' + e.message;
+      exitCode = 1;
+    }
   } else {
     evidence.cleanup.account = 'not-injected(no-cleanup-needed)';
   }

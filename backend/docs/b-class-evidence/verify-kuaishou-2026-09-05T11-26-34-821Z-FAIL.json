@@ -1,0 +1,162 @@
+{
+  "commitSha": "c84f515d8928e44cf608920daaccff5c125faf08",
+  "bundleHash": "9796b2521bcebdb7a410290750131805ec4a511d039e869d24a06d2a7ecc31e2",
+  "worktreeDirty": true,
+  "worktreeDirtyFiles": [
+    "workbuddy/memory/2026-09-05.md",
+    "backend/scripts/verify-b-class-realmachine.mjs",
+    "backend/src/common/project-paths.ts",
+    "backend/src/main.ts",
+    "backend/src/modules/auto-upload/auto-upload.client.ts",
+    "backend/src/modules/discovery/discovery-browser-runner.spec.ts",
+    "backend/src/modules/discovery/discovery-browser-runner.ts",
+    "backend/src/modules/discovery/platform-behaviors.ts",
+    "backend/src/modules/local-engine/agent-browser.controller.spec.ts",
+    "backend/src/modules/local-engine/agent-panel-bridge.service.ts",
+    "backend/src/modules/local-engine/local-browser-engine.service.spec.ts",
+    "backend/src/modules/local-engine/local-browser-engine.service.ts",
+    "backend/src/modules/local-engine/playwright-mcp.service.ts",
+    "backend/src/modules/rpa/rpa-execution-store.service.spec.ts",
+    "backend/src/modules/rpa/rpa-execution-store.service.ts",
+    "desktop/browser-agent-bridge-server.js",
+    "desktop/browser-agent-bridge-server.spec.js",
+    "desktop/browser-broker-wiring.js",
+    "desktop/browser-broker-wiring.spec.js",
+    "desktop/browser-panel-bridge-runtime.js",
+    "desktop/browser-panel-bridge-runtime.spec.js",
+    "desktop/main.js",
+    "desktop/tab-strip.html",
+    "frontend/src/app/globals.css",
+    "frontend/src/app/login/page.tsx",
+    ".workbuddy/memory/2026-09-03.md",
+    ".workbuddy/memory/2026-09-04.md",
+    ".workbuddy/memory/MEMORY.md",
+    ".workbuddy/memory/automations/",
+    "backend/.kuaishou-comments.png",
+    "backend/.kuaishou-home.png",
+    "backend/docs/b-class-evidence/",
+    "backend/patch-audit.py",
+    "backend/patch-reconcile-spec.py",
+    "backend/patch-reconcile.py",
+    "backend/patch-touch-fe.py",
+    "backend/patch-touch-query.py",
+    "backend/scripts/diag-kuaishou-search.mjs",
+    "backend/scripts/smoke-engine-panel-e2e.mjs",
+    "backend/scripts/smoke-panel-open-bridge.mjs",
+    "desktop/assets/brand/jiuzhang-wordmark-black.png",
+    "desktop/assets/brand/jiuzhang-wordmark-white.png",
+    "desktop/patch-activity.py",
+    "desktop/patch-anim-snap-retry.py",
+    "desktop/patch-chip-race.py",
+    "desktop/patch-gutter-contrast.py",
+    "desktop/patch-gutter-z.py",
+    "desktop/patch-highlight.py",
+    "desktop/patch-popup-clip.py",
+    "desktop/patch-prog-suggest.py",
+    "desktop/patch-strip-addr.py",
+    "desktop/patch-touch-detail.py",
+    "desktop/patch-traework-align.py",
+    "desktop/patch-traework-align2.py",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\344\\277\\256\\345\\244\\215\\346\\226\\271\\346\\241\\210-20260905.md\"",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\344\\277\\256\\345\\244\\215\\346\\226\\271\\346\\241\\210-v2-\\344\\270\\215\\351\\231\\215\\347\\272\\247-20260905.md\"",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\345\\205\\263\\351\\224\\256\\350\\257\\215AI\\347\\224\\237\\346\\210\\220\\346\\226\\271\\346\\241\\210-C\\347\\261\\273-20260905.md\"",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\351\\200\\273\\350\\276\\221\\346\\240\\270\\346\\237\\245\\346\\212\\245\\345\\221\\212-20260904.md\"",
+    "\"docs/3010-\\350\\207\\252\\345\\212\\250\\350\\216\\267\\345\\256\\242\\351\\227\\256\\351\\242\\230\\345\\205\\250\\351\\207\\217\\345\\256\\241\\350\\256\\241\\346\\212\\245\\345\\221\\212-20260905.md\"",
+    "docs/acceptance-evidence-2026-09-02/",
+    "docs/acceptance-evidence-2026-09-03/",
+    "docs/acceptance-evidence-2026-09-04/",
+    "docs/gate-evidence-2026-09-02T07-18-59-e7c97de6/",
+    "docs/gate-evidence-2026-09-02T09-32-51-355cce56/",
+    "docs/gate-evidence-2026-09-02T10-18-24-e464ea2d/",
+    "docs/gate-evidence-2026-09-02T11-49-40-27a5525d/",
+    "scripts/oss-error-report-scan.cjs",
+    "\"\\346\\241\\214\\351\\235\\242\\345\\243\\263\\345\\206\\205\\347\\275\\256\\346\\265\\217\\350\\247\\210\\345\\231\\250-\\346\\200\\273\\350\\247\\210.png\"",
+    "\"\\346\\241\\214\\351\\235\\242\\345\\243\\263\\345\\257\\271\\351\\275\\220TraeWork\\346\\226\\271\\346\\241\\210.png\"",
+    "\"\\346\\265\\217\\350\\247\\210\\345\\231\\250\\351\\235\\242\\346\\235\\277\\345\\210\\206\\345\\214\\272-\\345\\257\\271\\346\\257\\224.png\"",
+    "\"\\346\\265\\217\\350\\247\\210\\345\\231\\250\\351\\235\\242\\346\\235\\277\\345\\210\\206\\345\\214\\272-\\346\\224\\276\\345\\244\\247.png\""
+  ],
+  "base": "http://127.0.0.1:3013",
+  "platform": "kuaishou",
+  "accountId": "2",
+  "keyword": "穿搭",
+  "autoReply": false,
+  "minLeadScore": 999,
+  "requestedAt": "2026-09-05T11:26:34.778Z",
+  "portStatus": {
+    "backend_3013": {
+      "url": "http://127.0.0.1:3013/",
+      "httpStatus": 404,
+      "ok": false,
+      "ms": 28
+    },
+    "backend_3011": {
+      "url": "http://127.0.0.1:3011/",
+      "httpStatus": 404,
+      "ok": false,
+      "ms": 10
+    },
+    "desktop_3010": {
+      "url": "http://127.0.0.1:3010/",
+      "httpStatus": 200,
+      "ok": true,
+      "ms": 12
+    }
+  },
+  "httpStatus": 500,
+  "body": {
+    "success": false,
+    "data": null,
+    "message": "服务器内部错误",
+    "timestamp": "2026-09-05T11:26:34.819Z",
+    "path": "/api/comment-acquisition/scan",
+    "requestId": "e708137c-a09e-43f6-91a1-6b2ef7b38761",
+    "traceId": "e708137c-a09e-43f6-91a1-6b2ef7b38761",
+    "retryable": false
+  },
+  "assertions": {
+    "http2xx": false,
+    "scannedPositive": false,
+    "notFallback": true,
+    "readOnlyNoSideEffect": false,
+    "snapshotNoSideEffect": true
+  },
+  "injected": {
+    "session": "wbverify_57264870-e45",
+    "account": "local-engine-9ab472474cc21dd4-verify1788607594778-2-kuaishou"
+  },
+  "cleanup": {
+    "session": "deleted",
+    "account": "deleted-and-verified"
+  },
+  "snapshot": {
+    "leads": {
+      "before": 81,
+      "after": 81
+    },
+    "interaction_events": {
+      "before": 0,
+      "after": 0
+    },
+    "comment_acquisition_leads": {
+      "before": 0,
+      "after": 0
+    },
+    "lead_signals": {
+      "before": 0,
+      "after": 0
+    },
+    "lead_score_snapshots": {
+      "before": 0,
+      "after": 0
+    },
+    "acquisition_quotas": {
+      "before": 0,
+      "after": 0
+    },
+    "comment_insights": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "verdict": "FAIL"
+}
