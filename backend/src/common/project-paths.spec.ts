@@ -1,5 +1,8 @@
 import { join, resolve } from 'node:path';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import {
+  resolveDesktopUserDataDir,
   resolveProjectDataPath,
   resolveProjectLogPath,
   resolveRuntimeStateRoot,
@@ -94,3 +97,116 @@ describe('project runtime paths', () => {
     expect(resolveRuntimeStateRoot(devBackendCwd)).toBe(expectedRoot);
   });
 });
+
+// 2026-09-05 复核五轮（大王打回）：resolveDesktopUserDataDir 此前无任何单测。
+// 覆盖：env 优先 / 三平台默认推导 / 目录不存在 fail-closed / HOME 缺失 fail-closed。
+describe('resolveDesktopUserDataDir', () => {
+  const originalPlatform = process.platform;
+  const originalHome = process.env.HOME;
+  const originalAppData = process.env.APPDATA;
+  const originalXdgConfig = process.env.XDG_CONFIG_HOME;
+  const originalUserDataDir = process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+
+  const setPlatform = (p: NodeJS.Platform) => {
+    Object.defineProperty(process, 'platform', { value: p });
+  };
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+    if (originalHome === undefined) delete process.env.HOME;
+    else process.env.HOME = originalHome;
+    if (originalAppData === undefined) delete process.env.APPDATA;
+    else process.env.APPDATA = originalAppData;
+    if (originalXdgConfig === undefined) delete process.env.XDG_CONFIG_HOME;
+    else process.env.XDG_CONFIG_HOME = originalXdgConfig;
+    if (originalUserDataDir === undefined) delete process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+    else process.env.KAYPAL_DESKTOP_USER_DATA_DIR = originalUserDataDir;
+  });
+
+  it('env KAYPAL_DESKTOP_USER_DATA_DIR wins over any platform default', () => {
+    process.env.KAYPAL_DESKTOP_USER_DATA_DIR = '/explicit/user-data';
+    setPlatform('darwin');
+    expect(resolveDesktopUserDataDir()).toBe('/explicit/user-data');
+  });
+
+  it('darwin: derives ~/Library/Application Support/ai-content-desktop when it exists', () => {
+    delete process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+    const home = mkdtempSync(join(tmpdir(), 'kaypal-home-darwin-'));
+    try {
+      const expected = join(home, 'Library', 'Application Support', 'ai-content-desktop');
+      mkdirSync(expected, { recursive: true });
+      process.env.HOME = home;
+      delete process.env.APPDATA;
+      setPlatform('darwin');
+      expect(resolveDesktopUserDataDir()).toBe(expected);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('win32: derives %APPDATA%\\ai-content-desktop when it exists', () => {
+    delete process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+    const appData = mkdtempSync(join(tmpdir(), 'kaypal-appdata-win-'));
+    try {
+      const expected = join(appData, 'ai-content-desktop');
+      mkdirSync(expected, { recursive: true });
+      delete process.env.HOME;
+      process.env.APPDATA = appData;
+      setPlatform('win32');
+      expect(resolveDesktopUserDataDir()).toBe(expected);
+    } finally {
+      rmSync(appData, { recursive: true, force: true });
+    }
+  });
+
+  it('linux: derives $XDG_CONFIG_HOME/ai-content-desktop, falling back to ~/.config', () => {
+    delete process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+    const home = mkdtempSync(join(tmpdir(), 'kaypal-home-linux-'));
+    try {
+      const expected = join(home, '.config', 'ai-content-desktop');
+      mkdirSync(expected, { recursive: true });
+      process.env.HOME = home;
+      delete process.env.XDG_CONFIG_HOME;
+      delete process.env.APPDATA;
+      setPlatform('linux');
+      expect(resolveDesktopUserDataDir()).toBe(expected);
+
+      // XDG 覆盖默认 ~/.config
+      const xdg = mkdtempSync(join(tmpdir(), 'kaypal-xdg-linux-'));
+      try {
+        const expectedXdg = join(xdg, 'ai-content-desktop');
+        mkdirSync(expectedXdg, { recursive: true });
+        process.env.XDG_CONFIG_HOME = xdg;
+        expect(resolveDesktopUserDataDir()).toBe(expectedXdg);
+      } finally {
+        rmSync(xdg, { recursive: true, force: true });
+      }
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('fail-closed: returns null when the derived directory does not exist', () => {
+    delete process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+    const home = mkdtempSync(join(tmpdir(), 'kaypal-home-empty-'));
+    try {
+      process.env.HOME = home; // 目录存在但 ai-content-desktop 不存在
+      delete process.env.APPDATA;
+      delete process.env.XDG_CONFIG_HOME;
+      setPlatform('darwin');
+      expect(resolveDesktopUserDataDir()).toBeNull();
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('fail-closed: returns null when HOME is missing on unix', () => {
+    delete process.env.KAYPAL_DESKTOP_USER_DATA_DIR;
+    delete process.env.HOME;
+    delete process.env.APPDATA;
+    delete process.env.XDG_CONFIG_HOME;
+    setPlatform('darwin');
+    expect(resolveDesktopUserDataDir()).toBeNull();
+  });
+});
+

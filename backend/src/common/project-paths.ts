@@ -45,16 +45,19 @@ export function resolveDesktopUserDataDir(): string | null {
   const explicit = process.env.KAYPAL_DESKTOP_USER_DATA_DIR?.trim();
   if (explicit) return explicit;
   const platform = process.platform;
-  const home = process.env.HOME?.trim() || '';
-  if (!home) return null;
   let dir: string;
   if (platform === 'darwin') {
+    const home = process.env.HOME?.trim() || '';
+    if (!home) return null;
     dir = join(home, 'Library', 'Application Support', 'ai-content-desktop');
   } else if (platform === 'win32') {
+    // Windows 不依赖 HOME（测试/服务会话可能没有），只看 APPDATA
     const appData = process.env.APPDATA?.trim();
     if (!appData) return null;
     dir = join(appData, 'ai-content-desktop');
   } else {
+    const home = process.env.HOME?.trim() || '';
+    if (!home) return null;
     const configHome = process.env.XDG_CONFIG_HOME?.trim() || join(home, '.config');
     dir = join(configHome, 'ai-content-desktop');
   }

@@ -92,6 +92,15 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   private commandLabel = '';
   private startupPromise: Promise<void> | null = null;
   private lastError = '';
+  // 2026-09-05 复核五轮（大王打回）：sidecar 退出后此前只 WARN 不重启，
+  // MCP 永久 mcp-down（实测 3013：sidecar exited code=0 后 online=false 不恢复）。
+  // 加自动重启：指数退避 + 连续失败上限，人为 stopChild 不触发。
+  private stopping = false;
+  private restartAttempts = 0;
+  private restartTimer: NodeJS.Timeout | null = null;
+  private static readonly RESTART_MAX_ATTEMPTS = 5;
+  private static readonly RESTART_BASE_DELAY_MS = 2000;
+  private static readonly RESTART_MAX_DELAY_MS = 30_000;
   private readonly requiredAutomationTools = [
     'browser_navigate',
     'browser_snapshot',
@@ -167,6 +176,8 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       this.pendingResponse = null;
       this.profileKey = input.profileKey;
       this.profileDir = input.profileDir;
+      // 2026-09-05 复核五轮：主动启动 = 复位人为停止标志（stopChild → startChild 切 profile 场景）
+      this.stopping = false;
       mkdirSync(this.profileDir, { recursive: true });
       this.logger.log(
         `Starting playwright-mcp sidecar profile=${this.profileKey} dir=${this.profileDir}`,
@@ -233,6 +244,38 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
           this.cachedTools = [];
           this.toolDiscoveryPromise = null;
         }
+        // 2026-09-05 复核五轮：意外退出自动重启（人为 stopChild 置 stopping 不触发）。
+        // 指数退避 2s→4s→8s→16s→30s 封顶；连续 5 次失败放弃并 ERROR 留痕，
+        // 防坏产物/端口冲突类 crash loop。成功启动后 attempts 归零。
+        if (this.stopping) return;
+        if (this.restartAttempts >= PlaywrightMcpService.RESTART_MAX_ATTEMPTS) {
+          this.lastError = `playwright-mcp sidecar 连续 ${PlaywrightMcpService.RESTART_MAX_ATTEMPTS} 次启动失败，放弃自动重启`;
+          this.logger.error(this.lastError);
+          return;
+        }
+        const delay = Math.min(
+          PlaywrightMcpService.RESTART_BASE_DELAY_MS * 2 ** this.restartAttempts,
+          PlaywrightMcpService.RESTART_MAX_DELAY_MS,
+        );
+        this.restartAttempts += 1;
+        this.logger.warn(
+          `playwright-mcp sidecar 将在 ${delay}ms 后自动重启（第 ${this.restartAttempts}/${PlaywrightMcpService.RESTART_MAX_ATTEMPTS} 次）`,
+        );
+        if (this.restartTimer) clearTimeout(this.restartTimer);
+        this.restartTimer = setTimeout(() => {
+          this.restartTimer = null;
+          this.startupPromise = this.startChild({
+            profileKey: this.profileKey,
+            profileDir: this.profileDir,
+          })
+            .catch((err) => {
+              this.lastError = `playwright-mcp sidecar 自动重启失败：${err instanceof Error ? err.message : String(err)}`;
+              this.logger.error(this.lastError);
+            })
+            .finally(() => {
+              this.startupPromise = null;
+            });
+        }, delay);
       });
 
       child.stderr?.on('data', (d: Buffer) => {
@@ -269,6 +312,8 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
         },
       });
       this.online = true;
+      // 2026-09-05 复核五轮：启动成功即重置自动重启计数（新一轮故障从 1 数起）
+      this.restartAttempts = 0;
 
       this.logger.log(
         `playwright-mcp sidecar ready (pid=${child.pid}, profile=${this.profileKey}, visible=${this.visibleWindow}). HTTP bridge at /api/mcp/playwright`,
@@ -332,6 +377,13 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
   }
 
   private stopChild(): void {
+    // 2026-09-05 复核五轮：人为停止不打自动重启；切 profile 的 ensureProfile
+    // 也会走这里（stop 后立刻 startChild 重开），stopping 会在 startChild 入口复位
+    this.stopping = true;
+    if (this.restartTimer) {
+      clearTimeout(this.restartTimer);
+      this.restartTimer = null;
+    }
     if (this.child) {
       this.child.kill('SIGTERM');
       this.child = null;
