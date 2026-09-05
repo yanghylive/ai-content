@@ -665,7 +665,7 @@ function LoginPageContent() {
               {/* 融入式场景（F1 月夜山水）：九妹儿=hero 背景本身而非贴纸，
                   文字坐左侧暗部留白；veil 渐变保对比度（CSS 内定义） */}
               <div className="login-preview-hero-scene" aria-hidden="true">
-                <span className="scene-aurora" /><span className="scene-water" /><span className="scene-glow" /><span className="scene-stars" /><span className="scene-shoot scene-shoot-one" /><span className="scene-shoot scene-shoot-two" />
+                <span className="scene-aurora" /><span className="scene-water" /><span className="scene-glow" /><span className="scene-stars" /><span className="scene-shoot scene-shoot-one" /><span className="scene-shoot scene-shoot-two" /><span className="scene-glasses" /><span className="scene-glasses-two" />
               </div>
               <div className="login-preview-hero-copy flex flex-col gap-2">
                 <span className="preview-kicker text-small font-bold text-default-500">AI 智慧员工平台 · DIGITAL WORKFORCE</span>
