@@ -94,6 +94,8 @@ export class CommentAcquisitionService {
     replies: number;
     circuitOpen: boolean;
     retryAfterSeconds: number;
+    /** 关键词搜索是否降级到推荐流（true=结果非关键词搜索所得，勿冒充关键词结果） */
+    discoveryFallback: boolean;
     items: Array<{
       leadId: string;
       comment: string;
@@ -171,7 +173,7 @@ export class CommentAcquisitionService {
     );
 
     this.logger.log(
-      `[comment-acquisition] ${platformName} account=${input.accountId} 扫描到 ${comments.length} 条评论`,
+      `[comment-acquisition] ${platformName} account=${input.accountId} 扫描到 ${comments.length} 条评论${readResult.recommendedFallback ? '（⚠️降级推荐流，非关键词搜索结果）' : ''}`,
     );
 
     const items: Array<{
@@ -322,6 +324,7 @@ export class CommentAcquisitionService {
       replies,
       circuitOpen: circuit.open,
       retryAfterSeconds: circuit.retryAfterSeconds,
+      discoveryFallback: readResult.recommendedFallback === true,
       items,
     };
   }
@@ -357,10 +360,14 @@ export class CommentAcquisitionService {
     if (contents.length === 0) {
       return { items: [], readAt: new Date().toISOString() };
     }
+    // 透传降级标记：runner 在关键词搜索页未渲染时自动跳 /new-reco 降级推荐流，
+    // 会给每个 item 打 recommendedFallback=true。这里必须如实带上，否则会冒充关键词结果。
+    const recommendedFallback = contents.some((c) => c.recommendedFallback === true);
     // 2. 逐个内容读评论（取第一个能读到评论的内容，避免全量扫）
     const items: InteractionItem[] = [];
     let title: string | undefined;
     let url: string | undefined;
+    let readFailures = 0;
     for (const content of contents.slice(0, 3)) {
       const contentUrl = content.sourceContent?.url ?? '';
       if (!contentUrl) continue;
@@ -389,12 +396,22 @@ export class CommentAcquisitionService {
         }
         // 拿到评论即停（避免对多个内容重复读评论）
         if (items.length > 0) break;
-      } catch {
-        // 单个内容读评论失败不阻断整体，继续下一个内容
+      } catch (error) {
+        // 单个内容读评论失败不阻断整体，但如实计数 + 记录，避免「全部失败」被静默吞成空成功
+        readFailures += 1;
+        this.logger.warn(
+          `[comment-acquisition] ${platform} 读评论失败（${contentUrl}）: ${error instanceof Error ? error.message : String(error)}`,
+        );
         continue;
       }
     }
-    return { items, title, url, readAt: new Date().toISOString() };
+    // 所有内容读评论都失败时，明确抛错而非返回空 items 冒充「成功但无结果」
+    if (items.length === 0 && readFailures > 0) {
+      throw new Error(
+        `${platform} 关键词搜索命中的内容全部读评论失败（${readFailures} 条），页面结构可能变化`,
+      );
+    }
+    return { items, title, url, recommendedFallback, readAt: new Date().toISOString() };
   }
 
   /**

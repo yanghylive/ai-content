@@ -61,6 +61,12 @@ export interface InteractionReadResult {
   title?: string;
   /** 来源视频/页面 URL（回读证据用） */
   url?: string;
+  /**
+   * 是否降级到推荐流（关键词搜索页未渲染、自动跳 /new-reco 时 true）。
+   * 由 DiscoveryBrowserRunner.searchByKeyword 如实标注，业务层必须透传，
+   * 否则会把「推荐流内容」冒充「关键词搜索结果」造成假绿。
+   */
+  recommendedFallback?: boolean;
 }
 
 /** 发送/回复入参 */

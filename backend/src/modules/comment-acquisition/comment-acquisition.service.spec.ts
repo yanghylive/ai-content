@@ -372,6 +372,82 @@ describe('CommentAcquisitionService', () => {
         }),
       );
     });
+
+    it('关键词搜索降级推荐流时透传 discoveryFallback=true（不冒充关键词结果）', async () => {
+      // searchByKeyword 返回带 recommendedFallback 标记的内容（推荐流降级）
+      discoveryRunnerMock.searchByKeyword.mockResolvedValue([
+        {
+          platform: 'kuaishou',
+          accountId: '9',
+          recommendedFallback: true,
+          sourceContent: {
+            externalContentId: 'work-1',
+            url: 'https://kuaishou.com/v/1',
+            contentType: 'video',
+            title: '副业项目',
+            rawHash: 'h1',
+          },
+        },
+      ]);
+      discoveryRunnerMock.readComments.mockResolvedValue([
+        {
+          platform: 'kuaishou',
+          accountId: '9',
+          sourceContent: {
+            externalContentId: 'work-1',
+            url: 'https://kuaishou.com/v/1',
+            contentType: 'video',
+            title: '副业项目',
+            rawHash: 'h1',
+          },
+          interactionEvents: [
+            {
+              externalEventId: 'evt-1',
+              type: 'comment',
+              authorExternalId: 'author-1',
+              text: '怎么加入？',
+              occurredAt: '2026-09-05T00:00:00Z',
+            },
+          ],
+          identityHint: { nickname: '买家甲', externalUserId: 'author-1' },
+        },
+      ]);
+      replyEngineMock.scoreLeadPotential.mockReturnValue({ score: 60, signals: ['强意向'] });
+      replyEngineMock.generateReply.mockResolvedValue({
+        replyText: '私信我发你', personaId: 'x', personaName: 'x', retries: 0,
+      });
+
+      const result = await service.scanAccount({
+        platform: 'kuaishou',
+        accountId: 9,
+        keyword: '副业',
+        autoReply: false,
+      });
+
+      expect(result.discoveryFallback).toBe(true);
+    });
+
+    it('关键词搜索命中的内容全部读评论失败时抛错（不静默空成功）', async () => {
+      discoveryRunnerMock.searchByKeyword.mockResolvedValue([
+        {
+          platform: 'kuaishou',
+          accountId: '9',
+          sourceContent: {
+            externalContentId: 'work-1',
+            url: 'https://kuaishou.com/v/1',
+            contentType: 'video',
+            title: '副业项目',
+            rawHash: 'h1',
+          },
+        },
+      ]);
+      // readComments 全部失败
+      discoveryRunnerMock.readComments.mockRejectedValue(new Error('页面结构变化'));
+
+      await expect(
+        service.scanAccount({ platform: 'kuaishou', accountId: 9, keyword: '副业' }),
+      ).rejects.toThrow(/读评论失败/);
+    });
   });
 
   describe('dispatchReply', () => {
