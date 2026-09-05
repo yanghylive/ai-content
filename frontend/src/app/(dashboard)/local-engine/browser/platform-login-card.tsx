@@ -85,15 +85,18 @@ export function PlatformLoginCard({
       // 3) 当前用户 id（面板 owner 断言用）
       const me = await authApi.me();
       // 4) 打开面板（desktop manager.open 已支持 platform，IPC 透传）
+      // 2026-09-05 真机修复：IPC 'browser-panel:open' 返回 { state: publicState() }，
+      // 没有 success 字段——旧判断 opened?.success 恒 falsy → 面板明明已打开
+      // 却恒报「面板打开失败，请重试」。改为按 state.hasSession 判断。
       const opened = await electron.browserPanel.open({
         url: loginUrl,
         ownerId: me.id,
         tenantId: session.lease?.tenantId ?? undefined,
         platform,
       });
-      if (!opened?.success) {
+      if (!opened?.state?.hasSession) {
         setPhase("error");
-        setNote(opened?.error || "面板打开失败，请重试");
+        setNote("面板打开失败，请重试");
         return;
       }
       // 5) 轮询登录态：400（面板未就绪/未开）不终止——透出原因继续等

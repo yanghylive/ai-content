@@ -355,10 +355,21 @@ export function useAccountOperations(options: {
           clearTimeout(loginTimerRef.current);
           loginTimerRef.current = null;
         }
-        setLoginQrCode("");
         setLoginStatus("manual");
         setLoginPhase("manual");
         setLoginError("");
+        return;
+      }
+
+      if (data.startsWith("data:image")) {
+        // 2026-09-05 方案 B（引擎 headless 化，修「点登录弹外部浏览器」）：
+        // 视频号二维码在跨域 iframe（open.weixin.qq.com/qrconnect）主 frame 抽不到，
+        // 后端改投「登录页整页截图」data URL——先发 LOGIN_URL（进 manual 态），
+        // 截图随后到达。此时 hasLoginPrompt 已置位，不能走下方 !hasLoginPrompt
+        // 分支——直通更新二维码区并把 manual 升级为 qr（弹窗内显示登录页截图，
+        // 用户手机扫码，桌面零弹窗）。
+        setLoginQrCode(data);
+        setLoginPhase("qr");
         return;
       }
 

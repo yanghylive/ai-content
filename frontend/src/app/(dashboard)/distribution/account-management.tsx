@@ -438,7 +438,7 @@ export function AccountManagement() {
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             alt="登录二维码"
-                            className="h-48 w-48 rounded-lg"
+                            className="max-h-72 w-auto max-w-full rounded-lg object-contain"
                             src={ops.loginQrCode}
                           />
                         </div>

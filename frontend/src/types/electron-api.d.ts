@@ -40,14 +40,17 @@ interface ElectronAPI {
     getActive: () => Promise<unknown>;
   };
   browserPanel: {
+    // 2026-09-05 修正：IPC 'browser-panel:open'/'browser-panel:state' 实际返回
+    // { state: BrowserPanelState }（browser-panel-ipc.js:82-87），没有 success/error
+    // 字段——旧声明导致调用方恒判「面板打开失败」。
     open: (input: {
       url: string;
       ownerId?: string;
       tenantId?: string;
       accountId?: string;
       platform?: string;
-    }) => Promise<{ success: boolean; state?: BrowserPanelState; error?: string }>;
-    getState: () => Promise<{ success: boolean; state?: BrowserPanelState; error?: string }>;
+    }) => Promise<{ state?: BrowserPanelState }>;
+    getState: () => Promise<{ state?: BrowserPanelState }>;
     onState: (callback: (state: BrowserPanelState) => void) => string;
     removeOnState: (key: string) => void;
   };
