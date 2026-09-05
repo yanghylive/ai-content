@@ -441,6 +441,19 @@ export class AgentPanelBridgeService {
   }
 
   /**
+   * 2026-09-05 复核 P0-2：获客/互动 dispatch 链的单据状态回写（公开入口）。
+   * dispatch 走引擎 Playwright 直接执行（不经桥 /execute 的 CDP 闸门消费），
+   * 因此由执行器负责回写：执行前 in_use，成功 consumed，失败释放回 pending。
+   * prisma 缺失/失败只 warn，不阻断业务（落库是审计旁路，同 persistTicket）。
+   */
+  async markInteractionTicket(
+    actionId: string | null | undefined,
+    status: 'in_use' | 'consumed' | 'pending',
+  ): Promise<void> {
+    return this.markTicket(actionId ?? null, status);
+  }
+
+  /**
    * 执行——**拿执行权不等于拿批准权**。
    * 写方法（Page.navigate / Input.*）必须带 actionId，且该确认单必须已被
    * desktop 用户在面板里批准；缺单/错单/换页后旧单 → 桥一律拒绝（fail-closed）。
@@ -712,6 +725,66 @@ export class AgentPanelBridgeService {
       { panelId: credentials.panelId, actor },
     );
     return Array.isArray(json?.items) ? json.items : [];
+  }
+
+  /**
+   * 2026-09-05 复核 P0-1（账号强绑定）：读取面板当前会话事实（脱敏）。
+   * 引擎复用任何面板 page 前必须核验返回的 accountId 与请求账号一致；
+   * 桥不可用 → 抛 PANEL_UNAVAILABLE，调用方禁止按平台/URL 猜测复用。
+   */
+  async panelState(actor: PanelBridgeActor): Promise<{
+    hasSession: boolean;
+    panelId: string | null;
+    accountId: string | null;
+    platform: string | null;
+    partition: string | null;
+    url: string | null;
+    visible: boolean;
+    status: string | null;
+  }> {
+    this.assertActor(actor);
+    const credentials = this.requireCredentials();
+    return this.call(credentials, '/panel-state', 'POST', {
+      panelId: credentials.panelId,
+      actor,
+    });
+  }
+
+  /**
+   * 2026-09-05（引擎「内置面板优先」）：请求 desktop 打开面板并加载平台 URL。
+   * 只开面板、不读页面内容；URL 域名白名单由 desktop 侧把守。
+   * 桥不可用（面板从未打开过/凭据老化/desktop 未运行）→ 抛 PANEL_UNAVAILABLE，
+   * 调用方（LocalBrowserEngine）据此兜底 spawn 独立 Chromium。
+   */
+  async panelOpen(
+    actor: PanelBridgeActor,
+    input: { url: string; accountId?: string | number | null; platform?: string | null },
+  ): Promise<{
+    panelId: string | null;
+    accountId: string | null;
+    platform: string | null;
+    partition: string | null;
+    url: string;
+  }> {
+    this.assertActor(actor);
+    if (!input?.url) {
+      throw new PanelBridgeError('METHOD_REQUIRED', 400, 'panelOpen url 必填');
+    }
+    const credentials = this.requireCredentials();
+    return this.call(
+      credentials,
+      '/panel-open',
+      'POST',
+      {
+        panelId: credentials.panelId,
+        actor,
+        url: input.url,
+        accountId: input.accountId != null ? String(input.accountId) : null,
+        platform: input.platform ?? null,
+      },
+      // 打开面板含 UI 动画/导航，给比普通请求略宽的超时
+      REQUEST_TIMEOUT_MS * 2,
+    );
   }
 
   /**

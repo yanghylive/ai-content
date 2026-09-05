@@ -14,7 +14,7 @@
  * 启动策略：懒启动（首次 platform 任务时启动 Chrome），常驻后台，重用 profile。
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import {
   isXiaohongshuAuthenticatedPage,
   isXiaohongshuBackendUrl,
@@ -25,6 +25,7 @@ import { execFileSync, spawn, type ChildProcess } from 'child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs';
 import {
   chromium,
+  type Browser,
   type BrowserContext,
   type Cookie,
   type Page,
@@ -34,6 +35,7 @@ import {
   PlaywrightBrowserRuntimeService,
   type PlaywrightBrowserRuntimeInfo,
 } from './playwright-browser-runtime.service';
+import { AgentPanelBridgeService } from './agent-panel-bridge.service';
 import { safeText } from '../../common/text.utils';
 import {
   resolveProjectDataPath,
@@ -82,6 +84,13 @@ export type EngineSession = {
   lastActivityAt: string;
   /** 最近一次从 .login-cookies.json 恢复登录态的时间（用于冷却，防 cookie 失效时反复 recover + bringToFront 弹窗） */
   recoveredAt?: string;
+  /**
+   * 2026-09-05（引擎「内置面板优先」）：sessionMode=desktop-panel 表示该会话
+   * 直接驱动桌面壳内置面板的 WebContentsView（playwright connectOverCDP），
+   * 不是引擎自 spawn 的独立 Chromium。台账释放走 browserReused 路径
+   * （不 close context、不杀进程——面板是桌面 UI，登录态由面板 partition 持有）。
+   */
+  sessionMode?: 'desktop-panel';
 };
 
 export type EngineSessionSummary = {
@@ -122,11 +131,25 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   private lastBringToFrontAt = 0;
   /** 弹窗冷却（毫秒）：60 秒内非用户主动操作只弹一次 */
   private readonly BRING_TO_FRONT_COOLDOWN_MS = 60_000;
+  /** 内置面板 CDP 连接缓存（同一桌面壳进程复用；断线自动重连） */
+  private panelBrowser: Browser | null = null;
+  /** P0-1 面板账号切换的核验轮询参数（spec 可收紧以加速测试） */
+  protected panelSwitchMaxAttempts = 20;
+  protected panelSwitchPollMs = 500;
+  /**
+   * P0-1（2026-09-05 复核）面板获取互斥链：面板是单实例共享资源，
+   * 「台账核验 → panelOpen 切账号 → 取页 → 登记」必须整体串行，
+   * 防止 A 核验通过后 B 切走面板、A 登记到 B 的 page 的竞态错位。
+   */
+  private panelAcquireChain: Promise<unknown> = Promise.resolve();
 
   constructor(
     private readonly config: ConfigService,
     private readonly profiles: CdpBrowserProfileService,
     private readonly browsers: PlaywrightBrowserRuntimeService,
+    // 面板桥（可选注入）：「内置面板优先」通道的 desktop 侧端点客户端。
+    // 未注入（老测试）时 getOrCreateSession 保持原 spawn 语义。
+    @Optional() private readonly panelBridge?: AgentPanelBridgeService,
   ) {
     this.browserRuntime = this.browsers.resolve();
     this.chromePath = this.browserRuntime.executablePath;
@@ -220,6 +243,32 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     const existing = this.sessions.get(key);
     if (existing) {
       try {
+        // 面板会话快路径：page 存活 + **账号归属复核**（复核 P0-1）。
+        // 登录态由面板 partition 持有，profile 恢复语义不适用；但面板视图
+        // 可能被别的账号任务/用户操作切走——每次复用前必须经桥核验
+        // manager 台账的 accountId 仍等于本会话账号，否则弃用重建。
+        if (existing.sessionMode === 'desktop-panel') {
+          const panelPage =
+            this.selectBestSessionPage(
+              existing.context.pages(),
+              input.platform,
+            ) || existing.page;
+          if (!panelPage || panelPage.isClosed()) {
+            throw new Error('panel page closed');
+          }
+          const panelState = await this.readPanelStateOrNull(key);
+          if (
+            !panelState ||
+            panelState.accountId !== String(existing.accountId)
+          ) {
+            throw new Error(
+              `panel account mismatch/unverifiable (panel=${panelState?.accountId ?? 'n/a'}, want=${existing.accountId})`,
+            );
+          }
+          existing.page = panelPage;
+          existing.lastActivityAt = new Date().toISOString();
+          return existing;
+        }
         const currentPage =
           this.selectBestSessionPage(
             existing.context.pages(),
@@ -364,6 +413,15 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       }
     }
 
+    // 2026-09-05（引擎「内置面板优先」）：桌面壳内置面板可用 → 直接驱动面板
+    // WebContentsView（可见、partition 登录态），不再 spawn 独立 Chromium 窗口
+    // （大王方针：系统内浏览器首选内置，外部窗口仅兜底）。面板不可用（desktop
+    // 未运行 / CDP 未开 / 桥超时）→ 放行走下方 spawn 兜底，绝不静默造成功假象。
+    const panelSession = await this.tryAcquireDesktopPanelSession(input, key);
+    if (panelSession) {
+      return panelSession;
+    }
+
     if (!existsSync(this.chromePath)) {
       throw new Error(
         `未找到内置 Playwright Chromium 可执行文件：${this.chromePath}`,
@@ -423,6 +481,307 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     }
     this.startedAt = this.startedAt ?? session.startedAt;
     this.logger.log(`新持久会话 ${key}`);
+    return session;
+  }
+
+  // ========================================================================
+  // 内置面板优先（2026-09-05，阶段 P1）
+  //
+  // 方针（大王拍板）：系统内使用浏览器首选内置面板，外部独立窗口只做兜底。
+  // 引擎获客/互动执行链（PlatformInteractionExecutor.dispatchWithLocalBrowser、
+  // auto-upload 登录等）都经 getOrCreateSession 拿 playwright Page——在此
+  // 单点接入「面板优先」：desktop 壳 CDP 可用且桥能打开面板 → connectOverCDP
+  // 直接驱动面板 WebContentsView；否则放行原 spawn 兜底路径。
+  // ========================================================================
+
+  /** 桌面壳 CDP 端点；LOCAL_PANEL_MODE=off 显式关闭通道 */
+  private panelCdpHttp(): string | null {
+    // 单测禁用：jest 环境（NODE_ENV=test）下绝不允许面板通道真连本机 App，
+    // 否则多账号隔离等用例会被真机 9333 污染（2026-09-05 真机复现）。
+    if (process.env.NODE_ENV === 'test') return null;
+    if (this.config.get<string>('LOCAL_PANEL_MODE') === 'off') return null;
+    return (
+      this.config.get<string>('LOCAL_PANEL_CDP_HTTP') || 'http://127.0.0.1:9333'
+    );
+  }
+
+  /** 面板打开时的初始 URL（平台创作者后台首页） */
+  private platformPanelHomeUrl(platform: LocalBrowserPlatform): string | null {
+    switch (platform) {
+      case 'douyin':
+        return 'https://creator.douyin.com/creator-micro/home';
+      case 'wechat-channel':
+        return 'https://channels.weixin.qq.com/platform/home';
+      case 'xiaohongshu':
+        return 'https://creator.xiaohongshu.com';
+      case 'kuaishou':
+        return 'https://cp.kuaishou.com';
+      case 'bilibili':
+        return 'https://member.bilibili.com/platform/home';
+      default:
+        // general-web 与未映射平台不进面板（通用会话/老平台保持 spawn 语义）
+        return null;
+    }
+  }
+
+  /** CDP 探测（2s 超时；任何异常 = 面板通道不可用） */
+  private async probeDesktopPanelCdp(cdpHttp: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${cdpHttp}/json/version`, {
+        signal: AbortSignal.timeout(2000),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /** 取（或重连）desktop 壳的 CDP Browser 连接 */
+  private async connectPanelCdp(cdpHttp: string): Promise<Browser> {
+    if (this.panelBrowser && this.panelBrowser.isConnected()) {
+      return this.panelBrowser;
+    }
+    const browser = await chromium.connectOverCDP(cdpHttp, { timeout: 10_000 });
+    this.panelBrowser = browser;
+    return browser;
+  }
+
+  /**
+   * 跨 context 找面板 page（2026-09-05 复核 P0-1 竞态修复）：
+   * 面板 view 的 partition（persist:kaypal-browser-*）在 CDP 里是一个独立
+   * browserContext，与 tab-strip/主窗等工程 UI 天然隔离；候选 page 仍按
+   * 「同平台非登录页 URL」初筛，但**必须通过页面级绑定标记复核**——desktop
+   * 在面板 page 全局注入 __kaypalPanelBinding（panelId/accountId/partition），
+   * page 归属以页面自带标记为准：任何「核验 A 后拿到 B 的 page」的竞态错位
+   * 都在此被拦下（mismatch → 视为未就绪，走等待重试/兜底 spawn）。
+   */
+  private async acquirePanelPage(
+    browser: Browser,
+    platform: LocalBrowserPlatform,
+    homeUrl: string,
+    binding: { wantAccount: string; panelId: string | null },
+    waitRounds = 10,
+  ): Promise<{ context: BrowserContext; page: Page } | null> {
+    const matchInContexts = async (): Promise<{
+      context: BrowserContext;
+      page: Page;
+    } | null> => {
+      for (const context of browser.contexts()) {
+        const page = this.selectBestSessionPage(context.pages(), platform);
+        if (!page || !this.isSamePlatformNonLoginPage(platform, page.url())) {
+          continue;
+        }
+        // 页面级绑定复核：标记不存在/不匹配 = 这个 page 不属于请求账号
+        if (await this.pageBindingMatches(page, binding)) {
+          return { context, page };
+        }
+      }
+      return null;
+    };
+    const first = await matchInContexts();
+    if (first) return first;
+    // 面板刚 loadURL 还没落地（url 空/about:blank/标记未注入）→ 短暂等待后重查
+    for (let attempt = 0; attempt < waitRounds; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const next = await matchInContexts();
+      if (next) return next;
+    }
+    void homeUrl;
+    return null;
+  }
+
+  /** 页面级绑定标记复核（desktop manager._injectPanelBindingMarker 注入） */
+  private async pageBindingMatches(
+    page: Page,
+    binding: { wantAccount: string; panelId: string | null },
+  ): Promise<boolean> {
+    try {
+      const marker = (await page.evaluate(
+        'window.__kaypalPanelBinding || null',
+      )) as {
+        panelId?: string;
+        accountId?: string | null;
+      } | null;
+      if (!marker) return false;
+      if (binding.panelId && marker.panelId && marker.panelId !== binding.panelId) {
+        return false;
+      }
+      return String(marker.accountId) === binding.wantAccount;
+    } catch {
+      // evaluate 失败（执行上下文销毁中/导航中）= 无法证明归属，视为不匹配
+      return false;
+    }
+  }
+
+  /**
+   * 尝试经内置面板获得会话。任何一步不可用都返回 null（调用方走 spawn 兜底），
+   * 并在日志留痕（排障时能区分「走了面板」还是「落了兜底」）。
+   *
+   * 2026-09-05 复核 P0-1（账号强绑定）：面板 page 的归属以 desktop manager
+   * 会话台账为唯一事实源——复用/打开前必须经桥 panel-state 核验 accountId
+   * 与请求账号一致；核验不过（面板属于别的账号 / 桥不可用）一律不按平台/URL
+   * 猜测复用，转兜底 spawn 或经 panel-open 切换到目标账号后再次核验。
+   */
+  private async tryAcquireDesktopPanelSession(
+    input: {
+      accountId: string | number;
+      platform: LocalBrowserPlatform;
+      probe?: boolean;
+    },
+    key: string,
+  ): Promise<EngineSession | null> {
+    // 2026-09-05 复核 P0-1（互斥）：面板是**单实例共享资源**，核验→panelOpen
+    // 切账号→取页→登记必须整体串行，否则 A/B 并发时 A 核验通过后 B 把面板
+    // 切走，A 拿到 B 的 page 登记成 A（台账核验与取页两步之间的竞态）。
+    const run = () => this.doTryAcquireDesktopPanelSession(input, key);
+    const chained = this.panelAcquireChain.then(run, run);
+    this.panelAcquireChain = chained.catch(() => {});
+    return chained;
+  }
+
+  private async doTryAcquireDesktopPanelSession(
+    input: {
+      accountId: string | number;
+      platform: LocalBrowserPlatform;
+      probe?: boolean;
+    },
+    key: string,
+  ): Promise<EngineSession | null> {
+    const homeUrl = this.platformPanelHomeUrl(input.platform);
+    if (!homeUrl || input.probe) return null; // 探活档/未映射平台保持原语义
+    const cdpHttp = this.panelCdpHttp();
+    if (!cdpHttp) {
+      this.logger.log(`面板优先通道已关闭（LOCAL_PANEL_MODE=off），${key} 走兜底 spawn`);
+      return null;
+    }
+    if (!this.panelBridge) {
+      this.logger.warn(`面板桥未注入（无法核验账号归属），${key} 走兜底 spawn`);
+      return null;
+    }
+    if (!(await this.probeDesktopPanelCdp(cdpHttp))) {
+      this.logger.log(`桌面壳 CDP 不可用（${cdpHttp}），${key} 走兜底 spawn`);
+      return null;
+    }
+    const actor = { ownerId: 'local-engine', tenantId: 'local-tenant' };
+    const wantAccount = String(input.accountId);
+
+    // P0-1 第一步：面板当前归属核验
+    let state: Awaited<ReturnType<AgentPanelBridgeService['panelState']>> | null = null;
+    try {
+      state = await this.panelBridge.panelState(actor);
+    } catch (error) {
+      this.logger.warn(
+        `panel-state 核验失败（${key}），走兜底 spawn：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return null;
+    }
+
+    // P0-1 第二步：归属不符/无会话 → 经 panel-open 打开或切换到目标账号，
+    // 然后轮询台账直到 accountId 一致（manager 切账号会 dispose 旧视图重建）
+    if (!state.hasSession || state.accountId !== wantAccount) {
+      try {
+        await this.panelBridge.panelOpen(actor, {
+          url: homeUrl,
+          accountId: wantAccount,
+          platform: input.platform,
+        });
+      } catch (error) {
+        this.logger.warn(
+          `panel-open 失败（${key}），走兜底 spawn：${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        return null;
+      }
+      state = null;
+      for (let attempt = 0; attempt < this.panelSwitchMaxAttempts; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, this.panelSwitchPollMs));
+        try {
+          const next = await this.panelBridge.panelState(actor);
+          if (next.hasSession && next.accountId === wantAccount) {
+            state = next;
+            break;
+          }
+        } catch {
+          // 桥凭据可能在切账号时刷新（opened 事件重写 registry），短暂失败容忍
+        }
+      }
+      if (!state) {
+        this.logger.warn(`面板账号切换未确认（${key}，want=${wantAccount}），走兜底 spawn`);
+        return null;
+      }
+    }
+
+    // 核验通过 → CDP 直连只作为「已核验本账号面板」的执行通道（双证：
+    // desktop 台账 accountId + 平台 URL 命中）
+    let browser: Browser;
+    try {
+      browser = await this.connectPanelCdp(cdpHttp);
+    } catch (error) {
+      this.logger.warn(
+        `connectOverCDP 失败（${key}），走兜底 spawn：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return null;
+    }
+    const acquired = await this.acquirePanelPage(browser, input.platform, homeUrl, {
+      wantAccount,
+      panelId: state.panelId,
+    });
+    if (!acquired) {
+      this.logger.warn(`面板 page 未就绪（${key}），走兜底 spawn`);
+      return null;
+    }
+    return this.registerPanelSession(input, key, cdpHttp, acquired);
+  }
+
+  /** 读面板归属事实；桥未注入/请求失败 → null（调用方必须拒绝复用） */
+  private async readPanelStateOrNull(key: string) {
+    if (!this.panelBridge) return null;
+    try {
+      return await this.panelBridge.panelState({
+        ownerId: 'local-engine',
+        tenantId: 'local-tenant',
+      });
+    } catch (error) {
+      this.logger.warn(
+        `panel-state 核验失败（${key}）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return null;
+    }
+  }
+
+  private registerPanelSession(
+    input: { accountId: string | number; platform: LocalBrowserPlatform },
+    key: string,
+    cdpHttp: string,
+    acquired: { context: BrowserContext; page: Page },
+  ): EngineSession {
+    const session: EngineSession = {
+      key,
+      accountId: String(input.accountId),
+      platform: input.platform,
+      profileDir: '', // 面板模式登录态由 desktop partition 持有，引擎无 profile
+      context: acquired.context,
+      page: acquired.page,
+      debuggingPort: Number(new URL(cdpHttp).port) || undefined,
+      browser: 'desktop-panel',
+      browserReused: true, // closeSession 走「只删台账不关进程」路径，防误杀面板
+      visibleWindow: true, // 面板本来就是可见的
+      startedAt: new Date().toISOString(),
+      lastActivityAt: new Date().toISOString(),
+      sessionMode: 'desktop-panel',
+    };
+    this.sessions.set(key, session);
+    this.startedAt = this.startedAt ?? session.startedAt;
+    this.logger.log(
+      `会话 ${key} 已接入内置面板（sessionMode=desktop-panel, accountId=${session.accountId}, url=${acquired.page.url().slice(0, 120)}）`,
+    );
     return session;
   }
 
@@ -1436,6 +1795,38 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   }
 
   /**
+   * 2026-09-05 复核 P0-2：面板会话写动作闸门（click/fill 等直接 Playwright
+   * 封装不得绕开 actionId/Broker 审批链）。仅 sessionMode=desktop-panel 且
+   * 桥可用时生效——spawn 兜底浏览器没有面板审批通道，维持原语义。
+   * system 控制 → 自动批（与 AgentBrowserExecutor 同模型）；用户接管 → 抛
+   * 需确认错误（fail-closed，不提供无单直写路径）。
+   */
+  private async ensurePanelWriteGate(
+    session: EngineSession,
+    kind: 'click' | 'fill',
+    summary: Record<string, unknown>,
+  ): Promise<string | null> {
+    if (session.sessionMode !== 'desktop-panel' || !this.panelBridge) {
+      return null;
+    }
+    const ticket = await this.panelBridge.requestAction(
+      { ownerId: 'local-engine', tenantId: 'local-tenant' },
+      {
+        method: kind === 'fill' ? 'Input.insertText' : 'Input.dispatchMouseEvent',
+        params: {},
+        summary: { kind, sessionKey: session.key, ...summary },
+        sessionId: session.key,
+      },
+    );
+    if (!ticket.autoApproved) {
+      throw new Error(
+        `需用户确认后执行（面板${kind === 'fill' ? '输入' : '点击'}确认单 ${ticket.actionId}，请在右侧浏览器面板批准后重试）`,
+      );
+    }
+    return ticket.actionId;
+  }
+
+  /**
    * 点击元素（替代 5409 click()，用 playwright page.click）
    */
   async click(
@@ -1445,7 +1836,15 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   ): Promise<void> {
     const session = this.sessions.get(sessionKey);
     if (!session) throw new Error(`会话不存在: ${sessionKey}`);
+    const actionId = await this.ensurePanelWriteGate(session, 'click', {
+      selector,
+    });
     await session.page.click(selector, { timeout: options?.timeout ?? 10000 });
+    if (actionId) {
+      await this.panelBridge
+        ?.markInteractionTicket(actionId, 'consumed')
+        .catch(() => undefined);
+    }
     session.lastActivityAt = new Date().toISOString();
   }
 
@@ -1460,9 +1859,18 @@ export class LocalBrowserEngine implements OnModuleDestroy {
   ): Promise<void> {
     const session = this.sessions.get(sessionKey);
     if (!session) throw new Error(`会话不存在: ${sessionKey}`);
+    const actionId = await this.ensurePanelWriteGate(session, 'fill', {
+      selector,
+      textPreview: String(text || '').slice(0, 120),
+    });
     await session.page.fill(selector, text, {
       timeout: options?.timeout ?? 10000,
     });
+    if (actionId) {
+      await this.panelBridge
+        ?.markInteractionTicket(actionId, 'consumed')
+        .catch(() => undefined);
+    }
     session.lastActivityAt = new Date().toISOString();
   }
 
@@ -1730,6 +2138,13 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     for (const key of [...this.sessions.keys()]) {
       await this.closeSession(key);
     }
+    // 面板 CDP 连接只是 playwright 侧 attach，断开不影响桌面壳/面板视图本身
+    try {
+      await this.panelBrowser?.close();
+    } catch {
+      /* 已断开/进程不在，忽略 */
+    }
+    this.panelBrowser = null;
     // CDP browsers are intentionally detached on macOS/Linux so the backend
     // can survive a browser crash.  A backend crash/restart therefore leaves
     // no in-memory session to close; sweep only processes carrying this

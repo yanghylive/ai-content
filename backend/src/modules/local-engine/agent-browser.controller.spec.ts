@@ -184,6 +184,9 @@ describe('AgentBrowserController run 立即返回（2026-09-04）', () => {
     expect(loop.run).toHaveBeenCalledWith('s1', '打开 https://example.com', {
       confirmedTools: [],
       confirmationIds: undefined,
+      // 0d098260（09-04 触达审计）给 run 透传 leadId，无线索场景为 null；
+      // 提交时漏更本 spec，2026-09-05 面板优先改造跑门禁时发现，顺手补齐。
+      leadId: null,
     });
     // 不留悬挂句柄
     await new Promise((r) => setImmediate(r));

@@ -20,7 +20,7 @@ describe('LocalBrowserEngine', () => {
     }
   });
 
-  function createEngine(root: string) {
+  function createEngine(root: string, panelBridge?: unknown) {
     const profiles = {
       restoreLegacyProfileSnapshot: jest.fn(),
     };
@@ -44,8 +44,354 @@ describe('LocalBrowserEngine', () => {
           message: 'test browser',
         }),
       } as any,
+      panelBridge as any,
     );
   }
+
+  /**
+   * 复核 P0-1（账号强绑定）测试基建：绕过 NODE_ENV=test 的面板通道禁用，
+   * spy 私有探测/连接方法，让 tryAcquireDesktopPanelSession 走到账号核验分支。
+   */
+  function spyOnPanelChannel(engine: LocalBrowserEngine) {
+    const fakePage = {
+      url: jest.fn().mockReturnValue('https://creator.douyin.com/creator-micro/home'),
+      isClosed: jest.fn().mockReturnValue(false),
+    };
+    const fakeContext = { pages: jest.fn().mockReturnValue([fakePage]) };
+    const fakeBrowser = { contexts: jest.fn().mockReturnValue([fakeContext]) };
+    jest
+      .spyOn(engine as any, 'panelCdpHttp')
+      .mockReturnValue('http://127.0.0.1:9333');
+    jest
+      .spyOn(engine as any, 'probeDesktopPanelCdp')
+      .mockResolvedValue(true);
+    jest
+      .spyOn(engine as any, 'connectPanelCdp')
+      .mockResolvedValue(fakeBrowser);
+    jest.spyOn(engine as any, 'acquirePanelPage').mockResolvedValue({
+      context: fakeContext,
+      page: fakePage,
+    });
+    (engine as any).panelSwitchMaxAttempts = 2;
+    (engine as any).panelSwitchPollMs = 1;
+    return { fakePage, fakeContext, fakeBrowser };
+  }
+
+  function makeFakePanelBridge(states: Array<Record<string, unknown> | Error>) {
+    let call = 0;
+    return {
+      panelState: jest.fn().mockImplementation(() => {
+        const s = states[Math.min(call, states.length - 1)];
+        call += 1;
+        if (s instanceof Error) return Promise.reject(s);
+        return Promise.resolve(s);
+      }),
+      panelOpen: jest.fn().mockResolvedValue({ panelId: 'panel-x' }),
+      _callCount: () => call,
+    };
+  }
+
+  it('P0-1 账号强绑定：面板归属与请求账号一致 → 直接复用并登记 desktop-panel 会话', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const bridge = makeFakePanelBridge([
+      { hasSession: true, accountId: '4', partition: 'persist:kaypal-browser-local-desktop-4' },
+    ]);
+    const engine = createEngine(root, bridge);
+    const { fakePage } = spyOnPanelChannel(engine as any);
+
+    const session = await (engine as any).tryAcquireDesktopPanelSession(
+      { accountId: 4, platform: 'douyin' },
+      'douyin-4',
+    );
+    expect(session).toBeTruthy();
+    expect(session.sessionMode).toBe('desktop-panel');
+    expect(session.accountId).toBe('4');
+    expect(bridge.panelState).toHaveBeenCalledTimes(1);
+    expect(bridge.panelOpen).not.toHaveBeenCalled();
+    expect(fakePage.url).toHaveBeenCalled();
+  });
+
+  it('P0-1 账号强绑定：面板属于账号 B 而请求账号 A → panelOpen 切换 + 轮询核验后才复用', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    // 第一次核验：面板在账号 B(99)；panelOpen 切换后：核验到账号 A(4)
+    const bridge = makeFakePanelBridge([
+      { hasSession: true, accountId: '99' },
+      { hasSession: true, accountId: '4' },
+    ]);
+    const engine = createEngine(root, bridge);
+    spyOnPanelChannel(engine as any);
+
+    const session = await (engine as any).tryAcquireDesktopPanelSession(
+      { accountId: 4, platform: 'douyin' },
+      'douyin-4',
+    );
+    expect(session).toBeTruthy();
+    expect(session.accountId).toBe('4');
+    expect(bridge.panelOpen).toHaveBeenCalledTimes(1);
+    expect(bridge.panelOpen).toHaveBeenCalledWith(
+      { ownerId: 'local-engine', tenantId: 'local-tenant' },
+      expect.objectContaining({ accountId: '4', platform: 'douyin' }),
+    );
+    expect(bridge.panelState.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('P0-1 账号强绑定：切换后台账始终不匹配 → 拒绝登记（不按平台/URL 猜），返回 null 走兜底', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const bridge = makeFakePanelBridge([
+      { hasSession: true, accountId: '99' }, // 一直是他人的账号
+      { hasSession: true, accountId: '99' },
+      { hasSession: true, accountId: '99' },
+    ]);
+    const engine = createEngine(root, bridge);
+    const { fakeBrowser } = spyOnPanelChannel(engine as any);
+
+    const session = await (engine as any).tryAcquireDesktopPanelSession(
+      { accountId: 4, platform: 'douyin' },
+      'douyin-4',
+    );
+    expect(session).toBeNull();
+    expect(bridge.panelOpen).toHaveBeenCalledTimes(1);
+    expect(engine.getSession('douyin-4')).toBeUndefined();
+    expect(fakeBrowser.contexts).not.toHaveBeenCalled();
+  });
+
+  it('P0-1 账号强绑定：桥不可用（panel-state 失败）→ 拒绝复用，走兜底 spawn', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const bridge = makeFakePanelBridge([new Error('PANEL_UNAVAILABLE')]);
+    const engine = createEngine(root, bridge);
+    spyOnPanelChannel(engine as any);
+
+    const session = await (engine as any).tryAcquireDesktopPanelSession(
+      { accountId: 4, platform: 'douyin' },
+      'douyin-4',
+    );
+    expect(session).toBeNull();
+    expect(engine.getSession('douyin-4')).toBeUndefined();
+  });
+
+  it('P0-1 账号 A/B 顺序：A 登记后面板被切到 B → A 的会话快路径复核 mismatch → 弃用重建', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const engine = createEngine(root);
+    const bridge = makeFakePanelBridge([
+      { hasSession: true, accountId: '4' },  // A 首次获取
+      { hasSession: true, accountId: '4' },  // A 快路径复核通过
+      { hasSession: true, accountId: '99' }, // 面板被切到 B → A 快路径复核 mismatch
+      { hasSession: true, accountId: '99' }, // A 重建：tryAcquire 核验仍 B → panelOpen 切回
+      { hasSession: true, accountId: '4' },  // 切换后核验到 A → 重建登记
+    ]);
+    (engine as any).panelBridge = bridge;
+    spyOnPanelChannel(engine as any);
+
+    // A 首次获取
+    const s1 = await (engine as any).tryAcquireDesktopPanelSession(
+      { accountId: 4, platform: 'douyin' },
+      'douyin-4',
+    );
+    expect(s1?.accountId).toBe('4');
+    // A 再次获取（快路径，归属一致 → 复用）
+    const again = await (engine as any).getOrCreateSession({ accountId: 4, platform: 'douyin' });
+    expect(again.sessionMode).toBe('desktop-panel');
+    // 模拟面板被切到账号 B：A 的快路径复核必须弃用（mismatch → closeSession → 重建）
+    const rebuilt = await (engine as any).getOrCreateSession({ accountId: 4, platform: 'douyin' });
+    expect(rebuilt.sessionMode).toBe('desktop-panel');
+    expect(rebuilt.accountId).toBe('4');
+    // panelOpen 在重建路径里被调用（切回账号 A）
+    expect(bridge.panelOpen).toHaveBeenCalled();
+  });
+
+  // ---- 2026-09-05 复核 P0-1（二轮）：页面级绑定标记 + 并发互斥 ----
+
+  /** 构造带绑定标记的假 page（desktop manager._injectPanelBindingMarker 注入形态） */
+  function makeMarkedPanelPage(marker: Record<string, unknown> | null) {
+    return {
+      url: jest.fn().mockReturnValue('https://creator.douyin.com/creator-micro/home'),
+      isClosed: jest.fn().mockReturnValue(false),
+      evaluate: jest.fn().mockImplementation((expr: string) => {
+        if (String(expr).includes('__kaypalPanelBinding')) {
+          return Promise.resolve(marker);
+        }
+        return Promise.resolve(null);
+      }),
+    };
+  }
+
+  it('P0-1 页面级绑定：page 标记账号与请求不符 → 拒收（核验 A 后拿到 B 的 page 不再可能登记成 A）', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const engine = createEngine(root);
+    // 页面 URL 是 douyin（URL 初筛通过），但页面自带标记属于账号 99 / panel-b
+    // ——模拟 A 核验通过后面板被 B 切走的 interleave：A 必须拒收。
+    const pageB = makeMarkedPanelPage({
+      panelId: 'panel-b',
+      accountId: '99',
+      partition: 'persist:kaypal-browser-local-desktop-99',
+    });
+    const context = { pages: jest.fn().mockReturnValue([pageB]) };
+    const browser = { contexts: jest.fn().mockReturnValue([context]) };
+
+    const got = await (engine as any).acquirePanelPage(
+      browser,
+      'douyin',
+      'https://creator.douyin.com/creator-micro/home',
+      { wantAccount: '4', panelId: 'panel-a' },
+      1, // waitRounds=1 加速测试
+    );
+    expect(got).toBeNull();
+    expect(pageB.evaluate).toHaveBeenCalled();
+  });
+
+  it('P0-1 页面级绑定：page 标记与请求账号/panelId 一致 → 收页', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const engine = createEngine(root);
+    const pageA = makeMarkedPanelPage({
+      panelId: 'panel-a',
+      accountId: '4',
+      partition: 'persist:kaypal-browser-local-desktop-4',
+    });
+    const context = { pages: jest.fn().mockReturnValue([pageA]) };
+    const browser = { contexts: jest.fn().mockReturnValue([context]) };
+
+    const got = await (engine as any).acquirePanelPage(
+      browser,
+      'douyin',
+      'https://creator.douyin.com/creator-micro/home',
+      { wantAccount: '4', panelId: 'panel-a' },
+      1,
+    );
+    expect(got).toBeTruthy();
+    expect(got.page).toBe(pageA);
+  });
+
+  it('P0-1 页面级绑定：标记缺失/evaluate 失败 = 无法证明归属 → 拒收（fail-closed）', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const engine = createEngine(root);
+    const pageNoMarker = makeMarkedPanelPage(null);
+    const pageBroken = {
+      url: jest.fn().mockReturnValue('https://creator.douyin.com/creator-micro/home'),
+      isClosed: jest.fn().mockReturnValue(false),
+      evaluate: jest.fn().mockRejectedValue(new Error('Execution context destroyed')),
+    };
+    const context = { pages: jest.fn().mockReturnValue([pageNoMarker, pageBroken]) };
+    const browser = { contexts: jest.fn().mockReturnValue([context]) };
+
+    const got = await (engine as any).acquirePanelPage(
+      browser,
+      'douyin',
+      'https://creator.douyin.com/creator-micro/home',
+      { wantAccount: '4', panelId: 'panel-a' },
+      1,
+    );
+    expect(got).toBeNull();
+  });
+
+  it('P0-1 并发互斥：A/B 并发获取面板会话时「核验→取页→登记」整体串行（panelState 调用无重叠）', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const engine = createEngine(root);
+    const bridge = makeFakePanelBridge([
+      { hasSession: true, accountId: '4', panelId: 'panel-x' },
+    ]);
+    (engine as any).panelBridge = bridge;
+    spyOnPanelChannel(engine as any);
+
+    let inflight = 0;
+    let maxInflight = 0;
+    bridge.panelState.mockImplementation(async () => {
+      inflight += 1;
+      maxInflight = Math.max(maxInflight, inflight);
+      await new Promise((r) => setTimeout(r, 10));
+      inflight -= 1;
+      return { hasSession: true, accountId: '4', panelId: 'panel-x' };
+    });
+
+    // 两个不同 key 的会话并发走面板获取（同一块物理面板）
+    const [s1, s2] = await Promise.all([
+      (engine as any).tryAcquireDesktopPanelSession(
+        { accountId: 4, platform: 'douyin' },
+        'douyin-4',
+      ),
+      (engine as any).tryAcquireDesktopPanelSession(
+        { accountId: 4, platform: 'douyin' },
+        'douyin-4-b',
+      ),
+    ]);
+    expect(s1).toBeTruthy();
+    expect(s2).toBeTruthy();
+    expect(maxInflight).toBe(1);
+  });
+
+  it('P0-2 引擎面板写闸门：desktop-panel 会话 fill → requestAction（autoApproved）+ consumed 回写', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const engine = createEngine(root);
+    const bridge = makeFakePanelBridge([]) as any;
+    bridge.requestAction = jest.fn().mockResolvedValue({
+      actionId: 'act-f1',
+      autoApproved: true,
+    });
+    bridge.markInteractionTicket = jest.fn().mockResolvedValue(undefined);
+    (engine as any).panelBridge = bridge;
+    const fakePage = { fill: jest.fn().mockResolvedValue(undefined) };
+    (engine as any).sessions.set('douyin-4', {
+      key: 'douyin-4',
+      accountId: '4',
+      platform: 'douyin',
+      profileDir: '',
+      context: {},
+      page: fakePage,
+      sessionMode: 'desktop-panel',
+      lastActivityAt: '',
+    });
+
+    await (engine as any).fill('douyin-4', '.editor', 'hello');
+
+    expect(bridge.requestAction).toHaveBeenCalledWith(
+      { ownerId: 'local-engine', tenantId: 'local-tenant' },
+      expect.objectContaining({ method: 'Input.insertText' }),
+    );
+    expect(fakePage.fill).toHaveBeenCalled();
+    expect(bridge.markInteractionTicket).toHaveBeenCalledWith(
+      'act-f1',
+      'consumed',
+    );
+  });
+
+  it('P0-2 引擎面板写闸门：用户接管（非自动批）→ fill 抛需确认（fail-closed），页面未被写入', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));
+    roots.push(root);
+    const engine = createEngine(root);
+    const bridge = makeFakePanelBridge([]) as any;
+    bridge.requestAction = jest.fn().mockResolvedValue({
+      actionId: 'act-f2',
+      autoApproved: false,
+    });
+    bridge.markInteractionTicket = jest.fn().mockResolvedValue(undefined);
+    (engine as any).panelBridge = bridge;
+    const fakePage = { fill: jest.fn().mockResolvedValue(undefined) };
+    (engine as any).sessions.set('douyin-4', {
+      key: 'douyin-4',
+      accountId: '4',
+      platform: 'douyin',
+      profileDir: '',
+      context: {},
+      page: fakePage,
+      sessionMode: 'desktop-panel',
+      lastActivityAt: '',
+    });
+
+    await expect(
+      (engine as any).fill('douyin-4', '.editor', 'x'),
+    ).rejects.toThrow(/需用户确认/);
+    expect(fakePage.fill).not.toHaveBeenCalled();
+    expect(bridge.markInteractionTicket).not.toHaveBeenCalled();
+  });
 
   it('treats Playwright CDP browser context errors as recoverable launch failures', () => {
     const root = mkdtempSync(join(tmpdir(), 'local-browser-engine-'));

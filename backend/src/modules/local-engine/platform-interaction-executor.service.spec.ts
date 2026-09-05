@@ -978,4 +978,132 @@ describe('PlatformInteractionExecutor', () => {
     expect(page.mouse.click).toHaveBeenNthCalledWith(2, 518, 261);
     expect(page.mouse.click).toHaveBeenNthCalledWith(3, 518, 261);
   });
+
+  // ---- 2026-09-05 复核 P0-2：dispatch 写链审批闸门 ----
+
+  function makeDispatchPage(overrides: Record<string, unknown> = {}) {
+    return {
+      goto: jest.fn().mockResolvedValue(undefined),
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      waitForLoadState: jest.fn().mockResolvedValue(undefined),
+      bringToFront: jest.fn().mockResolvedValue(undefined),
+      url: jest.fn().mockReturnValue('https://creator.douyin.com/creator-micro/home'),
+      evaluate: jest.fn().mockRejectedValue(new Error('boom')),
+      locator: jest.fn().mockReturnValue({
+        first: jest.fn().mockReturnValue({
+          screenshot: jest.fn().mockResolvedValue(Buffer.from('png')),
+        }),
+      }),
+      mouse: { wheel: jest.fn().mockResolvedValue(undefined) },
+      screenshot: jest.fn().mockResolvedValue(Buffer.from('png')),
+      ...overrides,
+    };
+  }
+
+  function makeDispatchBrowser(page: Record<string, unknown>) {
+    return {
+      getOrCreateSession: jest.fn().mockResolvedValue({
+        key: 'douyin-1',
+        accountId: '1',
+        platform: 'douyin',
+        page,
+        profileDir: '/profiles/douyin-1',
+        visibleWindow: true,
+      }),
+    };
+  }
+
+  function makeBridge(overrides: Record<string, unknown> = {}) {
+    return {
+      requestAction: jest.fn().mockResolvedValue({
+        actionId: 'act-1',
+        autoApproved: true,
+        binding: { webContentsId: null, method: 'Input.insertText' },
+      }),
+      markInteractionTicket: jest.fn().mockResolvedValue(undefined),
+      ...overrides,
+    };
+  }
+
+  const DISPATCH_INPUT = {
+    platform: 'douyin' as const,
+    taskType: 'comment-reply' as const,
+    action: 'send' as const,
+    accountId: 1,
+    targetText: '想要链接',
+    replyText: '已私信你啦',
+  };
+
+  it('P0-2 闸门：system 控制自动批 → requestAction 先于写操作，单据 in_use 回写，结果带 approvalGate', async () => {
+    const page = makeDispatchPage();
+    const bridge = makeBridge();
+    const executor = new PlatformInteractionExecutor(
+      {} as any,
+      makeDispatchBrowser(page) as any,
+      bridge as any,
+    );
+
+    const result = await executor.dispatch(DISPATCH_INPUT);
+
+    expect(bridge.requestAction).toHaveBeenCalledTimes(1);
+    const [actor, req] = (bridge.requestAction as jest.Mock).mock.calls[0];
+    expect(actor).toEqual({ ownerId: 'local-engine', tenantId: 'local-tenant' });
+    expect(req.method).toBe('Input.insertText');
+    expect(req.summary).toEqual(
+      expect.objectContaining({
+        kind: 'interaction-dispatch',
+        platform: 'douyin',
+        taskType: 'comment-reply',
+        action: 'send',
+        accountId: '1',
+      }),
+    );
+    const statuses = (bridge.markInteractionTicket as jest.Mock).mock.calls.map(
+      (c) => c[1],
+    );
+    expect(statuses[0]).toBe('in_use');
+    expect(statuses).not.toContain('consumed');
+    expect(['failed', 'account_not_logged_in']).toContain(result.status);
+    expect(result.approvalGate).toBe('panel-auto');
+    expect(result.approvalActionId).toBe('act-1');
+  });
+
+  it('P0-2 闸门：用户接管（非自动批）→ 挂单拒绝执行（fail-closed），不碰页面，不写单据状态', async () => {
+    const page = makeDispatchPage();
+    const bridge = makeBridge({
+      requestAction: jest.fn().mockResolvedValue({
+        actionId: 'act-2',
+        autoApproved: false,
+        binding: { webContentsId: null, method: 'Input.insertText' },
+      }),
+    });
+    const browser = makeDispatchBrowser(page);
+    const executor = new PlatformInteractionExecutor(
+      {} as any,
+      browser as any,
+      bridge as any,
+    );
+
+    const result = await executor.dispatch(DISPATCH_INPUT);
+
+    expect(result.status).toBe('failed');
+    expect(result.message).toContain('需用户确认');
+    expect(result.message).toContain('act-2');
+    expect(page.goto).not.toHaveBeenCalled();
+    expect(page.evaluate).not.toHaveBeenCalled();
+    expect(bridge.markInteractionTicket).not.toHaveBeenCalled();
+  });
+
+  it('P0-2 闸门：无面板桥（纯兜底环境）→ 显式旁路留痕 approvalGate=bypassed-no-bridge', async () => {
+    const page = makeDispatchPage();
+    const executor = new PlatformInteractionExecutor(
+      {} as any,
+      makeDispatchBrowser(page) as any,
+    );
+
+    const result = await executor.dispatch(DISPATCH_INPUT);
+
+    expect(result.approvalGate).toBe('bypassed-no-bridge');
+    expect(result.approvalActionId).toBeNull();
+  });
 });

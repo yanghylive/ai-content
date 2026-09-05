@@ -24,10 +24,11 @@
  * 3. 商用保护: DISPATCH_MOCK=true 只能硬失败，不能伪造 sent/draft_filled 成功
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import type { Frame, Page } from 'playwright';
 import { PlaywrightMcpService } from './playwright-mcp.service';
 import { LocalBrowserEngine } from './local-browser-engine.service';
+import { AgentPanelBridgeService } from './agent-panel-bridge.service';
 import { safeText } from '../../common/text.utils';
 
 /** 浏览器 window 上挂载的抖音 IM 抓包缓存（页面注入脚本写入） */
@@ -82,8 +83,7 @@ export type PlatformDispatchResult = {
     | 'draft_filled'
     | 'failed'
     | 'account_not_logged_in'
-    | 'comment_missing'
-    | 'message_missing'
+    | 'comment_missing'    | 'message_missing'
     | 'editor_missing'
     | 'send_failed';
   message: string;
@@ -96,6 +96,9 @@ export type PlatformDispatchResult = {
   profileDir?: string;
   visibleWindow?: boolean;
   runtimeMode?: 'persistent-cdp-browser';
+  /** 2026-09-05 复核 P0-2：审批闸门留痕（panel-auto=经闸自动批；bypassed-no-bridge=无桥兜底旁路） */
+  approvalGate?: 'panel-auto' | 'bypassed-no-bridge' | 'bypassed-bridge-error';
+  approvalActionId?: string | null;
 };
 
 export type PlatformReadInput = {
@@ -161,6 +164,9 @@ export class PlatformInteractionExecutor {
   constructor(
     private readonly mcp: PlaywrightMcpService,
     private readonly browser: LocalBrowserEngine,
+    // 2026-09-05 复核 P0-2：获客/互动 dispatch 写链的审批闸门（面板桥）。
+    // 未注入 = 纯兜底环境（无 desktop 面板），闸门旁路并如实留痕。
+    @Optional() private readonly panelBridge?: AgentPanelBridgeService,
   ) {}
 
   listSessions() {
@@ -263,6 +269,70 @@ export class PlatformInteractionExecutor {
     return this.dispatchWithLocalBrowser(input);
   }
 
+  /**
+   * 2026-09-05 复核 P0-2：dispatch 写链审批闸门。
+   * 此前 dispatchWithLocalBrowser 拿到 engine page 后直接 goto/DOM/发送，
+   * 绕开了 AgentBrowserExecutor 的 actionId/Broker 审批链——本方法补上：
+   * 桥可用 → requestAction 签单（system 控制=自动批；用户接管=挂单返回
+   * needs-approval 语义），单据状态由执行器回写（in_use→consumed/pending）；
+   * 桥未注入（纯兜底环境，无 desktop 面板）→ 显式旁路留痕 approvalGate。
+   * 一条 dispatch = 一个业务写动作 = 一张确认单（summary 携带完整业务上下文）。
+   */
+  private async ensureDispatchWriteGate(
+    input: PlatformDispatchInput,
+    sessionKey: string,
+  ): Promise<
+    | { pass: true; actionId: string | null; gate: 'panel-auto' | 'bypassed-no-bridge' | 'bypassed-bridge-error' }
+    | { pass: false; message: string; nextAction: string }
+  > {
+    if (!this.panelBridge) {
+      this.logger.warn(
+        `审批闸门旁路（无面板桥/纯兜底环境）：${input.platform}/${input.taskType}/${input.action} account=${input.accountId}`,
+      );
+      return { pass: true, actionId: null, gate: 'bypassed-no-bridge' };
+    }
+    let ticket: Awaited<
+      ReturnType<AgentPanelBridgeService['requestAction']>
+    >;
+    try {
+      ticket = await this.panelBridge.requestAction(
+        { ownerId: 'local-engine', tenantId: 'local-tenant' },
+        {
+          method: 'Input.insertText',
+          params: {},
+          summary: {
+            kind: 'interaction-dispatch',
+            platform: input.platform,
+            taskType: input.taskType,
+            action: input.action,
+            accountId: String(input.accountId),
+            targetName: input.targetName ?? null,
+            targetText: String(input.targetText || '').slice(0, 120),
+            replyTextPreview: String(input.replyText || '').slice(0, 120),
+          },
+          sessionId: sessionKey,
+        },
+      );
+    } catch (error) {
+      // 桥不可用（desktop 未运行/凭据老化）= 无审批通道可用。fail-open 放行
+      // 兜底执行（外部浏览器链路必须保持可用），但如实留痕。
+      this.logger.warn(
+        `审批闸门旁路（面板桥不可用）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return { pass: true, actionId: null, gate: 'bypassed-bridge-error' };
+    }
+    if (!ticket.autoApproved) {
+      return {
+        pass: false,
+        message: `需用户确认后执行（互动确认单 ${ticket.actionId}，请在右侧浏览器面板批准后重试）`,
+        nextAction: `在浏览器面板批准该确认单（actionId=${ticket.actionId}）后重试本条互动；用户接管期间所有互动暂停。`,
+      };
+    }
+    return { pass: true, actionId: ticket.actionId, gate: 'panel-auto' };
+  }
+
   private async dispatchWithLocalBrowser(
     input: PlatformDispatchInput,
   ): Promise<PlatformDispatchResult> {
@@ -279,6 +349,28 @@ export class PlatformInteractionExecutor {
     this.logger.log(
       `local-browser dispatch ${input.platform}/${input.taskType} account=${input.accountId} action=${input.action} url=${targetUrl}`,
     );
+
+    // 2026-09-05 复核 P0-2：写链先过审批闸门（登录态检查等只读步骤前的
+    // goto 属于业务 dispatch 的一部分，统一由本单覆盖）。
+    const gate = await this.ensureDispatchWriteGate(input, session.key);
+    if (!gate.pass) {
+      return {
+        status: 'failed',
+        message: gate.message,
+        nextAction: gate.nextAction,
+        profileDir: session.profileDir,
+        visibleWindow: session.visibleWindow,
+        runtimeMode: 'persistent-cdp-browser',
+        approvalActionId: null,
+      };
+    }
+    const approvalActionId = gate.actionId;
+    if (approvalActionId) {
+      // 两阶段锁定对齐：执行前 in_use（并发只有一方抢到）
+      await this.panelBridge
+        ?.markInteractionTicket(approvalActionId, 'in_use')
+        .catch(() => undefined);
+    }
 
     try {
       const preserveCurrentPage =
@@ -316,6 +408,8 @@ export class PlatformInteractionExecutor {
           visibleWindow: session.visibleWindow,
           runtimeMode: 'persistent-cdp-browser',
           nextAction: '请在打开的浏览器里完成平台登录，然后重试。',
+          approvalGate: gate.gate,
+          approvalActionId,
         };
       }
       const recoveredPage = await this.ensureWechatChannelEntryReadyOrRecover(
@@ -325,6 +419,17 @@ export class PlatformInteractionExecutor {
       if (recoveredPage) page = recoveredPage;
 
       const actionResult = await this.performDomInteraction(page, input);
+      // 单据回写：真实发出/落稿 → consumed；失败 → 释放回 pending 可重试
+      if (approvalActionId) {
+        await this.panelBridge
+          ?.markInteractionTicket(
+            approvalActionId,
+            actionResult.status === 'sent' || actionResult.status === 'draft_filled'
+              ? 'consumed'
+              : 'pending',
+          )
+          .catch(() => undefined);
+      }
       if (actionResult.status === 'sent') {
         const hasVisualFailure = await this.detectSendFailureMarker(page);
         if (hasVisualFailure) {
@@ -349,9 +454,16 @@ export class PlatformInteractionExecutor {
         visibleWindow: session.visibleWindow,
         runtimeMode: 'persistent-cdp-browser',
         nextAction: actionResult.nextAction,
+        approvalGate: gate.gate,
+        approvalActionId,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      if (approvalActionId) {
+        await this.panelBridge
+          ?.markInteractionTicket(approvalActionId, 'pending')
+          .catch(() => undefined);
+      }
       const screenshot = await this.captureSessionScreenshot(
         session.key,
         `${input.platform}-${input.taskType}-failed`,
@@ -365,6 +477,8 @@ export class PlatformInteractionExecutor {
         runtimeMode: 'persistent-cdp-browser',
         nextAction:
           '检查平台页面是否加载完成、账号是否登录、目标对象是否仍可见。',
+        approvalGate: gate.gate,
+        approvalActionId,
       };
     }
   }

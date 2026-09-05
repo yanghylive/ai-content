@@ -189,8 +189,13 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       }
       this.lastError = '';
       this.commandLabel = `${command.command} ${command.args.join(' ')}`;
+      // 2026-09-05 复核修正：sidecar 默认 headless——它是 MCP 兜底执行器，
+      // 不需要人看；此前默认 visible=true 导致 3011/3013 每次重启都向桌面
+      // 弹一个独立 Chrome 窗口（被当成「调起外部浏览器」）。要恢复可见窗口
+      // 显式设 LOCAL_MCP_VISIBLE=true。dispatchViaMcp 的 visible 商用闸不受
+      // 影响（该分支已是死分支，主路径 dispatchWithLocalBrowser 走 playwright）。
       this.visibleWindow =
-        this.config.get<string>('LOCAL_BROWSER_HEADLESS') !== 'true';
+        this.config.get<string>('LOCAL_MCP_VISIBLE') === 'true';
       this.isolated =
         this.config.get<string>('LOCAL_BROWSER_ISOLATED') === 'true';
       const args = [
@@ -497,12 +502,12 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       profileDir: this.profileDir,
       visibleWindow: this.visibleWindow,
       isolated: this.isolated,
+      // 2026-09-05 复核修正：readiness 与可见性解耦——headless sidecar 是合法
+      // 自动化通道（MCP 兜底执行器不需要人看），此前硬性要求 visibleWindow=true
+      // 与默认 headless 配置冲突，把健康的 Agent-S 误判成 mcp-down。
+      // isolated 仍作为阻断条件（无持久 profile，登录态不落盘，不能承载真机自动化）。
       readyForAutomation:
-        this.online &&
-        this.child !== null &&
-        this.visibleWindow &&
-        !this.isolated &&
-        requiredToolsReady,
+        this.online && this.child !== null && !this.isolated && requiredToolsReady,
       requiredToolsReady,
       requiredTools: [...this.requiredAutomationTools],
       missingRequiredTools,
@@ -532,9 +537,10 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       requiredToolsReady,
       missingRequiredTools,
       readyForAutomation:
+        // 2026-09-05 复核修正：与 getStatus 同步解耦可见性（headless 是合法
+        // 自动化通道），isolated（无持久登录态）仍是阻断条件。
         this.online &&
         this.child !== null &&
-        this.visibleWindow &&
         !this.isolated &&
         requiredToolsReady,
       message:
