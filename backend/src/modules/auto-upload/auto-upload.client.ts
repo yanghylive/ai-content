@@ -235,6 +235,8 @@ export type AutoUploadOpenAccountsResult = {
     platform: string;
     accountId: number | string;
     status?: AutoUploadCdpBrowserSession['status'];
+    /** 会话承载方式：desktop-panel=内置面板（引擎 CDP 直连），external=外部浏览器兜底 */
+    browser?: 'desktop-panel' | 'external';
     currentUrl?: string;
     lastError?: string;
   }>;
@@ -2613,6 +2615,11 @@ export class AutoUploadClient {
             platform: account.platform,
             accountId: engineAccountId,
             status: openedStatus,
+            // 2026-09-05 内置面板优先：把引擎会话的承载方式透出，供前端/验收区分
+            browser:
+              session.sessionMode === 'desktop-panel'
+                ? 'desktop-panel'
+                : 'external',
             currentUrl,
             lastError:
               openedStatus === 'needs_login'
