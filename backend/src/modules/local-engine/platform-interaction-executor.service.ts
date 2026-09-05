@@ -6844,20 +6844,26 @@ export class PlatformInteractionExecutor {
               .sort((a, b) => b.rect.y - a.rect.y);
             const reply = replyNodes[0];
             if (reply) {
+              // 2026-09-06 复核：目标评论行常在视口外（rect.y 可达 1957 > 视口高），
+              // mouse.click 用视口坐标点视口外=无效点击→编辑框永不展开→editor_missing。
+              // 先滚动目标行入视口，再取滚动后的视口坐标。
+              reply.node.scrollIntoView({ block: 'center' });
+              const scrolledReplyRect = reply.node.getBoundingClientRect();
+              const scrolledRootRect = markedRoot.getBoundingClientRect();
               return {
                 status: 'target_found',
                 targetText: markedText.slice(0, 260),
                 replyRect: {
-                  x: reply.rect.x,
-                  y: reply.rect.y,
-                  width: reply.rect.width,
-                  height: reply.rect.height,
+                  x: scrolledReplyRect.x,
+                  y: scrolledReplyRect.y,
+                  width: scrolledReplyRect.width,
+                  height: scrolledReplyRect.height,
                 },
                 rootRect: {
-                  x: markedRect.x,
-                  y: markedRect.y,
-                  width: markedRect.width,
-                  height: markedRect.height,
+                  x: scrolledRootRect.x,
+                  y: scrolledRootRect.y,
+                  width: scrolledRootRect.width,
+                  height: scrolledRootRect.height,
                 },
                 alreadyOpen,
               };
@@ -6908,20 +6914,25 @@ export class PlatformInteractionExecutor {
               .sort((a, b) => b.rect.y - a.rect.y);
             const reply = replyNodes[0];
             if (!reply) continue;
+            // 2026-09-06 复核：滚动目标行入视口后再取视口坐标（否则
+            // rect.y 可达 1957 > 视口高，mouse.click 视口外=无效点击）。
+            reply.node.scrollIntoView({ block: 'center' });
+            const scrolledReplyRect = reply.node.getBoundingClientRect();
+            const scrolledRootRect = root.node.getBoundingClientRect();
             return {
               status: 'target_found',
               targetText: root.text.slice(0, 260),
               replyRect: {
-                x: reply.rect.x,
-                y: reply.rect.y,
-                width: reply.rect.width,
-                height: reply.rect.height,
+                x: scrolledReplyRect.x,
+                y: scrolledReplyRect.y,
+                width: scrolledReplyRect.width,
+                height: scrolledReplyRect.height,
               },
               rootRect: {
-                x: root.rect.x,
-                y: root.rect.y,
-                width: root.rect.width,
-                height: root.rect.height,
+                x: scrolledRootRect.x,
+                y: scrolledRootRect.y,
+                width: scrolledRootRect.width,
+                height: scrolledRootRect.height,
               },
               alreadyOpen,
             };
@@ -6949,17 +6960,15 @@ export class PlatformInteractionExecutor {
     this.logger.log(
       `[trace][douyin-reply] target=${JSON.stringify({ status: target.status, alreadyOpen: target.alreadyOpen, replyRect, rootRect })}`,
     );
-    if (!target.alreadyOpen) {
-      await page.mouse.click(
-        Number(replyRect.x || 0) +
-          Math.max(Number(replyRect.width || 1) / 2, 1),
-        Number(replyRect.y || 0) +
-          Math.max(Number(replyRect.height || 1) / 2, 1),
-      );
-      await page.waitForTimeout(1500);
-    }
+    // 2026-09-06 复核：目标评论在页面（alreadyOpen）≠ 回复编辑框已展开。
+    // 滚动入视口后无条件点击「回复」（坐标已是滚动后视口坐标）。
+    await page.mouse.click(
+      Number(replyRect.x || 0) + Math.max(Number(replyRect.width || 1) / 2, 1),
+      Number(replyRect.y || 0) + Math.max(Number(replyRect.height || 1) / 2, 1),
+    );
+    await page.waitForTimeout(1500);
 
-    const replyOpened = await this.evaluateWithTimeout(
+    let replyOpened = await this.evaluateWithTimeout(
       page,
       'douyin-comment-open-reply-editor',
       page.evaluate(
