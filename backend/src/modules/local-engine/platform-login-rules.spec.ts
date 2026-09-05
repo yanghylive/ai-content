@@ -218,6 +218,30 @@ describe('resolvePlatformLoginState：douyin 三态', () => {
     ).toBe('login_prompt');
   });
 
+  it('login_prompt：登录页营销文案命中特征词也必须是 login_prompt（2026-09-04 只读校准真机误报回归）', () => {
+    // 真机取证：creator.douyin.com 登录页 innerText（节选）——
+    // 「抖音创作者中心·创作者…一站式服务平台」命中「创作者中心」，
+    // 同页含「扫码登录/验证码登录」→ 强登录页标志词优先，不得判 logged_in
+    const loginPageInnerText =
+      '网址 抖音 抖音创作者中心·创作者 抖音创作者中心是抖音创作者的一站式服务平台 · ' +
+      '致力于助力创作者高效运营 我是创作者 我是MCN机构 扫码登录 如何扫码 ' +
+      '打开「抖音APP」点击左上角 扫一扫 验证码登录 密码登录 获取验证码 登录 ' +
+      '登录即代表同意用户协议和隐私政策 作品发布及管理 作品数据分析 商单任务变现';
+    expect(
+      resolvePlatformLoginState('douyin', 'https://creator.douyin.com/', loginPageInnerText),
+    ).toBe('login_prompt');
+  });
+
+  it('logged_in：后台特征词命中且无强登录页标志词（含「二维码」弱词不否决）', () => {
+    expect(
+      resolvePlatformLoginState(
+        'douyin',
+        'https://creator.douyin.com/',
+        '创作者中心 内容管理 数据中心 粉丝管理 直播二维码',
+      ),
+    ).toBe('logged_in');
+  });
+
   it('login_prompt：login 形态 URL', () => {
     expect(
       resolvePlatformLoginState('douyin', 'https://creator.douyin.com/login', ''),

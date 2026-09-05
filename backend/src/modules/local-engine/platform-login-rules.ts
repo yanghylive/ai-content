@@ -143,6 +143,13 @@ const DOUYIN_BACKEND_KEYWORDS =
 /**
  * 抖音登录态：判定域收窄 douyin.com（白名单里的 bytedance.com/iesdouyin.com
  * 是资源/短链域，页面本身不承载登录态 UI，判 unknown 防误报）。
+ *
+ * 2026-09-04 只读校准真机抓获（误报）：creator.douyin.com 登录页营销文案
+ * 「抖音创作者中心是抖音创作者的一站式服务平台」命中后台特征词「创作者中心」
+ * → 扫码页被判 logged_in。强登录页标志词（扫码登录/验证码登录/请先登录/
+ * 未登录）**优先于**特征词——页面明示扫码/验证码登录时无论文案命中什么都
+ * 是登录页（弱词「二维码」留在特征词之后：已登录后台的分享/直播功能也可能
+ * 出现二维码字样，不能一票否决）。
  */
 export function resolveDouyinLoginState(
   url: string,
@@ -151,8 +158,11 @@ export function resolveDouyinLoginState(
   const normalizedText = normalizePageText(text);
   if (!/douyin\.com/.test(url || '')) return 'unknown';
   if (isLoginLikeUrl(url)) return 'login_prompt';
+  if (/扫码登录|验证码登录|请先登录|未登录/.test(normalizedText)) {
+    return 'login_prompt';
+  }
   if (DOUYIN_BACKEND_KEYWORDS.test(normalizedText)) return 'logged_in';
-  if (/扫码登录|验证码登录|二维码|请先登录|未登录/.test(normalizedText)) {
+  if (/二维码/.test(normalizedText)) {
     return 'login_prompt';
   }
   // 在 douyin.com 上但无后台特征词（如 www.douyin.com 纯浏览）：
