@@ -392,10 +392,12 @@ describe('AutoUploadClient', () => {
     await stream.return?.(undefined as never);
 
     expect(first.value).toBe('data:image/png;base64,douyin-login-qr');
+    // 2026-09-05 方案 B：登录会话一律 headless（修「点登录弹外部浏览器」）
     expect(localBrowser.getOrCreateSession).toHaveBeenCalledWith({
       platform: 'douyin',
       accountId: 7,
       reuseLoggedInSession: false,
+      forceHeadless: true,
     });
   });
 

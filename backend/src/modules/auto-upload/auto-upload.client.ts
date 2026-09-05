@@ -5665,10 +5665,21 @@ export class AutoUploadClient {
     }
     const platformType = input.type;
     const engineAccountId = await this.resolveLoginEngineAccountId(input);
+    // 2026-09-05 方案 B（修「点登录弹外部浏览器」）：登录会话一律 headless——
+    // 二维码/登录页截图经 SSE 投到前端弹窗，用户手机扫码，桌面不再弹 Chrome 窗口。
+    // 先关同 key 旧会话：若旧会话是可见窗口（此前任务开的），复用分支不会改
+    // 可见性，登录会照常弹窗；登录是低频用户动作，重建成本（秒级）可接受。
+    const loginSessionKey = `${platform}-${engineAccountId}`;
+    try {
+      await this.localBrowser.closeSession(loginSessionKey);
+    } catch {
+      /* 旧引擎实现/测试 fake 无此方法时忽略（不阻断登录流程） */
+    }
     const session = await this.localBrowser.getOrCreateSession({
       platform,
       accountId: engineAccountId,
       reuseLoggedInSession: false,
+      forceHeadless: true,
     });
     this.activeLoginSessionKeys.set(input.requestId, session.key);
 
@@ -5723,7 +5734,26 @@ export class AutoUploadClient {
       );
       if (!qr) {
         if (platformType === 2) {
-          yield `LOGIN_URL:${this.platformLoginStartUrl(platformType)}`;
+          // 2026-09-05 方案 B：引擎 headless 化后用户没有可见页面可操作——
+          // 视频号二维码在跨域 iframe（open.weixin.qq.com/qrconnect），主 frame
+          // 抽不到，改投登录页整页截图到前端弹窗（headless=new 渲染完整，
+          // 实测二维码/快捷登录卡片均可渲染；本机微信开着时页面直接出快捷登录卡片）。
+          // 顺序约定：先 LOGIN_URL（前端进 manual 态）再投 data:image 截图
+          //（前端收到后自动转 qr 态显示），截图刷新在轮询前投一次即可。
+          try {
+            const shot = await session.page.screenshot({
+              type: 'jpeg',
+              quality: 70,
+              timeout: 10_000,
+            });
+            yield `LOGIN_URL:${this.platformLoginStartUrl(platformType)}`;
+            yield `data:image/jpeg;base64,${shot.toString('base64')}`;
+          } catch (error) {
+            this.logger.warn(
+              `视频号登录页截图投递失败: ${error instanceof Error ? error.message : String(error)}`,
+            );
+            yield `LOGIN_URL:${this.platformLoginStartUrl(platformType)}`;
+          }
         } else {
           yield 'ERROR: 登录页面加载超时，未获取到二维码。请关闭弹窗后重试，或检查平台登录页是否改版、浏览器是否被拦截。';
           yield '500';
