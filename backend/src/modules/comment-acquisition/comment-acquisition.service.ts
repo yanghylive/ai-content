@@ -199,21 +199,44 @@ export class CommentAcquisitionService {
       let replyText: string | undefined;
       let personaId: string | undefined;
       let personaName: string | undefined;
-      try {
-        const reply = await this.replyEngine.generateReply(comment, {
-          platformName,
-          bindKey: `${input.platform}:${input.accountId}`,
-          content: {
-            title: readResult.title || undefined,
-          },
-        });
-        replyText = reply.replyText;
-        personaId = reply.personaId;
-        personaName = reply.personaName;
-      } catch (error) {
-        this.logger.warn(
-          `[comment-acquisition] 回复生成失败: ${error instanceof Error ? error.message : String(error)}`,
+      // 2026-09-06 复核：同评论已生成过回复 → 直接复用既有草稿，不重复调 AI。
+      // 重复生成会以相同 prompt 触发 kaypal 网关 409 BILLING_IDEMPOTENCY_REPLAY
+      // （同键扣费已存在），且会把既有 latestReply 清空。409 时网关侧已扣费
+      // 但客户端拿不到结果，纯浪费积分。
+      const dedupeKey = LeadRepository.dedupeKeyOf({
+        platform: input.platform,
+        externalUserId: comment.item.authorId ?? null,
+        nickname: comment.item.authorName ?? null,
+        sourceText: comment.text,
+      });
+      const existingReplied = await this.leadRepository.findRepliedByDedupeKey(
+        scope.userId,
+        scope.tenantId,
+        dedupeKey,
+      );
+      if (existingReplied?.latestReply) {
+        replyText = existingReplied.latestReply;
+        this.logger.log(
+          `[comment-acquisition] 复用既有回复草稿 lead=${existingReplied.id}（跳过重复 AI 生成）`,
         );
+      }
+      if (!replyText) {
+        try {
+          const reply = await this.replyEngine.generateReply(comment, {
+            platformName,
+            bindKey: `${input.platform}:${input.accountId}`,
+            content: {
+              title: readResult.title || undefined,
+            },
+          });
+          replyText = reply.replyText;
+          personaId = reply.personaId;
+          personaName = reply.personaName;
+        } catch (error) {
+          this.logger.warn(
+            `[comment-acquisition] 回复生成失败: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        }
       }
 
       // 4. 先记录不可变的互动事实，再把真实事件 ID 写入 Lead。评论扫描

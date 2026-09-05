@@ -168,6 +168,9 @@ describe('CommentAcquisitionService', () => {
       created: true,
     }),
     updateReplyStatus: jest.fn().mockResolvedValue(undefined),
+    findRepliedByDedupeKey: jest.fn().mockResolvedValue(null),
+    // 2026-09-06 复核：scan 生成前查既有草稿（默认 null=走 AI 生成路径）
+    findRepliedByDedupeKey: jest.fn().mockResolvedValue(null),
   };
   const interactionEventStoreMock = {
     fromInteractionItem: jest.fn((platform, accountId, item, context) => ({
@@ -678,6 +681,7 @@ describe('CommentAcquisitionService 风控断路器', () => {
       created: true,
     }),
     updateReplyStatus: jest.fn().mockResolvedValue(undefined),
+    findRepliedByDedupeKey: jest.fn().mockResolvedValue(null),
   };
 
   beforeEach(async () => {
@@ -804,6 +808,7 @@ describe('CommentAcquisitionService 小红书获客', () => {
       created: true,
     }),
     updateReplyStatus: jest.fn().mockResolvedValue(undefined),
+    findRepliedByDedupeKey: jest.fn().mockResolvedValue(null),
   };
   const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
 
@@ -924,6 +929,7 @@ describe('CommentAcquisitionService 私信获客', () => {
       created: true,
     }),
     updateReplyStatus: jest.fn().mockResolvedValue(undefined),
+    findRepliedByDedupeKey: jest.fn().mockResolvedValue(null),
   };
   const interactionRegistryMock = makeRegistryMock(executorMock, xhsMock.replyComment, autoUploadMock, xhsMock.readComments);
 
