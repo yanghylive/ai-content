@@ -319,8 +319,40 @@ http.createServer(async (req, res) => {
     return;
   }
 
-  /* P0-1: HTML 层鉴权 —— 未登录用户直接 302 到登录页，不返回 HTML/JS */
-  if (!isPublicPath(urlPath) && !(await isAuthenticated(req))) {
+  /* P0-1b（2026-09-05 真机两连「登录后乱码」根因）：RSC payload 文件（Next
+     静态导出给每个路由生成 <route>.txt，text/plain 内容是 chunk/RSC 序列化流）
+     不是给人顶层导航的页面。用 Accept 头区分两种访问：
+     - 顶层导航（Accept: text/html）= 误触（地址栏/历史补全/next 循环）→
+       302 回对应页面（登录态回 /，未登录回 /login，不带 next 防循环）；
+     - Router fetch（Accept: text/x-component）= 正常数据请求 → 照常走鉴权
+       服务文件（公开页的 payload 未登录也放行，保证登录页预取不挂）。 */
+  if (!isPublicPath(urlPath) && urlPath.endsWith(".txt")) {
+    const wantsHtml = /text\/html/i.test(req.headers.accept || "");
+    if (wantsHtml) {
+      const redirectUrl = (await isAuthenticated(req)) ? "/" : "/login";
+      res.writeHead(302, {
+        "Location": redirectUrl,
+        "Cache-Control": "no-store",
+      });
+      res.end();
+      return;
+    }
+    const rscRoute = urlPath.slice(0, -".txt".length);
+    if (!isPublicPath(rscRoute) && !(await isAuthenticated(req))) {
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("not found");
+      return;
+    }
+  }
+
+  /* P0-1: HTML 层鉴权 —— 未登录用户直接 302 到登录页，不返回 HTML/JS。
+     豁免：公开页（/login）的 RSC payload（/login.txt）——Router fetch 需要
+     未登录也能拿到（登录页预取）；顶层导航形态已被上方 P0-1b 拦走。 */
+  if (
+    !isPublicPath(urlPath) &&
+    !(urlPath.endsWith(".txt") && isPublicPath(urlPath.slice(0, -".txt".length))) &&
+    !(await isAuthenticated(req))
+  ) {
     const redirectUrl = `/login?next=${encodeURIComponent(urlPath)}`;
     res.writeHead(302, {
       "Location": redirectUrl,
