@@ -276,12 +276,32 @@ export class LeadRepository {
         },
       })
       .catch(async (error: unknown) => {
-        // S0-P1-3 竞态：并发同 dedupeKey 撞唯一约束（P2002）时重查返回已有线索
+        // S0-P1-3 竞态：并发同 dedupeKey 撞唯一约束（P2002）时重查返回已有线索。
+        // 2026-09-06 复核：tenantId 漂移（null↔有值，如组织关系回补）会让
+        // dedupeWhere 在 userId 键/tenantId 键之间切换——findUnique 查旧键落空、
+        // create 撞旧键唯一约束 P2002、原 findUniqueOrThrow 用新键仍查空 → 500。
+        // 双键兜底：按 userId 键 + tenantId 键都查一遍，命中即复用，都不命中才抛。
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
           error.code === 'P2002'
         ) {
-          return this.prisma.lead.findUniqueOrThrow({ where });
+          const candidates: Array<Prisma.LeadWhereUniqueInput> = input.tenantId
+            ? [
+                { tenantId_dedupeKey: { tenantId: input.tenantId, dedupeKey } },
+                { userId_dedupeKey: { userId: input.userId, dedupeKey } },
+              ]
+            : [
+                { userId_dedupeKey: { userId: input.userId, dedupeKey } },
+                { tenantId_dedupeKey: { tenantId: '', dedupeKey } },
+              ];
+          for (const w of candidates) {
+            try {
+              const found = await this.prisma.lead.findUnique({ where: w });
+              if (found) return found;
+            } catch {
+              // 键不存在/字段不匹配时忽略，试下一个
+            }
+          }
         }
         throw error;
       });
