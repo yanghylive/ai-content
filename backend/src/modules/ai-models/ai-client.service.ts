@@ -1415,6 +1415,12 @@ export class AiClientService {
             : contextualMessages,
         )
       : '';
+    // 2026-09-06 复核诊断：409 BILLING_IDEMPOTENCY_REPLAY 排查——键与 salt 落日志
+    if (options?.billingSalt) {
+      this.logger.log(
+        `AI 调用带 billingSalt（len=${options.billingSalt.length}）→ key=${kaypalIdempotencyKey}`,
+      );
+    }
 
     await this.chargeCloudAiCredits(
       'text_generation',

@@ -392,16 +392,34 @@ export class ReplyEngineService {
     if (!model) {
       throw new Error('未配置可用的 AI 模型，请在「AI 模型设置」中同步');
     }
-    return this.aiClient.generate(
-      model.id,
-      [
-        {
-          role: 'system',
-          content: '你负责为内容作者生成评论回复，输出必须符合要求的风格。',
-        },
-        { role: 'user', content: prompt },
-      ],
-      { temperature, maxTokens: 300 },
-    );
+    const messages = [
+      {
+        role: 'system' as const,
+        content: '你负责为内容作者生成评论回复，输出必须符合要求的风格。',
+      },
+      { role: 'user' as const, content: prompt },
+    ];
+    // 2026-09-06 复核：409 BILLING_IDEMPOTENCY_REPLAY = 网关幂等键（内容哈希）
+    // 与近期请求冲突（如超时重试同键被拒）。billingSalt 参与键哈希——
+    // 换随机 salt 即换新键，标准解法。最多重试 2 次。
+    let salt: string | undefined;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        return await this.aiClient.generate(
+          model.id,
+          messages,
+          { temperature, maxTokens: 300, billingSalt: salt },
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const isReplay = /BILLING_IDEMPOTENCY_REPLAY/i.test(message);
+        if (!isReplay || attempt >= 2) throw error;
+        salt = `retry-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        this.logger.warn(
+          `ReplyEngine 命中 409 计费幂等冲突，换 salt 重试 ${attempt + 1}/2`,
+        );
+      }
+    }
+    throw new Error('unreachable');
   }
 }
