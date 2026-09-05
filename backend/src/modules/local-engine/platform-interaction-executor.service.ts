@@ -300,6 +300,11 @@ export class PlatformInteractionExecutor {
       await this.prisma.agentConfirmation.create({
         data: {
           id,
+          // 2026-09-05 复核 P1：归属与面板确认单一致（agent-panel-bridge
+          // persistTicket 写 local-engine/local-tenant）——审计按租户/用户
+          // 过滤才不断链。不走 schema 的 legacy-local-* 默认值。
+          tenantId: 'local-tenant',
+          userId: 'local-engine',
           sessionId: sessionKey || id,
           action: 'Interaction.dispatch',
           status: gate === 'gate-unavailable' ? 'rejected' : 'approved',

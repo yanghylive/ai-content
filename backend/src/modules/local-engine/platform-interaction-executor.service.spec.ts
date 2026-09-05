@@ -1137,6 +1137,9 @@ describe('PlatformInteractionExecutor', () => {
     expect(row.data.status).toBe('rejected');
     expect(row.data.confirmationJson.source).toBe('interaction-gate');
     expect(row.data.confirmationJson.gate).toBe('gate-unavailable');
+    // 2026-09-05 复核 P1：归属与面板确认单一致（断链防护）
+    expect(row.data.tenantId).toBe('local-tenant');
+    expect(row.data.userId).toBe('local-engine');
   });
 
   it('P0-2 闸门 fail-closed：面板桥请求异常（默认）→ 拒绝执行，不签单不回写', async () => {
