@@ -508,6 +508,26 @@ export class PrismaService
           `账号库历史 NULL 租户线索已认领 ${affected} 条：${accountPath}`,
         );
       }
+      // 2026-09-06 复核 P2：多租户归属歧义的 NULL 线索（user 属于多个 tenant）
+      // 无法自动认领，列表严格按 tenant 过滤会静默不可见。计数 + warn 审计日志，
+      // 给管理员明确的处理入口（需人工指定归属租户）。
+      const ambiguous = await account.$queryRawUnsafe<Array<{ cnt: number }>>(`
+        SELECT COUNT(*) AS cnt
+        FROM leads
+        WHERE tenant_id IS NULL
+          AND user_id IN (
+            SELECT user_id
+            FROM tenant_members
+            GROUP BY user_id
+            HAVING COUNT(DISTINCT tenant_id) > 1
+          )
+      `);
+      const ambiguousCount = Number(ambiguous?.[0]?.cnt || 0);
+      if (ambiguousCount > 0) {
+        this.logger.warn(
+          `账号库存在 ${ambiguousCount} 条多租户归属歧义的 NULL 线索（无法自动认领，需人工指定租户）：${accountPath}`,
+        );
+      }
     } catch (error) {
       // 2026-09-06 复核 P2-1：失败不写入已认领 Set，本进程下次 ensure 会重试；
       // 避免「一次性失败就永久跳过」导致 NULL 线索永远无法迁移。
