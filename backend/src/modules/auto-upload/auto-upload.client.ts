@@ -2602,6 +2602,7 @@ export class AutoUploadClient {
             context: session.context,
             page: session.page,
             profileDir: session.profileDir,
+            sessionMode: session.sessionMode,
           }).catch((error) =>
             this.logger.warn(
               `账号登录状态监听失败 ${account.platform}-${engineAccountId}: ${
@@ -5159,21 +5160,31 @@ export class AutoUploadClient {
     context: BrowserContext;
     page: Page;
     profileDir?: string;
+    sessionMode?: string;
   }): Promise<void> {
-    if (!input.storageFileName) return;
-    const storagePath = this.getAccountCookiePath(input.storageFileName);
+    // 2026-09-06 复核 P1-2：desktop-panel 登录态由 Electron persist partition
+    // 持有（落盘持久化），无需 storageFileName 文件；external 场景仍需 storageState 文件。
+    if (!input.storageFileName && input.sessionMode !== 'desktop-panel') return;
+    const storagePath = input.storageFileName
+      ? this.getAccountCookiePath(input.storageFileName)
+      : undefined;
     for (let i = 0; i < 300; i += 1) {
       if (input.page.isClosed()) return;
       if (await this.pageLooksLoggedIn(input.platformType, input.page)) {
         await input.page.waitForTimeout(1800).catch(() => undefined);
         if (!(await this.pageLooksLoggedIn(input.platformType, input.page)))
           return;
-        await this.saveFilteredStorageState(
-          input.context,
-          input.platform,
-          storagePath,
-          input.profileDir,
-        );
+        // desktop-panel：登录态由 Electron persist partition 持有，
+        // Playwright storageState() 会触发 CDP Target.createTarget（WebContentsView
+        // 不支持）报错。跳过导出，仅更新业务状态。
+        if (input.sessionMode !== 'desktop-panel' && storagePath) {
+          await this.saveFilteredStorageState(
+            input.context,
+            input.platform,
+            storagePath,
+            input.profileDir,
+          );
+        }
         await this.prisma.publishAccount.update({
           where: { id: input.rowId },
           data: {
