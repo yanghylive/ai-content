@@ -282,7 +282,11 @@
       ],
       "icon": "assets/icon.icns",
       "hardenedRuntime": true,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "signIgnore": [
+        "playwright-browsers"
+      ],
+      "identity": null
     },
     "win": {
       "extraResources": [
