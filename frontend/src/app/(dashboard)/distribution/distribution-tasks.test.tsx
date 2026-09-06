@@ -112,8 +112,10 @@ describe("DistributionTasks 分页加载更多（P1-4）", () => {
 
     render(<DistributionTasks />);
 
+    // 2026-09-06 复核 P1-2：toPublicError 会把「服务暂时不可用」归一为通用
+    // 提示（不再是旧的「发布任务暂时无法读取」具体文案），断言对齐当前行为。
     await waitFor(() => {
-      expect(screen.getByText(/发布任务暂时无法读取/)).toBeInTheDocument();
+      expect(screen.getByText(/服务暂时不可用/)).toBeInTheDocument();
     });
   });
 });

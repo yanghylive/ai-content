@@ -362,13 +362,29 @@ export class PrismaService
     );
     this.accountClients.delete(accountPath);
     // sidecar 先移（防残留 WAL 污染重建后的新库），失败则中止重建
+    const movedSidecars: Array<{ from: string; to: string }> = [];
     for (const suffix of ['-wal', '-shm']) {
       const sidecar = `${accountPath}${suffix}`;
       if (existsSync(sidecar)) {
-        renameSync(sidecar, `${sidecar}.corrupt-${stamp}`);
+        const target = `${sidecar}.corrupt-${stamp}`;
+        renameSync(sidecar, target);
+        movedSidecars.push({ from: sidecar, to: target });
       }
     }
-    renameSync(accountPath, `${accountPath}.corrupt-${stamp}`);
+    try {
+      renameSync(accountPath, `${accountPath}.corrupt-${stamp}`);
+    } catch (error) {
+      // 2026-09-06 复核 P1-5：主库 rename 失败时把已移走的 sidecar 放回，
+      // 否则 WAL 中已提交数据随 sidecar 漂移丢失（主库还在原位但 sidecar 不在）。
+      for (const { from, to } of movedSidecars.reverse()) {
+        try {
+          if (existsSync(to)) renameSync(to, from);
+        } catch {
+          /* 回滚失败保留原始错误 */
+        }
+      }
+      throw error;
+    }
     // 2026-09-01（复核 P2）：恢复复制前 checkpoint，避免丢 WAL 中已提交数据
     await this.copySqliteDatabaseWithSidecars(systemPath, accountPath);
     this.accountTablesCleared.delete(accountPath);
@@ -492,11 +508,14 @@ export class PrismaService
         );
       }
     } catch (error) {
+      // 2026-09-06 复核 P2-1：失败不写入已认领 Set，本进程下次 ensure 会重试；
+      // 避免「一次性失败就永久跳过」导致 NULL 线索永远无法迁移。
       this.logger.warn(
-        `账号库历史 NULL 租户线索认领失败（跳过）：${accountPath}：${
+        `账号库历史 NULL 租户线索认领失败（下次重试）：${accountPath}：${
           error instanceof Error ? error.message : String(error)
         }`,
       );
+      return;
     }
     this.nullTenantLeadsClaimed.add(accountPath);
   }

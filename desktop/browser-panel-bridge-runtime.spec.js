@@ -5,9 +5,10 @@
  *
  * 覆盖（生命周期规则是安全取舍，必须锁死）：
  *  - opened/shown → 起桥 + 写 0600 凭据文件，内容含 endpoint/panelId/webContentsId；
- *  - hidden/destroyed/account-switched → 关桥 + 删凭据文件（磁盘不留残留 token）；
+ *  - hidden/destroyed/account-switched → 桥与凭据保留（App 生命周期内常驻，
+ *     引擎可 panelOpen 重新展开面板；业务写权限由 Broker capability token 撤销兜底）；
+ *  - 面板真正关闭（App 退出）→ 关桥 + 删凭据文件（磁盘不留残留 token）；
  *  - 关桥后端口释放、旧 token 不可达；
- *  - 每次重新可见都换新端口+新 token（旧凭据自然失效）；
  *  - close 幂等；启动失败不留文件；getUserDataDir 返回 null 时不写文件也不崩。
  */
 const assert = require('node:assert/strict');

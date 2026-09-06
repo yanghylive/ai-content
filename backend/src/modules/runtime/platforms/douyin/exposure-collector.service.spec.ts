@@ -10,6 +10,7 @@ function makeBrowserMock(snapshot: {
     waitForTimeout: jest.fn().mockResolvedValue(undefined),
     mouse: { wheel: jest.fn().mockResolvedValue(undefined) },
     locator: jest.fn(() => ({
+      innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
       evaluateAll: jest.fn().mockResolvedValue([]),
     })),
   };
@@ -46,6 +47,7 @@ function makeBrowserSequenceMock(
     locator: jest.fn((selector: string) => {
       if (selector.includes('a[href]')) {
         return {
+          innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
           evaluateAll: jest.fn().mockResolvedValue([
             {
               href: 'https://www.douyin.com/video/10',
@@ -63,6 +65,7 @@ function makeBrowserSequenceMock(
         };
       }
       return {
+        innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
         evaluateAll: jest.fn().mockResolvedValue([]),
       };
     }),
@@ -103,6 +106,7 @@ function makeBrowserSequenceWithSearchCardsMock(
     waitForTimeout: jest.fn().mockResolvedValue(undefined),
     mouse: { wheel: jest.fn().mockResolvedValue(undefined) },
     locator: jest.fn(() => ({
+      innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
       evaluateAll: jest.fn().mockResolvedValue([
         {
           href: '',
@@ -152,6 +156,7 @@ function makeBrowserSequenceWithWaterfallCardsMock(
     waitForTimeout: jest.fn().mockResolvedValue(undefined),
     mouse: { wheel: jest.fn().mockResolvedValue(undefined) },
     locator: jest.fn(() => ({
+      innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
       evaluateAll: jest.fn().mockResolvedValue([
         {
           href: '',
@@ -205,6 +210,7 @@ function makeTargetedBrowserMock() {
       },
     ]),
     locator: jest.fn((selector: string) => ({
+      innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
       evaluateAll: jest.fn().mockResolvedValue(
         selector.includes('/user/')
           ? [
@@ -269,6 +275,7 @@ function makeBrowserWithSearchAccountLinksMock(snapshot: {
     locator: jest.fn((selector: string) => {
       if (selector.includes('/user/') || selector.includes('sec_uid')) {
         return {
+          innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
           evaluateAll: jest.fn().mockResolvedValue([
             {
               href: 'https://www.douyin.com/user/MS4wLjABAAAAaA1bB2cC3dD4eE5fF6gG',
@@ -284,6 +291,7 @@ function makeBrowserWithSearchAccountLinksMock(snapshot: {
         };
       }
       return {
+        innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
         evaluateAll: jest.fn().mockResolvedValue([]),
       };
     }),
@@ -948,6 +956,7 @@ describe('DouyinExposureCollector', () => {
       locator: jest.fn((selector: string) => {
         if (selector.includes('a[href]')) {
           return {
+            innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
             evaluateAll: jest.fn().mockResolvedValue([
               {
                 href: 'https://www.douyin.com/video/99',
@@ -957,6 +966,7 @@ describe('DouyinExposureCollector', () => {
           };
         }
         return {
+          innerText: jest.fn().mockResolvedValue('搜索 综合 视频 装修案例 粉丝 获赞 点赞'),
           evaluateAll: jest.fn().mockResolvedValue([]),
         };
       }),

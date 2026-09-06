@@ -574,28 +574,47 @@ export class CommentAcquisitionService {
       let personaId: string | undefined;
       let personaName: string | undefined;
       let generationError: string | undefined;
-      try {
-        const reply = await this.replyEngine.generateReply(message, {
-          platformName,
-          bindKey: `${platform}:${input.accountId}`,
-          content: { title: readResult.title || undefined },
-        });
-        replyText = reply.replyText;
-        personaId = reply.personaId;
-        personaName = reply.personaName;
-      } catch (error) {
-        generationError =
-          error instanceof Error ? error.message : String(error);
-        this.logger.warn(
-          `[comment-acquisition] 私信回复生成失败: ${generationError}`,
+      // 2026-09-06 复核 P1-4：私信同样按稳定字段去重复用草稿（sourceType='dm'、
+      // sourceUrl=null 私信无内容级标识），避免相同私信重复扫描重复生成触发 409。
+      const existingReplied = await this.leadRepository.findRepliedBySource(
+        scope.userId,
+        scope.tenantId,
+        platform,
+        String(input.accountId),
+        'dm',
+        null,
+        message.text,
+      );
+      if (existingReplied?.latestReply) {
+        replyText = existingReplied.latestReply;
+        this.logger.log(
+          `[comment-acquisition] 复用既有私信回复草稿 lead=${existingReplied.id}（跳过重复 AI 生成）`,
         );
+      }
+      if (!replyText) {
+        try {
+          const reply = await this.replyEngine.generateReply(message, {
+            platformName,
+            bindKey: `${platform}:${input.accountId}`,
+            content: { title: readResult.title || undefined },
+          });
+          replyText = reply.replyText;
+          personaId = reply.personaId;
+          personaName = reply.personaName;
+        } catch (error) {
+          generationError =
+            error instanceof Error ? error.message : String(error);
+          this.logger.warn(
+            `[comment-acquisition] 私信回复生成失败: ${generationError}`,
+          );
+        }
       }
 
       // 单写统一 leads 表（去重写入，返回 lead.id）
       const { lead } = await this.leadRepository.upsert({
         userId: scope.userId,
         tenantId: scope.tenantId,
-        platform: input.platform,
+        platform,
         sourceType: 'dm',
         sourceAccountId: String(input.accountId),
         sourceText: message.text,
@@ -654,7 +673,7 @@ export class CommentAcquisitionService {
             },
           });
           const sent = await this.dispatchReply(leadId, {
-            platform: input.platform,
+            platform,
             accountId: input.accountId,
             commentText: message.text,
             replyText,
