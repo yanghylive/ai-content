@@ -345,6 +345,14 @@
     "publish": {
       "provider": "generic",
       "url": "https://kaypal.oss-cn-hangzhou.aliyuncs.com/updates/"
-    }
+    },
+    "protocols": [
+      {
+        "name": "JIUZHANG AI 桌面端",
+        "schemes": [
+          "kaypal-desktop"
+        ]
+      }
+    ]
   }
 }

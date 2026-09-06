@@ -2780,12 +2780,57 @@ function setupIPC() {
 // 单实例锁：Windows/macOS 下用户再次点击任务栏/Dock 图标时，系统会启动
 // 第二个实例；单实例锁让第二个实例退出，并触发 second-instance 事件唤起
 // 已运行实例的主窗口（修复「界面关闭后点任务栏图标无法唤起」）。
+//
+// 深链协议 kaypal-desktop://：云端设备授权完成页（kaypal.cn /api/desktop-auth）
+// 的「立即返回桌面端」按钮用它一键唤回本客户端。打包版协议声明由
+// package.json build.protocols 写入 Info.plist / 注册表；此处运行时自注册
+// 覆盖开发模式（npm start 时也能被浏览器唤起）。注册失败静默降级：
+// 授权流程仍可靠「手动切回登录页 + 轮询」完成，不阻塞任何功能。
+const DESKTOP_PROTOCOL = 'kaypal-desktop';
+try {
+  if (process.defaultApp) {
+    app.setAsDefaultProtocolClient(DESKTOP_PROTOCOL, process.execPath, [path.resolve(__dirname)]);
+  } else {
+    app.setAsDefaultProtocolClient(DESKTOP_PROTOCOL);
+  }
+} catch (_err) {
+  /* 协议注册失败不影响主流程 */
+}
+
+function handleDesktopDeepLink(url) {
+  showMainWindow();
+  // 广播给所有窗口的页面（登录页可据此立即刷新轮询；未监听则无副作用）
+  try {
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) {
+        win.webContents.send('desktop:deep-link', String(url || ''));
+      }
+    }
+  } catch (_err) {
+    /* ignore */
+  }
+}
+
+// macOS：点击协议链接触发 open-url，可能在 ready 前送达，需等 ready 后补放
+app.on('open-url', (event, url) => {
+  if (typeof url === 'string' && url.startsWith(`${DESKTOP_PROTOCOL}://`)) {
+    event.preventDefault();
+    if (app.isReady()) handleDesktopDeepLink(url);
+    else app.whenReady().then(() => handleDesktopDeepLink(url));
+  }
+});
+
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
 if (!gotSingleInstanceLock) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
-    showMainWindow();
+  app.on('second-instance', (_event, argv) => {
+    // Windows/Linux：协议链接以 kaypal-desktop://… 形式出现在第二实例 argv 中
+    const link = (argv || []).find(
+      (a) => typeof a === 'string' && a.startsWith(`${DESKTOP_PROTOCOL}://`),
+    );
+    if (link) handleDesktopDeepLink(link);
+    else showMainWindow();
   });
 }
 
