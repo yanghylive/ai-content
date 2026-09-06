@@ -58,7 +58,8 @@ export function resolveDesktopUserDataDir(): string | null {
   } else {
     const home = process.env.HOME?.trim() || '';
     if (!home) return null;
-    const configHome = process.env.XDG_CONFIG_HOME?.trim() || join(home, '.config');
+    const configHome =
+      process.env.XDG_CONFIG_HOME?.trim() || join(home, '.config');
     dir = join(configHome, 'ai-content-desktop');
   }
   try {

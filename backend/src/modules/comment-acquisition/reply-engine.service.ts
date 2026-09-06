@@ -411,16 +411,19 @@ export class ReplyEngineService {
       const messages = salt
         ? baseMessages.map((m, i) =>
             i === baseMessages.length - 1
-              ? { ...m, content: `${m.content}\n\n（多样性提示：这是第 ${attempt + 1} 次为同一条评论生成回复，请换一种表达方式，不要与之前版本雷同。）[${salt}]` }
+              ? {
+                  ...m,
+                  content: `${m.content}\n\n（多样性提示：这是第 ${attempt + 1} 次为同一条评论生成回复，请换一种表达方式，不要与之前版本雷同。）[${salt}]`,
+                }
               : m,
           )
         : baseMessages;
       try {
-        return await this.aiClient.generate(
-          model.id,
-          messages,
-          { temperature, maxTokens: 300, billingSalt: salt },
-        );
+        return await this.aiClient.generate(model.id, messages, {
+          temperature,
+          maxTokens: 300,
+          billingSalt: salt,
+        });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         const isReplay = /BILLING_IDEMPOTENCY_REPLAY/i.test(message);

@@ -84,7 +84,8 @@ export type PlatformDispatchResult = {
     | 'draft_filled'
     | 'failed'
     | 'account_not_logged_in'
-    | 'comment_missing'    | 'message_missing'
+    | 'comment_missing'
+    | 'message_missing'
     | 'editor_missing'
     | 'send_failed';
   message: string;
@@ -323,7 +324,7 @@ export class PlatformInteractionExecutor {
             accountId: String(input.accountId),
             replyTextPreview: String(input.replyText || '').slice(0, 120),
             decidedAt: now.toISOString(),
-          } as unknown as object,
+          },
         },
       });
     } catch (error) {
@@ -352,8 +353,17 @@ export class PlatformInteractionExecutor {
     input: PlatformDispatchInput,
     sessionKey: string,
   ): Promise<
-    | { pass: true; actionId: string | null; gate: 'panel-auto' | 'bypassed-no-bridge' | 'bypassed-bridge-error' }
-    | { pass: false; message: string; nextAction: string; gate?: 'gate-unavailable' }
+    | {
+        pass: true;
+        actionId: string | null;
+        gate: 'panel-auto' | 'bypassed-no-bridge' | 'bypassed-bridge-error';
+      }
+    | {
+        pass: false;
+        message: string;
+        nextAction: string;
+        gate?: 'gate-unavailable';
+      }
   > {
     if (!this.panelBridge) {
       if (!this.debugBypassEnabled) {
@@ -376,9 +386,7 @@ export class PlatformInteractionExecutor {
       await this.persistGateAudit('bypassed-no-bridge', input, sessionKey);
       return { pass: true, actionId: null, gate: 'bypassed-no-bridge' };
     }
-    let ticket: Awaited<
-      ReturnType<AgentPanelBridgeService['requestAction']>
-    >;
+    let ticket: Awaited<ReturnType<AgentPanelBridgeService['requestAction']>>;
     try {
       ticket = await this.panelBridge.requestAction(
         { ownerId: 'local-engine', tenantId: 'local-tenant' },
@@ -526,7 +534,8 @@ export class PlatformInteractionExecutor {
         await this.panelBridge
           ?.markInteractionTicket(
             approvalActionId,
-            actionResult.status === 'sent' || actionResult.status === 'draft_filled'
+            actionResult.status === 'sent' ||
+              actionResult.status === 'draft_filled'
               ? 'consumed'
               : 'pending',
           )
@@ -6826,7 +6835,6 @@ export class PlatformInteractionExecutor {
             const markedText = normalize(
               markedRoot.innerText || markedRoot.textContent,
             );
-            const markedRect = markedRoot.getBoundingClientRect();
             const alreadyOpen = Array.from(
               markedRoot.querySelectorAll(
                 'textarea, [contenteditable="true"], input[type="text"], [role="textbox"]',
@@ -6968,7 +6976,7 @@ export class PlatformInteractionExecutor {
     );
     await page.waitForTimeout(1500);
 
-    let replyOpened = await this.evaluateWithTimeout(
+    const replyOpened = await this.evaluateWithTimeout(
       page,
       'douyin-comment-open-reply-editor',
       page.evaluate(

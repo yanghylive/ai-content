@@ -279,7 +279,11 @@ export class GrowthService implements OnModuleInit {
     }
     const brief = (message || '').slice(0, 160);
     const level: GrowthRunLiveEvent['level'] =
-      status === 'success' || status === 'partial' ? 'ok' : status === 'failed' ? 'err' : 'warn';
+      status === 'success' || status === 'partial'
+        ? 'ok'
+        : status === 'failed'
+          ? 'err'
+          : 'warn';
     this.logLive(
       userId,
       configId,
@@ -1876,7 +1880,12 @@ export class GrowthService implements OnModuleInit {
       });
     }
     this.beginLive(userId, normalizedConfig);
-    this.logLive(userId, normalizedConfig.id, 'info', '收到执行请求，正在检查账号与执行条件…');
+    this.logLive(
+      userId,
+      normalizedConfig.id,
+      'info',
+      '收到执行请求，正在检查账号与执行条件…',
+    );
     const executionEnabled = process.env.GROWTH_EXECUTION_ENABLED === 'true';
     if (!accountHealth) {
       return this.createRunResult(normalizedConfig, {
@@ -2072,7 +2081,12 @@ export class GrowthService implements OnModuleInit {
     // 复核#4-6：driver 成功路径的状态机记录 id（try 内赋值，catch 分支共用，防并发串单）
     let driverRpaRecordId: string | null = null;
     try {
-      this.logLive(userId, normalizedConfig.id, 'info', '采集引擎已就绪，开始扫描目标内容…');
+      this.logLive(
+        userId,
+        normalizedConfig.id,
+        'info',
+        '采集引擎已就绪，开始扫描目标内容…',
+      );
       // T2-4 防平台风控：真实执行前记录本次执行时间（供下次节流判断）
       this.acquisitionThrottle.set(throttleKey, { lastRunAt: Date.now() });
       const candidateResponse = await this.fetchCandidatesWithAiEmployee(
@@ -2117,7 +2131,12 @@ export class GrowthService implements OnModuleInit {
       }
 
       if (normalizedConfig.mode === 'search-account') {
-        this.logLive(userId, normalizedConfig.id, 'info', '账号定向模式：留存候选账号线索…');
+        this.logLive(
+          userId,
+          normalizedConfig.id,
+          'info',
+          '账号定向模式：留存候选账号线索…',
+        );
         const accountCandidates = candidates.slice(0, remaining);
         const leads = accountCandidates.map((candidate, index) =>
           this.createLeadFromCandidate(
@@ -2151,7 +2170,12 @@ export class GrowthService implements OnModuleInit {
       // D 阶段修正（大王纠错）：获客线索 = 评论区表达需求的用户（对齐抖音"读评论找客户"）。
       // 发现层返回的是内容（笔记/视频），必须读评论拿用户；评论不可达 → 如实失败，不把内容当客户。
       if (!this.platformTouchReady(normalizedConfig.platform)) {
-        this.logLive(userId, normalizedConfig.id, 'info', '当前平台未接入自动触达，读取评论生成线索…');
+        this.logLive(
+          userId,
+          normalizedConfig.id,
+          'info',
+          '当前平台未接入自动触达，读取评论生成线索…',
+        );
         // P1 复核：读评论关闭失败经 closeState 回传 → run 标注需人工核对（不静默）
         const commentCloseState: { failed: boolean } = { failed: false };
         const commentLeads = await this.fetchCommentUsersAsLeads(
@@ -2234,7 +2258,12 @@ export class GrowthService implements OnModuleInit {
         });
       }
 
-      this.logLive(userId, normalizedConfig.id, 'info', `AI 正在分析 ${candidates.length} 条候选的意向与话术…`);
+      this.logLive(
+        userId,
+        normalizedConfig.id,
+        'info',
+        `AI 正在分析 ${candidates.length} 条候选的意向与话术…`,
+      );
       // planDouyinFollowUp 同步实现，但测试里 mock 为 async；用 Promise.resolve 包一层统一 await
       const followUpPlan = await Promise.resolve(
         this.aiEmployeeService.planDouyinFollowUp({
@@ -2264,7 +2293,12 @@ export class GrowthService implements OnModuleInit {
         }),
       );
       if (!followUpPlan.targets.length) {
-        this.logLive(userId, normalizedConfig.id, 'warn', '没有候选达到跟进条件，本次跳过触达');
+        this.logLive(
+          userId,
+          normalizedConfig.id,
+          'warn',
+          '没有候选达到跟进条件，本次跳过触达',
+        );
         return this.createRunResult(normalizedConfig, {
           trigger,
           status: 'skipped',
@@ -2503,7 +2537,8 @@ export class GrowthService implements OnModuleInit {
     if (record.industries && typeof record.industries === 'object') {
       stats.scopes.legacy = {
         updatedAt: stats.updatedAt,
-        industries: record.industries as GrowthKeywordStatsFile['scopes'][string]['industries'],
+        industries:
+          record.industries as GrowthKeywordStatsFile['scopes'][string]['industries'],
       };
     }
     return stats;
@@ -3280,10 +3315,7 @@ export class GrowthService implements OnModuleInit {
     return { ok: true, lead: merged, mergedCount: duplicates.length };
   }
 
-  async listAccountHealth(
-    userId: string,
-    options: { force?: boolean } = {},
-  ) {
+  async listAccountHealth(userId: string, options: { force?: boolean } = {}) {
     // T2-9：30s 内重复请求直接用缓存，避免每次触发 force 真实校验（实测 2.6s）
     const cacheKey = `user:${userId}`;
     const cached = this.accountHealthCache.get(cacheKey);
@@ -5326,7 +5358,10 @@ export class GrowthService implements OnModuleInit {
       config.platform === 'douyin' &&
       (config.mode === 'keyword' || config.mode === 'search-account')
     ) {
-      const journey = await this.tryFetchDouyinAccountJourney(config, remaining);
+      const journey = await this.tryFetchDouyinAccountJourney(
+        config,
+        remaining,
+      );
       if (journey?.ok === true) return journey;
       // 两段式失败/不可用 → fallthrough 到下方 findDouyinXXX 旧链路兜底
     }
@@ -5568,8 +5603,7 @@ export class GrowthService implements OnModuleInit {
                 }
               : action === 'discover-account-search'
                 ? {
-                    keyword:
-                      config.sourceInputs[0] ?? config.taskName ?? '',
+                    keyword: config.sourceInputs[0] ?? config.taskName ?? '',
                     limit: remaining,
                     userId: config.userId,
                   }
@@ -5581,10 +5615,10 @@ export class GrowthService implements OnModuleInit {
                       userId: config.userId,
                     }
                   : {
-                    targetId: config.sourceInputs[0] ?? '',
-                    limit: remaining,
-                    userId: config.userId,
-                  };
+                      targetId: config.sourceInputs[0] ?? '',
+                      limit: remaining,
+                      userId: config.userId,
+                    };
         const result = await driver.execute(sessionRef.current, {
           name: action,
           action,
@@ -5829,7 +5863,10 @@ export class GrowthService implements OnModuleInit {
     }
     const caps = await driver.capabilities({ accountId: config.accountId });
     const probe = caps.accountProbe;
-    if (probe && (!probe.loggedIn || probe.captchaRequired || probe.riskControl)) {
+    if (
+      probe &&
+      (!probe.loggedIn || probe.captchaRequired || probe.riskControl)
+    ) {
       return {
         ok: false,
         fallback: {
@@ -5842,8 +5879,12 @@ export class GrowthService implements OnModuleInit {
         },
       };
     }
-    const searchCap = caps.actions.find((a) => a.action === 'discover-account-search');
-    const worksCap = caps.actions.find((a) => a.action === 'discover-account-works');
+    const searchCap = caps.actions.find(
+      (a) => a.action === 'discover-account-search',
+    );
+    const worksCap = caps.actions.find(
+      (a) => a.action === 'discover-account-works',
+    );
     const commentsCap = caps.actions.find((a) => a.action === 'read-comments');
     if (
       !caps.runtimeReady ||
@@ -5903,9 +5944,16 @@ export class GrowthService implements OnModuleInit {
             const accountResult = await driver.execute(sessionRef.current, {
               name: 'discover-account-search',
               action: 'discover-account-search',
-              input: { keyword: accountKeyword, limit: 10, userId: config.userId },
+              input: {
+                keyword: accountKeyword,
+                limit: 10,
+                userId: config.userId,
+              },
             });
-            if (accountResult.status !== 'success' || !accountResult.items?.length) {
+            if (
+              accountResult.status !== 'success' ||
+              !accountResult.items?.length
+            ) {
               continue;
             }
             const ids = accountResult.items
@@ -5948,8 +5996,7 @@ export class GrowthService implements OnModuleInit {
               rpaExecutionId: recordId,
               reasonCode: failReason,
               fallbackAllowed: true,
-              message:
-                `两段式发现：${accountKeywordList.length} 个行业词均未搜到账号，已回退本地适配器（执行 ${recordId}）`,
+              message: `两段式发现：${accountKeywordList.length} 个行业词均未搜到账号，已回退本地适配器（执行 ${recordId}）`,
             },
           };
         }
@@ -5965,7 +6012,11 @@ export class GrowthService implements OnModuleInit {
         const commentUsers: DouyinFollowUpCandidateInput[] = [];
         const seen = new Set<string>();
         const accountLimit = Math.min(3, accountIds.length);
-        for (let ai = 0; ai < accountLimit && commentUsers.length < remaining; ai += 1) {
+        for (
+          let ai = 0;
+          ai < accountLimit && commentUsers.length < remaining;
+          ai += 1
+        ) {
           const targetId = accountIds[ai];
           const worksResult = await driver.execute(sessionRef.current, {
             name: 'discover-account-works',
@@ -5985,7 +6036,10 @@ export class GrowthService implements OnModuleInit {
               input: { contentUrl: workUrl, limit: 10, userId: config.userId },
             });
             await new Promise((resolve) => setTimeout(resolve, 1500));
-            if (commentResult.status !== 'success' || !commentResult.items?.length) {
+            if (
+              commentResult.status !== 'success' ||
+              !commentResult.items?.length
+            ) {
               continue;
             }
             for (const item of commentResult.items) {
@@ -6010,7 +6064,8 @@ export class GrowthService implements OnModuleInit {
                 profileUrl: this.text(item.profileUrl) || undefined,
                 commentTime: this.text(item.occurredAt) || undefined,
                 externalEventId: this.text(item.externalEventId) || undefined,
-                externalContentId: this.text(item.externalContentId) || undefined,
+                externalContentId:
+                  this.text(item.externalContentId) || undefined,
                 rawHash: this.text(item.rawHash) || undefined,
               });
             }
@@ -6042,16 +6097,20 @@ export class GrowthService implements OnModuleInit {
           reasonCode: 'ok',
           message: `两段式读评论获得 ${commentUsers.length} 个评论用户`,
         });
-        const finalizePersisted = await this.finalizeDriverRecord(recordId, owner, {
-          status: 'success',
-          reasonCode: 'ok',
-          evidence: commentUsers.map((candidate) => ({
-            type: 'rpa-discover',
-            label: candidate.targetName || candidate.externalContentId,
-            url: candidate.sourceUrl,
-            createdAt: new Date().toISOString(),
-          })),
-        });
+        const finalizePersisted = await this.finalizeDriverRecord(
+          recordId,
+          owner,
+          {
+            status: 'success',
+            reasonCode: 'ok',
+            evidence: commentUsers.map((candidate) => ({
+              type: 'rpa-discover',
+              label: candidate.targetName || candidate.externalContentId,
+              url: candidate.sourceUrl,
+              createdAt: new Date().toISOString(),
+            })),
+          },
+        );
         if (!stepPersisted || !finalizePersisted) {
           return {
             ok: false,
@@ -6087,7 +6146,8 @@ export class GrowthService implements OnModuleInit {
           stepName: 'discover-account-search',
           status: 'failed',
           reasonCode: 'network_error',
-          message: error instanceof Error ? error.message : '两段式发现执行异常',
+          message:
+            error instanceof Error ? error.message : '两段式发现执行异常',
         });
         await this.finalizeDriverRecord(recordId, owner, {
           status: 'failed',
@@ -11134,27 +11194,37 @@ export class GrowthService implements OnModuleInit {
       );
       return { available: false, items: [], message: '触达历史暂不可用' };
     }
+    // 2026-09-06 lint 基线：$queryRaw 返回 unknown，对象 fallback 空串而非
+    // '[object Object]'（String(any) 会把脏数据对象串成无意义字符串）。
+    const asStr = (v: unknown): string => (typeof v === 'string' ? v : '');
     const items = rows.map((r) => {
       let json: Record<string, unknown> = {};
       try {
         const raw = r.confirmationJson;
-        json = typeof raw === 'string' ? JSON.parse(raw) : ((raw as Record<string, unknown>) || {});
-      } catch { /* 脏数据跳过解析 */ }
+        json =
+          typeof raw === 'string'
+            ? (JSON.parse(raw) as Record<string, unknown>)
+            : (raw as Record<string, unknown>) || {};
+      } catch {
+        /* 脏数据跳过解析 */
+      }
       const summary = (json.summary || {}) as Record<string, unknown>;
       const decision =
-        json.status === 'approved' || json.status === 'rejected' || json.status === 'expired'
-          ? (json.status as 'approved' | 'rejected' | 'expired')
+        json.status === 'approved' ||
+        json.status === 'rejected' ||
+        json.status === 'expired'
+          ? json.status
           : null;
       return {
         id: String(r.id),
-        sessionId: r.sessionId ? String(r.sessionId) : null,
-        method: String(json.method || r.action || ''),
-        label: String(summary.label || r.targetLabel || json.action || '操作'),
+        sessionId: typeof r.sessionId === 'string' ? r.sessionId : null,
+        method: asStr(json.method || r.action || ''),
+        label: asStr(summary.label || r.targetLabel || json.action || '操作'),
         // 动作内容摘要（审批卡片同源）：目标元素文本 / 输入文本 / 导航 URL
-        detail: String(summary.targetText || summary.text || summary.url || ''),
+        detail: asStr(summary.targetText || summary.text || summary.url || ''),
         // 生命周期：pending（待批）/ approved（批准待执行）/ rejected（拒绝终态）
         //          / consumed（已执行完成）/ in_use（执行中）
-        status: String(r.status || ''),
+        status: asStr(r.status || ''),
         decision,
         createdAt: r.createdAt,
         decidedAt: r.decidedAt,

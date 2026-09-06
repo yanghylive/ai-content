@@ -179,7 +179,9 @@ export class KeywordIntelligenceService {
 
     // 无 LLM 能力 → 回落规则版
     if (!this.aiClient || !this.defaultModels) {
-      this.logger.log('C-b 无 AiClientService/DefaultModelsService，回落 C-a 规则版');
+      this.logger.log(
+        'C-b 无 AiClientService/DefaultModelsService，回落 C-a 规则版',
+      );
       return ruleResult;
     }
 
@@ -252,7 +254,11 @@ export class KeywordIntelligenceService {
     platform?: string;
     windowDays?: number;
   }): Promise<
-    Array<{ sourceText: string | null; customerId: string | null; signals: unknown }>
+    Array<{
+      sourceText: string | null;
+      customerId: string | null;
+      signals: unknown;
+    }>
   > {
     const since = new Date(
       Date.now() - (input.windowDays ?? 30) * 24 * 3600_000,
@@ -298,7 +304,7 @@ export class KeywordIntelligenceService {
       const signalTypes = new Set(
         signals.map((s: unknown) =>
           typeof s === 'object' && s !== null && 'type' in s
-            ? String((s as { type: unknown }).type)
+            ? String(s.type)
             : '',
         ),
       );
@@ -372,9 +378,7 @@ export class KeywordIntelligenceService {
       .map((t) => `- ${t.slice(0, 120)}`)
       .join('\n');
 
-    const industryHint = industry
-      ? `\n行业背景：${industry}`
-      : '';
+    const industryHint = industry ? `\n行业背景：${industry}` : '';
 
     return `你是获客关键词分析师。下面给了「有购买/回复意向的真客户」和「反感/拉黑/举报的负反馈」两类真实线索原文，
 请你语义归纳出下一轮该搜的关键词。
@@ -452,7 +456,10 @@ ${negSamples || '（无）'}
   }
 
   /** 统计文本集合中命中词表各词的线索数（同一条线索内同一词只计一次） */
-  private countHits(texts: string[], wordPool: Set<string>): Map<string, number> {
+  private countHits(
+    texts: string[],
+    wordPool: Set<string>,
+  ): Map<string, number> {
     const freq = new Map<string, number>();
     for (const text of texts) {
       const normalized = text.toLowerCase();

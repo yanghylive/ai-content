@@ -226,7 +226,10 @@ export class LeadRepository {
       avatarUrl: existing.avatarUrl ?? input.avatarUrl ?? null,
       nickname: existing.nickname ?? input.nickname ?? null,
       score: Math.max(existing.score, input.score ?? 0),
-      scoreReasons: this.mergeJsonArray(existing.scoreReasons, input.scoreReasons),
+      scoreReasons: this.mergeJsonArray(
+        existing.scoreReasons,
+        input.scoreReasons,
+      ),
       signals: this.mergeJsonArray(existing.signals, input.signals),
       matchedKeywords: this.mergeJsonArray(
         existing.matchedKeywords,
@@ -234,10 +237,12 @@ export class LeadRepository {
       ),
       latestReply: input.latestReply ?? existing.latestReply,
       replyPersonaId: input.replyPersonaId ?? existing.replyPersonaId,
-      sourceAccountId: existing.sourceAccountId ?? input.sourceAccountId ?? null,
+      sourceAccountId:
+        existing.sourceAccountId ?? input.sourceAccountId ?? null,
       sourceTaskId: existing.sourceTaskId ?? input.sourceTaskId ?? null,
       sourceRunId: existing.sourceRunId ?? input.sourceRunId ?? null,
-      sourceArticleId: existing.sourceArticleId ?? input.sourceArticleId ?? null,
+      sourceArticleId:
+        existing.sourceArticleId ?? input.sourceArticleId ?? null,
       sourcePublishRecordId:
         existing.sourcePublishRecordId ?? input.sourcePublishRecordId ?? null,
       sourceInteractionEventId:

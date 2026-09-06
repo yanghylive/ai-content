@@ -8,10 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import {
-  AiGatewayService,
-  getCapabilityCenter,
-} from './ai-gateway.service';
+import { AiGatewayService, getCapabilityCenter } from './ai-gateway.service';
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';

@@ -136,7 +136,9 @@ export function buildSelectorProbeExpression(selector: string): string {
     '    }' +
     '    return null;' +
     '  }' +
-    '  var sel = ' + selJson + ';' +
+    '  var sel = ' +
+    selJson +
+    ';' +
     '  var hit = null;' +
     '  if (sel.indexOf("text=") === 0) {' +
     '    var text = sel.slice(5).trim();' +
@@ -187,7 +189,9 @@ export function buildTextExtractExpression(selector: string): string {
     '    }' +
     '    return null;' +
     '  }' +
-    '  var sel = ' + selJson + ';' +
+    '  var sel = ' +
+    selJson +
+    ';' +
     '  var hit = null;' +
     '  if (sel.indexOf("text=") === 0) {' +
     '    var text = sel.slice(5).trim();' +
@@ -245,7 +249,6 @@ export type AgentPanelLoginStateResult =
       panelWebContentsId: number | null;
     }
   | { ok: false; reason: string };
-
 
 /**
  * 面板 wait 时长收敛（纯函数，测试可直调）：
@@ -356,14 +359,14 @@ export class AgentBrowserExecutor {
       });
       // readonly 调用桥会回传 CDP 结果：{ result: { type, value } }
       const cdp = out.result as
-        | { result?: { value?: unknown } }
-        | null
-        | undefined;
+        { result?: { value?: unknown } } | null | undefined;
       let parsed: { url?: unknown; text?: unknown } | null = null;
       try {
-        parsed = JSON.parse(
-          String(cdp?.result?.value ?? ''),
-        ) as { url?: unknown; text?: unknown } | null;
+        const rawValue = cdp?.result?.value;
+        parsed = JSON.parse(typeof rawValue === 'string' ? rawValue : '') as {
+          url?: unknown;
+          text?: unknown;
+        } | null;
       } catch {
         parsed = null;
       }
@@ -430,22 +433,46 @@ export class AgentBrowserExecutor {
       }
       // 4) 导航：写动作——签单 → 等桌面端用户批准 → 带单执行
       if (kind === 'goto') {
-        return await this.gotoViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
+        return await this.gotoViaPanel(
+          action,
+          actor,
+          input.sessionId,
+          input.actionId,
+          input.leadId,
+        );
       }
       // 5) 点击：写动作——先解析坐标（元素不存在不签单）→ 签单 → 用户批准 →
       //    带单执行（pressed+released 一次逻辑点击，坐标执行时重新解析）
       if (kind === 'click') {
-        return await this.clickViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
+        return await this.clickViaPanel(
+          action,
+          actor,
+          input.sessionId,
+          input.actionId,
+          input.leadId,
+        );
       }
       // 5.5) 输入：写动作——先解析坐标（元素不存在不签单）→ 签单 → 用户批准 →
       //      带单执行（聚焦 pressed 消耗 insertText 单 + insertText 配对放行）
       if (kind === 'type') {
-        return await this.typeViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
+        return await this.typeViaPanel(
+          action,
+          actor,
+          input.sessionId,
+          input.actionId,
+          input.leadId,
+        );
       }
       // 5.75) 按键：写动作——签单 → 用户批准 → 带单执行（keyDown 消耗单 +
       //       keyUp 配对放行，一次逻辑按键）
       if (kind === 'press_key') {
-        return await this.pressKeyViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
+        return await this.pressKeyViaPanel(
+          action,
+          actor,
+          input.sessionId,
+          input.actionId,
+          input.leadId,
+        );
       }
       // 5.8) 等待：无 CDP 副作用（不动页面、无白名单命令）——免确认单本地等待
       //      （签"等待 N 毫秒"的审批卡片是骚扰）；身份/面板可用校验仍走前置。
@@ -456,7 +483,13 @@ export class AgentBrowserExecutor {
       //       Panel.tabs，manager 原生 tab 台账；switch 也签单：切换会改变用户
       //       所见的页面，知情卡片合理）
       if (kind === 'tabs') {
-        return await this.tabsViaPanel(action, actor, input.sessionId, input.actionId, input.leadId);
+        return await this.tabsViaPanel(
+          action,
+          actor,
+          input.sessionId,
+          input.actionId,
+          input.leadId,
+        );
       }
       // 5.9) 截图：readonly 观察类——免确认单直接执行（Page.captureScreenshot
       //      已在 desktop 白名单 READONLY_METHODS）。免单理由同 extract/wait：
@@ -469,7 +502,7 @@ export class AgentBrowserExecutor {
       // 6) 其余动作：面板桥还没开通，明确不支持（不许假装成功，也不许偷偷走老路径）
       return this.failed(
         kind,
-        `面板模式暂不支持动作 ${kind}（当前仅支持 extract / goto / click / type / press_key / wait / tabs / screenshot）；` +
+        `面板模式暂不支持动作 ${String(kind)}（当前仅支持 extract / goto / click / type / press_key / wait / tabs / screenshot）；` +
           `未执行、未回退（阶段 7 八个动作已全部接通，出现本提示说明解析层产出了未登记的动作类型）`,
       );
     } catch (error) {
@@ -501,7 +534,8 @@ export class AgentBrowserExecutor {
   ): Promise<AgentBrowserExecuteResult> {
     // 阶段 7 修断链：loop 锁定的确认单（lockedActionId）优先——否则重试时
     // executor 看不到已锁定的单，会再签新单，用户批一张废一张，死循环。
-    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
+    const carried =
+      lockedActionId ?? (action as { actionId?: string }).actionId;
     if (carried) {
       const state = await this.panelBridge!.actionState(actor, carried);
       if (state.state === 'approved') {
@@ -553,7 +587,13 @@ export class AgentBrowserExecutor {
     if (ticket.autoApproved) {
       // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
       // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
-      return this.gotoViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+      return this.gotoViaPanel(
+        action,
+        actor,
+        sessionId,
+        ticket.actionId,
+        leadId,
+      );
     }
     return this.failed(
       'goto',
@@ -651,7 +691,11 @@ export class AgentBrowserExecutor {
     });
     // readonly 调用桥会回传 CDP 结果：{ result: { type, value } }
     const cdp = out.result as
-      | { result?: { value?: { found?: boolean; x?: number; y?: number; text?: string } } }
+      | {
+          result?: {
+            value?: { found?: boolean; x?: number; y?: number; text?: string };
+          };
+        }
       | null
       | undefined;
     const value = cdp?.result?.value;
@@ -740,7 +784,8 @@ export class AgentBrowserExecutor {
     /** 触达审计：动作归属线索（签单落库 confirmationJson.leadId，线索详情反查） */
     leadId?: string | null,
   ): Promise<AgentBrowserExecuteResult> {
-    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
+    const carried =
+      lockedActionId ?? (action as { actionId?: string }).actionId;
     if (carried) {
       const state = await this.panelBridge!.actionState(actor, carried);
       if (state.state === 'approved') {
@@ -826,7 +871,13 @@ export class AgentBrowserExecutor {
     if (ticket.autoApproved) {
       // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
       // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
-      return this.clickViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+      return this.clickViaPanel(
+        action,
+        actor,
+        sessionId,
+        ticket.actionId,
+        leadId,
+      );
     }
     return this.failed(
       'click',
@@ -857,7 +908,8 @@ export class AgentBrowserExecutor {
     /** 触达审计：动作归属线索（签单落库 confirmationJson.leadId，线索详情反查） */
     leadId?: string | null,
   ): Promise<AgentBrowserExecuteResult> {
-    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
+    const carried =
+      lockedActionId ?? (action as { actionId?: string }).actionId;
     if (carried) {
       const state = await this.panelBridge!.actionState(actor, carried);
       if (state.state === 'approved') {
@@ -875,7 +927,13 @@ export class AgentBrowserExecutor {
         // 第一步：聚焦（消耗确认单）
         await this.panelBridge!.execute(actor, {
           method: 'Input.dispatchMouseEvent',
-          params: { type: 'mousePressed', x: probe.x, y: probe.y, button: 'left', clickCount: 1 },
+          params: {
+            type: 'mousePressed',
+            x: probe.x,
+            y: probe.y,
+            button: 'left',
+            clickCount: 1,
+          },
           actionId: carried,
         });
         // 第 1.5 步（2026-09-04 round17，对齐文档 fill_form 替换式语义）：
@@ -940,14 +998,24 @@ export class AgentBrowserExecutor {
         : action.text;
     const ticket = await this.panelBridge!.requestAction(actor, {
       method: 'Input.insertText',
-      summary: { label: '输入文本', selector: action.selector, text: textPreview },
+      summary: {
+        label: '输入文本',
+        selector: action.selector,
+        text: textPreview,
+      },
       sessionId: sessionId ?? null,
       leadId: leadId ?? null,
     });
     if (ticket.autoApproved) {
       // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
       // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
-      return this.typeViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+      return this.typeViaPanel(
+        action,
+        actor,
+        sessionId,
+        ticket.actionId,
+        leadId,
+      );
     }
     return this.failed(
       'type',
@@ -979,7 +1047,8 @@ export class AgentBrowserExecutor {
     /** 触达审计：动作归属线索（签单落库 confirmationJson.leadId，线索详情反查） */
     leadId?: string | null,
   ): Promise<AgentBrowserExecuteResult> {
-    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
+    const carried =
+      lockedActionId ?? (action as { actionId?: string }).actionId;
     const keyParams = (type: 'keyDown' | 'keyUp'): Record<string, unknown> => {
       const params: Record<string, unknown> = { type, key: action.key };
       if (type === 'keyDown' && action.key.length === 1) {
@@ -1036,7 +1105,13 @@ export class AgentBrowserExecutor {
     if (ticket.autoApproved) {
       // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
       // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
-      return this.pressKeyViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+      return this.pressKeyViaPanel(
+        action,
+        actor,
+        sessionId,
+        ticket.actionId,
+        leadId,
+      );
     }
     return this.failed(
       'press_key',
@@ -1070,8 +1145,12 @@ export class AgentBrowserExecutor {
     /** 触达审计：动作归属线索（签单落库 confirmationJson.leadId，线索详情反查） */
     leadId?: string | null,
   ): Promise<AgentBrowserExecuteResult> {
-    const carried = lockedActionId ?? (action as { actionId?: string }).actionId;
-    const summary: Record<string, unknown> = { label: '标签页操作', operation: action.operation };
+    const carried =
+      lockedActionId ?? (action as { actionId?: string }).actionId;
+    const summary: Record<string, unknown> = {
+      label: '标签页操作',
+      operation: action.operation,
+    };
     if (action.index != null) summary.index = action.index;
     if (carried) {
       const state = await this.panelBridge!.actionState(actor, carried);
@@ -1084,13 +1163,20 @@ export class AgentBrowserExecutor {
         });
         // desktop 侧回传 tab 台账快照 {tabs, activeIndex, url}（Panel.tabs 是
         // server result 过滤的放行特例）；取不到时退化为不含台账数的 message
-        const snap = (out.result ?? null) as
-          | { tabs?: number; activeIndex?: number; url?: string | null }
-          | null;
-        const snapNote =
+        const snap = out.result ?? null;
+        const snapObj =
           snap && typeof snap === 'object'
-            ? `（共 ${snap.tabs ?? '?'} 个，active=${snap.activeIndex ?? '?'}${snap.url ? `，${snap.url}` : ''}）`
-            : '';
+            ? (snap as {
+                tabs?: unknown;
+                activeIndex?: unknown;
+                url?: unknown;
+              })
+            : null;
+        const s = (v: unknown) =>
+          typeof v === 'string' || typeof v === 'number' ? String(v) : '';
+        const snapNote = snapObj
+          ? `（共 ${s(snapObj.tabs) || '?'} 个，active=${s(snapObj.activeIndex) || '?'}${snapObj.url ? `，${s(snapObj.url)}` : ''}）`
+          : '';
         return {
           index: 0,
           action: 'tabs',
@@ -1126,7 +1212,13 @@ export class AgentBrowserExecutor {
     if (ticket.autoApproved) {
       // TraeWork 控制权模型：系统控制（默认）下这张单已在桌面侧经 owner 通道
       // 自动批准——直接走带票执行分支，用户没点「接管」就不该看到"待批准"回执。
-      return this.tabsViaPanel(action, actor, sessionId, ticket.actionId, leadId);
+      return this.tabsViaPanel(
+        action,
+        actor,
+        sessionId,
+        ticket.actionId,
+        leadId,
+      );
     }
     return this.failed(
       'tabs',

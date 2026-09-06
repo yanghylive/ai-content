@@ -207,7 +207,7 @@ export class XiaohongshuInteractionAdapter implements InteractionAdapter {
             authorId: ev?.authorExternalId ?? d.identityHint?.externalUserId,
             ref: ev?.externalEventId,
             videoUrl: ev?.sourceUrl ?? d.sourceContent?.url,
-          } as InteractionItem;
+          };
         })
         .filter((c) => c.text.length > 0),
       url: items[0]?.sourceContent?.url,
@@ -265,7 +265,7 @@ export class KuaishouInteractionAdapter implements InteractionAdapter {
             authorId: ev?.authorExternalId ?? d.identityHint?.externalUserId,
             ref: ev?.externalEventId,
             videoUrl: ev?.sourceUrl ?? d.sourceContent?.url,
-          } as InteractionItem;
+          };
         })
         .filter((c) => c.text.length > 0),
       url: items[0]?.sourceContent?.url,

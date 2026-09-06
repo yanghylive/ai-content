@@ -4,6 +4,7 @@ import { chmodSync, existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { resolveDesktopUserDataDir } from '../../common/project-paths';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { Prisma } from '@prisma/client';
 
 /**
  * AgentPanelBridgeService — 3011 ⇄ desktop 右侧浏览器面板的**上行**通道。
@@ -52,7 +53,10 @@ export function describePanelMethod(method: string): string {
 /** 是否面板来源的确认单（persist mixin 过滤用；confirmationJson 形状不保证，要防御） */
 export function isPanelConfirmation(confirmationJson: unknown): boolean {
   if (!confirmationJson || typeof confirmationJson !== 'object') return false;
-  return (confirmationJson as { source?: unknown }).source === PANEL_CONFIRMATION_SOURCE;
+  return (
+    (confirmationJson as { source?: unknown }).source ===
+    PANEL_CONFIRMATION_SOURCE
+  );
 }
 /**
  * AiBrowserAction.action → 面板 CDP 方法（合并后 loop 用它比对确认单指纹）。
@@ -273,7 +277,10 @@ export class AgentPanelBridgeService {
     }
 
     if (parsed?.protocol !== PANEL_BRIDGE_PROTOCOL) return null;
-    if (typeof parsed.endpoint !== 'string' || !LOOPBACK_ENDPOINT.test(parsed.endpoint)) {
+    if (
+      typeof parsed.endpoint !== 'string' ||
+      !LOOPBACK_ENDPOINT.test(parsed.endpoint)
+    ) {
       return null;
     }
     if (typeof parsed.token !== 'string' || !parsed.token) return null;
@@ -360,7 +367,10 @@ export class AgentPanelBridgeService {
       binding?: Partial<PanelBridgeBinding>;
       title?: string | null;
       textSample?: string | null;
-    }>(credentials, '/observe', 'POST', { panelId: credentials.panelId, actor });
+    }>(credentials, '/observe', 'POST', {
+      panelId: credentials.panelId,
+      actor,
+    });
     return {
       binding: {
         panelId: json?.binding?.panelId ?? credentials.panelId ?? null,
@@ -481,13 +491,21 @@ export class AgentPanelBridgeService {
       executed?: boolean;
       actionId?: string | null;
       result?: unknown;
-    }>(credentials, '/execute', 'POST', {
-      panelId: credentials.panelId,
-      actor,
-      method: input.method,
-      params: input.params || {},
-      actionId: input.actionId ?? null,
-    }, EXECUTE_SLOW_METHODS.has(input.method) ? EXECUTE_SLOW_TIMEOUT_MS : REQUEST_TIMEOUT_MS);
+    }>(
+      credentials,
+      '/execute',
+      'POST',
+      {
+        panelId: credentials.panelId,
+        actor,
+        method: input.method,
+        params: input.params || {},
+        actionId: input.actionId ?? null,
+      },
+      EXECUTE_SLOW_METHODS.has(input.method)
+        ? EXECUTE_SLOW_TIMEOUT_MS
+        : REQUEST_TIMEOUT_MS,
+    );
     if (json?.executed === true) {
       await this.markTicket(input.actionId ?? null, 'consumed');
     } else {
@@ -565,12 +583,14 @@ export class AgentPanelBridgeService {
           riskLevel: 'medium',
           target: row.webContentsId === null ? null : String(row.webContentsId),
           targetLabel: describePanelMethod(row.method),
-          confirmationJson: confirmationJson as unknown as object,
+          confirmationJson:
+            confirmationJson as unknown as Prisma.InputJsonValue,
           createdAt: now,
         },
         update: {
           status: 'pending',
-          confirmationJson: confirmationJson as unknown as object,
+          confirmationJson:
+            confirmationJson as unknown as Prisma.InputJsonValue,
         },
       });
     } catch (error) {
@@ -585,12 +605,18 @@ export class AgentPanelBridgeService {
    * pending（待用户在面板点）→ in_use（执行中）→ consumed（已完成）。
    * 拒绝时由 markRejected 直接置 consumed（终态，不可翻案）。
    */
-  private async markTicket(actionId: string | null, status: 'in_use' | 'consumed' | 'pending'): Promise<void> {
+  private async markTicket(
+    actionId: string | null,
+    status: 'in_use' | 'consumed' | 'pending',
+  ): Promise<void> {
     if (!actionId || !this.prisma) return;
     try {
       await this.prisma.agentConfirmation.updateMany({
         where: { id: actionId },
-        data: { status, decidedAt: status === 'consumed' ? new Date() : undefined },
+        data: {
+          status,
+          decidedAt: status === 'consumed' ? new Date() : undefined,
+        },
       });
     } catch (error) {
       this.logger.warn(
@@ -637,11 +663,17 @@ export class AgentPanelBridgeService {
       await this.prisma.agentConfirmation.update({
         where: { id: actionId },
         data: {
-          confirmationJson: { ...prev, status: 'expired', decidedAt: new Date().toISOString() } as unknown as object,
+          confirmationJson: {
+            ...prev,
+            status: 'expired',
+            decidedAt: new Date().toISOString(),
+          },
         },
       });
     } catch (error) {
-      this.logger.warn(`面板确认单失效收口失败（${actionId}）：${error instanceof Error ? error.message : String(error)}`);
+      this.logger.warn(
+        `面板确认单失效收口失败（${actionId}）：${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -652,7 +684,9 @@ export class AgentPanelBridgeService {
    * - approved/pending → 不动（重试带票执行 / 浮层继续等批）
    * 桥不可达 = 整体放弃对账（不阻断签新单，审计旁路语义与落库一致）。
    */
-  private async reconcilePendingTickets(actor: PanelBridgeActor): Promise<void> {
+  private async reconcilePendingTickets(
+    actor: PanelBridgeActor,
+  ): Promise<void> {
     if (!this.prisma || !actor?.ownerId) return;
     let rows: Array<{ id: string; confirmationJson: unknown }>;
     try {
@@ -667,7 +701,12 @@ export class AgentPanelBridgeService {
     for (const row of rows) {
       if (!isPanelConfirmation(row.confirmationJson)) continue;
       const json = (row.confirmationJson || {}) as Record<string, unknown>;
-      if (json.status === 'approved' || json.status === 'rejected' || json.status === 'expired') continue;
+      if (
+        json.status === 'approved' ||
+        json.status === 'rejected' ||
+        json.status === 'expired'
+      )
+        continue;
       let state: string | null = null;
       try {
         state = (await this.actionState(actor, row.id)).state;
@@ -702,7 +741,7 @@ export class AgentPanelBridgeService {
             ...prev,
             status: decision,
             decidedAt: new Date().toISOString(),
-          } as unknown as object,
+          },
         },
       });
     } catch (error) {
@@ -758,7 +797,11 @@ export class AgentPanelBridgeService {
    */
   async panelOpen(
     actor: PanelBridgeActor,
-    input: { url: string; accountId?: string | number | null; platform?: string | null },
+    input: {
+      url: string;
+      accountId?: string | number | null;
+      platform?: string | null;
+    },
   ): Promise<{
     panelId: string | null;
     accountId: string | null;
@@ -863,12 +906,16 @@ export class AgentPanelBridgeService {
         signal: AbortSignal.timeout(timeoutMs),
       });
     } catch (error) {
-      const reason = (error as Error)?.name === 'TimeoutError' ? 'TIMEOUT' : 'NETWORK_ERROR';
+      const reason =
+        (error as Error)?.name === 'TimeoutError' ? 'TIMEOUT' : 'NETWORK_ERROR';
       throw new PanelBridgeError(reason, 0, `面板桥请求失败：${route}`);
     }
 
-    let json: { success?: boolean; data?: T; error?: { code?: string; reason?: string } } | null =
-      null;
+    let json: {
+      success?: boolean;
+      data?: T;
+      error?: { code?: string; reason?: string };
+    } | null = null;
     try {
       // 显式类型断言，避免 `as typeof json` 的循环引用把 json 收窄为 never
       json = (await response.json()) as {
@@ -887,8 +934,14 @@ export class AgentPanelBridgeService {
     // 2026-09-04：403 拒绝原因透传（desktop 桥附带安全 reason）+ 面向用户的修复提示。
     // 真机实证：token 过期/无效时用户只看到裸 POLICY_DENIED，不知道要重开面板。
     const reason = json?.error?.reason ? `（${json.error.reason}）` : '';
-    const hint = PANEL_REJECT_HINTS[code] ? `，${PANEL_REJECT_HINTS[code]}` : '';
-    throw new PanelBridgeError(code, response.status, `面板桥拒绝：${code}${reason}${hint}`);
+    const hint = PANEL_REJECT_HINTS[code]
+      ? `，${PANEL_REJECT_HINTS[code]}`
+      : '';
+    throw new PanelBridgeError(
+      code,
+      response.status,
+      `面板桥拒绝：${code}${reason}${hint}`,
+    );
   }
 }
 

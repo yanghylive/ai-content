@@ -314,7 +314,11 @@ export class CommentAcquisitionService {
         } else {
           // 低风险自动审批留痕（autoApprovedAt 写入 notes，审计可复验）
           // 2026-09-06 复核 P1-1：先原子认领历史 NULL 线索，再严格按租户操作
-          await this.claimLegacyLeadTenant(leadId, scope.userId, scope.tenantId);
+          await this.claimLegacyLeadTenant(
+            leadId,
+            scope.userId,
+            scope.tenantId,
+          );
           await this.prisma.lead.updateMany({
             where: {
               id: leadId,
@@ -382,7 +386,12 @@ export class CommentAcquisitionService {
    * 返回的内容自带 url，可直接喂 readComments 读评论。改走两段式，与平台真实能力对齐。
    */
   private async discoverByKeyword(
-    input: { platform: AcquisitionPlatform; accountId: number | string; limit?: number; keyword?: string },
+    input: {
+      platform: AcquisitionPlatform;
+      accountId: number | string;
+      limit?: number;
+      keyword?: string;
+    },
     accountId: string | number | undefined,
   ): Promise<InteractionReadResult> {
     const platform = input.platform as 'kuaishou' | 'xiaohongshu';
@@ -402,7 +411,9 @@ export class CommentAcquisitionService {
     }
     // 透传降级标记：runner 在关键词搜索页未渲染时自动跳 /new-reco 降级推荐流，
     // 会给每个 item 打 recommendedFallback=true。这里必须如实带上，否则会冒充关键词结果。
-    const recommendedFallback = contents.some((c) => c.recommendedFallback === true);
+    const recommendedFallback = contents.some(
+      (c) => c.recommendedFallback === true,
+    );
     // 2. 逐个内容读评论（取第一个能读到评论的内容，避免全量扫）
     const items: InteractionItem[] = [];
     let title: string | undefined;
@@ -451,7 +462,13 @@ export class CommentAcquisitionService {
         `${platform} 关键词搜索命中的内容全部读评论失败（${readFailures} 条），页面结构可能变化`,
       );
     }
-    return { items, title, url, recommendedFallback, readAt: new Date().toISOString() };
+    return {
+      items,
+      title,
+      url,
+      recommendedFallback,
+      readAt: new Date().toISOString(),
+    };
   }
 
   /**
@@ -596,7 +613,11 @@ export class CommentAcquisitionService {
         } else if (circuit.open) {
           status = 'pending';
         } else {
-          await this.claimLegacyLeadTenant(leadId, scope.userId, scope.tenantId);
+          await this.claimLegacyLeadTenant(
+            leadId,
+            scope.userId,
+            scope.tenantId,
+          );
           await this.prisma.lead.updateMany({
             where: {
               id: leadId,
@@ -718,10 +739,7 @@ export class CommentAcquisitionService {
       // 能力门（S2-3）：发送前预检真实能力，未接入/不支持时明确拦截，
       // 不把「平台未接入」误判为「发送失败」去污染熔断统计。
       const capability = adapter.capability;
-      if (
-        capability &&
-        !capability.supportedTasks.includes(taskType)
-      ) {
+      if (capability && !capability.supportedTasks.includes(taskType)) {
         const msg = `平台 ${input.platform} 不支持互动类型 ${taskType}`;
         this.logger.warn(`[comment-acquisition] ${msg}`);
         await this.leadRepository.updateReplyStatus(leadId, {
@@ -741,7 +759,9 @@ export class CommentAcquisitionService {
       );
       if (!consumed) {
         const msg = '今日账号触达额度已用尽';
-        this.logger.warn(`[comment-acquisition] ${input.platform}:${stableId} ${msg}`);
+        this.logger.warn(
+          `[comment-acquisition] ${input.platform}:${stableId} ${msg}`,
+        );
         await this.leadRepository.updateReplyStatus(leadId, {
           userId: resolvedScope.userId,
           status: 'failed',
@@ -772,7 +792,11 @@ export class CommentAcquisitionService {
         const message = error instanceof Error ? error.message : String(error);
         // 平台真实能力未接入（如快手 adapter 尚未接 RPA 实现）时，不算发送失败，
         // 不记熔断，lead 落 not_integrated，避免把「能力缺失」误判成「平台失败」。
-        if (/待接入|未实现|未接入|not\s*implemented|not\s*integrated/i.test(message)) {
+        if (
+          /待接入|未实现|未接入|not\s*implemented|not\s*integrated/i.test(
+            message,
+          )
+        ) {
           this.logger.warn(
             `[comment-acquisition] ${input.platform} 回复能力未接入: ${message}`,
           );

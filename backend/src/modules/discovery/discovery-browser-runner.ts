@@ -1093,7 +1093,6 @@ export class DiscoveryBrowserRunner {
     return items;
   }
 
-
   /** 抖音搜索「用户」tab 账号卡片解析：a[href*='/user/'] + 容器文本（昵称/粉丝数） */
   async extractDouyinUserSearchResults(page: Page): Promise<DiscoveryItem[]> {
     const items: DiscoveryItem[] = [];
@@ -1106,7 +1105,9 @@ export class DiscoveryBrowserRunner {
           rawText: string;
         }> = [];
         const seen = new Set<string>();
-        const links = Array.from(document.querySelectorAll('a[href*="/user/"]'));
+        const links = Array.from(
+          document.querySelectorAll('a[href*="/user/"]'),
+        );
         for (const link of links) {
           const href = link.getAttribute('href') || '';
           const m = href.match(/\/user\/([A-Za-z0-9_-]+)/);
@@ -1114,10 +1115,15 @@ export class DiscoveryBrowserRunner {
           const userId = m[1];
           if (seen.has(userId)) continue;
           seen.add(userId);
-          const container = (link.closest(
-            'li, [class*="card"], [class*="item"], [class*="user"]',
-          ) || link.parentElement) as HTMLElement | null;
-          const text = (container?.innerText || link.textContent || '')
+          const container =
+            link.closest(
+              'li, [class*="card"], [class*="item"], [class*="user"]',
+            ) || link.parentElement;
+          const text = (
+            (container as HTMLElement | null)?.innerText ||
+            link.textContent ||
+            ''
+          )
             .replace(/\s+/g, ' ')
             .trim();
           const nickname =

@@ -22,7 +22,14 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { basename, join } from 'path';
 import { execFileSync, spawn, type ChildProcess } from 'child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'fs';
 import {
   chromium,
   type Browser,
@@ -596,14 +603,19 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     binding: { wantAccount: string; panelId: string | null },
   ): Promise<boolean> {
     try {
-      const marker = (await page.evaluate(
+      const markerRaw = await page.evaluate(
         'window.__kaypalPanelBinding || null',
-      )) as {
-        panelId?: string;
+      );
+      const marker = markerRaw as {
+        panelId?: string | null;
         accountId?: string | null;
       } | null;
       if (!marker) return false;
-      if (binding.panelId && marker.panelId && marker.panelId !== binding.panelId) {
+      if (
+        binding.panelId &&
+        marker.panelId &&
+        marker.panelId !== binding.panelId
+      ) {
         return false;
       }
       return String(marker.accountId) === binding.wantAccount;
@@ -651,7 +663,9 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     if (!homeUrl || input.probe) return null; // 探活档/未映射平台保持原语义
     const cdpHttp = this.panelCdpHttp();
     if (!cdpHttp) {
-      this.logger.log(`面板优先通道已关闭（LOCAL_PANEL_MODE=off），${key} 走兜底 spawn`);
+      this.logger.log(
+        `面板优先通道已关闭（LOCAL_PANEL_MODE=off），${key} 走兜底 spawn`,
+      );
       return null;
     }
     if (!this.panelBridge) {
@@ -666,7 +680,9 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     const wantAccount = String(input.accountId);
 
     // P0-1 第一步：面板当前归属核验
-    let state: Awaited<ReturnType<AgentPanelBridgeService['panelState']>> | null = null;
+    let state: Awaited<
+      ReturnType<AgentPanelBridgeService['panelState']>
+    > | null = null;
     try {
       state = await this.panelBridge.panelState(actor);
     } catch (error) {
@@ -696,8 +712,14 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         return null;
       }
       state = null;
-      for (let attempt = 0; attempt < this.panelSwitchMaxAttempts; attempt += 1) {
-        await new Promise((resolve) => setTimeout(resolve, this.panelSwitchPollMs));
+      for (
+        let attempt = 0;
+        attempt < this.panelSwitchMaxAttempts;
+        attempt += 1
+      ) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.panelSwitchPollMs),
+        );
         try {
           const next = await this.panelBridge.panelState(actor);
           if (next.hasSession && next.accountId === wantAccount) {
@@ -709,7 +731,9 @@ export class LocalBrowserEngine implements OnModuleDestroy {
         }
       }
       if (!state) {
-        this.logger.warn(`面板账号切换未确认（${key}，want=${wantAccount}），走兜底 spawn`);
+        this.logger.warn(
+          `面板账号切换未确认（${key}，want=${wantAccount}），走兜底 spawn`,
+        );
         return null;
       }
     }
@@ -727,10 +751,15 @@ export class LocalBrowserEngine implements OnModuleDestroy {
       );
       return null;
     }
-    const acquired = await this.acquirePanelPage(browser, input.platform, homeUrl, {
-      wantAccount,
-      panelId: state.panelId,
-    });
+    const acquired = await this.acquirePanelPage(
+      browser,
+      input.platform,
+      homeUrl,
+      {
+        wantAccount,
+        panelId: state.panelId,
+      },
+    );
     if (!acquired) {
       this.logger.warn(`面板 page 未就绪（${key}），走兜底 spawn`);
       return null;
@@ -1157,7 +1186,11 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     profileDir: string,
     platform: string,
     accountId: string,
-    options: { forceNewPort?: boolean; probe?: boolean; forceHeadless?: boolean } = {},
+    options: {
+      forceNewPort?: boolean;
+      probe?: boolean;
+      forceHeadless?: boolean;
+    } = {},
   ): Promise<{
     context: BrowserContext;
     debuggingPort: number;
@@ -1223,7 +1256,8 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     return await chromium.launchPersistentContext(profileDir, {
       executablePath: this.chromePath,
       // 探活档/forceHeadless 强制 headless（不弹窗）；执行档才用可见窗口
-      headless: probe === true || forceHeadless === true ? true : !this.visibleWindow,
+      headless:
+        probe === true || forceHeadless === true ? true : !this.visibleWindow,
       locale: 'zh-CN',
       timezoneId: 'Asia/Shanghai',
       viewport: { width: 1600, height: 1000 },
@@ -1812,7 +1846,8 @@ export class LocalBrowserEngine implements OnModuleDestroy {
     const ticket = await this.panelBridge.requestAction(
       { ownerId: 'local-engine', tenantId: 'local-tenant' },
       {
-        method: kind === 'fill' ? 'Input.insertText' : 'Input.dispatchMouseEvent',
+        method:
+          kind === 'fill' ? 'Input.insertText' : 'Input.dispatchMouseEvent',
         params: {},
         summary: { kind, sessionKey: session.key, ...summary },
         sessionId: session.key,

@@ -140,7 +140,11 @@ export class SearchWebRpaDriver extends BaseRpaDriver {
       : unavailable;
     return [
       { action: 'discover-keyword' as const, supported: ready, ...unavailable },
-      { action: 'discover-account-search' as const, supported: ready, ...unavailable },
+      {
+        action: 'discover-account-search' as const,
+        supported: ready,
+        ...unavailable,
+      },
 
       {
         action: 'discover-account-works' as const,
@@ -315,7 +319,7 @@ export class SearchWebRpaDriver extends BaseRpaDriver {
         items: mapped,
       });
     }
-if (action === 'discover-account-search') {
+    if (action === 'discover-account-search') {
       const keyword = this.text(input.keyword).trim();
       if (!keyword) {
         return this.stepResult(

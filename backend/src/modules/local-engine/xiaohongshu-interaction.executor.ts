@@ -177,9 +177,7 @@ export class XiaohongshuInteractionExecutor {
           return {
             ok: true,
             cleared,
-            message: cleared
-              ? 'sent'
-              : '发送后输入框未清空（疑似未生效）',
+            message: cleared ? 'sent' : '发送后输入框未清空（疑似未生效）',
           };
         },
         { index: input.commentIndex, content: input.content },

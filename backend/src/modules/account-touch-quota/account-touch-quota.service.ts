@@ -82,7 +82,7 @@ export class AccountTouchQuotaService {
     dailyLimit = 20,
   ): Promise<boolean> {
     const touchDate = this.today();
-    const affected = await this.prisma.$executeRaw`
+    await this.prisma.$executeRaw`
       INSERT INTO "account_touch_quotas"
         ("id", "user_id", "platform", "account_id", "daily_limit", "touch_date", "touch_count", "created_at", "updated_at")
       VALUES
@@ -158,7 +158,11 @@ export class AccountTouchQuotaService {
     userId: string,
     platform: string,
     accountId: string,
-  ): Promise<{ dailyLimit: number; touchCount: number; touchDate: string } | null> {
+  ): Promise<{
+    dailyLimit: number;
+    touchCount: number;
+    touchDate: string;
+  } | null> {
     const touchDate = this.today();
     const row = await this.prisma.accountTouchQuota.findUnique({
       where: {

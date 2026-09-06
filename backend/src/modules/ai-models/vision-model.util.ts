@@ -91,9 +91,7 @@ export async function ensureKaypalVisionModel(
       },
       update: { enabled: true },
     });
-    logger?.log(
-      `视觉模型已懒创建（${VISION_MODEL_ALIASES[0]} @ ${baseUrl}）`,
-    );
+    logger?.log(`视觉模型已懒创建（${VISION_MODEL_ALIASES[0]} @ ${baseUrl}）`);
     return true;
   } catch (error) {
     logger?.warn(

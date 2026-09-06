@@ -254,7 +254,8 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
           return;
         }
         const delay = Math.min(
-          PlaywrightMcpService.RESTART_BASE_DELAY_MS * 2 ** this.restartAttempts,
+          PlaywrightMcpService.RESTART_BASE_DELAY_MS *
+            2 ** this.restartAttempts,
           PlaywrightMcpService.RESTART_MAX_DELAY_MS,
         );
         this.restartAttempts += 1;
@@ -559,7 +560,10 @@ export class PlaywrightMcpService implements OnModuleInit, OnModuleDestroy {
       // 与默认 headless 配置冲突，把健康的 Agent-S 误判成 mcp-down。
       // isolated 仍作为阻断条件（无持久 profile，登录态不落盘，不能承载真机自动化）。
       readyForAutomation:
-        this.online && this.child !== null && !this.isolated && requiredToolsReady,
+        this.online &&
+        this.child !== null &&
+        !this.isolated &&
+        requiredToolsReady,
       requiredToolsReady,
       requiredTools: [...this.requiredAutomationTools],
       missingRequiredTools,

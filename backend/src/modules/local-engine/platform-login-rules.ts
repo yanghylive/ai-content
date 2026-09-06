@@ -60,15 +60,20 @@ export function isLoginLikeUrl(url: string): boolean {
 }
 
 export function normalizePageText(text: string): string {
-  return String(text || '').replace(/\s+/g, ' ').trim();
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /** 引擎 hasLoginPrompt 的同款规则（xhs 场景）：URL 形态 + 通用登录提示词 */
 export function hasXiaohongshuLoginPrompt(url: string, text: string): boolean {
   if (isLoginLikeUrl(url)) return true;
   const normalizedText = normalizePageText(text);
-  return true === /扫码登录|验证码登录|密码登录|账号登录|登录\/注册|登录或注册|登录后|请先登录|未登录|二维码/.test(
-    normalizedText,
+  return (
+    true ===
+    /扫码登录|验证码登录|密码登录|账号登录|登录\/注册|登录或注册|登录后|请先登录|未登录|二维码/.test(
+      normalizedText,
+    )
   );
 }
 
@@ -83,7 +88,10 @@ export function isXiaohongshuBackendUrl(url: string): boolean {
  * 网页版（www.xiaohongshu.com）：登录用户有 发布/通知/消息/我 工具栏；
  * 未登录出现 登录/注册/扫码。创作者后台独立判定。
  */
-export function isXiaohongshuAuthenticatedPage(url: string, text: string): boolean {
+export function isXiaohongshuAuthenticatedPage(
+  url: string,
+  text: string,
+): boolean {
   const normalizedText = normalizePageText(text);
   if (/www\.xiaohongshu\.com/.test(url || '')) {
     return (
@@ -111,7 +119,8 @@ export function resolvePlatformLoginState(
   url: string,
   text: string,
 ): PlatformLoginState {
-  if (platform === 'xiaohongshu') return resolveXiaohongshuLoginState(url, text);
+  if (platform === 'xiaohongshu')
+    return resolveXiaohongshuLoginState(url, text);
   if (platform === 'douyin') return resolveDouyinLoginState(url, text);
   if (platform === 'wechat-channel') {
     return resolveWechatChannelLoginState(url, text);

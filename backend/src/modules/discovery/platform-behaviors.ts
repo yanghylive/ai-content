@@ -106,18 +106,12 @@ export class DouyinBehavior implements PlatformBehavior {
     return this.host.extractDouyinAccountWorks(page);
   }
 
-  async searchAccounts(
-    page: Page,
-    keyword: string,
-  ): Promise<DiscoveryItem[]> {
+  async searchAccounts(page: Page, keyword: string): Promise<DiscoveryItem[]> {
     // 行为式搜索（首页输入+回车，绕 /search/ 验证码）→ 切「用户」tab → 解析账号
     await this.host.behaviorSearch(this.platform, page, keyword);
     const state = await this.host.checkPageState(page, this.platform);
     if (state !== 'ok') {
-      throw new BrowserDiscoverError(
-        state as never,
-        '搜索页被拦截：' + state,
-      );
+      throw new BrowserDiscoverError(state as never, '搜索页被拦截：' + state);
     }
     // 切到「用户」tab（账号列表）。tab 文本定位，容错：点击失败不中断（解析仍可兜底）
     await page

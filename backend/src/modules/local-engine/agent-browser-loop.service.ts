@@ -297,7 +297,10 @@ export class AgentBrowserLoopService {
       // 阶段 5：面板模式需要调用方身份做 actor 断言（会话租约里就有，
       // 拿不到就传空——面板模式会据此 fail-closed，不静默改走无头浏览器）
       const actor = session.lease?.ownerId
-        ? { ownerId: session.lease.ownerId, tenantId: session.lease.tenantId ?? '' }
+        ? {
+            ownerId: session.lease.ownerId,
+            tenantId: session.lease.tenantId ?? '',
+          }
         : undefined;
       let allowed = true;
       let gateMessage: string | undefined;
@@ -330,7 +333,11 @@ export class AgentBrowserLoopService {
         // executor 每次重试都签新单 → "批一张废一张"。面板模式下导航与
         // executor 侧闸门对齐：导航一律要求面板确认单（executor.gotoViaPanel
         // 本来就对每次导航签单/验单，这里只是让 loop 簿记同一步）。
-        if (panelMode === 'on' && tool === 'navigate' && !audit.requiresConfirmation) {
+        if (
+          panelMode === 'on' &&
+          tool === 'navigate' &&
+          !audit.requiresConfirmation
+        ) {
           audit = {
             ...audit,
             requiresConfirmation: true,
@@ -551,9 +558,7 @@ export class AgentBrowserLoopService {
       (s) => !s.ok && isPanelDeferredStep(s),
     ).length;
     const awaitingPanelApproval =
-      okCount === 0 &&
-      failCount > 0 &&
-      deferredFailCount === failCount;
+      okCount === 0 && failCount > 0 && deferredFailCount === failCount;
     let status: NonNullable<AgentBrowserStepEvent['status']> = 'failed';
     if (actions.length === 0) {
       status = 'failed';
@@ -785,7 +790,7 @@ export class AgentBrowserLoopService {
         sessionId,
         actionId: panelActionId,
         leadId: leadId ?? null,
-      } as Parameters<typeof exec.execute>[0]);
+      });
       lastResult = r;
       if (r.ok) return r;
       // 门禁类失败不重试（策略阻断/需确认/写操作未开启/mock 阻断）
@@ -883,9 +888,10 @@ export class AgentBrowserLoopService {
           // 面板单：指纹按 CDP method 比（action 列存的是 Page.navigate 之类）。
           const expected = panelMethodForAction(action.action);
           if (!expected) continue;
-          const json = rec.confirmationJson as
-            | { method?: unknown; status?: unknown }
-            | null;
+          const json = rec.confirmationJson as {
+            method?: unknown;
+            status?: unknown;
+          } | null;
           if ((json?.method ?? rec.action) !== expected) continue;
           // 批准态的源头在**桌面面板桥**（executor 带票执行路径同源同问）。
           // 2026-09-04 修「批准后死锁」：旧实现只认落库 json.status==='approved'，
