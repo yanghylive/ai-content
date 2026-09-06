@@ -651,6 +651,89 @@
 
 
 @layer components {
+  /* ===== Ops 页 HeroUI 控件并入全站口径（2026-09-07）=====
+     任务中心沿用 Ops 组件 + HeroUI 控件，默认外观（紫色 flat 药丸、
+     灰底圆角输入框）与 CRM/消息页的「白底描边次级 + 金渐变主 CTA」不一致。
+     这里按变体类把 flat/bordered 按钮与输入框统一映射。 */
+  /* 次级按钮（flat 默认）：白底 + 描边 + 深墨字 */
+  .ops-v3 button[class*="bg-default/40"] {
+    background: var(--kaypal-v3-paper) !important;
+    border: 1px solid var(--kaypal-v3-border) !important;
+    color: var(--kaypal-v3-soft-ink) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+  }
+  .ops-v3 button[class*="bg-default/40"]:hover {
+    border-color: var(--kaypal-v3-border-strong) !important;
+    background: var(--kaypal-v3-paper-soft) !important;
+    color: var(--kaypal-v3-ink) !important;
+    opacity: 1 !important;
+  }
+  /* 行内动作按钮（flat primary）：白底描边 + 品牌紫字（不再紫色药丸） */
+  .ops-v3 button[class*="bg-primary/20"]:not(.ops-cta) {
+    background: var(--kaypal-v3-paper) !important;
+    border: 1px solid var(--kaypal-v3-accent-border) !important;
+    color: var(--kaypal-v3-accent-ink) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+  }
+  .ops-v3 button[class*="bg-primary/20"]:not(.ops-cta):hover {
+    background: var(--kaypal-v3-accent-soft) !important;
+    opacity: 1 !important;
+  }
+  /* 主 CTA：金渐变（与 kx-btn-primary / CRM「新增客户」同口径） */
+  .ops-v3 button.ops-cta {
+    background: var(--kaypal-v3-gradient-primary) !important;
+    border: 0 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 2px rgba(193, 129, 31, 0.3), 0 2px 8px -2px rgba(193, 129, 31, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  }
+  .ops-v3 button.ops-cta:hover {
+    opacity: 1 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(193, 129, 31, 0.35), 0 4px 16px -2px rgba(193, 129, 31, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+  }
+  .ops-v3 button.ops-cta [class*="text-"] { color: #fff !important; }
+  .ops-v3 button.ops-cta svg { color: #fff !important; }
+  /* 警告类动作（待确认）：琥珀软底描边 */
+  .ops-v3 button[class*="bg-warning/20"] {
+    background: var(--kaypal-v3-amber-soft) !important;
+    border: 1px solid color-mix(in srgb, var(--kaypal-v3-amber) 35%, transparent) !important;
+    color: var(--kaypal-v3-amber) !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+  }
+  /* 输入框（搜索等）：白底描边 10px，替代灰底大圆角 */
+  .ops-v3 [data-slot="input-wrapper"][class*="bg-default-100"] {
+    background: var(--kaypal-v3-paper) !important;
+    border: 1px solid var(--kaypal-v3-border) !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    gap: 6px !important;
+    padding: 0 10px !important;
+  }
+  .ops-v3 [data-slot="input-wrapper"][class*="bg-default-100"]:hover,
+  .ops-v3 [data-slot="input-wrapper"][class*="bg-default-100"]:focus-within {
+    background: var(--kaypal-v3-paper) !important;
+    border-color: var(--kaypal-v3-accent) !important;
+  }
+  .ops-v3 [data-slot="input-wrapper"][class*="bg-default-100"] input {
+    font-size: 12px !important;
+  }
+  /* 状态 Chip：细描边胶囊统一 999 圆角、去 heroui 色阶底 */
+  .ops-v3 [data-slot="chip"] { border-radius: 999px !important; }
+
   /* ===== Ops 执行中心并入 kaypal-v3 主视觉(2026-09-03) =====
      仅作用于 .ops-v3 根(任务中心桌面视图),不影响 case-admin 等复用 Ops 的面。
      把 heroui default 灰蓝色板映射到主系统语义色,圆角 6→12、面板内边距增宽。 */

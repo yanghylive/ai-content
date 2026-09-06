@@ -1465,6 +1465,7 @@ export function TaskCenterPage() {
                   待确认 {confirmations.length}
                 </Button>
                 <Button
+                  className="ops-cta"
                   color="primary"
                   size="sm"
                   startContent={<Icon icon="solar:add-circle-linear" />}
@@ -1887,6 +1888,7 @@ export function TaskCenterPage() {
             <div className="mt-3">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <Button
+                  className="ops-cta"
                   color="primary"
                   size="sm"
                   startContent={<Icon icon="solar:add-circle-linear" />}
@@ -1969,6 +1971,7 @@ export function TaskCenterPage() {
                         size="sm"
                         startContent={<Icon icon="solar:play-circle-linear" />}
                         variant="flat"
+                        className="ops-cta"
                         onPress={() => void startSavedWorkflow(definition)}
                       >
                         启动
@@ -2549,6 +2552,7 @@ export function TaskCenterPage() {
             恢复示例
           </Button>
           <Button
+            className="ops-cta"
             color="primary"
             data-testid="prepare-workflow"
             isLoading={workflowSubmitting}
@@ -2584,6 +2588,7 @@ export function TaskCenterPage() {
                 </span>
               </div>
               <Button
+                className="ops-cta"
                 color="primary"
                 isDisabled={
                   !workflowPreparation.steps.some(
