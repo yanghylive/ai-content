@@ -796,7 +796,7 @@ function LoginPageContent() {
                             >
                               {["自动识别当前账号", "随时可以退出登录", "工作区内容自动同步", "操作记录安全留存"].map((point) => <span key={point} className="text-small text-default-500"><b>✓</b>{point}</span>)}
                             </div>
-                            <Button className="preview-main-button w-full" color="primary" isLoading={phase === "starting"} startContent={<LogIn aria-hidden="true" className="h-4 w-4" />} onPress={() => void startDeviceAuth()}>
+                            <Button className="preview-main-button login-action-button w-full" color="primary" isLoading={phase === "starting"} onPress={() => void startDeviceAuth()}>
                               {phase === "starting" ? "正在准备 JIUZHANG AI 登录..." : "使用 JIUZHANG AI 账号继续"}
                             </Button>
                           </div>
@@ -860,7 +860,7 @@ function LoginPageContent() {
                             </span>
                           </label>
                           <Button
-                            className="w-full"
+                            className="login-action-button w-full"
                             color="primary"
                             isDisabled={
                               passwordSubmitting || !username.trim() || !password
@@ -868,13 +868,7 @@ function LoginPageContent() {
                             startContent={
                               passwordSubmitting ? (
                                 <Spinner aria-label="登录中" size="sm" />
-                              ) : (
-                                <LogIn
-                                  aria-hidden="true"
-                                  className="h-4 w-4"
-                                  strokeWidth={1.75}
-                                />
-                              )
+                              ) : null
                             }
                             onPress={() => void handlePasswordLogin()}
                           >
@@ -924,7 +918,7 @@ function LoginPageContent() {
                             <span className="text-small text-default-500">点击按钮，用微信扫码完成登录，确认后会自动回到本页。</span>
                           </div>
                           {!isMobileShell() && (
-                            <Button className="qr-login-button w-full" color="primary" onPress={handleWechatLogin}>
+                            <Button className="qr-login-button login-action-button w-full" color="primary" onPress={handleWechatLogin}>
                               使用微信登录
                             </Button>
                           )}
@@ -933,9 +927,8 @@ function LoginPageContent() {
                               不再走微信开放平台 openid 独立建号。 */}
                           {isMobileShell() && (
                             <Button
-                              className="qr-login-button w-full"
+                              className="qr-login-button login-action-button w-full"
                               variant="flat"
-                              startContent={<LogIn aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />}
                               onPress={() => void startDeviceAuth()}
                             >
                               微信一键登录（九章账号）

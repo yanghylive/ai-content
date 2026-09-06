@@ -80,3 +80,6 @@ html,body,.bg-background,.login-preview-stack,.login-preview-hero{background:tra
    这里收字号到单行可容纳，并禁止 em 段内折行（<br> 已负责分行）。 */
 .login-preview-hero-copy h1{font-size:clamp(32px,3.4vw,54px)!important}
 .login-preview-hero-copy h1 em{white-space:nowrap;font-weight:800!important}
+
+/* 2026-09-07: 三种登录方式主按钮统一——去图标后字号统一加大一档 */
+.login-action-button{font-size:13px!important;font-weight:650!important;letter-spacing:.01em!important}
