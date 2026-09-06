@@ -472,7 +472,7 @@ export const XIcon = withPark(ParkClose);
 export const Zap = withPark(ParkLightning);
 
 /** 兼容类型：既有 Record<string, LucideIcon> 等用法平滑迁移 */
-export type LucideIcon = React.ComponentType<any>;
+export type LucideIcon = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
 /* ---------- 补充导出（外壳 ShellIcon 等需要的非 lucide 原名） ---------- */
 export const Message = withPark(ParkMessage);
