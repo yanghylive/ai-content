@@ -1,0 +1,25 @@
+# ✅ L1 vitest 前端单测（26 例）
+# commit: c859f28e
+# exit: 0
+# duration_ms: 6010
+# command: cd '/Users/yanghy/Documents/New project/ai-content/frontend' && npx vitest run --silent
+# 完整命令输出（未截断）：
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/yanghy/Documents/New project/ai-content/frontend[39m
+
+ [32m✓[39m src/app/(dashboard)/content/workspace/workspace-initial-action.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/publish-status.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/analytics/case-events.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/api/client.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m src/lib/sanitize-article-html.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 84[2mms[22m[39m
+ [32m✓[39m src/components/shell/tickers.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/components/shell/ai-assistant.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 59[2mms[22m[39m
+ [32m✓[39m src/app/(dashboard)/distribution/distribution-tasks.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 192[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m8 passed[39m[22m[90m (8)[39m
+[2m      Tests [22m [1m[32m58 passed[39m[22m[90m (58)[39m
+[2m   Start at [22m 21:07:02
+[2m   Duration [22m 5.23s[2m (transform 1.01s, setup 5.26s, import 5.85s, tests 441ms, environment 16.62s)[22m
+
+

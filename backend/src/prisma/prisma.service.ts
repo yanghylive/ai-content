@@ -88,6 +88,7 @@ export class PrismaService
     'activeAccountPath',
     'accountTablesCleared',
     'tenantOrgSynced',
+    'nullTenantLeadsClaimed',
     'resolveActiveClient',
     'runActiveTransaction',
     'registerStudioProjectOwner',
