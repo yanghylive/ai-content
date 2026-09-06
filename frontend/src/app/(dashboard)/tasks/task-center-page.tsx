@@ -1543,9 +1543,9 @@ export function TaskCenterPage() {
                 block: "start",
               });
             }}
-            className="min-w-0 rounded-[12px] border border-divider bg-background px-4 py-3 text-left shadow-[var(--kaypal-v3-shadow-1)] transition hover:border-[rgba(114,46,209,0.22)] hover:shadow-[var(--kaypal-v3-shadow-2)]"
+            className="kaypal-v3-panel min-w-0 px-4 py-3 text-left"
           >
-            <div className="truncate text-12 text-default-500">{card.label}</div>
+            <div className="truncate text-12 text-[var(--kaypal-v3-muted)]">{card.label}</div>
             <div
               className="mt-1 text-lg font-semibold leading-6"
               style={{ color: card.color }}

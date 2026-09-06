@@ -734,6 +734,52 @@
   /* 状态 Chip：细描边胶囊统一 999 圆角、去 heroui 色阶底 */
   .ops-v3 [data-slot="chip"] { border-radius: 999px !important; }
 
+  /* ===== 任务流水 Tabs → 系统分段胶囊（segmented）口径（2026-09-07）=====
+     原 HeroUI 下划线 tab 与全站「软底容器 + 白底浮起胶囊」的切换控件不一致 */
+  .ops-v3 [role="tablist"] {
+    border-bottom: 0 !important;
+    background: var(--kaypal-v3-paper-soft) !important;
+    border-radius: 12px !important;
+    padding: 4px !important;
+    gap: 2px !important;
+    margin-top: 12px !important;
+    width: fit-content;
+    max-width: 100%;
+  }
+  .ops-v3 [role="tablist"] [role="tab"] {
+    border: 0 !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    border-radius: 9px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: var(--kaypal-v3-soft-ink) !important;
+    background: transparent !important;
+    transition: all 0.15s ease-out;
+  }
+  .ops-v3 [role="tablist"] [role="tab"]:hover {
+    color: var(--kaypal-v3-ink) !important;
+    background: rgba(255, 255, 255, 0.6) !important;
+  }
+  .ops-v3 [role="tablist"] [role="tab"][aria-selected="true"] {
+    background: var(--kaypal-v3-paper) !important;
+    color: var(--kaypal-v3-accent-ink) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(42, 36, 56, 0.1), 0 1px 0 rgba(42, 36, 56, 0.04) !important;
+  }
+  /* 计数徽标：胶囊内小圆点，选中态品牌色 */
+  .ops-v3 [role="tablist"] [role="tab"] > span {
+    background: rgba(114, 46, 209, 0.08) !important;
+    color: var(--kaypal-v3-muted) !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+  }
+  .ops-v3 [role="tablist"] [role="tab"][aria-selected="true"] > span {
+    background: var(--kaypal-v3-accent-soft) !important;
+    color: var(--kaypal-v3-accent-ink) !important;
+  }
+
   /* ===== Ops 执行中心并入 kaypal-v3 主视觉(2026-09-03) =====
      仅作用于 .ops-v3 根(任务中心桌面视图),不影响 case-admin 等复用 Ops 的面。
      把 heroui default 灰蓝色板映射到主系统语义色,圆角 6→12、面板内边距增宽。 */
