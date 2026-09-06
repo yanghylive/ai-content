@@ -1,0 +1,49 @@
+# ❌ L4 Win 包平台资产严格检查（node.exe/chrome.exe/引擎，防交叉构建假绿）
+# commit: f7b5583d
+# exit: 1
+# duration_ms: 0
+# command: cd '/Users/yanghy/Documents/New project/ai-content/desktop' && node scripts/check-package-contents.js --dir '/Users/yanghy/Documents/New project/ai-content/desktop/dist' --win-only
+# 完整命令输出（未截断）：
+
+═══ 安装包内容完整性检查（/Users/yanghy/Documents/New project/ai-content/desktop/dist）═══
+
+（--win-only：跳过 Mac 包检查）
+[asar] 顶层 13 项: /auto-updater.js /cloud-api.js /credential-key-store.js /hover-ball.html /local-bridge.js /main.js /package.json /preload-hoverball.js /preload.js /sqlite-empty-template.js /tab-strip-preload.js /tab-strip.html /workspace-tabs.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 cloud-api.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 sqlite-empty-template.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 credential-key-store.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 local-bridge.js
+❌ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 user-data-path.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 auto-updater.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 workspace-tabs.js
+❌ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 browser-panel-manager.js
+❌ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 browser-broker-wiring.js
+❌ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 browser-panel-bridge-runtime.js
+❌ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 browser-panel-ipc.js
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) backend 内置 sharp
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) backend 内置 detect-libc
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) backend 内置 semver
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) backend 内置 @img/sharp-darwin-arm64
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) backend 内置 @img/sharp-libvips-darwin-arm64
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) backend 内置 @img/sharp-win32-x64
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) backend 内置 @img/sharp-libvips-win32-x64
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) backend 无本地运行时数据
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) 内置 playwright chromium
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) Prisma 引擎 — query_engine-windows.dll.node
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) Prisma Windows 引擎 — query_engine-windows.dll.node
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) 不得混入 darwin 引擎（平台互斥，混入 = 交叉构建资源串包） — query_engine-windows.dll.node
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) 内置 Octop sidecar 目录
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) Octop entry.sh
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) Octop entry.bat
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) Octop venv python
+✅ Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) Octop playwright browsers
+
+❌ 5 项失败：
+  Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 user-data-path.js
+  Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 browser-panel-manager.js
+  Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 browser-broker-wiring.js
+  Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 browser-panel-bridge-runtime.js
+  Win(JIUZHANG AI 内容创作平台 Setup 1.1.115.exe) asar 含 main.js 依赖 browser-panel-ipc.js
+
+
+[exit 1]

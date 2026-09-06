@@ -1,0 +1,24 @@
+# ❌ L3 防复发守卫 R1-R4
+# commit: f7b5583d
+# exit: 1
+# duration_ms: 15527
+# command: cd '/Users/yanghy/Documents/New project/ai-content' && REGRESSION_FRONTEND_URL=http://127.0.0.1:3010 node --experimental-sqlite scripts/ci/mobile-regression-guard.mjs
+# 完整命令输出（未截断）：
+
+=== 真机回归守卫 ===
+前端: http://127.0.0.1:3010
+API: http://127.0.0.1:3011/api
+模式: 自起独立后端（临时 SQLite 库）
+已自起后端: http://127.0.0.1:3199/api
+❌ R1 建表完整性：167 张表全部存在 — 缺失: account_touch_quotas
+✅ R2 权限放开：member 创建获客 → HTTP 201（非 403）
+✅ R3 BigInt 序列化：/comment-acquisition/leads → HTTP 200
+✅ R4 关键路由静态页无 404（6 个路由）
+已停止自起后端
+
+(node:42858) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+✗ 真机回归守卫未通过（1 处问题）
+
+[exit 1]

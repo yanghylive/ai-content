@@ -1,0 +1,8 @@
+# ✅ L2 前端产物无 _next/image 残留（桌面端图标 404 坑）
+# commit: f7b5583d
+# exit: 0
+# duration_ms: 12
+# command: grep -rc "_next/image" /Users/yanghy/Documents/New project/ai-content/frontend/out/ 2>/dev/null | grep -v ":0" | head -3 || true
+# 完整命令输出（未截断）：
+
+(无输出)

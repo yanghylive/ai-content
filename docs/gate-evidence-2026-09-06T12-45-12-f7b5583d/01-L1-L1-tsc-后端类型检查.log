@@ -1,0 +1,8 @@
+# ✅ L1 tsc 后端类型检查
+# commit: f7b5583d
+# exit: 0
+# duration_ms: 3081
+# command: cd '/Users/yanghy/Documents/New project/ai-content/backend' && ./node_modules/.bin/tsc --noEmit -p tsconfig.json
+# 完整命令输出（未截断）：
+
+(无输出)
