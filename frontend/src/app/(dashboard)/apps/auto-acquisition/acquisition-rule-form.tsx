@@ -1069,11 +1069,6 @@ export function AcquisitionRuleForm() {
       <V2Section
         title="第 1 步：场景和客户类型"
         description="选择一个常见场景，自动帮你预填平台、关键词和话术；也可新增自己的行业"
-        action={
-          <V2GhostButton icon={Plus} onClick={() => setShowCustomForm((v) => !v)}>
-            {showCustomForm ? "收起新增" : "新增自定义行业"}
-          </V2GhostButton>
-        }
       >
         <div className="flex items-end gap-2">
           <div className="min-w-0 flex-1 sm:max-w-[360px]">
@@ -1081,6 +1076,10 @@ export function AcquisitionRuleForm() {
               <V2Select
                 value={form.scene}
                 onChange={(e) => {
+                  if (e.target.value === "__add_custom__") {
+                    setShowCustomForm(true);
+                    return;
+                  }
                   const picked = allScenarios.find(
                     (item) => item.value === e.target.value,
                   );
@@ -1117,6 +1116,10 @@ export function AcquisitionRuleForm() {
                     {value.startsWith("custom-") ? "（自定义）" : ""}
                   </option>
                 ))}
+                {/* 新增自定义行业：放在所有场景最下面，选中即展开表单（不改变当前场景） */}
+                <option value="__add_custom__">
+                  ＋ 新增自定义行业…
+                </option>
               </V2Select>
             </V2Field>
           </div>
