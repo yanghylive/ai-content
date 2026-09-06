@@ -298,14 +298,13 @@ export class CommentAcquisitionService {
           status = 'pending';
         } else {
           // 低风险自动审批留痕（autoApprovedAt 写入 notes，审计可复验）
+          // 2026-09-06 复核 P1-1：先原子认领历史 NULL 线索，再严格按租户操作
+          await this.claimLegacyLeadTenant(leadId, scope.userId, scope.tenantId);
           await this.prisma.lead.updateMany({
             where: {
               id: leadId,
               userId: scope.userId,
-              // 2026-09-06 修复：tenantId 漂移 → OR 宽容匹配（同 assertReplyLead）
-              ...(scope.tenantId
-                ? { OR: [{ tenantId: scope.tenantId }, { tenantId: null }] }
-                : {}),
+              ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
             },
             data: {
               status: 'approved',
@@ -582,14 +581,12 @@ export class CommentAcquisitionService {
         } else if (circuit.open) {
           status = 'pending';
         } else {
+          await this.claimLegacyLeadTenant(leadId, scope.userId, scope.tenantId);
           await this.prisma.lead.updateMany({
             where: {
               id: leadId,
               userId: scope.userId,
-              // 2026-09-06 修复：tenantId 漂移 → OR 宽容匹配（同 assertReplyLead）
-              ...(scope.tenantId
-                ? { OR: [{ tenantId: scope.tenantId }, { tenantId: null }] }
-                : {}),
+              ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
             },
             data: {
               status: 'approved',
@@ -882,14 +879,12 @@ export class CommentAcquisitionService {
   ): Promise<{ status: string }> {
     const scope = await this.resolveScope();
     const status = input.action === 'approve' ? 'approved' : 'skipped';
+    await this.claimLegacyLeadTenant(leadId, scope.userId, scope.tenantId);
     const result = await this.prisma.lead.updateMany({
       where: {
         id: leadId,
         userId: scope.userId,
-        // 2026-09-06 修复：tenantId 漂移（组织关系回补后 null↔有值）→ OR 宽容
-        ...(scope.tenantId
-          ? { OR: [{ tenantId: scope.tenantId }, { tenantId: null }] }
-          : {}),
+        ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
       },
       data: {
         status,
@@ -974,6 +969,27 @@ export class CommentAcquisitionService {
   }
 
   /**
+   * 2026-09-06 复核 P1-1：历史线索 tenantId=NULL 的原子认领。
+   * 组织关系回补后旧线索 tenantId 仍是 NULL。若用 OR 宽容匹配（tenantId 或
+   * NULL 都算），同一用户多租户场景下任一租户都能操作 NULL 线索且不写回，
+   * 线索持续跨租户可见。改为：首次被某租户操作时用原子条件把 NULL 认领到
+   * 当前租户（仅当 tenantId 仍为 NULL 时），之后严格按租户隔离。
+   * 返回是否认领成功（false=已被其他租户认领或无需认领）。
+   */
+  private async claimLegacyLeadTenant(
+    leadId: string,
+    userId: string,
+    tenantId: string | null,
+  ): Promise<boolean> {
+    if (!tenantId) return false;
+    const r = await this.prisma.lead.updateMany({
+      where: { id: leadId, userId, tenantId: null },
+      data: { tenantId },
+    });
+    return r.count > 0;
+  }
+
+  /**
    * 回复前的最终授权门禁：线索必须属于当前用户/租户、来自同一平台账号，
    * 且已经明确审核通过。扫描参数和前端状态都不构成发送授权。
    */
@@ -991,28 +1007,49 @@ export class CommentAcquisitionService {
     commentRef: string | null;
     sourceType?: string | null;
   }> {
-    const lead = await this.prisma.lead.findFirst({
+    const replyLeadSelect = {
+      status: true,
+      latestReply: true,
+      commentRef: true,
+      sourceText: true,
+      sourceType: true,
+    } as const;
+    let lead = await this.prisma.lead.findFirst({
       where: {
         id: leadId,
         userId: scope.userId,
-        // 2026-09-06 修复：tenantId 漂移 → OR 宽容匹配
-        ...(scope.tenantId
-          ? { OR: [{ tenantId: scope.tenantId }, { tenantId: null }] }
-          : {}),
+        // 2026-09-06 复核 P1-1：严格按租户过滤（不再 OR 宽容 NULL）。
+        // 历史 NULL 线索在下方经 claimLegacyLeadTenant 原子认领后重查。
+        ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
         platform: input.platform,
         sourceAccountId: String(input.accountId),
         // 2026-08-20 修复：对齐列表查询（559 行）——私信线索 sourceType='dm'，
         // 硬编码 'comment' 会导致私信回复永远查不到线索
         sourceType: { in: ['comment', 'dm'] },
       },
-      select: {
-        status: true,
-        latestReply: true,
-        commentRef: true,
-        sourceText: true,
-        sourceType: true,
-      },
+      select: replyLeadSelect,
     });
+    if (!lead && scope.tenantId) {
+      // 严格查不到 → 尝试原子认领历史 NULL 线索，认领成功后再严格查一次
+      const claimed = await this.claimLegacyLeadTenant(
+        leadId,
+        scope.userId,
+        scope.tenantId,
+      );
+      if (claimed) {
+        lead = await this.prisma.lead.findFirst({
+          where: {
+            id: leadId,
+            userId: scope.userId,
+            tenantId: scope.tenantId,
+            platform: input.platform,
+            sourceAccountId: String(input.accountId),
+            sourceType: { in: ['comment', 'dm'] },
+          },
+          select: replyLeadSelect,
+        });
+      }
+    }
     if (!lead) {
       throw new NotFoundException('线索不存在或无权操作');
     }

@@ -1015,3 +1015,103 @@ describe('CommentAcquisitionService 私信获客', () => {
     expect(executorMock.dispatch).not.toHaveBeenCalled();
   });
 });
+
+describe('CommentAcquisitionService 租户隔离（A/B 互斥，复核 P1-1）', () => {
+  let service: CommentAcquisitionService;
+  let authMock: { get: jest.Mock; resolveTenantId: jest.Mock };
+
+  const prismaMock = {
+    $executeRawUnsafe: jest.fn(),
+    $executeRaw: jest.fn(),
+    $queryRaw: jest.fn(),
+    sql: jest.fn(),
+    empty: jest.fn(),
+    publishAccount: { findFirst: jest.fn().mockResolvedValue({ id: 'acc-1' }) },
+    lead: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
+  };
+  const executorMock = { dispatch: jest.fn(), replyComment: jest.fn() };
+  const xhsMock = { readComments: jest.fn(), replyComment: jest.fn() };
+  const replyEngineMock = {
+    scoreLeadPotential: jest.fn().mockReturnValue({ score: 50, signals: [] }),
+    generateReply: jest.fn().mockResolvedValue({
+      replyText: 'ok', personaId: 'x', personaName: 'x', retries: 0,
+    }),
+    isHighRisk: jest.fn().mockReturnValue(false),
+  };
+  const leadRepositoryMock = {
+    upsert: jest.fn().mockResolvedValue({
+      lead: { id: 'lead-1', userId: 'u1', tenantId: null, dedupeKey: 'lead:mock' },
+      created: true,
+    }),
+    updateReplyStatus: jest.fn().mockResolvedValue(undefined),
+    findRepliedByDedupeKey: jest.fn().mockResolvedValue(null),
+  };
+  const interactionRegistryMock = { resolve: jest.fn() };
+  const discoveryRunnerMock = { run: jest.fn() };
+  const quotaMock = { canTouch: jest.fn().mockResolvedValue({ ok: true }) };
+  const autoUploadMock = { readDouyinMessages: jest.fn() };
+
+  async function build(tenantId: string) {
+    authMock = {
+      get: jest.fn(() => ({ user: { id: 'u1', kaypalLocalOnly: false } })),
+      resolveTenantId: jest.fn().mockResolvedValue(tenantId),
+    };
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        CommentAcquisitionService,
+        { provide: PrismaService, useValue: prismaMock },
+        { provide: AuthRequestContextService, useValue: authMock },
+        { provide: AutoUploadService, useValue: autoUploadMock },
+        { provide: PlatformInteractionExecutor, useValue: executorMock },
+        { provide: XiaohongshuInteractionExecutor, useValue: xhsMock },
+        { provide: ReplyEngineService, useValue: replyEngineMock },
+        { provide: LeadRepository, useValue: leadRepositoryMock },
+        { provide: InteractionAdapterRegistry, useValue: interactionRegistryMock },
+        { provide: DiscoveryBrowserRunner, useValue: discoveryRunnerMock },
+        { provide: AccountTouchQuotaService, useValue: quotaMock },
+        {
+          provide: InteractionEventStore,
+          useValue: {
+            fromInteractionItem: jest.fn(),
+            ingest: jest.fn().mockResolvedValue({ event: { id: 'event-test' } }),
+          },
+        },
+      ],
+    }).compile();
+    return moduleRef.get(CommentAcquisitionService);
+  }
+
+  it('A 租户原子认领 NULL 线索后严格操作成功（认领写入 tenantId）', async () => {
+    const tenantA = 'tenant-A';
+    // 认领（where.tenantId === null）返回 count=1，严格操作（tenantId=tenantA）返回 count=1
+    prismaMock.lead.updateMany.mockImplementation((args: { where: { tenantId?: string | null } }) => {
+      if (args.where.tenantId === null) return Promise.resolve({ count: 1 });
+      if (args.where.tenantId === tenantA) return Promise.resolve({ count: 1 });
+      return Promise.resolve({ count: 0 });
+    });
+    const svc = await build(tenantA);
+    const result = await svc.reviewLead('lead-1', { action: 'approve' });
+    expect(result.status).toBe('approved');
+    // 认领 + 严格操作各一次
+    expect(prismaMock.lead.updateMany).toHaveBeenCalledTimes(2);
+    expect(prismaMock.lead.updateMany).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ where: { id: 'lead-1', userId: 'u1', tenantId: null } }),
+    );
+  });
+
+  it('B 租户操作已被 A 认领的线索 → 认领失败且严格操作落空 → 拒绝', async () => {
+    const tenantB = 'tenant-B';
+    // 认领（where.tenantId===null）count=0（已被 A 认领），严格操作（tenantId=B）count=0
+    prismaMock.lead.updateMany.mockImplementation(() => Promise.resolve({ count: 0 }));
+    const svc = await build(tenantB);
+    await expect(svc.reviewLead('lead-1', { action: 'approve' })).rejects.toThrow(
+      '线索不存在或无权操作',
+    );
+  });
+});
