@@ -86,6 +86,10 @@ export interface InteractionSendInput {
   contentUrl?: string;
   /** 搜索关键词（小红书从搜索页点击进详情页必需） */
   keyword?: string;
+  /** 2026-09-06 复核 P0：私信稳定身份，全链透传用于精确目标匹配（防同文发错人） */
+  messageId?: string | null;
+  senderId?: string | null;
+  conversationId?: string | null;
 }
 
 /** 发送结果（统一 status 枚举） */

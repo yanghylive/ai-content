@@ -690,6 +690,9 @@ export class CommentAcquisitionService {
             accountId: input.accountId,
             commentText: message.text,
             replyText,
+            messageId: message.messageId,
+            senderId: message.senderId,
+            conversationId: message.conversationId,
           });
           if (sent) {
             replies += 1;
@@ -738,6 +741,10 @@ export class CommentAcquisitionService {
       contentUrl?: string;
       /** 搜索关键词（小红书从搜索页点击进详情页必需） */
       keyword?: string;
+      /** 2026-09-06 复核 P0：私信稳定身份，透传给发送执行器精确匹配目标 */
+      messageId?: string | null;
+      senderId?: string | null;
+      conversationId?: string | null;
     },
     scope?: { tenantId: string | null; userId: string },
     circuitKey?: string,
@@ -836,6 +843,9 @@ export class CommentAcquisitionService {
           contentUrl: input.contentUrl,
           keyword: input.keyword,
           replyText,
+          messageId: input.messageId ?? null,
+          senderId: input.senderId ?? null,
+          conversationId: input.conversationId ?? null,
         })) ?? {
           status: 'failed' as const,
           message: '该平台未实现回复能力',

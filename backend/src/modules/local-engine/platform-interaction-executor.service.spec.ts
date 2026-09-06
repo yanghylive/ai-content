@@ -626,6 +626,66 @@ describe('PlatformInteractionExecutor', () => {
     );
   });
 
+  it('fails closed when messageId provided but scan does not match it（P0 复核）', async () => {
+    const page = {
+      context: jest.fn().mockReturnValue({}),
+      url: jest
+        .fn()
+        .mockReturnValue(
+          'https://creator.douyin.com/creator-micro/data/following/chat',
+        ),
+      evaluate: jest.fn().mockResolvedValue(null),
+      waitForTimeout: jest.fn().mockResolvedValue(undefined),
+      mouse: { click: jest.fn().mockResolvedValue(undefined) },
+      keyboard: {
+        press: jest.fn().mockResolvedValue(undefined),
+        insertText: jest.fn().mockResolvedValue(undefined),
+      },
+    };
+    const executor = new PlatformInteractionExecutor({} as any, {} as any);
+    jest
+      .spyOn(executor as any, 'installDouyinImRouteCapture')
+      .mockResolvedValue({ patterns: [], handler: jest.fn(), captures: [] });
+    jest
+      .spyOn(executor as any, 'detachDouyinImRouteCapture')
+      .mockResolvedValue(undefined);
+    jest
+      .spyOn(executor as any, 'installDouyinImWindowCapture')
+      .mockResolvedValue(undefined);
+    jest
+      .spyOn(executor as any, 'pageContainsInteractionTarget')
+      .mockResolvedValue(false);
+    jest
+      .spyOn(executor as any, 'openDouyinMessagePage')
+      .mockResolvedValue(undefined);
+    jest.spyOn(executor as any, 'scanDouyinMessageTabs').mockResolvedValue({
+      messages: [
+        { text: '你好啊', messageId: 'msg-other', source: 'message-row' },
+      ],
+      totalCandidates: 1,
+    });
+    jest
+      .spyOn(executor as any, 'collectDouyinImWindowCapture')
+      .mockResolvedValue({});
+
+    const result = await (executor as any).performDouyinMessageInteraction(
+      page,
+      {
+        platform: 'douyin',
+        taskType: 'direct-message-reply',
+        action: 'send',
+        accountId: 1,
+        targetText: '你好啊',
+        replyText: '你好',
+        messageId: 'msg-target',
+      },
+    );
+
+    // 有稳定 messageId 但扫描匹配不到 → fail-closed，不点击、不发送
+    expect(result.status).toBe('message_missing');
+    expect(page.mouse.click).not.toHaveBeenCalled();
+  });
+
   it('treats Douyin comment scans as matched when the target name is visible', () => {
     const executor = new PlatformInteractionExecutor({} as any, {} as any);
     const result = (executor as any).douyinCommentScanHasTarget(

@@ -76,6 +76,10 @@ export type PlatformDispatchInput = {
   engagementScore?: number;
   commentMode?: 'reply' | 'video-comment';
   replyText: string;
+  /** 2026-09-06 复核 P0：私信稳定身份，精确匹配目标（防同文发错人），无精确目标 fail-closed */
+  messageId?: string | null;
+  senderId?: string | null;
+  conversationId?: string | null;
 };
 
 export type PlatformDispatchResult = {
@@ -2376,7 +2380,23 @@ export class PlatformInteractionExecutor {
         10,
         input.targetText,
         input.targetName || '',
+        input.messageId || '',
       );
+      // 2026-09-06 复核 P0：私信有稳定 messageId 时，必须精确匹配到对应消息才
+      // 允许回复；匹配不到则 fail-closed 中止，避免两条同文本私信回复到错误对象。
+      if (input.messageId) {
+        const matchedById = (scanResult.messages || []).some(
+          (m) =>
+            typeof m?.messageId === 'string' &&
+            m.messageId === String(input.messageId),
+        );
+        if (!matchedById) {
+          return {
+            status: 'message_missing',
+            message: `未在私信页精确匹配到消息 ${input.messageId}，为避免回复错误对象已中止`,
+          };
+        }
+      }
       await this.collectDouyinImWindowCapture(page, trace, 10);
       const loadBlocked = this.douyinMessageLoadBlockedSummary(scanResult);
       if (loadBlocked && !(scanResult.messages || []).length) {
@@ -3141,6 +3161,7 @@ export class PlatformInteractionExecutor {
     limit = 10,
     targetText = '',
     targetName = '',
+    targetMessageId = '',
   ): Promise<DouyinMessageScan> {
     const tabs = ['全部', '朋友私信', '陌生人私信'];
     const scannedTabs: Array<Record<string, any>> = [];
@@ -3215,8 +3236,13 @@ export class PlatformInteractionExecutor {
         loading: settled?.visibleLoaders || 0,
       });
       if (
-        (target || targetContact) &&
-        this.douyinMessageScanHasTarget(scan, target, targetContact)
+        (target || targetContact || targetMessageId) &&
+        this.douyinMessageScanHasTarget(
+          scan,
+          target,
+          targetContact,
+          targetMessageId,
+        )
       ) {
         scan.scannedTabs = scannedTabs;
         return scan;
@@ -3280,9 +3306,19 @@ export class PlatformInteractionExecutor {
     scan: { messages?: Array<Record<string, any>> } | null | undefined,
     targetText: string,
     targetName = '',
+    targetMessageId = '',
   ): boolean {
     const target = this.normalizeInteractionText(targetText);
     const contactTarget = this.normalizeInteractionText(targetName);
+    // 2026-09-06 复核 P0：有稳定 messageId 时优先精确匹配 ID，不退回文本匹配
+    //（防止两条同文本私信定位到错误对象）。
+    if (targetMessageId) {
+      return Boolean(
+        scan?.messages?.some(
+          (item) => String(item?.messageId || '') === String(targetMessageId),
+        ),
+      );
+    }
     if (!target && !contactTarget) return Boolean(scan?.messages?.length);
     return Boolean(
       scan?.messages?.some((item) => {
