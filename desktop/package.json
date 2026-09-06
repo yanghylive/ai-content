@@ -85,6 +85,8 @@
       "browser-agent-bridge-server.js",
       "browser-control-strip.html",
       "browser-control-strip-preload.js",
+      "browser-control-pill.html",
+      "browser-control-pill-preload.js",
       "browser-panel-gutter.html",
       "browser-approval-overlay.html",
       "browser-approval-overlay-preload.js",
