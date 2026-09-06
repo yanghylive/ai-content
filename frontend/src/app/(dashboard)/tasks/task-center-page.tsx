@@ -1543,7 +1543,7 @@ export function TaskCenterPage() {
                 block: "start",
               });
             }}
-            className="min-w-0 rounded-[12px] border border-divider bg-background px-4 py-3 text-left transition hover:border-[var(--kaypal-v3-brand-border)] hover:shadow-sm"
+            className="min-w-0 rounded-[12px] border border-divider bg-background px-4 py-3 text-left shadow-[var(--kaypal-v3-shadow-1)] transition hover:border-[rgba(114,46,209,0.22)] hover:shadow-[var(--kaypal-v3-shadow-2)]"
           >
             <div className="truncate text-12 text-default-500">{card.label}</div>
             <div
@@ -1588,7 +1588,7 @@ export function TaskCenterPage() {
                   block: "start",
                 });
               }}
-              className="min-w-0 rounded-[12px] border border-warning-200 bg-warning-50/60 px-4 py-3 text-left transition hover:border-[var(--kaypal-v3-amber)]"
+              className="min-w-0 rounded-[12px] border border-warning-200 bg-warning-50/60 px-4 py-3 text-left shadow-[var(--kaypal-v3-shadow-1)] transition hover:border-[var(--kaypal-v3-amber)] hover:shadow-[var(--kaypal-v3-shadow-2)]"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-13 font-semibold text-default-700">
@@ -1615,7 +1615,7 @@ export function TaskCenterPage() {
                   block: "start",
                 });
               }}
-              className="min-w-0 rounded-[12px] border border-danger-200 bg-danger-50/60 px-4 py-3 text-left transition hover:border-[var(--kaypal-v3-danger)]"
+              className="min-w-0 rounded-[12px] border border-danger-200 bg-danger-50/60 px-4 py-3 text-left shadow-[var(--kaypal-v3-shadow-1)] transition hover:border-[var(--kaypal-v3-danger)] hover:shadow-[var(--kaypal-v3-shadow-2)]"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-13 font-semibold text-default-700">
@@ -1632,7 +1632,7 @@ export function TaskCenterPage() {
           ) : null}
         </div>
       ) : !loading && !error ? (
-        <div className="rounded-[12px] border border-success-200 bg-success-50/50 px-4 py-2.5 text-12 text-default-600">
+        <div className="rounded-[12px] border border-success-200 bg-success-50/50 px-4 py-2.5 text-12 text-default-600 shadow-[var(--kaypal-v3-shadow-1)]">
           ✓ 没有需要你处理的事项，
           {runningCount > 0
             ? `${runningCount} 个任务正在运行。`

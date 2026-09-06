@@ -742,7 +742,15 @@
     border-color: var(--kaypal-v3-border) !important;
     background: var(--kaypal-v3-panel) !important;
     border-radius: var(--kaypal-v3-radius) !important;
-    box-shadow: none !important;
+    /* 2026-09-07：与 kaypal-v3-panel 卡片同款柔和投影（原 none 导致整页卡片
+       平贴在背景上，与 CRM/消息页质感不一致）；hover 抬升对齐主系统 */
+    box-shadow: var(--kaypal-v3-shadow-1) !important;
+    transition: border-color 180ms ease-out, box-shadow 180ms ease-out;
+  }
+  .ops-v3 section[class*="border"]:hover,
+  .ops-v3 .ops-form-scope:hover {
+    border-color: rgba(114, 46, 209, 0.22) !important;
+    box-shadow: var(--kaypal-v3-shadow-2) !important;
   }
   .ops-v3 [class*="border-b"],
   .ops-v3 [class*="border-divider"] {
