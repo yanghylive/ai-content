@@ -64,6 +64,23 @@ export class CommentAcquisitionController {
     });
   }
 
+  @Get('leads/ambiguous-tenant')
+  @ApiOperation({
+    summary: '多租户归属歧义的 NULL 线索（管理员处理入口）',
+  })
+  listAmbiguousTenantLeads() {
+    return this.commentAcquisitionService.listAmbiguousTenantLeads();
+  }
+
+  @Post('leads/:id/claim-tenant')
+  @ApiOperation({ summary: '管理员手动把歧义线索认领到指定租户' })
+  claimLeadToTenant(
+    @Param('id') id: string,
+    @Body() dto: { tenantId: string },
+  ) {
+    return this.commentAcquisitionService.claimLeadToTenant(id, dto.tenantId);
+  }
+
   @Post('leads/:id/review')
   @ApiOperation({ summary: '人工审核：通过待回复 / 跳过' })
   reviewLead(

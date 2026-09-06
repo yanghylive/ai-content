@@ -17,6 +17,34 @@ const { setupAutoUpdater, checkForUpdates, quitAndInstall, destroy: destroyUpdat
 // 修复 macOS PATH 问题
 fixPath();
 
+/**
+ * 2026-09-06 复核 P2-3：清理从父进程（WorkBuddy/Codex/IDE）继承的第三方凭据环境变量。
+ * 桌面端只应继承系统基础变量 + 自己管理的 KAYPAL_ / AI_CONTENT_ / DATABASE_URL，
+ * 不应继承父进程的第三方 API key（如 MAYNOR1024_API_KEY / DASHSCOPE_API_KEY），
+ * 否则这些 key 会随 spawn 的子进程（backend / agent-s）继续泄露，破坏最小权限。
+ */
+function sanitizeInheritedEnv() {
+  const keepWhole = new Set([
+    'HOME', 'PATH', 'USER', 'LOGNAME', 'SHELL', 'LANG', 'LC_ALL', 'LC_CTYPE',
+    'TMPDIR', 'TMP', 'TEMP', 'TERM', 'COLORTERM', 'PWD', 'OLDPWD', 'SHLVL',
+    'HOST', 'HOSTNAME', 'DISPLAY', 'SSH_AUTH_SOCK', 'SSL_CERT_FILE',
+    'NODE_ENV', 'NODE_EXE', 'NODE_OPTIONS', 'PORT', 'DATABASE_URL',
+    'SQLITE_DATABASE_URL', '_', 'ZSH', 'ZSH_VERSION', 'PAGER', 'EDITOR',
+  ]);
+  const keepPrefix = /^(KAYPAL_|AI_CONTENT_|ELECTRON_|NVM_|NODE_|npm_|YARN_|APP_)/;
+  for (const key of Object.keys(process.env)) {
+    if (keepWhole.has(key) || keepPrefix.test(key)) continue;
+    // 第三方凭据特征：名字含 KEY/TOKEN/SECRET/PASSWORD/CREDENTIAL，或第三方厂商前缀
+    if (
+      /(^|_)(API_KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|KEY|PRIVATE_KEY)$/i.test(key) ||
+      /^(OPENAI|ANTHROPIC|GEMINI|GOOGLE|AZURE|MAYNOR|DASHSCOPE|ALIYUN|AWS|GITHUB|GITLAB|HUGGING|COHERE|MISTRAL|DEEPSEEK|MOONSHOT|ZHIPU|QWEN|MINIMAX|CLAUDE|TAVILY|SERPAPI|PERPLEXITY|GROQ|XAI|BYTEDANCE|VOLC)/i.test(key)
+    ) {
+      delete process.env[key];
+    }
+  }
+}
+sanitizeInheritedEnv();
+
 function configureStableUserDataPath() {
   // round14（stage14 实锤）：打包版 userData 默认落 productName 目录（macOS =
   // `~/Library/Application Support/JIUZHANG AI 内容创作平台/`，Info.plist

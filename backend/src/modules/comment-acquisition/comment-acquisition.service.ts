@@ -974,6 +974,80 @@ export class CommentAcquisitionService {
     return { items, total };
   }
 
+  /**
+   * 2026-09-06 复核 P2：列出多租户归属歧义的 NULL 线索（管理员处理入口）。
+   * 这些线索 tenantId=NULL 且其 user 属于多个租户，启动迁移无法自动认领，
+   * 普通 listLeads 又严格按 tenant 过滤导致对所有租户都不可见。此处不按
+   * 当前租户过滤，直接列出待人工指定归属的线索。
+   */
+  async listAmbiguousTenantLeads(): Promise<{
+    items: Array<{
+      id: string;
+      userId: string;
+      sourceText: string;
+      platform: string;
+      sourceType: string;
+      createdAt: string;
+    }>;
+    total: number;
+  }> {
+    const rows = await this.prisma.$queryRawUnsafe<
+      Array<{
+        id: string;
+        user_id: string;
+        source_text: string;
+        platform: string;
+        source_type: string;
+        created_at: string;
+      }>
+    >(`
+      SELECT l.id, l.user_id, l.source_text, l.platform, l.source_type, l.created_at
+      FROM leads l
+      WHERE l.tenant_id IS NULL
+        AND l.user_id IN (
+          SELECT user_id FROM tenant_members
+          GROUP BY user_id
+          HAVING COUNT(DISTINCT tenant_id) > 1
+        )
+      ORDER BY l.created_at DESC
+    `);
+    const items = rows.map((r) => ({
+      id: r.id,
+      userId: r.user_id,
+      sourceText: r.source_text ?? '',
+      platform: r.platform,
+      sourceType: r.source_type ?? 'dm',
+      createdAt: r.created_at,
+    }));
+    return { items, total: items.length };
+  }
+
+  /**
+   * 2026-09-06 复核 P2：管理员手动把歧义线索认领到指定租户。
+   * 只允许认领到「该线索 user 确实所属」的租户（tenant_members 有归属记录），
+   * 防止误认领到无关租户。
+   */
+  async claimLeadToTenant(
+    leadId: string,
+    targetTenantId: string,
+  ): Promise<{ ok: boolean }> {
+    const result = await this.prisma.$executeRaw`
+      UPDATE leads
+      SET tenant_id = ${targetTenantId}, updated_at = ${new Date()}
+      WHERE id = ${leadId}
+        AND tenant_id IS NULL
+        AND user_id IN (
+          SELECT user_id FROM tenant_members WHERE tenant_id = ${targetTenantId}
+        )
+    `;
+    if (result !== 1) {
+      throw new NotFoundException(
+        '线索不存在、已认领，或目标租户与该线索用户无归属关系',
+      );
+    }
+    return { ok: true };
+  }
+
   /** 人工审核：通过 → 待回复；跳过 */
   async reviewLead(
     leadId: string,
