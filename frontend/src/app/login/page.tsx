@@ -16,6 +16,8 @@ import { authApi, kaypalApi, type AuthUser } from "@/lib/api/auth";
 import { ApiError, getApiBase } from "@/lib/api/client";
 import { toPublicError, toActionableError } from "@/lib/public-error";
 import { isMobileShell } from "@/lib/mobile-bridge";
+import LoginRuntime from "./login-runtime";
+import "./login-custom.css";
 
 const KAYPAL_DEVICE_AUTH_STATE_KEY = "kaypal_device_auth_state_v1";
 
@@ -1108,8 +1110,12 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<LoginPageFallback />}>
-      <LoginPageContent />
-    </Suspense>
+    <>
+      {/* 登录页运行时定制：背景透明化 + 弹窗拦截兜底（见 login-runtime.tsx） */}
+      <LoginRuntime />
+      <Suspense fallback={<LoginPageFallback />}>
+        <LoginPageContent />
+      </Suspense>
+    </>
   );
 }

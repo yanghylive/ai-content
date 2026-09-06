@@ -1,0 +1,76 @@
+/* 登录页定制样式（2026-09-06 从部署产物迁入源码）
+   原为 out/login.html 内联 <style>，重新构建会丢失；现随源码构建。
+   覆盖对象：NextUI/主 CSS 的登录页默认外观 → 浅色人物插画方案 + 窄屏自适应 */
+/* ===== 布局：登录卡左、场景右 ===== */
+.login-preview-grid{grid-template-columns:minmax(390px,.52fr) minmax(0,1.48fr)!important;align-items:center!important;min-height:100svh!important}
+.login-preview-hero{align-self:stretch!important;order:9999!important}
+.login-preview-card{order:1!important;padding:20px!important;max-width:400px!important;width:calc(100% - 48px)!important;align-self:center!important;justify-self:center!important;margin:24px!important;height:auto!important}
+.login-preview-card-inner{gap:16px!important}
+.login-preview-card-head{gap:10px!important}
+.login-preview-card h2{text-wrap:balance!important;word-break:keep-all!important}
+@media(max-width:1180px){.login-preview-grid{grid-template-columns:390px minmax(0,1fr)!important}}
+@media(max-width:560px){.login-preview-grid{grid-template-columns:minmax(250px,58%) minmax(0,1fr)!important}}
+
+/* ===== 背景：整页铺人物插画，去掉所有暗底与氛围层 ===== */
+html,body,.bg-background,.login-preview-stack,.login-preview-hero{background:transparent!important;background-color:transparent!important;--tw-bg-opacity:0!important}
+.login-preview{background-image:url(/brand/login-bg-welcome.png)!important;background-repeat:no-repeat!important;background-size:cover!important;background-position:78% 18%!important;background-attachment:fixed!important;background-color:#f4f1fa!important}
+.login-preview-hero-scene{background-image:none!important;background-color:transparent!important}
+.login-preview-hero-scene:after,.login-preview-hero:before{display:none!important}
+.login-preview-hero-scene>span{display:none!important}
+
+/* ===== 文字：浅色底上的干净深墨方案，无重阴影 ===== */
+.login-title{word-break:keep-all!important}
+.login-preview-hero-copy h1{color:#171221!important;text-shadow:none!important}
+.login-preview-hero-copy em{color:#853fdc!important}
+.login-preview-hero-copy p{color:rgba(27,20,36,.78)!important;opacity:1!important;text-shadow:none!important}
+.preview-kicker,.preview-credit{align-self:flex-start;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.78)!important;border:1px solid rgba(27,20,36,.07);text-shadow:none!important;box-shadow:0 6px 18px rgba(29,19,40,.06)}
+.preview-kicker{color:#722ed1!important}
+.preview-credit{color:rgba(27,20,36,.62)!important;opacity:1!important}
+.login-preview-features>div{opacity:1!important;transform:none!important;animation:none!important;background:rgba(255,255,255,.84)!important;border:1px solid rgba(27,20,36,.07);border-radius:12px;padding:9px 13px;box-shadow:0 8px 22px rgba(29,19,40,.07)}
+.login-preview-features .i-icon{color:#8a4fd8!important}
+.login-preview-features .text-default-500{color:#8a4fd8!important;text-shadow:none!important}
+.login-preview-features .text-sm{color:#171221!important;text-shadow:none!important}
+.preview-stage-footer-item{color:rgba(27,20,36,.72)!important;background:rgba(255,255,255,.8)!important;border:1px solid rgba(27,20,36,.07);text-shadow:none!important}
+.preview-stage-footer-item i{background:#9a5cf0!important}
+.preview-node{background:rgba(255,255,255,.88)!important;border:1px solid rgba(27,20,36,.08)}
+.preview-node b,.preview-node small{color:#171221!important;text-shadow:none!important}
+.preview-node i{color:#853fdc!important}
+.login-preview-hero-copy>*{opacity:1!important;transform:none!important;animation:none!important}
+.sso-note,.preview-signup{text-shadow:none!important}
+/* SSO 头像：透明 logo 完整显示，不做圆形裁切 */
+/* 输入框只保留 wrapper 一层框：压掉 input 自身的焦点方角幽灵环 */
+.login-preview-card input:not([type="checkbox"]):focus{box-shadow:none!important;border-color:transparent!important}
+/* logo 阴影沿方框画导致"不透明"观感：去掉 box-shadow，改用贴合形状的 drop-shadow */
+.sso-head img{border-radius:0!important;object-fit:contain!important;object-position:center!important;box-shadow:none!important;filter:drop-shadow(0 4px 10px rgba(114,46,209,.22))}
+/* ===== 更高优先级覆盖 bundle 的白色 !important 规则 ===== */
+.login-preview-hero-copy>span:first-child{color:#722ed1!important}
+.login-preview-features>div span{color:#5b4a6e!important;font-size:10px!important}
+.login-preview-features>div span:first-child{color:#8a4fd8!important;font-size:10px!important}
+.login-preview-features>div span:last-child{color:#171221!important;font-size:11px!important}
+.login-preview-features svg{color:#8a4fd8!important}
+.preview-stage-footer-item em{color:#853fdc!important}
+.preview-credit:before{background:rgba(27,20,36,.35)!important}
+.login-preview-footer>span{background:rgba(255,255,255,.82)!important;color:rgba(27,20,36,.72)!important;padding:5px 12px;border-radius:999px;border:1px solid rgba(27,20,36,.07)}
+.login-preview-footer{position:absolute!important;left:auto!important;top:auto!important;right:28px!important;bottom:14px!important;width:auto!important;height:auto!important;padding:0!important;z-index:8}
+.login-preview-header>div:last-child{color:#722ed1!important}
+
+.login-preview-hero{position:relative!important}
+
+/* ===== 窄屏自适应（<1250px）：隐藏右侧主文案，仅保留登录卡 + 人物插画 =====
+   宽屏(>=1250px)完全不受影响，以下规则只在窄视口生效 */
+@media (max-width:1249px){
+  .login-preview-hero-copy,
+  .login-preview-features,
+  .preview-stage-footer{display:none!important}
+  .login-preview-grid{grid-template-columns:minmax(340px,.42fr) minmax(0,1fr)!important}
+  .login-preview-hero{min-height:0!important}
+}
+@media (max-width:900px){
+  .login-preview{background-position:60% 18%!important}
+}
+@media (max-width:640px){
+  .login-preview-grid{grid-template-columns:1fr!important;justify-items:center!important}
+  .login-preview-card{max-width:420px!important;width:calc(100% - 32px)!important;margin:16px auto!important}
+  .login-preview-hero{display:none!important}
+  .login-preview{background-position:72% 22%!important}
+}
