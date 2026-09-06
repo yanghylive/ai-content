@@ -199,20 +199,17 @@ export class CommentAcquisitionService {
       let replyText: string | undefined;
       let personaId: string | undefined;
       let personaName: string | undefined;
-      // 2026-09-06 复核：同评论已生成过回复 → 直接复用既有草稿，不重复调 AI。
+      let generationError: string | undefined;
+      // 2026-09-06 复核 P1-3：同评论已生成过回复 → 直接复用既有草稿，不重复调 AI。
       // 重复生成会以相同 prompt 触发 kaypal 网关 409 BILLING_IDEMPOTENCY_REPLAY
-      // （同键扣费已存在），且会把既有 latestReply 清空。409 时网关侧已扣费
-      // 但客户端拿不到结果，纯浪费积分。
-      const dedupeKey = LeadRepository.dedupeKeyOf({
-        platform: input.platform,
-        externalUserId: comment.item.authorId ?? null,
-        nickname: comment.item.authorName ?? null,
-        sourceText: comment.text,
-      });
-      const existingReplied = await this.leadRepository.findRepliedByDedupeKey(
+      // （同键扣费已存在），且会把既有 latestReply 清空。按稳定字段（平台+账号+
+      // 评论原文）查，不用 dedupeKey（其 authorId 漂移会让键变化导致查空）。
+      const existingReplied = await this.leadRepository.findRepliedBySource(
         scope.userId,
         scope.tenantId,
-        dedupeKey,
+        input.platform,
+        String(input.accountId),
+        comment.text,
       );
       if (existingReplied?.latestReply) {
         replyText = existingReplied.latestReply;
@@ -233,8 +230,10 @@ export class CommentAcquisitionService {
           personaId = reply.personaId;
           personaName = reply.personaName;
         } catch (error) {
+          generationError =
+            error instanceof Error ? error.message : String(error);
           this.logger.warn(
-            `[comment-acquisition] 回复生成失败: ${error instanceof Error ? error.message : String(error)}`,
+            `[comment-acquisition] 回复生成失败: ${generationError}`,
           );
         }
       }
@@ -284,6 +283,22 @@ export class CommentAcquisitionService {
 
       // 6. 自动回复：低风险自动真实外发（留审批痕迹），高风险进人工审核
       let status = 'pending';
+      // 2026-09-06 复核 P1-3：回复生成失败（如网关 409 幂等冲突三次重试后
+      // 仍无草稿）时明确回写 failed + lastError，不再伪装 pending 误导「待审核」。
+      if (!replyText) {
+        status = 'failed';
+        await this.prisma.lead.updateMany({
+          where: {
+            id: leadId,
+            userId: scope.userId,
+            ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+          },
+          data: {
+            status: 'failed',
+            lastError: generationError ?? '回复生成失败',
+          },
+        });
+      }
       if (autoReply && replyText) {
         const highRisk = this.replyEngine.isHighRisk(comment);
         if (highRisk) {

@@ -153,20 +153,27 @@ export class LeadRepository {
   }
 
   /**
-   * 2026-09-06 复核：按 dedupeKey 查「已生成过回复」的既有线索。
-   * scanAccount 对同一批评论重复扫描时，若已有 latestReply 则跳过 AI 重新生成——
-   * 重复生成会以相同 prompt 触发 kaypal 网关 409 BILLING_IDEMPOTENCY_REPLAY
-   * （同键扣费已存在），并会把既有 latestReply 清空。
+   * 2026-09-06 复核 P1-3：按稳定字段（平台+账号+评论文本）查「已生成过回复」的
+   * 既有线索。scanAccount 对同一批评论重复扫描时，若已有 latestReply 则跳过 AI
+   * 重新生成——重复生成会以相同 prompt 触发 kaypal 网关 409 BILLING_IDEMPOTENCY_REPLAY。
+   * 不用 dedupeKey 的原因：dedupeKeyOf 里 externalUserId(authorId) 有/无漂移会让
+   * 键变化（uid:xxx ↔ nick:xxx|hash），导致复用查询落空 → 重复生成 → 409。
+   * sourceText 是评论文本原文，跨 scan 稳定。
    */
-  async findRepliedByDedupeKey(
+  async findRepliedBySource(
     userId: string,
     tenantId: string | null | undefined,
-    dedupeKey: string,
+    platform: string,
+    sourceAccountId: string,
+    sourceText: string,
   ): Promise<{ id: string; latestReply: string } | null> {
     const existing = await this.prisma.lead.findFirst({
       where: {
-        ...(tenantId ? { tenantId } : { userId }),
-        dedupeKey,
+        userId,
+        ...(tenantId ? { tenantId } : {}),
+        platform,
+        sourceAccountId,
+        sourceText,
         latestReply: { not: null },
       },
       orderBy: { updatedAt: 'desc' },
