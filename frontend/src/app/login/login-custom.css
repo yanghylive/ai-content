@@ -83,6 +83,8 @@ html,body,.bg-background,.login-preview-stack,.login-preview-hero{background:tra
 
 /* 2026-09-07: 三种登录方式主按钮统一——去图标后字号统一加大一档 */
 .login-action-button{font-size:13px!important;font-weight:650!important;letter-spacing:.01em!important}
+/* 2026-09-07: 主按钮圆角统一 10px */
+.login-action-button{border-radius:10px!important}
 
 /* 2026-09-07: 登录卡玻璃质感——半透明白底 + 背景模糊 + 高光描边与内投影 */
 .login-preview-card{
