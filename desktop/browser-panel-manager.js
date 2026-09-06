@@ -92,6 +92,10 @@ const ACTIVITY_CAP = 30;
 const ACTIVITY_EXPOSE = 15;
 const TAB_STRIP_HEIGHT = 38; // 与 workspace-tabs.js 保持一致（顶部通栏高度）
 
+// TRAE 对齐：AI 控制权悬浮胶囊（页面底部居中，agentMode=on 才出现）
+const PILL_WIDTH = 380;
+const PILL_HEIGHT = 56;
+
 // 阶段 6：审批浮层尺寸（与 browser-approval-overlay.html 的 CSS 保持一致，
 // 否则会出现"卡片被裁掉一块"或"底部一大片空白"）
 const APPROVAL_MARGIN = 8;
@@ -157,6 +161,8 @@ class BrowserPanelManager {
     this._approvalPreloadPath =
       deps.approvalPreloadPath || path.join(__dirname, 'browser-approval-overlay-preload.js');
     this._approvalHtmlPath = deps.approvalHtmlPath || path.join(__dirname, 'browser-approval-overlay.html');
+    this._pillPreloadPath = deps.pillPreloadPath || path.join(__dirname, 'browser-control-pill-preload.js');
+    this._pillHtmlPath = deps.pillHtmlPath || path.join(__dirname, 'browser-control-pill.html');
     // 分区沟槽（本地受信，复用控制条 preload：只需要 set-width / begin / end 三个通道）
     this._gutterHtmlPath = deps.gutterHtmlPath || path.join(__dirname, 'browser-panel-gutter.html');
     this._logger = deps.logger || console;
@@ -183,6 +189,8 @@ class BrowserPanelManager {
     this._activeTabIndex = 0;
     /** 审批浮层视图（本地受信；只在有待批动作时可见） */
     this.approvalView = null;
+    /** TRAE 对齐：AI 控制权悬浮胶囊视图（透明背景，agentMode=on 才可见） */
+    this.pillView = null;
     /** 当前待批动作条数（决定浮层高度与可见性） */
     this._approvalPendingCount = 0;
     /** @type {null | { panelId:string, sessionId:string, ownerId:string, tenantId:string, accountId?:string, platform:string, partition:string, currentUrl?:string, status:string }} */
@@ -414,6 +422,26 @@ class BrowserPanelManager {
       this.approvalView.webContents.loadFile(this._approvalHtmlPath);
       this.approvalView.setVisible(false);
     }
+    if (!this.pillView) {
+      // TRAE 对齐：AI 控制权悬浮胶囊。透明背景视图，只有胶囊本体可点。
+      this.pillView = new WebContentsView({
+        webPreferences: {
+          preload: this._pillPreloadPath,
+          contextIsolation: true,
+          nodeIntegration: false,
+          sandbox: false, // 本地受信（同控制条/审批浮层）
+          partition: 'persist:ai-content-browser-pill',
+          backgroundThrottling: false,
+        },
+      });
+      try {
+        this.pillView.setBackgroundColor('#00000000');
+      } catch { /* 老版本 View 无此 API：透明靠页面 CSS 兜底 */ }
+      this._knownWebContents.add(this.pillView.webContents);
+      this.window.contentView.addChildView(this.pillView);
+      this.pillView.webContents.loadFile(this._pillHtmlPath);
+      this.pillView.setVisible(false);
+    }
     if (!this.panelView) {
       // 面板 webContents 在首次 open 时按账号 partition 创建（见 _createPanelView）
     }
@@ -512,6 +540,7 @@ class BrowserPanelManager {
     this.window.contentView.addChildView(view);
     // 面板是新加的子视图 → 会盖在审批浮层之上，必须把浮层重新置顶
     this._bringApprovalToFront();
+    this._bringPillToFront();
     this._wirePanelEvents(view);
     view.setVisible(false);
     return view;
@@ -539,6 +568,18 @@ class BrowserPanelManager {
     try {
       this.window.contentView.removeChildView(this.approvalView);
       this.window.contentView.addChildView(this.approvalView);
+    } catch {
+      /* 视图已销毁时忽略 */
+    }
+  }
+
+  /** 悬浮胶囊同样要压在面板视图之上（面板账号切换重建后重新置顶） */
+  _bringPillToFront() {
+    if (!this.pillView || this.pillView.webContents.isDestroyed()) return;
+    if (!this.window || this.window.isDestroyed()) return;
+    try {
+      this.window.contentView.removeChildView(this.pillView);
+      this.window.contentView.addChildView(this.pillView);
     } catch {
       /* 视图已销毁时忽略 */
     }
@@ -920,6 +961,7 @@ class BrowserPanelManager {
       /* 视图已销毁时忽略 */
     }
     this._bringApprovalToFront();
+    this._bringPillToFront();
     // 会话 URL 必须跟 active tab 走：新开/切到未加载的 tab 时 getURL() 为空，
     // 回退 about:blank（否则 resolvePanelTarget 的 url 是旧 tab 的——自相矛盾证据）
     if (this.session) {
@@ -974,6 +1016,23 @@ class BrowserPanelManager {
       return { ok: true, snapshot: this.tabsOperation('close', index) };
     } catch (error) {
       return { ok: false, error: error?.message || String(error) };
+    }
+  }
+
+  /** TRAE 对齐：控制条「+」新建面板标签页 */
+  newTabByUser() {
+    try {
+      this.recordActivity('tab', '新建标签页', true);
+      return { ok: true, snapshot: this.tabsOperation('new') };
+    } catch (error) {
+      return { ok: false, error: error?.message || String(error) };
+    }
+  }
+
+  /** TRAE 对齐：加载中 reload 变 ✕ 停止 */
+  stop() {
+    if (this.panelView && !this.panelView.webContents.isDestroyed()) {
+      this.panelView.webContents.stop();
     }
   }
 
@@ -1320,6 +1379,7 @@ class BrowserPanelManager {
     // stage7 冒烟抓到的真 bug：写完不广播，控制条 onState 拿不到新 agentMode，
     // 按钮不高亮、且控制条用陈旧 lastState 算下一次 toggle（点两下=开了两次）。
     this._emitState();
+    if (this._visible) this.relayout(); // 悬浮胶囊可见性跟随开关
     return mode;
   }
 
@@ -1441,6 +1501,19 @@ class BrowserPanelManager {
       });
       this.approvalView.setVisible(this._approvalPendingCount > 0);
     }
+    if (this.pillView && !this.pillView.webContents.isDestroyed()) {
+      // TRAE 对齐：AI 控制权胶囊——面板底部居中；审批卡出现时上移避让
+      const approvalH = this._approvalPendingCount > 0 ? this._approvalHeight() + 8 : 0;
+      const pillW = Math.min(PILL_WIDTH, Math.max(0, panelW - 24));
+      const bottom = contentY + contentH - APPROVAL_MARGIN - approvalH;
+      this.pillView.setBounds({
+        x: x + Math.round((panelW - pillW) / 2),
+        y: Math.max(contentY + stripH, bottom - PILL_HEIGHT),
+        width: pillW,
+        height: PILL_HEIGHT,
+      });
+      this.pillView.setVisible(this._visible && this.getAgentMode() === 'on');
+    }
   }
 
   /** 审批浮层高度：按待批条数算，封顶 220px（超出内部滚动） */
@@ -1456,6 +1529,12 @@ class BrowserPanelManager {
     const state = this.publicState();
     this._sendToPanelOwner('browser-panel:state', state);
     this._sendToStrip('browser-panel:state', state);
+    // TRAE 对齐：悬浮胶囊订阅精简状态流（可见性/agentMode/control）
+    this._sendToPill('browser-pill:state', {
+      visible: this._visible,
+      agentMode: state.agentMode,
+      control: state.control,
+    });
     // 顶部标签条（浏览器 chip / 宽度预设按钮）订阅同一状态流
     for (const cb of this._stateListeners) {
       try { cb(state); } catch { /* 单个订阅方异常互不影响 */ }
@@ -1474,6 +1553,26 @@ class BrowserPanelManager {
         this.stripView.webContents.send(channel, payload);
       } catch {
         /* 控制条未就绪时忽略 */
+      }
+    }
+  }
+
+  /** TRAE 对齐：悬浮胶囊 sender 校验（只有浮层自己能调接管/交还/停用） */
+  isPillSender(sender) {
+    return !!(
+      sender &&
+      this.pillView &&
+      !this.pillView.webContents.isDestroyed() &&
+      this.pillView.webContents.id === sender.id
+    );
+  }
+
+  _sendToPill(channel, payload) {
+    if (this.pillView && !this.pillView.webContents.isDestroyed()) {
+      try {
+        this.pillView.webContents.send(channel, payload);
+      } catch {
+        /* 浮层未就绪时忽略 */
       }
     }
   }
@@ -1526,6 +1625,15 @@ class BrowserPanelManager {
         /* ignore */
       }
     }
+    if (this.pillView) {
+      try {
+        this.window && !this.window.isDestroyed() && this.window.contentView.removeChildView(this.pillView);
+        this.pillView.webContents.close();
+      } catch {
+        /* ignore */
+      }
+    }
+    this.pillView = null;
     this.approvalView = null;
     this._approvalPendingCount = 0;
     // 先通知订阅方（wiring 需在此撤销 broker 会话/token），再清空状态

@@ -61,6 +61,21 @@ function registerBrowserPanelIpc(deps) {
     }
   };
 
+  /** 控制条 ∨ 悬浮胶囊：接管/交还/AI 代操作开关（第三方页面两者都不是） */
+  const stripOrPill = (handler) => async (event, ...args) => {
+    const panel = getPanel();
+    const fromStrip = !!panel && typeof panel.isStripSender === 'function' && panel.isStripSender(event.sender);
+    const fromPill = !!panel && typeof panel.isPillSender === 'function' && panel.isPillSender(event.sender);
+    if (!fromStrip && !fromPill) {
+      return { success: false, error: 'untrusted-sender' };
+    }
+    try {
+      return { success: true, result: await handler(...args) };
+    } catch (error) {
+      return { success: false, error: error && error.message ? error.message : String(error) };
+    }
+  };
+
   /** 仅审批浮层：列出待批 / 批准 / 拒绝 */
   const approvalOnly = (handler) => async (event, ...args) => {
     const panel = getPanel();
@@ -107,13 +122,13 @@ function registerBrowserPanelIpc(deps) {
   // 阶段 6 决策 ③：面板模式开关（只有控制条按钮能切；写/删 userData 下的 0600 文件）
   ipcMain.handle(
     'browser-panel:toggle-agent-mode',
-    stripOnly((on) => getPanel().setAgentMode(!!on)),
+    stripOrPill((on) => getPanel().setAgentMode(!!on)),
   );
 
   // TraeWork 控制权模型：接管（AI 暂停、新单排队）/ 交还（恢复系统控制、放行排队单）。
   // 与 agent-mode 同级 stripOnly——只有本地控制条按钮能替用户交权，前端不可伪造。
-  ipcMain.handle('browser-panel:take-control', stripOnly(() => getPanel().takeControl()));
-  ipcMain.handle('browser-panel:release-control', stripOnly(() => getPanel().releaseControl()));
+  ipcMain.handle('browser-panel:take-control', stripOrPill(() => getPanel().takeControl()));
+  ipcMain.handle('browser-panel:release-control', stripOrPill(() => getPanel().releaseControl()));
 
   // round15：用户手动切/关 tab（只有控制条 tab 条能发；用户自家操作不走 Agent
   // 审批闸门，与后退/刷新同权；manager 侧错误转 {ok:false} 不抛）
@@ -125,6 +140,9 @@ function registerBrowserPanelIpc(deps) {
     'browser-panel:close-tab',
     stripOnly((index) => getPanel().closeTabByUser(Number(index))),
   );
+  // TRAE 对齐：控制条「+」新建标签页 / 加载中停止
+  ipcMain.handle('browser-panel:new-tab', stripOnly(() => getPanel().newTabByUser()));
+  ipcMain.handle('browser-panel:stop', stripOnly(() => { getPanel().stop(); return true; }));
 
   // 阶段 6：审批浮层三通道
   ipcMain.handle(

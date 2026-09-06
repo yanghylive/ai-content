@@ -302,7 +302,10 @@ export class CommentAcquisitionService {
             where: {
               id: leadId,
               userId: scope.userId,
-              ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+              // 2026-09-06 修复：tenantId 漂移 → OR 宽容匹配（同 assertReplyLead）
+              ...(scope.tenantId
+                ? { OR: [{ tenantId: scope.tenantId }, { tenantId: null }] }
+                : {}),
             },
             data: {
               status: 'approved',
@@ -583,7 +586,10 @@ export class CommentAcquisitionService {
             where: {
               id: leadId,
               userId: scope.userId,
-              ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+              // 2026-09-06 修复：tenantId 漂移 → OR 宽容匹配（同 assertReplyLead）
+              ...(scope.tenantId
+                ? { OR: [{ tenantId: scope.tenantId }, { tenantId: null }] }
+                : {}),
             },
             data: {
               status: 'approved',
@@ -880,7 +886,10 @@ export class CommentAcquisitionService {
       where: {
         id: leadId,
         userId: scope.userId,
-        ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+        // 2026-09-06 修复：tenantId 漂移（组织关系回补后 null↔有值）→ OR 宽容
+        ...(scope.tenantId
+          ? { OR: [{ tenantId: scope.tenantId }, { tenantId: null }] }
+          : {}),
       },
       data: {
         status,
@@ -986,7 +995,10 @@ export class CommentAcquisitionService {
       where: {
         id: leadId,
         userId: scope.userId,
-        ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+        // 2026-09-06 修复：tenantId 漂移 → OR 宽容匹配
+        ...(scope.tenantId
+          ? { OR: [{ tenantId: scope.tenantId }, { tenantId: null }] }
+          : {}),
         platform: input.platform,
         sourceAccountId: String(input.accountId),
         // 2026-08-20 修复：对齐列表查询（559 行）——私信线索 sourceType='dm'，

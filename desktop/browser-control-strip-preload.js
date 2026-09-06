@@ -26,6 +26,9 @@ const INVOKE_CHANNELS = new Set([
   // round15：用户手动切/关 tab（控制条 tab 条）
   'browser-panel:switch-tab',
   'browser-panel:close-tab',
+  // TRAE 对齐：新建标签页 / 停止加载
+  'browser-panel:new-tab',
+  'browser-panel:stop',
 ]);
 
 // main → 控制条（事件推送通道）

@@ -18,6 +18,9 @@
 const { startBrowserBridge } = require('./browser-agent-bridge-server');
 const { writeRegistry, clearRegistry } = require('./browser-panel-bridge-registry');
 
+// 2026-09-06：凭据 startedAt 心跳刷新周期（15 分钟，须 < 3011 侧 60min 老化窗口）
+const HEARTBEAT_INTERVAL_MS = 15 * 60 * 1000;
+
 /**
  * @param {object} deps
  * @param {object} deps.manager BrowserPanelManager 实例（提供 publicState / onSessionEvent）
@@ -86,6 +89,7 @@ function createBrowserBridgeRuntime({ manager, wiring, getUserDataDir, logger })
       startPromise = startBrowserBridge({ wiring, logger: { warn, error: warn } })
         .then((started) => {
           bridge = started;
+          startHeartbeat();
           return started;
         })
         .catch((error) => {
@@ -96,11 +100,38 @@ function createBrowserBridgeRuntime({ manager, wiring, getUserDataDir, logger })
     return startPromise;
   }
 
+  // 2026-09-06 修复（面板 1 小时后 PANEL_UNAVAILABLE 根因）：桥凭据文件里的
+  // startedAt 只在「面板状态变化」时刷新（writeCredentials），面板静置 1 小时
+  // 后凭据被 3011 判老化（DEFAULT_MAX_AGE_MS=60min）→ 引擎降级 spawn 外部窗口。
+  // 加定时心跳：只要桥活着，每 15 分钟刷一次凭据 startedAt，凭据永不过期。
+  let heartbeatTimer = null;
+  function startHeartbeat() {
+    if (heartbeatTimer) return;
+    heartbeatTimer = setInterval(() => {
+      if (!bridge) return;
+      try {
+        writeCredentials();
+      } catch (error) {
+        warn(`[BrowserPanel] 心跳刷新凭据失败：${error && error.message}`);
+      }
+    }, HEARTBEAT_INTERVAL_MS);
+    if (heartbeatTimer && typeof heartbeatTimer.unref === 'function') {
+      heartbeatTimer.unref();
+    }
+  }
+  function stopHeartbeat() {
+    if (heartbeatTimer) {
+      clearInterval(heartbeatTimer);
+      heartbeatTimer = null;
+    }
+  }
+
   /**
    * 关桥 = 停监听 + 销毁 token + 删凭据文件。幂等。
    * 即使启动还没完成（startPromise 在飞）也要能收干净。
    */
   async function close() {
+    stopHeartbeat();
     const pending = startPromise;
     startPromise = null;
     const current = bridge;

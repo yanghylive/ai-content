@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<title>AI 控制权浮条</title>
+<style>
+  /* TRAE Work 内置浏览器：AI 操作时页面底部居中的悬浮控制条。
+     透明视图，只有胶囊本体可见；两个按钮，状态驱动文案。 */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+  html, body { height: 100%; overflow: hidden; background: transparent; }
+  body { display: flex; align-items: flex-end; justify-content: center; font: 12px/1.4 -apple-system, "PingFang SC", "Segoe UI", sans-serif; }
+  #pill {
+    display: none; align-items: center; gap: 10px; margin-bottom: 10px;
+    height: 40px; padding: 0 6px 0 14px; border-radius: 999px;
+    background: rgba(22,22,27,.92); border: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 10px 32px rgba(0,0,0,.45); color: #e8e8ec;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    animation: rise .22s ease;
+  }
+  #pill.show { display: inline-flex; }
+  @keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #a171f0; flex: none; box-shadow: 0 0 0 0 rgba(161,113,240,.5); }
+  #pill.ai .dot { animation: pulse 1.6s ease-out infinite; }
+  #pill.user .dot { background: #e6a23c; box-shadow: none; animation: none; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(161,113,240,.55); } 70% { box-shadow: 0 0 0 9px rgba(161,113,240,0); } 100% { box-shadow: 0 0 0 0 rgba(161,113,240,0); } }
+  .txt { white-space: nowrap; font-size: 12px; font-weight: 600; letter-spacing: .02em; }
+  .btns { display: inline-flex; gap: 6px; margin-left: 2px; }
+  button {
+    height: 28px; padding: 0 12px; border-radius: 999px; font-size: 11.5px; font-weight: 700;
+    cursor: pointer; border: 1px solid transparent; transition: filter .15s, background .15s;
+    font-family: inherit;
+  }
+  #take { background: #8a4fd8; color: #fff; }
+  #take:hover { filter: brightness(1.12); }
+  #stop { background: transparent; color: #b9b9c2; border-color: rgba(255,255,255,.18); }
+  #stop:hover { color: #fff; border-color: rgba(255,255,255,.34); }
+</style>
+</head>
+<body>
+  <div id="pill" class="ai">
+    <span class="dot"></span>
+    <span class="txt" id="txt">AI 正在操作本页面</span>
+    <span class="btns">
+      <button id="take" type="button">接管</button>
+      <button id="stop" type="button" title="停用 AI 代操作（可在浏览器工具条 ⋯ 菜单再开启）">停用</button>
+    </span>
+  </div>
+  <script>
+    const api = window.browserPill;
+    const $ = (id) => document.getElementById(id);
+    if (!api) {
+      // 预览垫片：浏览器直接打开时演示两态（Electron 内不执行）
+      window.browserPill = {
+        invoke: (c, ...a) => { console.log('[pill mock]', c, ...a); return Promise.resolve({}); },
+        onState: (cb) => { setInterval(() => cb({ visible: true, agentMode: 'on', control: Math.random() > .5 ? 'system' : 'user' }), 2500); },
+      };
+    }
+    let lastControl = 'system';
+    window.browserPill.onState((s) => {
+      const pill = $('pill');
+      lastControl = (s && s.control) || 'system';
+      const on = !!(s && s.visible && s.agentMode === 'on');
+      pill.classList.toggle('show', on);
+      if (!on) return;
+      const user = s.control === 'user';
+      pill.classList.toggle('user', user);
+      pill.classList.toggle('ai', !user);
+      $('txt').textContent = user ? '你已接管 · AI 已暂停' : 'AI 正在操作本页面';
+      $('take').textContent = user ? '交还 AI' : '接管';
+    });
+    $('take').addEventListener('click', () => {
+      // 同一按钮双向：AI 控制中→接管；用户接管中→交还
+      window.browserPill.invoke(lastControl === 'user'
+        ? 'browser-panel:release-control'
+        : 'browser-panel:take-control');
+    });
+    $('stop').addEventListener('click', () => {
+      window.browserPill.invoke('browser-panel:toggle-agent-mode', false);
+    });
+  </script>
+</body>
+</html>
