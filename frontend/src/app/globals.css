@@ -736,6 +736,7 @@
 
   /* ===== 任务流水 Tabs → 系统分段胶囊（segmented）口径（2026-09-07）=====
      原 HeroUI 下划线 tab 与全站「软底容器 + 白底浮起胶囊」的切换控件不一致 */
+  .ops-v3 div[role="tablist"],
   .ops-v3 [role="tablist"] {
     border-bottom: 0 !important;
     background: var(--kaypal-v3-paper-soft) !important;
