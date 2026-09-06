@@ -18,7 +18,6 @@ import {
   Search,
   Upload,
   User,
-  UserPlus,
   UserRound,
   Users,
   X,
@@ -516,17 +515,13 @@ export function CrmCenter() {
             href: "/crm-import",
           },
           {
-            key: "follow-up",
-            brand: "followUp",
-            title: "待跟进",
-            description: "需要跟进的客户",
-            icon: Search,
-            href: "/crm?filter=follow-up",
-            badge: stats.followUp > 0 ? String(stats.followUp) : undefined,
+            key: "connectors",
+            brand: "link",
+            title: "数据连接",
+            description: "接入获客任务，线索自动入库",
+            icon: Link,
+            href: "/crm/connectors",
           },
-        ]}
-        advancedLinks={[
-          { key: "connectors", title: "数据连接", brand: "link", icon: Users, href: "/crm/connectors" },
         ]}
       />
 
@@ -663,72 +658,6 @@ export function CrmCenter() {
             <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">
               新增一个客户，或从 Excel 批量导入
             </p>
-            {/* 快速开始：三步引导（新增/导入入口在页头 CTA 与快捷操作，不再重复放按钮） */}
-            <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
-              {[
-                {
-                  title: "1 · 添加客户",
-                  desc: "手动录入或从 Excel 导入档案",
-                  icon: <UserPlus className="h-4 w-4" />,
-                  onClick: () => setShowCreateModal(true),
-                  primary: true,
-                },
-                {
-                  title: "2 · 连接数据",
-                  desc: "接入获客任务，线索自动入库",
-                  href: "/crm/connectors",
-                  icon: <Link className="h-4 w-4" />,
-                },
-                {
-                  title: "3 · 跟进转化",
-                  desc: "录入待跟进客户，逐条推进商机",
-                  href: "/crm?filter=follow-up",
-                  icon: <Phone className="h-4 w-4" />,
-                },
-              ].map((step) => {
-                const cls =
-                  "group flex items-start gap-3 rounded-[var(--kaypal-v3-radius)] border border-dashed p-4 text-left transition " +
-                  (step.primary
-                    ? "border-[var(--kaypal-v3-accent-border)] bg-[var(--kaypal-v3-accent-soft)]/50 hover:bg-[var(--kaypal-v3-accent-soft)]"
-                    : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] hover:border-[var(--kaypal-v3-accent)]");
-                const inner = (
-                  <>
-                    <span
-                      className={
-                        "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--kaypal-v3-radius-sm)] " +
-                        (step.primary
-                          ? "bg-[var(--kaypal-v3-accent)] text-white"
-                          : "bg-[var(--kaypal-v3-accent-soft)] text-[var(--kaypal-v3-accent-ink)]")
-                      }
-                    >
-                      {step.icon}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-[var(--kaypal-v3-ink)]">
-                        {step.title}
-                      </span>
-                      <span className="mt-0.5 block text-xs leading-5 text-[var(--kaypal-v3-muted)]">
-                        {step.desc}
-                      </span>
-                    </span>
-                  </>
-                );
-                return step.href ? (
-                  <button
-                    key={step.title}
-                    type="button"
-                    className={cls}
-                    onClick={() => router.push(step.href!)}
-                  >
-                    {inner}
-                  </button>
-                ) : (
-                  <button key={step.title} type="button" className={cls} onClick={step.onClick}>
-                    {inner}
-                  </button>
-                );
-              })}
-            </div>
           </div>
         ) : filteredCustomers.length === 0 ? (
           /* 空结果：搜索/筛选无命中 */
