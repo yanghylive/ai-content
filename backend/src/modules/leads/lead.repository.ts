@@ -181,6 +181,74 @@ export class LeadRepository {
    * 按 dedupeKey 去重写入：已存在则合并更新（累加 score/证据，刷新最新回复），
    * 不存在则创建。返回 created 标记，供双写阶段判断是否为新线索。
    */
+  /**
+   * 2026-09-06 提取：update 分支与 P2002 兜底共用——把既有线索与本次输入合并。
+   * 关键：latestReply 用「本次输入优先」（AI 新草稿覆盖旧草稿）。
+   */
+  private buildMergeData(
+    existing: {
+      externalUserId: string | null;
+      profileUrl: string | null;
+      avatarUrl: string | null;
+      nickname: string | null;
+      score: number;
+      scoreReasons: Prisma.InputJsonValue | null;
+      signals: Prisma.InputJsonValue | null;
+      matchedKeywords: Prisma.InputJsonValue | null;
+      latestReply: string | null;
+      replyPersonaId: string | null;
+      sourceAccountId: string | null;
+      sourceTaskId: string | null;
+      sourceRunId: string | null;
+      sourceArticleId: string | null;
+      sourcePublishRecordId: string | null;
+      sourceInteractionEventId: string | null;
+      sourceUrl: string | null;
+      sourceText: string | null;
+      commentRef: string | null;
+      lastError: string | null;
+      ownerUserId: string | null;
+      customerId: string | null;
+      nextFollowUpAt: Date | null;
+    },
+    input: LeadUpsertInput,
+  ): Record<string, unknown> {
+    return {
+      externalUserId: existing.externalUserId ?? input.externalUserId ?? null,
+      profileUrl: existing.profileUrl ?? input.profileUrl ?? null,
+      avatarUrl: existing.avatarUrl ?? input.avatarUrl ?? null,
+      nickname: existing.nickname ?? input.nickname ?? null,
+      score: Math.max(existing.score, input.score ?? 0),
+      scoreReasons: this.mergeJsonArray(existing.scoreReasons, input.scoreReasons),
+      signals: this.mergeJsonArray(existing.signals, input.signals),
+      matchedKeywords: this.mergeJsonArray(
+        existing.matchedKeywords,
+        input.matchedKeywords,
+      ),
+      latestReply: input.latestReply ?? existing.latestReply,
+      replyPersonaId: input.replyPersonaId ?? existing.replyPersonaId,
+      sourceAccountId: existing.sourceAccountId ?? input.sourceAccountId ?? null,
+      sourceTaskId: existing.sourceTaskId ?? input.sourceTaskId ?? null,
+      sourceRunId: existing.sourceRunId ?? input.sourceRunId ?? null,
+      sourceArticleId: existing.sourceArticleId ?? input.sourceArticleId ?? null,
+      sourcePublishRecordId:
+        existing.sourcePublishRecordId ?? input.sourcePublishRecordId ?? null,
+      sourceInteractionEventId:
+        existing.sourceInteractionEventId ??
+        input.sourceInteractionEventId ??
+        null,
+      sourceUrl: existing.sourceUrl ?? input.sourceUrl ?? null,
+      sourceText: existing.sourceText ?? input.sourceText ?? null,
+      commentRef: input.commentRef ?? existing.commentRef ?? null,
+      lastError: input.lastError ?? existing.lastError ?? null,
+      ownerUserId: existing.ownerUserId ?? input.ownerUserId ?? null,
+      customerId: existing.customerId ?? input.customerId ?? null,
+      nextFollowUpAt:
+        existing.nextFollowUpAt ??
+        (input.nextFollowUpAt ? new Date(input.nextFollowUpAt) : null),
+    };
+  }
+
   async upsert(input: LeadUpsertInput): Promise<LeadUpsertResult> {
     const dedupeKey = LeadRepository.dedupeKeyOf(input);
     const where = this.dedupeWhere(input.userId, input.tenantId, dedupeKey);
@@ -190,52 +258,7 @@ export class LeadRepository {
     if (existing) {
       const lead = await this.prisma.lead.update({
         where,
-        data: {
-          // 来源信息：保留最早来源，仅回填缺失的更强身份字段
-          externalUserId:
-            existing.externalUserId ?? input.externalUserId ?? null,
-          profileUrl: existing.profileUrl ?? input.profileUrl ?? null,
-          avatarUrl: existing.avatarUrl ?? input.avatarUrl ?? null,
-          nickname: existing.nickname ?? input.nickname ?? null,
-          // 意向评分：取更高分 + 合并评分理由/信号/关键词
-          score: Math.max(existing.score, input.score ?? 0),
-          scoreReasons: this.mergeJsonArray(
-            existing.scoreReasons,
-            input.scoreReasons,
-          ),
-          signals: this.mergeJsonArray(existing.signals, input.signals),
-          matchedKeywords: this.mergeJsonArray(
-            existing.matchedKeywords,
-            input.matchedKeywords,
-          ),
-          // 最新回复：覆盖（保留最新一次）
-          latestReply: input.latestReply ?? existing.latestReply,
-          replyPersonaId: input.replyPersonaId ?? existing.replyPersonaId,
-          // 补充追溯字段（若旧数据缺失）
-          sourceAccountId:
-            existing.sourceAccountId ?? input.sourceAccountId ?? null,
-          sourceTaskId: existing.sourceTaskId ?? input.sourceTaskId ?? null,
-          sourceRunId: existing.sourceRunId ?? input.sourceRunId ?? null,
-          sourceArticleId:
-            existing.sourceArticleId ?? input.sourceArticleId ?? null,
-          sourcePublishRecordId:
-            existing.sourcePublishRecordId ??
-            input.sourcePublishRecordId ??
-            null,
-          sourceInteractionEventId:
-            existing.sourceInteractionEventId ??
-            input.sourceInteractionEventId ??
-            null,
-          sourceUrl: existing.sourceUrl ?? input.sourceUrl ?? null,
-          sourceText: existing.sourceText ?? input.sourceText ?? null,
-          commentRef: input.commentRef ?? existing.commentRef ?? null,
-          lastError: input.lastError ?? existing.lastError ?? null,
-          ownerUserId: existing.ownerUserId ?? input.ownerUserId ?? null,
-          customerId: existing.customerId ?? input.customerId ?? null,
-          nextFollowUpAt:
-            existing.nextFollowUpAt ??
-            (input.nextFollowUpAt ? new Date(input.nextFollowUpAt) : null),
-        },
+        data: this.buildMergeData(existing, input),
       });
       return { lead, created: false };
     }
@@ -297,7 +320,15 @@ export class LeadRepository {
           for (const w of candidates) {
             try {
               const found = await this.prisma.lead.findUnique({ where: w });
-              if (found) return found;
+              if (found) {
+                // 2026-09-06 修复：兜底查到已有 lead 时必须 update（把本次
+                // latestReply 等字段写回），否则 AI 草稿丢失 → dispatchReply
+                // 校验「回复内容与已审核线索不一致」。
+                return this.prisma.lead.update({
+                  where: w,
+                  data: this.buildMergeData(found, input),
+                });
+              }
             } catch {
               // 键不存在/字段不匹配时忽略，试下一个
             }
