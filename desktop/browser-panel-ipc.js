@@ -130,6 +130,18 @@ function registerBrowserPanelIpc(deps) {
   ipcMain.handle('browser-panel:take-control', stripOrPill(() => getPanel().takeControl()));
   ipcMain.handle('browser-panel:release-control', stripOrPill(() => getPanel().releaseControl()));
 
+  // 2026-09-06 复核 P1-4：胶囊点击穿透（高频 mousemove，用 on+send 非 invoke）。
+  // 仅胶囊自身可翻转穿透；面板/第三方页面不可调用。
+  ipcMain.on('browser-pill:set-ignore-mouse', (event, ignore) => {
+    const panel = getPanel();
+    if (!panel || typeof panel.isPillSender !== 'function' || !panel.isPillSender(event.sender)) {
+      return;
+    }
+    if (typeof panel.setPillIgnoreMouse === 'function') {
+      panel.setPillIgnoreMouse(!!ignore);
+    }
+  });
+
   // round15：用户手动切/关 tab（只有控制条 tab 条能发；用户自家操作不走 Agent
   // 审批闸门，与后退/刷新同权；manager 侧错误转 {ok:false} 不抛）
   ipcMain.handle(

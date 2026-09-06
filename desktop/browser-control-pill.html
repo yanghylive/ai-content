@@ -56,11 +56,35 @@
       };
     }
     let lastControl = 'system';
+
+    // 2026-09-06 复核 P1-4：点击穿透。胶囊视图 380x56 覆盖在面板上，只有底部
+    // 居中的胶囊本体需要接收鼠标，透明区域应把点击转发给下层面板。
+    // forward:true 下主进程转发 mousemove，这里据鼠标是否落在胶囊 boundingRect
+    // 内动态翻转穿透；胶囊隐藏时整体穿透。
+    function updateHitTest(e) {
+      if (!window.browserPill || typeof window.browserPill.setIgnoreMouse !== 'function') return;
+      const pill = $('pill');
+      const shown = pill.classList.contains('show');
+      if (!shown) {
+        window.browserPill.setIgnoreMouse(true);
+        return;
+      }
+      const r = pill.getBoundingClientRect();
+      const inside = !!e &&
+        e.clientX >= r.left && e.clientX <= r.right &&
+        e.clientY >= r.top && e.clientY <= r.bottom;
+      window.browserPill.setIgnoreMouse(!inside);
+    }
+    document.addEventListener('mousemove', updateHitTest);
+    // 状态变化（胶囊显示/隐藏）时同步穿透；无事件时用最近一次鼠标位置。
+    document.addEventListener('mouseleave', () => updateHitTest(null));
+
     window.browserPill.onState((s) => {
       const pill = $('pill');
       lastControl = (s && s.control) || 'system';
       const on = !!(s && s.visible && s.agentMode === 'on');
       pill.classList.toggle('show', on);
+      updateHitTest(null);
       if (!on) return;
       const user = s.control === 'user';
       pill.classList.toggle('user', user);

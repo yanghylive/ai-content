@@ -16,6 +16,11 @@ contextBridge.exposeInMainWorld('browserPill', {
     if (INVOKE_CHANNELS.has(channel)) return ipcRenderer.invoke(channel, ...args);
     return Promise.reject(new Error(`channel not allowed: ${channel}`));
   },
+  // 2026-09-06 复核 P1-4：点击穿透——胶囊透明区域需把鼠标事件转发给下层面板。
+  // 高频 mousemove 用 send（非 invoke），主进程据 ignore 调 setIgnoreMouseEvents。
+  setIgnoreMouse: (ignore) => {
+    ipcRenderer.send('browser-pill:set-ignore-mouse', !!ignore);
+  },
   onState: (callback) => {
     if (typeof callback !== 'function') return () => undefined;
     const listener = (_event, payload) => callback(payload);

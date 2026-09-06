@@ -1557,6 +1557,26 @@ class BrowserPanelManager {
     }
   }
 
+  /**
+   * 2026-09-06 复核 P1-4：悬浮胶囊点击穿透。胶囊视图覆盖 380x56 但可见胶囊
+   * 只占底部居中一小块，透明区域若拦截鼠标会挡住下层面板点击。用
+   * setIgnoreMouseEvents(ignore, {forward:true})——forward 让 mousemove 仍转发
+   * 给胶囊 renderer，renderer 据鼠标是否落在胶囊 boundingRect 内动态翻转穿透。
+   */
+  setPillIgnoreMouse(ignore) {
+    if (!this.pillView || this.pillView.webContents.isDestroyed()) return;
+    try {
+      this.pillView.setIgnoreMouseEvents(!!ignore, { forward: true });
+    } catch {
+      /* 老 Electron 无 forward 参数时退化为整体穿透/接收 */
+      try {
+        this.pillView.setIgnoreMouseEvents(!!ignore);
+      } catch {
+        /* 忽略 */
+      }
+    }
+  }
+
   /** TRAE 对齐：悬浮胶囊 sender 校验（只有浮层自己能调接管/交还/停用） */
   isPillSender(sender) {
     return !!(
