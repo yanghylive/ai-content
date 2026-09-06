@@ -78,5 +78,5 @@ html,body,.bg-background,.login-preview-stack,.login-preview-hero{background:tra
 /* 2026-09-07: 标题第二行「是会成长的智慧员工。」保持单行——
    主 CSS 把 h1 放大到 clamp(46px,4.2vw,74px)，11 字超宽折行；
    这里收字号到单行可容纳，并禁止 em 段内折行（<br> 已负责分行）。 */
-.login-preview-hero-copy h1{font-size:clamp(30px,3vw,48px)!important}
+.login-preview-hero-copy h1{font-size:clamp(32px,3.4vw,54px)!important}
 .login-preview-hero-copy h1 em{white-space:nowrap}
