@@ -96,7 +96,7 @@ export default function MessageScene() {
         hint={
           waitingCount > 0
             ? {
-                icon: "message",
+                brand: "replyPen",
                 text: `${waitingCount} 条回复等你确认，AI 已写好草稿`,
                 actionLabel: "去确认",
                 href: "/tasks/confirmations",

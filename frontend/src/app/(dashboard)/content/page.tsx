@@ -80,7 +80,7 @@ export default function ContentScene() {
       hint={
         materialCount > 0
           ? {
-              icon: "database",
+              brand: "materials",
               text: `素材库现有 ${materialCount} 条素材，可以直接拿去生成内容`,
               actionLabel: "去生成",
               href: "/content/articles",

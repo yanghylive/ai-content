@@ -27,7 +27,7 @@ export function ScenePage({
 }: {
   title: string;
   sub: string;
-  hint?: { icon: ShellIconName; text: string; actionLabel: string; href: string };
+  hint?: { icon?: ShellIconName; brand?: BrandIconName; text: string; actionLabel: string; href: string };
   cards: SceneCard[];
   before?: React.ReactNode;
 }) {
@@ -79,7 +79,11 @@ export function ScenePage({
 
       {hint ? (
         <div className="kx-hint-bar">
-          <ShellIcon name={hint.icon} />
+          {hint.brand ? (
+            <BrandIcon name={hint.brand} size={18} />
+          ) : hint.icon ? (
+            <ShellIcon name={hint.icon} />
+          ) : null}
           {hint.text}
           <button className="kx-hint-act" onClick={() => router.push(hint.href)}>
             {hint.actionLabel} →
