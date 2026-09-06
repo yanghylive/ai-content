@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 /**
@@ -17,10 +17,48 @@ import { PrismaService } from '../../prisma/prisma.service';
  * 3. 跨天自动切桶：touch_date 变化即换新桶，从 0 重新计。
  */
 @Injectable()
-export class AccountTouchQuotaService {
+export class AccountTouchQuotaService implements OnModuleInit {
   private readonly logger = new Logger(AccountTouchQuotaService.name);
 
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * 2026-09-06 发版门禁 R1 修复：account_touch_quotas 是业务表，走「模块懒建」。
+   * schema.prisma 有 AccountTouchQuota model 但此前漏了启动建表，空库启动后
+   * 缺表导致 R1 建表完整性失败、tryConsume 直接崩。此处启动时幂等建表。
+   */
+  async onModuleInit(): Promise<void> {
+    try {
+      await this.prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "account_touch_quotas" (
+          "id" TEXT PRIMARY KEY NOT NULL,
+          "user_id" TEXT NOT NULL,
+          "platform" TEXT NOT NULL,
+          "account_id" TEXT NOT NULL,
+          "daily_limit" INTEGER NOT NULL DEFAULT 20,
+          "touch_date" TEXT NOT NULL,
+          "touch_count" INTEGER NOT NULL DEFAULT 0,
+          "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updated_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await this.prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "account_touch_quotas_user_id_platform_account_id_touch_date_key"
+          ON "account_touch_quotas" ("user_id", "platform", "account_id", "touch_date")
+      `);
+      await this.prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "account_touch_quotas_user_id_platform_account_id_idx"
+          ON "account_touch_quotas" ("user_id", "platform", "account_id")
+      `);
+    } catch (error) {
+      // 建表失败不阻断启动（非 SQLite/无权限等），业务访问时报错即可见
+      this.logger.warn(
+        `account_touch_quotas 建表失败（跳过）：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
 
   /** 本地时区 YYYY-MM-DD */
   private today(): string {
