@@ -860,11 +860,9 @@ function LoginPageContent() {
                             </span>
                           </label>
                           <Button
-                            className="login-action-button w-full"
+                            className="preview-main-button login-action-button w-full"
                             color="primary"
-                            isDisabled={
-                              passwordSubmitting || !username.trim() || !password
-                            }
+                            isDisabled={passwordSubmitting}
                             startContent={
                               passwordSubmitting ? (
                                 <Spinner aria-label="登录中" size="sm" />
@@ -918,7 +916,7 @@ function LoginPageContent() {
                             <span className="text-small text-default-500">点击按钮，用微信扫码完成登录，确认后会自动回到本页。</span>
                           </div>
                           {!isMobileShell() && (
-                            <Button className="qr-login-button login-action-button w-full" color="primary" onPress={handleWechatLogin}>
+                            <Button className="preview-main-button qr-login-button login-action-button w-full" color="primary" onPress={handleWechatLogin}>
                               使用微信登录
                             </Button>
                           )}
@@ -927,7 +925,7 @@ function LoginPageContent() {
                               不再走微信开放平台 openid 独立建号。 */}
                           {isMobileShell() && (
                             <Button
-                              className="qr-login-button login-action-button w-full"
+                              className="preview-main-button qr-login-button login-action-button w-full"
                               variant="flat"
                               onPress={() => void startDeviceAuth()}
                             >

@@ -99,3 +99,10 @@ html,body,.bg-background,.login-preview-stack,.login-preview-hero{background:tra
 
 /* 卡内 SSO 面板同步玻璃化（否则外层透了、内层还是实心白，整体不玻璃） */
 .sso-hero{background:rgba(255,255,255,.3)!important;-webkit-backdrop-filter:blur(14px) saturate(150%)!important;backdrop-filter:blur(14px) saturate(150%)!important;border:0!important;box-shadow:0 8px 24px rgba(29,19,40,.08),inset 0 1px rgba(255,255,255,.6)!important}
+
+/* 2026-09-07: 三种登录方式主按钮风格完全统一——
+   1) 账号密码按钮不再因"输入框为空"而禁用（点击时已有"请输入账号和密码"校验），
+      避免禁用态半透明导致它看起来是另一种风格；
+   2) 提交中的禁用态保持满色，仅由 Spinner + 文案表达进度；
+   3) 三个按钮统一挂 .preview-main-button，高度/字重/高光扫过效果一致。 */
+.login-action-button:disabled{opacity:1!important}
