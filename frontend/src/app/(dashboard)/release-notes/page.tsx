@@ -5,18 +5,23 @@ import { BadgeCheck, CheckCircle2, RefreshCw, ShieldCheck } from "@/components/i
 import type { ReactNode } from "react";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
-const currentVersion = "1.1.115";
+const currentVersion = "1.1.116";
 
 const highlights = [
   {
-    title: "报错看得见，不再静默空白",
-    text: "全站 16 个页面在数据加载失败时，会明确显示失败原因并提供「重新加载」按钮，不再出现看起来像「没有数据」的空白列表让用户猜。",
-    icon: <RefreshCw className="h-5 w-5" strokeWidth={1.8} />,
+    title: "私信回复更精准，不再回错人",
+    text: "同一条私信不会被重复回复，不同人发来同样的话也不会回错对象；只有能精确定位到具体消息时才自动回复，定位不到就交给人工审核，绝不乱发。",
+    icon: <BadgeCheck className="h-5 w-5" strokeWidth={1.8} />,
   },
   {
-    title: "获客失败原因说人话",
-    text: "自动获客执行失败的原因从技术错误码翻译成 16 类人话标签，铺满获客任务页、获客中心、今日中心和控制台；停留在获客中心时会主动弹出新失败提醒。",
+    title: "账号数据自愈更安全",
+    text: "账号数据异常自动修复时，会先完整备份、失败能回滚，不再可能出现「已写入的数据丢失」的情况。",
     icon: <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />,
+  },
+  {
+    title: "历史线索不再「看不见」",
+    text: "历史线索会正确归属到对应组织；归属有歧义的线索会进入专门的管理入口，由管理员手动指定，不再悄悄消失。",
+    icon: <CheckCircle2 className="h-5 w-5" strokeWidth={1.8} />,
   },
 ];
 

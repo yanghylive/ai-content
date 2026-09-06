@@ -12,6 +12,17 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES = [
   {
+    version: "v1.1.116",
+    date: "2026-09-06",
+    highlights: [
+      "私信自动回复更精准：同一条私信不会重复回复，不同人发同样的话也不会回错人",
+      "修复：账号数据自愈更安全，异常时不再可能丢失已写入的数据",
+      "修复：历史线索正确归属到对应组织，不再出现「看不见的线索」",
+      "修复：悬浮控制条透明区域不再挡住页面点击",
+      "安全：桌面启动时清理第三方凭据环境，最小权限运行",
+    ],
+  },
+  {
     version: "v1.1.115",
     date: "2026-09-02",
     highlights: [
@@ -400,4 +411,4 @@ export const RELEASE_NOTES = [
 ] as const;
 
 /** 桌面应用当前版本号（优先从 Electron 读取，此为兜底常量） */
-export const DESKTOP_APP_VERSION = "1.1.115";
+export const DESKTOP_APP_VERSION = "1.1.116";
