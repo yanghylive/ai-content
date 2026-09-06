@@ -474,7 +474,6 @@ export function CrmCenter() {
       ) : null}
       <WorkbenchCenter
         title="客户管理"
-        backHref="/crm"
         subtitle="管理你的客户档案，跟进每一个商机"
         icon={Users}
         stats={[
