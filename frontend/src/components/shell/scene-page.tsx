@@ -24,12 +24,15 @@ export function ScenePage({
   hint,
   cards,
   before,
+  after,
 }: {
   title: string;
   sub: string;
   hint?: { icon?: ShellIconName; brand?: BrandIconName; text: string; actionLabel: string; href: string };
   cards: SceneCard[];
   before?: React.ReactNode;
+  /** 卡片网格之后的页面级区块（渲染在 .kx-view 880 列内，与卡片同宽对齐） */
+  after?: React.ReactNode;
 }) {
   const router = useRouter();
 
@@ -113,6 +116,8 @@ export function ScenePage({
           <div className="kx-agg-grid">{g.cards.map(renderCard)}</div>
         </div>
       ))}
+
+      {after}
     </div>
   );
 }

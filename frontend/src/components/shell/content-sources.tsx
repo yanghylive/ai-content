@@ -177,18 +177,13 @@ export function ContentSources() {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-[var(--kaypal-v3-muted)]">
-          素材库的「开始采集」就是从这里抓内容
-        </p>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-end gap-2">
           <V2GhostButton icon={seeding ? Loader2 : Plus} loading={seeding} onClick={handleSeed}>
             一键推荐源
           </V2GhostButton>
           <V2PrimaryButton icon={Plus} onClick={() => setAdding((v) => !v)}>
             添加来源
           </V2PrimaryButton>
-        </div>
       </div>
 
       {adding && (

@@ -225,14 +225,23 @@ export default function ContentScene() {
           group: "视频与发布",
         },
       ]}
+        after={
+          /* 内容来源：收进 ScenePage 的 880 列（after 插槽），与卡片网格同宽对齐；
+             标题走全站 kx-section-title + 品牌图形口径（同 /message 统一收件箱） */
+          <div style={{ marginTop: 8 }}>
+            <div className="kx-section-title">
+              <BrandIcon name="scrape" size={20} />
+              内容来源
+            </div>
+            <div className="kaypal-v3-panel p-5">
+              <p className="mb-4 text-sm text-[var(--kaypal-v3-muted)]">
+                素材采集从这些地方抓内容，管理后可到素材库「开始采集」
+              </p>
+              <ContentSources />
+            </div>
+          </div>
+        }
       />
-      <div className="kaypal-v3-panel p-5">
-        <h2 className="mb-1 text-base font-semibold text-[var(--kaypal-v3-ink)]">内容来源</h2>
-        <p className="mb-4 text-sm text-[var(--kaypal-v3-muted)]">
-          素材采集从这些地方抓内容，管理后可到素材库「开始采集」
-        </p>
-        <ContentSources />
-      </div>
     </div>
   );
 }
