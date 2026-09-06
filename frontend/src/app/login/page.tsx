@@ -4,6 +4,8 @@ import React, { Suspense } from "react";
 import { Button, Card, CardBody, Input, Spinner, cn } from "@heroui/react";
 import {
   ExternalLink,
+  EyeClosed,
+  EyeOpen,
   KeyRound,
   LayoutDashboard,
   LogIn,
@@ -248,6 +250,7 @@ function LoginPageContent() {
 
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [rememberAccount, setRememberAccount] = React.useState(true);
   const [passwordSubmitting, setPasswordSubmitting] = React.useState(false);
   const [passwordError, setPasswordError] = React.useState<string | null>(
@@ -783,7 +786,7 @@ function LoginPageContent() {
                           <div className="sso-hero flex flex-col gap-3">
                             <div className="sso-head flex flex-row items-center gap-3">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img alt="" src="/brand/jiumeier-face.webp" width={400} height={400} />
+                              <img alt="" src="/brand/jiuzhang-logo.webp" width={400} height={400} />
                               <div className="flex flex-col gap-0"><span className="text-sm font-bold">使用 JIUZHANG AI 账号</span><span className="text-small text-default-500">登录一次，全端可用</span></div>
                             </div>
                             <p className="text-sm">用你的 JIUZHANG AI 账号一键登录，登录后即可直接开始工作。</p>
@@ -817,7 +820,7 @@ function LoginPageContent() {
                             id="login-password"
                             label="密码"
                             labelPlacement="outside"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="输入密码"
                             value={password}
                             onValueChange={(value) => setPassword(value)}
@@ -825,6 +828,21 @@ function LoginPageContent() {
                               if (e.key === "Enter") void handlePasswordLogin();
                             }}
                             className="w-full"
+                            endContent={
+                              <button
+                                type="button"
+                                aria-label={showPassword ? "隐藏密码" : "显示密码"}
+                                title={showPassword ? "隐藏密码" : "显示密码"}
+                                onClick={() => setShowPassword((v) => !v)}
+                                className="flex items-center justify-center rounded-md p-1 text-default-400 transition-colors hover:bg-default-100 hover:text-default-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                              >
+                                {showPassword ? (
+                                  <EyeClosed aria-hidden="true" className="h-4 w-4" />
+                                ) : (
+                                  <EyeOpen aria-hidden="true" className="h-4 w-4" />
+                                )}
+                              </button>
+                            }
                           />
                           <label
                             htmlFor="login-remember"

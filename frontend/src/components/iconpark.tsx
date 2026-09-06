@@ -56,6 +56,8 @@ import {
   Edit as ParkEdit,
   Export as ParkExport,
   Eyes as ParkEyes,
+  PreviewClose as ParkPreviewClose,
+  PreviewOpen as ParkPreviewOpen,
   FileAddition as ParkFileAddition,
   FileCabinet as ParkFileCabinet,
   FileCode as ParkFileCode,
@@ -306,6 +308,8 @@ export const Download = withPark(ParkDownload);
 export const Edit3 = withPark(ParkEdit);
 export const ExternalLink = withPark(ParkOpenOne);
 export const Eye = withPark(ParkEyes);
+export const EyeOpen = withPark(ParkPreviewOpen);
+export const EyeClosed = withPark(ParkPreviewClose);
 export const File = withPark(ParkFileText);
 export const FileBadge = withPark(ParkFileSuccess);
 export const FileCheck2 = withPark(ParkFileSuccess);
