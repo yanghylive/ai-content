@@ -154,6 +154,11 @@ html.dark {
 /* 嵌套 .kx-view（页面根 + ScenePage/WorkbenchCenter 自带层）：水平内边距归零，
    避免双层 34px 把内容再挤窄一圈 */
 .kx-view .kx-view { padding-left: 0; padding-right: 0; }
+/* 任务中心工作台列宽（2026-09-07）：Ops 组件体系按 1420 宽工作台设计，
+   收进通用 880 列后 xl 双列 grid 每列仅 ~400px，表格文字折行、表单截断、
+   左列拉伸留白。ops-v3 根放宽到 1240，双列各 ~580 与表格 min-w 560 匹配；
+   页边距仍走统一 34px。 */
+.kx-view.ops-v3 { max-width: 1240px; }
 @keyframes kx-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
 .kx-greet { font-size: 28px; font-weight: 600; letter-spacing: -0.3px; }
 .kx-greet-sub { color: var(--kx-muted); margin-top: 6px; font-size: 14px; }

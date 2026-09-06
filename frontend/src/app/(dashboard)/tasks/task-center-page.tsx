@@ -1484,7 +1484,7 @@ export function TaskCenterPage() {
         />
       ) : null}
 
-      <div className="grid gap-3 xl:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid items-start gap-3 xl:grid-cols-[1.05fr_0.95fr]">
         <OpsPanel
           extra={
             <Button
@@ -1595,7 +1595,7 @@ export function TaskCenterPage() {
               </tbody>
             </table>
           </OpsDenseTable>
-      <div className="grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid items-start gap-3 xl:grid-cols-[1.1fr_0.9fr]">
         <OpsPanel title="审批后执行流程">
           {loading ? <SkeletonList rows={3} /> : null}
           <OpsDenseTable className="mt-3">
