@@ -6,14 +6,15 @@
  * （manager × wiring × bridge server × registry），否则 E2E 验的是副本、
  * 生产跑的是另一份，等于没验。
  *
- * 生命周期规则（安全取舍）：
+ * 生命周期规则（2026-09-05 语义修订 + 2026-09-06 心跳续期）：
  *   面板 opened / shown   → 起桥（新随机端口 + 新随机 token）+ 写 0600 凭据文件
- *   面板 hidden / destroyed / account-switched → 关桥 + 删凭据文件
+ *   面板 hidden / destroyed / account-switched → **不关桥、不删凭据**（桥与 App
+ *     同生命周期，引擎经 panel-open 复用；业务写权限由 Broker 的 capability
+ *     token 撤销兜底）
+ *   面板真正关闭（App 退出）→ 关桥 + 删凭据文件
  *
- * 为什么隐藏就要关：①Page.captureScreenshot 在隐藏窗口会挂起、真实输入也不派发，
- * 让 Agent 继续"操作"看不见的页面只会产出假证据；②token 暴露窗口压到最短——
- * 只有面板真正可见的那段时间，磁盘上才存在凭据文件、端口才在监听。
- * 每次重新可见都会换一套端口+token（旧凭据自然失效）。
+ * 凭据续期：桥活着期间每 15 分钟心跳刷新 startedAt（凭据文件 60min 老化窗口），
+ * 避免面板静置 1 小时后被 3011 判 PANEL_UNAVAILABLE 降级 spawn。
  */
 const { startBrowserBridge } = require('./browser-agent-bridge-server');
 const { writeRegistry, clearRegistry } = require('./browser-panel-bridge-registry');

@@ -104,7 +104,7 @@ function registerBrowserPanelIpc(deps) {
   ipcMain.handle('browser-panel:navigate', stripOnly((url) => getPanel().navigate(url)));
   ipcMain.handle('browser-panel:back', stripOnly(() => getPanel().goBack()));
   ipcMain.handle('browser-panel:forward', stripOnly(() => getPanel().goForward()));
-  ipcMain.handle('browser-panel:reload', stripOnly(() => getPanel().reload()));
+  ipcMain.handle('browser-panel:reload', stripOnly((ignoreCache) => getPanel().reload(!!ignoreCache)));
   ipcMain.handle('browser-panel:hide', stripOnly(() => getPanel().hide()));
   ipcMain.handle('browser-panel:show', stripOnly(() => getPanel().show()));
   ipcMain.handle('browser-panel:set-width', stripOnly((w) => getPanel().setWidth(w)));

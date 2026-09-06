@@ -866,10 +866,18 @@ class BrowserPanelManager {
     }
   }
 
-  reload() {
+  /**
+   * 2026-09-06 复核 P2-2：强制重新加载（force-reload）必须真正忽略缓存。
+   * ignoreCache=true → reloadIgnoringCache()；否则普通 reload()。
+   */
+  reload(ignoreCache = false) {
     if (this.panelView) {
-      this.panelView.webContents.reload();
-      this.recordActivity('nav', '刷新', true);
+      if (ignoreCache && typeof this.panelView.webContents.reloadIgnoringCache === 'function') {
+        this.panelView.webContents.reloadIgnoringCache();
+      } else {
+        this.panelView.webContents.reload();
+      }
+      this.recordActivity('nav', ignoreCache ? '强制刷新' : '刷新', true);
     }
   }
 
