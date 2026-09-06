@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { ChevronDown, type LucideIcon } from "@/components/iconpark";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { Check, ChevronDown, Plus, type LucideIcon } from "@/components/iconpark";
 
 /**
  * JIUZHANG AI v2 UI 基础件库
@@ -107,6 +108,230 @@ export function V2Select(
       {...props}
       className={`${inputClass} ${props.className || ""}`}
     />
+  );
+}
+
+/** 下拉选项（V2Pick 用） */
+export type V2PickOption = {
+  value: string;
+  label: string;
+  /** 次行说明（两行式选项） */
+  desc?: string;
+  icon?: LucideIcon;
+  /** 标签（如「自定义」），跟在标题后 */
+  badge?: string;
+};
+
+/**
+ * 美化下拉单选（2026-09-07）：替代原生 select——触发器同系统输入框口径，
+ * 弹层为白底圆角面板 + 两行式选项（图标/标题/说明/选中勾），支持底部动作行。
+ */
+export function V2Pick({
+  value,
+  options,
+  placeholder = "请选择",
+  onChange,
+  footer,
+  ariaLabel,
+  className,
+}: {
+  value: string;
+  options: V2PickOption[];
+  placeholder?: string;
+  onChange: (value: string) => void;
+  /** 底部动作行（如「新增自定义行业」） */
+  footer?: { label: string; onClick: () => void };
+  ariaLabel?: string;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+  const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
+
+  /* 弹层用 portal + fixed 定位：不受祖先 overflow/层叠上下文裁剪；
+     下方空间不足时自动向上翻 */
+  const place = () => {
+    const rect = btnRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const listH = Math.min(320, 44 + (options.length + (footer ? 1 : 0)) * 46);
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const flip = spaceBelow < listH + 16 && rect.top > spaceBelow;
+    setPanelStyle({
+      position: "fixed",
+      left: rect.left,
+      width: rect.width,
+      minWidth: 240,
+      maxHeight: Math.min(320, (flip ? rect.top : spaceBelow) - 12),
+      ...(flip
+        ? { bottom: window.innerHeight - rect.top + 6 }
+        : { top: rect.bottom + 6 }),
+    });
+  };
+  useLayoutEffect(() => {
+    if (open) place();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (event: MouseEvent) => {
+      if (
+        !rootRef.current?.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest?.("[data-v2pick-panel]")
+      ) {
+        setOpen(false);
+      }
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    const onScrollOrResize = () => place();
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onScrollOrResize, true);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const current = options.find((option) => option.value === value);
+  const CurrentIcon = current?.icon;
+
+  return (
+    <div ref={rootRef} className={`relative ${className || ""}`}>
+      <button
+        ref={btnRef}
+        type="button"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-10 w-full items-center gap-2 rounded-[10px] border bg-[var(--kaypal-v3-paper)] px-3 text-left transition-colors"
+        style={{
+          borderColor: open
+            ? "var(--kaypal-v3-accent)"
+            : "var(--kaypal-v3-field-border)",
+        }}
+      >
+        {CurrentIcon ? (
+          <CurrentIcon
+            size={16}
+            className="shrink-0 text-[var(--kaypal-v3-accent-ink)]"
+          />
+        ) : null}
+        <span
+          className={`min-w-0 flex-1 truncate text-sm ${
+            current
+              ? "font-semibold text-[var(--kaypal-v3-ink)]"
+              : "text-[var(--kaypal-v3-muted)]"
+          }`}
+        >
+          {current ? current.label : placeholder}
+        </span>
+        {current?.desc ? (
+          <span className="hidden shrink-0 truncate text-xs text-[var(--kaypal-v3-muted)] sm:block">
+            {current.desc}
+          </span>
+        ) : null}
+        <ChevronDown
+          size={14}
+          className={`shrink-0 text-[var(--kaypal-v3-muted)] transition-transform duration-150 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open
+        ? createPortal(
+            <div
+              role="listbox"
+              data-v2pick-panel=""
+              style={panelStyle}
+              className="z-[70] overflow-y-auto rounded-[12px] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] p-1.5 shadow-[var(--kaypal-v3-shadow-2)]"
+            >
+          {options.map((option) => {
+            const active = option.value === value;
+            const OptionIcon = option.icon;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                className={`flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2 text-left transition-colors ${
+                  active
+                    ? "bg-[var(--kaypal-v3-accent-soft)]"
+                    : "hover:bg-[var(--kaypal-v3-paper-soft)]"
+                }`}
+              >
+                {OptionIcon ? (
+                  <OptionIcon
+                    size={16}
+                    className={`shrink-0 ${
+                      active
+                        ? "text-[var(--kaypal-v3-accent-ink)]"
+                        : "text-[var(--kaypal-v3-muted)]"
+                    }`}
+                  />
+                ) : null}
+                <span className="min-w-0 flex-1">
+                  <span
+                    className={`flex items-center gap-1.5 text-sm font-medium ${
+                      active
+                        ? "text-[var(--kaypal-v3-accent-ink)]"
+                        : "text-[var(--kaypal-v3-ink)]"
+                    }`}
+                  >
+                    <span className="truncate">{option.label}</span>
+                    {option.badge ? (
+                      <span className="shrink-0 rounded-full bg-[var(--kaypal-v3-paper-soft)] px-1.5 py-px text-[10px] font-semibold text-[var(--kaypal-v3-muted)]">
+                        {option.badge}
+                      </span>
+                    ) : null}
+                  </span>
+                  {option.desc ? (
+                    <span className="mt-0.5 block truncate text-xs text-[var(--kaypal-v3-muted)]">
+                      {option.desc}
+                    </span>
+                  ) : null}
+                </span>
+                {active ? (
+                  <Check
+                    size={15}
+                    className="shrink-0 text-[var(--kaypal-v3-accent-ink)]"
+                  />
+                ) : null}
+              </button>
+            );
+          })}
+          {footer ? (
+            /* 吸底动作行：长列表滚动时始终可见 */
+            <button
+              type="button"
+              onClick={() => {
+                footer.onClick();
+                setOpen(false);
+              }}
+              className="sticky bottom-0 mt-1 flex w-full items-center gap-2 rounded-[8px] border border-dashed border-[var(--kaypal-v3-border-strong)] bg-[var(--kaypal-v3-paper)] px-3 py-2 text-left text-sm font-medium text-[var(--kaypal-v3-accent-ink)] transition-colors hover:bg-[var(--kaypal-v3-accent-soft)]"
+            >
+              <Plus size={14} className="shrink-0" />
+              {footer.label}
+            </button>
+          ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
+    </div>
   );
 }
 

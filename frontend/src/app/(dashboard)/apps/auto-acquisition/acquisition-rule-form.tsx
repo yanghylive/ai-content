@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Target,
   ArrowLeft,
   BookOpen,
   CheckCircle2,
@@ -22,6 +23,7 @@ import {
   V2Textarea,
   V2PrimaryButton,
   V2GhostButton,
+  V2Pick,
   V2Select,
   V2Disclosure,
 } from "@/components/v2/ui-kit";
@@ -1073,15 +1075,24 @@ export function AcquisitionRuleForm() {
         <div className="flex items-end gap-2">
           <div className="min-w-0 flex-1 sm:max-w-[360px]">
             <V2Field label="场景和客户类型" hint="选择后自动预填平台、关键词和话术">
-              <V2Select
+              <V2Pick
+                ariaLabel="场景和客户类型"
+                placeholder="请选择场景"
                 value={form.scene}
-                onChange={(e) => {
-                  if (e.target.value === "__add_custom__") {
-                    setShowCustomForm(true);
-                    return;
-                  }
+                options={allScenarios.map(({ value, label, desc }) => ({
+                  value,
+                  label,
+                  desc,
+                  icon: Target,
+                  badge: value.startsWith("custom-") ? "自定义" : undefined,
+                }))}
+                footer={{
+                  label: "新增自定义行业",
+                  onClick: () => setShowCustomForm(true),
+                }}
+                onChange={(next) => {
                   const picked = allScenarios.find(
-                    (item) => item.value === e.target.value,
+                    (item) => item.value === next,
                   );
                   if (!picked) return;
                   const industry = SCENARIO_INDUSTRY_MAP[picked.value];
@@ -1108,19 +1119,7 @@ export function AcquisitionRuleForm() {
                     privateTemplate: picked.preset.privateTemplate,
                   }));
                 }}
-              >
-                {form.scene ? null : <option value="">请选择场景</option>}
-                {allScenarios.map(({ value, label, desc }) => (
-                  <option key={value} value={value}>
-                    {label} · {desc}
-                    {value.startsWith("custom-") ? "（自定义）" : ""}
-                  </option>
-                ))}
-                {/* 新增自定义行业：放在所有场景最下面，选中即展开表单（不改变当前场景） */}
-                <option value="__add_custom__">
-                  ＋ 新增自定义行业…
-                </option>
-              </V2Select>
+              />
             </V2Field>
           </div>
           {form.scene.startsWith("custom-") ? (
@@ -1246,18 +1245,19 @@ export function AcquisitionRuleForm() {
       <V2Section title="第 2 步：你的客户在哪个平台？">
         <div className="sm:max-w-[360px]">
           <V2Field label="平台" hint="任务在哪个平台的评论区/内容里找客户">
-            <V2Select
+            <V2Pick
+              ariaLabel="平台"
               value={form.platform}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, platform: e.target.value as GrowthPlatform }))
+              options={PLATFORM_OPTIONS.map(({ value, label, desc, icon }) => ({
+                value,
+                label,
+                desc,
+                icon,
+              }))}
+              onChange={(next) =>
+                setForm((p) => ({ ...p, platform: next as GrowthPlatform }))
               }
-            >
-              {PLATFORM_OPTIONS.map(({ value, label, desc }) => (
-                <option key={value} value={value}>
-                  {label} · {desc}
-                </option>
-              ))}
-            </V2Select>
+            />
           </V2Field>
         </div>
       </V2Section>
