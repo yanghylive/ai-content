@@ -541,7 +541,7 @@ export function CrmCenter() {
           },
         ]}
         advancedLinks={[
-          { key: "connectors", title: "数据连接", icon: Users, href: "/crm/connectors" },
+          { key: "connectors", title: "数据连接", brand: "link", icon: Users, href: "/crm/connectors" },
         ]}
       />
 

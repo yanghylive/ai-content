@@ -146,7 +146,14 @@ html.dark {
 .kx-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; letter-spacing: 0.5px; flex-shrink: 0; }
 
 /* ---------- 视图通用 ---------- */
-.kx-view { padding: 14px var(--page-gutter) 40px; max-width: 880px; margin: 0 auto; animation: kx-fade 0.25s ease; }
+.kx-view { padding: 14px var(--page-gutter) 40px; max-width: 880px; margin: 0 auto; animation: kx-fade 0.25s ease;
+  /* 2026-09-07 全站页宽统一：.kx-view 在 flex 列容器里时 margin:0 auto 会禁用
+     stretch、收缩成内容宽（/content 实测 747 vs 880，页边距各页 34~68px 不等）。
+     显式满宽（受 max-width 封顶后仍居中），所有页面左右边距统一为单层 34px。 */
+  width: 100%; min-width: 0; box-sizing: border-box; }
+/* 嵌套 .kx-view（页面根 + ScenePage/WorkbenchCenter 自带层）：水平内边距归零，
+   避免双层 34px 把内容再挤窄一圈 */
+.kx-view .kx-view { padding-left: 0; padding-right: 0; }
 @keyframes kx-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
 .kx-greet { font-size: 28px; font-weight: 600; letter-spacing: -0.3px; }
 .kx-greet-sub { color: var(--kx-muted); margin-top: 6px; font-size: 14px; }
@@ -547,6 +554,12 @@ html.dark {
    避免双层 34px（如 /growth 页根 + WorkbenchCenter）。B0 2026-08-23。 */
 .kx-view .kx-view.kaypal-v2-engine {
   padding: 0;
+  /* 2026-09-07 修复 /crm 卡片与两侧边距不对齐：flex 列父容器里内层 .kx-view 的
+     margin:0 auto 会禁用 stretch、收缩成内容宽（实测 716 vs 父内容盒 812），
+     整块比页头边距与下方列表面板各窄 48px。显式撑满恢复对齐。 */
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* 静态通知角标：替代 marquee */
