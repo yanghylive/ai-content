@@ -193,15 +193,15 @@ export function GrowthWorkflowsPage() {
             </span>
           </div>
 
-          {/* 行业 chips */}
+          {/* 行业 chips：自动换行全量展示（不横向滚动） */}
           {playbooks.length > 0 && (
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            <div className="mt-3 flex flex-wrap gap-2 pb-1">
               {playbooks.map((pb) => (
                 <button
                   key={pb.industry}
                   type="button"
                   onClick={() => setActiveIndustry(pb.industry)}
-                  className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm transition ${
+                  className={`rounded-full border px-3.5 py-1.5 text-sm transition ${
                     activeIndustry === pb.industry
                       ? "border-[var(--kaypal-v3-accent)] bg-[var(--kaypal-v3-accent)] text-white"
                       : "border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] text-[var(--kaypal-v3-muted)] hover:border-[var(--kaypal-v3-accent)] hover:text-[var(--kaypal-v3-ink)]"
