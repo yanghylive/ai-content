@@ -425,7 +425,21 @@ http.createServer(async (req, res) => {
     res.end("Forbidden");
     return;
   }
-  streamFile(res, file, 200, { "Content-Type": MIME[path.extname(file)] || "application/octet-stream" });
+  /* 2026-09-07 修复「构建后刷新仍见旧页面」：此前静态文件不带任何 Cache-Control，
+     浏览器按启发式缓存 HTML —— 新构建发布后普通刷新仍命中旧 HTML（引用旧 chunk），
+     表现为改了源码+重新部署但用户永远看到旧版。分型给头：
+     - HTML：no-store，每次回源（静态导出页很小，成本可忽略）；
+     - /_next/static/ 内容哈希资源：immutable 一年（文件名即版本，永不冲突）；
+     - 其余（brand 图片/字体等按 URL 覆盖的资产）：no-cache，强制带条件回源。 */
+  const cacheHeaders = file.endsWith(".html")
+    ? { "Cache-Control": "no-store" }
+    : file.startsWith(path.join(rootReal, "_next", "static"))
+      ? { "Cache-Control": "public, max-age=31536000, immutable" }
+      : { "Cache-Control": "no-cache" };
+  streamFile(res, file, 200, {
+    "Content-Type": MIME[path.extname(file)] || "application/octet-stream",
+    ...cacheHeaders,
+  });
 }).listen(PORT, "127.0.0.1", () => console.log(`✅ static server on ${PORT} -> ${ROOT}`));
 
 /* 进程级兜底：异常/畸形客户端请求不得让服务退出（2026-08-11 安全修复） */
