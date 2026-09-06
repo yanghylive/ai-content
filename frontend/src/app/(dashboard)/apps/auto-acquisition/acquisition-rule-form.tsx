@@ -13,7 +13,6 @@ import {
   Plus,
   Save,
   Sparkles,
-  Target,
   XCircle,
 } from "@/components/iconpark";
 import {
@@ -23,7 +22,6 @@ import {
   V2Textarea,
   V2PrimaryButton,
   V2GhostButton,
-  V2OptionCard,
   V2Select,
   V2Disclosure,
 } from "@/components/v2/ui-kit";
@@ -1077,31 +1075,28 @@ export function AcquisitionRuleForm() {
           </V2GhostButton>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-3">
-          {allScenarios.map(({ value, label, desc, preset }) => {
-            const isCustom = value.startsWith("custom-");
-            return (
-              <V2OptionCard
-                key={value}
-                icon={Target}
-                title={label}
-                description={desc}
-                selected={form.scene === value}
-                badge={isCustom ? "自定义" : undefined}
-                onDelete={isCustom ? () => removeCustomScenario(value) : undefined}
-                onClick={() => {
-                  const industry = SCENARIO_INDUSTRY_MAP[value];
+        <div className="flex items-end gap-2">
+          <div className="min-w-0 flex-1 sm:max-w-[360px]">
+            <V2Field label="场景和客户类型" hint="选择后自动预填平台、关键词和话术">
+              <V2Select
+                value={form.scene}
+                onChange={(e) => {
+                  const picked = allScenarios.find(
+                    (item) => item.value === e.target.value,
+                  );
+                  if (!picked) return;
+                  const industry = SCENARIO_INDUSTRY_MAP[picked.value];
                   const kw = industry
                     ? industryKeywords.get(industry)
                     : undefined;
                   setForm((p) => ({
                     ...p,
-                    scene: value,
-                    platform: preset.platform,
+                    scene: picked.value,
+                    platform: picked.preset.platform,
                     keywords:
                       kw && kw.sourceKeywords.length
                         ? kw.sourceKeywords.join("，")
-                        : preset.keywords,
+                        : picked.preset.keywords,
                     intentKeywords:
                       kw && kw.demandKeywords.length
                         ? kw.demandKeywords.join("，")
@@ -1110,13 +1105,30 @@ export function AcquisitionRuleForm() {
                       kw && kw.excludeKeywords.length
                         ? kw.excludeKeywords.join("，")
                         : p.excludeKeywords,
-                    commentTemplate: preset.commentTemplate,
-                    privateTemplate: preset.privateTemplate,
+                    commentTemplate: picked.preset.commentTemplate,
+                    privateTemplate: picked.preset.privateTemplate,
                   }));
                 }}
-              />
-            );
-          })}
+              >
+                {form.scene ? null : <option value="">请选择场景</option>}
+                {allScenarios.map(({ value, label, desc }) => (
+                  <option key={value} value={value}>
+                    {label} · {desc}
+                    {value.startsWith("custom-") ? "（自定义）" : ""}
+                  </option>
+                ))}
+              </V2Select>
+            </V2Field>
+          </div>
+          {form.scene.startsWith("custom-") ? (
+            <V2GhostButton
+              size="sm"
+              className="mb-0.5 shrink-0"
+              onClick={() => removeCustomScenario(form.scene)}
+            >
+              删除该行业
+            </V2GhostButton>
+          ) : null}
         </div>
 
         {showCustomForm && (
@@ -1229,17 +1241,21 @@ export function AcquisitionRuleForm() {
 
       {/* 第 2 步：平台 */}
       <V2Section title="第 2 步：你的客户在哪个平台？">
-        <div className="grid gap-3 sm:grid-cols-3">
-          {PLATFORM_OPTIONS.map(({ value, label, desc, icon }) => (
-            <V2OptionCard
-              key={value}
-              icon={icon}
-              title={label}
-              description={desc}
-              selected={form.platform === value}
-              onClick={() => setForm((p) => ({ ...p, platform: value }))}
-            />
-          ))}
+        <div className="sm:max-w-[360px]">
+          <V2Field label="平台" hint="任务在哪个平台的评论区/内容里找客户">
+            <V2Select
+              value={form.platform}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, platform: e.target.value as GrowthPlatform }))
+              }
+            >
+              {PLATFORM_OPTIONS.map(({ value, label, desc }) => (
+                <option key={value} value={value}>
+                  {label} · {desc}
+                </option>
+              ))}
+            </V2Select>
+          </V2Field>
         </div>
       </V2Section>
 
