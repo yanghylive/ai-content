@@ -964,7 +964,10 @@ describe('CommentAcquisitionService 私信获客', () => {
     autoUploadMock.readDouyinMessages.mockResolvedValue({
       accountId: 1,
       title: '抖音私信',
-      messages: [{ text: '你们的产品怎么收费？' }, { text: '哈哈哈' }],
+      messages: [
+        { text: '你们的产品怎么收费？', messageId: 'msg-1', senderId: 'sender-1' },
+        { text: '哈哈哈', messageId: 'msg-2', senderId: 'sender-2' },
+      ],
     });
     replyEngineMock.scoreLeadPotential.mockImplementation(
       (m: { text: string }) => {
@@ -1001,6 +1004,39 @@ describe('CommentAcquisitionService 私信获客', () => {
     expect(result.leads).toBe(1);
     expect(result.replies).toBe(1); // 低风险自动外发成功
     expect(executorMock.dispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('私信无稳定 messageId/senderId 时禁止 autoReply（P0 复核）', async () => {
+    autoUploadMock.readDouyinMessages.mockResolvedValue({
+      accountId: 1,
+      title: '抖音私信',
+      messages: [{ text: '你们的产品怎么收费？' }, { text: '哈哈哈' }],
+    });
+    replyEngineMock.scoreLeadPotential.mockImplementation(
+      (m: { text: string }) => {
+        const score = m.text.includes('收费') ? 70 : 5;
+        return { score, signals: score > 50 ? ['强意向'] : [] };
+      },
+    );
+    replyEngineMock.generateReply.mockResolvedValue({
+      replyText: '私信你详细报价',
+      personaId: 'x',
+      personaName: 'x',
+      retries: 0,
+    });
+    replyEngineMock.isHighRisk.mockReturnValue(false);
+    prismaMock.lead.findFirst.mockResolvedValue(null);
+    prismaMock.lead.updateMany.mockResolvedValue({ count: 1 });
+
+    const result = await service.scanDm({
+      platform: 'douyin',
+      accountId: 1,
+      autoReply: true,
+    });
+
+    // 无稳定 ID → 禁止自动外发（防仅按文本定位发错人），replies 应为 0
+    expect(result.replies).toBe(0);
+    expect(executorMock.dispatch).not.toHaveBeenCalled();
   });
 
   it('私信扫描 platform 漏传且账号推断失败时显式报错（S4-7）', async () => {

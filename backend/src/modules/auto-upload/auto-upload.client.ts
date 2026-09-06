@@ -338,6 +338,11 @@ export type AutoUploadDouyinMessage = {
   y?: number;
   width?: number;
   height?: number;
+  // 2026-09-06 复核 P0：私信稳定身份。扫描脚本尽力从 DOM 提取（data-message-id
+  // / data-sender-id 等）；提取不到为 null，此时 scanDm 禁止自动外发（防对错人）。
+  messageId?: string | null;
+  senderId?: string | null;
+  conversationId?: string | null;
 };
 
 export type AutoUploadDouyinMessagesReadResult = {

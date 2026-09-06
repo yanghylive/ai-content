@@ -153,12 +153,13 @@ export class LeadRepository {
   }
 
   /**
-   * 2026-09-06 复核 P1-3：按稳定字段（平台+账号+评论文本）查「已生成过回复」的
+   * 2026-09-06 复核 P1-3 + P0（私信稳定身份）：按稳定字段查「已生成过回复」的
    * 既有线索。scanAccount 对同一批评论重复扫描时，若已有 latestReply 则跳过 AI
    * 重新生成——重复生成会以相同 prompt 触发 kaypal 网关 409 BILLING_IDEMPOTENCY_REPLAY。
    * 不用 dedupeKey 的原因：dedupeKeyOf 里 externalUserId(authorId) 有/无漂移会让
    * 键变化（uid:xxx ↔ nick:xxx|hash），导致复用查询落空 → 重复生成 → 409。
-   * sourceText 是评论文本原文，跨 scan 稳定。
+   * 评论用 sourceText；私信有稳定 messageId 时用 commentRef（messageId）精确匹配，
+   * 避免「两个人都发多少钱」同文本误复用同一条线索。
    */
   async findRepliedBySource(
     userId: string,
@@ -168,6 +169,7 @@ export class LeadRepository {
     sourceType: string,
     sourceUrl: string | null,
     sourceText: string,
+    messageId?: string | null,
   ): Promise<{ id: string; latestReply: string } | null> {
     const existing = await this.prisma.lead.findFirst({
       where: {
@@ -177,10 +179,11 @@ export class LeadRepository {
         sourceAccountId,
         // 2026-09-06 复核 P1-3：区分评论/私信（同文不同来源不互串）
         sourceType,
+        // 私信有稳定 messageId → 用 commentRef（存 messageId）精确匹配；否则退文本
+        ...(messageId ? { commentRef: messageId } : { sourceText }),
         // 来源内容标识：同评论文本出现在不同视频/内容时不可复用；
         // sourceUrl 缺失（历史脏数据）时退化为不按内容限定，靠 sourceType+文本兜底。
         ...(sourceUrl ? { sourceUrl } : {}),
-        sourceText,
         latestReply: { not: null },
         // 可复用状态：只复用已审核/已回复的有效草稿，不复用 failed 旧草稿
         status: { in: ['approved', 'replied'] },

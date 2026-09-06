@@ -361,21 +361,22 @@ export class PrismaService
       `账号库损坏（quick_check 失败），备份后从系统库模板重建：${accountPath}（备份 .corrupt-${stamp}）`,
     );
     this.accountClients.delete(accountPath);
-    // sidecar 先移（防残留 WAL 污染重建后的新库），失败则中止重建
+    // 2026-09-06 复核 P1-3：sidecar 移动 + 主库 rename 纳入同一 try 回滚事务。
+    // 若 -wal 已移而 -shm 移动失败（或主库 rename 失败），任一失败都回滚已移
+    // 走的 sidecar，避免 WAL 中已提交数据随 sidecar 漂移丢失（主库还在原位）。
     const movedSidecars: Array<{ from: string; to: string }> = [];
-    for (const suffix of ['-wal', '-shm']) {
-      const sidecar = `${accountPath}${suffix}`;
-      if (existsSync(sidecar)) {
-        const target = `${sidecar}.corrupt-${stamp}`;
-        renameSync(sidecar, target);
-        movedSidecars.push({ from: sidecar, to: target });
-      }
-    }
     try {
+      // sidecar 先移（防残留 WAL 污染重建后的新库）
+      for (const suffix of ['-wal', '-shm']) {
+        const sidecar = `${accountPath}${suffix}`;
+        if (existsSync(sidecar)) {
+          const target = `${sidecar}.corrupt-${stamp}`;
+          renameSync(sidecar, target);
+          movedSidecars.push({ from: sidecar, to: target });
+        }
+      }
       renameSync(accountPath, `${accountPath}.corrupt-${stamp}`);
     } catch (error) {
-      // 2026-09-06 复核 P1-5：主库 rename 失败时把已移走的 sidecar 放回，
-      // 否则 WAL 中已提交数据随 sidecar 漂移丢失（主库还在原位但 sidecar 不在）。
       for (const { from, to } of movedSidecars.reverse()) {
         try {
           if (existsSync(to)) renameSync(to, from);

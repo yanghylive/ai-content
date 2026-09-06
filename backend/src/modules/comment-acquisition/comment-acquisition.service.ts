@@ -545,7 +545,12 @@ export class CommentAcquisitionService {
           });
 
     const messages = (readResult.messages || [])
-      .map((m) => ({ text: String(m.text || '').trim() }))
+      .map((m) => ({
+        text: String(m.text || '').trim(),
+        messageId: m.messageId ?? null,
+        senderId: m.senderId ?? null,
+        conversationId: m.conversationId ?? null,
+      }))
       .filter((m) => m.text.length > 0);
 
     this.logger.log(
@@ -574,8 +579,8 @@ export class CommentAcquisitionService {
       let personaId: string | undefined;
       let personaName: string | undefined;
       let generationError: string | undefined;
-      // 2026-09-06 复核 P1-4：私信同样按稳定字段去重复用草稿（sourceType='dm'、
-      // sourceUrl=null 私信无内容级标识），避免相同私信重复扫描重复生成触发 409。
+      // 2026-09-06 复核 P0：私信按稳定 messageId 去重（有 ID 用 ID，无 ID 退文本），
+      // 避免「两个人都发多少钱」同文本误复用同一条线索/草稿。
       const existingReplied = await this.leadRepository.findRepliedBySource(
         scope.userId,
         scope.tenantId,
@@ -584,6 +589,7 @@ export class CommentAcquisitionService {
         'dm',
         null,
         message.text,
+        message.messageId,
       );
       if (existingReplied?.latestReply) {
         replyText = existingReplied.latestReply;
@@ -618,6 +624,10 @@ export class CommentAcquisitionService {
         sourceType: 'dm',
         sourceAccountId: String(input.accountId),
         sourceText: message.text,
+        // 2026-09-06 复核 P0：持久化私信稳定身份——senderId→externalUserId、
+        // messageId→commentRef（私信场景 commentRef 恒 null，复用存消息 ID）。
+        externalUserId: message.senderId ?? null,
+        commentRef: message.messageId ?? null,
         score,
         signals,
         latestReply: replyText ?? null,
@@ -643,7 +653,10 @@ export class CommentAcquisitionService {
         });
       }
       // 私信自动回复：低风险自动真实外发（留审批痕迹），高风险进人工审核
-      if (autoReply && replyText) {
+      // 2026-09-06 复核 P0：无稳定 messageId+senderId 时禁止自动外发（仅文本定位
+      // 会发错人），强制进人工审核。
+      const hasStableId = !!message.messageId && !!message.senderId;
+      if (autoReply && replyText && hasStableId) {
         const highRisk = this.replyEngine.isHighRisk(message);
         if (highRisk) {
           status = 'pending';

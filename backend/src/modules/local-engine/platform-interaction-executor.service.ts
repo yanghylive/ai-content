@@ -3606,6 +3606,20 @@ export class PlatformInteractionExecutor {
         if (/私信|消息|回复|分钟前|小时前|刚刚|今天|昨天|\\d{1,2}:\\d{2}|\\d{1,2}-\\d{1,2}|未读/.test(context)) score += 20;
         if (/[？?吗呢吧呀哦]|预约|价格|多少|怎么|哪里|联系|电话|微信|私信/.test(text)) score += 18;
         if (/[\\u{1F300}-\\u{1FAFF}]/u.test(text)) score += 8;
+        const idAttrs = (el) => {
+          if (!el || !el.getAttribute) return {};
+          const get = (keys) => {
+            for (const k of keys) { const v = el.getAttribute(k); if (v) return v; }
+            return null;
+          };
+          return {
+            messageId: get(['data-message-id', 'data-msg-id', 'data-message_id', 'data-msgid', 'data-id', 'data-item-id']),
+            senderId: get(['data-sender-id', 'data-sender', 'data-from-user-id', 'data-sec-uid', 'data-sender_id', 'data-uid']),
+            conversationId: get(['data-conversation-id', 'data-conversation', 'data-session-id', 'data-conversation_id', 'data-cid']),
+          };
+        };
+        const rowIds = idAttrs(row);
+        const nodeIds = idAttrs(node);
         candidates.push({
           text,
           looksLikeMessage: true,
@@ -3613,6 +3627,9 @@ export class PlatformInteractionExecutor {
           score,
           context,
           contactName: contactFromRow(rowText),
+          messageId: rowIds.messageId || nodeIds.messageId || null,
+          senderId: rowIds.senderId || nodeIds.senderId || null,
+          conversationId: rowIds.conversationId || nodeIds.conversationId || null,
           x: Math.round(rect.x),
           y: Math.round(rect.y),
           width: Math.round(rect.width),
