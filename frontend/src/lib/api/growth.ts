@@ -600,6 +600,23 @@ overview: () => api.get<GrowthOverview>("/growth/overview"),
     deleteStrategy: (id: string) => api.delete<{ ok: boolean }>(`/growth/strategies/${id}`),
     generateStrategy: (body: { industry?: string; scenario?: string }) =>
         api.post<GrowthStrategyTemplate>("/growth/strategies/generate", body),
+    /** 获客表单 AI 帮填：keywords=行业词/意向词，templates=评论/私信话术；engine 标真实来源 */
+    acquisitionAiFill: (body: {
+        mode: "keywords" | "templates";
+        industry?: string;
+        region?: string;
+        platform?: string;
+        scene?: string;
+        goal?: string;
+    }) =>
+        api.post<{
+            mode: string;
+            sourceKeywords?: string[];
+            demandKeywords?: string[];
+            commentTemplate?: string;
+            privateTemplate?: string;
+            engine: "llm" | "template";
+        }>("/growth/acquisition/ai-fill", body),
     applyStrategy: (id: string, body: { mode?: GrowthAcquisitionMode; platform?: GrowthPlatform; taskName?: string } = {}) =>
         api.post<{ strategy: GrowthStrategyTemplate; config: GrowthAcquisitionConfig; message: string }>(
             `/growth/strategies/${id}/apply`,

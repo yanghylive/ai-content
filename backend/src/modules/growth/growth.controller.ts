@@ -206,6 +206,11 @@ export class GrowthController {
     );
   }
 
+  @Post('acquisition/ai-fill')
+  acquisitionAiFill(@Body() body: Record<string, unknown>) {
+    return this.growthService.acquisitionAiFill(body || {});
+  }
+
   @Post('strategies/generate')
   generateStrategy(
     @Req() request: AuthenticatedRequest,

@@ -32,6 +32,8 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { resolveProjectDataPath } from '../../common/project-paths';
 import { KaypalMemoryService } from '../memory/memory-kaypal.service';
+import { AiClientService } from '../ai-models/ai-client.service';
+import { DefaultModelsService } from '../ai-models/default-models.service';
 import {
   industryPlaybook,
   listWorkflowPlaybooks,
@@ -230,6 +232,8 @@ export class GrowthService implements OnModuleInit {
     @Optional() private readonly rpaDriverRegistry?: RpaDriverRegistry,
     @Optional() private readonly leadScoreService?: LeadScoreService,
     @Optional() private readonly accountTouchQuota?: AccountTouchQuotaService,
+    @Optional() private readonly aiClient?: AiClientService,
+    @Optional() private readonly defaultModels?: DefaultModelsService,
   ) {}
 
   /* ========== 实时执行遥测 helpers（2026-09-04） ========== */
@@ -1372,6 +1376,156 @@ export class GrowthService implements OnModuleInit {
     const scenario = this.text(input.scenario) || '评论获客';
     const templates = this.defaultIndustryTemplate(industry, scenario);
     return this.createStrategy(userId, templates);
+  }
+
+  /**
+   * 获客表单「AI 帮填」（第 3/4 步）：真实 LLM 生成行业词/意向词或评论/私信话术。
+   * mode=keywords → sourceKeywords/demandKeywords；mode=templates → commentTemplate/privateTemplate。
+   * LLM 不可用/解析失败 → 回落 14 行业词库模板，保证按钮永远有结果（engine 标回落来源）。
+   */
+  async acquisitionAiFill(input: QueryInput): Promise<{
+    mode: 'keywords' | 'templates';
+    sourceKeywords?: string[];
+    demandKeywords?: string[];
+    commentTemplate?: string;
+    privateTemplate?: string;
+    engine: 'llm' | 'template';
+  }> {
+    const mode: 'keywords' | 'templates' =
+      this.text(input.mode) === 'templates' ? 'templates' : 'keywords';
+    const industry = this.text(input.industry) || '本地生活';
+    const platform = this.text(input.platform) || '抖音';
+    const region = this.text(input.region);
+    const goal = this.text(input.goal);
+    const scene = this.text(input.scene);
+    const fallback = this.defaultIndustryTemplate(industry, scene || '评论获客');
+
+    const modelId = await this.resolveAiFillModelId();
+    if (!modelId || !this.aiClient) {
+      return { mode, engine: 'template', ...this.aiFillFromTemplate(mode, fallback) };
+    }
+
+    const prompt =
+      mode === 'keywords'
+        ? `行业：${industry}${region ? `；地域：${region}` : ''}；平台：${platform}。
+请生成获客关键词 JSON：
+{"sourceKeywords": ["8-12个用来找相关账号/话题的词，${region ? `含「${region}+行业」本地组合词` : '细分服务词'}"],
+ "demandKeywords": ["8-12个在评论区识别真实购买意向的口语词，例如 多少钱、求推荐、怎么联系"]}
+要求：全部中文口语搜索词，单词内不带标点，不重复，不要解释。`
+        : `行业：${industry}；平台：${platform}；目标：${goal || '引导客户私信咨询'}。
+参考现有话术：${fallback.commentTemplates[0]}
+请生成更贴合「${industry}」的获客话术 JSON：
+{"commentTemplate": "一条40-70字评论话术：像真实用户随口搭话，不提品牌名不硬广，留一个让对方想回复的钩子",
+ "privateTemplate": "一条50-90字私信话术：承接评论互动，自称{品牌}，给一个具体价值点，邀请对方说说自己的情况"}
+要求：自然口语，无 emoji，避开违禁营销词。`;
+
+    try {
+      const raw = await this.aiClient.generate(
+        modelId,
+        [
+          {
+            role: 'system',
+            content:
+              '你是获客策略文案助手，服务本地商家在内容平台评论区找客户。只输出合法 JSON，不要解释、不要 markdown 代码块。',
+          },
+          { role: 'user', content: prompt },
+        ],
+        {
+          maxTokens: 800,
+          temperature: 0.7,
+          knowledgeMode: 'off',
+          billingSalt: `acquisition-ai-fill:${mode}:${Date.now()}:${Math.random()
+            .toString(36)
+            .slice(2, 8)}`,
+        },
+      );
+      const parsed = this.parseAiFillJson(raw);
+      if (!parsed) {
+        return { mode, engine: 'template', ...this.aiFillFromTemplate(mode, fallback) };
+      }
+      if (mode === 'keywords') {
+        const sourceKeywords = this.cleanAiFillList(parsed.sourceKeywords);
+        const demandKeywords = this.cleanAiFillList(parsed.demandKeywords);
+        if (!sourceKeywords.length && !demandKeywords.length) {
+          return { mode, engine: 'template', ...this.aiFillFromTemplate(mode, fallback) };
+        }
+        return {
+          mode,
+          engine: 'llm',
+          sourceKeywords: sourceKeywords.length ? sourceKeywords : undefined,
+          demandKeywords: demandKeywords.length ? demandKeywords : undefined,
+        };
+      }
+      const commentTemplate = this.text(parsed.commentTemplate);
+      const privateTemplate = this.text(parsed.privateTemplate);
+      if (!commentTemplate && !privateTemplate) {
+        return { mode, engine: 'template', ...this.aiFillFromTemplate(mode, fallback) };
+      }
+      return {
+        mode,
+        engine: 'llm',
+        commentTemplate: commentTemplate || undefined,
+        privateTemplate: privateTemplate || undefined,
+      };
+    } catch {
+      return { mode, engine: 'template', ...this.aiFillFromTemplate(mode, fallback) };
+    }
+  }
+
+  private async resolveAiFillModelId(): Promise<string> {
+    try {
+      const defaults = await this.defaultModels?.getDefaults();
+      return (
+        defaults?.topicSelection ||
+        defaults?.articleCreation ||
+        defaults?.xCollection ||
+        ''
+      );
+    } catch {
+      return '';
+    }
+  }
+
+  private aiFillFromTemplate(
+    mode: 'keywords' | 'templates',
+    tpl: ReturnType<GrowthService['defaultIndustryTemplate']>,
+  ) {
+    return mode === 'keywords'
+      ? {
+          sourceKeywords: tpl.sourceKeywords,
+          demandKeywords: tpl.demandKeywords,
+        }
+      : {
+          commentTemplate: tpl.commentTemplates[0],
+          privateTemplate: tpl.privateMessageTemplates[0],
+        };
+  }
+
+  private cleanAiFillList(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((item) => String(item ?? '').trim())
+      .filter(Boolean)
+      .slice(0, 16);
+  }
+
+  private parseAiFillJson(raw: string): Record<string, unknown> | null {
+    const text = String(raw || '')
+      .trim()
+      .replace(/^```(?:json)?/i, '')
+      .replace(/```$/, '')
+      .trim();
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start < 0 || end <= start) return null;
+    try {
+      const parsed = JSON.parse(text.slice(start, end + 1));
+      return parsed && typeof parsed === 'object'
+        ? (parsed as Record<string, unknown>)
+        : null;
+    } catch {
+      return null;
+    }
   }
 
   async updateStrategy(userId: string, id: string, input: QueryInput) {

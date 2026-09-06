@@ -47,6 +47,7 @@ import { growthApi, type GrowthAccountHealth, type GrowthAcquisitionPreflight, t
 import { buildRiskConfirmation } from "@/lib/api/auto-upload";
 import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
+import toast from "@/lib/toast";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
 const PLATFORM_LOGO: Record<string, { image: string; brandColor: string }> =
@@ -511,6 +512,64 @@ export function AcquisitionRuleForm() {
     }
   };
 
+
+  /** AI 帮填（第 3/4 步）：带当前场景/地域/平台上下文调后端 LLM，失败回落词库模板 */
+  const runAiFill = async (mode: "keywords" | "templates") => {
+    setAiFillBusy(mode);
+    try {
+      const sceneLabel =
+        allScenarios.find((item) => item.value === form.scene)?.label || form.scene;
+      const result = await growthApi.acquisitionAiFill({
+        mode,
+        industry: sceneLabel || undefined,
+        scene: sceneLabel || undefined,
+        region: form.region || undefined,
+        platform: form.platform || undefined,
+        goal: form.taskName || undefined,
+      });
+      if (mode === "keywords") {
+        setForm((p) => ({
+          ...p,
+          keywords: result.sourceKeywords?.length
+            ? result.sourceKeywords.join(",")
+            : p.keywords,
+          intentKeywords: result.demandKeywords?.length
+            ? result.demandKeywords.join(",")
+            : p.intentKeywords,
+        }));
+      } else {
+        setForm((p) => ({
+          ...p,
+          commentTemplate: result.commentTemplate || p.commentTemplate,
+          privateTemplate: result.privateTemplate || p.privateTemplate,
+        }));
+      }
+      toast(
+        result.engine === "llm"
+          ? mode === "keywords"
+            ? "AI 已生成行业词和意向词，可继续修改"
+            : "AI 已重写评论和私信话术，可继续修改"
+          : mode === "keywords"
+            ? "已按行业词库帮你填好，可继续修改"
+            : "已按行业模板写好话术，可继续修改",
+      );
+    } catch (error) {
+      toast.error(toPublicError(error, "AI 帮填失败，请稍后重试"));
+    } finally {
+      setAiFillBusy("");
+    }
+  };
+
+  const aiFillButton = (mode: "keywords" | "templates", label: string) => (
+    <V2GhostButton
+      icon={Sparkles}
+      loading={aiFillBusy === mode}
+      onClick={() => void runAiFill(mode)}
+    >
+      {aiFillBusy === mode ? "AI 正在写…" : label}
+    </V2GhostButton>
+  );
+
   // T3-4：AI 记得你上次——加载 kaypal 长期记忆，预填行业/关键词/话术
   const [memoryHint, setMemoryHint] = useState<string | null>(null);
   useEffect(() => {
@@ -606,6 +665,7 @@ export function AcquisitionRuleForm() {
   /** T06：创建后持有的 configId（用于预检/执行） */
   const [createdConfigId, setCreatedConfigId] = useState<string | null>(null);
   const [preflight, setPreflight] = useState<GrowthAcquisitionPreflight | null>(null);
+  const [aiFillBusy, setAiFillBusy] = useState<"" | "keywords" | "templates">("");
   const [preflightLoading, setPreflightLoading] = useState(false);
   const [executing, setExecuting] = useState(false);
 
@@ -1387,7 +1447,10 @@ export function AcquisitionRuleForm() {
       </V2Section>
 
       {/* 第 3 步：行业词 + 意向词 */}
-      <V2Section title="第 3 步：你的客户在哪类账号/话题下？">
+      <V2Section
+        title="第 3 步：你的客户在哪类账号/话题下？"
+        action={aiFillButton("keywords", "AI 帮填关键词")}
+      >
         <V2Field
           label="行业词（找账号）"
           required
@@ -1430,7 +1493,11 @@ export function AcquisitionRuleForm() {
       </V2Section>
 
       {/* 第 3 步：说什么 */}
-      <V2Section title="第 4 步：找到后说什么？（策略和话术）" description="已帮你写好一版，改成你的风格">
+      <V2Section
+        title="第 4 步：找到后说什么？（策略和话术）"
+        description="已帮你写好一版，改成你的风格"
+        action={aiFillButton("templates", "AI 帮写话术")}
+      >
         <div className="grid gap-5">
           <V2Field label="评论话术" hint="在对方内容下的第一条评论">
             <V2Textarea

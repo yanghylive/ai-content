@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AiEmployeeModule } from '../ai-employee/ai-employee.module';
+import { AiModelsModule } from '../ai-models/ai-models.module';
 import { AutoUploadModule } from '../auto-upload/auto-upload.module';
 import { AuthModule } from '../auth/auth.module';
 import { CrmModule } from '../crm/crm.module';
@@ -22,6 +23,7 @@ import { GrowthLeadBridgeService } from './growth-lead-bridge.service';
 @Module({
   imports: [
     AiEmployeeModule,
+    AiModelsModule,
     AutoUploadModule,
     AuthModule,
     CrmModule,
