@@ -23,9 +23,9 @@ import { Icon } from "@/components/lucide-icon-compat";
 import {
   OpsDesktopPage,
   OpsDenseTable,
-  OpsMetric,
   OpsPanel,
   OpsStatusPill,
+  OpsTabs,
   OpsToolbar,
 } from "../components/desktop-ops-ui";
 import { FailureActionPanel } from "../components/failure-action-panel";
@@ -636,6 +636,13 @@ export function TaskCenterPage() {
     React.useState<AiEmployeeCapabilitiesSnapshot | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
+  /* 2026-09-07 工作台 IA 重构：任务流水 tab / 搜索 / 工作流创建抽屉 */
+  const [flowTab, setFlowTab] = React.useState<
+    "all" | "running" | "confirm" | "failed" | "publish" | "workflow"
+  >("all");
+  const [flowQuery, setFlowQuery] = React.useState("");
+  const [builderOpen, setBuilderOpen] = React.useState(false);
+  const flowRef = React.useRef<HTMLDivElement | null>(null);
   const [previewBusy, setPreviewBusy] = React.useState<
     AiEmployeeCoreTaskType | ""
   >("");
@@ -1100,14 +1107,10 @@ export function TaskCenterPage() {
     (sum, task) => sum + getPublishRecordEvidenceCount(task),
     0,
   );
-  const publishFailedCount = publishTasks.filter(
-    (task) => getPublishRecordMetrics(task).failed > 0,
-  ).length;
   const recentFailures = sessions
     .filter((session) => session.status === "failed")
     .slice(0, 3);
   const recentSessions = sessions.slice(0, 5);
-  const recentPublishTasks = publishTasks.slice(0, 6);
   const sessionById = React.useMemo(
     () => new Map(sessions.map((session) => [session.id, session])),
     [sessions],
@@ -1127,34 +1130,66 @@ export function TaskCenterPage() {
     (item) => item.riskLevel === "high",
   ).length;
 
-  const metricCards = [
-    {
-      label: "正在运行",
-      value: runningCount,
-      detail: "正在处理的发布、互动和自动化任务",
-      color: "primary" as const,
-    },
-    {
-      label: "待确认",
-      value: confirmations.length,
-      detail: highRiskConfirmations
-        ? `${highRiskConfirmations} 个高风险动作`
-        : "需要人工确认后继续",
-      color: confirmations.length ? ("warning" as const) : ("default" as const),
-    },
-    {
-      label: "失败待修复",
-      value: failedCount,
-      detail: "查看失败步骤、重试或回来源修复",
-      color: failedCount ? ("danger" as const) : ("default" as const),
-    },
-    {
-      label: "结果留存",
-      value: evidenceCount + publishRecordEvidenceCount,
-      detail: "截图、步骤、失败原因和文件记录",
-      color: "success" as const,
-    },
-  ];
+  /* 统一任务流水：Agent 会话 ∪ 自动化任务，按更新时间倒序（2026-09-07 IA 重构） */
+  type FlowRow =
+    | { kind: "session"; id: string; updatedAt: string; session: AgentSession }
+    | {
+        kind: "automation";
+        id: string;
+        updatedAt: string;
+        task: AutomationTaskView;
+      };
+  const flowRows = React.useMemo<FlowRow[]>(() => {
+    const merged: FlowRow[] = [
+      ...sessions.map(
+        (session): FlowRow => ({
+          kind: "session",
+          id: `session:${session.id}`,
+          updatedAt: session.updatedAt,
+          session,
+        }),
+      ),
+      ...automationTasks.map(
+        (task): FlowRow => ({
+          kind: "automation",
+          id: `automation:${task.id}`,
+          updatedAt: task.updatedAt,
+          task,
+        }),
+      ),
+    ];
+    return merged.sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    );
+  }, [sessions, automationTasks]);
+  const automationRunningCount = automationTasks.filter(
+    (task) => task.status === "running" || task.status === "queued",
+  ).length;
+  const automationFailedCount = automationTasks.filter(
+    (task) =>
+      task.status === "failed" || task.status === "partial_failed",
+  ).length;
+  const flowVisible = flowRows.filter((row) => {
+    if (flowTab === "running") {
+      return row.kind === "session"
+        ? row.session.status === "running"
+        : row.task.status === "running" || row.task.status === "queued";
+    }
+    if (flowTab === "failed") {
+      return row.kind === "session"
+        ? row.session.status === "failed"
+        : row.task.status === "failed" || row.task.status === "partial_failed";
+    }
+    const query = flowQuery.trim().toLowerCase();
+    if (!query) return true;
+    const haystack =
+      row.kind === "session"
+        ? `${sessionDisplayTitle(row.session)} ${sourceLabel(row.session.source)}`
+        : `${row.task.title} ${row.task.statusLabel} ${automationTaskTypeLabel(row.task.taskType)}`;
+    return haystack.toLowerCase().includes(query);
+  });
+
   const coreQuickTasks: Array<{
     type: AiEmployeeCoreTaskType;
     title: string;
@@ -1431,6 +1466,15 @@ export function TaskCenterPage() {
                 </Button>
                 <Button
                   color="primary"
+                  size="sm"
+                  startContent={<Icon icon="solar:add-circle-linear" />}
+                  variant="flat"
+                  onPress={() => setBuilderOpen(true)}
+                >
+                  新建自动流程
+                </Button>
+                <Button
+                  color="primary"
                   isLoading={loading}
                   size="sm"
                   startContent={loading ? null : <Icon icon="solar:refresh-linear" />}
@@ -1444,26 +1488,72 @@ export function TaskCenterPage() {
           </div>
         </div>
       <OpsDesktopPage>
-      <OpsToolbar>
-        <OpsMetric
-          label="任务总数"
-          tone="brand"
-          value={sessions.length + confirmations.length + publishTasks.length}
-        />
-        <OpsMetric label="运行中" tone="warning" value={runningCount} />
-        <OpsMetric label="待确认" tone="warning" value={confirmations.length} />
-        <OpsMetric label="失败" tone="danger" value={failedCount} />
-        <OpsMetric
-          label="发布记录"
-          tone="success"
-          value={publishTasks.length}
-        />
-        <OpsMetric
-          label="证据"
-          tone="success"
-          value={evidenceCount + publishRecordEvidenceCount}
-        />
-      </OpsToolbar>
+      {/* 状态概览：点击卡片跳到下方任务流水并按对应 tab 过滤（2026-09-07 IA 重构） */}
+      <div className="grid grid-cols-3 gap-3 lg:grid-cols-6">
+        {[
+          {
+            label: "任务总数",
+            value: sessions.length + confirmations.length + publishTasks.length,
+            tab: "all",
+            color: "var(--kaypal-v3-brand)",
+          },
+          {
+            label: "运行中",
+            value: runningCount,
+            tab: "running",
+            color: "var(--kaypal-v3-amber)",
+          },
+          {
+            label: "待确认",
+            value: confirmations.length,
+            tab: "confirm",
+            color: confirmations.length
+              ? "var(--kaypal-v3-amber)"
+              : "var(--kaypal-v3-muted)",
+          },
+          {
+            label: "失败",
+            value: failedCount,
+            tab: "failed",
+            color: failedCount
+              ? "var(--kaypal-v3-danger)"
+              : "var(--kaypal-v3-muted)",
+          },
+          {
+            label: "发布记录",
+            value: publishTasks.length,
+            tab: "publish",
+            color: "var(--kaypal-v3-success)",
+          },
+          {
+            label: "证据",
+            value: evidenceCount + publishRecordEvidenceCount,
+            tab: "workflow",
+            color: "var(--kaypal-v3-success)",
+          },
+        ].map((card) => (
+          <button
+            key={card.label}
+            type="button"
+            onClick={() => {
+              setFlowTab(card.tab as typeof flowTab);
+              flowRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
+            className="min-w-0 rounded-[12px] border border-divider bg-background px-4 py-3 text-left transition hover:border-[var(--kaypal-v3-brand-border)] hover:shadow-sm"
+          >
+            <div className="truncate text-12 text-default-500">{card.label}</div>
+            <div
+              className="mt-1 text-lg font-semibold leading-6"
+              style={{ color: card.color }}
+            >
+              {card.value}
+            </div>
+          </button>
+        ))}
+      </div>
 
       {error ? (
         <FailureActionPanel
@@ -1484,7 +1574,692 @@ export function TaskCenterPage() {
         />
       ) : null}
 
-      <div className="grid items-start gap-3 xl:grid-cols-[1.05fr_0.95fr]">
+      {/* ===== 待办带：先给「需要人处理」的事（2026-09-07 工作台 IA 重构） ===== */}
+      {confirmations.length > 0 || failedCount > 0 ? (
+        <div className="grid items-stretch gap-3 md:grid-cols-2">
+          {confirmations.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                setFlowTab("confirm");
+                flowRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
+              className="min-w-0 rounded-[12px] border border-warning-200 bg-warning-50/60 px-4 py-3 text-left transition hover:border-[var(--kaypal-v3-amber)]"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-13 font-semibold text-default-700">
+                  {confirmations.length} 个动作等你确认
+                </span>
+                <span className="shrink-0 text-tiny text-[var(--kaypal-v3-brand)]">
+                  去处理 →
+                </span>
+              </div>
+              <p className="mt-1 text-12 leading-5 text-default-500">
+                {highRiskConfirmations
+                  ? `含 ${highRiskConfirmations} 个高风险动作；确认后发布、互动继续执行。`
+                  : "AI 已写好草稿与步骤，确认后自动继续。"}
+              </p>
+            </button>
+          ) : null}
+          {failedCount > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                setFlowTab("failed");
+                flowRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
+              className="min-w-0 rounded-[12px] border border-danger-200 bg-danger-50/60 px-4 py-3 text-left transition hover:border-[var(--kaypal-v3-danger)]"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-13 font-semibold text-default-700">
+                  {failedCount} 个任务失败待修复
+                </span>
+                <span className="shrink-0 text-tiny text-[var(--kaypal-v3-brand)]">
+                  查看失败 →
+                </span>
+              </div>
+              <p className="mt-1 text-12 leading-5 text-default-500">
+                查看失败步骤与原因，选择重试或回来源修复。
+              </p>
+            </button>
+          ) : null}
+        </div>
+      ) : !loading && !error ? (
+        <div className="rounded-[12px] border border-success-200 bg-success-50/50 px-4 py-2.5 text-12 text-default-600">
+          ✓ 没有需要你处理的事项，
+          {runningCount > 0
+            ? `${runningCount} 个任务正在运行。`
+            : "当前也没有正在运行的任务。"}
+        </div>
+      ) : null}
+
+      {/* ===== 统一任务流水：原「待处理确认/发布留存/最近任务/全部记录/工作流运行」5 张表并入 6 个 tab ===== */}
+      <div ref={flowRef} className="scroll-mt-2">
+        <OpsPanel
+          title="任务流水"
+          extra={
+            <Input
+              aria-label="搜索任务"
+              className="w-52"
+              size="sm"
+              placeholder="搜索任务名称、来源…"
+              value={flowQuery}
+              onValueChange={setFlowQuery}
+            />
+          }
+        >
+          <OpsTabs
+            ariaLabel="任务流水视图"
+            items={[
+              { key: "all", label: "全部", count: flowRows.length },
+              {
+                key: "running",
+                label: "运行中",
+                count: runningCount + automationRunningCount,
+              },
+              { key: "confirm", label: "待确认", count: confirmations.length },
+              {
+                key: "failed",
+                label: "失败待修复",
+                count: failedCount + automationFailedCount,
+              },
+              { key: "publish", label: "发布记录", count: publishTasks.length },
+              { key: "workflow", label: "自动流程", count: workflowRuns.length },
+            ]}
+            activeKey={flowTab}
+            onChange={(key) => setFlowTab(key as typeof flowTab)}
+          />
+          {loading ? <SkeletonList rows={4} /> : null}
+          {!loading && flowTab === "confirm" ? (
+          <OpsDenseTable className="mt-3">
+            <table>
+              <thead>
+                <tr>
+                  <th>确认任务</th>
+                  <th>风险</th>
+                  <th>来源</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {confirmations.slice(0, 30).map((item) => {
+                  const session = sessionById.get(item.sessionId);
+                  return (
+                    <tr key={item.id}>
+                      <td>
+                        <div className="max-w-[320px]">
+                          <div className="truncate font-semibold">
+                            {confirmationSessionTitle(item)}
+                          </div>
+                          <div className="mt-1 line-clamp-2 text-12 text-default-500">
+                            {commercialDisplayText(
+                              item.description || item.actionLabel,
+                            )}
+                          </div>
+                          <WorkflowConfigSummary compact session={session} />
+                          <ExposureConfigSummary compact session={session} />
+                        </div>
+                      </td>
+                      <td>
+                        <Chip
+                          color={
+                            item.riskLevel === "high" ? "danger" : "warning"
+                          }
+                          size="sm"
+                          variant="flat"
+                        >
+                          {item.riskLevel === "high" ? "高风险" : "中风险"}
+                        </Chip>
+                      </td>
+                      <td>{confirmationSourceLabel(item)}</td>
+                      <td>
+                        <div className="flex flex-wrap gap-2">
+                          {session ? (
+                            <Button
+                              size="sm"
+                              startContent={<Icon icon="solar:radio-linear" />}
+                              variant="flat"
+                              onPress={() => {
+                                void openAgentDrawer(session);
+                              }}
+                            >
+                              状态
+                            </Button>
+                          ) : null}
+                          <Button
+                            as={Link}
+                            href={agentSessionRecordHref(
+                              item.session?.id || item.sessionId,
+                            )}
+                            size="sm"
+                            variant="flat"
+                          >
+                            处理
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!loading && confirmations.length === 0 ? (
+                  <tr>
+                    <td colSpan={4}>当前没有待确认动作。</td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </OpsDenseTable>
+          ) : null}
+          {!loading && flowTab === "publish" ? (
+            <div>
+              <div className="mb-2 mt-3 flex justify-end">
+                <Button
+                  as={Link}
+                  href="/distribution/tasks"
+                  size="sm"
+                  startContent={<Icon icon="solar:document-text-linear" />}
+                  variant="flat"
+                >
+                  打开发布记录
+                </Button>
+              </div>
+        <OpsDenseTable>
+          <table>
+            <thead>
+              <tr>
+                <th>发布记录</th>
+                <th>状态</th>
+                <th>结果</th>
+                <th>证据</th>
+                <th>更新时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {publishTasks.slice(0, 30).map((task) => {
+                const metrics = getPublishRecordMetrics(task);
+                const evidenceTotal = getPublishRecordEvidenceCount(task);
+                const failureReason = getPublishRecordFailureReason(task);
+                return (
+                  <tr key={task.id}>
+                    <td>
+                      <div className="max-w-[360px]">
+                        <div className="truncate font-semibold">
+                          {displayPublishRecordTitle(task.title)}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <Chip size="sm" variant="flat">
+                            #{task.id}
+                          </Chip>
+                          <Chip size="sm" variant="flat">
+                            {getPublishRecordModeLabel(task)}
+                          </Chip>
+                          {task.account_file ? (
+                            <Chip size="sm" variant="flat">
+                              {displayPublishRecordFileName(
+                                task.account_file,
+                                "账号",
+                              )}
+                            </Chip>
+                          ) : null}
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <Chip
+                        color={getPublishRecordStatusColor(task.status)}
+                        size="sm"
+                        variant="flat"
+                      >
+                        {resolvePublishRecordStatus(task.status)}
+                      </Chip>
+                    </td>
+                    <td>
+                      <div className="min-w-[150px] text-tiny leading-5 text-default-500">
+                        <span className="font-semibold text-success">
+                          成功 {metrics.succeeded}
+                        </span>
+                        <span className="mx-1">/</span>
+                        <span className="font-semibold text-danger">
+                          失败 {metrics.failed}
+                        </span>
+                        <span className="mx-1">/</span>
+                        <span>待处理 {metrics.waiting}</span>
+                        {failureReason ? (
+                          <p className="mt-1 line-clamp-2 text-warning-700">
+                            {failureReason}
+                          </p>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td>
+                      <OpsStatusPill
+                        tone={evidenceTotal ? "success" : "default"}
+                      >
+                        {evidenceTotal}
+                      </OpsStatusPill>
+                    </td>
+                    <td>{formatDateTime(task.updated_at)}</td>
+                    <td>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          startContent={<Icon icon="solar:radio-linear" />}
+                          variant="flat"
+                          onPress={() =>
+                            setDrawerSession(
+                              buildPublishRecordAgentSession(task),
+                            )
+                          }
+                        >
+                          状态
+                        </Button>
+                        <Button
+                          as={Link}
+                          href="/distribution/tasks"
+                          size="sm"
+                          variant="flat"
+                        >
+                          明细
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {!loading && publishTasks.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>暂无发布记录留存。</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </OpsDenseTable>
+            </div>
+          ) : null}
+          {!loading && flowTab === "workflow" ? (
+            <div className="mt-3">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <Button
+                  color="primary"
+                  size="sm"
+                  startContent={<Icon icon="solar:add-circle-linear" />}
+                  variant="flat"
+                  onPress={() => setBuilderOpen(true)}
+                >
+                  新建自动流程
+                </Button>
+              </div>
+        <div>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-13 font-semibold text-default-700">
+              已保存工作流
+            </h3>
+            <span className="text-tiny text-default-400">
+              {workflowDefinitions.length} 个定义
+            </span>
+          </div>
+          <OpsDenseTable>
+            <table>
+              <thead>
+                <tr>
+                  <th>工作流</th>
+                  <th>步骤</th>
+                  <th>状态</th>
+                  <th>更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workflowDefinitions.slice(0, 30).map((definition) => (
+                  <tr key={definition.id}>
+                    <td>
+                      <div className="font-semibold">{definition.title}</div>
+                      {definition.schedule ? (
+                        <div className="mt-1 text-tiny text-default-400">
+                          {definition.schedule.status === "active"
+                            ? `计划已启用 · 下次 ${formatDateTime(definition.schedule.nextRunAt)}`
+                            : "计划等待首次启动确认"}
+                        </div>
+                      ) : null}
+                    </td>
+                    <td>
+                      {
+                        definition.steps.filter(
+                          (step) => step.availability === "available",
+                        ).length
+                      }
+                      /{definition.steps.length} 可运行
+                    </td>
+                    <td>
+                      <OpsStatusPill
+                        tone={
+                          definition.status === "ready"
+                            ? "success"
+                            : definition.status === "partially_ready"
+                              ? "warning"
+                              : "default"
+                        }
+                      >
+                        {definition.status === "ready"
+                          ? "已就绪"
+                          : definition.status === "partially_ready"
+                            ? "部分就绪"
+                            : "待配置"}
+                      </OpsStatusPill>
+                    </td>
+                    <td>{formatDateTime(definition.updatedAt)}</td>
+                    <td>
+                      <Button
+                        color="primary"
+                        isDisabled={
+                          !definition.steps.some(
+                            (step) => step.availability === "available",
+                          )
+                        }
+                        isLoading={
+                          workflowBusyAction === `start:${definition.id}`
+                        }
+                        size="sm"
+                        startContent={<Icon icon="solar:play-circle-linear" />}
+                        variant="flat"
+                        onPress={() => void startSavedWorkflow(definition)}
+                      >
+                        启动
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                {!loading && workflowDefinitions.length === 0 ? (
+                  <tr>
+                    <td colSpan={5}>还没有保存工作流。</td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </OpsDenseTable>
+        </div>
+        <div className="mt-4 border-t border-divider pt-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-13 font-semibold text-default-700">
+              自动工作流 · 最近运行
+            </h3>
+            <span className="text-tiny text-default-400">
+              仅将有结果凭证且已确认的步骤计为完成
+            </span>
+          </div>
+          <OpsDenseTable>
+            <table>
+              <thead>
+                <tr>
+                  <th>运行</th>
+                  <th>步骤状态</th>
+                  <th>结果</th>
+                  <th>更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workflowRuns.slice(0, 30).map((run) => {
+                  const canRetry = run.steps.some(
+                    (step) =>
+                      step.status === "failed" ||
+                      step.status === "blocked" ||
+                      step.status === "cancelled",
+                  );
+                  const canCancel =
+                    run.status === "queued" || run.status === "running";
+                  return (
+                    <tr key={run.id}>
+                      <td>
+                        <div className="max-w-[260px]">
+                          <div className="truncate font-semibold">
+                            {run.title}
+                          </div>
+                          <div className="mt-1">
+                            <OpsStatusPill
+                              tone={workflowRunStatusTone(run.status)}
+                            >
+                              {workflowRunStatusLabel(run.status)}
+                            </OpsStatusPill>
+                            <span className="ml-2 text-tiny text-default-400">
+                              {run.trigger === "schedule"
+                                ? "按计划运行"
+                                : run.trigger === "retry"
+                                  ? "人工重试"
+                                  : "人工启动"}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex max-w-[360px] flex-wrap gap-1">
+                          {run.steps.map((step) => {
+                            const blocked =
+                              step.status === "failed" ||
+                              step.status === "blocked";
+                            return (
+                              <div
+                                key={`${run.id}-${step.stepId}`}
+                                className="flex flex-col gap-1"
+                              >
+                                <OpsStatusPill
+                                  tone={workflowStepStatusTone(step.status)}
+                                >
+                                  {step.title} ·{" "}
+                                  {workflowStepStatusLabel(step.status)}
+                                </OpsStatusPill>
+                                {blocked && step.message ? (
+                                  <span className="max-w-[280px] text-tiny leading-4 text-danger">
+                                    {step.message}
+                                    {step.nextAction
+                                      ? ` · ${step.nextAction}`
+                                      : ""}
+                                  </span>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="text-tiny leading-5 text-default-600">
+                          {run.aggregate.completedSteps}/
+                          {run.aggregate.totalSteps} 完成 ·{" "}
+                          {run.aggregate.evidenceCount} 条证据
+                          {run.aggregate.candidateCount
+                            ? ` · ${run.aggregate.candidateCount} 条候选`
+                            : ""}
+                        </div>
+                        {run.aggregate.readbacks.length ? (
+                          <div className="text-tiny text-default-400">
+                            结果确认{" "}
+                            {
+                              run.aggregate.readbacks.filter(
+                                (item) => item.matched,
+                              ).length
+                            }
+                            /{run.aggregate.readbacks.length} 匹配
+                          </div>
+                        ) : null}
+                      </td>
+                      <td>{formatDateTime(run.updatedAt)}</td>
+                      <td>
+                        <div className="flex flex-wrap gap-2">
+                          {canRetry ? (
+                            <Button
+                              isLoading={
+                                workflowBusyAction === `retry:${run.id}`
+                              }
+                              size="sm"
+                              startContent={
+                                <Icon icon="solar:restart-linear" />
+                              }
+                              variant="flat"
+                              onPress={() => void retrySavedWorkflow(run)}
+                            >
+                              重试失败步骤
+                            </Button>
+                          ) : null}
+                          {canCancel ? (
+                            <Button
+                              color="warning"
+                              isLoading={
+                                workflowBusyAction === `cancel:${run.id}`
+                              }
+                              size="sm"
+                              startContent={
+                                <Icon icon="solar:stop-circle-linear" />
+                              }
+                              variant="flat"
+                              onPress={() => void cancelSavedWorkflow(run)}
+                            >
+                              取消
+                            </Button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!loading && workflowRuns.length === 0 ? (
+                  <tr>
+                    <td colSpan={5}>还没有工作流运行记录。</td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </OpsDenseTable>
+        </div>
+            </div>
+          ) : null}
+          {!loading &&
+          (flowTab === "all" || flowTab === "running" || flowTab === "failed") ? (
+          <OpsDenseTable className="mt-3">
+            <table>
+              <thead>
+                <tr>
+                  <th>任务</th>
+                  <th>类型</th>
+                  <th>来源</th>
+                  <th>状态</th>
+                  <th>更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {flowVisible.map((row) =>
+                  row.kind === "session" ? (
+                    <tr key={row.id}>
+                      <td>
+                        <div className="max-w-[360px]">
+                          <div className="truncate font-semibold">
+                            {sessionDisplayTitle(row.session)}
+                          </div>
+                          <WorkflowConfigSummary compact session={row.session} />
+                          <ExposureConfigSummary compact session={row.session} />
+                        </div>
+                      </td>
+                      <td>
+                        <span className="text-tiny text-default-500">
+                          Agent 会话
+                        </span>
+                      </td>
+                      <td>{sourceLabel(row.session.source)}</td>
+                      <td>
+                        <Chip
+                          color={visibleAgentStatusColor(row.session)}
+                          size="sm"
+                          variant="flat"
+                        >
+                          {visibleAgentStatusText(row.session)}
+                        </Chip>
+                      </td>
+                      <td>{formatDateTime(row.session.updatedAt)}</td>
+                      <td>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            startContent={<Icon icon="solar:radio-linear" />}
+                            variant="flat"
+                            onPress={() => {
+                              void openAgentDrawer(row.session);
+                            }}
+                          >
+                            状态
+                          </Button>
+                          <Button
+                            as={Link}
+                            href={agentSessionRecordHref(row.session.id)}
+                            size="sm"
+                            variant="flat"
+                          >
+                            记录
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr key={row.id}>
+                      <td>
+                        <div className="max-w-[360px]">
+                          <div className="truncate font-semibold">
+                            {row.task.title}
+                          </div>
+                          <div className="mt-1 text-tiny text-default-500">
+                            {automationTaskTypeLabel(row.task.taskType)}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="text-tiny text-default-500">
+                          自动化任务
+                        </span>
+                      </td>
+                      <td>
+                        {row.task.source === "agent-session"
+                          ? "自动化会话"
+                          : "互动任务"}
+                      </td>
+                      <td>
+                        <Chip
+                          color={automationStatusColor(row.task.status)}
+                          size="sm"
+                          variant="flat"
+                        >
+                          {row.task.statusLabel}
+                        </Chip>
+                      </td>
+                      <td>{formatDateTime(row.task.updatedAt)}</td>
+                      <td>
+                        <div className="max-w-[260px] text-tiny leading-5 text-default-500">
+                          {row.task.nextAction ||
+                            row.task.failureReason ||
+                            "查看任务详情"}
+                        </div>
+                      </td>
+                    </tr>
+                  ),
+                )}
+                {!loading && flowVisible.length === 0 ? (
+                  <tr>
+                    <td colSpan={6}>暂无匹配的任务。</td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </OpsDenseTable>
+          ) : null}
+        </OpsPanel>
+      </div>
+
+      {/* ===== AI 员工快捷任务（全宽，本机能力入口） ===== */}
         <OpsPanel
           extra={
             <Button
@@ -1570,212 +2345,36 @@ export function TaskCenterPage() {
           </OpsDenseTable>
         </OpsPanel>
 
-        <OpsPanel title="执行看板">
-          <OpsDenseTable>
-            <table>
-              <thead>
-                <tr>
-                  <th>状态</th>
-                  <th>数量</th>
-                  <th>说明</th>
-                </tr>
-              </thead>
-              <tbody>
-                {metricCards.map((metric) => (
-                  <tr key={metric.label}>
-                    <td className="font-semibold">{metric.label}</td>
-                    <td>
-                      <Chip color={metric.color} size="sm" variant="flat">
-                        {metric.value}
-                      </Chip>
-                    </td>
-                    <td>{metric.detail}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </OpsDenseTable>
-      <div className="grid items-start gap-3 xl:grid-cols-[1.1fr_0.9fr]">
-        <OpsPanel title="审批后执行流程">
-          {loading ? <SkeletonList rows={3} /> : null}
-          <OpsDenseTable className="mt-3">
-            <table>
-              <thead>
-                <tr>
-                  <th>任务</th>
-                  <th>来源</th>
-                  <th>状态</th>
-                  <th>更新时间</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lifecycleSessions.map((session) => (
-                  <tr key={session.id}>
-                    <td>
-                      <div className="max-w-[360px]">
-                        <div className="truncate font-semibold">
-                          {sessionDisplayTitle(session)}
-                        </div>
-                        <WorkflowConfigSummary compact session={session} />
-                        <ExposureConfigSummary compact session={session} />
-                      </div>
-                    </td>
-                    <td>{sourceLabel(session.source)}</td>
-                    <td>
-                      <Chip
-                        color={visibleAgentStatusColor(session)}
-                        size="sm"
-                        variant="flat"
-                      >
-                        {visibleAgentStatusText(session)}
-                      </Chip>
-                    </td>
-                    <td>{formatDateTime(session.updatedAt)}</td>
-                    <td>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          startContent={<Icon icon="solar:radio-linear" />}
-                          variant="flat"
-                          onPress={() => {
-                            void openAgentDrawer(session);
-                          }}
-                        >
-                          状态
-                        </Button>
-                        <Button
-                          as={Link}
-                          href={agentSessionRecordHref(session.id)}
-                          size="sm"
-                          variant="flat"
-                        >
-                          记录
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {!loading && lifecycleSessions.length === 0 ? (
-                  <tr>
-                    <td colSpan={5}>当前没有审批后执行流程。</td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </OpsDenseTable>
-        </OpsPanel>
-
-        <OpsPanel title="待处理确认">
-          {loading ? <SkeletonList rows={3} /> : null}
-          <OpsDenseTable className="mt-3">
-            <table>
-              <thead>
-                <tr>
-                  <th>确认任务</th>
-                  <th>风险</th>
-                  <th>来源</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {confirmations.slice(0, 6).map((item) => {
-                  const session = sessionById.get(item.sessionId);
-                  return (
-                    <tr key={item.id}>
-                      <td>
-                        <div className="max-w-[320px]">
-                          <div className="truncate font-semibold">
-                            {confirmationSessionTitle(item)}
-                          </div>
-                          <div className="mt-1 line-clamp-2 text-12 text-default-500">
-                            {commercialDisplayText(
-                              item.description || item.actionLabel,
-                            )}
-                          </div>
-                          <WorkflowConfigSummary compact session={session} />
-                          <ExposureConfigSummary compact session={session} />
-                        </div>
-                      </td>
-                      <td>
-                        <Chip
-                          color={
-                            item.riskLevel === "high" ? "danger" : "warning"
-                          }
-                          size="sm"
-                          variant="flat"
-                        >
-                          {item.riskLevel === "high" ? "高风险" : "中风险"}
-                        </Chip>
-                      </td>
-                      <td>{confirmationSourceLabel(item)}</td>
-                      <td>
-                        <div className="flex flex-wrap gap-2">
-                          {session ? (
-                            <Button
-                              size="sm"
-                              startContent={<Icon icon="solar:radio-linear" />}
-                              variant="flat"
-                              onPress={() => {
-                                void openAgentDrawer(session);
-                              }}
-                            >
-                              状态
-                            </Button>
-                          ) : null}
-                          <Button
-                            as={Link}
-                            href={agentSessionRecordHref(
-                              item.session?.id || item.sessionId,
-                            )}
-                            size="sm"
-                            variant="flat"
-                          >
-                            处理
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {!loading && confirmations.length === 0 ? (
-                  <tr>
-                    <td colSpan={4}>当前没有待确认动作。</td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </OpsDenseTable>
-
-        </OpsPanel>
-      </div>
-
-      <OpsPanel
-        extra={
-          <Chip
-            color={
-              workflowForm.riskLevel === "high"
-                ? "danger"
-                : workflowForm.riskLevel === "medium"
-                  ? "warning"
-                  : "success"
-            }
-            size="sm"
-            variant="flat"
+      {/* ===== 工作流创建抽屉：创建表单不再占用监控页首屏（2026-09-07 IA 重构） ===== */}
+      {builderOpen ? (
+        <div
+          className="kx-overlay-anim fixed inset-0 z-50 flex justify-end bg-black/30"
+          onClick={() => setBuilderOpen(false)}
+        >
+          <aside
+            className="kx-drawer-panel-anim relative flex h-full w-full max-w-[720px] flex-col border-l border-divider bg-background shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
           >
-            {workflowRiskLabel(workflowForm.riskLevel)}
-          </Chip>
-        }
-        title="AI员工自动工作流"
-        className="ops-form-scope"
-      >
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <p className="text-13 leading-5 text-default-500">
-              保存后启动可执行步骤；未满足条件的步骤单独保留原因，不影响其他步骤运行。
-            </p>
-          </div>
-        </div>
+            <div className="flex items-start justify-between gap-3 border-b border-divider px-5 py-4">
+              <div>
+                <h2 className="text-15 font-semibold text-foreground">
+                  新建自动工作流
+                </h2>
+                <p className="mt-1 max-w-[520px] text-12 leading-5 text-default-500">
+                  保存后启动可执行步骤；未满足条件的步骤单独保留原因，不影响其他步骤运行。
+                </p>
+              </div>
+              <Button
+                isIconOnly
+                aria-label="关闭"
+                size="sm"
+                variant="flat"
+                onPress={() => setBuilderOpen(false)}
+              >
+                <Icon icon="solar:close-circle-linear" />
+              </Button>
+            </div>
+            <div className="ops-form-scope min-h-0 flex-1 overflow-y-auto px-5 py-4">
         <div className="mb-3 grid gap-2.5 md:grid-cols-3">
           {[
             {
@@ -2039,526 +2638,10 @@ export function TaskCenterPage() {
             </div>
           </div>
         ) : null}
-
-        <div className="mt-4 border-t border-divider pt-3">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-13 font-semibold text-default-700">
-              已保存工作流
-            </h3>
-            <span className="text-tiny text-default-400">
-              {workflowDefinitions.length} 个定义
-            </span>
-          </div>
-          <OpsDenseTable>
-            <table>
-              <thead>
-                <tr>
-                  <th>工作流</th>
-                  <th>步骤</th>
-                  <th>状态</th>
-                  <th>更新时间</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workflowDefinitions.slice(0, 6).map((definition) => (
-                  <tr key={definition.id}>
-                    <td>
-                      <div className="font-semibold">{definition.title}</div>
-                      {definition.schedule ? (
-                        <div className="mt-1 text-tiny text-default-400">
-                          {definition.schedule.status === "active"
-                            ? `计划已启用 · 下次 ${formatDateTime(definition.schedule.nextRunAt)}`
-                            : "计划等待首次启动确认"}
-                        </div>
-                      ) : null}
-                    </td>
-                    <td>
-                      {
-                        definition.steps.filter(
-                          (step) => step.availability === "available",
-                        ).length
-                      }
-                      /{definition.steps.length} 可运行
-                    </td>
-                    <td>
-                      <OpsStatusPill
-                        tone={
-                          definition.status === "ready"
-                            ? "success"
-                            : definition.status === "partially_ready"
-                              ? "warning"
-                              : "default"
-                        }
-                      >
-                        {definition.status === "ready"
-                          ? "已就绪"
-                          : definition.status === "partially_ready"
-                            ? "部分就绪"
-                            : "待配置"}
-                      </OpsStatusPill>
-                    </td>
-                    <td>{formatDateTime(definition.updatedAt)}</td>
-                    <td>
-                      <Button
-                        color="primary"
-                        isDisabled={
-                          !definition.steps.some(
-                            (step) => step.availability === "available",
-                          )
-                        }
-                        isLoading={
-                          workflowBusyAction === `start:${definition.id}`
-                        }
-                        size="sm"
-                        startContent={<Icon icon="solar:play-circle-linear" />}
-                        variant="flat"
-                        onPress={() => void startSavedWorkflow(definition)}
-                      >
-                        启动
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-                {!loading && workflowDefinitions.length === 0 ? (
-                  <tr>
-                    <td colSpan={5}>还没有保存工作流。</td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </OpsDenseTable>
+            </div>
+          </aside>
         </div>
-
-        <div className="mt-4 border-t border-divider pt-3">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-13 font-semibold text-default-700">
-              自动工作流 · 最近运行
-            </h3>
-            <span className="text-tiny text-default-400">
-              仅将有结果凭证且已确认的步骤计为完成
-            </span>
-          </div>
-          <OpsDenseTable>
-            <table>
-              <thead>
-                <tr>
-                  <th>运行</th>
-                  <th>步骤状态</th>
-                  <th>结果</th>
-                  <th>更新时间</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workflowRuns.slice(0, 8).map((run) => {
-                  const canRetry = run.steps.some(
-                    (step) =>
-                      step.status === "failed" ||
-                      step.status === "blocked" ||
-                      step.status === "cancelled",
-                  );
-                  const canCancel =
-                    run.status === "queued" || run.status === "running";
-                  return (
-                    <tr key={run.id}>
-                      <td>
-                        <div className="max-w-[260px]">
-                          <div className="truncate font-semibold">
-                            {run.title}
-                          </div>
-                          <div className="mt-1">
-                            <OpsStatusPill
-                              tone={workflowRunStatusTone(run.status)}
-                            >
-                              {workflowRunStatusLabel(run.status)}
-                            </OpsStatusPill>
-                            <span className="ml-2 text-tiny text-default-400">
-                              {run.trigger === "schedule"
-                                ? "按计划运行"
-                                : run.trigger === "retry"
-                                  ? "人工重试"
-                                  : "人工启动"}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex max-w-[360px] flex-wrap gap-1">
-                          {run.steps.map((step) => {
-                            const blocked =
-                              step.status === "failed" ||
-                              step.status === "blocked";
-                            return (
-                              <div
-                                key={`${run.id}-${step.stepId}`}
-                                className="flex flex-col gap-1"
-                              >
-                                <OpsStatusPill
-                                  tone={workflowStepStatusTone(step.status)}
-                                >
-                                  {step.title} ·{" "}
-                                  {workflowStepStatusLabel(step.status)}
-                                </OpsStatusPill>
-                                {blocked && step.message ? (
-                                  <span className="max-w-[280px] text-tiny leading-4 text-danger">
-                                    {step.message}
-                                    {step.nextAction
-                                      ? ` · ${step.nextAction}`
-                                      : ""}
-                                  </span>
-                                ) : null}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="text-tiny leading-5 text-default-600">
-                          {run.aggregate.completedSteps}/
-                          {run.aggregate.totalSteps} 完成 ·{" "}
-                          {run.aggregate.evidenceCount} 条证据
-                          {run.aggregate.candidateCount
-                            ? ` · ${run.aggregate.candidateCount} 条候选`
-                            : ""}
-                        </div>
-                        {run.aggregate.readbacks.length ? (
-                          <div className="text-tiny text-default-400">
-                            结果确认{" "}
-                            {
-                              run.aggregate.readbacks.filter(
-                                (item) => item.matched,
-                              ).length
-                            }
-                            /{run.aggregate.readbacks.length} 匹配
-                          </div>
-                        ) : null}
-                      </td>
-                      <td>{formatDateTime(run.updatedAt)}</td>
-                      <td>
-                        <div className="flex flex-wrap gap-2">
-                          {canRetry ? (
-                            <Button
-                              isLoading={
-                                workflowBusyAction === `retry:${run.id}`
-                              }
-                              size="sm"
-                              startContent={
-                                <Icon icon="solar:restart-linear" />
-                              }
-                              variant="flat"
-                              onPress={() => void retrySavedWorkflow(run)}
-                            >
-                              重试失败步骤
-                            </Button>
-                          ) : null}
-                          {canCancel ? (
-                            <Button
-                              color="warning"
-                              isLoading={
-                                workflowBusyAction === `cancel:${run.id}`
-                              }
-                              size="sm"
-                              startContent={
-                                <Icon icon="solar:stop-circle-linear" />
-                              }
-                              variant="flat"
-                              onPress={() => void cancelSavedWorkflow(run)}
-                            >
-                              取消
-                            </Button>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {!loading && workflowRuns.length === 0 ? (
-                  <tr>
-                    <td colSpan={5}>还没有工作流运行记录。</td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </OpsDenseTable>
-        </div>
-      </OpsPanel>
-
-        </OpsPanel>
-      </div>
-
-      <OpsPanel
-        extra={
-          <Button
-            as={Link}
-            href="/distribution/tasks"
-            size="sm"
-            startContent={<Icon icon="solar:document-text-linear" />}
-            variant="flat"
-          >
-            打开发布记录
-          </Button>
-        }
-        title="发布结果留存"
-      >
-        <OpsToolbar className="mb-3">
-          <OpsStatusPill tone="brand">记录 {publishTasks.length}</OpsStatusPill>
-          <OpsStatusPill tone={publishFailedCount ? "danger" : "default"}>
-            失败 {publishFailedCount}
-          </OpsStatusPill>
-          <OpsStatusPill tone="success">
-            证据 {publishRecordEvidenceCount}
-          </OpsStatusPill>
-        </OpsToolbar>
-        <OpsDenseTable>
-          <table>
-            <thead>
-              <tr>
-                <th>发布记录</th>
-                <th>状态</th>
-                <th>结果</th>
-                <th>证据</th>
-                <th>更新时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentPublishTasks.map((task) => {
-                const metrics = getPublishRecordMetrics(task);
-                const evidenceTotal = getPublishRecordEvidenceCount(task);
-                const failureReason = getPublishRecordFailureReason(task);
-                return (
-                  <tr key={task.id}>
-                    <td>
-                      <div className="max-w-[360px]">
-                        <div className="truncate font-semibold">
-                          {displayPublishRecordTitle(task.title)}
-                        </div>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          <Chip size="sm" variant="flat">
-                            #{task.id}
-                          </Chip>
-                          <Chip size="sm" variant="flat">
-                            {getPublishRecordModeLabel(task)}
-                          </Chip>
-                          {task.account_file ? (
-                            <Chip size="sm" variant="flat">
-                              {displayPublishRecordFileName(
-                                task.account_file,
-                                "账号",
-                              )}
-                            </Chip>
-                          ) : null}
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <Chip
-                        color={getPublishRecordStatusColor(task.status)}
-                        size="sm"
-                        variant="flat"
-                      >
-                        {resolvePublishRecordStatus(task.status)}
-                      </Chip>
-                    </td>
-                    <td>
-                      <div className="min-w-[150px] text-tiny leading-5 text-default-500">
-                        <span className="font-semibold text-success">
-                          成功 {metrics.succeeded}
-                        </span>
-                        <span className="mx-1">/</span>
-                        <span className="font-semibold text-danger">
-                          失败 {metrics.failed}
-                        </span>
-                        <span className="mx-1">/</span>
-                        <span>待处理 {metrics.waiting}</span>
-                        {failureReason ? (
-                          <p className="mt-1 line-clamp-2 text-warning-700">
-                            {failureReason}
-                          </p>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td>
-                      <OpsStatusPill
-                        tone={evidenceTotal ? "success" : "default"}
-                      >
-                        {evidenceTotal}
-                      </OpsStatusPill>
-                    </td>
-                    <td>{formatDateTime(task.updated_at)}</td>
-                    <td>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="sm"
-                          startContent={<Icon icon="solar:radio-linear" />}
-                          variant="flat"
-                          onPress={() =>
-                            setDrawerSession(
-                              buildPublishRecordAgentSession(task),
-                            )
-                          }
-                        >
-                          状态
-                        </Button>
-                        <Button
-                          as={Link}
-                          href="/distribution/tasks"
-                          size="sm"
-                          variant="flat"
-                        >
-                          明细
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {!loading && recentPublishTasks.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>暂无发布记录留存。</td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </OpsDenseTable>
-      </OpsPanel>
-
-      <OpsPanel title="最近任务">
-        {loading ? <SkeletonList rows={3} /> : null}
-        <OpsDenseTable className="mt-3">
-          <table>
-            <thead>
-              <tr>
-                <th>任务</th>
-                <th>来源</th>
-                <th>状态</th>
-                <th>更新时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentSessions.map((session) => (
-                <tr key={session.id}>
-                  <td>
-                    <div className="max-w-[420px]">
-                      <div className="truncate font-semibold">
-                        {sessionDisplayTitle(session)}
-                      </div>
-                      <WorkflowConfigSummary compact session={session} />
-                      <ExposureConfigSummary compact session={session} />
-                    </div>
-                  </td>
-                  <td>{sourceLabel(session.source)}</td>
-                  <td>
-                    <Chip
-                      color={visibleAgentStatusColor(session)}
-                      size="sm"
-                      variant="flat"
-                    >
-                      {visibleAgentStatusText(session)}
-                    </Chip>
-                  </td>
-                  <td>{formatDateTime(session.updatedAt)}</td>
-                  <td>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        size="sm"
-                        startContent={<Icon icon="solar:radio-linear" />}
-                        variant="flat"
-                        onPress={() => {
-                          void openAgentDrawer(session);
-                        }}
-                      >
-                        状态
-                      </Button>
-                      <Button
-                        as={Link}
-                        href={agentSessionRecordHref(session.id)}
-                        size="sm"
-                        variant="flat"
-                      >
-                        记录
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!loading && recentSessions.length === 0 ? (
-                <tr>
-                  <td colSpan={5}>暂无任务历史。</td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </OpsDenseTable>
-      </OpsPanel>
-
-      <OpsPanel title="全部任务记录">
-        {loading ? <SkeletonList rows={3} /> : null}
-        <OpsDenseTable className="mt-3">
-          <table>
-            <thead>
-              <tr>
-                <th>任务</th>
-                <th>来源</th>
-                <th>状态</th>
-                <th>模式</th>
-                <th>更新时间</th>
-                <th>下一步</th>
-              </tr>
-            </thead>
-            <tbody>
-              {automationTasks.slice(0, 8).map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <div className="max-w-[360px]">
-                      <div className="truncate font-semibold">{item.title}</div>
-                      <div className="mt-1 text-tiny text-default-500">
-                        {automationTaskTypeLabel(item.taskType)}
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    {item.source === "agent-session"
-                      ? "自动化会话"
-                      : "互动任务"}
-                  </td>
-                  <td>
-                    <Chip
-                      color={automationStatusColor(item.status)}
-                      size="sm"
-                      variant="flat"
-                    >
-                      {item.statusLabel}
-                    </Chip>
-                  </td>
-                  <td>
-                    {item.executionMode === "simulated"
-                      ? "预演"
-                      : item.executionMode === "blocked"
-                        ? "受阻"
-                        : item.executionMode === "configuration"
-                          ? "配置"
-                          : "执行"}
-                  </td>
-                  <td>{formatDateTime(item.updatedAt)}</td>
-                  <td>
-                    <div className="max-w-[260px] text-tiny leading-5 text-default-500">
-                      {item.nextAction || item.failureReason || "查看任务详情"}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!loading && automationTasks.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>暂无统一任务记录。</td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </OpsDenseTable>
-      </OpsPanel>
+      ) : null}
 
       {recentFailures.length ? (
         <FailureActionPanel
