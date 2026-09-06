@@ -20,7 +20,6 @@ import {
   User,
   UserPlus,
   UserRound,
-  UserRoundPlus,
   Users,
   X,
 } from "@/components/iconpark";
@@ -261,12 +260,6 @@ export function CrmCenter() {
         {/* 快捷入口 */}
         <section className="mx-px mx-mt-lg">
           <div className="mx-svc-grid">
-            <button type="button" className="mx-svc-item mx-control" onClick={() => setShowCreateModal(true)}>
-              <span className="mx-svc-ic" style={{ background: "rgba(37,99,235,.1)", color: "var(--kaypal-v3-cobalt)" }}>
-                <UserPlus width={19} height={19} />
-              </span>
-              <span className="mx-svc-name">新增客户</span><span className="mx-svc-sub">手动添加</span>
-            </button>
             <button type="button" className="mx-svc-item mx-control" onClick={() => router.push("/crm-import")}>
               <span className="mx-svc-ic" style={{ background: "rgba(16,185,129,.1)", color: "var(--kaypal-v3-success)" }}>
                 <Upload width={19} height={19} />
@@ -515,14 +508,6 @@ export function CrmCenter() {
         }}
         quickActions={[
           {
-            key: "new",
-            brand: "userPlus",
-            title: "新增客户",
-            description: "手动添加一个客户",
-            icon: UserRoundPlus,
-            onClick: () => setShowCreateModal(true),
-          },
-          {
             key: "import",
             brand: "importTray",
             title: "批量导入",
@@ -678,26 +663,8 @@ export function CrmCenter() {
             <p className="mt-2 text-sm text-[var(--kaypal-v3-muted)]">
               新增一个客户，或从 Excel 批量导入
             </p>
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center h-11 rounded-[var(--kaypal-v3-radius-sm)] bg-[image:var(--kaypal-v3-gradient-primary)] px-5 text-sm font-semibold text-white transition hover:brightness-105"
-                onClick={() => setShowCreateModal(true)}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <Plus className="h-4 w-4" /> 新增客户
-                </span>
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-[var(--kaypal-v3-radius-sm)] border border-[var(--kaypal-v3-border)] bg-[var(--kaypal-v3-paper)] h-11 px-4 text-sm font-medium text-[var(--kaypal-v3-soft-ink)] transition hover:border-[var(--kaypal-v3-border-strong)]"
-                onClick={() => router.push("/crm-import")}
-              >
-                批量导入
-              </button>
-            </div>
-            {/* 快速开始：三步引导 */}
-            <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
+            {/* 快速开始：三步引导（新增/导入入口在页头 CTA 与快捷操作，不再重复放按钮） */}
+            <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 {
                   title: "1 · 添加客户",
