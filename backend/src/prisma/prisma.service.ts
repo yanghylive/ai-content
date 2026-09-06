@@ -47,6 +47,9 @@ export class PrismaService
   /** 2026-09-02：已回补组织关系（tenants/tenant_members）的账号库（进程内防重复回补） */
   private readonly tenantOrgSynced = new Set<string>();
 
+  /** 2026-09-06：已认领 tenantId=NULL 历史线索的账号库（进程内防重复） */
+  private readonly nullTenantLeadsClaimed = new Set<string>();
+
   private static readonly TARGET_ONLY = new Set<string>([
     // 生命周期与内部建表/修复方法（必须跑在系统库上）
     'onModuleInit',
@@ -75,6 +78,8 @@ export class PrismaService
     'syncTenantOrgTables',
     // 2026-09-03：模型路由镜像回补（账号库缺默认文本模型 → AI 服务不可用 兜底）
     'syncModelRoutingMirror',
+    // 2026-09-06：历史 NULL 租户线索启动认领（P1-1 迁移）
+    'claimLegacyNullTenantLeads',
     'isSqliteCorrupt',
     'system',
     'switching',
@@ -306,6 +311,9 @@ export class PrismaService
     // 最新同步的默认文本模型（如 deepseek-v4-flash），登录时统一补齐，
     // 避免 AI 助手因账号库「电话簿缺页」报 AI 服务暂时不可用。
     await this.syncModelRoutingMirror(accountPath);
+    // 2026-09-06 复核 P1-1：历史 NULL 租户线索启动认领（listLeads 严格过滤
+    // 导致 NULL 线索不可见、claimLegacyLeadTenant 无 UI 入口，故一次性迁移）。
+    await this.claimLegacyNullTenantLeads(accountPath);
     // 2026-09-01（复核 P1-2）：登记 userId → 账号库路径（请求级路由）
     this.accountPaths.set(userId, accountPath);
     return accountPath;
@@ -450,6 +458,49 @@ export class PrismaService
    * 进程内每库只跑一次；重启后 accountPaths 清空，首个请求经守卫重入）。
    * 只回补与账号库 users 相关的组织行，规避 FK 失败；模板无组织表则跳过。
    */
+  /**
+   * 2026-09-06 复核 P1-1：历史线索 tenantId=NULL 的启动认领。
+   * 组织关系回补后旧线索 tenantId 仍是 NULL；listLeads 严格按 tenantId 过滤
+   * 导致 NULL 线索不可见、claimLegacyLeadTenant 又无 UI 入口。此处一次性把
+   * NULL 线索按 userId 的「唯一租户」认领（多租户归属歧义则跳过，留待人工）。
+   * 幂等：进程内 Set 防重复；SQL 只更新「唯一租户」用户的 NULL 线索。
+   */
+  private async claimLegacyNullTenantLeads(accountPath: string): Promise<void> {
+    if (this.nullTenantLeadsClaimed.has(accountPath)) return;
+    const account = this.getAccountClient(accountPath);
+    try {
+      const affected = await account.$executeRawUnsafe(`
+        UPDATE leads
+        SET tenant_id = (
+          SELECT tm.tenant_id
+          FROM tenant_members tm
+          WHERE tm.user_id = leads.user_id
+          GROUP BY tm.tenant_id
+          LIMIT 1
+        )
+        WHERE tenant_id IS NULL
+          AND user_id IN (
+            SELECT user_id
+            FROM tenant_members
+            GROUP BY user_id
+            HAVING COUNT(DISTINCT tenant_id) = 1
+          )
+      `);
+      if (affected > 0) {
+        this.logger.log(
+          `账号库历史 NULL 租户线索已认领 ${affected} 条：${accountPath}`,
+        );
+      }
+    } catch (error) {
+      this.logger.warn(
+        `账号库历史 NULL 租户线索认领失败（跳过）：${accountPath}：${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+    this.nullTenantLeadsClaimed.add(accountPath);
+  }
+
   private async syncTenantOrgTables(accountPath: string): Promise<void> {
     if (this.tenantOrgSynced.has(accountPath)) {
       return;

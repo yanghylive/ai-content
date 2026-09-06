@@ -209,6 +209,8 @@ export class CommentAcquisitionService {
         scope.tenantId,
         input.platform,
         String(input.accountId),
+        'comment',
+        comment.item.videoUrl ?? sourceAttribution.sourceUrl ?? null,
         comment.text,
       );
       if (existingReplied?.latestReply) {
@@ -571,6 +573,7 @@ export class CommentAcquisitionService {
       let replyText: string | undefined;
       let personaId: string | undefined;
       let personaName: string | undefined;
+      let generationError: string | undefined;
       try {
         const reply = await this.replyEngine.generateReply(message, {
           platformName,
@@ -581,8 +584,10 @@ export class CommentAcquisitionService {
         personaId = reply.personaId;
         personaName = reply.personaName;
       } catch (error) {
+        generationError =
+          error instanceof Error ? error.message : String(error);
         this.logger.warn(
-          `[comment-acquisition] 私信回复生成失败: ${error instanceof Error ? error.message : String(error)}`,
+          `[comment-acquisition] 私信回复生成失败: ${generationError}`,
         );
       }
 
@@ -602,6 +607,22 @@ export class CommentAcquisitionService {
       const leadId = lead.id;
 
       let status = 'pending';
+      // 2026-09-06 复核 P1-2：私信回复生成失败（如网关 409 三次重试后仍无草稿）
+      // 明确回写 failed + lastError，对齐评论扫描语义，不再伪装 pending 误导「待审核」。
+      if (!replyText) {
+        status = 'failed';
+        await this.prisma.lead.updateMany({
+          where: {
+            id: leadId,
+            userId: scope.userId,
+            ...(scope.tenantId ? { tenantId: scope.tenantId } : {}),
+          },
+          data: {
+            status: 'failed',
+            lastError: generationError ?? '回复生成失败',
+          },
+        });
+      }
       // 私信自动回复：低风险自动真实外发（留审批痕迹），高风险进人工审核
       if (autoReply && replyText) {
         const highRisk = this.replyEngine.isHighRisk(message);

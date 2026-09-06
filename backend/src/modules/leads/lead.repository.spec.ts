@@ -187,3 +187,67 @@ describe('LeadRepository.dedupeKeyOf（去重键）', () => {
     expect(a).toBe(b);
   });
 });
+
+describe('LeadRepository.findRepliedBySource（复核 P1-3 去重正确性）', () => {
+  function makeRepo() {
+    const prismaMock = {
+      lead: {
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
+    };
+    const repo = new LeadRepository(prismaMock as never);
+    return { repo, prismaMock };
+  }
+
+  const baseArgs = {
+    userId: 'u1',
+    tenantId: 'tenant-1',
+    platform: 'douyin',
+    sourceAccountId: '24',
+  };
+
+  it('where 含 sourceType——评论不会复用私信同文草稿', async () => {
+    const { repo, prismaMock } = makeRepo();
+    await repo.findRepliedBySource(
+      baseArgs.userId,
+      baseArgs.tenantId,
+      baseArgs.platform,
+      baseArgs.sourceAccountId,
+      'comment',
+      'https://douyin/video/1',
+      '在吗',
+    );
+    const where = prismaMock.lead.findFirst.mock.calls[0][0].where;
+    expect(where.sourceType).toBe('comment');
+  });
+
+  it('where 含 sourceUrl——跨视频同文不会复用', async () => {
+    const { repo, prismaMock } = makeRepo();
+    await repo.findRepliedBySource(
+      baseArgs.userId,
+      baseArgs.tenantId,
+      baseArgs.platform,
+      baseArgs.sourceAccountId,
+      'comment',
+      'https://douyin/video/1',
+      '太喜欢了',
+    );
+    const where = prismaMock.lead.findFirst.mock.calls[0][0].where;
+    expect(where.sourceUrl).toBe('https://douyin/video/1');
+  });
+
+  it('where 含 status in approved/replied——失败旧草稿不复用', async () => {
+    const { repo, prismaMock } = makeRepo();
+    await repo.findRepliedBySource(
+      baseArgs.userId,
+      baseArgs.tenantId,
+      baseArgs.platform,
+      baseArgs.sourceAccountId,
+      'comment',
+      'https://douyin/video/1',
+      '感谢分享',
+    );
+    const where = prismaMock.lead.findFirst.mock.calls[0][0].where;
+    expect(where.status).toEqual({ in: ['approved', 'replied'] });
+  });
+});

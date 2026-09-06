@@ -165,6 +165,8 @@ export class LeadRepository {
     tenantId: string | null | undefined,
     platform: string,
     sourceAccountId: string,
+    sourceType: string,
+    sourceUrl: string | null,
     sourceText: string,
   ): Promise<{ id: string; latestReply: string } | null> {
     const existing = await this.prisma.lead.findFirst({
@@ -173,8 +175,15 @@ export class LeadRepository {
         ...(tenantId ? { tenantId } : {}),
         platform,
         sourceAccountId,
+        // 2026-09-06 复核 P1-3：区分评论/私信（同文不同来源不互串）
+        sourceType,
+        // 来源内容标识：同评论文本出现在不同视频/内容时不可复用；
+        // sourceUrl 缺失（历史脏数据）时退化为不按内容限定，靠 sourceType+文本兜底。
+        ...(sourceUrl ? { sourceUrl } : {}),
         sourceText,
         latestReply: { not: null },
+        // 可复用状态：只复用已审核/已回复的有效草稿，不复用 failed 旧草稿
+        status: { in: ['approved', 'replied'] },
       },
       orderBy: { updatedAt: 'desc' },
       select: { id: true, latestReply: true },
