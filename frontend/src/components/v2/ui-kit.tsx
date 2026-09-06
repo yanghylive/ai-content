@@ -118,6 +118,9 @@ export type V2PickOption = {
   /** 次行说明（两行式选项） */
   desc?: string;
   icon?: LucideIcon;
+  /** 真实 logo 图（优先于 icon）；brandColor 作圆角色底 */
+  image?: string;
+  brandColor?: string;
   /** 标签（如「自定义」），跟在标题后 */
   badge?: string;
 };
@@ -199,8 +202,33 @@ export function V2Pick({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  const renderMark = (option: V2PickOption, active: boolean) => {
+    if (option.image) {
+      return (
+        <span
+          className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-[6px]"
+          style={{ background: option.brandColor || "var(--kaypal-v3-accent)" }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={option.image} alt="" className="h-3.5 w-3.5 object-contain" />
+        </span>
+      );
+    }
+    const Icon = option.icon;
+    if (!Icon) return null;
+    return (
+      <Icon
+        size={16}
+        className={`shrink-0 ${
+          active
+            ? "text-[var(--kaypal-v3-accent-ink)]"
+            : "text-[var(--kaypal-v3-muted)]"
+        }`}
+      />
+    );
+  };
+
   const current = options.find((option) => option.value === value);
-  const CurrentIcon = current?.icon;
 
   return (
     <div ref={rootRef} className={`relative ${className || ""}`}>
@@ -218,12 +246,7 @@ export function V2Pick({
             : "var(--kaypal-v3-field-border)",
         }}
       >
-        {CurrentIcon ? (
-          <CurrentIcon
-            size={16}
-            className="shrink-0 text-[var(--kaypal-v3-accent-ink)]"
-          />
-        ) : null}
+        {current ? renderMark(current, true) : null}
         <span
           className={`min-w-0 flex-1 truncate text-sm ${
             current
@@ -256,7 +279,6 @@ export function V2Pick({
             >
           {options.map((option) => {
             const active = option.value === value;
-            const OptionIcon = option.icon;
             return (
               <button
                 key={option.value}
@@ -273,16 +295,7 @@ export function V2Pick({
                     : "hover:bg-[var(--kaypal-v3-paper-soft)]"
                 }`}
               >
-                {OptionIcon ? (
-                  <OptionIcon
-                    size={16}
-                    className={`shrink-0 ${
-                      active
-                        ? "text-[var(--kaypal-v3-accent-ink)]"
-                        : "text-[var(--kaypal-v3-muted)]"
-                    }`}
-                  />
-                ) : null}
+                {renderMark(option, active)}
                 <span className="min-w-0 flex-1">
                   <span
                     className={`flex items-center gap-1.5 text-sm font-medium ${

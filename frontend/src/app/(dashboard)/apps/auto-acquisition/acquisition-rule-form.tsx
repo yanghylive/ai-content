@@ -3,19 +3,35 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Target,
+  Activity,
   ArrowLeft,
   BookOpen,
+  Briefcase,
+  Building2,
+  Camera,
   CheckCircle2,
+  Gift,
+  Hammer,
+  Heart,
+  MapPinned,
   MessageCircle,
   Music2,
   Play,
   PlayCircle,
   Plus,
+  Radar,
   Save,
+  ShieldCheck,
+  ShoppingCart,
   Sparkles,
+  Tag,
+  Target,
+  Users,
+  Utensils,
+  Wrench,
   XCircle,
 } from "@/components/iconpark";
+import { PLATFORM_META } from "@/components/platform-badge";
 import {
   V2Section,
   V2Field,
@@ -33,6 +49,14 @@ import { api } from "@/lib/api/client";
 import { toPublicError } from "@/lib/public-error";
 import { useIsMobile } from "@/lib/hooks/use-media-query";
 
+const PLATFORM_LOGO: Record<string, { image: string; brandColor: string }> =
+  Object.fromEntries(
+    PLATFORM_META.map((meta) => [
+      meta.key,
+      { image: meta.logo, brandColor: meta.brand },
+    ]),
+  );
+
 const PLATFORM_OPTIONS = [
   { value: "douyin", label: "抖音", desc: "评论区找客户", icon: Music2 },
   { value: "xiaohongshu", label: "小红书", desc: "笔记和评论", icon: BookOpen },
@@ -46,6 +70,7 @@ const SCENARIO_OPTIONS = [
     value: "home-renovation",
     label: "家装/装修",
     desc: "本地装修咨询客户",
+    icon: Hammer,
     preset: {
       platform: "douyin" as const,
       keywords: "装修,旧房翻新,全屋定制",
@@ -57,6 +82,7 @@ const SCENARIO_OPTIONS = [
     value: "beauty-makeup",
     label: "美业/护肤",
     desc: "美甲护肤客户",
+    icon: Heart,
     preset: {
       platform: "xiaohongshu" as const,
       keywords: "美甲,护肤,医美",
@@ -68,6 +94,7 @@ const SCENARIO_OPTIONS = [
     value: "edu-training",
     label: "教育培训",
     desc: "课程咨询客户",
+    icon: BookOpen,
     preset: {
       platform: "douyin" as const,
       keywords: "课程,培训,报名",
@@ -79,6 +106,7 @@ const SCENARIO_OPTIONS = [
     value: "local-life",
     label: "本地生活",
     desc: "同城到店客户",
+    icon: MapPinned,
     preset: {
       platform: "douyin" as const,
       keywords: "同城,探店,到店",
@@ -90,6 +118,7 @@ const SCENARIO_OPTIONS = [
     value: "ecommerce",
     label: "电商带货",
     desc: "购物种草客户",
+    icon: ShoppingCart,
     preset: {
       platform: "xiaohongshu" as const,
       keywords: "好物,测评,种草",
@@ -101,6 +130,7 @@ const SCENARIO_OPTIONS = [
     value: "catering",
     label: "餐饮",
     desc: "本地到店/团购客户",
+    icon: Utensils,
     preset: {
       platform: "douyin" as const,
       keywords: "探店,美食,团购,聚餐",
@@ -112,6 +142,7 @@ const SCENARIO_OPTIONS = [
     value: "wechat-business",
     label: "微商/私域",
     desc: "微信私域与朋友圈客户",
+    icon: Users,
     preset: {
       platform: "wechat" as const,
       keywords: "副业,货源,朋友圈,私域",
@@ -123,6 +154,7 @@ const SCENARIO_OPTIONS = [
     value: "direct-sales",
     label: "直销/轻创业",
     desc: "副业与轻创业人群",
+    icon: Briefcase,
     preset: {
       platform: "wechat" as const,
       keywords: "副业,轻创业,项目,兼职",
@@ -134,6 +166,7 @@ const SCENARIO_OPTIONS = [
     value: "fitness",
     label: "健身",
     desc: "减脂健身与私教客户",
+    icon: Activity,
     preset: {
       platform: "douyin" as const,
       keywords: "健身,减脂,私教,增肌",
@@ -145,6 +178,7 @@ const SCENARIO_OPTIONS = [
     value: "maternal-baby",
     label: "母婴/产后",
     desc: "产后恢复与母婴服务客户",
+    icon: Gift,
     preset: {
       platform: "xiaohongshu" as const,
       keywords: "产后恢复,育儿,母婴",
@@ -156,6 +190,7 @@ const SCENARIO_OPTIONS = [
     value: "healthcare",
     label: "医疗健康",
     desc: "体检与健康管理客户",
+    icon: ShieldCheck,
     preset: {
       platform: "douyin" as const,
       keywords: "体检,健康管理,养生",
@@ -167,6 +202,7 @@ const SCENARIO_OPTIONS = [
     value: "auto-aftermarket",
     label: "汽车后市场",
     desc: "本地养车保养车主",
+    icon: Wrench,
     preset: {
       platform: "douyin" as const,
       keywords: "养车,洗车,保养,汽修",
@@ -178,6 +214,7 @@ const SCENARIO_OPTIONS = [
     value: "real-estate",
     label: "房产中介",
     desc: "买房/租房客源",
+    icon: Building2,
     preset: {
       platform: "douyin" as const,
       keywords: "买房,看房,二手房,租房",
@@ -189,6 +226,7 @@ const SCENARIO_OPTIONS = [
     value: "wedding-photo",
     label: "婚庆摄影",
     desc: "婚纱照与婚庆客户",
+    icon: Camera,
     preset: {
       platform: "xiaohongshu" as const,
       keywords: "婚纱照,婚礼,婚庆,跟拍",
@@ -200,6 +238,7 @@ const SCENARIO_OPTIONS = [
     value: "b2b-leads",
     label: "B2B 线索",
     desc: "企业采购决策人",
+    icon: Radar,
     preset: {
       platform: "kuaishou" as const,
       keywords: "供应链,采购,合作",
@@ -1079,13 +1118,20 @@ export function AcquisitionRuleForm() {
                 ariaLabel="场景和客户类型"
                 placeholder="请选择场景"
                 value={form.scene}
-                options={allScenarios.map(({ value, label, desc }) => ({
-                  value,
-                  label,
-                  desc,
-                  icon: Target,
-                  badge: value.startsWith("custom-") ? "自定义" : undefined,
-                }))}
+                options={allScenarios.map(({ value, label, desc }) => {
+                  const preset = SCENARIO_OPTIONS.find(
+                    (item) => item.value === value,
+                  );
+                  return {
+                    value,
+                    label,
+                    desc,
+                    icon: value.startsWith("custom-")
+                      ? Tag
+                      : preset?.icon ?? Target,
+                    badge: value.startsWith("custom-") ? "自定义" : undefined,
+                  };
+                })}
                 footer={{
                   label: "新增自定义行业",
                   onClick: () => setShowCustomForm(true),
@@ -1253,6 +1299,8 @@ export function AcquisitionRuleForm() {
                 label,
                 desc,
                 icon,
+                image: PLATFORM_LOGO[value]?.image,
+                brandColor: PLATFORM_LOGO[value]?.brandColor,
               }))}
               onChange={(next) =>
                 setForm((p) => ({ ...p, platform: next as GrowthPlatform }))
