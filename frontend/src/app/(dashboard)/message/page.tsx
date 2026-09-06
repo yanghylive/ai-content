@@ -74,7 +74,7 @@ export default function MessageScene() {
         before={
           <div style={{ marginTop: 8 }}>
             <div className="kx-section-title">
-              <ShellIcon name="message" />
+              <BrandIcon name="inbox" size={20} />
               统一收件箱
             </div>
             <button
@@ -83,8 +83,8 @@ export default function MessageScene() {
               style={{ width: "100%", textAlign: "left" }}
               onClick={() => router.push("/engagement")}
             >
-              <div className="kx-agg-ico kx-t-violet">
-                <ShellIcon name="messageSq" />
+              <div className="kx-agg-ico kx-agg-ico-bare" aria-hidden="true">
+                <BrandIcon name="inbox" size={32} tone="gold" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="kx-agg-title">查看全部客户消息</div>
